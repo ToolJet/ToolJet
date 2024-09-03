@@ -153,7 +153,7 @@
             "currentEnvironmentId": "0504a0c9-1cc5-4603-be96-0185935e8703",
             "promotedFrom": null,
             "createdAt": "2024-08-28T07:26:46.735Z",
-            "updatedAt": "2024-09-02T09:08:20.718Z"
+            "updatedAt": "2024-09-03T05:46:24.122Z"
           },
           "components": [
             {
@@ -1532,7 +1532,7 @@
                   "value": "Update details"
                 },
                 "loadingState": {
-                  "value": "{{false}}",
+                  "value": "{{queries.19aecce0-a796-4c4d-898e-46b2e123ee90.isLoading }}",
                   "fxActive": true
                 }
               },
@@ -1556,7 +1556,7 @@
               },
               "validation": {},
               "createdAt": "2024-08-29T00:07:52.476Z",
-              "updatedAt": "2024-09-01T11:10:00.526Z",
+              "updatedAt": "2024-09-03T05:45:30.212Z",
               "layouts": [
                 {
                   "id": "597e3ad9-5a02-45d8-8761-a06877b61b8e",
@@ -1709,13 +1709,13 @@
                   "value": "Course Category"
                 },
                 "values": {
-                  "value": "{{[\"Artificial Intelligence\", \"Product Management\", \"Marketing\"]}}"
+                  "value": "{{[\"\\%\\%\",\"Artificial Intelligence\", \"Product Management\", \"Marketing\"]}}"
                 },
                 "display_values": {
-                  "value": "{{[\"Artificial Intelligence\", \"Product Management\", \"Marketing\"]}}"
+                  "value": "{{[\"Show All\",\"Artificial Intelligence\", \"Product Management\", \"Marketing\"]}}"
                 },
                 "value": {
-                  "value": "{{\"\"}}"
+                  "value": "{{\"\\%\\%\"}}"
                 }
               },
               "general": null,
@@ -1731,7 +1731,7 @@
               },
               "validation": {},
               "createdAt": "2024-08-29T17:07:38.118Z",
-              "updatedAt": "2024-08-29T17:32:29.000Z",
+              "updatedAt": "2024-09-03T05:39:42.639Z",
               "layouts": [
                 {
                   "id": "892f9ce7-e4a3-46b8-8c31-8aea789d1ff2",
@@ -1823,7 +1823,7 @@
               "properties": {
                 "loadingState": {
                   "value": "{{false}}",
-                  "fxActive": false
+                  "fxActive": true
                 }
               },
               "general": null,
@@ -1839,7 +1839,7 @@
               },
               "validation": {},
               "createdAt": "2024-08-29T17:16:53.774Z",
-              "updatedAt": "2024-09-02T08:49:58.972Z",
+              "updatedAt": "2024-09-03T05:45:36.796Z",
               "layouts": [
                 {
                   "id": "0cc1bbaf-1760-4a4f-9c06-c072a3b8c30d",
@@ -3229,13 +3229,16 @@
               "event": {
                 "eventId": "onClick",
                 "message": "Hello world!",
-                "actionId": "control-component",
+                "queryId": "914177da-46da-4de3-ae33-829bc5958ab9",
+                "actionId": "run-query",
                 "alertType": "info",
+                "queryName": "getCourses",
+                "parameters": {},
                 "componentId": "e36930c5-0a49-47c1-a66d-d783982ca720",
                 "componentSpecificActionHandle": "setFilters",
                 "componentSpecificActionParams": [
                   {
-                    "value": "{{components.3e688235-bf38-48bf-8fc1-dc62caf559b8.value}}",
+                    "value": "",
                     "handle": "parameters",
                     "displayName": "Parameters"
                   }
@@ -3245,7 +3248,7 @@
               "target": "component",
               "appVersionId": "cb43fd49-112d-45fe-8907-fbe29d944691",
               "createdAt": "2024-08-29T17:18:41.951Z",
-              "updatedAt": "2024-09-02T08:59:34.407Z"
+              "updatedAt": "2024-09-03T05:41:01.899Z"
             },
             {
               "id": "ecefa7cc-07db-4aee-9a03-0d17ad096167",
@@ -3327,7 +3330,7 @@
             {
               "id": "8dfbcb91-b889-4863-99b0-9d6df0990107",
               "name": "onClick",
-              "index": 0,
+              "index": 1,
               "event": {
                 "eventId": "onClick",
                 "message": "Hello world!",
@@ -3342,7 +3345,7 @@
               "target": "component",
               "appVersionId": "cb43fd49-112d-45fe-8907-fbe29d944691",
               "createdAt": "2024-09-01T09:19:51.090Z",
-              "updatedAt": "2024-09-01T09:19:51.090Z"
+              "updatedAt": "2024-09-03T05:43:26.996Z"
             },
             {
               "id": "258f5cfa-10ea-4da4-a987-2081de38a827",
@@ -3664,18 +3667,26 @@
             {
               "id": "5e0e6b21-deaf-4def-ba09-f0965d62ad0d",
               "name": "onClick",
-              "index": 1,
+              "index": 0,
               "event": {
                 "eventId": "onClick",
                 "message": "Hello world!",
                 "actionId": "control-component",
-                "alertType": "info"
+                "alertType": "info",
+                "componentId": "b171ce8b-5d03-41fd-9d3f-0457c48c23a6",
+                "componentSpecificActionHandle": "loading",
+                "componentSpecificActionParams": [
+                  {
+                    "value": "{{false}}",
+                    "handle": "loading"
+                  }
+                ]
               },
               "sourceId": "b171ce8b-5d03-41fd-9d3f-0457c48c23a6",
               "target": "component",
               "appVersionId": "cb43fd49-112d-45fe-8907-fbe29d944691",
               "createdAt": "2024-09-01T09:59:17.773Z",
-              "updatedAt": "2024-09-01T09:59:30.151Z"
+              "updatedAt": "2024-09-03T05:43:40.577Z"
             },
             {
               "id": "974701ed-ecdc-4d43-b6c7-e0c30f1b43c5",
@@ -3766,7 +3777,7 @@
             {
               "id": "1dbdbd0c-5170-41a5-8746-2ae6bdd4ca2f",
               "name": "onClick",
-              "index": 0,
+              "index": 1,
               "event": {
                 "eventId": "onClick",
                 "message": "Hello world!",
@@ -3780,12 +3791,12 @@
               "target": "component",
               "appVersionId": "cb43fd49-112d-45fe-8907-fbe29d944691",
               "createdAt": "2024-09-02T08:42:36.362Z",
-              "updatedAt": "2024-09-02T08:43:05.102Z"
+              "updatedAt": "2024-09-03T05:42:31.079Z"
             },
             {
               "id": "2db3a6ca-eac7-4c0e-916e-e7d937b63fdb",
               "name": "onClick",
-              "index": 1,
+              "index": 2,
               "event": {
                 "eventId": "onClick",
                 "message": "Hello world!",
@@ -3806,12 +3817,12 @@
               "target": "component",
               "appVersionId": "cb43fd49-112d-45fe-8907-fbe29d944691",
               "createdAt": "2024-09-02T08:43:08.948Z",
-              "updatedAt": "2024-09-02T08:44:39.526Z"
+              "updatedAt": "2024-09-03T05:42:31.079Z"
             },
             {
               "id": "ac05f133-e081-460c-8082-7547066068cb",
               "name": "onClick",
-              "index": 2,
+              "index": 3,
               "event": {
                 "eventId": "onClick",
                 "message": "Hello world!",
@@ -3832,12 +3843,12 @@
               "target": "component",
               "appVersionId": "cb43fd49-112d-45fe-8907-fbe29d944691",
               "createdAt": "2024-09-02T08:44:40.858Z",
-              "updatedAt": "2024-09-02T08:45:07.093Z"
+              "updatedAt": "2024-09-03T05:42:31.079Z"
             },
             {
               "id": "6ff845a5-2e25-4958-9c15-a632eb430116",
               "name": "onClick",
-              "index": 3,
+              "index": 4,
               "event": {
                 "eventId": "onClick",
                 "message": "Hello world!",
@@ -3857,12 +3868,12 @@
               "target": "component",
               "appVersionId": "cb43fd49-112d-45fe-8907-fbe29d944691",
               "createdAt": "2024-09-02T08:45:15.387Z",
-              "updatedAt": "2024-09-02T08:45:48.368Z"
+              "updatedAt": "2024-09-03T05:42:31.079Z"
             },
             {
               "id": "2d655488-7b8c-4ffe-8edf-9a63fb91a4fb",
               "name": "onClick",
-              "index": 4,
+              "index": 5,
               "event": {
                 "eventId": "onClick",
                 "message": "Hello world!",
@@ -3876,12 +3887,12 @@
               "target": "component",
               "appVersionId": "cb43fd49-112d-45fe-8907-fbe29d944691",
               "createdAt": "2024-09-02T08:45:52.885Z",
-              "updatedAt": "2024-09-02T08:46:21.250Z"
+              "updatedAt": "2024-09-03T05:42:31.079Z"
             },
             {
               "id": "6dc80fe5-e2ef-49d2-8b09-3e3c8c5cd9be",
               "name": "onClick",
-              "index": 5,
+              "index": 6,
               "event": {
                 "eventId": "onClick",
                 "message": "Hello world!",
@@ -3895,12 +3906,12 @@
               "target": "component",
               "appVersionId": "cb43fd49-112d-45fe-8907-fbe29d944691",
               "createdAt": "2024-09-02T08:46:25.697Z",
-              "updatedAt": "2024-09-02T08:46:45.501Z"
+              "updatedAt": "2024-09-03T05:42:31.079Z"
             },
             {
               "id": "94a0c1ad-f101-4d8d-bc27-12f258e59f0e",
               "name": "onClick",
-              "index": 6,
+              "index": 7,
               "event": {
                 "eventId": "onClick",
                 "message": "Hello world!",
@@ -3914,16 +3925,40 @@
               "target": "component",
               "appVersionId": "cb43fd49-112d-45fe-8907-fbe29d944691",
               "createdAt": "2024-09-02T08:46:53.768Z",
-              "updatedAt": "2024-09-02T08:47:19.841Z"
+              "updatedAt": "2024-09-03T05:42:31.079Z"
             },
             {
-              "id": "d95b4f96-76a1-41c2-a66b-c5c0b0527931",
+              "id": "8bff236b-5455-429e-899b-6ef3eb276abe",
+              "name": "onClick",
+              "index": 2,
+              "event": {
+                "eventId": "onClick",
+                "message": "Hello world!",
+                "actionId": "control-component",
+                "alertType": "info",
+                "componentId": "0baf850a-118c-4bac-a0c5-37ead9e1b613",
+                "componentSpecificActionHandle": "loading",
+                "componentSpecificActionParams": [
+                  {
+                    "value": "{{false}}",
+                    "handle": "loading"
+                  }
+                ]
+              },
+              "sourceId": "0baf850a-118c-4bac-a0c5-37ead9e1b613",
+              "target": "component",
+              "appVersionId": "cb43fd49-112d-45fe-8907-fbe29d944691",
+              "createdAt": "2024-09-03T05:33:07.940Z",
+              "updatedAt": "2024-09-03T05:33:36.190Z"
+            },
+            {
+              "id": "c68528a2-3d8a-4645-9514-07e1898bd0e1",
               "name": "onClick",
               "index": 0,
               "event": {
                 "eventId": "onClick",
                 "message": "Hello world!",
-                "actionId": "show-alert",
+                "actionId": "control-component",
                 "alertType": "info",
                 "componentId": "6013f32a-d59a-4eea-b783-86f1943c4998",
                 "componentSpecificActionHandle": "loading",
@@ -3940,11 +3975,11 @@
               "sourceId": "6013f32a-d59a-4eea-b783-86f1943c4998",
               "target": "component",
               "appVersionId": "cb43fd49-112d-45fe-8907-fbe29d944691",
-              "createdAt": "2024-09-02T08:50:02.158Z",
-              "updatedAt": "2024-09-02T08:57:00.812Z"
+              "createdAt": "2024-09-03T05:40:59.107Z",
+              "updatedAt": "2024-09-03T05:41:20.657Z"
             },
             {
-              "id": "d5bc3777-ae55-4c70-a4a4-80c78c3808fe",
+              "id": "dd4e4b51-1526-413c-8cfd-23833e68b9f1",
               "name": "onClick",
               "index": 2,
               "event": {
@@ -3956,16 +3991,70 @@
                 "componentSpecificActionHandle": "loading",
                 "componentSpecificActionParams": [
                   {
+                    "type": "toggle",
                     "value": "{{false}}",
-                    "handle": "loading"
+                    "handle": "loading",
+                    "displayName": "Value",
+                    "defaultValue": "{{false}}"
                   }
                 ]
               },
               "sourceId": "6013f32a-d59a-4eea-b783-86f1943c4998",
               "target": "component",
               "appVersionId": "cb43fd49-112d-45fe-8907-fbe29d944691",
-              "createdAt": "2024-09-02T08:50:39.839Z",
-              "updatedAt": "2024-09-02T08:50:56.537Z"
+              "createdAt": "2024-09-03T05:41:23.900Z",
+              "updatedAt": "2024-09-03T05:41:44.211Z"
+            },
+            {
+              "id": "bd7a0b25-d46c-4907-83e9-df08501c8593",
+              "name": "onClick",
+              "index": 0,
+              "event": {
+                "eventId": "onClick",
+                "message": "Hello world!",
+                "actionId": "control-component",
+                "alertType": "info",
+                "componentId": "1e651b36-2f0d-4e4a-892a-7aac0c728d95",
+                "componentSpecificActionHandle": "loading",
+                "componentSpecificActionParams": [
+                  {
+                    "type": "toggle",
+                    "value": "{{true}}",
+                    "handle": "loading",
+                    "displayName": "Value",
+                    "defaultValue": "{{false}}"
+                  }
+                ]
+              },
+              "sourceId": "1e651b36-2f0d-4e4a-892a-7aac0c728d95",
+              "target": "component",
+              "appVersionId": "cb43fd49-112d-45fe-8907-fbe29d944691",
+              "createdAt": "2024-09-03T05:42:28.183Z",
+              "updatedAt": "2024-09-03T05:42:45.546Z"
+            },
+            {
+              "id": "7d1ef4bf-fcc4-4998-be68-d4b549ea887d",
+              "name": "onClick",
+              "index": 8,
+              "event": {
+                "eventId": "onClick",
+                "message": "Hello world!",
+                "actionId": "control-component",
+                "alertType": "info",
+                "componentId": "1e651b36-2f0d-4e4a-892a-7aac0c728d95",
+                "componentSpecificActionHandle": "loading",
+                "componentSpecificActionParams": [
+                  {
+                    "value": "{{false}}",
+                    "handle": "loading"
+                  }
+                ]
+              },
+              "sourceId": "1e651b36-2f0d-4e4a-892a-7aac0c728d95",
+              "target": "component",
+              "appVersionId": "cb43fd49-112d-45fe-8907-fbe29d944691",
+              "createdAt": "2024-09-03T05:42:57.750Z",
+              "updatedAt": "2024-09-03T05:43:12.793Z"
             }
           ],
           "dataQueries": [
@@ -4003,14 +4092,28 @@
                   "fields": []
                 },
                 "list_rows": {
-                  "where_filters": {}
+                  "where_filters": {
+                    "7459f538-dc54-41f3-bb71-392f851a1b43": {
+                      "column": "Category",
+                      "operator": "like",
+                      "value": "{{components.dropdown2.value}}",
+                      "id": "7459f538-dc54-41f3-bb71-392f851a1b43"
+                    }
+                  },
+                  "order_filters": {
+                    "27229577-39be-4a5e-bee8-311bb5ff8f83": {
+                      "column": "id",
+                      "order": "asc",
+                      "id": "27229577-39be-4a5e-bee8-311bb5ff8f83"
+                    }
+                  }
                 },
                 "runOnPageLoad": true
               },
               "dataSourceId": "c1daf8ad-0681-41e4-ab5a-6222670831b1",
               "appVersionId": "cb43fd49-112d-45fe-8907-fbe29d944691",
               "createdAt": "2024-08-28T11:17:05.062Z",
-              "updatedAt": "2024-09-02T09:00:03.956Z"
+              "updatedAt": "2024-09-03T05:45:51.353Z"
             },
             {
               "id": "bffbce12-fb42-4ce3-a8c1-6afede31291d",
@@ -4114,7 +4217,7 @@
               "dataSourceId": "c1daf8ad-0681-41e4-ab5a-6222670831b1",
               "appVersionId": "cb43fd49-112d-45fe-8907-fbe29d944691",
               "createdAt": "2024-08-28T11:33:17.592Z",
-              "updatedAt": "2024-09-01T11:02:39.272Z"
+              "updatedAt": "2024-09-03T05:21:27.705Z"
             },
             {
               "id": "78937230-4800-418a-a13d-a192c2c613b6",
@@ -4348,11 +4451,11 @@
                     }
                   },
                   "where_filters": {
-                    "575f134a-f7f0-4860-a91d-5a037a5faa1c": {
+                    "c56197af-058f-42c0-ad43-a2d4bac6ed21": {
                       "column": "id",
                       "operator": "eq",
                       "value": "{{components.table2.selectedRow.id}}",
-                      "id": "575f134a-f7f0-4860-a91d-5a037a5faa1c"
+                      "id": "c56197af-058f-42c0-ad43-a2d4bac6ed21"
                     }
                   }
                 }
@@ -4360,7 +4463,7 @@
               "dataSourceId": "c1daf8ad-0681-41e4-ab5a-6222670831b1",
               "appVersionId": "cb43fd49-112d-45fe-8907-fbe29d944691",
               "createdAt": "2024-09-01T10:13:03.168Z",
-              "updatedAt": "2024-09-01T11:13:00.296Z"
+              "updatedAt": "2024-09-03T05:45:00.580Z"
             }
           ],
           "dataSources": [
@@ -4398,7 +4501,7 @@
               "currentEnvironmentId": "0504a0c9-1cc5-4603-be96-0185935e8703",
               "promotedFrom": null,
               "createdAt": "2024-08-28T07:26:46.735Z",
-              "updatedAt": "2024-09-02T09:08:20.718Z"
+              "updatedAt": "2024-09-03T05:46:24.122Z"
             }
           ],
           "appEnvironments": [
