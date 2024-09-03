@@ -4,11 +4,11 @@ import versionsArchived from './versionsArchived.json';
 const baseArchivedURL = "https://archived-docs.tooljet.com/docs/";
 
 const lastFiveArchivedVersions = versionsArchived
-.slice(0, 5)
-.map(version => ({
-  version,
-  url: `${baseArchivedURL}${version}`
-}));
+  .slice(0, 5)
+  .map((version, index) => ({
+    version,
+    url: index === 0 ? baseArchivedURL : `${baseArchivedURL}${version}`
+  }));
 
 const isProd = process.env.NODE_ENV === 'production';
 
