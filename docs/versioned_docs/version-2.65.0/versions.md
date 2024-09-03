@@ -3,8 +3,6 @@ id: versions
 title: ToolJet Documentation Versions
 ---
 
-### ToolJet Documentation Versions
-
 **Current LTS Version (Stable)**
 
 | Version     | Documentation                             |
