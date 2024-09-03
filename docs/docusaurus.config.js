@@ -1,9 +1,11 @@
 const devServerPlugin = require('./src/plugins/devServer/index.js');
 import versionsArchived from './versionsArchived.json';
 
-const baseArchivedURL = "https://docs.tooljet.com/docs/";
+const baseArchivedURL = "https://archived-docs.tooljet.com/docs/";
 
-const archivedVersionsDropdownItems = versionsArchived.map(version => ({
+const lastFiveArchivedVersions = versionsArchived
+.slice(0, 5)
+.map(version => ({
   version,
   url: `${baseArchivedURL}${version}`
 }));
@@ -62,7 +64,7 @@ module.exports = {
               className: 'dropdown-archived-versions',
               value: '<b>Archived versions</b>',
             },
-            ...archivedVersionsDropdownItems.map(
+            ...lastFiveArchivedVersions.map(
               ({ version, url }) => ({
                 label: `${version}\u00A0\u00A0\u00A0↗`,
                 href: url,
@@ -155,7 +157,12 @@ module.exports = {
           // Please change this to your repo.
           editUrl: 'https://github.com/ToolJet/Tooljet/blob/develop/docs/',
           includeCurrentVersion: false,
-          lastVersion: '2.50.0-LTS'
+          lastVersion: '2.50.0-LTS',
+          versions: {
+            '2.65.0': {
+              label: '2.65.0-Beta 🚧'
+            },
+          }
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
