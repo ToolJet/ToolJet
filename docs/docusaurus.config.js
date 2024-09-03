@@ -54,31 +54,6 @@ module.exports = {
         {
           type: 'docsVersionDropdown',
           position: 'right',
-          dropdownItemsAfter: [
-            {
-              type: 'html',
-              value: '<hr class="dropdown-separator">',
-            },
-            {
-              type: 'html',
-              className: 'dropdown-archived-versions',
-              value: '<b>Archived versions</b>',
-            },
-            ...lastFiveArchivedVersions.map(
-              ({ version, url }) => ({
-                label: `${version}\u00A0\u00A0\u00A0↗`,
-                href: url,
-              })
-            ),
-            {
-              type: 'html',
-              value: '<hr class="dropdown-separator">',
-            },
-            {
-              to: '/docs/versions',
-              label: 'All versions',
-            },
-          ],
         },
         {
           type: 'search',
