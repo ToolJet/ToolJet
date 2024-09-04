@@ -14,7 +14,7 @@
   ],
   "buildpacks": [
     {
-      "url": "neetodeploy/nodejs"
+      "url": "heroku/nodejs"
     }
   ]
 }
