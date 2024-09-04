@@ -188,22 +188,20 @@ This operation performs multiple index/update/delete operations in a single API 
 ```yaml
 Operations:
 [
+  { "index": { "_index": "books", "_id": "book1" } },
   {
-    "index": { "_index": "books", "_id": "book124" },
-    "document": {
-      "title": "To Kill a Mockingbird",
-      "author": "Harper Lee",
-      "year": 1960
-    }
+    "title": "The Great Gatsby",
+    "author": "F. Scott Fitzgerald",
+    "year": 1925
   },
+  { "delete": { "_index": "books", "_id": "book2" } },
+  { "index": { "_index": "books", "_id": "book3" } },
   {
-    "index": { "_index": "books", "_id": "book125" },
-    "document": {
-      "title": "Pride and Prejudice",
-      "author": "Jane Austen",
-      "year": 1813
-    }
-  }
+    "title": "Moby-Dick",
+    "author": "Herman Melville",
+    "year": 1851
+  },
+  { "delete": { "_index": "books", "_id": "book4" } }
 ]
 ```
 
@@ -269,7 +267,7 @@ Operations:
   {
     "docs": [
       { "_index": "books", "_id": "book124" },
-      { "_index": "books", "_id": "book125" },
+      { "_index": "books", "_id": "book125" }
     ]
   }
 ```
