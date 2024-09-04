@@ -75,7 +75,7 @@ The user password authentication method will be disabled after predefined number
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ### Reset Password
 
@@ -117,7 +117,23 @@ There are two ways through which a user can reset their password. The first meth
 - Enter the new password and click on the **Reset** button.
 
 <div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/sso/general/create-password.png" alt="Workspace settings" />
+ <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/sso/general/create-password.png" alt="Workspace settings" />
 </div>
 
 </div>
+
+## Direct App Access
+
+When users access ToolJet applications via direct links, they experience a streamlined login process that bypasses the dashboard and takes them straight to the specific app. When a user clicks on a direct application URL, the following scenarios are possible based on the user's session status:
+
+1. **User with a Valid Session:**
+   - The application loads directly without going through the dashboard.
+
+2. **User without a Valid Session:**
+   - The user is redirected to the workspace's login page.
+   - After successful authentication, the user is automatically redirected back to the original application URL.
+   - The dashboard is bypassed, providing immediate access to the desired application.
+
+:::info
+Access to specific applications depends on the user's group permission settings within the workspace. Even with direct access links, users may only access applications they are authorized to view.
+:::

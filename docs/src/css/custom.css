@@ -333,9 +333,35 @@ img {
   font-size: 0.85rem
 }
 
+.dropdown-archived-versions {
+  font-size: 0.875rem;
+  padding: 0.2rem 0.5rem;
+}
+
+.dropdown-separator {
+  margin: 0.3rem 0;
+}
+
 @media screen and (min-width: 768px) {
   .DocSearch-Button-Container {
     min-width: 200px;
     /* Fixes #3856 */
+  }
+}
+
+@media (max-width: 1000px) {
+  /* Styles for screens smaller than 1000px */
+  [data-theme='dark'] .clean-btn{
+    background-color: #272729;
+    color: #fff;
+    border-radius: 4px;
+    box-shadow: none;
+  }
+
+  [data-theme='dark'] .table-of-contents {
+    background-color: #272729;
+    color: #272729;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
   }
 }
