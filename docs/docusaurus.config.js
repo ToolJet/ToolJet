@@ -1,4 +1,14 @@
 const devServerPlugin = require('./src/plugins/devServer/index.js');
+import versionsArchived from './versionsArchived.json';
+
+const baseArchivedURL = "https://archived-docs.tooljet.com/docs/";
+
+const lastFiveArchivedVersions = versionsArchived
+  .slice(0, 5)
+  .map((version, index) => ({
+    version,
+    url: index === 0 ? baseArchivedURL : `${baseArchivedURL}${version}`
+  }));
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -124,15 +134,9 @@ module.exports = {
           includeCurrentVersion: false,
           lastVersion: '2.50.0-LTS',
           versions: {
-            '2.61.0': {
-              banner: 'none'
-            },
-            '2.62.0': {
-              banner: 'none'
-            },
             '2.65.0': {
-              banner: 'none'
-            }
+              label: '2.65.0-Beta 🚧'
+            },
           }
         },
         theme: {

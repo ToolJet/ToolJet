@@ -333,6 +333,15 @@ img {
   font-size: 0.85rem
 }
 
+.dropdown-archived-versions {
+  font-size: 0.875rem;
+  padding: 0.2rem 0.5rem;
+}
+
+.dropdown-separator {
+  margin: 0.3rem 0;
+}
+
 @media screen and (min-width: 768px) {
   .DocSearch-Button-Container {
     min-width: 200px;
