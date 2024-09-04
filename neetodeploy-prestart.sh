@@ -1,9 +1,13 @@
 #!/bin/sh
 
 echo "------> Running prestart script <------"
+echo $NEETODEPLOY_APP_DEFAULT_URL
+
 if [ $NEETODEPLOY_APP_DEFAULT_URL ]
 then
     TOOLJET_HOST=$NEETODEPLOY_APP_DEFAULT_URL
     TOOLJET_SERVER_URL=$NEETODEPLOY_APP_DEFAULT_URL
+    export TOOLJET_HOST
+    export TOOLJET_SERVER_URL
 fi
 
