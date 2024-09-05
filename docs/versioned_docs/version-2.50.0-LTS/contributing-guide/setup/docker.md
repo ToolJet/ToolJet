@@ -27,19 +27,25 @@ If you are setting up on a Windows machine, we advise you to set up Docker Deskt
 Make sure to run it within the WSL2 terminal.
 :::
 
-1. Clone the repository:
+1. Fork the repository:
+
+   Go to the [ToolJet GitHub repository](https://github.com/ToolJet/Tooljet), click on the **Fork** button to create a copy of the repository under your own GitHub account.
+
+2. Clone your forked repository:
+
+   After forking, clone the forked repository to your local machine using the URL of your forked repo.
 
 ```bash
-git clone https://github.com/tooljet/tooljet.git
+git clone https://github.com/<your-username>/ToolJet.git
 ```
 
-2. Create a `.env` file by copying `.env.example`. More information on the variables that can be set is given in the **[environment variables reference](/docs/setup/env-vars)**.
+3. Create a `.env` file by copying `.env.example`. More information on the variables that can be set is given in the **[environment variables reference](/docs/setup/env-vars)**.
 
 ```bash
 cp ./deploy/docker/.env.internal.example .env
 ```
 
-3. Populate the keys in the `.env` using the below the command: 
+4. Populate the keys in the `.env` using the below the command: 
 
 ```bash
 chmod +x ./deploy/docker/internal.sh && ./deploy/docker/internal.sh
@@ -49,14 +55,14 @@ chmod +x ./deploy/docker/internal.sh && ./deploy/docker/internal.sh
 If you are setting up on a Windows machine, please ensure that the .env file line endings are set to LF, as they will be CRLF by default unless configured otherwise.
 :::
    
-4. Build Docker images.
+5. Build Docker images.
 
 ```bash
 docker compose build
 docker compose run --rm  plugins npm run build:plugins
 ```
 
-5. Run ToolJet.
+6. Run ToolJet.
 
 ```bash
 docker compose up
@@ -64,7 +70,7 @@ docker compose up
 
    ToolJet should now be served locally at `http://localhost:8082`.
 
-8. To shut down the containers, use the below commands:
+7. To shut down the containers, use the below commands:
 
 ```bash
 docker compose stop
