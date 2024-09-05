@@ -1,135 +1,134 @@
 [build]
   base = "docs/"
   publish = "build"
-  command = "GTM=$GTM ALGOLIA_API_KEY=$ALGOLIA_API_KEY npm run build" 
-
+  command = "GTM=$GTM ALGOLIA_API_KEY=$ALGOLIA_API_KEY npm run build"
+  
   [template.environment]
-    NODE_ENV = "production"
-    NODE_VERSION = "18.18.2"
-    NPM_VERSION = "9.8.1"
+  NODE_ENV = "production"  
+  NODE_VERSION = "18.18.2"
+  NPM_VERSION = "9.8.1"
 
-[redirects]
-  [[redirects]]
-    from = "/docs/2.62.0/*"
-    to = "https://archived-docs.tooljet.com/2.62.0/:splat"
-    status = 301
+[[redirects]]
+  from = "/docs/2.62.0/*"
+  to = "https://archived-docs.tooljet.com/2.62.0/:splat"
+  status = 301
 
-  [[redirects]]
-    from = "/docs/2.61.0/*"
-    to = "https://archived-docs.tooljet.com/2.61.0/:splat"
-    status = 301
+[[redirects]]
+  from = "/docs/2.61.0/*"
+  to = "https://archived-docs.tooljet.com/2.61.0/:splat"
+  status = 301
 
-  [[redirects]]
-    from = "/docs/2.43.0/*"
-    to = "https://archived-docs.tooljet.com/2.43.0/:splat"
-    status = 301
+[[redirects]]
+  from = "/docs/2.43.0/*"
+  to = "https://archived-docs.tooljet.com/2.43.0/:splat"
+  status = 301
 
-  [[redirects]]
-    from = "/docs/2.39.0/*"
-    to = "https://archived-docs.tooljet.com/2.39.0/:splat"
-    status = 301
+[[redirects]]
+  from = "/docs/2.39.0/*"
+  to = "https://archived-docs.tooljet.com/2.39.0/:splat"
+  status = 301
 
-  [[redirects]]
-    from = "/docs/2.36.0/*"
-    to = "https://archived-docs.tooljet.com/2.36.0/:splat"
-    status = 301
+[[redirects]]
+  from = "/docs/2.36.0/*"
+  to = "https://archived-docs.tooljet.com/2.36.0/:splat"
+  status = 301
 
-  [[redirects]]
-    from = "/docs/2.35.0/*"
-    to = "https://archived-docs.tooljet.com/2.35.0/:splat"
-    status = 301
+[[redirects]]
+  from = "/docs/2.35.0/*"
+  to = "https://archived-docs.tooljet.com/2.35.0/:splat"
+  status = 301
 
-  [[redirects]]
-    from = "/docs/2.34.0/*"
-    to = "https://archived-docs.tooljet.com/2.34.0/:splat"
-    status = 301
+[[redirects]]
+  from = "/docs/2.34.0/*"
+  to = "https://archived-docs.tooljet.com/2.34.0/:splat"
+  status = 301
 
-  [[redirects]]
-    from = "/docs/2.33.0/*"
-    to = "https://archived-docs.tooljet.com/2.33.0/:splat"
-    status = 301
+[[redirects]]
+  from = "/docs/2.33.0/*"
+  to = "https://archived-docs.tooljet.com/2.33.0/:splat"
+  status = 301
 
-  [[redirects]]
-    from = "/docs/2.30.0/*"
-    to = "https://archived-docs.tooljet.com/2.30.0/:splat"
-    status = 301
+[[redirects]]
+  from = "/docs/2.30.0/*"
+  to = "https://archived-docs.tooljet.com/2.30.0/:splat"
+  status = 301
 
-  [[redirects]]
-    from = "/docs/2.29.0/*"
-    to = "https://archived-docs.tooljet.com/2.29.0/:splat"
-    status = 301
+[[redirects]]
+  from = "/docs/2.29.0/*"
+  to = "https://archived-docs.tooljet.com/2.29.0/:splat"
+  status = 301
 
-  [[redirects]]
-    from = "/docs/2.27.0/*"
-    to = "https://archived-docs.tooljet.com/2.27.0/:splat"
-    status = 301
+[[redirects]]
+  from = "/docs/2.27.0/*"
+  to = "https://archived-docs.tooljet.com/2.27.0/:splat"
+  status = 301
 
-  [[redirects]]
-    from = "/docs/2.25.0/*"
-    to = "https://archived-docs.tooljet.com/2.25.0/:splat"
-    status = 301
+[[redirects]]
+  from = "/docs/2.25.0/*"
+  to = "https://archived-docs.tooljet.com/2.25.0/:splat"
+  status = 301
 
-  [[redirects]]
-    from = "/docs/2.24.0/*"
-    to = "https://archived-docs.tooljet.com/2.24.0/:splat"
-    status = 301
+[[redirects]]
+  from = "/docs/2.24.0/*"
+  to = "https://archived-docs.tooljet.com/2.24.0/:splat"
+  status = 301
 
-  [[redirects]]
-    from = "/docs/2.23.0/*"
-    to = "https://archived-docs.tooljet.com/2.23.0/:splat"
-    status = 301
+[[redirects]]
+  from = "/docs/2.23.0/*"
+  to = "https://archived-docs.tooljet.com/2.23.0/:splat"
+  status = 301
 
-  [[redirects]]
-    from = "/docs/2.22.0/*"
-    to = "https://archived-docs.tooljet.com/2.22.0/:splat"
-    status = 301
+[[redirects]]
+  from = "/docs/2.22.0/*"
+  to = "https://archived-docs.tooljet.com/2.22.0/:splat"
+  status = 301
 
-  [[redirects]]
-    from = "/docs/2.19.0/*"
-    to = "https://archived-docs.tooljet.com/2.19.0/:splat"
-    status = 301
+[[redirects]]
+  from = "/docs/2.19.0/*"
+  to = "https://archived-docs.tooljet.com/2.19.0/:splat"
+  status = 301
 
-  [[redirects]]
-    from = "/docs/2.18.0/*"
-    to = "https://archived-docs.tooljet.com/2.18.0/:splat"
-    status = 301
+[[redirects]]
+  from = "/docs/2.18.0/*"
+  to = "https://archived-docs.tooljet.com/2.18.0/:splat"
+  status = 301
 
-  [[redirects]]
-    from = "/docs/2.17.0/*"
-    to = "https://archived-docs.tooljet.com/2.17.0/:splat"
-    status = 301
+[[redirects]]
+  from = "/docs/2.17.0/*"
+  to = "https://archived-docs.tooljet.com/2.17.0/:splat"
+  status = 301
 
-  [[redirects]]
-    from = "/docs/2.16.0/*"
-    to = "https://archived-docs.tooljet.com/2.16.0/:splat"
-    status = 301
+[[redirects]]
+  from = "/docs/2.16.0/*"
+  to = "https://archived-docs.tooljet.com/2.16.0/:splat"
+  status = 301
 
-  [[redirects]]
-    from = "/docs/2.15.0/*"
-    to = "https://archived-docs.tooljet.com/2.15.0/:splat"
-    status = 301
+[[redirects]]
+  from = "/docs/2.15.0/*"
+  to = "https://archived-docs.tooljet.com/2.15.0/:splat"
+  status = 301
 
-  [[redirects]]
-    from = "/docs/2.14.0/*"
-    to = "https://archived-docs.tooljet.com/2.14.0/:splat"
-    status = 301
+[[redirects]]
+  from = "/docs/2.14.0/*"
+  to = "https://archived-docs.tooljet.com/2.14.0/:splat"
+  status = 301
 
-  [[redirects]]
-    from = "/docs/2.13.0/*"
-    to = "https://archived-docs.tooljet.com/2.13.0/:splat"
-    status = 301
+[[redirects]]
+  from = "/docs/2.13.0/*"
+  to = "https://archived-docs.tooljet.com/2.13.0/:splat"
+  status = 301
 
-  [[redirects]]
-    from = "/docs/2.12.0/*"
-    to = "https://archived-docs.tooljet.com/2.12.0/:splat"
-    status = 301
+[[redirects]]
+  from = "/docs/2.12.0/*"
+  to = "https://archived-docs.tooljet.com/2.12.0/:splat"
+  status = 301
 
-  [[redirects]]
-    from = "/docs/2.11.0/*"
-    to = "https://archived-docs.tooljet.com/2.11.0/:splat"
-    status = 301
+[[redirects]]
+  from = "/docs/2.11.0/*"
+  to = "https://archived-docs.tooljet.com/2.11.0/:splat"
+  status = 301
 
-  [[redirects]]
-    from = "/docs/2.10.0/*"
-    to = "https://archived-docs.tooljet.com/2.10.0/:splat"
-    status = 301
+[[redirects]]
+  from = "/docs/2.10.0/*"
+  to = "https://archived-docs.tooljet.com/2.10.0/:splat"
+  status = 301
