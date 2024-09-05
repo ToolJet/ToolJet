@@ -10,6 +10,8 @@
     .container-fluid {
         height: 100%;
         padding: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
     }
 
     .row {
@@ -19,7 +21,6 @@
     .leftside-wrapper,
     .rightside-wrapper {
         height: 100%;
-        overflow-y: auto;
     }
 
     .leftside-wrapper {

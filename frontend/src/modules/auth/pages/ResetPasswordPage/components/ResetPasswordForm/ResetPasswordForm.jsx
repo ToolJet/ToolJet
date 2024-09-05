@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { authenticationService } from '@/_services';
@@ -14,13 +14,43 @@ const ResetPasswordForm = ({ token, onResetSuccess }) => {
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [isFormValid, setisFormValid] = useState(false);
 
+  const password_comparison_check = (formData) => {
+    if (
+      formData.password.length >= 5 &&
+      formData.password.length <= 100 &&
+      formData.password_confirmation.length >= 5
+    ) {
+      if (formData.password_confirmation === formData.password) {
+        delete errors.password_confirmation;
+        delete errors.password;
+        return true;
+      } else {
+        let newErrors = { ...errors };
+        newErrors.password_confirmation = "Passwords don't match";
+        setErrors(newErrors);
+      }
+    }
+    return false;
+  };
+  useEffect(() => {
+    if (
+      formData.password != '' &&
+      formData.password_confirmation != '' &&
+      password_comparison_check(formData) &&
+      Object.keys(errors).length === 0
+    ) {
+      setisFormValid(true);
+    } else {
+      setisFormValid(false);
+    }
+  }, [formData]);
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     validateField(name, value);
   };
-
   const validateField = (name, value) => {
     let newErrors = { ...errors };
     if (name === 'password') {
@@ -57,7 +87,6 @@ const ResetPasswordForm = ({ token, onResetSuccess }) => {
       }
     }
   };
-
   return (
     <div className="reset-password-form">
       <OnboardingFormWrapper>
@@ -82,11 +111,7 @@ const ResetPasswordForm = ({ token, onResetSuccess }) => {
               dataCy="confirm-password-input"
               placeholder={t('Re-enter the password')}
             />
-            <SubmitButton
-              buttonText={t('Reset password')}
-              isLoading={isLoading}
-              disabled={isLoading || Object.keys(errors).length > 0}
-            />
+            <SubmitButton buttonText={t('Reset password')} isLoading={isLoading} disabled={isLoading || !isFormValid} />
           </form>
         </OnboardingFormInsideWrapper>
       </OnboardingFormWrapper>

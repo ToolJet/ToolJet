@@ -3,6 +3,10 @@
         margin-bottom: 0px;
     }
 
+    .onboarding-form-wrapper {
+        padding-bottom: 10px !important;
+    }
+
     .login-form-signup-redirect {
         color: var(--text-placeholder, #6A727C);
         font-size: 12px;
@@ -46,3 +50,4 @@
         margin-top: 24px !important;
     }
 }
+

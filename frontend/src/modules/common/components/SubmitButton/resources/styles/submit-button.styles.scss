@@ -13,21 +13,23 @@
         font-weight: 500;
         line-height: 18px;
     }
-}
 
-.tj-base-btn:disabled {
-    background-color: var(--Disabled, #C2CFFD) !important;
-    opacity: 0.8;
+    &:disabled {
+        background-color: var(--Disabled, #C2CFFD) !important;
+        opacity: 0.8;
 
-    svg>path {
-        fill: #FFF !important;
+        svg>path {
+            fill: #FFF !important;
+        }
     }
 }
 
 .dark-theme {
-    .tj-base-btn:disabled {
-        background: var(--slate6) !important;
-        color: var(--slate9) !important;
-        cursor: auto !important;
+    .submit-button {
+        &:disabled {
+            background: var(--slate6) !important;
+            color: var(--slate9) !important;
+            cursor: auto !important;
+        }
     }
 }

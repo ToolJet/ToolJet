@@ -88,15 +88,11 @@ const SignupPage = ({ configs, organizationId }) => {
 
   if (signupSuccess) {
     return (
-      <OnboardingBackgroundWrapper
-        MiddleComponent={() => (
-          <SignupSuccessInfo
-            email={signingUserInfo.email}
-            backToSignup={() => setSignupSuccess(false)}
-            organizationId={organizationId}
-            redirectTo={redirectTo}
-          />
-        )}
+      <SignupSuccessInfo
+        email={signingUserInfo.email}
+        backToSignup={() => setSignupSuccess(false)}
+        organizationId={organizationId}
+        redirectTo={redirectTo}
       />
     );
   }

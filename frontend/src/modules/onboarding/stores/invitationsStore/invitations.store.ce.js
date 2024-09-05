@@ -37,6 +37,7 @@ const useInvitationsStore = create(
         });
         setAccountCreated(true);
       }
+      clearPageHistory();
       // Redirect to home page after onboarding
       window.location.href = '/';
     },
@@ -50,5 +51,9 @@ const useInvitationsStore = create(
     },
   }))
 );
+
+function clearPageHistory() {
+  history.replaceState(null, null, '/');
+}
 
 export default useInvitationsStore;

@@ -17,7 +17,7 @@ const EmailComponent = ({
     <div className="email-input">
       <FormTextInput
         label={label || 'Email'}
-        placeholder={t('loginSignupPage.enterWorkEmail', 'Enter your email')}
+        placeholder={t('loginSignupPage.enterWorkEmail', 'Enter your work email')}
         value={prefilledEmail || email}
         onChange={handleChange}
         type="email"

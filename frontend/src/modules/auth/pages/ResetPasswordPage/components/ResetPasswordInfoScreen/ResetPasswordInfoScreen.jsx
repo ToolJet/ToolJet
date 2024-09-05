@@ -28,7 +28,7 @@ const ForgotPasswordInfoScreen = ({ email }) => {
             className="back-to-login-button"
             data-cy="back-to-login"
           >
-            <span>{t('forgotPasswordInfo.backToLogin', 'Back to login')}</span>
+            <span className="button-text">{t('forgotPasswordInfo.backToLogin', 'Back to login')}</span>
           </button>
         </div>
       </OnboardingFormWrapper>

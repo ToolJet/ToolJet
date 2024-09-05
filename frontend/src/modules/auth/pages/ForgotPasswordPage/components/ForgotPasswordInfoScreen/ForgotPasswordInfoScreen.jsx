@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { OnboardingFormWrapper } from '@/modules/onboarding/components';
 import { FormHeader } from '@/modules/common/components';
 import './resources/styles/forgot-password-info.styles.scss';
+import SepratorComponent from '@/modules/common/components/SepratorComponent';
 
 const ForgotPasswordInfoScreen = ({ email }) => {
   const { t } = useTranslation();
@@ -22,16 +23,10 @@ const ForgotPasswordInfoScreen = ({ email }) => {
         <FormHeader>{t('forgotPasswordInfo.header', 'Check your mail')}</FormHeader>
         <p className="message">{message}</p>
         <span className="info">{info}</span>
-        <div className="separator-signup">
-          <div className="mt-2 separator" data-cy="onboarding-separator">
-            <h2>
-              <span data-cy="onboarding-separator-text">{t('common.or', 'OR')}</span>
-            </h2>
-          </div>
-        </div>
+        <SepratorComponent />
         <div className="action-buttons">
           <button onClick={() => navigate('/login')} className="back-to-login-button" data-cy="back-to-login">
-            <span>{t('forgotPasswordInfo.backToLogin', 'Back to login')}</span>
+            <span className="button-text">{t('forgotPasswordInfo.backToLogin', 'Back to login')}</span>
           </button>
         </div>
       </OnboardingFormWrapper>

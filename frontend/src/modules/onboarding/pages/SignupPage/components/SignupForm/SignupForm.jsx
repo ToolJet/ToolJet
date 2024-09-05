@@ -6,6 +6,7 @@ import { OnboardingFormWrapper, OnboardingFormInsideWrapper } from '@/modules/on
 import { FormTextInput, PasswordInput, SubmitButton, FormHeader, SSOAuthModule } from '@/modules/common/components';
 import SignupStatusCard from './components/SignupStatusCard';
 import './resources/styles/sign-up-form.styles.scss';
+import SepratorComponent from '@/modules/common/components/SepratorComponent';
 
 const SignupForm = ({
   configs,
@@ -167,15 +168,7 @@ const SignupForm = ({
                   />
                 </form>
               )}
-              {isAnySSOEnabled && isFormSignUpEnabled && (
-                <div className="separator-signup">
-                  <div className="mt-2 separator" data-cy="onboarding-separator">
-                    <h2>
-                      <span data-cy="onboarding-separator-text">OR</span>
-                    </h2>
-                  </div>
-                </div>
-              )}
+              {isAnySSOEnabled && isFormSignUpEnabled && <SepratorComponent />}
               <SSOAuthModule
                 configs={configs}
                 organizationSlug={paramOrganizationSlug}

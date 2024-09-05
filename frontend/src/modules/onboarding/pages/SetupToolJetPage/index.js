@@ -1,1 +1,1 @@
-export { default } from './SetupTooJet';
+export { default } from './SetupToolJetPage';

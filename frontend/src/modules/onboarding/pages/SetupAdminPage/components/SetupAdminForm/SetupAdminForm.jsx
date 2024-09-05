@@ -5,6 +5,7 @@ import useOnboardingStore from '@/modules/onboarding/stores/onboardingStore';
 import { shallow } from 'zustand/shallow';
 import { validateEmail } from '@/_helpers/utils';
 import './resources/styles/setup-admin-form.styles.scss';
+import { useEnterKeyPress } from '@/modules/common/hooks';
 
 const SetupAdminForm = () => {
   const { setAdminDetails, nextStep, adminDetails, accountCreated } = useOnboardingStore(
@@ -33,7 +34,6 @@ const SetupAdminForm = () => {
   const formAreaStyles = {
     marginTop: '24px',
   };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
@@ -78,13 +78,13 @@ const SetupAdminForm = () => {
   }, [formData]);
 
   const handleSubmit = (e) => {
-    e.preventDefault();
+    e?.preventDefault();
     if (isFormValid) {
       setAdminDetails(formData);
       nextStep();
     }
   };
-
+  useEnterKeyPress(() => handleSubmit());
   return (
     <OnboardingFormWrapper>
       <div className="onboarding-form-width">

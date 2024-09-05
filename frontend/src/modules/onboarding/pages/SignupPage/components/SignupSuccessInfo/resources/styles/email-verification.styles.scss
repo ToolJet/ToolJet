@@ -77,3 +77,46 @@
         }
     }
 }
+
+.dark-theme {
+
+    .form-header {
+        color: var(--Text-default, #FAFCFF);
+    }
+
+    .message {
+        color: var(--text-medium, #CFD3D8);
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 20px;
+    }
+
+    .back-to-signup-button {
+        width: 100%;
+        margin-bottom: 10px;
+
+        .button-parent {
+            border-radius: var(--4, 8px);
+            border: 1px solid var(--Border-brand-weak, rgba(74, 109, 217, 0.40));
+            background: var(--Button-Secondary-bg, #1E2226);
+
+            &:hover {
+                background-color: rgba(255, 255, 255, 0.1) !important;
+                border-color: #4A4F54 !important;
+            }
+
+            &:active {
+                background-color: #1E2226;
+            }
+
+            .button-text {
+                color: var(--Text-default, #FAFCFF);
+                font-size: 12px;
+                font-style: normal;
+                font-weight: 500;
+                line-height: 18px;
+            }
+        }
+    }
+}

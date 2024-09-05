@@ -27,6 +27,7 @@ const LoginPage = ({ configs, organizationId, currentOrganizationName }) => {
       toast.error(locationRef.state.errorMessage, {
         id: 'toast-login-auth-error',
         position: 'top-center',
+        style: { maxWidth: '50vw' },
       });
   }, []);
 

@@ -7,6 +7,7 @@ import { FormTextInput, SubmitButton, FormHeader } from '@/modules/common/compon
 import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 import './resources/styles/forgot-password-form.styles.scss';
 import { Alert } from '@/_ui/Alert';
+import SepratorComponent from '@/modules/common/components/SepratorComponent';
 
 const ForgotPasswordForm = ({ onSubmit }) => {
   const { t } = useTranslation();
@@ -44,7 +45,12 @@ const ForgotPasswordForm = ({ onSubmit }) => {
           <FormHeader>{t('forgotPasswordPage.forgotPassword', 'Forgot Password')}</FormHeader>
           <p className="forgot-password-form-signup-redirect" data-cy="signup-redirect-text">
             {t('forgotPasswordPage.newTo', 'New to')} {whiteLabelText}?{' '}
-            <Link to="/signup" className="signup-link" data-cy="create-an-account-link">
+            <Link
+              to="/signup"
+              className="signup-link"
+              data-cy="create-an-account-link"
+              state={{ from: '/forgot-password' }}
+            >
               {t('forgotPasswordPage.createAnAccount', 'Create an account')}
             </Link>
           </p>
@@ -65,13 +71,7 @@ const ForgotPasswordForm = ({ onSubmit }) => {
               isLoading={isLoading}
             />
           </form>
-          <div className="separator-signup">
-            <div className="mt-2 separator" data-cy="onboarding-separator">
-              <h2>
-                <span>{t('common.or', 'OR')}</span>
-              </h2>
-            </div>
-          </div>
+          <SepratorComponent />
           <Alert
             svg="tj-info"
             cls="reset-password-info-banner justify-content-center"

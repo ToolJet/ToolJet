@@ -9,17 +9,26 @@ import {
 
 const OnboardingFormWrapper = ({ children: components }) => {
   const [whiteLabelLogo, setWhiteLableLogo] = useState('');
+  const [imageWidth, setImageWidth] = useState(null);
   useEffect(() => {
     fetchWhiteLabelDetails();
     setWhiteLableLogo(retrieveWhiteLabelLogo());
-  }, [whiteLabelLogo]);
+  }, []);
+  const handleImageWidth = (event) => {
+    const { naturalWidth } = event.target;
+    setImageWidth(naturalWidth < 130 ? naturalWidth : 130);
+  };
+
+  const redirectToLoginPage = () => {
+    window.location.href = '/';
+  };
   return (
     <div className="onboarding-form-wrapper">
-      <div className="tooljet-header">
+      <div className="tooljet-header cursor-pointer" onClick={redirectToLoginPage}>
         {whiteLabelLogo != '' &&
         window.location.pathname != '/setup' &&
         whiteLabelLogo != defaultWhiteLabellingSettings.WHITE_LABEL_LOGO ? (
-          <img width="130" height="26" src={whiteLabelLogo} />
+          <img onLoad={handleImageWidth} width={imageWidth} height="26px" src={whiteLabelLogo} />
         ) : (
           <Logo />
         )}
