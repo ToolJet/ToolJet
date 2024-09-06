@@ -39,7 +39,7 @@ console.log(response.data);
 };
 ```
 
-### Additional Items:
+**Additional Items**:
 - API Endpoints: Use code ticks for API endpoints (e.g., `GET /api/v1/resources`).
 - Labels or User Inputs: Use double quotes to highlight labels or user inputs (e.g., "Enter your username").
 
