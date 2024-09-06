@@ -2,7 +2,6 @@
 id: airtable
 title: Airtable
 ---
-<div style={{paddingBottom:'24px'}}>
 
 ToolJet can connect to your **Airtable** account to read and write data. **Personal Access Token** is required to connect to the Airtable data source on ToolJet. You can generate the Personal Access Token by visiting **[Developer Hub from your Airtable profile](https://support.airtable.com/docs/creating-and-using-api-keys-and-access-tokens#understanding-personal-access-token-basic-actions)**.
 
@@ -16,9 +15,7 @@ ToolJet can connect to your **Airtable** account to read and write data. **Perso
 Airtable API has a rate limit, and at the time of writing this documentation, the limit is five(5) requests per second per base. You can read more about rate limits here **[Airtable API](https://airtable.com/api)**.
 :::
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Supported Operations
 
@@ -30,7 +27,7 @@ Airtable API has a rate limit, and at the time of writing this documentation, th
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ### List records
 
@@ -41,7 +38,6 @@ This operation returns a list of records from the specified table.
 - **Base ID:** To find the Base ID, first visit **[Airtable API](https://airtable.com/api)**. Then select the base you want to connect to. The Base ID will be mentioned in the API documentation. Example Base ID: `appDT3UCPffPiSmFd`
 - **Table name:** The name of the table from which you want to fetch the records.
 
-<br/>
 #### Optional parameters:
 
 - **Page size:** The number of records returned in each request. Default is 100 records.  
@@ -90,8 +86,6 @@ Example response from Airtable:
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
 ### Retrieve record
 
 #### Required parameters:
@@ -117,10 +111,6 @@ Example response from Airtable:
   "createdTime": "2021-05-12T14:30:33.000Z"
 }
 ```
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Create record
 
@@ -163,10 +153,6 @@ Query returns the following response when the record is created successfully:
 }
 ```
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
 ### Update record
 
 #### Required parameters:
@@ -206,10 +192,6 @@ Query returns the following response when the record is updated successfully:
 }
 ```
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
 ### Delete record
 
 #### Required parameters:
@@ -230,4 +212,3 @@ Query returns the following response when the record is deleted successfully:
     id: "recIKsyZgqI4zoqS7"
 }
 ```
-</div>
