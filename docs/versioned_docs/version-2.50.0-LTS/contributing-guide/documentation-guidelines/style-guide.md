@@ -86,14 +86,14 @@ Admonitions are blocks of content that are designed to draw attention to specifi
 
 **Example**: 
 :::warning
-Ensure you back up your data before proceeding with this action, as it cannot be undone.
+Ensure you back up your data before upgrading to the latest version.
 :::
 
 - **Tip Admonitions**: Use `info` type admonitions to offer useful hints or best practices. These are generally positive and provide additional value to the user.
 
 **Example**:
 :::info
-Use the `--dry-run` flag to preview changes before applying them.
+Preview the changes before pushing them.
 :::
 
 Overuse can dilute their impact. Use *italics* instead of admonitions whenever possible to emphasize important information instead of admonitions. This is a less intrusive way to draw attention to key details.
