@@ -236,7 +236,7 @@ export const numberinputConfig = {
     },
   ],
   exposedVariables: {
-    value: 99,
+    value: null,
     isMandatory: false,
     isVisible: true,
     isDisabled: false,
