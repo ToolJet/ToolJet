@@ -466,6 +466,15 @@
             "contributing-guide/marketplace/creating-a-plugin"
           ]
         },
+        {
+          "type": "category",
+          "label": "Documentation",
+          "items": [
+            "contributing-guide/documentation-guidelines/introduction",
+            "contributing-guide/documentation-guidelines/pr-checklist",
+            "contributing-guide/documentation-guidelines/style-guide"
+          ]
+        },
         "tooljet-cli",
         "contributing-guide/testing",
         "contributing-guide/l10n",
