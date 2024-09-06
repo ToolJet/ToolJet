@@ -3,11 +3,7 @@ id: amazonses
 title: Amazon SES
 ---
 
-<div style={{paddingBottom:'24px'}}>
-
 ToolJet can connect to your Amazon SES account to send emails.
-
-</div>
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
@@ -39,10 +35,10 @@ Click on the **Save** button to save the data source.
 
 ### Email service
 Required parameters:
-- Send email to
-- Send email from
-- Subject
-- Body as text
+- **Send email to**
+- **Send email from**
+- **Subject**
+- **Body as text**
 
 
 Optional parameters:
