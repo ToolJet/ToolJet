@@ -3,13 +3,7 @@ id: baserow
 title: Baserow
 ---
 
-<div style={{paddingBottom:'24px'}}>
-
 ToolJet can connect to your Baserow account to read and write data.
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Connection
 
@@ -25,9 +19,7 @@ To connect to Baserow, you need to provide the following details:
 
 </div>
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Supported Operations
 
@@ -41,13 +33,11 @@ To connect to Baserow, you need to provide the following details:
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-### List fields
+### List Fields
 
 This query lists all the fields in a table.
 
-#### Required parameters:
+#### Required Parameters:
 
 - **Table ID**
 
@@ -99,15 +89,11 @@ Example response from Baserow:
 ]
 ```
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-### List rows
+### List Rows
 
 This query lists all the rows in a table.
 
-#### Required parameters:
+#### Required Parameters:
 
 - **Table ID**
 
@@ -154,13 +140,9 @@ Example response from Baserow:
 }
 ```
 
-</div>
+### Get Row
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-### Get row
-
-#### Required parameters:
+#### Required Parameters:
 
 - **Table ID**
 - **Row ID**
@@ -186,11 +168,7 @@ Example response from Baserow:
 }
 ```
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-### Create row
+### Create Row
 
 #### Required parameters:
 
@@ -200,7 +178,7 @@ Example response from Baserow:
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/baserow/baserow-create-row-v2.png"  alt="Bserow create"/>
+<img style={{ border:'0'}} className="screenshot-full" src="/img/datasource-reference/baserow/baserow-create-row-v2.png"  alt="Bserow create"/>
 
 </div>
 
@@ -229,13 +207,9 @@ Example response from Baserow:
 }
 ```
 
-</div>
+### Update Row
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-### Update row
-
-#### Required parameters:
+#### Required Parameters:
 
 - **Table ID**
 - **Row ID**
@@ -243,7 +217,7 @@ Example response from Baserow:
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/baserow/baserow-update-row-v2.png" alt="Baserow update" />
+<img style={{ border:'0'}} className="screenshot-full" src="/img/datasource-reference/baserow/baserow-update-row-v2.png" alt="Baserow update" />
 
 </div>
 
@@ -271,18 +245,14 @@ Example response from Baserow:
 }
 ```
 
-</div>
+### Move Row
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-### Move row
-
-#### Required parameters:
+#### Required Parameters:
 
 - **Table ID**
 - **Row ID**
 
-#### Optional parameters:
+#### Optional Parameters:
 
 - **Before ID** (The row will be moved before the entered ID. If not provided, then the row will be moved to the end )
 
@@ -306,13 +276,9 @@ Example response from Baserow:
 }
 ```
 
-</div>
+### Delete Row
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-### Delete row
-
-#### Required parameters:
+#### Required Parameters:
 
 - **Table ID**
 - **Row ID**
@@ -323,7 +289,4 @@ Example response from Baserow:
 
 </div>
 
-
 While deleting a row, the response will be either success or failure from Baserow
-
-</div>
