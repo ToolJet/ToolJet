@@ -40,7 +40,7 @@ import { ComponentsService } from '@services/components.service';
 import { PageService } from '@services/page.service';
 import { EventsService } from '@services/events_handler.service';
 import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
-import { UserResourcePermissionsModule } from '@module/user_resource_permissions/user_resource_permissions.module';
+import { UserResourcePermissionsModule } from '@modules/user_resource_permissions/user_resource_permissions.module';
 import { AppsSubscriber } from 'src/entity-subscribers/apps.subscriber';
 import { AppsServiceSep } from '@apps/services/apps.service.sep';
 

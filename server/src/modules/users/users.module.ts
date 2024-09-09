@@ -9,7 +9,7 @@ import { UsersController } from 'src/controllers/users.controller';
 import { OrganizationsModule } from '../organizations/organizations.module';
 import { App } from 'src/entities/app.entity';
 import { FilesService } from '@services/files.service';
-import { UserResourcePermissionsModule } from '@module/user_resource_permissions/user_resource_permissions.module';
+import { UserResourcePermissionsModule } from '@modules/user_resource_permissions/user_resource_permissions.module';
 
 @Module({
   imports: [

@@ -12,7 +12,7 @@ import { DataSource } from 'src/entities/data_source.entity';
 import {
   GROUP_PERMISSIONS_TYPE,
   USER_ROLE,
-} from '@module/user_resource_permissions/constants/group-permissions.constant';
+} from '@modules/user_resource_permissions/constants/group-permissions.constant';
 
 @Injectable()
 export class MetadataService {

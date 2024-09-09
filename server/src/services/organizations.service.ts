@@ -29,12 +29,12 @@ import { UserRoleService } from './user-role.service';
 import {
   GROUP_PERMISSIONS_TYPE,
   USER_ROLE,
-} from '@module/user_resource_permissions/constants/group-permissions.constant';
+} from '@modules/user_resource_permissions/constants/group-permissions.constant';
 import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.constants';
 import { DataSource } from 'src/entities/data_source.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
-import { ERROR_HANDLER, ERROR_HANDLER_TITLE } from '@module/organizations/constant/constants';
+import { ERROR_HANDLER, ERROR_HANDLER_TITLE } from '@modules/organizations/constant/constants';
 import { GroupPermissionsServiceV2 } from './group_permissions.service.v2';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
 

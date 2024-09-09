@@ -11,7 +11,7 @@ import {
 } from 'typeorm';
 import { Organization } from './organization.entity';
 import { GroupUsers } from './group_users.entity';
-import { GROUP_PERMISSIONS_TYPE } from '@module/user_resource_permissions/constants/group-permissions.constant';
+import { GROUP_PERMISSIONS_TYPE } from '@modules/user_resource_permissions/constants/group-permissions.constant';
 import { GranularPermissions } from './granular_permissions.entity';
 
 @Entity({ name: 'permission_groups' })

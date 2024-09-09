@@ -12,7 +12,7 @@ import {
   ERROR_HANDLER,
   DATA_BASE_CONSTRAINTS,
   GROUP_PERMISSIONS_TYPE,
-} from '@module/user_resource_permissions/constants/group-permissions.constant';
+} from '@modules/user_resource_permissions/constants/group-permissions.constant';
 import { catchDbException } from 'src/helpers/utils.helper';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager } from 'typeorm';
@@ -22,7 +22,7 @@ import {
   GetGroupUsersObject,
   GetUsersResponse,
   UpdateGroupObject,
-} from '@module/user_resource_permissions/interface/group-permissions.interface';
+} from '@modules/user_resource_permissions/interface/group-permissions.interface';
 import { GroupUsers } from 'src/entities/group_users.entity';
 import {
   getAllUserGroupsQuery,
@@ -30,9 +30,9 @@ import {
   getUserInGroupQuery,
   validateAddGroupUserOperation,
   validateUpdateGroupOperation,
-} from '@module/user_resource_permissions/utility/group-permissions.utility';
-import { GroupPermissionsUtilityService } from '@module/user_resource_permissions/services/group-permissions.utility.service';
-import { getAllGranularPermissionQuery } from '@module/user_resource_permissions/utility/granular-permissios.utility';
+} from '@modules/user_resource_permissions/utility/group-permissions.utility';
+import { GroupPermissionsUtilityService } from '@modules/user_resource_permissions/services/group-permissions.utility.service';
+import { getAllGranularPermissionQuery } from '@modules/user_resource_permissions/utility/granular-permissios.utility';
 const _ = require('lodash');
 
 @Injectable()

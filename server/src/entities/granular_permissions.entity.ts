@@ -9,7 +9,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { ResourceType } from '@module/user_resource_permissions/constants/granular-permissions.constant';
+import { ResourceType } from '@modules/user_resource_permissions/constants/granular-permissions.constant';
 import { GroupPermissions } from './group_permissions.entity';
 import { AppsGroupPermissions } from './apps_group_permissions.entity';
 

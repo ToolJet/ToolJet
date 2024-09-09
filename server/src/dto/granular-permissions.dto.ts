@@ -1,12 +1,12 @@
 import { Transform } from 'class-transformer';
 import { IsString, IsNotEmpty, IsBoolean, IsOptional, IsEnum } from 'class-validator';
-import { ResourceType } from '@module/user_resource_permissions/constants/granular-permissions.constant';
+import { ResourceType } from '@modules/user_resource_permissions/constants/granular-permissions.constant';
 import {
   ResourceGroupActions,
   GranularPermissionAddResourceItems,
   GranularPermissionDeleteResourceItems,
   CreateAppsPermissionsObject,
-} from '@module/user_resource_permissions/interface/granular-permissions.interface';
+} from '@modules/user_resource_permissions/interface/granular-permissions.interface';
 
 export class CreateGranularPermissionDto {
   @IsString()

@@ -7,7 +7,7 @@ import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { USER_STATUS, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 import { defaultAppEnvironments } from 'src/helpers/utils.helper';
 import { UserRoleService } from './user-role.service';
-import { USER_ROLE } from '@module/user_resource_permissions/constants/group-permissions.constant';
+import { USER_ROLE } from '@modules/user_resource_permissions/constants/group-permissions.constant';
 
 @Injectable()
 export class SeedsService {

@@ -12,7 +12,6 @@ import { SentryModule } from './modules/observability/sentry/sentry.module';
 import * as Sentry from '@sentry/node';
 
 import { ConfigModule } from '@nestjs/config';
-import { ServeStaticModule } from '@nestjs/serve-static';
 import { CaslModule } from './modules/casl/casl.module';
 import { EmailService } from '@services/email.service';
 import { MetaModule } from './modules/meta/meta.module';
@@ -30,7 +29,6 @@ import { DataSourcesModule } from './modules/data_sources/data_sources.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
 import { CommentModule } from './modules/comments/comment.module';
 import { CommentUsersModule } from './modules/comment_users/comment_users.module';
-import { join } from 'path';
 import { LibraryAppModule } from './modules/library_app/library_app.module';
 import { ThreadModule } from './modules/thread/thread.module';
 import { EventsModule } from './events/events.module';
@@ -42,11 +40,11 @@ import { OrganizationConstantModule } from './modules/organization_constants/org
 import { RequestContextModule } from './modules/request_context/request-context.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ImportExportResourcesModule } from './modules/import_export_resources/import_export_resources.module';
-import { UserResourcePermissionsModule } from '@module/user_resource_permissions/user_resource_permissions.module';
-import { PermissionsModule } from '@module/permissions/permissions.module';
-import { GetConnection } from './helpers/getconnection';
+import { UserResourcePermissionsModule } from '@modules/user_resource_permissions/user_resource_permissions.module';
+import { PermissionsModule } from '@modules/permissions/permissions.module';
+import { GetConnection } from '@modules/database/getConnection';
 import { InstanceSettingsModule } from '@instance-settings/module';
-import { StaticFileServerModule } from '@module/static_file_server/static_file_server.module';
+import { StaticFileServerModule } from '@modules/static_file_server/static_file_server.module';
 
 const imports = [
   ScheduleModule.forRoot(),
@@ -107,7 +105,7 @@ const imports = [
   CopilotModule,
   OrganizationConstantModule,
   TooljetDbModule,
-  StaticFileServerModule
+  StaticFileServerModule,
 ];
 
 if (process.env.APM_VENDOR == 'sentry') {
@@ -131,11 +129,7 @@ if (process.env.ENABLE_TOOLJET_DB === 'true') {
 @Module({
   imports,
   controllers: [AppController],
-  providers: [
-    EmailService,
-    SeedsService,
-    GetConnection,
-  ],
+  providers: [EmailService, SeedsService, GetConnection],
 })
 export class AppModule implements OnModuleInit {
   constructor() {}

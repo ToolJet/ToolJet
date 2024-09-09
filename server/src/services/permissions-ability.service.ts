@@ -2,20 +2,20 @@ import { Injectable } from '@nestjs/common';
 import { User } from 'src/entities/user.entity';
 import { EntityManager } from 'typeorm';
 import { dbTransactionWrap } from '@helpers/database.helper';
-import { USER_ROLE } from '@module/user_resource_permissions/constants/group-permissions.constant';
+import { USER_ROLE } from '@modules/user_resource_permissions/constants/group-permissions.constant';
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
 import {
   DEFAULT_USER_APPS_PERMISSIONS,
   DEFAULT_USER_PERMISSIONS,
-} from '@module/permissions/constants/permissions-ability.constant';
+} from '@modules/permissions/constants/permissions-ability.constant';
 import {
   ResourcePermissionQueryObject,
   UserAppsPermissions,
   UserPermissions,
-} from '@module/permissions/interface/permissions-ability.interface';
+} from '@modules/permissions/interface/permissions-ability.interface';
 import { GranularPermissions } from 'src/entities/granular_permissions.entity';
 import { TOOLJET_RESOURCE } from 'src/constants/global.constant';
-import { getUserPermissionsQuery } from '@module/permissions/utility/permission-ability.utility';
+import { getUserPermissionsQuery } from '@modules/permissions/utility/permission-ability.utility';
 import { AppBase } from 'src/entities/app_base.entity';
 
 @Injectable()

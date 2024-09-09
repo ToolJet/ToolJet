@@ -1,6 +1,6 @@
 import { TOOLJET_RESOURCE } from 'src/constants/global.constant';
 import { ResourceType } from '../../user_resource_permissions/constants/granular-permissions.constant';
-import { UserAppsPermissions, UserPermissions } from '@module/permissions/interface/permissions-ability.interface';
+import { UserAppsPermissions, UserPermissions } from '@modules/permissions/interface/permissions-ability.interface';
 
 export const PERMISSION_RESOURCE_MAPPING = {
   [TOOLJET_RESOURCE.APP]: ResourceType.APP,

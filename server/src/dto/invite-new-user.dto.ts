@@ -1,7 +1,7 @@
 import { IsArray, IsEmail, IsEnum, IsOptional, IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { lowercaseString, sanitizeInput } from '../helpers/utils.helper';
-import { USER_ROLE } from '@module/user_resource_permissions/constants/group-permissions.constant';
+import { USER_ROLE } from '@modules/user_resource_permissions/constants/group-permissions.constant';
 
 export class InviteNewUserDto {
   @IsString()
