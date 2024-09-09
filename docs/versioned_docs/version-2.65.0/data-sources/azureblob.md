@@ -22,6 +22,8 @@ To successfully establish the connection, ToolJet requires the following details
 
 Once you have entered the connection string, click on the **Test connection** button to verify the connection's success. To save the data source, click on the **Save** button.
 
+<div style={{paddingTop:'24px'}}>
+
 ## Querying Azure Blob
 
 Once you have connected to the Azure Blob data source, follow these steps to create queries and interact with Azure Blob storage from the ToolJet application:
@@ -42,6 +44,11 @@ Query results can be transformed using Transformation. For more information on t
 <img className="screenshot-full" src="/img/datasource-reference/azureblob/queries.png" alt="Azure Blob - ToolJet" />
 
 </div>
+
+
+</div>
+
+<div style={{paddingTop:'24px'}}> 
 
 ## Supported Operations
 
@@ -136,5 +143,8 @@ The delete blob operation allows you to remove a specific blob from Azure Blob s
 <div style={{textAlign: 'center'}}>
 
 <img className="screenshot-full" src="/img/datasource-reference/azureblob/delete.png" alt="Azure blob: delete blob operation" />
+
+</div>
+
 
 </div>
