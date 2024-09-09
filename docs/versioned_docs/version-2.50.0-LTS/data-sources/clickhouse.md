@@ -3,8 +3,6 @@ id: clickhouse
 title: ClickHouse
 ---
 
-# ClickHouse
-
 ToolJet can connect to the ClickHouse to read and write data.
 
 :::info
@@ -13,7 +11,7 @@ ToolJet uses this [NodeJS](https://github.com/TimonKK/clickhouse) client for Cli
 
 ## Connection
 
-To establish a connection with the Clickhouse data source, you can either click on the `+Add new data source` button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+To establish a connection with the Clickhouse data source, you can either click on the **+ Add new data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
 
 ToolJet requires the following to connect to your ClickHouse Database:
 
@@ -33,7 +31,7 @@ ToolJet requires the following to connect to your ClickHouse Database:
 
 ## Querying ClickHouse
 
-After setting up the ClickHouse data source, you can click on the `+` button of the query manager and select the ClickHouse data source that you added in the previous step to create a new query.
+After setting up the ClickHouse data source, you can click on the **+ Add** button of the query manager and select the **ClickHouse** data source that you added in the previous step to create a new query.
 
 :::info
 For more details on clickhouse visit [Clickhouse docs](https://clickhouse.com/docs/en/quick-start).
@@ -42,8 +40,8 @@ For more details on clickhouse visit [Clickhouse docs](https://clickhouse.com/do
 
 ## Supported Operations: 
 
-- [SQL Query](#sql-query)
-- [Insert array of objects](#supported-operations)
+- **[SQL Query](#sql-query)**
+- **[Insert array of objects](#supported-operations)**
 
 ### SQL Query
 
@@ -82,7 +80,7 @@ Use this to operation to enter **[ClickHouse SQL Statements](https://clickhouse.
 
 	</div>
 
-- **ALTER TABLE**(add column)
+- **ALTER TABLE** (add column)
 
 	```sql
 	ALTER TABLE test array1 ADD COLUMN Added2 UInt32;
@@ -129,12 +127,12 @@ Use this to operation to enter **[ClickHouse SQL Statements](https://clickhouse.
 
 - **NORMAL INSERT**
 
-	1) Step 1 - Creating Table
+	Step 1 - Creating Table
 
 	```sql
 	CREATE TABLE test array4 (
-	name String,
-	date Date
+		name String,
+		date Date
    )ENGINE=MergeTree () ORDER BY (name)
 	```
 
@@ -144,7 +142,7 @@ Use this to operation to enter **[ClickHouse SQL Statements](https://clickhouse.
 
 	</div>
 
-	2) Step 2 - Insert
+	Step 2 - Insert
 
 	```sql
 	INSERT INTO test_array4 (*) VALUES ('juvane', '1996-01-13')
