@@ -26,6 +26,9 @@ You can find the endpoint and key in the **[Azure Portal](https://portal.azure.c
 
 </div>
 
+<div style={{paddingTop:'24px'}}>
+
+
 ## Supported Queries:
 
 - **[Listing databases](#listing-databases)**
@@ -86,3 +89,5 @@ To query documents from a container of a database in a Cosmos DB using SQL-like 
 | database  | id of the database                                                                |
 | container | id of the container                                                               |
 | query     | query to be executed. Example: `SELECT * FROM c WHERE c.age > 20 AND c.age <= 30` |
+
+</div>
