@@ -3,13 +3,13 @@ id: databricks
 title: Databricks
 ---
 
-# Databricks
-
 Databricks is a cloud-based platform for data processing, analytics, and machine learning. ToolJet connects to Databricks, allowing your applications to access and update your data in your Databricks Warehouses directly using SQL queries.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/databricks/install.gif" alt="Install Databricks" />
+    <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/databricks/install.gif" alt="Install Databricks" />
 </div>
+
+<div style={{paddingTop:'24px'}}>
 
 ## Configuration
 
@@ -51,6 +51,10 @@ ToolJet's Databricks integration relies on a configuration form that supports th
       <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/databricks/setup-parameters.png" alt="Databricks: Setup Paramaters" />
   </div>
 
+</div>
+
+<div style={{paddingTop:'24px'}}>
+
 ## Querying Databricks
 
 - To perform queries on Databricks in ToolJet, click the **+ Add** button in the query manager located at the bottom panel of the editor.
@@ -70,6 +74,10 @@ ToolJet's Databricks integration relies on a configuration form that supports th
 :::tip
 You can apply transformations to the query results. Refer to our transformations documentation for more information: [link](/docs/tutorial/transformations)
 :::
+
+</div>
+
+<div style={{paddingTop:'24px'}}>
 
 ## Supported Queries
 
@@ -130,3 +138,5 @@ The following example demonstrates how to delete data from a table. The query de
 DELETE FROM customer
 WHERE customer_id = 1001;
 ```
+
+</div>
