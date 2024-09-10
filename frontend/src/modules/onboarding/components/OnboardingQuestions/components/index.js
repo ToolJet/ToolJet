@@ -1,6 +1,4 @@
-import CompanyInfoForm from './CompanyInfoForm';
-import WorkspaceNameForm from './WorkspaceNameForm';
+import WorkspaceNameForm from './WorkspaceNameFormCE';
 import DynamicFeatureImage from './DynamicFeatureImage';
-import SampleAppIntroduction from './SampleAppIntroduction';
 
-export { WorkspaceNameForm, CompanyInfoForm, DynamicFeatureImage, SampleAppIntroduction };
+export { WorkspaceNameForm, DynamicFeatureImage };

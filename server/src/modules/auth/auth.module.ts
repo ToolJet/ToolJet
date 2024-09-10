@@ -35,6 +35,7 @@ import { SessionScheduler } from 'src/schedulers/session.scheduler';
 import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
 import { UserResourcePermissionsModule } from '@module/user_resource_permissions/user_resource_permissions.module';
 import { InstanceSettingsModule } from '@instance-settings/module';
+import { OnboardingServiceSep } from 'ce/onboarding/onboarding.service.sep';
 
 @Module({
   imports: [
@@ -84,8 +85,9 @@ import { InstanceSettingsModule } from '@instance-settings/module';
     PluginsHelper,
     SessionService,
     SessionScheduler,
+    OnboardingServiceSep,
   ],
   controllers: [OauthController],
-  exports: [AuthService, SessionService],
+  exports: [AuthService, SessionService, OnboardingServiceSep],
 })
 export class AuthModule {}

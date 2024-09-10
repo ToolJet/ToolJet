@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { OnboardingFormWrapper } from '@/modules/onboarding/components';
 import { FormTextInput, PasswordInput, SubmitButton, FormHeader, EmailComponent } from '@/modules/common/components';
-import useOnboardingStore from '@/modules/onboarding/stores/onboarding.store.js';
+import useOnboardingStore from '@/modules/onboarding/stores/onboardingStore';
 import { shallow } from 'zustand/shallow';
 import { validateEmail } from '@/_helpers/utils';
 import './resources/styles/setup-admin-form.styles.scss';

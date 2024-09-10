@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from '../entities/user.entity';
+import { OnboardingStatus, User } from '../entities/user.entity';
 import { FilesService } from '../services/files.service';
 import { App } from 'src/entities/app.entity';
 import { EntityManager, Repository } from 'typeorm';
@@ -259,5 +259,13 @@ export class UsersService {
       }
       return avatar;
     });
+  }
+
+  async updateOnboardingStatus(userId: string, onboardingStatus: OnboardingStatus, manager?: EntityManager) {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      await manager.update(User, userId, {
+        onboardingStatus,
+      });
+    }, manager);
   }
 }

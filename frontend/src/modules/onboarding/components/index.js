@@ -2,7 +2,6 @@ import OnboardingBackgroundWrapper from './OnboardingBackgroundWrapper';
 import OnboardingFormWrapper from './OnboardingFormWrapper';
 import OnboardingFormInsideWrapper from './OnboardingFormInsideWrapper';
 import OnboardingQuestions from './OnboardingQuestions';
-import StartFreeTrial from './StartFreeTrial';
 import OnboardingForm from './OnboardingForm';
 
 export {
@@ -10,6 +9,5 @@ export {
   OnboardingFormWrapper,
   OnboardingFormInsideWrapper,
   OnboardingQuestions,
-  StartFreeTrial,
   OnboardingForm,
 };

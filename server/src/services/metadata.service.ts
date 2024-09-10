@@ -58,13 +58,24 @@ export class MetadataService {
     }
   }
 
+  async finishOnboardingCE(name: string, email: string, companyName: string) {
+    if (process.env.NODE_ENV == 'production') {
+      const metadata = await this.getMetaData();
+      void this.finishInstallation(name, email, companyName, null, null, metadata);
+
+      await this.updateMetaData({
+        onboarded: true,
+      });
+    }
+  }
+
   async finishInstallation(
     name: string,
     email: string,
     org: string,
-    companySize: string,
-    role: string,
-    metadata: Metadata
+    companySize?: string,
+    role?: string,
+    metadata?: Metadata
   ) {
     try {
       return await got('https://hub.tooljet.io/subscribe', {

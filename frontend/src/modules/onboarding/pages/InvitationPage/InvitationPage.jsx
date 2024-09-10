@@ -3,8 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { verifyToken, onboarding } from '@/modules/onboarding/services/onboarding.service';
 import { toast } from 'react-hot-toast';
 import { OnboardingQuestions } from '@/modules/onboarding/components';
-import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
-import invitationsStore from '@/modules/onboarding/stores/invitations.store.js';
+import invitationsStore from '@/modules/onboarding/stores/invitationsStore';
 import { LinkExpiredPage } from '@/ConfirmationPage/LinkExpiredPage';
 import { utils } from '@/modules/common/helpers';
 

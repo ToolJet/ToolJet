@@ -6,17 +6,12 @@ import { authenticationService, tooljetService } from '@/_services';
 import { withRouter } from '@/_hoc/withRouter';
 import { PrivateRoute, AdminRoute, AppsRoute, SwitchWorkspaceRoute, OrganizationInviteRoute } from '@/Routes';
 import { HomePage } from '@/HomePage';
-import { LoginPage } from '@/LoginPage';
-import { SignupPage } from '@/SignupPage';
 import { TooljetDatabase } from '@/TooljetDatabase';
-import { OrganizationInvitationPage } from '@/ConfirmationPage';
 import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
 import { Viewer } from '@/Editor';
 import { OrganizationSettings } from '@/OrganizationSettingsPage';
 import { SettingsPage } from '../SettingsPage/SettingsPage';
-import { ForgotPassword } from '@/ForgotPassword';
-import { ResetPassword } from '@/ResetPassword';
 import { MarketplacePage } from '@/MarketplacePage';
 import SwitchWorkspacePage from '@/HomePage/SwitchWorkspacePage';
 import { GlobalDatasources } from '@/GlobalDatasources';
@@ -25,13 +20,11 @@ import Toast from '@/_ui/Toast';
 import { VerificationSuccessInfoScreen } from '@/SuccessInfoScreen';
 import '@/_styles/theme.scss';
 import { AppLoader } from '@/AppLoader';
-import SetupScreenSelfHost from '../SuccessInfoScreen/SetupScreenSelfHost';
 export const BreadCrumbContext = React.createContext({});
 import 'react-tooltip/dist/react-tooltip.css';
 import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
 import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
 import WorkspaceConstants from '@/WorkspaceConstants';
-import { AuthRoute } from '@/Routes/AuthRoute';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import cx from 'classnames';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
@@ -170,6 +163,14 @@ class AppComponent extends React.Component {
               {auth(this.props)}
               <Route path="/sso/:origin/:configId" exact element={<Oauth {...this.props} />} />
               <Route path="/sso/:origin" exact element={<Oauth {...this.props} />} />
+              <Route
+                path="/invitations/:token/workspaces/:organizationToken"
+                element={
+                  <OrganizationInviteRoute {...this.props}>
+                    <VerificationSuccessInfoScreen />
+                  </OrganizationInviteRoute>
+                }
+              />
               <Route
                 exact
                 path="/:workspaceId/apps/:slug/:pageHandle?/*"

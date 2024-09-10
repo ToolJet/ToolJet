@@ -1,8 +1,8 @@
 import React from 'react';
 import { FormHeader, FormDescription, SubmitButton } from '@/modules/common/components';
 import { OnboardingFormWrapper, OnboardingFormInsideWrapper } from '@/modules/onboarding/components';
-import useOnboardingStore from '@/modules/onboarding/stores/onboarding.store.js';
-import useInvitationsStore from '@/modules/onboarding/stores/invitations.store.js';
+import useOnboardingStore from '@/modules/onboarding/stores/onboardingStore';
+import useInvitationsStore from '@/modules/onboarding/stores/invitationsStore';
 import { shallow } from 'zustand/shallow';
 import './resources/styles/onboarding-form.styles.scss';
 import LeftArow from './resources/images/left-arrow.svg';

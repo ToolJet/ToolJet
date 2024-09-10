@@ -1,1 +1,1 @@
-export { default } from './SetupAdminPage';
+export { default } from './SetupAdminPageCE';

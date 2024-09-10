@@ -1,8 +1,7 @@
 import create from 'zustand';
 import { zustandDevTools } from '@/_stores/utils';
-import useOnboardingStore from './onboarding.store';
-import { onboarding, finishOnboarding, createOnboardSampleApp } from '@/modules/onboarding/services/onboarding.service';
-import { authenticationService } from '@/_services';
+import useOnboardingStore from '../onboardingStore';
+import { onboarding } from '@/modules/onboarding/services/onboarding.service';
 
 const initialState = {
   token: null,
@@ -23,7 +22,7 @@ const useInvitationsStore = create(
     inviteeEmail: null,
 
     initiateInvitedUserOnboarding: (states) => {
-      get().setTotalSteps(3);
+      get().setTotalSteps(1); // Only one step for CE
       get().nextStep();
       set((state) => ({ ...states, initiatedInvitedUserOnboarding: true }));
     },
@@ -31,11 +30,8 @@ const useInvitationsStore = create(
     onboardUser: async () => {
       if (!useOnboardingStore.getState().accountCreated) {
         const { token, source, organizationToken } = get();
-        const { companyInfo, workspaceName, setAccountCreated } = useOnboardingStore.getState();
-        const { companyName, buildPurpose } = companyInfo;
-        const data = await onboarding({
-          companyName,
-          buildPurpose,
+        const { workspaceName, setAccountCreated } = useOnboardingStore.getState();
+        await onboarding({
           token,
           source,
           organizationToken,
@@ -43,27 +39,16 @@ const useInvitationsStore = create(
         });
         setAccountCreated(true);
       }
-      get().nextStep();
+      // Redirect to home page after onboarding
+      window.location.href = '/';
     },
 
     onboardUserOrCreateAdmin: async () => {
       if (get().initiatedInvitedUserOnboarding) {
         await get().onboardUser();
-        return;
+      } else {
+        await get().createSuperAdminAccount();
       }
-      await get().createSuperAdminAccount();
-    },
-
-    createOnboardSampleApp: async () => {
-      const session = authenticationService.currentSessionValue;
-      const { app } = await createOnboardSampleApp();
-      const appId = app[0]?.id;
-      window.location.href = `/${session?.current_organization_slug}/apps/${appId}`;
-    },
-
-    completeOnboarding: async () => {
-      await finishOnboarding();
-      await get().createOnboardSampleApp();
     },
   }))
 );

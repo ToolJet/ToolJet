@@ -40,6 +40,7 @@ import { ActivateAccountWithTokenDto } from '@dto/activate-account-with-token.dt
 import { OrganizationInviteAuthGuard } from 'src/modules/auth/organization-invite-auth.guard';
 import { ResendInviteDto } from '@dto/resend-invite.dto';
 import { OrganizationUsersService } from '@services/organization_users.service';
+import { OnboardingServiceSep } from 'ce/onboarding/onboarding.service.sep';
 
 @Controller()
 export class AppController {
@@ -48,7 +49,8 @@ export class AppController {
     private userService: UsersService,
     private sessionService: SessionService,
     private organizationService: OrganizationsService,
-    private organizationUsersService: OrganizationUsersService
+    private organizationUsersService: OrganizationUsersService,
+    private onboardingService: OnboardingServiceSep
   ) {}
 
   @Post('authenticate')
@@ -206,6 +208,25 @@ export class AppController {
     const { token, password } = appAuthDto;
     await this.authService.resetPassword(token, password);
     return {};
+  }
+
+  /* Onboarding APIs */
+  @UseGuards(FirstUserSignupGuard)
+  @Post('setup-first-user')
+  async setupFirstUser(@Body() userCreateDto: CreateAdminDto, @Res({ passthrough: true }) response: Response) {
+    return await this.onboardingService.setupFirstUser(response, userCreateDto);
+  }
+
+  @UseGuards(SessionAuthGuard)
+  @Get('onboarding-session')
+  async getOnboardingDetails(@User() user) {
+    return await this.onboardingService.getOnboardingSession(user);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('finish-onboarding')
+  async finshOnboarding(@User() user) {
+    return await this.onboardingService.finishOnboarding(user);
   }
 
   @Get(['/health', '/api/health'])

@@ -1,6 +1,6 @@
 import config from 'config';
 import { handleResponse, authHeader } from '@/_helpers';
-import { authorizeUserAndHandleErrors, updateCurrentSession } from '@/_helpers/authorizeWorkspace';
+import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import queryString from 'query-string';
 
 function setupSuperAdmin({ companyName, buildPurpose, name, workspaceName, password, email }) {
@@ -17,36 +17,10 @@ function setupSuperAdmin({ companyName, buildPurpose, name, workspaceName, passw
       password,
     }),
   };
-  return fetch(`${config.apiUrl}/setup-admin`, requestOptions)
+  return fetch(`${config.apiUrl}/setup-first-user`, requestOptions)
     .then(handleResponse)
     .then((response) => {
       onSuperAdminAccountSetupSuccess(response);
-      return response;
-    });
-}
-
-function requestTrial() {
-  const requestOptions = {
-    method: 'GET',
-    headers: authHeader(),
-    credentials: 'include',
-  };
-  return fetch(`${config.apiUrl}/request-trial`, requestOptions)
-    .then(handleResponse)
-    .then((response) => {
-      return response;
-    });
-}
-
-function createOnboardSampleApp() {
-  const requestOptions = {
-    method: 'GET',
-    headers: authHeader(),
-    credentials: 'include',
-  };
-  return fetch(`${config.apiUrl}/library_apps/sample-onboard-app`, requestOptions)
-    .then(handleResponse)
-    .then((response) => {
       return response;
     });
 }
@@ -113,18 +87,6 @@ function verifyToken(token, organizationToken) {
     });
 }
 
-function getLicensePlans() {
-  const requestOptions = {
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json' },
-  };
-  return fetch(`${config.apiUrl}/license/plans`, requestOptions)
-    .then(handleResponse)
-    .then((response) => {
-      return response;
-    });
-}
-
 function getOnboardingSession() {
   const requestOptions = {
     method: 'GET',
@@ -142,26 +104,13 @@ function getOnboardingSession() {
     });
 }
 
-function trialDeclined() {
-  const requestOptions = {
-    method: 'GET',
-    credentials: 'include',
-    headers: authHeader(),
-  };
-  return fetch(`${config.apiUrl}/trial-declined`, requestOptions)
-    .then(handleResponse)
-    .then((response) => {
-      return response;
-    });
-}
-
 function checkWorkspaceNameUniqueness(name) {
   const requestOptions = { method: 'GET', headers: { 'Content-Type': 'application/json' } };
   const query = queryString.stringify({ name });
   return fetch(`${config.apiUrl}/organizations/workspace-name/unique?${query}`, requestOptions).then(handleResponse);
 }
 
-function finishOnboarding(params) {
+function finishOnboarding() {
   const requestOptions = {
     method: 'GET',
     credentials: 'include',
@@ -172,13 +121,9 @@ function finishOnboarding(params) {
 
 export {
   setupSuperAdmin,
-  requestTrial,
-  createOnboardSampleApp,
   verifyToken,
   onboarding,
-  getLicensePlans,
   getOnboardingSession,
-  trialDeclined,
   checkWorkspaceNameUniqueness,
   finishOnboarding,
 };

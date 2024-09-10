@@ -1,7 +1,7 @@
 import React from 'react';
 import { Step1, Step2, Step3 } from './resources/images';
-import useOnboardingStore from '@/modules/onboarding/stores/onboarding.store.js';
-import useInvitationsStore from '@/modules/onboarding/stores/invitations.store.js';
+import useOnboardingStore from '@/modules/onboarding/stores/onboardingStore';
+import useInvitationsStore from '@/modules/onboarding/stores/invitationsStore';
 import { shallow } from 'zustand/shallow';
 import './resources/styles/dynamic-feature-image.styles.scss';
 

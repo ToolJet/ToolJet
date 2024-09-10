@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import {
   OnboardingBackgroundWrapper,
   OnboardingFormInsideWrapper,
@@ -6,9 +6,8 @@ import {
 } from '@/modules/onboarding/components';
 import { SubmitButton, FormHeader, FormDescription, GeneralFeatureImage } from '@/modules/common/components';
 import { useEnterKeyPress } from '@/modules/common/hooks';
-import useOnboardingStore from '@/modules/onboarding/stores/onboarding.store.js';
+import useOnboardingStore from '@/modules/onboarding/stores/onboardingStore';
 import { shallow } from 'zustand/shallow';
-import config from 'config';
 import './resources/styles/setup-tooljet-page.styles.scss';
 
 const SetupToolJetPage = () => {

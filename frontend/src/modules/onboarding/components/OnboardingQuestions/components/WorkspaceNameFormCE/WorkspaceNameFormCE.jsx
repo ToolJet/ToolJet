@@ -1,70 +1,55 @@
 import React, { useState, useEffect } from 'react';
 import { OnboardingForm } from '@/modules/onboarding/components';
 import { FormTextInput } from '@/modules/common/components';
-import useInvitationsStore from '@/modules/onboarding/stores/invitations.store';
-import useOnboardingStore from '@/modules/onboarding/stores/onboarding.store';
+import useInvitationsStore from '@/modules/onboarding/stores/invitationsStore';
+import useOnboardingStore from '@/modules/onboarding/stores/onboardingStore';
 import toast from 'react-hot-toast';
 import { shallow } from 'zustand/shallow';
 import { checkWorkspaceNameUniqueness } from '@/modules/onboarding/services/onboarding.service';
 import { useEnterKeyPress } from '@/modules/common/hooks';
 import '@/_styles/theme.scss';
-import _ from 'lodash';
 
-const WorkspaceNameForm = () => {
-  const { onboardUserOrCreateAdmin } = useInvitationsStore(
+const WorkspaceNameFormCE = () => {
+  const { onboardUserOrCreateAdmin, initiatedInvitedUserOnboarding } = useInvitationsStore(
     (state) => ({
       onboardUserOrCreateAdmin: state.onboardUserOrCreateAdmin,
+      initiatedInvitedUserOnboarding: state.initiatedInvitedUserOnboarding,
     }),
     shallow
   );
-  const { setWorkspaceName, workspaceName, accountCreated, companyName } = useOnboardingStore(
+  const { setWorkspaceName, workspaceName, accountCreated } = useOnboardingStore(
     (state) => ({
       setWorkspaceName: state.setWorkspaceName,
       workspaceName: state.workspaceName,
       accountCreated: state.accountCreated,
-      companyName: state.companyInfo.companyName,
     }),
     shallow
   );
   useEnterKeyPress(() => handleSubmit());
 
-  const [formData, setFormData] = useState({ workspaceName: workspaceName });
+  const [formData, setFormData] = useState({ workspaceName: workspaceName || 'My workspace' });
   const [error, setError] = useState('');
-  const [isFormValid, setIsFormValid] = useState(false);
+  const [isFormValid, setIsFormValid] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isTouched, setIsTouched] = useState(false);
   const TITLE = 'Set up your workspace!';
   const description = 'Set up workspaces to manage users, applications & resources across various teams';
 
   useEffect(() => {
-    const fetchDefaultWorkspaceName = async () => {
-      if (!formData.workspaceName) {
-        // if the length of the company name > 38 characters --> trim it to 38 characters -- check if the name is unique after this - if unique then done
-        // else -> if after this also the company name is not unique --> add iso to the company name and then append it
-        const generateDefaultWorkspaceName = async () => {
-          if (!companyName) {
-            return 'My workspace';
-          }
-          const trimmedCompanyName = companyName.substring(0, Math.min(companyName.length, 38));
-          const isUnique = await isWorkspaceNameUnique(
-            `${trimmedCompanyName.charAt(0).toUpperCase() + trimmedCompanyName.slice(1)}'s workspace`
-          );
-          if (isUnique) {
-            return `${trimmedCompanyName.charAt(0).toUpperCase() + trimmedCompanyName.slice(1)}'s workspace`;
-          }
-          const trimmedCompanyNamee = companyName.substring(0, 22);
+    const initializeWorkspaceName = async () => {
+      if (initiatedInvitedUserOnboarding) {
+        const isUnique = await isWorkspaceNameUnique(formData.workspaceName);
+        if (!isUnique) {
           const timestamp = new Date().getTime();
-          return `${
-            trimmedCompanyNamee.charAt(0).toUpperCase() + trimmedCompanyNamee.slice(1) + timestamp
-          }'s workspace`;
-        };
-        const defaultWorkspaceName = await generateDefaultWorkspaceName();
-        setFormData({ workspaceName: defaultWorkspaceName });
+          const newName = `My workspace ${timestamp}`;
+          setFormData({ workspaceName: newName });
+          setIsFormValid(true);
+        }
       }
-      setIsFormValid(true); // Set form as valid for the default name
     };
-    fetchDefaultWorkspaceName();
-  }, [companyName]);
+    initializeWorkspaceName();
+  }, [initiatedInvitedUserOnboarding]);
+
   const isWorkspaceNameUnique = async (value) => {
     try {
       await checkWorkspaceNameUniqueness(value);
@@ -101,6 +86,7 @@ const WorkspaceNameForm = () => {
         await setWorkspaceName(formData.workspaceName);
         await onboardUserOrCreateAdmin();
       } catch (error) {
+        console.log('inside', error);
         const errorMessage = error?.error || 'Something went wrong. Please try again.';
         toast.error(errorMessage);
       } finally {
@@ -133,4 +119,4 @@ const WorkspaceNameForm = () => {
   );
 };
 
-export default WorkspaceNameForm;
+export default WorkspaceNameFormCE;
