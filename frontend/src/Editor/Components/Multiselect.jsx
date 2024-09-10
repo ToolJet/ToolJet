@@ -175,9 +175,24 @@ export const Multiselect = function Multiselect({
           debounceDuration={0}
           onMenuToggle={(isOpen) => {
             if (isOpen) {
-              document.querySelector(`.ele-${id}`).style.zIndex = 3;
+              // get all instances to handle for listview
+              const elements = document.querySelectorAll(`[id='${id}']`) || [];
+              elements.forEach((element) => {
+                // check if dropdown is open and set z-index
+                const child = element.querySelector(`.dropdown-container`);
+                if (child && child.hasAttribute('aria-expanded') && child.getAttribute('aria-expanded') === 'true') {
+                  element.style.zIndex = 3;
+                }
+              });
             } else {
-              document.querySelector(`.ele-${id}`).style.zIndex = '';
+              const elements = document.querySelectorAll(`[id='${id}']`) || [];
+              elements.forEach((element) => {
+                // check if dropdown is open and unset z-index
+                const child = element.querySelector(`.dropdown-container`);
+                if (child && child.hasAttribute('aria-expanded') && child.getAttribute('aria-expanded') === 'false') {
+                  element.style.zIndex = '';
+                }
+              });
             }
           }}
         />
