@@ -24,15 +24,13 @@ b. Bold is applied for Workspace Constants, Clickable Buttons, fx, Data Sources,
 - Expand the query panel at the bottom and click on the **Add** button to create a new **REST API** query.
 
 
-c. Single ticks are used for Component Properties and Inline Code.
+c. Use Single Ticks for Inline Code and Triple Ticks for Multi-Line Code.
 
 **Examples:**
-- Change the `Background color` of the *saveButton* component to blue.
-- The **fx** option next to the `Loading state` property can be used to add a loader to the component. For instance, you can enter `{{queries.getData.isLoading}}` to show the loader while the *getData* query is running. 
-- Create **block codes** using triple ticks to show multi-line code.
-
-Example:
+- The **fx** option next to the Loading state property can be used to add a loader to the component. For instance, you can enter `{{queries.getData.isLoading === true}}` to show the loader while the *getData* query is running. 
+- Use the below code to fetch data:
 ```js
+// this code is wrapped in triple ticks
 const fetchData = async () => {
 const response = await api.get('/users');
 console.log(response.data);
