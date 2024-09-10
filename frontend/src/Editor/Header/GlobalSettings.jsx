@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import cx from 'classnames';
 import { SketchPicker } from 'react-color';
 import { Confirm } from '../Viewer/Confirm';
@@ -131,6 +131,9 @@ export const GlobalSettings = ({
     boxShadow: showPicker && '0px 0px 0px 1px #C6D4F9',
   };
 
+  const closeModal = useCallback(() => {
+    setIsExportingApp(false);
+  }, []);
   return (
     <>
       <Confirm
@@ -147,9 +150,7 @@ export const GlobalSettings = ({
       {isExportingApp && app.hasOwnProperty('id') && (
         <ExportAppModal
           show={isExportingApp}
-          closeModal={() => {
-            setIsExportingApp(false);
-          }}
+          closeModal={closeModal}
           customClassName="modal-version-lists"
           title={'Select a version to export'}
           app={app}
