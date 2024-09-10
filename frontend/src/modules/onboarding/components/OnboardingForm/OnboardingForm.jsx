@@ -42,17 +42,23 @@ const OnboardingForm = ({
   const iconClasses = cx('steps__back', {
     disabled: disabledCondition,
   });
+  const shouldShowSteps = totalSteps > 1;
+  const formClasses = cx('onboarding-questions-form', {
+    __ce: !shouldShowSteps,
+  });
 
   return (
     <OnboardingFormWrapper>
       <OnboardingFormInsideWrapper>
-        <div className="onboarding-questions-form">
-          <div className="steps">
-            <div className={iconClasses} onClick={handleBackClick} data-cy="back-button">
-              <LeftArow />
+        <div className={formClasses}>
+          {shouldShowSteps && (
+            <div className="steps">
+              <div className={iconClasses} onClick={handleBackClick} data-cy="back-button">
+                <LeftArow />
+              </div>
+              <span>Step {currentStep}</span> of {totalSteps}
             </div>
-            <span>Step {currentStep}</span> of {totalSteps}
-          </div>
+          )}
           <FormHeader>{title}</FormHeader>
           {description && <FormDescription>{description}</FormDescription>}
           <form onSubmit={onSubmit} className="">

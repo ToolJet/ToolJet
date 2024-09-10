@@ -125,4 +125,9 @@ export class OrganizationsController {
   async checkWorkspaceUnique(@User() user, @Query('name') name: string, @Query('slug') slug: string) {
     return this.organizationsService.checkWorkspaceUniqueness(name, slug);
   }
+
+  @Get('/workspace-name/unique')
+  async checkUniqueWorkspaceName(@User() user, @Query('name') name: string) {
+    return this.organizationsService.checkWorkspaceNameUniqueness(name);
+  }
 }
