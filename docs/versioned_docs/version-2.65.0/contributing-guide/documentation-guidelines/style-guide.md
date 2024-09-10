@@ -144,7 +144,7 @@ Content-Type: application/json
 Authorization: Bearer <token>
 ```
 
-- HTTP blocks should be ready to run when pasted into tools like Postman or `curl` commands. This means including all necessary components like headers, body, and method. **Example**:
+- HTTP blocks should be ready to run when pasted into tools like Postman or `cURL` commands. This means including all necessary components like headers, body, and method. **Example**:
 ```bash
 curl -X POST https://api.example.com/resource \
 -H 'Content-Type: application/json' \
@@ -154,7 +154,7 @@ curl -X POST https://api.example.com/resource \
 
 ### JavaScript Guidelines
 
-- End statements with semicolons (`;`). While JavaScript can often infer semicolons, explicitly including them prevents potential issues, especially in complex code.**Example**:
+- End statements with semicolons (`;`). While JavaScript can often infer semicolons, explicitly including them prevents potential issues, especially in complex code. **Example**:
 ```javascript
 const name = 'John';
 console.log(name);
@@ -195,7 +195,7 @@ sudo apt-get install -y nodejs
 
 ### SQL Queries
 
-- format SQL queries with keywords in uppercase, and break down long queries into multiple lines for better readability. **Example**:
+- Format SQL queries with keywords in uppercase, and break down long queries into multiple lines for better readability. **Example**:
 ```sql
 SELECT name, age, city
 FROM users
