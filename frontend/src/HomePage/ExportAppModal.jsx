@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import { default as BootstrapModal } from 'react-bootstrap/Modal';
 import moment from 'moment';
 import { appsService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { ButtonSolid } from '@/_components/AppButton';
 
-export default function ExportAppModal({ title, show, closeModal, customClassName, app, darkMode }) {
+function ExportAppModal({ title, show, closeModal, customClassName, app, darkMode }) {
   const [versions, setVersions] = useState(undefined);
   const [tables, setTables] = useState(undefined);
   const [allTables, setAllTables] = useState(undefined);
@@ -274,3 +274,5 @@ function Loader() {
     </BootstrapModal.Body>
   );
 }
+
+export default memo(ExportAppModal);
