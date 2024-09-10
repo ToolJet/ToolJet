@@ -3,9 +3,9 @@ id: google.sheets
 title: Google Sheets
 ---
 
-# Google Sheets
-
 ToolJet has the capability to establish a connection with Google Sheet for both reading and writing data. By utilizing OAuth 2.0, ToolJet can establish a secure connection with Google Sheet, ensuring that the application's access to a user's account is restricted and limited appropriately.
+
+<div style={{paddingTop:'24px'}}>
 
 ## Self-Hosted Configuration
 
@@ -18,9 +18,13 @@ If you decide to self-host ToolJet, there are a few additional steps you need to
    - `TOOLJET_HOST`
 3. Activate the Google Sheets API within the Google Cloud Platform (GCP) console.
 
+</div>
+
+<div style={{paddingTop:'24px'}}>
+
 ## Connection
 
-To establish a connection with Google Sheet, you have two options. First, you can click on the **+Add new global datasource** button found on the query panel. Alternatively, you can go to the **[Global Datasources](/docs/data-sources/overview)** page within the ToolJet dashboard.
+To establish a connection with Google Sheet, you have two options. First, you can click on the **+ Add new global datasource** button found on the query panel. Alternatively, you can go to the **[Global Datasources](/docs/data-sources/overview)** page within the ToolJet dashboard.
 
 ### Authorization Scopes
 
@@ -35,9 +39,13 @@ When connecting to a Google Sheets datasource, you can choose between two permis
 
 </div>
 
+</div>
+
+<div style={{paddingTop:'24px'}}>
+
 ## Querying Google Sheet
 
-To perform operations on a Google Sheet, click the `+Add` button in the query manager located at the bottom panel of the app builder. Select the Google Sheet datasource under the Global datasource section. Choose the desired operation from the dropdown and click **Save** to save the query.
+To perform operations on a Google Sheet, click the **+ Add** button in the query manager located at the bottom panel of the app builder. Select the Google Sheet datasource under the Global datasource section. Choose the desired operation from the dropdown and click **Save** to save the query.
 
 Using Google sheets data source you can perform several operations from your applications like:
 
@@ -53,7 +61,7 @@ Using Google sheets data source you can perform several operations from your app
 
 </div>
 
-### Read data from a sheet
+### Read Data From a Sheet
 
 This operation allows you to retrieve the table data from a spreadsheet in the form of a JSON object.
 
@@ -69,7 +77,7 @@ This operation allows you to retrieve the table data from a spreadsheet in the f
 
 </div>
 
-### Append data to a sheet
+### Append Data to a Sheet
 
 Add additional rows to a table by using the append operation.
 
@@ -85,7 +93,7 @@ Add additional rows to a table by using the append operation.
 
 </div>
 
-### Update single row of a sheet
+### Update Single Row of a Sheet
 
 This operation allows you to update existing data in a sheet.
 
@@ -105,7 +113,7 @@ This operation allows you to update existing data in a sheet.
 
 </div>
 
-### Delete row from a sheet
+### Delete Row From a Sheet
 
 This operation allows you to delete a specific row from the sheet.
 
@@ -121,7 +129,7 @@ This operation allows you to delete a specific row from the sheet.
 
 </div>
 
-### Get spreadsheet info
+### Get Spreadsheet Info
 
 The "Get spreadsheet info" operation allows you to retrieve basic information about the spreadsheet, including the number of sheets, theme, time zone, format, and URL, among others.
 
@@ -130,5 +138,7 @@ Here is a preview of the query that utilizes the "Get spreadsheet info" operatio
 <div style={{textAlign: 'center'}}>
 
 <img className="screenshot-full" src="/img/datasource-reference/google-sheets/infoo.png" alt="google sheets get info" />
+
+</div>
 
 </div>
