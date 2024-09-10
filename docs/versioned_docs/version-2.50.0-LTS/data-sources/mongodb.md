@@ -3,15 +3,15 @@ id: mongodb
 title: MongoDB
 ---
 
-# MongoDB
-
 ToolJet can connect to MongoDB to read and write data.
+
+<div style={{paddingTop:'24px'}}>
 
 ## Manual Connection
 
 Please make sure the host/ip of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please whitelist our IP.
 
-To establish a manual connection with the MongoDB data source, click on the `+Add new data source` button located on the query panel or navigate to the [Data Sources](https://docs.tooljet.com/docs/data-sources/overview) page from the ToolJet dashboard.
+To establish a manual connection with the **MongoDB** data source, click on the **+ Add new data source** button located on the query panel or navigate to the [Data Sources](https://docs.tooljet.com/docs/data-sources/overview) page from the ToolJet dashboard.
 
 ToolJet requires the following to connect to your MongoDB.
 
@@ -22,9 +22,13 @@ ToolJet requires the following to connect to your MongoDB.
 
 It is recommended to create a new MongoDB user so that you can control the access levels of ToolJet.
 
-<img className="screenshot-full" src="/img/datasource-reference/mo-connect.png" alt="ToolJet - Mongo connection" height="250"/>
+<img className="screenshot-full" src="/img/datasource-reference/mo-connect.png" alt="ToolJet - Mongo connection" />
 
-Click on 'Test connection' button to verify if the credentials are correct and that the database is accessible to ToolJet server. Click on 'Save' button to save the data source.
+Click on **Test Connection** button to verify if the credentials are correct and that the database is accessible to ToolJet server. Click on **Save** button to save the data source.
+
+</div>
+
+<div style={{paddingTop:'24px'}}>
 
 ## Connect Using Connecting String
 
@@ -35,43 +39,47 @@ The primary piece of information you need here is your MongoDB connection string
 
 For example: `mongodb+srv://tooljettest:fakepassword@cluster0.urul7.mongodb.net/hrms`
 
-<img className="screenshot-full" src="/img/datasource-reference/mongo-db/mongodb-connection-string.png" alt="ToolJet - Mongo connection" height="250"/>
+<img className="screenshot-full" src="/img/datasource-reference/mongo-db/mongodb-connection-string.png" alt="ToolJet - Mongo connection"/>
 
 Make sure to replace username, password, cluster, and database with your actual MongoDB details. If your MongoDB instance requires additional connection options, you can usually append these options to the connection string.
 
 
+</div>
+
+<div style={{paddingTop:'24px'}}>
+
 ## Querying MongoDB
 
-Click on `+` button of the query manager at the bottom panel of the editor and select the database added in the previous step as the data source. Select the operation that you want to perform and click 'Save' to save the query.
+Click on **+ Add** button of the query manager at the bottom panel of the editor and select the database added in the previous step as the data source. Select the operation that you want to perform and click 'Save' to save the query.
 
-<img className="screenshot-full" src="/img/datasource-reference/mo-query.png" alt="ToolJet - Mongo query" height="250"/>
+<img className="screenshot-full" src="/img/datasource-reference/mo-query.png" alt="ToolJet - Mongo query"/>
 
-Click on the 'run' button to run the query.
+Click on the **run** button to run the query.
 
 :::tip
 Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/tutorial/transformations)
 :::
 
-### Supported operations
+### Supported Operations
 
-- [List Collections](#list-collections)
-- [Find One](#find-one)
-- [Find Many](#find-many)
-- [Total Count](#total-count)
-- [Count](#count)
-- [Distinct](#distinct)
-- [Insert One](#insert-one)
-- [Insert Many](#insert-many)
-- [Update One](#update-one)
-- [Update Many](#update-many)
-- [Replace One](#replace-one)
-- [Find One and Update](#find-one-and-update)
-- [Find One and Replace](#find-one-and-replace)
-- [Find One and Delete](#find-one-and-delete)
-- [Aggregate](#aggregate)
-- [Delete One](#delete-one)
-- [Delete Many](#delete-many)
-- [Bulk Operations](#bulk-operations)
+- **[List Collections](#list-collections)**
+- **[Find One](#find-one)**
+- **[Find Many](#find-many)**
+- **[Total Count](#total-count)**
+- **[Count](#count)**
+- **[Distinct](#distinct)**
+- **[Insert One](#insert-one)**
+- **[Insert Many](#insert-many)**
+- **[Update One](#update-one)**
+- **[Update Many](#update-many)**
+- **[Replace One](#replace-one)**
+- **[Find One and Update](#find-one-and-update)**
+- **[Find One and Replace](#find-one-and-replace)**
+- **[Find One and Delete](#find-one-and-delete)**
+- **[Aggregate](#aggregate)**
+- **[Delete One](#delete-one)**
+- **[Delete Many](#delete-many)**
+- **[Bulk Operations](#bulk-operations)**
 
 #### List Collections
 
@@ -158,3 +166,5 @@ Perform bulk operations. [Reference](https://docs.mongodb.com/drivers/node/v4.0/
 ```
 
 Reference on [mongodb extended JSON](https://docs.mongodb.com/manual/reference/mongodb-extended-json/) supported data types
+
+</div>
