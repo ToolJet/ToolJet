@@ -79,7 +79,7 @@ Whenever a request is made to the REST API, a **tj-x-forwarded-for** header is a
 The plugin will send a **JSON** formatted body by default. If you want to send a different type of body, you can enter the appropriate headers in the **Headers** section. For example, to send a **multipart/form-data** body, you can add the following header:
 
 ```javascript
-  "Content-Type": "multipart/form-data;"
+  Content-Type: multipart/form-data;
 ```
 
 
