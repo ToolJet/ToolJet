@@ -3,13 +3,11 @@ id: elasticsearch
 title: Elasticsearch
 ---
 
-# Elasticsearch
-
 ToolJet allows you to connect to your Elasticsearch cluster to perform data read/write operations and execute various queries.
 
 ## Connection
 
-To connect to an Elasticsearch data source in ToolJet, you can either click the **+Add new data source** button on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page in the ToolJet dashboard.
+To connect to an Elasticsearch data source in ToolJet, you can either click the **+ Add new data source** button on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page in the ToolJet dashboard.
 
 For self-hosted ToolJet, ensure that the Elasticsearch cluster's host/IP is accessible from your VPC. If using ToolJet Cloud, please make sure to **whitelist our IP**.
 
@@ -30,14 +28,20 @@ ToolJet also supports SSL certificate-based connections:
     <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/ssl-v2.png" alt="Elastic SSL Connect" />
 </div>
 
+<div style={{paddingTop:'24px'}}>
+
 ## Querying Elasticsearch
 
-1. Click the **+** button in the query manager at the bottom of the editor and select the Elasticsearch data source added earlier.
+1. Click the **+ Add** button in the query manager at the bottom of the editor and select the Elasticsearch data source added earlier.
 2. Choose the operation you want to perform on your Elasticsearch cluster.
 
 :::tip
 Query results can be transformed using transformations. Refer to our transformations documentation for more details: **[link](/docs/tutorial/transformations)**
 :::
+
+</div>
+
+<div style={{paddingTop:'24px'}}>
 
 ## Supported Operations
 
@@ -472,3 +476,5 @@ This operation retrieves the status of the cluster’s health. For more details,
 }
 ```
 </details>
+
+</div>

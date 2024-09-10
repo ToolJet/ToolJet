@@ -3,13 +3,12 @@ id: elasticsearch
 title: Elasticsearch
 ---
 
-# Elasticsearch
 ToolJet can connect to your Elasticsearch cluster to read and write data.
 
 ## Connection 
 Please make sure the host/IP of the Elasticsearch cluster is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please **whitelist our IP**.
 
-To establish a connection with the ElasticSearch data source, you can either click on the `+Add new data source` button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+To establish a connection with the ElasticSearch data source, you can either click on the **+ Add new data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
 
 ToolJet requires the following to connect to your Elasticsearch cluster: 
 - **Host**
@@ -29,7 +28,7 @@ Elastic search data source is also providing an option for connecting services w
   
 <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/ssl.png" alt="Elastic ssl" />
 
-
+<div style={{paddingTop:'24px'}}>
 
 ## Querying Elasticsearch 
 
@@ -47,16 +46,20 @@ Select the operation that you want to perform on your Elasticsearch cluster and 
 Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/tutorial/transformations)**
 :::
 
-## Supported operations
+</div>
 
-#### Search
+<div style={{paddingTop:'24px'}}>
+
+## Supported Operations
+
+### Search
 
 This operation allows you to execute a search query and get back search hits that match the query. Read the Elasticsearch's `Search` guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html)**.
 
 
 <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/elastic-search.png" alt="Elastic search" />
 
-#### Index a document
+### Index a Document
 
 This operation allows you to add a JSON document to the specified data stream or index. Read the Elasticsearch's `Index` guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html)**.
 
@@ -64,7 +67,7 @@ This operation allows you to add a JSON document to the specified data stream or
 <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/index.png" alt="Elastic index"/>
 
 
-#### Get a document
+### Get a Document
 
 This operation allows you to retrieve the specified JSON document from the index. Read the Elasticsearch's `Get` guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html)**.
 
@@ -72,9 +75,11 @@ This operation allows you to retrieve the specified JSON document from the index
 <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/get.png"  alt="Elastic get"/>
 
 
-#### Update a document
+### Update a Document
 
 This operation allows to update a document using the specified script. Read the Elasticsearch's `Update` guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html)**.
 
 
 <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/update.png" alt="Elastic update" />
+
+</div>
