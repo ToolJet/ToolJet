@@ -3,11 +3,11 @@ id: minio
 title: MinIO
 ---
 
-# MinIO
-
 ToolJet can connect to minio and perform various operation on them.
 
-## Supported operations
+<div style={{paddingTop:'24px'}}>
+
+## Supported Operations
 
 - **Read object**
 - **Put object**
@@ -17,10 +17,13 @@ ToolJet can connect to minio and perform various operation on them.
 - **Presigned url for download**
 - **Presigned url for upload**
 
+</div>
+
+<div style={{paddingTop:'24px'}}>
 
 ## Connection
 
-To establish a connection with the Minio data source, click on the `+Add new data source` button located on the query panel or navigate to the [Data Sources](https://docs.tooljet.com/docs/data-sources/overview) page from the ToolJet dashboard.
+To establish a connection with the Minio data source, click on the **+ Add new data source** button located on the query panel or navigate to the [Data Sources](https://docs.tooljet.com/docs/data-sources/overview) page from the ToolJet dashboard.
 
 ToolJet requires the following to connect to your DynamoDB:
 
@@ -37,9 +40,13 @@ ToolJet requires the following to connect to your DynamoDB:
 
 Click on **Test connection** button to verify if the credentials are correct and that the database is accessible to ToolJet server. Click on **Save** button to save the data source.
 
+</div>
+
+<div style={{paddingTop:'24px'}}>
+
 ## Querying Minio
 
-Click on `+` button of the **query manager** at the bottom panel of the editor and select the data source added in the previous step as the data source. Select the operation that you want to perform and click **Save** to save the query.
+Click on **+ Add** button of the **query manager** at the bottom panel of the editor and select the data source added in the previous step as the data source. Select the operation that you want to perform and click **Save** to save the query.
 
 <img className="screenshot-full" src="/img/datasource-reference/minio-query.png" alt="miniIo query" />
 
@@ -49,3 +56,5 @@ Click on the **run** button to run the query.
 :::tip
 Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/tutorial/transformations)
 :::
+
+</div>
