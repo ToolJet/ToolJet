@@ -1975,6 +1975,7 @@ export const removeSelectedComponent = (pageId, newDefinition, selectedComponent
   });
 
   updateAppDefinition(newDefinition, { componentDefinitionChanged: true, componentDeleted: true, componentCut: true });
+  return toDeleteComponents;
 };
 
 const getSelectedText = () => {
