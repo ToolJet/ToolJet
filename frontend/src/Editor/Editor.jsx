@@ -1581,7 +1581,12 @@ const EditorComponent = (props) => {
     if (!isVersionReleased && selectedComponents?.length > 1) {
       let newDefinition = JSON.parse(JSON.stringify(appDefinition));
 
-      removeSelectedComponent(currentPageId, newDefinition, selectedComponents, appDefinitionChanged);
+      const toDeleteComponents = removeSelectedComponent(
+        currentPageId,
+        newDefinition,
+        selectedComponents,
+        appDefinitionChanged
+      );
       const platform = navigator?.userAgentData?.platform || navigator?.platform || 'unknown';
       if (platform.toLowerCase().indexOf('mac') > -1) {
         toast('Selected components deleted! (⌘ + Z to undo)', {
@@ -1592,6 +1597,26 @@ const EditorComponent = (props) => {
           icon: '🗑️',
         });
       }
+
+      const allAppHints = useResolveStore.getState().suggestions.appHints ?? [];
+      const allHintsAssociatedWithQuery = [];
+
+      if (allAppHints.length > 0) {
+        toDeleteComponents.forEach((id) => {
+          const componentName = appDefinition.pages[currentPageId].components[id]?.component?.name;
+          if (componentName) {
+            allAppHints.forEach((suggestion) => {
+              if (suggestion?.hint.includes(componentName)) {
+                allHintsAssociatedWithQuery.push(suggestion.hint);
+              }
+            });
+          }
+        });
+      }
+
+      useResolveStore.getState().actions.removeEntitiesFromMap(toDeleteComponents);
+      useResolveStore.getState().actions.removeAppSuggestions(allHintsAssociatedWithQuery);
+
       updateEditorState({ selectedComponents: [] });
     } else if (isVersionReleased) {
       useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
