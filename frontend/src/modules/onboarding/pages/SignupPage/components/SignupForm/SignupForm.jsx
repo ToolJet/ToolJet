@@ -29,12 +29,7 @@ const SignupForm = ({
   const [errors, setErrors] = useState({});
   const [isFormValid, setIsFormValid] = useState(false);
 
-  const isAnySSOEnabled =
-    configs?.google?.enabled ||
-    configs?.git?.enabled ||
-    configs?.ldap?.enabled ||
-    configs?.saml?.enabled ||
-    configs?.openid?.enabled;
+  const isAnySSOEnabled = configs?.google?.enabled || configs?.git?.enabled;
 
   const isFormSignUpEnabled = organizationId ? configs?.form?.enabled : configs?.form?.enable_sign_up;
   const shouldShowSignInCTA = !organizationToken;

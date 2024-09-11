@@ -24,12 +24,7 @@ const LoginForm = ({
   const [errors, setErrors] = useState({});
   const [isFormValid, setIsFormValid] = useState(false);
 
-  const isAnySSOEnabled =
-    configs?.google?.enabled ||
-    configs?.git?.enabled ||
-    configs?.ldap?.enabled ||
-    configs?.saml?.enabled ||
-    configs?.openid?.enabled;
+  const isAnySSOEnabled = configs?.google?.enabled || configs?.git?.enabled;
 
   const noLoginMethodsEnabled = !configs?.form?.enabled && !isAnySSOEnabled;
   const workspaceSignUpEnabled = organizationId && configs?.enable_sign_up;
