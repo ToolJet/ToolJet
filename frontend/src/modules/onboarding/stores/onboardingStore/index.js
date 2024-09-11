@@ -1,1 +1,1 @@
-export { default } from './onboarding-ce.store';
+export { default } from './onboarding.store';

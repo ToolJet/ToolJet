@@ -1,6 +1,6 @@
 import create from 'zustand';
 import { zustandDevTools } from '@/_stores/utils';
-import { setupSuperAdmin } from '@/modules/onboarding/services/onboarding.service';
+import { setupFirstUser } from '@/modules/onboarding/services/onboarding.service';
 
 const useCEOnboardingStore = create(
   zustandDevTools((set, get) => ({
@@ -57,7 +57,7 @@ const useCEOnboardingStore = create(
     createSuperAdminAccount: async () => {
       if (!get().accountCreated) {
         const data = get().prepareSetupAdminData();
-        await setupSuperAdmin(data);
+        await setupFirstUser(data);
         set({ accountCreated: true });
       }
       window.location.href = '/';

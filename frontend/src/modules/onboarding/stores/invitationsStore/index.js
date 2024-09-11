@@ -1,1 +1,1 @@
-export { default } from './invitations-ce.store';
+export { default } from './invitations.store';
