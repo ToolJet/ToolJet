@@ -22,9 +22,7 @@ const useInvitationsStore = create(
     inviteeEmail: null,
 
     initiateInvitedUserOnboarding: (states) => {
-      get().setTotalSteps(1); // Only one step for CE
-      get().nextStep();
-      set((state) => ({ ...states, initiatedInvitedUserOnboarding: true }));
+      set(() => ({ ...states, initiatedInvitedUserOnboarding: true }));
     },
 
     onboardUser: async () => {

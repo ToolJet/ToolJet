@@ -15,7 +15,6 @@ export const InvitationPage = (darkMode = false) => {
 
   const location = useLocation();
   const params = useParams();
-  const navigate = useNavigate();
   const searchParams = new URLSearchParams(location?.search);
 
   const organizationId = searchParams.get('oid');

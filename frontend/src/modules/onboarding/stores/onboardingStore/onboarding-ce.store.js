@@ -33,6 +33,9 @@ const useCEOnboardingStore = create(
     // Action to move to previous step
     prevStep: () => set((state) => ({ currentStep: Math.max(0, state.currentStep - 1) })),
 
+    // action to set current step
+    setCurrentStep: (step) => set({ currentStep: step }),
+
     // Action to reset the store
     resetStore: () =>
       set({

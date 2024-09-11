@@ -1,1 +1,1 @@
-export { default } from './DynamicFeatureImage';
+export { default } from './DynamicFeatureImageCE';
