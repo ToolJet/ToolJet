@@ -17,7 +17,7 @@ Requires:
 - PostgREST server
 - Additional configuration for ToolJet server
 
-This feature is only enabled if [`ENABLE_TOOLJET_DB`](/docs/setup/env-vars#tooljet-database-feature-enable--optional-) is set to `true`.
+This feature is only enabled if [`ENABLE_TOOLJET_DB`](/docs/setup/env-vars/#enable-tooljet-database--optional--feature-enable--optional-) is set to `true`.
 
 ### PostgREST server
 

@@ -74,9 +74,9 @@ This event is triggered whenever a card is clicked to open the modal.
 
 </div>
 
-:::caution
-- It is mandatory to provide `id` for each column in the `column data` field. The `id` can be of type `string` or `number`.
-- It is mandatory to provide `id`, and `columnId` for each card in the `Card data` field. The `id` and `columnId` can be of type `string` or `number`.
+:::info
+- It is mandatory to provide an `id` for each column in the `column data` field. The `id` can be of type `string` or `number`.
+- It is mandatory to provide an `id` and a `columnId` for each card in the `Card data` field. Both `id` and `columnId` can be of type `string` or `number`.
 :::
 
 | Properties | description | Expected value |

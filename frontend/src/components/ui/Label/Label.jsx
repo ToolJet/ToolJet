@@ -1,5 +1,7 @@
 import * as React from 'react';
+// eslint-disable-next-line import/no-unresolved
 import * as LabelPrimitive from '@radix-ui/react-label';
+// eslint-disable-next-line import/no-unresolved
 import { cva } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 

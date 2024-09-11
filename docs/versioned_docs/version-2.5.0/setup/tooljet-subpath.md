@@ -12,7 +12,6 @@ You'll need to setup the following environment variables if ToolJet installation
 | variable | value |
 | -------- | ---------------------- |
 | TOOLJET_HOST | the public URL ( eg: https://www.yourcompany.com )  |
-| SERVE_CLIENT | By default, this variable will be unset and the server will serve the client at its `/` end-point. You can set `SERVE_CLIENT` to `false` to disable this behaviour. |
 | SUB_PATH | Set a subpath to this variable. The subpath is to be set with trailing `/` and is applicable only when the server is serving the frontend client. ( eg: `/apps/tooljet/` )  |
 
 

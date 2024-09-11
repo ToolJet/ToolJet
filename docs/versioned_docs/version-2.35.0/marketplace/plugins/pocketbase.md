@@ -27,7 +27,7 @@ ToolJet connects to your PocketBase database, allowing you to directly interact 
 
 ## Querying PocketBase
 
-- To perform queries on PocketBase in ToolJet, click the **+Add** button in the [query manager](/docs/app-builder/query-panel/#add) located at the bottom panel of the editor.
+- To perform queries on PocketBase in ToolJet, click the **+Add** button in the [query manager](/docs/app-builder/query-panel/#query-manager) located at the bottom panel of the editor.
 - Select the previously configured PocketBase datasource.
 
 - In the Operation dropdown, select the desired operation type. ToolJet currently [supports](#supported-operations) five query types for PocketBase interactions.

@@ -120,5 +120,5 @@ variables section include all the variables set by the user in the application. 
 :::info
 
 - Setting variables from the [event handler](/docs/actions/set-variable)
-- Setting variables from the [Run JavaScript code](/docs/how-to/run-actions-from-runjs#set-variable)
+- Setting variables from the [Run JavaScript code](/docs/how-to/run-actions-from-runjs#set-variables)
   :::

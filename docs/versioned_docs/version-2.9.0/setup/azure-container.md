@@ -30,7 +30,7 @@ Please note that you need to set up a PostgreSQL database manually to be used by
 3. In the container tab, uncheck the "Use quickstart image" option to select the image source manually.
  <div style={{textAlign: 'center'}}>
  
- <img className="screenshot-full" src="/img/setup/azure-container/step3.png" alt="Deploying ToolJet on Azure container apps" />
+ <img className="screenshot-full" src="/img/setup/azure-container/step3-v2.png" alt="Deploying ToolJet on Azure container apps" />
  
  </div>
  
@@ -38,7 +38,7 @@ Please note that you need to set up a PostgreSQL database manually to be used by
   - Add the following ToolJet application variables under the "Environmental variable" section. You can refer to this [**documentation**](/docs/setup/env-vars) for more information on environment variables.
    <div style={{textAlign: 'center'}}>
  
-   <img className="screenshot-full" src="/img/setup/azure-container/step4.png" alt="Deploying ToolJet on Azure container apps" />
+   <img className="screenshot-full" src="/img/setup/azure-container/step4-v2.png" alt="Deploying ToolJet on Azure container apps" />
 
    </div>
 

@@ -9,7 +9,7 @@ title: Try ToolJet
 You can run the command below to have ToolJet up and running right away.
 
 ```bash
-docker run -d \
+docker run \
   --name tooljet \
   --restart unless-stopped \
   -p 80:80 \

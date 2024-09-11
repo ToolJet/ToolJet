@@ -14,6 +14,7 @@ export const DaterangePicker = function DaterangePicker({
   darkMode,
   fireEvent,
   dataCy,
+  id,
 }) {
   const { borderRadius, visibility, disabledState, boxShadow } = styles;
   const { defaultStartDate, defaultEndDate } = properties;
@@ -63,6 +64,11 @@ export const DaterangePicker = function DaterangePicker({
 
   function focusChanged(focus) {
     setFocusedInput(focus);
+    if (focus) {
+      document.querySelector(`.ele-${id}`).style.zIndex = 3;
+    } else {
+      document.querySelector(`.ele-${id}`).style.zIndex = '';
+    }
   }
 
   return (

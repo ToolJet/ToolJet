@@ -147,9 +147,9 @@ const StringColumn = ({
             <span
               style={{
                 maxHeight: isMaxRowHeightAuto
-                  ? 'auto'
+                  ? 'fit-content'
                   : maxRowHeightValue
-                  ? maxRowHeightValue
+                  ? `${maxRowHeightValue}px`
                   : cellSize === 'condensed'
                   ? '39px'
                   : '45px',

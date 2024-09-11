@@ -206,7 +206,7 @@ actions.goToApp('slug', queryparams)
 ```
 
 - `slug` can be found in the URL of the released app after the `application/`, or in the `Share` modal. You can also set a custom slug for the app in the `Share` modal or from the global settings in the app builder.
-- `queryparams` can be provided like this `[{"key":"value"}, {"key2":"value2"}]`.
+- `queryparams` can be provided like this `[ ['key1','value1' ], ['key2','value2'] ]`.
 - Only the apps that are released can be accessed using this action.
 
 <div style={{textAlign: 'center'}}>

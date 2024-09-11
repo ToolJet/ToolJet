@@ -112,7 +112,7 @@ Please install Heroku CLI on your local machine. Please refer Heroku CLI install
 
 4. **Set environment variables**
 
-  You can also refer environment variable [**here**](/docs/setup/env-vars#tooljet-database).
+  You can also refer environment variable [**here**](/docs/setup/env-vars/#enable-tooljet-database--optional-).
 
   :::tip
   If you have openssl installed, you can run the following command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
@@ -125,7 +125,7 @@ Please install Heroku CLI on your local machine. Please refer Heroku CLI install
   heroku config:set POSTGREST_VER=10.0.0 
   ```
 
-  You can also refer environment variable [**here**](/docs/setup/env-vars#tooljet-database).  
+  You can also refer environment variable [**here**](/docs/setup/env-vars/#enable-tooljet-database--optional-).  
 
 
 5. **Build and deploy your app**
@@ -142,7 +142,7 @@ Please install Heroku CLI on your local machine. Please refer Heroku CLI install
 6. **Additional environment variables for Tooljet application**
 
 
-  Please enter the below env variables in the Tooljet application, under the setting tab. You can also refer environment variable [**here**](/docs/setup/env-vars#tooljet-database).
+  Please enter the below env variables in the Tooljet application, under the setting tab. You can also refer environment variable [**here**](/docs/setup/env-vars/#enable-tooljet-database--optional-).
 
 ## Upgrading to the Latest Version
 

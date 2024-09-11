@@ -49,6 +49,7 @@ const sidebars = {
       },
       'items': [
         'setup/try-tooljet',
+        'setup/choose-your-tooljet',
         'setup/system-requirements',
         'setup/digitalocean',
         'setup/docker',
@@ -59,13 +60,15 @@ const sidebars = {
         'setup/kubernetes',
         'setup/kubernetes-gke',
         'setup/kubernetes-aks',
+        'setup/kubernetes-eks',
         'setup/azure-container',
         'setup/google-cloud-run',
         'setup/client',
         'setup/env-vars',
         'setup/http-proxy',
         'setup/tooljet-subpath',
-        'setup/v2-migration-guide'
+        'setup/v2-migration-guide',
+        'setup/upgrade-to-lts'
       ]
     },
     {
@@ -73,32 +76,25 @@ const sidebars = {
       'label': 'App Builder',
       'items': [
         'app-builder/overview',
+        'app-builder/walkthrough/create-ui',
+        'app-builder/walkthrough/create-queries',
+        'app-builder/walkthrough/using-code',
+        'app-builder/walkthrough/accessing-values',
+        'app-builder/walkthrough/variables',
+        'app-builder/importing-exporting-applications',
         {
           'type': 'category',
-          'label': 'App-Builder UI',
+          'label': 'Layout Guide',
           'items': [
-           'app-builder/components-library',
-           'app-builder/query-panel',
-           'tutorial/pages',
-           'app-builder/topbar',
-           'app-builder/left-sidebar',
-           'app-builder/canvas',
-           'app-builder/preview',
-           'app-builder/share',
-           'app-builder/customstyles',
-           'app-builder/importing-exporting-applications',
-          ],
-        },
-        {
-          'type': 'category',
-          'label': 'Examples',
-          'items': [
-            'app-builder/examples/create-ui',
-            'app-builder/examples/create-queries',
-            'app-builder/examples/using-code',
-            'app-builder/examples/accessing-values',
-            'app-builder/examples/variables',
-            //'app-builder/examples/sharing-apps',
+            'app-builder/components-library',
+            'app-builder/query-panel',
+            'tutorial/pages',
+            'app-builder/topbar',
+            'app-builder/left-sidebar',
+            'app-builder/canvas',
+            'app-builder/preview',
+            'app-builder/share',
+            'app-builder/customstyles',
           ],
         },
         {
@@ -173,7 +169,7 @@ const sidebars = {
                 'widgets/rich-text-editor',
                 'widgets/timeline',
                 'widgets/timer',
-                'widgets/toggle-switch',
+                'widgets/toggle-switch-v2',
                 'widgets/tree-select',
                 'widgets/vertical-divider',
               ],
@@ -314,6 +310,7 @@ const sidebars = {
       'items': [
         'tooljet-db/tooljet-database',
         'tooljet-db/database-editor',
+        'tooljet-db/data-types',
         'tooljet-db/querying-tooljet-db',
       ]
     },
@@ -373,6 +370,7 @@ const sidebars = {
         },
         'org-management/permissions',
         'tutorial/manage-users-groups',
+        'tutorial/tooljet-api',
         'Enterprise/audit_logs',
         'Enterprise/white-label',
         'Enterprise/superadmin',
@@ -383,7 +381,8 @@ const sidebars = {
             "org-management/licensing/tooljet-cloud",
             "org-management/licensing/self-hosted"
           ]
-        }
+        },
+        "org-management/smtp-configuration"
       ],
     },
     {
@@ -425,8 +424,10 @@ const sidebars = {
             'marketplace/plugins/marketplace-plugin-harperdb',
             'marketplace/plugins/marketplace-plugin-openai',
             'marketplace/plugins/marketplace-plugin-plivo',
+            'marketplace/plugins/marketplace-plugin-salesforce',
             'marketplace/plugins/marketplace-plugin-supabase',
             'marketplace/plugins/marketplace-plugin-pocketbase',
+            'marketplace/plugins/marketplace-plugin-prestodb',
           ],
         },
       ],

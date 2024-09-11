@@ -49,7 +49,7 @@ All the global variables can be accessed anywhere within ToolJet applications. H
 
 ### Variables
 
-Variables shows user-defined variables in a key-value format. These variables, set through event handlers or queries, are accessible across the entire application. You can set variables from the [event handler](/docs/actions/set-variable) or using [JavaScript code](/docs/how-to/run-actions-from-runjs#set-variable).
+Variables shows user-defined variables in a key-value format. These variables, set through event handlers or queries, are accessible across the entire application. You can set variables from the [event handler](/docs/actions/set-variable) or using [JavaScript code](/docs/how-to/run-actions-from-runjs#set-variables).
 
 ### Page
 Page lets you view page-specific properties like page name, handle and variables. Page variables are restricted to their respective pages and are not accessible application-wide.

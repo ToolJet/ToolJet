@@ -95,6 +95,7 @@ async function bootstrap() {
           'cdn.jsdelivr.net',
           'https://esm.sh',
           'www.googletagmanager.com',
+          'https://www.gstatic.com',
         ],
         'default-src': [
           'maps.googleapis.com',

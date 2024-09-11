@@ -38,7 +38,7 @@ To connect Zendesk datasource to your ToolJet application, go to the data source
 
 </div>
 
-## Operations
+## Querying Zendesk
 1. **[List Tickets](/docs/data-sources/zendesk#list-tickets)**
 2. **[List requested Tickets](/docs/data-sources/zendesk#list-requested-tickets)**
 3. **[Show a Ticket](/docs/data-sources/zendesk#show-tickets)**

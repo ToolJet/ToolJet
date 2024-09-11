@@ -446,7 +446,7 @@ Enabling the `Make editable` property for a column allows the app users to edit 
 
 The following actions of the component can be controlled using component specific actions(CSA):
 
-| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
 | :------------ | :---------- | :------------ |
 | setPage()      | Sets the page on the table.   | Employ a RunJS query (for e.g.,  <br/> `await components.table1.setPage(2)`) <br/> or trigger it using an event. |
 | selectRow()    | Selects a row on the table | Employ a RunJS query (for e.g.,  <br/> `await components.table1.selectRow('id','11')`) <br/> or trigger it using an event. |

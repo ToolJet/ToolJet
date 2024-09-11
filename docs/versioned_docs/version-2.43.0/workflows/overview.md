@@ -230,7 +230,7 @@ The above code will return success or failure message based on the output we rec
 </div>
 <br/>
 
-We've now successfully used a workflow in our ToolJet Application. You can also use **[webhooks](docs/workflows/workflow-triggers#webhooks)** to execute workflows from third party apps.
+We've now successfully used a workflow in our ToolJet Application. You can also use **[webhooks](/docs/workflows/workflow-triggers#webhooks)** to execute workflows from third party apps.
 
 Continue learning about the different elements of ToolJet Workflows using the below links:
 

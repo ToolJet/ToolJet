@@ -112,7 +112,7 @@ Go back to the **Configure git** tab on ToolJet, and click on the **Finalize set
 
 ## Auto-commit on Promoting Environment
 
-When you promote an environment, from **Developement to Staging** or from **Staging to Production**, the changes will be automatically committed to the git repository. The commit message will be `<version_number> Version of <app_name> promoted from <source_environment> to <destination_environment>`. The author will be the user who promoted the environment.
+When you promote an environment, from **Developement to Staging**, the changes will be automatically committed to the git repository. The commit message will be `<version_number> Version of <app_name> promoted from <source_environment> to <destination_environment>`. The author will be the user who promoted the environment. When you promote an environment, from **Staging to Production**, no changes will be committed to the git repository.
 
 <div style={{textAlign: 'center'}}>
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/gitsync/promoted.png" alt="GitSync" />
@@ -252,7 +252,7 @@ Whenever a user creates a new app version and creates a commit to git repository
 
 ## Pulling Changes from Git Repo
 
-You can configure the GitSync feature on another workspace to pull the changes from the git repository. To configure the GitSync feature on another workspace, follow the steps mentioned in the [Setting up GitSyncing with GitHub](#setting-up-git-syncing-with-github) section.
+You can configure the GitSync feature on another workspace to pull the changes from the git repository. To configure the GitSync feature on another workspace, follow the steps mentioned in the [Setting up GitSyncing with GitHub](#setting-up-gitsyncing-with-github) section.
 
 Once the GitSync feature is configured, go to the ToolJet dashboard and click on the three dots on the right side of the **Create new app** button. Click on the **Import from git repository** option.
 
@@ -385,7 +385,7 @@ Go back to the **Configure git** tab on ToolJet, and click on the **Finalize set
 
 ## Auto-commit on promoting environment
 
-When you promote an environment, from **Developement to Staging** or from **Staging to Production**, the changes will be automatically committed to the git repository. The commit message will be `<version_number> Version of <app_name> promoted from <source_environment> to <destination_environment>`. The author will be the user who promoted the environment.
+When you promote an environment, from **Developement to Staging**, the changes will be automatically committed to the git repository. The commit message will be `<version_number> Version of <app_name> promoted from <source_environment> to <destination_environment>`. The author will be the user who promoted the environment. When you promote an environment, from **Staging to Production**, no changes will be committed to the git repository.
 
 This option can be enabled or disabled from the **Configure git** tab on the **Workspace settings** page. By default, this option is disabled.
 
