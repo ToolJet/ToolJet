@@ -2,7 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { join } from 'path';
 import handlebars from 'handlebars';
 import { generateInviteURL, generateOrgInviteURL } from 'src/helpers/utils.helper';
-import { MailerService } from '@nestjs-modules/mailer';
+
+const nodemailer = require('nodemailer');
+
 const path = require('path');
 const fs = require('fs');
 
@@ -21,20 +23,55 @@ export class EmailService {
   private TOOLJET_HOST;
   private NODE_ENV;
 
-  constructor(private readonly mailerService: MailerService) {
+  constructor() {
     this.FROM_EMAIL = process.env.DEFAULT_FROM_EMAIL || 'hello@tooljet.io';
     this.TOOLJET_HOST = this.stripTrailingSlash(process.env.TOOLJET_HOST);
     this.NODE_ENV = process.env.NODE_ENV || 'development';
   }
 
+  private registerPartials() {
+    const partialsDir = join(__dirname, '..', 'mails', 'base', 'partials');
+    const filenames = ['header.hbs', 'footer.hbs', 'body.hbs']; // Add all your partial filenames here
+
+    filenames.forEach((filename) => {
+      const filePath = join(partialsDir, filename);
+      const partialName = filename.split('.')[0]; // Remove the file extension to get the partial name
+      const template = fs.readFileSync(filePath, 'utf8');
+      handlebars.registerPartial(partialName, template);
+    });
+  }
+
+  mailTransport() {
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_DOMAIN,
+      port: process.env.SMTP_PORT,
+      secure: +process.env.SMTP_PORT == 465, // Use `true` for port 465, `false` for all other ports
+      auth: {
+        user: process.env.SMTP_USERNAME,
+        pass: process.env.SMTP_PASSWORD,
+      },
+    });
+
+    return transporter;
+  }
+
   private async sendEmail(to: string, subject: string, templateData: any) {
+    this.registerPartials();
+
+    // Load the main template file
+    const templatePath = join(__dirname, '..', 'mails', 'base', 'base_template.hbs');
+    const templateSource = fs.readFileSync(templatePath, 'utf8');
+
+    // Compile the template
+    const template = handlebars.compile(templateSource);
+    // Generate the HTML by applying the context to the template
+    const htmlToSend = template(templateData);
     try {
       if (this.NODE_ENV === 'test' || (this.NODE_ENV !== 'development' && !process.env.SMTP_DOMAIN)) return;
-      const message = {
+      const mailOptions = {
         to: to,
         subject: subject,
-        template: './base/base_template',
-        context: templateData,
+        html: htmlToSend,
         from: this.FROM_EMAIL,
         attachments: [
           {
@@ -65,8 +102,26 @@ export class EmailService {
         ],
       };
 
-      const info = await this.mailerService.sendMail(message);
-      console.log('Message sent: %s', info);
+      if (this.NODE_ENV === 'test' || (this.NODE_ENV !== 'development' && !process.env.SMTP_DOMAIN)) return;
+
+      /* if development environment, log the content of email instead of sending actual emails */
+      if (this.NODE_ENV === 'development') {
+        console.log('Captured email');
+        console.log('to: ', to);
+        console.log('Subject: ', subject);
+        console.log('content: ', htmlToSend);
+        const previewEmail = require('preview-email');
+        const transport = nodemailer.createTransport({
+          jsonTransport: true,
+        });
+        const result = await transport.sendMail(mailOptions);
+        previewEmail(JSON.parse(result.message)).then(console.log).catch(console.error);
+      } else {
+        const transport = this.mailTransport();
+        const result = await transport.sendMail(mailOptions);
+        console.log('Message sent: %s', result);
+        return result;
+      }
     } catch (error) {
       if (this.NODE_ENV === 'test' || this.NODE_ENV == 'development') return;
       console.error('Email sent error', error);
