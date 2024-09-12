@@ -14,11 +14,11 @@
     "write-heading-ids": "docusaurus write-heading-ids"
   },
   "dependencies": {
-    "@docusaurus/core": "^3.4.0",
-    "@docusaurus/plugin-client-redirects": "^3.4.0",
-    "@docusaurus/plugin-google-gtag": "^3.4.0",
-    "@docusaurus/plugin-sitemap": "^3.4.0",
-    "@docusaurus/preset-classic": "^3.2.1",
+    "@docusaurus/core": "^3.5.2",
+    "@docusaurus/plugin-client-redirects": "^3.5.2",
+    "@docusaurus/plugin-google-gtag": "^3.5.2",
+    "@docusaurus/plugin-sitemap": "^3.5.2",
+    "@docusaurus/preset-classic": "^3.5.2",
     "@mdx-js/react": "^3.0.1",
     "autoprefixer": "^10.4.20",
     "clsx": "^2.0.0",
@@ -30,8 +30,8 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@docusaurus/module-type-aliases": "3.2.1",
-    "@docusaurus/types": "3.2.1",
+    "@docusaurus/module-type-aliases": "^3.5.2",
+    "@docusaurus/types": "^3.5.2",
     "tailwindcss": "^3.4.10"
   },
   "overrides": {
