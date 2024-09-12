@@ -9,7 +9,7 @@ ToolJet can connect to MS SQL Server & Azure SQL databases to read and write dat
 
 ## Connection
 
-To establish a connection with the MS SQL Server data source, click on the **+ Add new Data source** button located on the query panel or navigate to the [Data Sources](https://docs.tooljet.com/docs/data-sources/overview) page from the ToolJet dashboard.
+To establish a connection with the MS SQL Server data source, click on the **+ Add new Data source** button located on the query panel or navigate to the [Data Sources](/docs/data-sources/overview) page from the ToolJet dashboard.
 
 :::info
 Please make sure the **Host/IP** of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please **whitelist** our IP.
@@ -38,14 +38,18 @@ ToolJet requires the following to connect to your PostgreSQL database.
 
 ## Querying SQL Server / Azure SQL Databases
 
-1. Click on **+ Add** button of the query manager at the bottom panel of the editor and select the database added in the previous step as the data source. 
-2. Click on the **Run** button to run the query.
+1. Click on **+ Add** button of the query manager at the bottom panel of the editor
+2. Select the database added in the previous step as the data source. 
 
 Once the SQL data source is added, you can create queries to read and write data to the database. You can create queries from the **[Query Panel](/docs/app-builder/query-panel#query-manager)** located at the bottom panel of the app builder.
 
 ### SQL Mode
 
-SQL mode can be used to query MS SQL Server / Azure SQL Databases using SQL queries. Select **SQL mode** from the dropdown and then enter the SQL query in the editor.
+SQL mode can be used to query MS SQL Server / Azure SQL Databases using SQL queries. 
+
+1. Select **SQL mode** from the dropdown
+2. Enter the SQL query in the editor.
+3. Click on the **Run** button to run the query.
 
 #### Example
 ```sql
@@ -56,7 +60,13 @@ SELECT * FROM users
 
 ### GUI Mode
 
-GUI mode can be used to query MS SQL Server / Azure SQL Databases without writing queries. Select **GUI mode** from the dropdown and then choose the operation **Bulk update using the primary key**. Enter the **Table** name and **Primary key** column name. In the editor, enter the records in the form of an array of objects. Each object should contain the primary key column and the columns to be updated.
+GUI mode can be used to query MS SQL Server / Azure SQL Databases without writing queries.
+
+1. Select **GUI mode** from the dropdown.
+2. Choose the operation **Bulk update using the primary key**.
+3. Enter the **Table** name and **Primary key** column name. 
+4. In the editor, enter the records in the form of an array of objects. 
+5. Click on the **Run** button to run the query.
 
 #### Example
 ```json
