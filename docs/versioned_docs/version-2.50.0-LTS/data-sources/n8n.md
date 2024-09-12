@@ -44,13 +44,30 @@ Webhook credentials and instance credentials are different. Please use the crede
 
 ## Trigger Workflow
 
-Click on **+ Add** button of the query manager at the bottom panel of the editor and the select **n8n** as the datasource.
+1. Click on **+ Add** button of the query manager at the bottom panel of the editor
+2. Select the database added in the previous step as the data source. 
 
-You can trigger a workflow with `GET/POST` URL. Choose the request type from the `Methods` dropdown and then provide the required fields:
-  - **URL parameters** (Support for GET & POST) (Optional)
-  - **Body** (Only for POST URL) (Required)
+Once the n8n data source is added, you can trigger a workflow with `GET/POST` URL. 
 
+### GET Method
 
-<img className="screenshot-full" src="/img/datasource-reference/n8n/query.png" alt="n8n query" />
+Choose the GET Method from the dropdown.
+
+#### Optional Parameter:
+  - **URL parameters** 
+
+<img className="screenshot-full" src="/img/datasource-reference/n8n/get.png" alt="n8n query" style={{marginBottom:'15px'}} />
+
+### POST Method
+
+Choose the POST Method from the dropdown.
+
+#### Required Parameter:
+  - **Body**
+
+#### Optional Parameter:
+  - **URL parameters** 
+
+<img className="screenshot-full" src="/img/datasource-reference/n8n/POST.png" alt="n8n query" />
 
 </div>
