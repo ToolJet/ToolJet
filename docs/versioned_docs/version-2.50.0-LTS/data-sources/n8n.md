@@ -13,7 +13,7 @@ To establish a connection with the n8n data source, click on the **+ Add new dat
 
 n8n webhooks can be called with or without an **Authentication**. You can keep the **Authentication type** as `none` if your webhook didn't have one or if it has one then you can choose the one from the dropdown and provide credentials:
 
-#### Authentication Types
+### Authentication Types
 - **Basic Auth**: To connect your n8n webhooks using basic auth you'll need to provide the following credentials:
     - **Username**
     - **Password**
