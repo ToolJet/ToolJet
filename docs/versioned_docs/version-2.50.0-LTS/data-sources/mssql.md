@@ -9,9 +9,11 @@ ToolJet can connect to MS SQL Server & Azure SQL databases to read and write dat
 
 ## Connection
 
-Please make sure the host/ip of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please whitelist our IP.
-
 To establish a connection with the MS SQL Server data source, click on the **+ Add new Data source** button located on the query panel or navigate to the [Data Sources](https://docs.tooljet.com/docs/data-sources/overview) page from the ToolJet dashboard.
+
+:::info
+Please make sure the **Host/IP** of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please **whitelist** our IP.
+:::
 
 ToolJet requires the following to connect to your PostgreSQL database.
 
@@ -19,13 +21,15 @@ ToolJet requires the following to connect to your PostgreSQL database.
 - **Port**
 - **Username**
 - **Password**
-- **Azure**  (Select this option if you are using Azure SQL databases.)
+- **Azure**  (Select this option if you are using Azure SQL databases)
 
-It is recommended to create a new database user so that you can control the access levels of ToolJet. 
+**Note:** It is recommended to create a new database user so that you can control the access levels of ToolJet. 
 
-Click on **Test connection** button to verify if the credentials are correct and that the database is accessible to ToolJet server. Click on **Save** button to save the data source.
+#### Saving the Data Source
+1. Click on **Test connection** button to verify if the credentials are correct and that the database is accessible to ToolJet server. 
+2. Click on **Save** button to save the data source.
 
-<img className="screenshot-full" src="/img/datasource-reference/mssql/connect.gif" alt="ToolJet - Redis connection" height="420"/>
+<img className="screenshot-full" src="/img/datasource-reference/mssql/connect.png" alt="ToolJet mssql" height="420"/>
 
 
 </div>
@@ -33,12 +37,33 @@ Click on **Test connection** button to verify if the credentials are correct and
 <div style={{paddingTop:'24px'}}>
 
 ## Querying SQL Server / Azure SQL Databases
-Click on **+ Add** button of the query manager at the bottom panel of the editor and select the database added in the previous step as the data source. 
 
-Click on the **Run** button to run the query.
+1. Click on **+ Add** button of the query manager at the bottom panel of the editor and select the database added in the previous step as the data source. 
+2. Click on the **Run** button to run the query.
 
-<img className="screenshot-full" src="/img/datasource-reference/mssql/query.gif" alt="ToolJet - Redis connection" height="420"/>
+Once the SQL data source is added, you can create queries to read and write data to the database. You can create queries from the **[Query Panel](/docs/app-builder/query-panel#query-manager)** located at the bottom panel of the app builder.
 
+### SQL Mode
+
+SQL mode can be used to query MS SQL Server / Azure SQL Databases using SQL queries. Select SQL mode from the dropdown and then enter the SQL query in the editor.
+
+#### Example
+```sql
+SELECT * FROM users
+```
+
+<img className="screenshot-full" src="/img/datasource-reference/mssql/sql mode.png" alt="ToolJet mssql sql mode" style={{marginBottom:'15px'}}/>
+
+### GUI Mode
+
+GUI mode can be used to query MS SQL Server / Azure SQL Databases without writing queries. Select GUI mode from the dropdown and then choose the operation, such as bulk update using the primary key. Enter the Table name and Primary key column name. In the editor, enter the records in the form of an array of objects. Each object should contain the primary key column and the columns to be updated.
+
+#### Example
+```json
+{{ [ {id: 1, channel: 33}, {id: 2, channel: 24} ] }}
+```
+
+<img className="screenshot-full" src="/img/datasource-reference/mssql/gui mode.png" alt="ToolJet mssql gui mode"/>
 
 :::tip
 Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/tutorial/transformations)
