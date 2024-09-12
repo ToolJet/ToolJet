@@ -320,6 +320,8 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
       };
     });
 
+    const aiTags = ['OpenAI', 'PortKey'];
+
     return (
       <>
         <div className="row row-deck mt-3">
@@ -335,6 +337,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
               actionButton={addDataSourceBtn(item)}
               className="datasource-card"
               titleClassName={'datasource-card-title'}
+              placeTag={aiTags.includes(item.title) ? true : false}
             />
           ))}
           {type === 'Plugins' && (
