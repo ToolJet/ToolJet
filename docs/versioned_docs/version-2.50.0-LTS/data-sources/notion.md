@@ -3,7 +3,7 @@ id: notion
 title: Notion
 ---
 
-ToolJet can connect to a Notion workspace to do operations on notion pages, databases and blocks.
+ToolJet can connect to a Notion workspace to do operations on notion pages, databases, users and blocks.
 
 <div style={{paddingTop:'24px'}}>
 
@@ -27,12 +27,26 @@ For integrating Notion with ToolJet we will need the API token. The API token ca
 
 Notion API provides support for:
 
-- **[Database](#database)**
-- **[Page](#page)**
-- **[Block](#blocks)**
-- **[User](#user)**
+- **[Database](#querying-notion-database)**
+- **[Page](#querying-notion-page)**
+- **[Block](#querying-notion-blocks)**
+- **[User](#querying-notion-user)**
 
 <img className="screenshot-full" src="/img/datasource-reference/notion/querying.png" alt="notion querying"/>
+
+:::info
+**Database ID**, **View ID** and **Page ID** can be found using notion workspace URL.
+
+For example:
+
+URL: `https://www.notion.so/workspace/XXX?v=YYY&p=ZZZ`
+
+Here:
+- `XXX` is the **Database ID**
+- `YYY` is the **View ID**
+- `ZZZ` is the **Page ID**
+
+:::
 
 :::tip
 
@@ -42,63 +56,67 @@ Before querying Notion, you must share the database with your integration. Click
 
 :::
 
-### Database
+</div>
+
+<div style={{paddingTop:'24px'}}>
+
+## Querying Notion Database
 
 On database resource you can perform the following operations:
 
-- **[Retrieve a database](#1-retrieve-a-database)**
-- **[Query a database](#2-query-a-database)**
-- **[Create a database](#3-create-a-database)**
-- **[Update a database](#4-update-a-database)**
+- **[Retrieve a database](#retrieve-a-database)**
+- **[Query a database](#query-a-database)**
+- **[Create a database](#create-a-database)**
+- **[Update a database](#update-a-database)**
 
-<img className="screenshot-full" src="/img/datasource-reference/notion/db_q.png" alt="notion db" />
+<img className="screenshot-full" src="/img/datasource-reference/notion/db_q.png" alt="notion db" style={{marginBottom:'15px'}} />
 
-#### 1. Retrieve a Database
+### Retrieve a Database
 
 This operations retrieves a Database object using the ID specified.
 
-##### Required Parameters:
+#### Required Parameters:
 
-- **Database ID**: You'll find the Database ID in the url. Suppose this is the example url: `https://www.notion.so/workspace/XXX?v=YYY&p=ZZZ` then `XXX` is the database ID, `YYY` is the view ID and `ZZZ` is the page ID.
+- **Database ID**
 
-<img className="screenshot-full" src="/img/datasource-reference/notion/db_retrieve.png" alt="notion db retrieve" />
+<img className="screenshot-full" src="/img/datasource-reference/notion/db_retrieve.png" alt="notion db retrieve" style={{marginBottom:'15px'}} />
 
-#### 2. Query a Database
+### Query a Database
 
 This operation gets a list of **Pages** contained in the database, filtered and ordered according to the filter conditions and sort criteria provided in the query.
 
-##### Required Parameters:
+#### Required Parameters:
 
-- **Database ID** : You'll find the Database ID in the url. Suppose this is the example url: `https://www.notion.so/workspace/XXX?v=YYY&p=ZZZ` then `XXX` is the database ID, `YYY` is the view ID and `ZZZ` is the page ID.
+- **Database ID**
 
-##### Optional Parameters:
+#### Optional Parameters:
 
-- **Filter** : This must be an object of filters
-- **Sort** : Array of sort objects
-- **Limit** : limit for pagination
-- **Start Cursor** : Next object id to continue pagination
+- **Filter**
+- **Sort**
+- **Limit**
+- **Start Cursor**
 
-<img className="screenshot-full" src="/img/datasource-reference/notion/db_query.png" alt="notion db query" />
+<img className="screenshot-full" src="/img/datasource-reference/notion/db_query.png" alt="notion db query" style={{marginBottom:'15px'}} />
 
-#### 3. Create a Database
+### Create a Database
 
 This operation creates a database as a subpage in the specified parent page, with the specified properties.
 
-##### Required Parameters:
+#### Required Parameters:
 
-- **Database ID** : You'll find the Database ID in the url. Suppose this is the example url: `https://www.notion.so/workspace/XXX?v=YYY&p=ZZZ` then `XXX` is the database ID, `YYY` is the view ID and `ZZZ` is the page ID.
-- **Page ID** : Page ID of the parent
-- **Properties** : Properties defines the columns in a database
+- **Database ID**
+- **Page ID**
+- **Properties**
 
-##### Optional Parameters:
+#### Optional Parameters:
 
-- **Title** : Title should be an array of rich_text properties
-- **Icon type** : Currently notion api accepts two icon options, emoji, external URL
-- **Icon value** : Value of selected icon type
-- **Cover type** : Currently notion api accepts only external URL
-- **Cover value** : Value of selected cover type
+- **Title**
+- **Icon type**
+- **Icon value**
+- **Cover type**
+- **Cover value**
 
-<img className="screenshot-full" src="/img/datasource-reference/notion/db_create.png" alt="notion db create" />
+<img className="screenshot-full" src="/img/datasource-reference/notion/db_create.png" alt="notion db create" style={{marginBottom:'15px'}} />
 
 #### Example:
 ##### Title
@@ -129,24 +147,24 @@ This operation creates a database as a subpage in the specified parent page, wit
 }
 ```
 
-#### 4. Update a Database
+### Update a Database
 
 This operation updates an existing database as specified by the parameters.
 
-##### Required Parameters:
+#### Required Parameters:
 
 - **Database ID**
 
-##### Optional Parameters:
+#### Optional Parameters:
 
-- **Title** : Title should be an array of rich_text properties
-- **Properties** : Properties defines the columns in a database
-- **Icon type** : Currently notion api accepts two icon options, emoji, external URL
-- **Icon value** : Value of selected icon type
-- **Cover type** : Currently notion api accepts only external URL
-- **Cover value** : Value of selected cover type
+- **Title**
+- **Properties**
+- **Icon type**
+- **Icon value**
+- **Cover type**
+- **Cover value**
 
-<img className="screenshot-full" src="/img/datasource-reference/notion/db_update.png" alt="notion db update" />
+<img className="screenshot-full" src="/img/datasource-reference/notion/db_update.png" alt="notion db update" style={{marginBottom:'15px'}} />
 
 #### Example:
 ##### Title
@@ -179,48 +197,52 @@ This operation updates an existing database as specified by the parameters.
 }
 ```
 
-### Page
+</div>
+
+<div style={{paddingTop:'24px'}}>
+
+## Querying Notion Page
 
 On page resource you can perform the following operations:
 
-- **[Retrieve a page](#1-retrieve-a-page)**
-- **[Create a page](#2-create-a-page)**
-- **[Update a page](#3-update-a-page)**
-- **[Retrieve a page property](#4-retrieve-a-page-property-item)**
-- **[Archive a page](#5-archive-delete-a-page)**
+- **[Retrieve a page](#retrieve-a-page)**
+- **[Create a page](#create-a-page)**
+- **[Update a page](#update-a-page)**
+- **[Retrieve a page property](#retrieve-a-page-property-item)**
+- **[Archive a page](#archive-delete-a-page)**
 
-<img className="screenshot-full" src="/img/datasource-reference/notion/page_q.png" alt="notion page" />
+<img className="screenshot-full" src="/img/datasource-reference/notion/page_q.png" alt="notion page" style={{marginBottom:'15px'}} />
 
-#### 1. Retrieve a Page
+### Retrieve a Page
 
 This operation retrieves a **Page** object using the ID specified.
 
-##### Required Parameters:
+#### Required Parameters:
 
 - **Page ID**
 
-<img className="screenshot-full" src="/img/datasource-reference/notion/page_retrieve.png" alt="notion page retrieve" />
+<img className="screenshot-full" src="/img/datasource-reference/notion/page_retrieve.png" alt="notion page retrieve" style={{marginBottom:'15px'}} />
 
-#### 2. Create a Page
+### Create a Page
 
 This operation creates a new page in the specified database or as a child of an existing page. If the parent is a database, the property values of the new page in the properties parameter must conform to the parent database's property schema. If the parent is a page, the only valid property is title.
 
-##### Required Parameters:
+#### Required Parameters:
 
-- **Parent Type** : A database parent or page parent
+- **Parent Type**
 - **Page/Database ID**
-- **Properties** : Property values of this page
+- **Properties**
 
-##### Optional Parameters:
-- **Children (Blocks)** : Page content for the new page as an array of block objects
-- **Icon type** : Currently notion api accepts two icon options, emoji, external URL
-- **Icon value**: Value of selected icon type
-- **Cover type** : Currently notion api accepts only external URL
-- **Cover value** : Value of selected cover type
+#### Optional Parameters:
+- **Children (Blocks)**
+- **Icon type**
+- **Icon value**
+- **Cover type**
+- **Cover value**
 
-<img className="screenshot-full" src="/img/datasource-reference/notion/page_create.png" alt="notion page create" />
+<img className="screenshot-full" src="/img/datasource-reference/notion/page_create.png" alt="notion page create" style={{marginBottom:'15px'}} />
 
-##### Example:
+#### Example:
 ```yaml
 {
     "Title": {
@@ -236,25 +258,25 @@ This operation creates a new page in the specified database or as a child of an 
 }
 ```
 
-#### 3. Update a Page
+### Update a Page
 
 This operation updates page property values for the specified page. Properties that are not set via the properties parameter will remain unchanged.
 
-##### Required Parameters:
+#### Required Parameters:
 
 - **Page ID**
-- **Properties** : Property values of this page
+- **Properties**
 
-##### Optional Parameters
+#### Optional Parameters
 
-- **Icon type** : Currently notion api accepts two icon options, emoji, external URL
-- **Icon value**: Value of selected icon type
-- **Cover type** : Currently notion api accepts only external URL
-- **Cover value** : Value of selected cover type
+- **Icon type**
+- **Icon value**
+- **Cover type**
+- **Cover value**
 
-<img className="screenshot-full" src="/img/datasource-reference/notion/page_update.png" alt="notion page update" />
+<img className="screenshot-full" src="/img/datasource-reference/notion/page_update.png" alt="notion page update" style={{marginBottom:'15px'}} />
 
-##### Example:
+#### Example:
 ```yaml
 {
     "Title": {
@@ -275,42 +297,46 @@ This operation updates page property values for the specified page. Properties t
 }
 ```
 
-#### 4. Retrieve a Page Property Item
+### Retrieve a Page Property Item
 
 This operation retrieves a property_item object for a given page ID and property ID. Depending on the property type, the object returned will either be a value or a paginated list of property item values. See Property item objects for specifics.
 
-##### Required Parameter:
+#### Required Parameter:
 
 - **Page ID**
 
-##### Optional Parameters:
+#### Optional Parameters:
 
 - **Property ID**
 - **Limit**
 - **Start cursor**
 
-<img className="screenshot-full" src="/img/datasource-reference/notion/page_retrieve_page_property.png" alt="notion page retrieve page property" />
+<img className="screenshot-full" src="/img/datasource-reference/notion/page_retrieve_page_property.png" alt="notion page retrieve page property" style={{marginBottom:'15px'}} />
 
-#### 5. Archive (delete) a Page
+### Archive (delete) a Page
 
 This operation archive or un archive the page specified using Page ID.
 
-##### Required parameters:
+#### Required Parameters:
 
 - **Page ID**
-- **Archive**: Dropdown for archive and un archive the page
+- **Archive**
 
 <img className="screenshot-full" src="/img/datasource-reference/notion/page_archive.png" alt="notion page retrieve page property" />
 
-### Blocks
+</div>
+
+<div style={{paddingTop:'24px'}}>
+
+## Querying Notion Blocks
 
 The following operations can be performed on the block resource:
 
-- **[Retrieve a block](#1-retrieve-a-block)**
-- **[Append block children](#2-append-new-block-children)**
-- **[Retrieve block children](#3-retrieve-block-children)**
-- **[Update a block](#4-update-a-block)**
-- **[Delete a block](#5-delete-a-block)**
+- **[Retrieve a block](#retrieve-a-block)**
+- **[Append block children](#append-new-block-children)**
+- **[Retrieve block children](#retrieve-block-children)**
+- **[Update a block](#update-a-block)**
+- **[Delete a block](#delete-a-block)**
 
 <img className="screenshot-full" src="/img/datasource-reference/notion/block_q.png" alt="notion block" />
 
@@ -318,58 +344,58 @@ The following operations can be performed on the block resource:
 To get the id for blocks, simply click on the menu icon for the block and click "Copy link". Afterwards, paste the link in the browser and it should look like this: `https://www.notion.so/Creating-Page-Sample-ee18b8779ae54f358b09221d6665ee15#7fcb3940a1264aadb2ad4ee9ffe11b0e` the string after **#** is the block id i.e. `7fcb3940a1264aadb2ad4ee9ffe11b0e`.
 :::
 
-#### 1. Retrieve a block
+### Retrieve a Block
 
 This operation retrieves a **Block** object using the ID specified.
 
-##### Required parameters:
+#### Required parameters:
 
 - **Block ID**
 
-<img className="screenshot-full" src="/img/datasource-reference/notion/block_retrieve.png" alt="notion block retrieve" />
+<img className="screenshot-full" src="/img/datasource-reference/notion/block_retrieve.png" alt="notion block retrieve" style={{marginBottom:'15px'}} />
 
-#### 2. Append New Block Children
+### Append New Block Children
 
 This operation creates and appends new children blocks to the parent block_id specified.
 
-##### Required parameters:
+#### Required parameters:
 
 - **Block ID**
-- **Children**: Array of block objects
+- **Children**
 
-<img className="screenshot-full" src="/img/datasource-reference/notion/block_append.png" alt="notion block append" />
+<img className="screenshot-full" src="/img/datasource-reference/notion/block_append.png" alt="notion block append" style={{marginBottom:'15px'}} />
 
-#### 3. Retrieve Block Children
+### Retrieve Block Children
 
 This operation retrieves a paginated array of child block objects contained in the block using the ID specified.
 
-##### Required Parameters:
+#### Required Parameters:
 
 - **Block ID**
 
-##### Optional Parameters:
+#### Optional Parameters:
 
 - **Limit**
 - **Start cursor**
 
-<img className="screenshot-full" src="/img/datasource-reference/notion/block_retrieve_block_children.png" alt="notion block append" />
+<img className="screenshot-full" src="/img/datasource-reference/notion/block_retrieve_block_children.png" alt="notion block append" style={{marginBottom:'15px'}} />
 
-#### 4. Update a Block
+### Update a Block
 
 This operation updates the content for the specified block_id based on the block type.
 
-##### Required Parameters:
+#### Required Parameters:
 
 - **Block ID**
 
-##### Optional Parameters:
+#### Optional Parameters:
 
-- **Properties**: The block object type value with the properties to be updated
+- **Properties**
 - **Archive**
 
-<img className="screenshot-full" src="/img/datasource-reference/notion/block_update.png" alt="notion block update" />
+<img className="screenshot-full" src="/img/datasource-reference/notion/block_update.png" alt="notion block update" style={{marginBottom:'15px'}} />
 
-##### Example
+#### Example
 ```yaml
 {
     "Title": {
@@ -390,38 +416,42 @@ This operation updates the content for the specified block_id based on the block
 }
 ```
 
-#### 5. Delete a Block
+### Delete a Block
 
-##### Required Parameters:
+#### Required Parameters:
 
 - **Block ID**
 
 <img className="screenshot-full" src="/img/datasource-reference/notion/block_delete.png" alt="notion block delete" />
 
-### User
+</div>
+
+<div style={{paddingTop:'24px'}}>
+
+## Querying Notion User
 
 The following operations can be performed on the user notion resource:
 
-- **[Retrieve a user from current workspace](#1-retrieve-a-user-from-current-workspace)**
-- **[Retrieve list of users of a workspace](#2-retrieve-list-of-users-of-a-workspace)**
+- **[Retrieve a user from current workspace](#retrieve-a-user-from-current-workspace)**
+- **[Retrieve list of users of a workspace](#retrieve-list-of-users-of-a-workspace)**
 
-<img className="screenshot-full" src="/img/datasource-reference/notion/user_q.png" alt="notion user" />
+<img className="screenshot-full" src="/img/datasource-reference/notion/user_q.png" alt="notion user" style={{marginBottom:'15px'}} />
 
-#### 1. Retrieve a User From Current Workspace
+### Retrieve a User From Current Workspace
 
 This operation retrieves a User using the ID specified.
 
-##### Required Parameters:
+#### Required Parameters:
 
 - **User ID**
 
-<img className="screenshot-full" src="/img/datasource-reference/notion/user_retrieve_a_user.png" alt="notion user retrieve a user" />
+<img className="screenshot-full" src="/img/datasource-reference/notion/user_retrieve_a_user.png" alt="notion user retrieve a user" style={{marginBottom:'15px'}} />
 
-#### 2. Retrieve List of Users of a Workspace
+### Retrieve List of Users of a Workspace
 
 This operation returns a paginated list of Users for the workspace.
 
-##### Optional Parameters:
+#### Optional Parameters:
 
 - **Limit**
 - **Start cursor**
