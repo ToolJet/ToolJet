@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { UsersService } from '@services/users.service';
 import { AuthService } from '@services/auth.service';
 import { OrganizationsService } from '@services/organizations.service';
-import { OnboardingStatus, User } from 'src/entities/user.entity';
 import { CreateAdminDto } from '@dto/user.dto';
 import { Response } from 'express';
 import { USER_ROLE } from '@module/user_resource_permissions/constants/group-permissions.constant';
@@ -55,24 +54,5 @@ export class OnboardingServiceSep {
 
     await this.metadataService.finishOnboardingCE(name, email, workspaceName);
     return result;
-  }
-
-  async getOnboardingSession(user: User) {
-    const name = `${user.firstName} ${user.lastName}`.trim();
-
-    return {
-      adminDetails: {
-        name,
-        email: user.email,
-      },
-      workspaceName: user.organization?.name,
-      currentOrganizationId: user.organization?.id,
-      currentOrganizationSlug: user.organization?.slug,
-      onboardingStatus: user.onboardingStatus,
-    };
-  }
-
-  async finishOnboarding(user: User) {
-    await this.usersService.updateOnboardingStatus(user.id, OnboardingStatus.ONBOARDING_COMPLETED);
   }
 }

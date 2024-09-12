@@ -36,6 +36,7 @@ import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
 import { UserResourcePermissionsModule } from '@module/user_resource_permissions/user_resource_permissions.module';
 import { InstanceSettingsModule } from '@instance-settings/module';
 import { OnboardingServiceSep } from 'ce/onboarding/onboarding.service.sep';
+import { OnboardingControllerSep } from 'ce/onboarding/onboarding.controller.sep';
 
 @Module({
   imports: [
@@ -87,7 +88,7 @@ import { OnboardingServiceSep } from 'ce/onboarding/onboarding.service.sep';
     SessionScheduler,
     OnboardingServiceSep,
   ],
-  controllers: [OauthController],
+  controllers: [OauthController, OnboardingControllerSep],
   exports: [AuthService, SessionService, OnboardingServiceSep],
 })
 export class AuthModule {}

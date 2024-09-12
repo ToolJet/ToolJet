@@ -1,5 +1,5 @@
 import config from 'config';
-import { handleResponse, authHeader } from '@/_helpers';
+import { handleResponse } from '@/_helpers';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import queryString from 'query-string';
 
@@ -17,7 +17,7 @@ function setupFirstUser({ companyName, buildPurpose, name, workspaceName, passwo
       password,
     }),
   };
-  return fetch(`${config.apiUrl}/setup-first-user`, requestOptions)
+  return fetch(`${config.apiUrl}/onboarding/setup-first-user`, requestOptions)
     .then(handleResponse)
     .then((response) => {
       onFirstUserAccountSetupSuccess(response);
@@ -87,43 +87,10 @@ function verifyToken(token, organizationToken) {
     });
 }
 
-function getOnboardingSession() {
-  const requestOptions = {
-    method: 'GET',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-  };
-  return fetch(`${config.apiUrl}/onboarding-session`, requestOptions)
-    .then(handleResponse)
-    .then((response) => {
-      updateCurrentSession({
-        current_organization_id: response.currentOrganizationId,
-        current_organization_slug: response.currentOrganizationSlug,
-      });
-      return response;
-    });
-}
-
 function checkWorkspaceNameUniqueness(name) {
   const requestOptions = { method: 'GET', headers: { 'Content-Type': 'application/json' } };
   const query = queryString.stringify({ name });
   return fetch(`${config.apiUrl}/organizations/workspace-name/unique?${query}`, requestOptions).then(handleResponse);
 }
 
-function finishOnboarding() {
-  const requestOptions = {
-    method: 'GET',
-    credentials: 'include',
-    headers: authHeader(),
-  };
-  return fetch(`${config.apiUrl}/finish-onboarding`, requestOptions).then(handleResponse);
-}
-
-export {
-  setupFirstUser,
-  verifyToken,
-  onboarding,
-  getOnboardingSession,
-  checkWorkspaceNameUniqueness,
-  finishOnboarding,
-};
+export { setupFirstUser, verifyToken, onboarding, checkWorkspaceNameUniqueness };
