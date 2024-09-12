@@ -69,7 +69,7 @@ SELECT * FROM users
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mysql/sqlmode.png" alt="mysql"/>
+<img className="screenshot-full" src="/img/datasource-reference/mysql/sqlmode.png" alt="mysql" style={{marginBottom:'15px'}}/>
 
 </div>
 
