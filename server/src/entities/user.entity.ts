@@ -24,13 +24,6 @@ import { GroupUsers } from './group_users.entity';
 import { UserGroupPermission } from './user_group_permission.entity';
 import { GroupPermissions } from './group_permissions.entity';
 
-export enum OnboardingStatus {
-  NOT_STARTED = 'not_started',
-  ACCOUNT_CREATED = 'account_created',
-  PLAN_SELECTED = 'plan_selected',
-  ONBOARDING_COMPLETED = 'onboarding_completed',
-}
-
 @Entity({ name: 'users' })
 export class User extends BaseEntity {
   @BeforeInsert()
@@ -73,15 +66,6 @@ export class User extends BaseEntity {
     default: 'invite',
   })
   source: string;
-
-  @Column({
-    type: 'enum',
-    enumName: 'onboarding_status',
-    name: 'onboarding_status',
-    enum: OnboardingStatus,
-    default: OnboardingStatus.NOT_STARTED,
-  })
-  onboardingStatus: OnboardingStatus;
 
   @Column({ name: 'avatar_id', nullable: true, default: null })
   avatarId?: string;
