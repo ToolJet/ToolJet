@@ -45,7 +45,7 @@ Once the SQL data source is added, you can create queries to read and write data
 
 ### SQL Mode
 
-SQL mode can be used to query MS SQL Server / Azure SQL Databases using SQL queries. Select SQL mode from the dropdown and then enter the SQL query in the editor.
+SQL mode can be used to query MS SQL Server / Azure SQL Databases using SQL queries. Select **SQL mode** from the dropdown and then enter the SQL query in the editor.
 
 #### Example
 ```sql
@@ -56,7 +56,7 @@ SELECT * FROM users
 
 ### GUI Mode
 
-GUI mode can be used to query MS SQL Server / Azure SQL Databases without writing queries. Select GUI mode from the dropdown and then choose the operation, such as bulk update using the primary key. Enter the Table name and Primary key column name. In the editor, enter the records in the form of an array of objects. Each object should contain the primary key column and the columns to be updated.
+GUI mode can be used to query MS SQL Server / Azure SQL Databases without writing queries. Select **GUI mode** from the dropdown and then choose the operation **Bulk update using the primary key**. Enter the **Table** name and **Primary key** column name. In the editor, enter the records in the form of an array of objects. Each object should contain the primary key column and the columns to be updated.
 
 #### Example
 ```json
