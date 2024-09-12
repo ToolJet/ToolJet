@@ -25,11 +25,7 @@ ToolJet requires the following to connect to your PostgreSQL database.
 
 **Note:** It is recommended to create a new database user so that you can control the access levels of ToolJet. 
 
-#### Saving the Data Source
-1. Click on **Test connection** button to verify if the credentials are correct and that the database is accessible to ToolJet server. 
-2. Click on **Save** button to save the data source.
-
-<img className="screenshot-full" src="/img/datasource-reference/mssql/connect.png" alt="ToolJet mssql" height="420"/>
+<img className="screenshot-full" src="/img/datasource-reference/mssql/connect.png" alt="ToolJet mssql"/>
 
 
 </div>
@@ -38,7 +34,7 @@ ToolJet requires the following to connect to your PostgreSQL database.
 
 ## Querying SQL Server / Azure SQL Databases
 
-1. Click on **+ Add** button of the query manager at the bottom panel of the editor
+1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
 2. Select the database added in the previous step as the data source. 
 
 Once the SQL data source is added, you can create queries to read and write data to the database. You can create queries from the **[Query Panel](/docs/app-builder/query-panel#query-manager)** located at the bottom panel of the app builder.
@@ -47,7 +43,7 @@ Once the SQL data source is added, you can create queries to read and write data
 
 SQL mode can be used to query MS SQL Server / Azure SQL Databases using SQL queries. 
 
-1. Select **SQL mode** from the dropdown
+1. Select **SQL mode** from the dropdown.
 2. Enter the SQL query in the editor.
 3. Click on the **Run** button to run the query.
 

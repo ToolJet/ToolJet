@@ -44,7 +44,7 @@ Webhook credentials and instance credentials are different. Please use the crede
 
 ## Trigger Workflow
 
-1. Click on **+ Add** button of the query manager at the bottom panel of the editor
+1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
 2. Select the database added in the previous step as the data source. 
 
 Once the n8n data source is added, you can trigger a workflow with `GET/POST` URL. 

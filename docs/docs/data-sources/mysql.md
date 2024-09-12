@@ -41,10 +41,6 @@ If you are using **Socket** as the connection type, you will need to provide the
 
 **Note:** It is recommended to create a new MySQL database user so that you can control the access levels of ToolJet.
 
-#### Saving the Data Source
-1. Click on **Test connection** button to verify if the credentials are correct and that the database is accessible to ToolJet server. 
-2. Click on **Save** button to save the data source.
-
 <div style={{textAlign: 'center'}}>
 
 <img className="screenshot-full" src="/img/datasource-reference/mysql/mysqlconnect.png" alt="mysql"/>
@@ -57,7 +53,7 @@ If you are using **Socket** as the connection type, you will need to provide the
 
 ## Querying MySQL
 
-1. Click on **+ Add** button of the query manager at the bottom panel of the editor
+1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
 2. Select the database added in the previous step as the data source. 
 
 Once the MySQL data source is added, you can create queries to read and write data to the database. You can create queries from the **[Query Panel](/docs/app-builder/query-panel#query-manager)** located at the bottom panel of the app builder.
@@ -66,8 +62,8 @@ Once the MySQL data source is added, you can create queries to read and write da
 
 SQL mode can be used to query MySQL database using SQL queries. 
 
-1. Select **SQL mode** from the dropdown
-2. Enter the SQL query in the editor
+1. Select **SQL mode** from the dropdown.
+2. Enter the SQL query in the editor.
 3. Click on the **Run** button to run the query.
 
 **Example:**
