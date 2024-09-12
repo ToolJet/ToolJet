@@ -1,6 +1,7 @@
 import React from 'react';
 // eslint-disable-next-line import/no-unresolved
 import { allSvgs } from '@tooljet/plugins/client';
+import AiBanner from '@/_ui/AiBanner';
 
 const Card = ({
   title,
@@ -13,6 +14,7 @@ const Card = ({
   titleClassName,
   actionButton,
   darkMode,
+  placeTag = false,
 }) => {
   const DisplayIcon = ({ src }) => {
     if (typeof src !== 'string') return;
@@ -44,6 +46,7 @@ const Card = ({
         data-cy={`data-source-${String(title).toLocaleLowerCase()}`}
       >
         <div className="card-body">
+          {placeTag && <AiBanner className="ai-card-tag" />}
           <center>
             <DisplayIcon src={src} />
             <br></br>
