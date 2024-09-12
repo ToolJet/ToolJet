@@ -47,7 +47,7 @@ const Card = ({
       >
         <div className="card-body">
           {placeTag && <AiBanner className="ai-card-tag" />}
-          <center>
+          <center style={{ marginTop: placeTag ? '0px' : '15px' }}>
             <DisplayIcon src={src} />
             <br></br>
             <br></br>
