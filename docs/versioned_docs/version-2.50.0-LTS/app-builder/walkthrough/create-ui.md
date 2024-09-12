@@ -86,7 +86,7 @@ You can see all the available properties of a component in the Properties Panel.
 
 
 ## Adding a New Page
-- Click on **Pages** on the left sidebar - there will be a *Home* page by default. Rename the 
+- Click on **Pages** on the left sidebar - there will be a *Home* page by default. Rename the home page to <i>Dashboard</i>.
 - Click on the `+` icon to create a new page and rename the new page to <i>Customers</i>.
 
 <div style={{textAlign: 'center', marginBottom:'15px'}}>
