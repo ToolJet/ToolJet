@@ -127,6 +127,16 @@
         "placeholder": "[{\"role\": \"user\", \"content\": \"Hello\"}, {\"role\": \"assistant\", \"content\": \"Hi\"]}",
         "height": "150px"
       },
+      "model": {
+        "label": "Model",
+        "key": "model",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter model",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
       "max_tokens": {
         "label": "Max Tokens",
         "key": "max_tokens",
