@@ -9,7 +9,7 @@ ToolJet can connect to MySQL databases to read and write data.
 
 ## Connection
 
-To establish a connection with the MySQL data source, you can either click on the **+ Add new data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+To establish a connection with the MySQL data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
 
 <div style={{textAlign: 'center'}}>
 
