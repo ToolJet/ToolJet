@@ -39,15 +39,17 @@ If you are using **Socket** as the connection type, you will need to provide the
 
 - **Socket Path**
 
-It is recommended to create a new MySQL database user so that you can control the access levels of ToolJet.
+**Note:** It is recommended to create a new MySQL database user so that you can control the access levels of ToolJet.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mysql/mysqlconnect.png" alt="mysql"/>
+<img className="screenshot-full" src="/img/datasource-reference/mysql/mysqlconnect.png" alt="mysql" style={{marginBottom:'15px'}} />
 
 </div>
 
-Click on **Test connection** to verify the correctness of the provided credentials and the accessibility of the database to the ToolJet server. Finally, click the **Save** button to save the data source configuration.
+#### Saving the Data Source
+1. Click on **Test connection** button to verify if the credentials are correct and that the database is accessible to ToolJet server. 
+2. Click on **Save** button to save the data source.
 
 </div>
 
@@ -59,7 +61,7 @@ Once the MySQL data source is added, you can create queries to read and write da
 
 ### SQL Mode
 
-SQL mode can be used to query MySQL database using SQL queries. Select SQL mode from the dropdown and then enter the SQL query in the editor.
+SQL mode can be used to query MySQL database using SQL queries. Select **SQL mode** from the dropdown and then enter the SQL query in the editor.
 
 **Example:**
 
@@ -75,7 +77,7 @@ SELECT * FROM users
 
 ### GUI Mode
 
-GUI mode can be used to query MySQL database without writing queries. Select GUI mode from the dropdown and then choose the operation **Bulk update using primary key**. Enter the **Table** name and **Primary key column** name. Now, in the editor enter the records in the form of an array of objects. Each object should contain the primary key column and the columns to be updated.
+GUI mode can be used to query MySQL database without writing queries. Select **GUI mode** from the dropdown and then choose the operation **Bulk update using primary key**. Enter the **Table** name and **Primary key column** name. Now, in the editor enter the records in the form of an array of objects. Each object should contain the primary key column and the columns to be updated.
 
 **Example:**
 
