@@ -6,11 +6,8 @@ title: gRPC
 <div className='badge badge--primary heading-badge'>Self-hosted only</div>
 
 :::caution
-only self-hosted deployments will have access to a gRPC datasource that is capable of handling unary requests and responses.
+Only self-hosted deployments will have access to a gRPC datasource that is capable of handling unary requests and responses.
 :::
-
-- [Setup](#setup)
-- [Querying gRPC](#querying-grpc)
 
 <div style={{paddingTop:'24px'}}>
 
@@ -18,7 +15,7 @@ only self-hosted deployments will have access to a gRPC datasource that is capab
 
 ### Step 1: Upgrade ToolJet to the Version 2.5 or Above
 
-Find instructions on how to do this in the setup guides located here: https://docs.tooljet.com/docs/setup/.
+Find instructions on how to do this in the setup guides located here: [ToolJet Setup](https://docs.tooljet.com/docs/setup/).
 
 ### Step 2: Add Proto Files
 
