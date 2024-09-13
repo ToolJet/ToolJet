@@ -108,23 +108,23 @@ This operation creates a new Jira issue.
 ```yaml
 Params/Body:
 {
-    "fields": {
-      "project": { 
-        "key": "SCRUM"
-      },
-      "summary": "New issue summary",
-      "description": "Issue description",
-      "issuetype": {
-        "name": "Bug"
-      },
-      "assignee": {
-        "name": "john.doe"
-      },
-      "labels": [
-        "critical",
-        "bug"
-      ]
-    }
+  "fields": {
+    "project": { 
+      "key": "SCRUM"
+    },
+    "summary": "A particular bug needs to be fixed.",
+    "description": "The XYZ feature is not working as expected.",
+    "issuetype": {
+      "name": "Bug"
+    },
+    "assignee": {
+      "accountId": "712020:4581444c-054e-41d8-90ed-6d1d849557f7"
+    },
+    "labels": [
+      "bug",
+      "urgent"
+    ]
+  }
 }
 ```
 
