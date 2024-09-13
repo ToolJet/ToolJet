@@ -27,23 +27,25 @@ To connect to PostgreSQL using Manual connection parameters, select **Manual con
 - **Connection Options**
 - **SSL Certificate**
 
+<div style={{textAlign: 'center'}}>
+<img className="screenshot-full" src="/img/datasource-reference/postgresql/pgconnection-v2.png" alt="PG connection"/>
+</div>
+
 ### Connection string
 
 To connect to PostgreSQL using a connection string, select **Connection String** as the connection type and provide the following details:
 
 - **Connection String**
 
+<div style={{textAlign: 'center'}}>
+<img className="screenshot-full" src="/img/datasource-reference/postgresql/pgconnection-string.png" alt="PG connection string"/>
+</div>
+
 We recommend creating a new PostgreSQL database user to have control over ToolJet's access levels.
 
 :::caution
 Ensure that the host/IP of the database is accessible from your VPC in case you are using self-hosted ToolJet. If you are using ToolJet cloud, please whitelist our IP.
 :::
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/datasource-reference/postgresql/pgconnection.png" alt="PG connection"/>
-
-</div>
 
 Click the **Test connection** button to verify the correctness of the credentials and the accessibility of the database to ToolJet server. Click the **Save** button to save the data source.
 
