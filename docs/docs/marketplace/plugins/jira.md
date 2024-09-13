@@ -223,7 +223,7 @@ This operation searches for users based on a query.
 
 #### Example:
 ```yaml
-Query: is assignee of PROJ AND [propertyKey].entity.property.path is "property value"
+Query: is assignee of PROJ
 Start at: 1
 Max results: 10
 ```
