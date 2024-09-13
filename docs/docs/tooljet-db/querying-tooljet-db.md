@@ -92,6 +92,22 @@ This operation deletes a record in the table. You can delete a single record or 
 
 ## SQL Editor
 
+The ToolJet **SQL editor** allows you to query the ToolJet Database by writing SQL queries, specifically supporting standard SQL syntax for **Data Manipulation Language (DML)** commands.
+
+### Supported SQL Commands
+
+- **DML Commands**: You can use the following DML commands to manipulate data:
+  - **SELECT**: Retrieve data from the database.
+  - **INSERT**: Add new records to the database.
+  - **UPDATE**: Modify existing data.
+  - **DELETE**: Remove records from the database.
+
+- **Restricted Commands**:
+  - **Data Definition Language (DDL)** commands like **CREATE**, **ALTER**, **TRUNCATE**, **DROP**, and **RENAME** are not allowed.
+  - **Data Control Language (DCL)** commands like **GRANT** and **REVOKE** are also restricted.
+
+### SQL Editor Usage
+
 1. In the Query panel, click on the **+Add** button to add a new query, and select **ToolJet Database**.
 2. Select the **SQL** mode tab in the query editor.
 3. Write your SQL query in the editor.
@@ -100,10 +116,6 @@ This operation deletes a record in the table. You can delete a single record or 
 <div style={{paddingBottom:'24px', textAlign: 'center'}}>
 <img className="screenshot-full" src="/img/v2-beta/database/newui/sql-editor.png" alt="ToolJet Database SQL Editor" />
 </div>
-
-:::tip
-The SQL editor supports standard SQL syntax, allowing you to perform complex operations such as joins, subqueries, and aggregations directly on your ToolJet database.
-:::
 
 Example:
 ```sql
