@@ -1,4 +1,5 @@
 import * as React from 'react';
+// eslint-disable-next-line import/no-unresolved
 import * as SelectPrimitive from '@radix-ui/react-select';
 import { cn } from '@/lib/utils';
 import SolidIcon from '@/_ui/Icon/SolidIcons';

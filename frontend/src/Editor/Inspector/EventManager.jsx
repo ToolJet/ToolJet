@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { ActionTypes } from '../ActionTypes';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
@@ -13,7 +13,7 @@ import defaultStyles from '@/_ui/Select/styles';
 import { useTranslation } from 'react-i18next';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import RunjsParameters from './ActionConfigurationPanels/RunjsParamters';
-import { useAppDataActions, useAppDataStore } from '@/_stores/appDataStore';
+import { useAppDataActions, useAppDataStore, useIsSaving } from '@/_stores/appDataStore';
 import { isQueryRunnable } from '@/_helpers/utils';
 import { shallow } from 'zustand/shallow';
 import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
@@ -27,6 +27,7 @@ import { useEditorStore } from '@/_stores/editorStore';
 import { handleLowPriorityWork } from '@/_helpers/editorHelpers';
 import { appService } from '@/_services';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import useDebuggerStore from '@/_stores/debuggerStore';
 
 export const EventManager = ({
   sourceId,
@@ -69,9 +70,12 @@ export const EventManager = ({
   }));
 
   const { handleYmapEventUpdates } = useContext(EditorContext) || {};
+  const targets = useRef([]);
 
   const { updateAppVersionEventHandlers, createAppVersionEventHandlers, deleteAppVersionEventHandler, updateState } =
     useAppDataActions();
+
+  const isSaving = useIsSaving();
 
   const currentEvents = allAppEvents?.filter((event) => {
     if (customEventRefs) {
@@ -87,6 +91,11 @@ export const EventManager = ({
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
 
   const { t } = useTranslation();
+  const currentPageId = useEditorStore.getState().currentPageId;
+  const { selectedError, setSelectedError } = useDebuggerStore((state) => ({
+    selectedError: state.selectedError,
+    setSelectedError: state.setSelectedError,
+  }));
 
   useEffect(() => {
     handleYmapEventUpdates && handleYmapEventUpdates();
@@ -361,6 +370,7 @@ export const EventManager = ({
         actionId: 'show-alert',
         message: 'Hello world!',
         alertType: 'info',
+        component: eventMetaDefinition.name,
         ...customEventRefs,
       },
       eventType: eventSourceType,
@@ -446,6 +456,8 @@ export const EventManager = ({
                 styles={styles}
                 useMenuPortal={false}
                 useCustomStyles={true}
+                isDisabled={isSaving}
+                isLoading={isSaving}
               />
             </div>
           </div>
@@ -971,6 +983,42 @@ export const EventManager = ({
     reorderEvents(source.index, destination.index);
   };
 
+  const [activeIndex, setActiveIndex] = useState(null);
+  const containerRef = useRef();
+  const handleClick = (index) => {
+    setActiveIndex(index);
+  };
+
+  useEffect(() => {
+    console.log('try---', selectedError);
+    handleClick(selectedError?.index);
+  }, [selectedError]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        // setActiveIndex(null);
+        setSelectedError(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+  const mergeRefs = (...refs) => {
+    return (element) => {
+      refs.forEach((ref) => {
+        if (typeof ref === 'function') {
+          ref(element);
+        } else if (ref != null) {
+          ref.current = element;
+        }
+      });
+    };
+  };
+
   const renderDraggable = useDraggableInPortal();
   const renderHandlers = (events) => {
     return (
@@ -986,6 +1034,10 @@ export const EventManager = ({
               {events.map((event, index) => {
                 const actionMeta = ActionTypes.find((action) => action.id === event.event.actionId);
                 // const rowClassName = `card-body p-0 ${focusedEventIndex === index ? ' bg-azure-lt' : ''}`;
+                {
+                  console.log('new---', { eventSourceType, target: selectedError?.target, activeIndex, index });
+                }
+
                 return (
                   <Draggable key={index} draggableId={`${event.eventId}-${index}`} index={index}>
                     {renderDraggable((provided, snapshot) => {
@@ -995,10 +1047,14 @@ export const EventManager = ({
                       }
                       return (
                         <OverlayTrigger
+                          {...(selectedError?.target
+                            ? { show: activeIndex === index && eventSourceType === selectedError.target }
+                            : {})}
                           trigger="click"
                           placement={popoverPlacement || 'left'}
                           rootClose={true}
                           overlay={eventPopover(event.event, index)}
+                          onClick={() => setActiveIndex(index)}
                           onHide={() => setFocusedEventIndex(null)}
                           onToggle={(showing) => {
                             if (showing) {
@@ -1011,7 +1067,7 @@ export const EventManager = ({
                         >
                           <div
                             key={index}
-                            ref={provided.innerRef}
+                            ref={mergeRefs(provided.innerRef, containerRef)}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
                           >

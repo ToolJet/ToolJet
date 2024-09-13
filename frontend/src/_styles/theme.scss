@@ -18,6 +18,7 @@
 @import "./componentdesign.scss";
 @import './pages-sidebar.scss';
 @import "./componentdesign.scss";
+
 /* ibm-plex-sans-100 - latin */
 @font-face {
   font-display: swap;
@@ -177,20 +178,24 @@
     width: 6px;
     height: 50px;
   }
+
   &::-webkit-scrollbar-track {
     background: transparent;
   }
+
   &::-webkit-scrollbar-thumb {
     background-color: #E4E7EB;
     border-radius: 10px;
     border: 3px solid transparent;
   }
+
   &::-webkit-scrollbar-thumb:hover {
     background-color: #E4E7EB;
   }
 }
 
 @layer base {
+
   input[type='number']::-webkit-outer-spin-button,
   input[type='number']::-webkit-inner-spin-button,
   input[type='number'] {
@@ -322,6 +327,31 @@ button {
   box-shadow: none !important;
   color: var(--slate12) !important;
   padding: 16px 16px !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.accordion-button.inspector::after {
+  display: none;
+}
+
+.accordion-item-trigger {
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="13" height="12" viewBox="0 0 13 12" fill="none"><path d="M8.83684 3L4.4484 3C3.86955 3 3.5089 3.62791 3.80056 4.1279L5.99478 7.88943C6.28419 8.38556 7.00104 8.38556 7.29045 7.88943L9.48467 4.1279C9.77634 3.62791 9.41568 3 8.83684 3Z" fill="%2311181C"/></svg>') !important;
+  height: 16px !important;
+  width: 16px !important;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  transition: transform 0.3s;
+  display: inherit !important;
+  opacity: 0.7;
+}
+
+.accordion-item-trigger:not(.collapsed) {
+  transform: rotate(180deg);
+  opacity: 1;
+
 }
 
 .accordion-button::after {
@@ -1535,6 +1565,10 @@ button {
 .theme-dark {
   .accordion-button::after {
     background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="13" viewBox="0 0 12 13" fill="none"><path d="M8.19426 3.5L3.80582 3.5C3.22697 3.5 2.86632 4.12791 3.15798 4.6279L5.35221 8.38943C5.64161 8.88556 6.35846 8.88556 6.64787 8.38943L8.8421 4.6279C9.13376 4.12791 8.77311 3.5 8.19426 3.5Z" fill="%23ffffff"/></svg>');
+  }
+
+  .accordion-item-trigger {
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="13" viewBox="0 0 12 13" fill="none"><path d="M8.19426 3.5L3.80582 3.5C3.22697 3.5 2.86632 4.12791 3.15798 4.6279L5.35221 8.38943C5.64161 8.88556 6.35846 8.88556 6.64787 8.38943L8.8421 4.6279C9.13376 4.12791 8.77311 3.5 8.19426 3.5Z" fill="%23ffffff"/></svg>') !important;
   }
 
   .homepage-body {
@@ -2949,7 +2983,7 @@ input:focus-visible {
   }
 }
 
-.jet-tabs{
+.jet-tabs {
   overflow-y: auto
 }
 
@@ -4673,10 +4707,10 @@ input[type="text"] {
 
   .modal-footer-btn {
 
-    & > *:nth-child(2) {
+    &>*:nth-child(2) {
       margin-left: 16px;
+    }
   }
-}
 }
 
 .home-modal-component-editor.dark {
@@ -8550,13 +8584,13 @@ tbody {
 }
 
 .react-loading-skeleton {
-  background-color: var(--interactive-default) ;
+  background-color: var(--interactive-default);
   // background-image: linear-gradient(90deg, #2F3C4C, #2F3C4C, #2F3C4C) !important;
 }
 
 .theme-dark {
   .react-loading-skeleton {
-    background-color: var(--interactive-default) ;
+    background-color: var(--interactive-default);
     background-image: linear-gradient(90deg, #2F3C4C, #2F3C4C, #2F3C4C) !important;
   }
 
@@ -13240,13 +13274,13 @@ tbody {
   @extend .widget-version-identifier
 }
 
-.tjdb-display-time-pill{
+.tjdb-display-time-pill {
   height: 12px;
   gap: 10px;
   border-radius: 100px 100px 100px 100px;
-  padding: 8px 8px ;
+  padding: 8px 8px;
   background: var(--Slate-07, #D7DBDF);
-  color:  var(--Slate-11, #687076);
+  color: var(--Slate-11, #687076);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -13300,6 +13334,7 @@ div.ds-svg-container svg {
       border-radius: 8px;
     }
   }
+
   .form-check-input:disabled {
     background-color: var(--surfaces-surface-03) !important;
   }
@@ -13333,8 +13368,17 @@ div.ds-svg-container svg {
   }
 }
 
-  .tabs-component{
-    .tab-pane{
-      top: initial !important;
-    }
+.debugger-error-title {
+  padding: 4px;
+  border-radius: 4px;
+
+  &:hover {
+    background-color: var(--interactive-overlays-fill-hover) !important;
   }
+}
+
+.tabs-component {
+  .tab-pane {
+    top: initial !important;
+  }
+}
