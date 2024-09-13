@@ -30,7 +30,7 @@ For generating API Token visit [InfluxDB docs](https://docs.influxdata.com/influ
 
 <div style={{paddingTop:'24px'}}>
 
-## Supported Queries:
+## Supported Queries
 
 - **[Write data](#write-data)**
 - **[Query data](#query-data)**

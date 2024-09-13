@@ -25,11 +25,7 @@ To establish a connection with the MariaDB global datasource, you can either cli
   - **Self-Signed Certificate:** This option allows you to use a self-signed certificate. This is less secure than using a CA certificate, as it does not ensure the identity of the MariaDB server has been verified by a trusted third party. However, it is a good option if you do not have access to a CA certificate.
   - **None:** This option does not use SSL. This is the least secure option, as it allows anyone to intercept your communications with the MariaDB server.
 
-<div style={{textAlign: 'center'}}>
-
 <img className="screenshot-full" src="/img/datasource-reference/mariadb/connections.png" alt="MariaDB" />
-
-</div>
 
 </div>
 
@@ -39,11 +35,10 @@ To establish a connection with the MariaDB global datasource, you can either cli
 
 Once you have connected to the MariaDB datasource, follow these steps to write queries and interact with a MariaDB database from the ToolJet application:
 
-1. Open the ToolJet application and navigate to the query panel at the bottom of the app builder.
-2. Click the **+ Add** button to open the list of available datasources.
-3. Select **MariaDB** from the global datasource section.
-4. Enter the SQL query in the editor.
-5. Click **Preview** to view the data returned from the query or click **Run** to execute the query.
+1. Click the **+ Add** button to open the list of available datasources.
+2. Select **MariaDB** from the global datasource section.
+3. Enter the SQL query in the editor.
+4. Click **Preview** to view the data returned from the query or click **Run** to execute the query.
 
 :::tip
 Query results can be transformed using Transformation. For more information on transformations, please refer to our documentation at **[link](/docs/tutorial/transformations)**.

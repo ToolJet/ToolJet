@@ -15,7 +15,7 @@ Only self-hosted deployments will have access to a gRPC datasource that is capab
 
 ### Step 1: Upgrade ToolJet to the Version 2.5 or Above
 
-Find instructions on how to do this in the setup guides located here: [ToolJet Setup](https://docs.tooljet.com/docs/setup/).
+Find instructions on how to do this in the setup guides located here: [ToolJet Setup](/docs/setup/).
 
 ### Step 2: Add Proto Files
 
@@ -24,26 +24,15 @@ At the root, create a directory named "*protos*" and add a "*service.proto*" fil
 
 ### Step 3: Mount Volumes
 
-In the **docker-compose.yml** add
+In the **docker-compose.yml** add the following to the *volumes* sections for **plugins** and **server**
 
 ```bash
 ./protos:/app/protos
 ```
 
-to the 2 volume sections for **plugins** and **server**
-
-
-<div style={{textAlign: 'center'}}>
-
 <img className="screenshot-full" src="/img/datasource-reference/grpc/proto1.png" alt="gRPC: datasource" width='500' />
 
-</div>
-
-<div style={{textAlign: 'center'}}>
-
 <img className="screenshot-full" src="/img/datasource-reference/grpc/proto2.png" alt="gRPC: datasource"  width='500'/>
-
-</div>
 
 ### Step 4: Reboot the Instance
 
@@ -64,7 +53,11 @@ After setting up your proto files, you should be able to establish a connection 
 ToolJet requires the following to connect to gRPC servers:
 
 - **Server URL**
-- **Authentication type** (None, Basic, Bearer, and API key)
+- **Authentication type** 
+    - None
+    - Basic
+    - Bearer
+    - API key
 
 <div style={{textAlign: 'center'}}>
 
