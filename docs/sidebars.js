@@ -430,6 +430,7 @@ const sidebars = {
             'marketplace/plugins/marketplace-plugin-supabase',
             'marketplace/plugins/marketplace-plugin-pocketbase',
             'marketplace/plugins/marketplace-plugin-prestodb',
+            'marketplace/plugins/marketplace-plugin-jira',
           ],
         },
       ],
