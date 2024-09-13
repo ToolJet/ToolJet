@@ -238,7 +238,6 @@ This operation finds users that can be assigned to issues.
 
 #### Parameters:
 - **Query**: The search query in Jira Query Language (JQL) format.
-- **Session id**: The session ID of the user to find assignable users for.
 - **Account id**: The account ID of the user to find assignable users for.
 - **Project key**: The key of the project to find assignable users for.
 - **Issue key**: The key of the issue to find assignable users for.
@@ -254,7 +253,6 @@ Note: Query and Account id are mutually exclusive parameters. You can only use o
 #### Example:
 ```yaml
 Query: Mark // Search for users with "Mark" in their name, username, or email
-Session id: 5b10a2844c20165700ede21g
 Account id: 5b10a2844c20165700ede21g
 Project key: PROJ
 Issue key: SCRUM-3
