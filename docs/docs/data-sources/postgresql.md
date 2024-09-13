@@ -71,6 +71,27 @@ To execute SQL queries, select the SQL mode from the dropdown and enter your que
 
 </div>
 
+#### **Parameterized queries**:
+
+ToolJet offers support for parameterized SQL queries, which enhance security by preventing SQL injection and allow for dynamic query construction. To implement parameterized queries:
+
+1. Use `:parameter_name` as placeholders in your SQL query where you want to insert parameters.
+2. In the **Parameters** section below the query editor, add key-value pairs for each parameter.
+3. The keys should match the parameter names used in the query (without the colon).
+4. The values can be static values or dynamic values using the `{{ }}` notation.
+
+<div style={{textAlign: 'center'}}>
+<img className="screenshot-full" src="/img/datasource-reference/postgresql/parameterized-query.png" alt="Postgresql parameterized SQL queries"/>
+</div>
+
+**Example:**
+```yaml
+Query: SELECT * FROM users WHERE username = :username
+SQL Parameters:
+  Key: username
+  Value: oliver // or {{ components.username.value }}
+```
+
 #### GUI Mode
 
 Choose the GUI mode from the dropdown and select the operation **Bulk update using primary key**. Provide the **Table** name and the **Primary key column** name. Then, in the editor, input the **records** as an array of objects.
@@ -99,27 +120,6 @@ Click the `Run` button to execute the query.
 <img className="screenshot-full" src="/img/datasource-reference/postgresql/gui1.png" alt="PG connection"/>
 
 </div>
-
-#### **Parameterized queries**:
-
-ToolJet supports parameterized SQL queries, which help prevent SQL injection and allows for more dynamic query construction. To use parameterized queries:
-
-1. Use `:parameter_name` as placeholders in your SQL query where you want to insert parameters.
-2. In the **Parameters** section below the query editor, add key-value pairs for each parameter.
-3. The keys should match the parameter names used in the query (without the colon).
-4. The values can be static values or dynamic values using the `{{ }}` notation.
-
-<div style={{textAlign: 'center'}}>
-<img className="screenshot-full" src="/img/datasource-reference/postgresql/parameterized-query.png" alt="Postgresql parameterized SQL queries"/>
-</div>
-
-**Example:**
-```yaml
-Query: SELECT * FROM users WHERE username = :username
-SQL Parameters:
-  Key: username
-  Value: oliver // or {{ components.username.value }}
-```
 
 :::tip
 - You can apply transformations to the query results. Refer to our transformations documentation for more details: **[link](/docs/tutorial/transformations)**

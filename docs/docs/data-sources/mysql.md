@@ -80,7 +80,7 @@ SELECT * FROM users
 
 #### Parameterized queries:
 
-ToolJet supports parameterized SQL queries, which help prevent SQL injection and allows for more dynamic query construction. To use parameterized queries:
+ToolJet offers support for parameterized SQL queries, which enhance security by preventing SQL injection and allow for dynamic query construction. To implement parameterized queries:
 
 1. Use `:parameter_name` as placeholders in your SQL query where you want to insert parameters.
 2. In the **Parameters** section below the query editor, add key-value pairs for each parameter.
