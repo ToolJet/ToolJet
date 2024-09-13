@@ -143,7 +143,7 @@ This operation deletes a specific Jira issue.
 #### Example:
 ```yaml
 Issue Key: 10001
-Delete Subtasks: Yes // Can be Yes, No or None
+Delete Subtasks: Yes // Can be Yes or No
 ```
 
 ### Assign Issue
