@@ -255,7 +255,7 @@ Note: Query and Account id are mutually exclusive parameters. You can only use o
 Query: Mark // Search for users with "Mark" in their name, username, or email
 Account id: 5b10a2844c20165700ede21g
 Project key: PROJ
-Issue key: SCRUM-3
+Issue key: SCRUM-1
 Start at: 1
 Max results: 10
 Action descriptor id: 12345
@@ -282,11 +282,11 @@ This operation retrieves the worklogs for a specific issue.
 
 #### Example:
 ```yaml
-Issue Key: SCRUM-3
+Issue Key: SCRUM-1
 Start at: 1
 Max results: 10
-Started after: 2021-10-01T00:00:00.000Z
-Started before: 2021-10-31T23:59:59.999Z
+Started after: 1626228754515
+Started before: 1726228754515
 ```
 
 ### Add Worklog
@@ -303,11 +303,15 @@ This operation adds a new worklog entry to an issue.
 
 #### Example:
 ```yaml
-Issue Key: SCRUM-3
+Issue Key: SCRUM-1
 Params/Body:
 {
-    "timeSpent": "3h 30m",
-    "comment": "Worked on implementing new feature"
+  "comment": "I did some work here.",
+  "created": "2017-03-14T10:35:37.097+0000",
+  "id": "100028",
+  "issueId": "SCRUM-1",
+  "started": "2017-03-14T10:35:37.097+0000",
+  "timeSpent": "3h 20m"
 }
 ```
 
@@ -326,8 +330,8 @@ This operation deletes a specific worklog entry from an issue.
 
 #### Example:
 ```yaml
-Issue Key: SCRUM-3
-Worklog id: 10002
+Issue Key: SCRUM-1
+Worklog id: 100010
 Params/Body:
 {
     "notifyUsers": "true",
