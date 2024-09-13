@@ -9,7 +9,14 @@ ToolJet has the capability to connect to PostgreSQL databases for data retrieval
 
 To establish a connection with the PostgreSQL global datasource, you can take either of the following steps: click on the "Add new global datasource" button in the query panel, or access the [Global Datasources](/docs/data-sources/overview) page through the ToolJet dashboard.
 
-ToolJet requires the following information to connect to your PostgreSQL database:
+ToolJet offers two connection types to connect to your PostgreSQL database:
+
+- **Manual connection**
+- **Connection string**
+
+### Manual connection
+
+To connect to PostgreSQL using Manual connection parameters, select **Manual connection** as the connection type and provide the following details:
 
 - **Host**
 - **Port**
@@ -19,6 +26,12 @@ ToolJet requires the following information to connect to your PostgreSQL databas
 - **Password**
 - **Connection Options**
 - **SSL Certificate**
+
+### Connection string
+
+To connect to PostgreSQL using a connection string, select **Connection String** as the connection type and provide the following details:
+
+- **Connection String**
 
 We recommend creating a new PostgreSQL database user to have control over ToolJet's access levels.
 
