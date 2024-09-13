@@ -13,7 +13,7 @@ To establish a connection with the GraphQL global datasource, you can either cli
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/graphql/graphgds-v2.png" alt="ToolJet - Data source - REST API" />
+<img className="screenshot-full" src="/img/datasource-reference/graphql/graphgds-v2.png" alt="ToolJet - Data source - GraphQL" style={{marginBottom:'15px'}}/>
 
 </div>
 
@@ -33,7 +33,10 @@ ToolJet requires the following to connect to a GraphQL datasource:
 
 ## Querying GraphQL
 
-Click on **+ Add** button of the query manager at the bottom panel of the editor and select the GraphQL global datasource added in previous step.
+1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
+2. Select the GraphQL global datasource added in previous step.
+3. Add the Query.
+4. Click on the **Preview** button to preview the output or Click on the **Run** button to create and trigger the query.
 
 ### Required Parameters:
 - **Query**
@@ -44,12 +47,19 @@ Click on **+ Add** button of the query manager at the bottom panel of the editor
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/graphql/headers.png" alt="ToolJet - Data source - GraphQl"/>
+<img className="screenshot-full" src="/img/datasource-reference/graphql/headers.png" alt="ToolJet - Data source - GraphQl" style={{marginBottom:'15px'}}/>
 
 </div>
 
-
-Click on the **Preview** button to preview the output or Click on the **Run** button to create and trigger the query.
+#### Example
+```yaml
+{
+  todos {
+    id
+    description
+  }
+}
+```
 
 :::tip
 Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/tutorial/transformations)
