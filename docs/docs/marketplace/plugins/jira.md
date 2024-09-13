@@ -80,7 +80,7 @@ This operation retrieves details of a specific Jira issue.
 </div>
 
 #### Parameters:
-- **Issue key**: The key of the issue to retrieve.
+- **Issue key**: The key or id of the issue to retrieve.
 - **Params/Body**: Additional parameters such as fields to retrieve, expand options, etc.
 
 #### Example:
@@ -137,7 +137,7 @@ This operation deletes a specific Jira issue.
 </div>
 
 #### Parameters:
-- **Issue key**: The key of the issue to delete.
+- **Issue key**: The key or id of the issue to delete.
 - **Delete subtasks**: Whether to delete the issue's subtasks.
 
 #### Example:
@@ -155,7 +155,7 @@ This operation assigns a Jira issue to a specific user.
 </div>
 
 #### Parameters:
-- **Issue key**: The key of the issue to assign.
+- **Issue key**: The key or id of the issue to assign.
 - **Account id**: The account ID of the user to assign the issue to.
 
 #### Example:
@@ -173,7 +173,7 @@ This operation modifies an existing Jira issue.
 </div>
 
 #### Parameters:
-- **Issue key**: The key of the issue to edit.
+- **Issue key**: The key or id of the issue to edit.
 - **Params/Body**: The fields to update and their new values.
 
 #### Example:
@@ -239,8 +239,8 @@ This operation finds users that can be assigned to issues.
 #### Parameters:
 - **Query**: The search query in Jira Query Language (JQL) format.
 - **Account id**: The account ID of the user to find assignable users for.
-- **Project key**: The key of the project to find assignable users for.
-- **Issue key**: The key of the issue to find assignable users for.
+- **Project key**: The key or id of the project to find assignable users for.
+- **Issue key**: The key or id of the issue to find assignable users for.
 - **Start at**: The index of the first user to return.
 - **Max results**: The maximum number of users to return.
 - **Action descriptor id**: The action descriptor ID to find assignable users for.
@@ -274,7 +274,7 @@ This operation retrieves the worklogs for a specific issue.
 </div>
 
 #### Parameters:
-- **Issue key**: The key of the issue to get worklogs for.
+- **Issue key**: The key or id of the issue to get worklogs for.
 - **Start at**: The index of the first worklog to return.
 - **Max results**: The maximum number of worklogs to return.
 - **Started after**: The date and time to start retrieving worklogs from.
@@ -298,7 +298,7 @@ This operation adds a new worklog entry to an issue.
 </div>
 
 #### Parameters:
-- **Issue key**: The key of the issue to add the worklog to.
+- **Issue key**: The key or id of the issue to add the worklog to.
 - **Params/Body**: The details of the worklog entry.
 
 #### Example:
@@ -324,7 +324,7 @@ This operation deletes a specific worklog entry from an issue.
 </div>
 
 #### Parameters:
-- **Issue key**: The key of the issue containing the worklog
+- **Issue key**: The key or id of the issue containing the worklog
 - **Worklog id**: The ID of the worklog to delete
 - **Params/Body**: Additional parameters such as notify users, adjust estimate, etc.
 
