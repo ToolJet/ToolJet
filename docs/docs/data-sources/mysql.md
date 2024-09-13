@@ -34,6 +34,10 @@ If you are using **Hostname** as the connection type, you will need to provide t
 - **Host/IP**
 - **Port**
 - **SSL**
+- **SSL Certificate**:
+  - **CA Certificate**
+  - **Self-signed Certificate**
+  - **None**
 
 If you are using **Socket** as the connection type, you will need to provide the following information:
 
@@ -43,7 +47,7 @@ If you are using **Socket** as the connection type, you will need to provide the
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mysql/mysqlconnect.png" alt="mysql"/>
+<img className="screenshot-full" src="/img/datasource-reference/mysql/mysqlconnect-v2.png" alt="mysql"/>
 
 </div>
 
