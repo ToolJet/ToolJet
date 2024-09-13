@@ -8916,6 +8916,7 @@ tbody {
   width: 848px;
   margin: 0 auto;
   padding: 16px;
+  @include scrollable();
 
   tbody {
 
