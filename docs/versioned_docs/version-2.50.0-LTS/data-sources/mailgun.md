@@ -5,8 +5,6 @@ title: Mailgun
 
 ToolJet can connect to your Mailgun account to send emails.
 
-<img class="screenshot-full" src="/img/datasource-reference/mailgun/mailgun-datasource-v2.png" alt="ToolJet - Data source - Mailgun" height="420" />
-
 :::info
 The Mailgun API Datasource supports for interaction with the mail endpoint of the [Mailgun API](https://documentation.mailgun.com/en/latest/api-intro.html#authentication-1).
 :::
@@ -15,15 +13,16 @@ The Mailgun API Datasource supports for interaction with the mail endpoint of th
 
 ## Connection
 
-To establish a connection with the **MailGun** data source, click on the **+ Add new data source** button located on the query panel or navigate to the [Data Sources](https://docs.tooljet.com/docs/data-sources/overview) page from the ToolJet dashboard.
+To establish a connection with the **Mailgun** data source, click on the **+ Add new data source** button located on the query panel or navigate to the [Data Sources](https://docs.tooljet.com/docs/data-sources/overview) page from the ToolJet dashboard.
 
-Enter your **Mailgun API key** in the "API key" field.
+ToolJet requires the following to connect to your Mailgun:
+- **API key**
+
+<img class="screenshot-full" src="/img/datasource-reference/mailgun/mailgun-datasource-v2.png" alt="ToolJet - Data source - Mailgun" />
 
 :::tip
 Mailgun API key is required to create an Mailgun datasource on ToolJet. You can generate API key by visiting [Mailgun account page](https://app.mailgun.com/app/account/security/api_keys).
 :::
-
-Click on the **Save** button to save the data source.
 
 </div>
 
@@ -35,14 +34,16 @@ Click on the **Save** button to save the data source.
 
 #### Required parameters:
 
-- Send email to
-- Send email from
-- Subject
-- Body as text
+- **Send email to**
+- **Send email from**
+- **Subject**
+- **Body as text**
 
 #### Optional parameters:
 
-- Body as HTML
+- **Body as HTML**
+
+<img class="screenshot-full" src="/img/datasource-reference/mailgun/mailgunQuery.png" alt="ToolJet - Data source - Mailgun Query" />
 
 :::info
 **Send mail to** - accepts a single email id. 
