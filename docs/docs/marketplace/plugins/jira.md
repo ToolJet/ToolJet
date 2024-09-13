@@ -26,7 +26,7 @@ To connect to your Jira instance, the following details are required:
 </div>
 
 :::tip
-You can generate a personal access token from your Jira account **Manage account** section.
+You can generate a personal access token from your Jira account **Manage account > Security > API Tokens** section.
 :::
 
 ## Querying Jira
