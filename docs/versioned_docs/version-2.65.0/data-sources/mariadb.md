@@ -11,12 +11,6 @@ ToolJet can connect to both self-hosted and cloud-based MariaDB servers to read 
 
 To establish a connection with the MariaDB global datasource, you can either click on the **+ Add new global datasource** button located on the query panel or navigate to the **[Global Datasources](/docs/data-sources/overview)** page through the ToolJet dashboard.
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/gdsmaria-v2.png" alt="MariaDB" />
-
-</div>
-
 **ToolJet requires the following connection details to connect to MariaDB:**
 
 - **Host:** The hostname or IP address of the MariaDB server.
@@ -36,10 +30,6 @@ To establish a connection with the MariaDB global datasource, you can either cli
 <img className="screenshot-full" src="/img/datasource-reference/mariadb/connections.png" alt="MariaDB" />
 
 </div>
-
-:::info
-Click on **Test connection** button to verify if the credentials are correct and that the database is accessible to ToolJet server. Click on **Save** button to save the data source.
-:::
 
 </div>
 
@@ -73,12 +63,10 @@ Query results can be transformed using Transformation. For more information on t
 
 Suppose there exists a MariaDB database named *customers*. We can create an example table called *users* with the following columns:
 
-- `id` (integer, auto-increment)
-- `name` (varchar)
-- `age` (integer)
-- `email` (varchar)
-
-The above command will create the *users* table within the *customers* database. Now, let's explore the CRUD commands for this table in MariaDB:
+- **id** (integer, auto-increment)
+- **name** (varchar)
+- **age** (integer)
+- **email** (varchar)
 
 ```sql
 CREATE TABLE user(
@@ -89,10 +77,12 @@ CREATE TABLE user(
 );
 ```
 
-Here are the CRUD commands for this table in MariaDB:
+The above command will create the *users* table within the *customers* database. Now, let's explore the CRUD commands for this table in MariaDB:
 
 ### Create (Insert)
-- To insert a single user:
+
+#### To Insert a Single User:
+
 ```sql
 INSERT INTO user (name, age, email)
 VALUES ('John Doe', 25, 'john@example.com');
@@ -100,11 +90,12 @@ VALUES ('John Doe', 25, 'john@example.com');
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/insertuser.png" alt="MariaDB query" />
+<img className="screenshot-full" src="/img/datasource-reference/mariadb/insertUser.png" alt="MariaDB query" style={{marginBottom:'15px'}} />
 
 </div>
 
-- To insert multiple users:
+#### To Insert Multiple Users:
+
 ```sql
 INSERT INTO user (name, age, email)
 VALUES
@@ -115,34 +106,38 @@ VALUES
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/insertusers.png" alt="MariaDB query" />
+<img className="screenshot-full" src="/img/datasource-reference/mariadb/insertUsers.png" alt="MariaDB query" style={{marginBottom:'15px'}} />
 
 </div>
 
 ### Read (Select)
-- To retrieve all users:
+
+#### To Retrieve All Users:
+
 ```sql
 SELECT * FROM user;
 ```
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/readall.png" alt="MariaDB query" />
+<img className="screenshot-full" src="/img/datasource-reference/mariadb/readall.png" alt="MariaDB query" style={{marginBottom:'15px'}} />
 
 </div>
 
-- To retrieve specific columns from users:
+#### To Retrieve Specific Columns From Users:
+
 ```sql
 SELECT name, age, email FROM user;
 ```
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/readcolumn.png" alt="MariaDB query" />
+<img className="screenshot-full" src="/img/datasource-reference/mariadb/readcolumn.png" alt="MariaDB query" style={{marginBottom:'15px'}}/>
 
 </div>
 
-- To add conditions and filters to the selection:
+#### To Add Conditions and Filters to the Selection:
+
 ```sql
 SELECT name, age, email
 FROM user
@@ -151,12 +146,14 @@ WHERE age > 25;
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/readfilter.png" alt="MariaDB query" />
+<img className="screenshot-full" src="/img/datasource-reference/mariadb/readfilter.png" alt="MariaDB query" style={{marginBottom:'15px'}}/>
 
 </div>
 
 ### Update
-- To update the age of a user:
+
+#### To Update the Age of a User:
+
 ```sql
 UPDATE user
 SET age = 26
@@ -165,19 +162,21 @@ WHERE id = 1;
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/updateuser.png" alt="MariaDB query" />
+<img className="screenshot-full" src="/img/datasource-reference/mariadb/updateuser.png" alt="MariaDB query" style={{marginBottom:'15px'}}/>
 
 </div>
 
 ### Delete
-- To delete a user:
+
+#### To Delete a User:
+
 ```sql
 DELETE FROM user WHERE id = 1;
 ```
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/updateuser.png" alt="MariaDB query" />
+<img className="screenshot-full" src="/img/datasource-reference/mariadb/deleteuser.png" alt="MariaDB query" style={{marginBottom:'15px'}} />
 
 </div>
 
