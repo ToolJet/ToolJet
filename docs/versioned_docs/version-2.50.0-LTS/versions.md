@@ -13,13 +13,14 @@ title: ToolJet Documentation Versions
 
 | Version     | Documentation                             | 
 |-------------|-------------------------------------------|
-| 2.65.0-Beta 🚧   | [Documentation](https://docs.tooljet.com/docs/2.65.0) |
+| 2.68.0-Beta 🚧   | [Documentation](https://docs.tooljet.com/docs/2.68.0) |
 
 **Past Versions (Not Maintained Anymore)**
 
 | Version     | Documentation                             |
 |-------------|-------------------------------------------|
-| 2.62.0      | [Documentation](https://archived-docs.tooljet.com/docs/) |
+| 2.65.0      | [Documentation](https://archived-docs.tooljet.com/docs/) |
+| 2.62.0      | [Documentation](https://archived-docs.tooljet.com/docs/2.62.0) |
 | 2.61.0      | [Documentation](https://archived-docs.tooljet.com/docs/2.61.0) |
 | 2.43.0      | [Documentation](https://archived-docs.tooljet.com/docs/2.43.0) |
 | 2.39.0      | [Documentation](https://archived-docs.tooljet.com/docs/2.39.0) |
