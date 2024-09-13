@@ -62,7 +62,10 @@ Once the MySQL data source is added, you can create queries to read and write da
 
 ### SQL mode
 
-SQL mode can be used to query MySQL database using SQL queries. Select SQL mode from the dropdown and then enter the SQL query in the editor.
+SQL mode can be used to query MySQL database using SQL queries. 
+
+1. Select SQL mode from the dropdown and then enter the SQL query in the editor.
+2. Click the **Run** button to execute the query.
 
 **Example:**
 
@@ -75,6 +78,25 @@ SELECT * FROM users
 <img className="screenshot-full" src="/img/datasource-reference/mysql/sqlmode.png" alt="mysql"/>
 
 </div>
+
+#### Parameterized queries:
+
+ToolJet supports parameterized SQL queries, which help prevent SQL injection and allows for more dynamic query construction. To use parameterized queries:
+
+1. Use `:parameter_name` as placeholders in your SQL query where you want to insert parameters.
+2. In the **Parameters** section below the query editor, add key-value pairs for each parameter.
+3. The keys should match the parameter names used in the query (without the colon).
+4. The values can be static values or dynamic values using the `{{ }}` notation.
+
+<div style={{textAlign: 'center'}}>
+<img className="screenshot-full" src="/img/datasource-reference/mysql/parameterized-query.png" alt="mysql"/>
+</div>
+
+**Example:**
+```yaml
+SELECT * FROM users WHERE username = :username
+```
+
 
 ### GUI mode
 
