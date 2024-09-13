@@ -504,6 +504,10 @@ Perform bulk operations. [Reference](https://docs.mongodb.com/drivers/node/v4.0/
 
 ## Dynamic Queries
 
+Dynamic queries in MongoDB can be used to create flexible and parameterized queries.
+
+#### Example
+
 ```javascript
 { amount: { $lt: '{{ components.textinput1.value }}' }}
 
