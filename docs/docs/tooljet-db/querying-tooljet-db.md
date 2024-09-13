@@ -3,16 +3,25 @@ id: querying-tooljet-db
 title: Querying Data
 ---
 
-Querying the ToolJet database is as easy as querying any other data source on ToolJet.
+Querying the ToolJet database is as easy as querying any other data source on ToolJet. You can use either the GUI or the SQL editor to interact with your data.
 
-- Go to the **Query panel**, and click on the **+Add** button to add a new query, and select **ToolJet Database**.
+## GUI Mode
+
+1. Go to the **Query panel**, and click on the **+Add** button to add a new query, and select **ToolJet Database**.
 
 <div style={{textAlign: 'center', paddingBottom:'24px'}}>
 <img className="screenshot-full" src="/img/v2-beta/database/newui/qtjdb.png" alt="ToolJet Database editor" />
 </div>
 
-- Select the table you want to query and the operation from the dropdown, then enter the required parameters for the selected operation. Click on the **Run** button to execute the query.<br/>
+2. Select the GUI mode from the toggle.
+
+3. Select the table you want to query and the operation from the dropdown, then enter the required parameters for the selected operation. 
+
+4. Click on the **Run** button to execute the query.
+
+:::info
 The selected operation should adhere to the column constraints of the selected table.
+:::
 
 <div style={{textAlign: 'center'}}>
 <img className="screenshot-full" src="/img/v2-beta/database/newui/qtjdb2.png" alt="ToolJet Database editor" />
@@ -21,9 +30,8 @@ The selected operation should adhere to the column constraints of the selected t
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-## Available Operations
+**Available Operations**:
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### List Rows
 This operation returns all the records from the table.
@@ -49,7 +57,6 @@ This operation returns all the records from the table.
 <img className="screenshot-full" src="/img/v2-beta/database/newui/group-by.png" alt="ToolJet Database editor" />
 </div>
 
-</div>
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
@@ -82,6 +89,26 @@ This operation deletes a record in the table. You can delete a single record or 
 - **Limit**: Limit the number of records to be deleted by entering a number.
 
 </div>
+
+## SQL Editor
+
+1. In the Query panel, click on the **+Add** button to add a new query, and select **ToolJet Database**.
+2. Select the **SQL** mode tab in the query editor.
+3. Write your SQL query in the editor.
+4. Click on the **Run** button to execute the query.
+
+<div style={{paddingBottom:'24px', textAlign: 'center'}}>
+<img className="screenshot-full" src="/img/v2-beta/database/newui/sql-editor.png" alt="ToolJet Database SQL Editor" />
+</div>
+
+:::tip
+The SQL editor supports standard SQL syntax, allowing you to perform complex operations such as joins, subqueries, and aggregations directly on your ToolJet database.
+:::
+
+Example:
+```sql
+SELECT * FROM users WHERE age > 30
+```
 
 ## Modifying Tables with Foreign Key Constraints
 

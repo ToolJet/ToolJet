@@ -77,6 +77,7 @@ ToolJet database allows you to:
 
 - **Maintain tables of data** in a secure database that's only accessible within your ToolJet organization.
 - **Edit, search, filter, sort, and filter** data using a spreadsheet-like interface.
+- **Use the SQL editor** to write and execute complex SQL queries directly on your ToolJet database, providing more advanced data manipulation and retrieval capabilities.
 - **Quickly build applications and write queries** to interact with the ToolJet Database, just like any other datasource but without any setup.
 - **Export schema** from the ToolJet Database to a JSON file.
 - Uniquely identify each record in a table using **Primary Keys**, ensuring data integrity and enabling efficient querying and indexing.
