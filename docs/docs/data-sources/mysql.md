@@ -94,7 +94,10 @@ ToolJet supports parameterized SQL queries, which help prevent SQL injection and
 
 **Example:**
 ```yaml
-SELECT * FROM users WHERE username = :username
+Query: SELECT * FROM users WHERE username = :username
+SQL Parameters:
+  Key: username
+  Value: oliver // or {{ components.username.value }}
 ```
 
 
