@@ -46,7 +46,7 @@ Query results can be transformed using Transformation. For more information on t
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/querycreate.png" alt="MariaDB query" />
+<img className="screenshot-full" src="/img/datasource-reference/mariadb/querycreate-v2.png" alt="MariaDB query" />
 
 </div>
 
@@ -115,7 +115,7 @@ SELECT * FROM user;
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/readall.png" alt="MariaDB query" style={{marginBottom:'15px'}} />
+<img className="screenshot-full" src="/img/datasource-reference/mariadb/readall-v2.png" alt="MariaDB query" style={{marginBottom:'15px'}} />
 
 </div>
 
@@ -127,7 +127,7 @@ SELECT name, age, email FROM user;
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/readcolumn.png" alt="MariaDB query" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full" src="/img/datasource-reference/mariadb/readcolumn-v2.png" alt="MariaDB query" style={{marginBottom:'15px'}}/>
 
 </div>
 
@@ -141,7 +141,7 @@ WHERE age > 25;
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/readfilter.png" alt="MariaDB query" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full" src="/img/datasource-reference/mariadb/readfilter-v2.png" alt="MariaDB query" style={{marginBottom:'15px'}}/>
 
 </div>
 
@@ -157,7 +157,7 @@ WHERE id = 1;
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/updateuser.png" alt="MariaDB query" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full" src="/img/datasource-reference/mariadb/updateuser-v2.png" alt="MariaDB query" style={{marginBottom:'15px'}}/>
 
 </div>
 
@@ -171,7 +171,7 @@ DELETE FROM user WHERE id = 1;
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mariadb/deleteuser.png" alt="MariaDB query" style={{marginBottom:'15px'}} />
+<img className="screenshot-full" src="/img/datasource-reference/mariadb/deleteuser-v2.png" alt="MariaDB query" style={{marginBottom:'15px'}} />
 
 </div>
 
