@@ -1,4 +1,4 @@
-import { React, useState} from 'react'
+import { React, useState, useMemo} from 'react'
 import {
     Grid3x3, Database, Workflow, ArrowRight, Cog, Target, Scale,
     Layers, FileSpreadsheet, Folder, Wand2, LayoutGrid, Users, UserCheck,
@@ -7,7 +7,33 @@ import {
     UserPlus, ScrollText, Gem, Mail, ChevronLeft, ChevronDown, ChevronRight
 } from 'lucide-react'
 import '../css/global.css'
-import Layout from '@theme/Layout'; // Import Layout from Docusaurus
+import docsStructure from '../../versioned_sidebars/version-2.50.0-LTS-sidebars.json'
+
+const generateMenuItems = (items) => {
+    return items.map(item => {
+      if (item.type === 'category') {
+        return {
+          title: item.label,
+          subItems: item.items ? generateMenuItems(item.items) : []
+        };
+      } else if (item.type === 'doc' || typeof item === 'string') {
+        return {
+          title: typeof item === 'string' ? item.split('/').pop() : item.id.split('/').pop()
+        };
+      }
+      // Handle other types if necessary
+      return null;
+    }).filter(Boolean); // Remove any null items
+  };
+
+const Header = () => (
+    <header className="fixed top-0 left-0 right-0 z-10 flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200 h-12">
+        <div className="flex items-center">
+            <img src="/tooljet-logo.svg" alt="ToolJet Logo" className="h-8 w-auto" />
+            <span className="ml-2 text-xl font-semibold text-gray-800">DOCS</span>
+        </div>
+    </header>
+)
 
 // UI Components
 const Card = ({ className = '', children }) => (
@@ -52,117 +78,72 @@ const Button = ({ variant = "default", className = '', children }) => {
     );
 }
 
-const Sidebar = ({ isOpen, toggleSidebar }) => {
-    const [expandedItems, setExpandedItems] = useState(['Getting Started'])
-  
-    const toggleExpand = (item) => {
-      setExpandedItems(prev => 
-        prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]
-      )
-    }
-  
-    const MenuItem = ({ item, level = 0 }) => {
-      const hasSubItems = item.subItems && item.subItems.length > 0
-      const isExpanded = expandedItems.includes(item.title)
-  
-      return (
-        <div className={`pl-${level * 4}`}>
-          <div 
-            className={`flex items-center justify-between py-2 px-4 cursor-pointer ${item.title === 'Platform Overview' ? 'bg-blue-50' : 'hover:bg-gray-100'}`}
-            onClick={() => hasSubItems ? toggleExpand(item.title) : null}
-          >
-            <span className={`${item.title === 'Platform Overview' ? 'text-blue-600' : 'text-gray-700'}`}>{item.title}</span>
-            {hasSubItems && (isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />)}
-          </div>
-          {isExpanded && hasSubItems && (
-            <div className="ml-4">
-              {item.subItems.map((subItem, index) => (
-                <MenuItem key={index} item={subItem} level={level + 1} />
-              ))}
-            </div>
-          )}
+const Sidebar = ({ isOpen, toggleSidebar, menuItems }) => (
+    <aside className={`bg-white h-[calc(100vh-64px)] fixed left-0 top-16 flex flex-col overflow-hidden border-r border-gray-200 transition-all duration-300 ${isOpen ? 'w-64' : 'w-6'}`}>
+        <div className="flex-1 overflow-y-auto">
+            {isOpen && (
+                <nav className="p-4">
+                    <ul className="space-y-1">
+                        {menuItems.map((item, index) => (
+                            <li key={index}>
+                                {item.subItems ? (
+                                    <details>
+                                        <summary className="cursor-pointer px-4 py-2 text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-md transition-colors duration-150 ease-in-out">
+                                            {item.title}
+                                        </summary>
+                                        <ul className="pl-4">
+                                            {item.subItems.map((subItem, subIndex) => (
+                                                <li key={subIndex}>
+                                                    <a 
+                                                        href="#" 
+                                                        className="block px-4 py-2 text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-md transition-colors duration-150 ease-in-out"
+                                                    >
+                                                        {subItem.title}
+                                                    </a>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </details>
+                                ) : (
+                                    <a 
+                                        href="#" 
+                                        className="block px-4 py-2 text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-md transition-colors duration-150 ease-in-out"
+                                    >
+                                        {item.title}
+                                    </a>
+                                )}
+                            </li>
+                        ))}
+                    </ul>
+                </nav>
+            )}
         </div>
-      )
-    }
-  
-    return (
-      <div className={`w-64 bg-white h-screen overflow-y-auto transition-all duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="p-4">
-          <h2 className="text-xl font-bold mb-4 flex items-center justify-between">
-            Documentation
-            <button onClick={toggleSidebar} className="text-gray-500 hover:text-gray-700">
-              <ChevronLeft size={24} />
-            </button>
-          </h2>
-          {[
-    {
-      title: 'Getting Started',
-      subItems: [
-        { title: 'Platform Overview' },
-        { title: 'Quickstart Guide' },
-        { title: 'ToolJet Concepts' },
-        { title: 'Setup' },
-        { title: 'App Builder' },
-        { title: 'How To' },
-        { title: 'Data Sources' },
-        { title: 'ToolJet Database' },
-        { title: 'Org Management' },
-        { title: 'Release Management' },
-        { title: 'Workflows' },
-        { title: 'Marketplace' },
-        { title: 'Copilot' },
-        { title: 'Security' },
-        { title: 'Tracking' },
-        { title: 'Project Overview' },
-        { title: 'Contributing Guide' },
-      ]
-    }
-  ].map((item, index) => (
-            <MenuItem key={index} item={item} />
-          ))}
-        </div>
-      </div>
-    )
-  }
+        <button 
+            onClick={toggleSidebar} 
+            className="p-2 w-full text-gray-500 hover:bg-gray-100 transition-colors duration-150 ease-in-out flex justify-center items-center"
+        >
+            {isOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+        </button>
+    </aside>
+);
 
 
 const Homepage = () => {
 
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+    const [isSidebarOpen, setSidebarOpen] = useState(true);
 
-  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen)
+    const toggleSidebar = () => setSidebarOpen(!isSidebarOpen);
 
-  const menuItems = [
-    {
-      title: 'Getting Started',
-      subItems: [
-        { title: 'Platform Overview' },
-        { title: 'Quickstart Guide' },
-        { title: 'ToolJet Concepts' },
-        { title: 'Setup' },
-        { title: 'App Builder' },
-        { title: 'How To' },
-        { title: 'Data Sources' },
-        { title: 'ToolJet Database' },
-        { title: 'Org Management' },
-        { title: 'Release Management' },
-        { title: 'Workflows' },
-        { title: 'Marketplace' },
-        { title: 'Copilot' },
-        { title: 'Security' },
-        { title: 'Tracking' },
-        { title: 'Project Overview' },
-        { title: 'Contributing Guide' },
-      ]
-    }
-  ]
+    const menuItems = useMemo(() => generateMenuItems(docsStructure.docs), []);
+
 
     return (
-        <main>
-            <div className="flex w-full">
-                <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-                <div className={`flex-1 transition-all duration-300 ease-in-out ${isSidebarOpen ? 'ml-0' : 'ml-0'}`}>
-                    <div className="relative w-full max-w-5xl m-0 p-6 space-y-12 bg-gradient-to-br from-blue-50 to-pink-50 overflow-hidde">
+        <main className="flex flex-col" >
+            <Header />
+            <div className="flex flex-1 overflow-hidden">
+            <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} menuItems={menuItems} />
+                <div className={`flex-1 transition-all duration-300 ease-in-out ${isSidebarOpen ? 'ml-64' : 'ml-6'}`}>
+                    <div className="relative w-full p-6 space-y-12 bg-gradient-to-br from-blue-50 to-pink-50 overflow-hidden">
                         {/* Grid pattern */}
                         <div
                             className="absolute top-0 right-0 w-96 h-96 pointer-events-none"
@@ -257,7 +238,7 @@ const Homepage = () => {
                         </div>
                     </div>
                 
-                <div className="w-full max-w-5xl mx-auto p-6 space-y-12 bg-white">
+                <div className="w-full p-6 space-y-12 bg-white">
                     {/* Setup ToolJet Section */}
                     <div className="space-y-6">
                         <h2 className="text-2xl font-bold">Setup ToolJet</h2>
