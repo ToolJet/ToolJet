@@ -143,7 +143,7 @@ const Homepage = () => {
             <div className="flex flex-1 overflow-hidden">
             <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} menuItems={menuItems} />
                 <div className={`flex-1 transition-all duration-300 ease-in-out ${isSidebarOpen ? 'ml-64' : 'ml-6'}`}>
-                    <div className="relative w-full p-6 space-y-12 bg-gradient-to-br from-blue-50 to-pink-50 overflow-hidden">
+                    <div className="relative w-full p-10 space-y-12 bg-gradient-to-br from-blue-50 to-pink-50 overflow-hidden">
                         {/* Grid pattern */}
                         <div
                             className="absolute top-0 right-0 w-96 h-96 pointer-events-none"
@@ -238,7 +238,7 @@ const Homepage = () => {
                         </div>
                     </div>
                 
-                <div className="w-full p-6 space-y-12 bg-white">
+                <div className="w-full p-10 space-y-12 bg-white">
                     {/* Setup ToolJet Section */}
                     <div className="space-y-6">
                         <h2 className="text-2xl font-bold">Setup ToolJet</h2>
