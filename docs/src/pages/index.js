@@ -37,7 +37,7 @@ const Header = () => (
 
 // UI Components
 const Card = ({ className = '', children }) => (
-    <div className={`rounded-lg border bg-card text-card-foreground shadow-sm ${className}`}>
+    <div className={`rounded-lg border bg-card text-card-foreground bg-white shadow-sm ${className}`}>
         {children}
     </div>
 );
@@ -174,8 +174,7 @@ const Homepage = () => {
                                     { icon: Workflow, title: "Workflows", color: "text-purple-500", content: "Automate processes and define workflows with precision, empowering your apps to handle tasks intelligently." }
                                 ].map((item, index) => (
                                     <Card key={index} className="transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative">
-                                        <div className="absolute inset-0 rounded-lg bg-gradient-to-b from-blue-200 to-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                        <div className="relative bg-white rounded-lg p-0.5">
+                                        <div className="relative bg-white rounded-lg">
                                             <div className="p-8 bg-white rounded-lg">
                                                 <CardHeader>
                                                     <div className="w-12 h-12 mb-5 rounded-lg bg-white shadow-md flex items-center justify-center transition-all duration-300 ease-in-out group-hover:shadow-lg">
