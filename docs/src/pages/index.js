@@ -43,19 +43,19 @@ const Card = ({ className = '', children }) => (
 );
 
 const CardHeader = ({ className = '', children }) => (
-    <div className={`flex flex-col space-y-1.5 p-6 ${className}`}>
+    <div className={`flex flex-col space-y-1.5 ${className}`}>
         {children}
     </div>
 );
 
 const CardContent = ({ className = '', children }) => (
-    <div className={`p-6 pt-0 ${className}`}>
+    <div className={` pt-2 ${className}`}>
         {children}
     </div>
 );
 
 const CardTitle = ({ className = '', children }) => (
-    <h3 className={`text-lg font-semibold leading-none tracking-tight ${className}`}>
+    <h3 className={`text-xl font-semibold leading-none tracking-tight ${className}`}>
         {children}
     </h3>
 );
@@ -143,7 +143,7 @@ const Homepage = () => {
             <div className="flex flex-1 overflow-hidden">
             <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} menuItems={menuItems} />
                 <div className={`flex-1 transition-all duration-300 ease-in-out ${isSidebarOpen ? 'ml-64' : 'ml-6'}`}>
-                    <div className="relative w-full p-10 space-y-12 bg-gradient-to-br from-blue-50 to-pink-50 overflow-hidden">
+                    <div className="relative w-full p-10 pt-20 pb-14 space-y-12 bg-gradient-to-br from-blue-50 to-pink-50 overflow-hidden">
                         {/* Grid pattern */}
                         <div
                             className="absolute top-0 right-0 w-96 h-96 pointer-events-none"
@@ -169,23 +169,23 @@ const Homepage = () => {
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 {[
-                                    { icon: Grid3x3, title: "Applications", color: "text-green-500" },
-                                    { icon: Database, title: "Database", color: "text-red-500" },
-                                    { icon: Workflow, title: "Workflows", color: "text-purple-500" }
+                                    { icon: Grid3x3, title: "App Builder", color: "text-green-500", content: "Design and create applications effortlessly with ToolJet's intuitive app builder, featuring a drag-and-drop interface and powerful pre-built components to streamline development." },
+                                    { icon: Database, title: "ToolJet Database", color: "text-red-500", content: "Powered by PostgreSQL, offering a user-friendly UI editor. This allows you to manage, edit, and interact with your data directly within the platform." },
+                                    { icon: Workflow, title: "Workflows", color: "text-purple-500", content: "Automate processes and define workflows with precision, empowering your apps to handle tasks intelligently." }
                                 ].map((item, index) => (
                                     <Card key={index} className="transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative">
                                         <div className="absolute inset-0 rounded-lg bg-gradient-to-b from-blue-200 to-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                                         <div className="relative bg-white rounded-lg p-0.5">
-                                            <div className="bg-white rounded-lg">
+                                            <div className="p-8 bg-white rounded-lg">
                                                 <CardHeader>
-                                                    <div className="w-12 h-12 rounded-lg bg-white shadow-md flex items-center justify-center transition-all duration-300 ease-in-out group-hover:shadow-lg">
+                                                    <div className="w-12 h-12 mb-5 rounded-lg bg-white shadow-md flex items-center justify-center transition-all duration-300 ease-in-out group-hover:shadow-lg">
                                                         <item.icon className={`w-6 h-6 ${item.color}`} />
                                                     </div>
                                                     <CardTitle>{item.title}</CardTitle>
                                                 </CardHeader>
                                                 <CardContent>
                                                     <p className="text-sm text-gray-500">
-                                                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus purus orci, dictum ut tellus ac, facilisis congue tellus.
+                                                        {item.content}
                                                     </p>
                                                 </CardContent>
                                             </div>
