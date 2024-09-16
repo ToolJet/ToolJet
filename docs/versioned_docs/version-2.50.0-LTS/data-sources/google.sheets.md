@@ -52,15 +52,15 @@ When connecting to a Google Sheets datasource, you can choose between two permis
 
 Using Google sheets data source you can perform several operations from your applications like:
 
-  1. **[Read data from a sheet](/docs/data-sources/google.sheets#read-data-from-a-sheet)**
-  2. **[Append data to a sheet](/docs/data-sources/google.sheets#append-data-to-a-sheet)**
-  3. **[Update single row of a sheet](/docs/data-sources/google.sheets#update-single-row-of-a-sheet)**
-  4. **[Delete row from a sheet](/docs/data-sources/google.sheets#delete-row-from-a-sheet)**
-  5. **[Get spreadsheet info](/docs/data-sources/google.sheets#get-spreadsheet-info)**
+  1. **[Read data from a spreadsheet](#read-data-from-a-spreadsheet)**
+  2. **[Append data to a spreadsheet](#append-data-to-a-spreadsheet)**
+  3. **[Update single row of a spreadsheet](#update-single-row-of-a-spreadsheet)**
+  4. **[Delete row from a spreadsheet](#delete-row-from-a-spreadsheet)**
+  5. **[Get spreadsheet info](#get-spreadsheet-info)**
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/google-sheets/operations.png" alt="Google Sheet Operations" style={{marginBottom:'15px'}} />
+<img className="screenshot-full" src="/img/datasource-reference/google-sheets/operations-v2.png" alt="Google Sheet Operations" style={{marginBottom:'15px'}} />
 
 </div>
 
@@ -68,7 +68,7 @@ Using Google sheets data source you can perform several operations from your app
 **Spreadsheet ID** can be obtained from the URL of the spreadsheet. For example, in the URL `https://docs.google.com/spreadsheets/d/1W2S4re7zNaPk9vqv6_CqOpPdm_mDEqmLmzjVe7Nb9WM/edit#gid=0`, the `1W2S4re7zNaPk9vqv6_CqOpPdm_mDEqmLmzjVe7Nb9WM` represents the spreadsheet ID.
 :::
 
-### Read Data From a Sheet
+### Read Data From a Spreadsheet
 
 This operation allows you to retrieve the table data from a spreadsheet in the form of a JSON object.
 
@@ -81,11 +81,11 @@ This operation allows you to retrieve the table data from a spreadsheet in the f
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/google-sheets/read-data-op.png" alt="Google Sheet Operations" style={{marginBottom:'15px'}} />
+<img className="screenshot-full" src="/img/datasource-reference/google-sheets/read-data-op-v2.png" alt="Google Sheet Operations" style={{marginBottom:'15px'}} />
 
 </div>
 
-### Append Data to a Sheet
+### Append Data to a Spreadsheet
 
 Add additional rows to a table by using the append operation.
 
@@ -98,7 +98,7 @@ Add additional rows to a table by using the append operation.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/google-sheets/append-data-op.png" alt="Google Sheet Operations" style={{marginBottom:'15px'}} />
+<img className="screenshot-full" src="/img/datasource-reference/google-sheets/append-data-op-v2.png" alt="Google Sheet Operations" style={{marginBottom:'15px'}} />
 
 </div>
 
@@ -129,7 +129,7 @@ Add additional rows to a table by using the append operation.
 ]
 ```
 
-### Update Single Row of a Sheet
+### Update Single Row of a Spreadsheet
 
 This operation allows you to update existing data in a sheet.
 
@@ -146,7 +146,7 @@ This operation allows you to update existing data in a sheet.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/google-sheets/upd.png" alt="Google Sheet Operations" />
+<img className="screenshot-full" src="/img/datasource-reference/google-sheets/upd-v2.png" alt="Google Sheet Operations" />
 
 </div>
 
@@ -162,7 +162,7 @@ This operation allows you to update existing data in a sheet.
 }
 ```
 
-### Delete Row From a Sheet
+### Delete Row From a Spreadsheet
 
 This operation allows you to delete a specific row from the sheet.
 
@@ -175,7 +175,7 @@ This operation allows you to delete a specific row from the sheet.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/google-sheets/del.png" alt="google sheets delete" style={{marginBottom:'15px'}} />
+<img className="screenshot-full" src="/img/datasource-reference/google-sheets/del-v2.png" alt="google sheets delete" style={{marginBottom:'15px'}} />
 
 </div>
 
@@ -185,7 +185,7 @@ This operation allows you to retrieve basic information about the spreadsheet, i
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/google-sheets/infoo.png" alt="google sheets get info" />
+<img className="screenshot-full" src="/img/datasource-reference/google-sheets/info-v2.png" alt="google sheets get info" />
 
 </div>
 
