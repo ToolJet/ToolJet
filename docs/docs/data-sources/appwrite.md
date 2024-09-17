@@ -59,7 +59,6 @@ Query results can be transformed using Transformations. Read our **Transformatio
 -  **[Get Document](#get-document)**
 -  **[Add Document to Collection](#add-document-to-collection)**
 -  **[Update Document](#update-document)** 
--  **[Bulk Update Using Document ID](#bulk-update-using-document-id)**
 -  **[Delete Document](#delete-document)**
 
 ### List Documents
@@ -128,22 +127,6 @@ Use this operation to update a document.
 <div style={{textAlign: 'center'}}>
 
 <img style={{ border:'0', marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/appwrite/upd-v3.png" alt="Appwrite update" />
-
-</div>
-
-### Bulk Update Using Document ID
-
-Use this operation for bulk updating a document in a collection.
-
-#### Required Parameters
-
-- **Collection ID**
-- **Key for document ID**
-- **Records**
-
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/appwrite/bulk-v3.png" alt="Appwrite bulk update" />
 
 </div>
 
