@@ -37,8 +37,19 @@ const Header = () => (
 
 // UI Components
 const Card = ({ className = '', children }) => (
-    <div className={`rounded-lg border bg-card text-card-foreground bg-white shadow-sm ${className}`}>
-        {children}
+    <div className={`relative rounded-lg bg-transparent group ${className}`}>
+        <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-50" 
+             style={{
+                 background: 'linear-gradient(to bottom, #3B82F6, transparent) border-box',
+                 border: '0px',
+                 backgroundClip: 'padding-box, border-box',
+                 backgroundOrigin: 'border-box',
+                 pointerEvents: 'none'
+             }}>
+        </div>
+        <div className="m-0.5 relative z-10 h-full rounded-lg border border-gray-300 bg-white">
+            {children}
+        </div>
     </div>
 );
 
@@ -174,20 +185,18 @@ const Homepage = () => {
                                     { icon: Workflow, title: "Workflows", color: "text-purple-500", content: "Automate processes and define workflows with precision, empowering your apps to handle tasks intelligently." }
                                 ].map((item, index) => (
                                     <Card key={index} className="transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative">
-                                        <div className="relative bg-white rounded-lg">
-                                            <div className="p-8 bg-white rounded-lg">
-                                                <CardHeader>
-                                                    <div className="w-12 h-12 mb-5 rounded-lg bg-white shadow-md flex items-center justify-center transition-all duration-300 ease-in-out group-hover:shadow-lg">
-                                                        <item.icon className={`w-6 h-6 ${item.color}`} />
-                                                    </div>
-                                                    <CardTitle>{item.title}</CardTitle>
-                                                </CardHeader>
-                                                <CardContent>
-                                                    <p className="text-sm text-gray-500">
-                                                        {item.content}
-                                                    </p>
-                                                </CardContent>
-                                            </div>
+                                        <div className="p-8">
+                                            <CardHeader>
+                                                <div className="w-12 h-12 mb-5 rounded-lg bg-white shadow-md flex items-center justify-center transition-all duration-300 ease-in-out group-hover:shadow-lg">
+                                                    <item.icon className={`w-6 h-6 ${item.color}`} />
+                                                </div>
+                                                <CardTitle>{item.title}</CardTitle>
+                                            </CardHeader>
+                                            <CardContent>
+                                                <p className="text-sm text-gray-500">
+                                                    {item.content}
+                                                </p>
+                                            </CardContent>
                                         </div>
                                     </Card>
                                 ))}
