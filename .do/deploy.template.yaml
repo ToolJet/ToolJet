@@ -2,7 +2,7 @@ spec:
   name: tooljet
   services:
   - name: tooljet
-    image:
+    image: tooljet/tooljet:EE-LTS-latest
       registry_type: DOCKER_HUB
       registry: tooljet
       repository: tooljet
