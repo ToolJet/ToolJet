@@ -47,7 +47,7 @@ ToolJet's Databricks integration relies on a configuration form that supports th
 
 ## Querying Databricks
 
-1. Click on + Add button of the query manager at the bottom panel of the editor.
+1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
 2. Select the **Databricks** datasource added in previous step.
 3. Select the **SQL Mode** from the dropdown. (ToolJet currently supports only SQL mode for Databricks interactions.)
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to create and trigger the query.

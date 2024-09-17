@@ -1,17 +1,17 @@
 ---
-id: elasticsearch  
+id: elasticsearch
 title: Elasticsearch
 ---
-
-# Elasticsearch
 
 ToolJet allows you to connect to your Elasticsearch cluster to perform data read/write operations and execute various queries.
 
 ## Connection
 
-To connect to an Elasticsearch data source in ToolJet, you can either click the **+Add new data source** button on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page in the ToolJet dashboard.
+To connect to an Elasticsearch data source in ToolJet, you can either click the **+ Add new data source** button on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page in the ToolJet dashboard.
 
-For self-hosted ToolJet, ensure that the Elasticsearch cluster's host/IP is accessible from your VPC. If using ToolJet Cloud, please make sure to **whitelist our IP**.
+:::info
+Please make sure the **Host/IP** of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please **whitelist** our IP.
+:::
 
 To connect to your Elasticsearch cluster, the following details are required:
 - **Host**
@@ -30,14 +30,20 @@ ToolJet also supports SSL certificate-based connections:
     <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/ssl-v2.png" alt="Elastic SSL Connect" />
 </div>
 
+<div style={{paddingTop:'24px'}}>
+
 ## Querying Elasticsearch
 
-1. Click the **+** button in the query manager at the bottom of the editor and select the Elasticsearch data source added earlier.
+1. Click the **+ Add** button in the query manager at the bottom of the editor and select the Elasticsearch data source added earlier.
 2. Choose the operation you want to perform on your Elasticsearch cluster.
 
 :::tip
 Query results can be transformed using transformations. Refer to our transformations documentation for more details: **[link](/docs/tutorial/transformations)**
 :::
+
+</div>
+
+<div style={{paddingTop:'24px'}}>
 
 ## Supported Operations
 
@@ -61,14 +67,16 @@ ToolJet supports the following Elasticsearch operations:
 
 This operation executes a search query and returns matching search hits. For more details, see the Elasticsearch search guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html)**.
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/elastic-search-v2.png" alt="Elastic search" />
-</div>
-
-#### Parameters:
+#### Required Parameter
 - **Index**: The name of the index to search in.
 - **Query**: The search query in JSON format.
-- **Scroll** (Optional): Scroll time.
+
+#### Optional Parameter
+- **Scroll**: Scroll time.
+
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/elastic-search-v2.png" alt="Elastic search" style={{marginBottom:'15px'}} />
+</div>
 
 #### Example:
 ```yaml
@@ -89,13 +97,13 @@ Scroll: 1m # Can be in the format of 1m, 1h, 1d.
 
 This operation adds a JSON document to the specified index or data stream. For more details, see the Elasticsearch index guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html)**.
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/index-v2.png" alt="Elastic index"/>
-</div>
-
-#### Parameters:
+#### Required Parameter
 - **Index**: The name of the index to add the document to
 - **Body**: The document body in JSON format
+
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/index-v2.png" alt="Elastic index" style={{marginBottom:'15px'}}/>
+</div>
 
 #### Example:
 ```yaml
@@ -113,13 +121,13 @@ Body:
 
 This operation retrieves the specified JSON document from the index. For more details, see the Elasticsearch get guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html)**.
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/get-v2.png"  alt="Elastic get"/>
-</div>
-
-#### Parameters:
+#### Required Parameter
 - **Index**: The name of the index to get the document from
 - **Id**: The ID of the document to retrieve
+
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/get-v2.png"  alt="Elastic get" style={{marginBottom:'15px'}}/>
+</div>
 
 #### Example:
 ```yaml
@@ -131,14 +139,14 @@ Id: FJXTSZEBsuzUn2y4wZ-W
 
 This operation updates a document using the specified script. For more details, see the Elasticsearch update guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html)**.
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/update-v2.png" alt="Elastic update" />
-</div>
-
-#### Parameters:
+#### Required Parameter
 - **Index**: The name of the index containing the document
 - **Id**: The ID of the document to update
 - **Body**: The update script or partial document in JSON format
+
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/update-v2.png" alt="Elastic update" style={{marginBottom:'15px'}}/>
+</div>
 
 #### Example:
 ```yaml
@@ -159,13 +167,13 @@ Body:
 
 This operation removes a JSON document from the specified index. For more details, see the Elasticsearch delete guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-delete.html)**.
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/delete.png" alt="Elastic delete" />
-</div>
-
-#### Parameters:
+#### Required Parameter
 - **Index**: The name of the index containing the document
 - **Id**: The ID of the document to delete
+
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/delete.png" alt="Elastic delete" style={{marginBottom:'15px'}}/>
+</div>
 
 #### Example:
 ```yaml
@@ -177,16 +185,15 @@ Id: FJXTSZEBsuzUn2y4wZ-W
 
 This operation performs multiple index/update/delete operations in a single API call. For more details, see the Elasticsearch bulk guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html)**.
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/bulk.png" alt="Elastic bulk" />
-</div>
-
-#### Parameters:
+#### Required Parameter
 - **Operations**: The bulk operations to perform in JSON format
+
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/bulk.png" alt="Elastic bulk" style={{marginBottom:'15px'}}/>
+</div>
 
 #### Example:
 ```yaml
-Operations:
 [
   { "index": { "_index": "books", "_id": "book1" } },
   {
@@ -209,40 +216,40 @@ Operations:
 
 This operation returns the number of matches for a search query. For more details, see the Elasticsearch count guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html)**.
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/count.png" alt="Elastic count" />
-</div>
+#### Required Parameter
+- **Index**: The name of the index to count documents in.
 
-#### Parameters:
-- **Index**: The name of the index to count documents in
-- **Query** (Optional): The query to filter documents in JSON format
+#### Optional Parameter
+- **Query**: The query to filter documents in JSON format
+
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/count.png" alt="Elastic count" style={{marginBottom:'15px'}}/>
+</div>
 
 #### Example:
 ```yaml
-Index: books
-Query:
-  {
-    "query": {
-      "range": {
-        "timestamp": {
-          "gte": 1901
-        }
+{
+  "query": {
+    "range": {
+      "timestamp": {
+        "gte": 1901
       }
     }
   }
+}
 ```
 
 ### Check Document Existence
 
 This operation checks if a document exists in an index. For more details, see the Elasticsearch exists guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html#docs-get-api-response-codes)**.
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/exists.png" alt="Elastic exists" />
-</div>
-
-#### Parameters:
+#### Required Parameter:
 - **Index**: The name of the index to check for document existence
 - **Id**: The ID of the document to check
+
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/exists.png" alt="Elastic exists" style={{marginBottom:'15px'}}/>
+</div>
 
 #### Example:
 ```yaml
@@ -254,35 +261,34 @@ Id: FJXTSZEBsuzUn2y4wZ-W
 
 This operation retrieves multiple documents in a single request. For more details, see the Elasticsearch multi-get guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-multi-get.html)**.
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/mget.png" alt="Elastic multi get" />
-</div>
-
-#### Parameters:
+#### Required Parameter
 - **Operations**: The multi-get operations to perform in JSON format
+
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/mget.png" alt="Elastic multi get" style={{marginBottom:'15px'}}/>
+</div>
 
 #### Example:
 ```yaml
-Operations:
-  {
-    "docs": [
-      { "_index": "books", "_id": "book124" },
-      { "_index": "books", "_id": "book125" }
-    ]
-  }
+{
+  "docs": [
+    { "_index": "books", "_id": "book124" },
+    { "_index": "books", "_id": "book125" }
+  ]
+}
 ```
 
 ### Scroll Search
 
 This operation retrieves large numbers of results from a single search request. For more details, see the Elasticsearch scroll guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/paginate-search-results.html#scroll-search-results)**.
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/scroll-search.png" alt="Elastic scroll" />
-</div>
-
-#### Parameters:
+#### Required Parameter
 - **Scroll ID**: The scroll ID for the search
 - **Scroll**: The scroll time
+
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/scroll-search.png" alt="Elastic scroll" style={{marginBottom:'15px'}}/>
+</div>
 
 #### Example:
 ```yaml
@@ -294,12 +300,12 @@ Scroll: 60m
 
 This operation clears the search context for a scroll. For more details, see the Elasticsearch clear scroll guide **[here](https://www.elastic.co/guide/en/elasticsearch/reference/current/clear-scroll-api.html)**.
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/clear-scroll.png" alt="Elastic clear scroll" />
-</div>
-
-#### Parameters:
+#### Required Parameter
 - **Scroll ID**: The scroll ID to clear
+
+<div style={{textAlign: 'center'}}>
+    <img className="screenshot-full" src="/img/datasource-reference/elasticsearch/clear-scroll.png" alt="Elastic clear scroll" style={{marginBottom:'15px'}}/>
+</div>
 
 #### Example:
 ```yaml
@@ -472,3 +478,5 @@ This operation retrieves the status of the cluster’s health. For more details,
 }
 ```
 </details>
+
+</div>

@@ -58,7 +58,10 @@ If you prefer to use an **AWS ARN Role**, you will need to provide the following
 
 ## Querying DynamoDB
 
-To perform queries on **DynamoDB**, click on the **+ Add** button in the query manager located at the bottom panel of the editor. Select the previously added database as the data source for the query. Choose the desired operation and click on the **Run** button to run the query.
+1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
+2. Select the **DynamoDB** datasource added in previous step.
+3. Choose the desired operation.
+4. Click on the Preview button to preview the output or Click on the Run button to create and trigger the query.
 
 <div style={{textAlign: 'center'}}>
 
@@ -70,7 +73,11 @@ To perform queries on **DynamoDB**, click on the **+ Add** button in the query m
 You can apply transformations to the query results. Refer to our transformations documentation for more information: [link](/docs/tutorial/transformations)
 :::
 
-#### Supported Operations
+</div>
+
+<div style={{paddingTop:'24px'}}>
+
+## Supported Operations
 
 - **[List Tables](#list-tables)**
 - **[Get Item](#get-item)**
