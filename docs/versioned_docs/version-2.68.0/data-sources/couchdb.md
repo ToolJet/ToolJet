@@ -3,54 +3,63 @@ id: couchdb
 title: CouchDB
 ---
 
-# CouchDB
+ToolJet can connect to CouchDB databases to read and write data. 
 
-ToolJet can connect to CouchDB databases to read and write data. CocuhDB uses basic auth for authentication , username and password for the database is required to create an CouchDB data source on ToolJet. For more info visit [CouchDB docs](https://docs.couchdb.org/en/stable/).
+<div style={{paddingTop:'24px'}}>
 
+## Connection
 
-## Supported Queries: 
+To establish a connection with the CouchDB data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
 
-- [Listing Records](#listing-records)
-- [Retrieving a Record](#retrieving-a-record)
-- [Creating a Record](#creating-a-record)
-- [Updating a Record](#updating-a-record)
-- [Deleting a Record](#deleting-a-record)
-- [Find](#find)
-- [Retrieving a View](#retrieving-a-view)
+ToolJet requires the following to connect to your CouchDB.
+- **Username**
+- **Password**
 
-:::info
-NOTE: Record ID is same as document ID("_id") .
-:::
-### Listing Records 
+<img className="screenshot-full" src="/img/datasource-reference/couchdb/connections.png" alt="Couch listing"/>
+
+</div>
+
+<div style={{paddingTop:'24px'}}>
+
+## Querying CouchDB
+
+1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
+2. Select the **CouchDB** datasource added in previous step.
+3. Select the operation you want to perform and enter the query.
+4. Click on the **Preview** button to preview the output or Click on the **Run** button to create and trigger the query.
+
+<img className="screenshot-full" src="/img/datasource-reference/couchdb/operations.png" alt="Couch listing"/>
+
+</div>
+
+<div style={{paddingTop:'24px'}}>
+
+## Supported Queries 
+
+- **[List Records](#list-records)**
+- **[Retrieve Record](#retrieve-record)**
+- **[Create Record](#create-record)**
+- **[Update Record](#update-record)**
+- **[Delete Record](#delete-record)**
+- **[Find](#find)**
+- **[Get View](#get-view)**
+
+### List Records 
 
 This query lists all the records in a database.
 
-#### Optional Parameters: 
+#### Optional Parameters
 
 - **Include docs**
 - **Descending order**
 - **Limit**
 - **Skip**
 
-:::info
-descending (boolean) – Return the documents in descending order by key. Default is false.
+<img className="screenshot-full" src="/img/datasource-reference/couchdb/listing-v2.png" alt="Couch listing"/>
 
-limit (number) – Limit the number of the returned documents to the specified number.
-
-skip (number) – Skip this number of records before starting to return the results. Default is 0.
-
-include_docs (boolean) – include_docs key is set to false by default , if true it returns the document data along with the default fields.
-
-:::
-
-
-<img className="screenshot-full" src="/img/datasource-reference/couchdb/listing.png" alt="Couch listing"/>
-
-
-
-Example response from CouchDb: 
-
-```json
+<details>
+  <summary>**Response Example**</summary>
+  ```json
 {
     "total_rows": 3,
     "offset": 0,
@@ -79,20 +88,21 @@ Example response from CouchDb:
     ]
 }
 ```
+</details>
 
-### Retrieving a Record 
+### Retrieve Record 
+
+This operation fetches a single record by its record ID.
 
 #### Required Parameters: 
 
 - **Record ID**
 
 
-<img className="screenshot-full" src="/img/datasource-reference/couchdb/retrieving.png" alt="Couch retrieve view" />
+<img className="screenshot-full" src="/img/datasource-reference/couchdb/retrieving-v2.png" alt="Couch retrieve view" />
 
-
-
-Example response from CouchDb: 
-
+<details>
+  <summary> **Response Example** </summary>
 ```json
 {
     "_id": "e33dc4e209689cb0400d095fc401a1e0",
@@ -102,99 +112,94 @@ Example response from CouchDb:
     }
 }
 ```
-The returned JSON is the JSON of the document, including the document ID and revision number:
+</details>
+
+### Create Record
+
+Inserts a new record into the database.
+
+#### Required Parameters: 
+
+- **Records**
 
 
-### Creating a Record
+<img className="screenshot-full" src="/img/datasource-reference/couchdb/creating-v2.png" alt="Couch create view"/>
 
-
-<img className="screenshot-full" src="/img/datasource-reference/couchdb/creating.png" alt="Couch create view"/>
-
-
-#### Example Records:
+#### Example
 
 ```json
   [{"name":"tooljet"}]
 ```
 
-Click on the `run` button to run the query.
+<details>
+  <summary>**Response Example**</summary>
+    ```json
+    {
+        "ok": true,
+        "id": "23212104e60a71edb42ebc509f0049a2",
+        "rev": "1-b0a625abc4e21ee554737920156e911f"
+    }
+    ```
+</details>
 
-Example response from CouchDb:
-```json
-
-   {
-    "ok": true,
-    "id": "23212104e60a71edb42ebc509f0049a2",
-    "rev": "1-b0a625abc4e21ee554737920156e911f"
-}
-
-```
-
-### Updating a Record
+### Update Record
 
 You can get the revision id  value, by sending a GET request to get the document details.
 You get the document as JSON in the response. For each update to the document, the revision field "_rev" gets changed.
 
-#### Required Rarameters:
-- **Revision ID**
+#### Required Parameters:
 - **Record ID**
+- **Revision ID**
 
 
-<img className="screenshot-full" src="/img/datasource-reference/couchdb/updating.png" alt="Couch update view" />
+<img className="screenshot-full" src="/img/datasource-reference/couchdb/updating-v2.png" alt="Couch update view" />
 
 
-#### Example Body:
+#### Example
 
 ```json
-  [{"name":"tooljet"}]
+[{"name":"tooljet"}]
 ```
 
+<details>
+  <summary>**Response Example**</summary>
+  ```json
+  {
+      "ok": true,
+      "id": "23212104e60a71edb42ebc509f0049a2",
+      "rev": "2-b0a625abc4e21ee554737920156e911f"
+  }
+ ```
+</details>
 
-Click on the `run` button to run the query.
+### Delete Record
 
-:::info
-NOTE: Query must be saved before running.
-:::
-
-Example response from CouchDb:
-```json
-{
-    "ok": true,
-    "id": "23212104e60a71edb42ebc509f0049a2",
-    "rev": "2-b0a625abc4e21ee554737920156e911f"
-}
-```
-
-### Deleting a Record
+Removes a record from the database by its record ID.
 
 #### Required Parameters:
-- **Revision ID**
 - **Record ID**
+- **Revision ID**
 
 
-<img className="screenshot-full" src="/img/datasource-reference/couchdb/deleting.png" alt="Couch delete view"/>
+<img className="screenshot-full" src="/img/datasource-reference/couchdb/deleteRecord.png" alt="Couch delete view"/>
 
-
-
-Click on the `run` button to run the query.
-
-
-Example response from CouchDb:
-
-```json
-{
-    "ok": true,
-    "id": "rev_id=2-3d01e0e87139c57e9bd083e48ecde13d&record_id=e33dc4e209689cb0400d095fc401a1e0",
-    "rev": "1-2b99ef28c03e68ea70bb668ee55ffb7b"
-}
-```
+<details>
+  <summary>**Response Example**</summary>
+    ```json
+    {
+        "ok": true,
+        "id": "rev_id=2-3d01e0e87139c57e9bd083e48ecde13d&record_id=e33dc4e209689cb0400d095fc401a1e0",
+        "rev": "1-2b99ef28c03e68ea70bb668ee55ffb7b"
+    }
+    ```
+</details>
 
 ### Find 
 
 Find documents using a declarative JSON querying syntax.
 
 #### Required Parameters:
-- **Selector**
+- **Mangoquery**
 
 :::info
 NOTE:
@@ -202,10 +207,10 @@ selector syntax: https://pouchdb.com/guides/mango-queries.html
 :::
 
 
-<img className="screenshot-full" src="/img/datasource-reference/couchdb/find.png" alt="Couch find" />
+<img className="screenshot-full" src="/img/datasource-reference/couchdb/find-v2.png" alt="Couch find" />
 
 
-#### Example Body:
+#### Example
 
 ```json
 {
@@ -216,89 +221,64 @@ selector syntax: https://pouchdb.com/guides/mango-queries.html
 }
 ```
 
-
-Click on the `run` button to run the query.
-
-:::info
-NOTE:
-selector (json) – JSON object describing criteria used to select documents. 
-
-More information : https://docs.couchdb.org/en/stable/api/database/find.html
-:::
-
-Example response from CouchDb:
-
+Example response from CouchDB:
 
 <img className="screenshot-full" src="/img/datasource-reference/couchdb/find_response.png" alt="Couch find response" />
 
-
-### Retrieving a View
+### Get View
 
 Views are the primary tool used for querying and reporting on CouchDB documents.
 
-#### Required Parameters:
+#### Required Parameters
 - **View url**
-
-Reference for view :https://docs.couchdb.org/en/3.2.0/ddocs/views/intro.html#what-is-a-view
-
-
-<img className="screenshot-full" src="/img/datasource-reference/couchdb/get_view.png" alt="Couch get view" />
 
 
 #### Optional Parameters: 
-
 - **Start key**
 - **End key**
 - **Limit**
 - **Skip**
 
-Click on the `run` button to run the query.
+<img className="screenshot-full" src="/img/datasource-reference/couchdb/get_view-v2.png" alt="Couch get view" />
 
-:::info
-startkey (json) – Return records starting with the specified key.
-
-endkey (json) – Stop returning records when the specified key is reached.
-
-limit (number) – Limit the number of the returned documents to the specified number.
-
-skip (number) – Skip this number of records before starting to return the results. Default is 0.
-:::
-
-Example response from CouchDb:
-```json
-{
-    "total_rows": 4,
-    "offset": 0,
-    "rows": [
-        {
-            "id": "23212104e60a71edb42ebc509f000dc2",
-            "key": "23212104e60a71edb42ebc509f000dc2",
-            "value": {
-                "rev": "1-0cc7f48876f15883394e5c139c628123"
+<details>
+  <summary>**Response Example**</summary>
+  ```json
+    {
+        "total_rows": 4,
+        "offset": 0,
+        "rows": [
+            {
+                "id": "23212104e60a71edb42ebc509f000dc2",
+                "key": "23212104e60a71edb42ebc509f000dc2",
+                "value": {
+                    "rev": "1-0cc7f48876f15883394e5c139c628123"
+                }
+            },
+            {
+                "id": "23212104e60a71edb42ebc509f00216e",
+                "key": "23212104e60a71edb42ebc509f00216e",
+                "value": {
+                    "rev": "1-b3c45696b10cb08221a335ff7cbd8b7a"
+                }
+            },
+            {
+                "id": "23212104e60a71edb42ebc509f00282a",
+                "key": "23212104e60a71edb42ebc509f00282a",
+                "value": {
+                    "rev": "1-da5732beb913ecbded309321cac892d2"
+                }
+            },
+            {
+                "id": "23212104e60a71edb42ebc509f002cbd",
+                "key": "23212104e60a71edb42ebc509f002cbd",
+                "value": {
+                    "rev": "1-ca5bb3c0767eb42ea6c33eee3d395b59"
+                }
             }
-        },
-        {
-            "id": "23212104e60a71edb42ebc509f00216e",
-            "key": "23212104e60a71edb42ebc509f00216e",
-            "value": {
-                "rev": "1-b3c45696b10cb08221a335ff7cbd8b7a"
-            }
-        },
-        {
-            "id": "23212104e60a71edb42ebc509f00282a",
-            "key": "23212104e60a71edb42ebc509f00282a",
-            "value": {
-                "rev": "1-da5732beb913ecbded309321cac892d2"
-            }
-        },
-        {
-            "id": "23212104e60a71edb42ebc509f002cbd",
-            "key": "23212104e60a71edb42ebc509f002cbd",
-            "value": {
-                "rev": "1-ca5bb3c0767eb42ea6c33eee3d395b59"
-            }
-        
-        }
-    ]
-}
-```
+        ]
+    }
+    ```
+</details>
+
+</div>
