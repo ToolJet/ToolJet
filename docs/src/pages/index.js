@@ -203,6 +203,22 @@ const Homepage = () => {
                                 ))}
                             </div>
                             {/* Getting Started Section */}
+                            <div className="w-full h-[104px] bg-white rounded-lg shadow-sm border border-gray-200 flex items-center overflow-hidden">
+    <div className="w-[200px] h-full relative overflow-hidden">
+        <img 
+            src={gettingStatedImage}
+            alt="Getting Started" 
+            className="absolute bottom-0 left-[-20px] w-[calc(100%+40px)] h-auto object-cover object-top"
+            style={{ maxHeight: '70px', borderRadius: '5px', transform: 'scale(1.8)', transformOrigin: 'top left' }}
+        />
+    </div>
+    <div className="flex-1 pl-6">
+        <h3 className="text-2xl font-medium text-[#1b1f24] mb-1">Getting Started</h3>
+        <p className="text-sm text-[#1b1f24] opacity-80">
+            Discover how to create and publish apps within minutes
+        </p>
+    </div>
+</div>
                         </div>
                     </div>
 
