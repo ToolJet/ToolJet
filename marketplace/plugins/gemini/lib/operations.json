@@ -1,0 +1,72 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Gemini datasource",
+  "description": "A schema defining Gemini datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "chat",
+          "name": "Chat"
+        }
+      ]
+    },
+    "chat": {
+      "messages": {
+        "label": "Message",
+        "key": "messages",
+        "type": "codehinter",
+        "description": "Enter message",
+        "placeholder": "[{\"role\": \"user\", \"content\": \"Hello\"}, {\"role\": \"assistant\", \"content\": \"Hi\"]",
+        "height": "150px"
+      },
+      "model": {
+        "label": "Model",
+        "key": "model",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter model",
+        "placeholder": "gemini-pro, gemini-1.5-pro etc.,",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "max_tokens": {
+        "label": "Max Tokens",
+        "key": "max_tokens",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter from 1 to 2048",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "temperature": {
+        "label": "Temperature",
+        "key": "temperature",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter a value between 0 to 1",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "stop_sequence": {
+        "label": "Stop Sequence",
+        "key": "stop_sequence",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter stop sequence",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      }
+    }
+  }
+}
