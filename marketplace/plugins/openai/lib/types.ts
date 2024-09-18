@@ -4,6 +4,7 @@ export type SourceOptions = {
 };
 
 export type QueryOptions = {
+  model?: string; // Added model as an optional field
   operation: Operation;
   prompt?: string;
   max_tokens?: number | string;
