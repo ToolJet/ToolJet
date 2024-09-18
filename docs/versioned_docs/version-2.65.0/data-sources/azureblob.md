@@ -8,7 +8,7 @@ ToolJet offers the capability to establish a connection with Azure Blob storage 
 ## Connection
 
 To connect ToolJet with the Azure Blob data source, you have two options:
-1. Click on the `+Add new data source` button in the query panel.
+1. Click on the `+ Add new data source` button in the query panel.
 2. Go to the **[Data Sources](/docs/data-sources/overview)** page on the ToolJet dashboard.
 
 <div style={{textAlign: 'center'}}>
@@ -22,15 +22,17 @@ To successfully establish the connection, ToolJet requires the following details
 
 Once you have entered the connection string, click on the **Test connection** button to verify the connection's success. To save the data source, click on the **Save** button.
 
+<div style={{paddingTop:'24px'}}>
+
 ## Querying Azure Blob
 
 Once you have connected to the Azure Blob data source, follow these steps to create queries and interact with Azure Blob storage from the ToolJet application:
 
 1. Open the ToolJet application and navigate to the query panel at the bottom of the app builder.
-2. Click the `+Add` button to open the list of available `local` and `data sources`.
+2. Click the **+ Add** button to open the list of available `local` and `data sources`.
 3. Select **Azure Blob** from the data source section.
-4. Select the desired **operation** from the dropdown and enter the required **parameters**.
-5. **Rename**(optional) and **Create** the query.
+4. Rename the query (optional).
+5. Select the desired operation from the dropdown and enter the required parameters.
 6. Click **Preview** to view the data returned from the query or click **Run** to execute the query.
 
 :::tip
@@ -42,6 +44,11 @@ Query results can be transformed using Transformation. For more information on t
 <img className="screenshot-full" src="/img/datasource-reference/azureblob/queries.png" alt="Azure Blob - ToolJet" />
 
 </div>
+
+
+</div>
+
+<div style={{paddingTop:'24px'}}> 
 
 ## Supported Operations
 
@@ -105,7 +112,7 @@ The upload blob operation allows you to upload a new blob or update an existing 
 
 - **Container**: Specify the name of the container where the blob will be uploaded or updated.
 - **Blob Name**: Provide a unique name for the blob. This name is used to identify and access the blob within the specified container.
-- **Content Type**: Set the content type of the blob, which indicates the type of data being stored. It helps clients interpret the blob content correctly when accessing it. example: **image/jpeg** for JPEG images or **image/png** for PNG image. You can also get the content type from the exposed variable of the file picker component.
+- **Content Type**: Set the content type of the blob, which indicates the type of data being stored. It helps clients interpret the blob content correctly when accessing it. Example: **image/jpeg** for JPEG images or **image/png** for PNG image. You can also get the content type from the exposed variable of the file picker component.
 - **Upload Data**: Select or provide the data to be uploaded as the content of the blob. This can be a file from your local system, binary data, or text content. You can also get the data from the exposed variable of the file picker component.
 - **Encoding**: Choose the encoding format for the uploaded data if applicable. This parameter determines how the data is encoded before being stored as the blob content. If the value is left blank then it takes **UTF-8** by default.
 
@@ -136,5 +143,8 @@ The delete blob operation allows you to remove a specific blob from Azure Blob s
 <div style={{textAlign: 'center'}}>
 
 <img className="screenshot-full" src="/img/datasource-reference/azureblob/delete.png" alt="Azure blob: delete blob operation" />
+
+</div>
+
 
 </div>
