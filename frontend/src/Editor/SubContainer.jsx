@@ -715,11 +715,19 @@ const SubWidgetWrapper = ({
 
   const isDragging = useGridStore((state) => state?.draggingComponentId === id);
 
+  const isComponentVisible = () => {
+    const visibility =
+      widget.component.definition?.properties?.visibility?.value ??
+      widget.component.definition?.styles?.visibility?.value ??
+      null;
+    return resolveWidgetFieldValue(visibility);
+  };
+
   let width = (canvasWidth * layoutData.width) / 43;
   width = width > canvasWidth ? canvasWidth : width; //this handles scenarios where the width is set more than canvas for older components
   const styles = {
     width: width + 'px',
-    height: layoutData.height + 'px',
+    height: isComponentVisible() ? layoutData.height + 'px' : '10px',
     transform: `translate(${layoutData.left * gridWidth}px, ${layoutData.top}px)`,
     ...(isGhostComponent ? { opacity: 0.5 } : {}),
   };
