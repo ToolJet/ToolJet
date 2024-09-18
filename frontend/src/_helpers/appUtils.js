@@ -2098,6 +2098,7 @@ export const removeSelectedComponent = (pageId, newDefinition, selectedComponent
   useResolveStore.getState().actions.removeAppSuggestions(allHintsAssociatedWithQuery);
 
   updateAppDefinition(newDefinition, { componentDefinitionChanged: true, componentDeleted: true, componentCut: true });
+  return toDeleteComponents;
 };
 
 const getSelectedText = () => {
