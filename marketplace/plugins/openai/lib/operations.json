@@ -12,7 +12,8 @@
 			"description": "Single select dropdown for operation",
 			"list": [
 				{ "value": "chat", "name": "Chat" },
-				{ "value": "completion", "name": "Completion" }
+				{ "value": "completion", "name": "Completion" },
+				{ "value": "image_generation", "name": "Generate AI Image(s)" }
 			]
 		},
 		"chat": {
@@ -248,6 +249,57 @@
                   "height": "36px"
                 }
               }
+		},
+		"image_generation": {
+  			"model": {
+    			"label": "Model",
+    			"key": "model",
+    			"type": "dropdown-component-flip",
+    			"description": "Select OpenAI Model",
+    			"list": [
+      				{ "value": "dall-e-3", "name": "DALL-E 3" },
+					{ "value": "dall-e-2", "name": "DALL-E 2" }
+    			],
+    			"disabled": true,
+    			"default": "dall-e-3"
+  			},
+  			"dall-e-3": {
+   				"prompt": {
+      				"label": "Prompt",
+      				"key": "prompt",
+      				"type": "codehinter",
+      				"description": "Enter prompt for image generation",
+      				"height": "150px"
+    			},
+    			"size": {
+					"label": "Size (in pixels)",
+					"key": "size",
+					"type": "codehinter",
+					"description": "Enter image size in pixels (e.g., 1024x1024)",
+					"placeholder": "By default 1024x1024 sized image will be generated",
+					"width": "320px",
+					"height": "36px"
+    			}
+  			},
+			"dall-e-2": {
+   				"prompt": {
+      				"label": "Prompt",
+      				"key": "prompt",
+      				"type": "codehinter",
+      				"description": "Enter prompt for image generation",
+      				"height": "150px"
+    			},
+    			"size": {
+					"label": "Size (in pixels)",
+					"key": "size",
+					"type": "codehinter",
+					"description": "Enter image size in pixels (e.g., 1024x1024)",
+					"placeholder": "By default 1024x1024 sized image will be generated",
+					"width": "320px",
+					"height": "36px"
+    			}
+  			}
 		}
+
 	}
 }
