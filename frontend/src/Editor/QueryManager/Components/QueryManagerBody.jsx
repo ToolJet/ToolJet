@@ -19,6 +19,8 @@ import { useSelectedQuery, useSelectedDataSource } from '@/_stores/queryPanelSto
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import SuccessNotificationInputs from './SuccessNotificationInputs';
+// import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { deepEqual } from '@/_helpers/utils';
 
 export const QueryManagerBody = ({
   darkMode,
@@ -85,9 +87,10 @@ export const QueryManagerBody = ({
 
   const validateNewOptions = (newOptions) => {
     const updatedOptions = cleanFocusedFields(newOptions);
-    setOptions((options) => ({ ...options, ...updatedOptions }));
-
-    updateDataQuery(cloneDeep({ ...options, ...updatedOptions }));
+    if (!deepEqual(options, updatedOptions)) {
+      setOptions((options) => ({ ...options, ...updatedOptions }));
+      updateDataQuery({ ...options, ...updatedOptions });
+    }
   };
 
   const optionchanged = (option, value) => {
