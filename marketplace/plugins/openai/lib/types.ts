@@ -11,9 +11,12 @@ export type QueryOptions = {
   temperature?: number | string;
   stop_sequence?: string;
   suffix?: string | null;
+  //num_images?: number | string; // Number of images for generation
+  size?: string; // Size of the generated image
 };
 
 export enum Operation {
   Completion = 'completion',
   Chat = 'chat',
+  ImageGeneration = 'image_generation' // New operation for image generation
 }
