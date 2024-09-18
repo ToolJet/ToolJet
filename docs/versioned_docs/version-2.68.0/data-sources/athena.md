@@ -37,7 +37,7 @@ You can also configure for **[additional optional parameters](https://github.com
 
 1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
 2. Select the **Amazon Athena** datasource added in previous step.
-3. Select the SQL Qury from the dropdown and enter the query.
+3. Select the SQL Query from the dropdown and enter the query.
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
 :::tip
