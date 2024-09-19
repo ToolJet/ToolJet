@@ -139,6 +139,17 @@ const Sidebar = ({ isOpen, toggleSidebar, menuItems }) => (
     </aside>
 );
 
+const OrganizationCard = ({ icon: Icon, title }) => (
+    <Card className="transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative">
+        <div className="p-3 flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-lg bg-white shadow flex items-center justify-center">
+                <Icon className="w-5 h-5 text-orange-500" />
+            </div>
+            <span className="text-sm font-medium">{title}</span>
+        </div>
+    </Card>
+);
+
 
 const Homepage = () => {
 
@@ -369,12 +380,7 @@ const Homepage = () => {
                                     { icon: Gem, title: "Super admin" },
                                     { icon: Mail, title: "Licensing" }
                                 ].map((item, index) => (
-                                    <div key={index} className="flex items-center space-x-3 bg-gray-50 p-3 rounded-lg">
-                                        <div className="w-10 h-10 rounded-lg bg-white shadow flex items-center justify-center">
-                                            <item.icon className="w-5 h-5 text-orange-500" />
-                                        </div>
-                                        <span className="text-sm font-medium">{item.title}</span>
-                                    </div>
+                                    <OrganizationCard key={index} icon={item.icon} title={item.title} />
                                 ))}
                             </div>
                         </div>
