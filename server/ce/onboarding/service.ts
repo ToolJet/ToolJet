@@ -12,7 +12,7 @@ import { MetadataService } from '@services/metadata.service';
 import { USER_STATUS } from '@helpers/user_lifecycle';
 
 @Injectable()
-export class OnboardingServiceSep {
+export class OnboardingService {
   constructor(
     private usersService: UsersService,
     private authService: AuthService,

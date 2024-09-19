@@ -86,7 +86,6 @@ const WorkspaceNameFormCE = () => {
         await setWorkspaceName(formData.workspaceName);
         await onboardUserOrCreateAdmin();
       } catch (error) {
-        console.log('inside', error);
         const errorMessage = error?.error || 'Something went wrong. Please try again.';
         toast.error(errorMessage);
       } finally {
