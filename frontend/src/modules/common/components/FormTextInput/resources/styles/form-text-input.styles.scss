@@ -64,6 +64,13 @@
         font-size: 10px;
         margin-top: 2px;
         height: 14px;
+        &__error-enabled {
+            margin-bottom: 4px;
+            display: block;
+            font-size: 10px;
+            margin-top: 2px;
+            height: 14px;
+        }
     }
 
     &--disabled {
