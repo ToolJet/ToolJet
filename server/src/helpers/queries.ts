@@ -22,36 +22,56 @@ export function getFolderQuery(
           ])
         ),
       ];
-  const hiddenApps = userAppPermissions.hiddenAppsId.filter((id) => !userAppPermissions.editableAppsId.includes(id));
+  const hiddenApps = [
+    ...userAppPermissions.hiddenAppsId.filter((id) => !userAppPermissions.editableAppsId.includes(id)),
+  ];
 
   const query = manager.createQueryBuilder(Folder, 'folders');
+  query.leftJoinAndSelect('folders.folderApps', 'folder_apps');
+  query.leftJoin('folder_apps.app', 'app');
   if (!isAllEditable) {
-    if ((isAllViewable && hideAll) || (!isAllViewable && !hideAll) || (!isAllViewable && hideAll))
-      query.leftJoinAndSelect('folders.folderApps', 'folder_apps', 'folder_apps.appId IN (:...viewableApps)', {
+    // Not all apps are editable - filter with view privilege
+    if (!isAllViewable) {
+      // Not all apps are viewable
+      query.andWhere('folder_apps.appId IN (:...viewableApps)', {
         viewableApps,
       });
-    else if (!userAppPermissions.hideAll && isAllViewable) {
-      if (hiddenApps.length > 0)
-        query.leftJoinAndSelect('folders.folderApps', 'folder_apps', 'folder_apps.appId NOT IN (:...hiddenApps)', {
-          hiddenApps,
-        });
-      else {
-        query.leftJoinAndSelect('folders.folderApps', 'folder_apps');
-      }
+    } else if (!hideAll && hiddenApps?.length) {
+      // Not all apps are hidden
+      query.andWhere('folder_apps.appId NOT IN (:...hiddenApps)', {
+        hiddenApps,
+      });
+    } else if (hideAll) {
+      // No need to return any
+      query.andWhere('1=0');
     }
-  } else {
-    query.leftJoinAndSelect('folders.folderApps', 'folder_apps');
   }
 
-  query.leftJoin('folder_apps.app', 'app');
   if (searchKey) {
-    query.where('LOWER(app.name) like :searchKey', {
+    query.andWhere('LOWER(app.name) like :searchKey', {
       searchKey: `%${searchKey && searchKey.toLowerCase()}%`,
     });
   }
   query
     .andWhere('folders.organization_id = :organizationId', {
       organizationId,
+    })
+    .orderBy('folders.name', 'ASC');
+
+  return query;
+}
+export function getAllFoldersQuery(
+  organizationId: string,
+  manager: EntityManager,
+  type = 'front-end'
+): SelectQueryBuilder<Folder> {
+  const query = manager.createQueryBuilder(Folder, 'folders');
+  query
+    .andWhere('folders.organization_id = :organizationId', {
+      organizationId,
+    })
+    .andWhere('folders.type = :type', {
+      type,
     })
     .orderBy('folders.name', 'ASC');
 

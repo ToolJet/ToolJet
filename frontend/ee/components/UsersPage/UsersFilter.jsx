@@ -9,7 +9,7 @@ const userStatusOptions = [
   { name: 'Archived', value: 'archived' },
 ];
 
-const UsersFilter = ({ filterList }) => {
+const UsersFilter = ({ filterList, resetSearch }) => {
   const [options, setOptions] = useState({ searchText: '', status: '' });
   const [statusVal, setStatusVal] = useState('');
   const [queryVal, setQueryVal] = useState();
@@ -43,6 +43,12 @@ const UsersFilter = ({ filterList }) => {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [options.searchText, options.status]);
+
+  useEffect(() => {
+    setOptions({ searchText: '', status: '' });
+    setStatusVal('');
+    setQueryVal('');
+  }, [resetSearch]);
 
   return (
     <div className="workspace-settings-table-wrap workspace-settings-filter-wrap">
@@ -79,6 +85,7 @@ const UsersFilter = ({ filterList }) => {
                 setQueryVal(e.target.value);
                 queryValuesChanged(e);
               }}
+              value={options.searchText}
               data-cy="input-field-user-filter-search"
             />
           </div>

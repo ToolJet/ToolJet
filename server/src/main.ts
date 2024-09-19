@@ -12,6 +12,7 @@ import { ConfigService } from '@nestjs/config';
 import { bootstrap as globalAgentBootstrap } from 'global-agent';
 import { join } from 'path';
 import * as helmet from 'helmet';
+import * as express from 'express';
 
 const fs = require('fs');
 
@@ -50,50 +51,52 @@ function setSecurityHeaders(app, configService) {
     credentials: true,
   });
 
-  app.use(helmet({
-    contentSecurityPolicy: {
-      useDefaults: true,
-      directives: {
-        upgradeInsecureRequests: null,
-        'img-src': ['*', 'data:', 'blob:'],
-        'script-src': [
-          'maps.googleapis.com',
-          'storage.googleapis.com',
-          'apis.google.com',
-          'accounts.google.com',
-          "'self'",
-          "'unsafe-inline'",
-          "'unsafe-eval'",
-          'blob:',
-          'https://unpkg.com/@babel/standalone@7.17.9/babel.min.js',
-          'https://unpkg.com/react@16.7.0/umd/react.production.min.js',
-          'https://unpkg.com/react-dom@16.7.0/umd/react-dom.production.min.js',
-          'cdn.skypack.dev',
-          'cdn.jsdelivr.net',
-          'https://esm.sh',
-          'www.googletagmanager.com',
-        ],
-        'default-src': [
-          'maps.googleapis.com',
-          'storage.googleapis.com',
-          'apis.google.com',
-          'accounts.google.com',
-          '*.sentry.io',
-          "'self'",
-          'blob:',
-          'www.googletagmanager.com',
-        ],
-        'connect-src': ['ws://' + domain, "'self'", '*'],
-        'frame-ancestors': ['*'],
-        'frame-src': ['*'],
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        useDefaults: true,
+        directives: {
+          upgradeInsecureRequests: null,
+          'img-src': ['*', 'data:', 'blob:'],
+          'script-src': [
+            'maps.googleapis.com',
+            'storage.googleapis.com',
+            'apis.google.com',
+            'accounts.google.com',
+            "'self'",
+            "'unsafe-inline'",
+            "'unsafe-eval'",
+            'blob:',
+            'https://unpkg.com/@babel/standalone@7.17.9/babel.min.js',
+            'https://unpkg.com/react@16.7.0/umd/react.production.min.js',
+            'https://unpkg.com/react-dom@16.7.0/umd/react-dom.production.min.js',
+            'cdn.skypack.dev',
+            'cdn.jsdelivr.net',
+            'https://esm.sh',
+            'www.googletagmanager.com',
+          ],
+          'default-src': [
+            'maps.googleapis.com',
+            'storage.googleapis.com',
+            'apis.google.com',
+            'accounts.google.com',
+            '*.sentry.io',
+            "'self'",
+            'blob:',
+            'www.googletagmanager.com',
+          ],
+          'connect-src': ['ws://' + domain, "'self'", '*'],
+          'frame-ancestors': ['*'],
+          'frame-src': ['*'],
+        },
       },
-    },
-    frameguard: configService.get('DISABLE_APP_EMBED') !== 'true' ? false : { action: 'deny' },
-    hidePoweredBy: true,
-    referrerPolicy: {
-      policy: 'no-referrer',
-    },
-  }));
+      frameguard: configService.get('DISABLE_APP_EMBED') !== 'true' ? false : { action: 'deny' },
+      hidePoweredBy: true,
+      referrerPolicy: {
+        policy: 'no-referrer',
+      },
+    })
+  );
 
   app.use((req, res, next) => {
     res.setHeader('Permissions-Policy', 'geolocation=(self), camera=(), microphone=()');
@@ -137,6 +140,7 @@ async function bootstrap() {
   });
 
   setSecurityHeaders(app, configService);
+  app.use(`${UrlPrefix}/assets`, express.static(join(__dirname, '/assets')));
 
   const listen_addr = process.env.LISTEN_ADDR || '::';
   const port = parseInt(process.env.PORT) || 3000;

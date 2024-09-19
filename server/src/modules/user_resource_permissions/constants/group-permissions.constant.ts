@@ -125,4 +125,6 @@ export const ERROR_HANDLER = {
   DELETING_DEFAULT_GROUP_USER: 'Deleting default user from default group is not allowed',
   EDITING_LAST_ADMIN_ROLE_NOT_ALLOWED:
     'Cannot change role of last present admin, please add another admin and change the role',
+  ADMIN_DEFAULT_GROUP_GRANULAR_PERMISSIONS: 'Cannot create granular permissions of admin group',
+  EDITOR_LEVEL_PERMISSION_NOT_ALLOWED_END_USER: 'Cannot assign builder level permission to end users',
 };
