@@ -4,7 +4,7 @@ import {
     Layers, FileSpreadsheet, Folder, Wand2, LayoutGrid, Users, UserCheck,
     Lock, UsersRound, ClipboardList, Megaphone, Diamond, GitBranch,
     Box, GitMerge, ShoppingBag, Wand, Flag, ShieldCheck, LayoutDashboard,
-    UserPlus, ScrollText, Gem, Mail, ChevronLeft, ChevronDown, ChevronRight
+    UserPlus, ScrollText, Gem, Mail, ChevronLeft, ChevronDown, ChevronRight, Cloud, Container, Boxes, Server, Telescope, Globe
 } from 'lucide-react'
 import '../css/global.css'
 import docsStructure from '../../versioned_sidebars/version-2.50.0-LTS-sidebars.json'
@@ -150,6 +150,17 @@ const OrganizationCard = ({ icon: Icon, title }) => (
     </Card>
 );
 
+const DeployCard = ({ icon: Icon, title }) => (
+    <Card className="transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative">
+        <div className="p-3 flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-lg bg-white shadow flex items-center justify-center">
+                <Icon className="w-5 h-5 text-blue-500" />
+            </div>
+            <span className="text-sm font-medium">{title}</span>
+        </div>
+    </Card>
+);
+
 
 const Homepage = () => {
 
@@ -289,15 +300,20 @@ const Homepage = () => {
                         {/* Deploy on Section */}
                         <div className="space-y-6">
                             <h3 className="text-xl font-semibold">Deploy on</h3>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                                 {[
-                                    "DigitalOcean", "Docker", "AWS EC2", "AWS ECS",
-                                    "Openshift", "Helm", "Kubernetes", "Kubernetes (GKE)",
-                                    "Kubernetes (GKE)", "Kubernetes (AKS)", "Kubernetes (AKS)", "Kubernetes (EKS)"
+                                    { icon: Cloud, title: "DigitalOcean" },
+                                    { icon: Container, title: "Docker" },
+                                    { icon: Server, title: "AWS EC2" },
+                                    { icon: Server, title: "AWS ECS" },
+                                    { icon: Server, title: "Openshift" },
+                                    { icon: Telescope, title: "Helm" },
+                                    { icon: Boxes, title: "Kubernetes" },
+                                    { icon: Globe, title: "Kubernetes (GKE)" },
+                                    { icon: Globe, title: "Kubernetes (AKS)" },
+                                    { icon: Globe, title: "Kubernetes (EKS)" },
                                 ].map((item, index) => (
-                                    <Card key={index} className="bg-white p-4 flex items-center justify-center">
-                                        <span className="text-sm font-medium">{item}</span>
-                                    </Card>
+                                    <DeployCard key={index} icon={item.icon} title={item.title} />
                                 ))}
                             </div>
                         </div>
