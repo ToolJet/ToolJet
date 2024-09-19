@@ -6,17 +6,12 @@ import { authenticationService, tooljetService } from '@/_services';
 import { withRouter } from '@/_hoc/withRouter';
 import { PrivateRoute, AdminRoute, AppsRoute, SwitchWorkspaceRoute, OrganizationInviteRoute } from '@/Routes';
 import { HomePage } from '@/HomePage';
-import { LoginPage } from '@/LoginPage';
-import { SignupPage } from '@/SignupPage';
 import { TooljetDatabase } from '@/TooljetDatabase';
-import { OrganizationInvitationPage } from '@/ConfirmationPage';
 import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
 import { Viewer } from '@/Editor';
 import { OrganizationSettings } from '@/OrganizationSettingsPage';
 import { SettingsPage } from '../SettingsPage/SettingsPage';
-import { ForgotPassword } from '@/ForgotPassword';
-import { ResetPassword } from '@/ResetPassword';
 import { MarketplacePage } from '@/MarketplacePage';
 import SwitchWorkspacePage from '@/HomePage/SwitchWorkspacePage';
 import { GlobalDatasources } from '@/GlobalDatasources';
@@ -25,13 +20,11 @@ import Toast from '@/_ui/Toast';
 import { VerificationSuccessInfoScreen } from '@/SuccessInfoScreen';
 import '@/_styles/theme.scss';
 import { AppLoader } from '@/AppLoader';
-import SetupScreenSelfHost from '../SuccessInfoScreen/SetupScreenSelfHost';
 export const BreadCrumbContext = React.createContext({});
 import 'react-tooltip/dist/react-tooltip.css';
 import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
 import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
 import WorkspaceConstants from '@/WorkspaceConstants';
-import { AuthRoute } from '@/Routes/AuthRoute';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import cx from 'classnames';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
@@ -40,6 +33,7 @@ import OrganizationLogin from '@/_components/OrganizationLogin/OrganizationLogin
 import { ManageOrgVars } from '@/ManageOrgVars';
 import { ManageGroupPermissionsV2 } from '@/ManageGroupPermissionsV2/ManageGroupPermissionsV2';
 import { setFaviconAndTitle } from '@white-label/whiteLabelling';
+import { onboarding, auth } from '@/modules';
 
 const AppWrapper = (props) => {
   const { isAppDarkMode } = useAppDarkMode();
@@ -165,62 +159,15 @@ class AppComponent extends React.Component {
           )}
           <BreadCrumbContext.Provider value={{ sidebarNav, updateSidebarNAV }}>
             <Routes>
-              <Route
-                path="/login/:organizationId"
-                exact
-                element={
-                  <AuthRoute {...this.props}>
-                    <LoginPage {...this.props} />
-                  </AuthRoute>
-                }
-              />
-              <Route
-                path="/login"
-                exact
-                element={
-                  <AuthRoute {...this.props}>
-                    <LoginPage {...this.props} />
-                  </AuthRoute>
-                }
-              />
-              <Route path="/setup" exact element={<SetupScreenSelfHost {...this.props} darkMode={darkMode} />} />
+              {onboarding(this.props)}
+              {auth(this.props)}
               <Route path="/sso/:origin/:configId" exact element={<Oauth {...this.props} />} />
               <Route path="/sso/:origin" exact element={<Oauth {...this.props} />} />
-              <Route
-                path="/signup/:organizationId"
-                exact
-                element={
-                  <AuthRoute {...this.props}>
-                    <SignupPage {...this.props} />
-                  </AuthRoute>
-                }
-              />
-              <Route
-                path="/signup"
-                exact
-                element={
-                  <AuthRoute {...this.props}>
-                    <SignupPage {...this.props} />
-                  </AuthRoute>
-                }
-              />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password/:token" element={<ResetPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/invitations/:token" element={<VerificationSuccessInfoScreen />} />
               <Route
                 path="/invitations/:token/workspaces/:organizationToken"
                 element={
                   <OrganizationInviteRoute {...this.props}>
                     <VerificationSuccessInfoScreen />
-                  </OrganizationInviteRoute>
-                }
-              />
-              <Route
-                path="/organization-invitations/:token"
-                element={
-                  <OrganizationInviteRoute {...this.props} isOrgazanizationOnlyInvite={true}>
-                    <OrganizationInvitationPage {...this.props} darkMode={darkMode} />
                   </OrganizationInviteRoute>
                 }
               />

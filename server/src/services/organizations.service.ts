@@ -846,6 +846,20 @@ export class OrganizationsService {
     return;
   }
 
+  async checkWorkspaceNameUniqueness(name: string) {
+    if (!name) {
+      throw new NotAcceptableException('Request should contain workspace name');
+    }
+    const manager = this._dataSource.manager;
+    const result = await manager.count(Organization, {
+      where: {
+        ...(name && { name }),
+      },
+    });
+    if (result) throw new ConflictException('Workspace name must be unique');
+    return;
+  }
+
   async createSampleDB(organizationId, manager: EntityManager) {
     const config = {
       name: 'Sample Data Source',

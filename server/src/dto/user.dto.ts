@@ -91,10 +91,15 @@ export class CreateAdminDto {
   @Transform(({ value }) => sanitizeInput(value))
   role: string;
 
-  @IsString()
+  @IsOptional()
   @IsNotEmpty()
   @Transform(({ value }) => sanitizeInput(value))
   workspace: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @Transform(({ value }) => sanitizeInput(value))
+  workspaceName: string;
 }
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {}

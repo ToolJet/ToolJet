@@ -175,6 +175,17 @@ export const generateNextNameAndSlug = (firstWord: string) => {
   };
 };
 
+export function generateWorkspaceSlug(workspaceName: string): string {
+  return workspaceName
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w-]+/g, '')
+    .replace(/--+/g, '-')
+    .replace(/^-+/, '')
+    .replace(/-+$/, '');
+}
+
 export const truncateAndReplace = (name) => {
   const secondsSinceEpoch = Date.now();
   if (name.length > 35) {
