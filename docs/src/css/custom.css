@@ -366,28 +366,36 @@ img {
   }
 }
 
-.docs-doc-id-getting-started\/platform-overview article {
+.docs-doc-id-doc-home-page article {
   padding-left: 0px;
   padding-right: 0px;
 }
 
-.docs-doc-id-getting-started\/platform-overview .theme-doc-breadcrumbs {
+.docs-doc-id-doc-home-page .theme-doc-breadcrumbs {
   display: none;
 }
 
-.docs-doc-id-getting-started\/platform-overview .theme-doc-version-badge {
+.docs-doc-id-doc-home-page .theme-doc-version-badge {
   display: none;
 }
 
-.docs-doc-id-getting-started\/platform-overview .padding-top--md {
+.docs-doc-id-doc-home-page .padding-top--md {
   padding: 0px !important;
 }
 
-.docs-doc-id-getting-started\/platform-overview .padding-bottom--lg {
+.docs-doc-id-doc-home-page .padding-bottom--lg {
   padding: 0px;
 }
 
-.docs-doc-id-getting-started\/platform-overview header {
+.docs-doc-id-doc-home-page header {
+  display: none;
+}
+
+.docs-doc-id-doc-home-page .theme-doc-footer {
+  display: none;
+}
+
+.docs-doc-id-doc-home-page .pagination-nav {
   display: none;
 }
 
