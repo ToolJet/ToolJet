@@ -204,21 +204,21 @@ const Homepage = () => {
                             </div>
                             {/* Getting Started Section */}
                             <div className="w-full h-[104px] bg-white rounded-lg shadow-sm border border-gray-200 flex items-center overflow-hidden">
-    <div className="w-[380px] h-full relative overflow-hidden">
-        <img 
-            src={gettingStatedImage}
-            alt="Getting Started" 
-            className="absolute bottom-0 left-[-20px] w-[calc(100%+40px)] h-auto object-cover object-top"
-            style={{ maxHeight: '70px', borderRadius: '5px', transform: 'scale(1.2)', transformOrigin: 'top left' }}
-        />
-    </div>
-    <div className="flex-1 ml-20">
-        <h3 className="text-2xl font-medium text-[#1b1f24] mb-1">Getting Started</h3>
-        <p className="text-sm text-[#1b1f24] opacity-80">
-            Discover how to create and publish apps within minutes
-        </p>
-    </div>
-</div>
+                                <div className="w-[380px] h-full relative overflow-hidden">
+                                    <img
+                                        src={gettingStatedImage}
+                                        alt="Getting Started"
+                                        className="absolute bottom-0 left-[-20px] w-[calc(100%+40px)] h-auto object-cover object-top"
+                                        style={{ maxHeight: '70px', borderRadius: '5px', transform: 'scale(1.2)', transformOrigin: 'top left' }}
+                                    />
+                                </div>
+                                <div className="flex-1 ml-20">
+                                    <h3 className="text-2xl font-medium text-[#1b1f24] mb-1">Getting Started</h3>
+                                    <p className="text-sm text-[#1b1f24] opacity-80">
+                                        Discover how to create and publish apps within minutes
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -231,27 +231,44 @@ const Homepage = () => {
                             </p>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                 {[
-                                    { icon: Cog, title: "Try ToolJet" },
-                                    { icon: Cog, title: "System requirement" },
-                                    { icon: Target, title: "Choose your ToolJet" },
-                                    { icon: Scale, title: "Upgrade to LTS" }
+                                    {
+                                        icon: Cog,
+                                        title: "Try ToolJet",
+                                        color: "text-blue-500",
+                                        content: "Get started with ToolJet in under 2 minutes by running it with Docker. Experience a seamless setup and explore the full capabilities of ToolJet's app builder right on your machine."
+                                    },
+                                    {
+                                        icon: Cog,
+                                        title: "System Requirements",
+                                        color: "text-blue-500",
+                                        content: "Ensure your system meets the requirements for running ToolJet. Check hardware and software specifications to get the best performance from the platform."
+                                    },
+                                    {
+                                        icon: Target,
+                                        title: "Choose Your ToolJet",
+                                        color: "text-blue-500",
+                                        content: "Find the right ToolJet plan that fits your needs. Compare features and pricing to select the best option for your development workflow."
+                                    },
+                                    {
+                                        icon: Scale,
+                                        title: "Upgrade to LTS",
+                                        color: "text-blue-500",
+                                        content: "Upgrade to the Long Term Support (LTS) version of ToolJet for extended support, stability, and access to critical updates."
+                                    }
                                 ].map((item, index) => (
                                     <Card key={index} className="transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative">
-                                        <div className="absolute inset-0 rounded-lg bg-gradient-to-b from-blue-200 to-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                        <div className="relative bg-white rounded-lg p-0.5">
-                                            <div className="bg-white rounded-lg">
-                                                <CardHeader>
-                                                    <div className="w-12 h-12 rounded-lg bg-white shadow-md flex items-center justify-center transition-all duration-300 ease-in-out group-hover:shadow-lg">
-                                                        <item.icon className="w-6 h-6 text-blue-500" />
-                                                    </div>
-                                                    <CardTitle className="text-sm">{item.title}</CardTitle>
-                                                </CardHeader>
-                                                <CardContent>
-                                                    <p className="text-xs text-gray-500">
-                                                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus purus orci, dictum ut tellus ac, facilisis congue tellus.
-                                                    </p>
-                                                </CardContent>
-                                            </div>
+                                        <div className="p-8">
+                                            <CardHeader>
+                                                <div className="w-12 h-12 mb-5 rounded-lg bg-white shadow-md flex items-center justify-center transition-all duration-300 ease-in-out group-hover:shadow-lg">
+                                                    <item.icon className={`w-6 h-6 ${item.color}`} />
+                                                </div>
+                                                <CardTitle>{item.title}</CardTitle>
+                                            </CardHeader>
+                                            <CardContent>
+                                                <p className="text-sm text-gray-500">
+                                                    {item.content}
+                                                </p>
+                                            </CardContent>
                                         </div>
                                     </Card>
                                 ))}
