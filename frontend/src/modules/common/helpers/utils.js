@@ -7,4 +7,8 @@ const processErrorMessage = (error) => {
   return error?.error || 'Something went wrong. Please try again.';
 };
 
-export { processErrorMessage };
+function clearPageHistory() {
+  history.replaceState(null, null, '/');
+}
+
+export { processErrorMessage, clearPageHistory };
