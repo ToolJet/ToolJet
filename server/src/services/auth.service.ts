@@ -823,6 +823,7 @@ export class AuthService {
       password: userPassword,
       source,
       phoneNumber,
+      workspaceName,
     } = userCreateDto;
     let password = userPassword;
 
@@ -883,6 +884,14 @@ export class AuthService {
 
         // Activate default workspace
         await this.organizationUsersService.activateOrganization(defaultOrganizationUser, manager);
+        if (workspaceName) {
+          //TODO: Check if the workspace name is already taken from frontend
+          const { slug } = generateNextNameAndSlug(workspaceName);
+          await this.organizationsService.updateOrganization(defaultOrganizationUser.organizationId, {
+            name: workspaceName,
+            slug: slug,
+          });
+        }
       } else {
         throw new BadRequestException('Invalid invitation link');
       }

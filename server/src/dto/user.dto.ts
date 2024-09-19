@@ -54,6 +54,11 @@ export class CreateUserDto {
   @IsOptional()
   @Transform(({ value }) => sanitizeInput(value))
   source: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @Transform(({ value }) => sanitizeInput(value))
+  workspaceName: string;
 }
 
 export class CreateAdminDto {

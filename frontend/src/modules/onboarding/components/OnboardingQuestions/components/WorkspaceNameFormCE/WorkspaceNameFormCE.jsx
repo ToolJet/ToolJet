@@ -9,16 +9,37 @@ import { checkWorkspaceNameUniqueness } from '@/modules/onboarding/services/onbo
 import { useEnterKeyPress } from '@/modules/common/hooks';
 import '@/_styles/theme.scss';
 
+const generalDomains = [
+  'gmail.com',
+  'outlook.com',
+  'hotmail.com',
+  'live.com',
+  'yahoo.com',
+  'icloud.com',
+  'me.com',
+  'mac.com',
+  'protonmail.com',
+  'pm.me',
+  'aol.com',
+  'zoho.com',
+  'gmx.com',
+  'gmx.de',
+  'yandex.com',
+  'yandex.ru',
+  'mail.com',
+];
 const WorkspaceNameFormCE = () => {
-  const { onboardUserOrCreateAdmin, initiatedInvitedUserOnboarding } = useInvitationsStore(
+  const { inviteeEmail, onboardUserOrCreateAdmin, initiatedInvitedUserOnboarding } = useInvitationsStore(
     (state) => ({
       onboardUserOrCreateAdmin: state.onboardUserOrCreateAdmin,
       initiatedInvitedUserOnboarding: state.initiatedInvitedUserOnboarding,
+      inviteeEmail: state.inviteeEmail,
     }),
     shallow
   );
-  const { setWorkspaceName, workspaceName, accountCreated } = useOnboardingStore(
+  const { adminDetails, setWorkspaceName, workspaceName, accountCreated } = useOnboardingStore(
     (state) => ({
+      adminDetails: state.adminDetails,
       setWorkspaceName: state.setWorkspaceName,
       workspaceName: state.workspaceName,
       accountCreated: state.accountCreated,
@@ -27,7 +48,7 @@ const WorkspaceNameFormCE = () => {
   );
   useEnterKeyPress(() => handleSubmit());
 
-  const [formData, setFormData] = useState({ workspaceName: workspaceName || 'My workspace' });
+  const [formData, setFormData] = useState({ workspaceName: workspaceName });
   const [error, setError] = useState('');
   const [isFormValid, setIsFormValid] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,20 +56,37 @@ const WorkspaceNameFormCE = () => {
   const TITLE = 'Set up your workspace!';
   const description = 'Set up workspaces to manage users, applications & resources across various teams';
 
+  // useEffect(() => {
+  //   const initializeWorkspaceName = async () => {
+  //     if (initiatedInvitedUserOnboarding) {
+  //       const isUnique = await isWorkspaceNameUnique(formData.workspaceName);
+  //       if (!isUnique) {
+  //         const timestamp = new Date().getTime();
+  //         const newName = `My workspace ${timestamp}`;
+  //         setFormData({ workspaceName: newName });
+  //         setIsFormValid(true);
+  //       }
+  //     }
+  //   };
+  //   initializeWorkspaceName();
+  // }, [initiatedInvitedUserOnboarding]);
+
   useEffect(() => {
-    const initializeWorkspaceName = async () => {
-      if (initiatedInvitedUserOnboarding) {
-        const isUnique = await isWorkspaceNameUnique(formData.workspaceName);
-        if (!isUnique) {
-          const timestamp = new Date().getTime();
-          const newName = `My workspace ${timestamp}`;
-          setFormData({ workspaceName: newName });
-          setIsFormValid(true);
-        }
-      }
-    };
-    initializeWorkspaceName();
-  }, [initiatedInvitedUserOnboarding]);
+    if (!formData.workspaceName) {
+      const generateDefaultWorkspaceName = (email) => {
+        if (!email) return 'My workspace';
+
+        const [localPart, domain] = email.split('@');
+        if (generalDomains.includes(domain)) return 'My workspace';
+
+        const companyName = domain.split('.')[0];
+        return `${companyName.charAt(0).toUpperCase() + companyName.slice(1)}'s workspace`;
+      };
+      const email = adminDetails.email || inviteeEmail;
+      const defaultWorkspaceName = generateDefaultWorkspaceName(email);
+      setFormData({ workspaceName: defaultWorkspaceName });
+    }
+  }, [adminDetails.email, formData.workspaceName, inviteeEmail]);
 
   const isWorkspaceNameUnique = async (value) => {
     try {
@@ -66,6 +104,7 @@ const WorkspaceNameFormCE = () => {
   };
 
   const handleInputChange = async (name, value) => {
+    console.log('name', name, 'value', value);
     setFormData((prevData) => ({ ...prevData, [name]: value }));
     setIsTouched(true);
 
@@ -83,6 +122,7 @@ const WorkspaceNameFormCE = () => {
     if (isFormValid) {
       setIsSubmitting(true);
       try {
+        console.log('Workspace name', formData.workspaceName);
         await setWorkspaceName(formData.workspaceName);
         await onboardUserOrCreateAdmin();
       } catch (error) {
