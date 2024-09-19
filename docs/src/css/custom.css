@@ -399,5 +399,13 @@ img {
   display: none;
 }
 
+.menu__link--active {
+  max-width: 98%;
+}
+
+.docs-doc-id-doc-home-page .col {
+  padding-right: 0px !important;
+}
+
 
 
