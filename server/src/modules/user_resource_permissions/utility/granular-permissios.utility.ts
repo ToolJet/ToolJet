@@ -1,7 +1,6 @@
 import { GroupPermissions } from 'src/entities/group_permissions.entity';
-import { USER_ROLE } from '../constants/group-permissions.constant';
+import { USER_ROLE, ERROR_HANDLER } from '../constants/group-permissions.constant';
 import { BadRequestException } from '@nestjs/common';
-import { ERROR_HANDLER } from '../constants/granular-permissions.constant';
 import { EntityManager, SelectQueryBuilder } from 'typeorm';
 import { GranularPermissionQuerySearchParam, ResourceGroupActions } from '../interface/granular-permissions.interface';
 import { GranularPermissions } from 'src/entities/granular_permissions.entity';
@@ -12,7 +11,7 @@ export function validateGranularPermissionCreateOperation(group: GroupPermission
 }
 
 export function validateGranularPermissionUpdateOperation(group: GroupPermissions, organizationId: string) {
-  if (group.organizationId !== organizationId) throw new BadRequestException(ERROR_HANDLER.GROUP_DOES_NOT_EXIST);
+  if (group.organizationId !== organizationId) throw new BadRequestException(ERROR_HANDLER.GROUP_NOT_EXIST);
   if (group.name === USER_ROLE.ADMIN)
     throw new BadRequestException(ERROR_HANDLER.ADMIN_DEFAULT_GROUP_GRANULAR_PERMISSIONS);
 }
