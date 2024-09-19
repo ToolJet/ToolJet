@@ -306,27 +306,45 @@ const Homepage = () => {
                             </p>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                 {[
-                                    { icon: Layers, title: "Overview" },
-                                    { icon: FileSpreadsheet, title: "Sample data source" },
-                                    { icon: Folder, title: "Datasource library" },
-                                    { icon: Wand2, title: "Transformation" }
+                                    {
+                                        icon: Layers, 
+                                        title: "Overview",  
+                                        color: "text-blue-500", 
+                                        content: "Gain a broad understanding of ToolJet’s features and capabilities. Learn how it simplifies app development with powerful tools and an intuitive interface."
+                                    },
+                                    {
+                                        icon: FileSpreadsheet, 
+                                        title: "Sample Data Source",  
+                                        color: "text-blue-500", 
+                                        content: "Explore sample data sources to quickly integrate with ToolJet. Test features and workflows using predefined datasets."
+                                    },
+                                    {
+                                        icon: Folder, 
+                                        title: "Datasource Library",  
+                                        color: "text-blue-500", 
+                                        content: "Browse ToolJet’s datasource library to connect with databases, APIs, and external services seamlessly."
+                                    },
+                                    {
+                                        icon: Wand2, 
+                                        title: "Transformation",  
+                                        color: "text-blue-500", 
+                                        content: "Leverage ToolJet’s transformation capabilities to manipulate and format data from various sources with ease."
+                                    }
+  
                                 ].map((item, index) => (
                                     <Card key={index} className="transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative">
-                                        <div className="absolute inset-0 rounded-lg bg-gradient-to-b from-green-200 to-green-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                        <div className="relative bg-white rounded-lg p-0.5">
-                                            <div className="bg-white rounded-lg">
-                                                <CardHeader>
-                                                    <div className="w-12 h-12 rounded-lg bg-white shadow-md flex items-center justify-center transition-all duration-300 ease-in-out group-hover:shadow-lg">
-                                                        <item.icon className="w-6 h-6 text-green-500" />
-                                                    </div>
-                                                    <CardTitle className="text-sm">{item.title}</CardTitle>
-                                                </CardHeader>
-                                                <CardContent>
-                                                    <p className="text-xs text-gray-500">
-                                                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus purus orci, dictum ut tellus ac, facilisis congue tellus.
-                                                    </p>
-                                                </CardContent>
-                                            </div>
+                                        <div className="p-8">
+                                            <CardHeader>
+                                                <div className="w-12 h-12 mb-5 rounded-lg bg-white shadow-md flex items-center justify-center transition-all duration-300 ease-in-out group-hover:shadow-lg">
+                                                    <item.icon className={`w-6 h-6 ${item.color}`} />
+                                                </div>
+                                                <CardTitle>{item.title}</CardTitle>
+                                            </CardHeader>
+                                            <CardContent>
+                                                <p className="text-sm text-gray-500">
+                                                    {item.content}
+                                                </p>
+                                            </CardContent>
                                         </div>
                                     </Card>
                                 ))}
@@ -369,20 +387,40 @@ const Homepage = () => {
                             </p>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 {[
-                                    { icon: GitBranch, title: "Git Sync" },
-                                    { icon: Box, title: "Multi-Environment" },
-                                    { icon: GitMerge, title: "Versioning and release" }
+                                    {
+                                        icon: GitBranch, 
+                                        title: "Git Sync", 
+                                        color: "text-blue-500", 
+                                        content: "Seamlessly sync your ToolJet projects with Git repositories, enabling version control and collaboration across teams."
+                                    },
+                                    {
+                                        icon: Box, 
+                                        title: "Multi-Environment", 
+                                        color: "text-blue-500", 
+                                        content: "Easily manage and deploy applications across multiple environments, ensuring smooth transitions between development, staging, and production."
+                                    },
+                                    {
+                                        icon: GitMerge, 
+                                        title: "Versioning and Release", 
+                                        color: "text-blue-500", 
+                                        content: "Implement version control and release management to track changes, roll back updates, and maintain stable app deployments."
+                                    }
+  
                                 ].map((item, index) => (
-                                    <Card key={index} className="bg-white transition-all duration-150 ease-in-out hover:shadow-lg hover:border-blue-500 cursor-pointer">
-                                        <CardHeader>
-                                            <item.icon className="w-8 h-8 text-blue-500" />
-                                            <CardTitle className="text-sm">{item.title}</CardTitle>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <p className="text-xs text-gray-500">
-                                                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus purus orci, dictum ut tellus ac, facilisis congue tellus.
-                                            </p>
-                                        </CardContent>
+                                    <Card key={index} className="transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative">
+                                        <div className="p-8">
+                                            <CardHeader>
+                                                <div className="w-12 h-12 mb-5 rounded-lg bg-white shadow-md flex items-center justify-center transition-all duration-300 ease-in-out group-hover:shadow-lg">
+                                                    <item.icon className={`w-6 h-6 ${item.color}`} />
+                                                </div>
+                                                <CardTitle>{item.title}</CardTitle>
+                                            </CardHeader>
+                                            <CardContent>
+                                                <p className="text-sm text-gray-500">
+                                                    {item.content}
+                                                </p>
+                                            </CardContent>
+                                        </div>
                                     </Card>
                                 ))}
                             </div>
@@ -396,21 +434,46 @@ const Homepage = () => {
                             </p>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                 {[
-                                    { icon: ShoppingBag, title: "Marketplace" },
-                                    { icon: Wand, title: "Copilot" },
-                                    { icon: Flag, title: "Tracking" },
-                                    { icon: ShieldCheck, title: "Security" }
+                                        {
+                                            icon: ShoppingBag, 
+                                            title: "Marketplace", 
+                                            color: "text-green-500", 
+                                            content: "Discover a variety of plugins, templates, and extensions in ToolJet’s marketplace to enhance your app-building experience."
+                                        },
+                                        {
+                                            icon: Wand, 
+                                            title: "Copilot", 
+                                            color: "text-green-500", 
+                                            content: "Boost productivity with ToolJet Copilot. Get AI-powered suggestions and assistance while building your applications."
+                                        },
+                                        {
+                                            icon: Flag, 
+                                            title: "Tracking", 
+                                            color: "text-green-500", 
+                                            content: "Track app performance and user activity with built-in analytics tools, giving you valuable insights to optimize your applications."
+                                        },
+                                        {
+                                            icon: ShieldCheck, 
+                                            title: "Security", 
+                                            color: "text-green-500", 
+                                            content: "Keep your data and applications safe with ToolJet’s robust security features, including encryption, authentication, and access control."
+                                        }
+  
                                 ].map((item, index) => (
-                                    <Card key={index} className="bg-white transition-all duration-150 ease-in-out hover:shadow-lg hover:border-blue-500 cursor-pointer">
-                                        <CardHeader>
-                                            <item.icon className="w-8 h-8 text-green-500" />
-                                            <CardTitle className="text-sm">{item.title}</CardTitle>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <p className="text-xs text-gray-500">
-                                                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus purus orci, dictum ut tellus ac, facilisis congue tellus.
-                                            </p>
-                                        </CardContent>
+                                    <Card key={index} className="transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative">
+                                        <div className="p-8">
+                                            <CardHeader>
+                                                <div className="w-12 h-12 mb-5 rounded-lg bg-white shadow-md flex items-center justify-center transition-all duration-300 ease-in-out group-hover:shadow-lg">
+                                                    <item.icon className={`w-6 h-6 ${item.color}`} />
+                                                </div>
+                                                <CardTitle>{item.title}</CardTitle>
+                                            </CardHeader>
+                                            <CardContent>
+                                                <p className="text-sm text-gray-500">
+                                                    {item.content}
+                                                </p>
+                                            </CardContent>
+                                        </div>
                                     </Card>
                                 ))}
                             </div>
