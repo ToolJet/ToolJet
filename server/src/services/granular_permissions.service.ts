@@ -21,7 +21,7 @@ import {
   DATA_BASE_CONSTRAINTS,
   USER_ROLE,
 } from '@modules/user_resource_permissions/constants/group-permissions.constant';
-import { ERROR_HANDLER } from '@modules/user_resource_permissions/constants/granular-permissions.constant';
+import { ERROR_HANDLER } from '@modules/user_resource_permissions/constants/group-permissions.constant';
 import {
   getAllGranularPermissionQuery,
   getGranularPermissionQuery,
@@ -144,7 +144,7 @@ export class GranularPermissionsService {
       if (groupEditors.length && canEdit)
         throw new BadRequestException({
           message: {
-            error: ERROR_HANDLER.EDITOR_LEVEL_PERMISSIONS_NOT_ALLOWED,
+            error: ERROR_HANDLER.EDITOR_LEVEL_PERMISSION_NOT_ALLOWED_END_USER,
             data: groupEditors.map((user) => user.email),
             title: 'Cannot create permissions',
           },

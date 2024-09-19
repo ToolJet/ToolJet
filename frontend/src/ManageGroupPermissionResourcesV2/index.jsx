@@ -150,7 +150,8 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
         toast.success('Group permissions updated');
         this.fetchGroupPermission(groupPermissionId);
       })
-      .catch(({ error }) => {
+      .catch((e) => {
+        const error = e?.error;
         if (error?.type) {
           this.setState({
             showAutoRoleChangeModal: true,
@@ -160,13 +161,16 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
           });
           return;
         }
-        this.setState({
-          errorMessage: error?.error,
-          showEditRoleErrorModal: true,
-          errorListItems: error?.data,
-          errorTitle: error?.title ? error?.title : 'Cannot add this permission to the group',
-          errorIconName: 'lock',
-        });
+        // status code 451 - license error handled on separate modal
+        if (e?.statusCode !== 451) {
+          this.setState({
+            errorMessage: error?.error,
+            showEditRoleErrorModal: true,
+            errorListItems: error?.data,
+            errorTitle: error?.title ? error?.title : 'Cannot add this permission to the group',
+            errorIconName: 'lock',
+          });
+        }
       });
   };
 

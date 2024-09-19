@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FolderApp } from 'src/entities/folder_app.entity';
-import { getFolderQuery } from 'src/helpers/queries';
+import { getFolderQuery, getAllFoldersQuery } from 'src/helpers/queries';
 
 import { User } from '../../src/entities/user.entity';
 import { Folder } from '../entities/folder.entity';
@@ -42,9 +42,19 @@ export class FoldersService {
     }, [{ dbConstraint: DataBaseConstraints.FOLDER_NAME_UNIQUE, message: 'This folder name is already taken.' }]);
   }
 
-  async allFolders(user: User, userAppPermissions: UserAppsPermissions, searchKey?: string): Promise<Folder[]> {
+  async allFoldersWithAppCount(
+    user: User,
+    userAppPermissions: UserAppsPermissions,
+    searchKey?: string
+  ): Promise<Folder[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       return await getFolderQuery(user.organizationId, manager, userAppPermissions, searchKey).distinct().getMany();
+    });
+  }
+
+  async allFolders(user: User, type = 'front-end'): Promise<Folder[]> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return await getAllFoldersQuery(user.organizationId, manager, type).getMany();
     });
   }
 
@@ -56,18 +66,17 @@ export class FoldersService {
       })
     ).App;
 
-    const allFolderList = await this.allFolders(user, userAppPermissions);
-    if (!searchKey || allFolderList.length === 0) {
+    const allFolderList = await this.allFolders(user);
+    if (allFolderList.length === 0) {
       return allFolderList;
     }
 
-    const folders = await this.allFolders(user, userAppPermissions, searchKey);
+    const folders = await this.allFoldersWithAppCount(user, userAppPermissions, searchKey);
 
     allFolderList.forEach((folder, index) => {
       const currentFolder = folders.find((f) => f.id === folder.id);
       if (currentFolder) {
-        allFolderList[index] = currentFolder;
-        allFolderList[index].folderApps;
+        allFolderList[index].folderApps = [...(currentFolder?.folderApps || [])];
         allFolderList[index].generateCount();
         console.log('folder found');
       } else {

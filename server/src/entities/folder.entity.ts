@@ -53,7 +53,7 @@ export class Folder {
   @AfterLoad()
   generateCount(): void {
     if (this.folderApps) {
-      this.count = this.folderApps.length;
+      this.count = this.folderApps?.length || 0;
     }
   }
 }
