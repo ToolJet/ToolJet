@@ -44,7 +44,8 @@ import { UserResourcePermissionsModule } from '@modules/user_resource_permission
 import { PermissionsModule } from '@modules/permissions/permissions.module';
 import { GetConnection } from '@modules/database/getConnection';
 import { InstanceSettingsModule } from '@instance-settings/module';
-import { StaticFileServerModule } from '@modules/static_file_server/static_file_server.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 const imports = [
   ScheduleModule.forRoot(),
@@ -105,8 +106,17 @@ const imports = [
   CopilotModule,
   OrganizationConstantModule,
   TooljetDbModule,
-  StaticFileServerModule,
 ];
+
+if (process.env.SERVE_CLIENT !== 'false' && process.env.NODE_ENV === 'production') {
+  imports.unshift(
+    ServeStaticModule.forRoot({
+      // Have to remove trailing slash of SUB_PATH.
+      serveRoot: process.env.SUB_PATH === undefined ? '' : process.env.SUB_PATH.replace(/\/$/, ''),
+      rootPath: join(__dirname, '../../../', 'frontend/build'),
+    })
+  );
+}
 
 if (process.env.APM_VENDOR == 'sentry') {
   imports.unshift(
