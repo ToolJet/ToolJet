@@ -55,38 +55,32 @@ const WorkspaceNameFormCE = () => {
   const [isTouched, setIsTouched] = useState(false);
   const TITLE = 'Set up your workspace!';
   const description = 'Set up workspaces to manage users, applications & resources across various teams';
-
-  // useEffect(() => {
-  //   const initializeWorkspaceName = async () => {
-  //     if (initiatedInvitedUserOnboarding) {
-  //       const isUnique = await isWorkspaceNameUnique(formData.workspaceName);
-  //       if (!isUnique) {
-  //         const timestamp = new Date().getTime();
-  //         const newName = `My workspace ${timestamp}`;
-  //         setFormData({ workspaceName: newName });
-  //         setIsFormValid(true);
-  //       }
-  //     }
-  //   };
-  //   initializeWorkspaceName();
-  // }, [initiatedInvitedUserOnboarding]);
-
   useEffect(() => {
-    if (!formData.workspaceName) {
-      const generateDefaultWorkspaceName = (email) => {
-        if (!email) return 'My workspace';
+    const generateDefaultWorkspaceName = async (email) => {
+      if (!email) return 'My workspace';
+      const [localPart, domain] = email.split('@');
+      if (generalDomains.includes(domain)) return 'My workspace';
 
-        const [localPart, domain] = email.split('@');
-        if (generalDomains.includes(domain)) return 'My workspace';
-
-        const companyName = domain.split('.')[0];
-        return `${companyName.charAt(0).toUpperCase() + companyName.slice(1)}'s workspace`;
-      };
-      const email = adminDetails.email || inviteeEmail;
-      const defaultWorkspaceName = generateDefaultWorkspaceName(email);
+      const companyName = domain.split('.')[0];
+      const trimmedCompanyName = companyName.substring(0, Math.min(companyName.length, 38));
+      const isUnique = await isWorkspaceNameUnique(
+        `${trimmedCompanyName.charAt(0).toUpperCase() + trimmedCompanyName.slice(1)}'s workspace`
+      );
+      if (isUnique) {
+        return `${trimmedCompanyName.charAt(0).toUpperCase() + trimmedCompanyName.slice(1)}'s workspace`;
+      }
+      const trimmedCompanyNamee = companyName.substring(0, 22);
+      const timestamp = new Date().getTime();
+      return `${trimmedCompanyNamee.charAt(0).toUpperCase() + trimmedCompanyNamee.slice(1) + timestamp}'s workspace`;
+    };
+    const setWorkspaceName = async () => {
+      const defaultWorkspaceName = await generateDefaultWorkspaceName(adminDetails.email || inviteeEmail);
+      console.log('Default workspace name', defaultWorkspaceName);
       setFormData({ workspaceName: defaultWorkspaceName });
-    }
-  }, [adminDetails.email, formData.workspaceName, inviteeEmail]);
+      setIsFormValid(true);
+    };
+    setWorkspaceName();
+  }, [adminDetails.email, inviteeEmail]);
 
   const isWorkspaceNameUnique = async (value) => {
     try {
