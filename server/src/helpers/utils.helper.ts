@@ -167,8 +167,9 @@ export const processDataInBatches = async <T>(
 };
 
 export const generateNextNameAndSlug = (firstWord: string) => {
+  firstWord = firstWord.length > 35 ? firstWord.slice(0, 35) : firstWord;
   const name = `${firstWord} ${Date.now()}`;
-  const slug = name.replace(/\s+/g, '-').toLowerCase();
+  const slug = generateWorkspaceSlug(name);
   return {
     name,
     slug,
