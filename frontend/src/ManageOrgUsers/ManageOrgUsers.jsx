@@ -45,6 +45,7 @@ class ManageOrgUsersComponent extends React.Component {
       errorItemList: [],
       errorTitle: '',
       errorIconName: 'usergear',
+      resetSearch: false,
     };
   }
 
@@ -129,7 +130,7 @@ class ManageOrgUsersComponent extends React.Component {
       .archive(id)
       .then(() => {
         toast.success('The user has been archived');
-        this.setState({ archivingUser: null });
+        this.setState({ archivingUser: null, resetSearch: !this.state.resetSearch });
         this.fetchUsers(this.state.currentPage, this.state.options);
       })
       .catch(({ error }) => {
@@ -145,7 +146,7 @@ class ManageOrgUsersComponent extends React.Component {
       .unarchive(id)
       .then(() => {
         toast.success('The user has been unarchived');
-        this.setState({ unarchivingUser: null });
+        this.setState({ unarchivingUser: null, resetSearch: !this.state.resetSearch });
         this.fetchUsers(this.state.currentPage, this.state.options);
       })
       .catch(({ error }) => {
@@ -257,6 +258,7 @@ class ManageOrgUsersComponent extends React.Component {
             isInviteUsersDrawerOpen: false,
             currentEditingUser: null,
             userDrawerMode: USER_DRAWER_MODES.CREATE,
+            resetSearch: !this.state.resetSearch,
           });
         })
         .catch(({ error }) => {
@@ -355,6 +357,7 @@ class ManageOrgUsersComponent extends React.Component {
       errorItemList,
       errorTitle,
       errorIconName,
+      resetSearch,
     } = this.state;
     return (
       <ErrorBoundary showFallback={true}>
@@ -420,6 +423,7 @@ class ManageOrgUsersComponent extends React.Component {
                   filterList={this.filterList}
                   darkMode={this.props.darkMode}
                   clearIconPressed={() => this.fetchUsers()}
+                  resetSearch={resetSearch}
                 />
 
                 {users?.length === 0 && (
