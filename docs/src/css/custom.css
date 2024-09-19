@@ -380,7 +380,7 @@ img {
 }
 
 .docs-doc-id-getting-started\/platform-overview .padding-top--md {
-  padding: 0px;
+  padding: 0px !important;
 }
 
 .docs-doc-id-getting-started\/platform-overview .padding-bottom--lg {
