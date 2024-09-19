@@ -4,12 +4,12 @@ import { AuthService } from '@services/auth.service';
 import { OrganizationsService } from '@services/organizations.service';
 import { CreateAdminDto } from '@dto/user.dto';
 import { Response } from 'express';
-import { USER_ROLE } from '@module/user_resource_permissions/constants/group-permissions.constant';
 import { generateWorkspaceSlug } from '@helpers/utils.helper';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { OrganizationUsersService } from '@services/organization_users.service';
 import { MetadataService } from '@services/metadata.service';
 import { USER_STATUS } from '@helpers/user_lifecycle';
+import { USER_ROLE } from '@modules/user_resource_permissions/constants/group-permissions.constant';
 
 @Injectable()
 export class OnboardingService {

@@ -1,6 +1,10 @@
 import create from 'zustand';
 import { zustandDevTools } from '@/_stores/utils';
 import { setupFirstUser } from '@/modules/onboarding/services/onboarding.service';
+import { appsService } from '@/_services/apps.service';
+import { getSubpath } from '@/_helpers/routes';
+import { authenticationService } from '@/_services';
+import { utils } from '@/modules/common/helpers';
 
 const useCEOnboardingStore = create(
   zustandDevTools((set, get) => ({
@@ -60,7 +64,18 @@ const useCEOnboardingStore = create(
         await setupFirstUser(data);
         set({ accountCreated: true });
       }
-      window.location.href = '/';
+      get().createNewOnboardingApp();
+    },
+
+    createNewOnboardingApp: async () => {
+      const session = authenticationService.currentSessionValue;
+      const app = await appsService.createApp({ name: 'My App' });
+      const appId = app?.id;
+      utils.clearPageHistory();
+      const path = getSubpath()
+        ? `${getSubpath()}/${session?.current_organization_slug}/apps/${appId}`
+        : `/${session?.current_organization_slug}/apps/${appId}`;
+      window.location.href = path;
     },
 
     setAccountCreated: (value) => set({ accountCreated: value }),
