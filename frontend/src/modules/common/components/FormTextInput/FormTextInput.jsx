@@ -14,11 +14,23 @@ const FormTextInput = ({
   maxLength,
   disableStartAdornment = false,
 }) => {
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    // Trimming the value from front and back field for email
+    const trimmedValue = name === 'email' ? value.trim() : value;
+    onChange({ target: { name, value: trimmedValue } });
+  };
   return (
     <div className={`form-input ${disabled ? 'form-input--disabled' : ''}`}>
-      <label htmlFor={name} className="form-input__label" data-cy={`${dataCy}-label`}>
-        {label} {!disableStartAdornment && <span className="form-input__required">*</span>}
-      </label>
+      {!disabled ? (
+        <label htmlFor={name} className="form-input__label" data-cy={`${dataCy}-label`}>
+          {label} {!disableStartAdornment && <span className="form-input__required">*</span>}
+        </label>
+      ) : (
+        <label htmlFor={name} className="form-input__label" data-cy={`${dataCy}-label`}>
+          {label} {!disableStartAdornment && <span className="form-input__required-disabled">*</span>}
+        </label>
+      )}
 
       {disabled ? (
         <p className="form-input__field form-input__field--disabled" data-cy={dataCy}>
@@ -33,17 +45,16 @@ const FormTextInput = ({
             name={name}
             placeholder={placeholder}
             value={value}
-            onChange={onChange}
+            onChange={handleChange}
             required
             data-cy={dataCy}
             autoComplete="off"
             {...(maxLength ? { maxLength } : {})}
           />
-          <span className="tj-input-error form-input__error">{error}</span>
+          <span className={`tj-input-error form-input__error${error ? '__error-enabled' : ''}`}>{error}</span>
         </>
       )}
     </div>
   );
 };
-
 export default FormTextInput;
