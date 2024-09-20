@@ -889,6 +889,7 @@ export class AuthService {
         if (workspaceName) {
           //TODO: Check if the workspace name is already taken from frontend
           let slug: string;
+          // if the timestamp is already attached -> we won't attach the timestamp again to the slug
           if (isTimeStampAttachedToWorkspaceName) {
             slug = generateWorkspaceSlug(workspaceName);
           } else {
