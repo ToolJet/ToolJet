@@ -78,13 +78,12 @@ const WorkspaceNameFormCE = () => {
       const trimmedCompanyNamee = companyName.substring(0, 22);
       return `${trimmedCompanyNamee.charAt(0).toUpperCase() + trimmedCompanyNamee.slice(1) + timestamp}'s workspace`;
     };
-    const setWorkspaceName = async () => {
+    const handleDefaultWorkspaceName = async () => {
       const defaultWorkspaceName = await generateDefaultWorkspaceName(adminDetails.email || inviteeEmail);
-      console.log('Default workspace name', defaultWorkspaceName);
       setFormData({ workspaceName: defaultWorkspaceName });
       setIsFormValid(true);
     };
-    setWorkspaceName();
+    handleDefaultWorkspaceName();
   }, [adminDetails.email, inviteeEmail]);
 
   const isWorkspaceNameUnique = async (value) => {
@@ -103,7 +102,6 @@ const WorkspaceNameFormCE = () => {
   };
 
   const handleInputChange = async (name, value) => {
-    console.log('name', name, 'value', value);
     setFormData((prevData) => ({ ...prevData, [name]: value }));
     setIsTouched(true);
 
@@ -121,7 +119,6 @@ const WorkspaceNameFormCE = () => {
     if (isFormValid) {
       setIsSubmitting(true);
       try {
-        console.log('Workspace name', formData.workspaceName);
         await setWorkspaceName(formData.workspaceName);
         await onboardUserOrCreateAdmin();
       } catch (error) {
