@@ -1,6 +1,7 @@
 ---
 id: platform-overview
 title: Platform Overview
+slug: /
 ---
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
