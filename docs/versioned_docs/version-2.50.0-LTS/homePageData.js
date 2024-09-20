@@ -62,3 +62,39 @@ export const resourceCards = [
     { icon: Flag, title: "Tracking", color: "text-green-500", content: "Track app performance and user activity with built-in analytics tools, giving you valuable insights to optimize your applications." },
     { icon: ShieldCheck, title: "Security", color: "text-green-500", content: "Keep your data and applications safe with ToolJet's robust security features, including encryption, authentication, and access control." }
 ];
+
+export const textLabels = {
+    title: {
+        prefix: "ToolJet",
+        highlight: "Documentation"
+      },    
+    subtitle: "Learn how to get up and running with ToolJet",
+    gettingStarted: {
+      title: "Getting Started",
+      description: "Discover how to create and publish apps within minutes"
+    },
+    setupToolJet: {
+      title: "Setup ToolJet",
+      description: "Check out the different methods you can use to deploy ToolJet on your machine"
+    },
+    deployOn: {
+      title: "Deploy on"
+    },
+    exploreMore: "Explore more details",
+    bringData: {
+      title: "Bring your data to ToolJet",
+      description: "Check out the different methods you can use to deploy ToolJet on your machine"
+    },
+    manageOrganization: {
+      title: "Manage your organization",
+      description: "Check out the different methods you can use to deploy ToolJet on your machine"
+    },
+    manageReleases: {
+      title: "Manage releases",
+      description: "Check out the different methods you can use to deploy ToolJet on your machine"
+    },
+    additionalResources: {
+      title: "Additional resources",
+      description: "Check out the different methods you can use to deploy ToolJet on your machine"
+    }
+  };
