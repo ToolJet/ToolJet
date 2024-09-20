@@ -20,6 +20,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   const { t } = useTranslation();
   const isSlugSet = useRef(false); // Flag to track if slug has been initially set
   const sluginput = useRef('');
+  const [isDisabled, setIsDisabled] = useState(true);
 
   const createOrganization = () => {
     let emptyError = false;
@@ -155,6 +156,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
             errorMsg: errResponse?.error,
           };
           setSlug({ value: defaultValue, error: error?.errorMsg });
+          sluginput.current.value = defaultValue;
         }
       };
       checkWorkspaceUniqueness();
@@ -167,7 +169,17 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
     }
   }, [name.value, slug.value, slugProgress, workspaceNameProgress, isSlugSet]);
 
-  const isDisabled = isCreating || isNameDisabled || isSlugDisabled || slugProgress || workspaceNameProgress;
+  useEffect(() => {
+    const isDisabled =
+      isCreating ||
+      isNameDisabled ||
+      isSlugDisabled ||
+      slugProgress ||
+      workspaceNameProgress ||
+      slug?.error ||
+      name?.error;
+    setIsDisabled(isDisabled);
+  }, [isCreating, isNameDisabled, isSlugDisabled, slugProgress, workspaceNameProgress, name, slug]);
 
   return (
     <AlertDialog
