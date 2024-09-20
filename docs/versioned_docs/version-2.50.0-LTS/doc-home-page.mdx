@@ -9,6 +9,7 @@ import './homepage.css';
 import { ArrowRight } from 'lucide-react';
 import gettingStartedImage from '../../src/pages/getting-started.png';
 import {
+    textLabels,
     featureCards,
     setupCards,
     deployOptions,
@@ -128,10 +129,10 @@ export const SectionContainer = ({ title, description, children }) => (
                 {/* ToolJet Documentation Section */}
                 <div className="space-y-6 relative display-block">
                     <h1 className="text-4xl font-bold">
-                        ToolJet <span className="text-blue-600">Documentation</span>
+                        {textLabels.title.prefix} <span className="text-blue-600">{textLabels.title.highlight}</span>
                     </h1>
                     <p className="text-xl text-gray-600">
-                        Learn how to get up and running with ToolJet
+                        {textLabels.subtitle}
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -151,9 +152,9 @@ export const SectionContainer = ({ title, description, children }) => (
                             />
                         </div>
                         <div className="flex-1 ml-20">
-                            <h3 className="text-2xl font-medium text-[#1b1f24] mb-1">Getting Started</h3>
+                            <h3 className="text-2xl font-medium text-[#1b1f24] mb-1">{textLabels.gettingStarted.title}</h3>
                             <p className="text-sm text-[#1b1f24] opacity-80">
-                                Discover how to create and publish apps within minutes
+                                {textLabels.gettingStarted.description}
                             </p>
                         </div>
                     </div>
@@ -163,8 +164,8 @@ export const SectionContainer = ({ title, description, children }) => (
             <div className="w-full p-10 space-y-12 bg-white">
                 {/* Setup ToolJet Section */}
                 <SectionContainer 
-                    title="Setup ToolJet" 
-                    description="Check out the different methods you can use to deploy ToolJet on your machine"
+                    title={textLabels.setupToolJet.title}
+                    description={textLabels.setupToolJet.description}
                 >
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         {setupCards.map((card, index) => (
@@ -174,7 +175,7 @@ export const SectionContainer = ({ title, description, children }) => (
                 </SectionContainer>
 
                 {/* Deploy on Section */}
-                <SectionContainer title="Deploy on">
+                <SectionContainer title={textLabels.deployOn.title}>
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                         {deployOptions.map((option, index) => (
                             <SmallCard key={index} {...option} />
@@ -191,8 +192,8 @@ export const SectionContainer = ({ title, description, children }) => (
 
                 {/* Bring your data to ToolJet section */}
                 <SectionContainer 
-                    title="Bring your data to ToolJet" 
-                    description="Check out the different methods you can use to deploy ToolJet on your machine"
+                    title={textLabels.bringData.title}
+                    description={textLabels.bringData.description}
                 >
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         {dataCards.map((card, index) => (
@@ -204,8 +205,8 @@ export const SectionContainer = ({ title, description, children }) => (
                 {/* Manage your organization section */}
 
                 <SectionContainer 
-                    title="Manage your organization" 
-                    description="Check out the different methods you can use to deploy ToolJet on your machine"
+                    title={textLabels.manageOrganization.title}
+                    description={textLabels.manageOrganization.description}
                 >
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {organizationCards.map((card, index) => (
@@ -217,8 +218,8 @@ export const SectionContainer = ({ title, description, children }) => (
                 {/* Manage releases section */}
 
                 <SectionContainer 
-                    title="Manage releases" 
-                    description="Check out the different methods you can use to deploy ToolJet on your machine"
+                    title={textLabels.manageReleases.title}
+                    description={textLabels.manageReleases.description}
                 >
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {releaseCards.map((card, index) => (
@@ -230,8 +231,8 @@ export const SectionContainer = ({ title, description, children }) => (
                 {/* Additional resources section */}
 
                 <SectionContainer 
-                    title="Additional resources" 
-                    description="Check out the different methods you can use to deploy ToolJet on your machine"
+                    title={textLabels.additionalResources.title}
+                    description={textLabels.additionalResources.description}
                 >
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         {resourceCards.map((card, index) => (
