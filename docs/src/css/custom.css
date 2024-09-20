@@ -365,3 +365,47 @@ img {
     border-bottom-right-radius: 5px;
   }
 }
+
+.docs-doc-id-doc-home-page article {
+  padding-left: 0px;
+  padding-right: 0px;
+}
+
+.docs-doc-id-doc-home-page .theme-doc-breadcrumbs {
+  display: none;
+}
+
+.docs-doc-id-doc-home-page .theme-doc-version-badge {
+  display: none;
+}
+
+.docs-doc-id-doc-home-page .padding-top--md {
+  padding: 0px !important;
+}
+
+.docs-doc-id-doc-home-page .padding-bottom--lg {
+  padding: 0px;
+}
+
+.docs-doc-id-doc-home-page header {
+  display: none;
+}
+
+.docs-doc-id-doc-home-page .theme-doc-footer {
+  display: none;
+}
+
+.docs-doc-id-doc-home-page .pagination-nav {
+  display: none;
+}
+
+.menu__link--active {
+  max-width: 98%;
+}
+
+.docs-doc-id-doc-home-page .col {
+  padding-right: 0px !important;
+}
+
+
+
