@@ -27,7 +27,7 @@ The App (which credentials are provided) needs to be installed in the workspace 
 
 <div style={{paddingTop:'24px'}}>
 
-## Querying SendGrid
+## Querying Slack
 
 1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
 2. Select the **Slack** datasource added in previous step.
@@ -40,7 +40,7 @@ The App (which credentials are provided) needs to be installed in the workspace 
 
 <div style={{paddingTop:'24px'}}>
 
-## Supported operations
+## Supported Operations
 
 1. **[List Members](#list-members)**
 2. **[Send Message](#send-message)**
