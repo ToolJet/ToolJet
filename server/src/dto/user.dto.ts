@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsNotEmpty, MinLength, IsEmail } from 'class-validator';
+import { IsString, IsOptional, IsNotEmpty, MinLength, IsEmail, IsBoolean } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { lowercaseString, sanitizeInput } from 'src/helpers/utils.helper';
 import { PartialType } from '@nestjs/mapped-types';
@@ -59,6 +59,10 @@ export class CreateUserDto {
   @IsNotEmpty()
   @Transform(({ value }) => sanitizeInput(value))
   workspaceName: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isTimeStampAttachedToWorkspaceName: boolean;
 }
 
 export class CreateAdminDto {

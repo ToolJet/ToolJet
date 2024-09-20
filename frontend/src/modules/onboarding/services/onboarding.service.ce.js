@@ -44,7 +44,15 @@ const onFirstUserAccountSetupSuccess = (userResponse, callBack) => {
   });
 };
 
-function onboarding({ companyName, buildPurpose, workspaceName, token, organizationToken, source }) {
+function onboarding({
+  companyName,
+  buildPurpose,
+  workspaceName,
+  token,
+  organizationToken,
+  source,
+  isTimeStampAttachedToWorkspaceName,
+}) {
   const payload = {
     ...(companyName && { companyName }),
     ...(buildPurpose && { buildPurpose }),
@@ -52,6 +60,7 @@ function onboarding({ companyName, buildPurpose, workspaceName, token, organizat
     ...(organizationToken && { organizationToken }),
     ...(source && { source }),
     ...(workspaceName && { workspaceName }),
+    ...(isTimeStampAttachedToWorkspaceName && { isTimeStampAttachedToWorkspaceName }),
   };
 
   const requestOptions = {

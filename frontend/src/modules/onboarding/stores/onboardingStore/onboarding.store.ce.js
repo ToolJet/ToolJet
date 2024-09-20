@@ -21,6 +21,7 @@ const useCEOnboardingStore = create(
     currentStep: 0,
     totalSteps: 1,
     accountCreated: false,
+    isTimeStampAttachedToWorkspaceName: false,
 
     // Action to update admin details
     setAdminDetails: (details) =>
@@ -30,6 +31,8 @@ const useCEOnboardingStore = create(
 
     // Action to set workspace name
     setWorkspaceName: (name) => set({ workspaceName: name }),
+
+    enableTimeStampOnWorkspaceName: () => set({ isTimeStampAttachedToWorkspaceName: true }),
 
     // Action to move to next step
     nextStep: () => set((state) => ({ currentStep: state.currentStep + 1 })),
@@ -47,6 +50,7 @@ const useCEOnboardingStore = create(
         workspaceName: '',
         currentStep: 0,
         accountCreated: false,
+        isTimeStampAttachedToWorkspaceName: false,
       }),
 
     // Action to prepare data for API call

@@ -37,15 +37,17 @@ const WorkspaceNameFormCE = () => {
     }),
     shallow
   );
-  const { adminDetails, setWorkspaceName, workspaceName, accountCreated } = useOnboardingStore(
-    (state) => ({
-      adminDetails: state.adminDetails,
-      setWorkspaceName: state.setWorkspaceName,
-      workspaceName: state.workspaceName,
-      accountCreated: state.accountCreated,
-    }),
-    shallow
-  );
+  const { adminDetails, setWorkspaceName, workspaceName, accountCreated, enableTimeStampOnWorkspaceName } =
+    useOnboardingStore(
+      (state) => ({
+        adminDetails: state.adminDetails,
+        setWorkspaceName: state.setWorkspaceName,
+        workspaceName: state.workspaceName,
+        accountCreated: state.accountCreated,
+        enableTimeStampOnWorkspaceName: state.enableTimeStampOnWorkspaceName,
+      }),
+      shallow
+    );
   useEnterKeyPress(() => handleSubmit());
 
   const [formData, setFormData] = useState({ workspaceName: workspaceName });
@@ -65,6 +67,7 @@ const WorkspaceNameFormCE = () => {
         if (isDefaultWorkspaceNameUnique) {
           return 'My workspace';
         }
+        await enableTimeStampOnWorkspaceName();
         return `My workspace ${timestamp}`;
       }
       const companyName = domain.split('.')[0];
@@ -76,6 +79,7 @@ const WorkspaceNameFormCE = () => {
         return `${trimmedCompanyName.charAt(0).toUpperCase() + trimmedCompanyName.slice(1)}'s workspace`;
       }
       const trimmedCompanyNamee = companyName.substring(0, 22);
+      await enableTimeStampOnWorkspaceName();
       return `${trimmedCompanyNamee.charAt(0).toUpperCase() + trimmedCompanyNamee.slice(1) + timestamp}'s workspace`;
     };
     const handleDefaultWorkspaceName = async () => {
@@ -100,7 +104,6 @@ const WorkspaceNameFormCE = () => {
       return false;
     }
   };
-
   const handleInputChange = async (name, value) => {
     setFormData((prevData) => ({ ...prevData, [name]: value }));
     setIsTouched(true);
@@ -113,7 +116,6 @@ const WorkspaceNameFormCE = () => {
       setIsFormValid(isUnique);
     }
   };
-
   const handleSubmit = async (e) => {
     e?.preventDefault();
     if (isFormValid) {

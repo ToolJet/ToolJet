@@ -28,12 +28,13 @@ const useInvitationsStore = create(
     onboardUser: async () => {
       if (!useOnboardingStore.getState().accountCreated) {
         const { token, source, organizationToken } = get();
-        const { workspaceName, setAccountCreated } = useOnboardingStore.getState();
+        const { workspaceName, setAccountCreated, isTimeStampAttachedToWorkspaceName } = useOnboardingStore.getState();
         await onboarding({
           token,
           source,
           organizationToken,
           workspaceName,
+          isTimeStampAttachedToWorkspaceName,
         });
         setAccountCreated(true);
       }

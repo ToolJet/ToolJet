@@ -29,6 +29,7 @@ import {
   generateOrgInviteURL,
   isValidDomain,
   isHttpsEnabled,
+  generateWorkspaceSlug,
 } from 'src/helpers/utils.helper';
 import {
   getUserErrorMessages,
@@ -824,6 +825,7 @@ export class AuthService {
       source,
       phoneNumber,
       workspaceName,
+      isTimeStampAttachedToWorkspaceName,
     } = userCreateDto;
     let password = userPassword;
 
@@ -886,7 +888,12 @@ export class AuthService {
         await this.organizationUsersService.activateOrganization(defaultOrganizationUser, manager);
         if (workspaceName) {
           //TODO: Check if the workspace name is already taken from frontend
-          const { slug } = generateNextNameAndSlug(workspaceName);
+          let slug: string;
+          if (isTimeStampAttachedToWorkspaceName) {
+            slug = generateWorkspaceSlug(workspaceName);
+          } else {
+            slug = generateNextNameAndSlug(workspaceName).slug;
+          }
           await this.organizationsService.updateOrganization(defaultOrganizationUser.organizationId, {
             name: workspaceName,
             slug: slug,
