@@ -5,6 +5,10 @@ title: User Groups
 
 ToolJet employs a Role-Based Access Control (RBAC) system to manage security and access to its resources, which include apps, folders, and workspace variables. In this system, Admins have the authority to invite Users to their workspaces and assign them to specific Groups. Each Group is associated with a set of Permissions that dictate what level of access its members have to various resources. 
 
+<div class="video-container">
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/VIlC0MnQRNA?si=dBJ6gL5ux55s32OO&rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</div>
+
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Groups
