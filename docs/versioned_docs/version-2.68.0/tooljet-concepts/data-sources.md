@@ -5,6 +5,10 @@ title: Data Sources
 
 Data sources are pivotal as they enable us to fetch and send data to and from different sources including databases, external APIs, or services. Once a data source is configured, it can be shared across all apps within a workspace.
 
+<div class="video-container">
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/XIDE_zA5VGc?si=n5j4WFcl75Baae1w&rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</div>
+
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Types and Management of Data Sources
@@ -30,6 +34,3 @@ Adding a new data source is as easy as filling out a form; users can click on th
 </div>
 
 To see a full list of compatible data sources and their set up details, checkout the **[Datasource Catalog](/docs/data-sources/overview)**.
-
-
-
