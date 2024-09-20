@@ -57,10 +57,16 @@ const WorkspaceNameFormCE = () => {
   const description = 'Set up workspaces to manage users, applications & resources across various teams';
   useEffect(() => {
     const generateDefaultWorkspaceName = async (email) => {
-      if (!email) return 'My workspace';
+      const timestamp = new Date().getTime();
+      const isDefaultWorkspaceNameUnique = await isWorkspaceNameUnique('My workspace');
       const [localPart, domain] = email.split('@');
-      if (generalDomains.includes(domain)) return 'My workspace';
 
+      if (!email || generalDomains.includes(domain)) {
+        if (isDefaultWorkspaceNameUnique) {
+          return 'My workspace';
+        }
+        return `My workspace ${timestamp}`;
+      }
       const companyName = domain.split('.')[0];
       const trimmedCompanyName = companyName.substring(0, Math.min(companyName.length, 38));
       const isUnique = await isWorkspaceNameUnique(
@@ -70,7 +76,6 @@ const WorkspaceNameFormCE = () => {
         return `${trimmedCompanyName.charAt(0).toUpperCase() + trimmedCompanyName.slice(1)}'s workspace`;
       }
       const trimmedCompanyNamee = companyName.substring(0, 22);
-      const timestamp = new Date().getTime();
       return `${trimmedCompanyNamee.charAt(0).toUpperCase() + trimmedCompanyNamee.slice(1) + timestamp}'s workspace`;
     };
     const setWorkspaceName = async () => {
