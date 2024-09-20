@@ -63,8 +63,8 @@ export class OrganizationUsersController {
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(ORGANIZATION_RESOURCE_ACTIONS.UPDATE_USERS, UserEntity))
   @Put(':id')
-  async updateUser(@Param('id') id: string, @Body() updateUserDto) {
-    await this.organizationUsersService.updateOrgUser(id, updateUserDto);
+  async updateUser(@Param('id') id: string, @Body() updateUserDto, @User() user) {
+    await this.organizationUsersService.updateOrgUser(id, updateUserDto, user.id);
     return;
   }
 

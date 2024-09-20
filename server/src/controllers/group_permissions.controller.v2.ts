@@ -145,8 +145,9 @@ export class GroupPermissionsControllerV2 {
   @CheckPolicies((ability: AppAbility) => ability.can(ORGANIZATION_RESOURCE_ACTIONS.ACCESS_PERMISSIONS, UserEntity))
   @Put('user-role/edit')
   async updateUserRole(@User() user, @Body() editRoleDto: EditUserRoleDto) {
-    const { organizationId } = user;
-    return await this.userRoleService.editDefaultGroupUserRole(editRoleDto, organizationId);
+    await this.userRoleService.editDefaultGroupUserRole(editRoleDto, user.organizationId, null, {
+      updatedAdmin: user.id,
+    });
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)

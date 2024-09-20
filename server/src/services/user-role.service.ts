@@ -79,7 +79,8 @@ export class UserRoleService {
   async editDefaultGroupUserRole(
     editRoleDto: EditUserRoleDto,
     organizationId: string,
-    manager?: EntityManager
+    manager?: EntityManager,
+    options?: { updatedAdmin?: string }
   ): Promise<void> {
     const { newRole, userId } = editRoleDto;
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -115,18 +116,30 @@ export class UserRoleService {
           },
         });
         if (userCreatedApps.length > 0) {
-          const user = await manager.findOne(User, {
-            where: {
-              id: userGroup.userId,
-            },
-          });
-          throw new BadRequestException({
-            message: {
-              error: ERROR_HANDLER.USER_IS_OWNER_OF_APPS(user.email),
-              data: userCreatedApps.map((app) => app.name),
-              title: 'Can not change user role',
-            },
-          });
+          if (options?.updatedAdmin) {
+            // Transfer the ownership
+            await manager.update(
+              App,
+              {
+                userId: userId,
+                organizationId: organizationId,
+              },
+              { userId: options?.updatedAdmin }
+            );
+          } else {
+            const user = await manager.findOne(User, {
+              where: {
+                id: userGroup.userId,
+              },
+            });
+            throw new BadRequestException({
+              message: {
+                error: ERROR_HANDLER.USER_IS_OWNER_OF_APPS(user.email),
+                data: userCreatedApps.map((app) => app.name),
+                title: 'Can not change user role',
+              },
+            });
+          }
         }
       }
       await this.groupPermissionsService.deleteGroupUser(userGroup.id, manager);

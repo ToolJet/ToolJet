@@ -160,7 +160,7 @@ export class UsersService {
     }, manager);
   }
 
-  async update(userId: string, params: any, manager?: EntityManager, organizationId?: string) {
+  async update(userId: string, params: any, manager?: EntityManager, organizationId?: string, adminId?: string) {
     const { forgotPasswordToken, password, firstName, lastName, addGroups, removeGroups, source, role } = params;
     const hashedPassword = password ? bcrypt.hashSync(password, 10) : undefined;
 
@@ -180,7 +180,11 @@ export class UsersService {
       const user = await manager.findOne(User, { where: { id: userId } });
 
       await this.removeUserGroupPermissionsIfExists(manager, user, removeGroups, organizationId);
-      if (role) await this.userRoleService.editDefaultGroupUserRole({ userId, newRole: role }, organizationId, manager);
+      if (role) {
+        await this.userRoleService.editDefaultGroupUserRole({ userId, newRole: role }, organizationId, manager, {
+          updatedAdmin: adminId,
+        });
+      }
       await this.attachUserGroup(addGroups, organizationId, userId, manager);
       return user;
     }, manager);
