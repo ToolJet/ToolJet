@@ -146,20 +146,6 @@ const SignupForm = ({
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  useEffect(() => {
-    const newErrors = {};
-    let fieldsValid = true;
-    Object.keys(formData).forEach((fieldName) => {
-      // only if the field is edited by the user -- after that we show validation error message
-      const fieldError = !formInputFields[fieldName] && validateField(fieldName, formData[fieldName]);
-      newErrors[fieldName] = fieldError;
-      if (fieldError) fieldsValid = false;
-    });
-    setErrors(newErrors);
-    // form validity -> used for checking all the validation checks in the form
-    const isFormValid = fieldsValid && checkFormValidity();
-    setIsFormValid(isFormValid);
-  }, [formData]);
 
   return (
     <div className="signup-form">
