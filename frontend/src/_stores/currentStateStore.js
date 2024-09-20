@@ -56,13 +56,16 @@ export const useCurrentStateStore = create(
         setEditorReady: (isEditorReady) => set({ isEditorReady }),
         initializeCurrentStateOnVersionSwitch: () => {
           //fetch user for current app
+          const currentSession = authenticationService.currentSessionValue;
           const currentUser = useAppDataStore.getState().currentUser;
           const userVars = {
             email: currentUser?.email,
             firstName: currentUser?.first_name,
             lastName: currentUser?.last_name,
-            groups: authenticationService.currentSessionValue.group_permissions?.map((group) => group.group),
-            ssoUserInfo: currentUser?.sso_user_info,
+            groups: currentSession?.group_permissions
+              ? ['all_users', ...currentSession.group_permissions.map((group) => group.name)]
+              : ['all_users'],
+            role: currentSession?.role?.name,
           };
           const newInitialState = {
             ...initialState,
