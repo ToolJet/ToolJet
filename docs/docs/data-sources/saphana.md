@@ -1,47 +1,58 @@
 ---
-id: saphana
-title: SAP HANA
+id: sendgrid
+title: SendGrid
 ---
 
-ToolJet can connect to SAP HANA databases to read and write data. 
-
-<div style={{paddingTop:'24px'}}>
+ToolJet can connect to your SendGrid account to send emails.
 
 ## Connection
 
-To establish a connection with the SAP HANA datasource, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+To establish a connection with the SendGrid datasource, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
 
-ToolJet requires the following to connect to your SAP HANA database:
+ToolJet requires the following to connect to your SendGrid database:
+- **SendGrid API key**
 
-- **Host**
-- **Port**
-- **Username**
-- **Password**
+<img class="screenshot-full" src="/img/datasource-reference/sendgrid/sendgrid-datasource-v2.png" alt="ToolJet - Data source - SendGrid" />
 
 :::info
-Please make sure the **Host/IP** of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please **whitelist** our IP.
+The SendGrid API Datasource supports for interaction with the mail endpoint of the [SendGrid v3 API](https://docs.sendgrid.com/api-reference/how-to-use-the-sendgrid-v3-api/authentication).
 :::
 
-<img className="screenshot-full" src="/img/datasource-reference/saphana/connect-v2.png" alt="ToolJet - Data source - SAP HANA" />
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
-
-## Querying SAP HANA
+## Querying SendGrid
 
 1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
-2. Select the **SAP HANA** datasource added in previous step.
-3. Add the Query.
+2. Select the **SendGrid** datasource added in previous step.
+3. Select **Email service** from the dropdown and enter the required parameters.
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to create and trigger the query.
 
-<img className="screenshot-full" src="/img/datasource-reference/saphana/query-v2.png" alt="saphana query" />
+## Supported Operations
 
-```sql
-select * from PRODUCTS
-```
+### Email Service
+
+#### Required Parameters 
+- **Multiple recipients**
+- **Send email to**
+- **Send email from** 
+- **Subject**
+- **Body as text**
+
+
+#### Optional Parameter
+- **Body as HTML**
+
+<img class="screenshot-full" src="/img/datasource-reference/sendgrid/sendgrid-query-v2.png" alt="ToolJet - Query SendGrid"/>
+
+:::info
+**Send mail to** - accepts an array/list of emails separated by comma.
+For example:
+`{{["dev@tooljet.io", "admin@tooljet.io"]}}`.
+
+**Send mail from** - accepts a string.
+For example: `admin@tooljet.io`
+:::
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/tutorial/transformations)**
+**Send a single email to multiple recipients** - The `Send mail to` field can contain an array of recipients, which will send a single email with all of the recipients in the field. 
+
+**Send multiple individual emails to multiple recipients** - set <b>Multiple recipients</b> field to `{{true}}` and the `Send mail to` field will be split into multiple emails and send to each recipient.
 :::
-</div>
