@@ -32,7 +32,7 @@
   "devDependencies": {
     "@docusaurus/module-type-aliases": "^3.5.2",
     "@docusaurus/types": "^3.5.2",
-    "tailwindcss": "^3.4.10"
+    "tailwindcss": "^3.4.12"
   },
   "overrides": {
     "got": "^12.1.0",
