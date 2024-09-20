@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { OnboardingFormWrapper } from '@/modules/onboarding/components';
-import { FormTextInput, PasswordInput, SubmitButton, FormHeader, EmailComponent } from '@/modules/common/components';
+import { FormTextInput, PasswordInput, SubmitButton, FormHeader } from '@/modules/common/components';
 import useOnboardingStore from '@/modules/onboarding/stores/onboardingStore';
 import { shallow } from 'zustand/shallow';
 import { validateEmail } from '@/_helpers/utils';
@@ -100,13 +100,13 @@ const SetupAdminForm = () => {
             name="name"
             dataCy="name-input"
           />
-          <EmailComponent
+          <FormTextInput
             label="Email"
-            placeholder="Enter your work email"
-            email={formData.email}
-            handleChange={handleChange}
-            emailError={touchedFields.email ? errors.email : ''}
             name="email"
+            value={formData.email}
+            onChange={handleChange}
+            placeholder="Enter your work email"
+            error={touchedFields.email ? errors.email : ''}
             dataCy="email-input"
             disabled={accountCreated}
           />

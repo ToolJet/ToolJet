@@ -19,7 +19,7 @@ export class OnboardingService {
     private organizationsService: OrganizationsService,
     private organizationUsersService: OrganizationUsersService,
     private metadataService: MetadataService
-  ) {}
+  ) { }
 
   async setupFirstUser(response: Response, userCreateDto: CreateAdminDto): Promise<any> {
     const { name, workspaceName, password, email } = userCreateDto;

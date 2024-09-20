@@ -6,29 +6,39 @@ import {
   fetchWhiteLabelDetails,
   defaultWhiteLabellingSettings,
 } from '@white-label/whiteLabelling';
-
+import { getSubpath } from '@/_helpers/routes';
 const OnboardingFormWrapper = ({ children: components }) => {
-  const [whiteLabelLogo, setWhiteLableLogo] = useState('');
-  const [imageWidth, setImageWidth] = useState(null);
-  useEffect(() => {
-    fetchWhiteLabelDetails();
-    setWhiteLableLogo(retrieveWhiteLabelLogo());
-  }, []);
-  const handleImageWidth = (event) => {
-    const { naturalWidth } = event.target;
+  const [whiteLabelLogo, setWhiteLableLogo] = useState(null);
+  const [imageWidth, setImageWidth] = useState(130);
+  const img = new Image();
+  const handleLoad = () => {
+    const { naturalWidth } = img;
     setImageWidth(naturalWidth < 130 ? naturalWidth : 130);
   };
-
+  useEffect(() => {
+    fetchWhiteLabelDetails();
+    const data = retrieveWhiteLabelLogo();
+    setWhiteLableLogo(data);
+  }, []);
+  useEffect(() => {
+    if (!whiteLabelLogo) return;
+    img.src = whiteLabelLogo;
+    img.addEventListener('load', handleLoad);
+    return () => {
+      img.removeEventListener('load', handleLoad);
+    };
+  }, [whiteLabelLogo]);
   const redirectToLoginPage = () => {
-    window.location.href = '/';
+    window.location.href = getSubpath() ? `${getSubpath()}` : `'/'`;
   };
   return (
     <div className="onboarding-form-wrapper">
       <div className="tooljet-header cursor-pointer" onClick={redirectToLoginPage}>
         {whiteLabelLogo != '' &&
         window.location.pathname != '/setup' &&
-        whiteLabelLogo != defaultWhiteLabellingSettings.WHITE_LABEL_LOGO ? (
-          <img onLoad={handleImageWidth} width={imageWidth} height="26px" src={whiteLabelLogo} />
+        whiteLabelLogo != defaultWhiteLabellingSettings.WHITE_LABEL_LOGO &&
+        imageWidth != null ? (
+          <img width={imageWidth} height="26px" src={whiteLabelLogo} />
         ) : (
           <Logo />
         )}

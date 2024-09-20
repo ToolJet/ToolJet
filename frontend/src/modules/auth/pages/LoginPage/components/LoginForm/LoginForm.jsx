@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { validateEmail } from '@/_helpers/utils';
+import { validateEmail, validatePassword } from '@/_helpers/utils';
 import { OnboardingFormWrapper, OnboardingFormInsideWrapper } from '@/modules/onboarding/components';
 import { FormTextInput, PasswordInput, SubmitButton, FormHeader, SSOAuthModule } from '@/modules/common/components';
 import { redirectToDashboard } from '@/_helpers/routes';
@@ -38,39 +38,68 @@ const LoginForm = ({
   const signUpUrl = `/signup${paramOrganizationSlug ? `/${paramOrganizationSlug}` : ''}${
     redirectTo ? `?redirectTo=${redirectTo}` : ''
   }`;
+  const [isDefaultFormEmail, setisDefaultFormEmail] = useState(true);
+  const [isDefaultFormPassword, setisDefaultFormPassword] = useState(true);
+  const defaultfieldStateSetters = {
+    email: setisDefaultFormEmail,
+    password: setisDefaultFormPassword,
+  };
 
   useEffect(() => {
     checkFormValidity();
+    const newErrors = {};
+    let isValid = true;
+    const emailFieldError = !isDefaultFormEmail && validateField('email', email);
+    newErrors['email'] = emailFieldError;
+    const passwordFieldError = !isDefaultFormPassword && validateField('password', password);
+    newErrors['password'] = passwordFieldError;
+    if (emailFieldError || passwordFieldError) isValid = false;
+    setErrors(newErrors);
+    setIsFormValid(isValid && email != '' && password != '');
   }, [email, password]);
 
   const checkFormValidity = () => {
     const isValid = validateEmail(email) && password.trim() !== '';
     setIsFormValid(isValid);
   };
-
+  const validateField = (name, value) => {
+    switch (name) {
+      case 'email':
+        return value.trim() ? (validateEmail(value) ? '' : 'Email is invalid') : 'Email is required';
+      case 'password':
+        return validatePassword(value);
+      default:
+        return '';
+    }
+  };
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     if (name === 'email') setEmail(value);
     if (name === 'password') setPassword(value);
+    if (defaultfieldStateSetters[name]) {
+      defaultfieldStateSetters[name](false);
+    }
     setErrors((prev) => ({ ...prev, [name]: '' }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setIsLoading(true);
-
     if (!validateEmail(email)) {
       setErrors((prev) => ({ ...prev, email: 'Invalid Email' }));
       setIsLoading(false);
       return;
     }
-
     if (!password || !password.trim()) {
       setErrors((prev) => ({ ...prev, password: 'Password is required' }));
       setIsLoading(false);
       return;
     }
-
+    if (password.length > 100) {
+      setErrors((prev) => ({ ...prev, password: 'Password can be at max 100 characters long' }));
+      setIsLoading(false);
+      return;
+    }
     onSubmit(email, password, () => {
       setIsLoading(false);
     });

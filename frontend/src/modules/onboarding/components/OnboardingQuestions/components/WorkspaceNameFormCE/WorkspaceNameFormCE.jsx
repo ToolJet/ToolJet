@@ -9,16 +9,37 @@ import { checkWorkspaceNameUniqueness } from '@/modules/onboarding/services/onbo
 import { useEnterKeyPress } from '@/modules/common/hooks';
 import '@/_styles/theme.scss';
 
+const generalDomains = [
+  'gmail.com',
+  'outlook.com',
+  'hotmail.com',
+  'live.com',
+  'yahoo.com',
+  'icloud.com',
+  'me.com',
+  'mac.com',
+  'protonmail.com',
+  'pm.me',
+  'aol.com',
+  'zoho.com',
+  'gmx.com',
+  'gmx.de',
+  'yandex.com',
+  'yandex.ru',
+  'mail.com',
+];
 const WorkspaceNameFormCE = () => {
-  const { onboardUserOrCreateAdmin, initiatedInvitedUserOnboarding } = useInvitationsStore(
+  const { inviteeEmail, onboardUserOrCreateAdmin, initiatedInvitedUserOnboarding } = useInvitationsStore(
     (state) => ({
       onboardUserOrCreateAdmin: state.onboardUserOrCreateAdmin,
       initiatedInvitedUserOnboarding: state.initiatedInvitedUserOnboarding,
+      inviteeEmail: state.inviteeEmail,
     }),
     shallow
   );
-  const { setWorkspaceName, workspaceName, accountCreated } = useOnboardingStore(
+  const { adminDetails, setWorkspaceName, workspaceName, accountCreated } = useOnboardingStore(
     (state) => ({
+      adminDetails: state.adminDetails,
       setWorkspaceName: state.setWorkspaceName,
       workspaceName: state.workspaceName,
       accountCreated: state.accountCreated,
@@ -27,28 +48,43 @@ const WorkspaceNameFormCE = () => {
   );
   useEnterKeyPress(() => handleSubmit());
 
-  const [formData, setFormData] = useState({ workspaceName: workspaceName || 'My workspace' });
+  const [formData, setFormData] = useState({ workspaceName: workspaceName });
   const [error, setError] = useState('');
   const [isFormValid, setIsFormValid] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isTouched, setIsTouched] = useState(false);
   const TITLE = 'Set up your workspace!';
   const description = 'Set up workspaces to manage users, applications & resources across various teams';
-
   useEffect(() => {
-    const initializeWorkspaceName = async () => {
-      if (initiatedInvitedUserOnboarding) {
-        const isUnique = await isWorkspaceNameUnique(formData.workspaceName);
-        if (!isUnique) {
-          const timestamp = new Date().getTime();
-          const newName = `My workspace ${timestamp}`;
-          setFormData({ workspaceName: newName });
-          setIsFormValid(true);
+    const generateDefaultWorkspaceName = async (email) => {
+      const timestamp = new Date().getTime();
+      const isDefaultWorkspaceNameUnique = await isWorkspaceNameUnique('My workspace');
+      const [localPart, domain] = email.split('@');
+
+      if (!email || generalDomains.includes(domain)) {
+        if (isDefaultWorkspaceNameUnique) {
+          return 'My workspace';
         }
+        return `My workspace ${timestamp}`;
       }
+      const companyName = domain.split('.')[0];
+      const trimmedCompanyName = companyName.substring(0, Math.min(companyName.length, 38));
+      const isUnique = await isWorkspaceNameUnique(
+        `${trimmedCompanyName.charAt(0).toUpperCase() + trimmedCompanyName.slice(1)}'s workspace`
+      );
+      if (isUnique) {
+        return `${trimmedCompanyName.charAt(0).toUpperCase() + trimmedCompanyName.slice(1)}'s workspace`;
+      }
+      const trimmedCompanyNamee = companyName.substring(0, 22);
+      return `${trimmedCompanyNamee.charAt(0).toUpperCase() + trimmedCompanyNamee.slice(1) + timestamp}'s workspace`;
     };
-    initializeWorkspaceName();
-  }, [initiatedInvitedUserOnboarding]);
+    const handleDefaultWorkspaceName = async () => {
+      const defaultWorkspaceName = await generateDefaultWorkspaceName(adminDetails.email || inviteeEmail);
+      setFormData({ workspaceName: defaultWorkspaceName });
+      setIsFormValid(true);
+    };
+    handleDefaultWorkspaceName();
+  }, [adminDetails.email, inviteeEmail]);
 
   const isWorkspaceNameUnique = async (value) => {
     try {

@@ -91,12 +91,13 @@ const WorkspaceInvitationPage = (props) => {
               readOnly="true"
               disableStartAdornment={true}
             />
-            <EmailComponent
+            <FormTextInput
               label="Email"
-              prefilledEmail={userEmail}
+              value={userEmail}
+              disabled={true}
+              readOnly="true"
               name="email"
               dataCy="email-input"
-              disableStartAdornment={true}
             />
             <SubmitButton
               onClick={(e) => acceptInvite(e)}
