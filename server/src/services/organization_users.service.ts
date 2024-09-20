@@ -114,13 +114,14 @@ export class OrganizationUsersService {
     });
   }
 
-  async updateOrgUser(organizationUserId: string, updateUserDto) {
+  async updateOrgUser(organizationUserId: string, updateUserDto, adminId: string) {
     const organizationUser = await this.organizationUsersRepository.findOne({ where: { id: organizationUserId } });
-    return await this.usersService.update(
+    await this.usersService.update(
       organizationUser.userId,
       updateUserDto,
       null,
-      organizationUser.organizationId
+      organizationUser.organizationId,
+      adminId
     );
   }
 
