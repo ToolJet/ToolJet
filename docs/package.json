@@ -20,15 +20,19 @@
     "@docusaurus/plugin-sitemap": "^3.5.2",
     "@docusaurus/preset-classic": "^3.5.2",
     "@mdx-js/react": "^3.0.1",
+    "autoprefixer": "^10.4.20",
     "clsx": "^2.0.0",
+    "lucide-react": "^0.436.0",
     "plugin-image-zoom": "github:flexanalytics/plugin-image-zoom",
+    "postcss": "^8.4.41",
     "prism-react-renderer": "^2.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@docusaurus/module-type-aliases": "^3.5.2",
-    "@docusaurus/types": "^3.5.2"
+    "@docusaurus/types": "^3.5.2",
+    "tailwindcss": "^3.4.10"
   },
   "overrides": {
     "got": "^12.1.0",
