@@ -886,7 +886,7 @@ export class AuthService {
         await this.organizationUsersService.activateOrganization(defaultOrganizationUser, manager);
         if (workspaceName) {
           //TODO: Check if the workspace name is already taken from frontend
-          const { slug } = generateNextNameAndSlug(workspaceName);
+          const { slug } = generateNextNameAndSlug('My workspace');
           await this.organizationsService.updateOrganization(defaultOrganizationUser.organizationId, {
             name: workspaceName,
             slug: slug,
