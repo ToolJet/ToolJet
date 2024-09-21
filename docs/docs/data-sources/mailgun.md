@@ -18,7 +18,7 @@ To establish a connection with the **Mailgun** data source, click on the **+ Add
 ToolJet requires the following to connect to your Mailgun:
 - **API key**
 
-<img class="screenshot-full" src="/img/datasource-reference/mailgun/mailgun-datasource-v2.png" alt="ToolJet - Data source - Mailgun" />
+<img class="screenshot-full" src="/img/datasource-reference/mailgun/mailgun-datasource-v3.png" alt="ToolJet - Data source - Mailgun" />
 
 :::tip
 Mailgun API key is required to create an Mailgun datasource on ToolJet. You can generate API key by visiting [Mailgun account page](https://app.mailgun.com/app/account/security/api_keys).

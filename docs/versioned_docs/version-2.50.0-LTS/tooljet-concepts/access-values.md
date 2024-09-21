@@ -6,6 +6,9 @@ title: Access Values
 
 In ToolJet, double curly braces `{{}}` can be used to retrieve data returned by queries, access values related to components and pass custom code. You can see the list of all accessible values in the **[Inspector](/docs/how-to/use-inspector/)** tab in the left sidebar. 
 
+<div class="video-container">
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/hMzkNaHMFr0?si=s5WeHv2hY6rBrvE_&rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</div>
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
