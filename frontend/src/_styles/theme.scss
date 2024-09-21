@@ -5396,7 +5396,7 @@ div#driver-page-overlay {
 .workspace-settings-page {
   width: 880px;
   margin: 0 auto;
-  background: var(--base);
+  // background: var(--base);
 
   .card {
     background: var(--base);
@@ -5436,13 +5436,14 @@ div#driver-page-overlay {
       border-top: 1px solid var(--slate5) !important;
       background: var(--base);
       margin-top: 0px !important;
-      align-Self: 'stretch';
+      align-self: stretch;
       height: 88px;
     }
 
     .card-body {
-      height: 467px;
+      height: calc(100vh - 300px) !important;
       padding: 24px;
+      overflow: scroll;
 
       .form-group {
         .tj-app-input {
@@ -7543,6 +7544,7 @@ tbody {
 
 .workspace-content-wrapper,
 .database-page-content-wrap {
+  overflow: scroll;
   background-color: var(--page-default);
   height: calc(100vh - 64px) !important;
 }
