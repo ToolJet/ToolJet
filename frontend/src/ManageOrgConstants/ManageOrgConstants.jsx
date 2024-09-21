@@ -1,3 +1,4 @@
+//Do not merge changes from ee
 import React, { useContext, useEffect, useState } from 'react';
 import { authenticationService, orgEnvironmentConstantService, appEnvironmentService } from '@/_services';
 import { ConfirmDialog } from '@/_components';
@@ -90,8 +91,29 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
     }
     setCurrentPage(1);
 
-    const envName = activeTabEnvironment ? activeTabEnvironment.name : environment.name;
+    const envName = activeTabEnvironment ? activeTabEnvironment?.name : environment?.name;
     updateTableData(allConstants, envName, 0, perPage, true, activeTab, searchTerm);
+    // Calculate counts for Global and Secret constants
+    const globalCount =
+      allConstants.length > 0
+        ? allConstants.filter(
+            (constant) =>
+              constant.type === Constants.Global &&
+              constant.values.find((env) => env.environmentName === envName)?.value !== ''
+          ).length
+        : 0;
+
+    const secretCount =
+      allConstants.length > 0
+        ? allConstants.filter(
+            (constant) =>
+              constant.type === Constants.Secret &&
+              constant.values.find((env) => env.environmentName === envName)?.value !== ''
+          ).length
+        : 0;
+
+    setGlobalCount(globalCount);
+    setSecretCount(secretCount);
   };
 
   const updateTableData = (orgConstants, envName, start, end, activeTabChanged = false, tab = null, search = '') => {
@@ -121,11 +143,35 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
         value: findValueForEnvironment(constant.values, envName),
       }));
 
+    let globalTabCount = 0;
+    let secretTabCount = 0;
+
+    globalTabCount = orgConstants.filter(
+      (constant) =>
+        constant.type === Constants.Global &&
+        constant.name.toLowerCase().includes(search.toLowerCase()) &&
+        constant?.values.find((value) => value.environmentName === envName && value.value !== '')
+    ).length;
+
+    secretTabCount = orgConstants.filter(
+      (constant) =>
+        constant.type === Constants.Secret &&
+        constant.name.toLowerCase().includes(search.toLowerCase()) &&
+        constant?.values.find((value) => value.environmentName === envName && value.value !== '')
+    ).length;
+
+    setGlobalCount(globalTabCount);
+    setSecretCount(secretTabCount);
     if (activeTabChanged) {
       computeTotalPages(filteredConstants.length || 1);
     }
     const paginatedConstants = filteredConstants ? filteredConstants.slice(start, end) : filteredConstants;
     setTableData(paginatedConstants);
+    if (tab === Constants.Global) {
+      setGlobalCount(filteredConstants.length);
+    } else {
+      setSecretCount(filteredConstants.length);
+    }
   };
 
   const goToNextPage = () => {
@@ -134,7 +180,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
     const start = currentPage * perPage;
     const end = start + perPage;
 
-    const envName = activeTabEnvironment.name;
+    const envName = activeTabEnvironment?.name;
     updateTableData(constants, envName, start, end, false, activeTab, searchTerm);
   };
 
@@ -144,7 +190,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
     const start = (currentPage - 2) * perPage;
     const end = start + perPage;
 
-    const envName = activeTabEnvironment.name;
+    const envName = activeTabEnvironment?.name;
     updateTableData(constants, envName, start, end, false, activeTab, searchTerm);
   };
 
@@ -203,7 +249,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   };
 
   const fetchConstantsAndEnvironments = async () => {
-    const orgConstants = await orgEnvironmentConstantService.getAll(true);
+    const orgConstants = await orgEnvironmentConstantService.getAll();
 
     if (orgConstants?.constants?.length > 1) {
       orgConstants.constants.sort((a, b) => {
@@ -212,13 +258,6 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
     }
 
     setConstants(orgConstants?.constants);
-
-    // Calculate counts for Global and Secret constants
-    const globalCount = orgConstants.constants.filter((constant) => constant.type === Constants.Global).length;
-    const secretCount = orgConstants.constants.filter((constant) => constant.type === Constants.Secret).length;
-
-    setGlobalCount(globalCount);
-    setSecretCount(secretCount);
 
     let orgEnvironments = await fetchEnvironments();
     setEnvironments(orgEnvironments?.environments);
@@ -230,29 +269,59 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
     const start = (currentPage - 1 - 1) * perPage;
     const end = start + perPage;
 
-    const envName = activeTabEnvironment.name;
+    const envName = activeTabEnvironment ? activeTabEnvironment?.name : currentEnvironment?.name;
     updateTableData(orgConstants, envName, start, end, activeTab, searchTerm);
   };
 
-  const checkIfConstantNameExists = (name, environementId) => {
+  const checkIfConstantNameExists = (name, type, environementId) => {
     if (!environementId) {
-      return constants.some((constant) => constant.name === name);
+      return constants.some((constant) => constant.name === name && constant.type === type);
+    }
+
+    const existingConstants = constants.filter((constant) => {
+      return (
+        constant.type === type && constant.values.some((value) => value.id === environementId && value.value !== '')
+      );
+    });
+    return existingConstants.some((constant) => constant.name === name);
+  };
+
+  const checkIfConstantNameExistsInDiffEnv = (name, type, environementId) => {
+    if (!environementId) {
+      return constants.some((constant) => constant.name === name && constant.type === type);
     }
 
     const envConstants = constants.filter((constant) => {
-      return constant.values.some((value) => value.id === environementId && value.value !== '');
+      return (
+        constant.type === type && constant.values.some((value) => value.id === environementId && value.value === '')
+      );
     });
-
     return envConstants.some((constant) => constant.name === name);
   };
 
   const createOrUpdate = (variable, shouldUpdate = false) => {
     const currentEnv = activeTabEnvironment;
 
-    const shouldUpdateConstant = mode === 'edit' && shouldUpdate ? true : false;
+    const constantExists = checkIfConstantNameExists(
+      variable?.name,
+      variable?.type,
+      variable?.environments?.[0]?.value
+    );
+    const constantExistsInDiffEnv = checkIfConstantNameExistsInDiffEnv(
+      variable?.name,
+      variable?.type,
+      variable?.environments?.[0]?.value
+    );
+    if (constantExists && !shouldUpdate) {
+      toast.error(`${variable.type} constant already exists!`);
+      return;
+    }
+    const shouldUpdateConstant = mode === 'edit' && shouldUpdate ? true : constantExistsInDiffEnv;
 
     if (shouldUpdateConstant) {
-      const variableId = variable.id;
+      const variableId = constantExistsInDiffEnv
+        ? constants.find((constant) => constant.name === variable.name && constant.type === variable.type).id
+        : variable.id;
 
       return orgEnvironmentConstantService
         .update(variableId, variable.value, currentEnv['id'])
@@ -260,9 +329,9 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
           toast.success('Constant updated successfully');
           onCancelBtnClicked();
         })
-        .catch((error) => {
+        .catch(({ error }) => {
           setErrors(error);
-          toast.error(error || 'Constant could not be updated');
+          toast.error(error);
         })
         .finally(() => fetchConstantsAndEnvironments());
     }
@@ -270,12 +339,12 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
     return orgEnvironmentConstantService
       .create(variable.name, variable.value, variable.type, [currentEnv['id']])
       .then(() => {
-        toast.success('Constant has been created');
+        toast.success(`${variable.type} constant created successfully!`);
         onCancelBtnClicked();
       })
       .catch(({ error }) => {
         setErrors(error);
-        toast.error(error || 'Constant could not be created');
+        toast.error('Constant could not be created');
       })
       .finally(() => fetchConstantsAndEnvironments());
   };
@@ -589,5 +658,4 @@ const Footer = ({ darkMode, totalPage, pageCount, dataLoading, gotoNextPage, got
 
 ManageOrgConstantsComponent.EnvironmentsTabs = RenderEnvironmentsTab;
 ManageOrgConstantsComponent.Footer = Footer;
-
 export default ManageOrgConstantsComponent;

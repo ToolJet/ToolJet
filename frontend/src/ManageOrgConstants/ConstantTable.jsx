@@ -21,6 +21,9 @@ const ConstantTable = ({
   };
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const displayValue = (constant) => {
+    if (typeof constant.value === 'undefined' || constant.value === null) {
+      return '';
+    }
     return String(constant.value).length > (canUpdateDeleteConstant ? 30 : 50)
       ? String(constant.value).substring(0, canUpdateDeleteConstant ? 30 : 50) + '...'
       : constant.value;

@@ -400,19 +400,20 @@ const EditorComponent = (props) => {
     });
   };
 
-  const fetchOrgEnvironmentConstants = async () => {
+  const fetchOrgEnvironmentConstants = async (environmentId) => {
     try {
-      //! for @ee: get the constants from  `getConstantsFromEnvironment ` -- '/organization-constants/:environmentId'
-      const { constants } = await orgEnvironmentConstantService.getAll(false, Constants.Global);
-      const globalConstants = {};
+      const { constants } = await orgEnvironmentConstantService.getConstantsFromEnvironment(
+        environmentId,
+        Constants.Global
+      );
+      const orgConstants = {};
 
       constants.forEach((constant) => {
-        const constantValue = constant.values.find((value) => value.environmentName === 'production')['value'];
-        globalConstants[constant.name] = constantValue;
+        orgConstants[constant.name] = constant.value;
       });
 
       useCurrentStateStore.getState().actions.setCurrentState({
-        constants: globalConstants,
+        constants: orgConstants,
       });
     } catch (error) {
       toast.error('Failed to fetch organization environment constants', {
@@ -723,7 +724,8 @@ const EditorComponent = (props) => {
     fetchAndSetWindowTitle({ page: pageTitles.EDITOR, appName });
     useAppVersionStore.getState().actions.updateEditingVersion(editing_version);
     current_version_id && useAppVersionStore.getState().actions.updateReleasedVersionId(current_version_id);
-    await fetchOrgEnvironmentConstants();
+    const environmentId = editing_version?.current_environment_id;
+    await fetchOrgEnvironmentConstants(environmentId);
     updateState({
       slug,
       isMaintenanceOn,

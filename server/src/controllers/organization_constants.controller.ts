@@ -33,20 +33,47 @@ export class OrganizationConstantController {
 
   @UseGuards(JwtAuthGuard)
   @Get()
-  async get(@User() user, @Query('decryptValue') decryptSecretValue, @Query('type') type: OrganizationConstantType) {
+  async get(@User() user, @Query('type') type: OrganizationConstantType) {
     const ability = await this.organizationConstantsAbilityFactory.organizationConstantActions(user, null);
     const decrypt =
-      decryptSecretValue === 'true' &&
-      (ability.can('createOrganizationConstant', OrganizationConstant) ||
-        ability.can('deleteOrganizationConstant', OrganizationConstant));
+      ability.can('createOrganizationConstant', OrganizationConstant) ||
+      ability.can('deleteOrganizationConstant', OrganizationConstant);
     const result = await this.organizationConstantsService.allEnvironmentConstants(user.organizationId, decrypt, type);
     return { constants: result };
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('secrets')
+  async getAllSecrets(@User() user) {
+    const result = await this.organizationConstantsService.allEnvironmentConstants(
+      user.organizationId,
+      false,
+      OrganizationConstantType.SECRET
+    );
+    return { constants: result };
+  }
+
+  //by default, this api fetches only global constants (for public apps, need to fetch app to get orgId in the public guard)
   @UseGuards(IsPublicGuard)
+  @Get('public/:app_slug')
+  async getConstantsFromPublicApp(@App() app) {
+    const result = await this.organizationConstantsService.allEnvironmentConstants(
+      app.OrganizationId,
+      false,
+      OrganizationConstantType.GLOBAL
+    );
+    return { constants: result };
+  }
+
+  //by default, this api fetches only global constants
+  @UseGuards(JwtAuthGuard)
   @Get(':app_slug')
-  async getConstantsFromApp(@App() app, @User() user, @Query('type') type: OrganizationConstantType) {
-    const result = await this.organizationConstantsService.allEnvironmentConstants(app.organizationId, false, type);
+  async getConstantsFromApp(@User() user) {
+    const result = await this.organizationConstantsService.allEnvironmentConstants(
+      user.organizationId,
+      false,
+      OrganizationConstantType.GLOBAL
+    );
     return { constants: result };
   }
 

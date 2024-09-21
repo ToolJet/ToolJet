@@ -41,7 +41,7 @@ export const useDataQueriesStore = create(
         fetchDataQueries: async (appVersionId, selectFirstQuery = false, runQueriesOnAppLoad = false, ref) => {
           get().loadingDataQueries && set({ loadingDataQueries: true });
           const data = await dataqueryService.getAll(appVersionId);
-          const { constants } = await orgEnvironmentConstantService.getAll(false, Constants.Secret);
+          const { constants } = await orgEnvironmentConstantService.getAllSecrets();
 
           const diff = _.differenceWith(data.data_queries, get().dataQueries, _.isEqual);
           const referencesManager = useResolveStore.getState().referenceMapper;

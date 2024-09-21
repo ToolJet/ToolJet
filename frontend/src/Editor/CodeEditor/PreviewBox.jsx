@@ -148,7 +148,17 @@ export const PreviewBox = ({
   }, [error]);
 
   useEffect(() => {
-    const [valid, _error, newValue, resolvedValue] = resolveReferences(currentValue, validationSchema, customVariables);
+    const [valid, _error, rawNewValue, rawResolvedValue] = resolveReferences(
+      currentValue,
+      validationSchema,
+      customVariables
+    );
+
+    const resolvedValue = typeof rawResolvedValue === 'function' ? undefined : rawResolvedValue;
+
+    const newValue = typeof rawNewValue === 'function' ? undefined : rawNewValue;
+    const isSecretError =
+      currentValue?.includes('secrets.') || _error?.includes('ReferenceError: secrets is not defined');
 
     if (isWorkspaceVariable || !validationSchema || isEmpty(validationSchema)) {
       return setResolvedValue(newValue);
@@ -157,7 +167,7 @@ export const PreviewBox = ({
     // we dont need to add or update the resolved value if the value has deep children
     const _resolveValue = sanitizeLargeDataset(resolvedValue, setLargeDataset);
 
-    if (valid) {
+    if (valid && !isSecretError) {
       const [coercionPreview, typeAfterCoercion, typeBeforeCoercion] = computeCoercion(resolvedValue, newValue);
 
       setResolvedValue(_resolveValue);
@@ -168,11 +178,10 @@ export const PreviewBox = ({
         typeBeforeCoercion,
       });
       setError(null);
-    } else if (!valid && !newValue && !resolvedValue) {
+    } else if (!valid && !newValue && !resolvedValue && !isSecretError) {
       const err = !error ? `Invalid value for ${validationSchema?.schema?.type}` : `${_error}`;
       setError({ message: err, value: resolvedValue, type: 'Invalid' });
     } else {
-      const isSecretError = _error?.includes('ReferenceError: secrets is not defined');
       const jsErrorType = isSecretError
         ? 'Error'
         : _error?.includes('ReferenceError')
@@ -187,11 +196,7 @@ export const PreviewBox = ({
 
       setError({
         message: isSecretError ? 'secrets cannot be used in apps' : _error,
-        value: isSecretError
-          ? 'Undefined'
-          : jsErrorType === 'Invalid'
-          ? JSON.stringify(errValue, reservedKeywordReplacer)
-          : resolvedValue,
+        value: isSecretError ? 'Undefined' : jsErrorType === 'Invalid' ? JSON.stringify(errValue) : resolvedValue,
         type: isSecretError ? 'Error' : jsErrorType,
       });
       setCoersionData(null);

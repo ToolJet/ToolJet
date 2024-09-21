@@ -15,7 +15,7 @@ import { Organization } from './organization.entity';
 import { OrgEnvironmentConstantValue } from './org_environment_constant_values.entity';
 
 export enum OrganizationConstantType {
-  CONSTANT = 'Global',
+  GLOBAL = 'Global',
   SECRET = 'Secret',
 }
 
@@ -40,7 +40,7 @@ export class OrganizationConstant extends BaseEntity {
   @Column({
     type: 'enum',
     enum: OrganizationConstantType,
-    default: OrganizationConstantType.CONSTANT,
+    default: OrganizationConstantType.GLOBAL,
   })
   type: OrganizationConstantType;
 

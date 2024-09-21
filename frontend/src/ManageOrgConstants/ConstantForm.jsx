@@ -8,6 +8,7 @@ import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import './ConstantFormStyle.scss';
 import { Constants } from '@/_helpers/utils';
+import CloseIcon from '@/_ui/Icon/bulkIcons/CloseIcon';
 
 const ConstantForm = ({
   selectedConstant,
@@ -17,6 +18,7 @@ const ConstantForm = ({
   currentEnvironment,
   mode,
 }) => {
+  console.log(isLoading);
   const [fields, setFields] = useState(() => ({
     ...selectedConstant,
     type: selectedConstant?.type,
@@ -129,6 +131,7 @@ const ConstantForm = ({
     !isActiveErrorState(error) &&
     fields['name'] &&
     fields['value'] &&
+    fields['type'] &&
     (fields['name'].length > 0 || fields['value'].length > 0)
       ? false
       : true;
@@ -156,6 +159,9 @@ const ConstantForm = ({
         <h3 className="card-title" data-cy="constant-form-title">
           {!selectedConstant ? 'Add new constant' : 'Update constant'} in {currentEnvironment?.name}{' '}
         </h3>
+        <div style={{ marginLeft: '200px' }} onClick={onCancelBtnClicked}>
+          <CloseIcon width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
+        </div>
       </div>
       <div className="card-body org-constant-form">
         <FormWrapper callback={handlecreateOrUpdate} id="variable-form">
@@ -163,9 +169,6 @@ const ConstantForm = ({
             <div className="d-flex mb-3">
               <div
                 className="col tj-app-input"
-                style={{
-                  marginRight: '10px',
-                }}
                 onMouseEnter={() => setIsOpen(true)}
                 onMouseLeave={() => setIsOpen(false)}
               >
@@ -189,7 +192,9 @@ const ConstantForm = ({
                 <span className="text-danger" data-cy="name-error-text">
                   {error['name']}
                 </span>
-                {!error['name'] && <small className="text-muted">Name must be unique and max 50 characters</small>}
+                {!error['name'] && (
+                  <small style={{ color: 'var(--text-placeholder)' }}>Name must be unique and max 50 characters</small>
+                )}
               </div>
             </div>
             <div className="form-group">

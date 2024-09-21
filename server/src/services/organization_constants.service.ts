@@ -9,6 +9,7 @@ import { DeleteResult, EntityManager, Repository } from 'typeorm';
 import { CreateOrganizationConstantDto, UpdateOrganizationConstantDto } from '@dto/organization-constant.dto';
 import { OrganizationConstantType } from '../entities/organization_constants.entity';
 
+const secretValue = '**********';
 @Injectable()
 export class OrganizationConstantsService {
   constructor(
@@ -18,10 +19,11 @@ export class OrganizationConstantsService {
     private appEnvironmentService: AppEnvironmentService
   ) {}
 
+  //this is to fetch all constants from all environments
   async allEnvironmentConstants(
     organizationId: string,
     decryptSecretValue: boolean,
-    type: OrganizationConstantType | null
+    type?: OrganizationConstantType
   ): Promise<OrganizationConstant[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const query = manager
@@ -39,6 +41,12 @@ export class OrganizationConstantsService {
 
       const constantsWithValues = await Promise.all(
         result.map(async (constant) => {
+          // Skip processing values if type is SECRET and decryptSecretValue is false
+          if (constant.type === OrganizationConstantType.SECRET && !decryptSecretValue) {
+            return {
+              name: constant.constantName,
+            };
+          }
           const values = await Promise.all(
             appEnvironments.map(async (env) => {
               const value = constant.orgEnvironmentConstantValues.find((value) => value.environmentId === env.id);
@@ -47,7 +55,7 @@ export class OrganizationConstantsService {
                 if (constant.type === OrganizationConstantType.SECRET) {
                   resolvedValue = decryptSecretValue
                     ? await this.decryptSecret(organizationId, value.value)
-                    : value.value;
+                    : secretValue;
                 } else {
                   resolvedValue = await this.decryptSecret(organizationId, value.value); // Constant type values are always decrypted
                 }
@@ -75,6 +83,7 @@ export class OrganizationConstantsService {
     });
   }
 
+  //this is to fetch all constants from a given environment
   async getConstantsForEnvironment(
     organizationId: string,
     environmentId: string,
@@ -95,10 +104,9 @@ export class OrganizationConstantsService {
 
       const constantsWithValues = await Promise.all(
         result.map(async (constant) => {
-          const resolvedValue =
-            constant.type === OrganizationConstantType.SECRET
-              ? await this.decryptSecret(organizationId, constant.orgEnvironmentConstantValues[0].value)
-              : constant.orgEnvironmentConstantValues[0].value;
+          const resolvedValue = !(constant.type === OrganizationConstantType.SECRET)
+            ? await this.decryptSecret(organizationId, constant.orgEnvironmentConstantValues[0].value)
+            : secretValue;
 
           return {
             id: constant.id,
@@ -208,6 +216,9 @@ export class OrganizationConstantsService {
   }
 
   private async decryptSecret(workspaceId: string, value: string) {
+    if (!value) {
+      return value;
+    }
     return await this.encryptionService.decryptColumnValue('org_environment_constant_values', workspaceId, value);
   }
 }

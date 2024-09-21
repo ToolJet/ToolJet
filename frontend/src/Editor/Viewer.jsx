@@ -438,11 +438,10 @@ class ViewerComponent extends React.Component {
 
     let variablesResult;
     if (!isPublic) {
-      const { constants } = await orgEnvironmentConstantService.getAll(false, Constants.Global);
+      const { constants } = await orgEnvironmentConstantService.getConstantsFromApp(slug);
       variablesResult = constants;
     } else {
-      const { constants } = await orgEnvironmentConstantService.getConstantsFromPublicApp(slug, constants.Global);
-
+      const { constants } = await orgEnvironmentConstantService.getConstantsFromPublicApp(slug);
       variablesResult = constants;
     }
 

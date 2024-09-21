@@ -7,15 +7,14 @@ export const orgEnvironmentConstantService = {
   update,
   remove,
   getConstantsFromEnvironment,
+  getConstantsFromApp,
   getConstantsFromPublicApp,
+  getAllSecrets,
 };
 
-function getAll(decryptSecretValue = false, type = null) {
+function getAll(type = null) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  let queryParams = `?decryptValue=${decryptSecretValue}`;
-  if (type) {
-    queryParams += `&type=${type}`;
-  }
+  const queryParams = type ? `?type=${type}` : '';
   return fetch(`${config.apiUrl}/organization-constants${queryParams}`, requestOptions).then(handleResponse);
 }
 
@@ -50,20 +49,24 @@ function remove(id, environmentId) {
 
 function getConstantsFromEnvironment(environmentId, type = null) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  const url = new URL(`${config.apiUrl}/organization-constants/environment/${environmentId}`);
-  if (type) {
-    url.searchParams.append('type', type);
-  }
-  return fetch(url.toString(), requestOptions).then(handleResponse);
+  const queryParams = type ? `?type=${type}` : '';
+  return fetch(
+    `${config.apiUrl}/organization-constants/environment/${environmentId}${queryParams}`,
+    requestOptions
+  ).then(handleResponse);
 }
 
-function getConstantsFromPublicApp(slug, type = null) {
+function getAllSecrets() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  const url = new URL(`${config.apiUrl}/organization-constants/${slug}`);
+  return fetch(`${config.apiUrl}/organization-constants/secrets`, requestOptions).then(handleResponse);
+}
 
-  if (type) {
-    url.searchParams.append('type', type);
-  }
+function getConstantsFromApp(slug) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/organization-constants/${slug}`, requestOptions).then(handleResponse);
+}
 
-  return fetch(url.toString(), requestOptions).then(handleResponse);
+function getConstantsFromPublicApp(slug) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/organization-constants/public/${slug}`, requestOptions).then(handleResponse);
 }
