@@ -229,12 +229,15 @@ const EditorComponent = (props) => {
 
     // Subscribe to changes in the current session using RxJS observable pattern
     const subscription = authenticationService.currentSession.subscribe((currentSession) => {
-      if (currentUser && currentSession?.group_permissions) {
+      if (currentUser && (currentSession?.group_permissions || currentSession?.role)) {
         const userVars = {
           email: currentUser.email,
           firstName: currentUser.first_name,
           lastName: currentUser.last_name,
-          groups: currentSession.group_permissions?.map((group) => group.group),
+          groups: currentSession?.group_permissions
+            ? ['all_users', ...currentSession.group_permissions.map((group) => group.name)]
+            : ['all_users'],
+          role: currentSession?.role?.name,
         };
 
         const appUserDetails = {
@@ -1589,7 +1592,12 @@ const EditorComponent = (props) => {
     if (!isVersionReleased && selectedComponents?.length > 1) {
       let newDefinition = JSON.parse(JSON.stringify(appDefinition));
 
-      removeSelectedComponent(currentPageId, newDefinition, selectedComponents, appDefinitionChanged);
+      const toDeleteComponents = removeSelectedComponent(
+        currentPageId,
+        newDefinition,
+        selectedComponents,
+        appDefinitionChanged
+      );
       const platform = navigator?.userAgentData?.platform || navigator?.platform || 'unknown';
       if (platform.toLowerCase().indexOf('mac') > -1) {
         toast('Selected components deleted! (⌘ + Z to undo)', {
@@ -1600,6 +1608,26 @@ const EditorComponent = (props) => {
           icon: '🗑️',
         });
       }
+
+      const allAppHints = useResolveStore.getState().suggestions.appHints ?? [];
+      const allHintsAssociatedWithQuery = [];
+
+      if (allAppHints.length > 0) {
+        toDeleteComponents.forEach((id) => {
+          const componentName = appDefinition.pages[currentPageId].components[id]?.component?.name;
+          if (componentName) {
+            allAppHints.forEach((suggestion) => {
+              if (suggestion?.hint.includes(componentName)) {
+                allHintsAssociatedWithQuery.push(suggestion.hint);
+              }
+            });
+          }
+        });
+      }
+
+      useResolveStore.getState().actions.removeEntitiesFromMap(toDeleteComponents);
+      useResolveStore.getState().actions.removeAppSuggestions(allHintsAssociatedWithQuery);
+
       updateEditorState({ selectedComponents: [] });
     } else if (isVersionReleased) {
       useAppVersionStore.getState().actions.enableReleasedVersionPopupState();

@@ -12,10 +12,15 @@ import { User } from 'src/entities/user.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { CaslModule } from '../casl/casl.module';
+import { UserResourcePermissionsModule } from '@modules/user_resource_permissions/user_resource_permissions.module';
 
 @Module({
   controllers: [FoldersController],
-  imports: [TypeOrmModule.forFeature([App, File, Folder, FolderApp, User, OrganizationUser, Organization]), CaslModule],
+  imports: [
+    UserResourcePermissionsModule,
+    TypeOrmModule.forFeature([App, File, Folder, FolderApp, User, OrganizationUser, Organization]),
+    CaslModule,
+  ],
   providers: [FilesService, FoldersService, UsersService],
 })
 export class FoldersModule {}

@@ -1,6 +1,6 @@
 import { QueryError, QueryResult, QueryService } from '@tooljet-marketplace/common';
 import { SourceOptions, QueryOptions, Operation } from './types';
-import { TextractClient } from '@aws-sdk/client-textract';
+import { TextractClient, FeatureType } from '@aws-sdk/client-textract';
 import { analyzeDocument, analyzeS3Document } from './query_operations';
 
 export default class Textract implements QueryService {
@@ -12,14 +12,18 @@ export default class Textract implements QueryService {
     try {
       switch (operation) {
         case Operation.AnalyzeDocument:
-          result = await analyzeDocument(queryOptions?.document, queryOptions?.feature_types, client);
+          result = await analyzeDocument(
+            queryOptions?.document, 
+            (queryOptions?.feature_types as string[]).map(ft => ft as FeatureType), 
+            client
+          );
           break;
 
         case Operation.AnalyzeS3Document:
           result = await analyzeS3Document(
             queryOptions?.bucket,
             queryOptions?.key,
-            queryOptions?.feature_types,
+            (queryOptions?.feature_types as string[]).map(ft => ft as FeatureType),
             client
           );
           break;
@@ -38,7 +42,7 @@ export default class Textract implements QueryService {
     };
   }
 
-  async getConnection(sourceOptions: SourceOptions): Promise<any> {
+  async getConnection(sourceOptions: SourceOptions): Promise<TextractClient> {
     const credentials = {
       accessKeyId: sourceOptions.access_key,
       secretAccessKey: sourceOptions.secret_key,

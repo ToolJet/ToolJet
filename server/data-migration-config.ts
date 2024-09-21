@@ -48,9 +48,6 @@ function buildConnectionOptions(): TypeOrmModuleOptions {
     logging: data.ORM_LOGGING || false,
     migrations: [__dirname + '/data-migrations/**/*{.ts,.js}'],
     keepConnectionAlive: true,
-    cli: {
-      migrationsDir: 'migrations',
-    },
   };
 }
 

@@ -3,6 +3,7 @@ import cx from 'classnames';
 import { appsService, folderService, authenticationService, libraryAppService } from '@/_services';
 import { ConfirmDialog, AppModal } from '@/_components';
 import Select from '@/_ui/Select';
+import _, { sample, isEmpty } from 'lodash';
 import { Folders } from './Folders';
 import { BlankPage } from './BlankPage';
 import { toast } from 'react-hot-toast';
@@ -14,7 +15,6 @@ import HomeHeader from './Header';
 import Modal from './Modal';
 import configs from './Configs/AppIcon.json';
 import { withTranslation } from 'react-i18next';
-import { sample, isEmpty } from 'lodash';
 import ExportAppModal from './ExportAppModal';
 import Footer from './Footer';
 import { OrganizationList } from '@/_components/OrganizationManager/List';
@@ -25,7 +25,6 @@ import { getQueryParams } from '@/_helpers/routes';
 import { withRouter } from '@/_hoc/withRouter';
 import FolderFilter from './FolderFilter';
 import { APP_ERROR_TYPE } from '@/_helpers/error_constants';
-import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 import HeaderSkeleton from '@/_ui/FolderSkeleton/HeaderSkeleton';
 
@@ -304,23 +303,27 @@ class HomePageComponent extends React.Component {
 
   canUserPerform(user, action, app) {
     const currentSession = authenticationService.currentSessionValue;
+    const appPermission = currentSession.app_group_permissions;
+    const canUpdateApp =
+      appPermission && (appPermission.is_all_editable || appPermission.editable_apps_id.includes(app?.id));
+    const canReadApp =
+      (appPermission && canUpdateApp) ||
+      appPermission.is_all_viewable ||
+      appPermission.viewable_apps_id.includes(app?.id);
     let permissionGrant;
 
     switch (action) {
       case 'create':
-        permissionGrant = this.canAnyGroupPerformAction('app_create', currentSession.group_permissions);
+        permissionGrant = currentSession.user_permissions.app_create;
         break;
       case 'read':
+        permissionGrant = this.isUserOwnerOfApp(user, app) || canReadApp;
+        break;
       case 'update':
-        permissionGrant =
-          this.canAnyGroupPerformActionOnApp(action, currentSession.app_group_permissions, app) ||
-          this.isUserOwnerOfApp(user, app);
+        permissionGrant = canUpdateApp || this.isUserOwnerOfApp(user, app);
         break;
       case 'delete':
-        permissionGrant =
-          this.canAnyGroupPerformActionOnApp('delete', currentSession.app_group_permissions, app) ||
-          this.canAnyGroupPerformAction('app_delete', currentSession.group_permissions) ||
-          this.isUserOwnerOfApp(user, app);
+        permissionGrant = currentSession.user_permissions.app_delete || this.isUserOwnerOfApp(user, app);
         break;
       default:
         permissionGrant = false;
@@ -364,15 +367,15 @@ class HomePageComponent extends React.Component {
   };
 
   canCreateFolder = () => {
-    return this.canAnyGroupPerformAction('folder_create', authenticationService.currentSessionValue?.group_permissions);
+    return authenticationService.currentSessionValue?.user_permissions?.folder_c_r_u_d;
   };
 
   canDeleteFolder = () => {
-    return this.canAnyGroupPerformAction('folder_delete', authenticationService.currentSessionValue?.group_permissions);
+    return authenticationService.currentSessionValue?.user_permissions?.folder_c_r_u_d;
   };
 
   canUpdateFolder = () => {
-    return this.canAnyGroupPerformAction('folder_update', authenticationService.currentSessionValue?.group_permissions);
+    return authenticationService.currentSessionValue?.user_permissions?.folder_c_r_u_d;
   };
 
   cancelDeleteAppDialog = () => {
@@ -853,8 +856,12 @@ class HomePageComponent extends React.Component {
                 {isLoading && !appSearchKey && <HeaderSkeleton />}
                 {(meta?.total_count > 0 || appSearchKey) && (
                   <>
-                    <HomeHeader onSearchSubmit={this.onSearchSubmit} darkMode={this.props.darkMode} />
-                    <div className="liner"></div>
+                    {!(isLoading && !appSearchKey) && (
+                      <>
+                        <HomeHeader onSearchSubmit={this.onSearchSubmit} darkMode={this.props.darkMode} />
+                        <div className="liner"></div>
+                      </>
+                    )}
                     <div className="filter-container">
                       <span>{currentFolder?.count ?? meta?.total_count} APPS</span>
                       <div className="d-flex align-items-center">
@@ -900,7 +907,7 @@ class HomePageComponent extends React.Component {
                     </span>
                   </div>
                 )}
-                {(isLoading || meta.total_count > 0 || currentFolder.count === 0) && (
+                {(isLoading || meta.total_count > 0 || !_.isEmpty(currentFolder)) && (
                   <AppList
                     apps={apps}
                     canCreateApp={this.canCreateApp}

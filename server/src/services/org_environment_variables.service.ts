@@ -72,8 +72,10 @@ export class OrgEnvironmentVariablesService {
 
   async fetch(organizationId: string, variableId: string) {
     return await this.orgEnvironmentVariablesRepository.findOne({
-      organizationId: organizationId,
-      id: variableId,
+      where: {
+        organizationId,
+        id: variableId,
+      },
     });
   }
 

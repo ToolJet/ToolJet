@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 import { EventHandler } from 'src/entities/event_handler.entity';
-import { dbTransactionWrap, dbTransactionForAppVersionAssociationsUpdate } from 'src/helpers/utils.helper';
+import { dbTransactionWrap, dbTransactionForAppVersionAssociationsUpdate } from 'src/helpers/database.helper';
 import { CreateEventHandlerDto, UpdateEvent } from '@dto/event-handler.dto';
 
 @Injectable()
@@ -57,7 +57,9 @@ export class EventsService {
         eventHandler.eventType === 'table_action'
       ) {
         const componentExists = await manager.findOne('Component', {
-          id: eventHandler.attachedTo,
+          where: {
+            id: eventHandler.attachedTo,
+          },
         });
 
         if (!componentExists) {
@@ -67,7 +69,9 @@ export class EventsService {
 
       if (eventHandler.eventType === 'data_query') {
         const dataQueryExists = await manager.findOne('DataQuery', {
-          id: eventHandler.attachedTo,
+          where: {
+            id: eventHandler.attachedTo,
+          },
         });
 
         if (!dataQueryExists) {
@@ -77,7 +81,9 @@ export class EventsService {
 
       if (eventHandler.eventType === 'page') {
         const pageExists = await manager.findOne('Page', {
-          id: eventHandler.attachedTo,
+          where: {
+            id: eventHandler.attachedTo,
+          },
         });
 
         if (!pageExists) {

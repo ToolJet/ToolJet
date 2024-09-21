@@ -1,10 +1,14 @@
 import { ExecutionContext, Injectable, NotFoundException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Organization } from 'src/entities/organization.entity';
-import { getManager } from 'typeorm';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class AuthorizeWorkspaceGuard extends AuthGuard('jwt') {
+  constructor(private readonly _dataSource: DataSource) {
+    super();
+  }
+
   async canActivate(context: ExecutionContext): Promise<any> {
     const request = context.switchToHttp().getRequest();
     if (request?.cookies['tj_auth_token']) {
@@ -14,7 +18,7 @@ export class AuthorizeWorkspaceGuard extends AuthGuard('jwt') {
           ? request.headers['tj-workspace-id'][0]
           : request.headers['tj-workspace-id'];
       if (organizationId) {
-        const org = await getManager().findOne(Organization, {
+        const org = await this._dataSource.manager.findOne(Organization, {
           where: { id: organizationId },
           select: ['id'],
         });

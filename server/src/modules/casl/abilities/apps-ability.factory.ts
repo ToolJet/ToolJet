@@ -3,34 +3,36 @@ import { InferSubjects, AbilityBuilder, Ability, AbilityClass, ExtractSubjectTyp
 import { Injectable } from '@nestjs/common';
 import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
-import { UsersService } from 'src/services/users.service';
+import { AbilityService } from '@services/permissions-ability.service';
+import { APP_RESOURCE_ACTIONS, TOOLJET_RESOURCE } from 'src/constants/global.constant';
 
 type Actions =
-  | 'authorizeOauthForSource'
-  | 'cloneApp'
-  | 'importApp'
-  | 'createApp'
+  | 'authorizeOauthForSource' //Deprecated
+  | APP_RESOURCE_ACTIONS.CLONE
+  | APP_RESOURCE_ACTIONS.IMPORT
+  | APP_RESOURCE_ACTIONS.CREATE
   | 'createDataSource'
   | 'createQuery'
   | 'createUsers'
-  | 'createVersions'
-  | 'deleteVersions'
+  | APP_RESOURCE_ACTIONS.VERSIONS_CREATE
+  | APP_RESOURCE_ACTIONS.VERSION_DELETE
   | 'deleteApp'
   | 'deleteDataSource'
   | 'deleteQuery'
   | 'fetchUsers'
-  | 'fetchVersions'
+  | APP_RESOURCE_ACTIONS.VERSION_READ
   | 'getDataSources'
   | 'getQueries'
   | 'previewQuery'
   | 'runQuery'
   | 'updateDataSource'
-  | 'updateParams'
+  | APP_RESOURCE_ACTIONS.UPDATE
   | 'updateQuery'
-  | 'updateVersions'
-  | 'updateIcon'
-  | 'viewApp'
-  | 'editApp';
+  | APP_RESOURCE_ACTIONS.VERSION_UPDATE
+  | APP_RESOURCE_ACTIONS.UPDATE
+  | APP_RESOURCE_ACTIONS.VIEW
+  | APP_RESOURCE_ACTIONS.EDIT
+  | APP_RESOURCE_ACTIONS.EXPORT;
 
 type Subjects = InferSubjects<typeof AppVersion | typeof User | typeof App> | 'all';
 
@@ -38,66 +40,81 @@ export type AppsAbility = Ability<[Actions, Subjects]>;
 
 @Injectable()
 export class AppsAbilityFactory {
-  constructor(private usersService: UsersService) {}
+  constructor(private abilityService: AbilityService) {}
 
   async appsActions(user: User, id?: string) {
-    const { can, build } = new AbilityBuilder<Ability<[Actions, Subjects]>>(Ability as AbilityClass<AppsAbility>);
-    const canUpdateApp = await this.usersService.userCan(user, 'update', 'App', id);
+    const { can, build } = new AbilityBuilder<Ability<[Actions | APP_RESOURCE_ACTIONS, Subjects]>>(
+      Ability as AbilityClass<AppsAbility>
+    );
 
-    if (await this.usersService.userCan(user, 'create', 'User')) {
-      can('createUsers', App, { organizationId: user.organizationId });
+    const userPermission = await this.abilityService.resourceActionsPermission(user, {
+      organizationId: user.organizationId,
+      ...(id && { resources: [{ resource: TOOLJET_RESOURCE.APP, resourceId: id }] }),
+    });
+    const userAppPermissions = userPermission?.App;
+    const appUpdateAllowed = userAppPermissions
+      ? userAppPermissions.isAllEditable || userAppPermissions.editableAppsId.includes(id)
+      : false;
+    const appViewAllowed = userAppPermissions
+      ? appUpdateAllowed || userAppPermissions.isAllViewable || userAppPermissions.viewableAppsId.includes(id)
+      : false;
+
+    //For app users.
+    if (userPermission.appCreate) {
+      can('createUsers', App);
     }
 
-    if (canUpdateApp) {
-      can('editApp', App, { organizationId: user.organizationId });
+    if (appUpdateAllowed) {
+      can(APP_RESOURCE_ACTIONS.EDIT, App);
     }
 
-    if (await this.usersService.userCan(user, 'create', 'App')) {
-      can('createApp', App);
-      can('importApp', App);
-      if (canUpdateApp) {
-        can('cloneApp', App, { organizationId: user.organizationId });
+    if (userPermission.appCreate) {
+      can(APP_RESOURCE_ACTIONS.CREATE, App);
+      can(APP_RESOURCE_ACTIONS.IMPORT, App);
+      can(APP_RESOURCE_ACTIONS.EXPORT, App);
+      if (appUpdateAllowed) {
+        can(APP_RESOURCE_ACTIONS.CLONE, App);
       }
     }
 
-    if (await this.usersService.userCan(user, 'read', 'App', id)) {
-      can('viewApp', App, { organizationId: user.organizationId });
+    if (appViewAllowed) {
+      can(APP_RESOURCE_ACTIONS.VIEW, App);
 
-      can('fetchUsers', App, { organizationId: user.organizationId });
-      can('fetchVersions', App, { organizationId: user.organizationId });
+      //Delete this actions
+      can('fetchUsers', App);
+      can(APP_RESOURCE_ACTIONS.VERSION_READ, App);
 
-      can('runQuery', App, { organizationId: user.organizationId });
-      can('getQueries', App, { organizationId: user.organizationId });
-      can('previewQuery', App, { organizationId: user.organizationId });
+      can('runQuery', App);
+      can('getQueries', App);
+      can('previewQuery', App);
 
-      // policies for datasources
-      can('getDataSources', App, { organizationId: user.organizationId });
-      can('authorizeOauthForSource', App, {
-        organizationId: user.organizationId,
-      });
+      // policies for data sources
+      can('getDataSources', App);
+      can('authorizeOauthForSource', App);
     }
 
-    if (canUpdateApp) {
-      can('updateParams', App, { organizationId: user.organizationId });
-      can('createVersions', App, { organizationId: user.organizationId });
-      can('deleteVersions', App, { organizationId: user.organizationId });
-      can('updateVersions', App, { organizationId: user.organizationId });
-      can('updateIcon', App, { organizationId: user.organizationId });
+    if (appUpdateAllowed) {
+      can(APP_RESOURCE_ACTIONS.UPDATE, App);
+      can(APP_RESOURCE_ACTIONS.VERSIONS_CREATE, App);
+      can(APP_RESOURCE_ACTIONS.VERSION_DELETE, App);
+      can(APP_RESOURCE_ACTIONS.VERSION_UPDATE, App);
+      can(APP_RESOURCE_ACTIONS.UPDATE, App);
 
-      can('updateQuery', App, { organizationId: user.organizationId });
-      can('createQuery', App, { organizationId: user.organizationId });
-      can('deleteQuery', App, { organizationId: user.organizationId });
+      can('updateQuery', App);
+      can('createQuery', App);
+      can('deleteQuery', App);
 
-      can('updateDataSource', App, { organizationId: user.organizationId });
-      can('createDataSource', App, { organizationId: user.organizationId });
-      can('deleteDataSource', App, { organizationId: user.organizationId });
+      //TODO: Need to remove this after depreciating local data source
+      can('updateDataSource', App);
+      can('createDataSource', App);
+      can('deleteDataSource', App);
     }
 
-    if (await this.usersService.userCan(user, 'delete', 'App', id)) {
-      can('deleteApp', App, { organizationId: user.organizationId });
+    if (userPermission.appDelete) {
+      can(APP_RESOURCE_ACTIONS.DELETE, App);
     }
 
-    can('viewApp', App, { isPublic: true });
+    can(APP_RESOURCE_ACTIONS.VIEW, App, { isPublic: true });
     can('runQuery', App, { isPublic: true });
 
     return build({

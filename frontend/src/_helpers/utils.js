@@ -1297,11 +1297,13 @@ export const USER_DRAWER_MODES = {
 
 export const humanizeifDefaultGroupName = (groupName) => {
   switch (groupName) {
-    case 'all_users':
-      return 'All users';
+    case 'end-user':
+      return 'End-user';
 
     case 'admin':
       return 'Admin';
+    case 'builder':
+      return 'Builder';
 
     default:
       return groupName;
@@ -1433,4 +1435,15 @@ export const removeNestedDoubleCurlyBraces = (str) => {
   }
 
   return transformedInput.join('');
+};
+export const validatePassword = (value) => {
+  if (!value.trim()) {
+    return 'Password is required';
+  }
+  if (value.length < 5) {
+    return 'Password must be at least 5 characters long';
+  }
+  if (value.length > 100) {
+    return 'Password can be at max 100 characters long';
+  }
 };

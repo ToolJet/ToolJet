@@ -20,6 +20,9 @@ export class Folder {
   id: string;
 
   @Column()
+  type: string;
+
+  @Column()
   name: string;
 
   @Column({ name: 'organization_id' })
@@ -53,7 +56,7 @@ export class Folder {
   @AfterLoad()
   generateCount(): void {
     if (this.folderApps) {
-      this.count = this.folderApps.length;
+      this.count = this.folderApps?.length || 0;
     }
   }
 }

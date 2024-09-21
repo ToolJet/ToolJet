@@ -1,0 +1,25 @@
+.setup-admin-form-wrapper {
+    width: 308px;
+
+    .form-input-area {
+        margin-top: 24px;
+    }
+
+    .sign-up-button {
+        height: 32px;
+        width: 87px;
+        border-radius: var(--4, 8px);
+        margin: 10px 8px;
+
+        .button-text {
+            color: var(--Text-on-color, #FFF);
+            /* default/medium */
+            font-family: "IBM Plex Sans";
+            font-size: 12px;
+            font-style: normal;
+            font-weight: 500;
+            line-height: 18px;
+            /* 150% */
+        }
+    }
+}
