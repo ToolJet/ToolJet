@@ -221,6 +221,9 @@
       font-size: 12px;
       color: var(--text-medium, #CFD3D8);
     }
+    .tab-count.active {
+      color: #3e63dd;
+    }
   }
 }
 .tab-count {

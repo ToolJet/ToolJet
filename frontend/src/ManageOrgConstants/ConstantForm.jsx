@@ -93,6 +93,10 @@ const ConstantForm = ({
     if (invalidValueLength) {
       setError((prev) => ({ ...prev, value: ERROR_MESSAGES.invalid_value_length }));
     }
+
+    if (mode === 'edit' && value === selectedConstant.value) {
+      setError((prev) => ({ ...prev, value: ERROR_MESSAGES.invalid_value }));
+    }
   };
 
   const handleFieldChange = (e) => {
