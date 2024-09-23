@@ -56,7 +56,7 @@ export class CreateUserDto {
   source: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @Transform(({ value }) => sanitizeInput(value))
   workspaceName: string;
 }
