@@ -6,6 +6,7 @@ import { OnboardingQuestions } from '@/modules/onboarding/components';
 import invitationsStore from '@/modules/onboarding/stores/invitationsStore';
 import { LinkExpiredPage } from '@/ConfirmationPage/LinkExpiredPage';
 import { utils } from '@/modules/common/helpers';
+import { getSubpath } from '@/_helpers/routes';
 
 const PostOnboardingComponent = () => null;
 
@@ -53,7 +54,9 @@ export const InvitationPage = (darkMode = false) => {
             organizationToken,
             source,
           }).then((data) => {
-            window.location.href = redirectTo || '/';
+            const toGo = redirectTo || '/';
+            const path = getSubpath() ? `${getSubpath()}${toGo}` : `${toGo}`;
+            window.location.href = path;
           });
         }
       })
