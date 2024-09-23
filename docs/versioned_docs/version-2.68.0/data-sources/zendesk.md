@@ -5,6 +5,8 @@ title: Zendesk
 
 ToolJet can connect to Zendesk APIs to read and write data using OAuth 2.0, which helps us to limit an application's access to a user's account.
 
+<div style={{paddingTop:'24px'}}>
+
 ## Connection 
 
 To establish a connection with the Zendesk data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page from the ToolJet dashboard and choose Zendesk as the data source.
@@ -24,6 +26,10 @@ You can create a Zendesk data source with one of either of the two permission sc
 You must first be a verified user to make Zendesk API requests. This is configured in the Admin Center interface in **Apps and integrations > APIs > Zendesk APIs.** For more information, see Security and Authentication in the [Zendesk Support API reference](https://developer.zendesk.com/api-reference/ticketing/introduction/#security-and-authentication) or [check out Zendesk's docs](https://support.zendesk.com/hc/en-us/articles/4408845965210).
 :::
 
+</div>
+
+<div style={{paddingTop:'24px'}}>
+
 ## Querying Zendesk
 
 1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
@@ -32,6 +38,11 @@ You must first be a verified user to make Zendesk API requests. This is configur
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
 <img className="screenshot-full" src="/img/datasource-reference/zendesk/zendesk-v2.gif" alt="ToolJet - Data source - Zendesk" />
+
+</div>
+
+
+<div style={{paddingTop:'24px'}}>
 
 ## Supported Operations
 
@@ -101,3 +112,5 @@ Common filters include:
 - `type:ticket organization:12345 status:open`
 
 <img className="screenshot-full" src="/img/datasource-reference/zendesk/search.png" alt="ToolJet - Data source - Zendesk" />
+
+</div>
