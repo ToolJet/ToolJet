@@ -1,4 +1,5 @@
 import { isString } from 'lodash';
+import { getSubpath } from '@/_helpers/routes';
 
 const processErrorMessage = (error) => {
   if (isString(error)) {
@@ -8,7 +9,8 @@ const processErrorMessage = (error) => {
 };
 
 function clearPageHistory() {
-  history.replaceState(null, null, '/');
+  const subpath = getSubpath() || '';
+  history.replaceState(null, null, `${subpath}/`);
 }
 
 export { processErrorMessage, clearPageHistory };
