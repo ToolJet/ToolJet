@@ -43,7 +43,7 @@ Query results can be transformed using Transformations. Read our **Transformatio
 
 1.  **[List documents](#list-documents)**
 2.  **[Get document](#get-document)**
-3.  **[Create document](#create-document)**
+3.  **[Create document](#add-document-to-collection)**
 4.  **[Update document](#update-document)** 
 5.  **[Delete document](#delete-document)**
 6.  **[Bulk update using document id](#bulk-update-using-document-id)**
