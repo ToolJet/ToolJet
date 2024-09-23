@@ -47,7 +47,7 @@ import { withTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
 import Skeleton from 'react-loading-skeleton';
 import EditorHeader from './Header';
-import { getWorkspaceId, isValidUUID } from '@/_helpers/utils';
+import { getWorkspaceId, isValidUUID, Constants } from '@/_helpers/utils';
 import { fetchAndSetWindowTitle, pageTitles, defaultWhiteLabellingSettings } from '@white-label/whiteLabelling';
 import '@/_styles/editor/react-select-search.scss';
 import { withRouter } from '@/_hoc/withRouter';
@@ -403,19 +403,26 @@ const EditorComponent = (props) => {
     });
   };
 
-  const fetchOrgEnvironmentConstants = () => {
-    //! for @ee: get the constants from  `getConstantsFromEnvironment ` -- '/organization-constants/:environmentId'
-    orgEnvironmentConstantService.getAll().then(({ constants }) => {
+  const fetchOrgEnvironmentConstants = async (environmentId) => {
+    try {
+      const { constants } = await orgEnvironmentConstantService.getConstantsFromEnvironment(
+        environmentId,
+        Constants.Global
+      );
       const orgConstants = {};
-      constants.map((constant) => {
-        const constantValue = constant.values.find((value) => value.environmentName === 'production')['value'];
-        orgConstants[constant.name] = constantValue;
+
+      constants.forEach((constant) => {
+        orgConstants[constant.name] = constant.value;
       });
 
       useCurrentStateStore.getState().actions.setCurrentState({
         constants: orgConstants,
       });
-    });
+    } catch (error) {
+      toast.error('Failed to fetch organization environment constants', {
+        position: 'top-center',
+      });
+    }
   };
 
   const initComponentVersioning = () => {
@@ -720,7 +727,8 @@ const EditorComponent = (props) => {
     fetchAndSetWindowTitle({ page: pageTitles.EDITOR, appName });
     useAppVersionStore.getState().actions.updateEditingVersion(editing_version);
     current_version_id && useAppVersionStore.getState().actions.updateReleasedVersionId(current_version_id);
-    await fetchOrgEnvironmentConstants();
+    const environmentId = editing_version?.current_environment_id;
+    await fetchOrgEnvironmentConstants(environmentId);
     updateState({
       slug,
       isMaintenanceOn,

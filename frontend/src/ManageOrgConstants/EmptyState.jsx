@@ -5,7 +5,7 @@ const EmptyState = ({ canCreateVariable, setIsManageVarDrawerOpen, isLoading }) 
   if (isLoading) return null;
 
   return (
-    <div className="w-100 workspace-constant-card-body">
+    <div className="w-100 constant-card-body">
       <div className="align-items-center p-3 justify-content-between">
         <div className="empty-state-org-constants">
           <center className={`empty-result`}>

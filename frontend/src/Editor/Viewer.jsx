@@ -26,7 +26,7 @@ import {
 import queryString from 'query-string';
 import ViewerLogoIcon from './Icons/viewer-logo.svg';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
-import { resolveReferences, isQueryRunnable, isValidUUID } from '@/_helpers/utils';
+import { resolveReferences, isQueryRunnable, isValidUUID, Constants } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
 import { Navigate } from 'react-router-dom';
@@ -441,11 +441,10 @@ class ViewerComponent extends React.Component {
 
     let variablesResult;
     if (!isPublic) {
-      const { constants } = await orgEnvironmentConstantService.getAll();
+      const { constants } = await orgEnvironmentConstantService.getConstantsFromApp(slug);
       variablesResult = constants;
     } else {
       const { constants } = await orgEnvironmentConstantService.getConstantsFromPublicApp(slug);
-
       variablesResult = constants;
     }
 
