@@ -1,3 +1,4 @@
+import { MigrationProgress } from 'src/helpers/utils.helper';
 import {
   GROUP_PERMISSIONS_TYPE,
   USER_ROLE,
@@ -21,6 +22,10 @@ export class AddingUsersToRespectiveRolesBuilderAndEndUsers1720365772516 impleme
   }
 
   async getAndConvertEditorBuilderUsers(manager: EntityManager, organizationIds: string[]) {
+    const migrationProgress = new MigrationProgress(
+      'AddingUsersToRespectiveRolesBuilderAndEndUsers1720365772516',
+      organizationIds.length
+    );
     for (const organizationId of organizationIds) {
       const userIdsWithEditPermissions = (
         await manager
@@ -41,9 +46,11 @@ export class AddingUsersToRespectiveRolesBuilderAndEndUsers1720365772516 impleme
           .leftJoin('group_permissions.appGroupPermission', 'app_group_permissions')
           .andWhere(
             new Brackets((qb) => {
-              qb.where('app_group_permissions.read = true AND app_group_permissions.update = true').orWhere(
-                'group_permissions.appCreate = true'
-              );
+              qb.orWhere('app_group_permissions.read = true AND app_group_permissions.update = true')
+                .orWhere('group_permissions.appCreate = true')
+                .orWhere('group_permissions.appDelete = true')
+                .orWhere('group_permissions.folderCreate = true')
+                .orWhere('group_permissions.orgEnvironmentConstantCreate = true');
             })
           )
           .select('users.id')
@@ -84,6 +91,7 @@ export class AddingUsersToRespectiveRolesBuilderAndEndUsers1720365772516 impleme
           })
           .getMany()
       ).map((record) => record.userId);
+
       const builderUsersWithAdmin = [...new Set([...userIdsWithEditPermissions, ...userIdsOfAppOwners])];
       const builderUsersWoAdmin = builderUsersWithAdmin.filter((id) => !adminsUsers.includes(id));
       const builderGroup = await manager.findOne(GroupPermissions, {
@@ -92,9 +100,6 @@ export class AddingUsersToRespectiveRolesBuilderAndEndUsers1720365772516 impleme
       const endUserGroup = await manager.findOne(GroupPermissions, {
         where: { name: USER_ROLE.END_USER, type: GROUP_PERMISSIONS_TYPE.DEFAULT, organizationId: organizationId },
       });
-
-      console.log('Builders users');
-      console.log(builderUsersWoAdmin);
 
       await this.migrateUserGroup(manager, builderUsersWoAdmin, builderGroup.id);
       const organizationUser = (
@@ -107,6 +112,7 @@ export class AddingUsersToRespectiveRolesBuilderAndEndUsers1720365772516 impleme
       const builderAdminUsers = [...new Set([...builderUsersWoAdmin, ...adminsUsers])];
       const endUsers = organizationUser.filter((userId) => !builderAdminUsers.includes(userId));
       await this.migrateUserGroup(manager, endUsers, endUserGroup.id);
+      migrationProgress.show();
     }
   }
 
