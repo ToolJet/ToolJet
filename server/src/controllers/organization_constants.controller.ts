@@ -22,6 +22,7 @@ import { OrgEnvironmentVariablesAbilityFactory } from 'src/modules/casl/abilitie
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
 import { OrganizationConstantType } from 'src/entities/organization_constants.entity';
 import { OrganizationConstant } from 'src/entities/organization_constants.entity';
+import { ORGANIZATION_CONSTANT_RESOURCE_ACTIONS } from 'src/constants/global.constant';
 
 @Controller('organization-constants')
 export class OrganizationConstantController {
@@ -36,8 +37,8 @@ export class OrganizationConstantController {
   async get(@User() user, @Query('type') type: OrganizationConstantType) {
     const ability = await this.organizationConstantsAbilityFactory.organizationConstantActions(user, null);
     const decrypt =
-      ability.can('createOrganizationConstant', OrganizationConstant) ||
-      ability.can('deleteOrganizationConstant', OrganizationConstant);
+      ability.can(ORGANIZATION_CONSTANT_RESOURCE_ACTIONS.CREATE, OrganizationConstant) ||
+      ability.can(ORGANIZATION_CONSTANT_RESOURCE_ACTIONS.DELETE, OrganizationConstant);
     const result = await this.organizationConstantsService.allEnvironmentConstants(user.organizationId, decrypt, type);
     return { constants: result };
   }
