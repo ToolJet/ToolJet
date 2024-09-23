@@ -29,7 +29,7 @@ const OnboardingFormWrapper = ({ children: components }) => {
     };
   }, [whiteLabelLogo]);
   const redirectToLoginPage = () => {
-    window.location.href = getSubpath() ? `${getSubpath()}` : `'/'`;
+    window.location.href = getSubpath() ? `${getSubpath()}` : '/';
   };
   return (
     <div className="onboarding-form-wrapper">
