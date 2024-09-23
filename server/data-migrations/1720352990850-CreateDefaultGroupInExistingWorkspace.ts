@@ -1,4 +1,5 @@
 import { CreateGranularPermissionDto } from '@dto/granular-permissions.dto';
+import { MigrationProgress } from 'src/helpers/utils.helper';
 import {
   DEFAULT_GRANULAR_PERMISSIONS_NAME,
   DEFAULT_RESOURCE_PERMISSIONS,
@@ -7,6 +8,7 @@ import {
 import {
   USER_ROLE,
   DEFAULT_GROUP_PERMISSIONS_MIGRATIONS,
+  DEFAULT_GROUP_PERMISSIONS,
 } from '@modules/user_resource_permissions/constants/group-permissions.constant';
 import {
   CreateResourcePermissionObject,
@@ -22,15 +24,24 @@ import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
 export class CreateDefaultGroupInExistingWorkspace1720352990850 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const manager = queryRunner.manager;
+    const licenseValid = true;
+
     const organizationIds = (
       await manager.find(Organization, {
         select: ['id'],
       })
     ).map((organization) => organization.id);
 
+    const migrationProgress = new MigrationProgress(
+      'CreateDefaultGroupInExistingWorkspace1720352990850',
+      organizationIds.length
+    );
+
     for (const organizationId of organizationIds) {
       for (const defaultGroup of Object.keys(USER_ROLE)) {
-        const groupPermissions = DEFAULT_GROUP_PERMISSIONS_MIGRATIONS[defaultGroup];
+        const groupPermissions = licenseValid
+          ? DEFAULT_GROUP_PERMISSIONS_MIGRATIONS[defaultGroup]
+          : DEFAULT_GROUP_PERMISSIONS[defaultGroup];
         const query = `
           INSERT INTO permission_groups (
             organization_id,
@@ -50,8 +61,8 @@ export class CreateDefaultGroupInExistingWorkspace1720352990850 implements Migra
             ${groupPermissions.appDelete},
             ${groupPermissions.folderCRUD},
             ${groupPermissions.orgConstantCRUD},
-            ${groupPermissions.dataSourceCreate},
-            ${groupPermissions.dataSourceDelete}
+            false,
+            false
           ) RETURNING *;
         `;
         const group: GroupPermissions = (await manager.query(query))[0];
@@ -59,8 +70,7 @@ export class CreateDefaultGroupInExistingWorkspace1720352990850 implements Migra
           DEFAULT_RESOURCE_PERMISSIONS[group.name];
 
         for (const resource of Object.keys(groupGranularPermissions)) {
-          const createResourcePermissionObj: CreateResourcePermissionObject = groupGranularPermissions[resource];
-          const dtoObject = {
+          const dtoObject: CreateGranularPermissionDto = {
             name: DEFAULT_GRANULAR_PERMISSIONS_NAME[resource],
             groupId: group.id,
             type: resource as ResourceType,
@@ -68,12 +78,16 @@ export class CreateDefaultGroupInExistingWorkspace1720352990850 implements Migra
             createAppsPermissionsObject: {},
           };
           if (group.name === USER_ROLE.ADMIN) {
+            const createResourcePermissionObj: CreateResourcePermissionObject = groupGranularPermissions[resource];
+
             const granularPermissions = await this.createGranularPermission(manager, dtoObject);
-            await this.createAppsResourcePermission(
-              manager,
-              { granularPermissions, organizationId },
-              createResourcePermissionObj
-            );
+            if (resource === ResourceType.APP) {
+              await this.createAppsResourcePermission(
+                manager,
+                { granularPermissions, organizationId },
+                createResourcePermissionObj as CreateResourcePermissionObject
+              );
+            }
           }
         }
         //Migrating Admins to new Admins
@@ -96,6 +110,7 @@ export class CreateDefaultGroupInExistingWorkspace1720352990850 implements Migra
           await this.migrateUserGroup(manager, userIds, group.id);
         }
       }
+      migrationProgress.show();
     }
   }
 

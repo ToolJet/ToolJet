@@ -1,4 +1,5 @@
 import { CreateGranularPermissionDto } from '@dto/granular-permissions.dto';
+import { MigrationProgress } from 'src/helpers/utils.helper';
 import {
   DEFAULT_GRANULAR_PERMISSIONS_NAME,
   ResourceType,
@@ -22,11 +23,24 @@ import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
 export class MigrateCustomGroupToNewUserGroup1720434737529 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const manager = queryRunner.manager;
+    const licenseValid = true;
+
+    if (!licenseValid) {
+      console.log('Not considering groups for basic plans');
+      return;
+    }
+
     const organizationIds = (
       await manager.find(Organization, {
         select: ['id'],
       })
     ).map((organization) => organization.id);
+
+    const migrationProgress = new MigrationProgress(
+      'MigrateCustomGroupToNewUserGroup1720434737529',
+      organizationIds.length
+    );
+
     for (const organizationId of organizationIds) {
       const groups = await manager
         .createQueryBuilder(GroupPermission, 'groupPermission')
@@ -41,6 +55,14 @@ export class MigrateCustomGroupToNewUserGroup1720434737529 implements MigrationI
         .getMany();
 
       for (const groupPermissions of groups) {
+        // check if all user groups has any privileges, if yes -> create a custom group for it
+        if (groupPermissions.group === 'all_users') {
+          const { appGroupPermission, appCreate, appDelete, folderCreate, orgEnvironmentConstantCreate } =
+            groupPermissions;
+          if (!(appGroupPermission?.length || appCreate || appDelete || folderCreate || orgEnvironmentConstantCreate)) {
+            continue;
+          }
+        }
         const query = `
           INSERT INTO permission_groups (
             organization_id,
@@ -70,25 +92,24 @@ export class MigrateCustomGroupToNewUserGroup1720434737529 implements MigrationI
         const resources = [ResourceType.APP];
         for (const resource of resources) {
           if (resource === ResourceType.APP) {
-            const updateLevelAppsPermissions = groupPermissions.appGroupPermission.filter(
-              (appPermissions) => appPermissions.update
+            const updateLevelAndHideAppsPermissions = groupPermissions.appGroupPermission.filter(
+              (appPermissions) => appPermissions.read && appPermissions.hideFromDashboard
             );
-            const viewLevelAppsPermissions = groupPermissions.appGroupPermission.filter(
-              (appPermissions) => appPermissions.read && !appPermissions.update
-            );
-
-            const createResourcePermissionObjView: CreateResourcePermissionObject = {
+            const createResourcePermissionObjViewAndHide: CreateResourcePermissionObject = {
               canView: true,
               canEdit: false,
-              hideFromDashboard: false,
+              hideFromDashboard: true,
             };
             await this.createAppLevelPermissions(
               manager,
-              viewLevelAppsPermissions,
+              updateLevelAndHideAppsPermissions,
               organizationId,
-              resource,
               group,
-              createResourcePermissionObjView
+              createResourcePermissionObjViewAndHide
+            );
+
+            const updateLevelAppsPermissions = groupPermissions.appGroupPermission.filter(
+              (appPermissions) => appPermissions.update && !appPermissions.hideFromDashboard
             );
             const createResourcePermissionObjEdit: CreateResourcePermissionObject = {
               canView: false,
@@ -99,13 +120,29 @@ export class MigrateCustomGroupToNewUserGroup1720434737529 implements MigrationI
               manager,
               updateLevelAppsPermissions,
               organizationId,
-              resource,
               group,
               createResourcePermissionObjEdit
+            );
+
+            const viewLevelAppsPermissions = groupPermissions.appGroupPermission.filter(
+              (appPermissions) => appPermissions.read && !appPermissions.update
+            );
+            const createResourcePermissionObjView: CreateResourcePermissionObject = {
+              canView: true,
+              canEdit: false,
+              hideFromDashboard: false,
+            };
+            await this.createAppLevelPermissions(
+              manager,
+              viewLevelAppsPermissions,
+              organizationId,
+              group,
+              createResourcePermissionObjView
             );
           }
         }
       }
+      migrationProgress.show();
     }
   }
 
@@ -198,16 +235,17 @@ export class MigrateCustomGroupToNewUserGroup1720434737529 implements MigrationI
     manager: EntityManager,
     appsPermissions: AppGroupPermission[],
     organizationId: string,
-    resource: ResourceType,
     group: GroupPermissions,
     createResourcePermissionObj: CreateResourcePermissionObject
   ) {
-    const nameInit = createResourcePermissionObj.canView ? 'Viewable' : 'Updatable';
+    const nameInit = createResourcePermissionObj.canEdit
+      ? 'Updatable'
+      : `Viewable ${createResourcePermissionObj.hideFromDashboard ? 'hidden' : ''}`;
     if (appsPermissions.length === 0) return;
-    const dtoObject = {
-      name: `${nameInit} ${DEFAULT_GRANULAR_PERMISSIONS_NAME[resource]}`,
+    const dtoObject: CreateGranularPermissionDto = {
+      name: `${nameInit} ${DEFAULT_GRANULAR_PERMISSIONS_NAME[ResourceType.APP]}`,
       groupId: group.id,
-      type: resource as ResourceType,
+      type: ResourceType.APP,
       isAll: false,
       createAppsPermissionsObject: {},
     };
