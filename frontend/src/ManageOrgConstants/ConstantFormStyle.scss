@@ -191,6 +191,8 @@
 .tab.active {
   border-radius: 0px;
   color: #3e63dd;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #3e63dd;
 
   .workspace-constant-text {
     padding-bottom: 8px;
@@ -218,6 +220,9 @@
       margin-left: 4px;
       font-size: 12px;
       color: var(--text-medium, #CFD3D8);
+    }
+    .tab-count.active {
+      color: #3e63dd;
     }
   }
 }
