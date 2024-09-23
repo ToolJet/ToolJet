@@ -55,9 +55,7 @@ const AppList = (props) => {
             className={`d-block text-center text-body ${props.darkMode && 'text-white-50'}`}
             data-cy="empty-folder-text"
           >
-            {props.currentFolder?.count == 0
-              ? t('homePage.thisFolderIsEmpty', 'This folder is empty')
-              : t('homePage.nonAccessibleFolderApps', 'You do not have access to any applications in this folder.')}
+            {props.currentFolder?.count == 0 && t('homePage.thisFolderIsEmpty', 'This folder is empty')}
           </span>
         </div>
       )}
