@@ -130,14 +130,20 @@ Query-specific cookies will override data source level cookies with the same nam
 
 ## Request types
 
-The plugin will send a **JSON** formatted body by default. If a file object from a [`FilePicker` widget](/docs/widgets/file-picker) is set as a value, the body is automatically converted to be sent as a `multipart/form-data` request.
+The plugin will send a **JSON** formatted body by default. If you want to send a different type of body, you can enter the appropriate headers in the **Headers** section. For example, to send a **multipart/form-data** body, you can add the following header:
+
+```javascript
+  Content-Type: multipart/form-data;
+```
+
 
 <div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/datasource-reference/rest-api/multipart-form-data.png" alt="ToolJet - Data source - REST API" />
-
+<img className="screenshot-full" src="/img/datasource-reference/rest-api/form-headers.png" alt="ToolJet - Data source - REST API" />
 </div>
 
+<div style={{textAlign: 'center'}}>
+<img className="screenshot-full" src="/img/datasource-reference/rest-api/form-body.png" alt="ToolJet - Data source - REST API" />
+</div>
 ## Response types
 
 REST APIs can return data in a variety of formats, including **JSON** and **Base64**. JSON is a common format used for data exchange in REST APIs, while Base64 is often used for encoding binary data, such as images or video, within a JSON response.

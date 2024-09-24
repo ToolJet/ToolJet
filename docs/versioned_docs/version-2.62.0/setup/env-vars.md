@@ -147,17 +147,26 @@ You can set `SERVE_CLIENT` to `false` to disable this behaviour.
 If ToolJet is hosted on a domain subpath, you can set the environment variable `SUB_PATH` to support it.
 Please note the subpath is to be set with trailing `/` and is applicable only when the server is serving the frontend client.
 
-### SMTP configuration ( optional )
+### SMTP Configuration (Optional)
 
-ToolJet uses SMTP services to send emails ( Eg: invitation email when you add new users to your workspace ).
+ToolJet uses SMTP services to send emails (e.g., invitation emails when you add new users to your workspace).
 
-| variable           | description                               |
+For Enterprise Edition, you must configure SMTP settings through the user interface (UI) in the ToolJet Settings. For more information, see [SMTP Configuration](../org-management/smtp-configuration.md).
+
+:::info
+If you have upgraded from a version prior to v2.62.0, the SMTP variables in your .env file will automatically be mapped to the UI.
+For versions v2.62.0 and later, SMTP configuration will no longer be picked up from the .env file for Enterprise Edition. You must configure SMTP through the UI. You can safely remove these variables from your .env file after ensuring that the configuration is properly set up in the UI.
+:::
+
+For Community Edition, you can configure SMTP via environment variables using the following:
+
+| Variable           | Description                               |
 | ------------------ | ----------------------------------------- |
-| DEFAULT_FROM_EMAIL | from email for the email fired by ToolJet |
-| SMTP_USERNAME      | username                                  |
-| SMTP_PASSWORD      | password                                  |
-| SMTP_DOMAIN        | domain or host                            |
-| SMTP_PORT          | port                                      |
+| DEFAULT_FROM_EMAIL | From email for emails sent by ToolJet     |
+| SMTP_USERNAME      | Username                                  |
+| SMTP_PASSWORD      | Password                                  |
+| SMTP_DOMAIN        | Domain or host                            |
+| SMTP_PORT          | Port                                      |
 
 ### Slack configuration ( optional )
 

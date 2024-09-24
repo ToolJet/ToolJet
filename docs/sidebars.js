@@ -86,15 +86,15 @@ const sidebars = {
           'type': 'category',
           'label': 'Layout Guide',
           'items': [
-           'app-builder/components-library',
-           'app-builder/query-panel',
-           'tutorial/pages',
-           'app-builder/topbar',
-           'app-builder/left-sidebar',
-           'app-builder/canvas',
-           'app-builder/preview',
-           'app-builder/share',
-           'app-builder/customstyles',
+            'app-builder/components-library',
+            'app-builder/query-panel',
+            'tutorial/pages',
+            'app-builder/topbar',
+            'app-builder/left-sidebar',
+            'app-builder/canvas',
+            'app-builder/preview',
+            'app-builder/share',
+            'app-builder/customstyles',
           ],
         },
         {
@@ -216,8 +216,11 @@ const sidebars = {
       'label': 'How To',
       'items': [
         'how-to/use-url-params-on-load',
+        'how-to/pass-query-params-in-custom-components',
         'how-to/use-custom-parameters',
+        'how-to/build-dynamic-forms',
         'how-to/setup-rsyslog',
+        'how-to/conditionally-display-components',
         'how-to/use-inspector',
         'how-to/use-form-component',
         'how-to/access-cellvalue-rowdata',
@@ -381,7 +384,8 @@ const sidebars = {
             "org-management/licensing/tooljet-cloud",
             "org-management/licensing/self-hosted"
           ]
-        }
+        },
+        "org-management/smtp-configuration"
       ],
     },
     {
@@ -427,6 +431,8 @@ const sidebars = {
             'marketplace/plugins/marketplace-plugin-supabase',
             'marketplace/plugins/marketplace-plugin-pocketbase',
             'marketplace/plugins/marketplace-plugin-portkey',
+            'marketplace/plugins/marketplace-plugin-prestodb',
+            'marketplace/plugins/marketplace-plugin-jira',
           ],
         },
       ],
@@ -475,6 +481,16 @@ const sidebars = {
           'items': [
             'contributing-guide/marketplace/marketplace-setup',
             'contributing-guide/marketplace/creating-a-plugin',
+          ],
+        },
+        {
+          'type': 'category',
+          'label': 'Documentation',
+          'items': [
+            'contributing-guide/documentation-guidelines/introduction',
+            'contributing-guide/documentation-guidelines/pr-checklist',
+            'contributing-guide/documentation-guidelines/style-guide',
+
           ],
         },
         'tooljet-cli',
