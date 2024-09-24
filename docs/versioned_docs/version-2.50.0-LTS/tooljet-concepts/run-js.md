@@ -3,7 +3,11 @@ id: run-js
 title: Run JavaScript code
 ---
 
-The **Run JavaScript code** query in ToolJet enables users to write and execute custom JavaScript code within their applications. It provides a flexible way to add custom logic and interact with various components. Whether it’s transforming data, manipulating component properties, or performing actions based on certain conditions, Run JavaScript code significantly enhances the capabilities of your ToolJet applications. 
+The **Run JavaScript code** query in ToolJet enables users to write and execute custom JavaScript code within their applications. It provides a flexible way to add custom logic and interact with various components. Whether it’s transforming data, manipulating component properties, or performing actions based on certain conditions, Run JavaScript code significantly enhances the capabilities of your ToolJet applications.
+
+<div class="video-container">
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/ySlDSuulHn8?si=0PLsANxkdwzIySIf&rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</div>
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 

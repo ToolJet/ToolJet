@@ -3,7 +3,15 @@ id: what-are-queries
 title: Queries
 ---
 
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
 **Queries** act as a bridge between the application and data sources. Queries help interact with data sources like databases or APIs. They fetch or update data based on events like button clicks, making apps dynamic.
+
+<div class="video-container">
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/VUw042ZXhBc?si=VSMxjvcq8zPw8O9z&rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</div>
+
+</div>
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
@@ -30,12 +38,3 @@ Queries run when triggered by app events, such as clicking a button. They can fe
 </div>
 
 Learn more about queries in this **[detailed guide](/docs/app-builder/query-panel/)** for Query Panel. 
-
-
-
-
-
-
-
-
-
