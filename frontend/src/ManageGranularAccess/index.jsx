@@ -470,6 +470,7 @@ class ManageGranularAccessComponent extends React.Component {
           setSelectedApps={this.setSelectedApps}
           addableApps={addableApps}
           darkMode={this.props.darkMode}
+          groupName={currentGroupPermission.name}
         />
         {!granularPermissions.length && !isLoading ? (
           <div className="empty-container">

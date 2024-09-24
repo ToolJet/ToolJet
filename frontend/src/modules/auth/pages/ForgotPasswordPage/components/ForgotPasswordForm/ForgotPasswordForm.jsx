@@ -24,7 +24,8 @@ const ForgotPasswordForm = ({ onSubmit }) => {
 
   const handleInputChange = (e) => {
     setEmail(e.target.value);
-    setEmailError('');
+    const emailError = email.trim() ? (validateEmail(email) ? '' : 'Email is invalid') : 'Email is required';
+    setEmailError(emailError === '' ? '' : emailError);
   };
 
   const handleSubmit = async (e) => {

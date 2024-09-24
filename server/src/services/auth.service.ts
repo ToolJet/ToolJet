@@ -20,7 +20,7 @@ import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, EntityManager, Repository } from 'typeorm';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
-import { CreateAdminDto, CreateUserDto } from '@dto/user.dto';
+import { CreateAdminDto, OnboardUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
 import {
   fullName,
@@ -813,7 +813,7 @@ export class AuthService {
     return result;
   }
 
-  async setupAccountFromInvitationToken(response: Response, userCreateDto: CreateUserDto) {
+  async setupAccountFromInvitationToken(response: Response, userCreateDto: OnboardUserDto) {
     const {
       companyName,
       companySize,

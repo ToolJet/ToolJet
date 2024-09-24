@@ -20,8 +20,6 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   const { t } = useTranslation();
   const isSlugSet = useRef(false); // Flag to track if slug has been initially set
   const sluginput = useRef('');
-  const [isDisabled, setIsDisabled] = useState(true);
-
   const createOrganization = () => {
     let emptyError = false;
     [name, slug].map((field, index) => {
@@ -168,18 +166,14 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
       isSlugSet.current = true;
     }
   }, [name.value, slug.value, slugProgress, workspaceNameProgress, isSlugSet]);
-
-  useEffect(() => {
-    const isDisabled =
-      isCreating ||
-      isNameDisabled ||
-      isSlugDisabled ||
-      slugProgress ||
-      workspaceNameProgress ||
-      slug?.error ||
-      name?.error;
-    setIsDisabled(isDisabled);
-  }, [isCreating, isNameDisabled, isSlugDisabled, slugProgress, workspaceNameProgress, name, slug]);
+  const isDisabled =
+    isCreating ||
+    isNameDisabled ||
+    isSlugDisabled ||
+    slugProgress ||
+    workspaceNameProgress ||
+    slug?.error ||
+    name?.error;
 
   return (
     <AlertDialog

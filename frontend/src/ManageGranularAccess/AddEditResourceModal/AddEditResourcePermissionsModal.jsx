@@ -19,6 +19,7 @@ function AddEditResourcePermissionsModal({
   setSelectedApps,
   addableApps,
   darkMode,
+  groupName,
 }) {
   const isCustom = currentState?.isCustom;
   const newPermissionName = currentState?.newPermissionName;
@@ -132,7 +133,7 @@ function AddEditResourcePermissionsModal({
           </label>
           <OverlayTrigger
             overlay={
-              disableBuilderLevelUpdate ? (
+              disableBuilderLevelUpdate || resourceType === '' || groupName === 'builder' ? (
                 <Tooltip id="tooltip-disable-edit-update">Use custom groups to select custom resources</Tooltip>
               ) : (
                 <span></span>
@@ -144,7 +145,7 @@ function AddEditResourcePermissionsModal({
               <input
                 className="form-check-input"
                 type="radio"
-                disabled={addableApps.length === 0 || disableBuilderLevelUpdate}
+                disabled={addableApps.length === 0 || disableBuilderLevelUpdate || groupName === 'builder'}
                 checked={isCustom}
                 onClick={() => {
                   !isCustom &&
