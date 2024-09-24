@@ -7,6 +7,7 @@ import { validateName, handleHttpErrorMessages } from '@/_helpers/utils';
 import { appendWorkspaceId, getHostURL } from '@/_helpers/routes';
 import _ from 'lodash';
 import { FormWrapper } from '@/_components/FormWrapper';
+import { toast } from 'react-hot-toast';
 
 export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   const [isCreating, setIsCreating] = useState(false);
@@ -42,6 +43,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
       setIsCreating(true);
       organizationService.createOrganization({ name: name.value, slug: slugValue }).then(
         () => {
+          toast.success('Workspace created successfully');
           setIsCreating(false);
           const newPath = appendWorkspaceId(slugValue, location.pathname, true);
           window.history.replaceState(null, null, newPath);
