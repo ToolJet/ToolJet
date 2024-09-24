@@ -1099,7 +1099,7 @@ export const validateName = (
   checkReservedWords = false,
   allowAllCases = false
 ) => {
-  const newName = name;
+  const newName = name.trim();
   let errorMsg = '';
   if (emptyCheck && !newName) {
     errorMsg = `${nameType} can't be empty`;
