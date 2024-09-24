@@ -57,10 +57,10 @@ export const releaseCards = [
 ];
 
 export const resourceCards = [
-    { icon: ShoppingBag, title: "Marketplace", color: "text-green-500", content: "Discover a variety of plugins, templates, and extensions in ToolJet's marketplace to enhance your app-building experience." },
-    { icon: Wand, title: "Copilot", color: "text-green-500", content: "Boost productivity with ToolJet Copilot. Get AI-powered suggestions and assistance while building your applications." },
-    { icon: Flag, title: "Tracking", color: "text-green-500", content: "Track app performance and user activity with built-in analytics tools, giving you valuable insights to optimize your applications." },
-    { icon: ShieldCheck, title: "Security", color: "text-green-500", content: "Keep your data and applications safe with ToolJet's robust security features, including encryption, authentication, and access control." }
+    { icon: ShoppingBag, title: "Marketplace", color: "text-blue-500", content: "Discover a variety of plugins, templates, and extensions in ToolJet's marketplace to enhance your app-building experience." },
+    { icon: Wand, title: "Copilot", color: "text-blue-500", content: "Boost productivity with ToolJet Copilot. Get AI-powered suggestions and assistance while building your applications." },
+    { icon: Flag, title: "Tracking", color: "text-blue-5000", content: "Track app performance and user activity with built-in analytics tools, giving you valuable insights to optimize your applications." },
+    { icon: ShieldCheck, title: "Security", color: "text-blue-500", content: "Keep your data and applications safe with ToolJet's robust security features, including encryption, authentication, and access control." }
 ];
 
 export const textLabels = {
