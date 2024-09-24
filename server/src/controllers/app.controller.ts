@@ -21,7 +21,7 @@ import {
 } from '@dto/app-authentication.dto';
 import { AuthService } from '../services/auth.service';
 import { SignupDisableGuard } from 'src/modules/auth/signup-disable.guard';
-import { CreateAdminDto, CreateUserDto } from '@dto/user.dto';
+import { CreateAdminDto, OnboardUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
 import { FirstUserSignupDisableGuard } from 'src/modules/auth/first-user-signup-disable.guard';
 import { FirstUserSignupGuard } from 'src/modules/auth/first-user-signup.guard';
@@ -149,7 +149,7 @@ export class AppController {
 
   @UseGuards(FirstUserSignupDisableGuard)
   @Post('setup-account-from-token')
-  async create(@Body() userCreateDto: CreateUserDto, @Res({ passthrough: true }) response: Response) {
+  async create(@Body() userCreateDto: OnboardUserDto, @Res({ passthrough: true }) response: Response) {
     return await this.authService.setupAccountFromInvitationToken(response, userCreateDto);
   }
 
