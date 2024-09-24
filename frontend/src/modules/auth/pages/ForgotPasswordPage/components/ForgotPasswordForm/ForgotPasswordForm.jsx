@@ -15,17 +15,20 @@ const ForgotPasswordForm = ({ onSubmit }) => {
   const [emailError, setEmailError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
+  const [isDefaultFormEmail, setisDefaultFormEmail] = useState(true);
 
   const whiteLabelText = retrieveWhiteLabelText();
 
   useEffect(() => {
     setIsFormValid(validateEmail(email));
+    const emailError =
+      !isDefaultFormEmail && (email.trim() ? (validateEmail(email) ? '' : 'Email is invalid') : 'Email is required');
+    setEmailError(emailError === '' ? '' : emailError);
   }, [email]);
 
   const handleInputChange = (e) => {
     setEmail(e.target.value);
-    const emailError = email.trim() ? (validateEmail(email) ? '' : 'Email is invalid') : 'Email is required';
-    setEmailError(emailError === '' ? '' : emailError);
+    setisDefaultFormEmail(false);
   };
 
   const handleSubmit = async (e) => {

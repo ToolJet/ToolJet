@@ -55,7 +55,10 @@ const AppList = (props) => {
             className={`d-block text-center text-body ${props.darkMode && 'text-white-50'}`}
             data-cy="empty-folder-text"
           >
-            {props.currentFolder?.count == 0 && t('homePage.thisFolderIsEmpty', 'This folder is empty')}
+            {/* removed this error message display for now -> as it was leading to multiple message being shown in the UI*/}
+            {/* {props.currentFolder?.count == 0
+              ? t('homePage.thisFolderIsEmpty', 'This folder is empty')
+              : t('homePage.nonAccessibleFolderApps', 'You do not have access to any applications in this folder.')} */}
           </span>
         </div>
       )}
