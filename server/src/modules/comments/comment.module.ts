@@ -14,7 +14,11 @@ import { InstanceSettingsModule } from '@instance-settings/module';
 
 @Module({
   controllers: [CommentController],
-  imports: [TypeOrmModule.forFeature([Comment, CommentUsers, AppVersion, User, Organization]), CaslModule, InstanceSettingsModule],
+  imports: [
+    TypeOrmModule.forFeature([Comment, CommentUsers, AppVersion, User, Organization]),
+    CaslModule,
+    InstanceSettingsModule,
+  ],
   providers: [CommentService, EmailService, CommentRepository],
 })
 export class CommentModule {}
