@@ -134,8 +134,9 @@ module.exports = {
           includeCurrentVersion: true,
           lastVersion: '2.50.0-LTS',
           versions: {
-            '2.68.0': {
-              label: '2.68.0-Beta 🚧'
+            current : {
+              label: '2.69.0-Beta 🚧',
+              path: 'beta',
             },
           }
         },
