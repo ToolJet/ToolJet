@@ -45,7 +45,11 @@ export const NumberInput = function NumberInput({
   const [visibility, setVisibility] = useState(properties.visibility);
   const [loading, setLoading] = useState(loadingState);
   const [showValidationError, setShowValidationError] = useState(false);
-  const [value, setValue] = React.useState(Number(parseFloat(properties.value).toFixed(properties.decimalPlaces)));
+  const [value, setValue] = React.useState(
+    properties.value === '' || isNaN(properties.value)
+      ? null
+      : Number(parseFloat(properties.value).toFixed(properties.decimalPlaces))
+  );
   const { isValid, validationError } = validate(value);
   const [isFocused, setIsFocused] = useState(false);
 
@@ -66,7 +70,11 @@ export const NumberInput = function NumberInput({
   }, [properties.decimalPlaces]);
 
   useEffect(() => {
-    setValue(Number(parseFloat(properties.value).toFixed(properties.decimalPlaces)));
+    setValue(
+      properties.value === '' || isNaN(properties.value)
+        ? null
+        : Number(parseFloat(properties.value).toFixed(properties.decimalPlaces))
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.value]);
 
@@ -195,15 +203,21 @@ export const NumberInput = function NumberInput({
   // eslint-disable-next-line import/namespace
 
   const handleChange = (e) => {
-    setValue(Number(parseFloat(e.target.value)));
-    if (e.target.value == '') {
+    if (e.target.value === '') {
       setValue(null);
       setExposedVariable('value', null);
       fireEvent('onChange');
-    }
-    if (!isNaN(Number(parseFloat(e.target.value)))) {
-      setExposedVariable('value', Number(parseFloat(e.target.value)));
-      fireEvent('onChange');
+    } else {
+      const newValue = Number(parseFloat(e.target.value));
+      if (!isNaN(newValue)) {
+        setValue(newValue);
+        setExposedVariable('value', newValue);
+        fireEvent('onChange');
+      } else {
+        setValue(null);
+        setExposedVariable('value', null);
+        fireEvent('onChange');
+      }
     }
   };
   useEffect(() => {
@@ -255,8 +269,8 @@ export const NumberInput = function NumberInput({
     });
 
     setExposedVariable('clear', async function () {
-      setValue('');
-      setExposedVariable('value', '');
+      setValue(null);
+      setExposedVariable('value', null);
       fireEvent('onChange');
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -354,7 +368,7 @@ export const NumberInput = function NumberInput({
             className={`${!isValid && showValidationError ? 'is-invalid' : ''} input-number  tj-text-input-widget`}
             placeholder={placeholder}
             style={computedStyles}
-            value={value}
+            value={value === null ? '' : value}
             data-cy={dataCy}
             min={minValue}
             max={maxValue}
