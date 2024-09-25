@@ -97,7 +97,7 @@ Admins can edit the details of any user in their workspace. To edit the details 
 
 <div style={{textAlign: 'center'}}>
   
-<img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/tutorial/manage-users-groups/edituserdetails-v2.png" alt="edit user" />
+<img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/tutorial/manage-users-groups/edituserdetails-v3.png" alt="edit user" />
   
 </div>
 
@@ -105,6 +105,7 @@ Admins can edit the details of any user in their workspace. To edit the details 
 
 User Metadata allows you to store additional information for users in your workspace. This custom data is stored at the workspace level and can include any key-value pairs relevant to your organization's needs.
 
+- User metadata can be added when inviting a new user or editing an existing user. Additionally, you can also specify metadata while bulk inviting users.
 - It can store various types of information such as user preferences, API keys, or role-specific data.
 - Metadata is accessible in your applications through the global variable `{{globals.currentUser.metadata}}`.
 - All metadata values are encrypted in the database for security.
@@ -115,7 +116,7 @@ User Metadata allows you to store additional information for users in your works
 You can access user metadata in the app builder using the following syntax:
 
 ```javascript
-{{globals.currentUser.metadata}}
+{{globals.currentUser.metadata.<key>}} // Replace <key> with the key of the metadata value 
 ```
 
 :::info
