@@ -91,6 +91,7 @@ export const ERROR_MESSAGES = {
 
 export const TOOLTIP_MESSAGES = {
   SHARE_URL_UNAVAILABLE: 'Share URL is unavailable until current version is released',
+  RELEASE_VERSION_URL_UNAVAILABLE: 'Release the version to make it public',
 };
 
 export const DATA_SOURCE_TYPE = {
