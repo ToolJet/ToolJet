@@ -365,6 +365,7 @@ const sidebars = {
                     'user-authentication/sso/openid/google-openid',
                   ],
                 },
+                'user-authentication/sso/oidc',
                 'user-authentication/sso/ldap',
                 'user-authentication/sso/saml',
                 'user-authentication/sso/auto-sso-login',
