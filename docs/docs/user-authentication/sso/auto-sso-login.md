@@ -3,9 +3,6 @@ id: auto-sso-login
 title: Automatic SSO Login
 ---
 
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
-
 
 ToolJet supports automatic SSO login for your workspace, allowing users to bypass the login screen and directly access the application when only one SSO method is configured.
 
