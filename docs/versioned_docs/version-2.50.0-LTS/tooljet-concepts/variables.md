@@ -5,10 +5,14 @@ title: Variables
 
 Variables can be used to store data that can be accessed and manipulated inside your application or across a workspace. You can create and access a variety of variables in ToolJet:
 
+<div class="video-container">
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/WQFaXqoIK_k?si=r-KqMnnKJKpaKcsz&rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</div>
+
 - **Variables** that can be defined and accessed anywhere within an application 
 - **Page Variables** that can be defined and accessed on a particular page of the application
 - **Exposed Variables** that hold important values related to a component and are accessible within an application
-- **Workspace Variables** that are available across all applications in a workspace
+- **Workspace Constants** that hold sensitive information and are available across all applications in a workspace
 - **Environment Variables** for environment-specific settings, streamlining app development and configuration
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>

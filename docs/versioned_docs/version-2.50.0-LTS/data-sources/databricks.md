@@ -3,13 +3,13 @@ id: databricks
 title: Databricks
 ---
 
-# Databricks
-
 Databricks is a cloud-based platform for data processing, analytics, and machine learning. ToolJet connects to Databricks, allowing your applications to access and update your data in your Databricks Warehouses directly using SQL queries.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/databricks/install.gif" alt="Install Databricks" />
+    <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/databricks/install.gif" alt="Install Databricks" />
 </div>
+
+<div style={{paddingTop:'24px'}}>
 
 ## Configuration
 
@@ -31,34 +31,26 @@ ToolJet's Databricks integration relies on a configuration form that supports th
 
 - Navigate to your Databricks workspace, select the desired SQL Warehouse, and find **Server Hostname** and **HTTP Path** within the connection details tab.
 
-  <div style={{textAlign: 'center'}}>
-      <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/databricks/connection-details.png" alt="Databricks: Connection Details" />
-  </div>
+<img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/databricks/connection-details.png" alt="Databricks: Connection Details" />
 
 - To generate a personal access token, access your Databricks User Settings, select the Developer tab, click Manage under Access Tokens, and then click on the **Generate New Token** button.
 
-  <div style={{textAlign: 'center'}}>
-      <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/databricks/generate-token.png" alt="Databricks: Access Tokens" />
-  </div> 
+<img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/databricks/generate-token.png" alt="Databricks: Access Tokens" />
 
 - Navigate to the Databricks datasource configuration form in ToolJet, fill in the required parameters, and click the **Save** button. You can test the connection by clicking the **Test Connection** button.
 
-  :::note
-    Ensure your Databricks Warehouse is running and has been granted the necessary permissions prior to clicking **Test Connection** or running any queries.
-  :::
+<img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/databricks/setup-parameters.png" alt="Databricks: Setup Paramaters" />
 
-  <div style={{textAlign: 'center'}}>
-      <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/databricks/setup-parameters.png" alt="Databricks: Setup Paramaters" />
-  </div>
+</div>
+
+<div style={{paddingTop:'24px'}}>
 
 ## Querying Databricks
 
-- To perform queries on Databricks in ToolJet, click the **+ Add** button in the query manager located at the bottom panel of the editor.
--  Select the previously configured Databricks datasource.
--  In the second Data Source dropdown, select **SQL mode** as the query type. ToolJet currently supports only SQL mode for Databricks interactions.
-- Selecting SQL mode will open a dedicated SQL editor where you can write your SQL queries.
-- After writing the query, click the **Run** button to execute the query.
-
+1. Click on + Add button of the query manager at the bottom panel of the editor.
+2. Select the **Databricks** datasource added in previous step.
+3. Select the **SQL Mode** from the dropdown. (ToolJet currently supports only SQL mode for Databricks interactions.)
+4. Click on the **Preview** button to preview the output or Click on the **Run** button to create and trigger the query.
 
 <div style={{textAlign: 'center'}}>
 
@@ -71,21 +63,27 @@ ToolJet's Databricks integration relies on a configuration form that supports th
 You can apply transformations to the query results. Refer to our transformations documentation for more information: [link](/docs/tutorial/transformations)
 :::
 
+</div>
+
+<div style={{paddingTop:'24px'}}>
+
 ## Supported Queries
 
 Databricks supports standard SQL commands for data manipulation tasks.
 
 ### Read Data 
 
-The following example demonstrates how to read data from a table. The query selects all the columns from the `customers` table.
+The following example demonstrates how to read data from a table. The query selects all the columns from the *customers* table.
 
 ```sql
 SELECT * FROM customers 
 ```
 
+<img className="screenshot-full" src="/img/datasource-reference/databricks/readData.png" alt="Databricks: Read Data Query" style={{marginBottom:'15px'}}/>
+
 ### Write Data 
 
-The following example demonstrates how to write data to a table. The query inserts a new row into the `customers` table.
+The following example demonstrates how to write data to a table. The query inserts a new row into the *customers* table.
 
 ```sql
 INSERT INTO customers (
@@ -111,9 +109,11 @@ INSERT INTO customers (
 );
 ```
 
+<img className="screenshot-full" src="/img/datasource-reference/databricks/writeData.png" alt="Databricks: Write Data Query" style={{marginBottom:'15px'}}/>
+
 ### Update Data 
 
-The following example demonstrates how to update data in a table. The query updates the `first_name` and `email` column of the `customers` table.
+The following example demonstrates how to update data in a table. The query updates the *first_name* and *email* column of the *customers* table.
 
 ```sql
 UPDATE customer
@@ -122,11 +122,17 @@ SET first_name = 'John',
 WHERE customer_id = 1001;
 ```
 
+<img className="screenshot-full" src="/img/datasource-reference/databricks/updateData.png" alt="Databricks: Update Data Query" style={{marginBottom:'15px'}}/>
+
 ### Delete Data
 
-The following example demonstrates how to delete data from a table. The query deletes a row from the `customers` table.
+The following example demonstrates how to delete data from a table. The query deletes a row from the *customers* table.
 
 ```sql
 DELETE FROM customer
 WHERE customer_id = 1001;
 ```
+
+<img className="screenshot-full" src="/img/datasource-reference/databricks/deleteData.png" alt="Databricks: Delete Data Query" style={{marginBottom:'15px'}}/>
+
+</div>

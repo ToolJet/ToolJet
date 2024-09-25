@@ -5,6 +5,9 @@ title: Workspace Constants and Secrets
 
 Workspace Constants and Secrets in ToolJet help in maintaining consistency and security across your applications. These are essentially predefined values that remain unaltered during an application's runtime, serving two main purposes: reusable values (Global Constants) and secure storage of sensitive information (Secrets).
 
+<div class="video-container">
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/rwXruKCUOqA?si=u3Cly11OeRYjqVmf&rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</div>
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Types of Constants
