@@ -21,6 +21,7 @@ import { User } from 'src/decorators/user.decorator';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourceScopes } from 'src/helpers/data_source.constants';
 import { getServiceAndRpcNames } from '../helpers/utils.helper';
+import { GLOBAL_DATA_SOURCE_RESOURCE_ACTIONS } from 'src/constants/global.constant';
 
 @Controller({
   path: 'data_sources',
@@ -81,7 +82,7 @@ export class GlobalDataSourcesController {
 
     const ability = await this.globalDataSourceAbilityFactory.globalDataSourceActions(user);
 
-    if (!ability.can('createGlobalDataSource', DataSource)) {
+    if (!ability.can(GLOBAL_DATA_SOURCE_RESOURCE_ACTIONS.CREATE, DataSource)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
@@ -118,7 +119,7 @@ export class GlobalDataSourcesController {
   ) {
     const ability = await this.globalDataSourceAbilityFactory.globalDataSourceActions(user);
 
-    if (!ability.can('updateGlobalDataSource', DataSource)) {
+    if (!ability.can(GLOBAL_DATA_SOURCE_RESOURCE_ACTIONS.UPDATE, DataSource)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
@@ -133,7 +134,7 @@ export class GlobalDataSourcesController {
   async delete(@User() user, @Param('id') dataSourceId) {
     const ability = await this.globalDataSourceAbilityFactory.globalDataSourceActions(user);
 
-    if (!ability.can('deleteGlobalDataSource', DataSource)) {
+    if (!ability.can(GLOBAL_DATA_SOURCE_RESOURCE_ACTIONS.DELETE, DataSource)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
     const result = await this.dataSourcesService.delete(dataSourceId);
@@ -149,7 +150,7 @@ export class GlobalDataSourcesController {
   async convertToGlobal(@User() user, @Param('id') dataSourceId) {
     const ability = await this.globalDataSourceAbilityFactory.globalDataSourceActions(user);
 
-    if (!ability.can('updateGlobalDataSource', DataSource)) {
+    if (!ability.can(GLOBAL_DATA_SOURCE_RESOURCE_ACTIONS.UPDATE, DataSource)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
     await this.dataSourcesService.convertToGlobalSource(dataSourceId, user.organizationId);

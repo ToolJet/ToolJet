@@ -8,6 +8,8 @@ import { toast } from 'react-hot-toast';
 import { FileDropzone } from './FileDropzone';
 import { USER_DRAWER_MODES } from '@/_helpers/utils';
 import { UserGroupsSelect } from './UserGroupsSelect';
+import { EDIT_ROLE_MESSAGE } from '@/ManageGroupPermissionResourcesV2/constant';
+import ModalBase from '@/_ui/Modal';
 
 function InviteUsersForm({
   onClose,
@@ -24,29 +26,61 @@ function InviteUsersForm({
   userDrawerMode,
   setUserValues,
   creatingUser,
+  darkMode,
 }) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState(1);
-  const [selectedGroups, setSelectedGroups] = useState([]);
   const [existingGroups, setExistingGroups] = useState([]);
+  const [newRole, setNewRole] = useState(null);
+  const customGroups = groups.filter((group) => group.groupType === 'custom');
+  const roleGroups = groups
+    .filter((group) => group.groupType === 'default')
+    .sort((a, b) => {
+      const sortOrder = ['admin', 'builder', 'end-user'];
+      const indexA = sortOrder.indexOf(a.value);
+      const indexB = sortOrder.indexOf(b.value);
+
+      return indexA - indexB;
+    });
+  const [isChangeRoleModalOpen, setIsChangeRoleModalOpen] = useState(false);
+  const [fileUpload, setFileUpload] = useState(false);
+  const groupedOptions = [
+    {
+      label: 'default',
+      options: roleGroups,
+    },
+    {
+      label: 'custom',
+      options: customGroups,
+    },
+  ];
+  const [selectedGroups, setSelectedGroups] = useState([]);
+  useEffect(() => {
+    setFileUpload(false);
+  }, [activeTab]);
 
   const hiddenFileInput = useRef(null);
 
   useEffect(() => {
     if (currentEditingUser && groups.length) {
-      const { first_name, last_name, email, groups: addedToGroups } = currentEditingUser;
+      const { first_name, last_name, email, groups: addedToCustomGroups, role_group } = currentEditingUser;
+      const addedToGroups = [...addedToCustomGroups, ...role_group];
       setUserValues({
         fullName: `${first_name}${last_name && ` ${last_name}`}`,
         email: email,
       });
       const preSelectedGroups = groups
-        .filter((group) => addedToGroups.includes(group.value))
+        .filter((group) => addedToGroups.map((group) => group.name).includes(group.value))
         .map((filteredGroup) => ({
           ...filteredGroup,
           label: filteredGroup.name,
         }));
-      setExistingGroups(groups.filter((group) => addedToGroups.includes(group.value)).map((g) => g.value));
+      setExistingGroups(
+        groups.filter((group) => addedToCustomGroups.map((gp) => gp.name).includes(group.value)).map((g) => g.id)
+      );
       onChangeHandler(preSelectedGroups);
+    } else {
+      onChangeHandler(roleGroups.filter((group) => group.value === 'end-user'));
     }
   }, [currentEditingUser, groups]);
 
@@ -56,6 +90,7 @@ function InviteUsersForm({
       toast.error('File size cannot exceed more than 1MB');
     } else {
       handleFileChange(file);
+      setFileUpload(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -65,44 +100,91 @@ function InviteUsersForm({
   };
 
   const onChangeHandler = (items) => {
-    setSelectedGroups(items);
+    let finalGroup = items;
+    const roleGroups = items.filter((group) => group.groupType === 'default');
+    const currentRole = selectedGroups.find((group) => group.groupType === 'default');
+    if (roleGroups.length == 2) {
+      finalGroup = items.filter((group) => group.value !== currentRole.value);
+    }
+    if (roleGroups.length === 0) return;
+    if (currentEditingUser) {
+      const role = finalGroup.find(
+        (group) =>
+          group.groupType === 'default' && !currentEditingUser.role_group.map((role) => role.name).includes(group.value)
+      );
+      setNewRole(role);
+    }
+    setSelectedGroups(finalGroup);
   };
 
   const handleCreateUser = (e) => {
     e.preventDefault();
-    const selectedGroupsIds = selectedGroups.map((group) => group.value);
-    manageUser(currentEditingUser?.id, selectedGroupsIds);
+    const role = selectedGroups.find((group) => group.groupType === 'default').value;
+    const selectedGroupsIds = selectedGroups.filter((group) => group.groupType !== 'default').map((group) => group.id);
+    manageUser(currentEditingUser?.id, selectedGroupsIds, role);
   };
 
   const handleEditUser = (e) => {
     e.preventDefault();
-    const selectedGroupsIds = selectedGroups.map((group) => group.value);
-    const newGroupsToAdd = selectedGroupsIds.filter((selectedGroupId) => !existingGroups.includes(selectedGroupId));
-    const groupsToRemove = existingGroups.filter((existingGroup) => !selectedGroupsIds.includes(existingGroup));
-    manageUser(currentEditingUser.id, selectedGroupsIds, newGroupsToAdd, groupsToRemove);
+    if (newRole && EDIT_ROLE_MESSAGE?.[currentEditingUser?.role_group?.[0]?.name]?.[newRole?.value]?.())
+      setIsChangeRoleModalOpen(true);
+    else {
+      editUser();
+    }
+  };
+
+  const editUser = () => {
+    const { newGroupsToAdd, groupsToRemove, selectedGroupsIds } = getEditedGroups();
+    manageUser(currentEditingUser.id, selectedGroupsIds, newRole?.value, newGroupsToAdd, groupsToRemove);
+    setIsChangeRoleModalOpen(false);
   };
 
   const getEditedGroups = () => {
-    const selectedGroupsIds = selectedGroups.map((group) => group.value);
+    const selectedGroupsIds = selectedGroups.filter((group) => group.groupType !== 'default').map((group) => group.id);
     const newGroupsToAdd = selectedGroupsIds.filter((selectedGroupId) => !existingGroups.includes(selectedGroupId));
     const groupsToRemove = existingGroups.filter((existingGroup) => !selectedGroupsIds.includes(existingGroup));
-    return { newGroupsToAdd, groupsToRemove };
+    return { newGroupsToAdd, groupsToRemove, selectedGroupsIds };
   };
 
   const isEdited = () => {
     const { newGroupsToAdd, groupsToRemove } = getEditedGroups();
+    const inValidUserDetail = !(fields?.['fullName'] && fields?.['email']);
     const { first_name, last_name } = currentEditingUser || {};
     return isEditing
       ? fields['fullName'] !== `${first_name}${last_name && ` ${last_name}`}` ||
           groupsToRemove.length ||
+          newRole ||
           newGroupsToAdd.length
-      : true;
+      : !inValidUserDetail || activeTab == 2;
   };
 
   const isEditing = userDrawerMode === USER_DRAWER_MODES.EDIT;
 
   return (
     <div>
+      {isChangeRoleModalOpen && (
+        <ModalBase
+          title={
+            <div className="my-3" data-cy="modal-title">
+              <span className="tj-text-md font-weight-500">Edit user role</span>
+              <div className="tj-text-sm text-muted" data-cy="user-email">
+                {currentEditingUser?.email}
+              </div>
+            </div>
+          }
+          handleConfirm={editUser}
+          show={isChangeRoleModalOpen}
+          darkMode={darkMode}
+          handleClose={() => {
+            setIsChangeRoleModalOpen(false);
+            onCancel();
+            onClose();
+          }}
+          confirmBtnProps={{ title: 'Continue', tooltipMessage: false }}
+        >
+          <div>{EDIT_ROLE_MESSAGE?.[currentEditingUser?.role_group?.[0]?.name]?.[newRole?.value]?.()}</div>
+        </ModalBase>
+      )}
       <div className="animation-fade invite-user-drawer-wrap">
         <div className="drawer-card-wrap invite-user-drawer-wrap">
           <div className="card-header">
@@ -216,7 +298,7 @@ function InviteUsersForm({
                         ? 'User groups'
                         : t('header.organization.menus.manageUsers.selectGroup', 'Select Group')}
                     </label>
-                    <UserGroupsSelect value={selectedGroups} onChange={onChangeHandler} options={groups} />
+                    <UserGroupsSelect value={selectedGroups} onChange={onChangeHandler} options={groupedOptions} />
                   </div>
                 </form>
               </div>
@@ -234,7 +316,9 @@ function InviteUsersForm({
                       ToolJet won’t be able to recognise files in any other format.{' '}
                     </p>
                     <ButtonSolid
-                      href="../../assets/csv/sample_upload.csv"
+                      href={`${window.public_config?.TOOLJET_HOST}${
+                        window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
+                      }assets/csv/sample_upload.csv`}
                       download="sample_upload.csv"
                       variant="tertiary"
                       className="download-template-btn"
@@ -255,6 +339,7 @@ function InviteUsersForm({
                 handleFileChange={handleFileChange}
                 inviteBulkUsers={inviteBulkUsers}
                 onDrop={onDrop}
+                setFileUpload={setFileUpload}
               />
             </div>
           )}
@@ -274,7 +359,7 @@ function InviteUsersForm({
               form={activeTab == 1 ? 'inviteByEmail' : 'inviteBulkUsers'}
               type="submit"
               variant="primary"
-              disabled={uploadingUsers || creatingUser || !isEdited()}
+              disabled={uploadingUsers || creatingUser || !isEdited() || (activeTab !== 1 && !fileUpload)}
               data-cy={activeTab == 1 ? 'button-invite-users' : 'button-upload-users'}
               leftIcon={activeTab == 1 ? 'sent' : 'fileupload'}
               width="20"

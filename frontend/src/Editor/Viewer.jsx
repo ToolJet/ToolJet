@@ -26,7 +26,7 @@ import {
 import queryString from 'query-string';
 import ViewerLogoIcon from './Icons/viewer-logo.svg';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
-import { resolveReferences, isQueryRunnable, isValidUUID } from '@/_helpers/utils';
+import { resolveReferences, isQueryRunnable, isValidUUID, Constants } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
 import { Navigate } from 'react-router-dom';
@@ -283,13 +283,16 @@ class ViewerComponent extends React.Component {
 
     const currentUser = this.state.currentUser;
     let userVars = {};
-
+    const currentSessionValue = authenticationService.currentSessionValue;
     if (currentUser) {
       userVars = {
         email: currentUser.email,
         firstName: currentUser.first_name,
         lastName: currentUser.last_name,
-        groups: authenticationService.currentSessionValue?.group_permissions.map((group) => group.group),
+        groups: currentSessionValue?.group_permissions
+          ? ['All Users', ...currentSessionValue.group_permissions.map((group) => group.name)]
+          : ['All Users'],
+        role: currentSessionValue?.role?.name,
       };
     }
 
@@ -438,11 +441,10 @@ class ViewerComponent extends React.Component {
 
     let variablesResult;
     if (!isPublic) {
-      const { constants } = await orgEnvironmentConstantService.getAll();
+      const { constants } = await orgEnvironmentConstantService.getConstantsFromApp(slug);
       variablesResult = constants;
     } else {
       const { constants } = await orgEnvironmentConstantService.getConstantsFromPublicApp(slug);
-
       variablesResult = constants;
     }
 
@@ -564,15 +566,18 @@ class ViewerComponent extends React.Component {
         const versionId = this.props.versionId;
 
         if (currentSession?.load_app && slug) {
-          if (currentSession?.group_permissions) {
+          if (currentSession?.group_permissions || currentSession?.role) {
             useAppDataStore.getState().actions.setAppId(appId);
 
             const currentUser = currentSession.current_user;
+            const currentSessionValue = authenticationService.currentSessionValue;
             const userVars = {
               email: currentUser.email,
               firstName: currentUser.first_name,
               lastName: currentUser.last_name,
-              groups: currentSession?.group_permissions?.map((group) => group.group),
+              groups: currentSessionValue?.group_permissions
+                ? ['All Users', ...currentSessionValue.group_permissions.map((group) => group.name)]
+                : ['All Users'],
             };
             this.props.setCurrentState({
               globals: {

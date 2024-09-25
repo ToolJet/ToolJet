@@ -4,6 +4,12 @@ import Information from '@/_ui/Icon/solidIcons/Information';
 import CodeHinter from '@/Editor/CodeEditor';
 
 const isValidVariableName = (str) => /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(str);
+const isConstant = (str) => {
+  if (typeof str !== 'string') {
+    return false;
+  }
+  return str.includes('secrets.') || str.includes('constants.');
+};
 
 const ParameterForm = ({
   darkMode,
@@ -38,7 +44,9 @@ const ParameterForm = ({
   };
 
   useEffect(() => {
-    if (!isValidVariableName(name)) {
+    if (isConstant(name)) {
+      setError('Constants cannot be used in params');
+    } else if (!isValidVariableName(name)) {
       setError('Variable name invalid');
     } else if (name && otherParams.some((param) => param.name === name.trim())) {
       setError('Variable name exists');

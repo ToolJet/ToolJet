@@ -2293,6 +2293,24 @@ progress {
     transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out
 }
 
+
+.form-control-org-login {
+    display: block;
+    width: 100%;
+    padding: .4375rem .75rem;
+    font-size: .875rem;
+    font-weight: 400;
+    line-height: 1.4285714;
+    background: var(--base);
+    background-clip: padding-box;
+    border: 1px solid var(--slate7);
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border-radius: 4px;
+    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out
+}
+
 @media (prefers-reduced-motion:reduce) {
     .form-control {
         transition: none
@@ -3546,7 +3564,8 @@ fieldset:disabled .btn {
 }
 
 .dropdown-menu.show {
-    display: block
+    display: block;
+    z-index: 9999;
 }
 
 .dropdown-header {
