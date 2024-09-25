@@ -107,7 +107,7 @@ export class FoldersService {
         .innerJoin('folderApp.app', 'app', 'folderApp.folderId = :id', {
           id: folder.id,
         })
-        .where('app.name LIKE :name', { name: `%${searchKey}%` })
+        .where('LOWER(app.name) LIKE :name', { name: `%${searchKey && searchKey.toLowerCase()}%` })
         .getMany();
 
       const userPermission = await this.abilityService.resourceActionsPermission(user, {
