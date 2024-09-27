@@ -1,0 +1,21 @@
+{
+    "name": "tooljet-unni",
+    "scripts": {},
+    "stack": "heroku-24",
+    "env": {},
+    "formation": {},
+    "addons": [
+      {
+        "plan": "neetodeploy-postgresql:basic",
+        "postgrestServer": true,
+        "options": {
+          "version": "13"
+        }
+      }
+    ],
+    "buildpacks": [
+      {
+        "url": "heroku/nodejs"
+      }
+    ]
+  }
