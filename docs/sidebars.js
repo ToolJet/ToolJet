@@ -243,7 +243,8 @@ const sidebars = {
         'how-to/upload-files-gcs',
         'how-to/loading-image-pdf-from-db',
         'how-to/use-events-on-chart',
-        'how-to/print-multi-tabs-report'
+        'how-to/print-multi-tabs-report',
+        'how-to/serverside-operations-in-table'
       ],
     },
     {
