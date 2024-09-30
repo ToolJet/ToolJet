@@ -55,7 +55,7 @@ export const Datepicker = function Datepicker({
       setExposedVariable('value', undefined);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [defaultValue]);
+  }, [defaultValue, enableTime]);
 
   useEffect(() => {
     if (Array.isArray(disabledDates) && disabledDates.length > 0) {
