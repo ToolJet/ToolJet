@@ -4,17 +4,17 @@ title: Vertical Divider
 ---
 # Vertical Divider
 
-The **Vertical Divider** widget is used to add vertical separator between components.
+The **Vertical Divider** component is used to add vertical separation between other components, helping to create a visually structured layout in your application.
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
-## Component Specific Actions (CSA)
+## Component-Specific Actions (CSA)
 
 There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Exposed Variables
 
@@ -22,40 +22,40 @@ There are currently no exposed variables for the component.
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## General
 ### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
+A Tooltip is often used to specify additional information about a component when the user hovers the mouse pointer over it.
 
-Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
+Under the <b>General</b> section, you can set the value in string format. Hovering over the component will display the string as the tooltip.
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
-## Layout
+## Devices
 
-|  <div style={{ width:"100px"}}> Layout </div> |  <div style={{ width:"100px"}}> Description </div> |  <div style={{ width:"135px"}}> Expected Value </div>|
+| <div style={{ width:"100px"}}> Devices </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 |:----- |:---------  |:------------- |
-| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
-| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+| Show on desktop | Toggle to show or hide the component on desktop devices. | You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`. |
+| Show on mobile  | Toggle to show or hide the component on mobile devices.  | You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`. |
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Styles
 
-| <div style={{ width:"100px"}}> Properties </div> | <div style={{ width:"100px"}}> Description </div> |
-| ----------- | ----------- |
-| Divider Color |  It is used to set the color of the divider. Use hex code to set the background color. |
-| Visibility |  This property is used to set the visibility of the divider. The property accepts Boolean value. |
-
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Configuration Options </div> |
+| ----------- | ----------- | ----------- |
+| Divider Color | Sets the color of the divider. Use a hex code or color name to set the color. | Any valid CSS color format (Hex, RGB, etc.) |
+| Visibility | Controls the visibility of the divider. Accepts a boolean value. | `true` (visible), `false` (hidden) |
+| Box-shadow | Adds a shadow effect to the divider. | Accepts values for x-offset, y-offset, blur, and spread (e.g., `0px 4px 6px rgba(0,0,0,0.1)`). |
 
 :::info
-Any property having `Fx` button next to its field can be **programmatically configured**.
+Any property with an `Fx` button next to its field can be **programmatically configured**.
 :::
 
 </div>
