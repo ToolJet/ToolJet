@@ -1,6 +1,6 @@
 ---
 id: sort
-title: Server Side Sort Operation
+title: Serverside Sort Operation
 ---
 
 This guide explains how to perform serverside sort operation on a table component in ToolJet.  While most databases offer support for serverside operations, the specific implementation can vary depending on the database. For the purposes of this guide, PostgreSQL will be used as the data source to demonstrate the process.
