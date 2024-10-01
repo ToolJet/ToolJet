@@ -8,9 +8,9 @@ We love your input! 💬 We want to make contributing to this project as easy an
 
 ## Setup ⚙️
 
-- [🍏 Mac OS](https://docs.tooljet.io/docs/contributing-guide/setup/macos)  
-- [🐋 Docker](https://docs.tooljet.io/docs/contributing-guide/setup/docker)  
-- [🐧 Ubuntu](https://docs.tooljet.io/docs/contributing-guide/setup/ubuntu)  
+- 🍏[ Mac OS](https://docs.tooljet.io/docs/contributing-guide/setup/macos)  
+- 🐋[ Docker](https://docs.tooljet.io/docs/contributing-guide/setup/docker)  
+- 🐧[ Ubuntu](https://docs.tooljet.io/docs/contributing-guide/setup/ubuntu)  
 
 ## We Develop with GitHub 👩‍💻👨‍💻  
 We use GitHub to host code, track issues, and feature requests, as well as accept pull requests.
