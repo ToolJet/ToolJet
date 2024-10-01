@@ -9,7 +9,7 @@
         "plan": "neetodeploy-postgresql:basic",
         "postgrestServer": true,
         "options": {
-          "version": "13" // version
+          "version": "13"
         }
       }
     ],
