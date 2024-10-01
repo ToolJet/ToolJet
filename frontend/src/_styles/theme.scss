@@ -4457,11 +4457,6 @@ input[type="text"] {
     background-color: var(--base);
   }
 
-  .input-icon .form-control:not(:first-child),
-  .input-icon .form-select:not(:last-child) {
-    padding-left: 28px !important;
-  }
-
   input:focus {
     width: 200px;
     background-color: var(--base);
