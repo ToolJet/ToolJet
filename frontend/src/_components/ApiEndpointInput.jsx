@@ -8,6 +8,7 @@ import { CodeHinter } from '../Editor/CodeBuilder/CodeHinter';
 import 'codemirror/theme/duotone-light.css';
 import { withTranslation } from 'react-i18next';
 import { isEmpty } from 'lodash';
+import PropTypes from 'prop-types';
 
 const operationColorMapping = {
   get: 'azure',
@@ -166,274 +167,37 @@ const ApiEndpointInput = (props) => {
           </div>
           {options?.selectedOperation && (
             <div className={`row stripe-fields-row ${props.darkMode && 'theme-dark'}`}>
-              {options?.selectedOperation?.parameters?.filter((param) => param.in === 'path').length > 0 && (
-                <div
-                  className={`path-fields d-flex ${
-                    options?.selectedOperation?.parameters?.filter((param) => param.in === 'path').length === 0 &&
-                    'd-none'
-                  }`}
-                >
-                  <h5 className="text-heading form-label">{props.t('globals.path', 'PATH')}</h5>
-                  <div className="flex-grow-1  input-group-parent-container">
-                    {options?.selectedOperation?.parameters
-                      ?.filter((param) => param.in === 'path')
-                      .map((param) => (
-                        <div className="input-group-wrapper" key={param.name}>
-                          <div className="input-group">
-                            <div className="col-auto d-flex field field-width-179 align-items-center">
-                              {param?.description ? (
-                                <ToolTip message={param.description}>
-                                  <div className="cursor-help">
-                                    <input
-                                      type="text"
-                                      value={param.name}
-                                      className="form-control form-control-underline"
-                                      placeholder="key"
-                                      disabled
-                                    />
-                                  </div>
-                                </ToolTip>
-                              ) : (
-                                <input
-                                  type="text"
-                                  value={param.name}
-                                  className="form-control"
-                                  placeholder="key"
-                                  disabled
-                                />
-                              )}
-                              {param.required && <span className="text-danger fw-bold ">*</span>}
-                              <div className="p-2 text-muted ">{param.schema?.type?.substring(0, 3).toUpperCase()}</div>
-                            </div>
-                            <div className="col field overflow-hidden code-hinter-borderless">
-                              <CodeHinter
-                                initialValue={options?.params?.path[param.name] ?? ''}
-                                mode="text"
-                                placeholder={'Value'}
-                                theme={props.darkMode ? 'monokai' : 'duotone-light'}
-                                lineNumbers={false}
-                                onChange={(value) => changeParam('path', param.name, value)}
-                                height={'32px'}
-                              />
-                            </div>
-                            {options['params']['path'][param.name] !== undefined &&
-                              options['params']['path'][param.name] !== '' && (
-                                <span
-                                  className="code-hinter-clear-btn"
-                                  role="button"
-                                  onClick={() => removeParam('path', param.name)}
-                                >
-                                  <svg
-                                    width="20"
-                                    height="20"
-                                    viewBox="0 0 20 20"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                  >
-                                    <path
-                                      fillRule="evenodd"
-                                      clipRule="evenodd"
-                                      d="M5 1.66675H15C16.8409 1.66675 18.3333 3.15913 18.3333 5.00008V15.0001C18.3333 16.841 16.8409 18.3334 15 18.3334H5C3.15905 18.3334 1.66666 16.841 1.66666 15.0001V5.00008C1.66666 3.15913 3.15905 1.66675 5 1.66675ZM12.799 7.20116C13.043 7.44524 13.043 7.84096 12.799 8.08504L10.8839 10.0001L12.799 11.9151C13.043 12.1592 13.043 12.5549 12.799 12.799C12.5549 13.0431 12.1592 13.0431 11.9151 12.799L10 10.884L8.08492 12.7991C7.84084 13.0432 7.44511 13.0432 7.20104 12.7991C6.95696 12.555 6.95696 12.1593 7.20104 11.9152L9.11617 10.0001L7.20104 8.08495C6.95697 7.84087 6.95697 7.44515 7.20104 7.20107C7.44512 6.95699 7.84085 6.95699 8.08493 7.20107L10 9.11619L11.9151 7.20116C12.1592 6.95708 12.5549 6.95708 12.799 7.20116Z"
-                                      fill="#ACB2B9"
-                                    />
-                                  </svg>
-                                </span>
-                              )}
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-              )}
-              {options?.selectedOperation?.parameters?.filter((param) => param.in === 'query').length > 0 && (
-                <div
-                  className={`query-fields d-flex ${
-                    options?.selectedOperation?.parameters?.filter((param) => param.in === 'query').length === 0 &&
-                    'd-none'
-                  }`}
-                >
-                  <h5 className="text-heading form-label">{props.t('globals.query'.toUpperCase(), 'Query')}</h5>
-                  <div className="flex-grow-1 input-group-parent-container">
-                    {options?.selectedOperation?.parameters
-                      ?.filter((param) => param.in === 'query')
-                      .map((param) => (
-                        <div className="input-group-wrapper" key={param.name}>
-                          <div className="input-group">
-                            <div className="col-auto d-flex field field-width-179 align-items-center">
-                              {param?.description ? (
-                                <ToolTip message={param.description}>
-                                  <div className="cursor-help">
-                                    <input
-                                      type="text"
-                                      value={param.name}
-                                      className="form-control form-control-underline"
-                                      placeholder="key"
-                                      disabled
-                                    />
-                                  </div>
-                                </ToolTip>
-                              ) : (
-                                <input
-                                  type="text"
-                                  value={param.name}
-                                  className="form-control"
-                                  placeholder="key"
-                                  disabled
-                                />
-                              )}
-                              {param.required && <span className="text-danger fw-bold">*</span>}
-                              <div className="p-2 text-muted ">
-                                {param?.schema?.anyOf
-                                  ? param?.schema?.anyOf.map((type, i) =>
-                                      i < param.schema?.anyOf.length - 1
-                                        ? type.type.substring(0, 3).toUpperCase() + '|'
-                                        : type.type.substring(0, 3).toUpperCase()
-                                    )
-                                  : param?.schema?.type?.substring(0, 3).toUpperCase()}
-                              </div>
-                            </div>
-                            <div className="col field overflow-hidden code-hinter-borderless">
-                              <CodeHinter
-                                initialValue={options.params?.query[param.name] ?? ''}
-                                mode="text"
-                                placeholder={'Value'}
-                                theme={props.darkMode ? 'monokai' : 'duotone-light'}
-                                lineNumbers={false}
-                                onChange={(value) => changeParam('query', param.name, value)}
-                                height={'32px'}
-                              />
-                            </div>
-                            {options['params']['query'][param.name] !== undefined &&
-                              options['params']['query'][param.name] !== '' && (
-                                <span
-                                  className="code-hinter-clear-btn"
-                                  role="button"
-                                  onClick={() => removeParam('query', param.name)}
-                                >
-                                  <svg
-                                    width="20"
-                                    height="20"
-                                    viewBox="0 0 20 20"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                  >
-                                    <path
-                                      fillRule="evenodd"
-                                      clipRule="evenodd"
-                                      d="M5 1.66675H15C16.8409 1.66675 18.3333 3.15913 18.3333 5.00008V15.0001C18.3333 16.841 16.8409 18.3334 15 18.3334H5C3.15905 18.3334 1.66666 16.841 1.66666 15.0001V5.00008C1.66666 3.15913 3.15905 1.66675 5 1.66675ZM12.799 7.20116C13.043 7.44524 13.043 7.84096 12.799 8.08504L10.8839 10.0001L12.799 11.9151C13.043 12.1592 13.043 12.5549 12.799 12.799C12.5549 13.0431 12.1592 13.0431 11.9151 12.799L10 10.884L8.08492 12.7991C7.84084 13.0432 7.44511 13.0432 7.20104 12.7991C6.95696 12.555 6.95696 12.1593 7.20104 11.9152L9.11617 10.0001L7.20104 8.08495C6.95697 7.84087 6.95697 7.44515 7.20104 7.20107C7.44512 6.95699 7.84085 6.95699 8.08493 7.20107L10 9.11619L11.9151 7.20116C12.1592 6.95708 12.5549 6.95708 12.799 7.20116Z"
-                                      fill="#ACB2B9"
-                                    />
-                                  </svg>
-                                </span>
-                              )}
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-              )}
-              {options?.selectedOperation?.requestBody?.content[
-                Object.keys(options?.selectedOperation?.requestBody?.content)[0]
-              ].schema.properties && (
-                <div
-                  className={`request-body-fields d-flex ${
-                    Object.keys(
-                      options?.selectedOperation?.requestBody?.content[
-                        Object.keys(options?.selectedOperation?.requestBody?.content)[0]
-                      ].schema.properties
-                    ).length === 0 && 'd-none'
-                  } `}
-                >
-                  <h5 className="text-heading form-label">{props.t('globals.requestBody', 'REQUEST BODY')}</h5>
-                  <div
-                    className={`flex-grow-1 ${
-                      Object.keys(
-                        options?.selectedOperation?.requestBody?.content[
-                          Object.keys(options?.selectedOperation?.requestBody?.content)[0]
-                        ].schema.properties
-                      ).length >= 1 && 'input-group-parent-container'
-                    }`}
-                  >
-                    {Object.keys(
-                      options?.selectedOperation?.requestBody?.content[
-                        Object.keys(options?.selectedOperation?.requestBody?.content)[0]
-                      ].schema.properties
-                    ).map((param) => (
-                      <div className="input-group-wrapper" key={param.name}>
-                        <div className="input-group">
-                          <div className="col-auto d-flex field field-width-179 align-items-center">
-                            {options?.selectedOperation?.requestBody?.content[
-                              Object.keys(options?.selectedOperation?.requestBody?.content)[0]
-                            ].schema.properties[param]?.['description'] ? (
-                              <ToolTip
-                                message={DOMPurify.sanitize(
-                                  options?.selectedOperation?.requestBody?.content[
-                                    Object.keys(options?.selectedOperation?.requestBody?.content)[0]
-                                  ].schema.properties[param]['description']
-                                )}
-                              >
-                                <div className="cursor-help">
-                                  <input
-                                    type="text"
-                                    value={param}
-                                    className="form-control form-control-underline"
-                                    placeholder="key"
-                                    disabled
-                                  />
-                                </div>
-                              </ToolTip>
-                            ) : (
-                              <input type="text" value={param} className="form-control" placeholder="key" disabled />
-                            )}
-                            {param.required && <span className="text-danger fw-bold">*</span>}
-                            <div className="p-2 text-muted ">
-                              {options?.selectedOperation?.requestBody?.content[
-                                Object.keys(options?.selectedOperation?.requestBody?.content)[0]
-                              ]?.schema?.properties?.[param]?.['type']
-                                ?.substring(0, 3)
-                                .toUpperCase()}
-                            </div>
-                          </div>
-                          <div className="col field overflow-hidden code-hinter-borderless">
-                            <CodeHinter
-                              initialValue={options.params?.request[param] ?? ''}
-                              mode="text"
-                              placeholder={'Value'}
-                              theme={props.darkMode ? 'monokai' : 'duotone-light'}
-                              lineNumbers={false}
-                              onChange={(value) => changeParam('request', param, value)}
-                              height={'32px'}
-                            />
-                          </div>
-                          {options['params']['request'][param] !== undefined &&
-                            options['params']['request'][param] !== '' && (
-                              <span
-                                className="code-hinter-clear-btn"
-                                role="button"
-                                onClick={() => removeParam('request', param)}
-                              >
-                                <svg
-                                  width="20"
-                                  height="20"
-                                  viewBox="0 0 20 20"
-                                  fill="none"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <path
-                                    fillRule="evenodd"
-                                    clipRule="evenodd"
-                                    d="M5 1.66675H15C16.8409 1.66675 18.3333 3.15913 18.3333 5.00008V15.0001C18.3333 16.841 16.8409 18.3334 15 18.3334H5C3.15905 18.3334 1.66666 16.841 1.66666 15.0001V5.00008C1.66666 3.15913 3.15905 1.66675 5 1.66675ZM12.799 7.20116C13.043 7.44524 13.043 7.84096 12.799 8.08504L10.8839 10.0001L12.799 11.9151C13.043 12.1592 13.043 12.5549 12.799 12.799C12.5549 13.0431 12.1592 13.0431 11.9151 12.799L10 10.884L8.08492 12.7991C7.84084 13.0432 7.44511 13.0432 7.20104 12.7991C6.95696 12.555 6.95696 12.1593 7.20104 11.9152L9.11617 10.0001L7.20104 8.08495C6.95697 7.84087 6.95697 7.44515 7.20104 7.20107C7.44512 6.95699 7.84085 6.95699 8.08493 7.20107L10 9.11619L11.9151 7.20116C12.1592 6.95708 12.5549 6.95708 12.799 7.20116Z"
-                                    fill="#ACB2B9"
-                                  />
-                                </svg>
-                              </span>
-                            )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              <RenderParameterFields
+                parameters={options?.selectedOperation?.parameters}
+                type="path"
+                label={props.t('globals.path', 'PATH')}
+                options={options}
+                changeParam={changeParam}
+                removeParam={removeParam}
+                darkMode={props.darkMode}
+              />
+              <RenderParameterFields
+                parameters={options?.selectedOperation?.parameters}
+                type="query"
+                label={props.t('globals.query'.toUpperCase(), 'Query')}
+                options={options}
+                changeParam={changeParam}
+                removeParam={removeParam}
+                darkMode={props.darkMode}
+              />
+              <RenderParameterFields
+                parameters={
+                  options?.selectedOperation?.requestBody?.content[
+                    Object.keys(options?.selectedOperation?.requestBody?.content)[0]
+                  ]?.schema?.properties ?? {}
+                }
+                type="request"
+                label={props.t('globals.requestBody', 'REQUEST BODY')}
+                options={options}
+                changeParam={changeParam}
+                removeParam={removeParam}
+                darkMode={props.darkMode}
+              />
             </div>
           )}
         </div>
@@ -443,3 +207,127 @@ const ApiEndpointInput = (props) => {
 };
 
 export default withTranslation()(ApiEndpointInput);
+
+ApiEndpointInput.propTypes = {
+  options: PropTypes.object,
+  specUrl: PropTypes.string,
+  optionsChanged: PropTypes.func,
+  darkMode: PropTypes.bool,
+  t: PropTypes.func,
+};
+
+const RenderParameterFields = ({ parameters, type, label, options, changeParam, removeParam, darkMode }) => {
+  let filteredParams;
+  if (type === 'request') {
+    filteredParams = Object.keys(parameters);
+  } else {
+    filteredParams = parameters?.filter((param) => param.in === type);
+  }
+  console.log('filteredParams', type, parameters, filteredParams);
+  return (
+    filteredParams?.length > 0 && (
+      <div className={`${type === 'request' ? 'request-body' : type}-fields d-flex`}>
+        <h5 className="text-heading form-label">{label}</h5>
+        <div className="flex-grow-1 input-group-parent-container">
+          {filteredParams.map((param) => (
+            <div className="input-group-wrapper" key={type === 'request' ? param : param.name}>
+              <div className="input-group">
+                <div className="col-auto d-flex field field-width-179 align-items-center">
+                  {(type === 'request' && parameters[param].description) || param?.description ? (
+                    <ToolTip
+                      message={
+                        type === 'request' ? DOMPurify.sanitize(parameters[param].description) : param.description
+                      }
+                    >
+                      <div className="cursor-help">
+                        <input
+                          type="text"
+                          value={type === 'request' ? param : param.name}
+                          className="form-control form-control-underline"
+                          placeholder="key"
+                          disabled
+                        />
+                      </div>
+                    </ToolTip>
+                  ) : (
+                    <input
+                      type="text"
+                      value={type === 'request' ? param : param.name}
+                      className="form-control"
+                      placeholder="key"
+                      disabled
+                    />
+                  )}
+                  {param.required && <span className="text-danger fw-bold">*</span>}
+                  <div className="p-2 text-muted">
+                    {type === 'query' &&
+                      param?.schema?.anyOf &&
+                      param?.schema?.anyOf.map((type, i) =>
+                        i < param.schema?.anyOf.length - 1
+                          ? type.type.substring(0, 3).toUpperCase() + '|'
+                          : type.type.substring(0, 3).toUpperCase()
+                      )}
+                    {(type === 'path' || (type === 'query' && !param?.schema?.anyOf)) &&
+                      param?.schema?.type?.substring(0, 3).toUpperCase()}
+                    {type === 'request' && parameters[param].type?.substring(0, 3).toUpperCase()}
+                  </div>
+                </div>
+                <div className="col field overflow-hidden code-hinter-borderless">
+                  <CodeHinter
+                    initialValue={
+                      (type === 'request' ? options?.params[type][param] : options?.params[type][param.name]) ?? ''
+                    }
+                    mode="text"
+                    placeholder={'Value'}
+                    theme={darkMode ? 'monokai' : 'duotone-light'}
+                    lineNumbers={false}
+                    onChange={(value) => {
+                      if (type === 'request') {
+                        changeParam(type, param, value);
+                      } else {
+                        changeParam(type, param.name, value);
+                      }
+                    }}
+                    height={'32px'}
+                  />
+                </div>
+                {((type === 'request' && options['params'][type][param]) || options['params'][type][param.name]) && (
+                  <span
+                    className="code-hinter-clear-btn"
+                    role="button"
+                    onClick={() => {
+                      if (type === 'request') {
+                        removeParam(type, param);
+                      } else {
+                        removeParam(type, param.name);
+                      }
+                    }}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path
+                        fillRule="evenodd"
+                        clipRule="evenodd"
+                        d="M5 1.66675H15C16.8409 1.66675 18.3333 3.15913 18.3333 5.00008V15.0001C18.3333 16.841 16.8409 18.3334 15 18.3334H5C3.15905 18.3334 1.66666 16.841 1.66666 15.0001V5.00008C1.66666 3.15913 3.15905 1.66675 5 1.66675ZM12.799 7.20116C13.043 7.44524 13.043 7.84096 12.799 8.08504L10.8839 10.0001L12.799 11.9151C13.043 12.1592 13.043 12.5549 12.799 12.799C12.5549 13.0431 12.1592 13.0431 11.9151 12.799L10 10.884L8.08492 12.7991C7.84084 13.0432 7.44511 13.0432 7.20104 12.7991C6.95696 12.555 6.95696 12.1593 7.20104 11.9152L9.11617 10.0001L7.20104 8.08495C6.95697 7.84087 6.95697 7.44515 7.20104 7.20107C7.44512 6.95699 7.84085 6.95699 8.08493 7.20107L10 9.11619L11.9151 7.20116C12.1592 6.95708 12.5549 6.95708 12.799 7.20116Z"
+                        fill="#ACB2B9"
+                      />
+                    </svg>
+                  </span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  );
+};
+
+RenderParameterFields.propTypes = {
+  parameters: PropTypes.any,
+  type: PropTypes.string,
+  label: PropTypes.string,
+  options: PropTypes.object,
+  changeParam: PropTypes.func,
+  removeParam: PropTypes.func,
+  darkMode: PropTypes.bool,
+};
