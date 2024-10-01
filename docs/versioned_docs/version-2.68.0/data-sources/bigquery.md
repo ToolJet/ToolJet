@@ -89,13 +89,13 @@ This operation returns the data based on the **Query**.
 - **Query options**
 - **Query results options**
 
-<img className="screenshot-full" src="/img/datasource-reference/bigquery/query-v2.png" alt="BQ query"/>
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/query-v2.png" alt="BQ query" style={{marginBottom:'15px'}}/>
 
 ### List Datasets
 
 This operation returns the list of datasets.
 
-<img className="screenshot-full" src="/img/datasource-reference/bigquery/list-datasets-v2.png" alt="BQ list datasets"/>
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/list-datasets-v2.png" alt="BQ list datasets" style={{marginBottom:'15px'}}/>
 
 ### List Tables
 
@@ -105,7 +105,7 @@ This operation returns the list of tables within a dataset.
 
 - **Dataset ID**
 
-<img className="screenshot-full" src="/img/datasource-reference/bigquery/listtables-v2.png"  alt="BQ list tables"/>
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/listtables-v2.png"  alt="BQ list tables" style={{marginBottom:'15px'}}/>
 
 ### Create Table
 
@@ -119,7 +119,7 @@ This operation is used to create a table.
 
 <img className="screenshot-full" src="/img/datasource-reference/bigquery/create-table.png"  alt="BQ create tables"/>
 
-**NOTE:** Visit -https://github.com/googleapis/nodejs-bigquery/blob/main/samples/createTable.js for more info on schema.
+**NOTE:** Visit https://github.com/googleapis/nodejs-bigquery/blob/main/samples/createTable.js for more info on schema.
 
 ### Delete Table
 
@@ -130,7 +130,7 @@ This operation is used to delete a table.
 - **Table ID**
 - **Dataset ID**
 
-<img className="screenshot-full" src="/img/datasource-reference/bigquery/delete-table.png"  alt="BQ delete tables"/>
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/delete-table.png"  alt="BQ delete tables" style={{marginBottom:'15px'}}/>
 
 ### Create View
 
@@ -146,7 +146,7 @@ This operation is used to create a view.
 - **Query options**
 - **Query results options**
 
-<img className="screenshot-full" src="/img/datasource-reference/bigquery/create-view-v2.png"  alt="BQ create view"/>
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/create-view-v2.png"  alt="BQ create view" style={{marginBottom:'15px'}}/>
 
 ### Insert Record
 
@@ -158,7 +158,7 @@ This operation is used to insert a record.
 - **Dataset ID**
 - **Rows**
 
-<img className="screenshot-full" src="/img/datasource-reference/bigquery/bq-insert-v2.png" alt="BQ insert" />
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/bq-insert-v2.png" alt="BQ insert"  style={{marginBottom:'15px'}}/>
 
 ### Delete Record 
 Use this operation to delete a record.
