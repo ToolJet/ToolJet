@@ -70,7 +70,7 @@ const ApiEndpointInput = (props) => {
   };
 
   const renderOperationOption = (data) => {
-    const path = data.value;
+    const path = data.value.substring(data.value.indexOf('/'));
     const operation = data.operation;
     if (path && operation) {
       return (
@@ -314,7 +314,17 @@ const RenderParameterFields = ({ parameters, type, label, options, changeParam, 
     };
 
     return (
-      <span className="code-hinter-clear-btn" role="button" onClick={handleClear} onKeyDown={handleClear} tabIndex="0">
+      <span
+        className="code-hinter-clear-btn"
+        role="button"
+        onClick={handleClear}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            handleClear;
+          }
+        }}
+        tabIndex="0"
+      >
         <SolidIcons name="removerectangle" width="20" fill="#ACB2B9" />
       </span>
     );
