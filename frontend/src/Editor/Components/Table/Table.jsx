@@ -831,11 +831,7 @@ export function Table({
       }, []);
       mergeToTableDetails({ selectedRowsDetails });
     }
-    if (
-      allowSelection &&
-      ((!showBulkSelector && !highlightSelectedRow) ||
-        (showBulkSelector && !highlightSelectedRow && preSelectRow.current))
-    ) {
+    if (allowSelection && (!showBulkSelector || (showBulkSelector && preSelectRow.current))) {
       const selectedRow = selectedFlatRows?.[0]?.original ?? {};
       const selectedRowId = selectedFlatRows?.[0]?.id ?? null;
       setExposedVariables({ selectedRow, selectedRowId });
@@ -1461,15 +1457,16 @@ export function Table({
                     {...rowProps}
                     onClick={async (e) => {
                       e.stopPropagation();
-                      // toggleRowSelected will triggered useRededcuer function in useTable and in result will get the selectedFlatRows consisting row which are selected
-                      if (allowSelection) {
-                        await toggleRowSelected(row.id);
+                      // ! table row is selected even if selection is disabled, so keeping this as it is for now so that it doesn't break exisitng apps that use it
+                      if (!allowSelection) {
+                        const selectedRow = row.original;
+                        const selectedRowId = row.id;
+                        setExposedVariables({ selectedRow, selectedRowId });
+                        mergeToTableDetails({ selectedRow, selectedRowId });
+                        return;
                       }
-                      const selectedRow = row.original;
-                      const selectedRowId = row.id;
-                      setExposedVariables({ selectedRow, selectedRowId });
-                      mergeToTableDetails({ selectedRow, selectedRowId });
-                      fireEvent('onRowClicked');
+                      // toggleRowSelected will triggered useRededcuer function in useTable and in result will get the selectedFlatRows consisting row which are selected
+                      await toggleRowSelected(row.id);
                     }}
                     onMouseOver={(e) => {
                       if (hoverAdded) {
