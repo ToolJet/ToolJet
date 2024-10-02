@@ -305,19 +305,16 @@ const RenderParameterFields = ({ parameters, type, label, options, changeParam, 
   };
 
   const clearButton = (param) => {
+    const handleClear = () => {
+      if (type === 'request') {
+        removeParam(type, param);
+      } else {
+        removeParam(type, param.name);
+      }
+    };
+
     return (
-      <span
-        className="code-hinter-clear-btn"
-        role="button"
-        onClick={() => {
-          if (type === 'request') {
-            removeParam(type, param);
-          } else {
-            removeParam(type, param.name);
-          }
-        }}
-        tabIndex="0"
-      >
+      <span className="code-hinter-clear-btn" role="button" onClick={handleClear} onKeyDown={handleClear} tabIndex="0">
         <SolidIcons name="removerectangle" width="20" fill="#ACB2B9" />
       </span>
     );
