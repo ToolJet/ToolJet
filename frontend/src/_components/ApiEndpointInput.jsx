@@ -316,6 +316,7 @@ const RenderParameterFields = ({ parameters, type, label, options, changeParam, 
             removeParam(type, param.name);
           }
         }}
+        tabIndex="0"
       >
         <SolidIcons name="removerectangle" width="20" fill="#ACB2B9" />
       </span>
