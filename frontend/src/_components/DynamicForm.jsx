@@ -320,7 +320,15 @@ const DynamicForm = ({
           selectedDataSource,
           darkMode,
         };
-      case 'codehinter':
+      case 'codehinter': {
+        let theme;
+        if (darkMode) {
+          theme = 'monokai';
+        } else if (lineNumbers) {
+          theme = 'duotone-light';
+        } else {
+          theme = 'default';
+        }
         return {
           currentState,
           initialValue: options[key]
@@ -332,7 +340,7 @@ const DynamicForm = ({
           lineNumbers,
           className: className ? className : lineNumbers ? 'query-hinter' : 'codehinter-query-editor-input',
           onChange: (value) => optionchanged(key, value),
-          theme: darkMode ? 'monokai' : lineNumbers ? 'duotone-light' : 'default',
+          theme: theme,
           placeholder,
           height,
           width,
@@ -340,6 +348,7 @@ const DynamicForm = ({
           ignoreBraces,
           cyLabel: key ? `${String(key).toLocaleLowerCase().replace(/\s+/g, '-')}` : '',
         };
+      }
       case 'react-component-openapi-validator':
         return {
           format: options.format?.value,
