@@ -320,7 +320,7 @@ const RenderParameterFields = ({ parameters, type, label, options, changeParam, 
         onClick={handleClear}
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
-            handleClear;
+            handleClear();
           }
         }}
         tabIndex="0"
