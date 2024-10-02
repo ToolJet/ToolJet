@@ -87,6 +87,24 @@ const ApiEndpointInput = (props) => {
     }
   };
 
+  const categorizeOperations = (operation, path, acc, category) => {
+    const option = {
+      value: `${operation}${path}`,
+      label: `${path}`,
+      name: path,
+      operation: operation,
+    };
+    const existingCategory = acc.find((obj) => obj.label === category);
+    if (existingCategory) {
+      existingCategory.options.push(option);
+    } else {
+      acc.push({
+        label: category,
+        options: [option],
+      });
+    }
+  };
+
   const computeOperationSelectionOptions = () => {
     const paths = specJson?.paths;
     if (isEmpty(paths)) return [];
@@ -94,23 +112,7 @@ const ApiEndpointInput = (props) => {
     const pathGroups = Object.keys(paths).reduce((acc, path) => {
       const operations = Object.keys(paths[path]);
       const category = path.split('/')[2];
-      operations.forEach((operation) => {
-        const option = {
-          value: `${operation}${path}`,
-          label: `${path}`,
-          name: path,
-          operation: operation,
-        };
-        const existingCategory = acc.find((obj) => obj.label === category);
-        if (existingCategory) {
-          existingCategory.options.push(option);
-        } else {
-          acc.push({
-            label: category,
-            options: [option],
-          });
-        }
-      });
+      operations.forEach((operation) => categorizeOperations(operation, path, acc, category));
       return acc;
     }, []);
 
@@ -223,7 +225,7 @@ const RenderParameterFields = ({ parameters, type, label, options, changeParam, 
   } else {
     filteredParams = parameters?.filter((param) => param.in === type);
   }
-  console.log('filteredParams', type, parameters, filteredParams);
+
   return (
     filteredParams?.length > 0 && (
       <div className={`${type === 'request' ? 'request-body' : type}-fields d-flex`}>
