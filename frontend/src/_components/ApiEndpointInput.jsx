@@ -9,6 +9,7 @@ import 'codemirror/theme/duotone-light.css';
 import { withTranslation } from 'react-i18next';
 import { isEmpty } from 'lodash';
 import PropTypes from 'prop-types';
+import SolidIcons from '@/_ui/Icon/SolidIcons';
 
 const operationColorMapping = {
   get: 'azure',
@@ -226,6 +227,101 @@ const RenderParameterFields = ({ parameters, type, label, options, changeParam, 
     filteredParams = parameters?.filter((param) => param.in === type);
   }
 
+  const paramLabelWithDescription = (param) => {
+    return (
+      <ToolTip message={type === 'request' ? DOMPurify.sanitize(parameters[param].description) : param.description}>
+        <div className="cursor-help">
+          <input
+            type="text"
+            value={type === 'request' ? param : param.name}
+            className="form-control form-control-underline"
+            placeholder="key"
+            disabled
+          />
+        </div>
+      </ToolTip>
+    );
+  };
+
+  const paramLabelWithoutDescription = (param) => {
+    return (
+      <input
+        type="text"
+        value={type === 'request' ? param : param.name}
+        className="form-control"
+        placeholder="key"
+        disabled
+      />
+    );
+  };
+
+  const paramType = (param) => {
+    return (
+      <div className="p-2 text-muted">
+        {type === 'query' &&
+          param?.schema?.anyOf &&
+          param?.schema?.anyOf.map((type, i) =>
+            i < param.schema?.anyOf.length - 1
+              ? type.type.substring(0, 3).toUpperCase() + '|'
+              : type.type.substring(0, 3).toUpperCase()
+          )}
+        {(type === 'path' || (type === 'query' && !param?.schema?.anyOf)) &&
+          param?.schema?.type?.substring(0, 3).toUpperCase()}
+        {type === 'request' && parameters[param].type?.substring(0, 3).toUpperCase()}
+      </div>
+    );
+  };
+
+  const paramDetails = (param) => {
+    return (
+      <div className="col-auto d-flex field field-width-179 align-items-center">
+        {(type === 'request' && parameters[param].description) || param?.description
+          ? paramLabelWithDescription(param)
+          : paramLabelWithoutDescription(param)}
+        {param.required && <span className="text-danger fw-bold">*</span>}
+        {paramType(param)}
+      </div>
+    );
+  };
+
+  const inputField = (param) => {
+    return (
+      <CodeHinter
+        initialValue={(type === 'request' ? options?.params[type][param] : options?.params[type][param.name]) ?? ''}
+        mode="text"
+        placeholder={'Value'}
+        theme={darkMode ? 'monokai' : 'duotone-light'}
+        lineNumbers={false}
+        onChange={(value) => {
+          if (type === 'request') {
+            changeParam(type, param, value);
+          } else {
+            changeParam(type, param.name, value);
+          }
+        }}
+        height={'32px'}
+      />
+    );
+  };
+
+  const clearButton = (param) => {
+    return (
+      <span
+        className="code-hinter-clear-btn"
+        role="button"
+        onClick={() => {
+          if (type === 'request') {
+            removeParam(type, param);
+          } else {
+            removeParam(type, param.name);
+          }
+        }}
+      >
+        <SolidIcons name="removerectangle" width="20" fill="#ACB2B9" />
+      </span>
+    );
+  };
+
   return (
     filteredParams?.length > 0 && (
       <div className={`${type === 'request' ? 'request-body' : type}-fields d-flex`}>
@@ -234,87 +330,10 @@ const RenderParameterFields = ({ parameters, type, label, options, changeParam, 
           {filteredParams.map((param) => (
             <div className="input-group-wrapper" key={type === 'request' ? param : param.name}>
               <div className="input-group">
-                <div className="col-auto d-flex field field-width-179 align-items-center">
-                  {(type === 'request' && parameters[param].description) || param?.description ? (
-                    <ToolTip
-                      message={
-                        type === 'request' ? DOMPurify.sanitize(parameters[param].description) : param.description
-                      }
-                    >
-                      <div className="cursor-help">
-                        <input
-                          type="text"
-                          value={type === 'request' ? param : param.name}
-                          className="form-control form-control-underline"
-                          placeholder="key"
-                          disabled
-                        />
-                      </div>
-                    </ToolTip>
-                  ) : (
-                    <input
-                      type="text"
-                      value={type === 'request' ? param : param.name}
-                      className="form-control"
-                      placeholder="key"
-                      disabled
-                    />
-                  )}
-                  {param.required && <span className="text-danger fw-bold">*</span>}
-                  <div className="p-2 text-muted">
-                    {type === 'query' &&
-                      param?.schema?.anyOf &&
-                      param?.schema?.anyOf.map((type, i) =>
-                        i < param.schema?.anyOf.length - 1
-                          ? type.type.substring(0, 3).toUpperCase() + '|'
-                          : type.type.substring(0, 3).toUpperCase()
-                      )}
-                    {(type === 'path' || (type === 'query' && !param?.schema?.anyOf)) &&
-                      param?.schema?.type?.substring(0, 3).toUpperCase()}
-                    {type === 'request' && parameters[param].type?.substring(0, 3).toUpperCase()}
-                  </div>
-                </div>
-                <div className="col field overflow-hidden code-hinter-borderless">
-                  <CodeHinter
-                    initialValue={
-                      (type === 'request' ? options?.params[type][param] : options?.params[type][param.name]) ?? ''
-                    }
-                    mode="text"
-                    placeholder={'Value'}
-                    theme={darkMode ? 'monokai' : 'duotone-light'}
-                    lineNumbers={false}
-                    onChange={(value) => {
-                      if (type === 'request') {
-                        changeParam(type, param, value);
-                      } else {
-                        changeParam(type, param.name, value);
-                      }
-                    }}
-                    height={'32px'}
-                  />
-                </div>
-                {((type === 'request' && options['params'][type][param]) || options['params'][type][param.name]) && (
-                  <span
-                    className="code-hinter-clear-btn"
-                    role="button"
-                    onClick={() => {
-                      if (type === 'request') {
-                        removeParam(type, param);
-                      } else {
-                        removeParam(type, param.name);
-                      }
-                    }}
-                  >
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path
-                        fillRule="evenodd"
-                        clipRule="evenodd"
-                        d="M5 1.66675H15C16.8409 1.66675 18.3333 3.15913 18.3333 5.00008V15.0001C18.3333 16.841 16.8409 18.3334 15 18.3334H5C3.15905 18.3334 1.66666 16.841 1.66666 15.0001V5.00008C1.66666 3.15913 3.15905 1.66675 5 1.66675ZM12.799 7.20116C13.043 7.44524 13.043 7.84096 12.799 8.08504L10.8839 10.0001L12.799 11.9151C13.043 12.1592 13.043 12.5549 12.799 12.799C12.5549 13.0431 12.1592 13.0431 11.9151 12.799L10 10.884L8.08492 12.7991C7.84084 13.0432 7.44511 13.0432 7.20104 12.7991C6.95696 12.555 6.95696 12.1593 7.20104 11.9152L9.11617 10.0001L7.20104 8.08495C6.95697 7.84087 6.95697 7.44515 7.20104 7.20107C7.44512 6.95699 7.84085 6.95699 8.08493 7.20107L10 9.11619L11.9151 7.20116C12.1592 6.95708 12.5549 6.95708 12.799 7.20116Z"
-                        fill="#ACB2B9"
-                      />
-                    </svg>
-                  </span>
-                )}
+                {paramDetails(param)}
+                <div className="col field overflow-hidden code-hinter-borderless">{inputField(param)}</div>
+                {((type === 'request' && options['params'][type][param]) || options['params'][type][param.name]) &&
+                  clearButton(param)}
               </div>
             </div>
           ))}
