@@ -737,6 +737,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                 key={user.id}
                                 className="manage-group-users-row"
                                 data-cy={`${String(user.email).toLowerCase().replace(/\s+/g, '-')}-user-row`}
+                                style={{ alignItems: 'center' }}
                               >
                                 <p className="tj-text-sm d-flex align-items-center">
                                   <Avatar
