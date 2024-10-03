@@ -70,8 +70,8 @@ A Tooltip provides additional information when users hover over the component. S
 
 | Property        | Description                               | Expected Value |
 | :-------------- | :---------------------------------------- | :------------- |
-| Show on desktop | Controls the component's desktop visibility | You can programmatically determining the value by clicking on **Fx** to set the value `{{true}}` or `{{false}}` |
-| Show on mobile  | Controls the component's mobile visibility  | You can programmatically determining the value by clicking on **Fx** to set the value `{{true}}` or `{{false}}` |
+| Show on desktop | Controls the component's desktop visibility | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on mobile  | Controls the component's mobile visibility  | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 </div>
 
