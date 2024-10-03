@@ -11,9 +11,9 @@ The **Timeline** component provides a visual representation of a sequence of eve
 
 ## Properties
 
-### Timeline data
+### Timeline Data
 
-**Data requirements:** The data should be an array of objects. Each object must have `title`, `subTitle`, `iconBackgroundColor`, and `date` keys. The `iconBackgroundColor` can be a hex color code or in an RGBA format.
+**Data requirements:** The data should be an array of objects. Each object must have **title**, **subTitle**, **iconBackgroundColor**, and **date** keys. The **iconBackgroundColor** can be a hex color code or in an RGBA format.
 
 **Example with hex color code:**
 ```json
@@ -70,8 +70,8 @@ A Tooltip provides additional information when users hover over the component. S
 
 | Property        | Description                               | Expected Value |
 | :-------------- | :---------------------------------------- | :------------- |
-| Show on desktop | Controls the component's desktop visibility | Set to `{{true}}` to show on desktop, `{{false}}` to hide |
-| Show on mobile  | Controls the component's mobile visibility  | Set to `{{true}}` to show on mobile, `{{false}}` to hide |
+| Show on desktop | Controls the component's desktop visibility | You can programmatically determining the value by clicking on **Fx** to set the value `{{true}}` or `{{false}}` |
+| Show on mobile  | Controls the component's mobile visibility  | You can programmatically determining the value by clicking on **Fx** to set the value `{{true}}` or `{{false}}` |
 
 </div>
 
@@ -81,11 +81,11 @@ A Tooltip provides additional information when users hover over the component. S
 
 | Property | Description | Configuration Options |
 | :------- | :---------- | :-------------------- |
-| Visibility | Controls the component's visibility | Toggle on/off or use `{{true}}` / `{{false}}` |
-| Box Shadow | Adds a shadow effect around the component | Options: `none` (default), `sm`, `md`, `lg`, `xl`, `2xl` |
+| Visibility | Controls the component's visibility | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Box Shadow | Adds a shadow effect around the component | Select the box shadow color and adjust the related properties or set it programmatically using **fx**. |
 
 :::info
-Any property with an `Fx` button next to it can be **programmatically configured**.
+Any property with an **Fx** button next to it can be **programmatically configured**.
 :::
 
 </div>
