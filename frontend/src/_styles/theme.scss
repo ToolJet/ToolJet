@@ -5028,7 +5028,7 @@ div#driver-page-overlay {
   border-color: rgba(101, 109, 119, 0.16) !important;
 
   .driver-popover-title {
-    color: var(--slate12) !important;
+    color: white !important;
   }
 
   .driver-popover-tip {
@@ -6767,11 +6767,15 @@ tbody {
       .react-datepicker__month-select,
       .react-datepicker__year-select {
         color: white;
+        
       }
 
       .react-datepicker__month-select,
       .react-datepicker__year-select {
         background-color: transparent;
+        option{
+          background-color: #232e3c;
+        }
       }
     }
 
