@@ -75,7 +75,7 @@ export const IconCard = ({ icon: Icon, title, content, color }) => (
     <Card className="transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative">
         <div className="p-8">
             <CardHeader>
-                <div className="w-12 h-12 mb-5 rounded-lg bg-white shadow-md flex items-center justify-center transition-all duration-300 ease-in-out group-hover:shadow-lg">
+                <div className="w-12 h-12 mb-5 rounded-lg shadow-md flex items-center justify-center transition-all duration-300 ease-in-out group-hover:shadow-lg">
                     <Icon className={`w-6 h-6 ${color}`} />
                 </div>
                 <CardTitle>{title}</CardTitle>
@@ -90,7 +90,7 @@ export const IconCard = ({ icon: Icon, title, content, color }) => (
 export const SmallCard = ({ icon: Icon, title }) => (
     <Card className="transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative">
         <div className="p-3 flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-lg bg-white shadow flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg shadow flex items-center justify-center">
                 <Icon className="w-5 h-5 text-blue-500" />
             </div>
             <span className="text-sm font-medium">{title}</span>
@@ -189,7 +189,7 @@ style={{
                     </div>
 
                     {/* Getting Started Section */}
-                                    <div className="w-full h-[104px] bg-white rounded-lg shadow-sm border border-gray-200 flex items-center overflow-hidden">
+                                    <div className="w-full h-[104px] rounded-lg shadow-sm border border-gray-200 flex items-center overflow-hidden">
                         <div className="w-[380px] h-full relative overflow-hidden">
                             <img
                                 src={gettingStartedImage}
@@ -208,7 +208,7 @@ style={{
                     </div>
             </div>
 
-            <div className="w-full p-10 space-y-12 bg-white">
+            <div className="w-full p-10 space-y-12">
                 {/* Setup ToolJet Section */}
                 <SectionContainer 
                     title={textLabels.setupToolJet.title}
