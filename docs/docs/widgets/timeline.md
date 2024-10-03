@@ -33,7 +33,7 @@ The **Timeline** component provides a visual representation of a sequence of eve
 ]
 ```
 
-### Hide date
+### Hide Date
 
 Toggle this option to hide the date/time information in the Timeline component.
 
