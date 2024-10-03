@@ -111,22 +111,69 @@ export const SectionContainer = ({ title, description, children }) => (
 #
     <main className="flex flex-col">
         <div className="flex flex-1 flex-col overflow-hidden">
-            <div className="relative w-full p-10 pt-20 pb-14 bg-gradient-to-br from-blue-50 to-pink-50 overflow-hidden">
-                {/* Grid pattern */}
-                <div
-                    className="absolute top-0 right-0 w-96 h-96 pointer-events-none"
-                    style={{
-                        backgroundImage: `
-                        linear-gradient(to left, rgba(59, 130, 246, 0.1) 1px, transparent 1px),
-                        linear-gradient(to bottom, rgba(59, 130, 246, 0.1) 1px, transparent 1px)
-                        `,
-                        backgroundSize: '64px 64px',
-                        maskImage: 'linear-gradient(to left, rgba(0, 0, 0, 1.0) 20%, transparent 80%)',
-                        WebkitMaskImage: 'linear-gradient(to left, rgba(0, 0, 0, 1.0) 20%, transparent 80%)'
-                    }}
-                />
+            <div className="relative w-full p-10 pt-20 pb-14 from-blue-50 to-pink-50 overflow-hidden" >
+            <div
+className="absolute top-0 right-0 w-96 h-96 pointer-events-none"
+style={{
+    backgroundImage: `
+    linear-gradient(to left, rgba(59, 130, 246, 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(59, 130, 246, 0.1) 1px, transparent 1px)
+    `,
+    backgroundSize: '64px 64px',
+    maskImage: 'linear-gradient(to left, rgba(0, 0, 0, 1.0) 20%, transparent 80%)',
+    WebkitMaskImage: 'linear-gradient(to left, rgba(0, 0, 0, 1.0) 20%, transparent 80%)'
+}}
+/>
 
-                {/* ToolJet Documentation Section */}
+                {/* Background shapes */}
+                <div
+                style={{
+                filter: 'blur(140px)'
+                        }}
+                >
+                    {/* Child component 1 */}
+                    <div className='inset-0 w-[302.83px] h-[364.71px] left-1/2 top-0'
+                        style={{
+                            boxSizing: 'border-box',
+                            boxShadow: 'inset 0px 4px 50px rgba(0, 0, 0, 0.25)',
+                            position: 'absolute',
+                            width: '302.83px',
+                            height: '364.71px',
+                            left: '30%',
+                            top: '-320px',
+                            transform: 'matrix(-0.76, 0.65, -0.37, -0.93, 0, 0)',
+                            borderRadius: '50%',
+                            background: '#7FDEFF'
+                        }}
+                    />
+                    {/* Child component 2 */}
+                    <div 
+                        className="w-[292.97px] h-[376.88px] right-1/4 bottom-0"
+                        style={{
+                            background: '#7FDEFF',
+                            transform: 'matrix(-0.76, 0.65, -0.37, -0.93, 0, 0)',
+                            position: 'absolute',
+                            borderRadius: '50%',
+                            right: '-15%'
+                        }}
+                    />
+                    {/* Child component 3 */}
+                    <div 
+                        className="w-[253.63px] h-[305.45px] right-1/4 top-1/2"
+                        style={{
+                            background: 'radial-gradient(111.63% 111.63% at 42.64% -5.82%, #FF0000 44.58%, #FF47D6 100%)',
+                            opacity: 0.6,
+                            filter: 'blur(50px)',
+                            transform: 'matrix(-0.86, 0.52, -0.27, -0.96, 0, 0)',
+                            borderRadius: '50%',
+                            position: 'absolute',
+                            right: '0%',
+
+                            
+                        }}
+                    />
+                </div>
+                                {/* ToolJet Documentation Section */}
                 <div className="space-y-6 relative display-block">
                     <h1 className="text-4xl font-bold">
                         {textLabels.title.prefix} <span className="text-blue-600">{textLabels.title.highlight}</span>
@@ -142,7 +189,7 @@ export const SectionContainer = ({ title, description, children }) => (
                     </div>
 
                     {/* Getting Started Section */}
-                    <div className="w-full h-[104px] bg-white rounded-lg shadow-sm border border-gray-200 flex items-center overflow-hidden">
+                                    <div className="w-full h-[104px] bg-white rounded-lg shadow-sm border border-gray-200 flex items-center overflow-hidden">
                         <div className="w-[380px] h-full relative overflow-hidden">
                             <img
                                 src={gettingStartedImage}
@@ -156,9 +203,9 @@ export const SectionContainer = ({ title, description, children }) => (
                             <p className="text-sm text-[#1b1f24] opacity-80">
                                 {textLabels.gettingStarted.description}
                             </p>
+                            </div>
                         </div>
                     </div>
-                </div>
             </div>
 
             <div className="w-full p-10 space-y-12 bg-white">
