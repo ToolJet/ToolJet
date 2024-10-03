@@ -115,7 +115,7 @@ For general help using ToolJet, please refer to the official [documentation](htt
 - [𝕏 (Twitter)](https://twitter.com/ToolJet) - Get the product updates quickly.
 
 ## Roadmap
-Check out our [roadmap](https://github.com/ToolJet/ToolJet/projects/2) to stay updated on recently released features and learn about what's coming next.
+Check out our [roadmap](https://github.com/orgs/ToolJet/projects/15/views/1) to stay updated on recently released features and learn about what's coming next.
 
 ## Branching model
 We use the git-flow branching model. The base branch is `develop`. If you are looking for a stable version, please use the main branch or tags labeled as v1.x.x.
