@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsObject, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
 
 export class CreatePageDto {
   @IsUUID()
@@ -23,10 +23,14 @@ export class CreatePageDto {
   disabled: boolean;
 
   @IsOptional()
-  hidden: boolean;
+  @IsObject()
+  hidden: Record<string, any>;
 
   @IsOptional()
   autoComputeLayout: boolean;
+
+  @IsOptional()
+  icon: string;
 }
 
 export class DeletePageDto {
