@@ -1,0 +1,64 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Portkey datasource",
+  "description": "A schema defining Portkey datasource",
+  "type": "api",
+  "source": {
+    "name": "Portkey",
+    "kind": "portkey",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "apiKey": {
+        "type": "string",
+        "encrypted": true
+      },
+      "virtualKey": {
+        "type": "string",
+        "encrypted": true
+      },
+      "config": {
+        "type": "string"
+      },
+      "gatewayUrl": {
+        "type": "string"
+      }
+    }
+  },
+  "defaults": {},
+  "properties": {
+    "apiKey": {
+      "label": "API Key",
+      "key": "apiKey",
+      "type": "password",
+      "description": "Enter your Portkey API Key",
+      "helpText": "How to obtain API Key: <a href='https://docs.portkey.ai/docs/api-reference/authentication#obtaining-your-api-key' target='_blank' rel='noreferrer'>See here</a>"
+    },
+    "virtualKey": {
+      "label": "Default Virtual Key",
+      "key": "virtualKey",
+      "type": "password",
+      "description": "Enter your default Portkey Virtual Key",
+      "helpText": "How to create Virtual Key: <a href='https://docs.portkey.ai/docs/product/ai-gateway-streamline-llm-integrations/virtual-keys#creating-virtual-keys' target='_blank' rel='noreferrer'>See here</a>"
+    },
+    "config": {
+      "label": "Config",
+      "key": "config",
+      "type": "text",
+      "description": "Enter your default Portkey config"
+    },
+    "gatewayUrl": {
+      "label": "Gateway URL",
+      "key": "gatewayUrl",
+      "type": "text",
+      "description": "Enter your default Portkey Gateway URL",
+      "helpText": "How to obtain Gateway URL: <a href='https://docs.portkey.ai/docs/api-reference/authentication#obtaining-your-api-key' target='_blank' rel='noreferrer'>See here</a>"
+    }
+  },
+  "required": [
+    "apiKey"
+  ]
+}

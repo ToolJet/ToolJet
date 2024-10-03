@@ -208,6 +208,7 @@
         "how-to/use-url-params-on-load",
         "how-to/pass-query-params-in-custom-components",
         "how-to/use-custom-parameters",
+        "how-to/build-dynamic-forms",
         "how-to/setup-rsyslog",
         "how-to/conditionally-display-components",
         "how-to/use-inspector",

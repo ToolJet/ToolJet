@@ -18,6 +18,11 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
     ```
 
+    Use the command to load NVM:
+    ```bash
+    source ~/.nvm/nvm.sh
+    ```
+
     Close and reopen your terminal to start using nvm
     ```bash
     nvm install 18.18.2
@@ -87,6 +92,11 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
     npm install --prefix frontend
     npm run build:plugins
     ```
+
+   > **_NOTE:_**
+   > If the `npm run build:plugins` command fails due to some packages are missing, try running the following command to install the necessary packages:
+   `sudo apt install build-essential`
+   > then proceed to `npm run build:plugins` step again
 
 6. Set up database
     ```bash
