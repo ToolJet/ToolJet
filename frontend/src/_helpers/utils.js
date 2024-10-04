@@ -1099,9 +1099,9 @@ export const validateName = (
   checkReservedWords = false,
   allowAllCases = false
 ) => {
-  const newName = name.trim();
+  const newName = name;
   let errorMsg = '';
-  if (emptyCheck && !newName) {
+  if (emptyCheck && (!newName || newName.trim().length === 0)) {
     errorMsg = `${nameType} can't be empty`;
     showError &&
       toast.error(errorMsg, {
