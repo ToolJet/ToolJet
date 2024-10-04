@@ -185,7 +185,8 @@ body {
 
 .video-container {
   position: relative;
-  padding-bottom: 56.25%; /* 16:9 */
+  padding-bottom: 56.25%;
+  /* 16:9 */
   height: 0;
   clip-path: inset(1px 1px);
 }
@@ -201,9 +202,9 @@ body {
 img {
   max-width: 100%;
   max-height: 100%;
-  border: 0 ;
+  border: 0;
   border-radius: 10px;
-  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2) 
+  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2)
 }
 
 .card-icon img {
@@ -350,8 +351,9 @@ img {
 }
 
 @media (max-width: 1000px) {
+
   /* Styles for screens smaller than 1000px */
-  [data-theme='dark'] .clean-btn{
+  [data-theme='dark'] .clean-btn {
     background-color: #272729;
     color: #fff;
     border-radius: 4px;
@@ -385,6 +387,7 @@ img {
 
 .docs-doc-id-doc-home-page .padding-bottom--lg {
   padding: 0px;
+  margin: 0px;
 }
 
 .docs-doc-id-doc-home-page header {
@@ -408,4 +411,6 @@ img {
 }
 
 
-
+.docs-doc-id-doc-home-page p {
+  margin-bottom: 0px !important;
+}
