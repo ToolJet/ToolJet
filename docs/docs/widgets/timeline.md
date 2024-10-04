@@ -85,7 +85,7 @@ A Tooltip provides additional information when users hover over the component. S
 | Box Shadow | Adds a shadow effect around the component | Select the box shadow color and adjust the related properties or set it programmatically using **fx**. |
 
 :::info
-Any property with an **Fx** button next to it can be **programmatically configured**.
+Any property with an **fx** button next to it can be **programmatically configured**.
 :::
 
 </div>
