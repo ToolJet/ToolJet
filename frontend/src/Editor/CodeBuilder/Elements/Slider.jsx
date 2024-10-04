@@ -12,7 +12,7 @@ function Slider1({ value, onChange, component, styleDefinition }) {
   useEffect(() => {
     setSliderValue(value);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [component?.id]);
+  }, [styleDefinition, component?.id]);
 
   const debouncedOnChange = debounce((value) => {
     onChange(value);
