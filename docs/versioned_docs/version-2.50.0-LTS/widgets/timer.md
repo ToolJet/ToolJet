@@ -14,7 +14,7 @@ The **Timer** component allows users to track time by counting both upward and d
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div>                                                                                                                                                        |
 | :--------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Default value                                  | It specifies the initial value of timer. Format is: `HH.MM.SS.MS`.                                                                                                                                       |
-| Timer type                                     | It specifies If its a upward or downward counter. Select **Count Up** or **Count Down** from the dropdown or you can click on **Fx** to programmatically define the values **countUp** or **countDown**. |
+| Timer type                                     | It specifies If its a upward or downward counter. Select **Count Up** or **Count Down** from the dropdown or you can click on **fx** to programmatically define the values **countUp** or **countDown**. |
 
 </div>
 
@@ -77,8 +77,9 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 </div>
 
-<div style={{paddingTop:'24px'}}>
 <hr/>
+
+<div style={{paddingTop:'24px'}}>
 
 ## Styles
 
@@ -89,5 +90,7 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 | Box shadow                                     | Sets the box shadow properties of the component.              | Select the box shadow color and adjust the related properties or programmatically set it using **fx**.                       |
 
 :::info
-Any property having **Fx** button next to its field can be **programmatically configured**.
+Any property having **fx** button next to its field can be **programmatically configured**.
 :::
+
+</div>
