@@ -154,12 +154,13 @@ style={{
                             transform: 'matrix(-0.76, 0.65, -0.37, -0.93, 0, 0)',
                             position: 'absolute',
                             borderRadius: '50%',
-                            right: '-15%'
+                            right: '-15%',
+                            bottom: '-720px',
                         }}
                     />
                     {/* Child component 3 */}
                     <div 
-                        className="w-[253.63px] h-[305.45px] right-1/4 top-1/2"
+                        className="w-[253.63px] h-[305.45px] right-1/4"
                         style={{
                             background: 'radial-gradient(111.63% 111.63% at 42.64% -5.82%, #FF0000 44.58%, #FF47D6 100%)',
                             opacity: 0.6,
@@ -167,20 +168,21 @@ style={{
                             transform: 'matrix(-0.86, 0.52, -0.27, -0.96, 0, 0)',
                             borderRadius: '50%',
                             position: 'absolute',
-                            right: '0%',
-
-                            
+                            right: '2%',
+                            bottom: '-720px',
                         }}
                     />
                 </div>
                                 {/* ToolJet Documentation Section */}
-                <div className="space-y-6 relative display-block">
-                    <h1 className="text-4xl font-bold">
-                        {textLabels.title.prefix} <span className="text-blue-600">{textLabels.title.highlight}</span>
-                    </h1>
-                    <p className="text-xl text-gray-600">
-                        {textLabels.subtitle}
-                    </p>
+                <div className="relative display-block">
+                    <div className='pb-14'>
+                        <h1 className="text-4xl font-bold flex flex-col md:flex-row">
+                            {textLabels.title.prefix} <span className="text-blue-600">{textLabels.title.highlight}</span>
+                        </h1>
+                        <p className="text-xl text-gray-600">
+                            {textLabels.subtitle}
+                        </p>
+                    </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {featureCards.map((card, index) => (
@@ -189,7 +191,7 @@ style={{
                     </div>
 
                     {/* Getting Started Section */}
-                                    <div className="w-full h-[104px] rounded-lg shadow-sm border border-gray-200 flex items-center overflow-hidden">
+                    <div className="w-full h-[104px] rounded-lg shadow-sm flex items-center overflow-hidden bg-white border-solid border-gray-100 mt-10">
                         <div className="w-[380px] h-full relative overflow-hidden">
                             <img
                                 src={gettingStartedImage}
@@ -198,7 +200,7 @@ style={{
                                 style={{ maxHeight: '70px', borderRadius: '5px', transform: 'scale(1.2)', transformOrigin: 'top left' }}
                             />
                         </div>
-                        <div className="flex-1 ml-20">
+                        <div className="flex-1 ml-20 mt-6 mb-6">
                             <h3 className="text-2xl font-medium text-[#1b1f24] mb-1">{textLabels.gettingStarted.title}</h3>
                             <p className="text-sm text-[#1b1f24] opacity-80">
                                 {textLabels.gettingStarted.description}
