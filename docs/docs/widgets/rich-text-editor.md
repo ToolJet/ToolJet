@@ -11,10 +11,10 @@ The **Text Editor** component is used to enter and edit text in HTML format. It 
 
 ## Properties
 
-| **Property** | **Description** | **Expected Value** |
+| **Property**  | **Description** | **Expected Value** |
 |:-----------|:-----------|:-----------|
-| Placeholder | Specifies a hint describing the expected value in the component. | A string value that represents the placeholder. |
-| Default Value | The default value that the component will hold when the app is loaded. | A string representing the initial content. |
+| Placeholder | A hint displayed to guide the user on what to enter. | String (e.g., `John Doe`). |
+| Default Value | The default value that the component will hold when the app is loaded. | String (e.g., `Default Text`). |
 
 </div>
 
@@ -32,7 +32,7 @@ There are currently no Component-Specific Actions (CSA) implemented to regulate 
 
 | **Variable** | **Description** | **How To Access** |
 |:-----------|:-----------|:-----------|
-| value | Holds the value whenever a user enters text into the Text Editor component.| Dynamically access it using `{{components.richtexteditor1.value}}`.|
+| value | Holds the value entered by the user in the component. | Accessible dynamically with JS (for e.g.,`{{components.richtexteditor1.value}}`). |
 
 </div>
 
@@ -49,10 +49,10 @@ A tooltip provides additional information when the user hovers over the componen
 
 ## Devices
 
-| **Device** | **Description** |
-|:-----------|:-----------|
-| Show on desktop | Toggle this option to display the component in desktop view. You can programmatically set the value using `{{true}}` or `{{false}}`. |
-| Show on mobile | Toggle this option to display the component in mobile view. You can programmatically set the value using `{{true}}` or `{{false}}`. |
+| **Property** |**Description** | **Expected Value** |
+|:-----------|:-----------|:-----------|
+| Show on desktop | Makes the component visible in desktop view. | You can set it using the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression |
+| Show on mobile | Makes the component visible in mobile view. | You can set it using the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression |
 
 </div>
 
@@ -62,8 +62,8 @@ A tooltip provides additional information when the user hovers over the componen
 
 | **Property** | **Description** | **Configuration Options** |
 |:-----------|:-----------|:-----------|
-| Visibility | Toggle on or off to control the visibility of the component. If set to `{{false}}`, the component will be hidden. | `{{true}}` or `{{false}}` (default: `{{true}}`) |
-| Disable | Toggle on to lock the component, making it non-functional. When set to `{{true}}`, the component is locked. | `{{true}}` or `{{false}}` (default: `{{false}}`) |
-| Box-shadow | Adds a shadow around the component.| Options: `none`, `small`, `medium`, `large`|
+| Visibility   | Controls component visibility. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Disable | Enables or disables the component. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Box-shadow | Sets the box shadow properties of the component. | Select the box shadow color and adjust the related properties or programmatically set it using **fx**. |
 
 </div>
