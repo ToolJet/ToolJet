@@ -578,7 +578,7 @@ export function validateDates({ validationObject, widgetValue, currentState, cus
 
 export function validateEmail(email) {
   const emailRegex =
-    /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+    /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[a-zA-Z]{2,})$/i;
   return emailRegex.test(email);
 }
 
