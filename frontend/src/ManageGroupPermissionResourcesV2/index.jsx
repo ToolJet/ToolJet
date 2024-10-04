@@ -20,6 +20,8 @@ import { SearchBox } from '@/_components/SearchBox';
 import EditRoleErrorModal from '@/ManageGroupPermissionsV2/ErrorModal/ErrorModal';
 import ChangeRoleModal from '@/ManageGroupPermissionResourcesV2/ChangeRoleModal';
 import { ToolTip } from '@/_components/ToolTip';
+import Avatar from '@/_ui/Avatar';
+
 class ManageGroupPermissionResourcesComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -339,7 +341,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     this.setState({ isChangeRoleModalOpen: true, updatingUserRole: updatingUser });
 
   showChangeRoleModalMessage = () => {
-    console.log('called');
     this.setState({ showRoleEditMessage: true });
   };
 
@@ -435,7 +436,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       autoRoleChangeModalList,
       autoRoleChangeMessageType,
     } = this.state;
-
     const isBasicPlan = false;
     const isPaidPlan = false;
 
@@ -737,11 +737,16 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                 key={user.id}
                                 className="manage-group-users-row"
                                 data-cy={`${String(user.email).toLowerCase().replace(/\s+/g, '-')}-user-row`}
+                                style={{ alignItems: 'center' }}
                               >
                                 <p className="tj-text-sm d-flex align-items-center">
-                                  <div className="name-avatar">
-                                    {`${user?.firstName?.[0] ?? ''} ${user?.lastName?.[0] ?? ''}`}
-                                  </div>
+                                  <Avatar
+                                    className="name-avatar"
+                                    avatarId={user.avatarId}
+                                    text={`${user.first_name ? user.first_name[0] : ''}${
+                                      user.last_name ? user.last_name[0] : ''
+                                    }`}
+                                  />
                                   <span>{`${user?.firstName ?? ''} ${user?.lastName ?? ''}`}</span>
                                 </p>
                                 <p className="tj-text-sm d-flex align-items-center" style={{ paddingLeft: '12px' }}>

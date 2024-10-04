@@ -58,6 +58,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   };
 
   const handleInputChange = async (value, field) => {
+    const trimmedValue = value?.trim();
     if (field === 'slug') {
       setSlug({
         ...slug,
@@ -83,7 +84,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
     if (error?.status === true) {
       try {
         await organizationService.checkWorkspaceUniqueness(
-          field === 'name' ? value : null,
+          field === 'name' ? trimmedValue : null,
           field === 'slug' ? value : null
         );
       } catch (errResponse) {
