@@ -29,7 +29,7 @@ There are currently no exposed variables for the component.
 
 A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the component.
 
-Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the component will display the string as the tooltip.
+Under the **General** accordion, you can set the value in the string format. Now hovering over the component will display the string as the tooltip.
 
 </div>
 
@@ -39,8 +39,8 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 |  <div style={{ width:"100px"}}> Devices </div> |  <div style={{ width:"100px"}}> Description </div> |  <div style={{ width:"135px"}}> Expected Value </div> |
 |:----- |:---------  |:------------- |
-| Show on desktop | Toggle to control whether the component is displayed on desktop devices. | Accepts Boolean values: `true` (visible) or `false` (hidden). You can programmatically determine the value using `Fx`. |
-| Show on mobile  | Toggle to control whether the component is displayed on mobile devices. | Accepts Boolean values: `true` (visible) or `false` (hidden). You can programmatically determine the value using `Fx`. |
+| Show on desktop | Toggle on or off to display desktop view.. | Accepts Boolean values: `true` (visible) or `false` (hidden). You can programmatically determine the value using **Fx**. |
+| Show on mobile  | Toggle on or off to display mobile view.. | Accepts Boolean values: `true` (visible) or `false` (hidden). You can programmatically determine the value using **Fx**. |
 
 </div>
 
@@ -52,11 +52,11 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 | <div style={{ width:"120px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"180px"}}> Configuration Options </div> |
 | ----------- | ----------- | ----------- |
 | Divider Color | Sets the color of the divider. Use hex code or color names. | Accepts any valid color value like hex (`#000000`), RGB, or predefined color names. |
-| Visibility | Controls whether the divider is visible. Accepts Boolean values. | `true` (visible), `false` (hidden) |
-| Box Shadow | Adds shadow around the divider to create depth. | Accepts `box-shadow` values like `none`, `2px 4px 6px rgba(0, 0, 0, 0.1)` |
+| Visibility | Controls whether the divider is visible. Accepts Boolean values. | Accepts Boolean values (true for visible, false for hidden) or an **fx** function for dynamic control. |
+| Box Shadow | Adds shadow around the divider to create depth. | Accepts box-shadow values like `none`, `2px 4px 6px rgba(0, 0, 0, 0.1)` |
 
 :::info
-Any property having the `Fx` button next to its field can be **programmatically configured**.
+Any property having the **Fx** button next to its field can be **programmatically configured**.
 :::
 
 </div>
