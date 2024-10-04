@@ -14,7 +14,7 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 </div>
 
-<div style={{paddingTop:'24px'}>
+<div style={{paddingTop:'24px'}}>
 
 ## Exposed Variables
 
