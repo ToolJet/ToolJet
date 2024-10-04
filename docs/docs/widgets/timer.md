@@ -11,10 +11,10 @@ The **Timer** component allows users to track time by counting both upward and d
 
 ## Properties
 
-| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div>                                                                                                                                              |
-| :--------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Default value                                  | It specifies the initial value of timer. Format is: `HH.mm.ss.SS`.                                                                                                                             |
-| Timer type                                     | It specifies If its a upward or downward counter. Select `Count Up` or `Count Down` from the dropdown or you can click on `Fx` to programmatically define the values `countUp` or `countDown`. |
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div>                                                                                                                                                        |
+| :--------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Default value                                  | It specifies the initial value of timer. Format is: `HH.MM.SS.MS`.                                                                                                                                       |
+| Timer type                                     | It specifies If its a upward or downward counter. Select **Count Up** or **Count Down** from the dropdown or you can click on **Fx** to programmatically define the values **countUp** or **countDown**. |
 
 </div>
 
@@ -22,13 +22,13 @@ The **Timer** component allows users to track time by counting both upward and d
 
 ## Events
 
-| <div style={{ width:"100px"}}> Event </div> | <div style={{ width:"100px"}}> Description </div>                                                                 |
-| :------------------------------------------ | :---------------------------------------------------------------------------------------------------------------- |
-| On start                                    | Triggers whenever the user types something in the text input.                                                     |
-| On resume                                   | Triggers whenever the user presses the enter key on the keyboard after entering text in the Text Input component. |
-| On pause                                    | Triggers whenever the user clicks inside the text input field.                                                    |
-| On count down finish                        | Triggers whenever the user clicks outside the text input field.                                                   |
-| On reset                                    | This event is fired when user clicks on reset button.                                                             |
+| <div style={{ width:"100px"}}> Event </div> | <div style={{ width:"100px"}}> Description </div>    |
+| :------------------------------------------ | :--------------------------------------------------- |
+| On start                                    | Triggers whenever the user clicks on start button.   |
+| On resume                                   | Triggers whenever the user clicks on resume button.  |
+| On pause                                    | Triggers whenever the user clicks on pause button.   |
+| On count down finish                        | Triggers whenever the count down timer reaches zero. |
+| On reset                                    | Triggers whenever the user clicks on reset button.   |
 
 :::info
 Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
@@ -70,26 +70,24 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 ## Devices
 
-| <div style={{ width:"100px"}}> Devices </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"100px"}}> Expected Value </div>                                                                            |
-| :-------------------------------------------- | :------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------ |
-| Show on desktop                               | Makes the component visible in desktop view.      | You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
-| Show on mobile                                | Makes the component visible in mobile view.       | You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| <div style={{ width:"100px"}}> Devices </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"100px"}}> Expected Value </div>                                                                              |
+| :-------------------------------------------- | :------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------- |
+| Show on desktop                               | Makes the component visible in desktop view.      | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on mobile                                | Makes the component visible in mobile view.       | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 </div>
 
 <div style={{paddingTop:'24px'}}>
-<hr>
+<hr/>
 
 ## Styles
 
-| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div>                                                       | <div style={{ width:"100px"}}> Configuration Options </div>                                                                |
-| :--------------------------------------------- | :------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------- |
-| Loading state                                  | Enables a loading spinner, often used with `isLoading` to indicate progress. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
-| Visibility                                     | Controls component visibility. Toggle or set dynamically.                                               | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
-| Disable                                        | Enables or disables the component. Toggle or set dynamically.                                           | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
-| Tooltip                                        | Provides additional information on hover. Set a string value for display.                               | String (e.g., `Enter your name here` ).                                                                                    |
-| Box shadow                                     | Sets the box shadow properties of the component.                                                        | Select the box shadow color and adjust the related properties or programmatically set it using `fx`.).                     |
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div>             | <div style={{ width:"100px"}}> Configuration Options </div>                                                                  |
+| :--------------------------------------------- | :------------------------------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------- |
+| Visibility                                     | Controls component visibility. Toggle or set dynamically.     | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Disable                                        | Enables or disables the component. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Box shadow                                     | Sets the box shadow properties of the component.              | Select the box shadow color and adjust the related properties or programmatically set it using **fx**.                       |
 
 :::info
-Any property having `Fx` button next to its field can be **programmatically configured**.
+Any property having **Fx** button next to its field can be **programmatically configured**.
 :::
