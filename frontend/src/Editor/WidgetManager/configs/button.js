@@ -106,7 +106,6 @@ export const buttonConfig = {
       displayName: 'Icon',
       validation: { schema: { type: 'string' } },
       accordian: 'button',
-
       visibility: false,
     },
     iconColor: {
