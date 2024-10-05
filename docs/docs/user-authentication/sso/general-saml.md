@@ -1,6 +1,6 @@
 ---
-id: saml
-title: SAML
+id: general-saml
+title: General SAML Configuration
 ---
 
 ToolJet supports SAML authentication for your workspace. The supported SAML providers are: Okta, Active Directory Federation Services, Azure AD, Auth0 and other SAML SSO providers.
