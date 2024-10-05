@@ -1,0 +1,990 @@
+{
+  "tooljet_database": [],
+  "app": [
+    {
+      "definition": {
+        "appV2": {
+          "id": "7134bdd2-e8fa-4938-afa2-3695db018b68",
+          "name": "Password Generator",
+          "slug": "7134bdd2-e8fa-4938-afa2-3695db018b68",
+          "isPublic": null,
+          "isMaintenanceOn": false,
+          "icon": "table",
+          "organizationId": "7242dbbf-f032-43c6-ac68-e3a7ca8e1172",
+          "currentVersionId": "e613ad0b-081e-4c02-aaa2-7f22871e76bd",
+          "userId": "0351e5c8-7da2-4362-bca2-d1d8f56053ff",
+          "createdAt": "2024-10-05T02:32:17.287Z",
+          "updatedAt": "2024-10-05T10:42:08.969Z",
+          "editingVersion": {
+            "id": "e613ad0b-081e-4c02-aaa2-7f22871e76bd",
+            "name": "v2",
+            "definition": null,
+            "globalSettings": {
+              "hideHeader": false,
+              "appInMaintenance": false,
+              "canvasMaxWidth": 100,
+              "canvasMaxWidthType": "%",
+              "canvasMaxHeight": 2400,
+              "canvasBackgroundColor": "#edeff5",
+              "backgroundFxQuery": "",
+              "appMode": "light"
+            },
+            "showViewerNavigation": true,
+            "homePageId": "0d426af2-a4bc-436b-b1ef-9ee7d4a54146",
+            "appId": "7134bdd2-e8fa-4938-afa2-3695db018b68",
+            "currentEnvironmentId": "77b2dc89-f4af-4a58-8937-21577aaded11",
+            "createdAt": "2024-10-05T10:42:05.014Z",
+            "updatedAt": "2024-10-05T10:42:04.983Z"
+          },
+          "components": [
+            {
+              "id": "887b0e5c-e587-414d-9276-2fcd76a2ab9e",
+              "name": "text2",
+              "type": "Text",
+              "pageId": "0d426af2-a4bc-436b-b1ef-9ee7d4a54146",
+              "parent": null,
+              "properties": {
+                "text": {
+                  "value": "Password rules"
+                }
+              },
+              "general": null,
+              "styles": {
+                "fontWeight": {
+                  "value": "bold"
+                },
+                "textSize": {
+                  "value": "14"
+                }
+              },
+              "generalStyles": null,
+              "displayPreferences": {
+                "showOnDesktop": {
+                  "value": "{{true}}"
+                },
+                "showOnMobile": {
+                  "value": "{{true}}"
+                }
+              },
+              "validation": {},
+              "createdAt": "2024-10-05T10:42:04.983Z",
+              "updatedAt": "2024-10-05T10:42:04.983Z",
+              "layouts": [
+                {
+                  "id": "ad9a4d26-2222-4513-9a68-e1af3f28e3ca",
+                  "type": "mobile",
+                  "top": 160,
+                  "left": 16,
+                  "width": 18,
+                  "height": 40,
+                  "componentId": "887b0e5c-e587-414d-9276-2fcd76a2ab9e",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-10-05T10:42:04.983Z"
+                },
+                {
+                  "id": "cd2d4ff5-1230-4cf5-b529-a4e437fff9b4",
+                  "type": "desktop",
+                  "top": 270,
+                  "left": 16,
+                  "width": 6,
+                  "height": 40,
+                  "componentId": "887b0e5c-e587-414d-9276-2fcd76a2ab9e",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-10-05T10:42:04.983Z"
+                }
+              ]
+            },
+            {
+              "id": "a8b511c7-2908-4fd8-8970-5ee2bcbbaf68",
+              "name": "uppercase",
+              "type": "Checkbox",
+              "pageId": "0d426af2-a4bc-436b-b1ef-9ee7d4a54146",
+              "parent": null,
+              "properties": {
+                "label": {
+                  "value": "A-Z"
+                },
+                "defaultValue": {
+                  "value": "{{false}}",
+                  "fxActive": false
+                }
+              },
+              "general": null,
+              "styles": {},
+              "generalStyles": null,
+              "displayPreferences": {
+                "showOnDesktop": {
+                  "value": "{{true}}"
+                },
+                "showOnMobile": {
+                  "value": "{{true}}"
+                }
+              },
+              "validation": {
+                "customRule": {
+                  "value": ""
+                }
+              },
+              "createdAt": "2024-10-05T10:42:04.983Z",
+              "updatedAt": "2024-10-05T10:42:04.983Z",
+              "layouts": [
+                {
+                  "id": "6873dd83-f6da-4a82-85d3-5f2ff51ab2c2",
+                  "type": "mobile",
+                  "top": 280,
+                  "left": 16,
+                  "width": 6,
+                  "height": 30,
+                  "componentId": "a8b511c7-2908-4fd8-8970-5ee2bcbbaf68",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-10-05T10:42:04.983Z"
+                },
+                {
+                  "id": "8a46087f-a3c3-4c49-8f59-878cf7dcfa0d",
+                  "type": "desktop",
+                  "top": 380,
+                  "left": 17,
+                  "width": 2,
+                  "height": 30,
+                  "componentId": "a8b511c7-2908-4fd8-8970-5ee2bcbbaf68",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-10-05T10:42:04.983Z"
+                }
+              ]
+            },
+            {
+              "id": "6208d9f7-a284-465d-bae1-a0d689fc6686",
+              "name": "lowercase",
+              "type": "Checkbox",
+              "pageId": "0d426af2-a4bc-436b-b1ef-9ee7d4a54146",
+              "parent": null,
+              "properties": {
+                "label": {
+                  "value": "a-z"
+                }
+              },
+              "general": null,
+              "styles": {},
+              "generalStyles": null,
+              "displayPreferences": {
+                "showOnDesktop": {
+                  "value": "{{true}}"
+                },
+                "showOnMobile": {
+                  "value": "{{true}}"
+                }
+              },
+              "validation": {},
+              "createdAt": "2024-10-05T10:42:04.983Z",
+              "updatedAt": "2024-10-05T10:42:04.983Z",
+              "layouts": [
+                {
+                  "id": "fd2cfc5d-a6b7-4f17-a0d2-4135c530f857",
+                  "type": "mobile",
+                  "top": 310,
+                  "left": 16,
+                  "width": 6,
+                  "height": 30,
+                  "componentId": "6208d9f7-a284-465d-bae1-a0d689fc6686",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-10-05T10:42:04.983Z"
+                },
+                {
+                  "id": "396707c9-4b84-427e-b065-bd86f5b761b9",
+                  "type": "desktop",
+                  "top": 380,
+                  "left": 20,
+                  "width": 2,
+                  "height": 30,
+                  "componentId": "6208d9f7-a284-465d-bae1-a0d689fc6686",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-10-05T10:42:04.983Z"
+                }
+              ]
+            },
+            {
+              "id": "ae820fe2-ab9f-4bdc-a9be-a35ff84f0d4d",
+              "name": "numbers",
+              "type": "Checkbox",
+              "pageId": "0d426af2-a4bc-436b-b1ef-9ee7d4a54146",
+              "parent": null,
+              "properties": {
+                "label": {
+                  "value": "0-9"
+                }
+              },
+              "general": null,
+              "styles": {},
+              "generalStyles": null,
+              "displayPreferences": {
+                "showOnDesktop": {
+                  "value": "{{true}}"
+                },
+                "showOnMobile": {
+                  "value": "{{true}}"
+                }
+              },
+              "validation": {},
+              "createdAt": "2024-10-05T10:42:04.983Z",
+              "updatedAt": "2024-10-05T10:42:04.983Z",
+              "layouts": [
+                {
+                  "id": "f5c9cca8-bc6b-4588-90f3-61dcbf22cd8d",
+                  "type": "mobile",
+                  "top": 340,
+                  "left": 16,
+                  "width": 6,
+                  "height": 30,
+                  "componentId": "ae820fe2-ab9f-4bdc-a9be-a35ff84f0d4d",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-10-05T10:42:04.983Z"
+                },
+                {
+                  "id": "079f19d5-7c26-4fa1-bed6-2912cdefb89b",
+                  "type": "desktop",
+                  "top": 380,
+                  "left": 23,
+                  "width": 2,
+                  "height": 30,
+                  "componentId": "ae820fe2-ab9f-4bdc-a9be-a35ff84f0d4d",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-10-05T10:42:04.983Z"
+                }
+              ]
+            },
+            {
+              "id": "f2accd3f-d67a-4f51-8024-1c50e2149c5e",
+              "name": "lengthCheck",
+              "type": "NumberInput",
+              "pageId": "0d426af2-a4bc-436b-b1ef-9ee7d4a54146",
+              "parent": null,
+              "properties": {
+                "label": {
+                  "value": "Password length"
+                },
+                "placeholder": {
+                  "value": ""
+                },
+                "value": {
+                  "value": "8"
+                }
+              },
+              "general": null,
+              "styles": {
+                "borderRadius": {
+                  "value": "6"
+                }
+              },
+              "generalStyles": null,
+              "displayPreferences": {
+                "showOnDesktop": {
+                  "value": "{{true}}"
+                },
+                "showOnMobile": {
+                  "value": "{{true}}"
+                }
+              },
+              "validation": {
+                "minValue": {
+                  "value": ""
+                }
+              },
+              "createdAt": "2024-10-05T10:42:04.983Z",
+              "updatedAt": "2024-10-05T10:42:04.983Z",
+              "layouts": [
+                {
+                  "id": "6e58f0f4-3d40-4e74-9eac-de3da0e06d37",
+                  "type": "desktop",
+                  "top": 370,
+                  "left": 5,
+                  "width": 11,
+                  "height": 40,
+                  "componentId": "f2accd3f-d67a-4f51-8024-1c50e2149c5e",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-10-05T10:42:04.983Z"
+                },
+                {
+                  "id": "d16f3263-5dfd-4bc6-8200-02fa8ab4e4dc",
+                  "type": "mobile",
+                  "top": 210,
+                  "left": 5,
+                  "width": 33,
+                  "height": 40,
+                  "componentId": "f2accd3f-d67a-4f51-8024-1c50e2149c5e",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-10-05T10:42:04.983Z"
+                }
+              ]
+            },
+            {
+              "id": "7c1143bb-6d9a-4d80-8dc3-61860e399b61",
+              "name": "special",
+              "type": "Checkbox",
+              "pageId": "0d426af2-a4bc-436b-b1ef-9ee7d4a54146",
+              "parent": null,
+              "properties": {
+                "label": {
+                  "value": "Special characters"
+                },
+                "visibility": {
+                  "value": "{{true}}"
+                }
+              },
+              "general": null,
+              "styles": {},
+              "generalStyles": null,
+              "displayPreferences": {
+                "showOnDesktop": {
+                  "value": "{{true}}"
+                },
+                "showOnMobile": {
+                  "value": "{{true}}"
+                }
+              },
+              "validation": {
+                "mandatory": {
+                  "value": "{{false}}"
+                }
+              },
+              "createdAt": "2024-10-05T10:42:04.983Z",
+              "updatedAt": "2024-10-05T10:42:04.983Z",
+              "layouts": [
+                {
+                  "id": "221ce722-3cbc-4aac-9052-b5593d7bd995",
+                  "type": "mobile",
+                  "top": 370,
+                  "left": 16,
+                  "width": 18,
+                  "height": 30,
+                  "componentId": "7c1143bb-6d9a-4d80-8dc3-61860e399b61",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-10-05T10:42:04.983Z"
+                },
+                {
+                  "id": "e4edeabd-0e05-47ab-b024-42fdc4868c71",
+                  "type": "desktop",
+                  "top": 380,
+                  "left": 26,
+                  "width": 6,
+                  "height": 30,
+                  "componentId": "7c1143bb-6d9a-4d80-8dc3-61860e399b61",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-10-05T10:42:04.983Z"
+                }
+              ]
+            },
+            {
+              "id": "f3954911-d5c2-4a67-b411-f90b8537437d",
+              "name": "generate",
+              "type": "Button",
+              "pageId": "0d426af2-a4bc-436b-b1ef-9ee7d4a54146",
+              "parent": null,
+              "properties": {
+                "text": {
+                  "value": "Generate Password"
+                },
+                "loadingState": {
+                  "value": "{{false}}"
+                },
+                "visibility": {
+                  "value": "{{true}}"
+                }
+              },
+              "general": null,
+              "styles": {
+                "direction": {
+                  "value": "left"
+                },
+                "borderRadius": {
+                  "value": "4"
+                },
+                "padding": {
+                  "value": "default"
+                },
+                "type": {
+                  "value": "primary"
+                }
+              },
+              "generalStyles": null,
+              "displayPreferences": {
+                "showOnDesktop": {
+                  "value": "{{true}}"
+                },
+                "showOnMobile": {
+                  "value": "{{true}}"
+                }
+              },
+              "validation": {},
+              "createdAt": "2024-10-05T10:42:04.983Z",
+              "updatedAt": "2024-10-05T10:42:04.983Z",
+              "layouts": [
+                {
+                  "id": "e79a1573-bbc1-40f4-b7ef-69fd43015f1a",
+                  "type": "mobile",
+                  "top": 80,
+                  "left": 22,
+                  "width": 21,
+                  "height": 40,
+                  "componentId": "f3954911-d5c2-4a67-b411-f90b8537437d",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-10-05T10:42:04.983Z"
+                },
+                {
+                  "id": "a5f67990-73c4-402c-a6d8-6dedecb545cd",
+                  "type": "desktop",
+                  "top": 160,
+                  "left": 23,
+                  "width": 7,
+                  "height": 40,
+                  "componentId": "f3954911-d5c2-4a67-b411-f90b8537437d",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-10-05T10:42:04.983Z"
+                }
+              ]
+            },
+            {
+              "id": "84f69392-749e-469d-b9a4-16dc394e5f52",
+              "name": "copy",
+              "type": "Button",
+              "pageId": "0d426af2-a4bc-436b-b1ef-9ee7d4a54146",
+              "parent": null,
+              "properties": {
+                "text": {
+                  "value": "Copy"
+                }
+              },
+              "general": null,
+              "styles": {
+                "borderRadius": {
+                  "value": "4"
+                }
+              },
+              "generalStyles": null,
+              "displayPreferences": {
+                "showOnDesktop": {
+                  "value": "{{true}}"
+                },
+                "showOnMobile": {
+                  "value": "{{true}}"
+                }
+              },
+              "validation": {},
+              "createdAt": "2024-10-05T10:42:04.983Z",
+              "updatedAt": "2024-10-05T10:42:04.983Z",
+              "layouts": [
+                {
+                  "id": "8731e1c3-ae08-478c-9917-92764d0764ed",
+                  "type": "mobile",
+                  "top": 120,
+                  "left": 31,
+                  "width": 12,
+                  "height": 40,
+                  "componentId": "84f69392-749e-469d-b9a4-16dc394e5f52",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-10-05T10:42:04.983Z"
+                },
+                {
+                  "id": "6a6eb2bc-e08a-420f-80c7-58fa14af9ce4",
+                  "type": "desktop",
+                  "top": 160,
+                  "left": 31,
+                  "width": 4,
+                  "height": 40,
+                  "componentId": "84f69392-749e-469d-b9a4-16dc394e5f52",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-10-05T10:42:04.983Z"
+                }
+              ]
+            },
+            {
+              "id": "d345afdd-385a-4061-865d-062253e6f7d3",
+              "name": "text1",
+              "type": "Text",
+              "pageId": "0d426af2-a4bc-436b-b1ef-9ee7d4a54146",
+              "parent": null,
+              "properties": {
+                "text": {
+                  "value": "Strong Password Generator"
+                }
+              },
+              "general": null,
+              "styles": {
+                "textSize": {
+                  "value": "20"
+                },
+                "fontWeight": {
+                  "value": "bold"
+                }
+              },
+              "generalStyles": null,
+              "displayPreferences": {
+                "showOnDesktop": {
+                  "value": "{{true}}"
+                },
+                "showOnMobile": {
+                  "value": "{{true}}"
+                }
+              },
+              "validation": {},
+              "createdAt": "2024-10-05T10:42:04.983Z",
+              "updatedAt": "2024-10-05T10:42:04.983Z",
+              "layouts": [
+                {
+                  "id": "2250851a-3328-4152-b52c-c312c320e41a",
+                  "type": "desktop",
+                  "top": 50,
+                  "left": 18,
+                  "width": 11,
+                  "height": 40,
+                  "componentId": "d345afdd-385a-4061-865d-062253e6f7d3",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-10-05T10:42:04.983Z"
+                },
+                {
+                  "id": "9a412621-3bec-4856-8807-d87e0d75a484",
+                  "type": "mobile",
+                  "top": 0,
+                  "left": 10,
+                  "width": 33,
+                  "height": 40,
+                  "componentId": "d345afdd-385a-4061-865d-062253e6f7d3",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-10-05T10:42:04.983Z"
+                }
+              ]
+            },
+            {
+              "id": "1667ead7-3807-4ce1-a7ec-b4be83550937",
+              "name": "divider1",
+              "type": "Divider",
+              "pageId": "0d426af2-a4bc-436b-b1ef-9ee7d4a54146",
+              "parent": null,
+              "properties": {},
+              "general": null,
+              "styles": {},
+              "generalStyles": null,
+              "displayPreferences": {
+                "showOnDesktop": {
+                  "value": "{{true}}"
+                },
+                "showOnMobile": {
+                  "value": "{{true}}"
+                }
+              },
+              "validation": {},
+              "createdAt": "2024-10-05T10:42:04.983Z",
+              "updatedAt": "2024-10-05T10:42:04.983Z",
+              "layouts": [
+                {
+                  "id": "13c3ea7c-bb75-4be6-9953-4d6b9dae62bd",
+                  "type": "desktop",
+                  "top": 310,
+                  "left": 3,
+                  "width": 36,
+                  "height": 10,
+                  "componentId": "1667ead7-3807-4ce1-a7ec-b4be83550937",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-10-05T10:42:04.983Z"
+                },
+                {
+                  "id": "efe12bed-cc82-4498-a3d1-218deba7df2f",
+                  "type": "mobile",
+                  "top": 200,
+                  "left": 0,
+                  "width": 43,
+                  "height": 10,
+                  "componentId": "1667ead7-3807-4ce1-a7ec-b4be83550937",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-10-05T10:42:04.983Z"
+                }
+              ]
+            },
+            {
+              "id": "2f6e70e8-1988-47bc-a27f-262e0ca2f4b9",
+              "name": "avoidAmbiguous",
+              "type": "Checkbox",
+              "pageId": "0d426af2-a4bc-436b-b1ef-9ee7d4a54146",
+              "parent": null,
+              "properties": {
+                "label": {
+                  "value": "Avoid Ambiguous Characters"
+                },
+                "defaultValue": {
+                  "value": "{{components.2f6e70e8-1988-47bc-a27f-262e0ca2f4b9.value}} = true",
+                  "fxActive": true
+                },
+                "disabledState": {
+                  "value": "{{false}}"
+                },
+                "tooltip": {
+                  "value": "Avoid Ambiguous Characters(1,I,l,O,o,0)"
+                },
+                "loadingState": {
+                  "value": "{{false}}"
+                }
+              },
+              "general": null,
+              "styles": {},
+              "generalStyles": null,
+              "displayPreferences": {
+                "showOnDesktop": {
+                  "value": "{{true}}"
+                },
+                "showOnMobile": {
+                  "value": "{{true}}"
+                }
+              },
+              "validation": {},
+              "createdAt": "2024-10-05T10:42:04.983Z",
+              "updatedAt": "2024-10-05T10:42:04.983Z",
+              "layouts": [
+                {
+                  "id": "9adc9a66-2061-419f-8c63-4ec6702e0597",
+                  "type": "desktop",
+                  "top": 380,
+                  "left": 33,
+                  "width": 9,
+                  "height": 30,
+                  "componentId": "2f6e70e8-1988-47bc-a27f-262e0ca2f4b9",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-10-05T10:42:04.983Z"
+                },
+                {
+                  "id": "5f85858a-0648-4006-866b-8b3b74d4a0f3",
+                  "type": "mobile",
+                  "top": 250,
+                  "left": 16,
+                  "width": 27,
+                  "height": 30,
+                  "componentId": "2f6e70e8-1988-47bc-a27f-262e0ca2f4b9",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-10-05T10:42:04.983Z"
+                }
+              ]
+            },
+            {
+              "id": "a7331d58-aadd-4f01-a8c5-64b88dea32ad",
+              "name": "passwordField",
+              "type": "TextInput",
+              "pageId": "0d426af2-a4bc-436b-b1ef-9ee7d4a54146",
+              "parent": null,
+              "properties": {
+                "label": {
+                  "value": "Generate Password"
+                },
+                "value": {
+                  "value": "{{String(queries.setPassword.data) || ''}}"
+                }
+              },
+              "general": null,
+              "styles": {
+                "color": {
+                  "value": "#1b1f24ff"
+                }
+              },
+              "generalStyles": null,
+              "displayPreferences": {
+                "showOnDesktop": {
+                  "value": "{{true}}"
+                },
+                "showOnMobile": {
+                  "value": "{{true}}"
+                }
+              },
+              "validation": {},
+              "createdAt": "2024-10-05T10:42:04.983Z",
+              "updatedAt": "2024-10-05T10:42:04.983Z",
+              "layouts": [
+                {
+                  "id": "ab7c2945-12de-4069-a34a-f15994b6b10d",
+                  "type": "mobile",
+                  "top": 160,
+                  "left": 12,
+                  "width": 10,
+                  "height": 40,
+                  "componentId": "a7331d58-aadd-4f01-a8c5-64b88dea32ad",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-10-05T10:42:04.983Z"
+                },
+                {
+                  "id": "bee03cfe-5854-4d6a-87be-94ab891378c2",
+                  "type": "desktop",
+                  "top": 160,
+                  "left": 4,
+                  "width": 18,
+                  "height": 40,
+                  "componentId": "a7331d58-aadd-4f01-a8c5-64b88dea32ad",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-10-05T10:42:04.983Z"
+                }
+              ]
+            }
+          ],
+          "pages": [
+            {
+              "id": "0d426af2-a4bc-436b-b1ef-9ee7d4a54146",
+              "name": "Home",
+              "handle": "home",
+              "index": 1,
+              "disabled": null,
+              "hidden": null,
+              "createdAt": "2024-10-05T10:42:04.983Z",
+              "updatedAt": "2024-10-05T10:42:04.983Z",
+              "autoComputeLayout": false,
+              "appVersionId": "e613ad0b-081e-4c02-aaa2-7f22871e76bd"
+            }
+          ],
+          "events": [
+            {
+              "id": "781ba805-597d-4d3d-bb80-82a57d5abd7a",
+              "name": "onDataQuerySuccess",
+              "index": 0,
+              "event": {
+                "eventId": "onDataQuerySuccess",
+                "message": "Hello world!",
+                "actionId": "control-component",
+                "alertType": "info",
+                "componentId": "f3954911-d5c2-4a67-b411-f90b8537437d",
+                "componentSpecificActionHandle": "setLoading",
+                "componentSpecificActionParams": [
+                  {
+                    "type": "toggle",
+                    "value": "{{false}}",
+                    "handle": "loading",
+                    "displayName": "Value",
+                    "defaultValue": "{{false}}"
+                  }
+                ]
+              },
+              "sourceId": "eed6ee3d-4b0e-4a42-b1de-73c560cdabf7",
+              "target": "data_query",
+              "appVersionId": "e613ad0b-081e-4c02-aaa2-7f22871e76bd",
+              "createdAt": "2024-10-05T10:42:04.983Z",
+              "updatedAt": "2024-10-05T10:42:04.983Z"
+            },
+            {
+              "id": "d0371bec-4397-4c7d-8b63-0bce3fe98b85",
+              "name": "onDataQueryFailure",
+              "index": 2,
+              "event": {
+                "eventId": "onDataQueryFailure",
+                "message": "Hello world!",
+                "actionId": "control-component",
+                "alertType": "info",
+                "componentId": "f3954911-d5c2-4a67-b411-f90b8537437d",
+                "componentSpecificActionHandle": "setLoading",
+                "componentSpecificActionParams": [
+                  {
+                    "value": "{{false}}",
+                    "handle": "loading"
+                  }
+                ]
+              },
+              "sourceId": "eed6ee3d-4b0e-4a42-b1de-73c560cdabf7",
+              "target": "data_query",
+              "appVersionId": "e613ad0b-081e-4c02-aaa2-7f22871e76bd",
+              "createdAt": "2024-10-05T10:42:04.983Z",
+              "updatedAt": "2024-10-05T10:42:04.983Z"
+            },
+            {
+              "id": "b47e7cd2-351a-4bd2-bfa8-7a02716d8538",
+              "name": "onClick",
+              "index": 0,
+              "event": {
+                "eventId": "onClick",
+                "message": "Hello world!",
+                "queryId": "eed6ee3d-4b0e-4a42-b1de-73c560cdabf7",
+                "actionId": "run-query",
+                "debounce": "500",
+                "alertType": "info",
+                "queryName": "setPassword",
+                "runOnlyIf": "",
+                "parameters": {}
+              },
+              "sourceId": "f3954911-d5c2-4a67-b411-f90b8537437d",
+              "target": "component",
+              "appVersionId": "e613ad0b-081e-4c02-aaa2-7f22871e76bd",
+              "createdAt": "2024-10-05T10:42:04.983Z",
+              "updatedAt": "2024-10-05T10:42:04.983Z"
+            },
+            {
+              "id": "b7e3aa94-cd96-49d9-b57a-90accc75e29b",
+              "name": "onClick",
+              "index": 1,
+              "event": {
+                "eventId": "onClick",
+                "message": "Hello world!",
+                "actionId": "control-component",
+                "alertType": "info",
+                "runOnlyIf": "",
+                "componentId": "f3954911-d5c2-4a67-b411-f90b8537437d",
+                "componentSpecificActionHandle": "setLoading",
+                "componentSpecificActionParams": [
+                  {
+                    "type": "toggle",
+                    "value": "{{true}}",
+                    "handle": "loading",
+                    "displayName": "Value",
+                    "defaultValue": "{{false}}"
+                  }
+                ]
+              },
+              "sourceId": "f3954911-d5c2-4a67-b411-f90b8537437d",
+              "target": "component",
+              "appVersionId": "e613ad0b-081e-4c02-aaa2-7f22871e76bd",
+              "createdAt": "2024-10-05T10:42:04.983Z",
+              "updatedAt": "2024-10-05T10:42:04.983Z"
+            },
+            {
+              "id": "39265883-c291-4d43-963e-880a9d947b8a",
+              "name": "onDataQueryFailure",
+              "index": 1,
+              "event": {
+                "eventId": "onDataQueryFailure",
+                "message": "Something Went Wrong!",
+                "actionId": "show-alert",
+                "alertType": "error",
+                "runOnlyIf": ""
+              },
+              "sourceId": "eed6ee3d-4b0e-4a42-b1de-73c560cdabf7",
+              "target": "data_query",
+              "appVersionId": "e613ad0b-081e-4c02-aaa2-7f22871e76bd",
+              "createdAt": "2024-10-05T10:42:04.983Z",
+              "updatedAt": "2024-10-05T10:42:04.983Z"
+            },
+            {
+              "id": "c17ffbb3-a543-4ab2-95ce-05493d624b5c",
+              "name": "onClick",
+              "index": 0,
+              "event": {
+                "eventId": "onClick",
+                "message": "Hello world!",
+                "queryId": "a17b8e5e-c2e3-42b5-b451-696f595bce94",
+                "actionId": "copy-to-clipboard",
+                "debounce": "500",
+                "alertType": "info",
+                "queryName": "copyPassword",
+                "runOnlyIf": "",
+                "parameters": {},
+                "contentToCopy": "{{variables.password}}"
+              },
+              "sourceId": "84f69392-749e-469d-b9a4-16dc394e5f52",
+              "target": "component",
+              "appVersionId": "e613ad0b-081e-4c02-aaa2-7f22871e76bd",
+              "createdAt": "2024-10-05T10:42:04.983Z",
+              "updatedAt": "2024-10-05T10:42:04.983Z"
+            }
+          ],
+          "dataQueries": [
+            {
+              "id": "cfa089be-6a4b-41cc-9435-c240ae438ad4",
+              "name": "getOptions",
+              "options": {
+                "code": "function getOptions() {\n  return {\n    passwordLength: components.lengthCheck.value,\n    includeUppercase: components.uppercase.value,\n    includeLowercase: components.lowercase.value,\n    includeNumbers: components.numbers.value,\n    includeSpecial: components.special.value,\n    avoidAmbiguous: components.avoidAmbiguous.value\n  };\n}\nreturn getOptions();\n",
+                "parameters": []
+              },
+              "dataSourceId": "9d3bbeb6-305f-43f0-a5a2-fc3fbc479031",
+              "appVersionId": "e613ad0b-081e-4c02-aaa2-7f22871e76bd",
+              "createdAt": "2024-10-05T10:42:04.983Z",
+              "updatedAt": "2024-10-05T10:42:04.983Z"
+            },
+            {
+              "id": "eed6ee3d-4b0e-4a42-b1de-73c560cdabf7",
+              "name": "setPassword",
+              "options": {
+                "code": " async  function setPassword() {\n   await queries.getOptions.run()\n    await queries.generatePassword.run();\n      const password = queries.generatePassword.getData();\n      components.passwordField.value = password;\n       actions.setVariable('password', password);\n    \n   return password;   \n  };\n\nreturn setPassword();",
+                "parameters": [],
+                "requestConfirmation": false,
+                "showSuccessNotification": false,
+                "successMessage": "Password Generated Successfully!",
+                "notificationDuration": ""
+              },
+              "dataSourceId": "9d3bbeb6-305f-43f0-a5a2-fc3fbc479031",
+              "appVersionId": "e613ad0b-081e-4c02-aaa2-7f22871e76bd",
+              "createdAt": "2024-10-05T10:42:04.983Z",
+              "updatedAt": "2024-10-05T10:42:04.983Z"
+            },
+            {
+              "id": "e342c99e-d977-4339-a383-ca9f35907830",
+              "name": "generatePassword",
+              "options": {
+                "code": "function generatePassword(options) {\n  const charSets = {\n        uppercase: \"ABCDEFGHIJKLMNOPQRSTUVWXYZ\",\n        lowercase: \"abcdefghijklmnopqrstuvwxyz\",\n        numbers: \"0123456789\",\n        special: \"!@#$%^&*()_+[]{}|;:,.<>?\"\n    };\n\n    const ambiguousChars = /[IlO0]/g;\n\n    let possibleChars = \"\";\n\n    if (options.passwordLength < 1){\n      actions.showAlert('info' , ' Password length must be greater than zero!' )\n    }\n    // Concatenate possible characters based on user options\n    if (options.includeUppercase) {\n        possibleChars += charSets.uppercase;\n    }\n    if (options.includeLowercase) {\n        possibleChars += charSets.lowercase;\n    }\n    if (options.includeNumbers) {\n        possibleChars += charSets.numbers;\n    }\n    if (options.includeSpecial) {\n        possibleChars += charSets.special;\n    }\n\n    // Remove ambiguous characters if needed\n    if (options.avoidAmbiguous) {\n        possibleChars = possibleChars.replace(ambiguousChars, \"\");\n    }\n\n    // Ensure at least one character type is selected\n    if (!possibleChars) {\n        actions.showAlert('error' , 'Please select at least one character type!' )\n        return \"\";\n    }\n\n    const passwordLength = options.passwordLength || 8;\n\n    // Generate password\n    const password = Array.from({ length: passwordLength }, () => {\n        const randomIndex = Math.floor(Math.random() * possibleChars.length);\n        return possibleChars[randomIndex];\n    }).join('');\n\n    return password;\n};\nconst options = queries.getOptions.data;\nconsole.log('password04', options )\nreturn generatePassword(options)\n\n\n",
+                "parameters": [],
+                "showSuccessNotification": false
+              },
+              "dataSourceId": "9d3bbeb6-305f-43f0-a5a2-fc3fbc479031",
+              "appVersionId": "e613ad0b-081e-4c02-aaa2-7f22871e76bd",
+              "createdAt": "2024-10-05T10:42:04.983Z",
+              "updatedAt": "2024-10-05T10:42:04.983Z"
+            }
+          ],
+          "dataSources": [
+            {
+              "id": "9d3bbeb6-305f-43f0-a5a2-fc3fbc479031",
+              "name": "runjsdefault",
+              "kind": "runjs",
+              "type": "static",
+              "pluginId": null,
+              "appVersionId": "e613ad0b-081e-4c02-aaa2-7f22871e76bd",
+              "organizationId": null,
+              "scope": "local",
+              "createdAt": "2024-10-05T10:42:04.983Z",
+              "updatedAt": "2024-10-05T10:42:04.983Z"
+            }
+          ],
+          "appVersions": [
+            {
+              "id": "e613ad0b-081e-4c02-aaa2-7f22871e76bd",
+              "name": "v2",
+              "definition": null,
+              "globalSettings": {
+                "hideHeader": false,
+                "appInMaintenance": false,
+                "canvasMaxWidth": 100,
+                "canvasMaxWidthType": "%",
+                "canvasMaxHeight": 2400,
+                "canvasBackgroundColor": "#edeff5",
+                "backgroundFxQuery": "",
+                "appMode": "light"
+              },
+              "showViewerNavigation": true,
+              "homePageId": "0d426af2-a4bc-436b-b1ef-9ee7d4a54146",
+              "appId": "7134bdd2-e8fa-4938-afa2-3695db018b68",
+              "currentEnvironmentId": "77b2dc89-f4af-4a58-8937-21577aaded11",
+              "createdAt": "2024-10-05T10:42:05.014Z",
+              "updatedAt": "2024-10-05T10:42:04.983Z"
+            }
+          ],
+          "appEnvironments": [
+            {
+              "id": "77b2dc89-f4af-4a58-8937-21577aaded11",
+              "organizationId": "7242dbbf-f032-43c6-ac68-e3a7ca8e1172",
+              "name": "production",
+              "isDefault": true,
+              "priority": 3,
+              "enabled": true,
+              "createdAt": "2024-10-05T02:22:04.358Z",
+              "updatedAt": "2024-10-05T02:22:04.358Z"
+            }
+          ],
+          "dataSourceOptions": [
+            {
+              "id": "ce1ca040-205d-47f0-b7ec-155480239a39",
+              "dataSourceId": "9d3bbeb6-305f-43f0-a5a2-fc3fbc479031",
+              "environmentId": "77b2dc89-f4af-4a58-8937-21577aaded11",
+              "options": {},
+              "createdAt": "2024-10-05T10:42:04.983Z",
+              "updatedAt": "2024-10-05T10:42:04.983Z"
+            }
+          ],
+          "schemaDetails": {
+            "multiPages": true,
+            "multiEnv": true,
+            "globalDataSources": true
+          }
+        }
+      }
+    }
+  ],
+  "tooljet_version": "2.63.0"
+}
