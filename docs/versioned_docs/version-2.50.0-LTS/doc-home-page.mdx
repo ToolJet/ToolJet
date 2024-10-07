@@ -18,24 +18,33 @@ import {
     releaseCards,
     resourceCards
 } from './homePageData';
+import Link from '@docusaurus/Link';
 
 {/* // Reusable components */}
-export const Card = ({ className = '', children }) => (
-    <div className={`relative rounded-lg bg-transparent group ${className}`}>
-        <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-50"
-            style={{
-                background: 'linear-gradient(to bottom, #3B82F6, transparent) border-box',
-                border: '0px',
-                backgroundClip: 'padding-box, border-box',
-                backgroundOrigin: 'border-box',
-                pointerEvents: 'none'
-            }}>
+export const Card = ({ className = '', href, children }) => {
+    const cardContent = (
+        <div className={`relative rounded-lg bg-transparent group ${className}`}>
+            <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-50"
+                style={{
+                    background: 'linear-gradient(to bottom, #3B82F6, transparent) border-box',
+                    border: '0px',
+                    backgroundClip: 'padding-box, border-box',
+                    backgroundOrigin: 'border-box',
+                    pointerEvents: 'none'
+                }}>
+            </div>
+            <div className="m-0.5 relative z-10 h-full rounded-lg border border-gray-300 bg-white">
+                {children}
+            </div>
         </div>
-        <div className="m-0.5 relative z-10 h-full rounded-lg border border-gray-300 bg-white">
-            {children}
-        </div>
-    </div>
-);
+    );
+
+    return href ? (
+        <Link to={href} className="no-underline hover:no-underline block h-full">
+            {cardContent}
+        </Link>
+    ) : cardContent;
+};
 
 export const CardHeader = ({ className = '', children }) => (
     <div className={`flex flex-col space-y-1.5 ${className}`}>
@@ -71,29 +80,31 @@ export const Button = ({ variant = "default", className = '', children }) => {
     );
 };
 
-export const IconCard = ({ icon: Icon, title, content, color }) => (
-    <Card className="transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative">
-        <div className="p-8">
+export const IconCard = ({ icon: Icon, title, content, color, href }) => (
+    <Card href={href} className="h-[280px] transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative">
+        <div className="p-8 h-full flex flex-col">
             <CardHeader>
                 <div className="w-12 h-12 mb-5 rounded-lg shadow-md flex items-center justify-center transition-all duration-300 ease-in-out group-hover:shadow-lg">
                     <Icon className={`w-6 h-6 ${color}`} />
                 </div>
                 <CardTitle>{title}</CardTitle>
             </CardHeader>
-            <CardContent>
-                <p className="text-sm text-gray-500">{content}</p>
+            <CardContent className="flex-grow">
+                <p className="text-sm text-gray-500 line-clamp-4">{content}</p>
             </CardContent>
         </div>
     </Card>
 );
 
-export const SmallCard = ({ icon: Icon, title }) => (
-    <Card className="transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative">
-        <div className="p-3 flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-lg shadow flex items-center justify-center">
-                <Icon className="w-5 h-5 text-blue-500" />
+export const SmallCard = ({ icon: Icon, title, href }) => (
+    <Card href={href} className="h-[72px] transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative">
+        <div className="p-3 h-full flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-lg shadow flex items-center justify-center">
+                    <Icon className="w-5 h-5 text-blue-500" />
+                </div>
+                <span className="text-sm font-medium">{title}</span>
             </div>
-            <span className="text-sm font-medium">{title}</span>
         </div>
     </Card>
 );
