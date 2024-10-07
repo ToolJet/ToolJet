@@ -23,7 +23,7 @@ import Link from '@docusaurus/Link';
 {/* // Reusable components */}
 export const Card = ({ className = '', href, children }) => {
     const cardContent = (
-        <div className={`relative rounded-lg bg-transparent group ${className}`}>
+        <div className={`relative rounded-lg bg-transparent group p-[0.5px] ${className}`}>
             <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-50"
                 style={{
                     background: 'linear-gradient(to bottom, #3B82F6, transparent) border-box',
