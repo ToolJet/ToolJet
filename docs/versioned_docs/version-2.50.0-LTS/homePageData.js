@@ -10,21 +10,21 @@ export const featureCards = [
       icon: Grid3x3, 
       title: "App Builder", 
       color: "text-blue-500", 
-      content: "Design and create applications effortlessly with ToolJet's intuitive app builder, featuring a drag-and-drop interface and powerful pre-built components to streamline development.",
+      content: "Design and create applications with ToolJet's intuitive app builder, featuring a drag-and-drop interface and powerful pre-built components to streamline development.",
       href: "/docs/app-builder/overview"
   },
   { 
       icon: Database, 
       title: "ToolJet Database", 
       color: "text-blue-500", 
-      content: "Powered by PostgreSQL, offering a user-friendly UI editor. This allows you to manage, edit, and interact with your data directly within the platform.",
+      content: "Powered by PostgreSQL, offering a user-friendly UI editor. ToolJet Database allows you to manage, edit, and interact with your data directly within the platform.",
       href: "/docs/tooljet-database/overview"
   },
   { 
       icon: Workflow, 
       title: "Workflows", 
       color: "text-blue-500", 
-      content: "Automate processes and define workflows with precision, empowering your apps to handle tasks intelligently.",
+      content: "Automate processes and define workflows with precision, allowing your apps to handle tasks intelligently.",
       href: "/docs/workflows/overview"
   }
 ];
@@ -34,7 +34,7 @@ export const setupCards = [
       icon: Cog, 
       title: "Try ToolJet", 
       color: "text-blue-500", 
-      content: "Get started with ToolJet in under 2 minutes by running it with Docker. Experience a seamless setup and explore the full capabilities of ToolJet's app builder right on your machine.",
+      content: "Get started with ToolJet in under 2 minutes by running it with Docker. Experience a seamless setup and explore the full capabilities of ToolJet.",
       href: "/docs/setup/try-tooljet"
   },
   { 
@@ -48,7 +48,7 @@ export const setupCards = [
       icon: Target, 
       title: "Choose Your ToolJet", 
       color: "text-blue-500", 
-      content: "Find the right ToolJet plan that fits your needs. Compare features and pricing to select the best option for your development workflow.",
+      content: "Discover the ideal ToolJet version for your development needs. Choose between our Long-Term Support (LTS) versions for stability and reliability, or explore Pre-Release versions to access the latest features. Select the option that best aligns with your project requirements ",
       href: "/docs/setup/choose-tooljet"
   },
   { 
@@ -121,7 +121,7 @@ export const releaseCards = [
       icon: GitBranch, 
       title: "Git Sync", 
       color: "text-blue-500", 
-      content: "Seamlessly sync your ToolJet projects with Git repositories, enabling version control and collaboration across teams.",
+      content: "Sync your ToolJet projects with Git repositories, enabling version control and collaboration across teams.",
       href: "/docs/releases/git-sync"
   },
   { 
@@ -145,7 +145,7 @@ export const resourceCards = [
       icon: ShoppingBag, 
       title: "Marketplace", 
       color: "text-blue-500", 
-      content: "Discover a variety of plugins, templates, and extensions in ToolJet's marketplace to enhance your app-building experience.",
+      content: "Discover a variety of plugins, extensions and integrations in ToolJet's marketplace to enhance your app-building experience.",
       href: "/docs/resources/marketplace"
   },
   { 
@@ -159,14 +159,14 @@ export const resourceCards = [
       icon: Flag, 
       title: "Tracking", 
       color: "text-blue-5000", 
-      content: "Track app performance and user activity with built-in analytics tools, giving you valuable insights to optimize your applications.",
+      content: "ToolJet ensures user privacy by acting as a proxy, never storing data from sources. It offers anonymous usage tracking with options to disable features for enhanced control.",
       href: "/docs/resources/tracking"
   },
   { 
       icon: ShieldCheck, 
       title: "Security", 
       color: "text-blue-500", 
-      content: "Keep your data and applications safe with ToolJet's robust security features, including encryption, authentication, and access control.",
+      content: "ToolJet guarantees your data security with SOC 2 compliance, robust encryption, and secure credential handling. We never store your data, ensuring peace of mind with every connection",
       href: "/docs/resources/security"
   }
 ];
@@ -183,7 +183,7 @@ export const textLabels = {
   },
   setupToolJet: {
       title: "Setup ToolJet",
-      description: "Check out the different methods you can use to deploy ToolJet on your machine"
+      description: "Learn about the different methods you can use to deploy ToolJet"
   },
   deployOn: {
       title: "Deploy on"
@@ -191,19 +191,19 @@ export const textLabels = {
   exploreMore: "Explore more details",
   bringData: {
       title: "Bring your data to ToolJet",
-      description: "Check out the different methods you can use to deploy ToolJet on your machine"
+      description: "Learn how to connect your data sources to ToolJet"
   },
   manageOrganization: {
       title: "Manage your organization",
-      description: "Check out the different methods you can use to deploy ToolJet on your machine"
+      description: "Learn how to secure your apps and manage user authentication in ToolJet."
   },
   manageReleases: {
       title: "Manage releases",
-      description: "Check out the different methods you can use to deploy ToolJet on your machine"
+      description: "Learn how you can efficiently control the release cycle in ToolJet"
   },
   additionalResources: {
       title: "Additional resources",
-      description: "Check out the different methods you can use to deploy ToolJet on your machine"
+      description: "Learn more about Marketplace Plugins, ToolJet Copilot, App Performance, and Security."
   }
 };
 
