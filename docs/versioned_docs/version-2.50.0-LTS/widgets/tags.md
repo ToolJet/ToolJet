@@ -25,7 +25,7 @@ It can be used to set array of tags. It must be an array of objects like this:
 }}
 ```
 
-Each object should contain a different title in different background colors like success in green color, info in blue color, warning in orange color and danger in red color and a text color is white to all object.
+Each object should contain a different title in different background colors like success in green color, info in blue color, warning in orange color and danger in red color while a text color is white to all object.
 
 </div>
 
