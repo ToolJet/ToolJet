@@ -4,7 +4,7 @@ title: Vertical Divider
 ---
 # Vertical Divider
 
-The **Vertical Divider** component creates a clear visual separation between two adjacent components by adding a vertical separator . It's commonly used to enhance layout structure, improve readability, and organize content by providing a distinct division between sections within a user interface.
+The **Vertical Divider** component creates a clear visual separation between two adjacent components by adding a vertical separator. It's commonly used to enhance layout structure, improve readability, and organize content by providing a distinct division between sections within a user interface.
 
 <div style={{paddingTop:'24px'}}>
 
@@ -39,8 +39,8 @@ Under the **General** accordion, you can set the value in the string format. Now
 
 |  <div style={{ width:"100px"}}> Devices </div> |  <div style={{ width:"100px"}}> Description </div> |  <div style={{ width:"135px"}}> Expected Value </div> |
 |:----- |:---------  |:------------- |
-| Show on desktop | Toggle on or off to display desktop view.. | Accepts Boolean values: `true` (visible) or `false` (hidden). You can programmatically determine the value using **Fx**. |
-| Show on mobile  | Toggle on or off to display mobile view.. | Accepts Boolean values: `true` (visible) or `false` (hidden). You can programmatically determine the value using **Fx**. |
+| Show on desktop | Toggle on or off to display desktop view.. | Accepts Boolean values: `true` (visible) or `false` (hidden). You can programmatically determine the value using **fx**. |
+| Show on mobile  | Toggle on or off to display mobile view.. | Accepts Boolean values: `true` (visible) or `false` (hidden). You can programmatically determine the value using **fx**. |
 
 </div>
 
@@ -56,7 +56,7 @@ Under the **General** accordion, you can set the value in the string format. Now
 | Box Shadow | Adds shadow around the divider to create depth. | Accepts box-shadow values like `none`, `2px 4px 6px rgba(0, 0, 0, 0.1)` |
 
 :::info
-Any property having the **Fx** button next to its field can be **programmatically configured**.
+Any property having the **fx** button next to its field can be **programmatically configured**.
 :::
 
 </div>
