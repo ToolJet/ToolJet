@@ -66,19 +66,25 @@ export const CardTitle = ({ className = '', children }) => (
 );
 
 export const Button = ({ variant = "default", className = '', children }) => {
-    const baseStyles = "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background";
-    const variantStyles = {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        outline: "border border-input hover:bg-accent hover:text-accent-foreground",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "underline-offset-4 hover:underline text-primary"
-    };
-    return (
-        <button className={`${baseStyles} ${variantStyles[variant]} ${className}`}>
-            {children}
-        </button>
-    );
+  const baseStyles = "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background";
+  const variantStyles = {
+    default: "bg-primary text-primary-foreground hover:bg-primary/90",
+    outline: "border border-input hover:bg-accent hover:text-accent-foreground",
+    secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+    ghost: "hover:bg-accent hover:text-accent-foreground",
+    link: "text-primary border-none",
+  };
+
+  return (
+    <div className="text-center">
+      <button 
+        className={`${baseStyles} ${variantStyles[variant]} ${className} bg-white text-blue-600 hover:bg-blue-200 hover:text-blue-800 px-4 py-2`}
+      >
+        {children}
+        <ArrowRight className="ml-2 w-4 h-4 inline" />
+      </button>
+    </div>
+  );
 };
 
 export const IconCard = ({ icon: Icon, title, content, color, href }) => (
@@ -250,8 +256,8 @@ style={{
 
                 {/* Explore more details link */}
                 <div className="text-center">
-                    <Button variant="link" className="text-blue-600 hover:text-blue-800">
-                        {textLabels.exploreMore} <ArrowRight className="ml-2 w-4 h-4 inline" />
+                    <Button variant="link">
+                        {textLabels.exploreMore}
                     </Button>
                 </div>
 
