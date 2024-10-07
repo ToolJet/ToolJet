@@ -69,7 +69,7 @@ docker run \
   tooljet/try:EE-LTS-latest
 ```
 
-_For users upgrading their ToolJet version, we recommend choosing the LTS version over the latest version. The LTS version ensures stability with production bug fixes, security patches, and performance enhancements._
+\*For users upgrading their ToolJet version, we recommend choosing the LTS version over the latest version. The LTS version ensures stability with production bug fixes, security patches, and performance enhancements.\_
 
 ## Tutorials and examples
 
