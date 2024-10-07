@@ -71,7 +71,7 @@ export const deployOptions = [
   { icon: Globe, title: "Kubernetes (GKE)", href: "/docs/setup/kubernetes-gke" },
   { icon: Globe, title: "Kubernetes (AKS)", href: "/docs/setup/kubernetes-aks" },
   { icon: Globe, title: "Kubernetes (EKS)", href: "/docs/setup/kubernetes-eks" },
-  { icon: Globe, title: "Azure Container apps", href: "/docs/setup/azure-container" },
+  { icon: Globe, title: "Azure Container Apps", href: "/docs/setup/azure-container" },
   { icon: Globe, title: "Google Cloud Run", href: "/docs/setup/google-cloud-run" },
 
 
