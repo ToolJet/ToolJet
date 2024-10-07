@@ -414,3 +414,7 @@ img {
 .docs-doc-id-doc-home-page p {
   margin-bottom: 0px !important;
 }
+
+.docs-doc-id-doc-home-page .container {
+  min-width: 100%;
+}
