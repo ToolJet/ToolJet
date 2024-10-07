@@ -114,7 +114,7 @@ export const organizationCards = [
   { icon: UserCheck, title: "User authentication", href: "/docs/user-authentication/workspace-login" },
   { icon: Lock, title: "Permissions", href: "/docs/org-management/permissions" },
   { icon: UserPlus, title: "Users and groups", href: "/docs/tutorial/manage-users-groups" },
-  { icon: ScrollText, title: "Audit logs", href: "/docs/Enterprise/audit_logss" },
+  { icon: ScrollText, title: "Audit logs", href: "/docs/Enterprise/audit_logs" },
   { icon: Megaphone, title: "White label", href: "/docs/Enterprise/white-label" },
   { icon: Gem, title: "Super admin", href: "/docs/Enterprise/superadmin" },
   { icon: Mail, title: "Licensing", href: "/docs/org-management/licensing/self-hosted" }
@@ -126,7 +126,7 @@ export const releaseCards = [
       title: "Git Sync", 
       color: "text-blue-500", 
       content: "Sync your ToolJet projects with Git repositories, enabling version control and collaboration across teams.",
-      href: "/docs/git-sync"
+      href: "/docs/gitsync"
   },
   { 
       icon: Box, 
