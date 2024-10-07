@@ -206,3 +206,11 @@ export const textLabels = {
       description: "Check out the different methods you can use to deploy ToolJet on your machine"
   }
 };
+
+export const sectionCards = {
+  gettingStarted : {
+    title: "Getting Started",
+    description: "Discover how to create and publish apps within minutes",
+    link: "/docs/getting-started",
+}
+};

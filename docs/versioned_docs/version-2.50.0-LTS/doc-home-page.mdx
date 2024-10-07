@@ -16,7 +16,8 @@ import {
     dataCards,
     organizationCards,
     releaseCards,
-    resourceCards
+    resourceCards,
+    sectionCards
 } from './homePageData';
 import Link from '@docusaurus/Link';
 
@@ -202,6 +203,7 @@ style={{
                     </div>
 
                     {/* Getting Started Section */}
+                    <Link to={sectionCards.gettingStarted.link} className="no-underline hover:no-underline block">
                         <div className="w-full h-[104px] rounded-lg shadow-sm flex items-center overflow-hidden bg-white border-solid border-gray-100 mt-10">
                         <div className="w-[380px] h-full relative overflow-hidden">
                             <img
@@ -212,12 +214,14 @@ style={{
                             />
                         </div>
                         <div className="flex-1 ml-4 md:ml-20 mt-4 md:mt-6 mb-4 md:mb-6">
-                            <h3 className="text-xl md:text-2xl font-medium text-[#1b1f24] mb-1">{textLabels.gettingStarted.title}</h3>
+                            <h3 className="text-xl md:text-2xl font-medium text-[#1b1f24] mb-1">{sectionCards.gettingStarted.title}</h3>
                             <p className="text-sm text-[#1b1f24] opacity-80">
-                            {textLabels.gettingStarted.description}
+                            {sectionCards.gettingStarted.description}
                             </p>
                         </div>
                         </div>
+                    </Link>
+
 
                     </div>
             </div>
