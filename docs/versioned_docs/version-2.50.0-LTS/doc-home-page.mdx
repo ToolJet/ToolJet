@@ -65,8 +65,12 @@ export const CardTitle = ({ className = '', children }) => (
     </h3>
 );
 
-export const Button = ({ variant = "default", className = '', children }) => {
-  const baseStyles = "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background";
+export const Button = ({ 
+  variant = "default", 
+  className = '', 
+  children, 
+}) => {
+  const baseStyles = "cursor-pointer inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background";
   const variantStyles = {
     default: "bg-primary text-primary-foreground hover:bg-primary/90",
     outline: "border border-input hover:bg-accent hover:text-accent-foreground",
@@ -256,9 +260,14 @@ style={{
 
                 {/* Explore more details link */}
                 <div className="text-center">
+                    <Link 
+                        className="no-underline" 
+                        to="/docs/setup/"
+    >
                     <Button variant="link">
                         {textLabels.exploreMore}
                     </Button>
+                    </Link>
                 </div>
 
                 {/* Bring your data to ToolJet section */}

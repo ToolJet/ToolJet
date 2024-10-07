@@ -410,6 +410,9 @@ img {
   padding-right: 0px !important;
 }
 
+.docs-doc-id-doc-home-page .row {
+  margin: 0px !important;
+}
 
 .docs-doc-id-doc-home-page p {
   margin-bottom: 0px !important;
