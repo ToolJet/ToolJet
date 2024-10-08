@@ -3,6 +3,7 @@ id: auto-sso-login
 title: Automatic SSO Login
 ---
 
+<div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
 
 ToolJet supports automatic SSO login for your workspace, allowing users to bypass the login screen and directly access the application when only one SSO method is configured.
 
