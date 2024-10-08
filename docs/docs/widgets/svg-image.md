@@ -4,17 +4,17 @@ title: Svg Image
 ---
 # SVG Image
 
-It is used to render vector images. We can display images, icons, texts using this widget. SVGs are vector images and therefore are usually much smaller in file-size than bitmap-based images.
+It is used to render vector images. We can display images, icons, texts using this component. SVGs are vector images and therefore are usually much smaller in file-size than bitmap-based images.
 
 Developers prefer having SVG **(Scalable Vector Graphics)** files as they are scalable and will render pixel-perfect at any resolution whereas JPEGs, PNGs and GIFs will not. 
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Properties
 
 ### SVG data
 
-Enter the SVG data of the image to display it on the widget. 
+Enter the SVG data of the image to display it on the component. 
 
 :::tip
 Refer to the resources where SVG files are downloaded for free. You copy-paste the below data in this field to see a new icon being rendered.
@@ -48,9 +48,9 @@ There are currently no exposed variables for the component.
 
 ### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the component.
 
-Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
+Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the component will display the string as the tooltip.
 
 </div>
 
@@ -60,8 +60,8 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 | <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 |:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
-| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
-| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on `fx` to set the value `{{true}}` or `{{false}}` |
+| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on `fx` to set the value `{{true}}` or `{{false}}` |
 
 </div>
 
@@ -71,6 +71,6 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 | <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"100px"}}> Default Value </div> |
 |:------------ |:-------------|:--------- |
-| Visibility | Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not be visible after the app is deployed. | By default, it's set to `{{true}}`. |
+| Visibility | Toggle on or off to control the visibility of the component. You can programmatically change its value by clicking on the `fx` button next to it. If `{{false}}` the component will not be visible after the app is deployed. | By default, it's set to `{{true}}`. |
 
 </div>
