@@ -14,6 +14,8 @@ ToolJet API allows you to interact with the ToolJet platform programmatically. Y
  - [Get User by ID](#get-user-by-id)
  - [Create User](#create-user)
  - [Update User](#update-user)
+ - [Add User Metadata](#add-user-metadata)
+ - [Update User Metadata](#update-user-metadata)
  - [Replace User Workspace](#replace-user-workspace)
  - [Replace User Workspaces Relations](#replace-user-workspaces-relations)
  - [Get All Workspaces](#get-all-workspaces)
@@ -257,6 +259,71 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
 
 </details>
 
+    - **Response:** `200 OK`
+
+
+### **Add User Metadata**
+    - **Description:** Adds metadata to a user's profile.
+    - **URL:** `/api/ext/user/:id/metadata`
+    - **Method:** POST
+    - **Authorization:** `Basic <access_token>`
+    - **Content-Type:** `application/json`
+    - **Params:**
+        - id (string): The ID of the user.
+    - **Body:**
+        ```json
+        {
+          "metadata": {
+            "key1": "value1",
+            "key2": "value2"
+          }
+        }
+        ```
+<details>
+
+<summary>Request Body Example</summary>
+
+```json
+
+{
+}
+
+```
+
+</details>
+
+    - **Response:** `200 OK`
+
+### **Update User Metadata**
+    - **Description:** Updates existing metadata of a user's profile.
+    - **URL:** `/api/ext/user/:id/metadata`
+    - **Method:** PUT
+    - **Authorization:** `Basic <access_token>`
+    - **Content-Type:** `application/json`
+    - **Params:**
+        - id (string): The ID of the user.
+    - **Body:**
+        ```json
+        {
+          "metadata": {
+            "key1": "new_value1",
+            "key3": "value3"
+          }
+        }
+        ```
+
+<details>
+
+<summary>Request Body Example</summary>
+
+```json
+
+{
+}
+
+```
+
+</details>
     - **Response:** `200 OK`
  
 ### **Replace User Workspaces Relations**
