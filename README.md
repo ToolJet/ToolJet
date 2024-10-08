@@ -16,6 +16,8 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/tooljet/tooljet)
 [![GitHub license which is AGPL license](https://img.shields.io/github/license/ToolJet/ToolJet)](https://github.com/ToolJet/ToolJet)
 [![Follow us on X, formerly Twitter](https://img.shields.io/twitter/follow/ToolJet?style=social)](https://twitter.com/ToolJet)
+[![License Badge](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
+
 
 </div>
 
@@ -141,8 +143,3 @@ Kindly read our [Contributing Guide](CONTRIBUTING.md) to familiarize yourself wi
 
 ToolJet © 2023, ToolJet Solutions Inc - Released under the [GNU Affero General Public License v3.0](LICENSE).
 
-<p align="center">
-  <a href="https://www.gnu.org/licenses/agpl-3.0.html">
-    <img src="https://img.shields.io/badge/License-AGPL%20v3-blue.svg" alt="License Badge">
-  </a>
-</p>
