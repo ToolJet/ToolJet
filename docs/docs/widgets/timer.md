@@ -14,7 +14,7 @@ The **Timer** component allows users to track time by counting both upward and d
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div>                                                                                                                                                        |
 | :--------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Default value                                  | It specifies the initial value of timer. Format is: `HH.MM.SS.MS`.                                                                                                                                       |
-| Timer type                                     | It specifies If its a upward or downward counter. Select **Count Up** or **Count Down** from the dropdown or you can click on **fx** to programmatically define the values **countUp** or **countDown**. |
+| Timer type                                     | It specifies if its a upward or downward counter. Select **Count Up** or **Count Down** from the dropdown or you can click on **fx** to programmatically define the values **countUp** or **countDown**. |
 
 </div>
 
