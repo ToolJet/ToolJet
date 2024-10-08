@@ -87,7 +87,8 @@ docker run \
 - [AWS S3 Browser](https://blog.tooljet.com/build-an-aws-s3-broswer-with-tooljet/)<br>
 
 ## Documentation
-Documentation is available at https://docs.tooljet.com.
+
+Comprehensive documentation is available at [ToolJet Documentation](https://docs.tooljet.com).
 
 - [Getting Started](https://docs.tooljet.com)<br>
 - [Data source Reference](https://docs.tooljet.com/docs/data-sources/airtable/)<br>
