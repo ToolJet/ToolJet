@@ -3,63 +3,85 @@ id: oidc
 title: OIDC Group Sync
 ---
 
-ToolJet supports OIDC (OpenID Connect) group sync, allowing you to automatically sync user groups based on your Identity Provider (IdP) configurations to ToolJet.
+<div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
+
+
+# OIDC Group Synchronization
 
 ## Overview
 
-OIDC group sync in ToolJet offers centralized user access management and control, reducing the risk of errors while providing a streamlined workflow with automatic updates and simplified user onboarding. This feature enables synchronization of user groups between your Identity Provider (IdP) and ToolJet. Group synchronization occurs at every user login, ensuring up-to-date access management. Users must log out and log back in for changes to take effect, maintaining security and consistency across the platform.
+ToolJet's OIDC (OpenID Connect) group synchronization feature enables seamless integration between your Identity Provider (IdP) and ToolJet's user management system. This functionality automates the process of synchronizing user groups, enhancing security and streamlining user access management.
 
-### Key features and behaviors:
+## Key Features
 
-- Default 1:1 mapping of groups based on group name (case-sensitive), with custom group mapping options available.
-- New custom groups can be created in ToolJet if no exact match exists.
-- Users without a matching group are added to the **end-users** group.
-- User roles are assigned based on custom group permissions, taking priority over default user roles.
-- Manual editing of groups is not recommended as it will be overridden with each login.
-- Group filtering should be configured in the IdP during OIDC application setup.
+- Centralized access management
+- Reduced risk of manual errors
+- Automated updates
+- Simplified user onboarding
 
-## Setting Up OIDC Group Sync
+Group synchronization occurs at each user login, ensuring up-to-date access rights. Users must log out and log back in for changes to take effect, maintaining security integrity across the platform.
 
-To implement OIDC group sync, follow these steps:
+## Implementation
 
-### 1. Create OIDC Integration in Your IdP
+### 1. Configure OIDC Integration in Your IdP
 
-Set up an OIDC application in your Identity Provider (e.g., Okta):
+Set up an OIDC application in your Identity Provider with the following details:
 
-- Application type: Web application
-- Name: ToolJet
 - Configure grant types, sign-in redirect URIs, and sign-out redirect URIs as required
 - Optionally limit access to specific groups for filtering
 
-### 2. Configure ToolJet with IdP Information
 
-Provide ToolJet with the following IdP details:
+### 2. Configure OIDC Group Sync in ToolJet
 
-- Client ID
-- Client Secret
-- IdP Domain (e.g., Okta domain)
-- Allowed Domains
-- Attribute mappings:
-  - Email key
-  - First name key
-  - Last name key
+To set up OIDC group synchronization in ToolJet follow these steps:
 
-### 3. Set Up Group Sync in Your IdP
+1. Navigate to the **Workspace Settings** > **Workspace Login** Tab.
+2. Click on the **OpenID Connect** under the **SSO** section.
+3. Enable the **OpenID Connect** toggle and provide the following information:
 
-1. Create a new scope to grant API access to ToolJet
-2. Create a new claim of type `groups` to reference the scope
-   - Optionally filter groups to limit sync
+   - **Name**: Enter a descriptive name for this OIDC configuration.
+   - **Client ID**: Input the Client ID provided by your Identity Provider (IdP).
+   - **Client secret**: Enter the Client Secret provided by your IdP.
+   - **Well known URL**: Provide the Well-Known URL for your OIDC provider.
 
-### 4. Configure Group Sync in ToolJet
+  <div style={{textAlign: 'center'}}>
+   <img className="screenshot-full" src="/img/sso/oidc-config-group-sync.png" alt="OIDC Config Group Sync" />
+  </div>
 
-1. Enter OIDC configurations
-2. Set up group sync settings:
-   - Configure group mapping if needed
-3. Enable SSO
+:::info
+For a detailed guide on setting up OIDC in ToolJet, refer to our [OIDC](/docs/category/openid-connect/) documentation.
+:::
 
-## Group Mapping Cases
+4. Once you have entered the information related to your IdP credentials, you can proceed to configure group synchronization settings.
 
-| Groups in IdP | Groups in ToolJet | Role Mapping Settings | Action |
+5. Enable the **Group Sync** toggle and provide the following information:
+
+- **Claim name**: Enter the name of the claim in the OIDC token that contains group information (e.g., `groups`).
+- **Group mapping**: Configure how IdP groups map to ToolJet groups. Use the format:
+   ```
+   IdP Group -> ToolJet Group, Another IdP Group -> Another ToolJet Group
+   ```
+   For example:
+   ```
+   Marketing Team -> marketing, Sales Team -> sales
+   ```
+
+   <div style={{textAlign: 'center'}}>
+      <img className="screenshot-full" src="/img/sso/group-sync-oidc.png" alt="OIDC Group Sync Config" />
+  </div>
+
+## Group Mapping
+
+Group mapping in ToolJet follows these principles:
+
+- Default 1:1 mapping based on group names (case-sensitive)
+- Custom group mapping options available
+- New custom groups can be created if no exact match exists
+- Users without a matching group are assigned to the **end-users** group
+
+### Group Mapping Scenarios
+
+| Groups in IdP | Groups in ToolJet | Role Mapping Settings | Result |
 |---------------|-------------------|------------------------|--------|
 | **admin**, **builder**, **end-user** | Exists | None | User added to corresponding default user group |
 | **engineers** | Exists (no permissions) | None | User added to **engineers** custom group and **end-users** default group |
@@ -69,8 +91,17 @@ Provide ToolJet with the following IdP details:
 | **admin**, **all apps** | Exists | None | User added to **all apps** and assigned **admin** role |
 | No group | N/A | None | User added to **end-users** default group |
 
-For more information on managing users and groups in ToolJet, please refer to the [Managing Users and Groups](/docs/tutorial/manage-users-groups/) documentation.
+## Important Considerations
 
-:::info
-If your license expires or downgrades to a plan without group sync, SSO and group sync will be disabled. 
-:::
+- Group synchronization occurs at every login. Users must log out and log back in for changes to be reflected.
+- Manual editing of groups is not recommended as changes will be overwritten upon subsequent logins.
+- User roles are assigned based on custom group permissions, taking priority over default user roles.
+- Group filtering should be configured at the IdP level during OIDC application setup.
+
+## Licensing
+
+- If a license expires or downgrades to a plan without group sync, both SSO and group sync features will be disabled.
+- Users will need to log in via alternative SSO methods or email/password.
+- If the license limit is reached, new users will not be allowed to log in.
+
+For more information on managing users and groups in ToolJet, please refer to our [Managing Users and Groups](/docs/tutorial/manage-users-groups/) documentation.
