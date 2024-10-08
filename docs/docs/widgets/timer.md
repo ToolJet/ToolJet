@@ -5,7 +5,7 @@ title: Timer
 
 # Timer
 
-The **Timer** component allows users to track time by counting both upward and downward. It's useful for tasks like setting countdowns, tracking elapsed time, or timing events
+The **Timer** component allows users to track time by counting both upward and downward. It's useful for tasks like setting countdowns, tracking elapsed time, or timing events.
 
 <div style={{paddingTop:'24px'}}>
 
