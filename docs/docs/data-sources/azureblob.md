@@ -7,9 +7,9 @@ ToolJet offers the capability to establish a connection with Azure Blob storage 
 
 ## Connection
 
-To establish a connection with the Azure Blob data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page from the ToolJet dashboard and choose Amazon Athena as the data source.
+To establish a connection with the Azure Blob data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page from the ToolJet dashboard and choose Azure Blob as the data source.
 
-ToolJet requires the following to connect to your Athena.
+ToolJet requires the following to connect to your Azure Blob.
 - **Connection String**
 
 <div style={{textAlign: 'center'}}>
