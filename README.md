@@ -1,11 +1,11 @@
 # ToolJet
 
----
-
 ToolJet is an **open-source low-code framework** to build and deploy internal tools with minimal engineering effort. ToolJet's drag-and-drop frontend builder allows you to create complex, responsive frontends within minutes. Additionally, you can integrate various data sources, including databases like PostgreSQL, MongoDB, and Elasticsearch; API endpoints with OpenAPI spec and OAuth2 support; SaaS tools such as Stripe, Slack, Google Sheets, Airtable, and Notion; as well as object storage services like S3, GCS, and Minio, to fetch and write data.
 
  :star: If you find ToolJet useful, please consider giving us a star on GitHub! Your support helps us continue to innovate and deliver exciting features.
 
+<div align="center">
+ 
 ![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/tooljet/tooljet-ce)
 ![Number of GitHub contributors](https://img.shields.io/github/contributors/tooljet/tooljet)
 [![Number of GitHub issues that are open](https://img.shields.io/github/issues/ToolJet/ToolJet)](https://github.com/ToolJet/ToolJet/issues)
@@ -16,6 +16,10 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/tooljet/tooljet)
 [![GitHub license which is AGPL license](https://img.shields.io/github/license/ToolJet/ToolJet)](https://github.com/ToolJet/ToolJet)
 [![Follow us on X, formerly Twitter](https://img.shields.io/twitter/follow/ToolJet?style=social)](https://twitter.com/ToolJet)
+
+</div>
+
+---
 
 <p align="center">
     <img src="https://user-images.githubusercontent.com/7828962/211444352-4d6d2e4a-13c9-4980-9e16-4aed4af9811b.png" alt="Tooljet dashboard showing inventory and orders"/>
@@ -76,9 +80,9 @@ docker run \
 
 ## Tutorials and examples
 
-[Time Tracker Application](https://docs.tooljet.com/docs/#quickstart-guide)<br>
-[Build your own CMS using low-code](https://blog.tooljet.com/build-cms-using-lowcode-and-mongodb/)<br>
-[AWS S3 Browser](https://blog.tooljet.com/build-an-aws-s3-broswer-with-tooljet/)<br>
+- [Time Tracker Application](https://docs.tooljet.com/docs/#quickstart-guide)<br>
+- [Build your own CMS using low-code](https://blog.tooljet.com/build-cms-using-lowcode-and-mongodb/)<br>
+- [AWS S3 Browser](https://blog.tooljet.com/build-an-aws-s3-broswer-with-tooljet/)<br>
 
 ## Documentation
 Documentation is available at https://docs.tooljet.com.
@@ -88,7 +92,7 @@ Documentation is available at https://docs.tooljet.com.
 - [Component Reference](https://docs.tooljet.com/docs/widgets/button)
 
 ## Self-hosted
-You can use ToolJet Cloud for a fully managed solution. If you want to self-host ToolJet, we have guides on deploying ToolJet on Kubernetes, AWS EC2, Docker, and more.
+You can use ToolJet Cloud to find a fully managed solution. If you want to self-host ToolJet, we have guides on deploying ToolJet on Kubernetes, AWS EC2, Docker, and more.
 
 | Provider  | Documentation |
 | :------------- | :------------- |
@@ -115,14 +119,14 @@ Find ToolJet on AWS Marketplace [here](https://aws.amazon.com/marketplace/pp/pro
 For general help using ToolJet, please refer to the official [documentation](https://docs.tooljet.com/docs/). For additional help, you can use one of these channels to ask a question:
 
 - [Slack](https://tooljet.com/slack) - Discussions with the community and the team.
-- [GitHub](https://github.com/ToolJet/ToolJet/issues) - For bug reports and feature requests.
+- [GitHub](https://github.com/ToolJet/ToolJet/issues) - This is for bug reports and feature requests.
 - [𝕏 (Twitter)](https://twitter.com/ToolJet) - Get the product updates quickly.
 
 ## Roadmap
 Check out our [roadmap](https://github.com/ToolJet/ToolJet/projects/2) to stay updated on recently released features and learn about what's coming next.
 
 ## Branching model
-We use the git-flow branching model. The base branch is `develop`. If you are looking for a stable version, please use the main branch or tags labeled as v1.x.x.
+We use the git-flow branching model. The base branch is `develop`. If you want a stable version, please use the main branch or tags labeled as v1.x.x.
 
 ## Contributing
 Kindly read our [Contributing Guide](CONTRIBUTING.md) to familiarize yourself with ToolJet's development process, how to suggest bug fixes and improvements, and the steps for building and testing your changes. <br>
@@ -134,4 +138,11 @@ Kindly read our [Contributing Guide](CONTRIBUTING.md) to familiarize yourself wi
 </a>
 
 ## License
-ToolJet © 2023, ToolJet Solutions Inc - Released under the GNU Affero General Public License v3.0.
+
+ToolJet © 2023, ToolJet Solutions Inc - Released under the [GNU Affero General Public License v3.0](LICENSE).
+
+<p align="center">
+  <a href="https://www.gnu.org/licenses/agpl-3.0.html">
+    <img src="https://img.shields.io/badge/License-AGPL%20v3-blue.svg" alt="License Badge">
+  </a>
+</p>
