@@ -244,14 +244,15 @@ The maximum retry limit of login password for a user is by default set to 5, acc
 
 Configurations for instance level SSO.
 
-| variable                     | description                                                    |
-| ---------------------------- | -------------------------------------------------------------- |
-| SSO_GOOGLE_OAUTH2_CLIENT_ID  | Google OAuth client id                                         |
-| SSO_GIT_OAUTH2_CLIENT_ID     | GitHub OAuth client id                                         |
-| SSO_GIT_OAUTH2_CLIENT_SECRET | GitHub OAuth client secret                                     |
-| SSO_GIT_OAUTH2_HOST          | GitHub OAuth host name if GitHub is self hosted                |
-| SSO_ACCEPTED_DOMAINS         | comma separated email domains that supports SSO authentication |
-| SSO_DISABLE_SIGNUPS          | Disable user sign up if authenticated user does not exist      |
+| variable                     | description                                                                                                                   |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| SSO_GOOGLE_OAUTH2_CLIENT_ID  | Google OAuth client id                                                                                                        |
+| SSO_GIT_OAUTH2_CLIENT_ID     | GitHub OAuth client id                                                                                                        |
+| SSO_GIT_OAUTH2_CLIENT_SECRET | GitHub OAuth client secret                                                                                                    |
+| SSO_GIT_OAUTH2_HOST          | GitHub OAuth host name if GitHub is self hosted                                                                               |
+| SSO_ACCEPTED_DOMAINS         | comma separated email domains that supports SSO authentication                                                                |
+| SSO_DISABLE_SIGNUPS          | Disable user sign up if authenticated user does not exist                                                                     |
+| SSO_SKIP_LOGIN_SCREEN        | Set to `true` to enable automatic SSO login. Only works when a single SSO method is configured and password login is disabled |
 
 ## ToolJet client
 
