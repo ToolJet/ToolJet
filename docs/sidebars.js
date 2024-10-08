@@ -218,6 +218,7 @@ const sidebars = {
         'how-to/use-url-params-on-load',
         'how-to/pass-query-params-in-custom-components',
         'how-to/use-custom-parameters',
+        'how-to/pass-values-in-rest-api',
         'how-to/build-dynamic-forms',
         'how-to/setup-rsyslog',
         'how-to/conditionally-display-components',
