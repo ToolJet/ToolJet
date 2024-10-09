@@ -30,7 +30,5 @@
     "lint": "eslint .  '**/*.ts'",
     "format": "eslint . --fix '**/*.ts'"
   },
-  "dependencies": {
-    "@nrwl/nx-linux-x64-gnu": "^15.9.3"
-  }
+  "dependencies": {}
 }
