@@ -4,9 +4,9 @@ title: Svg Image
 ---
 # SVG Image
 
-It is used to render vector images. We can display images, icons, texts using this component. SVGs are vector images and therefore are usually much smaller in file-size than bitmap-based images.
+It is used to render vector images. We can display images, icons, and texts using this component. SVGs are vector images and therefore are usually much smaller in file size than bitmap-based images.
 
-Developers prefer having SVG **(Scalable Vector Graphics)** files as they are scalable and will render pixel-perfect at any resolution whereas JPEGs, PNGs and GIFs will not. 
+Developers prefer having SVG **(Scalable Vector Graphics)** files as they are scalable and will render pixel-perfect at any resolution whereas JPEGs, PNGs, and GIFs will not. 
 
 <div style={{paddingTop:'24px'}}>
 
@@ -17,7 +17,7 @@ Developers prefer having SVG **(Scalable Vector Graphics)** files as they are sc
 Enter the SVG data of the image to display it on the component. 
 
 :::tip
-Refer to the resources where SVG files are downloaded for free. You copy-paste the below data in this field to see a new icon being rendered.
+Refer to the resources where SVG files are downloaded for free. You can copy-paste the below data in this field to see a new icon being rendered.
 :::
 
 ```
@@ -60,8 +60,8 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 | <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 |:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
-| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on **fx** to set the value `{{true}}` or `{{false}}` |
-| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on **fx** to set the value `{{true}}` or `{{false}}` |
+| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on **fx** to set the value `{{true}}` or `{{false}}`. |
+| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on **fx** to set the value `{{true}}` or `{{false}}`. |
 
 </div>
 
