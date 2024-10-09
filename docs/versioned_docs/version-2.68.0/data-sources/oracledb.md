@@ -3,15 +3,15 @@ id: oracledb
 title: Oracle DB
 ---
 
-# Oracle DB
-
 ToolJet can connect to Oracle databases to read and write data.
+
+<div style={{paddingTop:'24px'}}>
 
 ## Connection
 
-To establish a connection with the Oracle DB data source you can either click on the `+Add new` button in the query panel, or navigate to the [Data Sources](https://docs.tooljet.com/docs/data-sources/overview) page from the ToolJet dashboard.
+To establish a connection with the OracleDB datasource, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
 
-### Required Credentials
+ToolJet requires the following to connect to a OracleDB datasource:
 
 - **Host**
 - **Port**
@@ -22,10 +22,7 @@ To establish a connection with the Oracle DB data source you can either click on
 - **Password**
 - **Client Library Path**
 
-
-<div style={{textAlign: 'center'}}>
-![ToolJet - Data source - OracleDB](/img/datasource-reference/oracledb/oracleauth-v3.png)
-</div>
+<img className="screenshot-full" src="/img/datasource-reference/oracledb/oracleauth-v3.png" alt="ToolJet - Data source - OracleDB" />
 
 :::info
 ToolJet includes Oracle Instant Client versions 21.10 and 11.2. If you need to use a different client library version:
@@ -34,8 +31,6 @@ ToolJet includes Oracle Instant Client versions 21.10 and 11.2. If you need to u
 
 This allows ToolJet to locate and use the specific drivers for Oracle database connections.
 :::
-
-Click on **Test connection** to verify if the credentials are correct and the database is accessible to ToolJet server. Click on **Save** button to save the data source.
 
 ### Client Versions and Compatibility
 
@@ -52,42 +47,67 @@ The instant client version affects which Oracle Database versions you can connec
 - Oracle Instant Client 11.2 is compatible with Oracle Database 10.2 and later versions.
 
 
+</div>
+
+<div style={{paddingTop:'24px'}}>
+
 ## Querying Oracle DB
 
-Once you have added an Oracle DB data source, click on the  `+` button of the query manager to create a new query. There are two modes by which you can query SQL:
+1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
+2. Select the **OracleDB** datasource added in previous step.
+3. Select the desired query mode.
+4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
-  1. **[SQL mode](/docs/data-sources/oracledb#sql-mode)**
-  2. **[GUI mode](/docs/data-sources/oracledb#gui-mode)**
+</div>
 
-#### SQL mode
+<div style={{paddingTop:'24px'}}>
+
+## Supported Operations
+
+- **[SQL mode](/docs/data-sources/oracledb#sql-mode)**
+- **[GUI mode](/docs/data-sources/oracledb#gui-mode)**
+
+<img className="screenshot-full" src="/img/datasource-reference/oracledb/operations.png" alt="ToolJet - Data source - OracleDB" style={{marginBottom:'15px'}}/>
+
+### SQL mode
 
 SQL mode can be used to write raw SQL queries.
-  1. Select SQL mode from the dropdown.
-  2. Enter the SQL query in the editor.
-  3. Click on the `run` button to execute the query.
 
-#### GUI mode
+```sql
+SELECT first_name, last_name, email
+FROM employees
+WHERE department_id = 10
+ORDER BY last_name;
+```
+
+<img className="screenshot-full" src="/img/datasource-reference/oracledb/sql.png" alt="ToolJet - Data source - OracleDB" style={{marginBottom:'15px'}}/>
+
+### GUI mode
 
 GUI mode can be used to query Oracle database without writing queries.
 
-  1. Select GUI mode from the dropdown.
-  2. Choose the operation **Bulk update using primary key**.
-  3. Enter the **Table** name and **Primary key** column name.
-  4. In the editor, enter the records in the form of an array of objects. Example:
-  ```json
-  [
-    {
-      "id": 1,
-      "channel": 33
-    },
-    {
-      "id": 2,
-      "channel": 24
-    }
-  ]
-  ```
-  5. Click on the `run` button to execute the query.
+1. Select GUI mode from the dropdown.
+2. Choose the operation **Bulk update using primary key**.
+3. Enter the **Table** name and **Primary key** column name.
+4. In the editor, enter the records in the form of an array of objects.
+  
+```json
+[
+  {
+    "id": 1,
+    "channel": 33
+  },
+  {
+    "id": 2,
+    "channel": 24
+  }
+]
+```
+
+<img className="screenshot-full" src="/img/datasource-reference/oracledb/gui.png" alt="ToolJet - Data source - OracleDB" style={{marginBottom:'15px'}}/>
 
 :::tip
 Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/tutorial/transformations)**
 :::
+
+</div>
