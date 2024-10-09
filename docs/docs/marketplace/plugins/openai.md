@@ -50,6 +50,29 @@ The function of this query is to examine the user's input and generate a suitabl
     <img className="screenshot-full" src="/img/marketplace/plugins/openai/chat-v2.png" alt="Chat Operation" />
 </div>
 
+<details>
+<summary>**Example Values**</summary>
+
+```yaml
+Model: GPT-4 Turbo
+Prompt: What are the key principles of machine learning?
+Max Tokens: 100
+Temperature: 0.7
+Stop sequence: END
+Suffix: \n
+```
+
+</details>
+
+<details>
+<summary>**Response Example**</summary>
+
+```json
+"Machine learning, a subset of artificial intelligence, is fundamentally about designing and implementing algorithms that can learn from and make predictions or decisions based on data. The key principles of machine learning can be outlined as follows:nn1. **Learning from Data**: At its core, machine learning involves developing algorithms that can learn from and make predictions or inferences from data. Models are trained using a large set of data known as training data, which helps them make decisions or predictions without being explicitly programmed for the task.nn2"
+```
+
+</details>
+
 ### Completions
 
 The purpose of this query is to generate text completions based on a given prompt.
@@ -71,6 +94,29 @@ The purpose of this query is to generate text completions based on a given promp
     <img className="screenshot-full" src="/img/marketplace/plugins/openai/completions-v2.png" alt="Completions Operation" />
 </div>
 
+<details>
+<summary>**Example Values**</summary>
+
+```yaml
+Model: GPT-3.5 Turbo
+Prompt: The benefits of using low code platforms for software development include
+Max Tokens: 100
+Temperature: 0.6
+Stop sequence: END
+Suffix: \n
+```
+
+</details>
+
+<details>
+<summary>**Response Example**</summary>
+
+``` json
+":1. Increased Speed and Efficiency: Low code platforms allow developers to quickly build and deploy applications without having to write extensive lines of code. This significantly reduces development time and increases efficiency.nn2. Cost Savings: With low code platforms, businesses can save on development costs by reducing the need for a large team of developers. This also leads to lower maintenance costs as the applications are easier to maintain and update.nn3. User-Friendly Interface: Low code platforms are designed to be user-friendly and require minimal"
+```
+
+</details>
+
 ### Generate AI Image(s)
 
 This query generates AI images based on the given prompt.
@@ -89,3 +135,29 @@ This query generates AI images based on the given prompt.
 <div style={{textAlign: 'center'}}>
     <img className="screenshot-full" src="/img/marketplace/plugins/openai/generate-ai-images.png" alt="Generate AI Images Operation" />
 </div>
+
+<details>
+<summary>**Example Values**</summary>
+
+```yaml
+Model: DALL-E 3
+Prompt: A futuristic cityscape with flying cars and holographic billboards at sunset
+Size(in pixels): 720x720
+```
+
+</details>
+
+<details>
+<summary>**Response Example**</summary>
+
+```json
+{
+  "status": "success",
+  "message": "Image generated successfully",
+  "data": {
+    "url": "https://oaidalleapiprodscus.blob.core.windows.net/private/org-CpkCwFjT48kGZ33uOV2L4QxH/user-3QrXKnZO1PJUBeNP6xiQV9Rs/img-XXIds2QvTdcUfcJ2qmNWLwsC.png?st=2024-10-09T10%3A24%3A34Z&se=2024-10-09T12%3A24%3A34Z&sp=r&sv=2024-08-04&sr=b&rscd=inline&rsct=image/png&skoid=d505667d-d6c1-4a0a-bac7-5c84a87759f8&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2024-10-09T03%3A29%3A32Z&ske=2024-10-10T03%3A29%3A32Z&sks=b&skv=2024-08-04&sig=qPBYkPdQjLwBWJAS8fWmhs3B5TNSYbxhuMe15NcmgM4%3D"
+  }
+}
+```
+
+</details>
