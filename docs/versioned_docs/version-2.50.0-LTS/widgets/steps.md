@@ -14,7 +14,7 @@ This makes complex tasks feel more manageable, giving users a clear sense of pro
 
 ### Steps
 
-This property lets you add and the steps. Every object represents a step.
+This property lets you add the steps. Every object represents a step.
 
 ```json
 {{
@@ -34,7 +34,7 @@ This property lets you select the current step you want to be highlighted.
 
 ### Steps selectable
 
-This property when disabled will disable selection of steps.
+This property when disabled will disable the selection of steps.
 
 </div>
 
@@ -83,8 +83,8 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 | <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 |:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
-| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on **fx** to set the value `{{true}}` or `{{false}}` |
-| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on **fx** to set the value `{{true}}` or `{{false}}` |
+| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on **fx** to set the value `{{true}}` or `{{false}}`. |
+| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on **fx** to set the value `{{true}}` or `{{false}}`. |
 
 </div>
 
@@ -94,9 +94,9 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 | <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}>  Description </div> |
 |:------------ |:-------------|
-| Theme | You can change the theme of component by selecting available themes from dropdown. |
+| Theme | You can change the theme of a component by selecting available themes from the dropdown. |
 | Colour | You can change the  color of the component by entering the Hex color code or choosing a color of your choice from the color picker. |
-| Text colour | You can change the  text color of the component by entering the Hex color code or choosing a color of your choice from the color picker. |
+| Text color | You can change the  text color of the component by entering the Hex color code or choosing a color of your choice from the color picker. |
 | Visibility | Toggle on or off to control the visibility of the component. You can programmatically change its value by clicking on the **fx** button next to it. If `{{false}}` the component will not be visible after the app is deployed. By default, it's set to `{{true}}`. |
 
 :::info
