@@ -9,7 +9,7 @@ ToolJet can connect to Oracle databases to read and write data.
 
 ## Connection
 
-To establish a connection with the OracleDB global datasource, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Global Datasources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+To establish a connection with the OracleDB datasource, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
 
 ToolJet requires the following to connect to a OracleDB datasource:
 
