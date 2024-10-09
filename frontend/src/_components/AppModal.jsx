@@ -90,7 +90,13 @@ export function AppModal({
           closeModal();
         }
       } catch (error) {
-        toast.error(e.error, {
+        let errorMessage = 'Some Error Occured';
+        if (error?.error) {
+          errorMessage = error.error;
+        } else if (error?.message) {
+          errorMessage = error.message;
+        }
+        toast.error(errorMessage, {
           position: 'top-center',
         });
       }
@@ -124,7 +130,13 @@ export function AppModal({
       title={title}
       footerContent={
         <>
-          <ButtonSolid variant="tertiary" onClick={closeModal} data-cy="cancel-button" className="modal-footer-divider">
+          <ButtonSolid
+            variant="tertiary"
+            onClick={closeModal}
+            data-cy="cancel-button"
+            className="modal-footer-divider"
+            disabled={isLoading}
+          >
             Cancel
           </ButtonSolid>
           <ButtonSolid
@@ -157,6 +169,7 @@ export function AppModal({
               style={{
                 borderColor: errorText ? '#DB4324 !important' : 'initial',
               }}
+              disabled={isLoading}
             />
             {errorText ? (
               <small

@@ -51,7 +51,7 @@ This query will fetch the list of all the buckets in your S3. Just create a new 
 Now, let's edit the properties of **dropdown** widget.
 
 - **Label**: Set the label as Bucket.
-- **Option values**: Set option values as `{{queries.getBuckets.data.Buckets.map(bucket => bucket['Name'])}}`. We're mapping the data returned by the query as the returned data is array of abjects.
+- **Option values**: Set option values as `{{queries.getBuckets.data.Buckets.map(bucket => bucket['Name'])}}`. We're mapping the data returned by the query as the returned data is array of objects.
 - **Option label**: Set option values as `{{queries.getBuckets.data.Buckets.map(bucket => bucket['Name'])}}`. This will display the same option label as option values.
 
 You can later add an event handler for running the **listObject** query whenever an option is selected from the dropdown.
@@ -114,7 +114,7 @@ Edit the **properties** of the table, add a Event handler for running the `downl
 
 Create a new query, select the **Upload object** operation. Enter the following values in their respective fields:
 - **Bucket**: `{{components.dropdown1.value}}`
-- **Key**:  {{ components.textinput1.value + '/' +components.filepicker1.file[0].name}}`
+- **Key**:  `{{ components.textinput1.value + '/' +components.filepicker1.file[0].name}}`
 - **Content type**: `{{components.filepicker1.file[0].type}}`
 - **Upload data**: `{{components.filepicker1.file[0].base64Data}}`
 - **Encoding**: `base64`

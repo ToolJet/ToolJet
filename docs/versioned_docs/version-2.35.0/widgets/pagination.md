@@ -4,10 +4,10 @@ title: Pagination
 ---
 # Pagination
 
-Pagination enables the user to select a specific page from a range of pages. It is used to separate the content into discrete pages.
+**Pagination** enables the user to select a specific page from a range of pages. It is used to separate the content into discrete pages.
 
 :::tip
-You can club pagination widget with the List View widget.
+You can club the Pagination widget with the List View widget.
 :::
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
@@ -45,8 +45,8 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 | <div style={{ width:"100px"}}> Variables </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div>|
 |:----------- |:----------- |:--------- |
-| totalPages | This variable holds the value of the `Number of Pages` set from the pagination component properties. | Access the value dynamically using JS: `{{components.pagination1.totalPages}}`. |
-| currentPageIndex | This variable will hold the index of the currently selected option on the pagination component. | Access the value dynamically using JS: `{{components.pagination1.currentPageIndex}}`. |
+| totalPages | This variable holds the value of the `Number of Pages` set from the Pagination component properties. | Access the value dynamically using JS: `{{components.pagination1.totalPages}}`. |
+| currentPageIndex | This variable will hold the index of the currently selected option on the Pagination component. | Access the value dynamically using JS: `{{components.pagination1.currentPageIndex}}`. |
 
 </div>
 

@@ -1,4 +1,3 @@
-
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
   "title": "Amazon Athena datasource",
@@ -25,7 +24,8 @@
         "key": "query",
         "type": "codehinter",
         "description": "Enter query",
-        "height": "150px"
+        "height": "150px",
+        "editorType": "extendedSingleLine"
       },
       "Pagination": {
         "label": "Pagination",

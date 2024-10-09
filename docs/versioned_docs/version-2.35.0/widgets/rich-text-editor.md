@@ -4,7 +4,7 @@ title: Text Editor
 ---
 # Text Editor
 
-Rich Text Editor can be used to enter and edit the text in HTML format.
+The **Text Editor** can be used to enter and edit the text in HTML format.
 It should be preferred for blog posts, forum posts or notes sections. The text is to be used as the label for the radio button.
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
@@ -32,7 +32,7 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 | <div style={{ width:"100px"}}> Variables  </div>  | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 |:----------- |:----------- |:--------- |
-| value | This variable holds the value whenever a user enters a value in the rich text editor component.| You can access the value dynamically using JS: `{{components.richtexteditor1.value}}`|
+| value | This variable holds the value whenever a user enters a value in the Text Editor component.| You can access the value dynamically using JS: `{{components.richtexteditor1.value}}`|
 
 </div>
 

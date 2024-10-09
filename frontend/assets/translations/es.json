@@ -355,7 +355,7 @@
         "blankPage": {
             "welcomeToToolJet": "¡Bienvenido a ToolJet!",
             "getStartedCreateNewApp": "Puedes empezar creando una nueva aplicación o creando una aplicación usando una plantilla en la biblioteca de ToolJet.",
-            "importApplication": "Importar una aplicación",
+            "importApplication": "Importar una aplicación"
         },
         "foldersSection": {
             "allApplications": "Todas las aplicaciones",
@@ -387,11 +387,11 @@
         "templateCard": {
             "use": "Usar",
             "preview": "Prevista",
-            "leadGeneretion": "Generación de líderes",
+            "leadGeneretion": "Generación de líderes"
         },
         "templateLibraryModal": {
             "select": "Seleccionar plantilla",
-            "createAppfromTemplate": "Crear aplicación desde plantilla",
+            "createAppfromTemplate": "Crear aplicación desde plantilla"
         }
     },
     "confirmationPage": {
@@ -662,7 +662,7 @@
             "setColor": "Establecer color",
             "structure": "Estructura",
             "checkedValues": "Valores marcados",
-            "expandedValues": "Valores expandidos",
+            "expandedValues": "Valores expandidos"
         },
         "Table": {
             "displayName": "Tabla",
@@ -689,7 +689,7 @@
             "remove": "Eliminar",
             "addButton": "+ Agregar botón",
             "addColumn": "+ Agregar columna",
-            "noActionMessage": "Esta tabla no tiene botones de acción",
+            "noActionMessage": "Esta tabla no tiene botones de acción"
         },
         "Button": {
             "displayName": "Botón",
@@ -898,7 +898,7 @@
             "text": "Comentarios",
             "tip": "Habilitar comentarios",
             "commentBody": "No hay comentarios para desplegar",
-            "typeComment": "Escriba su comentario aquí",
+            "typeComment": "Escriba su comentario aquí"
         },
         "Settings": {
             "text": "Ajustes",
@@ -907,7 +907,7 @@
             "maintenanceMode": "Modo de mantenimiento",
             "maxWidthOfCanvas": "Ancho máximo del lienzo",
             "maxHeightOfCanvas": "Altura máxima del lienzo",
-            "backgroundColorOfCanvas": "Color de fondo del lienzo",
+            "backgroundColorOfCanvas": "Color de fondo del lienzo"
         },
         "Back": {
             "text": "Atrás",

@@ -48,7 +48,7 @@ When the query is triggered the alert will show the parameters value.
 
 Let's demonstrate how to utilize parameters in RunJS queries and call one query from another by providing custom parameter values:
 
-1. Begin by creating a new RunJS query named `multiply`. In this query, add the following parameters: **num1** with a default value of `10` and **num2** with a default value of `2`. To display the result, place a text component on the canvas and set its text to **{{queries.multiply.data}}**. Save and Run the query.
+1. Begin by creating a new RunJS query named `multiply`. In this query, add the following parameters: **num1** with a default value of `10` and **num2** with a default value of `2`. To display the result, place a text component on the canvas and set its text to `{{queries.multiply.data}}`. Save and Run the query.
  <div style={{textAlign: 'center'}}>
 
  <img className="screenshot-full" src="/img/datasource-reference/custom-javascript/multiply.png" alt="Run JavaScript code" />

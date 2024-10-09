@@ -3,18 +3,18 @@ id: macos
 title: Mac OS
 ---
 
-:::warning
 The following guide is intended for contributors to set-up ToolJet locally. If you're interested in **self-hosting** ToolJet, please refer to the **[Setup](/docs/setup/)** section.
-:::
 
-Follow these steps to setup and run ToolJet on macOS for development purposes. Open terminal and run the commands below. We recommend reading our guide on [architecture](/docs/contributing-guide/setup/architecture) of ToolJet before proceeding.
+
+To set up and run ToolJet on macOS for development, begin by opening your terminal and executing the commands listed below. For a better understanding of ToolJet's framework, we advise reviewing our [architecture guide](/docs/contributing-guide/setup/architecture) before proceeding.
 
 ## Setting up
 
 1. Set up the environment
 
     1.1 Install Homebrew
-    ```/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+    ```bash
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
     ```
 
     1.2 Install Node.js ( version: v18.18.2 ) and npm (version: v9.8.1)
@@ -33,19 +33,17 @@ Follow these steps to setup and run ToolJet on macOS for development purposes. O
     :::
 
     ```bash
-    brew install postgresql
+    brew install postgresql@13
     ```
     
     1.4 Install PostgREST(optional)
 
     :::info 
-    Required only if Tooljet Database is being used. 
-
-    Please use PostgREST version 10.1.1.x
+    Required only if ToolJet Database is being used. 
     :::       
 
     ```bash
-    brew install postgrest --version 10.1.1.20221215
+    brew install postgrest
     ```
 
     1.5 Clone the repository
@@ -69,18 +67,18 @@ Follow these steps to setup and run ToolJet on macOS for development purposes. O
 
    Example:
    ```bash
-   cat .env
-   TOOLJET_HOST=http://localhost:8082
-   LOCKBOX_MASTER_KEY=1d291a926ddfd221205a23adb4cc1db66cb9fcaf28d97c8c1950e3538e3b9281
-   SECRET_KEY_BASE=4229d5774cfe7f60e75d6b3bf3a1dbb054a696b6d21b6d5de7b73291899797a222265e12c0a8e8d844f83ebacdf9a67ec42584edf1c2b23e1e7813f8a3339041
-   NODE_ENV=development
-   # DATABASE CONFIG
-   PG_HOST=postgres
-   PG_PORT=5432
-   PG_USER=postgres
-   PG_PASS=postgres
-   PG_DB=tooljet_development
-   ORM_LOGGING=all
+    cat .env
+    TOOLJET_HOST=http://localhost:8082
+    LOCKBOX_MASTER_KEY=1d291a926ddfd221205a23adb4cc1db66cb9fcaf28d97c8c1950e3538e3b9281
+    SECRET_KEY_BASE=4229d5774cfe7f60e75d6b3bf3a1dbb054a696b6d21b6d5de7b73291899797a222265e12c0a8e8d844f83ebacdf9a67ec42584edf1c2b23e1e7813f8a3339041
+    NODE_ENV=development
+    # DATABASE CONFIG
+    PG_HOST=localhost
+    PG_PORT=5432
+    PG_USER=postgres
+    PG_PASS=postgres
+    PG_DB=tooljet_development
+    ORM_LOGGING=all
    ```
 
 4. Install and build dependencies

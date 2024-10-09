@@ -6,7 +6,7 @@ import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import Header from './Header';
 import Cross from '@/_ui/Icon/solidIcons/Cross';
 
-const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, changeDarkMode }) => {
+const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, changeDarkMode, showDarkModeToggle }) => {
   const [hamburgerMenuOpen, setHamburgerMenuOpen] = useState(false);
   const handlepageSwitch = (pageId) => {
     setHamburgerMenuOpen(false);
@@ -102,22 +102,24 @@ const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, chan
             </div>
           </div>
         </div>
-        <div>
-          <hr className="m-0 mb-3" />
-          <div className="d-flex justify-content-center">
-            <div
-              className={`d-flex align-items-center justify-content-center`}
-              style={{ border: '1px solid var(--slate7)', width: 'calc(100% - 20px)' }}
-            >
-              <DarkModeToggle
-                switchDarkMode={changeDarkMode}
-                darkMode={darkMode}
-                showText={true}
-                tooltipPlacement={'top'}
-              />
+        {showDarkModeToggle && (
+          <div>
+            <hr className="m-0 mb-3" />
+            <div className="d-flex justify-content-center">
+              <div
+                className={`d-flex align-items-center justify-content-center`}
+                style={{ border: '1px solid var(--slate7)', width: 'calc(100% - 20px)' }}
+              >
+                <DarkModeToggle
+                  switchDarkMode={changeDarkMode}
+                  darkMode={darkMode}
+                  showText={true}
+                  tooltipPlacement={'top'}
+                />
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </MobileMenu>
     </>
   );

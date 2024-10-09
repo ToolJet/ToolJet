@@ -4,7 +4,7 @@ title: Tags
 ---
 # Tags
 
-Tags widget can be used to show array of data as tags.
+The **Tags** widget can be used to show array of data as tags.
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 

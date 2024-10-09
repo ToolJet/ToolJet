@@ -3,13 +3,14 @@ import { useEventListener } from '@/_hooks/use-event-listener';
 import { Tooltip } from 'react-tooltip';
 import { QueryDataPane } from './QueryDataPane';
 import QueryManager from '../QueryManager/QueryManager';
-
 import useWindowResize from '@/_hooks/useWindowResize';
-import { useQueryPanelStore, useQueryPanelActions } from '@/_stores/queryPanelStore';
+import { useQueryPanelActions, useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useDataQueriesStore, useDataQueries } from '@/_stores/dataQueriesStore';
 import Maximize from '@/_ui/Icon/solidIcons/Maximize';
-import { cloneDeep, isEmpty, isEqual } from 'lodash';
+import { isEmpty, isEqual } from 'lodash';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import cx from 'classnames';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 const QueryPanel = ({
   dataQueriesChanged,
@@ -24,13 +25,20 @@ const QueryPanel = ({
 }) => {
   const { updateQueryPanelHeight } = useQueryPanelActions();
   const dataQueries = useDataQueries();
-  const queryManagerPreferences = useRef(JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {});
+  const queryManagerPreferences = useRef(
+    JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {
+      current: {
+        isExpanded: true,
+        queryPanelHeight: 100,
+      },
+    }
+  );
   const queryPaneRef = useRef(null);
   const [isExpanded, setExpanded] = useState(queryManagerPreferences.current?.isExpanded ?? true);
   const [isDragging, setDragging] = useState(false);
   const [height, setHeight] = useState(
     queryManagerPreferences.current?.queryPanelHeight > 95
-      ? 30
+      ? 50
       : queryManagerPreferences.current?.queryPanelHeight ?? 70
   );
   const [isTopOfQueryPanel, setTopOfQueryPanel] = useState(false);
@@ -47,10 +55,10 @@ const QueryPanel = ({
       }
 
       //removing updated_at since this value changes whenever the data is updated in the BE
-      const formattedQuery = cloneDeep(selectedQuery);
+      const formattedQuery = deepClone(selectedQuery);
       delete formattedQuery.updated_at;
 
-      const formattedPrevQuery = cloneDeep(prevState?.selectedQuery || {});
+      const formattedPrevQuery = deepClone(prevState?.selectedQuery || {});
       delete formattedPrevQuery.updated_at;
 
       if (!isEqual(formattedQuery, formattedPrevQuery)) {
@@ -145,7 +153,7 @@ const QueryPanel = ({
   }, []);
 
   return (
-    <>
+    <div className={cx({ 'dark-theme theme-dark': darkMode })}>
       <div
         className="query-pane"
         style={{
@@ -212,7 +220,7 @@ const QueryPanel = ({
         </div>
       </div>
       <Tooltip id="tooltip-for-query-panel-footer-btn" className="tooltip" />
-    </>
+    </div>
   );
 };
 

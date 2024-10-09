@@ -317,57 +317,6 @@ export const signInPageElements = () => {
   });
 };
 
-export const SignUpPageElements = () => {
-  cy.get(commonSelectors.pageLogo).should("be.visible");
-  cy.get(commonSelectors.SignUpSectionHeader).verifyVisibleElement(
-    "have.text",
-    commonText.SignUpSectionHeader
-  );
-  cy.get(commonSelectors.signUpButton).verifyVisibleElement(
-    "have.text",
-    commonText.getStartedButton
-  );
-  cy.get(commonSelectors.signInRedirectText).should(($el) => {
-    expect($el.contents().first().text().trim()).to.eq(
-      commonText.signInRedirectText
-    );
-  });
-  cy.get(commonSelectors.signInRedirectLink).verifyVisibleElement(
-    "have.text",
-    commonText.signInRedirectLink
-  );
-  cy.get(commonSelectors.signUpTermsHelperText).should(($el) => {
-    expect($el.contents().first().text().trim()).to.eq(
-      commonText.signUpTermsHelperText
-    );
-  });
-  cy.get(commonSelectors.termsOfServiceLink)
-    .verifyVisibleElement("have.text", commonText.termsOfServiceLink)
-    .and("have.attr", "href")
-    .and("equal", "https://www.tooljet.com/terms");
-  cy.get(commonSelectors.privacyPolicyLink)
-    .verifyVisibleElement("have.text", commonText.privacyPolicyLink)
-    .and("have.attr", "href")
-    .and("equal", "https://www.tooljet.com/privacy");
-  cy.get("body").then(($el) => {
-    if ($el.text().includes("Google")) {
-      cy.get(ssoSelector.googleSSOText).verifyVisibleElement(
-        "have.text",
-        ssoText.googleSignUpText
-      );
-      cy.get(ssoSelector.gitSSOText).verifyVisibleElement(
-        "have.text",
-        ssoText.gitSignUpText
-      );
-      cy.get(commonSelectors.onboardingSeperator).should("be.visible");
-      cy.get(commonSelectors.onboardingSeperatorText).verifyVisibleElement(
-        "have.text",
-        commonText.onboardingSeperatorText
-      );
-    }
-  });
-};
-
 export const loginbyGoogle = (email, password) => {
   cy.session([email, password], () => {
     cy.visit("/");
@@ -603,21 +552,25 @@ export const defaultSSO = (enable) => {
   });
 };
 
-export const setSignupStatus = (enable) => {
-  cy.getCookie("tj_auth_token").then((cookie) => {
-    cy.request(
-      {
+export const setSignupStatus = (enable, workspaceName = 'My workspace') => {
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `SELECT id FROM organizations WHERE name = '${workspaceName}'`,
+  }).then((resp) => {
+    const workspaceId = resp.rows[0].id;
+
+    cy.getCookie("tj_auth_token").then((cookie) => {
+      cy.request({
         method: "PATCH",
         url: "http://localhost:3000/api/organizations",
         headers: {
-          "Tj-Workspace-Id": Cypress.env("workspaceId"),
+          "Tj-Workspace-Id": workspaceId,
           Cookie: `tj_auth_token=${cookie.value}`,
         },
         body: { enableSignUp: enable },
-      },
-      { log: false }
-    ).then((response) => {
-      expect(response.status).to.equal(200);
+      }).then((response) => {
+        expect(response.status).to.equal(200);
+      });
     });
   });
 };

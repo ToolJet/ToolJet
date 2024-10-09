@@ -5,7 +5,7 @@ title: HTML Viewer
 
 # HTML Viewer
 
-HTML widget can be used to create your own HTML-CSS layout.
+**HTML** widget can be used to create your own HTML-CSS layout.
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 

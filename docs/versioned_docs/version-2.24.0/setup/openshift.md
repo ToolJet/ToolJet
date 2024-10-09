@@ -63,7 +63,7 @@ If there are self signed HTTPS endpoints that Tooljet needs to connect to, pleas
 
 You can know more about tooljet database [here](https://docs.tooljet.com/docs/tooljet-database)
 
-If you intend to use this feature, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. Please [follow the instructions here](https://docs.tooljet.com/docs/setup/env-vars#tooljet-database) for additional environment variables configuration to be done.
+If you intend to use this feature, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. Please [follow the instructions here](https://docs.tooljet.com/docs/setup/env-vars/#enable-tooljet-database--optional-) for additional environment variables configuration to be done.
 
 ```
 https://tooljet-deployments.s3.us-west-1.amazonaws.com/openshift/postgrest.yaml
@@ -79,8 +79,8 @@ If this is a new installation of the application, you may start directly with th
 
 - It is **crucial to perform a comprehensive backup of your database** before starting the upgrade process to prevent data loss.
 
-- Ensure that your current version is v2.23.3-ee2.10.2 before upgrading. 
+- Ensure that your current version is v2.23.0-ee2.10.2 before upgrading. 
 
-- Users on versions earlier than v2.23.3-ee2.10.2 must first upgrade to this version before proceeding to the latest version.
+- Users on versions earlier than v2.23.0-ee2.10.2 must first upgrade to this version before proceeding to the latest version.
 
 For specific issues or questions, refer to our **[Slack](https://tooljet.slack.com/join/shared_invite/zt-25438diev-mJ6LIZpJevG0LXCEcL0NhQ#)**.

@@ -51,7 +51,7 @@ You can learn more about this feature [here](/docs/tooljet-database).
 
 Follow the steps below to deploy ToolJet Database on DigitalOcean:
 
-1. If you are using dev database within ToolJet deployment, upgrade it to managed database. You could also add a separate database, if you intent use a differenet database, please refer the [environment variables](/docs/setup/env-vars#tooljet-database-feature-enable--optional-) for additional env variables. 
+1. If you are using dev database within ToolJet deployment, upgrade it to managed database. You could also add a separate database, if you intent use a differenet database, please refer the [environment variables](/docs/setup/env-vars/#enable-tooljet-database--optional--feature-enable--optional-) for additional env variables. 
 
 2. Create a new app for PostgREST server. You can opt for docker hub to deploy PostgREST image of version `10.1.x`.
 
@@ -63,7 +63,7 @@ Follow the steps below to deploy ToolJet Database on DigitalOcean:
 
 4. Add your newly created PostgREST app to the trusted sources of your managed or separate database.
 
-5. Update your existing ToolJet application deployment with [environment variables](/docs/setup/env-vars#tooljet-database-feature-enable--optional-) required for PostgREST. 
+5. Update your existing ToolJet application deployment with [environment variables](/docs/setup/env-vars/#enable-tooljet-database--optional--feature-enable--optional-) required for PostgREST. 
 
 ## Upgrading to the Latest Version
 
@@ -75,8 +75,8 @@ If this is a new installation of the application, you may start directly with th
 
 - It is **crucial to perform a comprehensive backup of your database** before starting the upgrade process to prevent data loss.
 
-- Ensure that your current version is v2.23.3-ee2.10.2 before upgrading. 
+- Ensure that your current version is v2.23.0-ee2.10.2 before upgrading. 
 
-- Users on versions earlier than v2.23.3-ee2.10.2 must first upgrade to this version before proceeding to the latest version.
+- Users on versions earlier than v2.23.0-ee2.10.2 must first upgrade to this version before proceeding to the latest version.
 
 For specific issues or questions, refer to our **[Slack](https://tooljet.slack.com/join/shared_invite/zt-25438diev-mJ6LIZpJevG0LXCEcL0NhQ#)**.

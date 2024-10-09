@@ -34,9 +34,9 @@ Following actions of the **Textarea** component can be controlled using Componen
 
 ## Exposed Variables
 
-| <div style={{ width:"100px"}}> Variables  </div>  | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
-|: ----------- |: ----------- | :-------------|
-| value | This variable holds the value entered in the text area component. | Sccess the value dynamically using JS. For example, `{{components.textarea1.value}}`|
+| Variables | Description | How To Access |
+|:---------:|:-----------:|:-------------:|
+| <div style={{ width:"100px"}}> value </div> | This variable holds the value entered in the text area component. | Access the value dynamically using JS. For example, `{{components.textarea1.value}}` |
 
 </div>
 

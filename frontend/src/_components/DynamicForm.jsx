@@ -8,20 +8,17 @@ import OAuth from '@/_ui/OAuth';
 import Toggle from '@/_ui/Toggle';
 import OpenApi from '@/_ui/OpenAPI';
 import { Checkbox, CheckboxGroup } from '@/_ui/CheckBox';
-import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
+import CodeHinter from '@/Editor/CodeEditor';
 import GoogleSheets from '@/_components/Googlesheets';
 import Slack from '@/_components/Slack';
 import Zendesk from '@/_components/Zendesk';
 import ApiEndpointInput from '@/_components/ApiEndpointInput';
 import { ConditionFilter, CondtionSort, MultiColumn } from '@/_components/MultiConditions';
+import Salesforce from '@/_components/Salesforce';
 import ToolJetDbOperations from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/ToolJetDbOperations';
 import { orgEnvironmentVariableService, orgEnvironmentConstantService } from '../_services';
-
 import { find, isEmpty } from 'lodash';
 import { ButtonSolid } from './AppButton';
-import { useCurrentState } from '@/_stores/currentStateStore';
-import { useEditorStore } from '@/_stores/editorStore';
-import { shallow } from 'zustand/shallow';
 
 const DynamicForm = ({
   schema,
@@ -41,16 +38,9 @@ const DynamicForm = ({
 }) => {
   const [computedProps, setComputedProps] = React.useState({});
   const isHorizontalLayout = layout === 'horizontal';
-  const currentState = useCurrentState();
 
   const [workspaceVariables, setWorkspaceVariables] = React.useState([]);
   const [currentOrgEnvironmentConstants, setCurrentOrgEnvironmentConstants] = React.useState([]);
-  const { isEditorActive } = useEditorStore(
-    (state) => ({
-      isEditorActive: state?.isEditorActive,
-    }),
-    shallow
-  );
 
   // if(schema.properties)  todo add empty check
   React.useLayoutEffect(() => {
@@ -163,6 +153,8 @@ const DynamicForm = ({
         return CondtionSort;
       case 'react-component-api-endpoint':
         return ApiEndpointInput;
+      case 'react-component-salesforce':
+        return Salesforce;
       default:
         return <div>Type is invalid</div>;
     }
@@ -193,8 +185,10 @@ const DynamicForm = ({
     className,
     controller,
     encrypted,
+    editorType = 'basic',
     placeholders = {},
     specUrl = '',
+    disabled = false,
   }) => {
     const source = schema?.source?.kind;
     const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -252,10 +246,10 @@ const DynamicForm = ({
 
       case 'react-component-headers': {
         let isRenderedAsQueryEditor;
-        if (!isEditorActive || isGDS) {
+        if (isGDS) {
           isRenderedAsQueryEditor = false;
         } else {
-          isRenderedAsQueryEditor = !isGDS && currentState != null;
+          isRenderedAsQueryEditor = !isGDS;
         }
         return {
           getter: key,
@@ -263,7 +257,6 @@ const DynamicForm = ({
             ? options?.[key] ?? schema?.defaults?.[key]
             : options?.[key]?.value ?? schema?.defaults?.[key]?.value,
           optionchanged,
-          currentState,
           isRenderedAsQueryEditor,
           workspaceConstants: currentOrgEnvironmentConstants,
           encrypted: options?.[key]?.encrypted,
@@ -301,6 +294,7 @@ const DynamicForm = ({
       case 'react-component-google-sheets':
       case 'react-component-slack':
       case 'react-component-zendesk':
+      case 'react-component-salesforce':
         return {
           optionchanged,
           createDataSource,
@@ -312,7 +306,6 @@ const DynamicForm = ({
         };
       case 'tooljetdb-operations':
         return {
-          currentState,
           optionchanged,
           createDataSource,
           options,
@@ -330,13 +323,13 @@ const DynamicForm = ({
           theme = 'default';
         }
         return {
-          currentState,
+          type: editorType,
           initialValue: options[key]
             ? typeof options[key] === 'string'
               ? options[key]
               : JSON.stringify(options[key])
             : initialValue,
-          mode,
+          lang: mode,
           lineNumbers,
           className: className ? className : lineNumbers ? 'query-hinter' : 'codehinter-query-editor-input',
           onChange: (value) => optionchanged(key, value),
@@ -345,8 +338,9 @@ const DynamicForm = ({
           height,
           width,
           componentName: queryName ? `${queryName}::${key ?? ''}` : null,
-          ignoreBraces,
           cyLabel: key ? `${String(key).toLocaleLowerCase().replace(/\s+/g, '-')}` : '',
+          disabled,
+          delayOnChange: false,
         };
       }
       case 'react-component-openapi-validator':
@@ -505,6 +499,7 @@ const DynamicForm = ({
                   'flex-grow-1': isHorizontalLayout && !isSpecificComponent,
                   'w-100': isHorizontalLayout && type !== 'codehinter',
                 })}
+                style={{ width: '100%' }}
               >
                 <Element
                   {...getElementProps(obj[key])}

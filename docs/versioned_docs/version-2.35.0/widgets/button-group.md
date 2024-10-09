@@ -4,7 +4,7 @@ title: Button Group
 ---
 # Button Group
 
-The Button group component is used to group a series of buttons together in a single line. It is used to group related buttons.
+The **Button Group** component is used to group a series of buttons together in a single line. It is used to group related buttons.
 
 <div style={{textAlign: 'left'}}>
 
@@ -19,8 +19,8 @@ The Button group component is used to group a series of buttons together in a si
 | <div style={{ width:"100px"}}> Properties </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 |:----------- |:----------- |:-------------- |
 | label | Sets the title of the button-group. | Any **String** value: `Select the options` or `{{queries.queryname.data.text}}` |
-| values | Sets the values of the button group items. | **Array** of strings and numbers: `{{[1,2,3]}}` |
-| Labels | Sets the labels of the button group items. | **Array** of strings and numbers: `{{['A','B','C']}}` |
+| values | Sets the values of the Button Group items. | **Array** of strings and numbers: `{{[1,2,3]}}` |
+| Labels | Sets the labels of the Button Group items. | **Array** of strings and numbers: `{{['A','B','C']}}` |
 | Default selected | Sets the initial selected values. | **Array** of strings and numbers: `{{[1]}}` will select the first button by default. |
 | Enable multiple selection | Toggle on or off to enable multiple selection. | **Boolean** value: `{{true}}` or `{{false}}` |
 
@@ -34,7 +34,7 @@ Events are actions that can be triggered programmatically when the user interact
 
 | <div style={{ width:"100px"}}> Events </div> | <div style={{ width:"100px"}}> Description </div> |
 |:----------- |:----------- |
-| On click | This event is triggered when the user clicks on the button in the button group. |
+| On click | This event is triggered when the user clicks on the button in the Button Group. |
 
 :::info
 Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.

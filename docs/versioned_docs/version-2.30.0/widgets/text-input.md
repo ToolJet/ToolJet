@@ -30,7 +30,7 @@ Check [Action Reference](/docs/category/actions-reference) docs to get detailed 
 
 Following actions of component can be controlled using the component specific actions(CSA):
 
-| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
 | :------------ | :---------- | :------------ |
 | setText()      | Sets the value of the input field.    | Employ a RunJS query (for e.g.,  <br/> `await components.textinput1.setText('this is input text')`) or trigger it using an event. |
 | clear()        | Clears the entered text in the input field.      | Employ a RunJS query (for e.g.,  <br/> `await components.textinput1.clear()`) or trigger it using an event. |
@@ -46,15 +46,15 @@ Check the **component specific actions** available for this component **[here](/
 
 ## Exposed Variables
 
-| <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
-|: ---------- | :---------- | :------------ |
-| value       | Holds the value entered by the user in the component. | Accessible dynamically with JS (for e.g., `{{components.textinput1.value}}`). |
-| label       | Holds the value of the component's label. | Accessible dynamically with JS (for e.g., `{{components.textinput1.label}}`). |
-| isValid     | Indicates if the input meets validation criteria. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isValid}}`). |
-| isMandatory | Indicates if the field is required. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isMandatory}}`). |
-| isLoading   | Indicates if the component is loading. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isLoading}}`). |
-| isVisible   | Indicates if the component is visible. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isVisible}}`). |
-| isDisabled  | Indicates if the component is disabled. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isDisabled}}`). |
+| Variable | Description | How To Access |
+|:--------:|:-----------:|:------------:|
+| <div style={{ width:"100px"}}> value </div> | Holds the value entered by the user in the component. | Accessible dynamically with JS (for e.g., `{{components.textinput1.value}}`).|
+| <div style={{ width:"100px"}}> label </div> | Holds the value of the component's label. | Accessible dynamically with JS (for e.g., `{{components.textinput1.label}}`).|
+| <div style={{ width:"100px"}}> isValid </div> | Indicates if the input meets validation criteria. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isValid}}`).|
+| <div style={{ width:"100px"}}> isMandatory </div> | Indicates if the field is required. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isMandatory}}`).|
+| <div style={{ width:"100px"}}> isLoading </div> | Indicates if the component is loading. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isLoading}}`).|
+| <div style={{ width:"100px"}}> isVisible </div> | Indicates if the component is visible. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isVisible}}`).|
+| <div style={{ width:"100px"}}> isDisabled </div> | Indicates if the component is disabled. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isDisabled}}`).|
 
 ## Validation
 

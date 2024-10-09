@@ -1,10 +1,10 @@
 ---
 id: datepicker
-title: Datepicker
+title: Date Picker
 ---
-# Datepicker
+# Date Picker
 
-The Datepicker widget allows users to select a single value for date and time from a pre-determined set.
+The **Date Picker** widget allows users to select a single value for date and time from a pre-determined set.
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
@@ -16,7 +16,7 @@ The Datepicker widget allows users to select a single value for date and time fr
 | Format | This value acts as placeholder for the date picker widget, if any value is not provided then the default value will be used from the picker. The default value needs to be a `String` with respect to the `format` field. Ex: If format is set to `MM/YYYY` then provide default value as `04/2022` |
 | Enable time selection? | Toggle on or off to enable the time selection. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
 | Enable date selection? | Toggle on or off to enable the date selection. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
-| Disabled dates | We can give disabled dates property which will make specific dates disabled and cannot be selected. The default value needs to be an array of`Strings` |
+| Disabled dates | We can give disabled dates property which will make specific dates disabled and cannot be selected. The default value needs to be an array of `Strings` |
 
 Example for disabling the 9th of January:
 ```js
@@ -57,7 +57,7 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 | <div style={{ width:"100px"}}> Variables </div>  | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 |:----------- |:----------- | :---------- |
-| value | This variable holds the date selected on the component, the date value will be returned according to the format set in the datepicker properties. | Access the value dynamically using JS: `{{components.datepicker1.value}}`|
+| value | This variable holds the date selected on the component, the date value will be returned according to the format set in the Date Picker properties. | Access the value dynamically using JS: `{{components.datepicker1.value}}`|
 
 </div>
 

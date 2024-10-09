@@ -14,6 +14,7 @@
     "incremental": true,
     "paths": {
       "@ee/*": ["ee/*"],
+      "@entities/*": ["src/entities/*"],
       "@services/*": ["src/services/*"],
       "@controllers/*": ["src/controllers/*"],
       "@repositories/*": ["src/repositories/*"],

@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
-import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
-import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import OnBoardingForm from '../OnBoardingForm/OnBoardingForm';
 import { authenticationService } from '@/_services';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { LinkExpiredInfoScreen } from '@/SuccessInfoScreen';
 import { ShowLoading } from '@/_components';
 import { toast } from 'react-hot-toast';
@@ -15,7 +13,9 @@ import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 import { useTranslation } from 'react-i18next';
 import { buildURLWithQuery } from '@/_helpers/utils';
+import { onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 import { redirectToDashboard } from '@/_helpers/routes';
+import { retrieveWhiteLabelText, setFaviconAndTitle, checkWhiteLabelsDefaultState } from '@white-label/whiteLabelling';
 
 export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScreen() {
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -29,18 +29,24 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   const [showPassword, setShowPassword] = useState(false);
   const [fallBack, setFallBack] = useState(false);
   const { t } = useTranslation();
+  const [defaultState, setDefaultState] = useState(false);
 
   const location = useLocation();
   const params = useParams();
+  const searchParams = new URLSearchParams(location?.search);
 
-  const organizationId = new URLSearchParams(location?.search).get('oid');
-  const source = new URLSearchParams(location?.search).get('source');
+  const organizationId = searchParams.get('oid');
+  const organizationToken = searchParams.get('organizationToken') || params?.organizationToken;
+  const source = searchParams.get('source');
   const darkMode = localStorage.getItem('darkMode') === 'true';
+  const redirectTo = searchParams.get('redirectTo');
+  const navigate = useNavigate();
+  const whiteLabelText = retrieveWhiteLabelText();
 
   const getUserDetails = () => {
     setIsLoading(true);
     authenticationService
-      .verifyToken(params?.token, params?.organizationToken)
+      .verifyToken(params?.token, organizationToken)
       .then((data) => {
         if (data?.redirect_url) {
           window.location.href = buildURLWithQuery(data.redirect_url, {
@@ -52,7 +58,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
         setUserDetails(data);
         setIsLoading(false);
         if (data?.email !== '') {
-          if (params?.organizationToken) {
+          if (organizationToken) {
             setShowJoinWorkspace(true);
             return;
           }
@@ -78,6 +84,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
           (configs) => {
             setIsGettingConfigs(false);
             setConfigs(configs);
+            setFaviconAndTitle(null, null, location);
           },
           () => {
             setIsGettingConfigs(false);
@@ -86,6 +93,9 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
     } else {
       setIsGettingConfigs(false);
     }
+    checkWhiteLabelsDefaultState(organizationId).then((res) => {
+      setDefaultState(res);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -111,14 +121,14 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
         companySize: '',
         role: '',
         token: params?.token,
-        organizationToken: params?.organizationToken ?? '',
-        source: source,
+        organizationToken,
+        source,
         password: password,
       })
       .then((user) => {
         authenticationService.deleteLoginOrganizationId();
         setIsLoading(false);
-        redirectToDashboard(user);
+        onLoginSuccess(user, navigate, redirectTo);
       })
       .catch((res) => {
         setIsLoading(false);
@@ -136,6 +146,14 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
     setPassword(event.target.value);
   };
   const clickContinue = (e) => {
+    if (showJoinWorkspace && !showOnboarding) {
+      e.preventDefault();
+      userDetails?.onboarding_details?.password && userDetails?.onboarding_details?.questions
+        ? (setShowOnboarding(true), setShowJoinWorkspace(false))
+        : setUpAccount(e);
+      return;
+    }
+
     userDetails?.onboarding_details?.questions && !userDetails?.onboarding_details?.password
       ? setShowOnboarding(true)
       : (userDetails?.onboarding_details?.password && !userDetails?.onboarding_details?.questions) ||
@@ -146,6 +164,16 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
 
   return (
     <div>
+      {isGettingConfigs && (
+        <div className="common-auth-section-whole-wrapper page">
+          <div className="common-auth-section-left-wrapper">
+            <div className="loader-wrapper">
+              <ShowLoading />
+            </div>
+          </div>
+        </div>
+      )}
+
       {showJoinWorkspace && !showOnboarding && (
         <div className="page common-auth-section-whole-wrapper">
           <div className="common-auth-section-left-wrapper">
@@ -153,54 +181,28 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
             <div className="common-auth-section-left-wrapper-grid">
               <form action="." method="get" autoComplete="off">
                 {isGettingConfigs ? (
-                  <ShowLoading />
+                  <div className="loader-wrapper">
+                    <ShowLoading />
+                  </div>
                 ) : (
                   <div className="common-auth-container-wrapper">
                     <h2 className="common-auth-section-header org-invite-header" data-cy="invite-page-header">
-                      Join {configs?.name ? configs?.name : 'ToolJet'}
+                      Join {configs?.name ? configs?.name : whiteLabelText}
                     </h2>
 
                     <div className="invite-sub-header" data-cy="invite-page-sub-header">
                       {`You are invited to ${
                         configs?.name
                           ? `a workspace ${configs?.name}. Accept the invite to join the workspace.`
-                          : 'ToolJet.'
+                          : `${whiteLabelText}.`
                       }`}
                     </div>
-                    {(configs?.google?.enabled || configs?.git?.enabled) && source !== 'sso' && (
-                      <div className="d-flex flex-column align-items-center separator-bottom">
-                        {configs?.google?.enabled && (
-                          <div className="login-sso-wrapper">
-                            <GoogleSSOLoginButton
-                              text={t('confirmationPage.signupWithGoogle', 'Sign up with Google')}
-                              configs={configs?.google?.configs}
-                              configId={configs?.google?.config_id}
-                            />
-                          </div>
-                        )}
-                        {configs?.git?.enabled && (
-                          <div className="login-sso-wrapper">
-                            <GitSSOLoginButton
-                              text={t('confirmationPage.signupWithGitHub', 'Sign up with GitHub')}
-                              configs={configs?.git?.configs}
-                            />
-                          </div>
-                        )}
-                        <div className="separator-onboarding " style={{ width: '100%' }}>
-                          <div className="mt-2 separator" data-cy="onboarding-separator">
-                            <h2>
-                              <span>{t('confirmationPage.or', 'OR')}</span>
-                            </h2>
-                          </div>
-                        </div>
-                      </div>
-                    )}
 
                     <div className="org-page-inputs-wrapper">
                       <label className="tj-text-input-label" data-cy="name-input-label">
                         {t('verificationSuccessPage.name', 'Name')}
                       </label>
-                      <p className="tj-text-input" data-cy="invited-user-name">
+                      <p className="tj-text-input onbaording-disabled-field" data-cy="invited-user-name">
                         {userDetails?.name}
                       </p>
                     </div>
@@ -209,12 +211,12 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                       <label className="tj-text-input-label" data-cy="email-input-label">
                         {t('verificationSuccessPage.workEmail', 'Email')}
                       </label>
-                      <p className="tj-text-input" data-cy="invited-user-email">
+                      <p className="tj-text-input onbaording-disabled-field" data-cy="invited-user-email">
                         {userDetails?.email}
                       </p>
                     </div>
 
-                    {userDetails?.onboarding_details?.password && (
+                    {userDetails?.onboarding_details?.password && source !== 'sso' && (
                       <div className="mb-3">
                         <label className="form-label" data-cy="password-label">
                           {t('verificationSuccessPage.password', 'Password')}
@@ -275,7 +277,8 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                         }}
                         disabled={
                           isLoading ||
-                          (userDetails?.onboarding_details?.password &&
+                          (source !== 'sso' &&
+                            userDetails?.onboarding_details?.password &&
                             (password?.length < 5 || password?.trim()?.length === 0 || !password))
                         }
                         data-cy="accept-invite-button"
@@ -287,25 +290,27 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                         ) : (
                           <>
                             <span>{t('verificationSuccessPage.acceptInvite', 'Accept invite')}</span>
-                            <EnterIcon className="enter-icon-onboard" />
+                            <EnterIcon className="enter-icon-onboard" fill={'#fff'} />
                           </>
                         )}
                       </ButtonSolid>
                     </div>
-                    <p className="verification-terms" data-cy="signup-terms-helper">
-                      By signing up you are agreeing to the
-                      <br />
-                      <span>
-                        <a href="https://www.tooljet.com/terms" data-cy="terms-of-service-link">
-                          Terms of Service{' '}
-                        </a>
-                        &
-                        <a href="https://www.tooljet.com/privacy" data-cy="privacy-policy-link">
-                          {' '}
-                          Privacy Policy
-                        </a>
-                      </span>
-                    </p>
+                    {defaultState && (
+                      <p className="verification-terms" data-cy="signup-terms-helper">
+                        By signing up you are agreeing to the
+                        <br />
+                        <span>
+                          <a href="https://www.tooljet.com/terms" data-cy="terms-of-service-link">
+                            Terms of Service{' '}
+                          </a>
+                          &
+                          <a href="https://www.tooljet.com/privacy" data-cy="privacy-policy-link">
+                            {' '}
+                            Privacy Policy
+                          </a>
+                        </span>
+                      </p>
+                    )}
                   </div>
                 )}
               </form>
@@ -335,7 +340,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                   {t('verificationSuccessPage.successfullyVerifiedEmail', 'Successfully verified email')}
                 </h1>
                 <p className="info-screen-description" data-cy="onboarding-page-description">
-                  Continue to set up your workspace to start using ToolJet.
+                  Continue to set up your workspace to start using {whiteLabelText}.
                 </p>
                 <ButtonSolid
                   className="verification-success-info-btn "
@@ -351,7 +356,10 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                     </div>
                   ) : (
                     <>
-                      {t('verificationSuccessPage.setupTooljet', 'Set up ToolJet')}
+                      {t('verificationSuccessPage.setupTooljet', `Set up ${whiteLabelText}`, {
+                        whiteLabelText,
+                      })}
+
                       <EnterIcon fill={'#fff'}></EnterIcon>
                     </>
                   )}
@@ -366,7 +374,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
         <OnBoardingForm
           userDetails={userDetails}
           token={params?.token}
-          organizationToken={params?.organizationToken ?? ''}
+          organizationToken={organizationToken}
           password={password}
           darkMode={darkMode}
         />

@@ -101,7 +101,9 @@ There are currently no exposed variables for the component.
 
 ## Component specific actions (CSA)
 
-Following actions of color picker component can be controlled using the component specific actions(CSA):
+Following actions of the component can be controlled using the component specific actions(CSA):
+
+
 
 | Actions     | Description |
 | ----------- | ----------- |

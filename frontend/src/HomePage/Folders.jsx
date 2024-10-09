@@ -111,8 +111,8 @@ export const Folders = function Folders({
   }
 
   function updateFolderQuery(name) {
-    const path = `${name ? `?folder=${name}` : ''}`;
-    navigate({ pathname: location.pathname, search: path }, { replace: true });
+    const search = `${name ? `?folder=${name}` : ''}`;
+    navigate({ pathname: `/${getWorkspaceId()}`, search }, { replace: true });
   }
 
   function deleteFolder(folder) {
@@ -353,7 +353,7 @@ export const Folders = function Folders({
           </div>
         </div>
         <div className="row">
-          <div className="col d-flex modal-footer-btn">
+          <div className="col d-flex modal-footer-btn justify-content-end">
             <ButtonSolid variant="tertiary" onClick={closeModal} data-cy="cancel-button">
               {t('globals.cancel', 'Cancel')}
             </ButtonSolid>

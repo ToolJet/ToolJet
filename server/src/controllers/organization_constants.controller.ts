@@ -38,7 +38,7 @@ export class OrganizationConstantController {
 
   @UseGuards(IsPublicGuard)
   @Get(':app_slug')
-  async getConstantsFromApp(@App() app) {
+  async getConstantsFromApp(@App() app, @User() user) {
     const result = await this.organizationConstantsService.allEnvironmentConstants(app.organizationId);
     return { constants: result };
   }

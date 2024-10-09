@@ -11,6 +11,7 @@ import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 const LeftSidebarPageSelector = ({
   appDefinition,
@@ -26,7 +27,6 @@ const LeftSidebarPageSelector = ({
   disableEnablePage,
   updateHomePage,
   updatePageHandle,
-  pages,
   homePageId,
   showHideViewerNavigationControls,
   updateOnSortingPages,
@@ -35,6 +35,13 @@ const LeftSidebarPageSelector = ({
   pinned,
   setPinned,
 }) => {
+  const pages = useMemo(
+    () =>
+      Object.entries(deepClone(appDefinition.pages))
+        .map(([id, page]) => ({ id, ...page }))
+        .sort((a, b) => a.index - b.index) || [],
+    [JSON.stringify(appDefinition.pages)]
+  );
   const [allpages, setPages] = useState(pages);
   const [haveUserPinned, setHaveUserPinned] = useState(false);
   const currentState = useCurrentState();

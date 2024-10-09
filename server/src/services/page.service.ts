@@ -11,6 +11,8 @@ import { EventsService } from './events_handler.service';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { EventHandler } from 'src/entities/event_handler.entity';
+import { findAllEntityReferences, isValidUUID, updateEntityReferences } from 'src/helpers/import_export.helpers';
+import { isEmpty } from 'class-validator';
 
 @Injectable()
 export class PageService {
@@ -33,7 +35,6 @@ export class PageService {
         return { ...page, components };
       })
     );
-
     return pagesWithComponents;
   }
 
@@ -49,6 +50,7 @@ export class PageService {
       newPage.handle = page.handle;
       newPage.index = page.index;
       newPage.appVersionId = appVersionId;
+      newPage.autoComputeLayout = true;
 
       return await manager.save(Page, newPage);
     }, appVersionId);
@@ -81,6 +83,7 @@ export class PageService {
       newPage.handle = pageHandle;
       newPage.index = pageToClone.index + 1;
       newPage.appVersionId = appVersionId;
+      newPage.autoComputeLayout = true;
 
       const clonedpage = await this.pageRepository.save(newPage);
 
@@ -173,14 +176,18 @@ export class PageService {
         })
       );
 
-      const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
+      const hasParentIdSuffixed = (component, allComponents = [], componentParentId = undefined) => {
         if (componentParentId) {
           const parentId = component?.parent?.split('-').slice(0, -1).join('-');
 
           const parentComponent = allComponents.find((comp) => comp.id === parentId);
 
           if (parentComponent) {
-            return parentComponent.type === 'Tabs' || parentComponent.type === 'Calendar';
+            return (
+              parentComponent.type === 'Tabs' ||
+              parentComponent.type === 'Calendar' ||
+              parentComponent.type === 'Kanban'
+            );
           }
         }
 
@@ -190,9 +197,9 @@ export class PageService {
       for (const component of clonedComponents) {
         let parentId = component.parent ? component.parent : null;
 
-        const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pageComponents, parentId);
+        const isParentIdSuffixed = hasParentIdSuffixed(component, pageComponents, parentId);
 
-        if (isParentTabOrCalendar) {
+        if (isParentIdSuffixed) {
           const childTabId = component.parent.split('-')[component.parent.split('-').length - 1];
           const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
           const mappedParentId = componentsIdMap[_parentId];
@@ -205,6 +212,20 @@ export class PageService {
         if (parentId) {
           await manager.update(Component, component.id, { parent: parentId });
         }
+      }
+
+      const toUpdateComponents = clonedComponents.filter((component) => {
+        const entityReferencesInComponentDefinitions = findAllEntityReferences(component, []).filter(
+          (entity) => entity && isValidUUID(entity)
+        );
+
+        if (entityReferencesInComponentDefinitions.length > 0) {
+          return updateEntityReferences(component, componentsIdMap);
+        }
+      });
+
+      if (!isEmpty(toUpdateComponents)) {
+        await manager.save(toUpdateComponents);
       }
     });
   }

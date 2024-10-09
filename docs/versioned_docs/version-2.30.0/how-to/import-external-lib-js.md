@@ -1,9 +1,12 @@
 ---
 id: import-external-libraries-using-runjs
-title: Import external libraries using RunJS
+title: Import External Libraries using RunJS
 ---
+<div style={{paddingBottom:'24px'}}>
 
 ToolJet allows you to integrate external JavaScript libraries into your application using RunJS queries. This guide walks you through the process of importing and utilizing these libraries effectively.
+
+</div>
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
@@ -11,19 +14,26 @@ ToolJet allows you to integrate external JavaScript libraries into your applicat
 
 You can import various JavaScript libraries using their Content Delivery Network (CDN) links. Find the CDN links for your desired open-source projects on [jsDelivr](https://www.jsdelivr.com/).
 
-## Creating a new app and runJS query
+</div>
 
-Start by creating a new application in ToolJet. Then, proceed to create a new RunJS query from the query panel.
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Creating a New App and RunJS Query
+
+- Create a new app from the ToolJet Dashboard.
+- Once the app is ready, choose ToolJet's deafult **JavaScript** Data Source from the query panel. 
 
 <div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/import-js/create-new-query.png" alt="Create a new RunJS query" />
+ <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/import-js/create-new-query-v2.png" alt="Create a new RunJS query" />
 </div>
 
 </div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Importing Libraries
 
-Here's a step-by-step guide to importing libraries and displaying an alert upon successful import.
+Once the query is created, add the following code:
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
@@ -55,27 +65,30 @@ try {
 
 </div>
 
-After creating and running the query, an alert should pop up with the message "Mathjs and Flatten imported."
+After adding the code, click on the **Run** button in the query panel, an alert should pop up with the message "Mathjs and Flatten imported."
 
 :::tip
 Enable the **Run this query on application load?** option to make the libraries available throughout the application as soon as the app is loaded.
 :::
 
+<div style={{textAlign: 'center'}}>
+ <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/import-js/import-successful-v2.png" alt="Import Successful" />
+</div>
+
+</div>
+
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-<div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/import-js/import-successful.png" alt="Import Successful" />
-</div>
-
-</div>
-
 ## Examples
+
+</div>
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### 1. Flattening JSON Objects using FlattenJS
 
-Create a new RunJS query using the Flatten library (imported earlier) to flatten a JSON object.
+- Create a new *RunJS* query using the Flatten library (imported earlier) to flatten a JSON object.
+- In the code section of the query, add the following code:
 
 ```js
 return flatten({
@@ -89,10 +102,10 @@ return flatten({
 });
 ```
 
-Preview the output in the query manager or run the query to see the flattened JSON.
+- Preview the output in the query manager or click **Run** in the query panel to see the flattened JSON.
 
 <div style={{textAlign: 'center'}}>
- <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/import-js/flatten-js.png" alt="Use FlattenJS" />
+ <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/import-js/flatten-js-v2.png" alt="Use FlattenJS" />
 </div>
 
 </div>
@@ -101,13 +114,14 @@ Preview the output in the query manager or run the query to see the flattened JS
 
 ### 2. Computation using MathJS
 
-Create another RunJS query utilizing the MathJS library for a calculation.
+- Create another *RunJS* query utilizing the MathJS library for a calculation.
+- In the code section of the query, add the following code:
 
 ```js
 return math.atan2(3, -3) / math.pi;
 ```
 
-Preview the output, or Run the query to see the result of the calculation.
+- Preview the output in the query manager or click **Run** in the query panel to see the result of the calculation.
 
 <div style={{textAlign: 'center'}}>
  <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/import-js/math-js-v2.png" alt="Use MathJs" />

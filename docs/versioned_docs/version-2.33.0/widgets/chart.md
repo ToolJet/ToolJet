@@ -305,11 +305,11 @@ Check the **[Plotly documentation](https://plotly.com/chart-studio-help/json-cha
 
 ## Exposed variables
 
-| <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
-|: ---------- | :---------- | :------------ |
-| chartTitle       | Holds the title of the chart component. | Accessible dynamically with JS (for e.g., `{{components.chart1.chartTitle}}`). |
-| xAxisTitle         | Contains the title for the X-axis of the chart.        | Accessible dynamically with JS (for e.g., `{{components.chart1.xAxisTitle}}`). |
-| yAxisTitle         | Contains the title for the Y-axis of the chart.        | Accessible dynamically with JS (for e.g., `{{components.chart1.yAxisTitle}}`). |
+| Variable|  Description  | How To Access  |
+| ------- | ------------- | -------------- |
+| chartTitle | Holds the title of the chart component.  | Accessible dynamically with JS (for e.g., `{{components.chart1.chartTitle}}`).|
+| xAxisTitle  | Contains the title for the X-axis of the chart. | Accessible dynamically with JS (for e.g., `{{components.chart1.xAxisTitle}}`). |
+| yAxisTitle  | Contains the title for the Y-axis of the chart. | Accessible dynamically with JS (for e.g., `{{components.chart1.yAxisTitle}}`). |
 | clickedDataPoints  | Stores details about the data points that were clicked.| Accessible dynamically with JS (for e.g., `{{components.chart1.clickedDataPoints}}`). Each data point includes `xAxisLabel`, `yAxisLabel`, `dataLabel`, `dataValue`, and `dataPercent`. |
 
 

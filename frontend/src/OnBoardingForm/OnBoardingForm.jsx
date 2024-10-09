@@ -6,6 +6,7 @@ import OnBoardingRadioInput from './OnBoardingRadioInput';
 import ContinueButton from './ContinueButton';
 import OnBoardingBubbles from './OnBoardingBubbles';
 import { getuserName } from '@/_helpers/utils';
+import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 import { redirectToDashboard } from '@/_helpers/routes';
 import { ON_BOARDING_SIZE, ON_BOARDING_ROLES } from '@/_helpers/constants';
 import LogoLightMode from '@assets/images/Logomark.svg';
@@ -25,6 +26,8 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
     companySize: '',
     phoneNumber: '',
   });
+  const source = new URLSearchParams(location?.search).get('source');
+  const whiteLabelText = retrieveWhiteLabelText();
 
   const pageProps = {
     formData,
@@ -44,6 +47,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
           companySize: formData.companySize,
           role: formData.role,
           token: token,
+          source,
           organizationToken: organizationToken,
           ...(password?.length > 0 && { password }),
           phoneNumber: formData?.phoneNumber,
@@ -73,7 +77,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
     'Enter your phone number',
     'Enter your phone number', //dummy for styling
   ];
-  const FormSubTitles = ['This information will help us improve ToolJet.'];
+  const FormSubTitles = [`This information will help us improve ${whiteLabelText}.`];
 
   return (
     <div className="flex">

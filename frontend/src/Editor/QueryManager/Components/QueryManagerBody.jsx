@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import cx from 'classnames';
-import { cloneDeep, isEmpty } from 'lodash';
+import { isEmpty } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { allSources, source } from '../QueryEditors';
@@ -13,12 +13,13 @@ import { CustomToggleSwitch } from './CustomToggleSwitch';
 import { EventManager } from '@/Editor/Inspector/EventManager';
 import { staticDataSources, customToggles, mockDataQueryAsComponent } from '../constants';
 import { DataSourceTypes } from '../../DataSourceManager/SourceComponents';
-import { useDataSources, useGlobalDataSources } from '@/_stores/dataSourcesStore';
+import { useDataSources, useGlobalDataSources, useSampleDataSource } from '@/_stores/dataSourcesStore';
 import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
 import { useSelectedQuery, useSelectedDataSource } from '@/_stores/queryPanelStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import SuccessNotificationInputs from './SuccessNotificationInputs';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 export const QueryManagerBody = ({
   darkMode,
@@ -32,6 +33,8 @@ export const QueryManagerBody = ({
   const { t } = useTranslation();
   const dataSources = useDataSources();
   const globalDataSources = useGlobalDataSources();
+  const sampleDataSource = useSampleDataSource();
+
   const selectedQuery = useSelectedQuery();
   const selectedDataSource = useSelectedDataSource();
   const { changeDataQuery, updateDataQuery } = useDataQueriesActions();
@@ -85,7 +88,7 @@ export const QueryManagerBody = ({
     const updatedOptions = cleanFocusedFields(newOptions);
     setOptions((options) => ({ ...options, ...updatedOptions }));
 
-    updateDataQuery(cloneDeep({ ...options, ...updatedOptions }));
+    updateDataQuery(deepClone({ ...options, ...updatedOptions }));
   };
 
   const optionchanged = (option, value) => {
@@ -113,6 +116,7 @@ export const QueryManagerBody = ({
           dataSources={dataSources}
           staticDataSources={staticDataSources}
           globalDataSources={globalDataSources}
+          sampleDataSource={sampleDataSource}
           darkMode={darkMode}
         />
       </div>
@@ -234,9 +238,9 @@ export const QueryManagerBody = ({
   };
 
   const renderChangeDataSource = () => {
-    const selectableDataSources = [...globalDataSources, ...dataSources].filter(
-      (ds) => ds.kind === selectedQuery?.kind
-    );
+    const selectableDataSources = [...dataSources, ...globalDataSources, !!sampleDataSource && sampleDataSource]
+      .filter(Boolean)
+      .filter((ds) => ds.kind === selectedQuery?.kind);
     if (isEmpty(selectableDataSources)) {
       return '';
     }

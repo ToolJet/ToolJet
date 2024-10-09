@@ -43,12 +43,12 @@ Check the **component specific actions** available for this component **[here](/
 
 ## Exposed Variables
 
-| <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
-|: ---------- | :---------- | :------------ |
-| text       | Holds the value of the component's label. | Accessible dynamically with JS (for e.g., `{{components.text1.text}}`) |
-| isLoading   | Indicates if the component is loading. | Accessible dynamically with JS (for e.g., `{{components.text1.isLoading}}`) |
-| isVisible   | Indicates if the component is visible. | Accessible dynamically with JS (for e.g., `{{components.text1.isVisible}}`) |
-| isDisabled  | Indicates if the component is disabled. | Accessible dynamically with JS (for e.g., `{{components.text1.isDisabled}}`) |
+| Variable | Description | How To Access |
+|:--------:|:-----------:|:------------:|
+| <div style={{ width:"100px"}}> text </div> | Holds the value of the component's label. | Accessible dynamically with JS (for e.g., `{{components.text1.text}}`) |
+| <div style={{ width:"100px"}}> isLoading </div> | Indicates if the component is loading. | Accessible dynamically with JS (for e.g., `{{components.text1.isLoading}}`) |
+| <div style={{ width:"100px"}}> isVisible </div> | Indicates if the component is visible. | Accessible dynamically with JS (for e.g., `{{components.text1.isVisible}}`) |
+| <div style={{ width:"100px"}}> isDisabled </div> | Indicates if the component is disabled. | Accessible dynamically with JS (for e.g., `{{components.text1.isDisabled}}`) |
 
 ## Additional Actions
 

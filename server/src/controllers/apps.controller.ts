@@ -240,6 +240,7 @@ export class AppsController {
     return response;
   }
 
+  // Deprecated - moved to import - export - controller
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ValidAppInterceptor)
   @Post(':id/clone')
