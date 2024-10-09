@@ -4,6 +4,7 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 
 ![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/tooljet/tooljet-ce)
 ![Number of GitHub contributors](https://img.shields.io/github/contributors/tooljet/tooljet)
+
 [![Number of GitHub issues that are open](https://img.shields.io/github/issues/ToolJet/ToolJet)](https://github.com/ToolJet/ToolJet/issues)
 [![Number of GitHub stars](https://img.shields.io/github/stars/ToolJet/ToolJet)](https://github.com/ToolJet/ToolJet/stargazers)
 ![Number of GitHub closed issues](https://img.shields.io/github/issues-closed/tooljet/tooljet)
