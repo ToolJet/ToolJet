@@ -3,43 +3,54 @@ id: sendgrid
 title: SendGrid
 ---
 
-# SendGrid
-
 ToolJet can connect to your SendGrid account to send emails.
 
-<img class="screenshot-full" src="/img/datasource-reference/sendgrid/sendgrid-datasource.png" alt="ToolJet - Data source - SendGrid" height="420" />
+<div style={{paddingTop:'24px'}}>
+
+## Connection
+
+To establish a connection with the SendGrid datasource, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+
+ToolJet requires the following to connect to your SendGrid database:
+- **SendGrid API key**
+
+<img class="screenshot-full" src="/img/datasource-reference/sendgrid/sendgrid-datasource-v2.png" alt="ToolJet - Data source - SendGrid" />
 
 :::info
 The SendGrid API Datasource supports for interaction with the mail endpoint of the [SendGrid v3 API](https://docs.sendgrid.com/api-reference/how-to-use-the-sendgrid-v3-api/authentication).
 :::
 
-## Connection
-To add a new SendGrid API datasource, click the **Datasource manager** icon on the left-sidebar of the app builder and click on the `Add datasource` button, then select SendGrid API from the modal that pops up.
- 
-Enter your **SendGrid API key** in the "API key" field.
+</div>
 
-:::tip
-SendGrid API key is required to create an SendGrid datasource on ToolJet. You can generate API key by visiting [SendGrid account page](https://app.sendgrid.com/settings/api_keys). 
-:::
+<div style={{paddingTop:'24px'}}>
 
-Click on the 'Save' button to save the data source.
+## Querying SendGrid
 
-## Supported operations
-1.  Email service
+1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
+2. Select the **SendGrid** datasource added in previous step.
+3. Select **Email service** from the dropdown and enter the required parameters.
+4. Click on the **Preview** button to preview the output or Click on the **Run** button to create and trigger the query.
+
+</div>
+
+<div style={{paddingTop:'24px'}}>
+
+## Supported Operations
+
+### Email Service
+
+#### Required Parameters 
+- **Multiple recipients**
+- **Send email to**
+- **Send email from** 
+- **Subject**
+- **Body as text**
 
 
-### Email service
-Required parameters: 
-- Send email to
-- Send email from 
-- Subject
-- Body as text
+#### Optional Parameter
+- **Body as HTML**
 
-
-Optional parameters:
-- Body as HTML
-
-<img class="screenshot-full" src="/img/datasource-reference/sendgrid/sendgrid-query.jpg" alt="ToolJet - Query SendGrid" height="420"/>
+<img class="screenshot-full" src="/img/datasource-reference/sendgrid/sendgrid-query-v2.png" alt="ToolJet - Query SendGrid"/>
 
 :::info
 **Send mail to** - accepts an array/list of emails separated by comma.
@@ -56,7 +67,4 @@ For example: `admin@tooljet.io`
 **Send multiple individual emails to multiple recipients** - set <b>Multiple recipients</b> field to `{{true}}` and the `Send mail to` field will be split into multiple emails and send to each recipient.
 :::
 
-
-:::note
-NOTE: Query should be saved before running.
-:::
+</div>
