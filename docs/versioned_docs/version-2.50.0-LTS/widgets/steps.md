@@ -44,11 +44,7 @@ This property when disabled will disable selection of steps.
 
 | <div style={{ width:"100px"}}> Event </div> | <div style={{ width:"100px"}}> Description </div> |
 |:------------------|:---------------------|
-| On select | This event is fired whenever the user selects any step. |
-| On change | This event triggers when the user changes the text in the input. |
-| On enter pressed | This event fires when the user presses the enter key inside the text input. |
-| On focus | This event triggers when the text input field receives focus (when the user clicks inside it). |
-| On blur | This event triggers when the user clicks outside or leaves the text input field. |
+| On select |  Triggers whenever the user selects any step. |
 
 </div>
 
