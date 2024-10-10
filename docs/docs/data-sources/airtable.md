@@ -58,17 +58,49 @@ This operation retrieves a list of records from the specified table.
 
 #### Required Parameters
 
-- **Base ID**
-- **Table name**
+- **Base ID**: The unique identifier of the Airtable base.
+- **Table name**: The name or ID of the table to retrieve records from.
 
-#### Optional Parameters
+#### Optional Parameters*
 
-- **Page size**  
-- **Offset**
-- **Filter by formula** 
-- **Fields**
+- **Page size**: The number of records to return per page.
+- **Offset**: Used for pagination to fetch the next set of records.
+- **Filter by formula**: A formula to filter records. 
+- **Fields**: Specifies which fields to include in the response.
+- **Timezone**: The timezone to use for date and time fields.
+- **User locale**: The locale to use for formatting date and time fields.
+- **Cell format**: Determines how cell values are returned. Possible values are:
+      - **json**: Returns cell values as JSON objects, depending on the field type.
+      - **string**: Returns cell values as strings.
+- **View**: Specifies the view to retrieve records from.
+- **Sort**: Defines the sorting order of records.
 
-<img className="screenshot-full" src="/img/datasource-reference/airtable/list-records-v2.png" alt="Airtable List Records Query" />
+:::info
+Timezone and User locale are mutually dependent. If you provide a timezone, you must also provide a user locale and vice versa. These properties are only applied when cell format is set to string. To correctly format date and time fields, make sure the coloumn type is set to Date or Date Time in Airtable.
+:::
+
+<img className="screenshot-full" src="/img/datasource-reference/airtable/list-records-v3.png" alt="Airtable List Records Query" />
+
+
+<details>
+<summary>**Example Values**</summary>
+
+```json
+Base ID: appO4WnRU3eTWnrDB
+Table name: tblAPbj6KMjS8pxhH // Can be Table name or Table ID
+Page size: 100
+Offset: itrU18e2y6ITuMs1n/recjR8UdOZKjZ7aK3
+Fields: ["Date", "Email", "Usage (# Weeks)"]
+Filter by formula: IF({Usage (# Weeks)} < 10, 1, 0) // Only records with Usage (# Weeks) less than 10
+Timezone: America/Chicago
+User locale: en-gb
+Cell format: string // Cell format needs to be string for Timezone and User locale to work
+View: All Responses
+Sort: createdTime // Select direction: Ascending or Descending
+```
+
+</details>
+
 
 <details>
   <summary>**Response Example**</summary>
@@ -77,35 +109,36 @@ This operation retrieves a list of records from the specified table.
   {
     "records": [
       {
-        "id": "recu9xMnUdr2n2cw8",
+        "id": "recToGRP6bWUG6djd",
+        "createdTime": "2016-11-21T20:21:40.000Z",
         "fields": {
-          "Notes": "Meeting to discuss project details",
-          "Name": "John Doe"
-        },
-        "createdTime": "2021-05-12T14:30:33.000Z"
+          "Usage (# Weeks)": "3",
+          "Email": "Edith Lindon",
+          "Date": "11-21-2016"
+        }
       },
       {
-        "id": "recyIdR7bVdQvmKXa",
+        "id": "recnUVJ8wwZbdECLk",
+        "createdTime": "2016-11-21T20:21:40.000Z",
         "fields": {
-          "Notes": "Follow-up call regarding contract",
-          "Name": "Jane Smith"
-        },
-        "createdTime": "2021-05-12T14:30:33.000Z"
+          "Usage (# Weeks)": "3",
+          "Email": "Marcellus Wong",
+          "Date": "11-21-2016"
+        }
       },
       {
-        "id": "recAOzdIHaRpvRaGE",
+        "id": "recStKhQYw4Fn2qpj",
+        "createdTime": "2016-11-21T20:21:40.000Z",
         "fields": {
-          "Notes": "Client feedback review meeting",
-          "Name": "Alice Johnson"
-        },
-        "createdTime": "2021-05-12T14:30:33.000Z"
+          "Usage (# Weeks)": "2",
+          "Email": "Lorraine Ljuba",
+          "Date": "11-21-2016"
+        }
       }
-    ],
-    "offset": "recAOzdIHaRpvRaGE"
+    ]
   }
   ```
 </details>
-
 
 ### Retrieve Record
 
