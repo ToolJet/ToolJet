@@ -276,7 +276,7 @@
 					"key": "size",
 					"type": "codehinter",
 					"description": "Enter image size in pixels (e.g., 1024x1024)",
-					"placeholder": "By default 1024x1024 sized image will be generated",
+                    "placeholder": "1024x1024, 1792x1024 or 1024x1792. By default 1024x1024 sized image is generated",
 					"width": "320px",
 					"height": "36px"
     			}
@@ -294,7 +294,7 @@
 					"key": "size",
 					"type": "codehinter",
 					"description": "Enter image size in pixels (e.g., 1024x1024)",
-					"placeholder": "By default 1024x1024 sized image will be generated",
+                    "placeholder": "256x256, 512x512 or 1024x1024. By default 1024x1024 sized image is generated",
 					"width": "320px",
 					"height": "36px"
     			}
