@@ -18,12 +18,12 @@ ToolJet provides an option to automatically retry REST API requests in case of c
 
 You can configure this feature at two levels:
 
-## Data Source Level:
+## Data Source Level
  In the REST API data source configuration, you'll find a toggle for **Retry on network errors** This sets the default behavior for all queries using this data source.
 
 <img className="screenshot-full" src="/img/datasource-reference/rest-api/rest-api-data-source.png" alt="ToolJet - Data source - REST API" />
 
-## Query Level:
+## Query Level
  In the query builder for each REST API query, you'll find a similar toggle for for **Retry on network errors** under the **Settings** tab. This sets the behavior for that specific query.
 
 <img className="screenshot-full" src="/img/datasource-reference/rest-api/query-builder-retry.png" alt="ToolJet - Data source - REST API" />
