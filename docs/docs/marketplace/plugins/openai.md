@@ -130,7 +130,9 @@ This query generates AI images based on the given prompt.
 
 #### Optional parameters:
 
-- **Size(in pixels)**: The size of the image to be generated in pixels. The default value is 1024x1024.
+- **Size (in pixels)**: The size of the image to be generated in pixels. The default value is 1024x1024. The allowed sizes depend on the model:
+    - **DALL-E 2**: Must be one of `256x256`, `512x512`, or `1024x1024`.
+    - **DALL-E 3**: Must be one of `1024x1024`, `1792x1024`, or `1024x1792`.
 
 <div style={{textAlign: 'center'}}>
     <img className="screenshot-full" src="/img/marketplace/plugins/openai/generate-ai-images.png" alt="Generate AI Images Operation" />
@@ -142,7 +144,7 @@ This query generates AI images based on the given prompt.
 ```yaml
 Model: DALL-E 3
 Prompt: A futuristic cityscape with flying cars and holographic billboards at sunset
-Size(in pixels): 720x720
+Size(in pixels): 1024x1024
 ```
 
 </details>
