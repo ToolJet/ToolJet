@@ -3,10 +3,8 @@ id: response-types-and-handling
 title: Response Types and Handling
 ---
 
-# Response Types and Handling
-
 REST APIs can return data in a variety of formats, including **JSON** and **Base64**. JSON is a common format used for data exchange in REST APIs, while Base64 is often used for encoding binary data, such as images or video, within a JSON response.
-When the response `content-type` is **image**, the response will be a `base64` string.
+When the response **content-type** is **image**, the response will be a **base64** string.
 
 <details>
 <summary>**Example JSON response**</summary>
@@ -63,23 +61,14 @@ When the response `content-type` is **image**, the response will be a `base64` s
   }
 ]
 ```
+
+The JSON response can be easily loaded on the components like **table** and **listview** using `{{queries.<queryname>.data}}`
+
 </details>
-The JSON response can be easily loaded on the components like **table** and **listview** using **`{{queries.<queryname>.data}}`**
-
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/datasource-reference/rest-api/json.png" alt="ToolJet - Data source - REST API" />
-
-</div>
 
 You can also use JS methods like **map** to load data on components like **dropdown** using **`{{queries.restapi1.data.map(i => i.title)}}`**
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/datasource-reference/rest-api/map.png" alt="ToolJet - Data source - REST API" />
-
-</div>
+<img className="screenshot-full" src="/img/datasource-reference/rest-api/map.png" alt="ToolJet - Data source - REST API" style={{marginBottom:'15px'}} />
 
 <details>
 <summary>**Example base64 response**</summary>
@@ -90,8 +79,4 @@ iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAA/FBMVEVAYt79/f1AYt/9/f79/ftAY9s/
 
 Read the guide on **[loading base64 data](/docs/how-to/loading-image-pdf-from-db)**
 
-<div style={{textAlign: 'center'}}>
-
 <img className="screenshot-full" src="/img/datasource-reference/rest-api/base64.png" alt="ToolJet - Data source - REST API" />
-
-</div>
