@@ -1,25 +1,45 @@
 import OpenAI from 'openai';  // Updated SDK version
 import { QueryOptions } from './types';
 
-// Utility function to convert size string to the enum value
-const getSizeEnum = (size: string | undefined): '256x256' | '512x512' | '1024x1024' => {
-  switch (size) {
-    case '256x256':
-      return '256x256';
-    case '512x512':
-      return '512x512';
-    case '1024x1024':
-      return '1024x1024';
-    default:
-      return '1024x1024'; // Default size
+// Updated utility function to handle size validation based on model
+const getSizeEnum = (model: string | undefined, size: string | undefined): '256x256' | '512x512' | '1024x1024' | '1792x1024' | '1024x1792' => {
+  // If the model is DALL-E 3, only allow 1024x1024, 1792x1024, or 1024x1792
+  if (model === 'dall-e-3') {
+    switch (size) {
+      case '1024x1024':
+        return '1024x1024';
+      case '1792x1024':
+        return '1792x1024';
+      case '1024x1792':
+        return '1024x1792';
+      default:
+        return '1024x1024'; // Default size for DALL-E 3
+    }
   }
+
+  // If the model is DALL-E 2, only allow 1024x1024, 512x512, or 256x256
+  if (model === 'dall-e-2') {
+    switch (size) {
+      case '1024x1024':
+        return '1024x1024';
+      case '512x512':
+        return '512x512';
+      case '256x256':
+        return '256x256';
+      default:
+        return '1024x1024'; // Default size for DALL-E 2
+    }
+  }
+
+  // Default size if model is not recognized
+  return '1024x1024';
 };
 
-// Utility function to convert number of images from string or number
-//const getNumberOfImages = (num_images: number | string | undefined): number => {
-//  const num = typeof num_images === 'string' ? parseInt(num_images) : num_images;
-//  return isNaN(num) ? 1 : Math.max(1, Math.min(10, num)); // Ensure it's between 1 and 10
-//};
+ //Utility function to convert number of images from string or number
+/*const getNumberOfImages = (num_images: number | string | undefined): number => {
+  const num = typeof num_images === 'string' ? parseInt(num_images) : num_images;
+  return isNaN(num) ? 1 : Math.max(1, Math.min(10, num)); // Ensure it's between 1 and 10
+};*/
 
 export async function getCompletion(
   openai: OpenAI,
@@ -81,15 +101,14 @@ export async function generateImage(
   openai: OpenAI,
   options: QueryOptions
 ): Promise<{ status: string; message: string; description?: string; data?: any }> {
-  const { model, prompt, 
-    //num_images,
-    size } = options;
+  const { model, prompt, size/* , n */ } = options;
+
   try {
     const response = await openai.images.generate({
       model: model || 'dall-e-3',
       prompt: prompt || '',
+      size: getSizeEnum(model, size), // Convert and validate image size based on the model
       //n: getNumberOfImages(num_images),  Convert and validate number of images
-      size: getSizeEnum(size), // Convert and validate image size
     });
 
     // Return the URL of the first image as a JSON object
