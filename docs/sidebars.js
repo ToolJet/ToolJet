@@ -297,9 +297,6 @@ const sidebars = {
                 'data-sources/restapi/configuration',
                 'data-sources/restapi/authentication',
                 'data-sources/restapi/querying-rest-api',
-                'data-sources/restapi/request-types',
-                'data-sources/restapi/response-types-and-handling',
-                'data-sources/restapi/retry-on-network-errors',
                 'data-sources/restapi/metadata-and-cookies',
 
               ],
