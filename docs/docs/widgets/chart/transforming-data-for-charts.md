@@ -72,7 +72,7 @@ This query will calculate the number of each course and return an array of objec
 
 ### Plotting Pie Chart
 
-1. Add a chart component from the component library available on left to the canvas. 
+1. Add a chart component from the component library available on right to the canvas. 
 2. Under Properties section select **Pie** as the chart type from the dropdown.
 3. Under chart data section input `{{queries.<Your RunJS Query Name>.data.courseData}}` to input the data from the query.
 
@@ -154,7 +154,7 @@ return finalData;
 
 ### Plotting Line Chart
 
-1. Add a chart component from the component library available on left to the canvas. 
+1. Add a chart component from the component library available on right to the canvas. 
 2. Under Properties section select **Line** as the chart type from the dropdown.
 3. Under chart data section input `{{queries.<Your RunJS Query Name>.data}}` to input the data from the query.
 
@@ -235,7 +235,7 @@ return JSON.stringify(result)
 
 ### Plotting Candlestick Chart
 
-1. Add a chart component from the component library available on left to the canvas. 
+1. Add a chart component from the component library available on right to the canvas. 
 2. Enable use plotly JSON schema under Plotly JSON Chart Schema section.
 3. Under JSON Description section input `{{queries.<Your RunJS Query Name>.data}}` to input the data from the query.
 
@@ -314,7 +314,7 @@ output_str
 
 ### Plotting Heatmap Chart
 
-1. Add a chart component from the component library available on left to the canvas. 
+1. Add a chart component from the component library available on right to the canvas. 
 2. Enable use plotly JSON schema under Plotly JSON Chart Schema section.
 3. Under JSON Description section input `{{queries.<Your RunJS Query Name>.data}}` to input the data from the query.
 
