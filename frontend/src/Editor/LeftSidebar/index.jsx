@@ -27,6 +27,94 @@ import { useDataQueries } from '@/_stores/dataQueriesStore';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import DataSourceIcon from '@/Editor/QueryManager/Components/DataSourceIcon';
 
+const QueryIcons = (dataQueries, staticDataSources, dataSources) => {
+  const queryIcons = dataQueries.map((query) => {
+    const allDs = [...staticDataSources, ...dataSources];
+    const source = allDs.find((ds) => ds.kind === query.kind);
+    return {
+      iconName: query.name,
+      jsx: () => <DataSourceIcon source={source} height={16} />,
+    };
+  });
+
+  return queryIcons;
+};
+
+const getTextInputIcons = (componentExposedVariables) => {
+  const icons = [];
+
+  if (componentExposedVariables.disable) {
+    icons.push({
+      iconName: 'disable',
+      jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
+      className: 'component-icon',
+      tooltipMessage: 'This function will be deprecated soon, You can use setDisable as an alternative',
+      isInfoIcon: true,
+    });
+  }
+
+  if (componentExposedVariables.visibility) {
+    icons.push({
+      iconName: 'visibility',
+      jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
+      className: 'component-icon',
+      tooltipMessage: 'This function will be deprecated soon, You can use setVisibility as an alternative',
+      isInfoIcon: true,
+    });
+  }
+
+  return icons;
+};
+const getButtonIcons = (componentExposedVariables) => {
+  const icons = [];
+
+  if (componentExposedVariables.disable) {
+    icons.push({
+      iconName: 'disable',
+      jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
+      className: 'component-icon',
+      tooltipMessage: 'This function will be deprecated soon, You can use setDisable as an alternative',
+      isInfoIcon: true,
+    });
+  }
+
+  if (componentExposedVariables.visibility) {
+    icons.push({
+      iconName: 'visibility',
+      jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
+      className: 'component-icon',
+      tooltipMessage: 'This function will be deprecated soon, You can use setVisibility as an alternative',
+      isInfoIcon: true,
+    });
+  }
+
+  if (componentExposedVariables.loading) {
+    icons.push({
+      iconName: 'loading',
+      jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
+      className: 'component-icon',
+      tooltipMessage: 'This function will be deprecated soon, You can use setLoading as an alternative',
+      isInfoIcon: true,
+    });
+  }
+
+  return icons;
+};
+
+const getTextIcons = (componentExposedVariables) => {
+  if (componentExposedVariables?.visibility) {
+    return [
+      {
+        iconName: 'visibility',
+        jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
+        className: 'component-icon',
+        tooltipMessage: 'This function will be deprecated soon, You can use setVisibility as an alternative',
+        isInfoIcon: true,
+      },
+    ];
+  }
+  return [];
+};
 export const LeftSidebar = forwardRef((props, ref) => {
   const router = useRouter();
   const {
@@ -212,15 +300,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentState, JSON.stringify(dataQueries)]);
 
-  const queryIcons = dataQueries.map((query) => {
-    const allDs = [...staticDataSources, ...dataSources];
-    const source = allDs.find((ds) => ds.kind === query.kind);
-    return {
-      iconName: query.name,
-      jsx: () => <DataSourceIcon source={source} height={16} />,
-    };
-  });
-
   const componentIcons = Object.entries(currentState['components']).map(([key, value]) => {
     const component = componentDefinitions[value.id]?.component ?? {};
 
@@ -234,31 +313,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
       };
     }
   });
-  const getTextInputIcons = (componentExposedVariables) => {
-    const icons = [];
-
-    if (componentExposedVariables.disable) {
-      icons.push({
-        iconName: 'disable',
-        jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
-        className: 'component-icon',
-        tooltipMessage: 'This function will be deprecated soon, You can use setDisable as an alternative',
-        isInfoIcon: true,
-      });
-    }
-
-    if (componentExposedVariables.visibility) {
-      icons.push({
-        iconName: 'visibility',
-        jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
-        className: 'component-icon',
-        tooltipMessage: 'This function will be deprecated soon, You can use setVisibility as an alternative',
-        isInfoIcon: true,
-      });
-    }
-
-    return icons;
-  };
 
   const getCheckboxIcons = (componentExposedVariables) => {
     const icons = [];
@@ -274,57 +328,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
     }
 
     return icons;
-  };
-
-  const getButtonIcons = (componentExposedVariables) => {
-    const icons = [];
-
-    if (componentExposedVariables.disable) {
-      icons.push({
-        iconName: 'disable',
-        jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
-        className: 'component-icon',
-        tooltipMessage: 'This function will be deprecated soon, You can use setDisable as an alternative',
-        isInfoIcon: true,
-      });
-    }
-
-    if (componentExposedVariables.visibility) {
-      icons.push({
-        iconName: 'visibility',
-        jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
-        className: 'component-icon',
-        tooltipMessage: 'This function will be deprecated soon, You can use setVisibility as an alternative',
-        isInfoIcon: true,
-      });
-    }
-
-    if (componentExposedVariables.loading) {
-      icons.push({
-        iconName: 'loading',
-        jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
-        className: 'component-icon',
-        tooltipMessage: 'This function will be deprecated soon, You can use setLoading as an alternative',
-        isInfoIcon: true,
-      });
-    }
-
-    return icons;
-  };
-
-  const getTextIcons = (componentExposedVariables) => {
-    if (componentExposedVariables?.visibility) {
-      return [
-        {
-          iconName: 'visibility',
-          jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
-          className: 'component-icon',
-          tooltipMessage: 'This function will be deprecated soon, You can use setVisibility as an alternative',
-          isInfoIcon: true,
-        },
-      ];
-    }
-    return [];
   };
 
   const exposedVariablesIcon = Object.entries(currentState['components'])
@@ -353,8 +356,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
     .filter((value) => value !== undefined); // Remove undefined values
 
   const iconsList = React.useMemo(
-    () => [...queryIcons, ...componentIcons, ...exposedVariablesIcon],
-    [queryIcons, componentIcons, exposedVariablesIcon]
+    () => [...QueryIcons(dataQueries, staticDataSources, dataSources), ...componentIcons, ...exposedVariablesIcon],
+    [dataQueries, staticDataSources, dataSources, componentIcons, exposedVariablesIcon]
   );
   const handleRemoveComponent = (component) => {
     removeComponent(component.id);
