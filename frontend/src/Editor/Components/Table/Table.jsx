@@ -1424,7 +1424,7 @@ export function Table({
                 let rowProps = { ...row.getRowProps() };
                 const contentWrap = resolveReferences(contentWrapProperty);
                 const isMaxRowHeightAuto = maxRowHeight === 'auto';
-                rowProps.style.minHeight = cellSize === 'condensed' ? '39px' : '45px'; // 1px is removed to accomodate 1px border-bottom
+                rowProps.style.minHeight = cellSize === 'condensed' ? '39px' : '45px'; // 1px is removed to accommodate 1px border-bottom
                 let cellMaxHeight;
                 let cellHeight;
                 if (contentWrap) {
