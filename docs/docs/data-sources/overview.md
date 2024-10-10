@@ -65,7 +65,7 @@ Data Source page is available only on **ToolJet version 2.3.0 and above**.
 ## Default data sources
 
 By default, 4 data sources will be available on every app on ToolJet:
-- **[ToolJet Database](/docs/tooljet-database/)**
+- **[ToolJet Database](/docs/tooljet-db/tooljet-database/)**
 - **[RestAPI](/docs/data-sources/restapi/)**
 - **[Run JavaScript Query](/docs/data-sources/run-js/)**
 - **[Run Python Query](/docs/data-sources/run-py/)**
