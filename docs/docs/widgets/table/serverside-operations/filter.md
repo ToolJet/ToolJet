@@ -3,15 +3,15 @@ id: filter
 title: Serverside Filter Operation
 ---
 
-This guide explains how to perform serverside filter operation on a table component in ToolJet.  While most databases offer support for server-side operations, the specific implementation can vary depending on the database. For this guide, PostgreSQL will be used as the data source to demonstrate the process.
+This guide explains how to perform serverside filter operation on a **Table** component in ToolJet.
 
 <div style={{paddingTop:'24px'}}>
 
 ## Add Table Component
 
-Before performing the search operation, let's setup the table component and populate it with the data:
+Before performing the filter operation, let's setup the table component and populate it with the data:
 
-1. Drag a table component from the left component library to the canvas.
+1. Drag a **Table** component from the right component library to the canvas.
 2. Select the data source and create a new query from the query panel at the bottom. (Refer to [data source](/docs/data-sources/overview) docs for more details) <br/>
     This guide will use ToolJet’s Sample data source (Postgres).<br/>
     Add the following query to fetch the data from the database:
@@ -23,7 +23,7 @@ Before performing the search operation, let's setup the table component and popu
 
     <img className="screenshot-full" src="/img/widgets/table/serverside-operations/fetch-data-query.png" alt="Fetch data from the data source" />
 
-3. Set the value of the **Data** property of the table to `{{queries.<query_name>.data}}` to populate the table with relevant data.
+3. Set the value of the **Data** property of the **Table** to `{{queries.<query_name>.data}}` to populate the table with relevant data.
 
 </div>
 
@@ -31,13 +31,13 @@ Before performing the search operation, let's setup the table component and popu
 
 ## Serverside Filter
 
-Follow the following steps to perform server-side filter operation on the table:
+Follow the following steps to perform server-side filter operation on the **Table**:
 
-1. Enable Server Side Sort under the table’s properties.
+1. Enable Server Side Filter under the **Table** properties.
     
     <img className="screenshot-full" src="/img/widgets/table/serverside-operations/filter-property.png" alt="Fetch data from the data source" />
     
-2. Create a new RunJS Query to dynamically create SQL queries for filters.
+2. Create a new **RunJS** Query to dynamically create SQL queries for filters.
     
     ```js
     const filterData = components.table1.filters;
@@ -87,7 +87,7 @@ Follow the following steps to perform server-side filter operation on the table:
     
     <img className="screenshot-full" src="/img/widgets/table/serverside-operations/filter-js-query.png" alt="Fetch data from the data source" />
     
-3. Add Event Handler to RunJS Query<br/>
+3. Add Event Handler to **RunJS** Query<br/>
     Event: **Query Success**<br/>
     Action: **Run Query**<br/>
     Query: **Select Your Query**
@@ -102,7 +102,7 @@ Follow the following steps to perform server-side filter operation on the table:
     
     <img className="screenshot-full" src="/img/widgets/table/serverside-operations/filter-query.png" alt="Fetch data from the data source" />
     
-5. Add Event Handler in the table:<br/>
+5. Add Event Handler in the **Table**:<br/>
     Event: **Filter Changed**<br/>
     Action: **Run Query**<br/>
     Query: **Select Your RunJS Query**
@@ -111,12 +111,12 @@ Follow the following steps to perform server-side filter operation on the table:
     
     This will run the query and fetch the data every time a filter changes.
     
-6. Add Loading State, navigate to the table's properties under Additional Actions. Click on the **fx** icon next to Loading State and enter `{{queries.getOrders.isLoading}}` in the field.
+6. Add Loading State, navigate to the **Table** properties under Additional Actions. Click on the **fx** icon next to Loading State and enter `{{queries.getOrders.isLoading}}` in the field.
     
     Note: Make sure to replace *getOrders* with your query name.
     
     <img className="screenshot-full" src="/img/widgets/table/serverside-operations/filter-loading.png" alt="Fetch data from the data source" />
 
-This is how serverside filtering is implemented in ToolJet's table component. When one or more filters are applied to the table, the query is executed on the server, ensuring that the filtering affects all records in the dataset, not just the data currently loaded into the table.
+This is how serverside filtering is implemented in ToolJet's **Table** component. When one or more filters are applied to the **Table**, the query is executed on the server, ensuring that the filtering affects all records in the dataset, not just the data currently loaded into the **Table**.
 
 </div>
