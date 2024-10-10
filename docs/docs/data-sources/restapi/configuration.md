@@ -1,7 +1,7 @@
 ---
 id: configuration
 title: Configuration
-slug: /data-sources/rest-api/
+slug: /data-sources/restapi/
 ---
 
 ToolJet can establish connections with any available REST API endpoint, allowing you to create queries and interact with external data sources seamlessly.
