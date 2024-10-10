@@ -2,7 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { HeaderSection } from '@/_ui/LeftSidebar';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
-import _ from 'lodash';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 export const LeftSidebarInspector = ({
