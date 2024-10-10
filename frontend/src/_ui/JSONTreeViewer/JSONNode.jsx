@@ -41,7 +41,6 @@ export const JSONNode = ({ data, ...restProps }) => {
     // eslint-disable-next-line no-unused-vars
     page,
   } = restProps;
-
   const [expandable, set] = React.useState(() =>
     typeof shouldExpandNode === 'function' ? shouldExpandNode(path, data) : shouldExpandNode
   );
@@ -164,7 +163,7 @@ export const JSONNode = ({ data, ...restProps }) => {
       break;
 
     case 'Object':
-      $VALUE = <JSONNodeObject data={data} path={currentNodePath} {...restProps} />;
+      $VALUE = <JSONNodeObject data={data} path={currentNodePath} page={page} {...restProps} />;
       $NODEType = !pageTree && (
         <JSONNode.DisplayNodeLabel type={'Object'}>
           <span className="mx-1 fs-9 node-length-color">

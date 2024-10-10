@@ -115,6 +115,23 @@ const getTextIcons = (componentExposedVariables) => {
   }
   return [];
 };
+
+const getCheckboxIcons = (componentExposedVariables) => {
+  const icons = [];
+
+  if (componentExposedVariables.setChecked) {
+    icons.push({
+      iconName: 'setChecked',
+      jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
+      className: 'component-icon',
+      tooltipMessage: 'This function will be deprecated soon, You can use setValue as an alternative',
+      isInfoIcon: true,
+    });
+  }
+
+  return icons;
+};
+
 export const LeftSidebar = forwardRef((props, ref) => {
   const router = useRouter();
   const {
@@ -149,15 +166,19 @@ export const LeftSidebar = forwardRef((props, ref) => {
     isMaintenanceOn,
   } = props;
 
-  const staticDataSources = [
-    { kind: 'tooljetdb', id: 'null', name: 'Tooljet Database' },
-    { kind: 'restapi', id: 'null', name: 'REST API' },
-    { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' },
-    { kind: 'runpy', id: 'runpy', name: 'Run Python code' },
-  ];
   const dataSources = useDataSources();
 
   const dataQueries = useDataQueries();
+
+  const staticDataSources = React.useMemo(
+    () => [
+      { kind: 'tooljetdb', id: 'null', name: 'Tooljet Database' },
+      { kind: 'restapi', id: 'null', name: 'REST API' },
+      { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' },
+      { kind: 'runpy', id: 'runpy', name: 'Run Python code' },
+    ],
+    []
+  );
   const prevSelectedSidebarItem = localStorage.getItem('selectedSidebarItem');
   const queryPanelHeight = usePanelHeight();
   const [selectedSidebarItem, setSelectedSidebarItem] = useState(
@@ -313,22 +334,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
       };
     }
   });
-
-  const getCheckboxIcons = (componentExposedVariables) => {
-    const icons = [];
-
-    if (componentExposedVariables.setChecked) {
-      icons.push({
-        iconName: 'setChecked',
-        jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
-        className: 'component-icon',
-        tooltipMessage: 'This function will be deprecated soon, You can use setValue as an alternative',
-        isInfoIcon: true,
-      });
-    }
-
-    return icons;
-  };
 
   const exposedVariablesIcon = Object.entries(currentState['components'])
     .map(([_, value]) => {

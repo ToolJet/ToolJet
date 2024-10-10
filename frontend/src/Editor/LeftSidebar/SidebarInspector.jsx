@@ -1,24 +1,12 @@
-import React, { useMemo } from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import { HeaderSection } from '@/_ui/LeftSidebar';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import _ from 'lodash';
-import { toast } from 'react-hot-toast';
-import Icon from '@/_ui/Icon/solidIcons/index';
-import { useGlobalDataSources } from '@/_stores/dataSourcesStore';
-import { useDataQueries } from '@/_stores/dataQueriesStore';
-import { useCurrentState } from '@/_stores/currentStateStore';
-import { useAppVersionStore } from '@/_stores/appVersionStore';
-import { shallow } from 'zustand/shallow';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { useEditorStore } from '@/_stores/editorStore';
-import DataSourceIcon from '@/Editor/QueryManager/Components/DataSourceIcon';
 
 export const LeftSidebarInspector = ({
   darkMode,
-  appDefinition,
-  setSelectedComponent,
-  removeComponent,
-  runQuery,
   setPinned,
   pinned,
   jsonData,
@@ -67,4 +55,14 @@ export const LeftSidebarInspector = ({
       </div>
     </div>
   );
+};
+
+LeftSidebarInspector.propTypes = {
+  darkMode: PropTypes.bool.isRequired,
+  setPinned: PropTypes.func.isRequired,
+  pinned: PropTypes.bool.isRequired,
+  jsonData: PropTypes.object.isRequired,
+  iconsList: PropTypes.array.isRequired,
+  actionsList: PropTypes.array.isRequired,
+  selectedComponent: PropTypes.object,
 };
