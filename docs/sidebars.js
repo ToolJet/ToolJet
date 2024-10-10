@@ -289,7 +289,22 @@ const sidebars = {
             'data-sources/oracledb',
             'data-sources/postgresql',
             'data-sources/redis',
-            'data-sources/restapi',
+            {
+              'type': 'category',
+              'label': 'REST API',
+              'collapsed': false,
+              'items': [
+                'data-sources/restapi/connection',
+                'data-sources/restapi/oauth2-authentication',
+                'data-sources/restapi/bearer-token-authentication',
+                'data-sources/restapi/querying-rest-api',
+                'data-sources/restapi/request-types',
+                'data-sources/restapi/response-types-and-handling',
+                'data-sources/restapi/retry-on-network-errors',
+                'data-sources/restapi/metadata-and-cookies',
+
+              ],
+            },
             'data-sources/rethinkdb',
             'data-sources/run-js',
             'data-sources/run-py',
