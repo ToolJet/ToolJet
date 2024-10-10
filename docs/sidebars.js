@@ -159,6 +159,13 @@ const sidebars = {
                     'widgets/table/table-properties',
                     'widgets/table/table-columns',
                     'widgets/table/table-csa-and-variables',
+                    {
+                      'type': 'category',
+                      'label': 'Serverside Operations',
+                      'items': [
+                        'widgets/table/serverside-operations/search'
+                      ]
+                    }
                   ]
                 },
                 'widgets/tabs',
