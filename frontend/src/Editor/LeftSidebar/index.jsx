@@ -21,6 +21,116 @@ import useDebugger from './SidebarDebugger/useDebugger';
 import { GlobalSettings } from '../Header/GlobalSettings';
 import cx from 'classnames';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { toast } from 'react-hot-toast';
+import Icon from '@/_ui/Icon/solidIcons/index';
+import { useDataQueries } from '@/_stores/dataQueriesStore';
+import { useCurrentState } from '@/_stores/currentStateStore';
+import DataSourceIcon from '@/Editor/QueryManager/Components/DataSourceIcon';
+
+const QueryIcons = (dataQueries, staticDataSources, dataSources) => {
+  const queryIcons = dataQueries.map((query) => {
+    const allDs = [...staticDataSources, ...dataSources];
+    const source = allDs.find((ds) => ds.kind === query.kind);
+    return {
+      iconName: query.name,
+      jsx: () => <DataSourceIcon source={source} height={16} />,
+    };
+  });
+
+  return queryIcons;
+};
+
+const getTextInputIcons = (componentExposedVariables) => {
+  const icons = [];
+
+  if (componentExposedVariables.disable) {
+    icons.push({
+      iconName: 'disable',
+      jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
+      className: 'component-icon',
+      tooltipMessage: 'This function will be deprecated soon, You can use setDisable as an alternative',
+      isInfoIcon: true,
+    });
+  }
+
+  if (componentExposedVariables.visibility) {
+    icons.push({
+      iconName: 'visibility',
+      jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
+      className: 'component-icon',
+      tooltipMessage: 'This function will be deprecated soon, You can use setVisibility as an alternative',
+      isInfoIcon: true,
+    });
+  }
+
+  return icons;
+};
+const getButtonIcons = (componentExposedVariables) => {
+  const icons = [];
+
+  if (componentExposedVariables.disable) {
+    icons.push({
+      iconName: 'disable',
+      jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
+      className: 'component-icon',
+      tooltipMessage: 'This function will be deprecated soon, You can use setDisable as an alternative',
+      isInfoIcon: true,
+    });
+  }
+
+  if (componentExposedVariables.visibility) {
+    icons.push({
+      iconName: 'visibility',
+      jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
+      className: 'component-icon',
+      tooltipMessage: 'This function will be deprecated soon, You can use setVisibility as an alternative',
+      isInfoIcon: true,
+    });
+  }
+
+  if (componentExposedVariables.loading) {
+    icons.push({
+      iconName: 'loading',
+      jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
+      className: 'component-icon',
+      tooltipMessage: 'This function will be deprecated soon, You can use setLoading as an alternative',
+      isInfoIcon: true,
+    });
+  }
+
+  return icons;
+};
+
+const getTextIcons = (componentExposedVariables) => {
+  if (componentExposedVariables?.visibility) {
+    return [
+      {
+        iconName: 'visibility',
+        jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
+        className: 'component-icon',
+        tooltipMessage: 'This function will be deprecated soon, You can use setVisibility as an alternative',
+        isInfoIcon: true,
+      },
+    ];
+  }
+  return [];
+};
+
+const getCheckboxIcons = (componentExposedVariables) => {
+  const icons = [];
+
+  if (componentExposedVariables.setChecked) {
+    icons.push({
+      iconName: 'setChecked',
+      jsx: () => <Icon name={'warning'} height={16} width={16} fill="#DB4324" />,
+      className: 'component-icon',
+      tooltipMessage: 'This function will be deprecated soon, You can use setValue as an alternative',
+      isInfoIcon: true,
+    });
+  }
+
+  return icons;
+};
 
 export const LeftSidebar = forwardRef((props, ref) => {
   const router = useRouter();
@@ -57,6 +167,18 @@ export const LeftSidebar = forwardRef((props, ref) => {
   } = props;
 
   const dataSources = useDataSources();
+
+  const dataQueries = useDataQueries();
+
+  const staticDataSources = React.useMemo(
+    () => [
+      { kind: 'tooljetdb', id: 'null', name: 'Tooljet Database' },
+      { kind: 'restapi', id: 'null', name: 'REST API' },
+      { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' },
+      { kind: 'runpy', id: 'runpy', name: 'Run Python code' },
+    ],
+    []
+  );
   const prevSelectedSidebarItem = localStorage.getItem('selectedSidebarItem');
   const queryPanelHeight = usePanelHeight();
   const [selectedSidebarItem, setSelectedSidebarItem] = useState(
@@ -71,7 +193,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
     }),
     shallow
   );
-  const { showComments, appMode } = useEditorStore(
+  const { showComments } = useEditorStore(
     (state) => ({
       showComments: state?.showComments,
       appMode: state?.appMode,
@@ -139,6 +261,174 @@ export const LeftSidebar = forwardRef((props, ref) => {
 
   const backgroundFxQuery = appDefinition?.globalSettings?.backgroundFxQuery;
 
+  const { selectedComponents } = useEditorStore(
+    (state) => ({
+      selectedComponents: state.selectedComponents,
+    }),
+    shallow
+  );
+  const currentState = useCurrentState();
+
+  const componentDefinitions = JSON.parse(JSON.stringify(appDefinition))['components'];
+
+  const selectedComponent = React.useMemo(() => {
+    const _selectedComponent = selectedComponents[selectedComponents.length - 1];
+
+    return {
+      id: _selectedComponent?.id,
+      component: _selectedComponent?.component?.name,
+    };
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedComponents]);
+
+  const memoizedJSONData = React.useMemo(() => {
+    const { queries: currentQueries } = currentState;
+
+    const jsontreeData = { ...currentState, queries: currentQueries };
+    delete jsontreeData.errors;
+    delete jsontreeData.client;
+    delete jsontreeData.server;
+    delete jsontreeData.actions;
+    delete jsontreeData.succededQuery;
+    delete jsontreeData.layout;
+
+    //*Sorted components and queries alphabetically
+    const sortedComponents = Object.keys(jsontreeData['components'])
+      .sort((a, b) => {
+        return a.toLowerCase().localeCompare(b.toLowerCase());
+      })
+      .reduce((accumulator, key) => {
+        accumulator[key] = jsontreeData['components'][key];
+
+        return accumulator;
+      }, {});
+
+    const sortedQueries = Object.keys(jsontreeData['queries'])
+      .sort((a, b) => {
+        return a.toLowerCase().localeCompare(b.toLowerCase());
+      })
+      .reduce((accumulator, key) => {
+        accumulator[key] = jsontreeData['queries'][key];
+
+        return accumulator;
+      }, {});
+
+    jsontreeData['components'] = sortedComponents;
+    jsontreeData['queries'] = sortedQueries;
+
+    return jsontreeData;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentState, JSON.stringify(dataQueries)]);
+
+  const componentIcons = Object.entries(currentState['components']).map(([key, value]) => {
+    const component = componentDefinitions[value.id]?.component ?? {};
+
+    if (!_.isEmpty(component) && component.name === key) {
+      return {
+        iconName: key,
+        iconPath: `assets/images/icons/widgets/${
+          component.component.toLowerCase() === 'radiobutton' ? 'radio-button' : component.component.toLowerCase()
+        }.svg`,
+        className: 'component-icon',
+      };
+    }
+  });
+
+  const exposedVariablesIcon = Object.entries(currentState['components'])
+    .map(([_, value]) => {
+      const component = componentDefinitions[value.id]?.component ?? {};
+      const componentExposedVariables = value;
+
+      if (!_.isEmpty(component)) {
+        switch (component.component) {
+          case 'TextInput':
+            return getTextInputIcons(componentExposedVariables);
+          case 'Checkbox':
+            return getCheckboxIcons(componentExposedVariables);
+          case 'Button':
+            return getButtonIcons(componentExposedVariables);
+          case 'Text':
+            return getTextIcons(componentExposedVariables);
+          default:
+            return [];
+        }
+      }
+
+      return [];
+    })
+    .flat()
+    .filter((value) => value !== undefined); // Remove undefined values
+
+  const iconsList = React.useMemo(
+    () => [...QueryIcons(dataQueries, staticDataSources, dataSources), ...componentIcons, ...exposedVariablesIcon],
+    [dataQueries, staticDataSources, dataSources, componentIcons, exposedVariablesIcon]
+  );
+  const handleRemoveComponent = (component) => {
+    removeComponent(component.id);
+  };
+
+  const handleSelectComponentOnEditor = (component) => {
+    setSelectedComponent(component.id, component);
+  };
+
+  const handleRunQuery = (query, currentNode) => {
+    runQuery(query.id, currentNode);
+  };
+
+  const copyToClipboard = (data) => {
+    const stringified = JSON.stringify(data, null, 2).replace(/\\/g, '');
+    navigator.clipboard.writeText(stringified);
+    return toast.success('Copied to the clipboard', {
+      position: 'top-center',
+    });
+  };
+
+  const callbackActions = [
+    {
+      for: 'queries',
+      actions: [
+        {
+          name: 'Run Query',
+          dispatchAction: handleRunQuery,
+          icon: true,
+          src: 'assets/images/icons/editor/play.svg',
+          width: 8,
+          height: 8,
+        },
+      ],
+      enableForAllChildren: false,
+      enableFor1stLevelChildren: true,
+    },
+    {
+      for: 'components',
+      actions: [
+        {
+          name: 'Select Widget',
+          dispatchAction: handleSelectComponentOnEditor,
+          icon: false,
+          onSelect: true,
+        },
+        ...(!isVersionReleased
+          ? [
+              {
+                name: 'Delete Component',
+                dispatchAction: handleRemoveComponent,
+                icon: true,
+                iconName: 'trash',
+              },
+            ]
+          : []),
+      ],
+      enableForAllChildren: false,
+      enableFor1stLevelChildren: true,
+    },
+    {
+      for: 'all',
+      actions: [{ name: 'Copy value', dispatchAction: copyToClipboard, icon: false }],
+    },
+  ];
+
   const renderPopoverContent = () => {
     if (selectedSidebarItem === null) return null;
     switch (selectedSidebarItem) {
@@ -170,6 +460,10 @@ export const LeftSidebar = forwardRef((props, ref) => {
             apps={apps}
             setPinned={handlePin}
             pinned={pinned}
+            jsonData={memoizedJSONData}
+            iconsList={iconsList}
+            actionsList={callbackActions}
+            selectedComponent={selectedComponent}
           />
         );
       case 'inspect':
@@ -184,6 +478,10 @@ export const LeftSidebar = forwardRef((props, ref) => {
             popoverContentHeight={popoverContentHeight}
             setPinned={handlePin}
             pinned={pinned}
+            jsonData={memoizedJSONData}
+            iconsList={iconsList}
+            actionsList={callbackActions}
+            selectedComponent={selectedComponent}
           />
         );
       case 'datasource':
@@ -305,7 +603,11 @@ export const LeftSidebar = forwardRef((props, ref) => {
           {config.COMMENT_FEATURE_ENABLE && (
             <div
               className={`${isVersionReleased && 'disabled'}`}
-              style={{ maxHeight: '32px', maxWidth: '32px', marginBottom: '16px' }}
+              style={{
+                maxHeight: '32px',
+                maxWidth: '32px',
+                marginBottom: '16px',
+              }}
             >
               <LeftSidebarComment
                 selectedSidebarItem={showComments ? 'comments' : ''}
