@@ -11,6 +11,8 @@ import { shallow } from 'zustand/shallow';
 import EyeDisable from '@/_ui/Icon/solidIcons/EyeDisable';
 import FileRemove from '@/_ui/Icon/solidIcons/FIleRemove';
 import Home from '@/_ui/Icon/solidIcons/Home';
+import { JSONTreeViewer } from '@/_ui/JSONTreeViewer/JSONTreeViewer';
+import PropTypes from 'prop-types';
 
 export const PageHandler = ({
   darkMode,
@@ -32,6 +34,10 @@ export const PageHandler = ({
   pinPagesPopover,
   haveUserPinned,
   disableEnablePage,
+  jsonData,
+  iconsList,
+  actionsList,
+  selectedComponent,
 }) => {
   const isHomePage = page.id === homePageId;
   const isSelected = page.id === currentPageId;
@@ -127,7 +133,10 @@ export const PageHandler = ({
   const windowUrl = window.location.href;
 
   const slug = windowUrl.split(page.handle)[0];
-
+  const jsonDataTree = {
+    //Rmove unecessary data from components
+    components: jsonData.components,
+  };
   return (
     <div
       onMouseEnter={() => setIsHovered(true)}
@@ -139,7 +148,11 @@ export const PageHandler = ({
       <div>
         <div className="row" role="button">
           <div className="col-auto d-flex align-items-center">
-            {!isHovered && isHomePage && <Home width={16} height={16} />}
+            {!isHovered && isHomePage && (
+              <div className="page-home-icon">
+                <Home width={16} height={16} />
+              </div>
+            )}
             {/* When the page is hidden as well as disabled, disabled icon takes precedence */}
             {!isHovered && (isDisabled || (isDisabled && isHidden)) && (
               <FileRemove width={16} height={16} viewBox={'0 0 16 16'} />
@@ -149,22 +162,49 @@ export const PageHandler = ({
             {isHovered && isDisabled && <FileRemove width={16} height={16} viewBox={'0 0 16 16'} />}
             {isHovered && !isDisabled && (
               <div style={{ paddingRight: '4px' }}>
-                <SortableList.DragHandle show />
+                <div className="page-home-icon">
+                  <SortableList.DragHandle show />
+                </div>
               </div>
             )}
+            <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+              <JSONTreeViewer
+                data={jsonDataTree}
+                useIcons={true}
+                iconsList={iconsList}
+                useIndentedBlock={true}
+                enableCopyToClipboard={false}
+                useActions={true}
+                actionsList={actionsList.filter((action) => action.for !== 'all')}
+                actionIdentifier="id"
+                expandWithLabels={false}
+                selectedComponent={selectedComponent}
+                treeType="page"
+                page={page}
+                darkMode={darkMode}
+                isHomePage={isHomePage}
+                isHidden={isHidden}
+                isDisabled={isDisabled}
+                isIconApplied={isIconApplied}
+              />
+            </div>
           </div>
           <div
             className="col text-truncate font-weight-400 page-name tj-text-xsm"
             data-cy={`pages-name-${String(page.name).toLowerCase()}`}
             style={isHomePage || isHidden || isHovered || isDisabled ? { paddingLeft: '0px' } : { paddingLeft: '16px' }}
           >
-            <span className={darkMode && 'dark-theme'}>{`${page.name}`}</span>
             {isIconApplied && (
               <span
                 style={{
                   marginLeft: '8px',
+                  display: 'inline-block',
+                  width: 'calc(100% - 16px)',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  top: '5px',
                 }}
-                className="color-slate09"
+                className="color-slate09 "
               >
                 {isHomePage && 'Home'}
                 {isDisabled && 'Disabled'}
@@ -172,7 +212,7 @@ export const PageHandler = ({
               </span>
             )}
           </div>
-          <div className="col-auto" data-cy="page-menu-option-icon">
+          <div className="col-auto page-menu-icon" data-cy="page-menu-option-icon">
             {(isHovered || isSelected) && !isVersionReleased && (
               <PagehandlerMenu
                 page={page}
@@ -212,7 +252,6 @@ export const PageHandler = ({
     </div>
   );
 };
-
 export const AddingPageHandler = ({ addNewPage, setNewPageBeingCreated, darkMode }) => {
   const handleAddingNewPage = (pageName) => {
     if (pageName.trim().length === 0) {
@@ -252,4 +291,33 @@ export const AddingPageHandler = ({ addNewPage, setNewPageBeingCreated, darkMode
       </div>
     </div>
   );
+};
+PageHandler.propTypes = {
+  darkMode: PropTypes.bool,
+  page: PropTypes.object,
+  switchPage: PropTypes.func,
+  deletePage: PropTypes.func,
+  renamePage: PropTypes.func,
+  clonePage: PropTypes.func,
+  hidePage: PropTypes.func,
+  unHidePage: PropTypes.func,
+  homePageId: PropTypes.string,
+  currentPageId: PropTypes.string,
+  updateHomePage: PropTypes.func,
+  updatePageHandle: PropTypes.func,
+  apps: PropTypes.array,
+  pages: PropTypes.array,
+  components: PropTypes.array,
+  pinPagesPopover: PropTypes.func,
+  haveUserPinned: PropTypes.bool,
+  disableEnablePage: PropTypes.func,
+  jsonData: PropTypes.object,
+  iconsList: PropTypes.array,
+  actionsList: PropTypes.array,
+  selectedComponent: PropTypes.object,
+};
+AddingPageHandler.propTypes = {
+  addNewPage: PropTypes.func,
+  setNewPageBeingCreated: PropTypes.func,
+  darkMode: PropTypes.bool,
 };

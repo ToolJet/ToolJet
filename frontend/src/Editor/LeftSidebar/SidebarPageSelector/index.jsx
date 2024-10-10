@@ -34,6 +34,10 @@ const LeftSidebarPageSelector = ({
   apps,
   pinned,
   setPinned,
+  jsonData,
+  iconsList,
+  actionsList,
+  selectedComponent,
 }) => {
   const pages = useMemo(
     () =>
@@ -179,6 +183,10 @@ const LeftSidebarPageSelector = ({
                 components={appDefinition?.components ?? {}}
                 pinPagesPopover={pinPagesPopover}
                 haveUserPinned={haveUserPinned}
+                jsonData={jsonData}
+                iconsList={iconsList}
+                actionsList={actionsList}
+                selectedComponent={selectedComponent}
               />
             ) : (
               <div className="d-flex justify-content-center align-items-center" style={{ height: '100%' }}>
