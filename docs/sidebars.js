@@ -294,9 +294,8 @@ const sidebars = {
               'label': 'REST API',
               'collapsed': false,
               'items': [
-                'data-sources/restapi/connection',
-                'data-sources/restapi/oauth2-authentication',
-                'data-sources/restapi/bearer-token-authentication',
+                'data-sources/restapi/configuration',
+                'data-sources/restapi/authentication',
                 'data-sources/restapi/querying-rest-api',
                 'data-sources/restapi/request-types',
                 'data-sources/restapi/response-types-and-handling',
