@@ -85,7 +85,7 @@ Timezone and User locale are mutually dependent. If you provide a timezone, you 
 <details>
 <summary>**Example Values**</summary>
 
-```yaml
+```json
 Base ID: appO4WnRU3eTWnrDB
 Table name: tblAPbj6KMjS8pxhH // Can be Table name or Table ID
 Page size: 100
