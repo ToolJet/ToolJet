@@ -39,7 +39,7 @@ ToolJet requires the following to connect to a REST API data source:
 ### Authentication
 
 :::info
-For a detailed explanation of the authentication types supported by REST API data sources, refer to the **[Authentication](/docs/data-sources/rest-api/authentication)** section.
+For a detailed explanation of the authentication types supported by REST API data sources, refer to the **[Authentication](/docs/data-sources/restapi/authentication)** section.
 :::
 
 ToolJet supports the following authentication types for REST API data sources:
