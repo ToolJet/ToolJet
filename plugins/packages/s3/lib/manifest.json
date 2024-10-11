@@ -159,6 +159,10 @@
               "value": "eu-north-1"
             },
             {
+              "name": "Middle East (UAE)",
+              "value": "me-central-1"
+            },
+            {
               "name": "Middle East (Bahrain)",
               "value": "me-south-1"
             },
