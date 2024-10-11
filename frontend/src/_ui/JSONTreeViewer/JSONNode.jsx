@@ -9,6 +9,7 @@ import JSONNodeValue from './JSONNodeValue';
 import JSONNodeIndicator from './JSONNodeIndicator';
 import JSONNodeMap from './JSONNodeMap';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import PropTypes from 'prop-types';
 
 export const JSONNode = ({ data, ...restProps }) => {
   const {
@@ -36,8 +37,10 @@ export const JSONNode = ({ data, ...restProps }) => {
     inspectorTree,
     renderCurrentNodeInfoIcon,
     debuggerTree,
+    pageTree,
+    // eslint-disable-next-line no-unused-vars
+    page,
   } = restProps;
-
   const [expandable, set] = React.useState(() =>
     typeof shouldExpandNode === 'function' ? shouldExpandNode(path, data) : shouldExpandNode
   );
@@ -63,6 +66,7 @@ export const JSONNode = ({ data, ...restProps }) => {
   };
 
   const onSelect = (data, currentNode, path) => {
+    console.log('onSelect', data, currentNode, path);
     const actions = getOnSelectLabelDispatchActions(currentNode, path)?.filter((action) => action.onSelect);
     actions.forEach((action) => action.dispatchAction(data, currentNode));
 
@@ -86,11 +90,17 @@ export const JSONNode = ({ data, ...restProps }) => {
   const currentNodePath = getCurrentPath(path, currentNode);
   const toExpandNode = (data instanceof Array || data instanceof Object) && !_.isEmpty(data);
   const toShowNodeIndicator =
-    (typeofCurrentNode === 'Array' || typeofCurrentNode === 'Object' || typeofCurrentNode === 'Map') &&
+    (typeofCurrentNode === 'Array' ||
+      typeofCurrentNode === 'Object' ||
+      typeofCurrentNode === 'Map' ||
+      typeofCurrentNode === 'Page') &&
     typeofCurrentNode !== 'Function';
   const numberOfEntries = getLength(typeofCurrentNode, data);
   const toRenderSelector =
-    (typeofCurrentNode === 'Object' || typeofCurrentNode === 'Array' || typeofCurrentNode === 'Map') &&
+    (typeofCurrentNode === 'Object' ||
+      typeofCurrentNode === 'Array' ||
+      typeofCurrentNode === 'Map' ||
+      typeofCurrentNode === 'Page') &&
     numberOfEntries > 0;
 
   let $VALUE = null;
@@ -140,7 +150,6 @@ export const JSONNode = ({ data, ...restProps }) => {
     $NODEIcon = renderNodeIcons(currentNode);
     $NODEInfoIcon = renderCurrentNodeInfoIcon(currentNode);
   }
-
   switch (typeofCurrentNode) {
     case 'String':
     case 'Boolean':
@@ -154,8 +163,8 @@ export const JSONNode = ({ data, ...restProps }) => {
       break;
 
     case 'Object':
-      $VALUE = <JSONNodeObject data={data} path={currentNodePath} {...restProps} />;
-      $NODEType = (
+      $VALUE = <JSONNodeObject data={data} path={currentNodePath} page={page} {...restProps} />;
+      $NODEType = !pageTree && (
         <JSONNode.DisplayNodeLabel type={'Object'}>
           <span className="mx-1 fs-9 node-length-color">
             {`${numberOfEntries} ${numberOfEntries > 1 ? 'entries' : 'entry'}`}{' '}
@@ -245,6 +254,14 @@ export const JSONNode = ({ data, ...restProps }) => {
         }
       });
     };
+
+    if (pageTree) {
+      return (
+        <div style={{ fontSize: '9px', marginTop: '0px', right: '10px' }} className="d-flex position-absolute">
+          {renderOptions()}
+        </div>
+      );
+    }
 
     return (
       <div style={{ fontSize: '9px', marginTop: '0px', right: '10px' }} className="d-flex position-absolute">
@@ -336,3 +353,33 @@ const DisplayNodeLabel = ({ type = '', children }) => {
 };
 
 JSONNode.DisplayNodeLabel = DisplayNodeLabel;
+
+JSONNode.propTypes = {
+  data: PropTypes.any,
+  path: PropTypes.array,
+  shouldExpandNode: PropTypes.bool,
+  currentNode: PropTypes.string,
+  selectedNode: PropTypes.object,
+  hoveredNode: PropTypes.object,
+  getCurrentPath: PropTypes.func,
+  getCurrentNodeType: PropTypes.func,
+  getLength: PropTypes.func,
+  toUseNodeIcons: PropTypes.bool,
+  renderNodeIcons: PropTypes.func,
+  useIndentedBlock: PropTypes.bool,
+  updateSelectedNode: PropTypes.func,
+  updateHoveredNode: PropTypes.func,
+  useActions: PropTypes.bool,
+  enableCopyToClipboard: PropTypes.bool,
+  getNodeShowHideComponents: PropTypes.func,
+  getOnSelectLabelDispatchActions: PropTypes.func,
+  expandWithLabels: PropTypes.bool,
+  getAbsoluteNodePath: PropTypes.func,
+  actionsList: PropTypes.array,
+  fontSize: PropTypes.string,
+  inspectorTree: PropTypes.bool,
+  renderCurrentNodeInfoIcon: PropTypes.func,
+  debuggerTree: PropTypes.bool,
+  pageTree: PropTypes.bool,
+  page: PropTypes.object,
+};

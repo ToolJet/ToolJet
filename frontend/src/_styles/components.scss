@@ -5,8 +5,6 @@ $btn-color: #11181C;
 $btn-dark-bg: #121212;
 $btn-dark-color: #FFFFFF;
 
-
-
 @mixin button($bg, $color) {
   background-color: $bg;
   color: $color;
@@ -17,7 +15,7 @@ $btn-dark-color: #FFFFFF;
   transition: all 0.3s ease-in-out;
 
   &:hover {
-    @if $bg  !=none {
+    @if $bg != none {
       background-color: darken($bg, 10%);
     }
   }
@@ -57,6 +55,8 @@ $btn-dark-color: #FFFFFF;
   font-style: normal;
   font-weight: 400;
   line-height: 20px;
+  align-self: start;
+
 }
 
 .unstyled-button.dark {
@@ -126,9 +126,11 @@ $btn-dark-color: #FFFFFF;
   height: 100%;
   padding: 12px 16px;
   background-color: var(--base);
+  overflow-y: auto;
 
   .page-handler {
-    height: 32px !important;
+    height: auto !important; 
+    min-height: 32px;
     padding: 0;
     margin-bottom: 2px;
     font-weight: 500;
@@ -140,8 +142,12 @@ $btn-dark-color: #FFFFFF;
 
     .card,
     .card-body {
-      height: 32px;
-
+      min-height: 32px;
+      height: auto; 
+      .page-home-icon {
+        margin-top: 2px;
+        align-self:start;
+      }
       .page-name {
         color: var(--slate12);
         display: flex;
@@ -184,7 +190,13 @@ $btn-dark-color: #FFFFFF;
     filter: invert(100%);
   }
 }
+.page-menu-icon {
+  position: absolute;
+  right: 0;
+  margin-right: .5rem;
+  filter: invert(38%) sepia(85%) saturate(5221%) hue-rotate(217deg) brightness(91%) contrast(90%);
 
+}
 #page-handler-menu.global-settings {
   min-height: 124px;
   padding: 6px;
@@ -382,7 +394,6 @@ $btn-dark-color: #FFFFFF;
   max-height: 22.5px;
 }
 
-// Style for Chart component
 .widget-chart{
   .js-plotly-plot{
     border-radius: inherit;
