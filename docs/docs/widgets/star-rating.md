@@ -82,7 +82,7 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 | <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}>  Description </div> | <div style={{ width:"100px"}}> Default Value </div> |
 |:------------ |:-------------|:--------- |
-| Star Color | Display color of the star. `default: #ffb400` (color hex). Change color by providing `Hex color code` or choosing one from the picker. |  |
+| Star Color | Display color of the star. Change color by providing `Hex color code` or choosing one from the picker. | `default: #ffb400` (color hex). |
 | Label color | Change the color of label in component by providing `Hex color code` or choosing one from the picker. |  |
 | Visibility | Toggle on or off to control the visibility of the component. You can programmatically change its value by clicking on the **fx** button next to it. If `{{false}}` the component will not be visible after the app is deployed. | By default, it's set to `{{true}}`. |
 | Disable | This is `off` by default, toggle `on` the switch to lock the component and make it non-functional. You can also programmatically set the value by clicking on the **fx** button next to it. If set to `{{true}}`, the component will be locked and becomes non-functional. | By default, its value is set to `{{false}}`. |
