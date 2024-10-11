@@ -51,8 +51,8 @@ A tooltip provides additional information when the user hovers over the componen
 
 | **Property** |**Description** | **Expected Value** |
 |:-----------|:-----------|:-----------|
-| Show on desktop | Makes the component visible in desktop view. | You can set it using the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression |
-| Show on mobile | Makes the component visible in mobile view. | You can set it using the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression |
+| Show on desktop | Makes the component visible in desktop view. | You can set it using the toggle button or dynamically configure the value by clicking on **`fx`** and entering a logical expression |
+| Show on mobile | Makes the component visible in mobile view. | You can set it using the toggle button or dynamically configure the value by clicking on **`fx`** and entering a logical expression |
 
 </div>
 
@@ -62,8 +62,8 @@ A tooltip provides additional information when the user hovers over the componen
 
 | **Property** | **Description** | **Configuration Options** |
 |:-----------|:-----------|:-----------|
-| Visibility   | Controls component visibility. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Disable | Enables or disables the component. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Box-shadow | Sets the box shadow properties of the component. | Select the box shadow color and adjust the related properties or programmatically set it using **fx**. |
+| Visibility   | Controls component visibility. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **`fx`** and entering a logical expression. |
+| Disable | Enables or disables the component. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **`fx`** and entering a logical expression. |
+| Box-shadow | Sets the box shadow properties of the component. | Select the box shadow color and adjust the related properties or programmatically set it using **`fx`**. |
 
 </div>

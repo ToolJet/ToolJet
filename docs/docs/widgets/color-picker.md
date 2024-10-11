@@ -15,7 +15,7 @@ title: Color Picker
 
 The data needs to be an valid hex color
 
-- One can change default color either from color picker or using `fx` (need to provide only respective hex value)
+- One can change default color either from color picker or using **`fx`** (need to provide only respective hex value)
 
 **Example:**
 
@@ -68,8 +68,8 @@ The following actions of the component can be controlled using component specifi
 
 | <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value  </div> |
 |:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
-| Show on desktop | Toggle on or off to display desktop view. | Programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
-| Show on mobile  | Toggle on or off to display mobile view.  | Programmatically determinine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+| Show on desktop | Toggle on or off to display desktop view. | Programmatically determine the value by clicking on **`fx`** to set the value `{{true}}` or `{{false}}` |
+| Show on mobile  | Toggle on or off to display mobile view.  | Programmatically determinine the value by clicking on **`fx`** to set the value `{{true}}` or `{{false}}` |
 
 </div>
 
@@ -79,7 +79,7 @@ The following actions of the component can be controlled using component specifi
 
 | <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description    </div>                                                                                                                                                                                                                                          | <div style={{ width:"135px"}}> Expected Value </div> |
 |:---------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |:---------- |
-| Visibility | Toggle on or off to control the visibility of the widget.| Programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not visible after the app is deployed. By default, it's set to `{{true}}` |
+| Visibility | Toggle on or off to control the visibility of the widget.| Programmatically change its value by clicking on the **`fx`** button next to it. If `{{false}}` the widget will not visible after the app is deployed. By default, it's set to `{{true}}` |
 
 </div>
 
@@ -92,7 +92,7 @@ The following actions of the component can be controlled using component specifi
 | setColor | Set the  color. | `color` eg - `#ffffff` |
 
 :::info
-Any property having `Fx` button next to its field can be **programmatically configured**.
+Any property having **`fx`** button next to its field can be **programmatically configured**.
 :::
 
 **Example: Selecting/changing color from the color picker and getting respective hex, rgb and rgba value of selected color**

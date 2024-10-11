@@ -16,7 +16,7 @@ a. Italics are used for names given to Queries, Database Tables, and Components.
 - Select **ToolJetDB** as the the data source and *Employees* table as the data source.
 - Pass the returned data to the *allEmployees* component.
 
-b. Bold is applied for Workspace Constants, Clickable Buttons, fx, Data Sources, and Components.
+b. Bold is applied for Workspace Constants, Clickable Buttons, **`fx`**, Data Sources, and Components.
 
 **Examples:**
 - Select the **Button** component and change its label to "Save".
@@ -27,7 +27,7 @@ b. Bold is applied for Workspace Constants, Clickable Buttons, fx, Data Sources,
 c. Use Single Ticks for Inline Code and Triple Ticks for Multi-Line Code.
 
 **Examples:**
-- The **fx** option next to the Loading state property can be used to add a loader to the component. For instance, you can enter `{{queries.getData.isLoading === true}}` to show the loader while the *getData* query is running. 
+- The **`fx`** option next to the Loading state property can be used to add a loader to the component. For instance, you can enter `{{queries.getData.isLoading === true}}` to show the loader while the *getData* query is running. 
 - Use the below code to fetch data:
 ```js
 // this code is wrapped in triple ticks

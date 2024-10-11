@@ -58,8 +58,8 @@ In the input field under **Tooltip**, you can enter some text and the component 
 
 | <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 |:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
-| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
-| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on **`fx`** to set the value `{{true}}` or `{{false}}` |
+| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on **`fx`** to set the value `{{true}}` or `{{false}}` |
 
 </div>
 
@@ -71,8 +71,8 @@ In the input field under **Tooltip**, you can enter some text and the component 
 
 | <div style={{ width:"100px"}}> Style  </div>    |  <div style={{ width:"100px"}}> Description </div> |  <div style={{ width:"135px"}}> Expected Value </div> |
 |:---------------|:-----------|:---------------|
-| Visibility | Controls the visibility of the component. If set to `{{false}}`, the component will not be visible after the app is deployed.| Use the toggle button OR click on `Fx` to pass a boolean value or a logical expression that returns a boolean value i.e. either `{{true}}` or `{{false}}`|
-| Disable | Makes the component non-functional when set to true. | Use the toggle button OR click on `Fx` to pass a boolean value or a logical expression that returns a boolean value i.e. either `{{true}}` or `{{false}}`|
+| Visibility | Controls the visibility of the component. If set to `{{false}}`, the component will not be visible after the app is deployed.| Use the toggle button OR click on **`fx`** to pass a boolean value or a logical expression that returns a boolean value i.e. either `{{true}}` or `{{false}}`|
+| Disable | Makes the component non-functional when set to true. | Use the toggle button OR click on **`fx`** to pass a boolean value or a logical expression that returns a boolean value i.e. either `{{true}}` or `{{false}}`|
 | Border radius | Adjusts the roundness of the component's corners.  | Numeric value|
 
 </div>

@@ -70,8 +70,8 @@ A Tooltip provides additional information when users hover over the component. S
 
 | Property        | Description                               | Expected Value |
 | :-------------- | :---------------------------------------- | :------------- |
-| Show on desktop | Controls the component's desktop visibility | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Show on mobile  | Controls the component's mobile visibility  | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on desktop | Controls the component's desktop visibility | You can set it with the toggle button or dynamically configure the value by clicking on **`fx`** and entering a logical expression. |
+| Show on mobile  | Controls the component's mobile visibility  | You can set it with the toggle button or dynamically configure the value by clicking on **`fx`** and entering a logical expression. |
 
 </div>
 
@@ -81,11 +81,11 @@ A Tooltip provides additional information when users hover over the component. S
 
 | Property | Description | Configuration Options |
 | :------- | :---------- | :-------------------- |
-| Visibility | Controls the component's visibility | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Box Shadow | Adds a shadow effect around the component | Select the box shadow color and adjust the related properties or set it programmatically using **fx**. |
+| Visibility | Controls the component's visibility | Enable/disable the toggle button or dynamically configure the value by clicking on **`fx`** and entering a logical expression. |
+| Box Shadow | Adds a shadow effect around the component | Select the box shadow color and adjust the related properties or set it programmatically using **`fx`**. |
 
 :::info
-Any property with an **fx** button next to it can be **programmatically configured**.
+Any property with an **`fx`** button next to it can be **programmatically configured**.
 :::
 
 </div>

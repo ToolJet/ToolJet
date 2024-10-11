@@ -16,8 +16,8 @@ Components like **Kanban**, **Calendar**, **Modal**, **Container**, **ListView**
 | <div style={{ width:"100px"}}> Properties </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 | :---------- | :--------------------------- | :------------- |
 | Button To submit form | This dropdown can be used to select a **Button** that will be used to submit the form. | Any button that is a child component inside the **Form** component
-| Loading state | Loading state can be used to show a spinner while the content is loaded. Loading state is commonly used with the **isLoading** property of queries. | Use the toggle button or dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either `{{true}}` or `{{false}}`|
-| Use custom schema | Enabling this property allows you to provide a schema for the Form component in the JSON format. | Switch the toggle or click on `Fx` to programmatically enable the **JSON schema**|
+| Loading state | Loading state can be used to show a spinner while the content is loaded. Loading state is commonly used with the **isLoading** property of queries. | Use the toggle button or dynamically configure the value by clicking on **`fx`** and entering a logical expression that results in either `{{true}}` or `{{false}}`|
+| Use custom schema | Enabling this property allows you to provide a schema for the Form component in the JSON format. | Switch the toggle or click on **`fx`** to programmatically enable the **JSON schema**|
 
 :::info
 If you need a step-by-step guide on using a **Form** component, you can checkout **[this](/docs/how-to/use-form-component)** guide.  
@@ -192,8 +192,8 @@ A Tooltip is often used to specify the extra information when the user hovers th
 
 | <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 |:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
-| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
-| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on **`fx`** to set the value `{{true}}` or `{{false}}` |
+| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on **`fx`** to set the value `{{true}}` or `{{false}}` |
 
 </div>
 
@@ -206,8 +206,8 @@ A Tooltip is often used to specify the extra information when the user hovers th
 | Background color |  Changes the background color of the form. | Hex color code/choose a color using the color picker|
 | Border radius | Adjusts the roundness of the component's corners. | Numeric value|
 | Border color |  Changes the border color of the component.| Hex color code/choose a color using the color picker|
-| Visibility | Controls the visibility of the component. If set to `{{false}}`, the component will not be visible.| Use the toggle button OR click on `Fx` to pass a boolean value or a logical expression that returns a boolean value i.e. either `{{true}}` or `{{false}}`|
-| Disable | Makes the component non-functional when set to true. | Use the toggle button OR click on `Fx` to pass a boolean value or a logical expression that returns a boolean value i.e. either `{{true}}` or `{{false}}`|
+| Visibility | Controls the visibility of the component. If set to `{{false}}`, the component will not be visible.| Use the toggle button OR click on **`fx`** to pass a boolean value or a logical expression that returns a boolean value i.e. either `{{true}}` or `{{false}}`|
+| Disable | Makes the component non-functional when set to true. | Use the toggle button OR click on **`fx`** to pass a boolean value or a logical expression that returns a boolean value i.e. either `{{true}}` or `{{false}}`|
 
 </div>
 

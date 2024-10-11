@@ -29,7 +29,7 @@ A **Bounded Box** is an infinitely customizable image annotation component that 
 | :----------- | :----------- | :----------------- |
 | Image URL | The URL or image data to show it on the component. | Get the image URL dynamically from database: `{{queries.queryname.data[0].url}}` or use [image's base64 data](/docs/how-to/loading-image-pdf-from-db/) |
 | Default value | The data that will load the default bounded boxes over the image when the app is loaded. | Array of objects. Check the [Default value](#default-value) data properties |
-| Selector | The bounded box support selection using rectangle or point. | Click **Fx** to set the value `RECTANGLE` or `POINT` |
+| Selector | The bounded box support selection using rectangle or point. | Click **fx** to set the value `RECTANGLE` or `POINT` |
 | List of labels | The list of label that will be displayed in the dropdown while selection in the bounded-box. | Labels in array format: `{{['Tree', 'Car', 'Stree light']}}` |
 
 #### Default value
@@ -137,8 +137,8 @@ A Tooltip is often used to specify the extra information when the user hovers th
 
 | <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | 
 | :----------- | :----------- | 
-| Desktop | Toggle to show or hide the component in the desktop view. Dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either true or false. Alternatively, the  values can be set to **`{{true}}`** or **`{{false}}`**. |  
-| Mobile | Toggle to show or hide the component in the desktop view. Dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either true or false. Alternatively, the  values can be set to **`{{true}}`** or **`{{false}}`**. | 
+| Desktop | Toggle to show or hide the component in the desktop view. Dynamically configure the value by clicking on **`fx`** and entering a logical expression that results in either true or false. Alternatively, the  values can be set to **`{{true}}`** or **`{{false}}`**. |  
+| Mobile | Toggle to show or hide the component in the desktop view. Dynamically configure the value by clicking on **`fx`** and entering a logical expression that results in either true or false. Alternatively, the  values can be set to **`{{true}}`** or **`{{false}}`**. | 
 
 </div>
 

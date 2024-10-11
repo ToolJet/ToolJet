@@ -81,8 +81,8 @@ A Tooltip is often used to display additional information when the user hovers t
 
 | <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | 
 | :----------- | :----------- | 
-| Desktop | Toggle to show or hide the component in the desktop view. Dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either true or false. Alternatively, the  values can be set to **`{{true}}`** or **`{{false}}`**.|  
-| Mobile | Toggle to show or hide the component in the desktop view. Dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either true or false. Alternatively, the  values can be set to **`{{true}}`** or **`{{false}}`**. | 
+| Desktop | Toggle to show or hide the component in the desktop view. Dynamically configure the value by clicking on **`fx`** and entering a logical expression that results in either true or false. Alternatively, the  values can be set to **`{{true}}`** or **`{{false}}`**.|  
+| Mobile | Toggle to show or hide the component in the desktop view. Dynamically configure the value by clicking on **`fx`** and entering a logical expression that results in either true or false. Alternatively, the  values can be set to **`{{true}}`** or **`{{false}}`**. | 
 
 </div>
 

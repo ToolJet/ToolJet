@@ -3,13 +3,13 @@ id: using-code
 title: Using Custom Code
 ---
 
-In ToolJet, code serves as a powerful means to enhance and customize your applications. From complex logic implementations using **Run JavaScript code** or **Run Python code** queries to simple dynamic expressions with `fx`, the versatility is immense. Below is a basic demonstration of how you can leverage code within ToolJet.
+In ToolJet, code serves as a powerful means to enhance and customize your applications. From complex logic implementations using **Run JavaScript code** or **Run Python code** queries to simple dynamic expressions with **`fx`**, the versatility is immense. Below is a basic demonstration of how you can leverage code within ToolJet.
 
 Let's take a look at different examples on how to use code. 
 
 ## Using fx to Dynamically Change Properties of a Component:
 - Drag and drop a **Number Input** component and a **Button** component on the canvas.
-- Click on the **Button** component, navigate to its Properties Panel on the right and click on the `fx` button next to the `Disable` condition.
+- Click on the **Button** component, navigate to its Properties Panel on the right and click on the **`fx`** button next to the `Disable` condition.
 - Enter the below code under the `Disable` condition:
 ```js
 {{components.numberinput1.value ? false : true}}

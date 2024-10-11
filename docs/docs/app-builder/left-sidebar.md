@@ -65,7 +65,7 @@ To configure the app's global settings, click on the kebab menu(three vertical d
 - **Hide header for launched apps**: Toggle this on to the hide the tooljet's header when the applications are launched
 - **Maintenance mode**: Toggle this on to put the application in maintenance mode. When in **maintenance mode**, on launching the app, the user will get an error message that **the app is under maintenance**.
 - **Max width of canvas**: Modify the width of the canvas in **px** or **%**. The default width is `1292` px.
-- **Canvas background**: Enter the hex color code or choose a color from the picker to change the background color of the canvas. You can also click on the **fx** to programmatically set the value.
+- **Canvas background**: Enter the hex color code or choose a color from the picker to change the background color of the canvas. You can also click on the **`fx`** to programmatically set the value.
 - **App mode**: Select between three theme modes - Auto (default, adapts to browser settings), Light (brighter interface for well-lit conditions), and Dark (reduces eye strain in low light). 
 - **Export app**: Click on the [Export app](/docs/dashboard/#export-app) button to export the application as a JSON file. You can import this JSON file in any other workspace to use the application.
 

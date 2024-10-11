@@ -79,7 +79,7 @@ Check the **component specific actions** available for this component **[here](/
 
 | <div style={{ width:"100px"}}> Validation Option </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> Expected Value </div>|
 |:---------------|:-------------------------------------------------|:-----------------------------|
-| Make this field mandatory    | Displays a 'Field cannot be empty' message if no value is entered. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Make this field mandatory    | Displays a 'Field cannot be empty' message if no value is entered. | Enable/disable the toggle button or dynamically configure the value by clicking on **``fx``** and entering a logical expression. |
 | Regex              | Regular Expression to validate the input.             | Regular Expression Pattern (e.g., `^\d{10}$`). |
 | Min value         | Sets the minimum value allowed.                | Integer (e.g., `10` for a minimum value of 10). |
 | Max value         | Sets the maximum value allowed.                | Integer (e.g., `1000` for a maximum value of 1000).|
@@ -99,9 +99,9 @@ To add regex inside `Custom Validation`, you can use the below format:
 
 | <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:------------------|:------------|:------------------------------|
-| Loading state      | Enables a loading spinner, often used with `isLoading` to indicate progress. Toggle or set dynamically.   | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Visibility         | Controls component visibility. Toggle or set dynamically.                                                 | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Disable            | Enables or disables the component. Toggle or set dynamically.                                             | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Loading state      | Enables a loading spinner, often used with `isLoading` to indicate progress. Toggle or set dynamically.   | Enable/disable the toggle button or dynamically configure the value by clicking on **`fx`** and entering a logical expression. |
+| Visibility         | Controls component visibility. Toggle or set dynamically.                                                 | Enable/disable the toggle button or dynamically configure the value by clicking on **`fx`** and entering a logical expression. |
+| Disable            | Enables or disables the component. Toggle or set dynamically.                                             | Enable/disable the toggle button or dynamically configure the value by clicking on **`fx`** and entering a logical expression. |
 | Tooltip            | Provides additional information on hover. Set a string value for display.                                 | String (e.g., `Enter your age here.` ).                       |
 
 </div>
@@ -112,8 +112,8 @@ To add regex inside `Custom Validation`, you can use the below format:
 
 |<div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Expected Value </div>|
 |:---------- |:----------- |:----------|
-| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **`fx`** and entering a logical expression. |
+| Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **`fx`** and entering a logical expression. |
 
 </div>
 
@@ -127,9 +127,9 @@ To add regex inside `Custom Validation`, you can use the below format:
 
 | <div style={{ width:"100px"}}> Label Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:---------------|:------------|:---------------|
-| Text     | Sets the color of the component's label. | Select the color or click on **fx** and input code that programmatically returns a Hex color code.          |
-| Alignment      | Sets the position of the label and input field. | Click on the toggle options or click on **fx** to input code that programmatically returns an alignment value - `side` or `top`. |
-| Width          | Sets the width of the input field. | Keep the `Auto width` option for standard width or deselect it to modify the width using the slider or through code entry in **fx** that returns a numeric value.  |
+| Text     | Sets the color of the component's label. | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code.          |
+| Alignment      | Sets the position of the label and input field. | Click on the toggle options or click on **`fx`** to input code that programmatically returns an alignment value - `side` or `top`. |
+| Width          | Sets the width of the input field. | Keep the `Auto width` option for standard width or deselect it to modify the width using the slider or through code entry in **`fx`** that returns a numeric value.  |
 
 </div>
 
@@ -139,13 +139,13 @@ To add regex inside `Custom Validation`, you can use the below format:
 
 | <div style={{ width:"100px"}}> Field Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:----------------|:------------|:--------------|
-| Background        | Sets the background color of the component.                                                   | Select the color or click on **fx** and input code that programmatically returns a Hex color code.          |
-| Border    | Sets the border color of the component.                                                       | Select the color or click on **fx** and input code that programmatically returns a Hex color code.          |
-| Text      | Sets the color of the number entered in the component.                                     | Select the color or click on **fx** and input code that programmatically returns a Hex color code.          |
-| Error text| Sets the text color of validation message that displays.                                      | Select the color or click on **fx** and input code that programmatically returns a Hex color code.          |
-| Icon            | Allows you to select an icon for the component.                                               | Enable the icon visibility, select icon and icon color. Alternatively, you can programmatically set it using **fx**.                                     |
-| Border radius   | Modifies the border radius of the component.                                                  | Enter a number or click on **fx** and enter a code that programmatically returns a numeric value.           |
-| Box shadow      | Sets the box shadow properties of the component.                                              | Select the box shadow color and adjust the related properties or programmatically set it using **fx**.                                                                     |
+| Background        | Sets the background color of the component.                                                   | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code.          |
+| Border    | Sets the border color of the component.                                                       | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code.          |
+| Text      | Sets the color of the number entered in the component.                                     | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code.          |
+| Error text| Sets the text color of validation message that displays.                                      | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code.          |
+| Icon            | Allows you to select an icon for the component.                                               | Enable the icon visibility, select icon and icon color. Alternatively, you can programmatically set it using **`fx`**.                                     |
+| Border radius   | Modifies the border radius of the component.                                                  | Enter a number or click on **`fx`** and enter a code that programmatically returns a numeric value.           |
+| Box shadow      | Sets the box shadow properties of the component.                                              | Select the box shadow color and adjust the related properties or programmatically set it using **`fx`**.                                                                     |
 
 
 </div>

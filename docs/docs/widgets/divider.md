@@ -55,7 +55,7 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 | Visibility |  This property is used to set the visibility of the divider. The property accepts Boolean value. |
 
 :::info
-Any property having `Fx` button next to its field can be **programmatically configured**.
+Any property having **`fx`** button next to its field can be **programmatically configured**.
 :::
 
 </div>

@@ -43,8 +43,8 @@ For instance, you can set the `Data` property of a Text component on a card usin
 | Card data | Enter the cards data - `id`, `title` and `columnId` in the form of array of objects or from a query that returns an array of objects. | `{{[{ id: "r1", title: "Title 1", description: "Description 1", columnId: "c1" },{ id: "r2", title: "Title 2", description: "Description 2", columnId: "c2" },{ id: "r3", title: "Title 3", description: "Description 3",columnId: "c3" }]}}` or `{{queries.abc.data}}` |
 | Card width | Set the width of the card | This property expects a numerical value. By default, the value is set to `{{302}}` |
 | Card height | Set the width of the card | This property expects a numerical value. By default, the value is set to `{{100}}` |
-| Enable add card | This property allows you to show or hide the **+Add Cards** button on the Kanban. | By default its enabled, you can programmatically set value to `{{true}}` or `{{false}}` to enable/disable button by clicking on the `Fx` next to it |
-| Show delete button | This property allows you to show or hide the **Drop here to delete cards** section at the bottom of the Kanban. | By default its enabled, you can programmatically set value to `{{true}}` or `{{false}}` to enable/disable button by clicking on the `Fx` next to it |
+| Enable add card | This property allows you to show or hide the **+Add Cards** button on the Kanban. | By default its enabled, you can programmatically set value to `{{true}}` or `{{false}}` to enable/disable button by clicking on the **`fx`** next to it |
+| Show delete button | This property allows you to show or hide the **Drop here to delete cards** section at the bottom of the Kanban. | By default its enabled, you can programmatically set value to `{{true}}` or `{{false}}` to enable/disable button by clicking on the **`fx`** next to it |
 
 </div>
 
@@ -121,8 +121,8 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 | <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 |:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
-| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
-| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on **`fx`** to set the value `{{true}}` or `{{false}}` |
+| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on **`fx`** to set the value `{{true}}` or `{{false}}` |
 
 </div>
 

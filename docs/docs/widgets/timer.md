@@ -14,7 +14,7 @@ The **Timer** component allows users to track time by counting both upward and d
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div>                                                                                                                                                        |
 | :--------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Default value                                  | It specifies the initial value of timer. Format is: `HH.MM.SS.MS`.                                                                                                                                       |
-| Timer type                                     | It specifies if its a upward or downward counter. Select **Count Up** or **Count Down** from the dropdown or you can click on **fx** to programmatically define the values **countUp** or **countDown**. |
+| Timer type                                     | It specifies if its a upward or downward counter. Select **Count Up** or **Count Down** from the dropdown or you can click on **`fx`** to programmatically define the values **countUp** or **countDown**. |
 
 </div>
 
@@ -72,8 +72,8 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 | <div style={{ width:"100px"}}> Devices </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"100px"}}> Expected Value </div>                                                                              |
 | :-------------------------------------------- | :------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------- |
-| Show on desktop                               | Makes the component visible in desktop view.      | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Show on mobile                                | Makes the component visible in mobile view.       | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on desktop                               | Makes the component visible in desktop view.      | You can set it with the toggle button or dynamically configure the value by clicking on **`fx`** and entering a logical expression. |
+| Show on mobile                                | Makes the component visible in mobile view.       | You can set it with the toggle button or dynamically configure the value by clicking on **`fx`** and entering a logical expression. |
 
 </div>
 
@@ -85,12 +85,12 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div>             | <div style={{ width:"100px"}}> Configuration Options </div>                                                                  |
 | :--------------------------------------------- | :------------------------------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------- |
-| Visibility                                     | Controls component visibility. Toggle or set dynamically.     | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Disable                                        | Enables or disables the component. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Box shadow                                     | Sets the box shadow properties of the component.              | Select the box shadow color and adjust the related properties or programmatically set it using **fx**.                       |
+| Visibility                                     | Controls component visibility. Toggle or set dynamically.     | Enable/disable the toggle button or dynamically configure the value by clicking on **`fx`** and entering a logical expression. |
+| Disable                                        | Enables or disables the component. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **`fx`** and entering a logical expression. |
+| Box shadow                                     | Sets the box shadow properties of the component.              | Select the box shadow color and adjust the related properties or programmatically set it using **`fx`**.                       |
 
 :::info
-Any property having **fx** button next to its field can be **programmatically configured**.
+Any property having **`fx`** button next to its field can be **programmatically configured**.
 :::
 
 </div>

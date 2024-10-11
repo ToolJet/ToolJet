@@ -125,7 +125,7 @@ This determines the time at which week view and day view cells ends. Keep in min
 
 ### Show Toolbar
 
-Determines whether the calendar toolbar should be displayed or not. Click on `Fx` button to programmatically determine the field value to `{{true}}` or `{{false}}`.
+Determines whether the calendar toolbar should be displayed or not. Click on **`fx`** button to programmatically determine the field value to `{{true}}` or `{{false}}`.
 
 </div>
 
@@ -133,7 +133,7 @@ Determines whether the calendar toolbar should be displayed or not. Click on `Fx
 
 ### Show View Switcher
 
-Determines whether the calendar's buttons that allow user to switch between `month`, `week` and `day` level views will be displayed. Click on `Fx` button to programmatically determine the field value to `{{true}}` or `{{false}}`.
+Determines whether the calendar's buttons that allow user to switch between `month`, `week` and `day` level views will be displayed. Click on **`fx`** button to programmatically determine the field value to `{{true}}` or `{{false}}`.
 
 </div>
 
@@ -141,7 +141,7 @@ Determines whether the calendar's buttons that allow user to switch between `mon
 
 ### Highlight Today
 
-Determines whether the today's card on the calendar should be highlighted or not. Click on `Fx` button to programmatically determine the field value to `{{true}}` or `{{false}}`.
+Determines whether the today's card on the calendar should be highlighted or not. Click on **`fx`** button to programmatically determine the field value to `{{true}}` or `{{false}}`.
 
 </div>
 
@@ -149,7 +149,7 @@ Determines whether the today's card on the calendar should be highlighted or not
 
 ### Show Popover When the Event is Clicked
 
-Determines whether to display a popover whenever an event is clicked. Click on `Fx` button to programmatically determine the field value to `{{true}}` or `{{false}}`.
+Determines whether to display a popover whenever an event is clicked. Click on **`fx`** button to programmatically determine the field value to `{{true}}` or `{{false}}`.
 
 </div>
 
@@ -206,8 +206,8 @@ A Tooltip is often used to specify extra information about something when the us
 
 | <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:---------------|:------------|:---------------|
-|  **Show on Desktop**   | Toggle on or off to display the widget in desktop view. |   The value can be programmatically determined by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.|
-|  **Show on Mobile**     | Toggle on or off to display the widget in desktop view. | The value can be programmatically determined by clicking on `Fx` to set the value `{{true}}` or `{{false}}`. |
+|  **Show on Desktop**   | Toggle on or off to display the widget in desktop view. |   The value can be programmatically determined by clicking on **`fx`** to set the value `{{true}}` or `{{false}}`.|
+|  **Show on Mobile**     | Toggle on or off to display the widget in desktop view. | The value can be programmatically determined by clicking on **`fx`** to set the value `{{true}}` or `{{false}}`. |
 
 </div>
 
@@ -217,12 +217,12 @@ A Tooltip is often used to specify extra information about something when the us
 
 | Style | Description |
 |:-----:|:-----------:|
-| **Visibility** | Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not be visible after the app is deployed. By default, it's set to `{{true}}`. |
+| **Visibility** | Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the **`fx`** button next to it. If `{{false}}` the widget will not be visible after the app is deployed. By default, it's set to `{{true}}`. |
 | **Cell Size in Views Classified by Resource** | When `resources` are specified, the calendar could take up quite a lot of horizontal space, making the horizontal scroll bar of calendar having to be relied upon all the time. |
 | **Header Date Format on Week View** | This format determines how the column header for each day in week view will be displayed. As with every other date format field in ToolJet, this follows the momentjs standard of date formatting. By default, its set to `DD MMM`. |
 
 :::info
-Any property having `Fx` button next to its field can be **programmatically configured**.
+Any property having **`fx`** button next to its field can be **programmatically configured**.
 :::
 
 </div>

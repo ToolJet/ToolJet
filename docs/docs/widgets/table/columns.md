@@ -67,15 +67,15 @@ This column type is used for columns with text values. Unlike the text column ty
 | Column Name          | Specify the name to be displayed on the table column header. | String (e.g., `Product Name`).       |
 | Key                  | Specify the key name associated with the loaded data in the table. Uses `Column name` if no key is provided.            | String (e.g., `product_name`).       |
 | Transformation       | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`.                             | Use JavaScript for dynamic value generation, e.g., `{{cellValue > 4.5 ? 5 : 4}}`.                                  |
-| Make Editable        | This option is disabled by default. Enabling it allows the column to be edited by app users.                            | Enable/disable the toggle button or dynamically configure the setting by clicking on `fx` and entering a logical expression.                            |
-| Visibility    | This option is enabled by default. Disabling it hides the column from the table.                                        | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Make Editable        | This option is disabled by default. Enabling it allows the column to be edited by app users.                            | Enable/disable the toggle button or dynamically configure the setting by clicking on **`fx`** and entering a logical expression.                            |
+| Visibility    | This option is enabled by default. Disabling it hides the column from the table.                                        | Enable/disable the toggle button or dynamically configure the value by clicking on **`fx`** and entering a logical expression. |
 
 #### Styles
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
 | Text Alignment       | Aligns the text within the column.	                                                                                        | Set alignment to `left`, `center`, or `right`, which can be specified using the switch.       |
-| Text Color           | Modifies the color of the text in the column.                                                                             | Select the color or click on `fx` and input code that programmatically returns a Hex color code. |
-| Cell Background Color| Adjusts the background color of the cell.                                                                                 | Select the color or click on `fx` and input code that programmatically returns a Hex color code.| 
+| Text Color           | Modifies the color of the text in the column.                                                                             | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code. |
+| Cell Background Color| Adjusts the background color of the cell.                                                                                 | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code.| 
 
 ### Number
 
@@ -88,15 +88,15 @@ Selecting the column type as number will load numerical data in the column cells
 | Key                  | Specify the key name associated with the loaded data in the table. Uses `Column name` if no key is provided.            | String (e.g., `quantity`).       |
 | Transformation       | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`.                             | Use JavaScript for dynamic value generation, e.g., `{{cellValue > 4.5 ? 5 : 4}}`.                                  |
 | Decimal places  | Specifies the number of decimal places for numerical values. | Integer  (e.g., `{{2}}`).               |                |
-| Make Editable        | This option is disabled by default. Enabling it allows the column to be edited by app users.                            | Enable/disable the toggle button or dynamically configure the setting by clicking on `fx` and entering a logical expression.                           |
-| Visibility    | This option is enabled by default. Disabling it hides the column from the table.                                        | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Make Editable        | This option is disabled by default. Enabling it allows the column to be edited by app users.                            | Enable/disable the toggle button or dynamically configure the setting by clicking on **`fx`** and entering a logical expression.                           |
+| Visibility    | This option is enabled by default. Disabling it hides the column from the table.                                        | Enable/disable the toggle button or dynamically configure the value by clicking on **`fx`** and entering a logical expression. |
 
 #### Styles
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
 | Text Alignment       | Aligns the text within the column.	                                                                                        | Set alignment to `left`, `center`, or `right`, which can be specified using the switch.       |
-| Text Color           | Modifies the color of the text in the column.                                                                             | Select the color or click on `fx` and input code that programmatically returns a Hex color code. |
-| Cell Background Color| Adjusts the background color of the cell.                                                                                 | Select the color or click on `fx` and input code that programmatically returns a Hex color code.| 
+| Text Color           | Modifies the color of the text in the column.                                                                             | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code. |
+| Cell Background Color| Adjusts the background color of the cell.                                                                                 | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code.| 
 
 
 ### Text
@@ -109,15 +109,15 @@ The text column type can be used for multi-line text.
 | Column Name          | Specify the name to be displayed on the table column header. | String (e.g., `Product Description`).       |
 | Key                  | Specify the key name associated with the loaded data in the table. Uses `Column name` if no key is provided.            | String (e.g., `product_description`).       |
 | Transformation       | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`.                             | Use JavaScript for dynamic value generation, e.g., `{{cellValue > 4.5 ? 5 : 4}}`.                                  |
-| Make Editable        | This option is disabled by default. Enabling it allows the column to be edited by app users.                            | Enable/disable the toggle button or dynamically configure the setting by clicking on `fx` and entering a logical expression.                            |
-| Visibility    | This option is enabled by default. Disabling it hides the column from the table.                                        | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Make Editable        | This option is disabled by default. Enabling it allows the column to be edited by app users.                            | Enable/disable the toggle button or dynamically configure the setting by clicking on **`fx`** and entering a logical expression.                            |
+| Visibility    | This option is enabled by default. Disabling it hides the column from the table.                                        | Enable/disable the toggle button or dynamically configure the value by clicking on **`fx`** and entering a logical expression. |
 
 #### Styles
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
 | Text Alignment       | Aligns the text within the column.	                                                                                        | Set alignment to `left`, `center`, or `right`, which can be specified using the switch.       |
-| Text Color           | Modifies the color of the text in the column.                                                                             | Select the color or click on `fx` and input code that programmatically returns a Hex color code. |
-| Cell Background Color| Adjusts the background color of the cell.                                                                                 | Select the color or click on `fx` and input code that programmatically returns a Hex color code.| 
+| Text Color           | Modifies the color of the text in the column.                                                                             | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code. |
+| Cell Background Color| Adjusts the background color of the cell.                                                                                 | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code.| 
 
 ### Datepicker
 
@@ -129,32 +129,32 @@ The datepicker type can be used to display dates.
 | Column Name        | Specify the name to be displayed on the table column header.                                  | Date (e.g., `13/09/1990`)                              |
 | Key                | Specify the key name associated with the loaded data in the table. Uses `Column name` if no key is provided. | String (e.g., `listing_date`)                                       |
 | Transformation     | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`.   | Use JavaScript for dynamic value generation, e.g., `{{cellValue > 4.5 ? 5 : 4}}`. |
-| Make Editable      | This option is disabled by default. Enabling it allows the column to be edited by app users.   | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
-| Visibility  | This option is enabled by default. Disabling it hides the column from the table.               | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Make Editable      | This option is disabled by default. Enabling it allows the column to be edited by app users.   | Enable/disable the toggle button or dynamically configure the value by clicking on **`fx`** and entering a logical expression. |
+| Visibility  | This option is enabled by default. Disabling it hides the column from the table.               | Enable/disable the toggle button or dynamically configure the value by clicking on **`fx`** and entering a logical expression. |
 
 #### Date format
 
 | Property           | Description     | Configuration Options  |
 |:-------------------|:----------------|:-----------------|
-|Enable date         | Enables the option to change the formatting of the date. | Use the toggle button or click on `fx` and enter a logical expression. |
-| Date format        | Configures the display format for date values within the column.                               | Use the drop down with common formats (Default: `DD/MM/YYYY`) or click on `fx` and enter a logical expression. |
-|Enable date         | Enables the option to change the formatting of the time. | Use the toggle button or click on `fx` and enter a logical expression. |
-|Enable 24 hr time format         | Enables the option to change the formatting of the time to 24 hours. | Use the toggle button or click on `fx` and enter a logical expression. |
-|Enable 24 hr time format         | Enables the option to change the formatting of the time to 24 hours. | Use the toggle button or click on `fx` and enter a logical expression. |
+|Enable date         | Enables the option to change the formatting of the date. | Use the toggle button or click on **`fx`** and enter a logical expression. |
+| Date format        | Configures the display format for date values within the column.                               | Use the drop down with common formats (Default: `DD/MM/YYYY`) or click on **`fx`** and enter a logical expression. |
+|Enable date         | Enables the option to change the formatting of the time. | Use the toggle button or click on **`fx`** and enter a logical expression. |
+|Enable 24 hr time format         | Enables the option to change the formatting of the time to 24 hours. | Use the toggle button or click on **`fx`** and enter a logical expression. |
+|Enable 24 hr time format         | Enables the option to change the formatting of the time to 24 hours. | Use the toggle button or click on **`fx`** and enter a logical expression. |
 |Time zone         | Allows the selection of timezone. | Use the drop down to select the time zone. |
 
 #### Parse format
 | Property           | Description     | Configuration Options  |
 |:-------------------|:----------------|:-----------------|
-| Parse in unix timestamp | Enables parsing and display of date, time, and time zone data.                               | Use the toggle button or click on `fx` and enter a logical expression. |
+| Parse in unix timestamp | Enables parsing and display of date, time, and time zone data.                               | Use the toggle button or click on **`fx`** and enter a logical expression. |
 | Unix timestamp | Select between `s` or `ms` as the format.           | Use the drop down to select the desired unix timestamp format. |
 
 #### Styles
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
 | Text Alignment       | Aligns the text within the column.	                                                                                        | Set alignment to `left`, `center`, or `right`, which can be specified using the switch.       |
-| Text Color           | Modifies the color of the text in the column.                                                                             | Select the color or click on `fx` and input code that programmatically returns a Hex color code. |
-| Cell Background Color| Adjusts the background color of the cell.                                                                                 | Select the color or click on `fx` and input code that programmatically returns a Hex color code.| 
+| Text Color           | Modifies the color of the text in the column.                                                                             | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code. |
+| Cell Background Color| Adjusts the background color of the cell.                                                                                 | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code.| 
 
 
 ### Select
@@ -167,8 +167,8 @@ The select column can be used to display or select a single item from a list.
 | Column Name          | Specify the name to be displayed on the table column header. | String (e.g., `Category`).       |
 | Key                  | Specify the key name associated with the loaded data in the table. Uses `Column name` if no key is provided.            | String (e.g., `category`).       |
 | Transformation       | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`.                             | Use JavaScript for dynamic value generation, e.g., `{{cellValue > 4.5 ? 5 : 4}}`.                                  |
-| Make Editable        | This option is disabled by default. Enabling it allows the column to be edited by app users.                            | Enable/disable the toggle button or dynamically configure the setting by clicking on `fx` and entering a logical expression.                            |
-| Visibility    | This option is enabled by default. Disabling it hides the column from the table.                                        | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Make Editable        | This option is disabled by default. Enabling it allows the column to be edited by app users.                            | Enable/disable the toggle button or dynamically configure the setting by clicking on **`fx`** and entering a logical expression.                            |
+| Visibility    | This option is enabled by default. Disabling it hides the column from the table.                                        | Enable/disable the toggle button or dynamically configure the value by clicking on **`fx`** and entering a logical expression. |
 
 #### Options 
 Options can be used to provide values for the select column as an array. You can click on the **Add new option** button and enter `Option label` and `Option value` to create a new option. You can switch on the toggle for `Make this option as default` to mark an option as the default value. You can also enable `Dynamic option` and enter an array of values as shown in the example below:
@@ -186,8 +186,8 @@ Options can be used to provide values for the select column as an array. You can
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
 | Text Alignment       | Aligns the text within the column.	                                                                                        | Set alignment to `left`, `center`, or `right`, which can be specified using the switch.       |
-| Text Color           | Modifies the color of the text in the column.                                                                             | Select the color or click on `fx` and input code that programmatically returns a Hex color code. |
-| Cell Background Color| Adjusts the background color of the cell.                                                                                 | Select the color or click on `fx` and input code that programmatically returns a Hex color code.| 
+| Text Color           | Modifies the color of the text in the column.                                                                             | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code. |
+| Cell Background Color| Adjusts the background color of the cell.                                                                                 | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code.| 
 
 ### MultiSelect
 
@@ -199,8 +199,8 @@ The MultiSelect column can be used to display or select multiple items from a li
 | Column Name          | Specify the name to be displayed on the table column header. | String (e.g., `Locations`).       |
 | Key                  | Specify the key name associated with the loaded data in the table. Uses `Column name` if no key is provided.            | String (e.g., `locations`).       |
 | Transformation       | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`.                             | Use JavaScript for dynamic value generation, e.g., `{{cellValue > 4.5 ? 5 : 4}}`.                                  |
-| Make Editable        | This option is disabled by default. Enabling it allows the column to be edited by app users.                            | Enable/disable the toggle button or dynamically configure the setting by clicking on `fx` and entering a logical expression.                            |
-| Visibility    | This option is enabled by default. Disabling it hides the column from the table.                                        | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Make Editable        | This option is disabled by default. Enabling it allows the column to be edited by app users.                            | Enable/disable the toggle button or dynamically configure the setting by clicking on **`fx`** and entering a logical expression.                            |
+| Visibility    | This option is enabled by default. Disabling it hides the column from the table.                                        | Enable/disable the toggle button or dynamically configure the value by clicking on **`fx`** and entering a logical expression. |
 
 #### Options 
 Options can be used to provide values for the select column as an array. You can click on the **Add new option** button and enter `Option label` and `Option value` to set the option values. You can switch on the toggle for `Make this option as default` to mark an option as the default value. You can also enable `Dynamic option` and enter an array of values as shown in the example below:
@@ -217,8 +217,8 @@ Options can be used to provide values for the select column as an array. You can
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
 | Text Alignment       | Aligns the text within the column.	                                                                                        | Set alignment to `left`, `center`, or `right`, which can be specified using the switch.       |
-| Text Color           | Modifies the color of the text in the column.                                                                             | Select the color or click on `fx` and input code that programmatically returns a Hex color code. |
-| Cell Background Color| Adjusts the background color of the cell.                                                                                 | Select the color or click on `fx` and input code that programmatically returns a Hex color code.| 
+| Text Color           | Modifies the color of the text in the column.                                                                             | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code. |
+| Cell Background Color| Adjusts the background color of the cell.                                                                                 | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code.| 
 
 ### Boolean
 
@@ -230,15 +230,15 @@ The boolean column type can be used to display boolean values. If the value is t
 | Column name          | Specify the name to be displayed on the table column header. | String (e.g., `Validity`).       |
 | Key                  | Specify the key name associated with the loaded data in the table. Uses `Column name` if no key is provided.            | String (e.g., `is_valid`).       |
 | Transformation       | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`.                             | Use JavaScript for dynamic value generation, e.g., `{{cellValue > 4.5 ? 5 : 4}}`.                                  |
-| Make Editable        | This option is disabled by default. Enabling it allows the column to be edited by app users.                            | Enable/disable the toggle button or dynamically configure the setting by clicking on `fx` and entering a logical expression.                            |
-| Visibility    | This option is enabled by default. Disabling it hides the column from the table.                                        | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Make Editable        | This option is disabled by default. Enabling it allows the column to be edited by app users.                            | Enable/disable the toggle button or dynamically configure the setting by clicking on **`fx`** and entering a logical expression.                            |
+| Visibility    | This option is enabled by default. Disabling it hides the column from the table.                                        | Enable/disable the toggle button or dynamically configure the value by clicking on **`fx`** and entering a logical expression. |
 
 #### Styles
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
 | Text Alignment       | Aligns the text within the column.	                                                                                        | Set alignment to `left`, `center`, or `right`, which can be specified using the switch.       |
-| Text Color           | Modifies the color of the text in the column.                                                                             | Select the color or click on `fx` and input code that programmatically returns a Hex color code. |
-| Cell Background Color| Adjusts the background color of the cell.                                                                                 | Select the color or click on `fx` and input code that programmatically returns a Hex color code.| 
+| Text Color           | Modifies the color of the text in the column.                                                                             | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code. |
+| Cell Background Color| Adjusts the background color of the cell.                                                                                 | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code.| 
 
 ### Image
 
@@ -250,14 +250,14 @@ The image column type can be used to display images.
 | Column name          | Specify the name to be displayed on the table column header. | String (e.g., `Product Image`).       |
 | Key                  | Specify the key name associated with the loaded data in the table. Uses `Column name` if no key is provided.            | String (e.g., `product_image`).       |
 | Transformation       | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`.                             | Use JavaScript for dynamic value generation, e.g., `{{cellValue > 4.5 ? 5 : 4}}`.                                  |
-| Visibility    | This option is enabled by default. Disabling it hides the column from the table.                                        | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Visibility    | This option is enabled by default. Disabling it hides the column from the table.                                        | Enable/disable the toggle button or dynamically configure the value by clicking on **`fx`** and entering a logical expression. |
 
 #### Styles
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
 | Text Alignment       | Aligns the text within the column.	                                                                                        | Set alignment to `left`, `center`, or `right`, which can be specified using the switch.       |
-| Text Color           | Modifies the color of the text in the column.                                                                             | Select the color or click on `fx` and input code that programmatically returns a Hex color code. |
-| Cell Background Color| Adjusts the background color of the cell.                                                                                 | Select the color or click on `fx` and input code that programmatically returns a Hex color code.| 
+| Text Color           | Modifies the color of the text in the column.                                                                             | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code. |
+| Cell Background Color| Adjusts the background color of the cell.                                                                                 | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code.| 
 
 
 ### Link
@@ -270,14 +270,14 @@ The link column type can be used to create a link to .
 | Column Name          | Specify the name to be displayed on the table column header. | String (e.g., `Product Description`).       |
 | Key                  | Specify the key name associated with the loaded data in the table. Uses `Column name` if no key is provided.            | String (e.g., `id`).       |
 | Transformation       | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`.                             | Use JavaScript for dynamic value generation, e.g., `{{cellValue > 4.5 ? 5 : 4}}`.                                  |
-| Visibility    | This option is enabled by default. Disabling it hides the column from the table.                                        | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Visibility    | This option is enabled by default. Disabling it hides the column from the table.                                        | Enable/disable the toggle button or dynamically configure the value by clicking on **`fx`** and entering a logical expression. |
 
 #### Styles
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
 | Text Alignment       | Aligns the text within the column.	                                                                                        | Set alignment to `left`, `center`, or `right`, which can be specified using the switch.       |
-| Text Color           | Modifies the color of the text in the column.                                                                             | Select the color or click on `fx` and input code that programmatically returns a Hex color code. |
-| Cell Background Color| Adjusts the background color of the cell.                                                                                 | Select the color or click on `fx` and input code that programmatically returns a Hex color code.| 
+| Text Color           | Modifies the color of the text in the column.                                                                             | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code. |
+| Cell Background Color| Adjusts the background color of the cell.                                                                                 | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code.| 
 
 
 ### Default (Deprecated)
@@ -290,15 +290,15 @@ This default column is used to display text.
 | Column Name          | Specify the name to be displayed on the table column header. | String (e.g., `Product Description`).       |
 | Key                  | Specify the key name associated with the loaded data in the table. Uses `Column name` if no key is provided.            | String (e.g., `product_description`).       |
 | Transformation       | Allows you to transform the data of a cell value. The default value will be `{{cellValue}}`.                             | Use JavaScript for dynamic value generation, e.g., `{{cellValue > 4.5 ? 5 : 4}}`.                                  |
-| Make Editable        | This option is disabled by default. Enabling it allows the column to be edited by app users.                            | Enable/disable the toggle button or dynamically configure the setting by clicking on `fx` and entering a logical expression.                            |
-| Visibility    | This option is enabled by default. Disabling it hides the column from the table.                                        | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Make Editable        | This option is disabled by default. Enabling it allows the column to be edited by app users.                            | Enable/disable the toggle button or dynamically configure the setting by clicking on **`fx`** and entering a logical expression.                            |
+| Visibility    | This option is enabled by default. Disabling it hides the column from the table.                                        | Enable/disable the toggle button or dynamically configure the value by clicking on **`fx`** and entering a logical expression. |
 
 #### Styles
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
 | Text Alignment       | Aligns the text within the column.	                                                                                        | Set alignment to `left`, `center`, or `right`, which can be specified using the switch.       |
-| Text Color           | Modifies the color of the text in the column.                                                                             | Select the color or click on `fx` and input code that programmatically returns a Hex color code. |
-| Cell Background Color| Adjusts the background color of the cell.                                                                                 | Select the color or click on `fx` and input code that programmatically returns a Hex color code.| 
+| Text Color           | Modifies the color of the text in the column.                                                                             | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code. |
+| Cell Background Color| Adjusts the background color of the cell.                                                                                 | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code.| 
 
 ### Dropdown (Deprecated)
 
@@ -311,16 +311,16 @@ The **Dropdown** column type is used to display a dropdown in the column cells u
 | Key                  | Specify the key name associated with the loaded data in the table. Uses `Column name` if no key is provided.            | String (e.g., `category_id`).       |
 | Values              | Provide the values for the dropdown as an array.                | Array (e.g., `[1, 2, 3]`).          |
 | Labels              | Provide the labels for the values in the dropdown as an array.  | Array (e.g., `["Option 1", "Option 2", "Option 3"]`). |
-| Make Editable        | This option is disabled by default. Enabling it allows the column to be edited by app users.                            | Enable/disable the toggle button or dynamically configure the setting by clicking on `fx` and entering a logical expression.                            |
-| Visibility    | This option is enabled by default. Disabling it hides the column from the table.                                        | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Make Editable        | This option is disabled by default. Enabling it allows the column to be edited by app users.                            | Enable/disable the toggle button or dynamically configure the setting by clicking on **`fx`** and entering a logical expression.                            |
+| Visibility    | This option is enabled by default. Disabling it hides the column from the table.                                        | Enable/disable the toggle button or dynamically configure the value by clicking on **`fx`** and entering a logical expression. |
 
 
 #### Styles
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
 | Text Alignment       | Aligns the text within the column.	                                                                                        | Set alignment to `left`, `center`, or `right`.       |
-| Text Color           | Modifies the color of the text in the column.                                                                             | Select the color or click on `fx` and input code that programmatically returns a Hex color code. |
-| Cell Background Color| Adjusts the background color of the cell.                                                                                 | Select the color or click on `fx` and input code that programmatically returns a Hex color code.| 
+| Text Color           | Modifies the color of the text in the column.                                                                             | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code. |
+| Cell Background Color| Adjusts the background color of the cell.                                                                                 | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code.| 
 
 ### Multiselect (Deprecated)
 
@@ -333,16 +333,16 @@ The multiselect column type is used to show multiple selections or display a dro
 | Key                  | Specify the key name associated with the loaded data in the table. Uses `Column name` if no key is provided.            | String (e.g., `tag_ids`).       |
 | Values              | Provide the values for the dropdown as an array.                | Array (e.g., `[1, 2, 3]`).          |
 | Labels              | Provide the labels for the values in the dropdown as an array.  | Array (e.g., `["Tag 1", "Tag 2", "Tag 3"]`). |
-| Make Editable        | This option is disabled by default. Enabling it allows the column to be edited by app users.                            | Enable/disable the toggle button or dynamically configure the setting by clicking on `fx` and entering a logical expression.                            |
-| Visibility    | This option is enabled by default. Disabling it hides the column from the table.                                        | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Make Editable        | This option is disabled by default. Enabling it allows the column to be edited by app users.                            | Enable/disable the toggle button or dynamically configure the setting by clicking on **`fx`** and entering a logical expression.                            |
+| Visibility    | This option is enabled by default. Disabling it hides the column from the table.                                        | Enable/disable the toggle button or dynamically configure the value by clicking on **`fx`** and entering a logical expression. |
 
 
 #### Styles
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
 | Text Alignment       | Aligns the text within the column.	                                                                                        | Set alignment to `left`, `center`, or `right`.       |
-| Text Color           | Modifies the color of the text in the column.                                                                             | Select the color or click on `fx` and input code that programmatically returns a Hex color code. |
-| Cell Background Color| Adjusts the background color of the cell.                                                                                 | Select the color or click on `fx` and input code that programmatically returns a Hex color code.| 
+| Text Color           | Modifies the color of the text in the column.                                                                             | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code. |
+| Cell Background Color| Adjusts the background color of the cell.                                                                                 | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code.| 
 
 ### Toggle Switch (Deprecated)
 
@@ -354,16 +354,16 @@ The **Toggle Switch** column type is used to display a toggle switch in the colu
 | Column Name          | Specify the name to be displayed on the table column header. | String (e.g., `Active Status`).       |
 | Key                  | Specify the key name associated with the loaded data in the table. Uses `Column name` if no key is provided.            | String (e.g., `active`).       |
 | Active Color         | Set the color of the toggle switch when it is active.          | Color code (e.g., `#76D7C4`).         |
-| Make Editable        | This option is disabled by default. Enabling it allows the column to be edited by app users.                            | Enable/disable the toggle button or dynamically configure the setting by clicking on `fx` and entering a logical expression.                            |
-| Visibility    | This option is enabled by default. Disabling it hides the column from the table.                                        | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Make Editable        | This option is disabled by default. Enabling it allows the column to be edited by app users.                            | Enable/disable the toggle button or dynamically configure the setting by clicking on **`fx`** and entering a logical expression.                            |
+| Visibility    | This option is enabled by default. Disabling it hides the column from the table.                                        | Enable/disable the toggle button or dynamically configure the value by clicking on **`fx`** and entering a logical expression. |
 
 
 #### Styles
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
 | Text Alignment       | Aligns the text within the column.	                                                                                        | Set alignment to `left`, `center`, or `right`.       |
-| Text Color           | Modifies the color of the text in the column.                                                                             | Select the color or click on `fx` and input code that programmatically returns a Hex color code. |
-| Cell Background Color| Adjusts the background color of the cell.                                                                                 | Select the color or click on `fx` and input code that programmatically returns a Hex color code.| 
+| Text Color           | Modifies the color of the text in the column.                                                                             | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code. |
+| Cell Background Color| Adjusts the background color of the cell.                                                                                 | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code.| 
 
 ### Radio (Deprecated)
 
@@ -376,16 +376,16 @@ The **Radio** column type is used to show radio buttons in the column cells, off
 | Key                  | Specify the key name associated with the loaded data in the table. Uses `Column name` if no key is provided.            | String (e.g., `membership_type`).       |
 | Values              | Provide the values for the radio buttons as an array.                | Array (e.g., `[1, 2, 3]`).          |
 | Labels              | Provide the labels for the values in the radio buttons as an array.  | Array (e.g., `["Gold", "Silver", "Bronze"]`). |
-| Make Editable        | This option is disabled by default. Enabling it allows the column to be edited by app users.                            | Enable/disable the toggle button or dynamically configure the setting by clicking on `fx` and entering a logical expression.                            |
-| Visibility    | This option is enabled by default. Disabling it hides the column from the table.                                        | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Make Editable        | This option is disabled by default. Enabling it allows the column to be edited by app users.                            | Enable/disable the toggle button or dynamically configure the setting by clicking on **`fx`** and entering a logical expression.                            |
+| Visibility    | This option is enabled by default. Disabling it hides the column from the table.                                        | Enable/disable the toggle button or dynamically configure the value by clicking on **`fx`** and entering a logical expression. |
 
 
 #### Styles
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
 | Text Alignment       | Aligns the text within the column.	                                                                                        | Set alignment to `left`, `center`, or `right`.       |
-| Text Color           | Modifies the color of the text in the column.                                                                             | Select the color or click on `fx` and input code that programmatically returns a Hex color code. |
-| Cell Background Color| Adjusts the background color of the cell.                                                                                 | Select the color or click on `fx` and input code that programmatically returns a Hex color code.| 
+| Text Color           | Modifies the color of the text in the column.                                                                             | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code. |
+| Cell Background Color| Adjusts the background color of the cell.                                                                                 | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code.| 
 
 ### Badge (Deprecated)
 
@@ -398,16 +398,16 @@ The **Badge** column type is utilized to exhibit labels or tags on the columns, 
 | Key                  | Specify the key name associated with the loaded data in the table. Uses `Column name` if no key is provided.            | String (e.g., `status`).       |
 | Values              | Provide the values for the badge as an array.                | Array (e.g., `["new", "in_progress", "completed"]`).          |
 | Labels              | Provide the labels for the values in the badge as an array.  | Array (e.g., `["New", "In Progress", "Completed"]`). |
-| Make Editable        | This option is disabled by default. Enabling it allows the column to be edited by app users.                            | Enable/disable the toggle button or dynamically configure the setting by clicking on `fx` and entering a logical expression.                            |
-| Visibility    | This option is enabled by default. Disabling it hides the column from the table.                                        | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Make Editable        | This option is disabled by default. Enabling it allows the column to be edited by app users.                            | Enable/disable the toggle button or dynamically configure the setting by clicking on **`fx`** and entering a logical expression.                            |
+| Visibility    | This option is enabled by default. Disabling it hides the column from the table.                                        | Enable/disable the toggle button or dynamically configure the value by clicking on **`fx`** and entering a logical expression. |
 
 
 #### Styles
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
 | Text Alignment       | Aligns the text within the column.	                                                                                        | Set alignment to `left`, `center`, or `right`.       |
-| Text Color           | Modifies the color of the text in the column.                                                                             | Select the color or click on `fx` and input code that programmatically returns a Hex color code. |
-| Cell Background Color| Adjusts the background color of the cell.                                                                                 | Select the color or click on `fx` and input code that programmatically returns a Hex color code.| 
+| Text Color           | Modifies the color of the text in the column.                                                                             | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code. |
+| Cell Background Color| Adjusts the background color of the cell.                                                                                 | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code.| 
 
 ### Multiple Badges (Deprecated)
 
@@ -420,16 +420,16 @@ Similar to the **Badge** type, the **Multiple Badges** type is used to display m
 | Key                  | Specify the key name associated with the loaded data in the table. Uses `Column name` if no key is provided.            | String (e.g., `features`).       |
 | Values              | Provide the values for the multiple badges as an array.                | Array (e.g., `["wifi", "bluetooth", "gps"]`).          |
 | Labels              | Provide the labels for the values in the multiple badges as an array.  | Array (e.g., `["WiFi", "Bluetooth", "GPS"]`). |
-| Make Editable        | This option is disabled by default. Enabling it allows the column to be edited by app users.                            | Enable/disable the toggle button or dynamically configure the setting by clicking on `fx` and entering a logical expression.                            |
-| Visibility    | This option is enabled by default. Disabling it hides the column from the table.                                        | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Make Editable        | This option is disabled by default. Enabling it allows the column to be edited by app users.                            | Enable/disable the toggle button or dynamically configure the setting by clicking on **`fx`** and entering a logical expression.                            |
+| Visibility    | This option is enabled by default. Disabling it hides the column from the table.                                        | Enable/disable the toggle button or dynamically configure the value by clicking on **`fx`** and entering a logical expression. |
 
 
 #### Styles
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
 | Text Alignment       | Aligns the text within the column.	                                                                                        | Set alignment to `left`, `center`, or `right`.       |
-| Text Color           | Modifies the color of the text in the column.                                                                             | Select the color or click on `fx` and input code that programmatically returns a Hex color code. |
-| Cell Background Color| Adjusts the background color of the cell.                                                                                 | Select the color or click on `fx` and input code that programmatically returns a Hex color code.| 
+| Text Color           | Modifies the color of the text in the column.                                                                             | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code. |
+| Cell Background Color| Adjusts the background color of the cell.                                                                                 | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code.| 
 
 ### Tags (Deprecated)
 
@@ -440,15 +440,15 @@ The **Tags** column type is utilized to display an array of tags within the colu
 |:--------------|:----------------|:----------------------|
 | Column Name          | Specify the name to be displayed on the table column header. | String (e.g., `Tags`).       |
 | Key                  | Specify the key name associated with the loaded data in the table. Uses `Column name` if no key is provided.            | String (e.g., `tag_list`).       |
-| Make Editable        | This option is disabled by default. Enabling it allows the column to be edited by app users.                            | Enable/disable the toggle button or dynamically configure the setting by clicking on `fx` and entering a logical expression.                            |
-| Visibility    | This option is enabled by default. Disabling it hides the column from the table.                                        | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Make Editable        | This option is disabled by default. Enabling it allows the column to be edited by app users.                            | Enable/disable the toggle button or dynamically configure the setting by clicking on **`fx`** and entering a logical expression.                            |
+| Visibility    | This option is enabled by default. Disabling it hides the column from the table.                                        | Enable/disable the toggle button or dynamically configure the value by clicking on **`fx`** and entering a logical expression. |
 
 #### Styles
 | Property       | Description     | Configuration Options |
 |:--------------|:----------------|:----------------------|
 | Text Alignment       | Aligns the text within the column.	                                                                                        | Set alignment to `left`, `center`, or `right`.       |
-| Text Color           | Modifies the color of the text in the column.                                                                             | Select the color or click on `fx` and input code that programmatically returns a Hex color code. |
-| Cell Background Color| Adjusts the background color of the cell.                                                                                 | Select the color or click on `fx` and input code that programmatically returns a Hex color code.| 
+| Text Color           | Modifies the color of the text in the column.                                                                             | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code. |
+| Cell Background Color| Adjusts the background color of the cell.                                                                                 | Select the color or click on **`fx`** and input code that programmatically returns a Hex color code.| 
 
 ### Add Column
 

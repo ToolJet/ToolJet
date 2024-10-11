@@ -373,7 +373,7 @@ To display email column, the key for the column should be `user.email`.
 Enable `editable` property of a column to make the cells editable. If a data type is not selected, `string` is selected as the data type.
 
 :::tip
-You can programatically **enable**/**disable** the make **editable** field in the columns property by clicking on the **Fx** button.
+You can programatically **enable**/**disable** the make **editable** field in the columns property by clicking on the **fx** button.
 :::
 
 If the data in a cell is changed, `changeSet` property of the table object will have the index of the row and the field that changed.
@@ -501,7 +501,7 @@ Action buttons will be displayed as the last column of the table. The styles of 
 | Button position | Set the button position to the left or right |
 | Background color (Action Button) | Background color of the action button. |
 | Text color (Action Button) | Color of button-text of the action button. |
-| Disable Action Button | Toggle on to disable the action button. You can programmatically set its value by clicking on the `Fx` button next to it, if set to `{{true}}`, the action button will be disabled and becomes non-functional. By default, its value is set to `{{false}}`. |
+| Disable Action Button | Toggle on to disable the action button. You can programmatically set its value by clicking on the **`fx`** button next to it, if set to `{{true}}`, the action button will be disabled and becomes non-functional. By default, its value is set to `{{false}}`. |
 
 ## Search Sort and Filter
 
@@ -524,7 +524,7 @@ When Server-side sort is enabled, clicking on the column headers will not automa
 
 ### Enable Filtering
 
-The filter button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to `{{true}}` or `{{false}}` to show or hide the filter button by clicking on the **Fx** button.
+The filter button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to `{{true}}` or `{{false}}` to show or hide the filter button by clicking on the **fx** button.
 
 #### Server-side Filter
 When Server-side filter is enabled, applying filters will not automatically filter the table, instead, the `Filter changed` event will be fired and the applied filters will be exposed as `filters`. You can use this data to run any query that feeds data to the table in a manner that reflects the filters applied.
@@ -553,15 +553,15 @@ Check this how-to guide to learn more about [server-side pagination](/docs/how-t
 
 ### Show Add New Row Button
 
-The Add new row button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to `{{true}}` or `{{false}}` to show or hide the Add new row button by clicking on the **Fx** button.
+The Add new row button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to `{{true}}` or `{{false}}` to show or hide the Add new row button by clicking on the **fx** button.
 
 ### Show Download Button
 
-The download button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to `{{true}}` or `{{false}}` to show or hide the download button by clicking on the **Fx** button.
+The download button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to `{{true}}` or `{{false}}` to show or hide the download button by clicking on the **fx** button.
 
 ### Hide Column Selector Button
 
-The column selector button on the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to `{{true}}` or `{{false}}` to show or hide the column selector button by clicking on the **Fx** button.
+The column selector button on the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to `{{true}}` or `{{false}}` to show or hide the column selector button by clicking on the **fx** button.
 
 ### Loading State (Boolean)
 
@@ -586,11 +586,11 @@ It's enabled by default. Table footer will show two update buttons **Save change
 | Action button radius | This field can be used to give a radius to all action buttons. The default value is `0` |
 | Table type | Select a type of table from the dropdown: Bordered, Regular, or Striped. |
 | Cell size |  This decides the size of table cells. You can choose between a `Condensed` size for table cells or a `Regular` size |
-| Visibility | Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the component will not visible after the app is deployed. By default, it's set to `{{true}}`. |
-| Disable | Toggle on to lock the widget. You can programmatically change its value by clicking on the `Fx` button next to it, if set to `{{true}}`, the component will be locked and becomes non-functional. By default, its value is set to `{{false}}`. |
+| Visibility | Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the **`fx`** button next to it. If `{{false}}` the component will not visible after the app is deployed. By default, it's set to `{{true}}`. |
+| Disable | Toggle on to lock the widget. You can programmatically change its value by clicking on the **`fx`** button next to it, if set to `{{true}}`, the component will be locked and becomes non-functional. By default, its value is set to `{{false}}`. |
 | Border radius | Use this property to modify the border radius of the button. |
 
 :::info
-Any property having `Fx` button next to its field can be **programmatically configured**.
+Any property having **`fx`** button next to its field can be **programmatically configured**.
 :::
 
