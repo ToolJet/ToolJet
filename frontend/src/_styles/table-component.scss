@@ -496,6 +496,23 @@
   overflow: hidden;
 }
 
+.table th,
+.table td {
+  border-left: 1px solid #dee2e6;
+  border-right: 1px solid #dee2e6; 
+}
+
+.table th:first-child,
+.table td:first-child {
+  border-left: none;
+}
+
+.table th:last-child,
+.table td:last-child {
+  border-right: none;
+}
+
+
 .table-add-new-row {
   padding: 8px;
   color: var(--slate12) !important;
