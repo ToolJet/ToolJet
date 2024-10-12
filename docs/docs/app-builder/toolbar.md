@@ -13,7 +13,7 @@ To modify the app name, click on the application name on the left side of the to
     <img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/appnamenew-v2.png" alt="App Builder: App Name"/>
 </div>
 
-### Desktop or Mobile layout
+### Desktop or Mobile Layout
 
 Toggle between Mobile and Desktop views directly from the topbar to switch the canvas mode.
 
@@ -61,7 +61,7 @@ Learn more about multi-environment configuration **[here](/docs/release-manageme
 
 ### Version Manager
 
-You can manage application versions through the Version Manager. You can use this dropdown to edit a version name or adding/removing versions.
+You can manage application versions through the Version Manager. You can use this dropdown to edit a version name or add or remove versions.
 
 :::tip
 Versioning is also helpful when working with **[multiple environments](/docs/release-management/multi-environment/)** like development, staging and production.
@@ -72,10 +72,10 @@ Versioning is also helpful when working with **[multiple environments](/docs/rel
 </div>
 
 
-### Gitsync
-The `Gitsync` icon next to the versions dropdown allows you to sync your application with your GitHub repository.
+### GitSync
+The `GitSync` icon next to the versions dropdown allows you to sync your application with your GitHub repository.
 
-Read more about Gitsync **[here](/docs/gitsync)**. 
+Read more about GitSync **[here](/docs/gitsync)**. 
 ### Undo or Redo
 
 You can Undo or Redo any action performed on the canvas using the Undo and Redo buttons. 
@@ -108,7 +108,7 @@ The Preview button allows you to view the current app version in a new tab, faci
 
 ### Release
 
-Use the Release button on the right to publish the current app version. The Release button, used to publish the current app version, becomes visible only in the Production environment, ensuring that only finalized versions are made public.
+Use the Release button on the right to publish the current app version. The Release button is used to publish the current app version, becomes visible only in the Production environment, ensuring that only finalized versions are made public.
 
 :::caution
 ToolJet will block editing of the Released version of an app and will display a prompt to create a new version to make the changes. This is to prevent accidentally pushing an unfinished app to the live version.
