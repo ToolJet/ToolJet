@@ -1,40 +1,29 @@
 ---
-id: star-rating
-title: Star Rating
+id: range-slider
+title: Range Slider
 ---
-# Star Rating
+# Range Slider
 
-The **Star Rating** widget can be used to display as well as input ratings. The widget supports half stars, and the number of stars can be set too.
+The **Range Slider** widget is widely used across different UIs. One of the main purposes is to filter, explore all the related content and available in the control and settings options.
 
-<div style={{paddingTop:'24px'}}>
+:::tip
+Range Sliders have "Two handles" option which allows user to select within a range.
+:::
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Properties
 
-| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
-|:------------ |:-------------|:---------- |
-| Label | The text to be used as the label for the star rating. | This field expects a `String` value. |
-| Number of stars | Initial number of stars in the list on initial load. `default: 5`. | This field expects an integer value. |
-| Default no of selected stars | This property specifies the default count of stars that are selected on the initial load. `default: 5` (integer). | This field expects an integer value. |
-| Enable half star | Toggle `on` to allow selection of half stars. `default: false` (bool). | Click on `fx` to programmatically define the value `{{true}}` or `{{false}}`. |
-| Tooltips | This is used for displaying informative tooltips on each star, and it is mapped to the index of the star. | `default: []` (array of strings ). |
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | 
+|:------------ |:-------------|
+| Minimum value | Set the minimum value for the slider. This field accepts any numerical value. |
+| Maximum value | Set the maximum value for the slider. This field accepts any numerical value. |
+| Value | Set the default value when the widget loads. This can be used to pre-fill the value based on your data and requirements. |
+| Two handles | The slider will now have 2 dragging handles. It is used to define a range of values versus a single given value. |
 
 </div>
 
-<div style={{paddingTop:'24px'}}>
-
-## Events
-
-| <div style={{ width:"100px"}}> Event </div> | <div style={{ width:"100px"}}> Description </div> |
-|:----------- |:----------- |
-| On Change | This event is triggered when a star is clicked. |
-
-:::info
-Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
-:::
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Component Specific Actions (CSA)
 
@@ -42,17 +31,17 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 </div>
 
-<div style={{paddingTop:'24px'}}>
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Exposed Variables
 
 | <div style={{ width:"100px"}}> Variables  </div>  | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 |:----------- |:----------- |:--------- |
-| value | This variable holds the value whenever a rating is added on the component. The variable holds a numerical value. | Access the value dynamically using JS: `{{components.colorpicker1.selectedColorHex}}`|
+| value | Holds an object when `two handles` option is disabled or an array when `two handles` is enabled from the component properties. | The value can be accessed dynamically using JS: `{{components.rangeslider1.value}}` or `{{components.rangeslider1.value[1]}}` |
 
 </div>
 
-<div style={{paddingTop:'24px'}}>
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## General
 ### Tooltip
@@ -63,26 +52,30 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 </div>
 
-<div style={{paddingTop:'24px'}}>
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Layout
 
 | <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 |:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
-| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on `fx` to set the value `{{true}}` or `{{false}}` |
-| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on `fx` to set the value `{{true}}` or `{{false}}` |
+| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
 
 </div>
-<hr>
-<div style={{paddingTop:'24px'}}>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Styles
 
-| <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}>  Description </div> | <div style={{ width:"100px"}}> Default Value </div> |
-|:------------ |:-------------|:--------- |
-| Star Color | Display color of the star. `default: #ffb400` (color hex). Change color by providing `Hex color code` or choosing one from the picker. |  |
-| Label color | Change the color of label in widget by providing `Hex color code` or choosing one from the picker. |  |
-| Visibility | Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `fx` button next to it. If `{{false}}` the widget will not be visible after the app is deployed. | By default, it's set to `{{true}}` |
-| Disable | This is `off` by default, toggle `on` the switch to lock the widget and make it non-functional. You can also programmatically set the value by clicking on the `fx` button next to it. If set to `{{true}}`, the widget will be locked and becomes non-functional. | By default, its value is set to `{{false}}` |
+| <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}>  Description </div> | 
+|:------------ |:-------------|
+| Line color | Enter the hexcode to set the default color for slider's track. |
+| Handle color | Enter the hexcode to set the color for slider's handler. |
+| Track color | Enter the hexcode to set the color for slider's active portion on the track. |
+| Visibility | Set the visibility of the slider programmatically. The default value is `{{true}}`. |
+
+:::info
+Any property having `Fx` button next to its field can be **programmatically configured**.
+:::
 
 </div>
