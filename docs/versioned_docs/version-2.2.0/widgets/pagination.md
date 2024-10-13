@@ -29,7 +29,7 @@ It is used to set and display the default page index when the app initially load
 
 ### On Page Change
 
-This event is triggered whenever the user switches to another page index. You can explore various actions associated with this event as per app logic.
+Triggered whenever the user switches to another page index.
 
 ## General
 ### Tooltip

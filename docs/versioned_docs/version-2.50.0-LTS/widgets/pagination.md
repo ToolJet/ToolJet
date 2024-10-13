@@ -27,7 +27,7 @@ You can club the Pagination component with the List View component.
 
 | <div style={{ width:"100px"}}> Event </div> | <div style={{ width:"100px"}}> Description </div> |
 |:------------------|:---------------------|
-| On Page Change | This event is triggered whenever the user switches to another page index. You can explore various actions associated with this event as per app logic. |
+| On Page Change | Triggered whenever the user switches to another page index. |
 
 </div>
 
