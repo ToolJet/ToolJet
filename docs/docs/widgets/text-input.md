@@ -20,12 +20,13 @@ The **Text Input** component allows users to enter a single line of text. It can
 
 ## Events
 
-| Event            | Description  | 
-|:-----------------|:---------------------------------------------|
-| On change    | Triggers whenever the user types something in the text input.                                 |
-| On enter pressed | Triggers whenever the user presses the enter key on the keyboard after entering text in the Text Input component. |
-| On focus     | Triggers whenever the user clicks inside the text input field.                                |
-| On blur      | Triggers whenever the user clicks outside the text input field.                               |
+| Event            | Description                                                                                   |
+|------------------|-----------------------------------------------------------------------------------------------|
+| On Page Change   | Triggers whenever the user navigates to a different page in the pagination component.          |
+| On Enter Pressed | Triggers whenever the user presses the enter key after selecting a specific page number.       |
+| On Focus         | Triggers whenever the user clicks inside the pagination control to focus on it.                |
+| On Blur          | Triggers whenever the user clicks outside the pagination control, removing the focus from it.  |
+                           |
 
 :::info
 Check [Action Reference](/docs/category/actions-reference) docs to get detailed information about all the **Actions**.
