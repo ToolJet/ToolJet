@@ -7,7 +7,7 @@ title: Range Slider
 The **Range Slider** component is widely used across different UIs. One of the main purposes is to filter, explore all the related content and available in the control and settings options.
 
 :::tip
-Range Sliders have "Two handles" option which allows user to select within a range.
+Range Sliders have "Two handles" option which allows users to select within a range.
 :::
 
 <div style={{paddingTop:'24px'}}>
@@ -71,13 +71,13 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 | <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}>  Description </div> | 
 |:------------ |:-------------|
-| Line color | Enter the hexcode to set the default color for slider's track. |
-| Handle color | Enter the hexcode to set the color for slider's handler. |
-| Track color | Enter the hexcode to set the color for slider's active portion on the track. |
+| Line color | Enter the hex code to set the default color for the slider's track. |
+| Handle color | Enter the hex code to set the color for the slider's handler. |
+| Track color | Enter the hex code to set the color for the slider's active portion on the track. |
 | Visibility | Set the visibility of the slider programmatically. The default value is `{{true}}`. |
 
 :::info
-Any property having `Fx` button next to its field can be **programmatically configured**.
+Any property having **fx** button next to its field can be **programmatically configured**.
 :::
 
 </div>
