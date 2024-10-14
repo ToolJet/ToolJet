@@ -5,7 +5,7 @@ title: Statistics
 
 # Statistics
 
-**Statistics** help us understand and summarize data in a clear and simple way. By using tools like graphs, charts, and averages, statistics allow us to see patterns, compare information, and make sense of numbers. Whether it's for research, business, or everyday decisions, statistics turn raw data into useful insights, making complex information easier to understand and act on.
+**Statistics** can be used to display different statistical information.
 
 <div style={{paddingTop:'24px'}}>
 
