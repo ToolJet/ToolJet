@@ -7,7 +7,7 @@ title: Range Slider
 The **Range Slider** component is widely used across different UIs. One of the main purposes is to filter, explore all the related content and available in the control and settings options.
 
 :::tip
-Range Sliders have "Two handles" option which allows user to select within a range.
+Range Sliders have **Two handles** option which allows users to select a range.
 :::
 
 <div style={{paddingTop:'24px'}}>
@@ -58,8 +58,8 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 |:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
-| Makes the component visible in desktop view. | Toggle on or off to display desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Makes the component visible in mobile view.  | Toggle on or off to display mobile view.  | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on mobile  | Makes the component visible in mobile view.  | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 </div>
 
