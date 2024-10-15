@@ -12,7 +12,7 @@ The **Tags** component can be used to show array of data as tags.
 
 ### Tags
 
-It can be used to set array of tags. It must be an array of objects like this:
+It can be used to set an array of tags. It must be an array of objects like this:
 
 ```js
 {{ 
