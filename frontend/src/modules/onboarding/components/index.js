@@ -3,6 +3,7 @@ import OnboardingFormWrapper from './OnboardingFormWrapper';
 import OnboardingFormInsideWrapper from './OnboardingFormInsideWrapper';
 import OnboardingQuestions from './OnboardingQuestions';
 import OnboardingForm from './OnboardingForm';
+import OnboardingUIWrapper from './OnboardingUIWrapper';
 
 export {
   OnboardingBackgroundWrapper,
@@ -10,4 +11,5 @@ export {
   OnboardingFormInsideWrapper,
   OnboardingQuestions,
   OnboardingForm,
+  OnboardingUIWrapper,
 };
