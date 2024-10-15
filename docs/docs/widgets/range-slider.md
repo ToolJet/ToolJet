@@ -7,7 +7,7 @@ title: Range Slider
 The **Range Slider** component is widely used across different UIs. One of the main purposes is to filter, explore all the related content and available in the control and settings options.
 
 :::tip
-Range Sliders have **Two handles** option which allows users to select within a range.
+Range Sliders have **Two handles** option which allows users to select a range.
 :::
 
 <div style={{paddingTop:'24px'}}>
