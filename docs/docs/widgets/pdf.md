@@ -7,7 +7,7 @@ title: PDF
 
 The **PDF** component can be used to embed PDF files either by URL or through Base64 code.
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Compatibility
 
@@ -25,7 +25,7 @@ If the PDF component is integrated into your application, it will only render in
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Properties
 
@@ -38,7 +38,7 @@ If the PDF component is integrated into your application, it will only render in
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Component Specific Actions (CSA)
 
@@ -46,7 +46,7 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Exposed Variables
 
@@ -54,7 +54,7 @@ There are currently no exposed variables for the component.
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## General
 ### Tooltip
@@ -63,24 +63,26 @@ To display instructional text when a user hovers over the PDF component, add som
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Devices
 
 | <div style={{ width:"100px"}}> Property   </div>       | <div style={{ width:"100px"}}>  Description           </div>                    | <div style={{ width:"135px"}}>  Expected Value </div>   |
-| :-------------- | :---------------------------------------- | :------------------ |
-| Show on desktop | Display the component in Desktop view. | Programmatically determine the value by clicking on `fx` or use the toggle switch |
-| Show on mobile  | Display the component in Mobile view.  | Programmatically determine the value by clicking on `fx` or use the toggle switch |
+| :-------------- | :------------------------------------------- | :------------------ |
+| Show on desktop | Makes the component visible in desktop view. | You can programmatically determine the value by clicking on **fx** or use the toggle switch. |
+| Show on mobile  | Makes the component visible in mobile view.  | You can programmatically determine the value by clicking on **fx** or use the toggle switch. |
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+---
+
+<div style={{paddingTop:'24px'}}>
 
 ## Styles
 
 | <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}>  Description </div> | <div style={{ width:"100px"}}> Default Value </div> |
 |:------------ |:-------------|:--------- |
-| Visibility | Toggle the `Visibility` condition on or off to control the visibility of the component. You can also programmatically change its value by clicking on the `fx` button next to it. If `{{false}}` the component will not be visible after the app is deployed. | By default, it's set to `{{true}}` |
+| Visibility | Toggle the `Visibility` condition on or off to control the visibility of the component. You can also programmatically change its value by clicking on the **fx** button next to it. If `{{false}}` the component will not be visible after the app is deployed. | By default, it's set to `{{true}}` |
 
 :::info
 Checkout **[this](/docs/how-to/loading-image-pdf-from-db)** guide to learn how to display images/PDFs using base64 string
