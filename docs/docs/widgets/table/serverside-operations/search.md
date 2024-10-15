@@ -1,6 +1,6 @@
 ---
 id: search
-title: Serverside Search Operation
+title: Search Operation
 ---
 
 This guide explains how to perform serverside search operation on a **Table** component in ToolJet.

@@ -163,7 +163,11 @@ const sidebars = {
                       'type': 'category',
                       'label': 'Serverside Operations',
                       'items': [
-                        'widgets/table/serverside-operations/search'
+                        'widgets/table/serverside-operations/overview',
+                        'widgets/table/serverside-operations/search',
+                        'widgets/table/serverside-operations/sort',
+                        'widgets/table/serverside-operations/filter',
+                        'widgets/table/serverside-operations/pagination'
                       ]
                     }
                   ]
