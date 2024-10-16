@@ -4,12 +4,12 @@ title: Docker
 ---
 
 :::warning
-The following guide is intended for contributors to set up ToolJet locally. If you're interested in **self-hosting** ToolJet, please refer to the **[Setup](/docs/setup/)** section.
+The following guide is intended for contributors to set up ToolJet locally. If you're interested in **self-hosting** ToolJet, please refer to the **[Setup](../../setup/)** section.
 :::
 
 Docker Compose is the easiest way to set up the ToolJet server and client locally.
 
-*If you just want to try out ToolJet locally with docker, you can follow the steps [here](https://docs.tooljet.com/docs/setup/try-tooljet).*
+*If you just want to try out ToolJet locally with docker, you can follow the steps [here](../../setup/try-tooljet).*
 
 ## Prerequisites
 
@@ -39,7 +39,7 @@ Make sure to run it within the WSL2 terminal.
 git clone https://github.com/<your-username>/ToolJet.git
 ```
 
-3. Create a `.env` file by copying `.env.example`. More information on the variables that can be set is given in the **[environment variables reference](/docs/setup/env-vars)**.
+3. Create a `.env` file by copying `.env.example`. More information on the variables that can be set is given in the **[environment variables reference](../../setup/env-vars)**.
 
 ```bash
 cp ./deploy/docker/.env.internal.example .env
