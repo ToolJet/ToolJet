@@ -154,7 +154,7 @@ Kindly read our [Contributing Guide](CONTRIBUTING.md) to familiarize yourself wi
 ToolJet © 2022, ToolJet Solutions Inc - Released under the GNU Affero General Public License v3.0.
 
 <p align="center">
-  <a href="#Tooljet" target="_blank">
+  <a href="# Tooljet" target="_blank">
   <bold>Back To Top </bold>
   </a>
 </p>
