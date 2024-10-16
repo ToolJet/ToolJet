@@ -8,31 +8,42 @@ import { authenticationService } from '@/_services';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components';
 import { decodeEntities } from '@/_helpers/utils';
-
 const Menu = (props) => {
   const { t } = useTranslation();
   const { admin } = authenticationService.currentSessionValue;
   const darkMode = localStorage.getItem('darkMode') === 'true';
+
   return (
     <components.Menu {...props}>
       <div className={darkMode && 'dark-theme'} style={{ padding: '4px' }}>
-        {admin && (
-          <>
-            <div
-              className="org-custom-select-header-wrap"
-              style={{ padding: '8px 12px' }}
-              onClick={() => props.selectProps.setShowEditOrg(true)}
-            >
-              <div className="row cursor-pointer d-flex align-items-center">
-                <div className="col-10">{props?.selectProps?.value?.label}</div>
-                <div className="col-1 tj-secondary-btn org-edit-icon">
-                  <SolidIcon name="editrectangle" width="14" fill="#3E63DD" />
-                </div>
-              </div>
+        <>
+          <div
+            className="org-custom-select-header-wrap"
+            style={{ padding: '8px 12px' }}
+            // onClick={() => props.selectProps.setShowEditOrg(true)}
+          >
+            <div className="row cursor-pointer d-flex align-items-center">
+              <div className="col-10">Workspaces ({props.options.length})</div>
+              {admin && (
+                <ToolTip message={'Add new workspace'} position="top">
+                  <div className="col-1 tj-secondary-btn org-edit-icon" onClick={props.selectProps.setShowCreateOrg}>
+                    {/* <SolidIcon name="editrectangle" width="14" fill="#3E63DD" /> */}
+                    <SolidIcon
+                      name="plus"
+                      fill="#3E63DD"
+                      className="add-new-workspace-icon"
+                      dataCy="add-new-workspace-link"
+                      width="18"
+                    />
+                  </div>
+                </ToolTip>
+              )}
             </div>
-          </>
-        )}
+          </div>
+        </>
+
         <div className={`${darkMode && 'dark-theme'}`}>{props.children}</div>
+
         <div
           className="cursor-pointer d-flex align-items-center add-workspace-button"
           style={{ padding: '4px 12px', color: '#3E63DD' }}
@@ -68,12 +79,12 @@ export const CustomSelect = ({ ...props }) => {
   const [showEditOrg, setShowEditOrg] = useState(false);
   const [showCreateOrg, setShowCreateOrg] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const currentValue = props?.options.find((option) => option?.value === props?.value);
+  // const currentValue = props?.options.find((option) => option?.value === props?.value);
 
   return (
     <>
       <CreateOrganization showCreateOrg={showCreateOrg} setShowCreateOrg={setShowCreateOrg} />
-      <EditOrganization showEditOrg={showEditOrg} setShowEditOrg={setShowEditOrg} currentValue={currentValue} />
+      {/* <EditOrganization showEditOrg={showEditOrg} setShowEditOrg={setShowEditOrg} currentValue={currentValue} /> */}
 
       <Select
         className={`react-select-container ${darkMode && 'dark-theme'}`}
