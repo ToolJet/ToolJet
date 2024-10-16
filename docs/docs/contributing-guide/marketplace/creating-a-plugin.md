@@ -17,7 +17,7 @@ The `tooljet` CLI is a user-friendly command-line tool designed to simplify the 
 
 The first step is to bootstrap a new plugin for the ToolJet marketplace. The plugin will authenticate users with a GitHub Personal Access Token and include fundamental operations such as fetching user details, repositories, issues, and pull requests.
 
-If you have completed the **[Setup](/docs/contributing-guide/marketplace/marketplace-setup)** guide, you can begin developing the plugin using the `tooljet` CLI. To initiate plugin development, enter the following command in the terminal:
+If you have completed the **[Setup](./marketplace-setup)** guide, you can begin developing the plugin using the `tooljet` CLI. To initiate plugin development, enter the following command in the terminal:
 ```bash
 # create a new plugin
 tooljet plugin create github
