@@ -4,7 +4,7 @@ title: Iframe
 ---
 # Iframe
 
-The **Iframe** widget is used to embed another HTML page into the current one and display iframes in your app.
+The **Iframe** component is used to embed another HTML page into the current one and display iframes in your app.
 
 <div style={{paddingTop:'24px'}}>
 
@@ -37,9 +37,9 @@ There are currently no exposed variables for the component.
 ## General
 ### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the  mouse pointer over the widget.
+A Tooltip is often used to specify extra information about something when the user hovers the  mouse pointer over the component.
 
-Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
+Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the component will display the string as the tooltip.
 
 </div>
 
@@ -62,8 +62,8 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 | <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Default Value </div> |
 |:----------- |:----------- |:------------- |
-| Visibility | Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the **fx** button next to it. If `{{false}}` the widget will not be visible after the app is deployed. | By default, it's set to `{{true}}`. |
-| Disable | This is `off` by default, toggle `on` the switch to lock the widget and make it non-functional. You can also programmatically set the value by clicking on the **fx** button next to it. If set to `{{true}}`, the widget will be locked and becomes non-functional. | By default, its value is set to `{{false}}`. |
+| Visibility | Toggle on or off to control the visibility of the component. You can programmatically change its value by clicking on the **fx** button next to it. If `{{false}}` the component will not be visible after the app is deployed. | By default, it's set to `{{true}}`. |
+| Disable | This is `off` by default, toggle `on` the switch to lock the component and make it non-functional. You can also programmatically set the value by clicking on the **fx** button next to it. If set to `{{true}}`, the component will be locked and becomes non-functional. | By default, its value is set to `{{false}}`. |
 
 :::info
 Any property having **fx** button next to its field can be **programmatically configured**.
