@@ -7,7 +7,7 @@ ToolJet's flexibility in integrating dynamic data within applications is facilit
 
 ## Accessing Values
 
-You can check all the accessible values using the left sidebar's **[Inspector](/docs/how-to/use-inspector/)** tab. This functionality can be handy to check data returned by queries and components on the canvas and reference it in queries or components. Inspector also displays other values like global values, variables, page variables, etc. 
+You can check all the accessible values using the left sidebar's **[Inspector](../../how-to/use-inspector/)** tab. This functionality can be handy to check data returned by queries and components on the canvas and reference it in queries or components. Inspector also displays other values like global values, variables, page variables, etc. 
 
 ![Check Available Values Using Inspector](/img/tooljet-concepts/writing-custom-code/inspector.png)
 
