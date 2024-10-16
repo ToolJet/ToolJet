@@ -3,7 +3,7 @@ id: switch-page
 title: Switch Page
 ---
 
-Utilize this action with various event handler to transition to a different page within the [Multipage App](/docs/tutorial/pages).
+Utilize this action with various event handler to transition to a different page within the [Multipage App](../tutorial/pages).
 
 By default, the debounce field is left empty. However, you can input a numeric value to indicate the time in milliseconds before the action is executed. For example, `300`.
 
@@ -43,7 +43,7 @@ await actions.switchPage('<page-handle>')
 ```
 
 :::info
-For instructions on how to run actions from a RunJS query, refer to the how-to guide [Running Actions from RunJS Query](/docs/how-to/run-actions-from-runjs).
+For instructions on how to run actions from a RunJS query, refer to the how-to guide [Running Actions from RunJS Query](../how-to/run-actions-from-runjs).
 :::
 
 ### Switch page with query params
