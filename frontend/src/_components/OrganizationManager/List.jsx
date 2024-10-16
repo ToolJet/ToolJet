@@ -14,7 +14,7 @@ import { EditOrganization } from './EditOrganization';
   otherwise this component will intiate everytime we switch between pages
 */
 export const OrganizationList = function () {
-  const { current_organization_id } = authenticationService.currentSessionValue;
+  const { current_organization_id, admin } = authenticationService.currentSessionValue;
   const { fetchOrganizations, organizationList, isGettingOrganizations } = useCurrentSessionStore(
     (state) => ({
       organizationList: state.organizations,
@@ -34,8 +34,7 @@ export const OrganizationList = function () {
     const organization = organizationList.find((org) => org.id === id);
     if (![id, organization.slug].includes(getWorkspaceIdOrSlugFromURL())) {
       const newPath = appendWorkspaceId(organization.slug || id, location.pathname, true);
-      window.history.replaceState(null, null, newPath);
-      window.location.reload();
+      window.open(newPath, '_blank');
     }
   };
 
@@ -48,7 +47,7 @@ export const OrganizationList = function () {
         <div className={`align-items-center d-flex tj-org-dropdown  ${darkMode && 'dark-theme'}`}>
           {org.id === current_organization_id ? (
             <div className="current-org-avatar">
-              <SolidIcon name="tick" fill="#3E63DD" dataCy="add-new-workspace-link" width="21" />
+              <SolidIcon name="tick" fill="#3E63DD" dataCy="add-new-workspace-link" width="16" />
             </div>
           ) : (
             <div
@@ -66,18 +65,28 @@ export const OrganizationList = function () {
               </span>
             </div>
           </ToolTip>
-          {org.id === current_organization_id ? (
-            <div className="current-org-indicator" data-cy="current-org-indicator" onClick={() => setShowEditOrg(true)}>
-              <SolidIcon name="editable" fill="#3E63DD" dataCy="add-new-workspace-link" width="14" />
-            </div>
+          {org.id === current_organization_id && admin ? (
+            <ToolTip message="Edit" placement="right">
+              <div
+                className="current-org-indicator"
+                data-cy="current-org-indicator"
+                onClick={() => setShowEditOrg(true)}
+              >
+                <SolidIcon name="editable" fill="#3E63DD" dataCy="add-new-workspace-link" width="16" />
+              </div>
+            </ToolTip>
           ) : (
-            <div
-              className="current-org-indicator"
-              data-cy="current-org-indicator"
-              onClick={() => console.log('Dummy onClick')}
-            >
-              <SolidIcon name="arrowtransfer" fill="#3E63DD" width="14" className="add-new-workspace-icon" />
-            </div>
+            org.id !== current_organization_id && (
+              <ToolTip message="Open in new tab" placement="right">
+                <div
+                  className="current-org-indicator"
+                  data-cy="current-org-indicator"
+                  onClick={() => switchOrganization(org.id)}
+                >
+                  <SolidIcon name="newtab" fill="#3E63DD" width="16" className="add-new-workspace-icon" />
+                </div>
+              </ToolTip>
+            )
           )}
         </div>
       ),
@@ -94,7 +103,7 @@ export const OrganizationList = function () {
         isLoading={isGettingOrganizations}
         options={options}
         value={current_organization_id}
-        onChange={(id) => switchOrganization(id)}
+        // onChange={(id) => switchOrganization(id)}
         className={`tj-org-select  ${darkMode && 'dark-theme'}`}
       />
     </div>

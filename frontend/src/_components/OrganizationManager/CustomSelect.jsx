@@ -26,14 +26,13 @@ const Menu = (props) => {
               <div className="col-10">Workspaces ({props.options.length})</div>
               {admin && (
                 <ToolTip message={'Add new workspace'} position="top">
-                  <div className="col-1 tj-secondary-btn org-edit-icon" onClick={props.selectProps.setShowCreateOrg}>
-                    {/* <SolidIcon name="editrectangle" width="14" fill="#3E63DD" /> */}
+                  <div className="col-1" style={{ paddingRight: '24px' }} onClick={props.selectProps.setShowCreateOrg}>
                     <SolidIcon
                       name="plus"
-                      fill="#3E63DD"
-                      className="add-new-workspace-icon"
+                      fill="var(--icon-strong)"
+                      className=""
                       dataCy="add-new-workspace-link"
-                      width="18"
+                      width="14"
                     />
                   </div>
                 </ToolTip>
@@ -43,21 +42,6 @@ const Menu = (props) => {
         </>
 
         <div className={`${darkMode && 'dark-theme'}`}>{props.children}</div>
-
-        <div
-          className="cursor-pointer d-flex align-items-center add-workspace-button"
-          style={{ padding: '4px 12px', color: '#3E63DD' }}
-          onClick={props.selectProps.setShowCreateOrg}
-        >
-          <div className="add-new-workspace-icon-old-wrap">
-            <SolidIcon name="plus" fill="#FDFDFE" className="add-new-workspace-icon-old" />
-          </div>
-
-          <div className="add-new-workspace-icon-wrap">
-            <SolidIcon name="plus" fill="#3E63DD" className="add-new-workspace-icon" dataCy="add-new-workspace-link" />
-          </div>
-          <span className="p-1 tj-text-xsm">{t('header.organization.addNewWorkSpace', 'Add new workspace')}</span>
-        </div>
       </div>
     </components.Menu>
   );
