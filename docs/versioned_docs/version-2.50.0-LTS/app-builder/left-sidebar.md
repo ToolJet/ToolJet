@@ -22,7 +22,7 @@ Left-sidebar has the following options:
 
 Pages allows you to have multiple pages in a single application, making your ToolJet applications more robust and user-friendly.
 
-Check the detailed documentation for **[Pages](/docs/tutorial/pages)**.
+Check the detailed documentation for **[Pages](../tutorial/pages)**.
 
 <div style={{textAlign: 'center'}}>
 
@@ -34,7 +34,7 @@ Check the detailed documentation for **[Pages](/docs/tutorial/pages)**.
 
 The Inspector can be used to inspect the data of the **queries**, properties and values of the **components** that are there on the canvas, ToolJet's global variables and the variables that have been set by the user.
 
-Check the detailed guide on **[using Inspector](/docs/how-to/use-inspector)**.
+Check the detailed guide on **[using Inspector](../how-to/use-inspector)**.
 
 <div style={{textAlign: 'center'}}>
 
@@ -61,13 +61,13 @@ Debugger consists of two main sections:
 To configure the app's global settings, click on the kebab menu(three vertical dots) on the left of the app name. Global settings include:
 
 - **Unique app slug**: The unique slug of the application. This slug is used in the URL of the application. By default, the slug is the `app id` of the application. You can change the slug to a custom value. For example, if the slug is `7b56293b-be5a-401f-8806-b71625f8ee0d` you can change it to `<unique-name>` then the new URL of the application will be `https://app.tooljet.com/<workspace-name>/apps/<unique-name>/`
-- **App link**: The link to the application. This link can be used to share the application with other users of the workspace. If you want to share the application with users outside the workspace, you can make the application public from the **[Share](/docs/app-builder/share)** modal.
+- **App link**: The link to the application. This link can be used to share the application with other users of the workspace. If you want to share the application with users outside the workspace, you can make the application public from the **[Share](./share)** modal.
 - **Hide header for launched apps**: Toggle this on to the hide the tooljet's header when the applications are launched
 - **Maintenance mode**: Toggle this on to put the application in maintenance mode. When in **maintenance mode**, on launching the app, the user will get an error message that **the app is under maintenance**.
 - **Max width of canvas**: Modify the width of the canvas in **px** or **%**. The default width is `1292` px.
 - **Canvas background**: Enter the hex color code or choose a color from the picker to change the background color of the canvas. You can also click on the **fx** to programmatically set the value.
 - **App mode**: Select between three theme modes - Auto (default, adapts to browser settings), Light (brighter interface for well-lit conditions), and Dark (reduces eye strain in low light). 
-- **Export app**: Click on the [Export app](/docs/dashboard/#export-app) button to export the application as a JSON file. You can import this JSON file in any other workspace to use the application.
+- **Export app**: Click on the [Export app](../dashboard/#export-app) button to export the application as a JSON file. You can import this JSON file in any other workspace to use the application.
 
 <div style={{textAlign: 'center'}}>
 

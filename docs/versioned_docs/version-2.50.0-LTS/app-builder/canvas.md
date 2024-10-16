@@ -13,8 +13,8 @@ Canvas is the center area of the ToolJet app builder where the application is bu
 <br/>
 
 :::info
-- The Canvas height and width can be adjusted from the [Global Settings](/docs/app-builder/left-sidebar#global-settings).
-- When the [Pages drawer](/docs/tutorial/pages) on the left is opened or pinned, the canvas becomes horizontally scrollable.
+- The Canvas height and width can be adjusted from the [Global Settings](./left-sidebar#global-settings).
+- When the [Pages drawer](../tutorial/pages) on the left is opened or pinned, the canvas becomes horizontally scrollable.
 
 <div style={{textAlign: 'center'}}>
 
@@ -47,7 +47,7 @@ You can precisely set the position of selected components using keyboard arrow k
 
 ### Group Components
 
-ToolJet comes with flexible components to group other components together, such as **[Container](/docs/widgets/container/)** and **[Form](/docs/widgets/form/)**. When you drag and drop components in containers/forms they create a group of nested components. All components can be nested in this way.
+ToolJet comes with flexible components to group other components together, such as **[Container](../widgets/container/)** and **[Form](../widgets/form/)**. When you drag and drop components in containers/forms they create a group of nested components. All components can be nested in this way.
 
 ### Hide or Disable Components
 
@@ -63,5 +63,5 @@ For example: We want to disable a button when a checkbox is checked so we can si
 
 ### Clone Components
 
-You can clone existing components on the canvas by **cmd/ctrl + d**. Check other **[Keyboard Shortcuts](/docs/tutorial/keyboard-shortcuts)**.
+You can clone existing components on the canvas by **cmd/ctrl + d**. Check other **[Keyboard Shortcuts](../tutorial/keyboard-shortcuts)**.
 

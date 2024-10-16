@@ -5,7 +5,7 @@ title: Query Panel
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-The Query Panel, located at the bottom of the app-builder, allows you to create and manage queries to interact with connected **data sources**. It provides the capability to perform API requests, query **[databases](/docs/data-sources/overview)**, and apply **[transformations](/docs/tutorial/transformations)** or data manipulation using **[JavaScript](/docs/data-sources/run-js)** and **[Python](/docs/data-sources/run-py)**.
+The Query Panel, located at the bottom of the app-builder, allows you to create and manage queries to interact with connected **data sources**. It provides the capability to perform API requests, query **[databases](../data-sources/overview)**, and apply **[transformations](../tutorial/transformations)** or data manipulation using **[JavaScript](../data-sources/run-js)** and **[Python](../data-sources/run-py)**.
 
 The Query Panel consists of two sections:
 - The **[Query Manager](#query-manager)** on the right side, which displays a list of all the created queries.
@@ -90,7 +90,7 @@ For each parameter, you need to specify:
 
 **Syntax for utilizing the parameter:** Employ `parameters.<identifier>` in your query. It's important to note that parameters can only be utilized within the specific query where they are defined.
 
-Learn more about **[Using Custom Parameters](/docs/how-to/use-custom-parameters)**.
+Learn more about **[Using Custom Parameters](../how-to/use-custom-parameters)**.
 
 <div style={{textAlign: 'center'}}>
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/app-builder/querypanel/newui3/queryparams.png" alt="Custom Parameters" />
@@ -155,7 +155,7 @@ In cases where multiple data sources of the same type are connected, easily swit
 
 ### Transformation
 
-Queries can be enhanced with transformations to modify the query results. ToolJet supports transformations using two programming languages: JavaScript & Python. Refer to the detailed documentation on **[Transformations](/docs/tutorial/transformations)** for more information.
+Queries can be enhanced with transformations to modify the query results. ToolJet supports transformations using two programming languages: JavaScript & Python. Refer to the detailed documentation on **[Transformations](../tutorial/transformations)** for more information.
 
 <div style={{textAlign: 'center'}}>
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/app-builder/querypanel/newui2/transform.gif" alt="Query Editor" />
@@ -208,7 +208,7 @@ The Result:
 - The component displaying the to-do data will be update with the lates data.
 
 :::info
-Learn more about [Event Handlers and Actions](/docs/widgets/overview#component-event-handlers).
+Learn more about [Event Handlers and Actions](../widgets/overview#component-event-handlers).
 :::
 
 <div style={{textAlign: 'center'}}>
