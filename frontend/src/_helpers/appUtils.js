@@ -391,12 +391,10 @@ function debounce(func) {
     if (event.debounce === undefined) {
       return func.apply(this, args);
     }
-    return new Promise((resolve) => {
-      clearTimeout(timer);
-      timer = setTimeout(() => {
-        resolve(func.apply(this, args)); // Resolve with the result of func
-      }, Number(event.debounce));
-    });
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      func.apply(this, args);
+    }, Number(event.debounce));
   };
 }
 
