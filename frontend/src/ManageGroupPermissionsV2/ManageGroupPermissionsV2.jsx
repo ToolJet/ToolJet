@@ -684,7 +684,14 @@ class ManageGroupPermissionsComponent extends React.Component {
                       />
                     </div>
                   )}
-
+                  {filteredGroup.length === 0 && showGroupSearchBar && groups.length !== 0 && (
+                    <div className="empty-custom-group-info">
+                      <SolidIcon className="info-icon" name="information" width="18px" />
+                      <span className="tj-text-xsm text-center info-label" data-cy="empty-custom-group-info">
+                        No custom groups found
+                      </span>
+                    </div>
+                  )}
                   {groups.length ? (
                     filteredGroup.map((permissionGroup) => {
                       return (
