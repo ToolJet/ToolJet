@@ -87,5 +87,29 @@
     "id": "salesforce",
     "author": "Tooljet",
     "timestamp": "Wed, 06 Mar 2024 11:34:26 GMT"
-	}
+  },
+  {
+    "name": "Presto",
+    "description": "Plugin for PrestoDB data source",
+    "version": "1.0.0",
+    "id": "presto",
+    "author": "Tooljet",
+    "timestamp": "Thu, 08 Aug 2024 11:04:36 GMT"
+  },
+  {
+    "name": "Sharepoint",
+    "description": "Plugin for Sharepoint API",
+    "version": "1.0.0",
+    "id": "sharepoint",
+    "author": "Tooljet",
+    "timestamp": "Wed, 04 Sep 2024 20:18:30 GMT"
+  },
+  {
+    "name": "Jira",
+    "description": "Plugin for Jira data source",
+    "version": "1.0.0",
+    "id": "jira",
+    "author": "Tooljet",
+    "timestamp": "Thu, 08 Aug 2024 11:04:36 GMT"
+  }
 ]
