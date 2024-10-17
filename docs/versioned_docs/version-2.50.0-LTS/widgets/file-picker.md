@@ -50,7 +50,7 @@ Any file that does not have a size in the range of `Max size limit` and `Min siz
 | On file deselected | Triggers whenever one or more files are removed from the picker. |
 
 :::info
-Checkout **[this](/docs/how-to/loading-image-pdf-from-db)** guide to learn how to refer or display images/PDFs using base64 string
+Checkout **[this](/docs/how-to/loading-image-pdf-from-db)** guide to learn how to refer or display images/PDFs using base64 string.
 :::
 
 </div>
@@ -63,7 +63,7 @@ Checkout **[this](/docs/how-to/loading-image-pdf-from-db)** guide to learn how t
 
 | Actions | Description | How To Access |
 |:--------|:-----------:|:------------:|
-| <div style={{ width:"100px"}}> clearFiles() </div> | You can clear the selected files on the filepicker component via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.filepicker1.clearFiles()` |
+| <div style={{ width:"100px"}}> clearFiles() </div> | You can clear the selected files on the filepicker component via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.filepicker1.clearFiles()`. |
 
 </div>
 
@@ -73,7 +73,7 @@ Checkout **[this](/docs/how-to/loading-image-pdf-from-db)** guide to learn how t
 
 | <div style={{ width:"100px"}}> Variables </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{ width:"200px"}}> How To Access </div> |
 |:----------- |:----------- |:-------- |
-| file | This variable holds the array of objects where each object represents the file loaded on the file picker component. Each object has the following keys: **name**, **type**, **content**, **dataURL**, **base64Data**, **parsedData**, **filePath**. | The values can be accesed using `{{components.filepicker1.file[0].base64Data}}`|
+| file | This variable holds the array of objects where each object represents the file loaded on the file picker component. Each object has the following keys: **name**, **type**, **content**, **dataURL**, **base64Data**, **parsedData**, **filePath**. | The values can be accesed using `{{components.filepicker1.file[0].base64Data}}`. |
 
 </div>
 
@@ -110,8 +110,8 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 | <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 |:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
-| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on **fx** to set the value `{{true}}` or `{{false}}` |
-| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on **fx** to set the value `{{true}}` or `{{false}}` |
+| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on **fx** to set the value `{{true}}` or `{{false}}`. |
+| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on **fx** to set the value `{{true}}` or `{{false}}`. |
 
 </div>
 
