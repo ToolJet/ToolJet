@@ -40,6 +40,14 @@ class AuthorizeComponent extends React.Component {
       localStorage.setItem('OAuthCode', code);
       this.setState({ isLoading: false, authSuccess: true });
     }
+
+    this.timer = setTimeout(() => {
+      window.close();
+    }, 2000);
+  }
+
+  componentWillUnmount() {
+    clearTimeout(this.timer);
   }
 
   render() {
@@ -105,7 +113,14 @@ class AuthorizeComponent extends React.Component {
                   Success
                 </h4>
                 <div>
-                  <div>Authorization successful, you can close this tab now.</div>
+                  <div>Authorization successful! You will be redirected in a few seconds.</div>
+                  <div>
+                    Don’t want to wait?{' '}
+                    <span style={{ color: 'blue', cursor: 'pointer' }} onClick={() => window.close()}>
+                      Click here
+                    </span>{' '}
+                    to go now.
+                  </div>
                 </div>
               </div>
             )}

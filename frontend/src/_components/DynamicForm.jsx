@@ -22,6 +22,7 @@ import { ButtonSolid } from './AppButton';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
+import Sharepoint from '@/_components/Sharepoint';
 
 const DynamicForm = ({
   schema,
@@ -163,6 +164,8 @@ const DynamicForm = ({
         return CondtionSort;
       case 'react-component-salesforce':
         return Salesforce;
+      case 'react-component-sharepoint':
+        return Sharepoint;
       default:
         return <div>Type is invalid</div>;
     }
@@ -307,6 +310,7 @@ const DynamicForm = ({
       case 'react-component-slack':
       case 'react-component-zendesk':
       case 'react-component-salesforce':
+      case 'react-component-sharepoint':
         return {
           optionchanged,
           createDataSource,
