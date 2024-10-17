@@ -1,6 +1,5 @@
 @import "./typography.scss";
 @import "./designtheme.scss";
-@import "./mixins.scss";
 
 .global-datasources-sidebar {
     height: calc(100vh - 64px);
@@ -182,7 +181,6 @@
     max-height: calc(100vh - 64px);
 
     .datasource-list {
-        @include scrollable();
         width: 976px;
         margin: 0 auto;
         max-height: calc(100vh - 70px);
