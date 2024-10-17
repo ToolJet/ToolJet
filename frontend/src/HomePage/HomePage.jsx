@@ -107,6 +107,7 @@ class HomePageComponent extends React.Component {
       this.setState({
         apps: data.apps,
         meta: { ...this.state.meta, ...data.meta },
+        searchedAppCount: appSearchKey ? data.apps.length : this.state.currentFolder.count,
         isLoading: false,
       })
     );
@@ -842,6 +843,7 @@ class HomePageComponent extends React.Component {
                 canUpdateFolder={this.canUpdateFolder()}
                 darkMode={this.props.darkMode}
                 canCreateApp={this.canCreateApp()}
+                searchedAppCount={this.state.searchedAppCount}
               />
               <OrganizationList />
             </div>
