@@ -101,6 +101,8 @@ function InviteUsersForm({
 
   const isEditing = userDrawerMode === USER_DRAWER_MODES.EDIT;
 
+  const isDarkMode = localStorage.getItem('darkMode') === 'true';
+
   return (
     <div>
       <div className="animation-fade invite-user-drawer-wrap">
@@ -109,7 +111,7 @@ function InviteUsersForm({
             <div className="card-header-inner-wrap">
               <h3 className="tj-text-lg tj-text font-weight-500" data-cy="add-users-card-title">
                 {!isEditing
-                  ? t('header.organization.menus.manageUsers.addNewUser', 'Add new user')
+                  ? t('header.organization.menus.manageUsers.inviteNewUsers', 'Add new user')
                   : 'Edit user details'}
               </h3>
               <div
@@ -131,7 +133,10 @@ function InviteUsersForm({
                     onClick={() => setActiveTab(1)}
                     data-cy="button-invite-with-email"
                   >
-                    <SolidIcon name="mail" width="14" fill={activeTab == 1 ? '#11181C' : '#687076'} />
+                    <SolidIcon name="mail" width="14" fill={
+                      !isDarkMode ? (activeTab == 1 ? '#11181C' : '#687076')
+                      : (activeTab == 1 ? '#FCFCFD' : '#687076')
+                    } />
                     <span> Invite with email</span>
                   </button>
                   <button
@@ -139,7 +144,10 @@ function InviteUsersForm({
                     onClick={() => setActiveTab(2)}
                     data-cy="button-upload-csv-file"
                   >
-                    <SolidIcon name="fileupload" width="14" fill={activeTab == 2 ? '#11181C' : '#687076'} />
+                    <SolidIcon name="mail" width="14" fill={
+                      !isDarkMode ? (activeTab == 2 ? '#11181C' : '#687076')
+                      : (activeTab == 2 ? '#FCFCFD' : '#687076')
+                    } />
                     <span>Upload CSV file</span>
                   </button>
                 </div>
