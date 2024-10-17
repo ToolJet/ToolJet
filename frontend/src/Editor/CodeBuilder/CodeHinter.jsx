@@ -424,25 +424,27 @@ export function CodeHinter({
                   dragResizePortal={true}
                   callgpt={callgpt}
                 >
-                  <CodeMirror
-                    value={typeof initialValue === 'string' ? initialValue : ''}
-                    realState={realState}
-                    scrollbarStyle={null}
-                    height={'100%'}
-                    onFocus={() => setFocused(true)}
-                    onBlur={(editor, e) => {
-                      e.stopPropagation();
-                      const value = editor.getValue()?.trimEnd();
-                      onChange(value);
-                      if (!isPreviewFocused.current) {
-                        setFocused(false);
-                      }
-                    }}
-                    onChange={(editor) => valueChanged(editor, onChange, ignoreBraces)}
-                    onBeforeChange={(editor, change) => onBeforeChange(editor, change, ignoreBraces)}
-                    options={options}
-                    viewportMargin={Infinity}
-                  />
+                  <span className={lineNumbers ? 'popover-code-editor-padding' : ''}>
+                    <CodeMirror
+                      value={typeof initialValue === 'string' ? initialValue : ''}
+                      realState={realState}
+                      scrollbarStyle={null}
+                      height={'100%'}
+                      onFocus={() => setFocused(true)}
+                      onBlur={(editor, e) => {
+                        e.stopPropagation();
+                        const value = editor.getValue()?.trimEnd();
+                        onChange(value);
+                        if (!isPreviewFocused.current) {
+                          setFocused(false);
+                        }
+                      }}
+                      onChange={(editor) => valueChanged(editor, onChange, ignoreBraces)}
+                      onBeforeChange={(editor, change) => onBeforeChange(editor, change, ignoreBraces)}
+                      options={options}
+                      viewportMargin={Infinity}
+                    />
+                  </span>
                 </CodeHinter.Portal>
               </div>
               {enablePreview && !isOpen && getPreview()}
