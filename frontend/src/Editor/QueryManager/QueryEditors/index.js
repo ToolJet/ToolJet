@@ -6,7 +6,6 @@ import { Restapi } from './Restapi';
 // eslint-disable-next-line import/no-unresolved
 import { Runjs } from './Runjs';
 import { Runpy } from './Runpy';
-import { Stripe } from './Stripe';
 import { Openapi } from './Openapi';
 import Grpc from './GRPC';
 import tooljetDbOperations from './TooljetDatabase/operations.json';
@@ -36,7 +35,6 @@ export const allSources = {
   Restapi,
   Runjs,
   Runpy,
-  Stripe,
   Openapi,
   Grpc,
 };
