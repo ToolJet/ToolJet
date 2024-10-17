@@ -75,8 +75,9 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 | Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on **fx** to set the value `{{true}}` or `{{false}}` |
 
 </div>
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
 <div style={{paddingTop:'24px'}}>
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  
 ## Styles
 
 | <div style={{ width:"100px"}}> Style  </div>    | <div style={{ width:"100px"}}> Description </div> |
