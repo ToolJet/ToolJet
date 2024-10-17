@@ -9,7 +9,7 @@ ToolJet can establish connections with GraphQL endpoints, enabling the execution
 
 ## Connection
 
-To establish a connection with the GraphQL global datasource, you can either click on the **+ Add new global datasource** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+To establish a connection with the GraphQL global datasource, you can either click on the **+ Add new global datasource** button located on the query panel or navigate to the **[Data Sources](./overview)** page through the ToolJet dashboard.
 
 <div style={{textAlign: 'center'}}>
 
@@ -63,7 +63,7 @@ ToolJet requires the following to connect to a GraphQL datasource:
 ```
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/tutorial/transformations)
+Query results can be transformed using transformations. Read our transformations documentation to see how: [link](../tutorial/transformations)
 :::
 
 </div>

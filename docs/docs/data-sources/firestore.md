@@ -9,7 +9,7 @@ ToolJet can connect to **Cloud Firestore** databases to read and write data.
 
 ## Connection 
 
-To establish a connection with the **Cloud Firestore** data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page from the ToolJet dashboard and choose Cloud Firestore as the data source.
+To establish a connection with the **Cloud Firestore** data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](./overview)** page from the ToolJet dashboard and choose Cloud Firestore as the data source.
 
 ToolJet requires the following to connect to your BigQuery:
 - **Private key**
@@ -32,7 +32,7 @@ For generating a private key check out **[Firestore's official documentation](ht
 <img className="screenshot-full" src="/img/datasource-reference/firestore/firestore-query-v2.png" alt="firestore QUERY" />
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/tutorial/transformations)**
+Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](../tutorial/transformations)**
 :::
 
 </div>

@@ -11,7 +11,7 @@ ToolJet uses this [NodeJS](https://github.com/TimonKK/clickhouse) client for Cli
 
 ## Connection
 
-To establish a connection with the Clickhouse data source, you can either click on the **+ Add new data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+To establish a connection with the Clickhouse data source, you can either click on the **+ Add new data source** button located on the query panel or navigate to the **[Data Sources](./overview)** page through the ToolJet dashboard.
 
 ToolJet requires the following to connect to your ClickHouse Database:
 
