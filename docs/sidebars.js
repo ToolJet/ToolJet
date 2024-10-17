@@ -115,7 +115,8 @@ const sidebars = {
                   'label': 'Chart',
                   'items': [
                     'widgets/chart/chart-properties',
-                    'widgets/chart/chart-examples'
+                    'widgets/chart/chart-examples',
+                    'widgets/chart/transforming-data-for-charts'
                   ]
                 },
                 'widgets/checkbox',
