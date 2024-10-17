@@ -80,9 +80,9 @@ There are currently no exposed variables for the component.
 
 | <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 |:----------- |:----------- |:------------- |
-| Icon color |  You can change the color of the Icon widget by entering the Hex color code or choosing a color of your choice from the color picker. |
-| Visibility | This is to control the visibility of the widget. | If `{{false}}` the widget will not visible after the app is deployed. | It can only have boolean values i.e. either `{{true}}` or `{{false}}`. By default, it's set to `{{true}}`. |
-| Box shadow | This property adds a shadow to the widget. | You can use different values for box shadow property like offsets, blur, spread, and the color code. |
+| Icon color |  You can change the color of the Icon component by entering the Hex color code or choosing a color of your choice from the color picker. |
+| Visibility | This is to control the visibility of the component. | If `{{false}}` the component will not visible after the app is deployed. | It can only have boolean values i.e. either `{{true}}` or `{{false}}`. By default, it's set to `{{true}}`. |
+| Box shadow | This property adds a shadow to the component. | You can use different values for box shadow property like offsets, blur, spread, and the color code. |
 
 :::info
 Any property having **fx** button next to its field can be **programmatically configured**.
