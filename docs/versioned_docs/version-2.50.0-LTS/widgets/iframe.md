@@ -37,7 +37,7 @@ There are currently no exposed variables for the component.
 ## General
 ### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the  mouse pointer over the component.
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the component.
 
 Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the component will display the string as the tooltip.
 
