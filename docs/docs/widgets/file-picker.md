@@ -62,7 +62,7 @@ Checkout **[this](/docs/how-to/loading-image-pdf-from-db)** guide to learn how t
 
 
 | Actions | Description | How To Access |
-|:--------|:-----------:|:------------:|
+|:--------|:-----------|:------------|
 | <div style={{ width:"100px"}}> clearFiles() </div> | You can clear the selected files on the filepicker component via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.filepicker1.clearFiles()`. |
 
 </div>
