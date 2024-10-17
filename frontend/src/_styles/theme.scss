@@ -10677,7 +10677,7 @@ tbody {
   }
 
   .current-org-indicator {
-    padding: 8px 8px;
+    padding: 0px 8px 0px 8px;
     margin-left: auto;
     margin-right: 5px;
   }
@@ -10698,6 +10698,10 @@ tbody {
   }
 }
 
+.org-dropdown-shadow{
+  box-shadow: var(--elevation-400-box-shadow)
+}
+
 .css-1q0xftk-menu {
   background-color: var(--base-black) !important;
   border: 1px solid hsl(197, 6.8%, 13.6%) !important;
@@ -10715,6 +10719,14 @@ tbody {
 
 .org-custom-select-header-wrap {
   border-bottom: 1px solid var(--slate5);
+
+  .select-header-font{
+font-size: 14px;
+font-weight: 500;
+line-height: 20px;
+color: var(--text-default);
+
+  }
 }
 
 .btn-close:focus {

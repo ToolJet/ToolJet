@@ -66,7 +66,7 @@ export const OrganizationList = function () {
             </div>
           </ToolTip>
           {org.id === current_organization_id && admin ? (
-            <ToolTip message="Edit" placement="right">
+            <ToolTip message="Edit" placement="top">
               <div
                 className="current-org-indicator"
                 data-cy="current-org-indicator"
@@ -77,13 +77,13 @@ export const OrganizationList = function () {
             </ToolTip>
           ) : (
             org.id !== current_organization_id && (
-              <ToolTip message="Open in new tab" placement="right">
+              <ToolTip message="Open in new tab" placement="top">
                 <div
                   className="current-org-indicator"
                   data-cy="current-org-indicator"
                   onClick={() => switchOrganization(org.id)}
                 >
-                  <SolidIcon name="newtab" fill="#3E63DD" width="16" className="add-new-workspace-icon" />
+                  <SolidIcon name="newtab" fill="var(--icon-strong)" width="16" className="add-new-workspace-icon" />
                 </div>
               </ToolTip>
             )
@@ -103,7 +103,7 @@ export const OrganizationList = function () {
         isLoading={isGettingOrganizations}
         options={options}
         value={current_organization_id}
-        // onChange={(id) => switchOrganization(id)}
+        onChange={(id) => switchOrganization(id)}
         className={`tj-org-select  ${darkMode && 'dark-theme'}`}
       />
     </div>
