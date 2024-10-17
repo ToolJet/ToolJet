@@ -385,16 +385,24 @@ function logoutAction(_ref) {
 }
 
 function debounce(func) {
-  let timer;
+  const timers = new Map();
+
   return (...args) => {
     const event = args[1] || {};
+    const eventId = uuidv4();
+
     if (event.debounce === undefined) {
       return func.apply(this, args);
     }
-    clearTimeout(timer);
-    timer = setTimeout(() => {
+
+    clearTimeout(timers.get(eventId));
+
+    const timer = setTimeout(() => {
       func.apply(this, args);
+      timers.delete(eventId);
     }, Number(event.debounce));
+
+    timers.set(eventId, timer);
   };
 }
 
