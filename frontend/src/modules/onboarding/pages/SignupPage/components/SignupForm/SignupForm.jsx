@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { OnboardingFormWrapper, OnboardingFormInsideWrapper } from '@/modules/onboarding/components';
+import { OnboardingUIWrapper, OnboardingFormInsideWrapper } from '@/modules/onboarding/components';
 import { FormTextInput, PasswordInput, SubmitButton, FormHeader, SSOAuthModule } from '@/modules/common/components';
 import SignupStatusCard from './components/SignupStatusCard';
 import './resources/styles/sign-up-form.styles.scss';
@@ -149,7 +149,7 @@ const SignupForm = ({
 
   return (
     <div className="signup-form">
-      <OnboardingFormWrapper>
+      <OnboardingUIWrapper>
         <OnboardingFormInsideWrapper>
           <FormHeader>{t('loginSignupPage.signUp', 'Sign up')}</FormHeader>
           {(organizationId || shouldShowSignInCTA) && (
@@ -241,7 +241,7 @@ const SignupForm = ({
             </>
           )}
         </OnboardingFormInsideWrapper>
-      </OnboardingFormWrapper>
+      </OnboardingUIWrapper>
     </div>
   );
 };

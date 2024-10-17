@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { validateEmail } from '@/_helpers/utils';
-import { OnboardingFormWrapper, OnboardingFormInsideWrapper } from '@/modules/onboarding/components';
+import { OnboardingUIWrapper, OnboardingFormInsideWrapper } from '@/modules/onboarding/components';
 import { FormTextInput, SubmitButton, FormHeader } from '@/modules/common/components';
 import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 import './resources/styles/forgot-password-form.styles.scss';
@@ -43,7 +43,7 @@ const ForgotPasswordForm = ({ onSubmit }) => {
   };
 
   return (
-    <OnboardingFormWrapper>
+    <OnboardingUIWrapper>
       <OnboardingFormInsideWrapper>
         <div className="forgot-password-form">
           <FormHeader>{t('forgotPasswordPage.forgotPassword', 'Forgot Password')}</FormHeader>
@@ -77,7 +77,7 @@ const ForgotPasswordForm = ({ onSubmit }) => {
           </form>
         </div>
       </OnboardingFormInsideWrapper>
-    </OnboardingFormWrapper>
+    </OnboardingUIWrapper>
   );
 };
 

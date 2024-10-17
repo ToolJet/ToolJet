@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { authenticationService } from '@/_services';
-import { OnboardingFormWrapper, OnboardingFormInsideWrapper } from '@/modules/onboarding/components';
+import { OnboardingUIWrapper, OnboardingFormInsideWrapper } from '@/modules/onboarding/components';
 import { PasswordInput, SubmitButton, FormHeader } from '@/modules/common/components';
 import './resources/styles/reset-password-form.styles.scss';
 
@@ -89,7 +89,7 @@ const ResetPasswordForm = ({ token, onResetSuccess }) => {
   };
   return (
     <div className="reset-password-form">
-      <OnboardingFormWrapper>
+      <OnboardingUIWrapper>
         <OnboardingFormInsideWrapper>
           <FormHeader>{t('Reset Password')}</FormHeader>
           <span className="free-space"></span>
@@ -114,7 +114,7 @@ const ResetPasswordForm = ({ token, onResetSuccess }) => {
             <SubmitButton buttonText={t('Reset password')} isLoading={isLoading} disabled={isLoading || !isFormValid} />
           </form>
         </OnboardingFormInsideWrapper>
-      </OnboardingFormWrapper>
+      </OnboardingUIWrapper>
     </div>
   );
 };

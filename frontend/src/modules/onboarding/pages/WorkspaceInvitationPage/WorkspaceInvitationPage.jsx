@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { OnboardingFormWrapper } from '@/modules/onboarding/components';
+import { OnboardingUIWrapper } from '@/modules/onboarding/components';
 import {
   FormTextInput,
   SubmitButton,
@@ -73,7 +73,7 @@ const WorkspaceInvitationPage = (props) => {
 
   const LeftSideComponent = () => {
     return (
-      <OnboardingFormWrapper>
+      <OnboardingUIWrapper>
         <div className="onboarding-form-width">
           <FormHeader>{`Join ${invitedOrganizationName}`}</FormHeader>
           <FormDescription>{`You are invited to ${
@@ -122,7 +122,7 @@ const WorkspaceInvitationPage = (props) => {
             </p>
           )}
         </div>
-      </OnboardingFormWrapper>
+      </OnboardingUIWrapper>
     );
   };
   return <OnboardingBackgroundWrapper LeftSideComponent={LeftSideComponent} RightSideComponent={GeneralFeatureImage} />;

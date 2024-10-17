@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import OnboardingBackgroundWrapper from '@/modules/onboarding/components/OnboardingBackgroundWrapper';
-import { OnboardingFormWrapper } from '@/modules/onboarding/components';
+import { OnboardingUIWrapper } from '@/modules/onboarding/components';
 import { FormHeader } from '@/modules/common/components';
 import './resources/styles/email-verification.styles.scss';
 import ResendVerificationEmail from './components/ResendVerificationEmail/ResendVerificationEmail';
@@ -12,7 +12,7 @@ const SignupSuccessInfo = ({ email, name, backToSignup, organizationId, redirect
     const info = `Did not receive an email? Check your spam folder!`;
     return (
       <div className="email-verification-wrapper" style={{ width: '356px' }}>
-        <OnboardingFormWrapper>
+        <OnboardingUIWrapper>
           <FormHeader>Check your mail</FormHeader>
           <p className="message">{message}</p>
           <span className="message">{info}</span>
@@ -23,7 +23,7 @@ const SignupSuccessInfo = ({ email, name, backToSignup, organizationId, redirect
               <span className="button-text">Back to sign up</span>
             </button>
           </div>
-        </OnboardingFormWrapper>
+        </OnboardingUIWrapper>
       </div>
     );
   };

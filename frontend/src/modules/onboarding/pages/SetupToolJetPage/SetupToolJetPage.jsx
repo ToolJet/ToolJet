@@ -2,7 +2,7 @@ import React from 'react';
 import {
   OnboardingBackgroundWrapper,
   OnboardingFormInsideWrapper,
-  OnboardingFormWrapper,
+  OnboardingUIWrapper,
 } from '@/modules/onboarding/components';
 import { SubmitButton, FormHeader, FormDescription, GeneralFeatureImage } from '@/modules/common/components';
 import { useEnterKeyPress } from '@/modules/common/hooks';
@@ -32,13 +32,13 @@ const SetupToolJetPage = () => {
   const LeftSideComponent = () => {
     return (
       <div className="setup-tooljet-page">
-        <OnboardingFormWrapper>
+        <OnboardingUIWrapper>
           <OnboardingFormInsideWrapper>
             <FormHeader>{headerText}</FormHeader>
             <FormDescription>{description}</FormDescription>
             <SubmitButton className="accept-invite-button" buttonText="Set up ToolJet" onClick={handleClick} />
           </OnboardingFormInsideWrapper>
-        </OnboardingFormWrapper>
+        </OnboardingUIWrapper>
       </div>
     );
   };

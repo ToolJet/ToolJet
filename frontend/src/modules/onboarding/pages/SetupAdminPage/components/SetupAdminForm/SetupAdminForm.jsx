@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { OnboardingFormWrapper } from '@/modules/onboarding/components';
+import { OnboardingUIWrapper } from '@/modules/onboarding/components';
 import { FormTextInput, PasswordInput, SubmitButton, FormHeader } from '@/modules/common/components';
 import useOnboardingStore from '@/modules/onboarding/stores/onboardingStore';
 import { shallow } from 'zustand/shallow';
@@ -86,7 +86,7 @@ const SetupAdminForm = () => {
   };
   useEnterKeyPress(() => handleSubmit());
   return (
-    <OnboardingFormWrapper>
+    <OnboardingUIWrapper>
       <div className="onboarding-form-width">
         <FormHeader>Set up your admin account</FormHeader>
         <form onSubmit={handleSubmit} className="form-input-area" style={formAreaStyles}>
@@ -135,7 +135,7 @@ const SetupAdminForm = () => {
           </p>
         </form>
       </div>
-    </OnboardingFormWrapper>
+    </OnboardingUIWrapper>
   );
 };
 
