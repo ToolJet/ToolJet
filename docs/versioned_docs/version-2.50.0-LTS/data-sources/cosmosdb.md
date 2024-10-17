@@ -7,7 +7,7 @@ ToolJet can connect to CosmosDB databases to read and write data.
 
 ## Connection
 
-To establish a connection with the CosmosDB data source, you can either click on the **+ Add new data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+To establish a connection with the CosmosDB data source, you can either click on the **+ Add new data source** button located on the query panel or navigate to the **[Data Sources](./overview)** page through the ToolJet dashboard.
 
 ToolJet requires the following to connect to your Cosmos DB.
 

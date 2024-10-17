@@ -60,7 +60,7 @@ ToolJet's Databricks integration relies on a configuration form that supports th
 
 
 :::tip
-You can apply transformations to the query results. Refer to our transformations documentation for more information: [link](/docs/tutorial/transformations)
+You can apply transformations to the query results. Refer to our transformations documentation for more information: [link](../tutorial/transformations)
 :::
 
 </div>

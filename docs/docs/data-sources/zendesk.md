@@ -9,7 +9,7 @@ ToolJet can connect to Zendesk APIs to read and write data using OAuth 2.0, whic
 
 ## Connection 
 
-To establish a connection with the Zendesk data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page from the ToolJet dashboard and choose Zendesk as the data source.
+To establish a connection with the Zendesk data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](./overview)** page from the ToolJet dashboard and choose Zendesk as the data source.
 
 ToolJet connects to your Zendesk app using :
 - **Zendesk Sub-domain**

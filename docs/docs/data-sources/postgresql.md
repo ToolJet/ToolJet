@@ -9,7 +9,7 @@ ToolJet has the capability to connect to PostgreSQL databases for data retrieval
 
 ## Establishing a Connection
 
-To establish a connection with the PostgreSQL data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page from the ToolJet dashboard and choose PostgreSQL as the data source.
+To establish a connection with the PostgreSQL data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](./overview)** page from the ToolJet dashboard and choose PostgreSQL as the data source.
 
 ToolJet offers two connection types to connect to your PostgreSQL database:
 
@@ -106,8 +106,8 @@ Choose the GUI mode from the dropdown and select the operation **Bulk update usi
 ```
 
 :::tip
-- You can apply transformations to the query results. Refer to our transformations documentation for more details: **[Transformation Tutorial](/docs/tutorial/transformations)**
-- Check out this how-to guide on **[bulk updating multiple rows](/docs/how-to/bulk-update-multiple-rows)** from a table component.
+- You can apply transformations to the query results. Refer to our transformations documentation for more details: **[Transformation Tutorial](../tutorial/transformations)**
+- Check out this how-to guide on **[bulk updating multiple rows](../how-to/bulk-update-multiple-rows)** from a table component.
 :::
 
 </div>

@@ -9,7 +9,7 @@ ToolJet can connect to MySQL databases to read and write data.
 
 ## Connection
 
-To establish a connection with the MySQL data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+To establish a connection with the MySQL data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](./overview)** page through the ToolJet dashboard.
 
 <div style={{textAlign: 'center'}}>
 
@@ -60,7 +60,7 @@ If you are using **Socket** as the connection type, you will need to provide the
 1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
 2. Select the database added in the previous step as the data source. 
 
-Once the MySQL data source is added, you can create queries to read and write data to the database. You can create queries from the **[Query Panel](/docs/app-builder/query-panel#query-manager)** located at the bottom panel of the app builder.
+Once the MySQL data source is added, you can create queries to read and write data to the database. You can create queries from the **[Query Panel](../app-builder/query-panel#query-manager)** located at the bottom panel of the app builder.
 
 ### SQL Mode
 
@@ -127,7 +127,7 @@ GUI mode can be used to query MySQL database without writing queries.
 </div>
 
 :::tip
-Query results can be transformed using transformations. Learn more about transformations [here](/docs/tutorial/transformations).
+Query results can be transformed using transformations. Learn more about transformations [here](../tutorial/transformations).
 :::
 
 </div>

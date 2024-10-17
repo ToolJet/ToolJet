@@ -9,7 +9,7 @@ title: DynamoDB
 
 ## Connection
 
-To establish a connection with the **DynamoDB** data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+To establish a connection with the **DynamoDB** data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data sources](./overview)** page through the ToolJet dashboard.
 
 <div style={{textAlign: 'center'}}>
 
@@ -67,7 +67,7 @@ To perform queries on **DynamoDB**, click on the **+ Add** button in the query m
 </div>
 
 :::tip
-You can apply transformations to the query results. Refer to our transformations documentation for more information: [link](/docs/tutorial/transformations)
+You can apply transformations to the query results. Refer to our transformations documentation for more information: [link](../tutorial/transformations)
 :::
 
 #### Supported Operations

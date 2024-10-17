@@ -9,7 +9,7 @@ ToolJet can connect to Snowflake databases to read and write data.
 
 ## Connection
 
-To establish a connection with the Snowflake data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview/)** page from the ToolJet dashboard and choose Snowflake as the data source.
+To establish a connection with the Snowflake data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](./overview/)** page from the ToolJet dashboard and choose Snowflake as the data source.
 
 :::info
 Please make sure the **Host/IP** of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please **whitelist** our IP.
@@ -47,7 +47,7 @@ select * from "SNOWFLAKE_SAMPLE_DATA"."WEATHER"."DAILY_14_TOTAL" limit 10;
 ```
 
 :::tip
-Query results can be transformed using transformations. Read our [transformations](/docs/tutorial/transformations) documentation to learn more.
+Query results can be transformed using transformations. Read our [transformations](../tutorial/transformations) documentation to learn more.
 :::
 
 </div>

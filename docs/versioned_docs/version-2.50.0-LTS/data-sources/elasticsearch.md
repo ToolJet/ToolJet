@@ -6,7 +6,7 @@ title: Elasticsearch
 ToolJet can connect to your Elasticsearch cluster to read and write data.
 
 ## Connection 
-To establish a connection with the ElasticSearch data source, you can either click on the **+ Add new data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+To establish a connection with the ElasticSearch data source, you can either click on the **+ Add new data source** button located on the query panel or navigate to the **[Data Sources](./overview)** page through the ToolJet dashboard.
 
 :::info
 Please make sure the **Host/IP** of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please **whitelist** our IP.
@@ -35,7 +35,7 @@ Elastic search data source is also providing an option for connecting services w
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to create and trigger the query.
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/tutorial/transformations)**
+Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](../tutorial/transformations)**
 :::
 
 #### Supported Operations

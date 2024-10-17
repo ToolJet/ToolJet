@@ -9,7 +9,7 @@ ToolJet can connect to your **Airtable** account to read and write data.
 
 ## Connection
 
-To establish a connection with the **Airtable** data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview/)** page from the ToolJet dashboard.
+To establish a connection with the **Airtable** data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](./overview/)** page from the ToolJet dashboard.
 
 ToolJet requires the following to connect to your Airtable:
 - **Personal Access Token**

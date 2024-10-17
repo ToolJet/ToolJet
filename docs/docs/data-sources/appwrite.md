@@ -9,7 +9,7 @@ ToolJet can connect to appwrite database to read/write data.
 
 ## Connection 
 
-To establish a connection with the Appwrite data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](https://docs.tooljet.com/docs/data-sources/overview)** page from the ToolJet dashboard.
+To establish a connection with the Appwrite data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](./overview)** page from the ToolJet dashboard.
 
 ToolJet requires the following to connect to your Appwrite:
 - **Host (API endpoint)**
@@ -46,7 +46,7 @@ You should also set the scope for access to a particular resource. Learn more ab
 </div> 
 
 :::tip
-Query results can be transformed using Transformations. Read our **Transformation Documentation** [here](/docs/tutorial/transformations).
+Query results can be transformed using Transformations. Read our **Transformation Documentation** [here](../tutorial/transformations).
 :::
 
 </div>
