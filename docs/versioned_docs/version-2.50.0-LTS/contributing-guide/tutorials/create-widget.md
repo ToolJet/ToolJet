@@ -7,7 +7,7 @@ title: Creating Widgets
 
 These are some of the most useful properties and functions passed to the widget
 
-### properties
+### Properties
 
 The `properties` object will contain the configurable properties of a widget, initially obtained from its definition on `widgetConfig.js`.
 The values inside `properties` change whenever the developer makes changes to the inspector panel of ToolJet editor.

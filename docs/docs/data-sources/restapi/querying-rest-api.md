@@ -13,7 +13,7 @@ Once you have connected to the REST API data source, you can easily write querie
 4. Click **Preview** to view the data returned from the query or click **Run** to execute the query.
 
 :::tip
-You can also transform the query results using the **[Transformations](/docs/how-to/transformations)** feature.
+You can also transform the query results using the **[Transformations](../../tutorial/transformations)** feature.
 :::
 
 ToolJet supports the following REST HTTP methods:
@@ -127,7 +127,7 @@ iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAA/FBMVEVAYt79/f1AYt/9/f79/ftAY9s/
 ```
 </details>
 
-Read the guide on **[loading base64 data](/docs/how-to/loading-image-pdf-from-db)**
+Read the guide on **[loading base64 data](../../how-to/loading-image-pdf-from-db)**
 
 <img className="screenshot-full" src="/img/datasource-reference/rest-api/base64.png" alt="ToolJet - Data source - REST API" />
 

@@ -5,7 +5,7 @@ title: Set page variable
 
 Page variables are restricted to the page where they are created and cannot be accessed throughout the entire application like regular variables.
 
-Use this action to establish a variable and assign a value to it within the [Multipage Apps](/docs/tutorial/pages).
+Use this action to establish a variable and assign a value to it within the [Multipage Apps](../tutorial/pages).
 
 By default, the debounce field is left empty. However, you can input a numeric value to indicate the time in milliseconds before the action is executed. For example, `300`.
 
@@ -31,6 +31,6 @@ await actions.setPageVariable('<variablekey>',<variablevalue>)
 </div>
 
 :::info
-For instructions on how to run actions from a RunJS query, refer to the how-to guide [Running Actions from RunJS Query](/docs/how-to/run-actions-from-runjs).
+For instructions on how to run actions from a RunJS query, refer to the how-to guide [Running Actions from RunJS Query](../how-to/run-actions-from-runjs).
 :::
 

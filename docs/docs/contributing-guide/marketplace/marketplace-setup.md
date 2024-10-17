@@ -21,9 +21,9 @@ git clone https://github.com/ToolJet/ToolJet.git
 
 Next, refer to the appropriate guide for your development environment to follow the Setup instructions:
 
-- **[MacOS](/docs/contributing-guide/setup/macos)**
-- **[Docker](/docs/contributing-guide/setup/docker)**
-- **[Ubuntu](/docs/contributing-guide/setup/ubuntu)**
+- **[MacOS](../setup/macos)**
+- **[Docker](../setup/docker)**
+- **[Ubuntu](../setup/ubuntu)**
 
 ### Step 2. Enabling the marketplace for your instance
 
@@ -48,7 +48,7 @@ The use of this environment variable facilitates plugin development by enabling 
 
 Please note that the marketplace is not enabled by default. After updating the variable, restart your ToolJet instance. 
 
-For information on running ToolJet on your local machine, please refer to the instructions provided **[here](/docs/contributing-guide/setup/architecture)**. You can access the marketplace by navigating to the **'/integrations'** route.
+For information on running ToolJet on your local machine, please refer to the instructions provided **[here](../setup/architecture)**. You can access the marketplace by navigating to the **'/integrations'** route.
 
 ### Step 3: Installation of tooljet-cli
 
@@ -60,6 +60,6 @@ npm install -g @tooljet/cli
 tooljet --version
 ```
 
-Having completed the environment setup for Marketplace Developer mode, we can proceed to the next section and commence with [developing the first plugin](/docs/contributing-guide/marketplace/creating-a-plugin).
+Having completed the environment setup for Marketplace Developer mode, we can proceed to the next section and commence with [developing the first plugin](../marketplace/creating-a-plugin).
 
 

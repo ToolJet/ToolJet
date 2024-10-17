@@ -4,7 +4,7 @@ title: Ubuntu
 ---
 
 :::warning
-The following guide is intended for contributors to set-up ToolJet locally. If you're interested in **self-hosting** ToolJet, please refer to the **[Setup](/docs/setup/)** section.
+The following guide is intended for contributors to set-up ToolJet locally. If you're interested in **self-hosting** ToolJet, please refer to the **[Setup](../../setup/)** section.
 :::
 
 Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the commands below.
@@ -65,7 +65,7 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
     
 3. Set up environment variables
 
-    Create a `.env` file by copying `.env.example`. More information on the variables that can be set is given in the [environment variables reference](/docs/setup/env-vars)
+    Create a `.env` file by copying `.env.example`. More information on the variables that can be set is given in the [environment variables reference](../../setup/env-vars)
     ```bash
     cp .env.example .env
     ```

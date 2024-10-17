@@ -8,7 +8,7 @@ You can use this action to open a webpage(on a new tab) for any event.
 Debounce field is empty by default, you can enter a numerical value to specify the time in milliseconds after which the action will be performed. ex: `300`
 
 :::info
-You can also trigger actions from the **JavaScript code**. Check it out [here](/docs/how-to/run-actions-from-runjs).
+You can also trigger actions from the **JavaScript code**. Check it out [here](../how-to/run-actions-from-runjs).
 :::
 
 <div style={{textAlign: 'center'}}>
