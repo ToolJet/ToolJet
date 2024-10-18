@@ -70,6 +70,7 @@ const sidebars = {
         'setup/v2-migration-guide',
         'setup/upgrade-to-lts',
         'setup/upgrade-to-v3',
+        'setup/cloud-v3-migration',
       ]
     },
     {
