@@ -6,7 +6,7 @@ title: Upload and Download Files on AWS S3 Bucket
 
 This guide will help you in quickly building a basic UI for uploading or downloading files from AWS S3 buckets.
 
-Before building the UI, check out the **[docs for AWS S3 data source](/docs/data-sources/s3)** to learn about setting up AWS S3 and adding the data source. 
+Before building the UI, check out the **[docs for AWS S3 data source](../data-sources/s3)** to learn about setting up AWS S3 and adding the data source. 
 
 Once you have successfully added the AWS data source, build a basic UI using the following widgets:
 - **Dropdown**: For selecting a bucket in S3 storage.

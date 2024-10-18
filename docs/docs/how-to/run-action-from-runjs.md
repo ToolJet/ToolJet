@@ -3,7 +3,7 @@ id: run-actions-from-runjs
 title: Run Actions from RunJS query
 ---
 
-ToolJet allows you to execute various [actions](/docs/actions/show-alert) within RunJS queries. This guide outlines the syntax and examples for each action.
+ToolJet allows you to execute various [actions](../actions/show-alert) within RunJS queries. This guide outlines the syntax and examples for each action.
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
@@ -254,7 +254,7 @@ actions.showAlert('error' , 'This is an error' )
 
 To run multiple actions from a RunJS query, you'll have to use **async-await** in the function.
 
-Here is a example code snippet for running the queries and showing alert after specific intervals. Check the complete guide on running queries at specified intervals **[here](/docs/how-to/run-query-at-specified-intervals)**.
+Here is a example code snippet for running the queries and showing alert after specific intervals. Check the complete guide on running queries at specified intervals **[here](./run-query-at-specified-intervals)**.
 
 ```js
 actions.setVariable('interval',setInterval(countdown, 5000));

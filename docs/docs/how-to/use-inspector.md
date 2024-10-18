@@ -59,7 +59,7 @@ The globals selection consists of the following data:
 - **modes:** Indicates whether the app is in **edit**, **preview**, or **view** mode. **Edit** is for editing the app, **preview** is used when the preview button in the app builder is clicked, and **view** is for when the app is opened through a shared URL.
 
 :::info
-All the global variables can be accessed anywhere within ToolJet applications. Here's an **[example use-case](/docs/how-to/access-currentuser)** that demonstrates the usage of these variables.
+All the global variables can be accessed anywhere within ToolJet applications. Here's an **[example use-case](../how-to/access-currentuser)** that demonstrates the usage of these variables.
 :::
 
 </div>
@@ -68,7 +68,7 @@ All the global variables can be accessed anywhere within ToolJet applications. H
 
 ### Variables
 
-Variables shows user-defined variables in a key-value format. These variables, set through event handlers or queries, are accessible across the entire application. You can set variables from the [event handler](/docs/actions/set-variable) or using [JavaScript code](/docs/how-to/run-actions-from-runjs#set-variables).
+Variables shows user-defined variables in a key-value format. These variables, set through event handlers or queries, are accessible across the entire application. You can set variables from the [event handler](../actions/set-variable) or using [JavaScript code](./run-actions-from-runjs#set-variables).
 
 </div>
 
@@ -83,7 +83,7 @@ Page lets you view page-specific properties like page name, handle and variables
 
 ### Constants
 
-Under **[Constants](/docs/org-management/workspaces/workspace_constants/)**, you can find the predefined values (usually tokens/secret keys/API keys) that can be used across your application to maintain consistency and facilitate easy updates. 
+Under **[Constants](../org-management/workspaces/workspace_constants/)**, you can find the predefined values (usually tokens/secret keys/API keys) that can be used across your application to maintain consistency and facilitate easy updates. 
 
 :::info
 The **environment** and **mode** variables are only available in **ToolJet Enterprise Edition v2.2.3** and above.
