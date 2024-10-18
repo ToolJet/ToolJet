@@ -42,7 +42,7 @@ The following patterns are no longer supported:
 3. Dynamically accessing nested properties:
    ```javascript
    // This dynamic property access is not allowed
-   {{components.table1[dynamicColumnName]}}
+   {{components.table1[components.textinput1.value]}}
    ```
 
 Instead, use static references to components:
@@ -99,7 +99,7 @@ variables.name
 // No longer supported
 {{'name' in variables}}
 {{Object.keys(variables).includes('name')}}
-
+{{variables.hasOwnProperty('name')}}
 // Recommended approach for checking existence
 {{variables['name'] ?? false}}
 ```
