@@ -8,7 +8,7 @@ title: Salesforce
 ToolJet connects to your Salesforce account, allowing you to directly interact with your Salesforce connected app from within your ToolJet application.
 
 :::info
-**NOTE:** **Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#using-marketplace-plugins)**.
+**NOTE:** **Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](../marketplace-overview#using-marketplace-plugins)**.
 :::
 
 ## Connection
@@ -21,7 +21,7 @@ ToolJet connects to your Salesforce account, allowing you to directly interact w
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/salesforce/api_settings.png" alt="Salesforce Connected App API Settings" />
 </div>
 
-- Establish a connection to Salesforce by either clicking `+Add new Data source` on the query panel or navigating to the [Data Sources](/docs/data-sources/overview/) page from the ToolJet dashboard.
+- Establish a connection to Salesforce by either clicking `+Add new Data source` on the query panel or navigating to the [Data Sources](../../data-sources/overview/) page from the ToolJet dashboard.
 
 - Select the API version from the dropdown, enter your Client ID and Client Secret into their designated fields.
 
@@ -37,7 +37,7 @@ ToolJet connects to your Salesforce account, allowing you to directly interact w
 
 ## Querying Salesforce
 
-- To perform queries on Salesforce in ToolJet, click the **+Add** button in the [query manager](/docs/app-builder/query-panel/#query-manager) located at the bottom panel of the editor.
+- To perform queries on Salesforce in ToolJet, click the **+Add** button in the [query manager](../../app-builder/query-panel/#query-manager) located at the bottom panel of the editor.
 - Select the previously configured Salesforce datasource from the **Data Source** dropdown.
 
 - In the Operation dropdown, select the desired operation type. ToolJet supports two operation types for Salesforce interactions:
@@ -60,7 +60,7 @@ ToolJet connects to your Salesforce account, allowing you to directly interact w
 <br/>
 
 :::info
-Query results can be transformed using transformations. Read our [transformations documentation](/docs/tutorial/transformations).
+Query results can be transformed using transformations. Read our [transformations documentation](../../tutorial/transformations).
 :::
 
 ## CRUD Actions

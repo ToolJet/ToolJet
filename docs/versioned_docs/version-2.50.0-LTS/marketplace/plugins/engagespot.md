@@ -8,14 +8,14 @@ title: Engagespot
 ToolJet connects to your Engagespot account, allowing you to send notifications, create or update users from within your ToolJet application.
 
 :::info
-**NOTE:** **Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#using-marketplace-plugins)**.
+**NOTE:** **Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](../marketplace-overview#using-marketplace-plugins)**.
 :::
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Connection
 
-- Establish a connection to Engagespot by either clicking `+Add new Data source` on the query panel or navigating to the [Data Sources](/docs/data-sources/overview/) page from the ToolJet dashboard.
+- Establish a connection to Engagespot by either clicking `+Add new Data source` on the query panel or navigating to the [Data Sources](../../data-sources/overview/) page from the ToolJet dashboard.
 
 - Enter your Engagespot API key and API secret into their designated fields. To generate user tokens directly from ToolJet, you can optionally provide a signing key.
 
@@ -36,7 +36,7 @@ You can change your Engagespot BaseURL by enable custom endpoint.
 
 ## Querying Engagespot
 
-Click on `+Add` button of the [query manager](/docs/app-builder/query-panel/#query-manager) and select the data source added in the previous step as the data source. Select the operation that you want to perform, fill in the required parameters and click on **Run** button to run the query.
+Click on `+Add` button of the [query manager](../../app-builder/query-panel/#query-manager) and select the data source added in the previous step as the data source. Select the operation that you want to perform, fill in the required parameters and click on **Run** button to run the query.
 
 <div style={{textAlign: 'center'}}>
 
@@ -47,7 +47,7 @@ Click on `+Add` button of the [query manager](/docs/app-builder/query-panel/#que
 <br/>
 
 :::info
-Query results can be transformed using transformations. Read our [transformations documentation](/docs/tutorial/transformations).
+Query results can be transformed using transformations. Read our [transformations documentation](../../tutorial/transformations).
 :::
 
 </div>

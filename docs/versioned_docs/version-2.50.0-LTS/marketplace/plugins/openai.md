@@ -6,7 +6,7 @@ title: OpenAI
 ToolJet can integrate with OpenAI to access two main services: Completions and Chat. The Completions service enables ToolJet to produce text from a given prompt or context. Meanwhile, the Chat service facilitates user interaction with an AI-driven chatbot based on OpenAI's language models. 
 
 :::note
-Before following this guide, it is assumed that you have already completed the process of **[Using Marketplace plugins](/docs/marketplace/marketplace-overview#using-marketplace-plugins)**.
+Before following this guide, it is assumed that you have already completed the process of **[Using Marketplace plugins](../marketplace-overview#using-marketplace-plugins)**.
 :::
 
 ## Connection
