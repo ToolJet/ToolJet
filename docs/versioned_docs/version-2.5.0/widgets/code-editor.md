@@ -4,7 +4,7 @@ title: Code Editor
 ---
 # Code Editor
 
-Code Editor widget is a versatile text editor for editing code and supports several languages. 
+Code Editor component is a versatile text editor for editing code and supports several languages. 
 
 <div style={{textAlign: 'center'}}>
 
@@ -15,7 +15,7 @@ Code Editor widget is a versatile text editor for editing code and supports seve
 ## Properties
 
 :::info
-Any property having `Fx` button next to its field can be **programmatically configured**.
+Any property having **fx** button next to its field can be **programmatically configured**.
 :::
 
 <div style={{textAlign: 'center'}}>
@@ -171,9 +171,9 @@ Any property having `Fx` button next to its field can be **programmatically conf
 ### General
 #### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the component.
 
-Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
+Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the component will display the string as the tooltip.
 
 <div style={{textAlign: 'center'}}>
 
@@ -191,8 +191,10 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 | Layout  | description |
 | ----------- | ----------- |
-| Show on desktop | Toggle on or off to display the widget in desktop view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}`. |
-| Show on mobile | Toggle on or off to display the widget in mobile view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}`. |
+| Show on desktop | Toggle on or off to display the component in desktop view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}`. |
+| Show on mobile | Toggle on or off to display the component in mobile view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}`. |
+
+---
 
 ## Styles
 
@@ -204,15 +206,15 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 | Styles  | description | 
 | ----------- | ----------- |
-| Visibility | Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not be visible after the app is deployed. By default, it's set to `{{true}}`. |
-| Disable | This is `off` by default, toggle `on` the switch to lock the widget and make it non-functional. You can also programmatically set the value by clicking on the `Fx` button next to it. If set to `{{true}}`, the widget will be locked and becomes non-functional. By default, its value is set to `{{false}}`. |
+| Visibility | Toggle on or off to control the visibility of the component. You can programmatically change its value by clicking on the **fx** button next to it. If `{{false}}` the component will not be visible after the app is deployed. By default, it's set to `{{true}}`. |
+| Disable | This is `off` by default, toggle `on` the switch to lock the component and make it non-functional. You can also programmatically set the value by clicking on the **fx** button next to it. If set to `{{true}}`, the component will be locked and becomes non-functional. By default, its value is set to `{{false}}`. |
 | Border radius | Use this property to modify the border radius of the editor. The field expects only numerical value from `1` to `100`, default is `0`. |
 
 ## Exposed Variables
 
 | Variables      | Description |
 | ----------- | ----------- |
-| value | This variable holds the value whenever the user inputs anything on the code-editor . You can access the value dynamically using JS: `{{components.codeeditor1.value}}`| 
+| value | Holds the value of the user inputs in the code-editor. Access the value dynamically using JS: `{{components.codeeditor1.value}}`| 
 
 ## Component specific actions (CSA)
 
