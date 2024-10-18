@@ -1,17 +1,16 @@
 ---
-id: upgrade-to-v3
-title: ToolJet v3 (Beta) Migration Guide Self-Hosted
+id: cloud-v3-migration
+title: ToolJet Cloud v3 Migration Guide
 ---
-# ToolJet v3 (Beta) Migration Guide
 
-This documentation will help you upgrade your application from ToolJet v2.50.0-LTS to the pre-release/beta version of ToolJet v3.
+# ToolJet Cloud v3 Migration Guide
 
-ToolJet v3 is a new **major version**, including **breaking changes** that require you to adjust your applications accordingly. We will guide you through this process and mention a few important changes.
+ToolJet Cloud will be upgraded to v3 on November 11th, 2024. This update includes breaking changes that may affect your applications. Please review and update your applications before November 11th to ensure they continue working after the upgrade.
 
-:::tip Before upgrading
-Before upgrading, we recommend reviewing your existing applications for any usage of deprecated features. Addressing these ahead of time will help reduce the work needed to upgrade to ToolJet v3.
+:::warning Important
 
-For complex applications, we also recommend setting up thorough testing procedures to ensure your apps function correctly after the upgrade.
+You must make these changes before November 11th to prevent disruption to your applications. The upgrade will happen automatically and cannot be postponed.
+
 :::
 
 ## Dynamic Input Restrictions
@@ -152,7 +151,7 @@ The old deprecated **Kanban Board** component will cease functioning entirely. A
 6. Test thoroughly to ensure all functionality is preserved
 
 :::caution
-After the V3 upgrade, applications with the old Kanban Board component will crash and become unusable. Make sure to replace all instances of the old component with the new Kanban component before upgrading.
+After November 11th, applications with the old Kanban Board component will crash and become unusable.
 :::
 
 ### Local Data Sources
@@ -197,17 +196,6 @@ Now, you should use:
 ```
 
 The `metadata` object will contain detailed information about the request and response, including request URL, method, headers, parameters, response status code, and headers.
-
-## System Changes
-
-### ToolJet Database
-
-#### Action Required
-- Enable ToolJet Database for all workspaces
-- Verify database connectivity and access
-- Test all database-dependent functionality
-
-Enabling the ToolJet Database is now mandatory. In previous versions, this was optional.
 
 ## Help and Support
 
