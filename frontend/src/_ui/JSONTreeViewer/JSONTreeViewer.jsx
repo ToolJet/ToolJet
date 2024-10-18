@@ -4,6 +4,7 @@ import { JSONNode } from './JSONNode';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
 import WidgetIcon from '@/../assets/images/icons/widgets';
 import { ToolTip } from '@/_components/ToolTip';
+import PropTypes from 'prop-types';
 
 export class JSONTreeViewer extends React.Component {
   constructor(props) {
@@ -16,6 +17,7 @@ export class JSONTreeViewer extends React.Component {
       hoveredNode: null,
       darkTheme: false,
       showHideActions: false,
+      page: null,
       enableCopyToClipboard: props.enableCopyToClipboard ?? false,
       actionsList: props.actionsList || [],
       useActions: props.useActions ?? false,
@@ -77,6 +79,7 @@ export class JSONTreeViewer extends React.Component {
 
     return 0;
   }
+
   extractComponentName = (path) => {
     // Match the last part of the URL before ".svg" using a regular expression
     const match = path.match(/\/([^/]+)\.svg$/);
@@ -143,6 +146,7 @@ export class JSONTreeViewer extends React.Component {
       });
     }
   };
+
   updateHoveredNode = (node, path) => {
     this.setState({
       hoveredNode: { node: node, parent: path?.length ? path[path.length - 2] : null },
@@ -150,8 +154,13 @@ export class JSONTreeViewer extends React.Component {
   };
 
   getDispatchActionsForNode = (node) => {
+    let actionsList = this.state.actionsList;
     if (!node) return null;
-    return this.state.actionsList.filter((action) => action.for === node)[0];
+    if (this.props.treeType == 'page') {
+      console.log('actionsList', actionsList);
+      actionsList = this.state.actionsList.filter((action) => action.for !== 'all');
+    }
+    return actionsList.filter((action) => action.for === node)[0];
   };
 
   getNodeShowHideComponents = (currentNode, path) => {
@@ -187,7 +196,7 @@ export class JSONTreeViewer extends React.Component {
   };
 
   getAbsoluteNodePath = (path) => {
-    const data = this.state.data;
+    const data = this.state.data.components;
     if (!data || _.isEmpty(data)) return null;
     const map = new Map();
 
@@ -274,10 +283,35 @@ export class JSONTreeViewer extends React.Component {
             fontSize={this.props.fontSize ?? '12px'}
             inspectorTree={this.props.treeType === 'inspector'}
             debuggerTree={this.props.treeType === 'debugger'}
+            pageTree={this.props.treeType === 'page'}
+            isPageTreeActive={false}
             renderCurrentNodeInfoIcon={this.renderCurrentNodeInfoIcon}
+            isHovered={this.state.isHovered}
+            page={this.props.page}
+            darkMode={this.props.darkMode}
+            isHomePage={this.state.isHomePage}
+            isHidden={this.state.isHidden}
+            isDisabled={this.state.isDisabled}
+            isIconApplied={this.state.isIconApplied}
           />
         </ErrorBoundary>
       </div>
     );
   }
 }
+
+JSONTreeViewer.propTypes = {
+  data: PropTypes.object.isRequired,
+  shouldExpandNode: PropTypes.bool,
+  useIcons: PropTypes.bool,
+  iconsList: PropTypes.array,
+  useIndentedBlock: PropTypes.bool,
+  enableCopyToClipboard: PropTypes.bool,
+  useActions: PropTypes.bool,
+  actionsList: PropTypes.array,
+  expandWithLabels: PropTypes.bool,
+  treeType: PropTypes.string,
+  page: PropTypes.object,
+  darkMode: PropTypes.bool,
+  fontSize: PropTypes.string,
+};

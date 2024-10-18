@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import PropTypes from 'prop-types';
 import Fuse from 'fuse.js';
 import { HeaderSection } from '@/_ui/LeftSidebar';
 import { PageHandler, AddingPageHandler } from './PageHandler';
@@ -34,6 +35,10 @@ const LeftSidebarPageSelector = ({
   apps,
   pinned,
   setPinned,
+  jsonData,
+  iconsList,
+  actionsList,
+  selectedComponent,
 }) => {
   const pages = useMemo(
     () =>
@@ -179,6 +184,10 @@ const LeftSidebarPageSelector = ({
                 components={appDefinition?.components ?? {}}
                 pinPagesPopover={pinPagesPopover}
                 haveUserPinned={haveUserPinned}
+                jsonData={jsonData}
+                iconsList={iconsList}
+                actionsList={actionsList}
+                selectedComponent={selectedComponent}
               />
             ) : (
               <div className="d-flex justify-content-center align-items-center" style={{ height: '100%' }}>
@@ -207,5 +216,29 @@ const LeftSidebarPageSelector = ({
     </div>
   );
 };
-
+LeftSidebarPageSelector.propTypes = {
+  appDefinition: PropTypes.object.isRequired,
+  darkMode: PropTypes.bool.isRequired,
+  currentPageId: PropTypes.string.isRequired,
+  addNewPage: PropTypes.func.isRequired,
+  switchPage: PropTypes.func.isRequired,
+  deletePage: PropTypes.func.isRequired,
+  renamePage: PropTypes.func.isRequired,
+  clonePage: PropTypes.func.isRequired,
+  hidePage: PropTypes.func.isRequired,
+  unHidePage: PropTypes.func.isRequired,
+  disableEnablePage: PropTypes.func.isRequired,
+  updateHomePage: PropTypes.func.isRequired,
+  updatePageHandle: PropTypes.func.isRequired,
+  homePageId: PropTypes.string.isRequired,
+  showHideViewerNavigationControls: PropTypes.func.isRequired,
+  updateOnSortingPages: PropTypes.func.isRequired,
+  apps: PropTypes.array.isRequired,
+  pinned: PropTypes.bool.isRequired,
+  setPinned: PropTypes.func.isRequired,
+  jsonData: PropTypes.object.isRequired,
+  iconsList: PropTypes.array.isRequired,
+  actionsList: PropTypes.array.isRequired,
+  selectedComponent: PropTypes.object.isRequired,
+};
 export default LeftSidebarPageSelector;
