@@ -1,7 +1,3 @@
----
-id: upgrade-to-v3
----
-
 # ToolJet v3 (Beta) Migration Guide
 
 This documentation will help you upgrade your application from ToolJet v2.50.0-LTS to the pre-release/beta version of ToolJet v3.
@@ -9,22 +5,23 @@ This documentation will help you upgrade your application from ToolJet v2.50.0-L
 ToolJet v3 is a new **major version**, including **breaking changes** that require you to adjust your applications accordingly. We will guide you through this process and mention a few important changes.
 
 :::tip Before upgrading
-
 Before upgrading, we recommend reviewing your existing applications for any usage of deprecated features. Addressing these ahead of time will help reduce the work needed to upgrade to ToolJet v3.
 
 For complex applications, we also recommend setting up thorough testing procedures to ensure your apps function correctly after the upgrade.
-
 :::
 
-## Breaking Changes
-
-### Restrictions on Dynamic Input
+## Dynamic Input Restrictions
 
 You can no longer dynamically change references to component names.
 
-**Action required:** Review your applications for any dynamic component name references and refactor as necessary.
+### Action Required
+- Review your applications for any dynamic component name references and refactor as necessary
+- Replace all dynamic component references with static references
+- Test all component interactions after making these changes
 
-**Examples of unsupported dynamic input:**
+### Examples and Details
+
+The following patterns are no longer supported:
 
 1. Using variables to construct component names:
    ```javascript
@@ -44,8 +41,6 @@ You can no longer dynamically change references to component names.
    {{components.table1[dynamicColumnName]}}
    ```
 
-**Supported static references:**
-
 Instead, use static references to components:
 
 ```javascript
@@ -54,48 +49,41 @@ Instead, use static references to components:
 {{queries.query1.data}}
 ```
 
-### Upgrade Considerations for Components and Queries with Identical Names
+## Component and Query Naming
 
 :::note
 This is only an issue during the upgrade process. Once your application is running on ToolJet v3, you can use identical names for components and queries without any problems.
 :::
 
-There's an important consideration for applications where components and queries share the same name.
+### Action Required
+- Review your applications for any instances where queries and components share the same name
+- Temporarily rename either the component or the query to ensure unique names
+- Document all renamed components/queries for potential post-upgrade reversion
+- Test affected components and queries after renaming
 
-**Issue:** When upgrading, if a component is referencing a query with the same name, the upgrade process may break that mapping.
+### Details and Examples
 
-**Explanation:** In the previous version, ToolJet used a global ID-to-name map for both components and queries. During the upgrade to v3, this global map is split, which can cause issues with existing references if components and queries share names.
+When upgrading, if a component is referencing a query with the same name, the upgrade process may break that mapping. This occurs because ToolJet previously used a global ID-to-name map for both components and queries, which is now split in v3.
 
-**Action required before upgrade:** 
-- Review your applications for any instances where queries and components share the same name.
-- Temporarily rename either the component or the query to ensure unique names across your application.
-- Document these changes so you can revert them after the upgrade if desired.
+Example scenario: If a table component named `userData` is referencing a query also named `userData`, this reference may break during the upgrade process.
 
-**Example scenario:** If a table component named `userData` is referencing a query also named `userData`, this reference may break during the upgrade process.
+## Property Panel Logic
 
-### Changes in Property Panel Logic and Variable Access
+### Action Required
+- Review all property panel variable checks
+- Update any existing variable existence checks to use the new recommended format
+- Remove any instances of unsupported logic patterns
+- Test all components using variable checks after updates
 
-There are changes to how you can access and check for the existence of variables in the property panel.
+### New Variable Access Rules
 
-- For components, queries, and page variables, a minimum of two keys must be available after the `component/query/page` keyword. 
-- For variables, a minimum of one key should be present after the `variables` keyword.
+There are changes to how you can access and check for the existence of variables in the property panel:
 
-**Issue:** Certain methods of checking for variable existence are no longer supported in the property panel.
+- For components, queries, and page variables, a minimum of two keys must be available after the `component/query/page` keyword
+- For variables, a minimum of one key should be present after the `variables` keyword
 
-**Unsupported logic:**
 ```javascript
-{{'name' in variables}}
-{{Object.keys(variables).includes('name')}}
-```
-
-**Recommended approach:**
-To check whether a variable exists, use the following format:
-```javascript
-{{variables['name'] ?? false}}
-```
-
-**Supported formats:**
-```javascript
+// Supported formats
 components.textinput1.value
 components?.textinput1?.value
 components["textinput1"].value
@@ -103,90 +91,106 @@ queries.restapi1.data
 page.variables.name
 variables["name"]
 variables.name 
-```
 
-**Action required:**
-- Review your applications for any usage of unsupported logic in the property panel.
-- Update variable existence checks to use the recommended approach.
-- Ensure that all references to components, queries, page variables, and variables follow the supported formats.
+// No longer supported
+{{'name' in variables}}
+{{Object.keys(variables).includes('name')}}
+
+// Recommended approach for checking existence
+{{variables['name'] ?? false}}
+```
 
 :::caution
 These changes may affect how your application interacts with variables and components. Be sure to test thoroughly after making these updates.
 :::
 
-### Component Names Across Multiple Pages
+## Multi-Page Component Names
 
-There's an important consideration for applications with identical component names across different pages, particularly when these components are linked to queries.
+### Action Required
+- Review multi-page applications for components with identical names
+- Either rename components to ensure uniqueness across pages
+- Or modify queries to use query parameters instead of direct references
+- Document all component name changes
+- Test affected pages and their interactions after making changes
 
-**Issue:** When the same component name exists on multiple pages and is linked to queries, the query will only work correctly on the page where the component was originally associated with it.
+### Current Limitations and Details
 
-**Example scenario:** 
-- 1. You have `page1` and `page2`, each containing a component named `textinput1`
-- 2. You create a query in `page1` that is linked to `textinput1`
-- 3. The query will only function properly on `page1`
-- 4. When you switch to `page2`, the query will not work as expected, even though there's a component with the same name
+When the same component name exists on multiple pages and is linked to queries, the query will only work correctly on the page where the component was originally associated with it.
 
-**Current solutions:** 
-- Use query parameters instead of direct component references
-- Ensure component names are unique across pages
-
-**Future resolution:** 
-We will be adding functionality to enforce unique component names across all pages in upcoming releases.
-
-**Action required:**
-- Review your multi-page applications for components with identical names
-- Either rename components to ensure uniqueness across pages or
-- Modify your queries to use query parameters instead of direct component references
+Example scenario:
+1. You have `page1` and `page2`, each containing a component named `textinput1`
+2. You create a query in `page1` that is linked to `textinput1`
+3. The query will only function properly on `page1`
+4. When you switch to `page2`, the query will not work as expected, even though there's a component with the same name
 
 :::tip
 When building multi-page applications, it's recommended to use unique component names across all pages to avoid any potential issues with query bindings.
 :::
 
-### Old Kanban Board Removal
+Future resolution: We will be adding functionality to enforce unique component names across all pages in upcoming releases.
 
-The old version of the deprecated Kanban board is no longer supported and may cause your application to crash if still in use.
+## Removal of Deprecated Features
 
-**Action required:** Delete any instances of the old Kanban board and replace them with the new Kanban component.
+### Kanban Board
 
-### Removal of Local Data Sources
+#### Action Required
+- Identify and remove all instances of the old Kanban board
+- Replace old Kanban boards with the new Kanban component
+- Test all workflows involving Kanban boards after migration
 
-Local data sources, which were deprecated in previous versions, have been completely removed in ToolJet v3. All data sources must now be configured globally at the workspace level.
+### Local Data Sources
 
-**Action required:** Migrate any remaining local data sources to global workspace data sources before upgrading.
+#### Action Required
+- Identify all local data sources in your applications
+- Migrate them to global workspace data sources
+- Update all queries and components using these data sources
+- Test all affected components and queries after migration
 
-### Removal of Workspace Variables
+### Workspace Variables
 
-Workspace Variables, which were deprecated in earlier versions, have been removed in ToolJet v3. Workspace constants have been introduced as a better alternative.
-
-**Action required:** Replace any usage of Workspace Variables with Workspace constants.
+#### Action Required
+- Identify all uses of Workspace Variables
+- Replace them with Workspace Constants
+- Update all components and queries using these variables
+- Configure appropriate role-based access for the new constants
+- Test all affected functionality after migration
 
 Workspace Constants are designed to be resolved on the server-side only, ensuring a high level of security. You can assign users to a specific role and provide create, update, and delete access to Workspace Constants.
 
 For detailed instructions on migrating from Workspace Variables to Workspace Constants, please refer to our [Workspace Variables Migration Guide](https://docs.tooljet.com/docs/beta/org-management/workspaces/workspace-variables-migration).
 
-### Changes in Accessing Response Headers and Metadata
+
+## Response Headers and Metadata
+
+#### Action Required
+- Identify all instances where response headers are being accessed
+- Update the code to use the new metadata format
+- Test all affected queries and components after migration
 
 We've introduced a capability to expose additional information through metadata for all datasources. Previously, this was only available for REST API and GraphQL data sources.
 
-**Action required:** Update your code to use the new method for accessing response headers and metadata. 
-
 Before, you could access response headers like this:
-```
+```javascript
 {{queries.<queryName>.responseHeaders}}
 ```
 
 Now, you should use:
-```
+```javascript
 {{queries.<queryName>.metadata}}
 ```
 
 The `metadata` object will contain detailed information about the request and response, including request URL, method, headers, parameters, response status code, and headers.
 
-### Mandatory ToolJet Database
+## System Changes
+
+### ToolJet Database
+
+#### Action Required
+- Enable ToolJet Database for all workspaces
+- Verify database connectivity and access
+- Test all database-dependent functionality
 
 Enabling the ToolJet Database is now mandatory. In previous versions, this was optional.
-
-**Action required:** Ensure that ToolJet Database is enabled for all your workspaces.
 
 ## Help and Support
 
