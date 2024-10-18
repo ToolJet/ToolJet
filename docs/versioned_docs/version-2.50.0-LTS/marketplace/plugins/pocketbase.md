@@ -8,14 +8,14 @@ title: PocketBase
 ToolJet connects to your PocketBase database, allowing you to directly interact with your PocketBase backend from the convenience of your ToolJet application.
 
 :::info
-**NOTE:** **Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](/docs/marketplace/marketplace-overview#using-marketplace-plugins)**.
+**NOTE:** **Before following this guide, it is assumed that you have already completed the process of [Using Marketplace plugins](../marketplace-overview#using-marketplace-plugins)**.
 :::
 
 ## Connection
 
 - To connect to PocketBase, you need the Host URL, email, and password. The Host URL is the URL of your PocketBase instance. Email and password are the credentials of the user who has access to the PocketBase instance.
 
-- Establish a connection to PocketBase by either clicking `+Add new Data source` on the query panel or navigating to the [Data Sources](/docs/data-sources/overview/) page from the ToolJet dashboard.
+- Establish a connection to PocketBase by either clicking `+Add new Data source` on the query panel or navigating to the [Data Sources](../../data-sources/overview/) page from the ToolJet dashboard.
 
 - Enter your Host URL, email and password into their designated fields.
 
@@ -27,7 +27,7 @@ ToolJet connects to your PocketBase database, allowing you to directly interact 
 
 ## Querying PocketBase
 
-- To perform queries on PocketBase in ToolJet, click the **+Add** button in the [query manager](/docs/app-builder/query-panel/#query-manager) located at the bottom panel of the editor.
+- To perform queries on PocketBase in ToolJet, click the **+Add** button in the [query manager](../../app-builder/query-panel/#query-manager) located at the bottom panel of the editor.
 - Select the previously configured PocketBase datasource.
 
 - In the Operation dropdown, select the desired operation type. ToolJet currently [supports](#supported-operations) five query types for PocketBase interactions.
@@ -43,7 +43,7 @@ ToolJet connects to your PocketBase database, allowing you to directly interact 
 <br/>
 
 :::info
-Query results can be transformed using transformations. Read our [transformations documentation](/docs/tutorial/transformations).
+Query results can be transformed using transformations. Read our [transformations documentation](../../tutorial/transformations).
 :::
 
 ## Supported Operations

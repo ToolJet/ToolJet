@@ -10,7 +10,7 @@ ToolJet can integrate with Portkey to access AI services such as text completion
 </div>
 
 :::note
-Before following this guide, it is assumed that you have already completed the process of **[Using Marketplace plugins](/docs/marketplace/marketplace-overview#using-marketplace-plugins)**.
+Before following this guide, it is assumed that you have already completed the process of **[Using Marketplace plugins](../marketplace-overview#using-marketplace-plugins)**.
 :::
 
 ## Connection

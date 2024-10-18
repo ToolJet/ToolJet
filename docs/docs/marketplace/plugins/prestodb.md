@@ -9,7 +9,7 @@ ToolJet allows you to connect to your PrestoDB database to perform SQL queries a
 
 ## Connection
 
-To connect to a PrestoDB data source in ToolJet, you can either click the **+Add new data source** button on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page in the ToolJet dashboard.
+To connect to a PrestoDB data source in ToolJet, you can either click the **+Add new data source** button on the query panel or navigate to the **[Data Sources](../../data-sources/overview)** page in the ToolJet dashboard.
 
 To connect to your PrestoDB database, the following details are required:
 - **Username**
@@ -32,7 +32,7 @@ To connect to your PrestoDB database, the following details are required:
 2. Write your SQL query in the query editor.
 
 :::tip
-Query results can be transformed using transformations. Refer to our transformations documentation for more details: **[link](/docs/tutorial/transformations)**
+Query results can be transformed using transformations. Refer to our transformations documentation for more details: **[link](../../tutorial/transformations)**
 :::
 
 ## Supported Operations
