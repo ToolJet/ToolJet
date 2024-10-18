@@ -4,7 +4,7 @@ title: Use Form Component
 ---
 <div style={{paddingBottom:'24px'}}>
 
-In this guide, we'll create a simple app that uses a **[Form](/docs/widgets/form)** component to add records to a database. We'll use **[ToolJet Database](/docs/tooljet-db/tooljet-database/)** as our data source. 
+In this guide, we'll create a simple app that uses a **[Form](../widgets/form)** component to add records to a database. We'll use **[ToolJet Database](../tooljet-db/tooljet-database/)** as our data source. 
 
 </div>
 
@@ -24,9 +24,9 @@ In this guide, we'll create a simple app that uses a **[Form](/docs/widgets/form
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## 2. Create the UI
-- Create a new app and drag and drop a **[Table](/docs/widgets/table)** component on the canvas.
-- Drop a **[Form](/docs/widgets/form)** next to it.
-- Since we have three columns in the database, let's update the Form with one **[Text Input](/docs/widgets/text-input)** for `name` and two **[Number Inputs](/docs/widgets/text-input)** for `quantity` and `price`.
+- Create a new app and drag and drop a **[Table](../widgets/table)** component on the canvas.
+- Drop a **[Form](../widgets/form)** next to it.
+- Since we have three columns in the database, let's update the Form with one **[Text Input](../widgets/text-input)** for `name` and two **[Number Inputs](../widgets/text-input)** for `quantity` and `price`.
 - Name the three input fields on the form as - *nameInput*, *quantityInput* and *priceInput*. Name the button as *submitButton*.
 
 <div style={{textAlign: 'center'}}>
@@ -40,7 +40,7 @@ In this guide, we'll create a simple app that uses a **[Form](/docs/widgets/form
 
 ## 3. Load the Table Component With Data
 
-- Click on the Add button in the **[Query Panel](/docs/app-builder/query-panel/)**, select ToolJet Database
+- Click on the Add button in the **[Query Panel](../app-builder/query-panel/)**, select ToolJet Database
 - Rename the query to *getProducts*
 - Choose *products* as Table name, List rows as Operations
 - Enable `Run this query on application load?` to automatically run the query when the app starts

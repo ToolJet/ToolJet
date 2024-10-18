@@ -30,7 +30,7 @@ This guide shows how to upload and view images and PDFs using the base64 string 
 ## 2. Upload Files To The Database
 
 - Create a new application and name it *Load PDF And Images Example*. 
-- Drag and drop two **[Filepicker](/docs/widgets/file-picker)** components on the canvas from the components library on the right. 
+- Drag and drop two **[Filepicker](../widgets/file-picker)** components on the canvas from the components library on the right. 
 - Rename the first Filepicker component to *imagePicker* and second Filepicker to *pdfPicker*.
 
 <div style={{ width: '100%', marginBottom:'15px', marginTop:'15px'}}>
@@ -68,7 +68,7 @@ This guide shows how to upload and view images and PDFs using the base64 string 
     <img className="screenshot-full" src="/img/how-to/load-base64/add-files-query.png" alt="Add Files Query"  />
 </div>
 
-- Add a **[Button](/docs/widgets/button)** component below the Filepickers and rename it to *upload*.
+- Add a **[Button](../widgets/button)** component below the Filepickers and rename it to *upload*.
 - Set the Button's text to *Upload* and create a **New event handler** with the following settings: Event - `On click`, Action - `Run Query` and Query - `uploadFiles`.
 - Click on the *upload* button to upload the files that we had selected in the Filepicker components earlier.
 
@@ -91,7 +91,7 @@ The upload process is now complete. Whenever files are selected in the Filepicke
     <img className="screenshot-full" src="/img/how-to/load-base64/fetch-files-query.png" alt="Fetch Files Query"  />
 </div>
 
-- Drag an **[Image](/docs/widgets/image)** and a **[PDF](/docs/widgets/pdf)** component on the canvas from the components library. Rename the **Image** component to *displayImage* and the **PDF** component to *displayPDF*.
+- Drag an **[Image](../widgets/image)** and a **[PDF](../widgets/pdf)** component on the canvas from the components library. Rename the **Image** component to *displayImage* and the **PDF** component to *displayPDF*.
 - In the **URL** property of the **displayImage** component, enter:
 ```js
 {{'data:image;base64,' + queries.getFiles.data[0].image}}

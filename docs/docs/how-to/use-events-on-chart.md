@@ -19,7 +19,7 @@ This guide will use the Custom Component to create a chart using a third-party l
 - Open the App Builder and add a Custom Component to the page. 
 - Click on the Custom Component to open the Properties panel.
 
-Note: If you are not familiar with the Custom Component, please read the [Custom Component](/docs/widgets/custom-component/)documentation.
+Note: If you are not familiar with the Custom Component, please read the [Custom Component](../widgets/custom-component/)documentation.
 
 </div>
 
@@ -253,6 +253,6 @@ const barOnClick = ({points}) => {
 }
 ```
 
-`runQuery` is a function which accepts a query name as a string used to run the query from the custom component. Learn more about the custom component [here](/docs/widgets/custom-component/).
+`runQuery` is a function which accepts a query name as a string used to run the query from the custom component. Learn more about the custom component [here](../widgets/custom-component/).
 
 </div>

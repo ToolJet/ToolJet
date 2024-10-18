@@ -20,7 +20,7 @@ The user details entered while setting up ToolJet will have Super Admin privileg
 | Manage SSO in their workspace | ✅ | ✅ |
 | Manage Workspace Variables in their workspace | ✅ | ✅ |
 | Manage Workspace Constants in their workspace | ✅ | ✅ |
-| [Manage data sources for the user group in their workspace](/docs/data-sources/overview#user-permissions) | ✅ | ✅ |
+| [Manage data sources for the user group in their workspace](../data-sources/overview#user-permissions) | ✅ | ✅ |
 | [Access any user's personal workspace (create, edit or delete apps)](#access-any-workspace) | ❌ | ✅ |
 | [Archive Admin or any user of any workspace](#archiveunarchive-users) | ❌ | ✅ |
 | [Access any user's ToolJet database (create, edit or delete database)](#access-tooljet-db-in-any-workspace) | ❌ | ✅ |
@@ -251,7 +251,7 @@ Super Admins can enable comments from the Manage Settings page. Once enabled, us
 ## White Labelling
 This feature allows you to customize the ToolJet instance with your own branding. You can change the logo, favicon, and the name of the instance.
 
-Check out the [White labelling](/docs/enterprise/white-label/) page for more details.
+Check out the [White labelling](./white-label/) page for more details.
 
 </div>
 
@@ -315,6 +315,6 @@ Turning off this option restricts workspace admins from configuring the login me
 
 Manage the instance license via the **Settings** page. Super Admins have the capability to update the instance's license key from this page.
 
-Check out the [License](/docs/org-management/licensing/self-hosted) page for more details.
+Check out the [License](../org-management/licensing/self-hosted) page for more details.
 
 </div>

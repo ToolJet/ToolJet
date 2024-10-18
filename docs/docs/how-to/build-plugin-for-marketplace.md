@@ -15,7 +15,7 @@ ToolJet marketplace is a place where you can find custom plugins and install the
 ### 1. Enabling the marketplace for your instance
 To enable the marketplace for your instance, you need to set the `ENABLE_MARKETPLACE` environment variable to `true` in your `.env` file.
 Marketplace is disabled by default.
-Once you set the environment variable, restart your ToolJet instance. You can find the instructions to run ToolJet locally [here](/docs/setup/).
+Once you set the environment variable, restart your ToolJet instance. You can find the instructions to run ToolJet locally [here](../setup/).
 Marketplace can be accessed from '/integrations' route.
 
 ### 2. Installing tooljet-cli

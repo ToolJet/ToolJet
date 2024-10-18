@@ -124,7 +124,7 @@ if ((variables?.tabIndex ?? undefined) == undefined) {
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/print-multitabs/q3-v2.png" alt="Print data from multiple tabs" />
 </div>
 
-Now that we have created the *viewTabs* query, we can go to the **[Download PDF](/docs/how-to/print-multi-tabs-report#printing-data-from-multiple-tabs)** button and add the *viewTabs* query to the `On click` event handler.
+Now that we have created the *viewTabs* query, we can go to the **[Download PDF](#printing-data-from-multiple-tabs)** button and add the *viewTabs* query to the `On click` event handler.
 
 </div>
 

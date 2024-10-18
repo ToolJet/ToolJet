@@ -6,8 +6,8 @@ title: Use URL Parameters on Page Load
 
 In this guide, we will learn how to use URL parameters at the time of page load. The URL parameters are used to pass data from one page to another. Currently, we can add URL parameters in the following ways:
 
-- From events through the [Switch page](/docs/actions/switch-page) action
-- From the [JavaScript code](/docs/actions/switch-page/#switch-page-with-query-params) queries
+- From events through the [Switch page](../actions/switch-page) action
+- From the [JavaScript code](../actions/switch-page/#switch-page-with-query-params) queries
 
 If a page is opened with URL parameters, you can access them using the `{{globals.urlparams}}`. This object contains all the URL parameters as key-value pairs and specific parameters can be accessed using the key like `{{globals.urlparams.<parameter_name>}}`.
 

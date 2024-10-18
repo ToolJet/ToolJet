@@ -29,7 +29,7 @@ To begin, create a free **[ToolJet](https://www.tooljet.com/signup)** account an
 <br/>
 
 - Click on the **Create new app** button on the dashboard. Name your application as "Employee Directory". 
-- Click and drag a **[Table](/docs/widgets/table)** component on the canvas. Optionally, you can also design a header by adding more components.  
+- Click and drag a **[Table](../widgets/table)** component on the canvas. Optionally, you can also design a header by adding more components.  
 
 <!-- <div style={{textAlign: 'center'}}>
     <img style={{marginBottom:'15px', borderRadius: '6px' }} className="screenshot-full" src="/img/quickstart-guide/header-design-v3.png" alt="Database Preview" />
@@ -40,7 +40,7 @@ To begin, create a free **[ToolJet](https://www.tooljet.com/signup)** account an
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### 2. Create a Database Table
-Now, create a new table in **[ToolJet’s Database](/docs/tooljet-db/tooljet-database/)** to store employee records. 
+Now, create a new table in **[ToolJet’s Database](../tooljet-db/tooljet-database/)** to store employee records. 
 
 <div class="video-container">
     <iframe width="560" height="315" src="https://www.youtube.com/embed/GKOZsWcOxgI?si=qXGYetr1u9KLdl1Z&rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
@@ -63,7 +63,7 @@ To display employees in the application, you will first have to fetch the data f
 </div>
 <br/>
 
-- Click on the **Add** button in the **[Query Panel](/docs/app-builder/query-panel/)** to create a new query.
+- Click on the **Add** button in the **[Query Panel](../app-builder/query-panel/)** to create a new query.
 - Select **ToolJet Database** as the data source for the query.
 - Rename the query to *getEmployees*.
 - Choose *employees* as the Table name, and List rows as the Operation.
@@ -156,7 +156,7 @@ The preview, release and share buttons are at the top-right of the App-Builder.
 
 Congratulations on completing the tutorial! You've successfully built an employee directory application and, in the process, learnt the fundamentals of ToolJet. 
 
-To learn more about how ToolJet works, explore the subjects covered in **[ToolJet Concepts](/docs/tooljet-concepts/what-are-components)**.
+To learn more about how ToolJet works, explore the subjects covered in **[ToolJet Concepts](../tooljet-concepts/what-are-components)**.
 
 </div>
 
