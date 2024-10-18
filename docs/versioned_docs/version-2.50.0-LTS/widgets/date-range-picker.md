@@ -40,7 +40,7 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Exposed Variables
 
@@ -82,7 +82,7 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 | <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Default Value </div> |
 |:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
 | Border radius | This is to modify the border radius of the date range picker. The field expects only numerical value from `1` to `100`| By default, it's set to `0`|
-| Visibility | This is to control the visibility of the widget. If `{{false}}` the component will not visible after the app is deployed. It can only have boolean values i.e. either `{{true}}` or `{{false}}`. | By default, it's set to `{{true}}`|
+| Visibility | This is to control the visibility of the component. If `{{false}}` the component will not visible after the app is deployed. It can only have boolean values i.e. either `{{true}}` or `{{false}}`. | By default, it's set to `{{true}}`|
 | Disable | This property only accepts boolean values. If set to `{{true}}`, the component will be locked and becomes non-functional. | By default, its value is set to `{{false}}` |
 
 :::info
