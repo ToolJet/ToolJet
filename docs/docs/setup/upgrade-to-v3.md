@@ -114,6 +114,34 @@ variables.name
 These changes may affect how your application interacts with variables and components. Be sure to test thoroughly after making these updates.
 :::
 
+### Component Names Across Multiple Pages
+
+There's an important consideration for applications with identical component names across different pages, particularly when these components are linked to queries.
+
+**Issue:** When the same component name exists on multiple pages and is linked to queries, the query will only work correctly on the page where the component was originally associated with it.
+
+**Example scenario:** 
+- 1. You have `page1` and `page2`, each containing a component named `textinput1`
+- 2. You create a query in `page1` that is linked to `textinput1`
+- 3. The query will only function properly on `page1`
+- 4. When you switch to `page2`, the query will not work as expected, even though there's a component with the same name
+
+**Current solutions:** 
+- Use query parameters instead of direct component references
+- Ensure component names are unique across pages
+
+**Future resolution:** 
+We will be adding functionality to enforce unique component names across all pages in upcoming releases.
+
+**Action required:**
+- Review your multi-page applications for components with identical names
+- Either rename components to ensure uniqueness across pages or
+- Modify your queries to use query parameters instead of direct component references
+
+:::tip
+When building multi-page applications, it's recommended to use unique component names across all pages to avoid any potential issues with query bindings.
+:::
+
 ### Old Kanban Board Removal
 
 The old version of the deprecated Kanban board is no longer supported and may cause your application to crash if still in use.
