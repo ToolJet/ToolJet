@@ -119,7 +119,7 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 </div>
 
 <div style={{paddingTop:'24px'}}>
-<hr>
+----
     
 ## Styles
 
