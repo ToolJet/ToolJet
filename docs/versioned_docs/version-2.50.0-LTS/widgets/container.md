@@ -86,7 +86,7 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 
 :::info
-Any property having `fx` button next to its field can be **programmatically configured**.
+Any property having **fx** button next to its field can be **programmatically configured**.
 :::
 
 </div>
