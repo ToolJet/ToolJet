@@ -93,11 +93,13 @@ export const Chart = function Chart({
         color: fontColor,
       },
     },
+    showlegend: chartLayout.showlegend ?? false,
     legend: {
       text: chartTitle,
       font: {
         color: fontColor,
       },
+      ...chartLayout.legend,
     },
     xaxis: {
       showgrid: showGridLines,
