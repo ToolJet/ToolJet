@@ -15,8 +15,8 @@ import EmptyState from './EmptyState';
 import FolderList from '@/_ui/FolderList/FolderList';
 import { BreadCrumbContext } from '@/App';
 import './ConstantFormStyle.scss';
-import { Constants } from '@/_helpers/utils';
-
+import { Constants, redirectToWorkspace } from '@/_helpers/utils';
+import { SearchBox } from '@/_components/SearchBox';
 const MODES = Object.freeze({
   CREATE: 'create',
   EDIT: 'edit',
@@ -47,6 +47,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [globalCount, setGlobalCount] = useState(0);
   const [secretCount, setSecretCount] = useState(0);
+  const NoPermissionMessage = 'You do not have permissions to perform this action';
 
   const handleTabChange = (tab) => {
     setCurrentPage(1);
@@ -56,6 +57,14 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
 
   const handleSearchChange = (e) => {
     const searchTerm = e?.target?.value.toLowerCase();
+    setSearchTerm(searchTerm);
+
+    // Re-filter the constants based on the current search term and active tab
+    updateTableData(constants, activeTabEnvironment?.name, 0, perPage, true, activeTab, searchTerm);
+  };
+
+  const handleSearchClear = () => {
+    const searchTerm = '';
     setSearchTerm(searchTerm);
 
     // Re-filter the constants based on the current search term and active tab
@@ -323,6 +332,9 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
         .catch(({ error }) => {
           setErrors(error);
           toast.error(error);
+          if (error === NoPermissionMessage) {
+            redirectToWorkspace();
+          }
         })
         .finally(() => fetchConstantsAndEnvironments());
     }
@@ -335,7 +347,10 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
       })
       .catch(({ error }) => {
         setErrors(error);
-        toast.error('Constant could not be created');
+        toast.error(error || 'Constant could not be created');
+        if (error === NoPermissionMessage) {
+          redirectToWorkspace();
+        }
       })
       .finally(() => fetchConstantsAndEnvironments());
   };
@@ -358,6 +373,9 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
       })
       .catch(({ error }) => {
         toast.error(error);
+        if (error === NoPermissionMessage) {
+          redirectToWorkspace();
+        }
       })
       .finally(() => fetchConstantsAndEnvironments());
   };
@@ -460,12 +478,13 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
                 </div>
 
                 <div className="search-bar">
-                  <input
-                    type="text"
+                  <SearchBox
+                    width={250}
+                    callBack={handleSearchChange}
+                    customClass="tj-common-search-input-group"
+                    autoFocus={true}
                     placeholder={activeTab === Constants.Global ? 'Search global constants' : 'Search secrets'}
-                    value={searchTerm}
-                    onChange={handleSearchChange}
-                    className="search-input"
+                    onClearCallback={handleSearchClear}
                   />
                 </div>
               </div>
