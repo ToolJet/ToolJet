@@ -3,9 +3,7 @@ id: divider
 title: Divider
 ---
 
-# Divider
-
-**Divider** component is used to add separator between components.
+The **Divider** component is used to add a separator between components.
 
 <div style={{paddingTop:'24px'}}>
 
@@ -39,10 +37,11 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 ## Layout
 
-| <div style={{ width:"135px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div>                                                                   |
-| :------------------------------------------- | :------------------------------------------------------------------------------------------------------------------ |
-| Show on Desktop                              | This property have toggle switch. If enabled, the divider will display in the desktop view else it will not appear. |
-| Show on Mobile                               | This property have toggle switch. If enabled, the divider will display in the mobile view else it will not appear.  |
+| <div style={{ width:"135px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div>    | Expected Value                                                  |
+| :------------------------------------------- | :----------------------------------------------------| :-------------------------------------------------------------- |
+| Show on Desktop                              | Makes the component visible in desktop view.         | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on Mobile                               | Makes the component visible in mobile view.          | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+
 
 </div>
 
