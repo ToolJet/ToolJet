@@ -196,7 +196,7 @@ Now, you should use:
 {{queries.<queryName>.metadata}}
 ```
 
-The `metadata` object will contain detailed information about the request and response, including request URL, method, headers, parameters, response status code, and headers.
+The `metadata` object will contain detailed information about the request and response, including request URL, method, headers, parameters, response status code, and headers. You can read more about metadata [here](/docs/beta/data-sources/restapi/metadata-and-cookies/#metadata).
 
 ## Help and Support
 
