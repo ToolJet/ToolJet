@@ -1,0 +1,20 @@
+{
+  "name": "Student attendance tracker",
+  "description": "Accurately track and record student attendance with individual markings and comprehensive reporting features for better oversight.",
+  "widgets": [
+    "Table",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "student-attendance-tracker",
+  "category": "educational-technology"
+}
