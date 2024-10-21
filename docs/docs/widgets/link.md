@@ -86,7 +86,7 @@ Under the **General** accordion, you can set the value in the string format. Now
 | Text size | By default, the text size is set to 14. You can enter any value from 1-100 to set a custom text size. |
 | Underline | You can change the underline of the text in the following ways: **on-hover (default), never, always** |
 | Visibility | Toggle on or off to control the visibility of the component. You can programmatically change its value by clicking on the **fx** button next to it. If `{{false}}` the component will not visible after the app is deployed. By default, it's set to `{{true}}`. |
-:------------------------------------------------------------------------------------------------------------- |
+
 :::info
 Any property having **fx** button next to its field can be **programmatically configured**.
 :::
