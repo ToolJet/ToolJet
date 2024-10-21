@@ -2,7 +2,7 @@
 id: upgrade-to-v3
 title: ToolJet v3 (Beta) Migration Guide Self-Hosted
 ---
-# ToolJet v3 (Beta) Migration Guide
+# ToolJet v3 (Beta) Migration Guide Self-Hosted
 
 This documentation will help you upgrade your application from ToolJet v2.50.0-LTS to the pre-release/beta version of ToolJet v3.
 
@@ -13,6 +13,29 @@ Before upgrading, we recommend reviewing your existing applications for any usag
 
 For complex applications, we also recommend setting up thorough testing procedures to ensure your apps function correctly after the upgrade.
 :::
+
+## Upgrading to v3 Beta Preview
+
+### Prerequisites ⚠️
+
+Before attempting to upgrade to the v3 Beta Preview:
+
+- **Database Backup**: Create a complete backup of your database
+- **Application Review**: Check your apps for breaking and deprecated features listed in this guide.
+- **Test Environment**: Only attempt upgrade in a testing environment first.
+
+To upgrade, update your Docker image to:
+
+```bash
+tooljet/tooljet:v3.0.0-ee-beta
+```
+:::warning
+This is a beta release. Test thoroughly in a non-production environment first.
+:::
+
+## Breaking Changes
+
+The following changes are breaking and require immediate action to ensure your applications continue to function correctly after the upgrade.
 
 ## Dynamic Input Restrictions
 
@@ -196,18 +219,21 @@ Now, you should use:
 {{queries.<queryName>.metadata}}
 ```
 
-The `metadata` object will contain detailed information about the request and response, including request URL, method, headers, parameters, response status code, and headers.
+The `metadata` object will contain detailed information about the request and response, including request URL, method, headers, parameters, response status code, and headers. You can read more about metadata [here](/docs/beta/data-sources/restapi/metadata-and-cookies/#metadata).
 
 ## System Changes
 
 ### ToolJet Database
 
-#### Action Required
-- Enable ToolJet Database for all workspaces
-- Verify database connectivity and access
-- Test all database-dependent functionality
+ToolJet Database is now a core requirement for the v3 beta. You'll need to manually enable the ToolJet Database feature at the instance level. This is a temporary requirement - in the final v3.0 LTS release, the ToolJet Database will be automatically enabled and configured by default.
 
-Enabling the ToolJet Database is now mandatory. In previous versions, this was optional.
+#### Beta Testing Requirements
+
+- Enable ToolJet Database for your instance (see required environment variables [here](/docs/beta/setup/env-vars/#enable-tooljet-database--optional-))
+
+:::note
+This manual configuration is only needed during the beta testing phase. When v3.0 LTS is released, the ToolJet Database will be automatically enabled and ready to use out of the box.
+:::
 
 ## Help and Support
 
