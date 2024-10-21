@@ -26,7 +26,7 @@ The **Image** component is used to display images in your app.
 
 |  <div style={{ width:"100px"}}> Event </div> |  <div style={{ width:"100px"}}> Description </div> |
 |:----------- |:----------- |
-| On click | Triggers whenever the user clicks an image. |
+| On click | Triggers whenever the user clicks on an image. |
 
 :::info
 Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
