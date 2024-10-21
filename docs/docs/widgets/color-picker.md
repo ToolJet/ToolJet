@@ -3,8 +3,6 @@ id: color-picker
 title: Color Picker
 ---
 
-# Color Picker
-
 **Color Picker** component is used to select the desired color from the color picker
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
@@ -13,9 +11,9 @@ title: Color Picker
 
 ### Default color
 
-The data needs to be an valid hex color
+The data needs to be a valid hex-color
 
-- One can change default color either from color picker or using  **fx** (need to provide only respective hex value)
+- One can change the default color either from the color picker or using **fx** (need to provide only respective hex value)
 
 **Example:**
 
@@ -70,7 +68,6 @@ The following actions of the component can be controlled using component specifi
 | Show on mobile  | Toggle on or off to display mobile view.  | Programmatically determinine the value by clicking on **fx** to set the value `{{true}}` or `{{false}}` |
 
 </div>
-
 
 ---
 
