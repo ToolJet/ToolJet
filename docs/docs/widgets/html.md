@@ -3,8 +3,6 @@ id: html
 title: HTML Viewer
 ---
 
-# HTML Viewer
-
 **HTML** component can be used to create your own HTML-CSS layout.
 
 <div style={{paddingTop:'24px'}}>
@@ -13,7 +11,7 @@ title: HTML Viewer
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> |
 |:------------|:-----------------|
-| Raw HTML | The Raw HTML needs to be an HTML. In order to provide styles, one can add inline css to the respective HTML tags. |
+| Raw HTML | The Raw HTML needs to be an HTML. In order to provide styles, one can add inline CSS to the respective HTML tags. |
 
 **Example:**
 
@@ -66,9 +64,9 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 ## Layout
 
 | <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
-|:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
-| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on **fx** to set the value `{{true}}` or `{{false}}` |
-| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on **fx** to set the value `{{true}}` or `{{false}}` |
+|:--------------- |:--------------| :-------------- |
+| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on **fx** to set the value `{{true}}` or `{{false}}`. |
+| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on **fx** to set the value `{{true}}` or `{{false}}`. |
 
 </div>
 
@@ -78,8 +76,8 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 ## Styles
 
-| <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description     </div>                                                                                                                                                                                                                                         |
-|:---------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div>      |
+|:---------- | :------------- |
 | Visibility | Toggle on or off to control the visibility of the component. You can programmatically change its value by clicking on the **fx** button next to it. If `{{false}}` the component will not visible after the app is deployed. By default, it's set to `{{true}}`. |
 
 :::info
