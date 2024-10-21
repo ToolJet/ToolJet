@@ -87,7 +87,7 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
           }}
           className={`app-${appId}`}
         >
-          <AutoComputeMobileLayoutAlert currentLayout={currentLayout} />
+          <AutoComputeMobileLayoutAlert currentLayout={currentLayout} darkMode={isAppDarkMode} />
           {creationMode === 'GIT' && <FreezeVersionInfo info={'Apps imported from git repository cannot be edited'} />}
           {creationMode !== 'GIT' && <FreezeVersionInfo hide={currentMode !== 'edit'} />}
           <DeleteWidgetConfirmation darkMode={isAppDarkMode} />
