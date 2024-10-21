@@ -252,7 +252,7 @@ export const Listview = function Listview({
             style={{ position: 'relative', height: `${rowHeight}px`, width: `${100 / positiveColumns}%` }}
             key={index}
             // data-cy={`${String(component.name).toLowerCase()}-row-${index}`}
-            onClick={(event) => {
+            onClickCapture={(event) => {
               onRecordOrRowClicked(index);
             }}
           >
