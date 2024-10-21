@@ -1289,7 +1289,7 @@
               "id": "a065af63-7ff5-478a-aafc-4e834ac0f40e",
               "name": "generateImageUrl",
               "options": {
-                "code": "function generatePlaceholderURL() {\n  const baseUrl = \"https://placehold.co/\";\n  const width = components.width.value;\n  const height = components.height.value;\n  const sizeParam = `${width}x${height}`;\n  const bgColorParam = components.bgColor.selectedColorHex.replace(\"#\", \"\");\n  const textColorParam = components.txtColor.selectedColorHex.replace(\"#\", \"\");\n  const formatParam = components.format.value;\n  const textParam = components.custom.value;\n  let imageUrl = `${baseUrl}${sizeParam}/${bgColorParam}/${textColorParam}/${formatParam}`;\n  if (textParam) {\n    imageUrl += `?text=${encodeURIComponent(textParam)}`;\n    }\n    return imageUrl;\n  }\ncomponents.filepicker1.file[0]=generatePlaceholderURL()",
+                "code": "function generatePlaceholderURL() {\n  const baseUrl = \"https://placehold.co/\";\n  const width = components.width.value;\n  const height = components.height.value;\n  const sizeParam = `${width}x${height}`;\n  const bgColorParam = components.bgColor.selectedColorHex.replace(\"#\", \"\");\n  const textColorParam = components.txtColor.selectedColorHex.replace(\"#\", \"\");\n  const formatParam = components.format.value;\n  const textParam = components.custom.value.replace(\" \", \"+\");\n  let imageUrl = `${baseUrl}${sizeParam}/${bgColorParam}/${textColorParam}/${formatParam}?text=${textParam}`;\n    return imageUrl;\n  }\ncomponents.filepicker1.file[0]=generatePlaceholderURL()",
                 "parameters": [],
                 "runOnPageLoad": true
               },
