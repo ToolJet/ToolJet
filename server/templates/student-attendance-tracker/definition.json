@@ -1,4 +1,207 @@
 {
+  "tooljet_database": [
+    {
+      "id": "c5bf7890-64e3-4978-aef2-c046e7f2f926",
+      "table_name": "attendance_table",
+      "schema": {
+        "columns": [
+          {
+            "column_name": "attendance_id",
+            "data_type": "integer",
+            "column_default": "nextval(\"c5bf7890-64e3-4978-aef2-c046e7f2f926_attendance_id_seq\"",
+            "character_maximum_length": null,
+            "numeric_precision": 32,
+            "constraints_type": {
+              "is_not_null": true,
+              "is_primary_key": true,
+              "is_unique": false
+            },
+            "keytype": "PRIMARY KEY"
+          },
+          {
+            "column_name": "student_id",
+            "data_type": "integer",
+            "column_default": null,
+            "character_maximum_length": null,
+            "numeric_precision": 32,
+            "constraints_type": {
+              "is_not_null": true,
+              "is_primary_key": false,
+              "is_unique": false
+            },
+            "keytype": ""
+          },
+          {
+            "column_name": "name",
+            "data_type": "character varying",
+            "column_default": null,
+            "character_maximum_length": null,
+            "numeric_precision": null,
+            "constraints_type": {
+              "is_not_null": false,
+              "is_primary_key": false,
+              "is_unique": false
+            },
+            "keytype": ""
+          },
+          {
+            "column_name": "email",
+            "data_type": "character varying",
+            "column_default": null,
+            "character_maximum_length": null,
+            "numeric_precision": null,
+            "constraints_type": {
+              "is_not_null": false,
+              "is_primary_key": false,
+              "is_unique": false
+            },
+            "keytype": ""
+          },
+          {
+            "column_name": "mobile",
+            "data_type": "bigint",
+            "column_default": null,
+            "character_maximum_length": null,
+            "numeric_precision": 64,
+            "constraints_type": {
+              "is_not_null": false,
+              "is_primary_key": false,
+              "is_unique": false
+            },
+            "keytype": ""
+          },
+          {
+            "column_name": "course_name",
+            "data_type": "character varying",
+            "column_default": null,
+            "character_maximum_length": null,
+            "numeric_precision": null,
+            "constraints_type": {
+              "is_not_null": false,
+              "is_primary_key": false,
+              "is_unique": false
+            },
+            "keytype": ""
+          },
+          {
+            "column_name": "status",
+            "data_type": "boolean",
+            "column_default": "false",
+            "character_maximum_length": null,
+            "numeric_precision": null,
+            "constraints_type": {
+              "is_not_null": false,
+              "is_primary_key": false,
+              "is_unique": false
+            },
+            "keytype": ""
+          },
+          {
+            "column_name": "attendance_date",
+            "data_type": "character varying",
+            "column_default": null,
+            "character_maximum_length": null,
+            "numeric_precision": null,
+            "constraints_type": {
+              "is_not_null": false,
+              "is_primary_key": false,
+              "is_unique": false
+            },
+            "keytype": ""
+          }
+        ],
+        "foreign_keys": [
+          {
+            "referenced_table_name": "students_details",
+            "constraint_name": "FK_8c1a1cb38f136ff07569a89e8e0",
+            "column_names": [
+              "student_id"
+            ],
+            "referenced_column_names": [
+              "student_id"
+            ],
+            "on_update": "RESTRICT",
+            "on_delete": "RESTRICT",
+            "referenced_table_id": "ed00dbe7-ab42-473b-8ebb-4b269647ad26"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ed00dbe7-ab42-473b-8ebb-4b269647ad26",
+      "table_name": "students_details",
+      "schema": {
+        "columns": [
+          {
+            "column_name": "student_id",
+            "data_type": "integer",
+            "column_default": "nextval(\"ed00dbe7-ab42-473b-8ebb-4b269647ad26_student_id_seq\"",
+            "character_maximum_length": null,
+            "numeric_precision": 32,
+            "constraints_type": {
+              "is_not_null": true,
+              "is_primary_key": true,
+              "is_unique": false
+            },
+            "keytype": "PRIMARY KEY"
+          },
+          {
+            "column_name": "name",
+            "data_type": "character varying",
+            "column_default": null,
+            "character_maximum_length": null,
+            "numeric_precision": null,
+            "constraints_type": {
+              "is_not_null": false,
+              "is_primary_key": false,
+              "is_unique": false
+            },
+            "keytype": ""
+          },
+          {
+            "column_name": "email",
+            "data_type": "character varying",
+            "column_default": null,
+            "character_maximum_length": null,
+            "numeric_precision": null,
+            "constraints_type": {
+              "is_not_null": false,
+              "is_primary_key": false,
+              "is_unique": false
+            },
+            "keytype": ""
+          },
+          {
+            "column_name": "mobile",
+            "data_type": "bigint",
+            "column_default": null,
+            "character_maximum_length": null,
+            "numeric_precision": 64,
+            "constraints_type": {
+              "is_not_null": false,
+              "is_primary_key": false,
+              "is_unique": false
+            },
+            "keytype": ""
+          },
+          {
+            "column_name": "course_name",
+            "data_type": "character varying",
+            "column_default": null,
+            "character_maximum_length": null,
+            "numeric_precision": null,
+            "constraints_type": {
+              "is_not_null": false,
+              "is_primary_key": false,
+              "is_unique": false
+            },
+            "keytype": ""
+          }
+        ],
+        "foreign_keys": []
+      }
+    }
+  ],
   "app": [
     {
       "definition": {
@@ -71,24 +274,26 @@
               "updatedAt": "2024-06-09T12:27:21.924Z",
               "layouts": [
                 {
-                  "id": "c383b9e5-c1e9-4c83-b9b7-8303a80f62bb",
-                  "type": "mobile",
-                  "top": 160,
-                  "left": 58.13953488372093,
-                  "width": 5,
-                  "height": 200,
-                  "componentId": "b63e699a-093f-425f-86b8-f1a27d31ab31",
-                  "updatedAt": "2024-06-02T12:25:44.056Z"
-                },
-                {
                   "id": "a93636c8-b055-4231-b031-bf6cf766616d",
                   "type": "desktop",
                   "top": 20,
-                  "left": 2.3255813953488373,
+                  "left": 1,
                   "width": 41,
                   "height": 90,
                   "componentId": "b63e699a-093f-425f-86b8-f1a27d31ab31",
-                  "updatedAt": "2024-06-03T07:21:48.207Z"
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-06-24T13:34:08.459Z"
+                },
+                {
+                  "id": "c383b9e5-c1e9-4c83-b9b7-8303a80f62bb",
+                  "type": "mobile",
+                  "top": 160,
+                  "left": 25,
+                  "width": 5,
+                  "height": 200,
+                  "componentId": "b63e699a-093f-425f-86b8-f1a27d31ab31",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-06-24T13:34:08.459Z"
                 }
               ]
             },
@@ -138,21 +343,23 @@
                   "id": "0a369b9d-900e-4e77-9dc6-758b93e2d819",
                   "type": "desktop",
                   "top": 20,
-                  "left": 80.76779462409368,
+                  "left": 35,
                   "width": 8,
                   "height": 40,
                   "componentId": "21e12078-014a-4b12-a355-001f2dae5223",
-                  "updatedAt": "2024-06-03T07:22:10.912Z"
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-06-24T13:34:08.459Z"
                 },
                 {
                   "id": "2c547d5b-e9f9-4e4d-b362-d0d3ee992f7e",
                   "type": "mobile",
                   "top": 10,
-                  "left": 81.3953488372093,
+                  "left": 35,
                   "width": 13.953488372093023,
                   "height": 40,
                   "componentId": "21e12078-014a-4b12-a355-001f2dae5223",
-                  "updatedAt": "2024-06-02T12:27:12.716Z"
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-06-24T13:34:08.459Z"
                 }
               ]
             },
@@ -196,21 +403,23 @@
                   "id": "369a293c-f2ea-4f19-90ea-1aba00064503",
                   "type": "mobile",
                   "top": 300,
-                  "left": 83.72093023255815,
+                  "left": 36,
                   "width": 6,
                   "height": 40,
                   "componentId": "b51c27c1-a9a8-4fe3-bd1e-a375565aac66",
-                  "updatedAt": "2024-06-03T06:52:39.398Z"
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-06-24T13:34:08.459Z"
                 },
                 {
                   "id": "f6c721af-2b99-4621-b09e-42325c06406b",
                   "type": "desktop",
                   "top": 130,
-                  "left": 6.9767435088412455,
+                  "left": 3,
                   "width": 9,
                   "height": 40,
                   "componentId": "b51c27c1-a9a8-4fe3-bd1e-a375565aac66",
-                  "updatedAt": "2024-06-03T07:05:51.389Z"
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-06-24T13:34:08.459Z"
                 }
               ]
             },
@@ -259,21 +468,23 @@
                   "id": "0d1e395d-530b-4c6f-b809-537b167f191f",
                   "type": "mobile",
                   "top": 300,
-                  "left": 6.976744186046512,
+                  "left": 3,
                   "width": 8,
                   "height": 30,
                   "componentId": "a5f2d741-9d42-4e9e-8f28-bcb772ee32f9",
-                  "updatedAt": "2024-06-03T06:53:56.680Z"
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-06-24T13:34:08.459Z"
                 },
                 {
                   "id": "22c6937e-01bb-4657-a814-44ce783487be",
                   "type": "desktop",
                   "top": 180,
-                  "left": 6.976742538180363,
+                  "left": 3,
                   "width": 8,
                   "height": 30,
                   "componentId": "a5f2d741-9d42-4e9e-8f28-bcb772ee32f9",
-                  "updatedAt": "2024-06-03T07:05:55.221Z"
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-06-24T13:34:08.459Z"
                 }
               ]
             },
@@ -314,21 +525,23 @@
                   "id": "50725500-983b-431e-aab8-9085e944281a",
                   "type": "mobile",
                   "top": 300,
-                  "left": 25.581395348837212,
+                  "left": 11,
                   "width": 6,
                   "height": 40,
                   "componentId": "229b47f2-1939-4413-bbf7-557b27b174ea",
-                  "updatedAt": "2024-06-03T06:54:15.881Z"
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-06-24T13:34:08.459Z"
                 },
                 {
                   "id": "e2fbe3f4-abdc-4060-9624-0a0dab63ada6",
                   "type": "desktop",
                   "top": 180,
-                  "left": 25.581394807072996,
+                  "left": 11,
                   "width": 1,
                   "height": 30,
                   "componentId": "229b47f2-1939-4413-bbf7-557b27b174ea",
-                  "updatedAt": "2024-06-03T07:05:58.646Z"
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-06-24T13:34:08.459Z"
                 }
               ]
             },
@@ -359,24 +572,26 @@
               "updatedAt": "2024-06-04T08:24:54.362Z",
               "layouts": [
                 {
-                  "id": "a89e39a3-85e5-4e2c-87e2-5d363ff0a5cc",
-                  "type": "mobile",
-                  "top": 300,
-                  "left": 27.906976744186046,
-                  "width": 5,
-                  "height": 30,
-                  "componentId": "dc7e0b18-ac3a-4ae5-bd15-9ff70f0f2eab",
-                  "updatedAt": "2024-06-03T06:55:00.440Z"
-                },
-                {
                   "id": "211adc4a-8887-40e5-9df5-fdf7ad0b9875",
                   "type": "desktop",
                   "top": 180,
-                  "left": 27.906975976686745,
+                  "left": 12,
                   "width": 5,
                   "height": 30,
                   "componentId": "dc7e0b18-ac3a-4ae5-bd15-9ff70f0f2eab",
-                  "updatedAt": "2024-06-03T07:06:00.358Z"
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-06-24T13:34:08.459Z"
+                },
+                {
+                  "id": "a89e39a3-85e5-4e2c-87e2-5d363ff0a5cc",
+                  "type": "mobile",
+                  "top": 300,
+                  "left": 12,
+                  "width": 5,
+                  "height": 30,
+                  "componentId": "dc7e0b18-ac3a-4ae5-bd15-9ff70f0f2eab",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-06-24T13:34:08.459Z"
                 }
               ]
             },
@@ -417,24 +632,26 @@
               "updatedAt": "2024-06-04T08:25:14.120Z",
               "layouts": [
                 {
-                  "id": "3f57fd42-00e7-4b8d-8a2c-328ee47d9e2a",
-                  "type": "mobile",
-                  "top": 300,
-                  "left": 41.86046511627907,
-                  "width": 3,
-                  "height": 30,
-                  "componentId": "5ba5a825-1ee9-4713-ac38-07e372b86e3c",
-                  "updatedAt": "2024-06-03T06:55:24.890Z"
-                },
-                {
                   "id": "aa0fc188-ef37-40f1-a839-d12aee0b683f",
                   "type": "desktop",
                   "top": 180,
-                  "left": 41.860468818334525,
+                  "left": 18,
                   "width": 5,
                   "height": 30,
                   "componentId": "5ba5a825-1ee9-4713-ac38-07e372b86e3c",
-                  "updatedAt": "2024-06-03T07:06:02.099Z"
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-06-24T13:34:08.459Z"
+                },
+                {
+                  "id": "3f57fd42-00e7-4b8d-8a2c-328ee47d9e2a",
+                  "type": "mobile",
+                  "top": 300,
+                  "left": 18,
+                  "width": 3,
+                  "height": 30,
+                  "componentId": "5ba5a825-1ee9-4713-ac38-07e372b86e3c",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-06-24T13:34:08.459Z"
                 }
               ]
             },
@@ -474,21 +691,23 @@
                   "id": "20b7868b-9afd-4abb-a488-56aee80fca6e",
                   "type": "mobile",
                   "top": 360,
-                  "left": 32.55813953488372,
+                  "left": 14,
                   "width": 5,
                   "height": 200,
                   "componentId": "dbf9dec2-ce2d-459d-b49d-d5475635fdd4",
-                  "updatedAt": "2024-06-03T07:02:42.592Z"
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-06-24T13:34:08.459Z"
                 },
                 {
                   "id": "a5b1aa25-97d3-4e11-ada2-cdf153ba552d",
                   "type": "desktop",
                   "top": 120,
-                  "left": 4.651162824557938,
+                  "left": 2,
                   "width": 22,
                   "height": 110,
                   "componentId": "dbf9dec2-ce2d-459d-b49d-d5475635fdd4",
-                  "updatedAt": "2024-06-03T07:06:07.653Z"
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-06-24T13:34:08.459Z"
                 }
               ]
             },
@@ -519,24 +738,26 @@
               "updatedAt": "2024-06-03T07:07:34.556Z",
               "layouts": [
                 {
-                  "id": "97391c83-946f-412a-8d94-0eed919dd6aa",
-                  "type": "desktop",
-                  "top": 120,
-                  "left": 58.13953618615097,
-                  "width": 16,
-                  "height": 110,
-                  "componentId": "f07637ce-3c2e-4fc7-9d2b-f99843ece282",
-                  "updatedAt": "2024-06-03T07:07:56.169Z"
-                },
-                {
                   "id": "d762dc6e-e927-4785-98a7-b43df33c8630",
                   "type": "mobile",
                   "top": 250,
-                  "left": 81.39534883720931,
+                  "left": 35,
                   "width": 5,
                   "height": 200,
                   "componentId": "f07637ce-3c2e-4fc7-9d2b-f99843ece282",
-                  "updatedAt": "2024-06-03T07:07:14.377Z"
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-06-24T13:34:08.459Z"
+                },
+                {
+                  "id": "97391c83-946f-412a-8d94-0eed919dd6aa",
+                  "type": "desktop",
+                  "top": 120,
+                  "left": 25,
+                  "width": 16,
+                  "height": 110,
+                  "componentId": "f07637ce-3c2e-4fc7-9d2b-f99843ece282",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-06-24T13:34:08.459Z"
                 }
               ]
             },
@@ -580,21 +801,23 @@
                   "id": "8bf40f4a-5338-434b-b3dd-f6c6b25b34e6",
                   "type": "desktop",
                   "top": 20,
-                  "left": 72.09299991966522,
+                  "left": 31,
                   "width": 8,
                   "height": 40,
                   "componentId": "9f74cfef-f2c1-4146-8524-6f45050efdea",
-                  "updatedAt": "2024-06-04T08:25:35.954Z"
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-06-24T13:34:08.459Z"
                 },
                 {
                   "id": "5f87aca0-4abd-4082-b29f-779949062753",
                   "type": "mobile",
                   "top": 20,
-                  "left": 11.627906976744187,
+                  "left": 5,
                   "width": 13.953488372093023,
                   "height": 40,
                   "componentId": "9f74cfef-f2c1-4146-8524-6f45050efdea",
-                  "updatedAt": "2024-06-03T07:07:52.992Z"
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-06-24T13:34:08.459Z"
                 }
               ]
             },
@@ -635,21 +858,23 @@
                   "id": "a14f1685-a598-4841-9d8d-f1c22fe261a2",
                   "type": "mobile",
                   "top": 20,
-                  "left": 11.627906976744187,
+                  "left": 5,
                   "width": 13.953488372093023,
                   "height": 40,
                   "componentId": "b6ff67b2-f562-4a49-9453-d777fefdfb7e",
-                  "updatedAt": "2024-06-03T07:08:47.238Z"
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-06-24T13:34:08.459Z"
                 },
                 {
                   "id": "13a0056c-c712-418f-a3df-3573b73d7763",
                   "type": "desktop",
                   "top": 20,
-                  "left": 6.9767240266945265,
+                  "left": 3,
                   "width": 8,
                   "height": 40,
                   "componentId": "b6ff67b2-f562-4a49-9453-d777fefdfb7e",
-                  "updatedAt": "2024-06-03T07:08:47.238Z"
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-06-24T13:34:08.459Z"
                 }
               ]
             },
@@ -693,21 +918,23 @@
                   "id": "50981f3f-07b3-456d-aa91-a14cf6592bed",
                   "type": "desktop",
                   "top": 20,
-                  "left": 39.53486720838237,
+                  "left": 17,
                   "width": 8,
                   "height": 40,
                   "componentId": "9c5046b4-69e0-45ac-9e5a-67543cb771d4",
-                  "updatedAt": "2024-06-03T07:08:54.642Z"
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-06-24T13:34:08.459Z"
                 },
                 {
                   "id": "64f536dd-7dde-4625-9c8f-4b0a7b900686",
                   "type": "mobile",
                   "top": 20,
-                  "left": 11.627906976744187,
+                  "left": 5,
                   "width": 13.953488372093023,
                   "height": 40,
                   "componentId": "9c5046b4-69e0-45ac-9e5a-67543cb771d4",
-                  "updatedAt": "2024-06-03T07:08:54.642Z"
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-06-24T13:34:08.459Z"
                 }
               ]
             },
@@ -757,24 +984,26 @@
               "updatedAt": "2024-06-09T13:09:03.766Z",
               "layouts": [
                 {
-                  "id": "ad7778e0-f7b5-420d-b480-d7db76fb2a20",
-                  "type": "mobile",
-                  "top": 50,
-                  "left": 6.976744186046511,
-                  "width": 13.953488372093023,
-                  "height": 40,
-                  "componentId": "973121fc-6313-46d6-9719-3f3b41e08640",
-                  "updatedAt": "2024-06-03T07:09:48.662Z"
-                },
-                {
                   "id": "45f223b0-cecc-4214-9e76-9b88cf60353e",
                   "type": "desktop",
                   "top": 40,
-                  "left": 76.74418417214491,
+                  "left": 33,
                   "width": 5,
                   "height": 50,
                   "componentId": "973121fc-6313-46d6-9719-3f3b41e08640",
-                  "updatedAt": "2024-06-05T11:42:56.342Z"
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-06-24T13:34:08.459Z"
+                },
+                {
+                  "id": "ad7778e0-f7b5-420d-b480-d7db76fb2a20",
+                  "type": "mobile",
+                  "top": 50,
+                  "left": 3,
+                  "width": 13.953488372093023,
+                  "height": 40,
+                  "componentId": "973121fc-6313-46d6-9719-3f3b41e08640",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-06-24T13:34:08.459Z"
                 }
               ]
             },
@@ -824,21 +1053,23 @@
                   "id": "5d664437-9d48-479a-9e16-4370764994cd",
                   "type": "mobile",
                   "top": 50,
-                  "left": 6.976744186046511,
+                  "left": 3,
                   "width": 13.953488372093023,
                   "height": 40,
                   "componentId": "cbddfd80-c8cf-41e2-b0ad-96e5d8477f49",
-                  "updatedAt": "2024-06-03T07:10:30.930Z"
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-06-24T13:34:08.459Z"
                 },
                 {
                   "id": "d3556da1-37d5-4b03-8f8d-65040def5aa9",
                   "type": "desktop",
                   "top": 40,
-                  "left": 9.302305682529372,
+                  "left": 4,
                   "width": 5,
                   "height": 50,
                   "componentId": "cbddfd80-c8cf-41e2-b0ad-96e5d8477f49",
-                  "updatedAt": "2024-06-09T06:32:41.306Z"
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-06-24T13:34:08.459Z"
                 }
               ]
             },
@@ -888,21 +1119,23 @@
                   "id": "212e46ac-a365-487d-8d7f-d8d12827055c",
                   "type": "mobile",
                   "top": 50,
-                  "left": 6.976744186046511,
+                  "left": 3,
                   "width": 13.953488372093023,
                   "height": 40,
                   "componentId": "118548e1-b978-405d-bff9-aec930256679",
-                  "updatedAt": "2024-06-03T07:10:37.647Z"
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-06-24T13:34:08.459Z"
                 },
                 {
                   "id": "63c761e2-9054-4dfb-b2f5-6a8dc3a1d32e",
                   "type": "desktop",
                   "top": 40,
-                  "left": 44.186040990457066,
+                  "left": 19,
                   "width": 5,
                   "height": 50,
                   "componentId": "118548e1-b978-405d-bff9-aec930256679",
-                  "updatedAt": "2024-06-05T11:43:12.953Z"
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-06-24T13:34:08.459Z"
                 }
               ]
             },
@@ -1024,24 +1257,26 @@
               "updatedAt": "2024-06-09T13:02:09.928Z",
               "layouts": [
                 {
-                  "id": "ee3bb322-9d5c-452c-8d0f-a85a12dee5b5",
-                  "type": "mobile",
-                  "top": 360,
-                  "left": 4.651162790697675,
-                  "width": 35,
-                  "height": 456,
-                  "componentId": "38d02cbd-0fb8-4c99-9283-d0eedf836c5d",
-                  "updatedAt": "2024-06-03T07:12:01.262Z"
-                },
-                {
                   "id": "37925406-00e0-4ecb-938d-66edd216010e",
                   "type": "desktop",
                   "top": 246,
-                  "left": 4.651162824557938,
+                  "left": 2,
                   "width": 39,
                   "height": 610,
                   "componentId": "38d02cbd-0fb8-4c99-9283-d0eedf836c5d",
-                  "updatedAt": "2024-06-04T06:50:31.403Z"
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-06-24T13:34:08.459Z"
+                },
+                {
+                  "id": "ee3bb322-9d5c-452c-8d0f-a85a12dee5b5",
+                  "type": "mobile",
+                  "top": 360,
+                  "left": 2,
+                  "width": 35,
+                  "height": 456,
+                  "componentId": "38d02cbd-0fb8-4c99-9283-d0eedf836c5d",
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-06-24T13:34:08.459Z"
                 }
               ]
             },
@@ -1079,21 +1314,23 @@
                   "id": "04b213e8-1530-4365-9242-55aa4749420f",
                   "type": "mobile",
                   "top": 0,
-                  "left": 72.09302325581396,
+                  "left": 31,
                   "width": 6.976744186046512,
                   "height": 100,
                   "componentId": "10a0a27f-13ec-4ee8-9f49-60de04832b93",
-                  "updatedAt": "2024-06-09T09:08:18.147Z"
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-06-24T13:34:08.459Z"
                 },
                 {
                   "id": "fe4ec807-bc29-4703-aef6-14c61d1945bb",
                   "type": "desktop",
                   "top": 20,
-                  "left": 2.325581358962442,
+                  "left": 1,
                   "width": 2,
                   "height": 40,
                   "componentId": "10a0a27f-13ec-4ee8-9f49-60de04832b93",
-                  "updatedAt": "2024-06-09T09:08:18.147Z"
+                  "dimensionUnit": "count",
+                  "updatedAt": "2024-06-24T13:34:08.459Z"
                 }
               ]
             }
@@ -1108,6 +1345,7 @@
               "hidden": null,
               "createdAt": "2024-06-01T12:36:12.108Z",
               "updatedAt": "2024-06-01T12:36:12.108Z",
+              "autoComputeLayout": false,
               "appVersionId": "1331a586-5b4f-42c3-893f-73ca7d7b1cef"
             }
           ],
@@ -1299,7 +1537,7 @@
               "dataSourceId": "3aaae6b7-2506-462d-a805-52c29c9103f1",
               "appVersionId": "1331a586-5b4f-42c3-893f-73ca7d7b1cef",
               "createdAt": "2024-06-01T12:38:03.559Z",
-              "updatedAt": "2024-06-10T06:25:18.131Z"
+              "updatedAt": "2024-10-21T07:22:55.732Z"
             },
             {
               "id": "0fde5773-8723-4830-9352-245af508902f",
@@ -1396,7 +1634,7 @@
               "dataSourceId": "3aaae6b7-2506-462d-a805-52c29c9103f1",
               "appVersionId": "1331a586-5b4f-42c3-893f-73ca7d7b1cef",
               "createdAt": "2024-06-04T11:52:43.997Z",
-              "updatedAt": "2024-06-10T06:25:17.189Z"
+              "updatedAt": "2024-10-21T07:22:54.593Z"
             },
             {
               "id": "80aac592-8d62-483c-8a4a-0d50bdb73c0e",
@@ -1770,5 +2008,5 @@
       }
     }
   ],
-  "tooljet_version": "2.38.0-ee2.17.0-cloud2.3.15"
+  "tooljet_version": "2.50.5.5.28"
 }
