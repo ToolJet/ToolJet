@@ -3,9 +3,7 @@ id: custom-component
 title: Custom Component
 ---
 
-# Custom Component
-
-**Custom Component** can be used to do create your own React component when the needed functionality isn't available in other components.
+**Custom Component** can be used to create your own React component when the needed functionality isn't available in other components.
 
 <div style={{textAlign: 'center'}}>
 
@@ -19,7 +17,7 @@ title: Custom Component
 
 ### Data
 
-The data needs to be an objects which needs to be passed as `data` props to the **Custom Component**.
+The data needs to be an object that needs to be passed as **data** props to the **Custom Component**.
 
 **Example:**
 
@@ -33,13 +31,12 @@ The data needs to be an objects which needs to be passed as `data` props to the 
 
 ### Code
 
-This field is used to add a React code for your custom component. The packages for the custom component can be imported from [Skypack](https://www.skypack.dev/) or [esm](https://esm.sh/). For example, to import `React` package into the custom component it can be imported as `import React from 'https://cdn.skypack.dev/react'`.
+This field is used to add a React code for your custom component. The packages for the custom component can be imported from [Skypack](https://www.skypack.dev/) or [esm](https://esm.sh/). For example, to import **React** package into the custom component it can be imported as `import React from 'https://cdn.skypack.dev/react'`.
 
-ToolJet provides 3 props to interact with the app: `data`, `updateData` and `runQuery`.
-
-- `data` is a shared object between custom component and ToolJet app.
-- `updateData` is a function which accepts a single object used to update the data passed to the custom component.
-- `runQuery` is a function which accepts a query name as a string used to run the query from the custom component.
+ToolJet provides 3 props to interact with the app:
+- **data** is a shared object between a custom component and the ToolJet app.
+- **updateData** is a function that accepts a single object used to update the data passed to the custom component.
+- **runQuery** is a function that accepts a query name as a string used to run the query from the custom component.
 
 **Example:**
 
