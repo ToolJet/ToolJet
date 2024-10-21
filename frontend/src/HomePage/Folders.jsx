@@ -316,11 +316,7 @@ export const Folders = function Folders({
                 className="flex-grow-1 tj-folder-list tj-text-xsm"
                 data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-name`}
               >
-                {folder.id === activeFolder.id ? (
-                  <span>{`${folder.name}${folder.count > 0 ? ` (${activeFolderAppCount})` : ''}`}</span>
-                ) : (
-                  <span>{`${folder.name}${folder.count > 0 ? ` (${folder.count})` : ''}`}</span>
-                )}
+                {`${folder.name}${folder.count > 0 ? ` (${folder.count})` : ''}`}
               </div>
             </ToolTip>
             {(canDeleteFolder || canUpdateFolder) && (
