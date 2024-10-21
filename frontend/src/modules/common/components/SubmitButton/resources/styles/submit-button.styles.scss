@@ -1,17 +1,23 @@
 .submit-button {
-    height: 32px;
+    height: 40px;
     width: fit-content;
     min-width: 87px;
-    border-radius: var(--4, 8px);
-    margin: 10px 8px;
-    padding: 6px 8px;
+    border-radius: var(--Border-radius, 10px);
+    margin: 10px;
+    padding: 10px 20px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--Border-gap, 8px);
 
     .button-text {
         color: var(--Text-on-color, #FFF);
-        font-size: 12px;
+        font-size: 14px;
         font-style: normal;
+        font-family: 'IBM Plex Sans';
         font-weight: 500;
-        line-height: 18px;
+        line-height: 20px;
     }
 
     &:disabled {

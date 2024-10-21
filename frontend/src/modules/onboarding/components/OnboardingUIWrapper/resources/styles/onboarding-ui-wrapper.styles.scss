@@ -1,0 +1,33 @@
+/* Default styles */
+.onboarding-setup-wrapper {
+    margin-top: 95px !important;
+    /* Default margin-top */
+}
+
+.auth-pages-wrapper {
+    display: flex !important;
+    justify-content: center !important;
+    min-height: 100vh !important;
+    flex-direction: column !important;
+}
+
+/* Media query for 1366x768 resolution */
+@media screen and (min-width: 1366px) and (min-height: 768px) {
+    .onboarding-setup-wrapper {
+        margin-top: 95px !important;
+    }
+}
+
+/* Media query for 1440x900 resolution */
+@media screen and (min-width: 1440px) and (min-height: 900px) {
+    .onboarding-setup-wrapper {
+        margin-top: 180px !important;
+    }
+}
+
+/* Media query for 1920x1080 resolution and above */
+@media screen and (min-width: 1920px) and (min-height: 1080px) {
+    .onboarding-setup-wrapper {
+        margin-top: 240px !important;
+    }
+}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { FormHeader, FormDescription, SubmitButton } from '@/modules/common/components';
-import { OnboardingFormWrapper, OnboardingFormInsideWrapper } from '@/modules/onboarding/components';
+import { OnboardingUIWrapper, OnboardingFormInsideWrapper } from '@/modules/onboarding/components';
 import useOnboardingStore from '@/modules/onboarding/stores/onboardingStore';
 import useInvitationsStore from '@/modules/onboarding/stores/invitationsStore';
 import { shallow } from 'zustand/shallow';
@@ -48,7 +48,7 @@ const OnboardingForm = ({
   });
 
   return (
-    <OnboardingFormWrapper>
+    <OnboardingUIWrapper>
       <OnboardingFormInsideWrapper>
         <div className={formClasses}>
           {shouldShowSteps && (
@@ -75,7 +75,7 @@ const OnboardingForm = ({
           </form>
         </div>
       </OnboardingFormInsideWrapper>
-    </OnboardingFormWrapper>
+    </OnboardingUIWrapper>
   );
 };
 
