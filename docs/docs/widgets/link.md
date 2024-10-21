@@ -27,7 +27,7 @@ The **Link** component allows you to add a hyperlink and navigate to the externa
 | On hover | **On Hover** event is triggered when the link is hovered. Just like any other event on ToolJet, you can set multiple handlers for on click event. |
 
 :::info
-Check [Action Reference](/docs/category/actions-reference) docs to get detailed information about all the **Actions**.
+Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
 :::
 
 </div>
