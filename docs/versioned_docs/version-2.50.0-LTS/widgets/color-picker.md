@@ -3,8 +3,6 @@ id: color-picker
 title: Color Picker
 ---
 
-# Color Picker
-
 **Color Picker** component is used to select the desired color from the color picker
 
 <div style={{paddingTop:'24px'}}>
@@ -13,9 +11,9 @@ title: Color Picker
 
 ### Default color
 
-The data needs to be an valid hex color
+The data needs to be a valid hex-color
 
-- One can change default color either from color picker or using **fx** (need to provide only respective hex value)
+- One can change the default color either from the color picker or using **fx** (need to provide only respective hex value)
 
 **Example:**
 
@@ -29,7 +27,6 @@ Invalid Color : #0000, "black" , rgb(0,0,0) ,
 <div style={{paddingTop:'24px'}}>
 
 ## Events
-
 
 | <div style={{ width:"100px"}}> Event </div> | <div style={{ width:"100px"}}> Description </div> |
 |:----------- |:----------- |
@@ -104,7 +101,7 @@ Any property having **fx** button next to its field can be **programmatically co
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/color-picker/colorpickerinspector-v2.png" alt="ToolJet - Widget Reference - Color Picker" />
+<img className="screenshot-full" src="/img/widgets/color-picker/colorpickerinspector-v2.png" alt="ToolJet - component Reference - Color Picker" />
 
 </div>
 
