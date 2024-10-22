@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { validateEmail, validatePassword } from '@/_helpers/utils';
-import { OnboardingFormWrapper, OnboardingFormInsideWrapper } from '@/modules/onboarding/components';
+import { OnboardingUIWrapper, OnboardingFormInsideWrapper } from '@/modules/onboarding/components';
 import { FormTextInput, PasswordInput, SubmitButton, FormHeader, SSOAuthModule } from '@/modules/common/components';
 import { redirectToDashboard } from '@/_helpers/routes';
 import './resources/styles/login-form.styles.scss';
@@ -107,7 +107,7 @@ const LoginForm = ({
 
   return (
     <div className="login-form">
-      <OnboardingFormWrapper>
+      <OnboardingUIWrapper>
         <OnboardingFormInsideWrapper>
           {noLoginMethodsEnabled ? (
             <div className="text-center-onboard">
@@ -184,7 +184,7 @@ const LoginForm = ({
             </>
           )}
         </OnboardingFormInsideWrapper>
-      </OnboardingFormWrapper>
+      </OnboardingUIWrapper>
     </div>
   );
 };

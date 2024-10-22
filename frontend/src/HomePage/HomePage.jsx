@@ -107,6 +107,7 @@ class HomePageComponent extends React.Component {
       this.setState({
         apps: data.apps,
         meta: { ...this.state.meta, ...data.meta },
+        searchedAppCount: appSearchKey ? data.apps.length : this.state.currentFolder.count,
         isLoading: false,
       })
     );
@@ -900,7 +901,7 @@ class HomePageComponent extends React.Component {
                     canCreateApp={this.canCreateApp}
                   />
                 )}
-                {!isLoading && meta.total_count === 0 && appSearchKey && (
+                {!isLoading && apps?.length === 0 && appSearchKey && (
                   <div>
                     <span className={`d-block text-center text-body pt-5 ${this.props.darkMode && 'text-white-50'}`}>
                       {this.props.t('homePage.noApplicationFound', 'No Applications found')}
@@ -921,6 +922,7 @@ class HomePageComponent extends React.Component {
                     darkMode={this.props.darkMode}
                     appActionModal={this.appActionModal}
                     removeAppFromFolder={this.removeAppFromFolder}
+                    appSearchKey={this.state.appSearchKey}
                   />
                 )}
               </div>

@@ -234,6 +234,7 @@ export function getUserInGroupQuery(
       'users.firstName',
       'users.lastName',
       'users.email',
+      'users.avatarId',
       'userRole.id',
       'role.name',
       'organizationUsers.status',

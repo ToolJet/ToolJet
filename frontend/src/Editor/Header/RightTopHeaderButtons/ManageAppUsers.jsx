@@ -401,40 +401,43 @@ class ManageAppUsersComponent extends React.Component {
                     </div>
                   </div>
                 )}
-
-                {((this?.props?.isVersionReleased && this?.props?.isPublic) ||
-                  window?.public_config?.ENABLE_PRIVATE_APP_EMBED === 'true') && (
-                  <div className="tj-app-input">
-                    <label className="field-name" data-cy="iframe-link-label">
-                      Embedded app link
-                    </label>
-                    <span className={`tj-text-input justify-content-between ${this.props.darkMode ? 'dark' : ''}`}>
-                      <span data-cy="iframe-link">{embeddableLink}</span>
-                      <span className="copy-container">
-                        <CopyToClipboard text={embeddableLink} onCopy={() => toast.success('Link copied to clipboard')}>
-                          <svg
-                            className="cursor-pointer"
-                            width="17"
-                            height="18"
-                            viewBox="0 0 17 18"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                            data-cy="iframe-link-copy-button"
+                {/* shows embedded app link only for released apps */}
+                {this?.props?.isVersionReleased &&
+                  (this?.props?.isPublic || window?.public_config?.ENABLE_PRIVATE_APP_EMBED === 'true') && (
+                    <div className="tj-app-input">
+                      <label className="field-name" data-cy="iframe-link-label">
+                        Embedded app link
+                      </label>
+                      <span className={`tj-text-input justify-content-between ${this.props.darkMode ? 'dark' : ''}`}>
+                        <span data-cy="iframe-link">{embeddableLink}</span>
+                        <span className="copy-container">
+                          <CopyToClipboard
+                            text={embeddableLink}
+                            onCopy={() => toast.success('Link copied to clipboard')}
                           >
-                            <path
-                              d="M9.11154 5.18031H5.88668V4.83302C5.88668 3.29859 7.13059 2.05469 8.66502 2.05469H12.8325C14.3669 2.05469 15.6109 3.29859 15.6109 4.83302V9.00052C15.6109 10.535 14.3669 11.7789 12.8325 11.7789H12.4852V8.554C12.4852 6.69076 10.9748 5.18031 9.11154 5.18031Z"
-                              fill="#889096"
-                            />
-                            <path
-                              d="M8.66502 15.9464H4.49752C2.96309 15.9464 1.71918 14.7025 1.71918 13.168V9.00052C1.71918 7.46609 2.96309 6.22219 4.49752 6.22219H8.66502C10.1994 6.22219 11.4434 7.46609 11.4434 9.00052V13.168C11.4434 14.7025 10.1994 15.9464 8.66502 15.9464Z"
-                              fill="#889096"
-                            />
-                          </svg>
-                        </CopyToClipboard>
+                            <svg
+                              className="cursor-pointer"
+                              width="17"
+                              height="18"
+                              viewBox="0 0 17 18"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                              data-cy="iframe-link-copy-button"
+                            >
+                              <path
+                                d="M9.11154 5.18031H5.88668V4.83302C5.88668 3.29859 7.13059 2.05469 8.66502 2.05469H12.8325C14.3669 2.05469 15.6109 3.29859 15.6109 4.83302V9.00052C15.6109 10.535 14.3669 11.7789 12.8325 11.7789H12.4852V8.554C12.4852 6.69076 10.9748 5.18031 9.11154 5.18031Z"
+                                fill="#889096"
+                              />
+                              <path
+                                d="M8.66502 15.9464H4.49752C2.96309 15.9464 1.71918 14.7025 1.71918 13.168V9.00052C1.71918 7.46609 2.96309 6.22219 4.49752 6.22219H8.66502C10.1994 6.22219 11.4434 7.46609 11.4434 9.00052V13.168C11.4434 14.7025 10.1994 15.9464 8.66502 15.9464Z"
+                                fill="#889096"
+                              />
+                            </svg>
+                          </CopyToClipboard>
+                        </span>
                       </span>
-                    </span>
-                  </div>
-                )}
+                    </div>
+                  )}
               </div>
             }
           </Modal.Body>

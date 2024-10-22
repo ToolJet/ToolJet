@@ -123,6 +123,7 @@ import AddRectangle from './AddRectangle.jsx';
 import Lock from './Lock.jsx';
 import Mail from './Mail.jsx';
 import Logs from './Logs.jsx';
+import NewTab from './NewTab.jsx';
 import Marketplace from './Marketplace.jsx';
 import Minimize from './Minimize.jsx';
 import Maximize from './Maximize.jsx';
@@ -354,6 +355,8 @@ const Icon = (props) => {
       return <NotificationSilent {...props} />;
     case 'notificationunread':
       return <NotificationUnread {...props} />;
+    case 'newtab':
+      return <NewTab {...props} />;
     case 'options':
       return <Options {...props} />;
     case 'open':
