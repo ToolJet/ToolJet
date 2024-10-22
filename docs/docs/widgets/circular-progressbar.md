@@ -52,10 +52,10 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 ## Devices
 
-| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> |
-| ----------- | ----------- |
-| Show on desktop | Toggle on or off to display the component in desktop view. You can programmatically determine the value by clicking on fx to set the value `{{true}}` or `{{false}}`. |
-| Show on mobile | Toggle on or off to display the component in mobile view. You can programmatically determine the value by clicking on fx to set the value `{{true}}` or `{{false}}`. |
+| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> |<div style={{ width:"100px"}}> Expected Value </div> |
+| ----------- | ----------- |----------- |
+| Show on desktop | Makes the component visible in desktop view. |You can set it with the toggle button or dynamically   configure the value by clicking on **fx** and entering a logical expression.|
+| Show on mobile | Makes the component visible in mobile view. |You can set it with the toggle button or dynamically   configure the value by clicking on fx and entering a logical expression.|
 
 </div>
 <hr/>
