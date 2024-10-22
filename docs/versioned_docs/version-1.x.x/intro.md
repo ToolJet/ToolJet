@@ -23,7 +23,7 @@ ToolJet is an **open-source low-code framework** to build and deploy custom inte
 
 - **Connect to data sources:** Connect to your existing data sources such as PostgreSQL, MySQL, Firestore, Stripe, Google Sheets, API endpoints, etc.
 - **Build queries:** ToolJet comes with query builders for all supported data sources. ToolJet also supports the use of custom JavaScript code to transform the query results.
-- **Customise widgets:** Widgets are the UI components that can be edited using ToolJet's visual app builder ( Eg: tables, charts, forms, etc ). Widgets have events such as `on click`, `on row selected`, `on page changed`, etc. Every UI widget has a dark version. 
+- **Customise widgets:** Widgets are the UI components that can be edited using ToolJet's visual app builder ( Eg: tables, charts, forms, etc ). Widgets have events such as `on click`, `on row selected`, `On page changed`, etc. Every UI widget has a dark version. 
 
 ToolJet binds together the data sources, queries and widgets to convert business logic into custom applications.
 ## Getting Started
