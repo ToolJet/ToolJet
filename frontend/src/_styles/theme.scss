@@ -10670,12 +10670,43 @@ tbody {
     border-radius: 6px;
   }
 
+  .current-org-avatar {
+    margin-right: 11px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 7px 8px;
+    gap: 10px;
+    width: 34px;
+    height: 34px;
+    border-radius: 6px;
+  }
+
+  .current-org-indicator {
+    padding: 0px 8px 0px 8px;
+    margin-left: auto;
+    margin-right: 5px;
+  }
+
+  .current-org-indicator {
+    display: none;
+  }
+  
+  &:hover .current-org-indicator {
+    display: block;
+  }
+
   .org-name {
     color: var(--slate12) !important;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
+}
+
+.org-dropdown-shadow{
+  box-shadow: var(--elevation-400-box-shadow)
 }
 
 .css-1q0xftk-menu {
@@ -10695,6 +10726,14 @@ tbody {
 
 .org-custom-select-header-wrap {
   border-bottom: 1px solid var(--slate5);
+
+  .select-header-font{
+font-size: 14px;
+font-weight: 500;
+line-height: 20px;
+color: var(--text-default);
+
+  }
 }
 
 .btn-close:focus {
