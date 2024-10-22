@@ -38,7 +38,7 @@ Data Source page is available only on **ToolJet version 2.3.0 and above**.
 
 3. Once the data source is added, you'll be required to input the configuration details for establishing a connection.
 
-  ***Note: For paid plans, configuration entry and saving are necessary to enable availability across [multiple environments](/docs/release-management/multi-environment/).***
+  ***Note: For paid plans, configuration entry and saving are necessary to enable availability across [multiple environments](../release-management/multi-environment/).***
 
   <div style={{textAlign: 'center'}}>
   
@@ -65,10 +65,10 @@ Data Source page is available only on **ToolJet version 2.3.0 and above**.
 ## Default data sources
 
 By default, 4 data sources will be available on every app on ToolJet:
-- **[ToolJet Database](/docs/tooljet-db/tooljet-database/)**
-- **[RestAPI](/docs/data-sources/restapi/)**
-- **[Run JavaScript Query](/docs/data-sources/run-js/)**
-- **[Run Python Query](/docs/data-sources/run-py/)**
+- **[ToolJet Database](../tooljet-db/tooljet-database/)**
+- **[RestAPI](./restapi/)**
+- **[Run JavaScript Query](./run-js/)**
+- **[Run Python Query](./run-py/)**
 
 <div style={{textAlign: 'center'}}>
 
@@ -78,7 +78,7 @@ By default, 4 data sources will be available on every app on ToolJet:
 
 ## User Permissions
 
-Changing the **Permissions** for Data Sources is a privilege reserved for **Admins** and **[Super Admins](/docs/Enterprise/superadmin)** within the workspace.
+Changing the **Permissions** for Data Sources is a privilege reserved for **Admins** and **[Super Admins](../Enterprise/superadmin)** within the workspace.
 
 To configure these permissions, navigate to **Workspace Settings** -> **Groups Settings**. Admins and Super Admins have the authority to assign the following permissions to user groups:
 

@@ -9,7 +9,7 @@ ToolJet can connect to Oracle databases to read and write data.
 
 ## Connection
 
-To establish a connection with the OracleDB datasource, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+To establish a connection with the OracleDB datasource, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data sources](./overview)** page through the ToolJet dashboard.
 
 ToolJet requires the following to connect to a OracleDB datasource:
 
@@ -64,8 +64,8 @@ The instant client version affects which Oracle Database versions you can connec
 
 ## Supported Operations
 
-- **[SQL mode](/docs/data-sources/oracledb#sql-mode)**
-- **[GUI mode](/docs/data-sources/oracledb#gui-mode)**
+- **[SQL mode](#sql-mode)**
+- **[GUI mode](#gui-mode)**
 
 <img className="screenshot-full" src="/img/datasource-reference/oracledb/operations.png" alt="ToolJet - Data source - OracleDB" style={{marginBottom:'15px'}}/>
 
@@ -107,7 +107,7 @@ GUI mode can be used to query Oracle database without writing queries.
 <img className="screenshot-full" src="/img/datasource-reference/oracledb/gui.png" alt="ToolJet - Data source - OracleDB" style={{marginBottom:'15px'}}/>
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/tutorial/transformations)**
+Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](../tutorial/transformations)**
 :::
 
 </div>
