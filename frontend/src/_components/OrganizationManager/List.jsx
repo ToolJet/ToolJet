@@ -47,7 +47,7 @@ export const OrganizationList = function () {
         <div className={`align-items-center d-flex tj-org-dropdown  ${darkMode && 'dark-theme'}`}>
           {org.id === current_organization_id ? (
             <div className="current-org-avatar">
-              <SolidIcon name="tick" fill="#3E63DD" dataCy="add-new-workspace-link" width="16" />
+              <SolidIcon name="tick" fill="#3E63DD" dataCy="add-new-workspace-link" width="20" viewBox="0 0 17 15" />
             </div>
           ) : (
             <div
