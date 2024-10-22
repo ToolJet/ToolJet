@@ -97,8 +97,6 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
   const switchPage = useStore((state) => state.switchPage);
 
   const showHeader = !globalSettings?.hideHeader && isAppLoaded;
-  const isLicenseValid = useStore((state) => state.isLicenseValid);
-  const licenseValid = isLicenseValid();
   // ---remove
   const handleAppEnvironmentChanged = useCallback((environment) => {
     console.log('setAppVersionCurrentEnvironment', environment);
@@ -225,7 +223,7 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
                               )}
                               <AppCanvas moduleId={moduleId} isViewerSidebarPinned={isSidebarPinned} />
                             </div>
-                            {/* {!licenseValid && isAppLoaded && <TooljetBanner isDarkMode={darkMode} />} */}
+                            {isAppLoaded && <TooljetBanner isDarkMode={darkMode} />}
                             {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ right: 0 }}></div>}
                             {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ left: 0 }}></div>}
                           </div>

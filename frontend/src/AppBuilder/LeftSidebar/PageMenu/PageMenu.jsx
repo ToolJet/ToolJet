@@ -29,9 +29,11 @@ export const PageMenu = ({
   setPinned,
 }) => {
   // const pages = useStore((state) => state.pages);
+  const allpages = useStore((state) => _.get(state, 'modules.canvas.pages', []), shallow);
   const showAddNewPageInput = useStore((state) => state.showAddNewPageInput);
   const toggleShowAddNewPageInput = useStore((state) => state.toggleShowAddNewPageInput);
   const showSearch = useStore((state) => state.showSearch);
+  const toggleSearch = useStore((state) => state.toggleSearch);
   const handleSearch = useStore((state) => state.handleSearch);
   const togglePageSettingMenu = useStore((state) => state.togglePageSettingMenu);
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
@@ -42,6 +44,58 @@ export const PageMenu = ({
       closePageEditPopover();
     };
   }, []);
+  // const [allpages, setAllPages] = useState(pages);
+  // const [haveUserPinned, setHaveUserPinned] = useState(false);
+  // const currentState = useCurrentState();
+  // const [newPageBeingCreated, setNewPageBeingCreated] = useState(false);
+  // const [showSearch, setShowSearch] = useState(false);
+  // const { enableReleasedVersionPopupState, isVersionReleased, isEditorFreezed } = useAppVersionStore(
+  //   (state) => ({
+  //     enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
+  //     isVersionReleased: state.isVersionReleased,
+  //     isEditorFreezed: state.isEditorFreezed,
+  //   }),
+  //   shallow
+  // );
+
+  // useEffect(() => {
+  //   setAllPages(pages);
+  // }, [pages]);
+
+  // const sortedAllPages = useMemo(
+  //   () => [...allpages.filter((c) => !c.disabled), ...allpages.filter((c) => c.disabled)],
+  //   [allpages]
+  // );
+
+  // const filterPages = (value) => {
+  // if (!value || value.length === 0) return clearSearch();
+
+  // const fuse = new Fuse(pages, { keys: ['name'], threshold: 0.3 });
+  // const result = fuse.search(value);
+  //   setAllPages(result.map((item) => item.item));
+  // };
+
+  // const clearSearch = () => {
+  //   setAllPages(pages);
+  // };
+
+  // React.useEffect(() => {
+  //   if (!_.isEqual(pages, allpages)) {
+  //     setAllPages(pages);
+  //   }
+
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [JSON.stringify({ pages })]);
+
+  // const pinPagesPopover = (state) => {
+  //   if (!haveUserPinned) {
+  //     setPinned(state);
+  //   }
+  // };
+  const license = useStore((state) => state.license);
+  const isLicensed =
+    !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
+    _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
 
   const {
     definition: { styles },
@@ -56,19 +110,42 @@ export const PageMenu = ({
         className="card-body p-0 pb-5"
       >
         <HeaderSection darkMode={darkMode}>
-          <HeaderSection.PanelHeader title="Pages" darkMode={darkMode}>
+          <HeaderSection.PanelHeader
+            title="Pages"
+            // settings={
+            //   <GlobalSettings
+            darkMode={darkMode}
+            //     showHideViewerNavigationControls={showHideViewerNavigationControls}
+            //     isViewerNavigationDisabled={!appDefinition?.showViewerNavigation}
+            //   />
+            // }
+          >
             <div className="d-flex justify-content-end" style={{ gap: '2px' }}>
-              <ButtonSolid
-                title={'Add Page'}
-                onClick={() => (shouldFreeze ? enableReleasedVersionPopupState() : toggleShowAddNewPageInput(true))}
-                className="left-sidebar-header-btn"
-                fill={`var(--slate12)`}
-                darkMode={darkMode}
-                leftIcon="plus"
-                iconWidth="14"
-                variant="tertiary"
-                disabled={shouldFreeze}
-              ></ButtonSolid>
+              {isLicensed ? (
+                <ButtonSolid
+                  title={'Add Page'}
+                  onClick={() => (shouldFreeze ? enableReleasedVersionPopupState() : toggleShowAddNewPageInput(true))}
+                  className="left-sidebar-header-btn"
+                  fill={`var(--slate12)`}
+                  darkMode={darkMode}
+                  leftIcon="plus"
+                  iconWidth="14"
+                  variant="tertiary"
+                  disabled={shouldFreeze}
+                ></ButtonSolid>
+              ) : (
+                <ButtonSolid
+                  title={'Add Page'}
+                  onClick={() => (shouldFreeze ? enableReleasedVersionPopupState() : toggleShowAddNewPageInput(true))}
+                  className="left-sidebar-header-btn"
+                  fill={`var(--slate12)`}
+                  darkMode={darkMode}
+                  leftIcon="plus"
+                  iconWidth="14"
+                  variant="tertiary"
+                  disabled={shouldFreeze}
+                ></ButtonSolid>
+              )}
               <ButtonSolid
                 title={'Settings'}
                 onClick={shouldFreeze ? enableReleasedVersionPopupState : togglePageSettingMenu}
@@ -122,12 +199,22 @@ export const PageMenu = ({
             <EditModal darkMode={darkMode} />
             <SettingsModal darkMode={darkMode} />
             <DeletePageConfirmationModal darkMode={darkMode} />
-            <SortableList
-              Element={PageMenuItem}
-              darkMode={darkMode}
-              switchPage={switchPage}
-              classNames="page-handler"
-            />
+            {isLicensed ? (
+              // <SortableTree collapsible indicator={true} />
+              <SortableList
+                Element={PageMenuItem}
+                darkMode={darkMode}
+                switchPage={switchPage}
+                classNames="page-handler"
+              />
+            ) : (
+              <SortableList
+                Element={PageMenuItem}
+                darkMode={darkMode}
+                switchPage={switchPage}
+                classNames="page-handler"
+              />
+            )}
             {showAddNewPageInput && (
               <div className="page-handler">
                 <AddingPageHandler darkMode={darkMode} />
