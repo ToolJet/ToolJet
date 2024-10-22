@@ -14,7 +14,7 @@ ToolJet allows you to connect to your Jira instance to perform various operation
 
 ## Connection
 
-To connect to a Jira data source in ToolJet, you can either click the **+Add new data source** button on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page in the ToolJet dashboard.
+To connect to a Jira data source in ToolJet, you can either click the **+Add new data source** button on the query panel or navigate to the **[Data Sources](../../data-sources/overview)** page in the ToolJet dashboard.
 
 To connect to your Jira instance, the following details are required:
 - **URL**: Your Jira instance URL
@@ -35,7 +35,7 @@ You can generate a personal access token from your Jira account **Manage account
 2. Choose the resource and operation you want to perform on your Jira instance.
 
 :::tip
-Query results can be transformed using transformations. Refer to our transformations documentation for more details: **[link](/docs/tutorial/transformations)**
+Query results can be transformed using transformations. Refer to our transformations documentation for more details: **[link](../../tutorial/transformations)**
 :::
 
 ## Supported Resources and Operations

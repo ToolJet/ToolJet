@@ -15,7 +15,7 @@ ToolJet Marketplace allows users to enhance their workspaces by adding custom pl
 
 ## Enabling Marketplace 
 
-To **Enable** the marketplace feature, users need to add the following environment variable to their **[`.env`](/docs/setup/env-vars#marketplace)** file:
+To **Enable** the marketplace feature, users need to add the following environment variable to their **[`.env`](../setup/env-vars#marketplace)** file:
 
 ```bash
 ENABLE_MARKETPLACE_FEATURE=true
@@ -73,21 +73,21 @@ To remove a plugin, follow these steps:
 - On the `Installed` page, click on the `Remove` button of the related plugin that you wish to remove.
 
 ## Available Plugins
-- **[AWS Redshift](/docs/marketplace/plugins/marketplace-plugin-redshift)**
-- **[AWS Textract](/docs/marketplace/plugins/marketplace-plugin-textract)**
-- **[AWS Lambda](/docs/marketplace/plugins/marketplace-plugin-aws-lambda)**
-- **[Engagespot](/docs/marketplace/plugins/marketplace-plugin-engagespot)**
-- **[GitHub](/docs/marketplace/plugins/marketplace-plugin-github)**
-- **[HarperDB](/docs/marketplace/plugins/marketplace-plugin-harperdb)**
-- **[OpenAI](/docs/marketplace/plugins/marketplace-plugin-openai)**
-- **[Plivo](/docs/marketplace/plugins/marketplace-plugin-plivo)**
-- **[Pocketbase](/docs/marketplace/plugins/marketplace-plugin-pocketbase)**
-- **[Portkey](/docs/marketplace/plugins/marketplace-plugin-portkey)**
-- **[PrestoDB](/docs/marketplace/plugins/marketplace-plugin-prestodb)**
-- **[Salesforce](/docs/marketplace/plugins/marketplace-plugin-salesforce)**
-- **[Supabase](/docs/marketplace/plugins/marketplace-plugin-supabase)**
+- **[AWS Redshift](./plugins/marketplace-plugin-redshift)**
+- **[AWS Textract](./plugins/marketplace-plugin-textract)**
+- **[AWS Lambda](./plugins/marketplace-plugin-aws-lambda)**
+- **[Engagespot](./plugins/marketplace-plugin-engagespot)**
+- **[GitHub](./plugins/marketplace-plugin-github)**
+- **[HarperDB](./plugins/marketplace-plugin-harperdb)**
+- **[OpenAI](./plugins/marketplace-plugin-openai)**
+- **[Plivo](./plugins/marketplace-plugin-plivo)**
+- **[Pocketbase](./plugins/marketplace-plugin-pocketbase)**
+- **[Portkey](./plugins/marketplace-plugin-portkey)**
+- **[PrestoDB](./plugins/marketplace-plugin-prestodb)**
+- **[Salesforce](./plugins/marketplace-plugin-salesforce)**
+- **[Supabase](./plugins/marketplace-plugin-supabase)**
 :::info For Plugin Developers
-Refer to the **[Plugin Development guide](/docs/contributing-guide/marketplace/marketplace-setup)** to learn how to create plugins for the ToolJet Marketplace.
+Refer to the **[Plugin Development guide](../contributing-guide/marketplace/marketplace-setup)** to learn how to create plugins for the ToolJet Marketplace.
 :::
 
 </div>

@@ -12,7 +12,7 @@ HarperDB is a database and application development platform that is focused on p
 </div>
 
 :::note
-Before following this guide, it is recommended to check the following doc: **[Using Marketplace plugins](/docs/marketplace/marketplace-overview#using-marketplace-plugins)**.
+Before following this guide, it is recommended to check the following doc: **[Using Marketplace plugins](../marketplace-overview#using-marketplace-plugins)**.
 :::
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
