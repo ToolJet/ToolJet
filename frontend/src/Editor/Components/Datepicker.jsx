@@ -1,27 +1,29 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import DatePickerComponent from 'react-datepicker';
 import moment from 'moment';
 import 'react-datepicker/dist/react-datepicker.css';
+import './datepicker.scss';
+import cx from 'classnames';
 
 export const Datepicker = function Datepicker({
   height,
   properties,
   styles,
-  exposedVariables,
   setExposedVariable,
+  setExposedVariables,
   validate,
   onComponentClick,
-  component,
   id,
   darkMode,
   fireEvent,
   dataCy,
 }) {
+  const isInitialRender = useRef(true);
   const { enableTime, enableDate, defaultValue, disabledDates } = properties;
   const format = typeof properties.format === 'string' ? properties.format : '';
   const { visibility, disabledState, borderRadius, boxShadow } = styles;
 
-  const [date, setDate] = useState(null);
+  const [date, setDate] = useState(defaultValue);
   const [excludedDates, setExcludedDates] = useState([]);
   const [showValidationError, setShowValidationError] = useState(false);
 
@@ -46,6 +48,7 @@ export const Datepicker = function Datepicker({
   };
 
   useEffect(() => {
+    if (isInitialRender.current) return;
     const dateMomentInstance = defaultValue && moment(defaultValue, selectedDateFormat);
     if (dateMomentInstance && dateMomentInstance.isValid()) {
       setDate(dateMomentInstance.toDate());
@@ -70,13 +73,31 @@ export const Datepicker = function Datepicker({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabledDates, format]);
 
-  const validationData = validate(exposedVariables.value);
+  const validationData = validate(computeDateString(date));
   const { isValid, validationError } = validationData;
 
   useEffect(() => {
+    isInitialRender.current = false;
     setExposedVariable('isValid', isValid);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isValid]);
+
+  useEffect(() => {
+    const exposedVariables = {
+      isValid,
+    };
+    const dateMomentInstance = defaultValue && moment(defaultValue, selectedDateFormat);
+    if (dateMomentInstance && dateMomentInstance.isValid()) {
+      setDate(dateMomentInstance.toDate());
+      exposedVariables.value = defaultValue;
+    } else {
+      setDate(null);
+      exposedVariables.value = undefined;
+    }
+    setExposedVariables(exposedVariables);
+    isInitialRender.current = false;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div
@@ -94,13 +115,14 @@ export const Datepicker = function Datepicker({
         className={`input-field form-control ${
           !isValid && showValidationError ? 'is-invalid' : ''
         } validation-without-icon px-2 ${darkMode ? 'bg-dark color-white' : 'bg-light'}`}
+        popperClassName={cx('tj-datepicker-widget', { 'dark-theme': darkMode })}
         selected={date}
         value={date !== null ? computeDateString(date) : 'select date'}
         onChange={(date) => onDateChange(date)}
         showTimeInput={enableTime ? true : false}
         showTimeSelectOnly={enableDate ? false : true}
         onFocus={(event) => {
-          onComponentClick(id, component, event);
+          onComponentClick(id);
         }}
         showMonthDropdown
         showYearDropdown

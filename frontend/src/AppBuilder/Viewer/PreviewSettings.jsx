@@ -33,7 +33,6 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
           <>
             <AppVersionsManager darkMode={darkMode} />
             <div className="navbar-seperator"></div>
-            {/* <EnvironmentManager darkMode={darkMode} /> */}
           </>
         )}
         <span>
@@ -78,8 +77,6 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
           </Offcanvas.Header>
           {previewNavbar && (
             <Offcanvas.Body>
-              <span style={{ marginTop: '4px' }}>{/* <EnvironmentManager darkMode={darkMode} /> */}</span>
-              <hr className="m-0" />
               <span>
                 <AppVersionsManager darkMode={darkMode} />
               </span>

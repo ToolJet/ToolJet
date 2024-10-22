@@ -1,5 +1,7 @@
 import { componentTypes } from '@/Editor/WidgetManager/components';
-export function generateUIComponents(JSONSchema, advanced) {
+import { useCurrentStateStore } from '@/_stores/currentStateStore';
+
+export function generateUIComponents(JSONSchema, advanced, componentName) {
   if (advanced) {
     if (typeof JSONSchema?.properties !== 'object' || JSONSchema?.properties == null) {
       return;
@@ -11,6 +13,17 @@ export function generateUIComponents(JSONSchema, advanced) {
       if (itemType) {
         uiComponentsDraft.push(structuredClone(componentTypes.find((component) => component?.component == 'Text')));
         //only add if there is a valid item type
+      } else {
+        useCurrentStateStore.getState().actions.setErrors({
+          [componentName]: {
+            type: 'component',
+            data: {
+              message: `JSON Schema consists of invalid input type: ${value?.type}`,
+              status: 'Failed',
+            },
+          },
+        });
+        uiComponentsDraft.push(undefined);
       }
       uiComponentsDraft.push(structuredClone(componentTypes.find((component) => component?.component == itemType)));
     });

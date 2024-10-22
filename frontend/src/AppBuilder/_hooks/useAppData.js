@@ -163,7 +163,7 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
       }
       const constantsResp = isPublicAccess
         ? await orgEnvironmentConstantService.getConstantsFromPublicApp(slug)
-        : await orgEnvironmentConstantService.getConstantsFromEnvironment(editorEnvironmentId);
+        : await orgEnvironmentConstantService.getConstantsFromApp(editorEnvironmentId);
 
       const pages = appData.pages.map((page) => {
         return page;

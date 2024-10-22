@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { resolveWidgetFieldValue } from '@/_helpers/utils';
+import React, { useEffect, useRef, useState } from 'react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 
@@ -94,23 +93,24 @@ export const ToggleSwitchV2 = ({
   styles,
   fireEvent,
   setExposedVariable,
+  setExposedVariables,
   dataCy,
-  component,
+  validation,
+  componentName,
   validate,
   width,
 }) => {
+  const isInitialRender = useRef(true);
   const defaultValue = properties.defaultValue ?? false;
-
   const [on, setOn] = useState(Boolean(defaultValue));
   const label = properties.label;
+  const isMandatory = validation?.mandatory ?? false;
   const { isValid, validationError } = validate(on);
   const [showValidationError, setShowValidationError] = useState(true);
   const [loading, setLoading] = useState(properties?.loadingState);
   const [disable, setDisable] = useState(properties.disabledState || properties.loadingState);
   const [visibility, setVisibility] = useState(properties.visibility);
   const [userInteracted, setUserInteracted] = useState(false);
-
-  const isMandatory = resolveWidgetFieldValue(component?.definition?.validation?.mandatory?.value);
 
   const { toggleSwitchColor, boxShadow, alignment, borderColor } = styles;
   const textColor = styles.textColor === '#1B1F24' ? 'var(--text-primary)' : styles.textColor;
@@ -124,6 +124,7 @@ export const ToggleSwitchV2 = ({
   // Exposing the initially set false value once on load
 
   useEffect(() => {
+    if (isInitialRender.current) return;
     setExposedVariable('value', defaultValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
 
@@ -152,55 +153,70 @@ export const ToggleSwitchV2 = ({
   }, [properties.loadingState]);
 
   useEffect(() => {
+    if (isInitialRender.current) return;
     setExposedVariable('label', label);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [label]);
 
   useEffect(() => {
+    if (isInitialRender.current) return;
     setExposedVariable('isMandatory', isMandatory);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMandatory]);
 
   useEffect(() => {
+    if (isInitialRender.current) return;
     setExposedVariable('isLoading', loading);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading]);
   useEffect(() => {
+    if (isInitialRender.current) return;
     setExposedVariable('isVisible', visibility);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visibility]);
 
   useEffect(() => {
+    if (isInitialRender.current) return;
     setExposedVariable('isDisabled', disable);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disable]);
   useEffect(() => {
+    if (isInitialRender.current) return;
     setExposedVariable('isValid', isValid);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isValid]);
-  useEffect(() => {
-    setExposedVariable('setLoading', async function (loading) {
-      setLoading(loading);
-      setExposedVariable('isLoading', loading);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.loadingState]);
 
   useEffect(() => {
-    setExposedVariable('setVisibility', async function (state) {
-      setVisibility(state);
-      setExposedVariable('isVisible', state);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.visibility]);
-
-  useEffect(() => {
-    setExposedVariable('setDisable', async function (disable) {
-      setDisable(disable);
-      setExposedVariable('isDisabled', disable);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.disabledState]);
+    const exposedVariables = {
+      setValue: async function (value) {
+        setOn(value);
+        setExposedVariable('value', value);
+        setUserInteracted(true);
+      },
+      setVisibility: async function (state) {
+        setVisibility(state);
+        setExposedVariable('isVisible', state);
+      },
+      setDisable: async function (disable) {
+        setDisable(disable);
+        setExposedVariable('isDisabled', disable);
+      },
+      setLoading: async function (loading) {
+        setLoading(loading);
+        setExposedVariable('isLoading', loading);
+      },
+      label: label,
+      isMandatory: isMandatory,
+      isLoading: loading,
+      isVisible: visibility,
+      isDisabled: disable,
+      isValid: isValid,
+      value: defaultValue,
+    };
+    setExposedVariables(exposedVariables);
+    setOn(defaultValue);
+    isInitialRender.current = false;
+  }, []);
 
   useEffect(() => {
     setExposedVariable('toggle', async function () {
@@ -211,15 +227,6 @@ export const ToggleSwitchV2 = ({
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [on]);
-
-  useEffect(() => {
-    setExposedVariable('setValue', async function (value) {
-      setOn(value);
-      setExposedVariable('value', value);
-      setUserInteracted(true);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const renderInput = () => (
     <div
@@ -289,7 +296,7 @@ export const ToggleSwitchV2 = ({
       {renderInput()}
       {showValidationError && isMandatory && userInteracted && !on && visibility && (
         <div
-          data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
+          data-cy={`${String(componentName).toLowerCase()}-invalid-feedback`}
           style={{
             color: 'var(--status-error-strong)',
             fontSize: '11px',

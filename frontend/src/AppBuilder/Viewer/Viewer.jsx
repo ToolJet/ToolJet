@@ -97,10 +97,6 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
   const switchPage = useStore((state) => state.switchPage);
 
   const showHeader = !globalSettings?.hideHeader && isAppLoaded;
-  // ---remove
-  const handleAppEnvironmentChanged = useCallback((environment) => {
-    console.log('setAppVersionCurrentEnvironment', environment);
-  }, []);
 
   useEffect(() => {
     updateCanvasHeight(currentPageComponents);
@@ -151,7 +147,6 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
                       pages={pages}
                       currentPageId={currentPageId ?? homePageId}
                       showViewerNavigation={!isPagesSidebarHidden}
-                      handleAppEnvironmentChanged={handleAppEnvironmentChanged}
                       changeToDarkMode={changeToDarkMode}
                     />
                   )}
@@ -163,7 +158,6 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
                       pages={pages}
                       currentPageId={currentPageId ?? homePageId}
                       showViewerNavigation={!isPagesSidebarHidden}
-                      handleAppEnvironmentChanged={handleAppEnvironmentChanged}
                       changeToDarkMode={changeToDarkMode}
                     />
                   )}
@@ -216,14 +210,13 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
                                   pages={pages}
                                   currentPageId={currentPageId ?? homePageId}
                                   showViewerNavigation={!isPagesSidebarHidden}
-                                  handleAppEnvironmentChanged={handleAppEnvironmentChanged}
                                   switchPage={switchPage}
                                   changeToDarkMode={changeToDarkMode}
                                 />
                               )}
                               <AppCanvas moduleId={moduleId} isViewerSidebarPinned={isSidebarPinned} />
                             </div>
-                            {isAppLoaded && <TooljetBanner isDarkMode={darkMode} />}
+                            <TooljetBanner isDarkMode={darkMode} />
                             {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ right: 0 }}></div>}
                             {isMobilePreviewMode && <div className="hide-drawer-transition" style={{ left: 0 }}></div>}
                           </div>
