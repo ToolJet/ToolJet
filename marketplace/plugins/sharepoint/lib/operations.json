@@ -58,6 +58,28 @@
         }
       ]
     },
+    "get_sites": {
+      "top": {
+        "label": "Top",
+        "key": "sp_top",
+        "description": "Enter the number of items a response page should contain",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "className": "codehinter-plugins",
+        "placeholder": "Enter the number of items a response page should contain",
+        "height": "36px"
+      },
+      "page": {
+        "label": "Page",
+        "key": "sp_page",
+        "description": "Enter the page number",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "className": "codehinter-plugins",
+        "placeholder": "Enter the page number",
+        "height": "36px"
+      }
+    },
     "get_site": {
       "site_id": {
         "label": "Site id",
@@ -108,6 +130,26 @@
         "className": "codehinter-plugins",
         "placeholder": "Enter site id",
         "height": "36px"
+      },
+      "top": {
+        "label": "Top",
+        "key": "sp_top",
+        "description": "Enter the number of items a response page should contain",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "className": "codehinter-plugins",
+        "placeholder": "Enter the number of items a response page should contain",
+        "height": "36px"
+      },
+      "page": {
+        "label": "Page",
+        "key": "sp_page",
+        "description": "Enter the page number",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "className": "codehinter-plugins",
+        "placeholder": "Enter the page number",
+        "height": "36px"
       }
     },
     "get_lists": {
@@ -119,6 +161,16 @@
         "lineNumbers": false,
         "className": "codehinter-plugins",
         "placeholder": "Enter site id",
+        "height": "36px"
+      },
+      "page": {
+        "label": "Page",
+        "key": "sp_page",
+        "description": "Enter the page number",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "className": "codehinter-plugins",
+        "placeholder": "Enter the page number",
         "height": "36px"
       }
     },
@@ -194,6 +246,26 @@
         "lineNumbers": false,
         "className": "codehinter-plugins",
         "placeholder": "Enter list id",
+        "height": "36px"
+      },
+      "top": {
+        "label": "Top",
+        "key": "sp_top",
+        "description": "Enter the number of items a response page should contain",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "className": "codehinter-plugins",
+        "placeholder": "Enter the number of items a response page should contain",
+        "height": "36px"
+      },
+      "page": {
+        "label": "Page",
+        "key": "sp_page",
+        "description": "Enter the page number",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "className": "codehinter-plugins",
+        "placeholder": "Enter the page number",
         "height": "36px"
       }
     },
