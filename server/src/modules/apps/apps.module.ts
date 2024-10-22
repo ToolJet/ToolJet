@@ -38,6 +38,7 @@ import { Layout } from 'src/entities/layout.entity';
 
 import { ComponentsService } from '@services/components.service';
 import { PageService } from '@services/page.service';
+import { PageHelperService } from '@apps/services/pages/service.helper';
 import { EventsService } from '@services/events_handler.service';
 import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
 import { UserResourcePermissionsModule } from '@modules/user_resource_permissions/user_resource_permissions.module';
@@ -87,6 +88,7 @@ import { AppsServiceSep } from '@apps/services/apps.service.sep';
     PageService,
     EventsService,
     AppsSubscriber,
+    PageHelperService,
   ],
   controllers: [AppsController, AppsControllerV2, AppUsersController, AppsImportExportController],
 })
