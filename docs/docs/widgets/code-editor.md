@@ -2,7 +2,6 @@
 id: code-editor
 title: Code Editor
 ---
-# Code Editor
 
 **Code Editor** component is a versatile text editor for editing code and supports several languages. 
 
