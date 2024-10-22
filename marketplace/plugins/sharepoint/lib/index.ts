@@ -99,6 +99,20 @@ export default class Sharepoint implements QueryService {
       const header = requestOptions?.headers;
       const body = requestOptions.body || {};
 
+      if (queryOptions.sp_page) {
+        const regex = /^[1-9]\d*(\.\d+)?$/;
+        if (regex.test(queryOptions.sp_page)) {
+          const pageNo = parseInt(queryOptions.sp_page || '1');
+          const data = await this.getPageData(apiUrl, pageNo, header);
+          return {
+            status: 'ok',
+            data: data,
+          };
+        } else {
+          throw new Error('Page field value should be a number >= 1.');
+        }
+      }
+
       response = await fetch(apiUrl, {
         method: method,
         headers: header,
@@ -136,6 +150,34 @@ export default class Sharepoint implements QueryService {
     };
   }
 
+  async getPageData(apiUrl: string, pageNo: number, header: any): Promise<any> {
+    let currentPage = 1;
+    let nextApiUrl = apiUrl;
+    let result = null;
+
+    while (currentPage <= pageNo) {
+      const response = await fetch(nextApiUrl, {
+        method: 'GET',
+        headers: header,
+      });
+      const data = await response.json();
+
+      if (currentPage === pageNo) {
+        result = data;
+        break;
+      }
+
+      if (!data['@odata.nextLink']) {
+        throw new Error('No more pages available.');
+      }
+
+      nextApiUrl = data['@odata.nextLink'];
+      currentPage++;
+    }
+
+    return result;
+  }
+
   async fetchRequestOptsForOperation(accessToken: string, queryOptions: QueryOptions): Promise<any> {
     const {
       sp_operation,
@@ -146,6 +188,7 @@ export default class Sharepoint implements QueryService {
       sp_item_id,
       sp_list_object,
       sp_item_object,
+      sp_top,
     } = queryOptions;
 
     const authHeader = {
@@ -156,7 +199,7 @@ export default class Sharepoint implements QueryService {
       case 'get_sites':
         return {
           method: 'GET',
-          endpoint: '?search=*',
+          endpoint: `?search=*${sp_top ? `&$top=${sp_top}` : ''}`,
           headers: { ...authHeader },
         };
       case 'get_site':
@@ -174,7 +217,7 @@ export default class Sharepoint implements QueryService {
       case 'get_pages':
         return {
           method: 'GET',
-          endpoint: `/${sp_site_id}/pages`,
+          endpoint: `/${sp_site_id}/pages${sp_top ? `?&$top=${sp_top}` : ''}`,
           headers: { ...authHeader, 'Content-Type': 'application/json' },
         };
       case 'get_lists':
@@ -192,7 +235,7 @@ export default class Sharepoint implements QueryService {
       case 'get_items':
         return {
           method: 'GET',
-          endpoint: `/${sp_site_id}/lists/${sp_list_id}/items?$expand=fields`,
+          endpoint: `/${sp_site_id}/lists/${sp_list_id}/items?$expand=fields${sp_top ? `&$top=${sp_top}` : ''}`,
           headers: { ...authHeader },
         };
       case 'create_list':

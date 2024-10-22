@@ -14,4 +14,6 @@ export type QueryOptions = {
   sp_list_object: string;
   sp_item_id: string;
   sp_item_object: string;
+  sp_top: string;
+  sp_page: string;
 };
