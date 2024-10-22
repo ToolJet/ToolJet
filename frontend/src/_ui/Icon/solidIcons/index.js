@@ -173,6 +173,7 @@ import Search01 from './Search01.jsx';
 import ShiftButtonIcon from './ShiftButtonIcon.jsx';
 import Unpin01 from './Unpin01.jsx';
 import WarningUserNotFound from './WarningUserNotFound.jsx';
+import Reset from './Reset.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -394,6 +395,8 @@ const Icon = (props) => {
       return <RightOuterJoin {...props} />;
     case 'row':
       return <Row {...props} />;
+    case 'reset':
+      return <Reset {...props} />;
     case 'sadrectangle':
       return <SadRectangle {...props} />;
     case 'search':

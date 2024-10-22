@@ -39,7 +39,7 @@ export const SearchBox = forwardRef(
     };
 
     const handleClickOutside = (event) => {
-      if (ref.current && !ref.current.contains(event.target)) {
+      if (ref?.current && !ref.current.contains(event.target)) {
         clearSearchText();
         // Your function to be triggered
       }

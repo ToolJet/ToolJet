@@ -3016,6 +3016,19 @@ input:focus-visible {
   cursor: pointer;
 }
 
+.color-reset {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  width: 25px;
+  margin-right: 5px;
+  border-radius: 5px;
+  &:hover{
+    background: var(--slate1);
+  }
+}
+
 .app-sharing-modal {
 
   .form-control.is-invalid,
