@@ -11,7 +11,7 @@ This guide shows how to change the text color and background color of certain ce
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Create a New Application and Set up the Data Source
-- Create a new app and add a **[Table](/docs/widgets/table)** component to the canvas.
+- Create a new app and add a **[Table](../widgets/table)** component to the canvas.
 - Open the Query Panel at the bottom and click on the `+ Add` button.
 - Select REST API as your data source - your query will be named as restapi1 by default.
 - Choose GET method and enter the below URL:

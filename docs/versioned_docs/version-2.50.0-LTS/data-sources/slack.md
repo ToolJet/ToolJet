@@ -9,7 +9,7 @@ ToolJet can connect to your Slack workspace to send messages.
 
 ## Connection
 
-To establish a connection with the **Slack** datasource, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+To establish a connection with the **Slack** datasource, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](./overview)** page through the ToolJet dashboard.
 
 <img className="screenshot-full" src="/img/datasource-reference/slack/connect-v2.png" alt="Slack datasource: ToolJet"/>
 

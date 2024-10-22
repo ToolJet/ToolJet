@@ -4,7 +4,7 @@ title: Import External Libraries Using RunPy
 ---
 <div style={{paddingBottom:'24px'}}>
 
-ToolJet allows you to utilize python packages in your app by importing them using the [RunPy query](/docs/data-sources/run-py). 
+ToolJet allows you to utilize python packages in your app by importing them using the [RunPy query](../data-sources/run-py). 
 In this how-to guide, we will import a few packages and use them in the application.
 
 </div>

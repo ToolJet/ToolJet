@@ -16,7 +16,7 @@ The **to_py()** function within the **Pyodide** library serves as the counterpar
 
 Similar to **to_js()**, **to_py()** facilitates the mapping and conversion of data types between JavaScript and Python. It effectively converts JavaScript objects, arrays, and other data structures into their Python counterparts.
 
-**Note**: Refer to the **[RunPy](/docs/data-sources/run-py)** documentation for a more in-depth understanding.
+**Note**: Refer to the **[RunPy](../data-sources/run-py)** documentation for a more in-depth understanding.
 
 </div>
 

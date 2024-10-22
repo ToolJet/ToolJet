@@ -4,7 +4,7 @@ title: Enable/Disable a Component Using Current User's Property
 ---
 <div style={{paddingBottom:'24px'}}>
 
-Let's take a look at the exposed variables of the currentUser property by clicking on the **[inspector](/docs/app-builder/left-sidebar/#inspector)** icon on the left sidebar:
+Let's take a look at the exposed variables of the currentUser property by clicking on the **[inspector](../app-builder/left-sidebar/#inspector)** icon on the left sidebar:
 
 - **email** : The value can accessed using `{{globals.currentUser.email}}`
 - **firstName** : The value can accessed using `{{globals.currentUser.firstName}}`
