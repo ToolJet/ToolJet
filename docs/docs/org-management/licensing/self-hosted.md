@@ -24,7 +24,7 @@ Let's look into three types of licenses:
 
 If you are an existing user and wish to update your trial license key, follow these steps:
 
-1. Set up the instance and log in as a **[Super Admin](/docs/Enterprise/superadmin)**.
+1. Set up the instance and log in as a **[Super Admin](../../Enterprise/superadmin)**.
 2. Navigate to the Settings page.
 3. In the license key tab, make the necessary updates to the provided license key.
 4. Within the license tab of the Settings page, you can access the limit tab, which displays the current status of available super admins, builders, and end users.
@@ -64,7 +64,7 @@ The business license key will be valid for 3 months only. You can renew it to co
 ## Updating License Key
 
 **To update the license key, follow these steps:**
-1. Log in as a **[Super Admin](/docs/Enterprise/superadmin)**, ensuring that you are on the correct instance URL.
+1. Log in as a **[Super Admin](../../Enterprise/superadmin)**, ensuring that you are on the correct instance URL.
 2. Go to the Settings page.
 3. In the license key tab, update the provided license key.
 4. Within the license tab of the Settings page, you can access the limit tab, which provides details about available super admins, builders, and end users.

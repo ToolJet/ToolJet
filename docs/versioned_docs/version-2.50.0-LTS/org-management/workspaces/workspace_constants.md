@@ -89,7 +89,7 @@ Workspace constants can be used in the app builder and the global datasource con
 
 ### Using Workspace Constants in Datasource Connection
 
-You can use workspace constants in the **[datasource connection](/docs/data-sources/overview#connecting-data-sources)** form to store sensitive information like API keys, tokens, etc. This will ensure that the data remains secure and is not exposed to the client-side. You can use the syntax `{{constants.constant_name}}` to access the value of the constant.
+You can use workspace constants in the **[datasource connection](../../data-sources/overview#connecting-data-sources)** form to store sensitive information like API keys, tokens, etc. This will ensure that the data remains secure and is not exposed to the client-side. You can use the syntax `{{constants.constant_name}}` to access the value of the constant.
 
  <div style={{textAlign: 'center'}}>
 
@@ -103,7 +103,7 @@ You can use workspace constants in the **[datasource connection](/docs/data-sour
 
 ### Using Workspace Constants in App Builder
 
-Inside the App Builder, you will find the **[Inspector](/docs/app-builder/left-sidebar#inspector)** on the left sidebar. The inspector will have a Constants section which will be updated dynamically to display all the available constant values.
+Inside the App Builder, you will find the **[Inspector](../../app-builder/left-sidebar#inspector)** on the left sidebar. The inspector will have a Constants section which will be updated dynamically to display all the available constant values.
 
  <div style={{textAlign: 'center'}}>
 

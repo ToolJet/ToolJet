@@ -1,8 +1,6 @@
 ---
-
 id: workspace_constants
 title: Workspace Constants and Secrets
-
 ---
 
 Workspace constants and secrets are predefined values that can be used across your application to maintain consistency, facilitate easy updates, and securely store sensitive information. This document will guide you through the usage and management of workspace constants and secrets within your workspaces.
