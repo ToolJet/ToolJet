@@ -171,14 +171,16 @@ function AddEditResourcePermissionsModal({
               </div>
             </label>
           </OverlayTrigger>
-          <AppsSelect
-            disabled={!isCustom}
-            allowSelectAll={true}
-            value={selectedApps}
-            onChange={setSelectedApps}
-            options={addableApps}
-            data-value="test"
-          />
+          {isCustom && (
+            <AppsSelect
+              disabled={!isCustom}
+              allowSelectAll={true}
+              value={selectedApps}
+              onChange={setSelectedApps}
+              options={addableApps}
+              data-value="test"
+            />
+          )}
         </div>
       </div>
     </ModalBase>
