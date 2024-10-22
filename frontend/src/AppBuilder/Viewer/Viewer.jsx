@@ -97,10 +97,6 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
   const switchPage = useStore((state) => state.switchPage);
 
   const showHeader = !globalSettings?.hideHeader && isAppLoaded;
-  // ---remove
-  const handleAppEnvironmentChanged = useCallback((environment) => {
-    console.log('setAppVersionCurrentEnvironment', environment);
-  }, []);
 
   useEffect(() => {
     updateCanvasHeight(currentPageComponents);
@@ -151,7 +147,6 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
                       pages={pages}
                       currentPageId={currentPageId ?? homePageId}
                       showViewerNavigation={!isPagesSidebarHidden}
-                      handleAppEnvironmentChanged={handleAppEnvironmentChanged}
                       changeToDarkMode={changeToDarkMode}
                     />
                   )}
@@ -163,7 +158,6 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
                       pages={pages}
                       currentPageId={currentPageId ?? homePageId}
                       showViewerNavigation={!isPagesSidebarHidden}
-                      handleAppEnvironmentChanged={handleAppEnvironmentChanged}
                       changeToDarkMode={changeToDarkMode}
                     />
                   )}
@@ -216,7 +210,6 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
                                   pages={pages}
                                   currentPageId={currentPageId ?? homePageId}
                                   showViewerNavigation={!isPagesSidebarHidden}
-                                  handleAppEnvironmentChanged={handleAppEnvironmentChanged}
                                   switchPage={switchPage}
                                   changeToDarkMode={changeToDarkMode}
                                 />

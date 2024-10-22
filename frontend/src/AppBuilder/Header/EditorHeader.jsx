@@ -6,11 +6,11 @@ import LogoNavDropdown from '@/_components/LogoNavDropdown';
 import HeaderActions from './HeaderActions';
 import { AppVersionsManager } from './AppVersionsManager';
 import RealtimeAvatars from '@/Editor/RealtimeAvatars';
-// import UpdatePresence from '@/Editor/Header/UpdatePresence';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import useStore from '@/AppBuilder/_stores/store';
 import RightTopHeaderButtons from './RightTopHeaderButtons/RightTopHeaderButtons';
 import BuildSuggestions from './BuildSuggestions';
+import UpdatePresenceMultiPlayer from './UpdatePresenceMultiPlayer';
 
 export const EditorHeader = ({ darkMode }) => {
   const { isSaving, saveError, isVersionReleased } = useStore(
@@ -98,18 +98,14 @@ export const EditorHeader = ({ darkMode }) => {
                         <RealtimeAvatars />
                       </div>
                     )}
-                    {/* {shouldEnableMultiplayer && <UpdatePresence />} */}
+                    {shouldEnableMultiplayer && <UpdatePresenceMultiPlayer />}
                   </div>
                 </div>
                 <div className="navbar-seperator"></div>
                 {/* <div className="d-flex align-items-center p-0" style={{ marginRight: '12px' }}></div> */}
               </div>
               <div className="d-flex align-items-center p-0">
-                <div className="d-flex version-manager-container p-0 mx-2  align-items-center ">
-                  {/* {editingVersion && ( */}
-                  {/* <EnvironmentManager darkMode={darkMode} /> */}
-                  {/* )} */}
-                  {/* <div className="navbar-seperator"></div> */}
+                <div className="d-flex p-0 mx-2  align-items-center ">
                   <AppVersionsManager darkMode={darkMode} />
                 </div>
               </div>
