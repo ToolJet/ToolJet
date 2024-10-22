@@ -6,7 +6,7 @@ title: Button
 
 **Button** component can be used to trigger an action. It can be used to submit a form, navigate to another page, or trigger a query.
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Properties
 
@@ -18,8 +18,8 @@ title: Button
 
 | <div style={{ width:"100px"}}> Event </div> | <div style={{ width:"100px"}}> Description </div> |
 | :----------- | :----------- |
-| On click | The On click event is triggered when the button is clicked. |
-| On hover | The On hover event is triggered when the mouse cursor is moved over the button. |
+| On click | Triggers whenever the user clicks the button. |
+| On hover | Triggers whenever the user moves the mouse cursor over the button. |
 
 :::info
 Check [Action Reference](/docs/category/actions-reference) docs to get detailed information about all the **Actions**.
@@ -32,7 +32,7 @@ Check [Action Reference](/docs/category/actions-reference) docs to get detailed 
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Component Specific Actions (CSA)
 
@@ -48,7 +48,7 @@ Following actions of Button component can be controlled using the component spec
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Exposed Variables
 
@@ -65,20 +65,20 @@ Following actions of Button component can be controlled using the component spec
 
 | <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:------------------|:------------|:------------------------------|
-| Loading state      | Enables a loading spinner, often used with `isLoading` to indicate progress. Toggle or set dynamically.   | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
-| Visibility         | Controls component visibility. Toggle or set dynamically.                                                 | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
-| Disable            | Enables or disables the component. Toggle or set dynamically.                                             | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Loading state      | Enables a loading spinner, often used with `isLoading` to indicate progress. Toggle or set dynamically.   | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Visibility         | Controls component visibility. Toggle or set dynamically.                                                 | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Disable            | Enables or disables the component. Toggle or set dynamically.                                             | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Tooltip            | Provides additional information on hover. Set a string value for display.                                 | String (e.g., `Button to Submit Form` ).                       |
 
 ## Devices
 
 **Show on desktop**
 
-Makes the component visible in desktop view. You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.
+Makes the component visible in desktop view. You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.
 
 **Show on mobile**
 
-Makes the component visible in mobile view. You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.
+Makes the component visible in mobile view. You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.
 
 
 ---
@@ -90,13 +90,13 @@ Makes the component visible in mobile view. You can set it with the toggle butto
 | <div style={{ width:"100px"}}> Button Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:------------------|:------------|:------------------------------|
 | Type        | Sets the fill value of the Button component.                                                   | Select `Solid` for a button with a solid background and `Outline` for a transparent button with an outline.          |
-| Background        | Sets the background color of the component.                                                   | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
-| Text color    | Sets the text color of the text entered in the component.                                     | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
-| Border color    | Sets the border color of the component.                                                       | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
-| Loader color    | Sets the loader color of the component.                                                       | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
-| Icon            | Allows you to select an icon for the component.                                               | Enable the icon visibility, select icon and icon color. Alternatively, you can programmatically set it using `fx`.                                     |
-| Border radius   | Modifies the border radius of the component.                                                  | Enter a number or click on `fx` and enter a code that programmatically returns a numeric value.           |
-| Box shadow      | Sets the box shadow properties of the component.                                              | Select the box shadow color and adjust the related properties or set it programmatically using `fx`.                                            |
+| Background        | Sets the background color of the component.                                                   | Select the color or click on **fx** and input code that programmatically returns a Hex color code.          |
+| Text color    | Sets the text color of the text entered in the component.                                     | Select the color or click on **fx** and input code that programmatically returns a Hex color code.          |
+| Border color    | Sets the border color of the component.                                                       | Select the color or click on **fx** and input code that programmatically returns a Hex color code.          |
+| Loader color    | Sets the loader color of the component.                                                       | Select the color or click on **fx** and input code that programmatically returns a Hex color code.          |
+| Icon            | Allows you to select an icon for the component.                                               | Enable the icon visibility, select icon and icon color. Alternatively, you can programmatically set it using **fx**.                                     |
+| Border radius   | Modifies the border radius of the component.                                                  | Enter a number or click on **fx** and enter a code that programmatically returns a numeric value.           |
+| Box shadow      | Sets the box shadow properties of the component.                                              | Select the box shadow color and adjust the related properties or set it programmatically using **fx**.                                            |
 
 ## Container
 
