@@ -9,6 +9,7 @@ export const Datepicker = function Datepicker({
   styles,
   exposedVariables,
   setExposedVariable,
+  setExposedVariables,
   validate,
   onComponentClick,
   component,
@@ -77,6 +78,31 @@ export const Datepicker = function Datepicker({
     setExposedVariable('isValid', isValid);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isValid]);
+
+  useEffect(() => {
+    const exposedVariables = {
+      setDate: async function (date) {
+        if (date instanceof Date) {
+          date = moment(date);
+          setDate(date.toDate());
+          const dateString = computeDateString(date);
+          setExposedVariable('value', dateString);
+          fireEvent('onChange');
+        } else {
+          setExposedVariable('value', undefined);
+          setDate(null);
+          fireEvent('onChange');
+        }
+      },
+      clear: async function () {
+        setDate(null);
+        setExposedVariable('value', '');
+        fireEvent('onChange');
+      },
+    };
+    setExposedVariables(exposedVariables);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setDate]);
 
   return (
     <div

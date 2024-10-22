@@ -88,6 +88,17 @@ export const datepickerConfig = {
   exposedVariables: {
     value: '',
   },
+  actions: [
+    {
+      handle: 'setDate',
+      displayName: 'Set date',
+      params: [{ handle: 'date', displayName: 'date'}],
+    },
+    {
+      handle: 'clear',
+      displayName: 'Clear',
+    },
+  ],
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },
