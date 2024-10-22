@@ -843,7 +843,6 @@ class HomePageComponent extends React.Component {
                 canUpdateFolder={this.canUpdateFolder()}
                 darkMode={this.props.darkMode}
                 canCreateApp={this.canCreateApp()}
-                searchedAppCount={this.state.searchedAppCount}
               />
               <OrganizationList />
             </div>

@@ -25,7 +25,6 @@ export const Folders = function Folders({
   canDeleteFolder,
   canCreateApp,
   darkMode,
-  searchedAppCount,
 }) {
   const [isLoading, setLoadingStatus] = useState(foldersLoading);
   const [showInput, setShowInput] = useState(false);
@@ -41,14 +40,10 @@ export const Folders = function Folders({
   const [activeFolder, setActiveFolder] = useState(currentFolder || {});
   const [filteredData, setFilteredData] = useState(folders);
   const [errorText, setErrorText] = useState('');
-  const [activeFolderAppCount, setActiveFolderAppCount] = useState(activeFolder.count);
   const navigate = useNavigate();
 
   const { t } = useTranslation();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
-  useEffect(() => {
-    setActiveFolderAppCount(searchedAppCount);
-  }, [searchedAppCount]);
   useEffect(() => {
     setLoadingStatus(foldersLoading);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -111,7 +106,6 @@ export const Folders = function Folders({
     updateSidebarNAV(folder?.name ?? 'All apps');
     //update the url query parameter with folder name
     updateFolderQuery(folder?.name);
-    setActiveFolderAppCount(folder.count);
   }
 
   function updateFolderQuery(name) {
