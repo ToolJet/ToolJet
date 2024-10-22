@@ -35,6 +35,7 @@ import { CreateEventHandlerDto, UpdateEventHandlerDto } from '@dto/event-handler
 import { APP_RESOURCE_ACTIONS } from 'src/constants/global.constant';
 import { VersionReleaseDto } from '@dto/version-release.dto';
 import { AppsServiceSep } from '@apps/services/apps.service.sep';
+import { mergeDefaultComponentData } from 'src/helpers/components.helper';
 
 @Controller({
   path: 'apps',
@@ -93,7 +94,7 @@ export class AppsControllerV2 {
 
     response['data_queries'] = seralizedQueries;
     response['definition'] = app.editingVersion?.definition;
-    response['pages'] = pagesForVersion;
+    response['pages'] = mergeDefaultComponentData(pagesForVersion);
     response['events'] = eventsForVersion;
 
     //! if editing version exists, camelize the definition
@@ -148,7 +149,7 @@ export class AppsControllerV2 {
       name: app.name,
       slug: app.slug,
       events: eventsForVersion,
-      pages: pagesForVersion,
+      pages: mergeDefaultComponentData(pagesForVersion),
       homePageId: versionToLoad.homePageId,
       globalSettings: { ...versionToLoad.globalSettings, theme: appTheme },
       showViewerNavigation: versionToLoad.showViewerNavigation,
@@ -198,7 +199,7 @@ export class AppsControllerV2 {
     return {
       ...appData,
       editing_version: editingVersion,
-      pages: pagesForVersion,
+      pages: mergeDefaultComponentData(pagesForVersion),
       events: eventsForVersion,
     };
   }
