@@ -3,10 +3,10 @@ id: macos
 title: Mac OS
 ---
 
-The following guide is intended for contributors to set-up ToolJet locally. If you're interested in **self-hosting** ToolJet, please refer to the **[Setup](/docs/setup/)** section.
+The following guide is intended for contributors to set-up ToolJet locally. If you're interested in **self-hosting** ToolJet, please refer to the **[Setup](../../setup/)** section.
 
 
-To set up and run ToolJet on macOS for development, begin by opening your terminal and executing the commands listed below. For a better understanding of ToolJet's framework, we advise reviewing our [architecture guide](/docs/contributing-guide/setup/architecture) before proceeding.
+To set up and run ToolJet on macOS for development, begin by opening your terminal and executing the commands listed below. For a better understanding of ToolJet's framework, we advise reviewing our [architecture guide](./architecture) before proceeding.
 
 ## Setting up
 
@@ -60,7 +60,7 @@ To set up and run ToolJet on macOS for development, begin by opening your termin
 
 2. Set up environment variables
 
-    Create a `.env` file by copying `.env.example`. More information on the variables that can be set is given in the [environment variables reference](/docs/setup/env-vars)
+    Create a `.env` file by copying `.env.example`. More information on the variables that can be set is given in the [environment variables reference](../../setup/env-vars)
     ```bash
     cp .env.example .env
     ```

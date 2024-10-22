@@ -3,7 +3,7 @@ id: testing
 title: Testing
 ---
 
-Follow the steps below to setup and run the test specifications using Cypress. We recommend [setting up ToolJet locally](/docs/contributing-guide/setup/macos) before proceeding.
+Follow the steps below to setup and run the test specifications using Cypress. We recommend [setting up ToolJet locally](./setup/macos) before proceeding.
 
 ## Setting up
 
