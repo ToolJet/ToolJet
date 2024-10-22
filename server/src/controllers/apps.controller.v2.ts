@@ -409,6 +409,23 @@ export class AppsControllerV2 {
 
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ValidAppInterceptor)
+  @Put(':id/versions/:versionId/pages/reorder')
+  async reorderPages(@User() user, @Param('id') id, @Param('versionId') versionId, @Body() reorderPagesDto) {
+    const version = await this.appsService.findVersion(versionId);
+    const app = version.app;
+    if (app.id !== id) {
+      throw new BadRequestException();
+    }
+    const ability = await this.appsAbilityFactory.appsActions(user, id);
+    if (!ability.can(APP_RESOURCE_ACTIONS.VERSION_UPDATE, app)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+    console.log(reorderPagesDto, 'payload');
+    await this.pageService.reorderPages(reorderPagesDto, versionId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ValidAppInterceptor)
   @Delete(':id/versions/:versionId/pages')
   async deletePage(@User() user, @Param('id') id, @Param('versionId') versionId, @Body() deletePageDto: DeletePageDto) {
     const version = await this.appsService.findVersion(versionId);
