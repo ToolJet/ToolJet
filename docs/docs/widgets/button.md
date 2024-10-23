@@ -2,7 +2,6 @@
 id: button
 title: Button
 ---
-# Button
 
 **Button** component can be used to trigger an action. It can be used to submit a form, navigate to another page, or trigger a query.
 
@@ -27,8 +26,8 @@ Check [Action Reference](/docs/category/actions-reference) docs to get detailed 
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 | :----------- | :----------- | :----------- |
-| Button text | Used to set the label of the button. | Any **String** value: `Send Message`, `Delete`, or `{{queries.xyz.data.action}}` |
-| Loading state | The loading state is used to show a spinner as the button content. Loading state is commonly used with isLoading property of the queries to show a loading status while a query is being run. | Toggle the switch **On** or click on **fx** to programmatically set the value to `{{true}}` or `{{false}}`  |
+| Button text | Used to set the label of the button. | Any **String** value: `Send Message`, `Delete`, or `{{queries.xyz.data.action}}`. |
+| Loading state | The loading state is used to show a spinner as the button content. Loading state is commonly used with isLoading property of the queries to show a loading status while a query is being run. | Toggle the switch **On** or click on **fx** to programmatically set the value to `{{true}}` or `{{false}}`.  |
 
 </div>
 
@@ -54,7 +53,7 @@ Following actions of Button component can be controlled using the component spec
 
 | <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 | :----------- | :----------- | :---------- |
-| buttonText | This variable stores the text displayed on the button. | Access the value dynamically through JavaScript using the following syntax: `{{components.button1.buttonText}}` |
+| buttonText | This variable stores the text displayed on the button. | Access the value dynamically through JavaScript using the following syntax: `{{components.button1.buttonText}}`. |
 | <div style={{ width:"100px"}}> isValid </div> | Indicates if the input meets validation criteria. | Accessible dynamically with JS (for e.g., `{{components.button1.isValid}}`).|
 | <div style={{ width:"100px"}}> isLoading </div> | Indicates if the component is loading. | Accessible dynamically with JS (for e.g., `{{components.button1.isLoading}}`).|
 | <div style={{ width:"100px"}}> isVisible </div> | Indicates if the component is visible. | Accessible dynamically with JS (for e.g., `{{components.button1.isVisible}}`).|
