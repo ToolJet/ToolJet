@@ -1,9 +1,9 @@
 ---
 id: results
-title: Configuring Results
+title: Configuring Response
 ---
 
-Users have the flexibility to customize the results returned by workflows. The **Result** node enables configuration of your output through JavaScript code.
+Users have the flexibility to customize the results returned by workflows. The **Response** node enables configuration of your output through JavaScript code. Each workflow can have multiple response nodes. 
 
 ## Return Data from a Single Node
 Consider a workflow that integrates product data (from the *products* node) with sales data (from the *sales* node) via a JavaScript operation (in the *collatedData* node).
