@@ -1,4 +1,9 @@
-Here is the updated formatted version based on your instructions:
+---
+id: bounded-box
+title: Bounded Box
+---
+
+Here's the updated version with the requested changes:
 
 ---
 
@@ -132,14 +137,16 @@ A Tooltip is often used to specify the extra information when the user hovers th
 
 <div style={{paddingTop:'24px'}}>
 
-## Layout
+## Devices
 
-| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | 
+| <div style={{ width:"100px"}}> Devices </div> | <div style={{ width:"100px"}}> Description </div> | 
 | :----------- | :----------- | 
 | Desktop | Toggle to show or hide the component in the desktop view. Dynamically configure the value by clicking on **fx** and entering a logical expression that results in either true or false. Alternatively, the  values can be set to **`{{true}}`** or **`{{false}}`**. |  
 | Mobile | Toggle to show or hide the component in the desktop view. Dynamically configure the value by clicking on **fx** and entering a logical expression that results in either true or false. Alternatively, the  values can be set to **`{{true}}`** or **`{{false}}`**. | 
 
 </div>
+
+<hr/>
 
 <div style={{paddingTop:'24px'}}>
 
@@ -152,3 +159,6 @@ A Tooltip is often used to specify the extra information when the user hovers th
 | Box shadow | Sets the add shadow effects around a component's frame. You can specify the horizontal and vertical offsets (through X and Y sliders), blur and spread radius, and color of the shadow. | Values that represent x, y, blur, spread and color. Ex: `9px 11px 5px 5px #00000040` |
 
 </div>
+
+
+
