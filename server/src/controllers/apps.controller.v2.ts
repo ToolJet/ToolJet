@@ -153,6 +153,7 @@ export class AppsControllerV2 {
       homePageId: versionToLoad.homePageId,
       globalSettings: { ...versionToLoad.globalSettings, theme: appTheme },
       showViewerNavigation: versionToLoad.showViewerNavigation,
+      pageSettings: versionToLoad?.pageSettings,
     };
   }
 
