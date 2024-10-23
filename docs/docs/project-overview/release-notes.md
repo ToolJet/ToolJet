@@ -5,6 +5,8 @@ title: Release Notes
 
 # ToolJet 3.0 Release Notes
 
+This document outlines the key improvements introduced in ToolJet 3.0, a major upgrade focused on performance, scalability, and developer experience.
+
 ## Platform Enhancements
 
 1. Group Sync OIDC: Easily manage user access to ToolJet applications from your IDP directly
