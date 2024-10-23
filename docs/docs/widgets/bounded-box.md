@@ -137,12 +137,18 @@ A Tooltip is often used to specify the extra information when the user hovers th
 
 <div style={{paddingTop:'24px'}}>
 
+Here is the updated version of the "Devices" section with the requested changes:
+
+---
+
 ## Devices
 
-| <div style={{ width:"100px"}}> Devices </div> | <div style={{ width:"100px"}}> Description </div> | 
-| :----------- | :----------- | 
-| Desktop | Toggle to show or hide the component in the desktop view. Dynamically configure the value by clicking on **fx** and entering a logical expression that results in either true or false. Alternatively, the  values can be set to **`{{true}}`** or **`{{false}}`**. |  
-| Mobile | Toggle to show or hide the component in the desktop view. Dynamically configure the value by clicking on **fx** and entering a logical expression that results in either true or false. Alternatively, the  values can be set to **`{{true}}`** or **`{{false}}`**. | 
+| <div style={{ width:"100px"}}> **Device** </div> | <div style={{ width:"200px"}}> **Description** </div> | <div style={{ width:"150px"}}> **Expected Value** </div> |
+| :----------- | :----------- | :----------------- |
+| Desktop | Toggle on or off to display the component in the desktop view. | You can programmatically determine the value by clicking on **fx** to set the value **`{{true}}`** or **`{{false}}`** |
+| Mobile | Toggle on or off to display the component in the mobile view. | You can programmatically determine the value by clicking on **fx** to set the value  **`{{true}}`** or **`{{false}}`** |
+
+
 
 </div>
 
