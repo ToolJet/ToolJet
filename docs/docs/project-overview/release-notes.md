@@ -9,7 +9,8 @@ This document outlines the key improvements introduced in ToolJet 3.0, a major u
 
 ## App Builder
 
-1. Performance upgrades: Up to 10 times faster app loading speeds
+1. Up to 10 times faster app loading speeds 
+2. Smooth app development even on large applications with 1000s of components and 100s of queries
 2. More intuitive experience in designing applications on the canvas with the new grid system
 4. Highly configurable page management system
 5. Revamped components with more styling and functionality customizations
@@ -27,23 +28,25 @@ This document outlines the key improvements introduced in ToolJet 3.0, a major u
 5. User APIs: External API for creating and managing users
 6. Security fixes: Various improvements to enhance platform security
 
-## ToolJet Database (TJDB)
+## ToolJet Database (TJ DB)
 
-1. Support for more data types for advanced use cases
-2. SQL mode for complex querying 
-3. Import/export schema and duplicate table functionality
-4. Bulk upload, primary key and foreign key support
+1. Custom primary key and foreign key support
+2. Support for more data types for advanced use cases
+3. SQL mode for complex querying 
+4. Bulk upload using CSV 
+5. GUI for complex SQL queries like joins, aggregates, and group by
 
 ## Integrations
 
-15+ new integrations, including:
-- Portkey
-- AWS services (Textract, Lambda, Redshift)
-- Databricks
-- Salesforce
-- Jira
-- Sharepoint
-- Supabase
+1. 15+ new integrations, including:
+    - AWS services (Textract, Lambda, Redshift)
+    - OpenAI
+    - Databricks
+    - Salesforce
+    - Jira
+    - Sharepoint
+    - Supabase
+2. Client Credentials Grant Type
 
 ## AI Apps
 
