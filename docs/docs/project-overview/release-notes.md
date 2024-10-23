@@ -9,9 +9,7 @@ This document outlines the key improvements introduced in ToolJet 3.0, a major u
 
 ## App Builder
 
-1. Performance upgrades:
-Up to 10 times faster app loading speeds
-Smooth app development even on large applications with 1000s of components and 100s of queries
+1. Performance upgrades: Up to 10 times faster app loading speeds
 2. More intuitive experience in designing applications on the canvas with the new grid system
 4. Highly configurable page management system
 5. Revamped components with more styling and functionality customizations
@@ -31,10 +29,10 @@ Smooth app development even on large applications with 1000s of components and 1
 
 ## ToolJet Database (TJDB)
 
-1. New data types: Support for date/time data type
-2. SQL interface: SQL mode for complex querying 
-3. Schema management: Import/export schema and duplicate table functionality
-4. Improved data handling: Bulk upload, primary key and foreign key support
+1. Support for more data types for advanced use cases
+2. SQL mode for complex querying 
+3. Import/export schema and duplicate table functionality
+4. Bulk upload, primary key and foreign key support
 
 ## Integrations
 
@@ -58,6 +56,12 @@ Build AI apps using OpenAI, and Portkey integrations
 3. Support for multiple deployment environments
 4. Webhook triggers to trigger workflows from external apps and services
 5. Multiple result nodes for greater flexibility in defining the output
+
+## Migration Steps
+
+Ready to upgrade to ToolJet 3.0? Follow our migration guides:
+- **[For Self-Hosted Users](https://docs.tooljet.com/docs/beta/setup/upgrade-to-v3)**
+- **[For Cloud Users](https://docs.tooljet.com/docs/beta/setup/cloud-v3-migration)**
 
 This release significantly enhances ToolJet's capabilities across its platform, focusing on improved performance, expanded integrations, and smoother development experience for building complex applications. The addition of AI-powered features and the release of Workflows provide users with advanced tools for creating sophisticated, automated solutions.
 
