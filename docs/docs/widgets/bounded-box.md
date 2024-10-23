@@ -1,6 +1,5 @@
----
-id: bounded-box
-title: Bounded Box
+Here is the updated formatted version based on your instructions:
+
 ---
 
 # Bounded Box
@@ -13,7 +12,7 @@ A **Bounded Box** is an infinitely customizable image annotation component that 
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Properties
 
@@ -29,10 +28,10 @@ A **Bounded Box** is an infinitely customizable image annotation component that 
 | :----------- | :----------- | :----------------- |
 | Image URL | The URL or image data to show it on the component. | Get the image URL dynamically from database: `{{queries.queryname.data[0].url}}` or use [image's base64 data](/docs/how-to/loading-image-pdf-from-db/) |
 | Default value | The data that will load the default bounded boxes over the image when the app is loaded. | Array of objects. Check the [Default value](#default-value) data properties |
-| Selector | The bounded box support selection using rectangle or point. | Click **Fx** to set the value `RECTANGLE` or `POINT` |
+| Selector | The bounded box support selection using rectangle or point. | Click **fx** to set the value `RECTANGLE` or `POINT` |
 | List of labels | The list of label that will be displayed in the dropdown while selection in the bounded-box. | Labels in array format: `{{['Tree', 'Car', 'Stree light']}}` |
 
-#### Default value
+### Default value
 
 Provide the data that will load the default bounding boxes over the image when the app is loaded. The data is expected to be an array of objects format.
 
@@ -70,7 +69,7 @@ Provide the data that will load the default bounding boxes over the image when t
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Events
 
@@ -88,7 +87,7 @@ Check [Action Reference](/docs/category/actions-reference) docs to get the detai
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Component Specific Actions (CSA)
 
@@ -96,7 +95,7 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Exposed Variables
 
@@ -115,11 +114,11 @@ The values can be accessed dynamically using `{{components.boundedbox1.annotatio
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## General
 
-#### Tooltip
+### Tooltip
 
 A Tooltip is often used to specify the extra information when the user hovers the mouse pointer over the component. Once a value is set for Tooltip, hovering over the element will display the specified string as the tooltip text.
 
@@ -131,25 +130,25 @@ A Tooltip is often used to specify the extra information when the user hovers th
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Layout
 
 | <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | 
 | :----------- | :----------- | 
-| Desktop | Toggle to show or hide the component in the desktop view. Dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either true or false. Alternatively, the  values can be set to **`{{true}}`** or **`{{false}}`**. |  
-| Mobile | Toggle to show or hide the component in the desktop view. Dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either true or false. Alternatively, the  values can be set to **`{{true}}`** or **`{{false}}`**. | 
+| Desktop | Toggle to show or hide the component in the desktop view. Dynamically configure the value by clicking on **fx** and entering a logical expression that results in either true or false. Alternatively, the  values can be set to **`{{true}}`** or **`{{false}}`**. |  
+| Mobile | Toggle to show or hide the component in the desktop view. Dynamically configure the value by clicking on **fx** and entering a logical expression that results in either true or false. Alternatively, the  values can be set to **`{{true}}`** or **`{{false}}`**. | 
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Styles
 
 | <div style={{ width:"100px"}}> Style  </div>  | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"100px"}}> Expected Value </div> |
 | :----------- | :----------- | :----------- |
-| Visibility | Toggle on or off to control the visibility of the component when the app is loaded. |  **`{{true}}`** or **`{{false}}`**, By default, it's set to `{{true}}` |
-| Disable | Toggle on to disable the component. | **`{{true}}`** or **`{{false}}`**, By default, it's set to `{{false}}` |
-| Box shadow | Sets the add shadow effects around a component's frame. You can specify the horizontal and vertical offsets(through X and Y sliders), blur and spread radius, and color of the shadow. | Values that represent x,y, blur, spread and color. Ex: `9px 11px 5px 5px #00000040` |
+| Visibility | Toggle on or off to control the visibility of the component when the app is loaded. |  **`{{true}}`** or **`{{false}}`**, By default, it's set to **`{{true}}`** |
+| Disable | Toggle on to disable the component. | **`{{true}}`** or **`{{false}}`**, By default, it's set to **`{{false}}`** |
+| Box shadow | Sets the add shadow effects around a component's frame. You can specify the horizontal and vertical offsets (through X and Y sliders), blur and spread radius, and color of the shadow. | Values that represent x, y, blur, spread and color. Ex: `9px 11px 5px 5px #00000040` |
 
 </div>
