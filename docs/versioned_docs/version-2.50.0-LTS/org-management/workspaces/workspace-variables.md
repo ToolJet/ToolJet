@@ -6,7 +6,7 @@ title: Workspace Variables
 :::caution
 Workspace variables are currently marked as deprecated, indicating that it will be removed in future releases. In the current version, you are still able to delete existing variables and use it through out any ToolJet apps, but creating and updating variables are no longer supported. 
 
-Please use [Workspace Constants](/docs/org-management/workspaces/workspace_constants) instead.
+Please use [Workspace Constants](./workspace_constants) instead.
 :::
 
 Workspace Variables are the variables with some value(usually tokens/secret keys/API keys) that can be used in different apps across the same Workspace.
@@ -68,7 +68,7 @@ This feature enables us to add a client variable with and without `encryption`. 
 
 ### Using Variable in an App
 
-Let's use the variable that we created [here](/docs/org-management/workspaces/workspace-variables#adding-the-environment-variable). If you have used ToolJet before, then you know that for getting the values from any variable we use JS notation i.e. `{{}}` but for using the Workspace variables we have different opening and closing notation `%% %%`. The environment variables will not work inside js code `{{}}`.
+Let's use the variable that we created [here](#adding-the-environment-variable). If you have used ToolJet before, then you know that for getting the values from any variable we use JS notation i.e. `{{}}` but for using the Workspace variables we have different opening and closing notation `%% %%`. The environment variables will not work inside js code `{{}}`.
 
 So, the syntax for using the variable that we created before will be `%%client.pi%%`
 

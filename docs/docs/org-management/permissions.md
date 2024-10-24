@@ -87,5 +87,3 @@ For more fine-grained control, administrators can set permissions for individual
 - Users inherit permissions from their assigned role and any groups they belong to.
 - Custom group permissions can override default role permissions.
 - When a user belongs to multiple groups, they receive the highest level of permission granted by any of their groups.
-
----

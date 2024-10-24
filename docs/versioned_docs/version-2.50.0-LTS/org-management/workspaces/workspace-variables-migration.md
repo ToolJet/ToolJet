@@ -3,9 +3,7 @@ id: workspace-variables-migration
 title: Workspace Variables Migration Guide
 ---
 
-
 Workspace variables are currently marked as deprecated, indicating that it will be removed in future releases. This guide will help you migrate from Workspace Variables to Workspace Constants. Workspace Constants are designed to be resolved on the server-side only, ensuring a high level of security. You can assign users to a specific role and provide create, update, and delete access to Workspace Constants based on the role. By default, the Workspace admin has full access to Workspace Constants.
-
 
 ## Syntax
 
