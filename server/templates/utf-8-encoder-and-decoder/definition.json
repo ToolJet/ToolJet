@@ -1026,7 +1026,7 @@
               "id": "e97e4993-6647-4520-ad92-9f63bc2e7c90",
               "name": "utfToText",
               "options": {
-                "code": "function utfToText(\n  text\n){\n  let utfArray = new Uint8Array(text.split(',').map(Number));\n  const decoder = new TextDecoder('utf-8');\n  const decodedText = decoder.decode(utfArray);\n  components.textarea4.setText(decodedText);\n}\n\nutfToText(\n  components.utfText.value\n);",
+                "code": "function utfToText(\n  text\n){\n  const bytes = [];\n   for (let i = 0; i < text.length; i += 2) {\n    bytes.push(parseInt(text.substr(i, 2), 16));\n  }\n  \n  const decoder = new TextDecoder('utf-8');\n  const decodedText = decoder.decode(new Uint8Array(bytes));\n  components.textarea4.setText(decodedText);\n}\n\nutfToText(\n  components.utfText.value\n);",
                 "parameters": [],
                 "runOnPageLoad": false,
                 "showSuccessNotification": false,
@@ -1035,20 +1035,20 @@
               "dataSourceId": "33ccddde-0ad1-4b2d-99e6-966f4c01578e",
               "appVersionId": "763c32ff-b8cc-4a0c-bfbf-8eda84679a3e",
               "createdAt": "2024-10-22T19:15:56.794Z",
-              "updatedAt": "2024-10-22T19:15:56.794Z"
+              "updatedAt": "2024-10-24T02:17:31.975Z"
             },
             {
               "id": "538429f9-5f0e-4438-b2da-08671a7a1d65",
               "name": "textToUTF",
               "options": {
-                "code": "function utfText(\n  text\n){\n  const encoder = new TextEncoder();\n  const encoded = encoder.encode(text);\n  components.textarea5.setText(encoded.toString())\n  \n \n}\nutfText(\n  components.textarea3.value\n);",
+                "code": "function utfText(\n  text\n){\n  const encoder = new TextEncoder();\n  const encoded = encoder.encode(text);\n   const hexString = Array.from(encoded)\n    .map(byte => byte.toString(16).padStart(2, '0'))\n    .join('');\n  components.textarea5.setText(hexString);\n  \n \n}\nutfText(\n  components.textarea3.value\n);",
                 "parameters": [],
                 "showSuccessNotification": false
               },
               "dataSourceId": "33ccddde-0ad1-4b2d-99e6-966f4c01578e",
               "appVersionId": "763c32ff-b8cc-4a0c-bfbf-8eda84679a3e",
               "createdAt": "2024-10-22T19:15:56.794Z",
-              "updatedAt": "2024-10-22T19:15:56.794Z"
+              "updatedAt": "2024-10-24T02:16:04.726Z"
             },
             {
               "id": "db4e829f-f85d-44f4-87c3-117c2432850a",
