@@ -32,6 +32,8 @@ function InviteUsersForm({
 
   const hiddenFileInput = useRef(null);
 
+  const darkmode = localStorage.getItem('darkMode') === 'true';
+
   useEffect(() => {
     if (currentEditingUser && groups.length) {
       const { first_name, last_name, email, groups: addedToGroups } = currentEditingUser;
@@ -100,6 +102,12 @@ function InviteUsersForm({
   };
 
   const isEditing = userDrawerMode === USER_DRAWER_MODES.EDIT;
+  let fillColor;
+  if (activeTab == 1) {
+    fillColor = darkmode ? '#FFFFFF' : '#11181C';
+  } else {
+    fillColor = darkmode ? '#AAAAAA' : '#687076';
+  }
 
   return (
     <div>
@@ -131,7 +139,7 @@ function InviteUsersForm({
                     onClick={() => setActiveTab(1)}
                     data-cy="button-invite-with-email"
                   >
-                    <SolidIcon name="mail" width="14" fill={activeTab == 1 ? '#11181C' : '#687076'} />
+                    <SolidIcon name="mail" width="14" fill={fillColor} />
                     <span> Invite with email</span>
                   </button>
                   <button
@@ -139,7 +147,7 @@ function InviteUsersForm({
                     onClick={() => setActiveTab(2)}
                     data-cy="button-upload-csv-file"
                   >
-                    <SolidIcon name="fileupload" width="14" fill={activeTab == 2 ? '#11181C' : '#687076'} />
+                    <SolidIcon name="fileupload" width="14" fill={fillColor} />
                     <span>Upload CSV file</span>
                   </button>
                 </div>
