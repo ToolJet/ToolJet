@@ -17,12 +17,13 @@ export const Tabs = function Tabs({
   styles,
   darkMode,
   dataCy,
+  properties,
 }) {
   const { tabWidth, boxShadow } = styles;
+  const { defaultTab } = properties;
 
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
-  const defaultTab = component.definition.properties.defaultTab.value;
   // config for tabs. Includes title
   const tabs = isExpectedDataType(resolveWidgetFieldValue(component.definition.properties?.tabs?.value), 'array');
   let parsedTabs = tabs;
@@ -43,7 +44,6 @@ export const Tabs = function Tabs({
 
   // Default tab
   let parsedDefaultTab = defaultTab;
-  parsedDefaultTab = resolveWidgetFieldValue(parsedDefaultTab, 1);
 
   const parsedDisabledState =
     typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState) : disabledState;
@@ -137,7 +137,6 @@ export const Tabs = function Tabs({
     }
     return true; // Render by default if no specific conditions are met
   }
-
   return (
     <div
       data-disabled={parsedDisabledState}

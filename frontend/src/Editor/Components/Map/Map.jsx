@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { GoogleMap, LoadScript, Marker, Autocomplete, Polygon } from '@react-google-maps/api';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { darkModeStyles } from './styles';
@@ -9,32 +9,30 @@ export const Map = function Map({
   id,
   width,
   height,
-  component,
   darkMode,
-  onComponentClick,
-  onComponentOptionChanged,
-  onComponentOptionsChanged,
+  onComponentClick = () => {},
+  onComponentOptionChanged = () => {},
+  onComponentOptionsChanged = () => {},
   styles,
   setExposedVariable,
+  setExposedVariables,
   dataCy,
   properties,
   fireEvent,
 }) {
-  const center = component.definition.properties.initialLocation.value;
+  const isInitialRender = useRef(true);
+  const center = properties?.initialLocation ?? { lat: 0, lng: 0 };
   const { polygonPoints = [], defaultMarkers = [] } = properties;
 
   const { t } = useTranslation();
 
-  const addNewMarkersProp = component.definition.properties.addNewMarkers;
-  const canAddNewMarkers = addNewMarkersProp ? resolveWidgetFieldValue(addNewMarkersProp.value) : false;
+  const canAddNewMarkers = properties?.addNewMarkers ?? false;
+  const canSearch = properties?.canSearch ?? false;
+  const widgetVisibility = styles?.visibility ?? true;
+  const disabledState = styles?.disabledState ?? false;
 
-  const canSearchProp = component.definition.properties.canSearch;
-  const canSearch = canSearchProp ? resolveWidgetFieldValue(canSearchProp.value) : false;
-  const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
-  const disabledState = component.definition.styles?.disabledState?.value ?? false;
-
-  const parsedDisabledState =
-    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState) : disabledState;
+  // const parsedDisabledState =
+  //   typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState) : disabledState;
 
   let parsedWidgetVisibility = widgetVisibility;
 
@@ -58,6 +56,16 @@ export const Map = function Map({
     setMarkers(defaultMarkers);
   }, [JSON.stringify(defaultMarkers)]);
 
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('center', center);
+  }, [center]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('markers', defaultMarkers);
+  }, [defaultMarkers]);
+
   function handleMapClick(e) {
     if (!canAddNewMarkers) {
       return;
@@ -66,11 +74,12 @@ export const Map = function Map({
     const lat = e.latLng.lat();
     const lng = e.latLng.lng();
 
-    const newMarkers = markers;
+    const newMarkers = [...markers];
     newMarkers.push({ lat, lng });
     setMarkers(newMarkers);
-
-    onComponentOptionChanged(component, 'markers', newMarkers).then(() => fireEvent('onCreateMarker'));
+    setExposedVariable('markers', newMarkers);
+    fireEvent('onCreateMarker');
+    // onComponentOptionChanged(component, 'markers', newMarkers).then(() => fireEvent('onCreateMarker'));
   }
 
   function addMapUrlToJson(centerJson) {
@@ -88,17 +97,24 @@ export const Map = function Map({
 
     const newCenter = gmap.center?.toJSON();
     setMapCenter(newCenter);
-
-    onComponentOptionsChanged(component, [
-      ['bounds', bounds],
-      ['center', addMapUrlToJson(newCenter)],
-    ]).then(() => fireEvent('onBoundsChange'));
+    const exposedVariables = {
+      bounds,
+      center: addMapUrlToJson(newCenter),
+    };
+    setExposedVariables(exposedVariables);
+    fireEvent('onBoundsChange');
+    // onComponentOptionsChanged(component, [
+    //   ['bounds', bounds],
+    //   ['center', addMapUrlToJson(newCenter)],
+    // ]).then(() => fireEvent('onBoundsChange'));
   }
 
   useEffect(() => {
+    if (isInitialRender.current) return;
     const resolvedCenter = resolveWidgetFieldValue(center);
     setMapCenter(resolvedCenter);
-    onComponentOptionsChanged(component, [['center', addMapUrlToJson(resolvedCenter)]]);
+    setExposedVariable('center', addMapUrlToJson(resolvedCenter));
+    // onComponentOptionsChanged(component, [['center', addMapUrlToJson(resolvedCenter)]]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [center]);
 
@@ -106,11 +122,14 @@ export const Map = function Map({
   const onLoad = useCallback(function onLoad(mapInstance) {
     setGmap(mapInstance);
     const centerJson = mapInstance.center?.toJSON();
-    onComponentOptionsChanged(component, [['center', addMapUrlToJson(centerJson)]]);
+    setExposedVariable('center', addMapUrlToJson(centerJson));
+    // onComponentOptionsChanged(component, [['center', addMapUrlToJson(centerJson)]]);
   });
 
   function handleMarkerClick(index) {
-    onComponentOptionChanged(component, 'selectedMarker', markers[index]).then(() => fireEvent('onMarkerClick'));
+    setExposedVariable('selectedMarker', markers[index]);
+    fireEvent('onMarkerClick');
+    // onComponentOptionChanged(component, 'selectedMarker', markers[index]).then(() => fireEvent('onMarkerClick'));
   }
 
   function onPlaceChanged() {
@@ -124,18 +143,27 @@ export const Map = function Map({
   }
 
   useEffect(() => {
-    setExposedVariable('setLocation', async function (lat, lng) {
-      if (lat && lng) setMapCenter(resolveWidgetFieldValue({ lat, lng }));
-    });
-  }, [setMapCenter]);
+    const resolvedCenter = resolveWidgetFieldValue(center);
+    const exposedVariables = {
+      setLocation: async function (lat, lng) {
+        if (lat && lng) setMapCenter(resolveWidgetFieldValue({ lat, lng }));
+      },
+      center: addMapUrlToJson(resolvedCenter),
+      markers: defaultMarkers,
+    };
+
+    setMapCenter(resolvedCenter);
+    setExposedVariables(exposedVariables);
+    isInitialRender.current = false;
+  }, []);
 
   return (
     <div
-      data-disabled={parsedDisabledState}
+      data-disabled={disabledState}
       style={{ height, display: parsedWidgetVisibility ? '' : 'none', boxShadow: styles.boxShadow }}
       onClick={(event) => {
         event.stopPropagation();
-        onComponentClick(id, component, event);
+        onComponentClick(id);
       }}
       className="map-widget"
       data-cy={dataCy}

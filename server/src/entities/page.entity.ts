@@ -28,8 +28,11 @@ export class Page {
   @Column()
   disabled: boolean;
 
+  @Column('simple-json', { name: 'hidden' })
+  hidden;
+
   @Column()
-  hidden: boolean;
+  icon: string;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;

@@ -35,6 +35,12 @@ export default function generateColumnsData({
   cellSize,
   maxRowHeightValue,
 }) {
+  const isValueRowDependent = (value) => {
+    return (
+      (typeof value === 'string' || Array.isArray(value)) && (value.includes('cellValue') || value.includes('rowData'))
+    );
+  };
+
   return columnProperties.map((column) => {
     if (!column) return;
     const columnSize = columnSizes[column?.id] || columnSizes[column?.name] || column.columnSize;
@@ -51,8 +57,8 @@ export default function generateColumnsData({
       columnType === 'image'
     ) {
       columnOptions.selectOptions = [];
-      const values = resolveReferences(column.values, []);
-      const labels = resolveReferences(column.labels, []);
+      const values = resolveReferences(column.values);
+      const labels = resolveReferences(column.labels);
 
       if (Array.isArray(labels) && Array.isArray(values)) {
         columnOptions.selectOptions = labels.map((label, index) => {
@@ -60,13 +66,34 @@ export default function generateColumnsData({
         });
       }
     }
+
+    // This is done to ensure that if row dependent properties are not used, the default value is used and performance is not affected
+    const rowDependentMap = {
+      cellBackgroundColor: isValueRowDependent(column.cellBackgroundColor),
+      textColor: isValueRowDependent(column.textColor),
+      minValue: isValueRowDependent(column.minValue),
+      maxValue: isValueRowDependent(column.maxValue),
+      minLength: isValueRowDependent(column.minLength),
+      maxLength: isValueRowDependent(column.maxLength),
+      regex: isValueRowDependent(column.regex),
+      customRule: isValueRowDependent(column.customRule),
+      isEditable: isValueRowDependent(column.isEditable),
+      minDate: isValueRowDependent(column.minDate),
+      maxDate: isValueRowDependent(column.maxDate),
+      borderRadius: isValueRowDependent(column.borderRadius),
+      multiselect: false,
+    };
+
+    let useDynamicOptions = false;
     if (columnType === 'select' || columnType === 'newMultiSelect') {
       columnOptions.selectOptions = [];
-      const useDynamicOptions = resolveReferences(column?.useDynamicOptions);
+      useDynamicOptions = resolveReferences(column?.useDynamicOptions, currentState);
       if (useDynamicOptions) {
-        const dynamicOptions = resolveReferences(column?.dynamicOptions || []);
+        rowDependentMap['multiselect'] = isValueRowDependent(column?.dynamicOptions);
+        const dynamicOptions = resolveReferences(column?.dynamicOptions || [], currentState);
         columnOptions.selectOptions = Array.isArray(dynamicOptions) ? dynamicOptions : [];
       } else {
+        rowDependentMap['multiselect'] = isValueRowDependent(JSON.stringify(column?.options));
         const options = column?.options ?? [];
         columnOptions.selectOptions =
           options?.map((option) => ({
@@ -101,6 +128,7 @@ export default function generateColumnsData({
       };
     }
     const width = columnSize || defaultColumn.width;
+
     return {
       id: column.id,
       Header: resolveReferences(column.name) ?? '',
@@ -146,6 +174,14 @@ export default function generateColumnsData({
           exposeToCodeHinter((prevState) => ({ ...prevState, ...customResolvables }));
         }
         cellValue = cellValue === undefined || cellValue === null ? '' : cellValue;
+        column = { ...column };
+
+        Object.keys(rowDependentMap).map((key) => {
+          column[key] = rowDependentMap[key]
+            ? resolveReferences(cell.column?.[key], currentState, '', { cellValue, rowData })
+            : column[key];
+        });
+
         switch (columnType) {
           case 'string':
           case undefined:
@@ -260,9 +296,8 @@ export default function generateColumnsData({
             };
 
             const allowedDecimalPlaces = column?.decimalPlaces ?? null;
-
             const removingExcessDecimalPlaces = (cellValue, allowedDecimalPlaces) => {
-              allowedDecimalPlaces = resolveReferences(allowedDecimalPlaces);
+              allowedDecimalPlaces = resolveReferences(allowedDecimalPlaces, currentState, 2, { cellValue, rowData });
               if (cellValue?.toString()?.includes('.')) {
                 const splittedCellValue = cellValue?.toString()?.split('.');
                 const decimalPlacesUnderLimit = splittedCellValue[1].split('').splice(0, allowedDecimalPlaces).join('');
@@ -270,7 +305,6 @@ export default function generateColumnsData({
               }
               return cellValue;
             };
-
             cellValue = allowedDecimalPlaces ? removingExcessDecimalPlaces(cellValue, allowedDecimalPlaces) : cellValue;
 
             if (isEditable) {
@@ -445,8 +479,26 @@ export default function generateColumnsData({
               currentState,
               customResolveObjects: { cellValue },
             });
-
             const { isValid, validationError } = validationData;
+            let rowOptions = [];
+            if ((columnType === 'select' || columnType === 'newMultiSelect') && rowDependentMap['multiselect']) {
+              if (useDynamicOptions) {
+                const dynamicOptions = resolveReferences(column?.dynamicOptions || [], currentState, [], {
+                  rowData,
+                  cellValue,
+                });
+                rowOptions = Array.isArray(dynamicOptions) ? dynamicOptions : [];
+              } else {
+                const options = column?.options ?? [];
+
+                rowOptions =
+                  options?.map((option) => ({
+                    label: resolveReferences(option.label, currentState, [], { rowData, cellValue }),
+                    value: resolveReferences(option.value, currentState, [], { rowData, cellValue }),
+                  })) ?? [];
+              }
+            }
+
             return (
               <div
                 className="h-100 d-flex align-items-center flex-column justify-content-center"
@@ -468,7 +520,7 @@ export default function generateColumnsData({
                 )}
                 {['newMultiSelect', 'select'].includes(columnType) && (
                   <CustomSelect
-                    options={columnOptions.selectOptions}
+                    options={rowOptions.length > 0 ? rowOptions : columnOptions.selectOptions}
                     value={cellValue}
                     search={true}
                     onChange={(value) => {
@@ -614,12 +666,23 @@ export default function generateColumnsData({
             );
           }
           case 'datepicker': {
-            const textColor = resolveReferences(column.textColor, '', { cellValue, rowData });
-            const isTimeChecked = resolveReferences(column?.isTimeChecked);
-            const isTwentyFourHrFormatEnabled = resolveReferences(column?.isTwentyFourHrFormatEnabled);
-            const disabledDates = resolveReferences(column?.disabledDates);
-            const parseInUnixTimestamp = resolveReferences(column?.parseInUnixTimestamp);
-            const isDateSelectionEnabled = resolveReferences(column?.isDateSelectionEnabled);
+            const textColor = resolveReferences(column.textColor, currentState, '', { cellValue, rowData });
+            const isTimeChecked = resolveReferences(column?.isTimeChecked, currentState, false, { cellValue, rowData });
+            const isTwentyFourHrFormatEnabled = resolveReferences(
+              column?.isTwentyFourHrFormatEnabled,
+              currentState,
+              false,
+              { cellValue, rowData }
+            );
+            const disabledDates = resolveReferences(column?.disabledDates, currentState, [], { cellValue, rowData });
+            const parseInUnixTimestamp = resolveReferences(column?.parseInUnixTimestamp, currentState, '', {
+              cellValue,
+              rowData,
+            });
+            const isDateSelectionEnabled = resolveReferences(column?.isDateSelectionEnabled, currentState, true, {
+              cellValue,
+              rowData,
+            });
             const cellStyles = {
               color: textColor ?? '',
             };
@@ -688,20 +751,30 @@ export default function generateColumnsData({
             );
           }
           case 'link': {
-            const linkTarget = resolveReferences(column?.linkTarget ?? '{{true}}');
-            const displayText = column?.displayText ? resolveReferences(column.displayText) : '';
-            column = {
-              ...column,
-              linkColor: column?.linkColor ?? '#1B1F24',
-              underlineColor: column?.underlineColor ?? '#4368E3',
-            };
+            const linkTarget = resolveReferences(column?.linkTarget ?? '{{true}}', currentState, '', {
+              cellValue,
+              rowData,
+            });
+            const displayText = resolveReferences(column?.displayText ?? '{{}}', currentState, '', {
+              cellValue,
+              rowData,
+            });
+            const linkColor = resolveReferences(column?.linkColor ?? '#1B1F24', currentState, '', {
+              cellValue,
+              rowData,
+            });
+            const underlineColor = resolveReferences(column.underlineColor ?? '', currentState, '', {
+              cellValue,
+              rowData,
+            });
+
             return (
               <div className="h-100 d-flex align-items-center">
                 <Link
                   cellValue={cellValue}
                   linkTarget={linkTarget}
-                  linkColor={column.linkColor}
-                  underlineColor={column.underlineColor}
+                  linkColor={linkColor}
+                  underlineColor={underlineColor}
                   underline={column.underline}
                   displayText={displayText}
                   darkMode={darkMode}

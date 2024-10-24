@@ -15,7 +15,7 @@ import { useKeyboardShortcutStore } from '@/_stores/keyboardShortcutStore';
 import { validateMultilineCode } from './utility';
 import { componentTypes } from '@/Editor/WidgetManager/components';
 
-const reservedKeyword = ['app', 'window'];
+export const reservedKeyword = ['app', 'window'];
 
 export const Constants = {
   Global: 'Global',
@@ -83,7 +83,7 @@ export function resolve(data, state) {
   }
 }
 
-function resolveCode(code, state, customObjects = {}, withError = false, reservedKeyword, isJsCode) {
+export function resolveCode(code, state, customObjects = {}, withError = false, reservedKeyword, isJsCode) {
   let result = '';
   let error;
 
@@ -285,7 +285,7 @@ export function resolveReferences(
         return new_array;
       } else if (!_.isEmpty(object)) {
         Object.keys(object).forEach((key) => {
-          const resolved_object = resolveReferences(object[key]);
+          const resolved_object = resolveReferences(object[key], state);
           object[key] = resolved_object;
         });
         if (withError) return [object, error];
@@ -731,6 +731,24 @@ export const isJson = (str) => {
   return true;
 };
 
+export const isStringValidJson = (str) => {
+  try {
+    JSON.parse(str);
+  } catch (e) {
+    return false;
+  }
+  return true;
+};
+
+export const isObjectValidJson = (obj) => {
+  try {
+    JSON.stringify(obj);
+  } catch (e) {
+    return false;
+  }
+  return true;
+};
+
 export function buildURLWithQuery(url, query = {}) {
   return `${url}?${toQuery(query)}`;
 }
@@ -749,27 +767,27 @@ export const handleCircularStructureToJSON = () => {
   };
 };
 
-export function hasCircularDependency(obj) {
-  let seenObjects = new WeakSet();
-
-  function detect(obj) {
-    if (obj && typeof obj === 'object') {
-      if (seenObjects.has(obj)) {
-        // Circular reference found
-        return true;
-      }
-      seenObjects.add(obj);
-
-      for (let key in obj) {
-        if (obj.hasOwnProperty(key) && detect(obj[key])) {
-          return true;
-        }
-      }
-    }
+export function hasCircularDependency(obj, stack = new Set()) {
+  if (typeof obj !== 'object' || obj === null) {
     return false;
   }
 
-  return detect(obj);
+  if (stack.has(obj)) {
+    return true;
+  }
+
+  stack.add(obj);
+
+  for (let key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      if (hasCircularDependency(obj[key], new Set(stack))) {
+        return true;
+      }
+    }
+  }
+
+  stack.delete(obj);
+  return false;
 }
 
 export const hightlightMentionedUserInComment = (comment) => {
