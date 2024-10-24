@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { OnboardingFormWrapper } from '@/modules/onboarding/components';
+import { OnboardingUIWrapper } from '@/modules/onboarding/components';
 import { FormHeader } from '@/modules/common/components';
 import './resources/styles/forgot-password-info.styles.scss';
 import SepratorComponent from '@/modules/common/components/SepratorComponent';
@@ -19,7 +19,7 @@ const ForgotPasswordInfoScreen = ({ email }) => {
 
   return (
     <div className="forgot-password-info-wrapper info-screen">
-      <OnboardingFormWrapper>
+      <OnboardingUIWrapper>
         <FormHeader>{t('forgotPasswordInfo.header', 'Check your mail')}</FormHeader>
         <p className="message">{message}</p>
         <span className="info">{info}</span>
@@ -29,7 +29,7 @@ const ForgotPasswordInfoScreen = ({ email }) => {
             <span className="button-text">{t('forgotPasswordInfo.backToLogin', 'Back to login')}</span>
           </button>
         </div>
-      </OnboardingFormWrapper>
+      </OnboardingUIWrapper>
     </div>
   );
 };

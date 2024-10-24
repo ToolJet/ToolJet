@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { OnboardingFormWrapper } from '@/modules/onboarding/components';
+import { OnboardingUIWrapper } from '@/modules/onboarding/components';
 import { FormHeader } from '@/modules/common/components';
 import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 
@@ -15,7 +15,7 @@ const ForgotPasswordInfoScreen = ({ email }) => {
 
   return (
     <div className="forgot-password-info-wrapper info-screen">
-      <OnboardingFormWrapper>
+      <OnboardingUIWrapper>
         <FormHeader>Password has been reset</FormHeader>
         <p className="message">{message}</p>
         <div className="action-buttons pt-3">
@@ -31,7 +31,7 @@ const ForgotPasswordInfoScreen = ({ email }) => {
             <span className="button-text">{t('forgotPasswordInfo.backToLogin', 'Back to login')}</span>
           </button>
         </div>
-      </OnboardingFormWrapper>
+      </OnboardingUIWrapper>
     </div>
   );
 };

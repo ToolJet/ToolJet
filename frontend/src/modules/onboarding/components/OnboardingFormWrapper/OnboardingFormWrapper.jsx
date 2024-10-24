@@ -1,47 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import Logo from '@/modules/common/resources/images/Logo';
 import './resources/styles/onboarding-form-wrapper.styles.scss';
-import {
-  retrieveWhiteLabelLogo,
-  fetchWhiteLabelDetails,
-  defaultWhiteLabellingSettings,
-} from '@white-label/whiteLabelling';
 import { getSubpath } from '@/_helpers/routes';
+import WhiteLabellingFormWrapper from '@/modules/onboarding/components/WhiteLabellingFormWrapper';
+import { defaultWhiteLabellingSettings, retrieveWhiteLabelFavicon } from '@white-label/whiteLabelling';
 const OnboardingFormWrapper = ({ children: components }) => {
-  const [whiteLabelLogo, setWhiteLableLogo] = useState(null);
-  const [imageWidth, setImageWidth] = useState(130);
-  const img = new Image();
-  const handleLoad = () => {
-    const { naturalWidth } = img;
-    setImageWidth(naturalWidth < 130 ? naturalWidth : 130);
-  };
-  useEffect(() => {
-    fetchWhiteLabelDetails();
-    const data = retrieveWhiteLabelLogo();
-    setWhiteLableLogo(data);
-  }, []);
-  useEffect(() => {
-    if (!whiteLabelLogo) return;
-    img.src = whiteLabelLogo;
-    img.addEventListener('load', handleLoad);
-    return () => {
-      img.removeEventListener('load', handleLoad);
-    };
-  }, [whiteLabelLogo]);
+  const whiteLabelLogoTest = retrieveWhiteLabelFavicon();
+  const defaultWhiteLabelLogoTest = defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON;
+  const isWhiteLabelApplied = !(whiteLabelLogoTest === defaultWhiteLabelLogoTest);
   const redirectToLoginPage = () => {
     window.location.href = getSubpath() ? `${getSubpath()}` : '/';
   };
+  if (window.location.pathname != '/setup' && isWhiteLabelApplied == null) {
+    return <div></div>;
+  }
+  if (window.location.pathname != '/setup' && isWhiteLabelApplied) {
+    return <WhiteLabellingFormWrapper>{components}</WhiteLabellingFormWrapper>;
+  }
   return (
-    <div className="onboarding-form-wrapper">
+    <div>
       <div className="tooljet-header cursor-pointer" onClick={redirectToLoginPage}>
-        {whiteLabelLogo != '' &&
-        window.location.pathname != '/setup' &&
-        whiteLabelLogo != defaultWhiteLabellingSettings.WHITE_LABEL_LOGO &&
-        imageWidth != null ? (
-          <img width={imageWidth} height="26px" src={whiteLabelLogo} />
-        ) : (
-          <Logo />
-        )}
+        <Logo />
       </div>
       {components}
     </div>

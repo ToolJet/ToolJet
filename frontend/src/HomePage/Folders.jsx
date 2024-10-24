@@ -44,7 +44,6 @@ export const Folders = function Folders({
 
   const { t } = useTranslation();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
-
   useEffect(() => {
     setLoadingStatus(foldersLoading);
     // eslint-disable-next-line react-hooks/exhaustive-deps
