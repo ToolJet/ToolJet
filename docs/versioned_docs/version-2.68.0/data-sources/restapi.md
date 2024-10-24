@@ -5,17 +5,15 @@ title: REST API
 
 ToolJet can establish connections with any available REST API endpoint, allowing you to create queries and interact with external data sources seamlessly.
 
+<div style={{paddingTop:'24px'}}>
+
 ## Connection
 
-To establish a connection with the REST API data source, you can either click on the `Add new` button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+To establish a connection with the REST API data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
 
-<div style={{textAlign: 'center'}}>
+<img className="screenshot-full" src="/img/datasource-reference/rest-api/restconnect.gif" alt="ToolJet - Data source - REST API" style={{marginBottom:'15px'}} />
 
-<img className="screenshot-full" src="/img/datasource-reference/rest-api/restconnect.gif" alt="ToolJet - Data source - REST API" />
-
-</div>
-
-**ToolJet requires the following to connect to a REST API data source:**
+ToolJet requires the following to connect to a REST API data source:
 
 - **Base URL**: REST API endpoint URL
 - **Headers**: Key-value pairs to include as headers with REST API requests
@@ -39,11 +37,11 @@ To establish a connection with the REST API data source, you can either click on
   - **Client Certificate**: Requires a client certificate and private key to authenticate with the server.
 - **Cookies**: Key-value pairs to include as cookies with REST API requests. These cookies will be sent with every query created using this data source instance.
 
-<div style={{textAlign: 'center'}}>
-
 <img className="screenshot-full" src="/img/datasource-reference/rest-api/oauth-v2.png" alt="ToolJet - Data source - REST API" />
 
 </div>
+
+<div style={{paddingTop:'24px'}}>
 
 ## Retry on Network Errors
 
@@ -64,60 +62,55 @@ You can configure this feature at two levels:
 
 1. **Data Source Level**: In the REST API data source configuration, you'll find a toggle for **Retry on network errors** This sets the default behavior for all queries using this data source.
 
-<div style={{textAlign: 'center'}}>
 <img className="screenshot-full" src="/img/datasource-reference/rest-api/rest-api-data-source.png" alt="ToolJet - Data source - REST API" />
-</div>
 
 2. **Query Level**: In the query builder for each REST API query, you'll find a similar toggle for for **Retry on network errors** under the **Settings** tab. This sets the behavior for that specific query.
 
-<div style={{textAlign: 'center'}}>
 <img className="screenshot-full" src="/img/datasource-reference/rest-api/query-builder-retry.png" alt="ToolJet - Data source - REST API" />
-</div>
 
 :::info
 If the data source-level configuration is enabled but a specific query has it disabled, the query-level setting takes precedence.
 :::
 
+</div>
+
+<div style={{paddingTop:'24px'}}>
+
 ## Querying REST API
 
 Once you have connected to the REST API data source, follow these steps to write queries and interact with a REST API in the ToolJet application:
 
-1. Open the ToolJet application and navigate to the query panel at the bottom of the app builder.
-2. Click the `+Add` button to open the list of available `Data Sources`.
-3. Select **REST API** from the Data Source section.
-4. Enter the required query parameters.
-5. Click `Preview` to view the data returned from the query or click `Run` to execute the query.
+1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
+2. Select **REST API** from the Data Source section.
+3. Enter the required query parameters.
+4. Click **Preview** to view the data returned from the query or click **Run** to execute the query.
 
 :::tip
 Query results can be transformed using the **[Transformations](/docs/how-to/transformations)** feature.
 :::
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/datasource-reference/rest-api/preview.png" alt="ToolJet - Data source - REST API" />
-
-</div>
-
-<br/>
-
-ToolJet supports the REST HTTP methods **GET**, **POST**, **PUT**, **PATCH**, and **DELETE**. You can select the method from the dropdown menu.
-
-<div style={{textAlign: 'center'}}>
+ToolJet supports the following REST HTTP methods 
+- **GET**
+- **POST**
+- **PUT**
+- **PATCH**
+- **DELETE**
 
 <img className="screenshot-full" src="/img/datasource-reference/rest-api/restquery.png" alt="ToolJet - Data source - REST API" />
 
 </div>
-<br/>
+
+<div style={{paddingTop:'24px'}}>
 
 ## Additional header
 
 Whenever a request is made to the REST API, a **tj-x-forwarded-for** header is added to the request, the value of the header will be the IP address of the user who is logged in to the ToolJet application. This header can be used to identify the user who is making the request to the REST API.
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/datasource-reference/rest-api/header.png" alt="ToolJet - Data source - REST API" width='500'/>
+<img className="screenshot-full" src="/img/datasource-reference/rest-api/header.png" alt="ToolJet - Data source - REST API"/>
 
 </div>
+
+<div style={{paddingTop:'24px'}}>
 
 ## Cookies
 
@@ -139,26 +132,32 @@ You can use both static values and dynamic values for cookie values.
 Query-specific cookies will override data source level cookies with the same name for that particular query.
 :::
 
+</div>
+
+<div style={{paddingTop:'24px'}}>
+
 ## Request types
 
-The plugin will send a **JSON** formatted body by default. If you want to send a different type of body, you can enter the appropriate headers in the **Headers** section. For example, to send a **multipart/form-data** body, you can add the following header:
+The plugin will send a **JSON** formatted body by default. If you want to send a different type of body, you can enter the appropriate headers in the **Headers** section.
+
+For example, to send a **multipart/form-data** body, you can add the following header:
 
 ```javascript
   Content-Type: multipart/form-data;
 ```
 
-
-<div style={{textAlign: 'center'}}>
 <img className="screenshot-full" src="/img/datasource-reference/rest-api/form-headers.png" alt="ToolJet - Data source - REST API" />
+
+<img className="screenshot-full" src="/img/datasource-reference/rest-api/form-body.png" alt="ToolJet - Data source - REST API" />
+
 </div>
 
-<div style={{textAlign: 'center'}}>
-<img className="screenshot-full" src="/img/datasource-reference/rest-api/form-body.png" alt="ToolJet - Data source - REST API" />
-</div>
+<div style={{paddingTop:'24px'}}>
+
 ## Response types
 
 REST APIs can return data in a variety of formats, including **JSON** and **Base64**. JSON is a common format used for data exchange in REST APIs, while Base64 is often used for encoding binary data, such as images or video, within a JSON response.
-When the response `content-type` is **image**, the response will be a `base64` string.
+When the response **content-type** is **image**, the response will be a **base64** string.
 
 <details>
 <summary>**Example JSON response**</summary>
@@ -215,23 +214,14 @@ When the response `content-type` is **image**, the response will be a `base64` s
   }
 ]
 ```
+
+The JSON response can be easily loaded on the components like **table** and **listview** using `{{queries.<queryname>.data}}`
+
 </details>
-The JSON response can be easily loaded on the components like **table** and **listview** using **`{{queries.<queryname>.data}}`**
-
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/datasource-reference/rest-api/json.png" alt="ToolJet - Data source - REST API" />
-
-</div>
 
 You can also use JS methods like **map** to load data on components like **dropdown** using **`{{queries.restapi1.data.map(i => i.title)}}`**
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/datasource-reference/rest-api/map.png" alt="ToolJet - Data source - REST API" />
-
-</div>
+<img className="screenshot-full" src="/img/datasource-reference/rest-api/map.png" alt="ToolJet - Data source - REST API" style={{marginBottom:'15px'}} />
 
 <details>
 <summary>**Example base64 response**</summary>
@@ -242,11 +232,11 @@ iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAA/FBMVEVAYt79/f1AYt/9/f79/ftAY9s/
 
 Read the guide on **[loading base64 data](/docs/how-to/loading-image-pdf-from-db)**
 
-<div style={{textAlign: 'center'}}>
-
 <img className="screenshot-full" src="/img/datasource-reference/rest-api/base64.png" alt="ToolJet - Data source - REST API" />
 
 </div>
+
+<div style={{paddingTop:'24px'}}>
 
 ## Metadata
 
@@ -303,7 +293,11 @@ While accessing the properties of the metadata object, which contains a hyphen, 
 </details>
 
 
-## OAuth 2.0 method for authenticating REST APIs
+</div>
+
+<div style={{paddingTop:'24px'}}>
+
+## OAuth 2.0 Method for Authenticating REST APIs
 
 ToolJet’s REST API data source supports OAuth 2.0 as the authentication type. Supported OAuth 2.0 grant types are Authorization Code and Client Credentials.
 
@@ -327,36 +321,27 @@ Google Cloud Platform provides access to more than 350 APIs and Services that ca
     2. `http://localhost:8082/oauth2/authorize` (if you’re using ToolJet locally)
 6. Now save and then you’ll get the **Client ID and Client secret** for your application.
 
-<img class="screenshot-full" src="/img/how-to/oauth2-authorization/gcp.png" alt="ToolJet - How To - REST API authentication using OAuth 2.0" height="420"/>
+<img class="screenshot-full" src="/img/how-to/oauth2-authorization/gcp.png" alt="ToolJet - How To - REST API authentication using OAuth 2.0" style={{marginBottom:'15px'}}/>
 
 ### Configuring ToolJet Application with Google's OAuth 2.0 API
 
 Let's follow the steps to authorize ToolJet to access your Google profile data:
 
--  Go to the **Data Sources** page from the ToolJet dashboard, select API category on sidebar and choose the **REST API** data source.
+1. Go to the **Data Sources** page from the ToolJet dashboard, select API category on sidebar and choose the **REST API** data source.
+2. In the **Base URL** field, enter the base URL `https://www.googleapis.com/oauth2/v1/userinfo`; the base URL specifies the network address of the API service.
+3. Select **Authentication** type as *OAuth 2.0*
+4. Keep the default values for **Grant Type**, **Add Access Token To**, and **Header Prefix** i.e. *Authorization Code*, *Request Header*, and *Bearer* respectively.
+5. Enter **Access Token URL**: `https://oauth2.googleapis.com/token`; this token allows users to verify their identity, and in return, receive a unique access token.
+6. Enter the **Client ID** and **Client Secret** that we generated from the [Google Console](http://console.developers.google.com/).
+7. In the **Scope** field, enter `https://www.googleapis.com/auth/userinfo.profile`; Scope is a mechanism in OAuth 2.0 to limit an application's access to a user's account. Check the scopes available for [Google OAuth2 API here](https://developers.google.com/identity/protocols/oauth2/scopes#oauth2).
+8. Enter **Authorization URL:** `https://accounts.google.com/o/oauth2/v2/auth`; the Authorization URL requests authorization from the user and redirects to retrieve an authorization code from identity server.
+9. Create three **Custom Authentication Parameters:**
+    1. **response_type**: code ( `code` refers to the Authorization Code)
+    2. **client_id**: Client ID
+    3. **redirect_url**: `http://localhost:8082/oauth2/authorize` if using ToolJet locally or enter this `https://app.tooljet.com/oauth2/authorize` if using ToolJet Cloud.
+10. Keep the default selection for **Client Authentication** and **Save** the data source.
 
-  :::info
-  You can rename the data source by clicking on its default name `restapi`
-  :::
-
-- In the **Base URL** field, enter the base URL `https://www.googleapis.com/oauth2/v1/userinfo`; the base URL specifies the network address of the API service.
-- Select **Authentication** type as `OAuth 2.0`
-- Keep the default values for **Grant Type**, **Add Access Token To**, and **Header Prefix** i.e. `Authorization Code`, `Request Header`, and `Bearer` respectively.
-- Enter **Access Token URL**: `https://oauth2.googleapis.com/token`; this token allows users to verify their identity, and in return, receive a unique access token.
-- Enter the **Client ID** and **Client Secret** that we generated from the [Google Console](http://console.developers.google.com/).
-- In the **Scope** field, enter `https://www.googleapis.com/auth/userinfo.profile`; Scope is a mechanism in OAuth 2.0 to limit an application's access to a user's account. Check the scopes available for [Google OAuth2 API here](https://developers.google.com/identity/protocols/oauth2/scopes#oauth2).
-- Enter **Authorization URL:** `https://accounts.google.com/o/oauth2/v2/auth`; the Authorization URL requests authorization from the user and redirects to retrieve an authorization code from identity server.
-- Create three **Custom Authentication Parameters:**
-
-  | Params      | Description |
-  |:----------- |:----------- |
-  | response_type | code ( `code` refers to the Authorization Code) |
-  | client_id | **Client ID**  |
-  | redirect_uri | `http://localhost:8082/oauth2/authorize` if using ToolJet locally or enter this `https://app.tooljet.com/oauth2/authorize` if using ToolJet Cloud.  |
-    
-- Keep the default selection for **Client Authentication** and **Save** the data source.
-
-<img class="screenshot-full" src="/img/how-to/oauth2-authorization/restapi.png" alt="ToolJet - How To - REST API authentication using OAuth 2.0"/>
+<img class="screenshot-full" src="/img/how-to/oauth2-authorization/restapi-v2.png" alt="ToolJet - How To - REST API authentication using OAuth 2.0" style={{marginBottom:'15px'}}/>
 
 ### Authenticating REST API
 
@@ -367,46 +352,34 @@ Let’s create a query to make a `GET` request to the URL, it will pop a new win
 - Run the query. 
 - A new window will pop for authentication and once auth is successful, you can run the query again to get the user data like Name and Profile Picture.
 
-## Bearer Token method for authenticating REST APIs
+</div>
+
+<div style={{paddingTop:'24px'}}>
+
+## Bearer Token Method for Authenticating REST APIs
 
 ToolJet’s REST API data source supports Bearer Token as the authentication type. Bearer Token is a security token that is issued by the authentication server to the client. The client then uses the token to access the protected resources hosted by the resource server.
 
-### Configuring REST API data source with Bearer Token
+### Configuring REST API Data Source with Bearer Token
 
--  Go to the **Data Sources** page from the ToolJet dashboard, select **API** category on sidebar and choose the **REST API** data source.
-
-  :::info
-  You can rename the data source by clicking on its default name `restapi`
-  :::
-
-- In the **Base URL** field, enter the base URL. The base URL specifies the network address of the API service. For example, `http://localhost:3001/api/bearer-auth`
-- Enter the **Headers** if required. Headers are key-value pairs to include as headers with REST API requests.
-- Select **Authentication** type as `Bearer` from the dropdown.
-- Enter the **Token** in the field. The token is a security token that is issued by the authentication server to the client. The client then uses the token to access the protected resources hosted by the resource server.
-  <div style={{textAlign: 'center'}}>
-
-  <img className="screenshot-full" src="/img/datasource-reference/rest-api/none.png" alt="ToolJet - Data source - REST API" />
-
-  </div>
-
-- Now you have option to select the **SSL Certificate** if required. SSL certificate is used to verify the server certificate. By default, it is set to `None`. You can provide the **CA Certificate** or **Client Certificate** from the dropdown.
-  - **CA Certificate**: Requires a CA certificate to verify the server certificate. Copy the content of `server.crt` file and paste it in the **CA Cert** field. `server.crt` file is the certificate file that is used to verify the server certificate.
+1. Go to the **Data Sources** page from the ToolJet dashboard, select **API** category on sidebar and choose the **REST API** data source.
+2. In the **Base URL** field, enter the base URL. The base URL specifies the network address of the API service. For example, `http://localhost:3001/api/bearer-auth`
+3. Enter the **Headers** if required. Headers are key-value pairs to include as headers with REST API requests.
+4. Select **Authentication** type as *Bearer* from the dropdown.
+5. Enter the **Token** in the field. The token is a security token that is issued by the authentication server to the client. The client then uses the token to access the protected resources hosted by the resource server.
   
-  <div style={{textAlign: 'center'}}>
+<img className="screenshot-full" src="/img/datasource-reference/rest-api/none.png" alt="ToolJet - Data source - REST API" />
 
-  <img className="screenshot-full" src="/img/datasource-reference/rest-api/cacert.png" alt="ToolJet - Data source - REST API" />
-
-  </div>
-
-  - **Client Certificate**: Requires a client certificate to authenticate with the server. `client.key`, `client.crt`, and `server.crt` files are the certificate files that are used to authenticate with the server. Copy the content of `client.key` file and paste it in the **Client Key** field. Copy the content of `client.crt` file and paste it in the **Client Cert** field. Copy the content of `server.crt` file and paste it in the **CA Cert** field.
+6. Now you have option to select the **SSL Certificate** if required. SSL certificate is used to verify the server certificate. By default, it is set to *None*. You can provide the **CA Certificate** or **Client Certificate** from the dropdown.
+    1. **CA Certificate**: Requires a CA certificate to verify the server certificate. Copy the content of `server.crt` file and paste it in the **CA Cert** field. `server.crt` file is the certificate file that is used to verify the server certificate.
   
-  <div style={{textAlign: 'center'}}>
+        <img className="screenshot-full" src="/img/datasource-reference/rest-api/cacert.png" alt="ToolJet - Data source - REST API" />
 
-  <img className="screenshot-full" src="/img/datasource-reference/rest-api/clientcert.png" alt="ToolJet - Data source - REST API" />
+    2. **Client Certificate**: Requires a client certificate to authenticate with the server. **client.key**, **client.crt**, and **server.crt** files are the certificate files that are used to authenticate with the server. Copy the content of **client.key** file and paste it in the **Client Key** field. Copy the content of **client.crt** file and paste it in the **Client Cert** field. Copy the content of **server.crt** file and paste it in the **CA Cert** field.
+  
+        <img className="screenshot-full" src="/img/datasource-reference/rest-api/clientcert.png" alt="ToolJet - Data source - REST API" />
 
-  </div>
-
-- Once you have configured the REST API data source, click on the **Save** button.
+7. Once you have configured the REST API data source, click on the **Save** button.
 
 ### Authenticating REST API
 
@@ -415,5 +388,7 @@ Create a query to make a `GET` request to the URL, and it will return a success 
 <div style={{textAlign: 'center'}}>
 
 <img className="screenshot-full" src="/img/datasource-reference/rest-api/bearersuccess.png" alt="ToolJet - Data source - REST API" />
+
+</div>
 
 </div>

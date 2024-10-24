@@ -68,7 +68,9 @@ const sidebars = {
         'setup/http-proxy',
         'setup/tooljet-subpath',
         'setup/v2-migration-guide',
-        'setup/upgrade-to-lts'
+        'setup/upgrade-to-lts',
+        'setup/upgrade-to-v3',
+        'setup/cloud-v3-migration',
       ]
     },
     {
@@ -301,7 +303,18 @@ const sidebars = {
             'data-sources/oracledb',
             'data-sources/postgresql',
             'data-sources/redis',
-            'data-sources/restapi',
+            {
+              'type': 'category',
+              'label': 'REST API',
+              'collapsed': false,
+              'items': [
+                'data-sources/restapi/configuration',
+                'data-sources/restapi/authentication',
+                'data-sources/restapi/querying-rest-api',
+                'data-sources/restapi/metadata-and-cookies',
+
+              ],
+            },
             'data-sources/rethinkdb',
             'data-sources/run-js',
             'data-sources/run-py',
@@ -378,8 +391,10 @@ const sidebars = {
                     'user-authentication/sso/openid/google-openid',
                   ],
                 },
+                'user-authentication/sso/oidc',
                 'user-authentication/sso/ldap',
                 'user-authentication/sso/saml',
+                'user-authentication/sso/auto-sso-login',
               ],
             },
           ],
@@ -419,7 +434,6 @@ const sidebars = {
         'workflows/workflow-triggers',
         'workflows/results',
         'workflows/permissions',
-        'workflows/logs',
       ],
     },
     {
@@ -458,11 +472,7 @@ const sidebars = {
       'label': 'Project Overview',
       'collapsed': true,
       'items': [
-        {
-          'type': 'link',
-          'label': 'Release Notes',
-          'href': 'https://app.tooljet.com/applications/tj-changelog/home',
-        },
+        'project-overview/release-notes',
         {
           'type': 'link',
           'label': 'Roadmap',
