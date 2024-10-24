@@ -19,13 +19,10 @@ const DesktopHeader = ({
   isAppLoaded,
   changeToDarkMode,
 }) => {
-  const { editingVersion, showDarkModeToggle, isReleasedVersionId } = useStore(
+  const { showDarkModeToggle, isReleasedVersionId } = useStore(
     (state) => ({
-      editingVersion: state?.editingVersion,
-      isReleasedVersionId: state?.releasedVersionId == state.editingVersion || state.isVersionReleased,
-      switchDarkMode: state.switchDarkMode,
+      isReleasedVersionId: state?.releasedVersionId == state.selectedVersion?.id || state.isVersionReleased,
       showDarkModeToggle: state.globalSettings.appMode === 'auto' || !state.globalSettings.appMode,
-      appMode: state.globalSettings.appMode,
     }),
     shallow
   );

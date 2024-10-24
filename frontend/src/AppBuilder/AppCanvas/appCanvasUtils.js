@@ -211,6 +211,7 @@ export const getAllChildComponents = (allComponents, parentId) => {
 
     if (componentParentId === parentId) {
       let childComponent = deepClone(allComponents[componentId]);
+      childComponent.componentId = componentId;
       childComponents.push(childComponent);
 
       // Recursively find children of the current child component
@@ -240,7 +241,10 @@ export const copyComponents = ({ isCut = false, isCloning = false }) => {
   const currentPageId = useStore.getState().getCurrentPageId();
   // if parent is selected, then remove the parent from the selected components
   const filteredSelectedComponents = selectedComponents.filter((selectedComponent) => {
-    const parentComponentId = selectedComponent?.component?.parent;
+    const parentComponentId = isChildOfTabsOrCalendar(selectedComponent, allComponents)
+      ? selectedComponent.component.parent.split('-').slice(0, -1).join('-')
+      : selectedComponent?.component?.parent;
+
     if (parentComponentId) {
       // Check if the parent component is also selected
       const isParentSelected = selectedComponents.some((comp) => comp.id === parentComponentId);
@@ -327,8 +331,7 @@ const updateComponentLayout = (components, parentId, isCut = false) => {
 
 const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
   const parentId = componentParentId ?? component.component?.parent?.split('-').slice(0, -1).join('-');
-
-  const parentComponent = allComponents.find((comp) => comp.componentId === parentId);
+  const parentComponent = allComponents?.[parentId];
   if (parentComponent) {
     return parentComponent.component.component === 'Tabs' || parentComponent.component.component === 'Calendar';
   }
