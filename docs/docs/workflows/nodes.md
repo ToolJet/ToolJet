@@ -12,6 +12,8 @@ The **Start Trigger** node is the entry point of your workflow. It can be trigge
 
 The data received by the Start Trigger through parameters is accessible throughout the workflow.
 
+<img className="screenshot-full" src="/img/workflows/nodes/v2/start-node.png" alt="Workflows Preview" />
+
 ## Logic Nodes
 
 ### JavaScript Node
@@ -23,6 +25,8 @@ The **JavaScript** node lets you write custom server-side code to:
 
 The code must include a **return** statement to pass results to subsequent nodes.
 
+<img className="screenshot-full" src="/img/workflows/nodes/v2/javascript.png" alt="Workflows Preview" />
+
 ### If Condition Node
 The **If condition** node enables branching logic with:
 - One or two incoming flows
@@ -31,12 +35,16 @@ The **If condition** node enables branching logic with:
 
 When the condition evaluates to true, the outgoing node connected to the green arrow will be executed. If it is false, the outgoing node connected to the red arrow will be executed.
 
+<img className="screenshot-full" src="/img/workflows/nodes/v2/if-node.png" alt="Workflows Preview" />
+
 ### Loop Node
 The **Loop** node allows you to:
 - Iterate over datasets
 - Process items sequentially
 - Apply operations to each item
 - Aggregate results
+
+<img className="screenshot-full" src="/img/workflows/nodes/v2/loop-node.png" alt="Workflows Preview" />
 
 ## Data Source Nodes
 Data source nodes connect to your configured data sources, enabling you to:
@@ -51,7 +59,11 @@ Each data source node has specific configurations based on its type:
 - **Twilio**: SMS configuration fields
 - And more based on your configured sources
 
+<img className="screenshot-full" src="/img/workflows/nodes/v2/datasources.png" alt="Workflows Preview" />
+
 ## Response Node
 The **Response** node defines the final output of your workflow. You can configure multiple response nodes to return multiple execution results.
 
 Each node type serves a specific purpose in the workflow. By combining these nodes, you can create powerful automation flows tailored to your business needs.
+
+<img className="screenshot-full" src="/img/workflows/nodes/v2/response-node.png" alt="Workflows Preview" />
