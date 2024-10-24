@@ -168,6 +168,19 @@
 }
 
 
+.query-wrapper {
+    .cm-base-autocomplete {
+        width:  auto !important;
+        ul {
+            width: 100% !important;
+        }
+    }
+
+    .cm-tooltip {
+        max-width: 100% !important;
+    }
+}
+
 
 .query-manager-sort-filter-popup {
     .cm-base-autocomplete {
