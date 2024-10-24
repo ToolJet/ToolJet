@@ -187,7 +187,6 @@ export function computeComponentName(componentType, currentComponents) {
 
 export const getAllChildComponents = (allComponents, parentId) => {
   const childComponents = [];
-
   Object.keys(allComponents).forEach((componentId) => {
     const componentParentId = allComponents[componentId].component?.parent;
 
@@ -198,7 +197,7 @@ export const getAllChildComponents = (allComponents, parentId) => {
 
     if (componentParentId && isParentTabORCalendar) {
       let childComponent = deepClone(allComponents[componentId]);
-      childComponent.componentId = componentId;
+      childComponent.id = componentId;
       const childTabId = componentParentId.split('-').at(-1);
       if (componentParentId === `${parentId}-${childTabId}`) {
         childComponent.isParentTabORCalendar = true;
@@ -211,7 +210,7 @@ export const getAllChildComponents = (allComponents, parentId) => {
 
     if (componentParentId === parentId) {
       let childComponent = deepClone(allComponents[componentId]);
-      childComponent.componentId = componentId;
+      childComponent.id = componentId;
       childComponents.push(childComponent);
 
       // Recursively find children of the current child component
@@ -312,7 +311,10 @@ const updateComponentLayout = (components, parentId, isCut = false) => {
   let _components = deepClone(components);
   _components.forEach((component, index) => {
     Object.keys(component.layouts).map((layout) => {
-      if ((parentId !== undefined && !component?.component?.parent) || component?.component?.parent === parentId) {
+      if (
+        (parentId !== undefined && !component?.component?.parent) ||
+        (component?.component?.parent === parentId && !isCut)
+      ) {
         if (index > 0) {
           component.layouts[layout].top = prevComponent.layouts[layout].top + prevComponent.layouts[layout].height;
           component.layouts[layout].left = 0;
@@ -347,11 +349,14 @@ export function pasteComponents(parentId, copiedComponentObj) {
   const components = useStore.getState().getCurrentPageComponents();
   const currentPageId = useStore.getState().getCurrentPageId();
   const { isCut = false, newComponents: pastedComponents = [], pageId, isCloning = false } = copiedComponentObj;
+  // Prevent pasting if the parent subcontainer was deleted during a cut operation
+  if (parentId && !Object.keys(components).find((key) => parentId === key)) {
+    return;
+  }
   if (parentId) {
     const id = Object.keys(components).filter((key) => parentId.startsWith(key));
     parentComponent = components[id];
   }
-
   pastedComponents.forEach((component) => {
     const newComponentId = isCut ? component.id : uuidv4();
     const componentName = computeComponentName(component.component.component, {
