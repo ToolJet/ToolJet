@@ -50,9 +50,14 @@ export const LeftSidebar = ({ darkMode = false, switchDarkMode }) => {
   // const exposed
   const handleSelectedSidebarItem = (item) => {
     if (item === 'debugger') resetUnreadErrorCount();
-    setSelectedSidebarItem(item);
-    if (!isSidebarOpen) toggleLeftSidebar(true);
-    pinned && localStorage.setItem('selectedSidebarItem', item);
+    if (item === selectedSidebarItem && !pinned) {
+      setSelectedSidebarItem(null);
+    } else {
+      setSelectedSidebarItem(item);
+      pinned && localStorage.setItem('selectedSidebarItem', item);
+    }
+
+    toggleLeftSidebar(!isSidebarOpen);
   };
 
   const setSideBarBtnRefs = (page) => (ref) => {
