@@ -26,6 +26,7 @@ export const CreateVersion = ({ showCreateAppVersion, setShowCreateAppVersion })
     appId,
     setCurrentVersionId,
     selectedVersion,
+    fetchDevelopmentVersions,
   } = useStore(
     (state) => ({
       createNewVersionAction: state.createNewVersionAction,
@@ -40,14 +41,15 @@ export const CreateVersion = ({ showCreateAppVersion, setShowCreateAppVersion })
       currentVersionId: state.currentVersionId,
       setCurrentVersionId: state.setCurrentVersionId,
       selectedVersion: state.selectedVersion,
+      fetchDevelopmentVersions: state.fetchDevelopmentVersions,
     }),
     shallow
   );
 
   const [selectedVersionForCreation, setSelectedVersionForCreation] = useState(null);
-  // useEffect(() => {
-  //   fetchDevelopmentVersions(appId);
-  // }, []);
+  useEffect(() => {
+    fetchDevelopmentVersions(appId);
+  }, []);
 
   useEffect(() => {
     if (developmentVersions?.length && selectedVersion?.id) {
@@ -59,7 +61,7 @@ export const CreateVersion = ({ showCreateAppVersion, setShowCreateAppVersion })
   const { t } = useTranslation();
   console.log({ developmentVersions });
 
-  const options = versionsPromotedToEnvironment.map((version) => {
+  const options = developmentVersions.map((version) => {
     return { label: version.name, value: version };
   });
 
