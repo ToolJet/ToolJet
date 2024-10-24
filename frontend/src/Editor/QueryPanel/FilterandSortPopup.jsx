@@ -311,7 +311,11 @@ const MenuButton = ({
 
   return (
     <div className={`field ${noMargin ? '' : 'mx-1'} tj-list-btn`}>
-      <Button.UnstyledButton onClick={handleOnClick} disabled={disabled} classNames="d-flex justify-content-between p-2">
+      <Button.UnstyledButton
+        onClick={handleOnClick}
+        disabled={disabled}
+        classNames="d-flex justify-content-between p-2"
+      >
         <Button.Content title={text} iconSrc={iconSrc} direction="left" />
         {active && <Tick width="20" height="20" viewBox="0 0 22 22" fill="var(--indigo9)" />}
       </Button.UnstyledButton>
