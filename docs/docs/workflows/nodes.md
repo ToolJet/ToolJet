@@ -3,65 +3,55 @@ id: nodes
 title: Types of Nodes
 ---
 
-Nodes are a graphical representation of each process in a workflow. Each node in the workflow passes over the result to the next node. Every new workflow will have two nodes - **Start Trigger** and **Result**. The **Start Trigger** node triggers the workflow to run. Once the workflow execution is completed, the resulting data is stored in the **Result** node type.
+Nodes are graphical representations of each process in a workflow. Each node can access the data from the nodes that were executed earlier. Every workflow contains key node types that help orchestrate the flow of data and logic.
 
-Apart from the default **Start Trigger** and **Result** nodes, there are an array of nodes that you can add to the canvas. They can be broadly divided into four types - **JavaScript**, **If condition**, **Data sources** and **REST API**. Let's take a closer look at each node.
+## Start Trigger Node
+The **Start Trigger** node is the entry point of your workflow. It can be triggered:
+- Manually through ToolJet applications similar to queries
+- Via webhooks from external systems
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+The data received by the Start Trigger through parameters is accessible throughout the workflow.
 
-## JavaScript
+## Logic Nodes
 
-The **JavaScript** node lets you write custom JavaScript code than runs on the server side. Server-side execution of code protects sensitive logic and data from exposure to the client and improves performance by offloading complex computations from the client. You can use the JavaScript code to transform data, create alert messages and more. The code you enter in each JavaScript node needs a **return** statement to ensure that the result is sent to the next node. 
+### JavaScript Node
+The **JavaScript** node lets you write custom server-side code to:
+- Transform data
+- Perform complex calculations
+- Create custom messages
+- Handle business logic
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/workflows/nodes/js-node.png" alt="JavaScript Node" />
-</div>
+The code must include a **return** statement to pass results to subsequent nodes.
 
-</div>
+### If Condition Node
+The **If condition** node enables branching logic with:
+- One or two incoming flows
+- Two outgoing flows (true/false paths)
+- Logical expressions for decision making
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+When the condition evaluates to true, the outgoing node connected to the green arrow will be executed. If it is false, the outgoing node connected to the red arrow will be executed.
 
-## If condition
-The **If condition** node can have one or two incoming flows and two outgoing flows. If it has two incoming flows, it'll only trigger after the execution of both the incoming flows is completed. 
+### Loop Node
+The **Loop** node allows you to:
+- Iterate over datasets
+- Process items sequentially
+- Apply operations to each item
+- Aggregate results
 
-The **If condition** node triggers one of the outgoing flows depending on the given logical expression. If the expression evaluates to true, it activates the flow connected to the green circle. Conversely, if it's false, the flow linked to the red circle will be activated.
+## Data Source Nodes
+Data source nodes connect to your configured data sources, enabling you to:
+- Execute database queries
+- Make API calls
+- Send emails/messages
+- Interact with external services
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/workflows/nodes/if-condition-node.png" alt="If Condition Node" />
-</div>
-<br/>
+Each data source node has specific configurations based on its type:
+- **PostgreSQL**: SQL query fields
+- **REST API**: HTTP method, endpoint, headers
+- **Twilio**: SMS configuration fields
+- And more based on your configured sources
 
-- If you click on the **If condition** node, a dialog box will appear on the right that accepts a logical expression.
-- The **If condition** node can be handy when you want to run flows based on the data received or create alert messages based on success or failure of certain nodes.
+## Response Node
+The **Response** node defines the final output of your workflow. You can configure multiple response nodes to return multiple execution results.
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-## Data Sources 
-In the flow builder of ToolJet, all the data sources you've set up will appear as nodes. These nodes can be utilized to perform intricate queries on your data sources, establish connections with APIs, send emails and messages, and more.
-
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/workflows/nodes/datasources-nodes.png" alt="Datasources and Other Services" />
-</div>
-
-Each node type will have a different configuration based on the function it performs. For example, a **Twilio** node might come with the relevant fields needed to send an SMS, while a **PostgreSQL** node will have a query field to retrieve the data.
-
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/workflows/nodes/twilio-postgres-config.png" alt="Twilio and Postgres Configuration" />
-</div>
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-## REST API
-
-The **REST API** node acts as a bridge to connect with RESTful web services. By leveraging standard HTTP methods like GET, POST, PUT, and DELETE, the REST API node ensures smooth communication with web services, making data integration and manipulation more efficient and straightforward.
-
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/workflows/nodes/restapi-node.png" alt="Rest API Configuration" />
-</div>
-
-</div>
-
+Each node type serves a specific purpose in the workflow. By combining these nodes, you can create powerful automation flows tailored to your business needs.
