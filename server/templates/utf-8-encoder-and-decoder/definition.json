@@ -1041,14 +1041,14 @@
               "id": "538429f9-5f0e-4438-b2da-08671a7a1d65",
               "name": "textToUTF",
               "options": {
-                "code": "function utfText(\n  text\n){\n  const encoder = new TextEncoder();\n  const encoded = encoder.encode(text);\n   const hexString = Array.from(encoded)\n    .map(byte => byte.toString(16).padStart(2, '0'))\n    .join('');\n  components.textarea5.setText(hexString);\n  \n \n}\nutfText(\n  components.textarea3.value\n);",
+                "code": "function utfText(text) {\n  const encoder = new TextEncoder();\n  const encoded = encoder.encode(text);\n  const hexString = Array.from(encoded)\n    .map(byte => '\\\\x' + byte.toString(16).padStart(2, '0'))\n    .join('');\n  components.textarea5.setText(hexString);\n}\nutfText(components.textarea3.value);\n",
                 "parameters": [],
                 "showSuccessNotification": false
               },
               "dataSourceId": "33ccddde-0ad1-4b2d-99e6-966f4c01578e",
               "appVersionId": "763c32ff-b8cc-4a0c-bfbf-8eda84679a3e",
               "createdAt": "2024-10-22T19:15:56.794Z",
-              "updatedAt": "2024-10-24T02:16:04.726Z"
+              "updatedAt": "2024-10-24T09:42:20.533Z"
             },
             {
               "id": "db4e829f-f85d-44f4-87c3-117c2432850a",
