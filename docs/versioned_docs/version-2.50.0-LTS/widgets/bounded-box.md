@@ -152,7 +152,7 @@ Here is the updated version of the "Devices" section with the requested changes:
 
 </div>
 
-<hr/>
+<br/>
 
 <div style={{paddingTop:'24px'}}>
 
