@@ -5,7 +5,7 @@ title: Bounded Box
 
 Here's the updated version with the requested changes:
 
----
+
 
 # Bounded Box
 
@@ -139,7 +139,7 @@ A Tooltip is often used to specify the extra information when the user hovers th
 
 Here is the updated version of the "Devices" section with the requested changes:
 
----
+
 
 ## Devices
 
