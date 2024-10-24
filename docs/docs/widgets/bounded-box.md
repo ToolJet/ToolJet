@@ -151,7 +151,7 @@ Here is the updated version of the "Devices" section with the requested changes:
 
 
 </div>
-
+<br/>
 <hr/>
 
 <div style={{paddingTop:'24px'}}>
