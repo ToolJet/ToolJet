@@ -3,15 +3,14 @@ id: nodes
 title: Types of Nodes
 ---
 
-Nodes are graphical representations of each process in a workflow. Each node passes its result to the next node in the sequence. Every workflow contains key node types that help orchestrate the flow of data and logic.
-
-
+Nodes are graphical representations of each process in a workflow. Each node can access the data from the nodes that were executed earlier. Every workflow contains key node types that help orchestrate the flow of data and logic.
 
 ## Start Trigger Node
 The **Start Trigger** node is the entry point of your workflow. It can be triggered:
 - Manually through ToolJet applications similar to queries
 - Via webhooks from external systems
-The data received by the Start Trigger is accessible throughout the workflow.
+
+The data received by the Start Trigger through parameters is accessible throughout the workflow.
 
 ## Logic Nodes
 
@@ -30,9 +29,7 @@ The **If condition** node enables branching logic with:
 - Two outgoing flows (true/false paths)
 - Logical expressions for decision making
 
-When the condition evaluates to:
-- True: Activates the green outgoing flow
-- False: Activates the red outgoing flow
+When the condition evaluates to true, the outgoing node connected to the green arrow will be executed. If it is false, the outgoing node connected to the red arrow will be executed.
 
 ### Loop Node
 The **Loop** node allows you to:
@@ -55,10 +52,6 @@ Each data source node has specific configurations based on its type:
 - And more based on your configured sources
 
 ## Response Node
-The **Response** node defines the final output of your workflow. You can:
-- Configure multiple result nodes
-- Return different outputs based on conditions
-- Format data for downstream use
-- Store execution results
+The **Response** node defines the final output of your workflow. You can configure multiple response nodes to return multiple execution results.
 
-[Node Structure Example]
+Each node type serves a specific purpose in the workflow. By combining these nodes, you can create powerful automation flows tailored to your business needs.

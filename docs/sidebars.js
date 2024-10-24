@@ -430,12 +430,10 @@ const sidebars = {
       'label': 'Workflows',
       'items': [
         'workflows/overview',
-        'workflows/create-your-first-workflow',
         'workflows/nodes',
         'workflows/workflow-triggers',
         'workflows/results',
         'workflows/permissions',
-        'workflows/logs',
       ],
     },
     {
