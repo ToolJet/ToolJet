@@ -111,7 +111,7 @@ Click on the **Run** button on the top-right to execute the workflow. The logs p
     <img className="screenshot-full" src="/img/workflows/overview/v2/event-notification-logs-output.png" alt="Output Logs" />
 </div>
 
-Congratulations on creating your first workflow! This workflow fetches data, transforms the data, sends an SMS notifications, and handles success or failure responses.
+Congratulations on creating your first workflow! This workflow fetches data, transforms the data, sends SMS notifications, and handles success or failure responses.
 
 As you saw in this example, ToolJet Workflows provides a streamlined way to extend the capabilities of your ToolJet applications and automate complex processes. 
 
