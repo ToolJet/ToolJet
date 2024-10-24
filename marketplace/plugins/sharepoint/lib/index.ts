@@ -7,10 +7,11 @@ export default class Sharepoint implements QueryService {
     const subpath = process.env.SUB_PATH;
     const fullUrl = `${host}${subpath ? subpath : '/'}`;
     const clientId = sourceOptions.sp_client_id;
-    const clientSecret = sourceOptions.sp_client_secret;
+    const clientSecret = sourceOptions.sp_client_secret.value;
+    const tenant = sourceOptions.sp_tenant_id;
 
-    if (!clientId || !clientSecret) {
-      throw Error('You need to enter the client ID and client secret');
+    if (!clientId || !clientSecret || !tenant) {
+      throw Error('You need to enter the client ID, client secret and tenant ID for authentication.');
     }
 
     return (
@@ -72,6 +73,11 @@ export default class Sharepoint implements QueryService {
 
       const result = await response.json();
 
+      if (!response.ok) {
+        console.error(`Error occurred: `, result);
+        throw new Error(result.error_description);
+      }
+
       if (result['access_token']) {
         authDetails.push(['access_token', result['access_token']]);
       }
@@ -80,7 +86,7 @@ export default class Sharepoint implements QueryService {
         authDetails.push(['refresh_token', result['refresh_token']]);
       }
     } catch (error) {
-      throw Error('could not connect to Sharepoint');
+      throw Error(`Could not connect to Sharepoint:\n${error?.message}`);
     }
 
     return authDetails;
@@ -90,6 +96,7 @@ export default class Sharepoint implements QueryService {
     const rootApiUrl = 'https://graph.microsoft.com/v1.0/sites';
     const accessToken = sourceOptions.access_token;
     let response = null;
+    let data = null;
 
     try {
       const requestOptions = await this.fetchRequestOptsForOperation(accessToken, queryOptions);
@@ -99,49 +106,58 @@ export default class Sharepoint implements QueryService {
       const header = requestOptions?.headers;
       const body = requestOptions.body || {};
 
-      if (queryOptions.sp_page) {
+      if (requestOptions?.paginationFeature && queryOptions.sp_page) {
         const regex = /^[1-9]\d*(\.\d+)?$/;
         if (regex.test(queryOptions.sp_page)) {
           const pageNo = parseInt(queryOptions.sp_page || '1');
-          const data = await this.getPageData(apiUrl, pageNo, header);
-          return {
-            status: 'ok',
-            data: data,
-          };
+          const paginatedResponse = await this.getPageData(apiUrl, pageNo, header);
+          response = paginatedResponse.response;
+          data = paginatedResponse.data;
         } else {
           throw new Error('Page field value should be a number >= 1.');
         }
-      }
-
-      response = await fetch(apiUrl, {
-        method: method,
-        headers: header,
-        ...(Object.keys(body).length !== 0 && { body: JSON.stringify(body) }),
-      });
-    } catch (error) {
-      throw new QueryError('Query could not be completed', error?.message, error);
-    }
-
-    if (response.status === 204) {
-      return {
-        status: 'ok',
-        data: {
-          code: response.status,
-          statusText: response.statusText,
-          message: `Item having id '${queryOptions.sp_item_id}' in List '${queryOptions.sp_list_id}' has been deleted.`,
-        },
-      };
-    }
-
-    const data = await response.json();
-
-    if (response.status !== 200 && response.status !== 204 && response.status !== 201) {
-      if (response.status === 401 || response.status === 403) {
-        throw new OAuthUnauthorizedClientError('Query could not be completed', response.statusText, data);
       } else {
-        const errorMessage = data?.error?.message || 'An unknown error occurred';
-        throw new QueryError('Query could not be completed', errorMessage, data?.error || {});
+        response = await fetch(apiUrl, {
+          method: method,
+          headers: header,
+          ...(Object.keys(body).length !== 0 && { body: JSON.stringify(body) }),
+        });
+
+        if (
+          !response.ok &&
+          response.status !== 401 &&
+          response.status !== 403 &&
+          response.status !== 204 &&
+          response.status !== 201
+        ) {
+          const data = await response.json();
+          const errorMessage = data?.error?.message || 'An unknown error occurred';
+          throw new QueryError('Query could not be completed', errorMessage, {
+            statusCode: response.status,
+            ...data?.error,
+          });
+        }
+
+        if (response.status === 204) {
+          return {
+            status: 'ok',
+            data: {
+              code: response.status,
+              status: response.statusText,
+              message: `Item having id '${queryOptions.sp_item_id}' in List '${queryOptions.sp_list_id}' has been deleted.`,
+            },
+          };
+        }
+
+        data = await response.json();
       }
+    } catch (error) {
+      const errorMessage = error?.message === 'Query could not be completed' ? error?.description : error?.message;
+      throw new QueryError('Query could not be completed', errorMessage, error?.data || {});
+    }
+
+    if (response.status === 401 || response.status === 403) {
+      throw new OAuthUnauthorizedClientError('Unauthorized client error', response.statusText, data);
     }
 
     return {
@@ -160,10 +176,18 @@ export default class Sharepoint implements QueryService {
         method: 'GET',
         headers: header,
       });
+
       const data = await response.json();
 
+      if (!response.ok && response.status !== 401 && response.status !== 403) {
+        throw new QueryError('Query could not be completed', data?.error?.message || 'An unknown error occurred', {
+          statusCode: response.status,
+          ...data?.error,
+        });
+      }
+
       if (currentPage === pageNo) {
-        result = data;
+        result = { response: response, data: data };
         break;
       }
 
@@ -201,6 +225,7 @@ export default class Sharepoint implements QueryService {
           method: 'GET',
           endpoint: `?search=*${sp_top ? `&$top=${sp_top}` : ''}`,
           headers: { ...authHeader },
+          paginationFeature: true,
         };
       case 'get_site':
         return {
@@ -219,12 +244,14 @@ export default class Sharepoint implements QueryService {
           method: 'GET',
           endpoint: `/${sp_site_id}/pages${sp_top ? `?&$top=${sp_top}` : ''}`,
           headers: { ...authHeader, 'Content-Type': 'application/json' },
+          paginationFeature: true,
         };
       case 'get_lists':
         return {
           method: 'GET',
           endpoint: `/${sp_site_id}/lists`,
           headers: { ...authHeader },
+          paginationFeature: true,
         };
       case 'get_metadata':
         return {
@@ -237,6 +264,7 @@ export default class Sharepoint implements QueryService {
           method: 'GET',
           endpoint: `/${sp_site_id}/lists/${sp_list_id}/items?$expand=fields${sp_top ? `&$top=${sp_top}` : ''}`,
           headers: { ...authHeader },
+          paginationFeature: true,
         };
       case 'create_list':
         return {

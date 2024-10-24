@@ -87,7 +87,7 @@ const Sharepoint = ({
         <Input
           type="password"
           className="form-control dynamic-form-encrypted-field"
-          onChange={(e) => optionchanged('sp_client_secret', e.target.value, true)}
+          onChange={(e) => optionchanged('sp_client_secret', e.target.value)}
           value={options?.sp_client_secret?.value || ''}
           placeholder="**************"
           workspaceConstants={workspaceConstants}
