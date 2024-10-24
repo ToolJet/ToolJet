@@ -21,7 +21,7 @@ This document outlines the key improvements introduced in ToolJet 3.0, a major u
 
 ## Platform Enhancements
 
-1. **[Group Sync OIDC](/docs/beta/user-authentication/sso/oidc/)**: Easily manage user access to ToolJet applications from your Identity provider (IDP) directly
+1. **[Group Sync OIDC](/docs/beta/user-authentication/sso/oidc/)**: Easily manage user access to ToolJet applications from your Identity Provider (IDP) directly
 2. **[Secrets constants](/docs/beta/org-management/workspaces/workspace_constants/#using-secrets)**: Ability to store encrypted credentials 
 3. **[User metadata](/docs/beta/tutorial/manage-users-groups/#user-metadata)**: Store custom metadata with user details & access them while building applications
 4. User roles: Revamped user groups with granular access control
@@ -30,7 +30,7 @@ This document outlines the key improvements introduced in ToolJet 3.0, a major u
 
 ## ToolJet Database (TJ DB)
 
-1. **[Custom primary key](/docs/beta/tooljet-db/database-editor/#primary-key)** and **[foreign key support](https://docs.tooljet.com/docs/beta/tooljet-db/database-editor/#foreign-key)**
+1. **[Custom primary key](/docs/beta/tooljet-db/database-editor/#primary-key)** and **[foreign key support](/docs/beta/tooljet-db/database-editor/#foreign-key)**
 2. Support for more data types for advanced use cases
 3. **[SQL mode](/docs/beta/tooljet-db/querying-tooljet-db#sql-editor)** for complex querying 
 4. Bulk upload using CSV 
@@ -50,21 +50,21 @@ This document outlines the key improvements introduced in ToolJet 3.0, a major u
 
 ## AI Apps
 
-Build AI apps using **[OpenAI](/docs/beta/marketplace/plugins/marketplace-plugin-openai)**, and **[Portkey](docs/beta/marketplace/plugins/marketplace-plugin-portkey)** integrations
+Build AI apps using **[OpenAI](/docs/beta/marketplace/plugins/marketplace-plugin-openai)**, and **[Portkey](/docs/beta/marketplace/plugins/marketplace-plugin-portkey)** integrations
 
 ## Workflows
 
 1. Introduction of loop node to implement iterative processes
 2. Improved error handling and debugger: Improved troubleshooting
 3. Support for multiple deployment environments
-4. **[Webhook triggers](docs/beta/workflows/workflow-triggers#webhooks)** to trigger workflows from external apps and services
+4. **[Webhook triggers](/docs/beta/workflows/workflow-triggers#webhooks)** to trigger workflows from external apps and services
 5. **[Multiple result nodes](/docs/beta/workflows/results)** for greater flexibility in defining the output
 
 ## Migration Steps
 
 Ready to upgrade to ToolJet 3.0? Follow our migration guides:
-- **[For Self-Hosted Users](https://docs.tooljet.com/docs/beta/setup/upgrade-to-v3)**
-- **[For Cloud Users](https://docs.tooljet.com/docs/beta/setup/cloud-v3-migration)**
+- **[For Self-Hosted Users](/docs/beta/setup/upgrade-to-v3)**
+- **[For Cloud Users](/docs/beta/setup/cloud-v3-migration)**
 
 This release significantly enhances ToolJet's capabilities across its platform, focusing on improved performance, expanded integrations, and smoother development experience for building complex applications. The addition of AI-powered features and the release of Workflows provide users with advanced tools for creating sophisticated, automated solutions.
 
