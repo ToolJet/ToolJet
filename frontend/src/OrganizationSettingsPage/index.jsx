@@ -106,7 +106,7 @@ export function OrganizationSettings(props) {
             <OrganizationList />
           </div>
 
-          <div className={cx('col workspace-content-wrapper')} style={{ paddingTop: '40px' }}>
+          <div className={cx('col workspace-content-wrapper')} style={{ paddingTop: '20px', paddingBottom: '20px' }}>
             <div className="w-100">
               <Outlet />
             </div>
