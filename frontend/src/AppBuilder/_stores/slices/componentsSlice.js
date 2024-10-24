@@ -796,7 +796,7 @@ export const createComponentsSlice = (set, get) => ({
             toDeleteComponents.push(componentId);
 
             // Find the children of this component
-            const children = getAllChildComponents(allComponents, componentId).map((child) => child.componentId);
+            const children = getAllChildComponents(allComponents, componentId).map((child) => child.id);
             if (children.length > 0) {
               // Recursively find children of children
               children.forEach((child) => {

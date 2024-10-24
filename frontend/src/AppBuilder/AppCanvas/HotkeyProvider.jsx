@@ -18,8 +18,8 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth }
   const enableReleasedVersionPopupState = useStore((state) => state.enableReleasedVersionPopupState, shallow);
   const clearSelectedComponents = useStore((state) => state.clearSelectedComponents, shallow);
   const getSelectedComponents = useStore((state) => state.getSelectedComponents, shallow);
-  const undoRef = useHotkeys('meta+z, control+z', handleUndo, { enabled: mode === 'edit' });
-  const redoRef = useHotkeys('meta+shift+z, control+shift+z', handleRedo, { enabled: mode === 'edit' });
+  useHotkeys('meta+z, control+z', handleUndo, { enabled: mode === 'edit' });
+  useHotkeys('meta+shift+z, control+shift+z', handleRedo, { enabled: mode === 'edit' });
 
   const paste = async () => {
     if (isContainerFocused && navigator.clipboard && typeof navigator.clipboard.readText === 'function') {
