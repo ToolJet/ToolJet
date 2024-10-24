@@ -5,7 +5,7 @@ title: Pages
 
 Pages allow you to have multiple pages in a single application, making your ToolJet applications easier to navigate and more user-friendly.
 
-<img className="screenshot-full" src="/img/tooljet-v3/pages/pages-v3.png" alt="Multi-page app" />
+<img className="screenshot-full" src="/img/v2-beta/pages/v3/pages-v3.png" alt="Multi-page app" />
 
 <div style={{paddingTop:'24px'}}>
 
@@ -13,7 +13,7 @@ Pages allow you to have multiple pages in a single application, making your Tool
 
 You can open the **Pages Panel** by clicking on the **Pages** icon on the left sidebar of the app-builder.
 
-<img className="screenshot-full" src="/img/tooljet-v3/pages/pages-panel-v4.png" alt="Pages Panel"/>
+<img className="screenshot-full" src="/img/v2-beta/pages/v3/pages-panel-v4.png" alt="Pages Panel"/>
 
 </div>
 
@@ -27,25 +27,30 @@ You can open the **Pages Panel** by clicking on the **Pages** icon on the left s
 - Click the **+** button to add a new page.
 - Enter the name for the new page and press enter.
 
-<img className="screenshot-full" src="/img/tooljet-v3/pages/page-add.png" alt="Pages Panel" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full" src="/img/v2-beta/pages/v3/page-add.png" alt="Pages Panel" style={{marginBottom:'15px'}}/>
 
 ### Settings
 
 - You can use the settings option to customize the page navigation sidebar for your app.
 - Click on the settings button and a new panel will open on the right.
 
-In the Page Menu settings panel, you can set the following options:
+#### Properties Tab
 - **Collapsable**: This option allows you to make the page navigation sidebar collapsible.
 - **Style**: Choose whether you want to display Text only, Text + icon, or Icon only on the page navigation sidebar.
 - **Hide page menu in viewer mode**: This option lets you hide the page navigation sidebar in viewer mode.
 
-<img className="screenshot-full" src="/img/tooljet-v3/pages/page-settings.png" alt="Pages Panel" style={{marginBottom:'15px'}} />
+<img className="screenshot-full" src="/img/v2-beta/pages/v3/page-settings.png" alt="Pages Panel" style={{marginBottom:'15px'}} />
+
+#### Style Tab
+- You can use the style tab to customize the page navigation sidebar.
+
+<img className="screenshot-full" src="/img/v2-beta/pages/v3/page-style.png" alt="Pages Panel" style={{marginBottom:'15px'}} />
 
 ### Pin
 
 - By default, the panel will close when you click outside the panel. You can pin the **Pages panel** from the **Pin** button and the panel won't close until you **unpin** it.
 
-<img className="screenshot-full" src="/img/tooljet-v3/pages/page-pin.png" alt="Pages Panel"/>
+<img className="screenshot-full" src="/img/v2-beta/pages/v3/page-pin.png" alt="Pages Panel"/>
 
 </div>
 
@@ -55,7 +60,7 @@ In the Page Menu settings panel, you can set the following options:
 
 There are several options available for a Page. To use these options, click on the kebab menu on the right of the page card.
 
-<img className="screenshot-full" src="/img/tooljet-v3/pages/page-option.png" alt="Pages Panel" style={{marginBottom:'15px'}} />
+<img className="screenshot-full" src="/img/v2-beta/pages/v3/page-option.png" alt="Pages Panel" style={{marginBottom:'15px'}} />
 
 ### Page Handle
 
@@ -74,7 +79,7 @@ Mark home option can be used to make a page the default landing page of the appl
 Hide Page option can be used to hide a page from the **page navigation sidebar** in viewer mode. You can go to the options again and **unhide** the app from the **page navigation sidebar**. Page marked as **home** cannot be hidden.<br/>
 **Note:** After hiding a page, although the page may not appear in the pages navigation sidebar, it can still be accessed by utilizing either the **switch page Action** or the **page URL**.
 
-<img className="screenshot-full" src="/img/tooljet-v3/pages/page-hidden.png" alt="Pages Panel" style={{marginBottom:'15px'}} />
+<img className="screenshot-full" src="/img/v2-beta/pages/v3/page-hidden.png" alt="Pages Panel" style={{marginBottom:'15px'}} />
 
 ### Duplicate
 
