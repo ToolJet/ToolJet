@@ -72,11 +72,7 @@ export class ComponentsService {
       for (const componentId in componentDiff) {
         const { component } = componentDiff[componentId];
 
-        const doesComponentExist = await manager.findOneOrFail(Component, {
-          where: {
-            id: componentId,
-          },
-        });
+        const doesComponentExist = await manager.findAndCount(Component, { where: { id: componentId } });
 
         if (doesComponentExist[1] === 0) {
           return {
@@ -133,8 +129,8 @@ export class ComponentsService {
 
   async delete(componentIds: string[], appVersionId: string, isComponentCut = false) {
     return dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
-      const components = await manager.find(Component, {
-        where: { id: In(componentIds) },
+      const components = await manager.findBy(Component, {
+        id: In(componentIds),
       });
 
       if (!components.length) {
@@ -161,7 +157,7 @@ export class ComponentsService {
   ) {
     return dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
       for (const componentId in componenstLayoutDiff) {
-        const doesComponentExist = await manager.findOneOrFail(Component, { where: { id: componentId } });
+        const doesComponentExist = await manager.findAndCount(Component, { where: { id: componentId } });
 
         if (doesComponentExist[1] === 0) {
           return {

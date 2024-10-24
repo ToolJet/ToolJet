@@ -54,7 +54,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
   setEnvironmentDropdownStatus: (status) => set({ initializedEnvironmentDropdown: status }),
 
   fetchDevelopmentVersions: async (appId) => {
-    const developmentEnvironmentId = get().environments.find((environment) => environment.name === 'development').id;
+    const developmentEnvironmentId = get().environments.find((environment) => environment.name === 'production').id;
 
     try {
       const response = await appEnvironmentService.getVersionsByEnvironment(appId, developmentEnvironmentId);

@@ -153,6 +153,7 @@ export class AppsControllerV2 {
       homePageId: versionToLoad.homePageId,
       globalSettings: { ...versionToLoad.globalSettings, theme: appTheme },
       showViewerNavigation: versionToLoad.showViewerNavigation,
+      pageSettings: versionToLoad?.pageSettings,
     };
   }
 
@@ -230,7 +231,7 @@ export class AppsControllerV2 {
 
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ValidAppInterceptor)
-  @Put(':id/versions/:versionId/global_settings')
+  @Put([':id/versions/:versionId/global_settings', ':id/versions/:versionId/page_settings'])
   async updateGlobalSettings(
     @User() user,
     @Param('id') id,
@@ -406,6 +407,23 @@ export class AppsControllerV2 {
     }
 
     await this.pageService.updatePage(updatePageDto, versionId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ValidAppInterceptor)
+  @Put(':id/versions/:versionId/pages/reorder')
+  async reorderPages(@User() user, @Param('id') id, @Param('versionId') versionId, @Body() reorderPagesDto) {
+    const version = await this.appsService.findVersion(versionId);
+    const app = version.app;
+    if (app.id !== id) {
+      throw new BadRequestException();
+    }
+    const ability = await this.appsAbilityFactory.appsActions(user, id);
+    if (!ability.can(APP_RESOURCE_ACTIONS.VERSION_UPDATE, app)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+    console.log(reorderPagesDto, 'payload');
+    await this.pageService.reorderPages(reorderPagesDto, versionId);
   }
 
   @UseGuards(JwtAuthGuard)

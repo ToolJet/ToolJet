@@ -205,7 +205,6 @@ export const createQueryPanelSlice = (set, get) => ({
         setPreviewPanelExpanded,
         executeRunPycode,
         runTransformation,
-        executeWorkflow,
         executeMultilineJS,
       } = queryPanel;
       const { onEvent } = eventsSlice;
@@ -297,14 +296,6 @@ export const createQueryPanelSlice = (set, get) => ({
           queryExecutionPromise = executeMultilineJS(query.options.code, query?.id, false, mode, parameters);
         } else if (query.kind === 'runpy') {
           queryExecutionPromise = executeRunPycode(query.options.code, query, false, mode, queryState);
-        } else if (query.kind === 'workflows') {
-          queryExecutionPromise = executeWorkflow(
-            moduleId,
-            query.options.workflowId,
-            query.options.blocking,
-            query.options?.params,
-            (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id //TODO: currentAppEnvironmentId may no longer required. Need to check
-          );
         } else {
           queryExecutionPromise = dataqueryService.run(
             queryId,
@@ -465,7 +456,6 @@ export const createQueryPanelSlice = (set, get) => ({
         setPreviewPanelExpanded,
         executeRunPycode,
         runTransformation,
-        executeWorkflow,
         executeMultilineJS,
         setIsPreviewQueryLoading,
       } = queryPanel;
@@ -514,14 +504,6 @@ export const createQueryPanelSlice = (set, get) => ({
           queryExecutionPromise = executeMultilineJS(query.options.code, query?.id, true, '', parameters);
         } else if (query.kind === 'runpy') {
           queryExecutionPromise = executeRunPycode(query.options.code, query, true, 'edit', queryState);
-        } else if (query.kind === 'workflows') {
-          queryExecutionPromise = executeWorkflow(
-            moduleId,
-            query.options.workflowId,
-            query.options.blocking,
-            query.options?.params,
-            (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id //TODO: currentAppEnvironmentId may no longer required. Need to check
-          );
         } else {
           queryExecutionPromise = dataqueryService.preview(query, options, currentVersionId, currentAppEnvironmentId);
         }

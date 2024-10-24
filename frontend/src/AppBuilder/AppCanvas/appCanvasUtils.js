@@ -330,8 +330,9 @@ const updateComponentLayout = (components, parentId, isCut = false) => {
 };
 
 const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
-  const parentId = componentParentId ?? component.component?.parent?.split('-').slice(0, -1).join('-');
+  const parentId = componentParentId ?? component.component?.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1];
   const parentComponent = allComponents?.[parentId];
+
   if (parentComponent) {
     return parentComponent.component.component === 'Tabs' || parentComponent.component.component === 'Calendar';
   }
