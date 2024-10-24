@@ -1377,7 +1377,7 @@ export const createComponentsSlice = (set, get) => ({
       const component = {
         component: allComponents?.[componentId]?.component,
         layouts: allComponents?.[componentId]?.layouts,
-        parent: allComponents?.[componentId]?.parent,
+        parent: allComponents?.[componentId]?.component?.parent,
         id: componentId,
       };
       _selected.push(component);
