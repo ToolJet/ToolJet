@@ -143,6 +143,8 @@ export const Listview = function Listview({
     if (selectedRowIndex != undefined) {
       exposedVariables.selectedRecordId = selectedRowIndex;
       exposedVariables.selectedRecord = childrenData[selectedRowIndex];
+      exposedVariables.selectedRowId = selectedRowIndex;
+      exposedVariables.selectedRow = childrenData[selectedRowIndex];
     }
     setExposedVariables(exposedVariables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
