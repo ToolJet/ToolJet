@@ -101,7 +101,7 @@ Any property having **fx** button next to its field can be **programmatically co
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/color-picker/colorpickerinspector-v2.png" alt="ToolJet - component Reference - Color Picker" />
+<img className="screenshot-full" src="/img/widgets/color-picker/colorpickerinspector-v2.png" alt="ToolJet - Component Reference - Color Picker" />
 
 </div>
 
