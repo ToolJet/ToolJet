@@ -163,7 +163,7 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
       }
       const constantsResp = isPublicAccess
         ? await orgEnvironmentConstantService.getConstantsFromPublicApp(slug)
-        : await orgEnvironmentConstantService.getConstantsFromApp(editorEnvironmentId);
+        : await orgEnvironmentConstantService.getConstantsFromEnvironment(editorEnvironmentId);
 
       const pages = appData.pages.map((page) => {
         return page;
@@ -241,7 +241,6 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
             orgSecrets[constant.name] = constant.value;
           }
         });
-
         setResolvedConstants(orgConstants);
         setSecrets(orgSecrets);
       }
