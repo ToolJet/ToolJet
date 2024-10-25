@@ -1,0 +1,20 @@
+{
+  "name": "Credit card test data generator",
+  "description": "Generate realistic, randomized credit card information for testing payment systems and quality assurance.",
+  "widgets": [
+    "Table",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "credit-card-test-data-generator",
+  "category": "developer-utilities"
+}
