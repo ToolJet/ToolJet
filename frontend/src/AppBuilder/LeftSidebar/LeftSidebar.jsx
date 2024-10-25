@@ -47,17 +47,14 @@ export const LeftSidebar = ({ darkMode = false, switchDarkMode }) => {
   const [popoverContentHeight, setPopoverContentHeight] = useState(queryPanelHeight);
   const sideBarBtnRefs = useRef({});
 
-  // const exposed
   const handleSelectedSidebarItem = (item) => {
+    pinned && localStorage.setItem('selectedSidebarItem', item);
     if (item === 'debugger') resetUnreadErrorCount();
+    setSelectedSidebarItem(item);
     if (item === selectedSidebarItem && !pinned) {
-      setSelectedSidebarItem(null);
-    } else {
-      setSelectedSidebarItem(item);
-      pinned && localStorage.setItem('selectedSidebarItem', item);
+      return toggleLeftSidebar(false);
     }
-
-    toggleLeftSidebar(!isSidebarOpen);
+    if (!isSidebarOpen) toggleLeftSidebar(true);
   };
 
   const setSideBarBtnRefs = (page) => (ref) => {
