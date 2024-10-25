@@ -21,7 +21,7 @@ jobs:
 
     steps:
       - name: Checkout code to main
-        if: where can i enable the source control in zed
+        if: "!contains(github.event.release.tag_name, 'CE-LTS')"
         uses: actions/checkout@v2
         with:
           ref: refs/heads/main
