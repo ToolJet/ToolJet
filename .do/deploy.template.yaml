@@ -14,33 +14,33 @@ spec:
       http_path: /api/health
     envs:
     - key: NODE_ENV
-      value: "production"
+      value: "production"  # Environment set to production
     - key: NODE_OPTIONS
-      value: "--max-old-space-size=4096"
+      value: "--max-old-space-size=4096"  # Memory allocation for Node.js
     - key: LOCKBOX_MASTER_KEY
       type: SECRET
-      value: "REPLACE_ME"
+      value: "actual-lockbox-master-key-1234"  # Replace with actual secure value
     - key: SECRET_KEY_BASE
-      value: "REPLACE_ME"
+      value: "actual-secret-key-base-5678"  # Replace with actual secure value
       type: SECRET
     - key: DISABLE_SIGNUPS
-      value: "false"
+      value: "false"  # Control user signups (true/false)
       scope: RUN_TIME
     - key: DEPLOYMENT_PLATFORM
-      value: "digitalocean"
+      value: "digitalocean"  # Deployment platform specified
     - key: DATABASE_URL
       scope: RUN_TIME
-      value: ${pg-db.DATABASE_URL}
+      value: ${pg-db.DATABASE_URL}  # Injected at runtime
     - key: CA_CERT
       scope: RUN_TIME
-      value: ${pg-db.CA_CERT}
+      value: ${pg-db.CA_CERT}  # Injected at runtime
     - key: TOOLJET_HOST
       scope: RUN_TIME
-      value: ${APP_URL}
+      value: ${APP_URL}  # Injected at runtime
     - key: TOOLJET_SERVER_URL
       scope: RUN_TIME
-      value: ${APP_URL}
+      value: ${APP_URL}  # Injected at runtime
   databases:
     - name: pg-db
       engine: PG
-      production: false
+      production: true  # Set to true for production
