@@ -76,9 +76,13 @@ export const QueryPanel = ({ darkMode }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [windowSize.height, isExpanded, isWindowResizing]);
 
-  const onMouseDown = useCallback(() => {
-    if (isTopOfQueryPanel) setIsDraggingQueryPane(true);
-  }, [isTopOfQueryPanel]);
+  const onMouseDown = useCallback(
+    (e) => {
+      e.preventDefault();
+      if (isTopOfQueryPanel) setIsDraggingQueryPane(true);
+    },
+    [isTopOfQueryPanel]
+  );
 
   const onMouseUp = useCallback((e) => {
     setIsDraggingQueryPane(false);
