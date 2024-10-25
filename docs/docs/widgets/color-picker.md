@@ -97,7 +97,7 @@ Any property having **fx** button next to its field can be **programmatically co
 - Let's start by creating a new app and then dragging the Color Picker component onto the canvas.
 - Click on the Color Picker component, a picker pop-up will appear, one can select desired color from the picker.
 - In order to close the appeared picker pop-up, one need's to move away mouse from the picker pop-up and picker pop-up will fade away.
-- In the Inspector, inside component, look for colorpicker, where one can get respective hex, rgb and rgba color
+- In the Inspector, inside component, look for colorpicker, where one can get respective hex, rgb and rgba color.
 
 <div style={{textAlign: 'center'}}>
 
