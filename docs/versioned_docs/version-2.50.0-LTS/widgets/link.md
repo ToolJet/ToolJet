@@ -23,8 +23,8 @@ The **Link** component allows you to add a hyperlink and navigate to the externa
 
 |  <div style={{ width:"100px"}}> Event </div> |  <div style={{ width:"100px"}}> Description </div> |
 |:----------- |:----------- |
-| On click | **On Click** event is triggered when the link is clicked. Just like any other event on ToolJet, you can set multiple handlers for on click event. |
-| On hover | **On Hover** event is triggered when the link is hovered. Just like any other event on ToolJet, you can set multiple handlers for on click event. |
+| On click | Triggered when the link is clicked. |
+| On hover | Triggered when the cursor hovers over the link. |
 
 :::info
 Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
@@ -40,7 +40,7 @@ The following actions of the link component can be controlled using the componen
 
 | <div style={{ width:"100px"}}> Actions  </div>   | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 |:----------- |:----------- |:------------ |
-| click | You can trigger the click action of the Link component via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.link1.click()`. |
+| click | Triggers click action of the link component. | Employ a RunJS query to execute component-specific actions such as `await components.link1.click()` or trigger it using an event. |
 
 </div>
 
@@ -65,12 +65,12 @@ Under the **General** accordion, you can set the value in the string format. Now
 
 <div style={{paddingTop:'24px'}}>
 
-## Layout
+## Devices
 
-| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 |:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
-| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on **fx** to set the value `{{true}}` or `{{false}}`. |
-| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on **fx** to set the value `{{true}}` or `{{false}}`. |
+| Show on desktop | Toggles the component's visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on mobile  | Toggles the component's visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 </div>
 
