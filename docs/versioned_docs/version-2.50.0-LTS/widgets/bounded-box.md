@@ -151,7 +151,6 @@ Here is the updated version of the "Devices" section with the requested changes:
 
 
 </div>
-
 <br/>
 <hr/>
 
@@ -166,3 +165,6 @@ Here is the updated version of the "Devices" section with the requested changes:
 | Box shadow | Sets the add shadow effects around a component's frame. You can specify the horizontal and vertical offsets (through X and Y sliders), blur and spread radius, and color of the shadow. | Values that represent x, y, blur, spread and color. Ex: `9px 11px 5px 5px #00000040` |
 
 </div>
+
+
+
