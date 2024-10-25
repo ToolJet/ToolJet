@@ -45,6 +45,13 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth }
     }
   };
 
+  const deleteComponents = () => {
+    const selectedComponents = getSelectedComponents();
+    if (selectedComponents.length > 0) {
+      setWidgetDeleteConfirmation(true);
+    }
+  };
+
   useEffect(() => {
     const handleClick = (e) => {
       const modalContainer = document.getElementById('modal-container');
@@ -91,7 +98,7 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth }
         handleEscapeKeyPress(); // clears the selected components
         break;
       case 'Backspace':
-        setWidgetDeleteConfirmation(true); // Delete opration -> First asks for a Confirmation
+        deleteComponents(); // Delete opration -> First asks for a Confirmation
         break;
       case 'KeyD':
         copyComponents({ isCloning: true }); // Clone/Duplicate operation
