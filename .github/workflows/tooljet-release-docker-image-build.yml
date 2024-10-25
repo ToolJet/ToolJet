@@ -20,17 +20,23 @@ jobs:
     if: "${{ github.event.release }}"
 
     steps:
-      - name: Checkout code
-        if: "!contains(github.event.release.tag_name, 'CE-LTS')"
+      - name: Checkout code to main
+        if: where can i enable the source control in zed
         uses: actions/checkout@v2
         with:
           ref: refs/heads/main
 
-      - name: Checkout code
+      - name: Checkout code to LTS-2.50
         if: "contains(github.event.release.tag_name, 'CE-LTS')"
         uses: actions/checkout@v2
         with:
           ref: refs/heads/lts-2.50
+
+      - name: Checkout code to LTS-3.0
+        if: "contains(github.event.release.tag_name, 'CE-LTS-3.0')"
+        uses: actions/checkout@v2
+        with:
+          ref: refs/heads/lts-3.0
 
       # Create Docker Buildx builder with platform configuration
       - name: Set up Docker Buildx
@@ -67,7 +73,20 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and Push Docker image for LTS tag
-        if: "contains(github.event.release.tag_name, 'CE-LTS')"
+        if: "contains(github.event.release.tag_name, 'CE-LTS-3.0')"
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: docker/production.Dockerfile
+          push: true
+          tags: tooljet/tooljet-ce:${{ github.event.release.tag_name }},tooljet/tooljet-ce:CE-LTS-latest
+          platforms: linux/amd64
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push Docker image for LTS tag
+        if: "contains(github.event.release.tag_name, 'CE-LTS-2.50')"
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -156,7 +175,6 @@ jobs:
           fi
 
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
-
 
   update-lts-machine:
     runs-on: ubuntu-latest
