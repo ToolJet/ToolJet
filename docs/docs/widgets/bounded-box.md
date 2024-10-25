@@ -133,9 +133,6 @@ A Tooltip is often used to specify the extra information when the user hovers th
 
 <div style={{paddingTop:'24px'}}>
 
-Here is the updated version of the "Devices" section with the requested changes:
-
-
 
 ## Devices
 
