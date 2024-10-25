@@ -61,6 +61,8 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 <div style={{paddingTop:'24px'}}>
 
+---
+
 ## Styles
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
