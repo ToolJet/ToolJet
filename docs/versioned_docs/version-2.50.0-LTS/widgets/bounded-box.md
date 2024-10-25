@@ -1,12 +1,3 @@
----
-id: bounded-box
-title: Bounded Box
----
-
-Here's the updated version with the requested changes:
-
-
-
 # Bounded Box
 
 A **Bounded Box** is an infinitely customizable image annotation component that can be used to select and tag areas within an image. It supports selection using specific points (landmarking) or drawing rectangular areas (bounding boxes). It can be used to create datasets for machine learning models or to annotate images for other purposes.
