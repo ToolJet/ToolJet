@@ -1,13 +1,13 @@
 ---
 id: importing-exporting-applications
-title: Importing and Exporting Applications
+title: Import and Export Applications
 ---
 
 This documentation explains the process of exporting and importing applications in ToolJet.
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-## 1. Exporting Applications
+## Exporting Applications
 
 - Navigate to the dashboard.
 - Click on the settings icon located in the top right corner of the application.
@@ -28,7 +28,7 @@ This documentation explains the process of exporting and importing applications 
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-## 2. Importing Applications
+## Importing Applications
 
 - Navigate to the dashboard.
 - Click on the ellipses on the **Create new app** button and select `Import`.
