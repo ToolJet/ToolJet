@@ -223,6 +223,8 @@ export const createDataQuerySlice = (set, get) => ({
       set((state) => {
         state.dataQuery.creatingQueryInProcessId = uuidv4();
       });
+      const { eventsSlice } = get();
+      const { getEventsByComponentsId, createAppVersionEventHandlers } = eventsSlice;
       const dataQueries = get().dataQuery.queries.modules[moduleId];
       const queryToClone = { ...dataQueries.find((query) => query.id === id) };
       let newName = queryToClone.name + '_copy';
@@ -265,6 +267,20 @@ export const createDataQuerySlice = (set, get) => ({
             data: [],
             rawData: [],
             id: data.id,
+          });
+
+          const events = getEventsByComponentsId(queryToClone.id);
+
+          events.forEach((event) => {
+            const newEvent = {
+              event: {
+                ...event.event,
+              },
+              eventType: event.target,
+              attachedTo: data.id,
+              index: event.index,
+            };
+            createAppVersionEventHandlers(newEvent, moduleId);
           });
         })
         .catch((error) => {

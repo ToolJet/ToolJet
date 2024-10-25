@@ -948,7 +948,7 @@ export const createEventsSlice = (set, get) => ({
       };
     },
     // Selectors
-    geEventsByComponentsId: (componentId, moduleId = 'canvas') => {
+    getEventsByComponentsId: (componentId, moduleId = 'canvas') => {
       const { eventsSlice } = get();
       return eventsSlice.module[moduleId]?.events?.filter((event) => event.sourceId === componentId);
     },
