@@ -434,7 +434,6 @@ const sidebars = {
         'workflows/workflow-triggers',
         'workflows/results',
         'workflows/permissions',
-        'workflows/logs',
       ],
     },
     {
@@ -473,11 +472,7 @@ const sidebars = {
       'label': 'Project Overview',
       'collapsed': true,
       'items': [
-        {
-          'type': 'link',
-          'label': 'Release Notes',
-          'href': 'https://app.tooljet.com/applications/tj-changelog/home',
-        },
+        'project-overview/release-notes',
         {
           'type': 'link',
           'label': 'Roadmap',
