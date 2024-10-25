@@ -36,7 +36,10 @@ export const buildComponentMetaDefinition = (components = {}) => {
         componentMeta.definition.properties,
         currentComponentData?.component?.definition?.properties,
         (objValue, srcValue) => {
-          if (currentComponentData?.component?.component === 'Table' && isArray(objValue)) {
+          if (
+            ['Table', 'DropdownV2', 'MultiselectV2'].includes(currentComponentData?.component?.component) &&
+            isArray(objValue)
+          ) {
             return srcValue;
           }
         }
