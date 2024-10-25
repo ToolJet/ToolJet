@@ -23,7 +23,7 @@ The **Date-Range Picker** component allows users to select a range of dates.
 
 | <div style={{ width:"100px"}}> Event  </div>    | <div style={{ width:"100px"}}> Description </div> |
 |:----------- |:----------- |
-| On select | Triggered when a start date and end date are selected. You can set multiple handlers for this event. |
+| On select | Triggered when a start date and end date are selected. |
 
 :::info
 Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
