@@ -12,7 +12,7 @@ This document outlines the key improvements introduced in ToolJet 3.0, a major u
 1. Up to 10 times faster app loading speeds 
 2. Smooth app development even with 1000s of components and 100s of queries
 2. More intuitive experience in designing applications on the canvas with the new grid system
-4. Highly configurable page management system
+4. Highly configurable **[page management system](/docs/beta/tutorial/pages)**
 5. Revamped **[components](/docs/beta/widgets/table/table-properties/)** with more styling and functionality customizations
 6. Enhanced developer experience in managing queries with the **[new query manager UI](/docs/beta/app-builder/query-panel)**
 7. Improved coding experience with better code suggestions, linting, and type-casting
@@ -54,7 +54,7 @@ Build AI apps using **[OpenAI](/docs/beta/marketplace/plugins/marketplace-plugin
 
 ## Workflows
 
-1. Introduction of loop node to implement iterative processes
+1. Introduction of **[loop node](/docs/beta/workflows/nodes#loop-node)** to implement iterative processes
 2. Improved error handling and debugger: Improved troubleshooting
 3. Support for multiple deployment environments
 4. **[Webhook triggers](/docs/beta/workflows/workflow-triggers#webhooks)** to trigger workflows from external apps and services
