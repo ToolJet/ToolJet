@@ -113,6 +113,7 @@ export default function DragContainer({
   const childMoveableRefs = useRef({});
   const groupResizeDataRef = useRef([]);
   const isDraggingRef = useRef(false);
+  const isDragging = useRef(false);
   const boxList = boxes
     .filter((box) =>
       ['{{true}}', true].includes(
@@ -128,43 +129,6 @@ export default function DragContainer({
       parent: box?.component?.parent,
     }));
   const [list, setList] = useState(boxList);
-
-  const hoveredComponent = useEditorStore((state) => state?.hoveredComponent, shallow);
-
-  useEffect(() => {
-    if (!moveableRef.current) {
-      return;
-    }
-    moveableRef.current.updateRect();
-    moveableRef.current.updateTarget();
-    moveableRef.current.updateSelectors();
-    for (let refObj of Object.values(childMoveableRefs.current)) {
-      if (refObj) {
-        refObj.updateRect();
-        refObj.updateTarget();
-        refObj.updateSelectors();
-      }
-    }
-    setTimeout(reloadGrid, 100);
-
-    try {
-      const boxes = document.querySelectorAll('.jet-container');
-      var timer;
-      boxes.forEach((box) => {
-        box.addEventListener('scroll', function handleClick() {
-          if (timer) {
-            clearTimeout(timer);
-          }
-
-          timer = setTimeout(function () {
-            reloadGrid();
-          }, 250); //Threshold is 100ms
-        });
-      });
-    } catch (error) {
-      console.error('Error---->', error);
-    }
-  }, [hoveredComponent, reloadGrid]);
 
   useEffect(() => {
     setList(boxList);
@@ -463,6 +427,8 @@ export default function DragContainer({
         }}
         checkInput
         onDragStart={(e) => {
+          if (isDragging.current) return false;
+          isDragging.current = true;
           e?.moveable?.controlBox?.removeAttribute('data-off-screen');
           const box = boxes.find((box) => box.id === e.target.id);
           let isDragOnTable = false;
@@ -489,11 +455,9 @@ export default function DragContainer({
               return false;
             }
           }
-          if (hoveredComponent !== e.target.id) {
-            return false;
-          }
         }}
         onDragEnd={(e) => {
+          isDragging.current = false;
           try {
             if (isDraggingRef.current) {
               useGridStore.getState().actions.setDraggingComponentId(null);

@@ -19,7 +19,6 @@ const ACTIONS = {
 const initialState = {
   currentLayout: 'desktop',
   showComments: false,
-  hoveredComponent: '',
   selectionInProgress: false,
   selectedComponents: [],
   isEditorActive: false,
@@ -84,11 +83,6 @@ export const useEditorStore = create(
       },
 
       updateQueryConfirmationList: (queryConfirmationList) => set({ queryConfirmationList }),
-      setHoveredComponent: (hoveredComponent) =>
-        set({ hoveredComponent }, false, {
-          type: ACTIONS.SET_HOVERED_COMPONENT,
-          hoveredComponent,
-        }),
       setSelectionInProgress: (isSelectionInProgress) => {
         set(
           {
