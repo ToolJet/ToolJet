@@ -1,6 +1,6 @@
 ---
 id: create-ui
-title: Creating UI
+title: Create User Interfaces
 ---
 
 ToolJet offers a variety of pre-built components that streamline the development process and allow for rapid prototyping and deployment of internal tools. This guide is focused on building a basic UI for a Support Desk Dashboard application.
