@@ -1,6 +1,6 @@
 ---
 id: using-code
-title: Using Custom Code
+title: Use Custom Code
 ---
 
 In ToolJet, code serves as a powerful means to enhance and customize your applications. From complex logic implementations using **Run JavaScript code** or **Run Python code** queries to simple dynamic expressions with `fx`, the versatility is immense. Below is a basic demonstration of how you can leverage code within ToolJet.

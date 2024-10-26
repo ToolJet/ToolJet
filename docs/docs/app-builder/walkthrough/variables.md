@@ -1,6 +1,6 @@
 ---
 id: variables
-title: Variables
+title: Create and Manage Variables
 ---
 
 During application development, managing state and user interactions effectively are crucial for creating a seamless user experience. This involves keeping track of various data points, filtering data based on the user, tracking user preferences, navigation history, and more. In this context, variables and page variables allow developers to store and manage variables within an application dynamically.

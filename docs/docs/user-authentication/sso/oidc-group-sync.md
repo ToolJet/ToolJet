@@ -89,7 +89,7 @@ Group mapping in ToolJet follows these principles:
 | **engineers** | Doesn't exist | **engineers → all apps** | User added to **all apps** custom group and **builder** or **end-user** default group based on permissions |
 | **engineers** | Doesn't exist | **engineers → builders** | User added to **builders** default group |
 | **admin**, **all apps** | Exists | None | User added to **all apps** and assigned **admin** role |
-| No group | N/A | None | User added to **end-users** default group |
+| no group | N/A | None | User added to **end-users** default group |
 
 ## Important Considerations
 
