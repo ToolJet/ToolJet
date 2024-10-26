@@ -101,11 +101,12 @@ jobs:
             sudo docker images
 
             # Update docker-compose.yml with the new image for tooljet service
-            sed -i '/^[[:space:]]*tooljet:/,/^[[:space:]]*[^:]*$/ { /^[[:space:]]*image:[[:space:]]*tooljet\/tj-osv/s|\(image:[[:space:]]*\).*|\1tooljet/tj-osv:'"${{ env.SAFE_BRANCH_NAME }}"'| }' docker-compose.yml
+            sed -i '/^[[:space:]]*tooljet:/,/^[[:space:]]*[^[:space:]]/ { /^[[:space:]]*image:/s|image:.*|image: tooljet/tj-osv:'"${{ env.SAFE_BRANCH_NAME }}"'| }' docker-compose.yaml
+            
 
             # Start the Docker containers
             cat docker-compose.yaml
-            sudo docker-compose up -d
+            docker-compose up -d
 
             #View containers
             sudo docker ps
