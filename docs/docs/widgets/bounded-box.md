@@ -145,7 +145,7 @@ A Tooltip is often used to specify the extra information when the user hovers th
 
 </div>
 <br/>
-----
+---
 
 <div style={{paddingTop:'24px'}}>
 
