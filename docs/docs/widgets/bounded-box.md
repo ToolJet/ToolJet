@@ -111,7 +111,7 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 | annotations.`text` | label selected for the annotation. |
 | annotations.`id` | unique ID of the annotation (system generated). |
 
-The values can be accessed dynamically using `{{components.boundedbox1.annotations[0].text}}` or `{{components.boundedbox1.annotations[1].width}}`
+The values can be accessed dynamically using `{{components.boundedbox1.annotations[0].text}}` or `{{components.boundedbox1.annotations[1].width}}`.
 
 </div>
 
