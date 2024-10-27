@@ -57,10 +57,10 @@ In the input field under **Tooltip**, you can enter some text and the component 
 
 ## Devices
 
-| <div style={{ width:"100px"}}> Devices </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div>                                                                          |
-| :-------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------- |
-| Show on desktop                               | Makes the component visible in desktop view.      | You can set it with the toggle button or dynamically configure the value by clicking on fx and entering a logical expression. |
-| Show on mobile                                | Makes the component visible in mobile view.       | You can set it with the toggle button or dynamically configure the value by clicking on fx and entering a logical expression. |
+| <div style={{ width:"100px"}}> Devices </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div>                                                                              |
+| :-------------------------------------------- | :------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------- |
+| Show on desktop                               | Makes the component visible in desktop view.      | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on mobile                                | Makes the component visible in mobile view.       | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 </div>
 
@@ -70,11 +70,11 @@ In the input field under **Tooltip**, you can enter some text and the component 
 
 ## Styles
 
-| <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div>                                                                             | <div style={{ width:"135px"}}> Expected Value </div>                                                                                                      |
-| :------------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Visibility                                  | Controls the visibility of the component. If set to `{{false}}`, the component will not be visible after the app is deployed. | Use the toggle button OR click on `fx` to pass a boolean value or a logical expression that returns a boolean value i.e. either `{{true}}` or `{{false}}` |
-| Disable                                     | Makes the component non-functional when set to true.                                                                          | Use the toggle button OR click on `fx` to pass a boolean value or a logical expression that returns a boolean value i.e. either `{{true}}` or `{{false}}` |
-| Border radius                               | Adjusts the roundness of the component's corners.                                                                             | Numeric value                                                                                                                                             |
+| <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div>                                                                             | <div style={{ width:"135px"}}> Expected Value </div>                                                                                                        |
+| :------------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Visibility                                  | Controls the visibility of the component. If set to `{{false}}`, the component will not be visible after the app is deployed. | Use the toggle button OR click on **fx** to pass a boolean value or a logical expression that returns a boolean value i.e. either `{{true}}` or `{{false}}` |
+| Disable                                     | Makes the component non-functional when set to true.                                                                          | Use the toggle button OR click on **fx** to pass a boolean value or a logical expression that returns a boolean value i.e. either `{{true}}` or `{{false}}` |
+| Border radius                               | Adjusts the roundness of the component's corners.                                                                             | Numeric value                                                                                                                                               |
 
 </div>
 
