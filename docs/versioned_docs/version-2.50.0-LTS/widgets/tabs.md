@@ -116,7 +116,7 @@ Following actions of Tabs component can be controlled using the component specif
 
 <div style={{paddingTop:'24px'}}>
 
-***
+----
 
 ## Styles
 
