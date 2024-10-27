@@ -93,8 +93,8 @@ export const DropdownV2 = ({
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const isMandatory = validation?.mandatory ?? false;
   const options = properties?.options;
-  const validationData = validate(currentValue);
-  const { isValid, validationError } = validationData;
+  const [validationStatus, setValidationStatus] = useState(validate(currentValue));
+  const { isValid, validationError } = validationStatus;
   const ref = React.useRef(null);
   const [visibility, setVisibility] = useState(properties.visibility);
   const [isDropdownLoading, setIsDropdownLoading] = useState(dropdownLoadingState);
@@ -132,7 +132,7 @@ export const DropdownV2 = ({
   function selectOption(value) {
     const val = selectOptions.filter((option) => !option.isDisabled)?.find((option) => option.value === value);
     if (val) {
-      setCurrentValue(value);
+      setInputValue(value);
       fireEvent('onSelect');
     }
   }
@@ -162,10 +162,22 @@ export const DropdownV2 = ({
     }
   };
 
+  const setInputValue = (value) => {
+    setCurrentValue(value);
+    const validationStatus = validate(value);
+    setValidationStatus(validationStatus);
+    const _selectedOption = selectOptions.find((option) => option.value === value);
+    setExposedVariables({
+      value,
+      isValid: validationStatus?.isValid,
+      selectedOption: pick(_selectedOption, ['label', 'value']),
+    });
+  };
+
   useEffect(() => {
     if (advanced) {
-      setCurrentValue(findDefaultItem(schema));
-    } else setCurrentValue(value);
+      setInputValue(findDefaultItem(schema));
+    } else setInputValue(value);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [advanced, value, JSON.stringify(schema)]);
 
@@ -185,18 +197,6 @@ export const DropdownV2 = ({
   }, [properties.visibility, dropdownLoadingState, disabledState]);
 
   // Exposed variables
-
-  useEffect(() => {
-    if (isInitialRender.current) return;
-    setExposedVariable('value', currentValue);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentValue]);
-
-  useEffect(() => {
-    const _selectedOption = selectOptions.find((option) => option.value === currentValue);
-    setExposedVariable('selectedOption', pick(_selectedOption, ['label', 'value']));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentValue, JSON.stringify(selectOptions)]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
@@ -223,11 +223,6 @@ export const DropdownV2 = ({
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    setExposedVariable('isValid', isValid);
-  }, [isValid]);
-
-  useEffect(() => {
-    if (isInitialRender.current) return;
     setExposedVariable('isVisible', properties.visibility);
   }, [properties.visibility]);
 
@@ -250,7 +245,7 @@ export const DropdownV2 = ({
     const _options = selectOptions?.map(({ label, value }) => ({ label, value }));
     const exposedVariables = {
       clear: async function () {
-        setCurrentValue(null);
+        setInputValue(null);
       },
       setVisibility: async function (value) {
         setVisibility(value);
@@ -448,10 +443,10 @@ export const DropdownV2 = ({
             value={selectOptions.filter((option) => option.value === currentValue)[0] ?? null}
             onChange={(selectedOption, actionProps) => {
               if (actionProps.action === 'clear') {
-                setCurrentValue(null);
+                setInputValue(null);
               }
               if (actionProps.action === 'select-option') {
-                setCurrentValue(selectedOption.value);
+                setInputValue(selectedOption.value);
                 fireEvent('onSelect');
               }
               setIsFocused(false);

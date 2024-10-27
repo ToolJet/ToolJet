@@ -65,8 +65,10 @@ export const MultiselectV2 = ({
   const isMandatory = validation?.mandatory ?? false;
   const multiselectRef = React.useRef(null);
   const labelRef = React.useRef(null);
-  const validationData = validate(selected?.length ? selected?.map((option) => option.value) : null);
-  const { isValid, validationError } = validationData;
+  const [validationStatus, setValidationStatus] = useState(
+    validate(selected?.length ? selected?.map((option) => option.value) : null)
+  );
+  const { isValid, validationError } = validationStatus;
   const valueContainerRef = React.useRef(null);
   const [visibility, setVisibility] = useState(properties.visibility);
   const [isMultiSelectLoading, setIsMultiSelectLoading] = useState(multiSelectLoadingState);
@@ -126,39 +128,32 @@ export const MultiselectV2 = ({
     return false;
   }
   const onChangeHandler = (items, action) => {
-    setSelected(items);
+    setInputValue(items);
     if (action.action === 'select-option') {
-      setExposedVariable(
-        'values',
-        items.map((item) => item.value)
-      );
       fireEvent('onSelect');
     }
   };
+
   useEffect(() => {
     let foundItem = findDefaultItem(values, advanced);
-    setSelected(foundItem);
+    setInputValue(foundItem);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectOptions]);
 
   useEffect(() => {
     let foundItem = findDefaultItem(values, advanced, true);
-    setSelected(foundItem);
+    setInputValue(foundItem);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [advanced, JSON.stringify(schema), JSON.stringify(values)]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
     setExposedVariable(
-      'selectedOptions',
-      Array.isArray(selected) && selected?.map(({ label, value }) => ({ label, value }))
-    );
-    setExposedVariable(
       'options',
       Array.isArray(selectOptions) && selectOptions?.map(({ label, value }) => ({ label, value }))
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(selected), selectOptions]);
+  }, [selectOptions]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
@@ -186,14 +181,11 @@ export const MultiselectV2 = ({
   }, [isMandatory]);
 
   useEffect(() => {
-    if (isInitialRender.current) return;
-    setExposedVariable('isValid', isValid);
-  }, [isValid]);
+    const defaultItems = findDefaultItem(values, advanced, true);
 
-  useEffect(() => {
     const exposedVariables = {
       clear: async function () {
-        setSelected([]);
+        setInputValue([]);
       },
       setVisibility: async function (value) {
         setVisibility(value);
@@ -210,7 +202,7 @@ export const MultiselectV2 = ({
       isDisabled: disabledState,
       isMandatory: isMandatory,
       isValid: isValid,
-      selectedOptions: Array.isArray(selected) && selected?.map(({ label, value }) => ({ label, value })),
+      selectedOptions: Array.isArray(defaultItems) && defaultItems?.map(({ label, value }) => ({ label, value })),
       options: Array.isArray(selectOptions) && selectOptions?.map(({ label, value }) => ({ label, value })),
     };
     setExposedVariables(exposedVariables);
@@ -237,7 +229,7 @@ export const MultiselectV2 = ({
             newSelected.push(...optionsToAdd);
           }
         });
-        setSelected(newSelected);
+        setInputValue(newSelected);
       }
     });
 
@@ -247,7 +239,7 @@ export const MultiselectV2 = ({
         // Check if array provided is a list of objects with value key
         const _value = value.map((val) => (isObject(val) && has(val, 'value') ? val.value : val));
         const newSelected = selected.filter((option) => !_value.includes(option.value));
-        setSelected(newSelected);
+        setInputValue(newSelected);
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -274,6 +266,17 @@ export const MultiselectV2 = ({
         setSearchInputValue('');
       }
     }
+  };
+
+  const setInputValue = (values) => {
+    setSelected(values);
+    const validationStatus = validate(values?.length ? values?.map((option) => option.value) : null);
+    setValidationStatus(validationStatus);
+    setExposedVariables({
+      values: values.map((item) => item.value),
+      isValid: validationStatus?.isValid,
+      selectedOptions: Array.isArray(values) && values?.map(({ label, value }) => ({ label, value })),
+    });
   };
 
   useEffect(() => {
@@ -485,7 +488,7 @@ export const MultiselectV2 = ({
             showAllOption={showAllOption}
             isSelectAllSelected={isSelectAllSelected}
             setIsSelectAllSelected={setIsSelectAllSelected}
-            setSelected={setSelected}
+            setSelected={setInputValue}
             iconColor={iconColor}
             optionsLoadingState={optionsLoadingState && advanced}
             darkMode={darkMode}

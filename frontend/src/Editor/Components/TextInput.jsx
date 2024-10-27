@@ -47,8 +47,8 @@ export const TextInput = function TextInput({
   const [disable, setDisable] = useState(disabledState || loadingState);
   const [value, setValue] = useState(properties.value);
   const [visibility, setVisibility] = useState(properties.visibility);
-  // const isValid = true; // TODO: remove this and uncomment the below line
-  const { isValid, validationError } = validate(value);
+  const [validationStatus, setValidationStatus] = useState(validate(value));
+  const { isValid, validationError } = validationStatus;
   const [showValidationError, setShowValidationError] = useState(false);
 
   const [labelWidth, setLabelWidth] = useState(0);
@@ -156,18 +156,11 @@ export const TextInput = function TextInput({
   }, [loadingState]);
 
   useEffect(() => {
-    setExposedVariable('isValid', isValid);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isValid]);
-
-  useEffect(() => {
     if (isInitialRender.current) return;
     if (properties.value === undefined) {
-      setValue('');
-      setExposedVariable('value', '');
+      setInputValue('');
     } else {
-      setValue(properties.value);
-      setExposedVariable('value', properties.value);
+      setInputValue(properties.value);
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -200,13 +193,11 @@ export const TextInput = function TextInput({
   useEffect(() => {
     const exposedVariables = {
       setText: async function (text) {
-        setValue(text);
-        setExposedVariable('value', text);
+        setInputValue(text);
         fireEvent('onChange');
       },
       clear: async function () {
-        setValue('');
-        setExposedVariable('value', '');
+        setInputValue('');
         fireEvent('onChange');
       },
       setFocus: async function () {
@@ -241,12 +232,18 @@ export const TextInput = function TextInput({
       isVisible: visibility,
       isDisabled: disable,
     };
-    setValue(properties.value);
 
     setExposedVariables(exposedVariables);
     isInitialRender.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const setInputValue = (value) => {
+    setValue(value);
+    const validationStatus = validate(value);
+    setValidationStatus(validationStatus);
+    setExposedVariables({ value, isValid: validationStatus?.isValid });
+  };
 
   const iconName = styles.icon; // Replace with the name of the icon you want
   // eslint-disable-next-line import/namespace
@@ -320,14 +317,12 @@ export const TextInput = function TextInput({
           } validation-without-icon`}
           onKeyUp={(e) => {
             if (e.key === 'Enter') {
-              setValue(e.target.value);
-              setExposedVariable('value', e.target.value);
+              setInputValue(e.target.value);
               fireEvent('onEnterPressed');
             }
           }}
           onChange={(e) => {
-            setValue(e.target.value);
-            setExposedVariable('value', e.target.value);
+            setInputValue(e.target.value);
             fireEvent('onChange');
           }}
           onBlur={(e) => {
