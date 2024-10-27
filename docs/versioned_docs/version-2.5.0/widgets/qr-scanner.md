@@ -21,7 +21,7 @@ You might have to stick to the Safari browser in IOS as camera access is restric
 This variable holds the data contained in the last QR code scanned by the widget. To fetch the data use `{{components.qrscanner1.lastDetectedValue}}`.
 
 ## Events
-### onDetect
+### On detect
 
 This event is fired whenever the widget successfully scans a QR code.
 
@@ -51,14 +51,14 @@ Now hovering over the widget will display the string as the tooltip.
 
 </div>
 
-## Layout
+## Devices
 
 ### Show on desktop
 
-Toggle on or off to display the widget in desktop view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
+Makes the component visible in desktop view. You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.
 ### Show on mobile
 
-Toggle on or off to display the widget in mobile view. You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`.
+TMakes the component visible in mobile view. You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.
 
 ## Styles
 
