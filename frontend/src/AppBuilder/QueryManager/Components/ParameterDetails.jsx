@@ -12,7 +12,8 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
   useEffect(() => {
     const handleClickOutside = (event) => {
       const isClickedOnAddButton = !!event.target.closest('#runjs-param-add-btn');
-      const isClickedOnPillButton = !!event.target.closest('.parameterItemPillButton');
+      const parameterItemPillButton = event.target.closest('.parameterItemPillButton');
+      const isClickedOnPillButton = !!(parameterItemPillButton?.id === `query-param-${String(name).toLowerCase()}`);
       if (isClickedOnAddButton && !isEdit) {
         return;
       }
@@ -74,6 +75,7 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
         {isEdit ? (
           <PillButton
             className="parameterItemPillButton"
+            id={`query-param-${String(name).toLowerCase()}`}
             name={name}
             onClick={() => setShowModal(true)}
             onRemove={onRemove}
@@ -97,10 +99,11 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
   );
 };
 
-export const PillButton = ({ name, onClick, onRemove, marginBottom, className, size }) => (
+export const PillButton = ({ name, onClick, onRemove, marginBottom, className, size, id }) => (
   <ButtonGroup
     aria-label="Parameter"
     className={cx({ 'mb-2': marginBottom, ...(className && { [className]: true }) })}
+    {...(id && { id })}
     style={{ borderRadius: '6px', marginRight: '6px', height: '28px', background: 'var(--interactive-default)' }}
   >
     <Button
