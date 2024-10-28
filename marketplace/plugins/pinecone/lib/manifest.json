@@ -1,0 +1,20 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Pinecone datasource",
+  "description": "A schema defining Pinecone datasource",
+  "type": "api",
+  "source": {
+    "name": "Pinecone",
+    "kind": "pinecone",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {}
+  },
+  "defaults": {},
+  "properties": {},
+  "required": []
+}

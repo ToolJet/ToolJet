@@ -1,0 +1,9 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Pinecone datasource",
+  "description": "A schema defining Pinecone datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {}
+}
