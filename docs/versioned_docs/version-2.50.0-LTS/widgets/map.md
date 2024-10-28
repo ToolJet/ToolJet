@@ -15,7 +15,7 @@ If you are utilizing the self-hosted version of ToolJet, it is necessary to conf
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Properties
 
@@ -24,12 +24,12 @@ If you are utilizing the self-hosted version of ToolJet, it is necessary to conf
 | Initial location | default location when the app is loaded initially. | An object containing the **latitude** and **longitude** as key value pairs. ex: `{{ {"lat": 40.7128, "lng": -73.935242} }}` |
 | Default markers | Number of markers that should be shown on the map | An array of objects containing the coordinates. ex: `{{ [{"lat": 40.7128, "lng": -73.935242}, {"lat": 40.7128, "lng": -73.935242}] }}` |
 | Polygon points | Create a polygon on the map using the given coordinates. | An array of objects containing the coordinates. ex: `{{ [{"lat": 40.7128, "lng": -73.935242}, {"lat": 40.7128, "lng": -73.935242}] }}` |
-| Add new markers | On clicking the map, a new marker will be added to the map. | By default, it's set to `On`. Toggle `off` to disable adding new markers on the map. Click `Fx` to set `{{true}}` or `{{false}}` programmatically. |
-| Search for places | Enable to show the search box on the map. | By default, it's set to `On`. Toggle `off` to disable the search box on the map. Click `Fx` to set `{{true}}` or `{{false}}` programmatically. |
+| Add new markers | On clicking the map, a new marker will be added to the map. | By default, it's set to `On`. Toggle `off` to disable adding new markers on the map. Click **fx** to set `{{true}}` or `{{false}}` programmatically. |
+| Search for places | Enable to show the search box on the map. | By default, it's set to `On`. Toggle `off` to disable the search box on the map. Click **fx** to set `{{true}}` or `{{false}}` programmatically. |
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Events
 
@@ -46,7 +46,7 @@ For detailed information about all the available **Actions**, please refer to th
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Component Specific Actions (CSA)
 
@@ -58,7 +58,7 @@ Following actions of Map component can be controlled using the component specifi
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Exposed Variables
 
@@ -78,7 +78,7 @@ Exposed variables can be used to get data from the component.
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## General
 ### Tooltip
@@ -87,25 +87,27 @@ A Tooltip is often used to specify the extra information when the user hovers th
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
-## Layout
+## Devices
 
-| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 |:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
-| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
-| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on mobile  | Makes the component visible in mobile view.  | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
+
+<hr/>
 
 ## Styles
 
 | <div style={{ width:"100px"}}> Properties </div>     | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 |:----------- |:----------- |:------------------ |
-| Visibility | Toggle on or off to control the visibility of the component. | You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the component will not be visible after the app is release. By default, it's set to `{{true}}`. |
-| Disable | This is `off` by default, toggle `on` the switch to lock the component and make it non-functional. | You can also programmatically set the value by clicking on the `Fx` button next to it. If set to `{{true}}`, the component will be locked and becomes non-functional. By default, its value is set to `{{false}}`. |
-| Box shadow | Add a shadow effect to the component by providing values to X, Y, Blur, Spread and Color. | You can also programmatically set the value by clicking on the `Fx` button next to it. Ex: `{{"x": 0, "y": 0, "blur": 0, "spread": 0, "color": "#000000"}}` | 
+| Visibility | Toggle on or off to control the visibility of the component. | You can programmatically change its value by clicking on the **fx** button next to it. If `{{false}}` the component will not be visible after the app is release. By default, it's set to `{{true}}`. |
+| Disable | This is `off` by default, toggle `on` the switch to lock the component and make it non-functional. | You can also programmatically set the value by clicking on the **fx** button next to it. If set to `{{true}}`, the component will be locked and becomes non-functional. By default, its value is set to `{{false}}`. |
+| Box shadow | Add a shadow effect to the component by providing values to X, Y, Blur, Spread and Color. | You can also programmatically set the value by clicking on the **fx** button next to it. Ex: `{{"x": 0, "y": 0, "blur": 0, "spread": 0, "color": "#000000"}}` | 
 
 </div>
