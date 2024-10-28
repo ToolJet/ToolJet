@@ -15,6 +15,7 @@ export const ConfigHandle = ({
   customClassName = '',
   showHandle,
   componentType,
+  visibility,
 }) => {
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
   const componentName = useStore((state) => state.getComponentDefinition(id)?.component?.name || '', shallow);
@@ -23,11 +24,12 @@ export const ConfigHandle = ({
     shallow
   );
   const deleteComponents = useStore((state) => state.deleteComponents, shallow);
+  let height = visibility === false ? 10 : widgetHeight;
   return (
     <div
       className={`config-handle ${customClassName}`}
       style={{
-        top: position === 'top' ? '-20px' : widgetTop + widgetHeight - (widgetTop < 10 ? 15 : 10),
+        top: position === 'top' ? '-20px' : widgetTop + height - (widgetTop < 10 ? 15 : 10),
         visibility: showHandle && !isMultipleComponentsSelected ? 'visible' : 'hidden',
         left: '-1px',
       }}
