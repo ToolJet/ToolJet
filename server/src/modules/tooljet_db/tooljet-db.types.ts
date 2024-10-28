@@ -2,6 +2,51 @@ import { QueryFailedError } from 'typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { capitalize } from 'lodash';
 
+export const TJDB = {
+  character_varying: 'character varying' as const,
+  integer: 'integer' as const,
+  bigint: 'bigint' as const,
+  serial: 'serial' as const,
+  double_precision: 'double precision' as const,
+  boolean: 'boolean' as const,
+  timestampz: 'timestamp with time zone' as const,
+};
+
+export type TooljetDatabaseDataTypes = (typeof TJDB)[keyof typeof TJDB];
+
+export type TooljetDatabaseColumn = {
+  column_name: string;
+  data_type: TooljetDatabaseDataTypes;
+  column_default: string | null;
+  character_maximum_length: number | null;
+  numeric_precision: number | null;
+  constraints_type: {
+    is_not_null: boolean;
+    is_primary_key: boolean;
+    is_unique: boolean;
+  };
+  keytype: string | null;
+};
+
+export type TooljetDatabaseForeignKey = {
+  column_names: string[];
+  referenced_table_name: string;
+  referenced_column_names: string[];
+  on_update: string;
+  on_delete: string;
+  constraint_name: string;
+  referenced_table_id: string;
+};
+
+export type TooljetDatabaseTable = {
+  id: string;
+  table_name: string;
+  schema: {
+    columns: TooljetDatabaseColumn[];
+    foreign_keys: TooljetDatabaseForeignKey[];
+  };
+};
+
 enum PostgresErrorCode {
   UniqueViolation = '23505',
   CheckViolation = '23514',
@@ -9,6 +54,7 @@ enum PostgresErrorCode {
   ForeignKeyViolation = '23503',
   DuplicateColumn = '42701',
   UndefinedTable = '42P01',
+  PermissionDenied = '42501',
   UndefinedFunction = '42883',
 }
 
@@ -25,6 +71,7 @@ export type TooljetDbActions =
   | 'update_foreign_key'
   | 'view_table'
   | 'view_tables'
+  | 'sql_execution'
   | 'proxy_postgrest';
 
 type ErrorCodeMappingItem = Partial<Record<TooljetDbActions | 'default', string>>;
@@ -43,9 +90,14 @@ const errorCodeMapping: Partial<ErrorCodeMapping> = {
   },
   [PostgresErrorCode.UndefinedTable]: {
     default: 'Could not find the table {{table}}.',
+    sql_execution: `Could not find the table or schema`,
   },
   [PostgresErrorCode.ForeignKeyViolation]: {
     proxy_postgrest: 'Update or delete on  {{table}}.{{column}} with {{value}} violates foreign key constraint',
+    sql_execution: 'Update or delete on  {{table}}.{{column}} with {{value}} violates foreign key constraint',
+  },
+  [PostgresErrorCode.PermissionDenied]: {
+    default: 'Insufficient privilege',
   },
   [PostgresErrorCode.UndefinedFunction]: {
     proxy_postgrest: '{{fxName}} - aggregate function requires serial, integer, float or big int column type',
@@ -119,6 +171,20 @@ export class TooljetDatabaseError extends QueryFailedError {
       }, errorMessage);
     };
 
+    const maskWorkspaceSchemaNameInErrorMessage = (errorMessage): string => {
+      let output = errorMessage
+        .replace(/workspace_[\w-]+\./g, '')
+        .replace(/'workspace_[\w-]+'\./g, "'")
+        .replace(/workspace_[\w-]+'?/g, '')
+        .replace(/\s*workspace_[\w-]+\s*/g, '')
+        .replace(/\s{2,}/g, ' ')
+        .replace(/"\s*"/g, '')
+        .trim();
+
+      output = output.trim();
+      return output;
+    };
+
     // Handle custom errors that are thrown from PostgREST with
     // specific parsers for the error code
     if (this.queryError.driverError instanceof PostgrestError) {
@@ -140,6 +206,7 @@ export class TooljetDatabaseError extends QueryFailedError {
     // Based on the internalTables in context replace table UUIDs in
     // the error message
     modifiedErrorMessage = replaceTableUUIDs(modifiedErrorMessage, internalTableEntries);
+    modifiedErrorMessage = maskWorkspaceSchemaNameInErrorMessage(modifiedErrorMessage);
     return modifiedErrorMessage;
   }
 

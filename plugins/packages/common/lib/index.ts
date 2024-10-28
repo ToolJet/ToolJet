@@ -9,18 +9,20 @@ import {
   getCachedConnection,
   parseJson,
   cleanSensitiveData,
+  redactHeaders,
   getCurrentToken,
   sanitizeHeaders,
   sanitizeCookies,
   cookiesToString,
   sanitizeSearchParams,
   fetchHttpsCertsForCustomCA,
+  sanitizeSortPairs,
 } from './utils.helper';
 import { ConnectionTestResult } from './connection_test_result.type';
 import {
   getRefreshedToken,
   getAuthUrl,
-  sanitizeCustomParams,
+  sanitizeParams,
   checkIfContentTypeIsURLenc,
   checkIfContentTypeIsMultipartFormData,
   validateAndSetRequestOptionsBasedOnAuthType,
@@ -42,7 +44,7 @@ export {
   getCurrentToken,
   getRefreshedToken,
   getAuthUrl,
-  sanitizeCustomParams,
+  sanitizeParams,
   sanitizeHeaders,
   sanitizeCookies,
   sanitizeSearchParams,
@@ -50,5 +52,7 @@ export {
   checkIfContentTypeIsMultipartFormData,
   validateAndSetRequestOptionsBasedOnAuthType,
   fetchHttpsCertsForCustomCA,
+  redactHeaders,
   cookiesToString,
+  sanitizeSortPairs,
 };

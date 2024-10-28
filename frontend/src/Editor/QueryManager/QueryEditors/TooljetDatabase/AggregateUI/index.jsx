@@ -1,5 +1,5 @@
 import React, { useContext, useMemo, useState } from 'react';
-import { NoCondition } from './NoConditionUI';
+import { NoCondition } from '../NoConditionUI';
 import './style.scss';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { isEmpty } from 'lodash';
@@ -352,16 +352,20 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
   return (
     <>
       <div className="d-flex" style={{ marginBottom: '1.5rem' }}>
-        <label className="form-label" data-cy="label-column-filter">
+        <label className="form-label flex-shrink-0" data-cy="label-column-filter">
           Aggregate
         </label>
-        <div className="field-container col d-flex custom-gap-8 flex-column ">
+        <div
+          className={`field-container col d-flex custom-gap-8 flex-column ${
+            !isEmpty(operationDetails?.aggregates) && 'minw-400-w-400'
+          }`}
+        >
           {isEmpty(operationDetails?.aggregates || {}) && <NoCondition />}
           {operationDetails?.aggregates &&
             !isEmpty(operationDetails?.aggregates) &&
             Object.entries(operationDetails.aggregates).map(([aggregateKey, aggregateDetails]) => {
               return (
-                <div key={aggregateKey} className="d-flex flex-row minw-400px-maxw-45perc">
+                <div key={aggregateKey} className="d-flex flex-row ">
                   <div
                     style={{ minWidth: '25%', borderRadius: '4px 0 0 4px' }}
                     className="border overflow-hidden border-width-except-right"
@@ -439,13 +443,13 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
         </div>
       </div>
       <div className="d-flex" style={{ marginBottom: '1.5rem' }}>
-        <label className="form-label" data-cy="label-column-filter">
+        <label className="form-label flex-shrink-0" data-cy="label-column-filter">
           Group by
         </label>
-        <div className="field-container col minw-400px-maxw-45perc">
+        <div className="field-container col minw-400-w-400">
           {/* tooltip is not working */}
           {operation === 'listRows' && (
-            <div className="border rounded">
+            <div className="border rounded ">
               <SelectBox
                 width="100%"
                 height="32"
@@ -461,7 +465,7 @@ export const AggregateFilter = ({ darkMode, operation = '' }) => {
             </div>
           )}
           {operation === 'joinTable' && (
-            <div className="d-flex flex-column custom-gap-8 join-group-bys">
+            <div className="d-flex flex-column custom-gap-8 join-group-bys ">
               <div className="border rounded d-flex">
                 <ToolTip
                   message={selectedTableName}

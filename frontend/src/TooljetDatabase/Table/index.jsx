@@ -786,7 +786,6 @@ const Table = ({ collapseSidebar }) => {
 
     // Optimised by avoiding Refetch API call on Cell-Edit Save and state is updated
     const selectedTableDataCopy = [...selectedTableData];
-    console.log('cellValue', cellValue);
     if (selectedTableDataCopy[rIndex][cellKey] !== undefined) {
       selectedTableDataCopy[rIndex][cellKey] = directToggle === true ? !cellValue : cellValue;
       setSelectedTableData([...selectedTableDataCopy]);

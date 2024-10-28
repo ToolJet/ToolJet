@@ -1,12 +1,12 @@
 import React, { useContext } from 'react';
-import { Col, Container, Row } from 'react-bootstrap';
+import { Col, Row } from 'react-bootstrap';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import DropDownSelect from './DropDownSelect';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 import { isEmpty } from 'lodash';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { NoCondition } from './NoConditionUI';
 
 export default function JoinSort({ darkMode }) {
   const { tableInfo, joinOrderByOptions, setJoinOrderByOptions, joinOptions, findTableDetails } =
@@ -53,29 +53,17 @@ export default function JoinSort({ darkMode }) {
   ];
 
   return (
-    <Container fluid className="p-0">
+    <div className="p-0">
       {isEmpty(joinOrderByOptions) ? (
-        <Row className="mb-2 mx-0">
-          <div
-            style={{
-              gap: '4px',
-              height: '30px',
-              border: '1px dashed var(--slate-08, #C1C8CD)',
-            }}
-            className="px-4 py-2 text-center rounded-1"
-          >
-            <SolidIcon name="information" style={{ height: 14, width: 14 }} width={14} height={14} /> There are no
-            conditions
-          </div>
-        </Row>
+        <NoCondition />
       ) : (
         joinOrderByOptions.map((options, i) => {
           const tableDetails = options?.table ? findTableDetails(options?.table) : '';
           return (
-            <Row className="mb-2 mx-0" key={i}>
+            <Row className="mb-2 mx-0 " key={i}>
               <Col sm="6" className="p-0">
                 <DropDownSelect
-                  buttonClasses="border border-end-0 rounded-start"
+                  buttonClasses="border border-end-0 rounded-start overflow-hidden"
                   showPlaceHolder
                   options={tableList}
                   darkMode={darkMode}
@@ -105,7 +93,7 @@ export default function JoinSort({ darkMode }) {
               <Col sm="6" className="p-0 d-flex">
                 <div className="flex-grow-1">
                   <DropDownSelect
-                    buttonClasses="border border-end-0"
+                    buttonClasses="border border-end-0 overflow-hidden"
                     showPlaceHolder
                     options={sortbyConstants}
                     darkMode={darkMode}
@@ -150,6 +138,6 @@ export default function JoinSort({ darkMode }) {
           </ButtonSolid>
         </Col>
       </Row>
-    </Container>
+    </div>
   );
 }

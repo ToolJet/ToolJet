@@ -121,12 +121,21 @@ const RowForm = ({
     return matchingColumn;
   }
 
-  const handleDisabledInputClick = (index, tabData, defaultValue, nullValue, columnName, dataType, currentValue) => {
-    handleTabClick(index, tabData, defaultValue, nullValue, columnName, dataType, currentValue);
+  const handleDisabledInputClick = (index, columnName) => {
     if (inputRefs.current[columnName]) {
       setTimeout(() => {
         inputRefs.current[columnName].focus();
       }, 0);
+    }
+    const newInputValues = [...inputValues];
+    const isCurrentlyDisabled = newInputValues[index].disabled;
+    newInputValues[index] = {
+      ...newInputValues[index],
+      disabled: !isCurrentlyDisabled,
+    };
+    setInputValues(newInputValues);
+    if (isCurrentlyDisabled) {
+      setData((prevData) => ({ ...prevData, [columnName]: newInputValues[index].value }));
     }
   };
 
@@ -183,14 +192,20 @@ const RowForm = ({
 
   const handleInputChange = (index, value, columnName) => {
     const newInputValues = [...inputValues];
+    const isNull = value === null || value === 'Null';
     newInputValues[index] = {
       value: value === 'Null' ? null : value,
       checkboxValue: inputValues[index].checkboxValue,
-      disabled: false,
+      disabled: isNull,
       label: value === 'Null' ? null : value,
     };
     setInputValues(newInputValues);
     setData({ ...data, [columnName]: value === 'Null' ? null : value });
+    if (isNull) {
+      const newActiveTabs = [...activeTab];
+      newActiveTabs[index] = 'Null';
+      setActiveTab(newActiveTabs);
+    }
   };
 
   const handleCheckboxChange = (index, value, columnName) => {
@@ -316,6 +331,11 @@ const RowForm = ({
 
   const renderElement = (columnName, dataType, isPrimaryKey, defaultValue, index, isNullable) => {
     const isSerialDataTypeColumn = dataType === 'serial';
+    const handleInputFocus = () => {
+      if (activeTab[index] === 'Null') {
+        handleTabClick(index, 'Custom', defaultValue, null, columnName, dataType);
+      }
+    };
     switch (dataType) {
       case 'character varying':
       case 'integer':
@@ -373,6 +393,7 @@ const RowForm = ({
                     ? ''
                     : inputValues[index]?.value
                 }
+                onFocus={handleInputFocus}
                 onChange={(e) => handleInputChange(index, e.target.value, columnName)}
                 disabled={isSerialDataTypeColumn || inputValues[index]?.disabled}
                 placeholder={
@@ -395,17 +416,7 @@ const RowForm = ({
             )}
             {inputValues[index]?.disabled && (
               <div
-                onClick={() =>
-                  handleDisabledInputClick(
-                    index,
-                    'Custom',
-                    inputValues[index]?.column_default,
-                    isNullable,
-                    columnName,
-                    dataType,
-                    inputValues[index]?.value
-                  )
-                }
+                onClick={() => handleDisabledInputClick(index, columnName)}
                 style={{
                   position: 'absolute',
                   top: 0,
@@ -468,17 +479,7 @@ const RowForm = ({
             />
             {inputValues[index]?.disabled && (
               <div
-                onClick={() =>
-                  handleDisabledInputClick(
-                    index,
-                    'Custom',
-                    inputValues[index]?.column_default,
-                    isNullable,
-                    columnName,
-                    dataType,
-                    inputValues[index]?.value
-                  )
-                }
+                onClick={() => handleDisabledInputClick(index, columnName)}
                 style={{
                   position: 'absolute',
                   top: 0,

@@ -291,7 +291,7 @@ const ColumnForm = ({
       column: {
         column_name: selectedColumn?.Header,
         data_type: selectedColumn?.dataType,
-        ...(selectedColumn?.dataType !== 'serial' && { column_default: defaultValue === 'Null' ? null : defaultValue }),
+        ...(selectedColumn?.dataType !== 'serial' && { column_default: defaultValue }),
         constraints_type: {
           is_not_null: isNotNull,
           is_primary_key: selectedColumn?.constraints_type?.is_primary_key ?? false,
@@ -411,10 +411,10 @@ const ColumnForm = ({
   const newChangesInForeignKey = changesInForeignKey();
 
   const referenceTableDetails = referencedColumnDetails.map((item) => {
-    const [key, _value] = Object.entries(item);
+    const [key, value] = Object.entries(item);
     return {
-      label: key[1] === null ? 'Null' : key[1],
-      value: key[1] === null ? 'Null' : key[1],
+      label: key[1],
+      value: key[1],
     };
   });
 
@@ -837,9 +837,9 @@ const ColumnForm = ({
                 </label>
               </div>
               <div className="col d-flex flex-column">
-                <p className="m-0 p-0 fw-500 tj-switch-text">{isNotNull ? 'NOT NULL' : 'NULL'}</p>
+                <p className="m-0 p-0 fw-500 tj-switch-text">NOT NULL</p>
                 <p className="fw-400 secondary-text tj-text-xsm mb-2 tj-switch-text">
-                  {isNotNull ? 'Not null constraint is added' : 'This field can accept NULL value'}
+                  This constraint will restrict entry of NULL values in this column.
                 </p>
               </div>
             </div>
@@ -886,15 +886,9 @@ const ColumnForm = ({
                   </label>
                 </div>
                 <div className="col d-flex flex-column">
-                  <p className="m-0 p-0 fw-500 tj-switch-text">
-                    {isUniqueConstraint || (!isUniqueConstraint && selectedColumn?.constraints_type?.is_primary_key)
-                      ? 'UNIQUE'
-                      : 'NOT UNIQUE'}
-                  </p>
+                  <p className="m-0 p-0 fw-500 tj-switch-text">{'UNIQUE'}</p>
                   <p className="fw-400 secondary-text tj-text-xsm tj-switch-text">
-                    {isUniqueConstraint || (!isUniqueConstraint && selectedColumn?.constraints_type?.is_primary_key)
-                      ? 'Unique value constraint is added'
-                      : 'Unique value constraint is not added'}
+                    This constraint restricts entry of duplicate values in this column.
                   </p>
                 </div>
               </div>
@@ -905,27 +899,17 @@ const ColumnForm = ({
           isEditMode={true}
           fetching={fetching}
           onClose={onClose}
-          onEdit={() => {
-            if (foreignKeyDetails?.length > 0 && !isForeignKey && isMatchingForeignKeyColumn(columnName)) {
-              setOnDeletePopup(true);
-            } else {
-              handleEdit();
-            }
-          }}
+          onEdit={handleEdit}
           shouldDisableCreateBtn={columnName === ''}
           showToolTipForFkOnReadDocsSection={true}
           initiator={initiator}
         />
       </div>
       <ConfirmDialog
-        title={'Delete foreign key relation'}
+        title={'Delete foreign key'}
         show={onDeletePopup}
         message={'Deleting the foreign key relation cannot be reversed. Are you sure you want to continue?'}
-        onConfirm={
-          foreignKeyDetails?.length > 0 && !isForeignKey && isMatchingForeignKeyColumn(columnName)
-            ? handleEdit
-            : handleDeleteForeignKeyColumn
-        }
+        onConfirm={handleDeleteForeignKeyColumn}
         onCancel={() => {
           setOnDeletePopup(false);
         }}

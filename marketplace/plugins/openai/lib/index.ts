@@ -1,7 +1,7 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-marketplace/common';
 import { SourceOptions, QueryOptions, Operation } from './types';
-import OpenAI from 'openai';
-import { getCompletion, getChatCompletion } from './query_operations';
+import OpenAI from 'openai'; // Correct import for SDK 4.56.0
+import { getCompletion, getChatCompletion, generateImage } from './query_operations';
 
 export default class Openai implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
@@ -19,6 +19,10 @@ export default class Openai implements QueryService {
           result = await getChatCompletion(openai, queryOptions);
           break;
 
+        case Operation.ImageGeneration:
+          result = await generateImage(openai, queryOptions);
+          break;
+
         default:
           throw new QueryError('Query could not be completed', 'Invalid operation', {});
       }
@@ -34,13 +38,17 @@ export default class Openai implements QueryService {
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const openai: OpenAI = await this.getConnection(sourceOptions);
-
+    console.log();
     try {
-      const response = await openai.models.list();
-      if (response.data) {
+      const response = await openai.models.list(); // The response doesn't have a 'status'
+
+      if (response.data.length > 0) {
+        // Checking if models exist in the response
         return {
           status: 'ok',
         };
+      } else {
+        throw new QueryError('No models found', 'The models list is empty', {});
       }
     } catch (error) {
       throw new QueryError('Connection could not be established', error?.message, {});
@@ -50,14 +58,18 @@ export default class Openai implements QueryService {
   async getConnection(sourceOptions: SourceOptions): Promise<OpenAI> {
     const { apiKey, organizationId = null } = sourceOptions;
 
-    const config: OpenAI.FunctionParameters = {
-      apiKey: apiKey,
+    const creds = {
+      apiKey: apiKey, // No hardcoding, pulling from sourceOptions
     };
     if (organizationId) {
-      config.organization = organizationId;
+      creds['organizationId'] = organizationId;
     }
 
-    const openai = new OpenAI(config);
+    // Initialize OpenAI instance directly with API key
+    const openai = new OpenAI({
+      apiKey: apiKey,
+    });
+
     return openai;
   }
 }

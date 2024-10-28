@@ -1,5 +1,4 @@
 import { get } from 'lodash';
-
 /**
  * Checks if the queryOptions object contains a filter with an 'eq' (equal) operator and a value equal to '{{null}}'.
  *

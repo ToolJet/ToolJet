@@ -4,6 +4,7 @@ import { EntityManager } from 'typeorm';
 import { isEmpty } from 'lodash';
 import { ConflictException } from '@nestjs/common';
 import { DataBaseConstraints } from './db_constraints.constants';
+import { LICENSE_LIMIT } from '@licensing/helper';
 const protobuf = require('protobufjs');
 const semver = require('semver');
 
@@ -137,6 +138,22 @@ export async function getServiceAndRpcNames(protoDefinition) {
   return serviceNamesAndMethods;
 }
 
+export function generatePayloadForLimits(currentCount: number, totalCount: any, licenseStatus: object, label?: string) {
+  return totalCount !== LICENSE_LIMIT.UNLIMITED
+    ? {
+        percentage: (currentCount / totalCount) * 100,
+        total: totalCount,
+        current: currentCount,
+        licenseStatus,
+        label,
+        canAddUnlimited: false,
+      }
+    : {
+        canAddUnlimited: true,
+        licenseStatus,
+        label,
+      };
+}
 export class MigrationProgress {
   private progress = 0;
   constructor(private fileName: string, private totalCount: number) {}
@@ -251,24 +268,80 @@ export function isTooljetVersionWithNormalizedAppDefinitionSchem(version) {
   return semver.satisfies(semver.coerce(version), '>= 2.24.0');
 }
 
-export function isVersionGreaterThanOrEqual(version1: string, version2: string) {
-  if (!version1) return false;
+function parseVersion(version: string): number[] {
+  return version.split('-')[0].split('.').map(Number);
+}
 
-  const v1Parts = version1.split('-')[0].split('.').map(Number);
-  const v2Parts = version2.split('-')[0].split('.').map(Number);
+/**
+ * Compares two version strings and determines if the first version is greater than the second.
+ *
+ * @param {string} version1 - The first version string to compare.
+ * @param {string} version2 - The second version string to compare.
+ * @returns {boolean} True if version1 is greater than version2, false otherwise.
+ *
+ * @example
+ * isVersionGreaterThan('2.62.0-ee2.21.0', '2.28.4-ee2.15.0-cloud2.3.1'); // true
+ * isVersionGreaterThan('2.50.1.1.1', '2.50.1.1.0'); // true
+ * isVersionGreaterThan('2.62.0', '2.62.0-ee2.21.0'); // false (ignores text after hyphen)
+ */
+export function isVersionGreaterThan(version1: string, version2: string): boolean {
+  if (!version1) return false;
+  const v1Parts = parseVersion(version1);
+  const v2Parts = parseVersion(version2);
 
   for (let i = 0; i < Math.max(v1Parts.length, v2Parts.length); i++) {
-    const v1Part = +v1Parts[i] || 0;
-    const v2Part = +v2Parts[i] || 0;
-
-    if (v1Part < v2Part) {
-      return false;
-    } else if (v1Part > v2Part) {
+    const v1Part = v1Parts[i] || 0;
+    const v2Part = v2Parts[i] || 0;
+    if (v1Part > v2Part) {
       return true;
+    } else if (v1Part < v2Part) {
+      return false;
     }
   }
+  return false;
+}
 
+/**
+ * Compares two ToolJet version strings and determines if they are equal.
+ *
+ * @param {string} version1 - The first version string to compare.
+ * @param {string} version2 - The second version string to compare.
+ * @returns {boolean} True if version1 is equal to version2, false otherwise.
+ *
+ * @example
+ * isVersionEqual('2.62.0-ee2.21.0', '2.62.0-ee2.21.0'); // true
+ * isVersionEqual('2.50.1.1.1', '2.50.1.1.1'); // true
+ * isVersionEqual('2.62.0', '2.62.0-ee2.21.0'); // true (ignores text after hyphen)
+ */
+export function isVersionEqual(version1: string, version2: string): boolean {
+  if (!version1) return false;
+  const v1Parts = parseVersion(version1);
+  const v2Parts = parseVersion(version2);
+
+  if (v1Parts.length !== v2Parts.length) return false;
+
+  for (let i = 0; i < v1Parts.length; i++) {
+    if (v1Parts[i] !== v2Parts[i]) {
+      return false;
+    }
+  }
   return true;
+}
+
+/**
+ * Compares two ToolJet version strings and determines if the first version is greater than or equal to the second.
+ *
+ * @param {string} version1 - The first version string to compare.
+ * @param {string} version2 - The second version string to compare.
+ * @returns {boolean} True if version1 is greater than or equal to version2, false otherwise.
+ *
+ * @example
+ * isVersionGreaterThanOrEqual('2.62.0-ee2.21.0', '2.28.4-ee2.15.0-cloud2.3.1'); // true
+ * isVersionGreaterThanOrEqual('2.50.1.1.1', '2.50.1.1.1'); // true
+ * isVersionGreaterThanOrEqual('2.28.4-ee2.15.0-cloud2.3.1', '2.62.0-ee2.21.0'); // false
+ */
+export function isVersionGreaterThanOrEqual(version1: string, version2: string): boolean {
+  return isVersionGreaterThan(version1, version2) || isVersionEqual(version1, version2);
 }
 
 export const getMaxCopyNumber = (existNameList, splitChar = '_') => {

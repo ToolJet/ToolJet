@@ -8,10 +8,15 @@ import { USER_STATUS, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 import { defaultAppEnvironments } from 'src/helpers/utils.helper';
 import { UserRoleService } from './user-role.service';
 import { USER_ROLE } from '@modules/user_resource_permissions/constants/group-permissions.constant';
+import { TooljetDbService } from './tooljet_db.service';
 
 @Injectable()
 export class SeedsService {
-  constructor(private readonly entityManager: EntityManager, private userRoleService: UserRoleService) {}
+  constructor(
+    private readonly entityManager: EntityManager,
+    private userRoleService: UserRoleService,
+    private readonly tooljetDbService: TooljetDbService
+  ) {}
 
   async perform(): Promise<void> {
     await this.entityManager.transaction(async (manager) => {
@@ -90,9 +95,18 @@ export class SeedsService {
 
       // Adding test user to group
 
+      // Creating new schema for user in Tooljet database
+      await this.tooljetDbService.createTooljetDbTenantSchemaAndRole(organization.id, manager);
+
       console.log(
         'Seeding complete. Use default credentials to login.\n' + 'email: dev@tooljet.io\n' + 'password: password'
       );
+    });
+  }
+
+  async getAllOrganizations(manager?: EntityManager): Promise<Organization[]> {
+    return await this.entityManager.transaction(async (manager: EntityManager) => {
+      return await manager.find(Organization);
     });
   }
 

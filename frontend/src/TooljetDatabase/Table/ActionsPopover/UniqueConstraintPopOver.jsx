@@ -55,8 +55,8 @@ export const UniqueConstraintPopOver = ({
   };
 
   const popover = (
-    <Popover className={`create-table-list-items ${darkMode && 'dark-theme'}`}>
-      <Popover.Body>
+    <Popover className={`create-table-list-items ${darkMode && ' dark-theme'}`}>
+      <Popover.Body className={` ${darkMode && 'theme-dark'}`}>
         <div className="unique-constraint-parent">
           {showUniqueConstraintInfo() && (
             <div className="unique-constraint-info">
@@ -169,25 +169,12 @@ export const UniqueConstraintPopOver = ({
                 </label>
 
                 <div>
-                  <div className="tj-text-xsm unique-tag">
-                    {columns[index]?.constraints_type?.is_primary_key || columns[index]?.constraints_type?.is_unique
-                      ? 'UNIQUE'
-                      : 'NOT UNIQUE'}
-                  </div>
-                  <div className="tj-text-xsm">
-                    {columns[index]?.constraints_type?.is_primary_key || columns[index]?.constraints_type?.is_unique
-                      ? 'Unique value constraint is added'
-                      : 'Unique value constraint is not added'}
-                  </div>
+                  <div className="tj-text-xsm unique-tag">{'UNIQUE'}</div>
+                  <div className="tj-text-xsm">This constraint restricts entry of duplicate values in this column.</div>
                 </div>
               </div>
             </ToolTip>
           </div>
-          {/* <div className="col unique-helper-text px-2 py-1">
-            {columns[index]?.constraints_type?.is_primary_key || columns[index]?.constraints_type?.is_unique
-              ? 'Unique value constraint is added'
-              : 'Unique value constraint is not added'}
-          </div> */}
         </div>
 
         <hr />
