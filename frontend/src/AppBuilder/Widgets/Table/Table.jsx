@@ -171,7 +171,7 @@ export const Table = React.memo(
       });
     }, [JSON.stringify(tableDetails?.filterDetails?.filters)]);
 
-    useEffect(() => mergeToTableDetails({ columnProperties: properties?.columns }), [properties]);
+    useEffect(() => mergeToTableDetails({ columnProperties: properties?.columns }), [properties?.columns]);
 
     useEffect(() => {
       const hoverEvent = tableEvents?.find(({ event }) => {
@@ -860,12 +860,6 @@ export const Table = React.memo(
       if (preSelectRow.current) {
         preSelectRow.current = false;
       } else {
-        // onComponentOptionsChanged(component, [
-        //   ['currentPageData', pageData],
-        //   ['currentData', data],
-        //   ['selectedRow', []],
-        //   ['selectedRowId', null],
-        // ]);
         setExposedVariables({
           currentPageData: pageData,
           currentData: data,
@@ -973,12 +967,6 @@ export const Table = React.memo(
         deselectAllRows,
       });
     }, [JSON.stringify(tableDetails.selectedRowsDetails)]);
-
-    const pageData = page.map((row) => row.original);
-
-    useEffect(() => {
-      setExposedVariables({ currentPageData: pageData });
-    }, [pageData]);
 
     useEffect(() => {
       setExposedVariables({ dataUpdates: tableDetails.dataUpdates || [] });
