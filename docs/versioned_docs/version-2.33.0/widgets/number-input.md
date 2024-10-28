@@ -32,7 +32,7 @@ Check [Action Reference](/docs/category/actions-reference) docs to get detailed 
 
 Following actions of component can be controlled using the component specific actions(CSA):
 
-| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
 | :------------ | :---------- | :------------ |
 | setText()      | Sets the value of the input field.    | Employ a RunJS query (for e.g.,  <br/> `await components.numberinput1.setText(1)`) or trigger it using an event. |
 | clear()        | Clears the entered text in the input field.      | Employ a RunJS query (for e.g.,  <br/> `await components.numberinput1.clear()`) or trigger it using an event. |

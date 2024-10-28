@@ -392,6 +392,8 @@ export const PasswordInput = function PasswordInput({
             fontSize: '11px',
             fontWeight: '400',
             lineHeight: '16px',
+            position: 'relative',
+            zIndex: 2,
           }}
         >
           {showValidationError && validationError}

@@ -7,7 +7,7 @@ title: Kanban
 
 The **Kanban** component allows you to visually organize and prioritize your tasks with a transparent workflow. You can set the number of columns to display, enable/disable the add cards button, and bind data to the cards.
 
-:::caution Restricted components
+:::info Restricted components
 Certain components are restricted from being placed within the **Card** and **Popout** of the **Kanban** component.
 - **Card**: Calendar, Kanban, Form, Tabs, Modal, ListView, Container
 - **Popout**: Calendar, Kanban
@@ -32,9 +32,9 @@ For instance, you can set the `Data` property of a Text component on a card usin
 
 ## Properties
 
-:::caution
-- It is mandatory to provide `id` for each column in the `column data` field. The `id` can be of type `string` or `number`.
-- It is mandatory to provide `id`, and `columnId` for each card in the `Card data` field. The `id` and `columnId` can be of type `string` or `number`.
+:::info
+- It is mandatory to provide an `id` for each column in the `column data` field. The `id` can be of type `string` or `number`.
+- It is mandatory to provide an `id` and a `columnId` for each card in the `Card data` field. Both `id` and `columnId` can be of type `string` or `number`.
 :::
 
 | <div style={{ width:"100px"}}> Properties </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
@@ -54,21 +54,6 @@ For instance, you can set the `Data` property of a Text component on a card usin
 
 To add an event, click on the component handle to open the component properties on the right sidebar. Go to the **Events** section and click on **Add handler**.
 
-- **[On update](#on-update)**
-- **[On add card click](#on-add-card-click)**
-- **[Card removed](#card-removed)**
-- **[Card added](#card-added)**
-- **[Card moved](#card-moved)**
-- **[Card selected](#card-selected)**
-
-Just like any other event on ToolJet, you can set multiple handlers for any of the above mentioned events.
-
-:::info
-Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
-
-Check the **[Component Specific Action](#component-specific-actions-csa)** available for Kanban.
-:::
-
 |  <div style={{ width:"100px"}}> Event </div> |  <div style={{ width:"100px"}}> Description </div> |
 |:----------- |:----------- |
 | On Update | On update event is triggered whenever the card data (id, title, description, or columnID) is updated using the component specific actions. |
@@ -77,6 +62,14 @@ Check the **[Component Specific Action](#component-specific-actions-csa)** avail
 | Card added | This event is triggered whenever a card is **added** on the Kanban using the component specific action. |
 | Card moved | This event is triggered whenever the card's position is changed on the Kanban or using the component specific action. |
 | Card selected | This event is triggered whenever a card is clicked to open the modal. |
+
+Just like any other event on ToolJet, you can set multiple handlers for any of the above mentioned events.
+
+:::info
+Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
+
+Check the **[Component Specific Action](#component-specific-actions-csa)** available for Kanban.
+:::
 
 </div>
 
