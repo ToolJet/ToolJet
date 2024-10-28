@@ -35,6 +35,17 @@ class OpenapiComponent extends React.Component {
     };
   }
 
+  componentDidUpdate(prevProps) {
+    if (prevProps.options.parameters !== this.props.options.parameters) {
+      this.setState({
+        options: {
+          ...this.state.options,
+          parameters: this.props.options.parameters,
+        },
+      });
+    }
+  }
+
   changeOperation = (value) => {
     const operation = value.split(',')[0];
     const path = value.split(',')[1];
