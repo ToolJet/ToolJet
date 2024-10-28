@@ -143,6 +143,8 @@ export const Listview = function Listview({
     if (selectedRowIndex != undefined) {
       exposedVariables.selectedRecordId = selectedRowIndex;
       exposedVariables.selectedRecord = childrenData[selectedRowIndex];
+      exposedVariables.selectedRowId = selectedRowIndex;
+      exposedVariables.selectedRow = childrenData[selectedRowIndex];
     }
     setExposedVariables(exposedVariables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -252,7 +254,7 @@ export const Listview = function Listview({
             style={{ position: 'relative', height: `${rowHeight}px`, width: `${100 / positiveColumns}%` }}
             key={index}
             // data-cy={`${String(component.name).toLowerCase()}-row-${index}`}
-            onClick={(event) => {
+            onClickCapture={(event) => {
               onRecordOrRowClicked(index);
             }}
           >

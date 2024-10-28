@@ -741,7 +741,9 @@ export const createComponentsSlice = (set, get) => ({
             if (!state.containerChildrenMapping[parentId]) {
               state.containerChildrenMapping[parentId] = [];
             }
-            state.containerChildrenMapping[parentId].push(newComponent.id);
+            if (!state.containerChildrenMapping[parentId].includes(newComponent.id)) {
+              state.containerChildrenMapping[parentId].push(newComponent.id);
+            }
             const page = state.modules[moduleId].pages[state.currentPageIndex];
             page.components[newComponent.id] = newComponent;
           }, skipUndoRedo),

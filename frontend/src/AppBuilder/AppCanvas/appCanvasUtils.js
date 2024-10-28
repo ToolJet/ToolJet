@@ -262,7 +262,7 @@ export const copyComponents = ({ isCut = false, isCloning = false }) => {
 
   for (let selectedComponent of filteredSelectedComponents) {
     if (addedComponentId.has(selectedComponent.id)) continue;
-    const events = useStore.getState().eventsSlice.geEventsByComponentsId(selectedComponent.id);
+    const events = useStore.getState().eventsSlice.getEventsByComponentsId(selectedComponent.id);
     const component = {
       component: allComponents[selectedComponent.id]?.component,
       layouts: allComponents[selectedComponent.id]?.layouts,

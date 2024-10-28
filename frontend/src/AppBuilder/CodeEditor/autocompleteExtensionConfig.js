@@ -124,9 +124,7 @@ export const generateHints = (hints, totalReferences = 1, input, searchText) => 
         const multiReferenceInSingleIndentifier = totalReferences == 1 && searchText !== currentWord;
 
         if (multiReferenceInSingleIndentifier) {
-          const splitAtSearchString = doc.toString().split(searchText)[0];
-          const newFrom = splitAtSearchString.length;
-
+          const newFrom = to - searchText.length;
           pickedCompletionConfig.from = newFrom;
         } else if (totalReferences > 1 && completion.type !== 'js_methods') {
           const splitIndex = from;

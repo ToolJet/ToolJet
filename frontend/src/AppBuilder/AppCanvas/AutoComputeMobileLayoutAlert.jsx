@@ -10,7 +10,7 @@ import useConfirm from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/C
 import { diff } from 'deep-object-diff';
 import { isEmpty } from 'lodash';
 
-export default function AutoComputeMobileLayoutAlert({ currentLayout }) {
+export default function AutoComputeMobileLayoutAlert({ currentLayout, darkMode }) {
   const currentPageComponents = useStore((state) => state.getCurrentPageComponents(), shallow);
   const isAutoMobileLayout = useStore((state) => state.getIsAutoMobileLayout(), shallow);
   const turnOffAutoComputeLayout = useStore((state) => state.turnOffAutoComputeLayout, shallow);
@@ -67,7 +67,7 @@ export default function AutoComputeMobileLayoutAlert({ currentLayout }) {
   }
   return (
     <>
-      <ConfirmDialog confirmButtonText="Turn off" darkMode={false} />
+      <ConfirmDialog confirmButtonText="Turn off" darkMode={darkMode} />
       <div
         style={{
           position: 'absolute',

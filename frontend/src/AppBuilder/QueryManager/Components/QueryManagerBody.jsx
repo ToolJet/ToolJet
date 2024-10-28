@@ -311,7 +311,6 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
     );
   };
 
-  if (selectedQueryId !== selectedQuery?.id) return;
   const hasPermissions =
     selectedDataSource?.scope === 'global' && selectedDataSource?.type !== DATA_SOURCE_TYPE.SAMPLE
       ? canUpdateDataSource(selectedQuery?.data_source_id) ||
