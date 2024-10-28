@@ -163,7 +163,7 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
       }
       const constantsResp = isPublicAccess
         ? await orgEnvironmentConstantService.getConstantsFromPublicApp(slug)
-        : await orgEnvironmentConstantService.getConstantsFromEnvironment(editorEnvironmentId);
+        : await orgEnvironmentConstantService.getConstantsFromApp();
 
       const pages = appData.pages.map((page) => {
         return page;
@@ -190,7 +190,7 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
       );
 
       setPages(pages, moduleId);
-      setPageSettings(deepCamelCase(appData?.editing_version?.page_settings || appData?.page_settings));
+      setPageSettings(deepCamelCase(appData?.editing_version?.page_settings));
 
       // set starting page as homepage initially
       let startingPage = appData.pages.find((page) => page.id === homePageId);
@@ -236,11 +236,13 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
         const orgSecrets = {};
         constants.map((constant) => {
           if (constant.type !== 'Secret') {
-            orgConstants[constant.name] = constant.value;
+            orgConstants[constant.name] =
+              constant.value || constant.values?.find((v) => v.environmentName === 'production').value;
           } else {
             orgSecrets[constant.name] = constant.value;
           }
         });
+
         setResolvedConstants(orgConstants);
         setSecrets(orgSecrets);
       }
