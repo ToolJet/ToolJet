@@ -1,7 +1,6 @@
-
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
-  "title": "Pinecone datasource",
+  "title": "Pinecone Plugin",
   "description": "A schema defining Pinecone datasource",
   "type": "api",
   "source": {
@@ -12,9 +11,24 @@
       "data": {},
       "rawData": {}
     },
-    "options": {}
+    "options": {
+      "apiKey": {
+        "type": "string",
+        "encrypted": true
+      }
+    }
   },
   "defaults": {},
-  "properties": {},
-  "required": []
+  "properties": {
+    "apiKey": {
+      "label": "API Key",
+      "key": "apiKey",
+      "type": "password",
+      "description": "Enter your Pinecone API Key",
+      "helpText": "For generating API Key, visit: <a href='https://app.pinecone.io/organizations/-/projects/-/keys' target='_blank' rel='noreferrer'>Pinecone Console</a>"
+    }
+  },
+  "required": [
+    "apiKey"
+  ]
 }
