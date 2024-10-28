@@ -438,6 +438,7 @@ export const MultiselectV2 = ({
           auto={auto}
           isMandatory={isMandatory}
           _width={_width}
+          top={'1px'}
         />
         <div
           className="w-100 px-0 h-100"
