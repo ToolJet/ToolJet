@@ -1,11 +1,11 @@
 ---
 id: cloud-v3-migration
-title: ToolJet Cloud v3 Migration Guide
+title: ToolJet 3.0 Cloud Migration Guide
 ---
 
-# ToolJet Cloud v3 Migration Guide
+# ToolJet 3.0 Cloud Migration Guide
 
-ToolJet Cloud will be upgraded to v3 on November 11th, 2024. This update includes breaking changes that may affect your applications. Please review and update your applications before November 11th to ensure they continue working after the upgrade.
+ToolJet Cloud will be upgraded to 3.0 on November 11th, 2024. This update includes breaking changes that may affect your applications. Please review and update your applications before November 11th to ensure they continue working after the upgrade.
 
 :::warning Important
 
@@ -55,7 +55,7 @@ Instead, use static references to components:
 ## Component and Query Naming
 
 :::note
-This is only an issue during the upgrade process. Once your application is running on ToolJet v3, you can use identical names for components and queries without any problems.
+This is only an issue during the upgrade process. Once your application is running on ToolJet 3.0, you can use identical names for components and queries without any problems.
 :::
 
 ### Action Required
@@ -66,7 +66,7 @@ This is only an issue during the upgrade process. Once your application is runni
 
 ### Details and Examples
 
-When upgrading, if a component is referencing a query with the same name, the upgrade process may break that mapping. This occurs because ToolJet previously used a global ID-to-name map for both components and queries, which is now split in v3.
+When upgrading, if a component is referencing a query with the same name, the upgrade process may break that mapping. This occurs because ToolJet previously used a global ID-to-name map for both components and queries, which is now split in 3.0.
 
 Example scenario: If a table component named `userData` is referencing a query also named `userData`, this reference may break during the upgrade process.
 
