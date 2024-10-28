@@ -78,8 +78,10 @@ export const QueryPanel = ({ darkMode }) => {
 
   const onMouseDown = useCallback(
     (e) => {
-      e.preventDefault();
-      if (isTopOfQueryPanel) setIsDraggingQueryPane(true);
+      if (isTopOfQueryPanel) {
+        e.preventDefault();
+        setIsDraggingQueryPane(true);
+      }
     },
     [isTopOfQueryPanel]
   );
