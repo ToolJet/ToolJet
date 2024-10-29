@@ -11,10 +11,10 @@ The **Textarea** component allows users to enter text in an input field similar 
 
 ## Properties
 
-| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div>                                                                                                                   | <div style={{ width:"135px"}}> Expected Value </div>                   |
-| :--------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :--------------------------------------------------------------------- |
-| Default value                                  | Used to set initial value in textarea on load. It is a pre-established value that can be retrieved from the Text area component if no modifications are made to it. | Enter some text as the value (example: "John Doe")                     |
-| Placeholder                                    | Provides a hint for the expected value. It disappears once the user interacts with the component.                                                                   | Enter some instructional text as the value (example: "Type name here") |
+| <div style={{ width:"100px"}}> Property </div>    | <div style={{ width:"100px"}}> Description  </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+|:-------------|:------------------------------------------------------------|:------------|
+| Default value| Used to set initial value in textarea on load. It is a pre-established value that can be retrieved from the Text area component if no modifications are made to it. | Enter some text as the value (example: "John Doe"). |
+| Placeholder  | Provides a hint for the expected value. It disappears once the user interacts with the component. | Enter some instructional text as the value (example: "Type name here"). |
 
 </div>
 
@@ -24,10 +24,10 @@ The **Textarea** component allows users to enter text in an input field similar 
 
 Following actions of the **Textarea** component can be controlled using Component-Specific Actions(CSA):
 
-| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"135px"}}> Description </div>                                                       | <div style={{ width:"135px"}}> How To Access </div>                                                                            |
-| :-------------------------------------------- | :------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------- |
-| setText                                       | Sets the text on the text area component via a component-specific action within any event handler.      | Employ a RunJS query to execute component-specific actions such as `await components.textarea1.setText('this is a textarea')`. |
-| clear                                         | Clears the value from the text area component via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.textarea1.clear()`.                       |
+| <div style={{ width:"100px"}}> Actions  </div>   | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
+| :----------- | :----------- |:---------|
+| setText | Sets the text on the text area component via a component-specific action within any event handler.|  Employ a RunJS query to execute component-specific actions such as `await components.textarea1.setText('this is a textarea')`. |
+| clear | Clears the value from the text area component via a component-specific action within any event handler.| Employ a RunJS query to execute component-specific actions such as `await components.textarea1.clear()`. |
 
 </div>
 
@@ -35,8 +35,8 @@ Following actions of the **Textarea** component can be controlled using Componen
 
 ## Exposed Variables
 
-|                  Variables                  |                            Description                            |                                    How To Access                                     |
-| :-----------------------------------------: | :---------------------------------------------------------------: | :----------------------------------------------------------------------------------: |
+| Variables | Description | How To Access |
+|:---------|:-----------|:-------------|
 | <div style={{ width:"100px"}}> value </div> | This variable holds the value entered in the text area component. | Access the value dynamically using JS. For example, `{{components.textarea1.value}}` |
 
 </div>
@@ -57,10 +57,10 @@ In the input field under **Tooltip**, you can enter some text and the component 
 
 ## Devices
 
-| <div style={{ width:"100px"}}> Devices </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div>                                                                              |
-| :-------------------------------------------- | :------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------- |
-| Show on desktop                               | Makes the component visible in desktop view.      | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Show on mobile                                | Makes the component visible in mobile view.       | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| <div style={{ width:"100px"}}> Devices </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+| :----------- | :----------- | :------------ |
+| Show on desktop  | Makes the component visible in desktop view.  | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on mobile  | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 </div>
 
@@ -70,11 +70,11 @@ In the input field under **Tooltip**, you can enter some text and the component 
 
 ## Styles
 
-| <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div>                                                                             | <div style={{ width:"135px"}}> Expected Value </div>                                                                                                        |
-| :------------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Visibility                                  | Controls the visibility of the component. If set to `{{false}}`, the component will not be visible after the app is deployed. | Use the toggle button OR click on **fx** to pass a boolean value or a logical expression that returns a boolean value i.e. either `{{true}}` or `{{false}}` |
-| Disable                                     | Makes the component non-functional when set to true.                                                                          | Use the toggle button OR click on **fx** to pass a boolean value or a logical expression that returns a boolean value i.e. either `{{true}}` or `{{false}}` |
-| Border radius                               | Adjusts the roundness of the component's corners.                                                                             | Numeric value                                                                                                                                               |
+| <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div>  | <div style={{ width:"135px"}}> Expected Value </div>  |
+| :------------- | :-------------- | :-------------- |
+| Visibility  | Controls the visibility of the component. If set to `{{false}}`, the component will not be visible after the app is deployed. | Use the toggle button OR click on **fx** to pass a boolean value or a logical expression that returns a boolean value i.e. either `{{true}}` or `{{false}}`. |
+| Disable  | Makes the component non-functional when set to true.  | Use the toggle button OR click on **fx** to pass a boolean value or a logical expression that returns a boolean value i.e. either `{{true}}` or `{{false}}`. |
+| Border radius  | Adjusts the roundness of the component's corners.  | Numeric value  |
 
 </div>
 
