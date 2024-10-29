@@ -682,6 +682,8 @@ export const createComponentsSlice = (set, get) => ({
       updateComponentDependencyGraph,
       getCurrentPageComponents,
       canAddToParent,
+      getComponentNameFromId,
+      deleteComponentNameIdMapping,
     } = get();
     // This is made into a promise to wait for the saveComponentChanges to complete so that the caller can await it
     return new Promise((resolve) => {
@@ -699,10 +701,11 @@ export const createComponentsSlice = (set, get) => ({
           ...getCurrentPageComponents(),
           ...Object.fromEntries(acc.map((component) => [component.id, component])),
         };
-        const componentName = computeComponentName(componentDefinition.component.component, currentComponents);
+        const componentName =
+          componentDefinition.name || computeComponentName(componentDefinition.component.component, currentComponents);
         const newComponent = {
           id: componentDefinition.id,
-          name: componentDefinition.name || componentName,
+          name: componentName,
           component: {
             component: componentDefinition.component.component,
             definition: {
@@ -734,6 +737,11 @@ export const createComponentsSlice = (set, get) => ({
       }, {});
 
       newComponents.forEach((newComponent, index) => {
+        // Have added this condition to delete the oldName from the mapping if it exists due to cut pasting multiple times
+        const oldName = getComponentNameFromId(newComponent.id, moduleId);
+        if (oldName) {
+          deleteComponentNameIdMapping(oldName, moduleId);
+        }
         updateComponentDependencyGraph(moduleId, newComponent);
         const parentId = newComponent.component.parent || 'canvas';
         set(
