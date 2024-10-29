@@ -48,7 +48,7 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 | <div style={{ width:"100px"}}> Variables  </div>  | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 |:----------- |:----------- |:--------- |
-| value | Holds the value entered by the user  whenever a rating is added on the component. | Accessible dynamically with JS (for e.g., `{{components.colorpicker1.selectedColorHex}}`).|
+| value | Holds the value entered by the user whenever a rating is added on the component. | Accessible dynamically with JS (for e.g., `{{components.colorpicker1.selectedColorHex}}`).|
 
 </div>
 
