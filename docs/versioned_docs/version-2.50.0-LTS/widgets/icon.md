@@ -40,8 +40,8 @@ Following actions of the component can be controlled using the component specifi
 
 | <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"135px"}}> Description </div>                                                             | <div style={{ width:"135px"}}> How To Access </div>                                                              |
 | :-------------------------------------------- | :------------------------------------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------------------------------------- |
-| setVisibility                                 | You can toggle the visibility of the Icon component via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.icon1.setVisibility(false)`. |
-| click                                         | You can trigger the click action on Icon component via a component-specific action within any event handler.  | Employ a RunJS query to execute component-specific actions such as `await components.icon1.click()`.              |
+| setVisibility()                                 | Toggles the visibility of the Icon component. | Employ a RunJS query (for e.g., `await components.icon1.setVisibility(false))` or trigger it using an event. |
+| click()                                         | Triggers the click action on the Icon component.  | Employ a RunJS query (for e.g., `await components.icon1.click())` or trigger it using an event.              |
 
 </div>
 
@@ -63,12 +63,12 @@ There are currently no exposed variables for the component.
 
 <div style={{paddingTop:'24px'}}>
 
-## Layout
+## Devices
 
-| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div>                                                            |
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div>                                                            |
 | :------------------------------------------- | :------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------- |
-| Show on desktop                              | Toggle on or off to display desktop view.         | You can programmatically determining the value by clicking on **fx** to set the value `{{true}}` or `{{false}}`. |
-| Show on mobile                               | Toggle on or off to display mobile view.          | You can programmatically determining the value by clicking on **fx** to set the value `{{true}}` or `{{false}}`. |
+| Show on desktop                              | Toggles the component’s visibility in desktop view.         | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering `{{true}}` or `{{false}}`. |
+| Show on mobile                               | Toggles the component’s visibility in mobile view.          | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering `{{true}}` or `{{false}}`. |
 
 </div>
 

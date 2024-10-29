@@ -44,12 +44,12 @@ Check [Action Reference](/docs/category/actions-reference) docs to get the detai
 
 <b>Tooltip:</b> Set a tooltip text to specify the information when the user moves the mouse pointer over the widget.
 
-## Layout
+## Devices
 
-| Layout  | description | Expected value |
+| Property  | description | Expected value |
 | ----------- | ----------- | ------------ |
-| Show on desktop | Toggle on or off to show/hide the widget on desktop screens. | You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
-| Show on mobile | Toggle on or off to show/hide the widget on mobile screens. | You can programmatically determine the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}`   |
+| Show on desktop | Toggles the component’s visibility in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering `{{true}}` or `{{false}}`. |
+| Show on mobile | Toggles the component’s visibility in mobile view.  | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering `{{true}}` or `{{false}}`.   |
 
 ## Styles
 
@@ -73,5 +73,5 @@ Following actions of the component can be controlled using the component specifi
 
 | Actions     | Description |
 | ----------- | ----------- |
-| setVisibility | You can toggle the visibility of the icon component via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.icon1.setVisibility(false)` |
-| click | You can trigger the click action on icon component via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.icon1.click()` |
+| setVisibility() | Toggles the visibility of the Icon component. Employ a RunJS query (for e.g., `await components.icon1.setVisibility(false))` or trigger it using an event. |
+| click() | Triggers the click action on the Icon component. Employ a RunJS query (for e.g., `await components.icon1.click())` or trigger it using an event. |
