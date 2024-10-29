@@ -26,7 +26,7 @@ The **Star Rating** component can be used to display as well as input ratings. T
 
 | <div style={{ width:"100px"}}> Event </div> | <div style={{ width:"100px"}}> Description </div> |
 |:----------- |:----------- |
-| On change | Triggers whenever the user clicked a star |
+| On change | This action triggers whenever a user clicks on a star icon. |
 
 :::info
 Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
@@ -48,7 +48,7 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 | <div style={{ width:"100px"}}> Variables  </div>  | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 |:----------- |:----------- |:--------- |
-| value | Holds the value entered by the user whenever a rating is added on the component. | Accessible dynamically with JS (for e.g., `{{components.colorpicker1.selectedColorHex}}`).|
+| value | Holds the value entered by the user whenever a rating is added on the component. | Accessible dynamically with JS (for e.g., `{{components.starrating1.value}}`).|
 
 </div>
 
@@ -69,8 +69,8 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 |:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
-| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** to set the value `{{true}}` or `{{false}}`. |
-| Show on mobile  | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** to set the value `{{true}}` or `{{false}}`. |
+| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.`. |
+| Show on mobile  | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.`. |
 
 </div>
 
