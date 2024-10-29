@@ -16,7 +16,7 @@ import { Logger } from 'nestjs-pino';
   imports: [TypeOrmModule.forFeature([Credential]), CaslModule],
   controllers: [TooljetDbController],
   providers: [TooljetDbService, TooljetDbBulkUploadService, TooljetDbOperationsService, PostgrestProxyService],
-  exports: [TooljetDbOperationsService],
+  exports: [TooljetDbService, TooljetDbBulkUploadService, TooljetDbOperationsService, PostgrestProxyService],
 })
 export class TooljetDbModule implements OnModuleInit {
   constructor(

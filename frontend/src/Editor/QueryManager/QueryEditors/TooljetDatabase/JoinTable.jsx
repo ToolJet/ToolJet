@@ -9,10 +9,10 @@ import DropDownSelect from './DropDownSelect';
 import JoinConstraint from './JoinConstraint';
 import JoinSelect from './JoinSelect';
 import JoinSort from './JoinSort';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { filterOperatorOptions, nullOperatorOptions } from './util';
 import CodeHinter from '@/Editor/CodeEditor';
 import { AggregateFilter } from './AggregateUI';
+import { NoCondition } from './NoConditionUI';
 
 export const JoinTable = React.memo(({ darkMode }) => {
   return (
@@ -95,6 +95,8 @@ const SelectTableMenu = ({ darkMode }) => {
     return isGroupByUsed || !isEmpty(aggregates) ? false : true;
   }, [joinTableOptions]);
 
+  const { joinOrderByOptions } = useContext(TooljetDatabaseContext);
+
   return (
     <div>
       {/* Join Section */}
@@ -150,16 +152,16 @@ const SelectTableMenu = ({ darkMode }) => {
         </div>
       </div>
       {/* Sort Section */}
-      <div className="field-container d-flex" style={{ marginBottom: '1.5rem' }}>
+      <div className="field-container tooljetdb-worflow-operations d-flex" style={{ marginBottom: '1.5rem' }}>
         <label className="form-label flex-shrink-0">Sort</label>
-        <div className="field flex-grow-1">
+        <div className={`field flex-grow-1 ${!isEmpty(joinOrderByOptions) && 'minw-400-w-400'} `}>
           <JoinSort darkMode={darkMode} />
         </div>
       </div>
       {/* Limit Section */}
-      <div className="field-container d-flex" style={{ marginBottom: '1.5rem' }}>
+      <div className="field-container tooljetdb-worflow-operations d-flex" style={{ marginBottom: '1.5rem' }}>
         <label className="form-label flex-shrink-0">Limit</label>
-        <div className="field flex-grow-1">
+        <div className="field flex-grow-1 minw-400-w-400 tjdb-limit-offset-codehinter">
           <CodeHinter
             type="basic"
             className="tjdb-codehinter border rounded"
@@ -177,9 +179,9 @@ const SelectTableMenu = ({ darkMode }) => {
         </div>
       </div>
       {/* Offset Section */}
-      <div className="field-container d-flex" style={{ marginBottom: '1.5rem' }}>
+      <div className="field-container tooljetdb-worflow-operations d-flex" style={{ marginBottom: '1.5rem' }}>
         <label className="form-label flex-shrink-0">Offset</label>
-        <div className="field flex-grow-1">
+        <div className="field flex-grow-1 minw-400-w-400 tjdb-limit-offset-codehinter">
           <CodeHinter
             className="tjdb-codehinter border rounded"
             placeholder="Enter offset"
@@ -197,7 +199,7 @@ const SelectTableMenu = ({ darkMode }) => {
       </div>
       {/* Select Section */}
       {showSelectSection() && (
-        <div className="field-container d-flex" style={{ marginBottom: '1.5rem' }}>
+        <div className="field-container tooljetdb-worflow-operations d-flex" style={{ marginBottom: '1.5rem' }}>
           <label className="form-label flex-shrink-0">Select</label>
           <div className="field flex-grow-1">
             <JoinSelect darkMode={darkMode} />
@@ -432,7 +434,7 @@ const RenderFilterSection = ({ darkMode }) => {
             darkMode={darkMode}
           />
         </Col>
-        <Col sm="3" className="p-0">
+        <Col sm="2" className="p-0">
           <DropDownSelect
             buttonClasses="border border-end-0"
             showPlaceHolder
@@ -443,7 +445,7 @@ const RenderFilterSection = ({ darkMode }) => {
           />
         </Col>
         <Col className="p-0 d-flex">
-          <div className="col-10">
+          <div className="col-11 tjdb-codhinter-wrapper">
             {operator === 'IS' ? (
               <DropDownSelect
                 buttonClasses="border border-end-0"
@@ -477,6 +479,7 @@ const RenderFilterSection = ({ darkMode }) => {
           <ButtonSolid
             customStyles={{
               height: '30px',
+              maxWidth: '30px',
             }}
             size="sm"
             variant="ghostBlack"
@@ -492,21 +495,7 @@ const RenderFilterSection = ({ darkMode }) => {
 
   return (
     <Container fluid className="p-0">
-      {conditionsList.length === 0 && (
-        <Row className="mb-2 mx-0">
-          <div
-            style={{
-              gap: '4px',
-              height: '30px',
-              border: '1px dashed var(--slate-08, #C1C8CD)',
-            }}
-            className="px-4 py-2 text-center rounded-1"
-          >
-            <SolidIcon name="information" style={{ height: 14, width: 14 }} width={14} height={14} /> There are no
-            conditions
-          </div>
-        </Row>
-      )}
+      {conditionsList.length === 0 && <NoCondition />}
       {filterComponents}
       <Row className="mx-1 mb-1">
         <Col className="p-0">

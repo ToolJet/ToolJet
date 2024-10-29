@@ -20,7 +20,8 @@
 .width-fit-content{
     width: fit-content;
 }
-.minw-400px-maxw-45perc{
-    min-width: 400px;
+.minw-400-w-400{
+    width: 45% !important;
     max-width: 45%;
+    min-width: 45%;
 }

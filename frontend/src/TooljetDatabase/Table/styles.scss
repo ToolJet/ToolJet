@@ -417,6 +417,16 @@
   .tjdb-th-bg-dark {
     background: #1C252F !important;
   }
+
+  &::-webkit-scrollbar{
+    display: none;
+  }
+  &::-webkit-scrollbar-track{
+    background-color: transparent;
+  }
+  &:hover::-webkit-scrollbar{
+    display: block;
+  }
 }
 
 .create-table-list-items {

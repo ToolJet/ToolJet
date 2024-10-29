@@ -14,6 +14,7 @@ import { InternalTable } from './internal_table.entity';
 import { AppEnvironment } from './app_environments.entity';
 import { GroupPermissions } from './group_permissions.entity';
 import { GroupPermission } from './group_permission.entity';
+import { OrganizationTjdbConfigurations } from './organization_tjdb_configurations.entity';
 
 @Entity({ name: 'organizations' })
 export class Organization extends BaseEntity {
@@ -61,4 +62,10 @@ export class Organization extends BaseEntity {
 
   @OneToMany(() => InternalTable, (internalTable) => internalTable.organization)
   internalTable: InternalTable[];
+
+  @OneToMany(
+    () => OrganizationTjdbConfigurations,
+    (organizationTjdbConfiguration) => organizationTjdbConfiguration.organizationId
+  )
+  organizationTjdbConfigurations: OrganizationTjdbConfigurations[];
 }

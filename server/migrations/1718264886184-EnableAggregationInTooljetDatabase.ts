@@ -39,7 +39,7 @@ export class EnableAggregationInTooljetDatabase1718264886184 implements Migratio
       console.error('Error during migration: EnableAggregationInTooljetDatabase --- ', error);
       throw error;
     } finally {
-      await tooljetDbConnection.close();
+      await tooljetDbConnection.destroy();
     }
   }
 

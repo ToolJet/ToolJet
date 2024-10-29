@@ -6,6 +6,7 @@ import {
   QueryResult,
   QueryService,
   cleanSensitiveData,
+  redactHeaders,
   User,
   App,
   OAuthUnauthorizedClientError,
@@ -41,9 +42,7 @@ function isFileObject(value) {
 }
 
 interface RestAPIResult extends QueryResult {
-  request?: Array<object> | object;
-  response?: Array<object> | object;
-  responseHeaders?: Array<object> | object;
+  metadata?: Array<object> | object;
 }
 
 export default class RestapiQueryService implements QueryService {
@@ -85,8 +84,10 @@ export default class RestapiQueryService implements QueryService {
   ): Promise<RestAPIResult> {
     /* REST API queries can be adhoc or associated with a REST API datasource */
     const hasDataSource = dataSourceId !== undefined;
-    const isUrlEncoded = checkIfContentTypeIsURLenc(queryOptions['headers']);
-    const isMultipartFormData = checkIfContentTypeIsMultipartFormData(queryOptions['headers']);
+    const headers = sanitizeHeaders(sourceOptions, queryOptions, hasDataSource);
+    const headerEntries = Object.entries(headers);
+    const isUrlEncoded = checkIfContentTypeIsURLenc(headerEntries);
+    const isMultipartFormData = checkIfContentTypeIsMultipartFormData(headerEntries);
 
     /* Prefixing the base url of datasource if datasource exists */
     const url = hasDataSource ? `${sourceOptions.url || ''}${queryOptions.url || ''}` : queryOptions.url;
@@ -96,6 +97,13 @@ export default class RestapiQueryService implements QueryService {
     const json = method !== 'get' ? this.body(sourceOptions, queryOptions, hasDataSource) : undefined;
     const paramsFromUrl = urrl.parse(url, true).query;
     const searchParams = new URLSearchParams();
+
+    for (const param of sourceOptions.url_parameters || []) {
+      const [key, value] = param;
+      if (key && value) {
+        searchParams.append(key, value);
+      }
+    }
 
     // Append parameters individually to preserve duplicates
     for (const [key, value] of Object.entries(paramsFromUrl)) {
@@ -112,7 +120,7 @@ export default class RestapiQueryService implements QueryService {
     const _requestOptions: OptionsOfTextResponseBody = {
       method,
       ...this.fetchHttpsCertsForCustomCA(sourceOptions),
-      headers: sanitizeHeaders(sourceOptions, queryOptions, hasDataSource),
+      headers,
       searchParams,
       ...(retryOnNetworkError ? {} : { retry: 0 }),
     };
@@ -124,6 +132,8 @@ export default class RestapiQueryService implements QueryService {
     }
 
     const hasFiles = (json) => {
+      if (isEmpty(json)) return false;
+
       return Object.values(json || {}).some((item) => {
         return isFileObject(item);
       });
@@ -147,11 +157,12 @@ export default class RestapiQueryService implements QueryService {
         }
       }
       _requestOptions.body = form;
+      _requestOptions.headers = { ..._requestOptions.headers, ...form.getHeaders() };
     } else {
       _requestOptions.json = json;
     }
 
-    const authValidatedRequestOptions = validateAndSetRequestOptionsBasedOnAuthType(
+    const authValidatedRequestOptions = await validateAndSetRequestOptionsBasedOnAuthType(
       sourceOptions,
       context,
       _requestOptions
@@ -164,25 +175,22 @@ export default class RestapiQueryService implements QueryService {
     let result = {};
     let requestObject = {};
     let responseObject = {};
-    let responseHeaders = {};
 
     try {
       const response = await got(url, requestOptions);
       result = this.getResponse(response);
-      const requestUrl = response?.request?.options?.url?.origin + response?.request?.options?.url?.pathname;
+
       requestObject = {
-        requestUrl,
+        url: response.requestUrl,
         method: response.request.options.method,
-        headers: response.request.options.headers,
+        headers: redactHeaders(response.request.options.headers),
         params: urrl.parse(response.request.requestUrl, true).query,
       };
 
       responseObject = {
-        body: response.body,
         statusCode: response.statusCode,
+        headers: redactHeaders(response.headers),
       };
-
-      responseHeaders = response.headers;
     } catch (error) {
       console.error(
         `Error while calling REST API end point. status code: ${error?.response?.statusCode} message: ${error?.response?.body}`
@@ -211,14 +219,13 @@ export default class RestapiQueryService implements QueryService {
       throw new QueryError('Query could not be completed', error.message, result);
     }
 
-    requestObject['headers'] = cleanSensitiveData(requestObject['headers'], ['authorization']);
-
     return {
       status: 'ok',
       data: result,
-      request: requestObject,
-      response: responseObject,
-      responseHeaders,
+      metadata: {
+        request: requestObject,
+        response: responseObject,
+      },
     };
   }
 
@@ -273,12 +280,6 @@ export default class RestapiQueryService implements QueryService {
       console.error('Error while parsing response', error);
     }
     return response.body;
-  }
-
-  checkIfContentTypeIsURLenc(headers: [] = []) {
-    const objectHeaders = Object.fromEntries(headers);
-    const contentType = objectHeaders['content-type'] ?? objectHeaders['Content-Type'];
-    return contentType === 'application/x-www-form-urlencoded';
   }
 
   authUrl(sourceOptions: SourceOptions): string {
