@@ -3,8 +3,6 @@ id: kanban
 title: Kanban
 ---
 
-# Kanban
-
 The **Kanban** component allows you to visually organize and prioritize your tasks with a transparent workflow. You can set the number of columns to display, enable/disable the add cards button, and bind data to the cards.
 
 :::info Restricted components
