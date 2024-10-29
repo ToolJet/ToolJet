@@ -200,8 +200,8 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 | <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> |
 |:----------- |:----------- |
-| Show on desktop | Toggle on or off to display the component in desktop view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}`. |
-| Show on mobile | Toggle on or off to display the component in mobile view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}`. |
+| Show on desktop | Toggle on or off to display the component in desktop view. You can programmatically determine the value by clicking on **fx** to set the value `{{true}}` or `{{false}}`. |
+| Show on mobile | Toggle on or off to display the component in mobile view. You can programmatically determine the value by clicking on **fx** to set the value `{{true}}` or `{{false}}`. |
 
 </div>
 
