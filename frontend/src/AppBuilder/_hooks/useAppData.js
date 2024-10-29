@@ -138,7 +138,8 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
       return;
     }
     const queryParams = getPreviewQueryParams();
-    const isPublicAccess = currentSession?.load_app && currentSession?.authentication_failed;
+    const isPublicAccess =
+      (currentSession?.load_app && currentSession?.authentication_failed) || (!queryParams.version && mode !== 'edit');
     const isPreviewForVersion = (mode !== 'edit' && queryParams.version) || isPublicAccess;
     let appDataPromise;
     if (isPublicAccess) {
