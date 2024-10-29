@@ -579,7 +579,22 @@ export const Table = React.memo(
           properties.autogenerateColumns ?? false,
           id
         );
-        useDynamicColumn && setGeneratedColumn(generatedColumnFromData);
+        if (useDynamicColumn) {
+          const dynamicColumnHasId = dynamicColumn && dynamicColumn.every((column) => 'id' in column);
+          if (!dynamicColumnHasId) {
+            // if dynamic columns do not have an id then we need to manually compare the generated columns with the columns in the state because the id that we generate for columns without id is a uuid and it will be different every time
+            const generatedColumnsWithoutIds = generatedColumnFromData.map(({ id, ...rest }) => ({
+              ...rest,
+            }));
+            const columnsFromStateWithoutIds = generatedColumn.map(({ id, ...rest }) => ({
+              ...rest,
+            }));
+            !isEqual(generatedColumnsWithoutIds, columnsFromStateWithoutIds) &&
+              setGeneratedColumn(generatedColumnFromData);
+            return;
+          }
+          setGeneratedColumn(generatedColumnFromData);
+        }
       }
     }, [tableData, JSON.stringify(dynamicColumn)]);
 
