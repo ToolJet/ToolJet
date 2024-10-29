@@ -211,7 +211,7 @@ export const createEventsSlice = (set, get) => ({
         state.eventsSlice.module[moduleId].events = newEvents;
       });
     },
-    setTablePageIndex: (tableId, index) => {
+    setTablePageIndex: (tableId, index = 1) => {
       const { getExposedValueOfComponent } = get();
       if (_.isEmpty(tableId)) {
         console.log('No table is associated with this event.');

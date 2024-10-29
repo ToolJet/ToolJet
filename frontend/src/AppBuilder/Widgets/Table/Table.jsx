@@ -865,7 +865,6 @@ export const Table = React.memo(
           currentData: data,
           selectedRow: [],
           selectedRowId: null,
-          pageIndex: pageIndex + 1,
         });
         if (tableDetails.selectedRowId || !isEmpty(tableDetails.selectedRowDetails)) {
           toggleAllRowsSelected(false);
