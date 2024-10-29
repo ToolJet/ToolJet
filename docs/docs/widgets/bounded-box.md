@@ -119,7 +119,7 @@ The values can be accessed dynamically using `{{components.boundedbox1.annotatio
 
 ## General
 
-### Tooltip
+#### Tooltip
 
 A Tooltip is often used to specify the extra information when the user hovers the mouse pointer over the component. Once a value is set for Tooltip, hovering over the element will display the specified string as the tooltip text.
 
@@ -133,18 +133,14 @@ A Tooltip is often used to specify the extra information when the user hovers th
 
 <div style={{paddingTop:'24px'}}>
 
-
 ## Devices
 
-| <div style={{ width:"100px"}}> **Device** </div> | <div style={{ width:"200px"}}> **Description** </div> | <div style={{ width:"150px"}}> **Expected Value** </div> |
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{ width:"150px"}}> Expected Value </div> |
 | :----------- | :----------- | :----------------- |
-| Desktop | Toggle on or off to display the component in the desktop view. | You can programmatically determine the value by clicking on **fx** to set the value **`{{true}}`** or **`{{false}}`**. |
-| Mobile | Toggle on or off to display the component in the mobile view. | You can programmatically determine the value by clicking on **fx** to set the value  **`{{true}}`** or **`{{false}}`**. |
-
-
+| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 </div>
-<br/>
 
 ---
 
@@ -154,11 +150,8 @@ A Tooltip is often used to specify the extra information when the user hovers th
 
 | <div style={{ width:"100px"}}> Style  </div>  | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"100px"}}> Expected Value </div> |
 | :----------- | :----------- | :----------- |
-| Visibility | Toggle on or off to control the visibility of the component when the app is loaded. |  **`{{true}}`** or **`{{false}}`**, By default, it's set to **`{{true}}`**. |
-| Disable | Toggle on to disable the component. | **`{{true}}`** or **`{{false}}`**, By default, it's set to **`{{false}}`**. |
+| Visibility | Toggle on or off to control the visibility of the component when the app is loaded. |  `{{true}}` or `{{false}}`, By default, it's set to `{{true}}`. |
+| Disable | Toggle on to disable the component. | `{{true}}` or `{{false}}`, By default, it's set to `{{false}}`. |
 | Box shadow | Sets the add shadow effects around a component's frame. You can specify the horizontal and vertical offsets (through X and Y sliders), blur and spread radius, and color of the shadow. | Values that represent x, y, blur, spread and color. Ex: `9px 11px 5px 5px #00000040`. |
 
 </div>
-
-
-
