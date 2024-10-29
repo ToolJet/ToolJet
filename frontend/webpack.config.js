@@ -198,7 +198,7 @@ module.exports = {
       ENABLE_MULTIPLAYER_EDITING: true,
       ENABLE_MARKETPLACE_FEATURE: process.env.ENABLE_MARKETPLACE_FEATURE ?? true,
       ENABLE_MARKETPLACE_DEV_MODE: process.env.ENABLE_MARKETPLACE_DEV_MODE,
-      TJDB_SQL_MODE_DISABLE: process.env.TJDB_SQL_MODE_DISABLE ?? true,
+      TJDB_SQL_MODE_DISABLE: process.env.TJDB_SQL_MODE_DISABLE ?? false,
       TOOLJET_MARKETPLACE_URL:
         process.env.TOOLJET_MARKETPLACE_URL || 'https://tooljet-plugins-production.s3.us-east-2.amazonaws.com',
     }),
