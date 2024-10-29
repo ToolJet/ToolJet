@@ -18,6 +18,7 @@ import { Organization } from 'src/entities/organization.entity';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { PostgrestError, TooljetDatabaseError } from '@modules/tooljet_db/tooljet-db.types';
+import { ConfigService } from '@nestjs/config';
 
 // This service encapsulates all TJDB data manipulation operations
 // which can act like any other datasource
@@ -29,7 +30,8 @@ export class TooljetDbOperationsService implements QueryService {
     private postgrestProxyService: PostgrestProxyService,
     @Optional()
     @InjectEntityManager('tooljetDb')
-    private readonly tooljetDbManager: EntityManager
+    private readonly tooljetDbManager: EntityManager,
+    private readonly configService: ConfigService
   ) {}
 
   async run(
@@ -276,6 +278,9 @@ export class TooljetDbOperationsService implements QueryService {
   }
 
   async sqlExecution(queryOptions, context): Promise<QueryResult> {
+    if (this.configService.get<string>('TJDB_SQL_MODE_DISABLED') === 'true')
+      throw new QueryError('SQL execution is disabled', 'Contact Admin to enable SQL execution', {});
+
     const { organization_id: organizationId } = context.app;
     const { sql_execution: sqlExecution = {} } = queryOptions;
     const { sqlQuery = '' } = sqlExecution;
