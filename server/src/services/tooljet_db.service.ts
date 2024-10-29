@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException, Optional, ConflictException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import {
   Connection,
   EntityManager,
@@ -74,9 +74,6 @@ SelectQueryBuilder.prototype.fullOuterJoin = function (entityOrProperty, alias, 
 export class TooljetDbService {
   constructor(
     private readonly manager: EntityManager,
-    // TODO: remove optional decorator when
-    // ENABLE_TOOLJET_DB flag is deprecated
-    @Optional()
     @InjectEntityManager('tooljetDb')
     private readonly tooljetDbManager: EntityManager,
     private eventEmitter: EventEmitter2,
@@ -1490,9 +1487,6 @@ export class TooljetDbService {
   }
 
   async createTooljetDbTenantSchemaAndRole(organizationId: string, entityManager: EntityManager) {
-    const isTjdbEnabled = this.configService.get('ENABLE_TOOLJET_DB');
-    if (isTjdbEnabled !== 'true') return;
-
     const dbUser = `user_${organizationId}`;
     const dbSchema = `workspace_${organizationId}`;
     const dbPassword = crypto.randomBytes(8).toString('hex');
@@ -1513,8 +1507,6 @@ export class TooljetDbService {
   }
 
   async deleteTooljetDbTenantSchemaAndRole(organizationId: string) {
-    const isTjdbEnabled = this.configService.get('ENABLE_TOOLJET_DB');
-    if (isTjdbEnabled !== 'true') return;
     const dbUser = `user_${organizationId}`;
     const dbSchema = `workspace_${organizationId}`;
 

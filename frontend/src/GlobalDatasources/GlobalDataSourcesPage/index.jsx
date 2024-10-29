@@ -32,7 +32,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
   const [suggestingDataSource, setSuggestingDataSource] = useState(false);
   const { t } = useTranslation();
   const { admin } = authenticationService.currentSessionValue;
-  const marketplaceEnabled = admin && window.public_config?.ENABLE_MARKETPLACE_FEATURE == 'true';
+  const marketplaceEnabled = admin;
   const [modalProps, setModalProps] = useState({
     backdrop: false,
     dialogClassName: `datasource-edit-modal`,
