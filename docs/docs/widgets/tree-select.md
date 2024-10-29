@@ -7,7 +7,7 @@ title: Tree Select
 
 The **Tree Select** component is a group checkboxes in a TreeView which can be expanded or collapsed.
 
-<div style={{padding-top:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Properties
 
@@ -86,7 +86,7 @@ Similar to checked values, expanded values is an array of values passed to expan
 
 </div>
 
-<div style={{padding-top:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Events
 
@@ -102,7 +102,7 @@ Check [Action Reference](/docs/category/actions-reference) docs to get the detai
 
 </div>
 
-<div style={{padding-top:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Component Specific Actions (CSA)
 
@@ -110,7 +110,7 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 </div>
 
-<div style={{padding-top:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Exposed Variables
 
@@ -123,7 +123,7 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 </div>
 
-<div style={{padding-top:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Layout
 
@@ -134,7 +134,7 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 </div>
 
-<div style={{padding-top:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ---
 
