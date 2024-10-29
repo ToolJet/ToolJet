@@ -1,12 +1,7 @@
-import { QueryOptions, Vector, SparseValues } from './types';
-import { Pinecone } from '@pinecone-database/pinecone';  
+import { QueryOptions } from './types';
+import { Pinecone } from '@pinecone-database/pinecone';
 
-
-// Function to get index stats
-export async function getIndexStats(
-  pinecone: Pinecone,
-  options: QueryOptions
-): Promise<any> {
+export async function getIndexStats(pinecone: Pinecone, options: QueryOptions): Promise<any> {
   const { index } = options;
 
   if (!index) {
@@ -14,9 +9,9 @@ export async function getIndexStats(
   }
 
   try {
-    const indexClient = pinecone.Index(index);
-    const stats = await indexClient.describeIndexStats(); 
-    
+    const indexClient = pinecone.index(index);
+    const stats = await indexClient.describeIndexStats();
+
     return stats;
   } catch (error) {
     console.error('Error fetching index stats:', error);
@@ -24,11 +19,7 @@ export async function getIndexStats(
   }
 }
 
-// Function to list vector IDs (using listPaginated)
-export async function listVectorIds(
-  pinecone: Pinecone,
-  options: QueryOptions
-): Promise<any> {
+export async function listVectorIds(pinecone: Pinecone, options: QueryOptions): Promise<any> {
   const { index, prefix, limit, paginationToken, namespace } = options;
 
   if (!index) {
@@ -37,18 +28,16 @@ export async function listVectorIds(
 
   try {
     const indexClient = pinecone.index(index);
-    
+
     const listOptions = {
       prefix: prefix,
       limit: limit || 10,
       paginationToken: paginationToken,
     };
 
-    const targetIndexClient = namespace 
-      ? indexClient.namespace(namespace)
-      : indexClient;
+    const client = namespace ? indexClient.namespace(namespace) : indexClient;
 
-    const vectors = await targetIndexClient.listPaginated(listOptions);
+    const vectors = await client.listPaginated(listOptions);
 
     return vectors;
   } catch (error) {
@@ -57,56 +46,35 @@ export async function listVectorIds(
   }
 }
 
-// Function to fetch vectors
-export async function fetchVectors(
-  pinecone: Pinecone,
-  options: QueryOptions
-): Promise<any> {
+export async function fetchVectors(pinecone: Pinecone, options: QueryOptions): Promise<any> {
   const { index, ids, namespace } = options;
-
-  // Log at the beginning to check if the function is called
-  console.log('fetchVectors function called');
 
   if (!index || !ids) {
     throw new Error('Index name and vector IDs are required');
   }
 
-  // Log the ids to check if they are being passed correctly
-  console.log('Fetching vectors for IDs:', ids);
+  const vectorIds = typeof ids === 'string' ? JSON.parse(ids) : ids;
 
   try {
-    const indexClient = pinecone.index(index); 
-    
-    const targetIndexClient = namespace 
-      ? indexClient.namespace(namespace)
-      : indexClient;
+    const indexClient = pinecone.index(index);
+    const client = namespace ? await indexClient.namespace(namespace) : indexClient;
+    const vectors = await client.fetch(vectorIds);
 
-    
-    const vectors = await targetIndexClient.fetch(ids);
-
-    // Log the result from Pinecone
-    console.log('Fetched vectors:', vectors);
-    
-    return vectors;  // Return the fetched vectors
+    return vectors;
   } catch (error) {
-    // Log any errors that occur during fetch
-    console.error('Error fetching vectors:', error);
     throw new Error(error?.message || 'An unexpected error occurred');
   }
 }
 
-export async function upsertVectors(
-  pinecone: Pinecone,
-  options: QueryOptions
-): Promise<any> {
+export async function upsertVectors(pinecone: Pinecone, options: QueryOptions): Promise<any> {
   const { index, vectors, namespace } = options;
+  const parsedVectors = typeof vectors === 'string' ? JSON.parse(vectors) : vectors;
 
   if (!index || !vectors) {
     throw new Error('Index name and vectors are required');
   }
 
-  // Ensure that each vector has an ID and values array
-  vectors.forEach((vector) => {
+  parsedVectors.forEach((vector) => {
     if (!vector.id || !Array.isArray(vector.values)) {
       throw new Error('Each vector must have an id and a values array');
     }
@@ -114,77 +82,100 @@ export async function upsertVectors(
 
   try {
     const indexClient = pinecone.index(index);
-
-    const targetIndexClient = namespace 
-      ? indexClient.namespace(namespace)
-      : indexClient;
-
-    const upsertResponse = await targetIndexClient.upsert(vectors); 
-
-    return upsertResponse;
+    const client = namespace ? await indexClient.namespace(namespace) : indexClient;
+    const upsertResponse = await client.upsert(parsedVectors);
+    if (upsertResponse === undefined) {
+      return 'Upsert Successful';
+    } else {
+      throw new Error('Upsert failed');
+    }
   } catch (error) {
-    console.error('Error upserting vectors:', error);
     throw new Error(error?.message || 'An unexpected error occurred');
   }
 }
 
-// Function to update a vector
-export async function updateVector(
-  pinecone: Pinecone,
-  options: QueryOptions
-): Promise<any> {
-  const { index, id, values, sparseValues, namespace, setmetadata } = options;  
+export async function updateVector(pinecone: Pinecone, options: QueryOptions): Promise<any> {
+  const { index, id, values, sparse_vector, metadata, namespace } = options;
 
-  if (!index || !id || (!values && !sparseValues)) {
+  if (!index || !id || (!values && !sparse_vector)) {
     throw new Error('Index name, vector ID, and either values or sparse vector are required');
   }
-  if (typeof values === 'string') {
-    options.values = JSON.parse(values);
-  }
-  console.log('Updating vector with ID:', id, 'and values:', options.values);
+
+  const valuesArray = typeof values === 'string' ? JSON.parse(values) : values;
+
   try {
-    const indexClient = pinecone.index(index); 
-    const updateResponse = await indexClient.update({
+    const indexClient = pinecone.index(index);
+    const client = namespace ? await indexClient.namespace(namespace) : indexClient;
+    const updateResponse = await client.update({
       id,
-      values: values || undefined,  
-      sparseValues: sparseValues || undefined,  
-      //setmetadata: setmetadata || undefined,  
+      ...(valuesArray && { values: valuesArray }),
+      ...(metadata && { metadata: JSON.parse(metadata) }),
+      ...(sparse_vector && { sparseValues: JSON.parse(sparse_vector) }),
     });
 
-    return updateResponse;  
+    if (updateResponse === undefined) {
+      return 'Update Successful';
+    } else {
+      throw new Error('Update failed');
+    }
   } catch (error) {
-    console.error('Error updating vector:', error);
     throw new Error(error?.message || 'An unexpected error occurred');
   }
 }
 
-// Function to delete vectors (consolidates deleteMany, deleteOne, and deleteAll)
-export async function deleteVectors(
-  pinecone: Pinecone,
-  options: QueryOptions
-): Promise<any> {
-  const { index, ids, delete_all, namespace, filter } = options;
+export async function deleteVectors(pinecone: Pinecone, options: QueryOptions): Promise<any> {
+  const { index, id, delete_all, namespace, filter } = options;
 
   if (!index) {
     throw new Error('Index name is required');
   }
 
-  // Ensuring that filter is provided when namespace is used and ids are not specified
-  /*if (namespace && !delete_all && (!ids || ids.length === 0) && (!filter || Object.keys(filter).length === 0)) {
-    throw new Error('`filter` property cannot be empty for key namespace when no specific ids are provided');
-  }*/
+  try {
+    const indexClient = pinecone.index(index);
+    const client = namespace ? await indexClient.namespace(namespace) : indexClient;
+    let deleteResponse;
+    if (delete_all && delete_all.toLowerCase() === 'true') {
+      deleteResponse = await client.deleteAll();
+    } else if (filter) {
+      deleteResponse = await client.deleteMany({
+        filter: JSON.parse(filter),
+      });
+    } else {
+      deleteResponse = await client.deleteMany(JSON.parse(id));
+    }
+
+    if (deleteResponse === undefined) {
+      return 'Delete Successful';
+    } else {
+      throw new Error('Delete failed');
+    }
+  } catch (error) {
+    throw new Error(error?.message || 'An unexpected error occurred');
+  }
+}
+
+export async function quertVectors(pinecone: Pinecone, options: QueryOptions): Promise<any> {
+  const { index, namespace, top_k, filter, include_values, include_metadata, vectors, sparse_vector } = options;
+
+  if (!index) {
+    throw new Error('Index is required');
+  }
+
+  const pineconeQueryOptions = {
+    topK: Number(top_k),
+    vector: JSON.parse(vectors),
+    ...(filter && { filter: JSON.parse(filter) }),
+    ...(include_values && { includeValues: include_values.toLowerCase() === 'true' }),
+    ...(include_metadata && { includeMetadata: include_metadata.toLowerCase() === 'true' }),
+    ...(sparse_vector && { sparseVector: JSON.parse(sparse_vector) }),
+  };
 
   try {
-    const indexClient = pinecone.Index(index).namespace(namespace);
-    const deleteResponse = await indexClient.deleteMany({
-      ids: ids, 
-      filter: filter || undefined, 
-      deleteAll: delete_all 
-  });
-
-    return deleteResponse;  
+    const indexClient = pinecone.index(index);
+    const client = namespace ? await indexClient.namespace(namespace) : indexClient;
+    const queryResponse = await client.query(pineconeQueryOptions);
+    return queryResponse;
   } catch (error) {
-    console.error('Error deleting vectors:', error);
-    throw new Error(error?.message || 'An unexpected error occurred');
+    throw new Error(error.message);
   }
 }
