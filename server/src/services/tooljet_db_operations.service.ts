@@ -278,7 +278,7 @@ export class TooljetDbOperationsService implements QueryService {
   }
 
   async sqlExecution(queryOptions, context): Promise<QueryResult> {
-    if (this.configService.get<string>('TJDB_SQL_MODE_DISABLED') === 'true')
+    if (this.configService.get<string>('TJDB_SQL_MODE_DISABLE') === 'true')
       throw new QueryError('SQL execution is disabled', 'Contact Admin to enable SQL execution', {});
 
     const { organization_id: organizationId } = context.app;
