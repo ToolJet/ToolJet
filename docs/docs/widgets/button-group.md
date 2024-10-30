@@ -32,7 +32,7 @@ The **Button Group** component is used to group a series of buttons together in 
 
 | <div style={{ width:"100px"}}> Events </div> | <div style={{ width:"100px"}}> Description </div> |
 |:----------- |:----------- |
-| On click | Triggeres when the user clicks on the button in the Button |
+| On click | Triggers when the user clicks the button. |
 
 :::info
 Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.

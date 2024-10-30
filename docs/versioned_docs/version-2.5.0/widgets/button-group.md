@@ -24,7 +24,7 @@ Button group widget can be used to take actions.
 #### On click
 | Events | Description |
 |:----------- |:----------- |
-| On click | Triggeres when the user clicks on the button in the Button |
+| On click | Triggers when the user clicks the button. |
 
 :::info
 Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
