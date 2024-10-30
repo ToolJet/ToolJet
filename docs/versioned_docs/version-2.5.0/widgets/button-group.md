@@ -82,14 +82,14 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 | Style      | Description | Expected Value |
 | ----------- | ----------- | ----------- |
-| Background color | Set a background color for the buttons in Button Group. | Choose a color from the picker or enter the Hex color code. e.x:, `#000000`. |
-| Text color | Set a text color for the buttons in the Button Group. | Choose a color from the picker or enter the Hex color code. e.x:, `#000000`. |
+| Background color | Set a background color for the buttons in Button Group. | Choose a color from the picker or enter the Hex color code. ex:, `#000000`. |
+| Text color | Set a text color for the buttons in the Button Group. | Choose a color from the picker or enter the Hex color code. ex:, `#000000`. |
 | Visibility | Make the component visible or hidden. | **`{{true}}`** or **`{{false}}`**. By default, its value is set to `{{true}}`. |
 | Disable | Disable the component. | **`{{true}}`** or **`{{false}}`**. By default, its value is set to  `{{false}}`. |
 | Border radius |  Add a border radius to the buttons in the component using this property. | Any numerical value from `0` to `100`. |
-| Selected text color | Use this property to modify the text color of selected button. | Choose a color from the picker or enter the Hex color code. e.x: `#000000`. |
-| Selected background color | Use this property to modify the background color of selected button. | Choose a color from the picker or enter the Hex color code. e.x: `#000000`.|
-| Box shadow | Sets the add shadow effects around a component's frame. You can specify the horizontal and vertical offsets(through X and Y sliders), blur and spread radius, and color of the shadow. | Values that represent X, Y, blur, spread, and color. Example, `9px 11px 5px 5px #00000040`. |
+| Selected text color | Use this property to modify the text color of selected button. | Choose a color from the picker or enter the Hex color code. ex: `#000000`. |
+| Selected background color | Use this property to modify the background color of selected button. | Choose a color from the picker or enter the Hex color code. ex: `#000000`.|
+| Box shadow | Sets the add shadow effects around a component's frame. You can specify the horizontal and vertical offsets(through X and Y sliders), blur and spread radius, and color of the shadow. | Values that represent X, Y, blur, spread, and color. Example: `9px 11px 5px 5px #00000040`. |
 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
