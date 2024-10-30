@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "lib",
+    "target": "ES2019"
+  },
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}

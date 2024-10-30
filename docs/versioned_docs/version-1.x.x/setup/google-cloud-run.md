@@ -17,12 +17,14 @@ Follow the steps below to deploy ToolJet on Cloud run with `gcloud` CLI.
 
 1. Cloud Run requires prebuilt image to be present within cloud registry. You can pull specific tooljet image from docker hub and then tag with your project to push it to cloud registry.
 
-   ```bash
-   gcloud auth configure-docker
-   docker pull tooljet/tooljet-ce:latest
-   docker tag tooljet/tooljet-ce:latest gcr.io/<replace-your-project-id>/tooljet/tooljet-ce:latest
-   docker push gcr.io/<replace-your-project-id>/tooljet/tooljet-ce:latest
-   ```
+*Ensure you change `replace-with-your-project-id` in the below command with your project ID.*  
+
+```bash
+  gcloud auth configure-docker
+  docker pull tooljet/tooljet:EE-LTS-latest
+  docker tag tooljet/tooljet:EE-LTS-latest gcr.io/replace-with-your-project-id/tooljet/tooljet:EE-LTS-latest
+  docker push gcr.io/replace-with-your-project-id/tooljet/tooljet:EE-LTS-latest
+```
 
 2. Deploy new cloud run service
 

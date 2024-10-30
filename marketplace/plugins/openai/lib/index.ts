@@ -53,7 +53,7 @@ export default class Openai implements QueryService {
     } catch (error) {
       throw new QueryError('Connection could not be established', error?.message, {});
     }
-  }
+  }  
 
   async getConnection(sourceOptions: SourceOptions): Promise<OpenAI> {
     const { apiKey, organizationId = null } = sourceOptions;

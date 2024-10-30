@@ -9,7 +9,7 @@ Triggers can be used to execute a workflow. Currently, ToolJet supports two type
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/workflows/triggers/triggers.png" alt="Triggers" />
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Webhooks
 
@@ -17,7 +17,7 @@ A webhook trigger allows you to run the workflow when a webhook is received. You
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ### Creating a Webhook Trigger
 - Click on the **Triggers** option in the left panel to open the Triggers tab.
@@ -96,7 +96,7 @@ A webhook trigger allows you to run the workflow when a webhook is received. You
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ### Restrictions on Usage of Webhook Triggers
 
@@ -120,7 +120,7 @@ For Virtual Private Clouds (VPCs), restrict access only to the `{TOOLJET_HOST}/a
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Manual
 
@@ -134,7 +134,7 @@ In the application, simply click on the `+ Add` button in the query panel and se
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ### Passing Parameters
 

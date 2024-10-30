@@ -57,15 +57,18 @@ You can deploy ToolJet on DigitalOcean using one-click-deployment.
 ### Try using Docker
 Want to give ToolJet a quick spin on your local machine? You can run the following command from your terminal to have ToolJet up and running right away.
 
+
 ```bash
-docker run -d \
+docker run \
   --name tooljet \
   --restart unless-stopped \
   -p 80:80 \
   --platform linux/amd64 \
   -v tooljet_data:/var/lib/postgresql/13/main \
-  tooljet/try:latest
+  tooljet/try:EE-LTS-latest
 ```
+
+*For users upgrading their ToolJet version, we recommend choosing the LTS version over the latest version. The LTS version ensures stability with production bug fixes, security patches, and performance enhancements.*
 
 ## Tutorials and examples
 
@@ -112,7 +115,7 @@ For general help using ToolJet, please refer to the official [documentation](htt
 - [𝕏 (Twitter)](https://twitter.com/ToolJet) - Get the product updates quickly.
 
 ## Roadmap
-Check out our [roadmap](https://github.com/ToolJet/ToolJet/projects/2) to stay updated on recently released features and learn about what's coming next.
+Check out our [roadmap](https://github.com/orgs/ToolJet/projects/15) to stay updated on recently released features and learn about what's coming next.
 
 ## Branching model
 We use the git-flow branching model. The base branch is `develop`. If you are looking for a stable version, please use the main branch or tags labeled as v1.x.x.
