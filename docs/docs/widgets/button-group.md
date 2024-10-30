@@ -32,7 +32,7 @@ The **Button Group** component is used to group a series of buttons together in 
 
 | <div style={{ width:"100px"}}> Events </div> | <div style={{ width:"100px"}}> Description </div> |
 |:----------- |:----------- |
-| On click | This event is triggered when the user clicks on the button in the Button Group. |
+| On click | Triggeres when the user clicks on the button in the Button |
 
 :::info
 Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
@@ -54,7 +54,7 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 | <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div>| <div style={{ width:"135px"}}> How To Access </div> |
 | :---------- | :---------- | :----------|
-| selected | If the **enable multiple selection** option is turned off, then the variable is an array of objects, and the first object holds the value of the selected button. However, if it is turned on, the variable type changes from an array to an object, and the selected button values are stored as a string within that object. | Access the value using `{{components.buttongroup1.selected[0]}}` or `{{components.buttongroup1.selected}}`. |
+| selected | Holds the currently selected button value as an array object. | Accessible dynamically with JS (for e.g., {{components.buttongroup1.selected[0]}} or {{components.buttongroup1.selected}}). |
 
 </div>
 
@@ -79,8 +79,8 @@ A Tooltip is often used to display additional information when the user hovers t
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 | :----------- | :----------- | :----------- |
-| Desktop | Toggle to show or hide the component in the desktop view. Dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either `true` or `false`. | **`{{true}}`** or **`{{false}}`**. |
-| Mobile | Toggle to show or hide the component in the desktop view. Dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either `true` or `false`. | **`{{true}}`** or **`{{false}}`**. |
+| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 </div>
 
