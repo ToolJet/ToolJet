@@ -290,29 +290,27 @@ class AppComponent extends React.Component {
                   </PrivateRoute>
                 }
               />
-              {window.public_config?.ENABLE_TOOLJET_DB == 'true' && (
-                <Route
-                  exact
-                  path="/:workspaceId/database"
-                  element={
-                    <PrivateRoute>
-                      <TooljetDatabase switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                    </PrivateRoute>
-                  }
-                />
-              )}
 
-              {window.public_config?.ENABLE_MARKETPLACE_FEATURE === 'true' && (
-                <Route
-                  exact
-                  path="/integrations"
-                  element={
-                    <AdminRoute {...this.props}>
-                      <MarketplacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                    </AdminRoute>
-                  }
-                />
-              )}
+              <Route
+                exact
+                path="/:workspaceId/database"
+                element={
+                  <PrivateRoute>
+                    <TooljetDatabase switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </PrivateRoute>
+                }
+              />
+
+              <Route
+                exact
+                path="/integrations"
+                element={
+                  <AdminRoute {...this.props}>
+                    <MarketplacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </AdminRoute>
+                }
+              />
+
               <Route exact path="/" element={<Navigate to="/:workspaceId" />} />
               <Route
                 exact

@@ -90,6 +90,7 @@ const imports = [
     },
   }),
   TypeOrmModule.forRoot(ormconfig),
+  TypeOrmModule.forRoot(tooljetDbOrmconfig),
   RequestContextModule,
   InstanceSettingsModule,
   AppConfigModule,
@@ -141,10 +142,6 @@ if (process.env.APM_VENDOR == 'sentry') {
 
 if (process.env.COMMENT_FEATURE_ENABLE !== 'false') {
   imports.unshift(CommentModule, ThreadModule, CommentUsersModule);
-}
-
-if (process.env.ENABLE_TOOLJET_DB === 'true') {
-  imports.unshift(TypeOrmModule.forRoot(tooljetDbOrmconfig));
 }
 
 @Module({

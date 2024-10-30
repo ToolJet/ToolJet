@@ -10,7 +10,6 @@ import { tooljetDbOrmconfig } from 'ormconfig';
 // them to follow the same naming convention throughout
 export class ReplaceTjDbPrimaryKeyConstraintsForExistingTables1715105945504 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    if (process.env.ENABLE_TOOLJET_DB !== 'true') return;
     const batchSize = 1000;
     const entityManager = queryRunner.manager;
     const tooljetDbConnection = new DataSource({

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Optional } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { ExportTooljetDatabaseDto } from '@dto/export-resources.dto';
 import { ImportResourcesDto, ImportTooljetDatabaseDto } from '@dto/import-resources.dto';
 import { TooljetDbService } from './tooljet_db.service';
@@ -12,9 +12,6 @@ export class TooljetDbImportExportService {
   constructor(
     private readonly tooljetDbService: TooljetDbService,
     private readonly manager: EntityManager,
-    // TODO: remove optional decorator when
-    // ENABLE_TOOLJET_DB flag is deprecated
-    @Optional()
     @InjectEntityManager('tooljetDb')
     private readonly tooljetDbManager: EntityManager
   ) {}

@@ -27,7 +27,7 @@ export default function LogoNavDropdown({ darkMode }) {
           <span>Back to apps</span>
         </Link>
         <div className="divider"></div>
-        {window.public_config?.ENABLE_TOOLJET_DB == 'true' && admin && (
+        {admin && (
           <Link
             target="_blank"
             to={getPrivateRoute('database')}

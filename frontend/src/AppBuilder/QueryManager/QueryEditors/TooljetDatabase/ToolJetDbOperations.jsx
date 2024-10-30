@@ -341,11 +341,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
   );
 
   const triggerTooljetDBStatus = (key) => {
-    if (window.public_config?.ENABLE_TOOLJET_DB !== 'true') {
-      toast('Tooljet database is not enabled.', {
-        icon: '⚠️',
-      });
-    } else if (key === 'addTJDBTable') {
+    if (key === 'addTJDBTable') {
       navigate(getPrivateRoute('database'));
     }
   };

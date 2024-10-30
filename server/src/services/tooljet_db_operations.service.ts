@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Optional } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import PostgrestQueryBuilder from 'src/helpers/postgrest_query_builder';
 import { QueryService, QueryResult, QueryError } from '@tooljet/plugins/dist/packages/common/lib';
 import { TooljetDbService } from './tooljet_db.service';
@@ -28,7 +28,6 @@ export class TooljetDbOperationsService implements QueryService {
     private readonly manager: EntityManager,
     private tooljetDbService: TooljetDbService,
     private postgrestProxyService: PostgrestProxyService,
-    @Optional()
     @InjectEntityManager('tooljetDb')
     private readonly tooljetDbManager: EntityManager,
     private readonly configService: ConfigService

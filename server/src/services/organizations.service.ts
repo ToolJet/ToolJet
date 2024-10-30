@@ -120,8 +120,8 @@ export class OrganizationsService {
       if (user) {
         await this.organizationUserService.create(user, organization, false, manager);
         await this.userRoleService.addUserRole({ role: USER_ROLE.ADMIN, userId: user.id }, organization.id, manager);
-        await this.tooljetdbService.createTooljetDbTenantSchemaAndRole(organization.id, manager);
       }
+      await this.tooljetdbService.createTooljetDbTenantSchemaAndRole(organization.id, manager);
     }, manager);
 
     return organization;

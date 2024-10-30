@@ -21,7 +21,6 @@ const crypto = require('crypto');
 export class MoveToolJetDatabaseTablesFromPublicToTenantSchema1721236971725 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const envData = getEnvVars();
-    if (envData.ENABLE_TOOLJET_DB !== 'true') return;
     const batchSize = 100;
     const entityManager = queryRunner.manager;
     const tooljetDbConnection = new DataSource({
@@ -132,7 +131,6 @@ export class MoveToolJetDatabaseTablesFromPublicToTenantSchema1721236971725 impl
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     const envData = getEnvVars();
-    if (envData.ENABLE_TOOLJET_DB !== 'true') return;
     const batchSize = 100;
     const entityManager = queryRunner.manager;
     const tooljetDbConnection = new DataSource({
