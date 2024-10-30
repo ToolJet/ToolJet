@@ -127,7 +127,7 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 </div>
 
-<hr style="background-color: var(--ifm-hr-background-color); border: 0; height: var(--ifm-hr-height); margin: var(--ifm-hr-margin-vertical) 0;">
+----
 
 <div style={{paddingTop:'24px'}}>
 
