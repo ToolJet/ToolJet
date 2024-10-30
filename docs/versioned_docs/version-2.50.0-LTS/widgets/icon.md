@@ -40,8 +40,8 @@ Following actions of the component can be controlled using the component specifi
 
 | <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"135px"}}> Description </div>                                                             | <div style={{ width:"135px"}}> How To Access </div>                                                              |
 | :-------------------------------------------- | :------------------------------------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------------------------------------- |
-| setVisibility()                                 | Toggles the visibility of the Icon component. | Employ a RunJS query (for e.g., `await components.icon1.setVisibility(false))` or trigger it using an event. |
-| click()                                         | Triggers the click action on the Icon component.  | Employ a RunJS query (for e.g., `await components.icon1.click())` or trigger it using an event.              |
+| setVisibility()                                 | Sets the visibility of the component. | Employ a RunJS query (for e.g., `await components.icon1.setVisibility(false))` or trigger it using an event. |
+| click()                                         | Triggers the click action on the component.  | Employ a RunJS query (for e.g., `await components.icon1.click())` or trigger it using an event.              |
 
 </div>
 

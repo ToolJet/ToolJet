@@ -71,7 +71,7 @@ There are currently no exposed variables for the component.
 
 Following actions of the component can be controlled using the component specific actions(CSA):
 
-| Actions     | Description |
-| ----------- | ----------- |
-| setVisibility() | Toggles the visibility of the Icon component. Employ a RunJS query (for e.g., `await components.icon1.setVisibility(false))` or trigger it using an event. |
-| click() | Triggers the click action on the Icon component. Employ a RunJS query (for e.g., `await components.icon1.click())` or trigger it using an event. |
+| Actions     | Description | How to Access |
+| ----------- | ----------- | ------------- |
+| setVisibility() | Sets the visibility of the component. | Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.icon1.setVisibility(false))`. |
+| click() | Triggers the click action on the component. | Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.icon1.click())`. |
