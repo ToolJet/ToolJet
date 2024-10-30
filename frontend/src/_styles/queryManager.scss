@@ -38,10 +38,10 @@ $border-radius: 4px;
 
         .parameterItem {
 
-          height: 24px;
+          height: 28px;
 
           .parameterItemPillButton {
-            height: inherit;
+            height: 28px;
 
             .query-param-text {
               color: var(--text-default);
@@ -50,7 +50,7 @@ $border-radius: 4px;
 
             button {
               padding: 0px;
-              height: inherit;
+              height: 28px;
             }
           }
 
@@ -135,7 +135,7 @@ $border-radius: 4px;
   .query-manager-toggle-button {
     border-radius: 5px;
     margin-right: 16px;
-    width: 68px;
+    width: 77px;
     text-align: center;
     cursor: pointer;
     color: var(--slate12) !important;
@@ -190,6 +190,7 @@ $border-radius: 4px;
     .query-rename-delete-btn {
       display: none;
       align-items: center;
+      justify-content: flex-end;
       gap: 8px;
       margin-left: 2px;
       width: 66px;
@@ -695,7 +696,7 @@ $border-radius: 4px;
   }
 
   .list-group-item.active {
-    background-color: var(--surfaces-surface-01) !important;
+    background-color: transparent !important;
     z-index: inherit !important;
     border-bottom: 2px solid var(--indigo9) !important;
     color: var(--text-default) !important;
@@ -1128,7 +1129,7 @@ $border-radius: 4px;
 
     ul {
       margin: 0 !important;
-      padding: 0.5em !important;
+      padding: 0.4em 0.6em !important;
     }
 
     .preview-default-container {
@@ -1183,7 +1184,7 @@ $border-radius: 4px;
       font-weight: 500;
       line-height: 20px;
       margin-bottom: 0 !important;
-      width: 140px;
+      width: 100px;
       display: flex;
       padding: 0;
       margin-right: 16px;
@@ -1823,4 +1824,34 @@ $border-radius: 4px;
 
 .copilot-codehinter-wrap {
   margin-left: 32px !important;
+}
+
+.tjdb-codhinter-wrapper{
+  .codehinter-input{
+    .cm-editor{
+      height: 30px !important;
+      min-height: 30px !important;
+      border-radius: 0 !important;
+      border-right: 0 ;
+  }
+  }
+}
+.tjdb-limit-offset-codehinter{
+  .cm-editor{
+    height: 30px !important;
+    min-height: 30px !important;
+  }
+}
+
+.empty-paramlist {
+  width: 156px;
+  height: 28px;
+  padding: 12px 6px;
+  gap: 8px;
+  opacity: 0px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--Grey-01, #F5F7FB);
+  margin-right: 4px;
 }
