@@ -6,26 +6,24 @@ export type SourceOptions = {
 export type QueryOptions = {
   operation: Operation;
   index: string;
-  ids?: string[]; 
-  vectors?: Vector[]; 
+  ids?: string[];
+  vectors?: string;
   string?: string[];
-  id?: string; 
-  values?: number[]; 
-  sparseValues?: SparseValues; 
-  setmetadata?: object; 
-  filter?: object; 
-  prefix?: string; 
-  limit?: number; 
-  paginationToken?: string; 
+  id?: string;
+  values?: number[];
+  sparseValues?: SparseValues;
+  setmetadata?: object;
+  filter?: string;
+  prefix?: string;
+  limit?: number;
+  paginationToken?: string;
   namespace?: string;
-  delete_all?: boolean; 
-};
-
-// Define a type for the vector structure for upsert and update operations.
-export type Vector = {
-  id: string;
-  values: number[];
-  sparse_values: SparseValues;
+  delete_all?: string;
+  metadata?: string;
+  sparse_vector?: string;
+  top_k?: string;
+  include_metadata?: string;
+  include_values?: string;
 };
 
 // Define a type for sparse vectors used in the "update_vector" operation.
@@ -41,5 +39,6 @@ export enum Operation {
   FetchVectors = 'fetch_vectors',
   UpsertVectors = 'upsert_vectors',
   UpdateVector = 'update_vector',
-  DeleteVectors = 'delete_vectors'
+  DeleteVectors = 'delete_vectors',
+  QueryVectors = 'query_vector',
 }

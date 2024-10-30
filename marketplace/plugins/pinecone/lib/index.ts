@@ -1,7 +1,15 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-marketplace/common';
 import { SourceOptions, QueryOptions, Operation } from './types';
-import { getIndexStats, listVectorIds, fetchVectors, upsertVectors, updateVector, deleteVectors } from './query_operations';
-import { Pinecone } from '@pinecone-database/pinecone'; 
+import {
+  getIndexStats,
+  listVectorIds,
+  fetchVectors,
+  upsertVectors,
+  updateVector,
+  deleteVectors,
+  quertVectors,
+} from './query_operations';
+import { Pinecone } from '@pinecone-database/pinecone';
 
 export default class PineconeService implements QueryService {
   // Function to run the specified operation
@@ -30,6 +38,9 @@ export default class PineconeService implements QueryService {
         case Operation.DeleteVectors:
           result = await deleteVectors(pinecone, queryOptions);
           break;
+        case Operation.QueryVectors:
+          result = await quertVectors(pinecone, queryOptions);
+          break;
         default:
           throw new QueryError('Query could not be completed', 'Invalid operation', {});
       }
@@ -45,10 +56,7 @@ export default class PineconeService implements QueryService {
 
   // Function to test the Pinecone connection
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
-    console.log('testConnection function triggered');
-    
     const pinecone = await this.getConnection(sourceOptions);
-    console.log('Pinecone connection established', pinecone);
 
     try {
       const indexes = await pinecone.listIndexes();
@@ -67,7 +75,6 @@ export default class PineconeService implements QueryService {
     }
   }
 
-  // Function to establish a Pinecone connection
   async getConnection(sourceOptions: SourceOptions): Promise<Pinecone> {
     const { apiKey } = sourceOptions;
 
@@ -82,4 +89,3 @@ export default class PineconeService implements QueryService {
     return pinecone;
   }
 }
-

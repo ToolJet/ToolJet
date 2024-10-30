@@ -24,7 +24,8 @@
         { "value": "fetch_vectors", "name": "Fetch Vectors" },
         { "value": "upsert_vectors", "name": "Upsert Vectors" },
         { "value": "update_vector", "name": "Update a Vector" },
-        { "value": "delete_vectors", "name": "Delete Vectors" }
+        { "value": "delete_vectors", "name": "Delete Vectors" },
+        { "value": "query_vector", "name": "Query Vectors" }
       ]
     },
     "get_index_stats": {
@@ -221,6 +222,72 @@
         "description": "Enter a filter query in JSON format",
         "placeholder": "{\"genre\": {\"$in\": [\"documentary\", \"action\"]}}",
         "height": "150px"
+      }
+    },
+    "query_vector": {
+      "index": {
+        "label": "Index",
+        "key": "index",
+        "type": "codehinter",
+        "description": "Enter the index name (e.g., example-index)",
+        "placeholder": "example-index",
+        "height": "36px"
+      },
+      "namespace": {
+        "label": "Namespace",
+        "key": "namespace",
+        "type": "codehinter",
+        "description": "Enter the namespace (optional)",
+        "placeholder": "example-namespace",
+        "height": "36px"
+      },
+      "top_k": {
+        "label": "Top K",
+        "key": "top_k",
+        "type": "codehinter",
+        "description": "Enter the number",
+        "placeholder": "3",
+        "height": "36px"
+      },
+      "filter": {
+        "label": "Filter",
+        "key": "filter",
+        "type": "codehinter",
+        "description": "Enter a filter query in JSON format",
+        "placeholder": "{\"genre\": {\"$in\": [\"documentary\", \"action\"]}}",
+        "height": "150px"
+      },
+      "include_values": {
+        "label": "Include values",
+        "key": "include_values",
+        "type": "codehinter",
+        "description": "Enter boolean values",
+        "placeholder": "example-namespace",
+        "height": "36px"
+      },
+      "include_metadata": {
+        "label": "Include metadata",
+        "key": "include_metadata",
+        "type": "codehinter",
+        "description": "Enter boolean values",
+        "placeholder": "example-namespace",
+        "height": "36px"
+      },
+      "vectors": {
+        "label": "Vector",
+        "key": "vectors",
+        "type": "codehinter",
+        "description": "Enter vector IDs as JSON array",
+        "placeholder": "[\"0.3\", \"0.3\", \"0.3\", \"0.3\", \"0.3\"]",
+        "height": "36px"
+      },
+      "sparse_vector": {
+        "label": "Sparse Vector",
+        "key": "sparse_vector",
+        "type": "codehinter",
+        "description": "Enter sparse vector values",
+        "placeholder": "{\"indices\": [1, 5], \"values\": [0.5, 0.5]}",
+        "height": "36px"
       }
     }
   }
