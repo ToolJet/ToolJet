@@ -72,7 +72,7 @@ jobs:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and Push Docker image for LTS tag
+      - name: Build and Push Docker image for 3.0 LTS tag
         if: "contains(github.event.release.tag_name, 'CE-LTS-3.0')"
         uses: docker/build-push-action@v4
         with:
@@ -85,14 +85,14 @@ jobs:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and Push Docker image for LTS tag
+      - name: Build and Push Docker image for 2.50 LTS tag
         if: "contains(github.event.release.tag_name, 'CE-LTS-2.50')"
         uses: docker/build-push-action@v4
         with:
           context: .
           file: docker/production.Dockerfile
           push: true
-          tags: tooljet/tooljet-ce:${{ github.event.release.tag_name }},tooljet/tooljet-ce:CE-LTS-latest
+          tags: tooljet/tooljet-ce:${{ github.event.release.tag_name }}
           platforms: linux/amd64
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
