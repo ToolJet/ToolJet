@@ -44,7 +44,7 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 | <div style={{ width:"100px"}}> Variables </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div>|
 |:----------- |:----------- |:--------- |
-| lastDetectedValue | This variable holds the data contained in the last QR code scanned by the component. | To fetch the data use `{{components.qrscanner1.lastDetectedValue}}`. |
+| lastDetectedValue | This variable holds the data contained in the last QR code scanned by the component. | Accessible dynamically with JS (for e.g., `{{components.qrscanner1.lastDetectedValue}}`). |
 
 </div>
 
