@@ -67,8 +67,8 @@ There are currently no exposed variables for the component.
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div>                                                            |
 | :------------------------------------------- | :------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------- |
-| Show on desktop                              | Toggles the component’s visibility in desktop view.         | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering `{{true}}` or `{{false}}`. |
-| Show on mobile                               | Toggles the component’s visibility in mobile view.          | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering `{{true}}` or `{{false}}`. |
+| Show on desktop                              | Makes the component visible in desktop view.         | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on mobile                               | Makes the component visible in mobile view.          | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 </div>
 
