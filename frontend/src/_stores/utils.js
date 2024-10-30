@@ -53,7 +53,7 @@ export const computeAppDiff = (appDiff, currentPageId, opts, currentLayout) => {
   return { updateDiff, type, operation, error };
 };
 
-// for table column diffs, we need to compute the diff for each column separately and send the the entire column data
+// for table column diffs, we need to compute the diff for each column separately and send the entire column data
 function generatePath(obj, targetKey, currentPath = '') {
   for (const key in obj) {
     const newPath = currentPath ? currentPath + '.' + key : key;
@@ -343,21 +343,21 @@ export function createReferencesLookup(refState, forQueryParams = false, initalL
   const queries = forQueryParams ? {} : state['queries'];
   const actions = initalLoad
     ? [
-        'runQuery',
-        'setVariable',
-        'unSetVariable',
-        'showAlert',
-        'logout',
-        'showModal',
-        'closeModal',
-        'setLocalStorage',
-        'copyToClipboard',
-        'goToApp',
-        'generateFile',
-        'setPageVariable',
-        'unsetPageVariable',
-        'switchPage',
-      ]
+      'runQuery',
+      'setVariable',
+      'unSetVariable',
+      'showAlert',
+      'logout',
+      'showModal',
+      'closeModal',
+      'setLocalStorage',
+      'copyToClipboard',
+      'goToApp',
+      'generateFile',
+      'setPageVariable',
+      'unsetPageVariable',
+      'switchPage',
+    ]
     : [];
 
   if (!forQueryParams) {

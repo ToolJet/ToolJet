@@ -21,7 +21,7 @@ Let's take look at the exposed variables of the current user property:
 
 ### Example: Disable a button if a user is not admin
 
-- Click on the **Button** handle to open its properties, on the **Styles** tab go to the **Disable** property. 
+- Click on the **Button** handle to open its properties, on the **Styles** tab go to the **Disable** property.
 
     <div style={{textAlign: 'center'}}>
 
@@ -29,11 +29,15 @@ Let's take look at the exposed variables of the current user property:
 
     </div>
 
-- Set a condition on the Disable field so that if the the user who is using the app does not have **admin** value in the first index of **groups** array return **true**. The condition can be:
+- Set a condition on the Disable field so that if the user who is using the app does not have **admin** value in the first index of **groups** array return **true**. The condition can be:
 
-    ```javascript
-    {{globals.currentUser.groups[1] !== "admin" ? true : false}}
-    ```
+  ```javascript
+  {
+    {
+      globals.currentUser.groups[1] !== "admin" ? true : false;
+    }
+  }
+  ```
 
     <div style={{textAlign: 'center'}}>
 
@@ -41,7 +45,7 @@ Let's take look at the exposed variables of the current user property:
 
     </div>
 
-- Now, when you'll **release** the app, if the user is not is not admin the button will be disabled. 
+- Now, when you'll **release** the app, if the user is not is not admin the button will be disabled.
 
     <div style={{textAlign: 'center'}}>
 

@@ -22,26 +22,26 @@ Follow these steps to apply custom styles in your ToolJet apps:
 </div>
 <br/>
 
-- To modify the default colors of components, use their class names, which follow the format `_tooljet-<component>`. 
+- To modify the default colors of components, use their class names, which follow the format `_tooljet-<component>`.
 
 <div style={{textAlign: 'center'}}>
     <img className="screenshot-full" src="/img/v2-beta/app-builder/customcss/component-class.png" alt="Component Class" />
 </div>
 <br/>
 
-- You'll need to identify the specific sub-class(or HTML tags) of each component to target particular attributes. The browser's inspector will allow you to easily find the sub-class(or HTML tags) of the specific 
-properties. 
+- You'll need to identify the specific sub-class(or HTML tags) of each component to target particular attributes. The browser's inspector will allow you to easily find the sub-class(or HTML tags) of the specific
+  properties.
 
 <div style={{textAlign: 'center'}}>
     <img className="screenshot-full" src="/img/v2-beta/app-builder/customcss/button-class-subclass.png" alt="Sub-Class" />
 </div>
 <br/>
 
-- After locating the specific sub-class(or HTML tag), refer it in the **Custom Styles** section and add styling to it. For instance, for the Button component above, the the below CSS will change the background color:
+- After locating the specific sub-class(or HTML tag), refer it in the **Custom Styles** section and add styling to it. For instance, for the Button component above, the below CSS will change the background color:
 
 ```css
 ._tooljet-Button button {
-    background-color: #152A65 !important;
+  background-color: #152a65 !important;
 }
 ```
 
@@ -54,7 +54,7 @@ properties.
 
 ```css
 ._tooljet-Table .table-card-header button {
-    background-color: #152A65 !important;
+  background-color: #152a65 !important;
 }
 ```
 
@@ -66,22 +66,22 @@ properties.
 - The code below will change the font size and color of the Text Input and Number Input labels.
 
 ```css
-._tooljet-TextInput p  {
-	color: #152A65 !important;
-    font-size: 16px !important;
-    font-weight: bold !important;
+._tooljet-TextInput p {
+  color: #152a65 !important;
+  font-size: 16px !important;
+  font-weight: bold !important;
 }
 
-._tooljet-NumberInput p  {
-	color: #152A65 !important;
-    font-size: 16px !important;
-    font-weight: bold !important;
+._tooljet-NumberInput p {
+  color: #152a65 !important;
+  font-size: 16px !important;
+  font-weight: bold !important;
 }
 ```
+
 <div style={{textAlign: 'center'}}>
     <img className="screenshot-full" src="/img/v2-beta/app-builder/customcss/input-fields-customcss.png" alt="Input Field Custom CSS" />
 </div>
-
 
 ## Applying Custom Styles To Individual Components
 
@@ -96,9 +96,10 @@ To modify the colors of individual components, use their class names, which foll
 
 ```css
 ._tooljet-addIncomeButton button {
-    background-color: blue !important;
+  background-color: blue !important;
 }
 ```
+
 <div style={{textAlign: 'center'}}>
     <img className="screenshot-full" src="/img/v2-beta/app-builder/customcss/individual-customcss.png" alt="Individual Class Custom CSS" />
 </div>
