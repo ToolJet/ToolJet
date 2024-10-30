@@ -98,9 +98,9 @@ Any property having `Fx` button next to its field can be **programmatically conf
 
 ## Exposed Variables
 
-| Variables      | Description |
-| ----------- | ----------- |
-| selected | Holds the currently selected button value as an array object. | Accessible dynamically with JS (for e.g., {{components.buttongroup1.selected[0]}} or {{components.buttongroup1.selected}}). |
+| Variables   | Description | How To Access |
+| ----------- | ----------- |  ----------- |
+| selected | Holds the currently selected button value as an array object. | Accessible dynamically with JS (for e.g., `{{components.buttongroup1.selected[0]}} or {{components.buttongroup1.selected}}`). |
 
 ## Component specific actions (CSA)
 

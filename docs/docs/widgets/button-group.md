@@ -54,7 +54,7 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 | <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div>| <div style={{ width:"135px"}}> How To Access </div> |
 | :---------- | :---------- | :----------|
-| selected | Holds the currently selected button value as an array object. | Accessible dynamically with JS (for e.g., {{components.buttongroup1.selected[0]}} or {{components.buttongroup1.selected}}). |
+| selected | Holds the currently selected button value as an array object. | Accessible dynamically with JS (for e.g., `{{components.buttongroup1.selected[0]}} or {{components.buttongroup1.selected}}`). |
 
 </div>
 
