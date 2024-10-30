@@ -204,7 +204,7 @@
           "key": "delete_all",
           "type": "codehinter",
           "description": "Set true to delete all vectors",
-          "placeholder": "False",
+          "placeholder": "true (false by default)",
           "height":"36px"
         },
       "namespace": {
@@ -262,7 +262,7 @@
         "key": "include_values",
         "type": "codehinter",
         "description": "Enter boolean values",
-        "placeholder": "example-namespace",
+        "placeholder": "true (false by default)",
         "height": "36px"
       },
       "include_metadata": {
@@ -270,7 +270,7 @@
         "key": "include_metadata",
         "type": "codehinter",
         "description": "Enter boolean values",
-        "placeholder": "example-namespace",
+        "placeholder": "true (false by default)",
         "height": "36px"
       },
       "vectors": {
