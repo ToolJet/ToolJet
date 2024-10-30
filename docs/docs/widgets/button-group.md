@@ -18,11 +18,11 @@ The **Button Group** component is used to group a series of buttons together in 
 
 | <div style={{ width:"100px"}}> Properties </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 |:----------- |:----------- |:-------------- |
-| label | Sets the title of the button-group. | Any **String** value: `Select the options` or `{{queries.queryname.data.text}}` |
-| values | Sets the values of the Button Group items. | **Array** of strings and numbers: `{{[1,2,3]}}` |
-| Labels | Sets the labels of the Button Group items. | **Array** of strings and numbers: `{{['A','B','C']}}` |
+| label | Sets the title of the button-group. | Any **String** value: `Select the options` or `{{queries.queryname.data.text}}`. |
+| values | Sets the values of the Button Group items. | **Array** of strings and numbers: `{{[1,2,3]}}`. |
+| Labels | Sets the labels of the Button Group items. | **Array** of strings and numbers: `{{['A','B','C']}}`. |
 | Default selected | Sets the initial selected values. | **Array** of strings and numbers: `{{[1]}}` will select the first button by default. |
-| Enable multiple selection | Toggle on or off to enable multiple selection. | **Boolean** value: `{{true}}` or `{{false}}` |
+| Enable multiple selection | Toggle on or off to enable multiple selection. | **Boolean** value: `{{true}}` or `{{false}}`. |
 
 </div>
 
@@ -80,7 +80,7 @@ A Tooltip is often used to display additional information when the user hovers t
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 | :----------- | :----------- | :----------- |
 | Desktop | Toggle to show or hide the component in the desktop view. Dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either `true` or `false`. | **`{{true}}`** or **`{{false}}`**. |
-| Mobile | Toggle to show or hide the component in the mobile view. Dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either `true` or `false`. | **`{{true}}`** or **`{{false}}`**. |
+| Mobile | Toggle to show or hide the component in the desktop view. Dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either `true` or `false`. | **`{{true}}`** or **`{{false}}`**. |
 
 </div>
 
@@ -90,13 +90,13 @@ A Tooltip is often used to display additional information when the user hovers t
 
 | <div style={{ width:"135px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 | :---------- | :---------- | :-------------- |
-| Background color | Set a background color for the buttons in the Button Group. | Choose a color from the picker or enter the Hex color code, e.g., `#000000`. |
-| Text color | Set a text color for the buttons in the Button Group. | Choose a color from the picker or enter the Hex color code, e.g., `#000000`. |
-| Visibility | Make the component visible or hidden. | **`{{true}}`** or **`{{false}}`**. By default, the value is `{{true}}`. |
-| Disable | Disable the component. | **`{{true}}`** or **`{{false}}`**. By default, the value is `{{false}}`. |
-| Border radius | Add a border radius to the buttons in the component. | Any numerical value from `0` to `100`. |
-| Selected text color | Modify the text color of the selected button. | Choose a color from the picker or enter the Hex color code, e.g., `#000000`. |
-| Selected background color | Modify the background color of the selected button. | Choose a color from the picker or enter the Hex color code, e.g., `#000000`. |
-| Box shadow | Add shadow effects around the component's frame. Specify the horizontal and vertical offsets (through X and Y sliders), blur and spread radius, and shadow color. | Values that represent X, Y, blur, spread, and color, e.g., `9px 11px 5px 5px #00000040`. |
+| Background color | Set a background color for the buttons in Button Group. | Choose a color from the picker or enter the Hex color code. e.x:, `#000000`. |
+| Text color | Set a text color for the buttons in the Button Group. | Choose a color from the picker or enter the Hex color code. e.x:, `#000000`. |
+| Visibility | Make the component visible or hidden. | **`{{true}}`** or **`{{false}}`**. By default, its value is set to `{{true}}`. |
+| Disable | Disable the component. | **`{{true}}`** or **`{{false}}`**. By default, its value is set to  `{{false}}`. |
+| Border radius. | Add a border radius to the buttons in the component using this property. | Any numerical value from `0` to `100`. |
+| Selected text color | Use this property to modify the text color of selected button. | Choose a color from the picker or enter the Hex color code. e.x: `#000000`. |
+| Selected background color | Use this property to modify the background color of selected button. | Choose a color from the picker or enter the Hex color code. e.x: `#000000`. |
+| Box shadow | Sets the add shadow effects around a component's frame. You can specify the horizontal and vertical offsets(through X and Y sliders), blur and spread radius, and color of the shadow. | Values that represent X, Y, blur, spread, and color. Example, `9px 11px 5px 5px #00000040`. |
 
 </div>
