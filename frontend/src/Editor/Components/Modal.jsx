@@ -20,6 +20,11 @@ export const Modal = function Modal({
   dataCy,
   height,
   mode,
+  headerIcon,
+  headerImage,
+  showHeader = true,
+  showFooter = true,
+  footerContent,
 }) {
   const [showModal, setShowModal] = useState(false);
 
@@ -111,7 +116,6 @@ export const Modal = function Modal({
         canvasElement.style.height = '100vh';
         canvasElement.style.maxHeight = '100vh';
         canvasElement.style.minHeight = '100vh';
-        canvasElement.style.height = '100vh';
         modalCanvasEl.style.height = modalHeight;
 
         realCanvasEl.style.height = '100vh';
@@ -119,7 +123,6 @@ export const Modal = function Modal({
 
         canvasElement?.classList?.add('freeze-scroll');
         modalBackdropEl.style.height = '100vh';
-        modalBackdropEl.style.minHeight = '100vh';
         modalBackdropEl.style.minHeight = '100vh';
       }
     };
@@ -255,6 +258,11 @@ export const Modal = function Modal({
           showConfigHandler: containerProps.mode === 'edit',
           removeComponent: containerProps.removeComponent,
           setSelected: containerProps.setSelectedComponent,
+          headerIcon,
+          headerImage,
+          showHeader,
+          showFooter,
+          footerContent,
         }}
       >
         {!loadingState ? (
@@ -292,21 +300,24 @@ const Component = ({ children, ...restProps }) => {
     showConfigHandler,
     removeComponent,
     setSelected,
-  } = restProps['modalProps'];
+    headerIcon,
+    headerImage,
+    showHeader,
+    showFooter,
+    footerContent,
+  } = restProps;
 
   return (
-    <BootstrapModal {...restProps}>
-      {showConfigHandler && (
-        <ConfigHandle
-          id={id}
-          component={component}
-          removeComponent={removeComponent}
-          setSelectedComponent={setSelected} //! Only Modal uses setSelectedComponent instead of selecto lib
-          customClassName={hideTitleBar ? 'modalWidget-config-handle' : ''}
-        />
-      )}
-      {!hideTitleBar && (
+    <BootstrapModal
+      {...restProps}
+      dialogClassName={`grid-modal grid-modal-${id}`}
+      onHide={hideModal}
+      aria-labelledby="contained-modal-title-vcenter"
+    >
+      {!hideTitleBar && showHeader && (
         <BootstrapModal.Header style={{ ...customStyles.modalHeader }} data-cy={`modal-header`}>
+          {headerIcon && <img src={headerIcon} alt="header icon" style={{ marginRight: '8px' }} />}
+          {headerImage && <img src={headerImage} alt="header image" className="modal-header-image" />}
           <BootstrapModal.Title id="contained-modal-title-vcenter" data-cy={`modal-title`}>
             {title}
           </BootstrapModal.Title>
@@ -341,9 +352,15 @@ const Component = ({ children, ...restProps }) => {
           )}
         </BootstrapModal.Header>
       )}
-      <BootstrapModal.Body style={{ ...customStyles.modalBody }} ref={parentRef} id={id} data-cy={`modal-body`}>
+      <BootstrapModal.Body ref={parentRef} style={{ ...customStyles.modalBody }} data-cy={`modal-body`}>
         {children}
+        <ConfigHandle show={showConfigHandler} removeComponent={removeComponent} setSelected={setSelected} />
       </BootstrapModal.Body>
+      {showFooter && (
+        <BootstrapModal.Footer data-cy={`modal-footer`}>
+          {footerContent || <button className="btn btn-secondary" onClick={hideModal}>Close</button>}
+        </BootstrapModal.Footer>
+      )}
     </BootstrapModal>
   );
 };
