@@ -36,6 +36,7 @@ import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { defaultAppEnvironments } from 'src/helpers/utils.helper';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 import * as cookieParser from 'cookie-parser';
+import { InternalTable } from '@entities/internal_table.entity';
 
 export async function createNestAppInstance(): Promise<INestApplication> {
   let app: INestApplication;
@@ -103,10 +104,24 @@ export function authHeaderForUser(user: User, organizationId?: string, isPasswor
 }
 
 export async function clearDB() {
-  const entities = getConnection().entityMetadatas;
-  for (const entity of entities) {
-    const repository = getConnection().getRepository(entity.name);
+  if (process.env.NODE_ENV !== 'test') return;
+  if (process.env.ENABLE_TOOLJET_DB === 'true') await dropTooljetDbTables();
+
+  const connection = getConnection();
+  for (const entity of connection.entityMetadatas) {
+    const repository = connection.getRepository(entity.name);
     await repository.query(`TRUNCATE ${entity.tableName} RESTART IDENTITY CASCADE;`);
+  }
+}
+
+async function dropTooljetDbTables() {
+  const connection = getConnection();
+  const tooljetDbConnection = getConnection('tooljetDb');
+
+  const internalTables = (await connection.manager.find(InternalTable, { select: ['id'] })) as InternalTable[];
+
+  for (const table of internalTables) {
+    await tooljetDbConnection.query(`DROP TABLE IF EXISTS "${table.id}" CASCADE`);
   }
 }
 

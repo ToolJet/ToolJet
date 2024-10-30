@@ -23,7 +23,7 @@ export class TooljetDbBulkUploadService {
     @InjectEntityManager('tooljetDb')
     private readonly tooljetDbManager: EntityManager,
     private readonly tooljetDbService: TooljetDbService
-  ) {}
+  ) { }
 
   async perform(organizationId: string, tableName: string, fileBuffer: Buffer) {
     const internalTable = await this.manager.findOne(InternalTable, {

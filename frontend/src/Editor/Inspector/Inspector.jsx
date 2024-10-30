@@ -91,6 +91,7 @@ export const Inspector = ({
     layouts: allComponents[selectedComponentId].layouts,
     parent: allComponents[selectedComponentId].parent,
   };
+
   const [showWidgetDeleteConfirmation, setWidgetDeleteConfirmation] = useState(false);
   // eslint-disable-next-line no-unused-vars
   const [newComponentName, setNewComponentName] = useState('');
@@ -528,8 +529,8 @@ export const Inspector = ({
                   componentMeta.displayName === 'Toggle Switch (Legacy)'
                     ? 'Toggle (Legacy)'
                     : componentMeta.displayName === 'Toggle Switch'
-                    ? 'Toggle Switch'
-                    : componentMeta.component,
+                      ? 'Toggle Switch'
+                      : componentMeta.component,
               })}
             </small>
           </span>

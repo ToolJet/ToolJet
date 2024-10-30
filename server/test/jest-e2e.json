@@ -1,5 +1,5 @@
 {
-  "moduleFileExtensions": ["js", "json", "ts"],
+  "moduleFileExtensions": ["js", "json", "ts", "node"],
   "rootDir": ".",
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
@@ -11,6 +11,7 @@
     "@plugins/(.*)": "<rootDir>/../plugins/$1",
     "@dto/(.*)": "<rootDir>/../src/dto/$1",
     "@services/(.*)": "<rootDir>/../src/services/$1",
+    "@entities/(.*)": "<rootDir>/src/entities/$1",
     "@controllers/(.*)": "<rootDir>/../src/controllers/$1",
     "@ee/(.*)": "<rootDir>/../ee/$1"
   }
