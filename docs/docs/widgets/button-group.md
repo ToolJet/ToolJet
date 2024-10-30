@@ -30,8 +30,6 @@ The **Button Group** component is used to group a series of buttons together in 
 
 ## Events
 
-Events are actions that can be triggered programmatically when the user interacts with the component. Click on the component handle to open its properties on the right. Go to the **Events** accordion and click on **+ Add handler**.
-
 | <div style={{ width:"100px"}}> Events </div> | <div style={{ width:"100px"}}> Description </div> |
 |:----------- |:----------- |
 | On click | This event is triggered when the user clicks on the button in the Button Group. |
@@ -56,7 +54,7 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 | <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div>| <div style={{ width:"135px"}}> How To Access </div> |
 | :---------- | :---------- | :----------|
-| selected | If the **enable multiple selection** option is turned off, then the variable is an array of objects, and the first object holds the value of the selected button. However, if it is turned on, the variable type changes from an array to an object, and the selected button values are stored as a string within that object. | Access the value using `{{components.buttongroup1.selected[0]}}` or `{{components.buttongroup1.selected}}` |
+| selected | If the **enable multiple selection** option is turned off, then the variable is an array of objects, and the first object holds the value of the selected button. However, if it is turned on, the variable type changes from an array to an object, and the selected button values are stored as a string within that object. | Access the value using `{{components.buttongroup1.selected[0]}}` or `{{components.buttongroup1.selected}}`. |
 
 </div>
 
@@ -77,12 +75,12 @@ A Tooltip is often used to display additional information when the user hovers t
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-## Layout
+## Devices
 
-| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | 
-| :----------- | :----------- | 
-| Desktop | Toggle to show or hide the component in the desktop view. Dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either true or false. Alternatively, the  values can be set to **`{{true}}`** or **`{{false}}`**.|  
-| Mobile | Toggle to show or hide the component in the desktop view. Dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either true or false. Alternatively, the  values can be set to **`{{true}}`** or **`{{false}}`**. | 
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+| :----------- | :----------- | :----------- |
+| Desktop | Toggle to show or hide the component in the desktop view. Dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either `true` or `false`. | **`{{true}}`** or **`{{false}}`**. |
+| Mobile | Toggle to show or hide the component in the mobile view. Dynamically configure the value by clicking on `Fx` and entering a logical expression that results in either `true` or `false`. | **`{{true}}`** or **`{{false}}`**. |
 
 </div>
 
@@ -92,13 +90,13 @@ A Tooltip is often used to display additional information when the user hovers t
 
 | <div style={{ width:"135px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 | :---------- | :---------- | :-------------- |
-| Background color | Set a background color for the buttons in buttons group. | Choose a color from the picker or enter the Hex color code. ex: `#000000` |
-| Text color | Set a text color for the buttons in buttons group. | Choose a color from the picker or enter the Hex color code. ex: `#000000` |
-| Visibility | Make the component visible or hidden. | **`{{true}}`** or **`{{false}}`**, By default, its value is set to `{{true}}` |
-| Disable | Disable the component. | **`{{true}}`** or **`{{false}}`**, By default, its value is set to `{{false}}` |
-| Border radius | Add a border radius to the buttons in the component using this property. | Any numerical value from `0` to `100` |
-| Selected text color | Use this property to modify the text color of selected button | Choose a color from the picker or enter the Hex color code. ex: `#000000` |
-| Selected background color | Use this property to modify the background color of selected button | Choose a color from the picker or enter the Hex color code. ex: `#000000` |
-| Box shadow | Sets the add shadow effects around a component's frame. You can specify the horizontal and vertical offsets(through X and Y sliders), blur and spread radius, and color of the shadow. | Values that represent X, Y, blur, spread, and color. Example: `9px 11px 5px 5px #00000040`` |
+| Background color | Set a background color for the buttons in the Button Group. | Choose a color from the picker or enter the Hex color code, e.g., `#000000`. |
+| Text color | Set a text color for the buttons in the Button Group. | Choose a color from the picker or enter the Hex color code, e.g., `#000000`. |
+| Visibility | Make the component visible or hidden. | **`{{true}}`** or **`{{false}}`**. By default, the value is `{{true}}`. |
+| Disable | Disable the component. | **`{{true}}`** or **`{{false}}`**. By default, the value is `{{false}}`. |
+| Border radius | Add a border radius to the buttons in the component. | Any numerical value from `0` to `100`. |
+| Selected text color | Modify the text color of the selected button. | Choose a color from the picker or enter the Hex color code, e.g., `#000000`. |
+| Selected background color | Modify the background color of the selected button. | Choose a color from the picker or enter the Hex color code, e.g., `#000000`. |
+| Box shadow | Add shadow effects around the component's frame. Specify the horizontal and vertical offsets (through X and Y sliders), blur and spread radius, and shadow color. | Values that represent X, Y, blur, spread, and color, e.g., `9px 11px 5px 5px #00000040`. |
 
 </div>
