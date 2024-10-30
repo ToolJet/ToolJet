@@ -54,6 +54,7 @@ export const Modal = function Modal({ darkMode, showModal, setShowModal, kanbanP
       animation={false}
       id="modal-container"
       backdrop={'static'}
+      component-id={`${id}-modal`}
     >
       <BootstrapModal.Body ref={parentRef} id={`${id}-modal`} style={{ width: '100%', height: '400px' }}>
         {renderCloseButton()}
