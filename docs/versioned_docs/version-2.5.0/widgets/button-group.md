@@ -82,8 +82,8 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 | Style      | Description | Expected Value |
 | ----------- | ----------- | ----------- |
-| Background color | Set a background color for the buttons in Button Group. | Choose a color from the picker or enter the Hex color code. ex:, `#000000`. |
-| Text color | Set a text color for the buttons in the Button Group. | Choose a color from the picker or enter the Hex color code. ex:, `#000000`. |
+| Background color | Set a background color for the buttons in button group. | Choose a color from the picker or enter the Hex color code. ex: `#000000`. |
+| Text color | Set a text color for the buttons in button group. | Choose a color from the picker or enter the Hex color code. ex: `#000000`. |
 | Visibility | Make the component visible or hidden. | **`{{true}}`** or **`{{false}}`**. By default, its value is set to `{{true}}`. |
 | Disable | Disable the component. | **`{{true}}`** or **`{{false}}`**. By default, its value is set to  `{{false}}`. |
 | Border radius |  Add a border radius to the buttons in the component using this property. | Any numerical value from `0` to `100`. |
