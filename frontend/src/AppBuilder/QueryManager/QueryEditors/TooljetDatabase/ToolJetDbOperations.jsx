@@ -516,57 +516,61 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     <TooljetDatabaseContext.Provider value={value}>
       {/* table name dropdown */}
 
-      <div className={cx({ 'col-4': !isHorizontalLayout, 'd-flex tooljetdb-worflow-operations': isHorizontalLayout })}>
-        <label className={cx('form-label', 'flex-shrink-0')}>Mode</label>
+      {window.public_config?.TJDB_SQL_MODE_DISABLE !== 'true' && (
         <div
-          className={cx('d-flex align-items-center justify-content-start gap-2', {
-            'row-tabs-dark': darkMode,
-            'row-tabs': !darkMode,
-          })}
+          className={cx({ 'col-4': !isHorizontalLayout, 'd-flex tooljetdb-worflow-operations': isHorizontalLayout })}
         >
+          <label className={cx('form-label', 'flex-shrink-0')}>Mode</label>
           <div
-            onClick={() => handleTabClick('GUI mode')}
-            style={{
-              backgroundColor:
-                activeTab === 'GUI mode' && !darkMode
-                  ? 'white'
-                  : activeTab === 'GUI mode' && darkMode
-                  ? '#242f3c'
-                  : 'transparent',
-              color:
-                activeTab === 'GUI mode' && !darkMode
-                  ? '#3E63DD'
-                  : activeTab === 'GUI mode' && darkMode
-                  ? 'white'
-                  : '#687076',
-            }}
-            className="row-tab-content"
+            className={cx('d-flex align-items-center justify-content-start gap-2', {
+              'row-tabs-dark': darkMode,
+              'row-tabs': !darkMode,
+            })}
           >
-            GUI mode
-          </div>
+            <div
+              onClick={() => handleTabClick('GUI mode')}
+              style={{
+                backgroundColor:
+                  activeTab === 'GUI mode' && !darkMode
+                    ? 'white'
+                    : activeTab === 'GUI mode' && darkMode
+                    ? '#242f3c'
+                    : 'transparent',
+                color:
+                  activeTab === 'GUI mode' && !darkMode
+                    ? '#3E63DD'
+                    : activeTab === 'GUI mode' && darkMode
+                    ? 'white'
+                    : '#687076',
+              }}
+              className="row-tab-content"
+            >
+              GUI mode
+            </div>
 
-          <div
-            onClick={() => handleTabClick('SQL mode')}
-            style={{
-              backgroundColor:
-                activeTab === 'SQL mode' && !darkMode
-                  ? 'white'
-                  : activeTab === 'SQL mode' && darkMode
-                  ? '#242f3c'
-                  : 'transparent',
-              color:
-                activeTab === 'SQL mode' && !darkMode
-                  ? '#3E63DD'
-                  : activeTab === 'SQL mode' && darkMode
-                  ? 'white'
-                  : '#687076',
-            }}
-            className="row-tab-content"
-          >
-            SQL mode
+            <div
+              onClick={() => handleTabClick('SQL mode')}
+              style={{
+                backgroundColor:
+                  activeTab === 'SQL mode' && !darkMode
+                    ? 'white'
+                    : activeTab === 'SQL mode' && darkMode
+                    ? '#242f3c'
+                    : 'transparent',
+                color:
+                  activeTab === 'SQL mode' && !darkMode
+                    ? '#3E63DD'
+                    : activeTab === 'SQL mode' && darkMode
+                    ? 'white'
+                    : '#687076',
+              }}
+              className="row-tab-content"
+            >
+              SQL mode
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {activeTab === 'GUI mode' && (
         <>
