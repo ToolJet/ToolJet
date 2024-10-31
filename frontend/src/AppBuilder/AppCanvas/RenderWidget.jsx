@@ -169,6 +169,7 @@ const RenderWidget = ({
             setExposedVariables={setExposedVariables}
             height={widgetHeight - 4}
             width={widgetWidth}
+            parentId={parentId}
             fireEvent={fireEventWrapper}
             validate={validate}
             resetComponent={resetComponent}
