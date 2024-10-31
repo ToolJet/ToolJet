@@ -1,0 +1,20 @@
+{
+  "name": "Student management system",
+  "description": "Centralize student data management, including grades, attendance, and communications, for improved efficiency and accessibility.",
+  "widgets": [
+    "Table",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "student-management-system",
+  "category": "educational-technology"
+}
