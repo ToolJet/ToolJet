@@ -71,7 +71,7 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 ## Styles
 
-| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"100px"}}> Configuration Options </div> |
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | Configuration Options |
 |:------------ |:-------------|:--------- |
 | Visibility | Controls component visibility. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Box-Shadow | Sets the box shadow properties of the component. | Select the box shadow color and adjust the related properties or programmatically set it using **fx**. |
