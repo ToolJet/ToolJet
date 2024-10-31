@@ -73,5 +73,5 @@ Following actions of the component can be controlled using the component specifi
 
 | Actions     | Description | How to Access |
 | ----------- | ----------- | ------------- |
-| setVisibility() | Sets the visibility of the component. | Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.icon1.setVisibility(false))`. |
-| click() | Triggers the click action on the component. | Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.icon1.click())`. |
+| setVisibility() | Sets the visibility of the component. | Employ a RunJS query (for e.g., `await components.icon1.setVisibility(false))` or trigger it using an event. |
+| click() | Triggers the click action on the component.  | Employ a RunJS query (for e.g., `await components.icon1.click())` or trigger it using an event. |
