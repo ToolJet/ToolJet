@@ -11,7 +11,7 @@ title: Color Picker
 
 ### Default color
 
-The data needs to be an valid hex color.
+The data needs to be a valid hex color.
 
 - One can change default color either from color picker or using **fx** (need to provide only respective hex value).
 
@@ -42,7 +42,7 @@ The following actions of the component can be controlled using component specifi
 
 | <div style={{ width:"100px"}}> Actions  </div>   | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 |:----------- |:----------- |:----------- |
-| setColor | Set a color on the color component via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.colorpicker1.setColor('#64A07A')`. |
+| setColor() | Sets a color on the color component. | Employ a RunJS query (for e.g., `await components.colorpicker1.setColor('#64A07A')`) or trigger it using an event. |
 
 </div>
 
@@ -52,20 +52,20 @@ The following actions of the component can be controlled using component specifi
 
 | <div style={{ width:"100px"}}> Variables </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 |:----------- |:----------- |:---------- |
-| selectedColorHex | Gets updated with HEX color code whenever a user selects a color from the color picker.| Access the value dynamically using JS: `{{components.colorpicker1.selectedColorHex}}`.|
-| selectedColorRGB | Gets updated with RGB color code whenever a user selects a color from the color picker. | Access the value dynamically using JS: `{{components.colorpicker1.selectedColorRGB}}`.|
-| selectedColorRGBA | Gets updated with RGBA color code whenever a user selects a color from the color picker.| Access the value dynamically using JS: `{{components.colorpicker1.selectedColorRGBA}}`.|
+| selectedColorHex | Gets updated with HEX color code whenever a user selects a color from the color picker.| Accessible dynamically with JS (for e.g., `{{components.colorpicker1.selectedColorHex}}`).|
+| selectedColorRGB | Gets updated with RGB color code whenever a user selects a color from the color picker. | Accessible dynamically with JS (for e.g., `{{components.colorpicker1.selectedColorRGB}}`).|
+| selectedColorRGBA | Gets updated with RGBA color code whenever a user selects a color from the color picker.| Accessible dynamically with JS (for e.g., `{{components.colorpicker1.selectedColorRGBA}}`).|
 
 </div>
 
 <div style={{paddingTop:'24px'}}>
 
-## Layout
+## Devices
 
-| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value  </div> |
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value  </div> |
 |:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
-| Show on desktop | Toggle on or off to display desktop view. | Programmatically determine the value by clicking on **fx** to set the value `{{true}}` or `{{false}}`. |
-| Show on mobile  | Toggle on or off to display mobile view.  | Programmatically determinine the value by clicking on **fx** to set the value `{{true}}` or `{{false}}`. |
+| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 </div>
 
