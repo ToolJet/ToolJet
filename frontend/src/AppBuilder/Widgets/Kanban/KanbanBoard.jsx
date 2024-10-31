@@ -73,6 +73,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id }) {
 
   const updateCardDataInCustomResolvable = useCallback((cardDataAsObj) => {
     const flatCardData = Object.values(cardDataAsObj).flat();
+    if (flatCardData.length === 0) return;
     updateCustomResolvables(
       id,
       flatCardData.map((d) => ({ cardData: d })),
