@@ -42,7 +42,7 @@ The following actions of the component can be controlled using component specifi
 
 | <div style={{ width:"100px"}}> Actions  </div>   | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 |:----------- |:----------- |:----------- |
-| setColor() | Sets a color on the color component via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.colorpicker1.setColor('#64A07A')`. |
+| setColor() | Sets a color on the color component. | Employ a RunJS query (for e.g., `await components.colorpicker1.setColor('#64A07A')`) or trigger it using an event. |
 
 </div>
 
