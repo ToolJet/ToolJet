@@ -69,14 +69,14 @@ export const Tabs = function Tabs({
   }, [parsedDefaultTab]);
 
   useEffect(() => {
-    const currentTabData = parsedTabs.filter((tab) => tab.id === currentTab);
+    const currentTabData = parsedTabs.filter((tab) => tab.id == currentTab);
     setBgColor(currentTabData[0]?.backgroundColor ? currentTabData[0]?.backgroundColor : darkMode ? '#324156' : '#fff');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentTab, darkMode]);
 
   function computeTabDisplay(componentId, id) {
     let tabVisibility = 'none';
-    if (id !== currentTab) {
+    if (id != currentTab) {
       return tabVisibility;
     }
 
@@ -87,14 +87,13 @@ export const Tabs = function Tabs({
       }
     }
 
-    return id === currentTab ? 'block' : 'none';
+    return id == currentTab ? 'block' : 'none';
   }
 
   useEffect(() => {
     const exposedVariables = {
       setTab: async function (id) {
-        id = typeof id === 'number' ? String(id) : id;
-        if (id && currentTab !== id) {
+        if (currentTab != id) {
           setCurrentTab(id);
           setExposedVariable('currentTab', id);
           fireEvent('onTabSwitch');
@@ -134,7 +133,7 @@ export const Tabs = function Tabs({
 
   function shouldRenderTabContent(tab) {
     if (parsedRenderOnlyActiveTab) {
-      return tab.id === currentTab;
+      return tab.id == currentTab;
     }
     return true; // Render by default if no specific conditions are met
   }
@@ -162,7 +161,7 @@ export const Tabs = function Tabs({
             className="nav-item"
             style={{ opacity: tab?.disabled && '0.5', width: tabWidth == 'split' && equalSplitWidth + '%' }}
             onClick={() => {
-              if (currentTab === tab.id) return;
+              if (currentTab == tab.id) return;
 
               !tab?.disabled && setCurrentTab(tab.id);
               !tab?.disabled && setExposedVariable('currentTab', tab.id);
@@ -193,7 +192,7 @@ export const Tabs = function Tabs({
         <div
           className="tab-content"
           ref={(newCurrent) => {
-            if (currentTab === tab.id) {
+            if (currentTab == tab.id) {
               parentRef.current = newCurrent;
             }
           }}
@@ -202,7 +201,7 @@ export const Tabs = function Tabs({
         >
           {shouldRenderTabContent(tab) && renderTabContent(id, tab)}
 
-          {/* {tab.id === currentTab && <SubContainer id={`${id}-${tab.id}`} canvasHeight={'200'} canvasWidth={width} />} */}
+          {/* {tab.id == currentTab && <SubContainer id={`${id}-${tab.id}`} canvasHeight={'200'} canvasWidth={width} />} */}
         </div>
       ))}
     </div>
