@@ -5,8 +5,8 @@ spec:
     image: 
       registry_type: DOCKER_HUB
       registry: tooljet
-      repository: tooljet
-      tag: EE-LTS-latest
+      repository: tooljet-te-ce
+      tag: do
     run_command: "./server/scripts/digitalocean-postbuild.sh"
     instance_size_slug: "basic-s"
     health_check:
@@ -40,7 +40,35 @@ spec:
     - key: TOOLJET_SERVER_URL
       scope: RUN_TIME
       value: ${APP_URL}
+    - key: TOOLJET_DB_URL
+      scope: RUN_TIME
+      value: ${tj-db.DATABASE_URL}
+    - key: CA_CERT
+      scope: RUN_TIME
+      value: ${pg-db.CA_CERT}
+    - key: PGRST_HOST
+      value: posgtrest
+    - key: PGRST_JWT_SECRET
+      value: "REPLACE_ME"
+  - name: posgtrest
+    image:
+      registry_type: DOCKER_HUB
+      registry: posgtrest
+      repository: posgtrest
+      tag: v12.0.2
+    instance_size_slug: "basic-s"
+    envs:
+    - key: PGRST_JWT_SECRET
+      value: "REPLACE_ME"
+    - key: PGRST_DB_URI
+      scope: RUN_TIME
+      value: ${tj-db.DATABASE_URL}
+    - key: PGRST_DB_PRE_CONFIG
+      value: postgrest.pre_config
   databases:
     - name: pg-db
+      engine: PG
+      production: false
+    - name: tj-db
       engine: PG
       production: false
