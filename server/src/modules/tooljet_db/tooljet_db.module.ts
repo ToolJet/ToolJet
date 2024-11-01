@@ -1,4 +1,4 @@
-import { Module, OnModuleInit, Optional } from '@nestjs/common';
+import { Module, OnModuleInit } from '@nestjs/common';
 import { InjectEntityManager, TypeOrmModule } from '@nestjs/typeorm';
 import { Credential } from '../../../src/entities/credential.entity';
 import { TooljetDbController } from '@controllers/tooljet_db.controller';
@@ -16,37 +16,26 @@ import { Logger } from 'nestjs-pino';
   imports: [TypeOrmModule.forFeature([Credential]), CaslModule],
   controllers: [TooljetDbController],
   providers: [TooljetDbService, TooljetDbBulkUploadService, TooljetDbOperationsService, PostgrestProxyService],
-  exports: [TooljetDbOperationsService],
+  exports: [TooljetDbService, TooljetDbBulkUploadService, TooljetDbOperationsService, PostgrestProxyService],
 })
 export class TooljetDbModule implements OnModuleInit {
   constructor(
     private logger: Logger,
     private configService: ConfigService,
-    @Optional()
     @InjectEntityManager('tooljetDb')
     private readonly tooljetDbManager: EntityManager
   ) {}
 
   async onModuleInit() {
-    const enableTooljetDb = this.configService.get('ENABLE_TOOLJET_DB') === 'true';
-    this.logger.log(`ToolJet Database enabled: ${enableTooljetDb}`);
+    const tooljtDbUser = this.configService.get('TOOLJET_DB_USER');
+    const statementTimeout = this.configService.get('TOOLJET_DB_STATEMENT_TIMEOUT') || 60000;
+    const statementTimeoutInSecs = Number.isNaN(Number(statementTimeout)) ? 60 : Number(statementTimeout) / 1000;
 
-    if (!enableTooljetDb) return;
-
-    const hasTooljetDbReconfig = this.configService.get('TOOLJET_DB_RECONFIG') === 'true';
-    this.logger.log(`Tooljet Database reconfig: ${hasTooljetDbReconfig}`);
-
-    if (hasTooljetDbReconfig) {
-      const tooljtDbUser = this.configService.get('TOOLJET_DB_USER');
-      const statementTimeout = this.configService.get('TOOLJET_DB_STATEMENT_TIMEOUT') || 60000;
-      const statementTimeoutInSecs = Number.isNaN(Number(statementTimeout)) ? 60 : Number(statementTimeout) / 1000;
-
-      await reconfigurePostgrest(this.tooljetDbManager, {
-        user: tooljtDbUser,
-        enableAggregates: true,
-        statementTimeoutInSecs: statementTimeoutInSecs,
-      });
-    }
+    await reconfigurePostgrest(this.tooljetDbManager, {
+      user: tooljtDbUser,
+      enableAggregates: true,
+      statementTimeoutInSecs: statementTimeoutInSecs,
+    });
 
     await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
   }

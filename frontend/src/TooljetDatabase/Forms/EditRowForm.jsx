@@ -193,13 +193,19 @@ const EditRowForm = ({
 
   const handleInputChange = (index, value, columnName) => {
     const newInputValues = [...inputValues];
+    const isNull = value === null || value === 'Null';
     newInputValues[index] = {
-      value: value === 'Null' ? null : value,
-      disabled: false,
-      label: value === 'Null' ? null : value,
+      value: isNull ? null : value,
+      disabled: isNull,
+      label: isNull ? null : value,
     };
     setInputValues(newInputValues);
-    setRowData({ ...rowData, [columnName]: value === 'Null' ? null : value });
+    setRowData({ ...rowData, [columnName]: isNull ? null : value });
+    if (isNull) {
+      const newActiveTabs = [...activeTab];
+      newActiveTabs[index] = 'Null';
+      setActiveTab(newActiveTabs);
+    }
   };
 
   useEffect(() => {

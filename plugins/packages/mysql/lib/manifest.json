@@ -33,6 +33,18 @@
       "password": {
         "type": "string",
         "encrypted": true
+      },
+      "ca_cert": {
+        "encrypted": true
+      },
+      "client_key": {
+        "encrypted": true
+      },
+      "client_cert": {
+        "encrypted": true
+      },
+      "root_cert": {
+        "encrypted": true
       }
     }
   },
@@ -60,71 +72,128 @@
     },
     "ssl_enabled": {
       "value": false
+    },
+    "ssl_certificate": {
+      "value": "none"
     }
   },
   "properties": {
-    "connection_type": {
-      "label": "Connection type",
-      "key": "connection_type",
+    "ssl_certificate": {
+      "label": "SSL certificate",
+      "key": "ssl_certificate",
       "type": "dropdown-component-flip",
-      "description": "Single select dropdown for connection type",
+      "description": "Single select dropdown for choosing certificates",
       "list": [
         {
-          "value": "hostname",
-          "name": "Hostname"
+          "value": "ca_certificate",
+          "name": "CA certificate"
         },
         {
-          "value": "socket_path",
-          "name": "Socket"
+          "value": "self_signed",
+          "name": "Self-signed certificate"
+        },
+        {
+          "value": "none",
+          "name": "None"
         }
       ],
       "commonFields": {
-        "username": {
-          "label": "Username",
-          "key": "username",
-          "type": "text",
-          "description": "Enter username"
+        "connection_type": {
+          "label": "Connection type",
+          "key": "connection_type",
+          "type": "dropdown-component-flip",
+          "description": "Single select dropdown for connection type",
+          "list": [
+            {
+              "value": "hostname",
+              "name": "Hostname"
+            },
+            {
+              "value": "socket_path",
+              "name": "Socket"
+            }
+          ],
+          "commonFields": {
+            "username": {
+              "label": "Username",
+              "key": "username",
+              "type": "text",
+              "description": "Enter username"
+            },
+            "password": {
+              "label": "Password",
+              "key": "password",
+              "type": "password",
+              "description": "Enter password"
+            },
+            "database": {
+              "label": "Database name",
+              "key": "database",
+              "type": "text",
+              "description": "Name of the database"
+            }
+          }
         },
-        "password": {
-          "label": "Password",
-          "key": "password",
-          "type": "password",
-          "description": "Enter password"
+        "hostname": {
+          "host": {
+            "label": "Host",
+            "key": "host",
+            "type": "text",
+            "description": "Enter host"
+          },
+          "port": {
+            "label": "Port",
+            "key": "port",
+            "type": "text",
+            "description": "Enter port"
+          },
+          "ssl_enabled": {
+            "label": "SSL",
+            "key": "ssl_enabled",
+            "type": "toggle",
+            "description": "Toggle for ssl_enabled"
+          }
         },
-        "database": {
-          "label": "Database Name",
-          "key": "database",
-          "type": "text",
-          "description": "Name of the database"
+        "socket_path": {
+          "socket": {
+            "label": "Socket path",
+            "type": "text",
+            "name": "socket_path",
+            "description": "Enter the socket path"
+          }
         }
       }
     },
-    "hostname": {
-      "host": {
-        "label": "Host",
-        "key": "host",
-        "type": "text",
-        "description": "Enter host"
-      },
-      "port": {
-        "label": "Port",
-        "key": "port",
-        "type": "text",
-        "description": "Enter port"
-      },
-      "ssl_enabled": {
-        "label": "SSL",
-        "key": "ssl_enabled",
-        "type": "toggle",
-        "description": "Toggle for ssl_enabled"
+    "ca_certificate": {
+      "ca_cert": {
+        "label": "CA cert",
+        "key": "ca_cert",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Enter ca certificate"
       }
     },
-    "socket_path": {
-      "socket": {
-        "label": "Socket Path",
-        "type": "text",
-        "name": "socket_path",
-        "description": "Enter the socket path"
+    "self_signed": {
+      "client_key": {
+        "label": "Client key",
+        "key": "client_key",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Enter client key"
+      },
+      "client_cert": {
+        "label": "Client cert",
+        "key": "client_cert",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Enter client certificate"
+      },
+      "root_cert": {
+        "label": "Root cert",
+        "key": "root_cert",
+        "type": "textarea",
+        "encrypted": true,
+        "description": "Enter root certificate"
       }
     }
   },

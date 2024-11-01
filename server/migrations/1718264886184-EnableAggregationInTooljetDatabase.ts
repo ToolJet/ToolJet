@@ -5,9 +5,6 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 export class EnableAggregationInTooljetDatabase1718264886184 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const envData = getEnvVars();
-    const isToolJetDBEnabled = envData.ENABLE_TOOLJET_DB;
-
-    if (isToolJetDBEnabled !== 'true') return;
     console.log('Entering Migration --- EnableAggregationInTooljetDatabase');
 
     const tooljetDbUser = envData.TOOLJET_DB_USER;
@@ -39,7 +36,7 @@ export class EnableAggregationInTooljetDatabase1718264886184 implements Migratio
       console.error('Error during migration: EnableAggregationInTooljetDatabase --- ', error);
       throw error;
     } finally {
-      await tooljetDbConnection.close();
+      await tooljetDbConnection.destroy();
     }
   }
 

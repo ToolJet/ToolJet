@@ -4,7 +4,7 @@ import LazyLoad, { forceCheck } from 'react-lazyload';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
 export const Image = function Image({
-  component,
+  componentName,
   height,
   properties,
   styles,
@@ -15,10 +15,7 @@ export const Image = function Image({
 }) {
   const { source, loadingState, alternativeText, zoomButtons, rotateButton } = properties;
   const { visibility, disabledState, borderType, backgroundColor, padding, imageFit, boxShadow } = styles;
-  const {
-    definition: { events },
-  } = component;
-  const hasOnClickEvent = events.some((event) => event.eventId === 'onClick');
+  const hasOnClickEvent = false;
   const widgetVisibility = visibility ?? true;
   const imageRef = useRef(null);
   const [imageOffset, setImageOffset] = useState(0);
@@ -130,7 +127,7 @@ export const Image = function Image({
   return (
     <div
       data-disabled={disabledState}
-      data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
+      data-cy={`draggable-widget-${String(componentName).toLowerCase()}`}
       style={{
         display: widgetVisibility ? 'flex' : 'none',
         justifyContent: 'center',

@@ -1,5 +1,5 @@
 import React from 'react';
-function Label({ label, width, labelRef, color, defaultAlignment, direction, auto, isMandatory, _width }) {
+function Label({ label, width, labelRef, color, defaultAlignment, direction, auto, isMandatory, _width, top }) {
   return (
     <>
       {label && (width > 0 || auto) && (
@@ -31,6 +31,7 @@ function Label({ label, width, labelRef, color, defaultAlignment, direction, aut
                   ? '12px'
                   : '',
               paddingLeft: label?.length > 0 && defaultAlignment === 'side' && direction != 'left' ? '12px' : '',
+              ...(top && { top }),
             }}
           >
             {label}

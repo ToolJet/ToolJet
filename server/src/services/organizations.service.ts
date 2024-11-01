@@ -37,6 +37,7 @@ import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 import { ERROR_HANDLER, ERROR_HANDLER_TITLE } from '@modules/organizations/constant/constants';
 import { GroupPermissionsServiceV2 } from './group_permissions.service.v2';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
+import { TooljetDbService } from './tooljet_db.service';
 
 const MAX_ROW_COUNT = 500;
 
@@ -88,6 +89,7 @@ export class OrganizationsService {
     private emailService: EmailService,
     private configService: ConfigService,
     private userRoleService: UserRoleService,
+    private tooljetdbService: TooljetDbService,
     private readonly _dataSource: TypeORMDatasource
   ) {}
 
@@ -119,6 +121,7 @@ export class OrganizationsService {
         await this.organizationUserService.create(user, organization, false, manager);
         await this.userRoleService.addUserRole({ role: USER_ROLE.ADMIN, userId: user.id }, organization.id, manager);
       }
+      await this.tooljetdbService.createTooljetDbTenantSchemaAndRole(organization.id, manager);
     }, manager);
 
     return organization;

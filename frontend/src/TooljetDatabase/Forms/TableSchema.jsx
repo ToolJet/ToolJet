@@ -570,17 +570,13 @@ function TableSchema({
                     .replace(/\s+/g, '-')}-text`}
                   className="m-0"
                 >
-                  {columnDetails[index]?.constraints_type?.is_not_null ?? false ? (
-                    <span
-                      className={`${
-                        columnDetails[index]?.constraints_type?.is_primary_key === true ? 'not-null-with-disable' : ''
-                      }`}
-                    >
-                      NOT NULL
-                    </span>
-                  ) : (
-                    <span>NULL</span>
-                  )}
+                  <span
+                    className={`${
+                      columnDetails[index]?.constraints_type?.is_primary_key === true ? 'not-null-with-disable' : ''
+                    }`}
+                  >
+                    NOT NULL
+                  </span>
                 </p>
               </div>
             </ToolTip>

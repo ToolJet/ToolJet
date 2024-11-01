@@ -9,7 +9,7 @@ import { HomePage } from '@/HomePage';
 import { TooljetDatabase } from '@/TooljetDatabase';
 import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
-import { Viewer } from '@/Editor';
+import { Viewer } from '@/AppBuilder/Viewer/Viewer.jsx';
 import { OrganizationSettings } from '@/OrganizationSettingsPage';
 import { SettingsPage } from '../SettingsPage/SettingsPage';
 import { MarketplacePage } from '@/MarketplacePage';
@@ -34,13 +34,21 @@ import { ManageOrgVars } from '@/ManageOrgVars';
 import { ManageGroupPermissionsV2 } from '@/ManageGroupPermissionsV2/ManageGroupPermissionsV2';
 import { setFaviconAndTitle } from '@white-label/whiteLabelling';
 import { onboarding, auth } from '@/modules';
+import { shallow } from 'zustand/shallow';
+import useStore from '@/AppBuilder/_stores/store';
 
 const AppWrapper = (props) => {
   const { isAppDarkMode } = useAppDarkMode();
+  const { updateIsTJDarkMode } = useStore(
+    (state) => ({
+      updateIsTJDarkMode: state.updateIsTJDarkMode,
+    }),
+    shallow
+  );
   return (
     <Suspense fallback={null}>
       <BrowserRouter basename={window.public_config?.SUB_PATH || '/'}>
-        <AppWithRouter props={props} isAppDarkMode={isAppDarkMode} />
+        <AppWithRouter props={props} isAppDarkMode={isAppDarkMode} updateIsTJDarkMode={updateIsTJDarkMode} />
       </BrowserRouter>
     </Suspense>
   );
@@ -99,8 +107,18 @@ class AppComponent extends React.Component {
 
   switchDarkMode = (newMode) => {
     this.setState({ darkMode: newMode });
-    useAppDataStore.getState().actions.updateIsTJDarkMode(newMode);
+    this.props.updateIsTJDarkMode(newMode);
     localStorage.setItem('darkMode', newMode);
+  };
+
+  isEditorOrViewerFromPath = () => {
+    const pathname = this.props.location.pathname;
+    if (pathname.includes('/apps/')) {
+      return 'editor';
+    } else if (pathname.includes('/applications/')) {
+      return 'viewer';
+    }
+    return '';
   };
 
   render() {
@@ -128,7 +146,7 @@ class AppComponent extends React.Component {
       <>
         <div
           className={cx('main-wrapper', {
-            'theme-dark dark-theme': !isEditorOrViewer && darkMode,
+            'theme-dark dark-theme': !this.isEditorOrViewerFromPath() && darkMode,
           })}
           data-cy="main-wrapper"
         >
@@ -176,11 +194,7 @@ class AppComponent extends React.Component {
                 path="/:workspaceId/apps/:slug/:pageHandle?/*"
                 element={
                   <AppsRoute componentType="editor">
-                    <AppLoader
-                      switchDarkMode={this.switchDarkMode}
-                      darkMode={darkMode}
-                      setEditorOrViewer={(value) => this.setState({ isEditorOrViewer: value })}
-                    />
+                    <AppLoader switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                   </AppsRoute>
                 }
               />
@@ -198,11 +212,7 @@ class AppComponent extends React.Component {
                 path="/applications/:slug/:pageHandle?"
                 element={
                   <AppsRoute componentType="viewer">
-                    <Viewer
-                      switchDarkMode={this.switchDarkMode}
-                      darkMode={this.props.isAppDarkMode}
-                      setEditorOrViewer={(value) => this.setState({ isEditorOrViewer: value })}
-                    />
+                    <Viewer switchDarkMode={this.switchDarkMode} darkMode={this.props.isAppDarkMode} />
                   </AppsRoute>
                 }
               />
@@ -211,11 +221,7 @@ class AppComponent extends React.Component {
                 path="/applications/:slug/versions/:versionId/:pageHandle?"
                 element={
                   <AppsRoute componentType="viewer">
-                    <Viewer
-                      switchDarkMode={this.switchDarkMode}
-                      darkMode={this.props.isAppDarkMode}
-                      setEditorOrViewer={(value) => this.setState({ isEditorOrViewer: value })}
-                    />
+                    <Viewer switchDarkMode={this.switchDarkMode} darkMode={this.props.isAppDarkMode} />
                   </AppsRoute>
                 }
               />
@@ -284,29 +290,27 @@ class AppComponent extends React.Component {
                   </PrivateRoute>
                 }
               />
-              {window.public_config?.ENABLE_TOOLJET_DB == 'true' && (
-                <Route
-                  exact
-                  path="/:workspaceId/database"
-                  element={
-                    <PrivateRoute>
-                      <TooljetDatabase switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                    </PrivateRoute>
-                  }
-                />
-              )}
 
-              {window.public_config?.ENABLE_MARKETPLACE_FEATURE === 'true' && (
-                <Route
-                  exact
-                  path="/integrations"
-                  element={
-                    <AdminRoute {...this.props}>
-                      <MarketplacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                    </AdminRoute>
-                  }
-                />
-              )}
+              <Route
+                exact
+                path="/:workspaceId/database"
+                element={
+                  <PrivateRoute>
+                    <TooljetDatabase switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </PrivateRoute>
+                }
+              />
+
+              <Route
+                exact
+                path="/integrations"
+                element={
+                  <AdminRoute {...this.props}>
+                    <MarketplacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </AdminRoute>
+                }
+              />
+
               <Route exact path="/" element={<Navigate to="/:workspaceId" />} />
               <Route
                 exact

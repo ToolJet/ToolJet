@@ -25,7 +25,6 @@ function Layout({
   const router = useRouter();
   const currentUserValue = authenticationService.currentSessionValue;
   const admin = currentUserValue?.admin;
-  const marketplaceEnabled = admin && window.public_config?.ENABLE_MARKETPLACE_FEATURE == 'true';
   fetchWhiteLabelDetails();
   const whiteLabelLogo = retrieveWhiteLabelLogo();
 
@@ -87,7 +86,7 @@ function Layout({
                     </Link>
                   </ToolTip>
                 </li>
-                {window.public_config?.ENABLE_TOOLJET_DB == 'true' && admin && (
+                {admin && (
                   <li className="text-center  cursor-pointer" data-cy={`database-icon`}>
                     <ToolTip message="ToolJet Database" placement="right">
                       <Link

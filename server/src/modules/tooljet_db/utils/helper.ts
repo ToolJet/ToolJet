@@ -11,7 +11,11 @@ export async function reconfigurePostgrest(
       await transactionalEntityManager.queryRunner.query(`create or replace function postgrest.pre_config()
       returns void as $$
         select
-          set_config('pgrst.db_aggregates_enabled', '${options.enableAggregates}', false)
+          set_config('pgrst.db_aggregates_enabled', '${options.enableAggregates}', false);
+        select
+          set_config('pgrst.db_schemas', string_agg(nspname, ','), true)
+        from pg_namespace
+        where nspname like 'workspace_%';
       $$ language sql;
       `);
       await transactionalEntityManager.queryRunner.query(

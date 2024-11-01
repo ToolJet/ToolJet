@@ -102,7 +102,9 @@ export const DarkModeToggle = function DarkModeToggle({
         </animated.svg>
 
         {showText && (
-          <span className="dark-theme-toggle-btn-text">Switch to {!darkMode ? 'dark mode' : 'light mode'}</span>
+          <span className="dark-theme-toggle-btn-text" onClick={toggleDarkMode}>
+            Switch to {!darkMode ? 'dark mode' : 'light mode'}
+          </span>
         )}
       </div>
     </OverlayTrigger>

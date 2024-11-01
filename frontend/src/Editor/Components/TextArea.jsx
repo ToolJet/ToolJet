@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 export const TextArea = function TextArea({
   height,
@@ -8,9 +8,11 @@ export const TextArea = function TextArea({
   setExposedVariables,
   dataCy,
 }) {
+  const isInitialRender = useRef(true);
   const [value, setValue] = useState(properties.value);
 
   useEffect(() => {
+    if (isInitialRender.current) return;
     setValue(properties.value);
     setExposedVariable('value', properties.value);
 
@@ -27,11 +29,14 @@ export const TextArea = function TextArea({
         setValue('');
         setExposedVariable('value', '');
       },
+      value: properties.value,
     };
     setExposedVariables(exposedVariables);
+    setValue(properties.value);
+    isInitialRender.current = false;
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setValue]);
+  }, []);
 
   return (
     <textarea

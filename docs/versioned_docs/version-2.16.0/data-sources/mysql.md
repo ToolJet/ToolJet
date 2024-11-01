@@ -56,7 +56,7 @@ Click on **Test connection** to verify the correctness of the provided credentia
 
 ## Querying MySQL
 
-Once the MySQL data source is added, you can create queries to read and write data to the database. You can create queries from the **[Query Panel](/docs/app-builder/query-panel#add)** located at the bottom panel of the app builder.
+Once the MySQL data source is added, you can create queries to read and write data to the database. You can create queries from the **[Query Panel](/docs/app-builder/query-panel#query-manager)** located at the bottom panel of the app builder.
 
 1. **[SQL mode](/docs/data-sources/mysql#sql-mode)**
 2. **[GUI mode](/docs/data-sources/mysql#gui-mode)**

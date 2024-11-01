@@ -60,9 +60,9 @@ import { InstanceSettingsModule } from '@instance-settings/module';
       },
       inject: [ConfigService],
     }),
-    TooljetDbModule,
     UserResourcePermissionsModule,
     InstanceSettingsModule,
+    TooljetDbModule,
   ],
   providers: [
     OrganizationsService,

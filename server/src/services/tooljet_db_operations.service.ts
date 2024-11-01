@@ -1,20 +1,36 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import PostgrestQueryBuilder from 'src/helpers/postgrest_query_builder';
-import { QueryService, QueryResult } from '@tooljet/plugins/dist/packages/common/lib';
+import { QueryService, QueryResult, QueryError } from '@tooljet/plugins/dist/packages/common/lib';
 import { TooljetDbService } from './tooljet_db.service';
 import { isEmpty } from 'lodash';
 import { PostgrestProxyService } from './postgrest_proxy.service';
 import { maybeSetSubPath } from 'src/helpers/utils.helper';
-import { EntityManager } from 'typeorm';
+import { AST, Parser } from 'node-sql-parser/build/postgresql';
+import {
+  createTooljetDatabaseConnection,
+  decryptTooljetDatabasePassword,
+  findTenantSchema,
+  modifyTjdbErrorObject,
+} from 'src/helpers/tooljet_db.helper';
+import { EntityManager, In, QueryFailedError } from 'typeorm';
+import { OrganizationTjdbConfigurations } from 'src/entities/organization_tjdb_configurations.entity';
+import { Organization } from 'src/entities/organization.entity';
 import { InternalTable } from 'src/entities/internal_table.entity';
-import { QueryError } from '@tooljet/plugins/packages/common';
+import { InjectEntityManager } from '@nestjs/typeorm';
+import { PostgrestError, TooljetDatabaseError } from '@modules/tooljet_db/tooljet-db.types';
+import { ConfigService } from '@nestjs/config';
 
+// This service encapsulates all TJDB data manipulation operations
+// which can act like any other datasource
 @Injectable()
 export class TooljetDbOperationsService implements QueryService {
   constructor(
+    private readonly manager: EntityManager,
     private tooljetDbService: TooljetDbService,
     private postgrestProxyService: PostgrestProxyService,
-    private readonly manager: EntityManager
+    @InjectEntityManager('tooljetDb')
+    private readonly tooljetDbManager: EntityManager,
+    private readonly configService: ConfigService
   ) {}
 
   async run(
@@ -36,7 +52,8 @@ export class TooljetDbOperationsService implements QueryService {
       case 'join_tables':
         // custom implementation without PostgREST
         return this.joinTables(queryOptions, context);
-
+      case 'sql_execution':
+        return this.sqlExecution(queryOptions, context);
       default:
         return {
           status: 'failed',
@@ -52,7 +69,7 @@ export class TooljetDbOperationsService implements QueryService {
     headers: Record<string, string>,
     body: Record<string, any> = {}
   ): Promise<QueryResult> {
-    const result = await this.postgrestProxyService.perform(url, method, headers, body);
+    const result: any = await this.postgrestProxyService.perform(url, method, headers, body);
 
     return { status: 'ok', data: result };
   }
@@ -80,6 +97,11 @@ export class TooljetDbOperationsService implements QueryService {
           group_by: groupBy = {},
         } = listRows;
 
+        if (limit && isNaN(limit))
+          throw new QueryError('An incorrect limit value.', 'Limit should be a valid integer', {});
+        if (offset && isNaN(offset))
+          throw new QueryError('An incorrect offset value.', 'Offset should be a valid integer', {});
+
         const internalTable = await this.manager.findOne(InternalTable, {
           where: {
             organizationId,
@@ -88,14 +110,6 @@ export class TooljetDbOperationsService implements QueryService {
         });
 
         if (!internalTable) throw new NotFoundException('Table not found');
-
-        if (limit && isNaN(limit)) {
-          return {
-            status: 'failed',
-            errorMessage: 'Limit should be a number.',
-            data: {},
-          };
-        }
 
         const whereQuery = buildPostgrestQuery(whereFilters);
         const orderQuery = buildPostgrestQuery(orderFilters);
@@ -186,11 +200,7 @@ export class TooljetDbOperationsService implements QueryService {
     }
 
     if (limit && isNaN(limit)) {
-      return {
-        status: 'failed',
-        errorMessage: 'Limit should be a number',
-        data: {},
-      };
+      throw new QueryError('An incorrect limit value.', 'Limit should be a valid integer', {});
     }
 
     !isEmpty(whereQuery) && query.push(whereQuery);
@@ -230,6 +240,14 @@ export class TooljetDbOperationsService implements QueryService {
       };
     }
 
+    if (sanitizedJoinTableJson.limit && isNaN(sanitizedJoinTableJson.limit)) {
+      throw new QueryError('An incorrect limit value.', 'Limit should be a valid integer', {});
+    }
+
+    if (sanitizedJoinTableJson.offset && isNaN(sanitizedJoinTableJson.offset)) {
+      throw new QueryError('An incorrect offset value.', 'Offset should be a valid integer', {});
+    }
+
     // If non-mandatory fields ( Filter & Sort ) are empty - remove the particular field
     if (
       sanitizedJoinTableJson?.conditions &&
@@ -256,6 +274,233 @@ export class TooljetDbOperationsService implements QueryService {
     });
 
     return { status: 'ok', data: { result } };
+  }
+
+  async sqlExecution(queryOptions, context): Promise<QueryResult> {
+    if (this.configService.get<string>('TJDB_SQL_MODE_DISABLE') === 'true')
+      throw new QueryError('SQL execution is disabled', 'Contact Admin to enable SQL execution', {});
+
+    const { organization_id: organizationId } = context.app;
+    const { sql_execution: sqlExecution = {} } = queryOptions;
+    const { sqlQuery = '' } = sqlExecution;
+    if (isEmpty(sqlQuery)) return;
+
+    // Check for Workspace
+    const workspaceDetails = await this.manager.findOne(Organization, {
+      where: { id: organizationId },
+    });
+    if (!workspaceDetails) throw new NotFoundException(`Workspace doesn't exists`);
+
+    // Check for Tjdb Configuration
+    const tjdbTenantConfigs = await this.manager.findOne(OrganizationTjdbConfigurations, {
+      where: { organizationId },
+    });
+    if (!tjdbTenantConfigs) throw new NotFoundException(`Tooljet database schema configuration doesn't exists`);
+
+    const { pgPassword, pgUser } = tjdbTenantConfigs;
+    const tjdbPassKey = await decryptTooljetDatabasePassword(pgPassword);
+    const tenantSchema = findTenantSchema(organizationId);
+    const { tooljetDbTenantConnection } = await createTooljetDatabaseConnection(tjdbPassKey, pgUser, tenantSchema);
+
+    let ast;
+    let tableList;
+    const sqlParser = new Parser();
+
+    try {
+      const parsedSQL = sqlParser.parse(sqlQuery);
+      ast = parsedSQL.ast;
+      tableList = parsedSQL.tableList;
+    } catch (error) {
+      return {
+        status: 'failed',
+        errorMessage: 'Syntax error encountered',
+        data: { name: error?.name, message: error?.message },
+      };
+    }
+
+    const internalTableInfo = [];
+
+    try {
+      // Operation AllowList check
+      const isValidCommand = await this.checkCommandAllowlist(ast);
+      if (!isValidCommand) throw new Error('This SQL functionality is restricted.');
+
+      // Updating SearchPath for a session
+      await tooljetDbTenantConnection.query(`SET search_path TO "${tenantSchema}"`);
+
+      const { tablesUsedInQuery, tableAndSchemaList } = this.parseTableListFromASTParser(tableList);
+      // Validate tables are exists in workspace.
+      const tableDetailsInList = await this.verifyTablesExistInWorkspace(tablesUsedInQuery, organizationId);
+      const internalTableNameToIdMap = tablesUsedInQuery.reduce((acc, tableName) => {
+        const tableId = tableDetailsInList.find((table) => table.tableName === tableName).id;
+        internalTableInfo.push({ id: tableId, tableName: tableName });
+
+        return {
+          ...acc,
+          [tableName]: tableId,
+        };
+      }, {});
+
+      await this.validateSchemaAndTablePrivileges(
+        this.tooljetDbManager,
+        tenantSchema,
+        pgUser,
+        tableAndSchemaList,
+        internalTableNameToIdMap
+      );
+
+      this.parseTableNameInAST(ast, internalTableNameToIdMap);
+      const validSql = await sqlParser.sqlify(ast);
+      const results = await tooljetDbTenantConnection.query(validSql);
+      return { status: 'ok', data: { results } };
+    } catch (error) {
+      const modifiedErrorObj = modifyTjdbErrorObject(error);
+      const errorObj = new QueryFailedError(error, [], new PostgrestError(modifiedErrorObj));
+      const tjdbErrorObj = new TooljetDatabaseError(
+        error.message,
+        {
+          origin: 'sql_execution',
+          internalTables: internalTableInfo,
+        },
+        errorObj
+      );
+      const alteredErrorMessage = tjdbErrorObj.toString();
+      throw new QueryError(alteredErrorMessage, alteredErrorMessage, {});
+    } finally {
+      await tooljetDbTenantConnection.destroy();
+    }
+  }
+
+  /**
+   * Helper function to UPDATE TableName with TableId in the parsed sql (AST)
+   * @param parsedSql - AST Json for SQL
+   * @param internalTableNameToIdMap - Object which holds tablename and its respective tableId
+   */
+  private parseTableNameInAST(parsedSql, internalTableNameToIdMap) {
+    if (Array.isArray(parsedSql)) {
+      parsedSql.forEach((item) => this.parseTableNameInAST(item, internalTableNameToIdMap));
+    } else if (typeof parsedSql === 'object' && parsedSql !== null) {
+      if (parsedSql['table'] && !isEmpty(internalTableNameToIdMap)) {
+        parsedSql.table = internalTableNameToIdMap[parsedSql.table]
+          ? internalTableNameToIdMap[parsedSql.table]
+          : parsedSql.table;
+      }
+      Object.keys(parsedSql).forEach((key) => {
+        this.parseTableNameInAST(parsedSql[key], internalTableNameToIdMap);
+      });
+    }
+  }
+
+  /**
+   * Function to validate, if SQL operations are in allowlist else it is invalid SQL command.
+   * @param parsedSqlAst
+   * @returns boolean
+   */
+  private checkCommandAllowlist(parsedSqlAst: AST[] | AST): boolean {
+    const allowList = ['select', 'insert', 'update', 'delete', 'transaction'];
+    let isValidCommand = true;
+    if (Array.isArray(parsedSqlAst)) {
+      parsedSqlAst.forEach((sqlExpression) => {
+        if (!allowList.includes(sqlExpression.type)) isValidCommand = false;
+      });
+    }
+
+    if (!Array.isArray(parsedSqlAst) && parsedSqlAst.type) {
+      if (!allowList.includes(parsedSqlAst.type)) isValidCommand = false;
+    }
+    return isValidCommand;
+  }
+
+  /**
+   * Function to verify that all the tables mentioned in the SQL query are exists and valid.
+   * @param tablesUsedInquery - Table names in list
+   * @param organizationId - Workspace id
+   * @returns Table details as list.
+   */
+  private async verifyTablesExistInWorkspace(tablesUsedInquery: Array<string>, organizationId: string) {
+    const tableDetailsInList = await this.manager.find(InternalTable, {
+      where: {
+        organizationId: organizationId,
+        tableName: In(tablesUsedInquery),
+      },
+    });
+    const tableList = tableDetailsInList.map((table) => table.tableName);
+    const tablesNotInOrg = tablesUsedInquery.filter((tableName) => !tableList.includes(tableName));
+    if (isEmpty(tablesNotInOrg)) return tableDetailsInList;
+    throw new NotFoundException(`Table: ${tablesNotInOrg.join(', ')} not found`);
+  }
+
+  /**
+   * Function to parse tableList from SQL parser, which will be in specific format like <statement_type>::<schema>::<table>.
+   * This function splits the mentioned format into schema and table separately.
+   * @param tableList - Strings in list - String format will be <statement_type>::<schema>::<table>
+   * @returns
+   */
+  private parseTableListFromASTParser(tableList: Array<string>): {
+    tablesUsedInQuery: Array<string>;
+    tableAndSchemaList: Array<{ schema: string; table: string }>;
+  } {
+    const tablesUsedInQuery = [];
+    const results = tableList.map((parsedTable) => {
+      const separatedString = parsedTable.split('::');
+      if (!isEmpty(separatedString[2])) tablesUsedInQuery.push(separatedString[2]);
+      return { schema: separatedString[1] !== 'null' ? separatedString[1] : null, table: separatedString[2] };
+    });
+    return { tablesUsedInQuery: tablesUsedInQuery, tableAndSchemaList: results };
+  }
+
+  /**
+   * Function to validate Access to Schema and Tables mentioned in query for the Tenant user.
+   * @param tooljetDbManager
+   * @param tenantSchema - Schema for specific workspace.
+   * @param pgUser - Tenant user
+   * @param tableAndSchemaList
+   * @param internalTableNameToIdMap
+   */
+  private async validateSchemaAndTablePrivileges(
+    tooljetDbManager: EntityManager,
+    tenantSchema: string,
+    pgUser: string,
+    tableAndSchemaList: Array<{ schema: string; table: string }>,
+    internalTableNameToIdMap
+  ) {
+    // Validates if Tenant User has access to Workspace Schema.
+    await this.validateSchemaPrivileges(tooljetDbManager, pgUser, tenantSchema);
+    for (const tableAndSchema of tableAndSchemaList) {
+      const { schema, table } = tableAndSchema;
+      if (schema) await this.validateSchemaPrivileges(tooljetDbManager, pgUser, schema);
+      if (!isEmpty(internalTableNameToIdMap[table]))
+        await this.validateUserHasTablePrivileges(
+          internalTableNameToIdMap,
+          tooljetDbManager,
+          pgUser,
+          schema,
+          table,
+          tenantSchema
+        );
+    }
+  }
+
+  private async validateSchemaPrivileges(tooljetDbManager: EntityManager, pgUser: string, schema: string) {
+    const [{ has_schema_privilege }] = await tooljetDbManager.query(
+      `SELECT has_schema_privilege('${pgUser}', '${schema}', 'USAGE')`
+    );
+    if (!has_schema_privilege) throw new Error('You are not authorized to perform actions on some schemas.');
+  }
+
+  private async validateUserHasTablePrivileges(
+    internalTableNameToIdMap,
+    tooljetDbManager: EntityManager,
+    pgUser: string,
+    schema: string,
+    tableName: string,
+    tenantSchema: string
+  ) {
+    const queryToExecute = schema
+      ? `SELECT has_table_privilege('${pgUser}', '${schema}.${internalTableNameToIdMap[tableName]}', 'SELECT')`
+      : `SELECT has_table_privilege('${pgUser}', '${tenantSchema}.${internalTableNameToIdMap[tableName]}', 'SELECT')`;
+    const [{ has_table_privilege }] = await tooljetDbManager.query(queryToExecute);
+    if (!has_table_privilege) throw new Error('TJDB table permission denied');
   }
 
   private buildAggregateAndGroupByQuery(

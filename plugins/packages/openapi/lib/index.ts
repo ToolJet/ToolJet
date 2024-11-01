@@ -48,7 +48,7 @@ export default class Openapi implements QueryService {
       json,
     };
 
-    const authValidatedRequestOptions: QueryResult = validateAndSetRequestOptionsBasedOnAuthType(
+    const authValidatedRequestOptions: QueryResult = await validateAndSetRequestOptionsBasedOnAuthType(
       sourceOptions,
       context,
       _requestOptions,

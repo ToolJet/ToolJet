@@ -40,6 +40,7 @@ import { useResolveStore } from '@/_stores/resolverStore';
 import { handleLowPriorityWork } from './editorHelpers';
 import { updateParentNodes } from './utility';
 import { deepClone } from './utilities/utils.helpers';
+import useStore from '@/AppBuilder/_stores/store';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -639,17 +640,16 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         const value = resolveReferences(event.value, state, undefined, customVariables);
         const customAppVariables = { ...state.variables };
         customAppVariables[key] = value;
-        const resp = useCurrentStateStore.getState().actions.setCurrentState({
-          variables: customAppVariables,
-        });
+        // const resp = useCurrentStateStore.getState().actions.setCurrentState({
+        //   variables: customAppVariables,
+        // });
 
-        useResolveStore.getState().actions.addAppSuggestions({
-          variables: customAppVariables,
-        });
+        // return useStore.getState().setVariable(key, value);
 
-        useResolveStore.getState().actions.resetHintsByKey(`variables.${key}`);
+        // useResolveStore.getState().actions.resetHintsByKey(`variables.${key}`);
 
-        return resp;
+        // return resp;
+        break;
       }
 
       case 'get-custom-variable': {
@@ -1856,7 +1856,7 @@ const updateComponentLayout = (components, parentId, isCut = false) => {
 };
 //
 const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
-  const parentId = componentParentId ?? component.component?.parent?.split('-').slice(0, -1).join('-');
+  const parentId = componentParentId ?? component.component?.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1];
 
   const parentComponent = allComponents.find((comp) => comp.componentId === parentId);
 
@@ -2102,15 +2102,13 @@ export const removeSelectedComponent = (pageId, newDefinition, selectedComponent
 };
 
 const getSelectedText = () => {
+  let selectedText = '';
   if (window.getSelection) {
-    navigator.clipboard.writeText(window.getSelection());
+    selectedText = window.getSelection().toString();
+  } else if (window.document.selection) {
+    selectedText = document.selection.createRange().text;
   }
-  if (window.document.getSelection) {
-    navigator.clipboard.writeText(window.document.getSelection());
-  }
-  if (window.document.selection) {
-    navigator.clipboard.writeText(window.document.selection.createRange().text);
-  }
+  return selectedText || null;
 };
 
 function convertMapSet(obj) {
@@ -2392,4 +2390,17 @@ export const updateSuggestionsFromCurrentState = () => {
     components: currentStateObj.components,
     page: currentStateObj.page,
   });
+};
+
+export const deepCamelCase = (obj) => {
+  if (Array.isArray(obj)) {
+    return obj.map((item) => deepCamelCase(item));
+  } else if (typeof obj === 'object' && obj !== null) {
+    return Object.keys(obj).reduce((acc, key) => {
+      const camelCaseKey = _.camelCase(key);
+      acc[camelCaseKey] = deepCamelCase(obj[key]);
+      return acc;
+    }, {});
+  }
+  return obj;
 };

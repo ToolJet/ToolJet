@@ -1,5 +1,6 @@
 import { Module, OnModuleInit, RequestMethod, MiddlewareConsumer } from '@nestjs/common';
 
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ormconfig, tooljetDbOrmconfig } from '../ormconfig';
 import { getEnvVars } from '../scripts/database-config-utils';
@@ -46,8 +47,17 @@ import { GetConnection } from '@modules/database/getConnection';
 import { InstanceSettingsModule } from '@instance-settings/module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { LicenseModule } from '@licensing/module';
 
 const imports = [
+  EventEmitterModule.forRoot({
+    wildcard: false,
+    newListener: false,
+    removeListener: false,
+    maxListeners: 5,
+    verboseMemoryLeak: true,
+    ignoreErrors: false,
+  }),
   ScheduleModule.forRoot(),
   ConfigModule.forRoot({
     isGlobal: true,
@@ -80,12 +90,14 @@ const imports = [
     },
   }),
   TypeOrmModule.forRoot(ormconfig),
+  TypeOrmModule.forRoot(tooljetDbOrmconfig),
   RequestContextModule,
   InstanceSettingsModule,
   AppConfigModule,
   SeedsModule,
   AuthModule,
   UsersModule,
+  LicenseModule,
   AppsModule,
   FoldersModule,
   OrgEnvironmentVariablesModule,
@@ -130,10 +142,6 @@ if (process.env.APM_VENDOR == 'sentry') {
 
 if (process.env.COMMENT_FEATURE_ENABLE !== 'false') {
   imports.unshift(CommentModule, ThreadModule, CommentUsersModule);
-}
-
-if (process.env.ENABLE_TOOLJET_DB === 'true') {
-  imports.unshift(TypeOrmModule.forRoot(tooljetDbOrmconfig));
 }
 
 @Module({

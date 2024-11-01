@@ -8,6 +8,7 @@ import {
   redirectToErrorPage,
 } from './routes';
 import { ERROR_TYPES } from './constants';
+import useStore from '@/AppBuilder/_stores/store';
 
 /* [* Be cautious: READ THE CASES BEFORE TOUCHING THE CODE. OTHERWISE YOU MAY SEE ENDLESS REDIRECTIONS (AKA ROUTES-BURMUDA-TRIANGLE) *]
   What is this function?
@@ -133,6 +134,14 @@ export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug, callb
   authenticationService
     .authorize()
     .then((data) => {
+      useStore.getState().setUser({
+        email: data.current_user.email,
+        firstName: data.current_user.first_name,
+        lastName: data.current_user.last_name,
+        id: data.current_user.id,
+        avatarId: data.current_user.avatar_id,
+        groups: data.group_permissions.map((group) => group.group),
+      });
       /* CASE-1 */
       const { current_organization_name } = data;
       /* add the user details like permission and user previlliage details to the subject */

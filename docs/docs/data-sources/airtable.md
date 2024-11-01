@@ -2,23 +2,45 @@
 id: airtable
 title: Airtable
 ---
-<div style={{paddingBottom:'24px'}}>
 
-ToolJet can connect to your **Airtable** account to read and write data. **Personal Access Token** is required to connect to the Airtable data source on ToolJet. You can generate the Personal Access Token by visiting **[Developer Hub from your Airtable profile](https://support.airtable.com/docs/creating-and-using-api-keys-and-access-tokens#understanding-personal-access-token-basic-actions)**.
+ToolJet can connect to your **Airtable** account to read and write data.
+
+<div style={{paddingTop:'24px'}}>
+
+## Connection
+
+To establish a connection with the **Airtable** data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview/)** page from the ToolJet dashboard.
+
+ToolJet requires the following to connect to your Airtable:
+- **Personal Access Token**
+
+You can generate the Personal Access Token by visiting **[Developer Hub from your Airtable profile](https://support.airtable.com/docs/creating-and-using-api-keys-and-access-tokens#understanding-personal-access-token-basic-actions)**.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/airtable/airtableconnect-v2.gif" alt="Airtable Data Source Connection" />
+    <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/airtable/airtableconnect-v2.gif" alt="Airtable Data Source Connection" />
 </div>
 
-<br/>
+</div>
 
 :::info
 Airtable API has a rate limit, and at the time of writing this documentation, the limit is five(5) requests per second per base. You can read more about rate limits here **[Airtable API](https://airtable.com/api)**.
 :::
 
+
+<div style={{paddingTop:'24px'}}>
+
+## Querying Airtable
+
+1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
+2. Select the **Airtable** datasource added in previous step.
+3. Select the desired operation from the dropdown and enter the required parameters.
+4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
+
+<img className="screenshot-full" src="/img/datasource-reference/airtable/operations.png" alt="Airtable Data Source Operations" />
+
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Supported Operations
 
@@ -30,187 +52,203 @@ Airtable API has a rate limit, and at the time of writing this documentation, th
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+### List Records
 
-### List records
+This operation retrieves a list of records from the specified table.
 
-This operation returns a list of records from the specified table.
+#### Required Parameters
 
-#### Required parameters:
+- **Base ID**: The unique identifier of the Airtable base.
+- **Table name**: The name or ID of the table to retrieve records from.
 
-- **Base ID:** To find the Base ID, first visit **[Airtable API](https://airtable.com/api)**. Then select the base you want to connect to. The Base ID will be mentioned in the API documentation. Example Base ID: `appDT3UCPffPiSmFd`
+#### Optional Parameters*
 
-- **Table name:** The name of the table from which you want to fetch the records.
+- **Page size**: The number of records to return per page.
+- **Offset**: Used for pagination to fetch the next set of records.
+- **Filter by formula**: A formula to filter records. 
+- **Fields**: Specifies which fields to include in the response.
+- **Timezone**: The timezone to use for date and time fields.
+- **User locale**: The locale to use for formatting date and time fields.
+- **Cell format**: Determines how cell values are returned. Possible values are:
+      - **json**: Returns cell values as JSON objects, depending on the field type.
+      - **string**: Returns cell values as strings.
+- **View**: Specifies the view to retrieve records from.
+- **Sort**: Defines the sorting order of records.
 
-#### Optional parameters:
+:::info
+Timezone and User locale are mutually dependent. If you provide a timezone, you must also provide a user locale and vice versa. These properties are only applied when cell format is set to string. To correctly format date and time fields, make sure the coloumn type is set to Date or Date Time in Airtable.
+:::
 
-- **Page size:** The number of records returned in each request. Default is 100 records.  
-
-- **Offset:** The offset value is used to fetch the next set of records. The offset value is returned in the response of the previous request.
-
-Example response from Airtable:
-
-```json
-{
-  "records": [
-    {
-      "id": "recu9xMnUdr2n2cw8",
-      "fields": {
-        "Notes": "sdfdsf",
-        "Name": "dsfdsf"
-      },
-      "createdTime": "2021-05-12T14:30:33.000Z"
-    },
-    {
-      "id": "recyIdR7bVdQvmKXa",
-      "fields": {
-        "Notes": "sdfdsf",
-        "Name": "dfds"
-      },
-      "createdTime": "2021-05-12T14:30:33.000Z"
-    },
-    {
-      "id": "recAOzdIHaRpvRaGE",
-      "fields": {
-        "Notes": "sdfsdfsd",
-        "Name": "sdfdsf"
-      },
-      "createdTime": "2021-05-12T14:30:33.000Z"
-    }
-  ],
-  "offset": "recAOzdIHaRpvRaGE"
-}
-```
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-### Retrieve record
-
-#### Required parameters:
-
-- **Base ID**: To find the Base ID, first visit **[Airtable API](https://airtable.com/api)**. Then select the base you want to connect to. The Base ID will be mentioned in the API documentation. Example Base ID: `appDT3UCPffPiSmFd`
-
-- **Table name**: The name of the table from which you want to fetch the records.
-
-- **Record ID**: The ID of the record you want to retrieve.
+<img className="screenshot-full" src="/img/datasource-reference/airtable/list-records-v3.png" alt="Airtable List Records Query" />
 
 
-Example response from Airtable:
+<details>
+<summary>**Example Values**</summary>
 
 ```json
-{
-  "id": "recu9xMnUdr2n2cw8",
-  "fields": {
-    "Notes": "sdfdsf",
-    "Name": "dsfdsf"
-  },
-  "createdTime": "2021-05-12T14:30:33.000Z"
-}
+Base ID: appO4WnRU3eTWnrDB
+Table name: tblAPbj6KMjS8pxhH // Can be Table name or Table ID
+Page size: 100
+Offset: itrU18e2y6ITuMs1n/recjR8UdOZKjZ7aK3
+Fields: ["Date", "Email", "Usage (# Weeks)"]
+Filter by formula: IF({Usage (# Weeks)} < 10, 1, 0) // Only records with Usage (# Weeks) less than 10
+Timezone: America/Chicago
+User locale: en-gb
+Cell format: string // Cell format needs to be string for Timezone and User locale to work
+View: All Responses
+Sort: createdTime // Select direction: Ascending or Descending
 ```
 
-</div>
+</details>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-### Create record
+<details>
+  <summary>**Response Example**</summary>
+  
+  ```json
+  {
+    "records": [
+      {
+        "id": "recToGRP6bWUG6djd",
+        "createdTime": "2016-11-21T20:21:40.000Z",
+        "fields": {
+          "Usage (# Weeks)": "3",
+          "Email": "Edith Lindon",
+          "Date": "11-21-2016"
+        }
+      },
+      {
+        "id": "recnUVJ8wwZbdECLk",
+        "createdTime": "2016-11-21T20:21:40.000Z",
+        "fields": {
+          "Usage (# Weeks)": "3",
+          "Email": "Marcellus Wong",
+          "Date": "11-21-2016"
+        }
+      },
+      {
+        "id": "recStKhQYw4Fn2qpj",
+        "createdTime": "2016-11-21T20:21:40.000Z",
+        "fields": {
+          "Usage (# Weeks)": "2",
+          "Email": "Lorraine Ljuba",
+          "Date": "11-21-2016"
+        }
+      }
+    ]
+  }
+  ```
+</details>
 
-#### Required parameters:
+### Retrieve Record
 
-- **Base ID**: To find the Base ID, first visit **[Airtable API](https://airtable.com/api)**. Then select the base you want to connect to. The Base ID will be mentioned in the API documentation. Example Base ID: `appDT3UCPffPiSmFd`
+This operation fetches a specific record from the specified table.
 
-- **Table name**: The name of the table from which you want to fetch the records.
+#### Required Parameters
 
-- **Records**: The records you want to create. The records should be in the form of an array of objects. Each object should have a `fields` key, which contains the fields of the record. The field names should be the same as the field names in the Airtable table.
+- **Base ID**
+- **Table name**
+- **Record ID**
 
-Example creating two records:
+<img className="screenshot-full" src="/img/datasource-reference/airtable/retrieve-record-v2.png" alt="Airtable Retrieve Record Query" />
+
+<details>
+  <summary>**Response Example**</summary>
+  ```json
+  {
+    "id": "recu9xMnUdr2n2cw8",
+    "fields": {
+      "Notes": "Discuss project timeline",
+      "Name": "Michael Scott"
+    },
+    "createdTime": "2021-05-12T14:30:33.000Z"
+  }
+  ```
+</details>
+
+### Create Record
+
+This operation creates a new record in the specified table.
+
+#### Required Parameters
+
+- **Base ID**
+- **Table name**
+- **Records**
+
+<img className="screenshot-full" src="/img/datasource-reference/airtable/create-record-v2.png" alt="Airtable Create Record Query" />
+
+#### Example
 
 ```json title="Records"
-[
-  {
+[{
     "fields": {
-      "Notes": "sdfdsf",
-      "Name": "dsfdsf"
+      "Name": "Katrina Petersons",
+      "Email": "katrina.petersions@example.com"
     }
-  },
+}]
+```
+<details>
+  <summary>**Response Example**</summary>
+  ```json
   {
-    "fields": {
-      "Notes": "note1",
-      "Name": "dsfdsf"
-    }
+    "records": [
+      {
+        "id": "recu6jhA7tzv4K66s",
+        "createdTime": "2024-06-11T06:01:44.000Z",
+        "fields": {
+          "Name": "Katrina Petersons",
+          "Email": "katrina.petersions@example.com",
+          "Date": "06-11-2024",
+        }
+      }
+    ]
   }
-]
-```
-
-Query returns the following response when the records are created successfully:
-
-```json
-{
-  "records": [
-    {
-      "id": "rec5RuZ1COoZGtGDY",
-      "fields": {
-        "Notes": "sdfdsf",
-        "Name": "dsfdsf"
-      },
-      "createdTime": "2022-02-07T20:25:27.000Z"
-    },
-    {
-      "id": "recaYbFPonNNu6Cwj",
-      "fields": {
-        "Notes": "note1",
-        "Name": "dsfdsf"
-      },
-      "createdTime": "2022-02-07T20:25:27.000Z"
-    }
-  ]
-}
-```
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+  ```
+</details>
 
 ### Update record
 
+Update a specific record by providing new data.
+
 #### Required parameters:
 
-- **Base ID**: To find the Base ID, first visit **[Airtable API](https://airtable.com/api)**. Then select the base you want to connect to. The Base ID will be mentioned in the API documentation. Example Base ID: `appDT3UCPffPiSmFd`
+- **Base ID**
+- **Table name**
+- **Record ID**
+- **Body**
 
-- **Table name**: The name of the table from which you want to fetch the records.
+<img className="screenshot-full" src="/img/datasource-reference/airtable/update-record-v2.png" alt="Airtable Update Record Query" />
 
-- **Record ID**: The ID of the record you want to update.
-
-- **Body**: The fields you want to update. The fields should be in the form of an object. The field names should be the same as the field names in the Airtable table.
-
-Example updating a record:
-
-```json title="Body"
-{
-  "Notes": "Example Notes",
-  "Name": "change"
-}
-```
-
-Query returns the following response when the record is updated successfully:
+#### Example
 
 ```json
 {
-  "id": "recu9xMnUdr2n2cw8",
-  "fields": {
-    "Notes": "Example Notes",
-    "Name": "change"
-  },
-  "createdTime": "2021-08-08T17:27:17.000Z"
+  "Email": "katrina.petersions2@example.com"
 }
 ```
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<details>
+  <summary>**Response Example**</summary>
+  ```json
+  {
+    "records": [
+      {
+        "id": "recu6jhA7tzv4K66s",
+        "createdTime": "2024-06-11T07:01:44.000Z",
+        "fields": {
+          "Name": "Katrina Petersons",
+          "Email": "katrina.petersions2@example.com",
+          "Date": "06-11-2024",
+        }
+      }
+    ]
+  }
+  ```
+</details>
 
 ### Delete record
+
+This operation removes a record from the specified table.
 
 #### Required parameters:
 
@@ -218,12 +256,14 @@ Query returns the following response when the record is updated successfully:
 - **Table name**
 - **Record ID**
 
-Query returns the following response when the record is deleted successfully:
+<img className="screenshot-full" src="/img/datasource-reference/airtable/delete-record-v2.png" alt="Airtable Delete Record Query" />
 
-```json
-{
-    deleted: true
-    id: "recIKsyZgqI4zoqS7"
-}
-```
-</div>
+<details>
+  <summary>**Response Example**</summary>
+  ```json
+  {
+      deleted: true
+      id: "recIKsyZgqI4zoqS7"
+  }
+  ```
+</details>

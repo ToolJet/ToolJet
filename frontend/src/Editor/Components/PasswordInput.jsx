@@ -4,7 +4,8 @@ import * as Icons from '@tabler/icons-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import Label from '@/_ui/Label';
-import { useEditorStore } from '@/_stores/editorStore';
+import useStore from '@/AppBuilder/_stores/store';
+import { useGridStore } from '@/_stores/gridStore';
 
 export const PasswordInput = function PasswordInput({
   height,
@@ -12,16 +13,17 @@ export const PasswordInput = function PasswordInput({
   properties,
   styles,
   setExposedVariable,
+  setExposedVariables,
   fireEvent,
-  component,
   darkMode,
   dataCy,
-  isResizing,
+  validation,
+  componentName,
   id,
 }) {
   const textInputRef = useRef();
   const labelRef = useRef();
-
+  const isInitialRender = useRef(true);
   const { loadingState, disabledState, label, placeholder } = properties;
   const {
     padding,
@@ -40,13 +42,14 @@ export const PasswordInput = function PasswordInput({
     accentColor,
   } = styles;
 
+  const components = useStore((state) => state.getCurrentPageComponents() || {});
+  const isMandatory = validation?.mandatory ?? false;
+  const isResizing = useGridStore((state) => state.resizingComponentId === id);
   const [disable, setDisable] = useState(disabledState || loadingState);
   const [passwordValue, setPasswordValue] = useState(properties.value);
   const [visibility, setVisibility] = useState(properties.visibility);
   const { isValid, validationError } = validate(passwordValue);
   const [showValidationError, setShowValidationError] = useState(false);
-
-  const isMandatory = resolveWidgetFieldValue(component?.definition?.validation?.mandatory?.value);
   const [labelWidth, setLabelWidth] = useState(0);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
   const [iconVisibility, setIconVisibility] = useState(false);
@@ -55,7 +58,6 @@ export const PasswordInput = function PasswordInput({
   const tinycolor = require('tinycolor2');
 
   const _width = (width / 100) * 70; // Max width which label can go is 70% for better UX calculate width based on this value
-  console.log('style---', styles);
   const computedStyles = {
     height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
     borderRadius: `${borderRadius}px`,
@@ -70,7 +72,11 @@ export const PasswordInput = function PasswordInput({
     padding: styles?.iconVisibility ? '8px 10px 8px 29px' : '8px 10px 8px 10px',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    color: textColor !== '#1B1F24' ? textColor : disable || loading ? 'var(--text-disabled)' : 'var(--text-primary)',
+    color: !['#11181C', '#1B1F24'].includes(textColor)
+      ? textColor
+      : disable || loading
+      ? 'var(--text-disabled)'
+      : 'var(--text-primary)',
     borderColor: isFocused
       ? accentColor != '4368E3'
         ? accentColor
@@ -104,6 +110,7 @@ export const PasswordInput = function PasswordInput({
   };
 
   useEffect(() => {
+    if (isInitialRender.current) return;
     setExposedVariable('label', label);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [label]);
@@ -146,91 +153,92 @@ export const PasswordInput = function PasswordInput({
   }, [loadingState]);
 
   useEffect(() => {
+    if (isInitialRender.current) return;
     setExposedVariable('isValid', isValid);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isValid]);
 
   useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isMandatory', isMandatory);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMandatory]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isLoading', loading);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isVisible', visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibility]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isDisabled', disable);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disable]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
     setPasswordValue(properties.value);
     setExposedVariable('value', properties?.value ?? '');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.value]);
 
   useEffect(() => {
-    setExposedVariable('setFocus', async function () {
-      textInputRef.current.focus();
-    });
-    setExposedVariable('setBlur', async function () {
-      textInputRef.current.blur();
-    });
+    const exposedVariables = {
+      setFocus: async function () {
+        textInputRef.current.focus();
+      },
+      setBlur: async function () {
+        textInputRef.current.blur();
+      },
+      setText: async function (text) {
+        setPasswordValue(text);
+        setExposedVariable('value', text);
+        fireEvent('onChange');
+      },
+      clear: async function () {
+        setPasswordValue('');
+        setExposedVariable('value', '');
+        fireEvent('onChange');
+      },
+      setLoading: async function (loading) {
+        setLoading(loading);
+        setExposedVariable('isLoading', loading);
+      },
+      setVisibility: async function (state) {
+        setVisibility(state);
+        setExposedVariable('isVisible', state);
+      },
+      setDisable: async function (disable) {
+        setDisable(disable);
+        setExposedVariable('isDisabled', disable);
+      },
+      label: label,
+      isValid: isValid,
+      isMandatory: isMandatory,
+      isLoading: loading,
+      isVisible: visibility,
+      isDisabled: disable,
+      value: properties?.value ?? '',
+    };
+
+    setPasswordValue(properties.value ?? '');
+    setExposedVariables(exposedVariables);
+    isInitialRender.current = false;
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    setExposedVariable('setText', async function (text) {
-      setPasswordValue(text);
-      setExposedVariable('value', text);
-      fireEvent('onChange');
-    });
-    setExposedVariable('clear', async function () {
-      setPasswordValue('');
-      setExposedVariable('value', '');
-      fireEvent('onChange');
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setPasswordValue]);
 
   const iconName = styles.icon; // Replace with the name of the icon you want
   // eslint-disable-next-line import/namespace
   const IconElement = Icons[iconName] == undefined ? Icons['IconHome2'] : Icons[iconName];
   // eslint-disable-next-line import/namespace
-
-  useEffect(() => {
-    setExposedVariable('isMandatory', isMandatory);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMandatory]);
-
-  useEffect(() => {
-    setExposedVariable('isLoading', loading);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading]);
-
-  useEffect(() => {
-    setExposedVariable('setLoading', async function (loading) {
-      setLoading(loading);
-      setExposedVariable('isLoading', loading);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.loadingState]);
-
-  useEffect(() => {
-    setExposedVariable('isVisible', visibility);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visibility]);
-
-  useEffect(() => {
-    setExposedVariable('setVisibility', async function (state) {
-      setVisibility(state);
-      setExposedVariable('isVisible', state);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.visibility]);
-
-  useEffect(() => {
-    setExposedVariable('setDisable', async function (disable) {
-      setDisable(disable);
-      setExposedVariable('isDisabled', disable);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [disabledState]);
-
-  useEffect(() => {
-    setExposedVariable('isDisabled', disable);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [disable]);
-
-  const currentPageId = useEditorStore.getState().currentPageId;
-  const components = useEditorStore.getState().appDefinition?.pages?.[currentPageId]?.components || {};
 
   const isChildOfForm = Object.keys(components).some((key) => {
     if (key == id) {
@@ -249,7 +257,7 @@ export const PasswordInput = function PasswordInput({
   const renderInput = () => (
     <>
       <div
-        data-cy={`label-${String(component.name).toLowerCase()}`}
+        data-cy={`label-${String(componentName).toLowerCase()}`}
         className={`text-input  d-flex  ${
           defaultAlignment === 'top' &&
           ((width != 0 && label && label?.length != 0) || (auto && width == 0 && label && label?.length != 0))
@@ -350,6 +358,7 @@ export const PasswordInput = function PasswordInput({
             !isValid && showValidationError ? 'is-invalid' : ''
           } validation-without-icon `}
           ref={textInputRef}
+          autoComplete="new-password"
           onKeyUp={(e) => {
             if (e.key === 'Enter') {
               setPasswordValue(e.target.value);
@@ -385,13 +394,15 @@ export const PasswordInput = function PasswordInput({
       </div>
       {showValidationError && visibility && (
         <div
-          data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
+          data-cy={`${String(componentName).toLowerCase()}-invalid-feedback`}
           style={{
             color: errTextColor !== '#D72D39' ? errTextColor : 'var(--status-error-strong)',
             textAlign: direction == 'left' && 'end',
             fontSize: '11px',
             fontWeight: '400',
             lineHeight: '16px',
+            position: 'relative',
+            zIndex: 2,
           }}
         >
           {showValidationError && validationError}
@@ -400,7 +411,13 @@ export const PasswordInput = function PasswordInput({
     </>
   );
   const renderContainer = (children) => {
-    return !isChildOfForm ? <form autoComplete="off">{children}</form> : <div>{children}</div>;
+    return !isChildOfForm ? (
+      <form onSubmit={(e) => e.preventDefault()} autoComplete="off">
+        {children}
+      </form>
+    ) : (
+      <div>{children}</div>
+    );
   };
 
   return renderContainer(renderInput());

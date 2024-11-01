@@ -15,6 +15,7 @@
     "paths": {
       "@ee/*": ["ee/*"],
       "@apps/*": ["ce/apps/*"],
+      "@entities/*": ["src/entities/*"],
       "@services/*": ["src/services/*"],
       "@controllers/*": ["src/controllers/*"],
       "@repositories/*": ["src/repositories/*"],

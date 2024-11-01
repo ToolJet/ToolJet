@@ -11652,8 +11652,8 @@
                             "globalSettings": {
                                 "hideHeader": true,
                                 "appInMaintenance": false,
-                                "canvasMaxWidth": "1600",
-                                "canvasMaxWidthType": "px",
+                                "canvasMaxWidth": "100",
+                                "canvasMaxWidthType": "%",
                                 "canvasMaxHeight": "900",
                                 "canvasBackgroundColor": "",
                                 "backgroundFxQuery": ""
@@ -25743,8 +25743,8 @@
                                 "globalSettings": {
                                     "hideHeader": true,
                                     "appInMaintenance": false,
-                                    "canvasMaxWidth": "1600",
-                                    "canvasMaxWidthType": "px",
+                                    "canvasMaxWidth": "100",
+                                    "canvasMaxWidthType": "%",
                                     "canvasMaxHeight": "900",
                                     "canvasBackgroundColor": "",
                                     "backgroundFxQuery": ""

@@ -7,7 +7,7 @@ import { DataQuery } from 'src/entities/data_query.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 import { User } from 'src/entities/user.entity';
-import { DeepPartial, EntityManager, In } from 'typeorm';
+import { EntityManager, In, DeepPartial } from 'typeorm';
 import { DataSourcesService } from './data_sources.service';
 import {
   defaultAppEnvironments,
@@ -16,6 +16,7 @@ import {
   isTooljetVersionWithNormalizedAppDefinitionSchem,
   isVersionGreaterThanOrEqual,
 } from 'src/helpers/utils.helper';
+import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { LayoutDimensionUnits, resolveGridPositionForComponent } from 'src/helpers/components.helper';
 import { AppEnvironmentService } from './app_environments.service';
 import { convertAppDefinitionFromSinglePageToMultiPage } from '../../lib/single-page-to-and-from-multipage-definition-conversion';
@@ -30,7 +31,6 @@ import { Layout } from 'src/entities/layout.entity';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
 import { v4 as uuid } from 'uuid';
 import { findAllEntityReferences, isValidUUID, updateEntityReferences } from 'src/helpers/import_export.helpers';
-import { dbTransactionWrap } from 'src/helpers/database.helper';
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
   dataQueryMapping: Record<string, string>;
@@ -217,6 +217,7 @@ export class AppImportExportService {
     appParamsObj: any,
     appName: string,
     externalResourceMappings = {},
+    isGitApp = false,
     tooljetVersion = '',
     cloning = false
   ): Promise<App> {
@@ -244,8 +245,9 @@ export class AppImportExportService {
       ? true
       : isTooljetVersionWithNormalizedAppDefinitionSchem(importedAppTooljetVersion);
 
-    const importedApp = await this.createImportedAppForUser(this.entityManager, schemaUnifiedAppParams, user);
     const currentTooljetVersion = !cloning ? tooljetVersion : null;
+
+    const importedApp = await this.createImportedAppForUser(this.entityManager, schemaUnifiedAppParams, user, isGitApp);
 
     const resourceMapping = await this.setupImportedAppAssociations(
       this.entityManager,
@@ -325,7 +327,7 @@ export class AppImportExportService {
     }
   }
 
-  async createImportedAppForUser(manager: EntityManager, appParams: any, user: User): Promise<App> {
+  async createImportedAppForUser(manager: EntityManager, appParams: any, user: User, isGitApp = false): Promise<App> {
     return await catchDbException(async () => {
       const importedApp = manager.create(App, {
         name: appParams.name,
@@ -333,6 +335,7 @@ export class AppImportExportService {
         userId: user.id,
         slug: null,
         icon: appParams.icon,
+        creationMode: `${isGitApp ? 'GIT' : 'DEFAULT'}`,
         isPublic: false,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -498,6 +501,8 @@ export class AppImportExportService {
                 disabled: page.disabled || false,
                 hidden: page.hidden || false,
                 autoComputeLayout: page.autoComputeLayout || false,
+                isPageGroup: page.isPageGroup || false,
+                pageGroupIndex: page.pageGroupIndex || null,
               });
               const pageCreated = await transactionalEntityManager.save(newPage);
 
@@ -794,13 +799,14 @@ export class AppImportExportService {
           const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pageComponents, parentId, true);
 
           if (isParentTabOrCalendar) {
-            const childTabId = component.parent.split('-')[component.parent.split('-').length - 1];
-            const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+            const childTabId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[2] : null;
+
+            const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
             const mappedParentId = newComponentIdsMap[_parentId];
 
             parentId = `${mappedParentId}-${childTabId}`;
           } else if (isChildOfKanbanModal(component, pageComponents, parentId, true)) {
-            const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+            const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
             const mappedParentId = newComponentIdsMap[_parentId];
 
             parentId = `${mappedParentId}-modal`;
@@ -1294,8 +1300,9 @@ export class AppImportExportService {
         version.showViewerNavigation = appVersion.showViewerNavigation;
         version.homePageId = appVersion.homePageId;
         version.globalSettings = appVersion.globalSettings;
+        version.pageSettings = appVersion.pageSettings;
       } else {
-        version.showViewerNavigation = appVersion.definition.showViewerNavigation || true;
+        version.showViewerNavigation = appVersion.definition?.showViewerNavigation || true;
         version.homePageId = appVersion.definition?.homePageId;
 
         if (!appVersion.definition?.globalSettings) {
@@ -1311,6 +1318,7 @@ export class AppImportExportService {
           };
         } else {
           version.globalSettings = appVersion.definition?.globalSettings;
+          version.pageSettings = appVersion.definition?.pageSettings;
         }
       }
 
@@ -1393,7 +1401,6 @@ export class AppImportExportService {
   }
 
   replaceDataQueryIdWithinDefinitions(
-    /* TODO: we need more accurate entity / type for definition instead of using partials or any */
     definition: DeepPartial<any>,
     dataQueryMapping: Record<string, string>
   ): QueryDeepPartialEntity<any> {
@@ -1772,7 +1779,7 @@ export class AppImportExportService {
   }
 }
 
-function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
+export function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
   const appParamsWithMultipageSchema = {
     ...appParams,
     appVersions: appParams.appVersions?.map((appVersion: { definition: any }) => ({
@@ -1885,13 +1892,13 @@ function transformComponentData(
     );
 
     if (isParentTabOrCalendar) {
-      const childTabId = component.parent.split('-')[component.parent.split('-').length - 1];
-      const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+      const childTabId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[2] : null;
+      const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
       const mappedParentId = componentsMapping[_parentId];
 
       parentId = `${mappedParentId}-${childTabId}`;
-    } else if (isChildOfKanbanModal(component, allComponents, parentId, true)) {
-      const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+    } else if (isChildOfKanbanModal(component, allComponents, parentId, isNormalizedAppDefinitionSchema)) {
+      const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
       const mappedParentId = componentsMapping[_parentId];
 
       parentId = `${mappedParentId}-modal`;
@@ -1940,7 +1947,7 @@ const isChildOfTabsOrCalendar = (
   isNormalizedAppDefinitionSchema: boolean
 ) => {
   if (componentParentId) {
-    const parentId = component?.parent?.split('-').slice(0, -1).join('-');
+    const parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
 
     const parentComponent = allComponents.find((comp) => comp.id === parentId);
 
@@ -1964,7 +1971,7 @@ const isChildOfKanbanModal = (
 ) => {
   if (!componentParentId || !componentParentId.includes('modal')) return false;
 
-  const parentId = component?.parent?.split('-').slice(0, -1).join('-');
+  const parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
 
   const parentComponent = allComponents.find((comp) => comp.id === parentId);
 

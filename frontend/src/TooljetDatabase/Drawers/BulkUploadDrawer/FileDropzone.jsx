@@ -23,9 +23,9 @@ export function FileDropzone({
   const { getRootProps, getInputProps, isDragActive, acceptedFiles } = useDropzone({
     accept: { parsedFileType: ['text/csv'] },
     onDrop: (acceptedFiles) => {
-      if (acceptedFiles.length === 1) {
+      if (acceptedFiles.length > 0) {
         const file = acceptedFiles[0];
-        setFileData(file); // Set the file data
+        setFileData(file);
         handleFileChange(file);
       }
     },
@@ -70,19 +70,13 @@ export function FileDropzone({
     <>
       {fileData?.name ? (
         <div className="bulkUpload-file">
-          {/* <ul>
-            {acceptedFiles.map((file) => (
-              <li key={file.path}>{file.path}</li>
-            ))}
-          </ul> */}
-
           <div className="fileName mt-3" ref={divRef}>
             {fileData?.name && (
               <ul className="m-0 p-0" data-cy="uploaded-file-data">{` ${fileData?.name} - ${fileData?.size} bytes`}</ul>
             )}
           </div>
 
-          <div>
+          <div style={{ width: '486px' }}>
             {progress < 100 && (
               <progress style={{ width: divWidth }} className="progress progress-sm mt-3" value={progress} max="100" />
             )}

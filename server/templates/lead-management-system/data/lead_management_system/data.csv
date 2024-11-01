@@ -1,0 +1,21 @@
+id,name,email,company,department,status,deal_amount,notes,process_state,profile_image_url,is_active,created_at,updated_at
+1,Sarah Johnson,sjohnson@innovatech.com,InnovaTech Solutions,Marketing,Opportunity,75000,Interested in our marketing automation platform,Proposed,,true,2024-09-01T09:30:22+05:30,2024-09-15T14:45:37+05:30
+2,Michael Chen,mchen@globalsync.net,Global Sync Systems,Engineering,Lead,0,Initial contact made at tech conference,Contacted,,true,2024-09-02T11:15:43+05:30,2024-09-02T11:15:43+05:30
+3,Emma Rodriguez,erodriguez@greenenergy.co,Green Energy Co.,Operations,Customer,120000,Successfully implemented our energy management solution,Closed,,true,2024-09-03T14:20:18+05:30,2024-09-18T09:55:29+05:30
+4,Raj Patel,rpatel@swiftlogistics.com,Swift Logistics,Finance and Accounting,Lost,0,Chose competitor's solution due to pricing,Closed,,true,2024-09-04T10:45:56+05:30,2024-09-20T16:30:12+05:30
+5,Olivia Taylor,otaylor@healthplus.org,Health Plus,Human Resources,Lead,0,Expressed interest in employee wellness program,Prospect,,true,2024-09-05T13:25:39+05:30,2024-09-05T13:25:39+05:30
+6,Daniel Kim,dkim@techinnovate.io,Tech Innovate,Engineering,Opportunity,95000,Discussing customization options for our software suite,Negotation,,true,2024-09-06T15:50:27+05:30,2024-09-21T11:20:36+05:30
+7,Sophie Dubois,sdubois@ecopackage.fr,EcoPackage Solutions,Marketing,Customer,85000,Renewed contract for sustainable packaging campaign,Closed,,true,2024-09-07T09:10:33+05:30,2024-09-22T14:55:19+05:30
+8,Alexander Ivanov,aivanov@cyberguard.ru,CyberGuard Systems,Operations,Lead,0,Requested demo of our cybersecurity platform,Contacted,,true,2024-09-08T12:35:48+05:30,2024-09-08T12:35:48+05:30
+9,Isabella Rossi,irossi@fashionforward.it,Fashion Forward,Human Resources,Opportunity,60000,Interested in our AI-driven recruitment tool,Proposed,,true,2024-09-09T16:40:52+05:30,2024-09-23T10:15:23+05:30
+10,Mohammed Al-Fayed,malfayed@deserttech.ae,Desert Tech Innovations,Finance and Accounting,Lost,0,Budget constraints prevented deal closure,Closed,,true,2024-09-10T08:55:19+05:30,2024-09-24T15:30:56+05:30
+11,Emily Watson,ewatson@smartedu.uk,Smart Education Ltd.,Marketing,Customer,110000,Implemented our e-learning platform across multiple schools,Closed,,true,2024-10-11T14:30:41+05:30,2024-10-25T09:40:18+05:30
+12,Carlos Mendoza,cmendoza@solarfuture.mx,Solar Future Corp.,Engineering,Opportunity,150000,Evaluating our solar panel efficiency software,Negotation,,true,2024-10-12T11:20:37+05:30,2024-10-26T12:25:41+05:30
+13,Yuki Tanaka,ytanaka@aiinnovate.jp,AI Innovate,Operations,Lead,0,Showed interest in our machine learning solutions,Prospect,,true,2024-10-13T17:05:54+05:30,2024-10-13T17:05:54+05:30
+14,Anna Kowalski,akowalski@greenpolish.pl,Green Polish Enterprises,Human Resources,Lost,0,Decided to develop in-house solution,Closed,,false,2024-10-14T09:45:23+05:30,2024-10-27T11:55:37+05:30
+15,Luis Garcia,lgarcia@agritech.es,AgriTech Solutions,Finance and Accounting,Opportunity,80000,Discussing implementation of our farm management software,Proposed,,true,2024-10-15T13:50:48+05:30,2024-10-28T14:35:29+05:30
+16,Fatima Al-Saud,falsaud@medinnov.sa,Medical Innovations Co.,Marketing,Customer,200000,Successful rollout of our patient management system,Closed,,true,2024-10-16T10:25:36+05:30,2024-10-29T16:50:31+05:30
+17,John Smith,jsmith@datainsights.com,Data Insights Inc.,Engineering,Lead,0,Requested whitepaper on our big data analytics tools,Contacted,,true,2024-10-17T15:40:19+05:30,2024-10-17T15:40:19+05:30
+18,Maria Silva,msilva@ecotravel.br,EcoTravel Adventures,Operations,Opportunity,70000,Interested in our sustainable tourism management platform,Negotation,,true,2024-10-18T12:15:57+05:30,2024-10-30T09:30:52+05:30
+19,Henrik Larsson,hlarsson@nordictech.se,Nordic Tech Solutions,Human Resources,Customer,90000,Renewed subscription for our employee engagement software,Closed,,true,2024-10-19T16:30:28+05:30,2024-10-31T13:15:40+05:30
+20,Priya Sharma,psharma@smartcity.in,Smart City Innovations,Finance and Accounting,Lead,0,Expressed interest in our urban planning AI,Prospect,,true,2024-10-20T09:55:46+05:30,2024-10-20T09:55:46+05:30

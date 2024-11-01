@@ -18,8 +18,7 @@
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
     "@tooljet-marketplace/common": "^1.0.0",
-    "octokit": "4.0.2",
-    "openai": "^4.52.1"
+    "openai": "^4.56.0"
   },
   "devDependencies": {
     "@vercel/ncc": "^0.34.0",
