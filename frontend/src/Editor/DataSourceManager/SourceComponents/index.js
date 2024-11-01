@@ -13,7 +13,7 @@ export const CommonlyUsedDataSources = Object.keys(allManifests)
   .reduce((accumulator, currentValue) => {
     const sourceName = allManifests[currentValue]?.source?.name;
     if (
-      sourceName === 'Rest API' ||
+      sourceName === 'REST API' ||
       sourceName === 'MongoDB' ||
       sourceName === 'Airtable' ||
       sourceName === 'Google Sheets' ||
