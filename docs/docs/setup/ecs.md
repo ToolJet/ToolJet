@@ -82,6 +82,8 @@ Follow the steps below to deploy ToolJet on a ECS cluster.
         - **PG_DB**
         - **PG_USER**
         - **PG_PASS**
+        - **SECRET_KEY_BASE** 
+        - **LOCKBOX_KEY**
         </ul>
         <br/>
         Read **[environment variables reference](https://docs.tooljet.com/docs/setup/env-vars)**
