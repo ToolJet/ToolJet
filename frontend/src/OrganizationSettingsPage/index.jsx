@@ -42,19 +42,20 @@ export function OrganizationSettings(props) {
     if (selectedTabFromRoute === 'workspace-settings') {
       // No Sub routes added loading first one
       setSelectedTab(admin ? workspaceSettingsLinks[0].id : 'workspacevariables');
+      navigate(admin ? workspaceSettingsLinks[0].route : 'workspace-variables');
     } else {
+      const selectedWorkspaceSetting = workspaceSettingsLinks?.find((m) => m.id === selectedTabFromRoute);
+      updateSidebarNAV(selectedWorkspaceSetting?.name || '');
       setSelectedTab(getMenuFromRoute(selectedTabFromRoute)?.id);
     }
 
     return () => subscription.unsubscribe();
-  }, [authenticationService.currentSessionValue?.admin]);
+  }, [admin, location.pathname]);
 
-  useEffect(() => {
-    const menu = workspaceSettingsLinks?.find((m) => m.id === selectedTab);
-    updateSidebarNAV(menu?.name || '');
-    navigate(menu?.route || '');
-  }, [selectedTab]);
-
+  const handleClick = (data) => {
+    setSelectedTab(data.id);
+    updateSidebarNAV(data?.name || '');
+  };
   return (
     <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
       <div className="wrapper organization-settings-page">
@@ -67,6 +68,7 @@ export function OrganizationSettings(props) {
                   <Wrapper key={index}>
                     <Link
                       key={index}
+                      to={item.route}
                       style={{
                         textDecoration: 'none',
                         border: 'none',
@@ -79,7 +81,7 @@ export function OrganizationSettings(props) {
                         className="workspace-settings-nav-items"
                         key={index}
                         onClick={() => {
-                          setSelectedTab(item.id);
+                          handleClick(item);
                         }}
                         selectedItem={selectedTab == item.id}
                         renderBadgeForItems={[]}
