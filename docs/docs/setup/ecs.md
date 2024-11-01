@@ -119,6 +119,68 @@ The setup above is just a template. Feel free to update the task definition and 
 
 </div>
 
+<div style={{paddingTop:'24px'}}>
+
+## ToolJet Database
+
+To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. You can learn more about this feature [here](../tooljet-db/tooljet-database).
+
+Follow the steps below to deploy PostgREST on a ECS cluster. 
+
+1. Create a new take definition
+
+  <div style={{textAlign: 'center'}}>
+
+  <img className="screenshot-full" src="/img/setup/ecs/ecs-12.png" alt="ECS Setup" />
+
+  </div>
+  
+  Add the container details and image tag as shown below:
+
+  <div style={{textAlign: 'center'}}>
+
+  <img className="screenshot-full" src="/img/setup/ecs/ecs-13.png" alt="ECS Setup" />
+
+  </div>
+  
+  Under environmental variable please add corresponding PostgREST env variables. You can also refer [env variable](https://docs.tooljet.com/docs/setup/env-vars/#postgrest-server-optional).
+
+  <div style={{textAlign: 'center'}}>
+
+  <img className="screenshot-full" src="/img/setup/ecs/ecs-14.png" alt="ECS Setup" />
+
+  </div>
+
+
+2. Create service and make sure the postgrest is within the same cluster as ToolJet app. 
+
+  <div style={{textAlign: 'center'}}>
+
+  <img className="screenshot-full" src="/img/setup/ecs/ecs-15.png" alt="ECS Setup" />
+
+  </div>
+
+
+3. Specify a service name and leave the remaining settings at their default configurations.
+
+  <div style={{textAlign: 'center'}}>
+
+  <img className="screenshot-full" src="/img/setup/ecs/ecs-16.png" alt="ECS Setup" />
+
+  </div>
+
+4. Ensure that the PostgREST service resides within the same Virtual Private Cloud (VPC), and confirm that port 3001 is included in the security group used by the ToolJet app. **Note: Please enable public IP**
+
+  <div style={{textAlign: 'center'}}>
+
+  <img className="screenshot-full" src="/img/setup/ecs/ecs-17.png" alt="ECS Setup" />
+
+  </div>
+
+Update ToolJet deployment with the appropriate env variables [here](https://docs.tooljet.com/docs/setup/env-vars/#enable-tooljet-database--optional-) and apply the changes.
+
+</div>
+
 ## Upgrading to the Latest LTS Version
 
 New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:EE-LTS-latest`.
