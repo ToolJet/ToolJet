@@ -1,21 +1,17 @@
 #!/bin/sh
 
-# Write the CA certificate to a file
-echo "$CA_CERT" > ca-certificate.pem
+echo $CA_CERT > ca-certificate.pem
 
-# Install cloud-init for Digital Ocean dependencies
+# Dependency for digital ocean
 apt-get install -y cloud-init
-
-# Remove sslmode from DATABASE_URL and TOOLJET_DB_URL if present
+# FIXME: Trying to connect to digital ocean managed db fails even with adding
+# NODE_EXTRA_CA_CERTS and therefore removing sslmode from database url
 export DATABASE_URL=${DATABASE_URL%"?sslmode=require"}
-export TOOLJET_DB_URL=${TOOLJET_DB_URL%"?sslmode=require"}
 
-# Attempt migration and start server with custom CA certificate
 (
-  export NODE_EXTRA_CA_CERTS="$(pwd)/ca-certificate.pem"
-  if ! npm run db:migrate:prod; then
-    echo "Database migration failed."
-    exit 1
-  fi
+  export NODE_EXTRA_CA_CERTS="$(pwd)/ca-certificate.pem"; \
+  npm run db:migrate:prod && \
   npm run start:prod
 )
+
+export TOOLJET_DB_URL=${TOOLJET_DB_URL%"?sslmode=require"}

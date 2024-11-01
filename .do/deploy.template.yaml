@@ -42,10 +42,7 @@ spec:
       value: ${APP_URL}
     - key: TOOLJET_DB_URL
       scope: RUN_TIME
-      value: ${tj-db.TOOLJET_DB_URL}
-    - key: TJDB_CA_CERT
-      scope: RUN_TIME
-      value: ${tj-db.CA_CERT}
+      value: ${pg-db.DATABASE_URL}
     - key: PGRST_HOST
       value: posgtrest
     - key: PGRST_JWT_SECRET
