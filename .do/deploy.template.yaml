@@ -5,8 +5,8 @@ spec:
     image: 
       registry_type: DOCKER_HUB
       registry: tooljet
-      repository: tooljet
-      tag: EE-LTS-latest
+      repository: tooljet-te-ce
+      tag: do
     run_command: "./server/scripts/digitalocean-postbuild.sh"
     instance_size_slug: "basic-s"
     health_check:
