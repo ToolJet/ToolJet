@@ -163,3 +163,29 @@ Issues with writing custom JavaScript code? Ask in our [Slack Community](https:/
 :::
 
 </div>
+
+<div style={{paddingTop:'24px'}}>
+
+## Additional Details
+
+### Creating a Run JavaScript Query
+
+When creating a Run JavaScript query, you can use the **Preview** button to see the output of your code before running it. This helps in debugging and ensuring that the code works as expected.
+
+### Parameters in Run JavaScript Code
+
+Parameters provide a way to make your JavaScript code dynamic and reusable. By defining parameters, you can change the input values without modifying the core code. This is useful for scenarios where the same logic needs to be applied with different inputs.
+
+### RunJS Example Queries
+
+The example queries provided demonstrate how to use JavaScript to perform common tasks such as generating random numbers and unique IDs. These examples can be used as a starting point for creating more complex queries.
+
+### Libraries
+
+ToolJet supports the use of popular JavaScript libraries such as Moment, Lodash, and Axios. These libraries can be used to simplify common tasks such as date manipulation, data transformation, and making HTTP requests.
+
+### Resources
+
+The resources section provides links to tutorials and guides on how to use RunJS effectively. These resources can help you get started with writing custom JavaScript code and integrating it with your ToolJet applications.
+
+</div>

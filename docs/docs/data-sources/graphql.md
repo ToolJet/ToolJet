@@ -118,3 +118,26 @@ While accessing the properties of the metadata object, which contains a hyphen, 
 }
 ```
 </details>
+
+<div style={{paddingTop:'24px'}}>
+
+## Additional Information
+
+### Rate Limits
+
+GraphQL APIs may have rate limits to ensure fair usage and prevent abuse. It is important to design your queries and applications to handle rate limits gracefully. You can read more about rate limits in the documentation of the specific GraphQL API you are using.
+
+### Error Handling
+
+When working with GraphQL APIs, it is important to handle errors appropriately. Common errors include authentication errors, rate limit errors, and validation errors. Make sure to check the response status and handle errors accordingly in your application.
+
+### Best Practices
+
+- **Use Caching**: To reduce the number of API requests and improve performance, consider implementing caching mechanisms for frequently accessed data.
+- **Optimize Queries**: Use filters, sorting, and pagination to optimize your queries and retrieve only the necessary data.
+- **Handle Rate Limits**: Implement retry mechanisms and exponential backoff to handle rate limit errors gracefully.
+- **Secure API Keys**: Keep your GraphQL API keys secure and avoid exposing them in client-side code. Use environment variables or secure storage mechanisms to store API keys.
+
+For more detailed information and best practices, refer to the documentation of the specific GraphQL API you are using.
+
+</div>
