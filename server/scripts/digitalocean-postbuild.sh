@@ -13,3 +13,5 @@ export DATABASE_URL=${DATABASE_URL%"?sslmode=require"}
   npm run db:migrate:prod && \
   npm run start:prod
 )
+
+export TOOLJET_DB_URL=${TOOLJET_DB_URL%"?sslmode=require"}
