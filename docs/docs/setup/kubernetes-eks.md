@@ -21,6 +21,24 @@ kubectl apply -f https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernet
 
 Make sure to edit the environment variables in the `deployment.yaml`. We advise using secrets to set up sensitive information. You can check out the available options [here](https://docs.tooljet.com/docs/setup/env-vars).
 
+:::info
+        For the setup, ToolJet requires:
+        <ul> 
+        - **TOOLJET_DB** 
+        - **TOOLJET_DB_HOST**
+        - **TOOLJET_DB_USER**
+        - **TOOLJET_DB_PASS**
+        - **PG_HOST**
+        - **PG_DB**
+        - **PG_USER**
+        - **PG_PASS**
+        - **SECRET_KEY_BASE** 
+        - **LOCKBOX_KEY**
+        </ul>
+        <br/>
+        Read **[environment variables reference](https://docs.tooljet.com/docs/setup/env-vars)**
+:::
+
 3. Create a Kubernetes service to publish the Kubernetes deployment that you have created. We have a [template](https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/service.yaml) for exposing the ToolJet server as a service using an AWS Load Balancer.
 
 **Example:**
@@ -28,7 +46,7 @@ Make sure to edit the environment variables in the `deployment.yaml`. We advise 
 
 ## ToolJet Database
 
-If you intend to use this feature, you'd have to set up and deploy a PostgREST server, which helps in querying the ToolJet Database. Please [follow the instructions here](https://docs.tooljet.com/docs/setup/env-vars/#enable-tooljet-database--optional-) for additional environment variables configuration.
+To use ToolJet Database, you'd have to set up and deploy a PostgREST server, which helps in querying the ToolJet Database. Please [follow the instructions here](https://docs.tooljet.com/docs/setup/env-vars/#enable-tooljet-database--optional-).
 
 1. Set up PostgREST server
 
@@ -50,4 +68,4 @@ If this is a new installation of the application, you may start directly with th
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
-For specific issues or questions, refer to our **[Slack](https://tooljet.slack.com/join/shared_invite/zt-25438diev-mJ6LIZpJevG0LXCEcL0NhQ#)**.
+*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*

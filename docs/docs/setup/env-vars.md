@@ -92,11 +92,10 @@ Use this environment variable to enable/disable the developement mode that allow
 | ---------------- | ----------------------------------------------- |
 | USER_SESSION_EXPIRY | This variable controls the user session expiry time. By default, the session expires after **10** days. The variable expects the value in minutes. ex: USER_SESSION_EXPIRY = 120 which is 2 hours |
 
-### Enable ToolJet Database ( optional )
+### Enable ToolJet Database (required)
 
 | variable                     | description                                  |
 | -----------------------------| -------------------------------------------- |
-| ENABLE_TOOLJET_DB            | `true` or `false`                            |
 | TOOLJET_DB                   | Default value is `tooljet_db`                |
 | TOOLJET_DB_HOST              | database host                                |
 | TOOLJET_DB_USER              | database username                            |

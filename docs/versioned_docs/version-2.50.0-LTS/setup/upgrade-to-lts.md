@@ -31,5 +31,3 @@ The upgrade process depends on your deployment method. You can follow the upgrad
 - [Upgrade ToolJet on Kubernetes(AKS)](/docs/setup/kubernetes-aks#upgrading-to-the-latest-lts-version)
 - [Upgrade ToolJet on Azure Container Apps](/docs/setup/azure-container#upgrading-to-the-latest-lts-version)
 - [Upgrade ToolJet on Google Cloud Run](/docs/setup/google-cloud-run#upgrading-to-the-latest-lts-version)
-
-
