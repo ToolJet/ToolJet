@@ -54,7 +54,6 @@ export const EventManager = ({
     appId,
     events: allAppEvents,
     eventsUpdatedLoader,
-    eventsCreatedLoader,
     actionsUpdatedLoader,
     eventToDeleteLoaderIndex,
     setEventToDeleteLoaderIndex,
@@ -62,7 +61,6 @@ export const EventManager = ({
     appId: state.appId,
     events: state.events,
     eventsUpdatedLoader: state.eventsUpdatedLoader,
-    eventsCreatedLoader: state.eventsCreatedLoader,
     actionsUpdatedLoader: state.actionsUpdatedLoader,
     eventToDeleteLoaderIndex: state.eventToDeleteLoaderIndex,
     setEventToDeleteLoaderIndex: state.actions.setEventToDeleteLoaderIndex,
@@ -85,6 +83,7 @@ export const EventManager = ({
 
   const [events, setEvents] = useState([]);
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
+  const [isEventHandlerLoading, setIsEventHandlerLoading] = useState({});
 
   const { t } = useTranslation();
 
@@ -353,6 +352,7 @@ export const EventManager = ({
   }
 
   function addHandler() {
+    setIsEventHandlerLoading((prev) => ({ ...prev, [sourceId]: true }));
     let newEvents = events;
     const eventIndex = newEvents.length;
     createAppVersionEventHandlers({
@@ -366,9 +366,13 @@ export const EventManager = ({
       eventType: eventSourceType,
       attachedTo: sourceId,
       index: eventIndex,
-    });
-
-    handleYmapEventUpdates();
+    })
+      .then(() => {
+        handleYmapEventUpdates();
+      })
+      .finally(() => {
+        setIsEventHandlerLoading((prev) => ({ ...prev, [sourceId]: false }));
+      });
   }
 
   //following two are functions responsible for on change and value for the control specific actions
@@ -1044,7 +1048,12 @@ export const EventManager = ({
 
   const renderAddHandlerBtn = () => {
     return (
-      <AddNewButton onClick={addHandler} dataCy="add-event-handler" className="mt-0" isLoading={eventsCreatedLoader}>
+      <AddNewButton
+        onClick={addHandler}
+        dataCy="add-event-handler"
+        className="mt-0"
+        isLoading={isEventHandlerLoading[sourceId]}
+      >
         {t('editor.inspector.eventManager.addHandler', 'New event handler')}
       </AddNewButton>
     );
