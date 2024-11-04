@@ -69,13 +69,9 @@ Click on deploy once the above parameters are set.
 Once the Service is created and live, to make the  Cloud Service URL public. Please follow the steps [**here**](https://cloud.google.com/run/docs/securing/managing-access) to make the service public.
 :::
 
-
-
-
-
 ### Deploying ToolJet Database 
 
-If you intend to use this feature, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database.
+To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database.
 
 #### PostgREST server 
 

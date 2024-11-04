@@ -71,7 +71,7 @@ Once the Service is created and live, to make the  Cloud Service URL public. Ple
 
 ### Deploying ToolJet Database 
 
-If you intend to use this feature, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database.
+To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database.
 
 #### PostgREST server 
 
