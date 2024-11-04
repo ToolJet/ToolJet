@@ -1,16 +1,11 @@
 export type SourceOptions = {
   connection_type: string;
-  database: string;
   host: string;
   port: string;
   username: string;
   password: string;
   ssl_certificate: string;
   ca_cert: string;
-  sshHost: string;
-  sshPort: string;
-  sshUser: string;
-  sshKey: string;
   location: string;
   connection_string: string;
 };

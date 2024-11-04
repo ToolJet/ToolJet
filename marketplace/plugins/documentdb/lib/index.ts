@@ -3,11 +3,9 @@ import { SourceOptions, QueryOptions } from './types';
 const { MongoClient } = require('mongodb');
 const JSON5 = require('json5');
 import { EJSON } from 'bson';
-import { v4 as uuidv4 } from 'uuid';
-import { promises as fs } from 'fs';
-import path from 'path';
 import os from 'os';
-import { Client } from 'ssh2';
+import { promises as fsPromises } from 'fs';
+import tls from 'tls';
 
 export default class Documentdb implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
@@ -166,167 +164,86 @@ export default class Documentdb implements QueryService {
     }
   }
 
-  //USING SSH2
   async getConnection(sourceOptions: SourceOptions): Promise<any> {
-    let tlsCAFilePath = null;
-    if (sourceOptions.ca_cert) {
-      tlsCAFilePath = await this.writeTempCACertificate(sourceOptions.ca_cert);
-    }
+    let db = null,
+      client;
+    const connectionType = sourceOptions['connection_type'];
+    const tempFiles = [];
 
-    const sshConfig = {
-      host: sourceOptions.sshHost,
-      port: Number(sourceOptions.sshPort) || 22,
-      username: sourceOptions.sshUser,
-      privateKey: sourceOptions.sshKey,
-    };
+    if (connectionType === 'manual') {
+      const host = sourceOptions.host;
+      const port = sourceOptions.port;
+      const username = encodeURIComponent(sourceOptions.username);
+      const password = encodeURIComponent(sourceOptions.password);
+      const tlsCert = sourceOptions.ca_cert;
 
-    try {
-      if (sourceOptions.connection_type === 'manual') {
-        return await this.manualConnectionViaSSHTunnel(sourceOptions, tlsCAFilePath, sshConfig);
+      const uri = `mongodb://${username}:${password}@${host}:${port}?authSource=admin`;
+      const connectionOptions = {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        directConnection: true,
+      };
+
+      if (tlsCert) {
+        const tempFilePath = await this.createTempFile(tlsCert);
+        tempFiles.push(tempFilePath);
+
+        const secureContext = tls.createSecureContext({
+          ca: await fsPromises.readFile(tempFilePath),
+        });
+
+        Object.assign(connectionOptions, {
+          tls: true,
+          tlsAllowInvalidHostnames: true,
+          secureContext,
+        });
       } else {
-        return await this.stringConnectionViaSSHTunnel(sourceOptions, tlsCAFilePath, sshConfig);
+        Object.assign(connectionOptions, {
+          tls: false,
+          ssl: false,
+        });
       }
-    } catch (error) {
-      console.error('Error in getConnection:', error);
-      if (tlsCAFilePath) {
-        await this.cleanupTempCACertificate(tlsCAFilePath);
+
+      try {
+        client = new MongoClient(uri, connectionOptions);
+        await client.connect();
+      } catch (error) {
+        console.error('Connection failed:', error);
       }
-      throw error;
-    }
-  }
 
-  private async manualConnectionViaSSHTunnel(sourceOptions: SourceOptions, tlsCAFilePath, sshConfig): Promise<any> {
-    const dbConfig = {
-      srcHost: 'localhost',
-      srcPort: 0,
-      dstHost: sourceOptions.host,
-      dstPort: Number(sourceOptions.port) || 27017,
-      localPort: 0,
+      db = client.db();
+    } else {
+      const connectionString = sourceOptions['connection_string'];
+
+      const password = connectionString.match(/(?<=:\/\/)(.*):(.*)@/)[2];
+
+      const encodedPassword = encodeURIComponent(password);
+
+      const encodedConnectionString = connectionString.replace(password, encodedPassword);
+
+      client = new MongoClient(encodedConnectionString);
+      await client.connect();
+      db = client.db();
+    }
+
+    return {
+      db,
+      close: async () => {
+        await client?.close?.();
+        for (const filePath of tempFiles) {
+          try {
+            await fsPromises.unlink(filePath);
+          } catch (error) {
+            console.error(`Error cleaning up temp file ${filePath}:`, error);
+          }
+        }
+      },
     };
-    const username = sourceOptions.username;
-    const password = sourceOptions.password;
-    const database = sourceOptions.database;
-    return this.connectToMongoDB(sshConfig, dbConfig, tlsCAFilePath, username, password, database);
   }
 
-  private async stringConnectionViaSSHTunnel(sourceOptions: SourceOptions, tlsCAFilePath, sshConfig): Promise<any> {
-    const connectionString = sourceOptions.connection_string;
-    const uriPattern = /^mongodb:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/?([^?]*)/;
-    const match = connectionString.match(uriPattern);
-
-    if (!match) {
-      throw new Error('Invalid MongoDB connection string format');
-    }
-
-    const username = match[1];
-    const password = match[2];
-    const dstHost = match[3];
-    const dstPort = Number(match[4]);
-    const database = match[5];
-
-    const dbConfig = {
-      srcHost: 'localhost',
-      srcPort: 0,
-      dstHost,
-      dstPort,
-      localPort: 0,
-    };
-
-    return this.connectToMongoDB(sshConfig, dbConfig, tlsCAFilePath, username, password, database);
-  }
-
-  private async connectToMongoDB(sshConfig, dbConfig, tlsCAFilePath, username, password, database?): Promise<any> {
-    const sshClient = new Client();
-
-    return new Promise((resolve, reject) => {
-      sshClient
-        .on('ready', () => {
-          sshClient.forwardOut(
-            dbConfig.srcHost,
-            dbConfig.srcPort,
-            dbConfig.dstHost,
-            dbConfig.dstPort,
-            (err, stream) => {
-              if (err) {
-                sshClient.end();
-                reject(err);
-                return;
-              }
-
-              const server = require('net').createServer((socket) => {
-                stream.pipe(socket).pipe(stream);
-              });
-
-              server.listen(dbConfig.localPort, dbConfig.srcHost, async () => {
-                const localPort = server.address().port;
-                const uri = `mongodb://${encodeURIComponent(username)}:${encodeURIComponent(password)}@${
-                  dbConfig.srcHost
-                }:${localPort}/${database}?retryWrites=false`;
-
-                const clientOptions: any = {
-                  useNewUrlParser: true,
-                  useUnifiedTopology: true,
-                  connectTimeoutMS: 30000,
-                  socketTimeoutMS: 45000,
-                  directConnection: true,
-                };
-
-                if (tlsCAFilePath) {
-                  clientOptions.tls = true;
-                  clientOptions.tlsCAFile = tlsCAFilePath;
-                }
-
-                try {
-                  const client = new MongoClient(uri, clientOptions);
-                  await client.connect();
-                  const db = client.db(database);
-                  resolve({
-                    db,
-                    close: async () => {
-                      try {
-                        if (client) await client.close();
-                        if (server) server.close();
-                        if (sshClient) sshClient.end();
-                      } catch (error) {
-                        console.error('Error during cleanup:', error);
-                      } finally {
-                        if (tlsCAFilePath) {
-                          await this.cleanupTempCACertificate(tlsCAFilePath);
-                        }
-                      }
-                    },
-                  });
-                } catch (err) {
-                  console.error('Error connecting to MongoDB:', err);
-                  reject(err);
-                }
-              });
-            }
-          );
-        })
-        .on('error', (err) => {
-          console.error('SSH Client Error:', err);
-          reject(err);
-        })
-        .connect(sshConfig);
-    });
-  }
-
-  private async writeTempCACertificate(caCertificate: string): Promise<string> {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ds-amazonDocumentDb'));
-    const uniqueFilename = `${uuidv4()}.pem`;
-    const caFilePath = path.join(tempDir, uniqueFilename);
-    await fs.writeFile(caFilePath, caCertificate);
-    return caFilePath;
-  }
-
-  private async cleanupTempCACertificate(filePath: string): Promise<void> {
-    try {
-      await fs.unlink(filePath);
-      const dirPath = path.dirname(filePath);
-      await fs.rmdir(dirPath);
-    } catch (error) {
-      console.error('Error cleaning up temporary CA certificate:', error);
-    }
+  async createTempFile(certContent: string): Promise<string> {
+    const tempFilePath = `${os.tmpdir()}/cert-${Date.now()}.pem`;
+    await fsPromises.writeFile(tempFilePath, certContent);
+    return tempFilePath;
   }
 }
