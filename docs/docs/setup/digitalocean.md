@@ -7,8 +7,6 @@ title: DigitalOcean
 
 Now you can quickly deploy ToolJet using the Deploy to DigitalOcean button.
 
-If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.
-
 ### Redis setup
 
 :::info
@@ -37,7 +35,7 @@ Follow the steps below to configure Redis database:
 
 ## Deploying
 
-#### Follow the steps below to deploy ToolJet on DigitalOcean:
+#### Follow the Steps Below to Deploy ToolJet on DigitalOcean:
 
 1. Click on the button below to start one click deployment
 
@@ -89,8 +87,12 @@ ToolJet server and client can be deployed as standalone applications. If you do 
 
 ## Deploying ToolJet Database
 
-If you intend to use this feature, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database.
+To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database.
 You can learn more about this feature [here](/docs/tooljet-database).
+
+Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration might break, checkout the following docs to know more about new major version, including breaking changes that require you to adjust your applications accordingly:
+- [Self Hosted](./upgrade-to-v3.md)
+- [Cloud](./cloud-v3-migration.md)
 
 Follow the steps below to deploy ToolJet Database on DigitalOcean:
 
@@ -120,4 +122,4 @@ If this is a new installation of the application, you may start directly with th
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
-For specific issues or questions, refer to our **[Slack](https://tooljet.slack.com/join/shared_invite/zt-25438diev-mJ6LIZpJevG0LXCEcL0NhQ#)**.
+If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.
