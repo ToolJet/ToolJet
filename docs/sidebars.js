@@ -171,6 +171,7 @@ const sidebars = {
                         'widgets/table/table-properties',
                         'widgets/table/table-columns',
                         'widgets/table/table-csa-and-variables',
+                        'widgets/table/dynamic-column',
                       ]
                     },
                     'widgets/tabs',
