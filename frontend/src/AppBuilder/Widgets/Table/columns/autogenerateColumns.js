@@ -9,7 +9,8 @@ export default function autogenerateColumns(
   dynamicColumn = [],
   setProperty,
   generateNestedColumns,
-  id
+  id,
+  isInitialRender
 ) {
   if (useDynamicColumn) {
     if (dynamicColumn.length > 0 && dynamicColumn[0].name) {
@@ -107,7 +108,14 @@ export default function autogenerateColumns(
     finalKeys.includes(column?.key || column?.name)
   );
 
-  setTimeout(() => setProperty(id, 'columns', finalColumns, 'properties'), 10);
+  setTimeout(
+    () =>
+      setProperty(id, 'columns', finalColumns, 'properties', undefined, undefined, undefined, {
+        skipUndoRedo: isInitialRender,
+        saveAfterAction: true,
+      }),
+    10
+  );
 }
 
 const dataTypeToColumnTypeMapping = {

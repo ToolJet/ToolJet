@@ -139,6 +139,7 @@ export const Table = React.memo(
     const updatedDataReference = useRef([]);
     const preSelectRow = useRef(false);
     const initialPageCountRef = useRef(null);
+    const isInitialRender = useRef(true);
     const allAppEvents = useEvents();
     // const { events: allAppEvents } = useAppInfo();
     const tableEvents = allAppEvents.filter((event) => event.target === 'component' && event.sourceId === id);
@@ -577,8 +578,10 @@ export const Table = React.memo(
           dynamicColumn,
           setComponentProperty,
           properties.autogenerateColumns ?? false,
-          id
+          id,
+          isInitialRender.current
         );
+        isInitialRender.current = false;
         if (useDynamicColumn) {
           const dynamicColumnHasId = dynamicColumn && dynamicColumn.every((column) => 'id' in column);
           if (!dynamicColumnHasId) {
