@@ -23,7 +23,7 @@ To connect to Sharepoint, you need the following details:
 - **Tenant ID**
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/datasource-reference/sharepoint/connect.png" alt="Sharepoint Connect" />
+    <img className="screenshot-full" src="/img/marketplace/plugins/sharepoint/connect.png" alt="Sharepoint Connect" />
 </div>
 
 ## Querying Sharepoint
@@ -42,114 +42,142 @@ ToolJet supports the following Sharepoint operations:
 - **[Get All Sites](#get-all-sites)**
 - **[Get Site](#get-site)**
 - **[Get Analytics](#get-analytics)**
-- **[Get Pages](#get-pages)**
-- **[Get Lists](#get-lists)**
-- **[Get List Metadata](#get-list-metadata)**
-- **[Create List](#create-list)**
-- **[Get List Items](#get-list-items)**
-- **[Update List Item](#update-list-item)**
-- **[Delete List Item](#delete-list-item)**
-- **[Add List Item](#add-list-item)**
+- **[Get Pages Of a Site](#get-pages-of-a-site)**
+- **[Get All Lists](#get-lists)**
+- **[Get Metadata Of a List](#get-list-metadata)**
+- **[Create a List](#create-list)**
+- **[Get Items Of a List](#get-list-items)**
+- **[Update Item Of a List](#update-list-item)**
+- **[Delete Item Of a List](#delete-list-item)**
+- **[Add Item To a List](#add-list-item)**
 
 ### Get All Sites
 
 This operation retrieves all available Sharepoint sites. For more details, see the Microsoft Graph API documentation **[here](https://learn.microsoft.com/en-us/graph/api/site-search)**.
 
-#### Required Parameters
-None
+#### Optional Parameter
+- **Top**: The number of sites to retrieve.
+- **Page**: The page number to retrieve.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/datasource-reference/sharepoint/get-sites.png" alt="Get Sites" />
+    <img className="screenshot-full" src="/img/marketplace/plugins/sharepoint/get-all-sites.png" alt="Get All Sites" />
 </div>
 
-#### Example Response:
+<details>
+<summary>**Response Example**</summary>
+
 ```json
 {
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#sites",
   "value": [
     {
-      "id": "contoso.sharepoint.com,da60e844-ba1d-49bc-b4d4-d5e36bae9019",
-      "name": "Marketing Team Site",
-      "description": "Site for marketing team collaboration",
-      "createdDateTime": "2021-08-15T10:00:00Z",
-      "lastModifiedDateTime": "2023-09-20T15:30:00Z",
-      "webUrl": "https://contoso.sharepoint.com/sites/marketing"
+      "createdDateTime": "2024-09-08T15:54:30Z",
+      "id": "tooljetxxxx.sharepoint.com,bcxxxx-4b3a-xxxxxx-dfe229c34311,2a4ac5da-xxx-xxxx-b047-18dece61fb95",
+      "lastModifiedDateTime": "2024-08-17T18:50:05Z",
+      "name": "appcatalog",
+      "webUrl": "https://tooljetxxxx.sharepoint.com/sites/appcatalog",
+      "displayName": "Apps",
+      "root": {},
+      "siteCollection": {
+        "hostname": "tooljetxxxx.sharepoint.com"
+      }
     }
   ]
 }
 ```
+</details>
 
 ### Get Site
 
 This operation retrieves information about a specific site.
 
 #### Required Parameters
-- **Site ID**: The ID of the site to retrieve
+- **Site ID**: The ID of the site to retrieve.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/datasource-reference/sharepoint/get-site.png" alt="Get Site" />
+    <img className="screenshot-full" src="/img/marketplace/plugins/sharepoint/get-site.png" alt="Get Site" />
 </div>
 
 #### Example:
 ```yaml
-Site ID: contoso.sharepoint.com,da60e844-ba1d-49bc-b4d4-d5e36bae9019
+Site ID: tooljetxxxx.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d09-1613-4663-99ab-1bb72ff6ceeb
 ```
 
-#### Example Response:
+<details>
+<summary>**Response Example**</summary>
+
 ```json
 {
-  "id": "contoso.sharepoint.com,da60e844-ba1d-49bc-b4d4-d5e36bae9019",
-  "name": "Marketing Team Site",
-  "description": "Site for marketing team collaboration",
-  "createdDateTime": "2021-08-15T10:00:00Z",
-  "lastModifiedDateTime": "2023-09-20T15:30:00Z",
-  "webUrl": "https://contoso.sharepoint.com/sites/marketing"
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#sites/$entity",
+  "createdDateTime": "2024-10-22T13:21:10.623Z",
+  "description": "Internal DIA Guidelines",
+  "id": "tooljetxxxx5.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d09-1613-4663-99ab-1bb72ff6ceeb",
+  "lastModifiedDateTime": "2024-10-24T13:35:39Z",
+  "name": "NewStyle",
+  "webUrl": "https://tooljetxxxx.sharepoint.com/sites/NewStyle",
+  "displayName": "NewStyle",
+  "root": {},
+  "siteCollection": {
+    "hostname": "tooljetxxxx.sharepoint.com"
+  }
 }
 ```
+</details>
 
 ### Get Analytics
 
 This operation retrieves analytics for a specific site.
 
 #### Required Parameters
-- **Site ID**: The ID of the site
-- **Time Interval**: Select one:
-  - `lastSevenDays`
-  - `allTime`
+- **Site ID**: The ID of the site.
+- **Time Interval**:
+  - **Last 7 Days**
+  - **All Time**
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/datasource-reference/sharepoint/get-analytics.png" alt="Get Analytics" />
+    <img className="screenshot-full" src="/img/marketplace/plugins/sharepoint/get-analytics.png" alt="Get Analytics" />
 </div>
 
 #### Example:
 ```yaml
-Site ID: contoso.sharepoint.com,da60e844-ba1d-49bc-b4d4-d5e36bae9019
-Time Interval: lastSevenDays
+Site ID: tooljetxxxx5.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d09-1613-4663-99ab-1bb72ff6ceeb
+Time Interval: Last 7 Days
 ```
 
-#### Example Response:
+<details>
+<summary>**Response Example**</summary>
+
 ```json
 {
-  "itemActivityStats": [
-    {
-      "startDateTime": "2023-10-10T00:00:00Z",
-      "viewCount": 125,
-      "editCount": 14,
-      "commentCount": 3
-    }
-  ]
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#microsoft.graph.itemActivityStat",
+  "aggregationInterval": "None",
+  "startDateTime": "2024-10-30T00:00:00Z",
+  "endDateTime": "2024-11-05T00:00:00Z",
+  "isTrending": false,
+  "access": {
+    "actionCount": 0,
+    "actorCount": 0,
+    "timeSpentInSeconds": 0
+  },
+  "incompleteData": {
+    "wasThrottled": false,
+    "resultsPending": false,
+    "notSupported": false
+  }
 }
 ```
+</details>
 
 ### Create List
 
 This operation creates a new list in a Sharepoint site.
 
 #### Required Parameters
-- **Site ID**: The ID of the site
-- **Body**: The list configuration in JSON format
+- **Site ID**: The ID of the site.
+- **Body**: The list configuration in JSON format.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/datasource-reference/sharepoint/create-list.png" alt="Create List" />
+    <img className="screenshot-full" src="/img/marketplace/plugins/sharepoint/create-list.png" alt="Create List" />
 </div>
 
 #### Example:
@@ -216,7 +244,7 @@ This operation retrieves items from a specific list.
 - **List ID**: The ID of the list
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/datasource-reference/sharepoint/get-items.png" alt="Get Items" />
+    <img className="screenshot-full" src="/img/marketplace/plugins/sharepoint/get-items.png" alt="Get Items" />
 </div>
 
 #### Example:
@@ -260,7 +288,7 @@ This operation updates an existing item in a list.
 - **Body**: The updated values in JSON format
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/datasource-reference/sharepoint/update-item.png" alt="Update Item" />
+    <img className="screenshot-full" src="/img/marketplace/plugins/sharepoint/update-item.png" alt="Update Item" />
 </div>
 
 #### Example:
@@ -298,7 +326,7 @@ This operation removes an item from a list.
 - **Item ID**: The ID of the item to delete
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/datasource-reference/sharepoint/delete-item.png" alt="Delete Item" />
+    <img className="screenshot-full" src="/img/marketplace/plugins/sharepoint/delete-item.png" alt="Delete Item" />
 </div>
 
 #### Example:
@@ -327,7 +355,7 @@ This operation adds a new item to a list.
 - **Body**: The new item's data in JSON format
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/datasource-reference/sharepoint/add-item.png" alt="Add Item" />
+    <img className="screenshot-full" src="/img/marketplace/plugins/sharepoint/add-item.png" alt="Add Item" />
 </div>
 
 #### Example:
@@ -355,7 +383,3 @@ Body:
   }
 }
 ```
-
-:::info
-The images referenced in this documentation are placeholders. You'll need to replace them with actual screenshots of the ToolJet interface showing each operation's configuration panel.
-:::
