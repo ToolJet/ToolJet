@@ -743,9 +743,12 @@ export const createComponentsSlice = (set, get) => ({
           deleteComponentNameIdMapping(oldName, moduleId);
         }
         updateComponentDependencyGraph(moduleId, newComponent);
-        const parentId = newComponent.component.parent || 'canvas';
-        set(
-          withUndoRedo((state) => {
+      });
+      set(
+        withUndoRedo((state) => {
+          newComponents.forEach((newComponent) => {
+            const parentId = newComponent.component.parent || 'canvas';
+
             if (!state.containerChildrenMapping[parentId]) {
               state.containerChildrenMapping[parentId] = [];
             }
@@ -754,15 +757,14 @@ export const createComponentsSlice = (set, get) => ({
             }
             const page = state.modules[moduleId].pages[state.currentPageIndex];
             page.components[newComponent.id] = newComponent;
-          }, skipUndoRedo),
-          false,
-          'addComponentToCurrentPage'
-        );
-        if (index === 0) {
-          //incase of multiple components, only first one will be selected since it will be the parent component
-          get().setSelectedComponents([newComponent.id]);
-        }
-      });
+          });
+        }, skipUndoRedo),
+        false,
+        'addComponentToCurrentPage'
+      );
+
+      //incase of multiple components, only first one will be selected since it will be the parent component
+      get().setSelectedComponents([newComponents[0].id]);
 
       if (saveAfterAction) {
         saveComponentChanges(diff, 'components', 'create')
