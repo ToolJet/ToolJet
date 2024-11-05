@@ -3,7 +3,8 @@ const walk = require('acorn-walk');
 
 export function extractAndReplaceReferencesFromString(input, componentIdNameMapping = {}, queryIdNameMapping = {}) {
   // Quick check for relevant keywords
-  const regexForQuickCheck = /\b(components|queries|globals|variables|page|parameters|secrets)(?:\[\S*|\.\S*|\?\.\S*)/;
+  const regexForQuickCheck =
+    /\b(components|queries|globals|variables|page|parameters|secrets|constants)(?:\[\S*|\.\S*|\?\.\S*)/;
   if (!regexForQuickCheck.test(input)) {
     return {
       allRefs: [],
@@ -12,7 +13,7 @@ export function extractAndReplaceReferencesFromString(input, componentIdNameMapp
     };
   }
 
-  const relevantKeywords = /\b(components|queries|globals|variables|page|parameters|secrets)\b/;
+  const relevantKeywords = /\b(components|queries|globals|variables|page|parameters|secrets|constants)\b/;
   const expressionRegex = /{{(.*?)}}/gs;
   const results = [];
   let lastIndex = 0;
@@ -30,6 +31,8 @@ export function extractAndReplaceReferencesFromString(input, componentIdNameMapp
 
     // Check if the expression contains relevant keywords
     if (!relevantKeywords.test(expression)) {
+      replacedString += input.slice(lastIndex, match.index);
+      bracketNotationString += input.slice(lastIndex, match.index);
       replacedString += fullMatch;
       bracketNotationString += fullMatch;
       lastIndex = match.index + fullMatch.length;
