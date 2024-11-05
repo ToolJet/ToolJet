@@ -175,6 +175,10 @@ This operation retrieves all pages from a specific site.
 #### Required Parameters
 - **Site ID**: The ID of the site
 
+#### Optional Parameters
+- **Top**: The number of sites to retrieve
+- **Page**: The page number to retrieve
+
 <div style={{textAlign: 'center'}}>
     <img className="screenshot-full" src="/img/marketplace/plugins/sharepoint/get-pages.png" alt="Get Pages" />
 </div>
@@ -189,14 +193,48 @@ Site ID: tooljetxxxx.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d0
 
 ```json
 {
-  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#sites('tooljetxxxx.sharepoint.com')/pages",
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#sites('tooljetxxxx.sharepoint.com%2C887cb371-e930-4e5b-a726-8d5769e6b946%2C6d653d09-1613-4663-99ab-1bb72ff6ceeb')/pages",
+  "@odata.nextLink": "https://graph.microsoft.com/v1.0/sites/tooljetxxxx.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d09-1613-4663-99ab-1bb72ff6ceeb/pages?$top=1&$skiptoken=UGFnZWQ9VFJVRSZwX0ZpbGVMZWFmUmVmPUV2ZW50UGxhbkhvbWUuYXNweCZwX0lEPTc",
   "value": [
     {
-      "id": "1234-5678-91011",
-      "title": "Welcome Page",
-      "webUrl": "https://tooljetxxxx.sharepoint.com/sites/mysite/SitePages/Welcome.aspx",
-      "createdDateTime": "2024-01-15T10:00:00Z",
-      "lastModifiedDateTime": "2024-01-16T14:30:00Z"
+      "@odata.type": "#microsoft.graph.sitePage",
+      "@odata.etag": ""{2095ED1D-AC76-4480-BBDC-8D63EBAAE2AF},6"",
+      "createdDateTime": "2024-10-22T13:21:33Z",
+      "eTag": ""{2095ED1D-AC76-4480-BBDC-8D63EBAAE2AF},6"",
+      "id": "2095ed1d-ac76-4480-bbdc-8d63ebaae2af",
+      "lastModifiedDateTime": "2024-10-22T13:21:35Z",
+      "name": "EventPlanHome.aspx",
+      "webUrl": "https://tooljetxxxx.sharepoint.com/sites/NewStyle/SitePages/EventPlanHome.aspx",
+      "title": "Home",
+      "pageLayout": "home",
+      "thumbnailWebUrl": "https://tooljetxxxx.sharepoint.com/_layouts/15/getpreview.ashx?guidSite=887cb371-e930-4e5b-a726-8d5769e6b946&guidWeb=6d653d09-1613-4663-99ab-1bb72ff6ceeb&guidFile=bb423735-7402-47df-ab2e-729bddfe6f23",
+      "promotionKind": "page",
+      "showComments": false,
+      "showRecommendedPages": false,
+      "contentType": {
+        "id": "0x0101009D1CB255DA76424F860D91F20E6C4118004CC245E37669F3438CDDEB01FCEAE890",
+        "name": "Site Page"
+      },
+      "createdBy": {
+        "user": {
+          "displayName": "Devanshu Rastogi",
+          "email": "DevanshuRastogi@tooljetxxxx.onmicrosoft.com"
+        }
+      },
+      "lastModifiedBy": {
+        "user": {
+          "displayName": "Devanshu Rastogi",
+          "email": "DevanshuRastogi@tooljetxxxx.onmicrosoft.com"
+        }
+      },
+      "parentReference": {
+        "siteId": "887cb371-e930-4e5b-a726-8d5769e6b946"
+      },
+      "publishingState": {
+        "level": "published",
+        "versionId": "1.0"
+      },
+      "reactions": {}
     }
   ]
 }
@@ -210,13 +248,17 @@ This operation retrieves all lists from a specific site.
 #### Required Parameters
 - **Site ID**: The ID of the site
 
+#### Optional Parameters
+- **Page**: The page number to retrieve
+
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/sharepoint/get-lists.png" alt="Get Lists" />
+    <img className="screenshot-full" src="/img/marketplace/plugins/sharepoint/get-all-lists.png" alt="Get All Lists" />
 </div>
 
 #### Example:
 ```yaml
 Site ID: tooljetxxxx.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d09-1613-4663-99ab-1bb72ff6ceeb
+Page: 1
 ```
 
 <details>
@@ -224,16 +266,40 @@ Site ID: tooljetxxxx.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d0
 
 ```json
 {
-  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#sites('tooljetxxxx.sharepoint.com')/lists",
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#sites('tooljetxxxx.sharepoint.com%2C887cb371-e930-4e5b-a726-8d5769e6b946%2C6d653d09-1613-4663-99ab-1bb72ff6ceeb')/lists",
   "value": [
     {
-      "id": "22f69173-0c1d-4c76-a721-5a31f0bd5af3",
-      "displayName": "Documents",
-      "list": {
-        "template": "documentLibrary"
+      "@odata.etag": ""1a64ae23-9cb6-4521-b489-61d558dde9f7,11"",
+      "createdDateTime": "2024-10-24T11:11:10Z",
+      "description": "",
+      "eTag": ""1a64ae23-9cb6-4521-b489-61d558dde9f7,11"",
+      "id": "1a64ae23-9cb6-4521-b489-61d558dde9f7",
+      "lastModifiedDateTime": "2024-10-24T11:11:17Z",
+      "name": "Test_table_query",
+      "webUrl": "https://tooljetxxxx.sharepoint.com/sites/NewStyle/Lists/Test_table_query",
+      "displayName": "Test_table_query",
+      "createdBy": {
+        "user": {
+          "email": "oliver@tooljetxxxx.onmicrosoft.com",
+          "id": "90ccfd6b-17ea-402b-aa21-1a1799a547d6",
+          "displayName": "Oliver Smith"
+        }
       },
-      "createdDateTime": "2024-01-15T10:00:00Z",
-      "lastModifiedDateTime": "2024-01-16T14:30:00Z"
+      "lastModifiedBy": {
+        "user": {
+          "email": "oliver@tooljetxxxx.onmicrosoft.com",
+          "id": "90ccfd6b-17ea-402b-aa21-1a1799a547d6",
+          "displayName": "Oliver Smith"
+        }
+      },
+      "parentReference": {
+        "siteId": "tooljetxxxx.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d09-1613-4663-99ab-1bb72ff6ceeb"
+      },
+      "list": {
+        "contentTypesEnabled": false,
+        "hidden": false,
+        "template": "genericList"
+      }
     }
   ]
 }
@@ -246,7 +312,8 @@ This operation retrieves metadata for a specific list.
 
 #### Required Parameters
 - **Site ID**: The ID of the site
-- **List ID**: The ID of the list
+- **List Name**: The name of the list, only used if List ID is not provided
+- **List ID**: The ID of the list, required if List Name is not provided
 
 <div style={{textAlign: 'center'}}>
     <img className="screenshot-full" src="/img/marketplace/plugins/sharepoint/get-list-metadata.png" alt="Get List Metadata" />
