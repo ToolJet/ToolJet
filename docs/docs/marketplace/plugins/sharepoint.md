@@ -484,7 +484,7 @@ Body:
 
 ```json
 {
-  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#sites('olivetooljetxxxxr.sharepoint.com%2C887cb371-e930-4e5b-a726-8d5769e6b946%2C6d653d09-1613-4663-99ab-1bb72ff6ceeb')/lists/$entity",
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#sites('tooljetxxxx.sharepoint.com%2C887cb371-e930-4e5b-a726-8d5769e6b946%2C6d653d09-1613-4663-99ab-1bb72ff6ceeb')/lists/$entity",
   "@odata.etag": "f7497bc1-a8e6-49d0-a11c-05b3df1d8d2b,10",
   "createdDateTime": "2024-11-05T10:48:51Z",
   "description": "",
@@ -492,16 +492,16 @@ Body:
   "id": "f7497bc1-a8e6-49d0-a11c-05b3df1d8d2b",
   "lastModifiedDateTime": "2024-11-05T10:48:52Z",
   "name": "Project Tasks",
-  "webUrl": "https://olivetooljetxxxxr.sharepoint.com/sites/NewStyle/Lists/Project%20Tasks",
+  "webUrl": "https://tooljetxxxx.sharepoint.com/sites/NewStyle/Lists/Project%20Tasks",
   "displayName": "Project Tasks",
   "createdBy": {
     "user": {
       "displayName": "Oliver Smith",
-      "email": "oliver@olivetooljetxxxxr.onmicrosoft.com"
+      "email": "oliver@tooljetxxxx.onmicrosoft.com"
     }
   },
   "parentReference": {
-    "siteId": "olivetooljetxxxxr.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d09-1613-4663-99ab-1bb72ff6ceeb"
+    "siteId": "tooljetxxxx.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d09-1613-4663-99ab-1bb72ff6ceeb"
   },
   "list": {
     "contentTypesEnabled": false,
@@ -520,14 +520,20 @@ This operation retrieves items from a specific list.
 - **Site ID**: The ID of the site
 - **List ID**: The ID of the list
 
+#### Optional Parameters
+- **Top**: The number of sites to retrieve
+- **Page**: The page number to retrieve
+
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/sharepoint/get-items.png" alt="Get Items" />
+    <img className="screenshot-full" src="/img/marketplace/plugins/sharepoint/get-list-items.png" alt="Get List Items" />
 </div>
 
 #### Example:
 ```yaml
 Site ID: tooljetxxxx.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d09-1613-4663-99ab-1bb72ff6ceeb
 List ID: 22f69173-0c1d-4c76-a721-5a31f0bd5af3
+Top: 1
+Page: 1
 ```
 
 <details>
@@ -535,8 +541,8 @@ List ID: 22f69173-0c1d-4c76-a721-5a31f0bd5af3
 
 ```json
 {
-  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#sites('olivetooljetxxxxr.sharepoint.com%2C887cb371-e930-4e5b-a726-8d5769e6b946%2C6d653d09-1613-4663-99ab-1bb72ff6ceeb')/lists('1a64ae23-9cb6-4521-b489-61d558dde9f7')/items(fields())",
-  "@odata.nextLink": "https://graph.microsoft.com/v1.0/sites/olivetooljetxxxxr.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d09-1613-4663-99ab-1bb72ff6ceeb/lists/1a64ae23-9cb6-4521-b489-61d558dde9f7/items?$expand=fields&$top=1&$skiptoken=UGFnZWQ9VFJVRSZwX0lEPTE",
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#sites('tooljetxxxx.sharepoint.com%2C887cb371-e930-4e5b-a726-8d5769e6b946%2C6d653d09-1613-4663-99ab-1bb72ff6ceeb')/lists('1a64ae23-9cb6-4521-b489-61d558dde9f7')/items(fields())",
+  "@odata.nextLink": "https://graph.microsoft.com/v1.0/sites/tooljetxxxx.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d09-1613-4663-99ab-1bb72ff6ceeb/lists/1a64ae23-9cb6-4521-b489-61d558dde9f7/items?$expand=fields&$top=1&$skiptoken=UGFnZWQ9VFJVRSZwX0lEPTE",
   "value": [
     {
       "@odata.etag": ""12b493eb-2452-451b-84e5-ecba8ec898c8,1"",
@@ -544,30 +550,30 @@ List ID: 22f69173-0c1d-4c76-a721-5a31f0bd5af3
       "eTag": ""12b493eb-2452-451b-84e5-ecba8ec898c8,1"",
       "id": "1",
       "lastModifiedDateTime": "2024-10-24T11:11:11Z",
-      "webUrl": "https://olivetooljetxxxxr.sharepoint.com/sites/NewStyle/Lists/Test_table_query/1_.000",
+      "webUrl": "https://tooljetxxxx.sharepoint.com/sites/NewStyle/Lists/Test_table_query/1_.000",
       "createdBy": {
         "user": {
-          "email": "oliver@olivetooljetxxxxr.onmicrosoft.com",
+          "email": "oliver@tooljetxxxx.onmicrosoft.com",
           "id": "90ccfd6b-17ea-402b-aa21-1a1799a547d6",
           "displayName": "Oliver Smith"
         }
       },
       "lastModifiedBy": {
         "user": {
-          "email": "oliver@olivetooljetxxxxr.onmicrosoft.com",
+          "email": "oliver@tooljetxxxx.onmicrosoft.com",
           "id": "90ccfd6b-17ea-402b-aa21-1a1799a547d6",
           "displayName": "Oliver Smith"
         }
       },
       "parentReference": {
         "id": "036d657d-ed69-4dcc-a669-483ce9788655",
-        "siteId": "olivetooljetxxxxr.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d09-1613-4663-99ab-1bb72ff6ceeb"
+        "siteId": "tooljetxxxx.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d09-1613-4663-99ab-1bb72ff6ceeb"
       },
       "contentType": {
         "id": "0x0100A3D887BE30452F4A9CBA7E684C523E2100098058C6B440D14786561D28914A3EDB",
         "name": "Item"
       },
-      "fields@odata.context": "https://graph.microsoft.com/v1.0/$metadata#sites('olivetooljetxxxxr.sharepoint.com%2C887cb371-e930-4e5b-a726-8d5769e6b946%2C6d653d09-1613-4663-99ab-1bb72ff6ceeb')/lists('1a64ae23-9cb6-4521-b489-61d558dde9f7')/items('1')/fields/$entity",
+      "fields@odata.context": "https://graph.microsoft.com/v1.0/$metadata#sites('tooljetxxxx.sharepoint.com%2C887cb371-e930-4e5b-a726-8d5769e6b946%2C6d653d09-1613-4663-99ab-1bb72ff6ceeb')/lists('1a64ae23-9cb6-4521-b489-61d558dde9f7')/items('1')/fields/$entity",
       "fields": {
         "@odata.etag": ""12b493eb-2452-451b-84e5-ecba8ec898c8,1"",
         "Title": "Null_test",
