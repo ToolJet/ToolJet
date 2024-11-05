@@ -620,8 +620,8 @@ This operation updates an existing item in a list.
 
 #### Example:
 ```yaml
-Site ID: contoso.sharepoint.com,da60e844-ba1d-49bc-b4d4-d5e36bae9019
-List ID: 22f69173-0c1d-4c76-a721-5a31f0bd5af3
+Site ID: tooljetxxxx.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d09-1613-4663-99ab-1bb72ff6ceeb
+List ID: 1a64ae23-9cb6-4521-b489-61d558dde9f7
 Item ID: 1
 Body:
 {
@@ -661,7 +661,7 @@ This operation removes an item from a list.
 
 #### Example:
 ```yaml
-Site ID: contoso.sharepoint.com,da60e844-ba1d-49bc-b4d4-d5e36bae9019
+Site ID: tooljetxxxx.sharepoint.com,da60e844-ba1d-49bc-b4d4-d5e36bae9019
 List ID: 22f69173-0c1d-4c76-a721-5a31f0bd5af3
 Item ID: 1
 ```
@@ -672,8 +672,8 @@ Item ID: 1
 ```json
 {
   "code": 204,
-  "statusText": "No Content",
-  "message": "Item having id '1' in List '22f69173-0c1d-4c76-a721-5a31f0bd5af3' has been deleted."
+  "status": "No Content",
+  "message": "Item having id '1' in List '1a64ae23-9cb6-4521-b489-61d558dde9f7' has been deleted."
 }
 ```
 </details>
@@ -693,14 +693,12 @@ This operation adds a new item to a list.
 
 #### Example:
 ```yaml
-Site ID: contoso.sharepoint.com,da60e844-ba1d-49bc-b4d4-d5e36bae9019
+Site ID: tooljetxxxx.sharepoint.com,da60e844-ba1d-49bc-b4d4-d5e36bae9019
 List ID: 22f69173-0c1d-4c76-a721-5a31f0bd5af3
 Body:
 {
   "fields": {
-    "TaskName": "Prepare Presentation",
-    "Priority": "High",
-    "DueDate": "2023-10-30T00:00:00Z"
+    "Title": "Prepare Presentation"
   }
 }
 ```
@@ -710,11 +708,62 @@ Body:
 
 ```json
 {
-  "id": "3",
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#sites('tooljetxxxx.sharepoint.com%2C887cb371-e930-4e5b-a726-8d5769e6b946%2C6d653d09-1613-4663-99ab-1bb72ff6ceeb')/lists('1a64ae23-9cb6-4521-b489-61d558dde9f7')/items/$entity",
+  "@odata.etag": ""95d95442-f155-45be-ae85-ef9acf1d35f9,1"",
+  "createdDateTime": "2024-11-05T11:40:52Z",
+  "eTag": ""95d95442-f155-45be-ae85-ef9acf1d35f9,1"",
+  "id": "69",
+  "lastModifiedDateTime": "2024-11-05T11:40:52Z",
+  "webUrl": "https://tooljetxxxx.sharepoint.com/sites/NewStyle/Lists/Test_table_query/69_.000",
+  "createdBy": {
+    "user": {
+      "email": "oliver@tooljetxxxx.onmicrosoft.com",
+      "id": "90ccfd6b-17ea-402b-aa21-1a1799a547d6",
+      "displayName": "Oliver Smith"
+    }
+  },
+  "lastModifiedBy": {
+    "application": {
+      "id": "0dc94ee2-9788-443c-8e67-ce714f0fe579",
+      "displayName": "Microsoft Graph"
+    },
+    "user": {
+      "email": "oliver@tooljetxxxx.onmicrosoft.com",
+      "id": "90ccfd6b-17ea-402b-aa21-1a1799a547d6",
+      "displayName": "Oliver Smith"
+    }
+  },
+  "parentReference": {
+    "id": "036d657d-ed69-4dcc-a669-483ce9788655",
+    "siteId": "tooljetxxxx.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d09-1613-4663-99ab-1bb72ff6ceeb"
+  },
+  "contentType": {
+    "id": "0x0100A3D887BE30452F4A9CBA7E684C523E2100098058C6B440D14786561D28914A3EDB",
+    "name": "Item"
+  },
+  "fields@odata.context": "https://graph.microsoft.com/v1.0/$metadata#sites('tooljetxxxx.sharepoint.com%2C887cb371-e930-4e5b-a726-8d5769e6b946%2C6d653d09-1613-4663-99ab-1bb72ff6ceeb')/lists('1a64ae23-9cb6-4521-b489-61d558dde9f7')/items('69')/fields/$entity",
   "fields": {
-    "TaskName": "Prepare Presentation",
-    "Priority": "High",
-    "DueDate": "2023-10-30T00:00:00Z"
+    "@odata.etag": ""95d95442-f155-45be-ae85-ef9acf1d35f9,1"",
+    "Title": "Prepare Presentation",
+    "id": "69",
+    "ContentType": "Item",
+    "Modified": "2024-11-05T11:40:52Z",
+    "Created": "2024-11-05T11:40:52Z",
+    "AuthorLookupId": "7",
+    "EditorLookupId": "7",
+    "_UIVersionString": "1.0",
+    "Attachments": false,
+    "Edit": "",
+    "LinkTitleNoMenu": "Prepare Presentation",
+    "LinkTitle": "Prepare Presentation",
+    "ItemChildCount": "0",
+    "FolderChildCount": "0",
+    "_ComplianceFlags": "",
+    "_ComplianceTag": "",
+    "_ComplianceTagWrittenTime": "",
+    "_ComplianceTagUserId": "",
+    "AppAuthorLookupId": "3",
+    "AppEditorLookupId": "3"
   }
 }
 ```
