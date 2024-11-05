@@ -99,6 +99,16 @@ export const Checkbox = ({
   }, [disable]);
 
   useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('toggle', async function () {
+      setInputValue(!checked);
+      fireEvent('onChange');
+      setUserInteracted(true);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [checked]);
+
+  useEffect(() => {
     const setCheckedAndNotify = async (status) => {
       setInputValue(status);
       if (status) {
@@ -125,12 +135,9 @@ export const Checkbox = ({
         setExposedVariable('isDisabled', disable);
       },
       toggle: () => {
-        setExposedVariable('toggle', async function () {
-          setInputValue(!checked);
-          fireEvent('onChange');
-          setUserInteracted(true);
-        });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        setInputValue(!checked);
+        fireEvent('onChange');
+        setUserInteracted(true);
       },
       label: label,
       isMandatory: isMandatory,
