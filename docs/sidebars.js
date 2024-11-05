@@ -460,6 +460,7 @@ const sidebars = {
             'marketplace/plugins/marketplace-plugin-portkey',
             'marketplace/plugins/marketplace-plugin-prestodb',
             'marketplace/plugins/marketplace-plugin-jira',
+            'marketplace/plugins/marketplace-plugin-sharepoint'
           ],
         },
       ],
