@@ -217,14 +217,14 @@ Site ID: tooljetxxxx.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d0
       },
       "createdBy": {
         "user": {
-          "displayName": "Devanshu Rastogi",
-          "email": "DevanshuRastogi@tooljetxxxx.onmicrosoft.com"
+          "displayName": "Oliver Smith",
+          "email": "oliver@tooljetxxxx.onmicrosoft.com"
         }
       },
       "lastModifiedBy": {
         "user": {
-          "displayName": "Devanshu Rastogi",
-          "email": "DevanshuRastogi@tooljetxxxx.onmicrosoft.com"
+          "displayName": "Oliver Smith",
+          "email": "oliver@tooljetxxxx.onmicrosoft.com"
         }
       },
       "parentReference": {
@@ -330,22 +330,109 @@ List ID: 22f69173-0c1d-4c76-a721-5a31f0bd5af3
 
 ```json
 {
-  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#sites('tooljetxxxx.sharepoint.com')/lists/$entity",
-  "id": "22f69173-0c1d-4c76-a721-5a31f0bd5af3",
-  "displayName": "Project Tasks",
-  "list": {
-    "template": "genericList",
-    "contentTypesEnabled": true,
-    "hidden": false
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#sites('tooljetxxxx.sharepoint.com%2C887cb371-e930-4e5b-a726-8d5769e6b946%2C6d653d09-1613-4663-99ab-1bb72ff6ceeb')/lists/$entity",
+  "@odata.etag": ""1a64ae23-9cb6-4521-b489-61d558dde9f7,11"",
+  "createdDateTime": "2024-10-24T11:11:10Z",
+  "description": "",
+  "eTag": ""1a64ae23-9cb6-4521-b489-61d558dde9f7,11"",
+  "id": "1a64ae23-9cb6-4521-b489-61d558dde9f7",
+  "lastModifiedDateTime": "2024-11-05T10:27:04Z",
+  "name": "Test_table_query",
+  "webUrl": "https://tooljetxxxx.sharepoint.com/sites/NewStyle/Lists/Test_table_query",
+  "displayName": "Test_table_query",
+  "createdBy": {
+    "user": {
+      "email": "oliver@tooljetxxxx.onmicrosoft.com",
+      "id": "90ccfd6b-17ea-402b-aa21-1a1799a547d6",
+      "displayName": "Oliver Smith"
+    }
   },
+  "lastModifiedBy": {
+    "user": {
+      "email": "oliver@tooljetxxxx.onmicrosoft.com",
+      "id": "90ccfd6b-17ea-402b-aa21-1a1799a547d6",
+      "displayName": "Oliver Smith"
+    }
+  },
+  "parentReference": {
+    "siteId": "tooljetxxxx.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d09-1613-4663-99ab-1bb72ff6ceeb"
+  },
+  "list": {
+    "contentTypesEnabled": false,
+    "hidden": false,
+    "template": "genericList"
+  },
+  "columns@odata.context": "https://graph.microsoft.com/v1.0/$metadata#sites('tooljetxxxx.sharepoint.com%2C887cb371-e930-4e5b-a726-8d5769e6b946%2C6d653d09-1613-4663-99ab-1bb72ff6ceeb')/lists('1a64ae23-9cb6-4521-b489-61d558dde9f7')/columns",
   "columns": [
     {
-      "name": "TaskName",
-      "text": {}
-    },
+      "columnGroup": "Custom Columns",
+      "description": "",
+      "displayName": "USER_NAME",
+      "enforceUniqueValues": false,
+      "hidden": false,
+      "id": "fa564e0f-0c70-4ab9-b863-0177e6ddd247",
+      "indexed": false,
+      "name": "Title",
+      "readOnly": false,
+      "required": false,
+      "text": {
+        "allowMultipleLines": false,
+        "appendChangesToExistingText": false,
+        "linesForEditing": 0,
+        "maxLength": 255
+      }
+    }
+  ],
+  "items@odata.context": "https://graph.microsoft.com/v1.0/$metadata#sites('tooljetxxxx.sharepoint.com%2C887cb371-e930-4e5b-a726-8d5769e6b946%2C6d653d09-1613-4663-99ab-1bb72ff6ceeb')/lists('1a64ae23-9cb6-4521-b489-61d558dde9f7')/items",
+  "items": [
     {
-      "name": "DueDate",
-      "dateTime": {}
+      "@odata.etag": ""12b493eb-2452-451b-84e5-ecba8ec898c8,1"",
+      "createdDateTime": "2024-10-24T11:11:11Z",
+      "eTag": ""12b493eb-2452-451b-84e5-ecba8ec898c8,1"",
+      "id": "1",
+      "lastModifiedDateTime": "2024-10-24T11:11:11Z",
+      "webUrl": "https://tooljetxxxx.sharepoint.com/sites/NewStyle/Lists/Test_table_query/1_.000",
+      "createdBy": {
+        "user": {
+          "email": "oliver@tooljetxxxx.onmicrosoft.com",
+          "id": "90ccfd6b-17ea-402b-aa21-1a1799a547d6",
+          "displayName": "Oliver Smith"
+        }
+      },
+      "lastModifiedBy": {
+        "user": {
+          "email": "oliver@tooljetxxxx.onmicrosoft.com",
+          "id": "90ccfd6b-17ea-402b-aa21-1a1799a547d6",
+          "displayName": "Oliver Smith"
+        }
+      },
+      "parentReference": {
+        "id": "036d657d-ed69-4dcc-a669-483ce9788655",
+        "siteId": "tooljetxxxx.sharepoint.com,887cb371-e930-4e5b-a726-8d5769e6b946,6d653d09-1613-4663-99ab-1bb72ff6ceeb"
+      },
+      "contentType": {
+        "id": "0x0100A3D887BE30452F4A9CBA7E684C523E2100098058C6B440D14786561D28914A3EDB",
+        "name": "Item"
+      },
+      "fields@odata.context": "https://graph.microsoft.com/v1.0/$metadata#sites('tooljetxxxx.sharepoint.com%2C887cb371-e930-4e5b-a726-8d5769e6b946%2C6d653d09-1613-4663-99ab-1bb72ff6ceeb')/lists('1a64ae23-9cb6-4521-b489-61d558dde9f7')/items('1')/fields/$entity",
+      "fields": {
+        "@odata.etag": ""12b493eb-2452-451b-84e5-ecba8ec898c8,1"",
+        "Title": "Null_test",
+        "id": "1",
+        "AuthorLookupId": "7",
+        "EditorLookupId": "7",
+        "_UIVersionString": "1.0",
+        "Attachments": false,
+        "Edit": "",
+        "LinkTitleNoMenu": "Null_test",
+        "LinkTitle": "Null_test",
+        "ItemChildCount": "0",
+        "FolderChildCount": "0",
+        "_ComplianceFlags": "",
+        "_ComplianceTag": "",
+        "_ComplianceTagWrittenTime": "",
+        "_ComplianceTagUserId": ""
+      }
     }
   ]
 }
