@@ -112,7 +112,7 @@ export const ViewerSidebarNavigation = ({
         borderRight: !styles?.borderColor?.isDefault ? `1px solid ${styles?.borderColor?.value}` : '',
       }}
     >
-      <div className="position-relative">
+      <div className="position-relative" style={{ height: '100%' }}>
         <ButtonSolid
           onClick={() => {
             toggleSidebarPinned();
