@@ -109,7 +109,7 @@ export default function autogenerateColumns(
 
   setTimeout(
     () =>
-      setProperty(id, 'columns', finalColumns, 'properties', undefined, undefined, undefined, {
+      setProperty(id, 'columns', finalColumns, 'properties', 'value', false, 'canvas', {
         skipUndoRedo: true,
         saveAfterAction: true,
       }),
