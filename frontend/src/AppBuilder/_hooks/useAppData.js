@@ -93,7 +93,9 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
     if (pageSwitchInProgress) {
       const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === currentPageId);
       setPageSwitchInProgress(false);
-      handleEvent('onPageLoad', currentPageEvents, {});
+      setTimeout(() => {
+        handleEvent('onPageLoad', currentPageEvents, {});
+      }, 0);
     }
   }, [pageSwitchInProgress, currentPageId]);
 
