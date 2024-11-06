@@ -179,7 +179,7 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 | <div style={{ width:"100px"}}> Variables </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 |:----------- |:----------- |:---------- |
-| value | Holds the value of the user inputs in the code editor. | Access the value dynamically using JS (for e.g., `{{components.codeeditor1.value}}`). |
+| value | Holds the current input value entered by the user in the code editor. | Access this value dynamically using JavaScript (e.g., `{{components.codeeditor1.value}}`) or by triggering it through an event. |
 
 </div>
 
@@ -196,12 +196,12 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 <div style={{paddingTop:'24px'}}>
 
-## Layout
+## Devices
 
-| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> |
-|:----------- |:----------- |
-| Show on desktop | Toggle on or off to display the component in desktop view. You can programmatically determine the value by clicking on **fx** to set the value `{{true}}` or `{{false}}`. |
-| Show on mobile | Toggle on or off to display the component in mobile view. You can programmatically determine the value by clicking on **fx** to set the value `{{true}}` or `{{false}}`. |
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"100px"}}> Expected Value </div> |
+|:----------- |:----------- |:---------- |
+| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.|
+| Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.|
 
 </div>
 
