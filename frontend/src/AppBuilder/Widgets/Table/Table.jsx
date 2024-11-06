@@ -581,7 +581,7 @@ export const Table = React.memo(
         );
         useDynamicColumn && setGeneratedColumn(generatedColumnFromData);
       }
-    }, [tableData, JSON.stringify(dynamicColumn)]);
+    }, [JSON.stringify(tableData), JSON.stringify(dynamicColumn)]);
 
     const computedStyles = {
       // width: `${width}px`,
