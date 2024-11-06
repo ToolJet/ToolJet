@@ -9,8 +9,7 @@ export default function autogenerateColumns(
   dynamicColumn = [],
   setProperty,
   generateNestedColumns,
-  id,
-  isInitialRender
+  id
 ) {
   if (useDynamicColumn) {
     if (dynamicColumn.length > 0 && dynamicColumn[0].name) {
@@ -111,7 +110,7 @@ export default function autogenerateColumns(
   setTimeout(
     () =>
       setProperty(id, 'columns', finalColumns, 'properties', undefined, undefined, undefined, {
-        skipUndoRedo: isInitialRender,
+        skipUndoRedo: true,
         saveAfterAction: true,
       }),
     10
