@@ -571,6 +571,13 @@
 
 .page-handler-wrapper {
   background: transparent;
+  height: 100%;
+  scrollbar-width: none;
+  overflow: auto;
+
+  &::-webkit-scrollbar {
+      display: none;
+  }
 
   .tj-list-item-selected {
     .custom-icon {

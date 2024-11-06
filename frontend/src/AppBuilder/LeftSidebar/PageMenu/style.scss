@@ -1,3 +1,9 @@
+.PopoverContent {
+    &.page {
+        min-height: unset !important;
+    }
+}
+
 .edit-page-overlay-toggle {
     opacity: 0;
     transition: opacity 0.1s;
