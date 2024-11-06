@@ -22,7 +22,7 @@ export class OnboardingService {
   ) {}
 
   async setupFirstUser(response: Response, userCreateDto: CreateAdminDto): Promise<any> {
-    const { name, workspaceName, password, email } = userCreateDto;
+    const { name, workspaceName, password, email, region } = userCreateDto;
     const workspaceSlug = generateWorkspaceSlug(workspaceName || 'My workspace');
 
     const result = await dbTransactionWrap(async (manager) => {
@@ -52,7 +52,7 @@ export class OnboardingService {
       return this.authService.generateLoginResultPayload(response, user, organization, false, true, null, manager);
     });
 
-    await this.metadataService.finishOnboardingCE(name, email, workspaceName);
+    await this.metadataService.finishOnboardingCE(name, email, workspaceName, region);
     return result;
   }
 }
