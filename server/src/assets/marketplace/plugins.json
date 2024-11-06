@@ -88,12 +88,20 @@
     "author": "Tooljet",
     "timestamp": "Wed, 06 Mar 2024 11:34:26 GMT"
 	},
-  {
-    "name": "documentdb",
-    "description": "Plugin for Amazon DocumentDB",
-    "version": "1.0.0",
-    "id": "documentdb",
-    "author": "Tooljet",
-    "timestamp": "Wed, 24 Apr 2024 10:34:39 GMT"
-  }
+	{
+		"name": "documentdb",
+		"description": "Plugin for Amazon DocumentDB",
+		"version": "1.0.0",
+		"id": "documentdb",
+		"author": "Tooljet",
+		"timestamp": "Wed, 24 Apr 2024 10:34:39 GMT"
+	},
+	{
+		"name": "portkey",
+		"description": "Plugin for Portkey APIs",
+		"version": "1.0.0",
+		"id": "portkey",
+		"author": "Portkey",
+		"timestamp": "Sat, 29 Jun 2024 09:40:13 GMT"
+	}
 ]

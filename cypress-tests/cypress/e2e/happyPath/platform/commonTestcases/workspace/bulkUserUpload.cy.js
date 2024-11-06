@@ -34,9 +34,9 @@ describe("Bulk user upload", () => {
     data.firstName = fake.firstName;
     data.workspaceName = data.firstName.toLowerCase();
 
-    cy.apiLogin()
+    cy.apiLogin();
     cy.apiCreateWorkspace(data.firstName, data.workspaceName);
-    cy.visit(`${data.workspaceName}`)
+    cy.visit(`${data.workspaceName}`);
 
     common.navigateToManageUsers();
 
@@ -122,9 +122,9 @@ describe("Bulk user upload", () => {
     data.firstName = fake.firstName;
     data.workspaceName = data.firstName.toLowerCase();
 
-    cy.apiLogin()
+    cy.apiLogin();
     cy.apiCreateWorkspace(data.firstName, data.workspaceName);
-    cy.visit(`${data.workspaceName}`)
+    cy.visit(`${data.workspaceName}`);
     common.navigateToManageUsers();
 
     cy.get(usersSelector.buttonAddUsers).click();
@@ -142,7 +142,10 @@ describe("Bulk user upload", () => {
       force: true,
     });
     cy.get(usersSelector.buttonUploadUsers).click();
-    cy.wait(10000);
+    cy.wait(30000);
+    cy.get(".go2072408551")
+      .should("be.visible")
+      .and("have.text", "250 users are being added");
     common.searchUser("test12@gmail.com");
     cy.contains("td", "test12@gmail.com")
       .parent()

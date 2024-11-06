@@ -1,4 +1,14 @@
 const devServerPlugin = require('./src/plugins/devServer/index.js');
+import versionsArchived from './versionsArchived.json';
+
+const baseArchivedURL = "https://archived-docs.tooljet.com/docs/";
+
+const lastFiveArchivedVersions = versionsArchived
+  .slice(0, 5)
+  .map((version, index) => ({
+    version,
+    url: index === 0 ? baseArchivedURL : `${baseArchivedURL}${version}`
+  }));
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -34,7 +44,7 @@ module.exports = {
     },
     navbar: {
       logo: {
-        href: '/docs',
+        href: '/docs/',
         alt: 'ToolJet Logo',
         src: 'img/Logomark.svg',
         srcDark: `img/Logomark_white.svg`,
@@ -121,8 +131,14 @@ module.exports = {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
           editUrl: 'https://github.com/ToolJet/Tooljet/blob/develop/docs/',
-          includeCurrentVersion: false,
+          includeCurrentVersion: true,
           lastVersion: '2.50.0-LTS',
+          versions: {
+            current : {
+              label: '3.0.0-Beta 🚧',
+              path: 'beta',
+            },
+          }
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
@@ -135,7 +151,7 @@ module.exports = {
         },
         googleTagManager: isProd
           ? {
-            containerId: process.env.GTM,
+            containerId: process.env.GTM || 'development',
           }
           : undefined,
       },
@@ -143,6 +159,17 @@ module.exports = {
   ],
   plugins: [
     devServerPlugin,
-    'plugin-image-zoom'
+    'plugin-image-zoom',
+    [
+      '@docusaurus/plugin-client-redirects',
+      {
+        redirects: [
+          {
+            to: '/docs/',
+            from: '/',
+          },
+        ],
+      },
+    ],
   ],
 };

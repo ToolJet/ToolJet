@@ -105,7 +105,7 @@ Use this environment variable to enable/disable the developement mode that allow
 | PGRST_JWT_SECRET  | JWT token client provided for authentication |
 | PGRST_HOST        | postgrest database host                      |
 
-Use `ENABLE_TOOLJET_DB` to enable/disable the feature that allows users to work with inbuilt data store to build apps with. In order to set it up, [follow the instructions here](/docs/tooljet-database#enabling-the-tooljet-database-for-your-instance).
+Use `ENABLE_TOOLJET_DB` to enable/disable the feature that allows users to work with inbuilt data store to build apps with. In order to set it up, [follow the instructions here](/docs/tooljet-db/tooljet-database/#enabling-the-tooljet-database-for-your-instance).
 
 :::tip
 When this feature is enabled, the database name provided for `TOOLJET_DB` will be utilized to create a new database during server boot process in all of our production deploy setups.
@@ -244,14 +244,15 @@ The maximum retry limit of login password for a user is by default set to 5, acc
 
 Configurations for instance level SSO.
 
-| variable                     | description                                                    |
-| ---------------------------- | -------------------------------------------------------------- |
-| SSO_GOOGLE_OAUTH2_CLIENT_ID  | Google OAuth client id                                         |
-| SSO_GIT_OAUTH2_CLIENT_ID     | GitHub OAuth client id                                         |
-| SSO_GIT_OAUTH2_CLIENT_SECRET | GitHub OAuth client secret                                     |
-| SSO_GIT_OAUTH2_HOST          | GitHub OAuth host name if GitHub is self hosted                |
-| SSO_ACCEPTED_DOMAINS         | comma separated email domains that supports SSO authentication |
-| SSO_DISABLE_SIGNUPS          | Disable user sign up if authenticated user does not exist      |
+| variable                     | description                                                                                                                   |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| SSO_GOOGLE_OAUTH2_CLIENT_ID  | Google OAuth client id                                                                                                        |
+| SSO_GIT_OAUTH2_CLIENT_ID     | GitHub OAuth client id                                                                                                        |
+| SSO_GIT_OAUTH2_CLIENT_SECRET | GitHub OAuth client secret                                                                                                    |
+| SSO_GIT_OAUTH2_HOST          | GitHub OAuth host name if GitHub is self hosted                                                                               |
+| SSO_ACCEPTED_DOMAINS         | comma separated email domains that supports SSO authentication                                                                |
+| SSO_DISABLE_SIGNUPS          | Disable user sign up if authenticated user does not exist                                                                     |
+| SSO_SKIP_LOGIN_SCREEN        | Set to `true` to enable automatic SSO login. Only works when a single SSO method is configured and password login is disabled |
 
 ## ToolJet client
 

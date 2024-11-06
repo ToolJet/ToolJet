@@ -79,9 +79,14 @@ To remove a plugin, follow these steps:
 - **[Engagespot](/docs/marketplace/plugins/marketplace-plugin-engagespot)**
 - **[GitHub](/docs/marketplace/plugins/marketplace-plugin-github)**
 - **[HarperDB](/docs/marketplace/plugins/marketplace-plugin-harperdb)**
+- **[Jira](/docs/marketplace/plugins/marketplace-plugin-jira)**
 - **[OpenAI](/docs/marketplace/plugins/marketplace-plugin-openai)**
 - **[Plivo](/docs/marketplace/plugins/marketplace-plugin-plivo)**
 - **[Pocketbase](/docs/marketplace/plugins/marketplace-plugin-pocketbase)**
+- **[Portkey](/docs/marketplace/plugins/marketplace-plugin-portkey)**
+- **[PrestoDB](/docs/marketplace/plugins/marketplace-plugin-prestodb)**
+- **[Salesforce](/docs/marketplace/plugins/marketplace-plugin-salesforce)**
+- **[Sharepoint](/docs/marketplace/plugins/marketplace-plugin-sharepoint)**
 - **[Supabase](/docs/marketplace/plugins/marketplace-plugin-supabase)**
 :::info For Plugin Developers
 Refer to the **[Plugin Development guide](/docs/contributing-guide/marketplace/marketplace-setup)** to learn how to create plugins for the ToolJet Marketplace.

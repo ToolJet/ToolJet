@@ -26,7 +26,7 @@ export const MarketplacePlugins = ({ allPlugins = [] }) => {
   }, []);
 
   return (
-    <div className="col-9">
+    <div className="col-9 pb-3">
       <div className="row row-cards">
         {allPlugins?.map(({ id, name, repo, version, description }) => {
           return (

@@ -1,6 +1,6 @@
 ---
 id: create-ui
-title: Creating UI
+title: Create User Interfaces
 ---
 
 ToolJet offers a variety of pre-built components that streamline the development process and allow for rapid prototyping and deployment of internal tools. This guide is focused on building a basic UI for a Support Desk Dashboard application.
@@ -86,7 +86,7 @@ You can see all the available properties of a component in the Properties Panel.
 
 
 ## Adding a New Page
-- Click on **Pages** on the left sidebar - there will be a *Home* page by default. Rename the 
+- Click on **Pages** on the left sidebar - there will be a *Home* page by default. Rename the home page to <i>Dashboard</i>.
 - Click on the `+` icon to create a new page and rename the new page to <i>Customers</i>.
 
 <div style={{textAlign: 'center', marginBottom:'15px'}}>

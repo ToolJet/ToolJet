@@ -1,6 +1,6 @@
 ---
 id: accessing-values
-title: Accessing and Utilizing Values
+title: Access and Reference Values
 ---
 
 ToolJet's flexibility in integrating dynamic data within applications is facilitated through the ability to use custom code, and access and manipulate values derived from components, queries, globals. You can use double curly braces `{{}}` in the app-builder to access values or enter JavaScript code.

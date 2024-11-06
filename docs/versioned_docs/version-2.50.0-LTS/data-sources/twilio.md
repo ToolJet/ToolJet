@@ -3,52 +3,55 @@ id: twilio
 title: Twilio
 ---
 
-# Twilio
+ToolJet can connect to Twilio account to send sms.
 
-ToolJet can connect to your Twilio account to send sms.
-
-<div style={{textAlign: 'center'}}>
-
-![ToolJet - Data source - Twilio](/img/datasource-reference/twilio/connect.png)
-
-</div>
+<div style={{paddingTop:'24px'}}>
 
 ## Connection
-- To add the Twilio datasource, click the **Datasource manager** icon on the left-sidebar of the app builder and click on the `Add datasource` button, then select **Twilio** from the modal that pops up.
- 
-- In the next dialog, you'll be asked to enter the Auth Token, Account SID, and Messaging Service SID.
 
-- You can get the **Auth Token and Account SID** on the dashboard of your Twilio account.
+To establish a connection with the Twilio data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page from the ToolJet dashboard and choose Twilio as the data source.
 
-<div style={{textAlign: 'center'}}>
+ToolJet requires the following to connect to Twilio:
+- **Auth Token**
+- **Account SID**
+- **Messaging Service SID**
 
-![ToolJet - Data source - Twilio](/img/datasource-reference/twilio/auth.png)
+You can get the **Auth Token and Account SID** on the dashboard of your Twilio account.
+
+<img className="screenshot-full" src="/img/datasource-reference/twilio/auth.png" alt="ToolJet - Data source - Twilio" />
+
+For **Messaging Service SID**, you'll need to create a messaging service first from the Services under Messaging in the left-sidebar.
+
+<img className="screenshot-full" src="/img/datasource-reference/twilio/sid.png" alt="ToolJet - Data source - Twilio" />
+
+<img className="screenshot-full" src="/img/datasource-reference/twilio/connect-v2.png" alt="ToolJet - Data source - Twilio" />
 
 </div>
 
-- For **Messaging Service SID**, you'll need to create a messaging service first from the Services under Messaging in the left-sidebar.
+<div style={{paddingTop:'24px'}}>
 
-<div style={{textAlign: 'center'}}>
+## Querying Twilio
 
-![ToolJet - Data source - Twilio](/img/datasource-reference/twilio/sid.png)
+1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
+2. Select the **Twilio** datasource added in previous step.
+3. Select **Send SMS** from the dropdown and enter the required parameters.
+4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
 </div>
 
-- After entering the three credentials, you can **Save** the datasource.
+<div style={{paddingTop:'24px'}}>
 
 ## Supported operations
-
-1. **Send message**
 
 ### Send message
 
 This operation will send the specified message to specified mobile number.
 
-<div style={{textAlign: 'center'}}>
+#### Required Parameters
+- **To Number**
+- **Body**
 
-![ToolJet - Data source - Twilio](/img/datasource-reference/twilio/sms.png)
+<img className="screenshot-full" src="/img/datasource-reference/twilio/sms-v2.png" alt="ToolJet - Data source - Twilio" />
 
 </div>
-
-
 

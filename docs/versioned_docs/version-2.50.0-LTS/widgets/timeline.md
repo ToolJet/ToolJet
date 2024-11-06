@@ -2,17 +2,18 @@
 id: timeline
 title: Timeline
 ---
+
 # Timeline
 
-The **Timeline** component can be used to do a visual representation of a sequence of events.
+The **Timeline** component provides a visual representation of a sequence of events. It's useful for displaying historical data, project milestones, or any chronological information in a clear and engaging format.
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Properties
 
-### Timeline data
+### Timeline Data
 
-**Data requirements:** The data needs to be an array of objects and each object should have `title`, `subTitle`, `iconBackgroundColor` and `date` keys. The `iconBackgroundColor` can be a hex color code or in an RGBA format.
+**Data requirements:** The data should be an array of objects. Each object must have **title**, **subTitle**, **iconBackgroundColor**, and **date** keys. The **iconBackgroundColor** can be a hex color code or in an RGBA format.
 
 **Example with hex color code:**
 ```json
@@ -32,60 +33,59 @@ The **Timeline** component can be used to do a visual representation of a sequen
 ]
 ```
 
-### Hide date
+### Hide Date
 
-Hide date can be used to hide the date time of the Timeline component.
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-## Component Specific Actions (CSA)
-
-There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.
+Toggle this option to hide the date/time information in the Timeline component.
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
+
+## Component-Specific Actions (CSA)
+
+There are currently no Component-Specific Actions implemented for the Timeline component.
+
+</div>
+
+<div style={{paddingTop:'24px'}}>
 
 ## Exposed Variables
 
-There are currently no exposed variables for the component.
+There are currently no exposed variables for the Timeline component.
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## General
 ### Tooltip
 
-A Tooltip is often used to specify extra information when the user hovers the mouse pointer over the component.
-
-Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the component will display the string as the tooltip.
+A Tooltip provides additional information when users hover over the component. Set the tooltip content under the **General** accordion in the component's properties.
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
-## Layout
+## Devices
 
-| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
-|:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
-| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
-| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+| Property        | Description                               | Expected Value |
+| :-------------- | :---------------------------------------- | :------------- |
+| Show on desktop | Controls the component's desktop visibility | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on mobile  | Controls the component's mobile visibility  | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.  |
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Styles
 
-| <div style={{ width:"100px"}}> Style </div>     | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"100px"}}> How To Access </div> |
-|:----------- |:----------- |:--------|
-| Visibility | Toggle on or off to control the visibility of the component. | Programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the component will not visible after the app is deployed. By default, it's set to `{{true}}`. |
+| Property | Description | Configuration Options |
+| :------- | :---------- | :-------------------- |
+| Visibility | Controls the component's visibility | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Box Shadow | Adds a shadow effect around the component | Select the box shadow color and adjust the related properties or set it programmatically using **fx**. |
 
 :::info
-Any property having `Fx` button next to its field can be **programmatically configured**.
+Any property with an **fx** button next to it can be **programmatically configured**.
 :::
 
 </div>

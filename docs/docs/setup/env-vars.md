@@ -94,18 +94,20 @@ Use this environment variable to enable/disable the developement mode that allow
 
 ### Enable ToolJet Database ( optional )
 
-| variable          | description                                  |
-| ----------------- | -------------------------------------------- |
-| ENABLE_TOOLJET_DB | `true` or `false`                            |
-| TOOLJET_DB        | Default value is `tooljet_db`                |
-| TOOLJET_DB_HOST   | database host                                |
-| TOOLJET_DB_USER   | database username                            |
-| TOOLJET_DB_PASS   | database password                            |
-| TOOLJET_DB_PORT   | database port                                |
-| PGRST_JWT_SECRET  | JWT token client provided for authentication |
-| PGRST_HOST        | postgrest database host                      |
+| variable                     | description                                  |
+| -----------------------------| -------------------------------------------- |
+| ENABLE_TOOLJET_DB            | `true` or `false`                            |
+| TOOLJET_DB                   | Default value is `tooljet_db`                |
+| TOOLJET_DB_HOST              | database host                                |
+| TOOLJET_DB_USER              | database username                            |
+| TOOLJET_DB_PASS              | database password                            |
+| TOOLJET_DB_PORT              | database port                                |
+| PGRST_JWT_SECRET             | JWT token client provided for authentication |
+| PGRST_HOST                   | postgrest database host                      |
+| TOOLJET_DB_RECONFIG          | `true` or `false`                            |
+| TOOLJET_DB_STATEMENT_TIMEOUT | statement timeout in milliseconds            |
 
-Use `ENABLE_TOOLJET_DB` to enable/disable the feature that allows users to work with inbuilt data store to build apps with. In order to set it up, [follow the instructions here](/docs/tooljet-database#enabling-the-tooljet-database-for-your-instance).
+Use `ENABLE_TOOLJET_DB` to enable/disable the feature that allows users to work with inbuilt data store to build apps with. In order to set it up, [follow the instructions here](/docs/tooljet-db/tooljet-database/#enabling-the-tooljet-database-for-your-instance).
 
 :::tip
 When this feature is enabled, the database name provided for `TOOLJET_DB` will be utilized to create a new database during server boot process in all of our production deploy setups.
@@ -147,17 +149,26 @@ You can set `SERVE_CLIENT` to `false` to disable this behaviour.
 If ToolJet is hosted on a domain subpath, you can set the environment variable `SUB_PATH` to support it.
 Please note the subpath is to be set with trailing `/` and is applicable only when the server is serving the frontend client.
 
-### SMTP configuration ( optional )
+### SMTP Configuration (Optional)
 
-ToolJet uses SMTP services to send emails ( Eg: invitation email when you add new users to your workspace ).
+ToolJet uses SMTP services to send emails (e.g., invitation emails when you add new users to your workspace).
 
-| variable           | description                               |
+For Enterprise Edition, you must configure SMTP settings through the user interface (UI) in the ToolJet Settings. For more information, see [SMTP Configuration](../org-management/smtp-configuration.md).
+
+:::info
+If you have upgraded from a version prior to v2.62.0, the SMTP variables in your .env file will automatically be mapped to the UI.
+For versions v2.62.0 and later, SMTP configuration will no longer be picked up from the .env file for Enterprise Edition. You must configure SMTP through the UI. You can safely remove these variables from your .env file after ensuring that the configuration is properly set up in the UI.
+:::
+
+For Community Edition, you can configure SMTP via environment variables using the following:
+
+| Variable           | Description                               |
 | ------------------ | ----------------------------------------- |
-| DEFAULT_FROM_EMAIL | from email for the email fired by ToolJet |
-| SMTP_USERNAME      | username                                  |
-| SMTP_PASSWORD      | password                                  |
-| SMTP_DOMAIN        | domain or host                            |
-| SMTP_PORT          | port                                      |
+| DEFAULT_FROM_EMAIL | From email for emails sent by ToolJet     |
+| SMTP_USERNAME      | Username                                  |
+| SMTP_PASSWORD      | Password                                  |
+| SMTP_DOMAIN        | Domain or host                            |
+| SMTP_PORT          | Port                                      |
 
 ### Slack configuration ( optional )
 

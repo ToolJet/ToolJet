@@ -40,25 +40,51 @@ To set up and run ToolJet on macOS for development, begin by opening your termin
 
     :::info 
     Required only if ToolJet Database is being used. 
-    :::       
+    :::
+
+    To install a specific version of PostgRest using Homebrew:
 
     ```bash
-    brew install postgrest
+    brew install postgrest@<version>
     ```
+    To find out which versions are available, you can search with:
 
-    1.5 Clone the repository
     ```bash
-    git clone https://github.com/tooljet/tooljet.git
+    brew search postgrest
     ```
 
-2. Set up environment variables
+    Once PostgREST is installed, you can start the PostgREST service using Homebrew services:
+
+    ```
+    brew services start postgrest
+    ```
+
+    Run the following command to check the status of the PostgREST service and other Homebrew-managed services:
+
+    ```
+    brew services list
+    ```
+
+    1.5 Fork the repository:
+
+    Go to the [ToolJet GitHub repository](https://github.com/ToolJet/Tooljet), click on the **Fork** button to create a copy of the repository under your own GitHub account.
+
+    1.6 Clone your forked repository:
+
+    After forking, clone the forked repository to your local machine using the URL of your forked repo.
+
+    ```bash
+    git clone https://github.com/<your-username>/ToolJet.git
+    ```
+
+3. Set up environment variables
 
     Create a `.env` file by copying `.env.example`. More information on the variables that can be set is given in the [environment variables reference](/docs/setup/env-vars)
     ```bash
     cp .env.example .env
     ```
 
-3. Populate the keys in the env file
+4. Populate the keys in the env file
    :::info
    `SECRET_KEY_BASE` requires a 64 byte key. (If you have `openssl` installed, run `openssl rand -hex 64` to create a 64 byte secure   random key)
 
@@ -81,7 +107,7 @@ To set up and run ToolJet on macOS for development, begin by opening your termin
     ORM_LOGGING=all
    ```
 
-4. Install and build dependencies
+5. Install and build dependencies
     ```bash
     npm install
     npm install --prefix server
@@ -89,7 +115,7 @@ To set up and run ToolJet on macOS for development, begin by opening your termin
     npm run build:plugins
     ```
 
-5. Set up database
+6. Set up database
     ```bash
     npm run --prefix server db:create
     npm run --prefix server db:reset
@@ -98,24 +124,24 @@ To set up and run ToolJet on macOS for development, begin by opening your termin
     If at any point you need to reset the database, use this command `npm run --prefix server db:reset`
     :::
 
-6. Run plugins compilation in watch mode
+7. Run plugins compilation in watch mode
     ```bash
     cd ./plugins && npm start
     ```
 
-7. Run the server
+8. Run the server
     ```bash
     cd ./server && npm run start:dev
     ```
 
-8. Run the client
+9. Run the client
     ```bash
     cd ./frontend && npm start
     ```
 
     The client will start on the port 8082, you can access the client by visiting:  [http://localhost:8082](http://localhost:8082)
 
-9. Create login credentials
+10. Create login credentials
 
     Visiting [http://localhost:8082](http://localhost:8082) should redirect you to the login page, click on the signup link and enter your email. The emails sent by the server in development environment are captured and are opened in your default browser. Click the invitation link in the email preview to setup the account.
 

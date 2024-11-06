@@ -95,9 +95,10 @@ export const Tabs = function Tabs({
   useEffect(() => {
     const exposedVariables = {
       setTab: async function (id) {
-        if (id) {
-          setCurrentTab(id);
-          setExposedVariable('currentTab', id);
+        if (id !== undefined) {
+          const tabId = Number(id);
+          setCurrentTab(tabId);
+          setExposedVariable('currentTab', tabId);
           fireEvent('onTabSwitch');
         }
       },
