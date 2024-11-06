@@ -54,20 +54,20 @@ Check the **component specific actions** available for this component **[here](/
 
 | <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:------------------|:------------|:------------------------------|
-| Loading state      | Enables a loading spinner, often used with `isLoading` to indicate progress. Toggle or set dynamically.   | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression |
-| Visibility         | Controls component visibility. Toggle or set dynamically                                                 | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
-| Disable            | Enables or disables the component. Toggle or set dynamically                                            | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Loading state      | Enables a loading spinner, often used with `isLoading` to indicate progress. Toggle or set dynamically.   | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression |
+| Visibility         | Controls component visibility. Toggle or set dynamically                                                 | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Disable            | Enables or disables the component. Toggle or set dynamically                                            | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Tooltip            | Provides additional information on hover. Set a string value for display.                                 | String (e.g., `Enter your name here.` )                    |
 
 ## Devices
 
 **Show on desktop**
 
-Makes the component visible in desktop view. You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.
+Makes the component visible in desktop view. You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.
 
 **Show on mobile**
 
-Makes the component visible in mobile view. You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.
+Makes the component visible in mobile view. You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.
 
 ---
 # Styles
@@ -76,19 +76,19 @@ Makes the component visible in mobile view. You can set it with the toggle butto
 
 | Text Property          | Description                           | Configuration Options |
 |:--------------------|:--------------------------------------|:---------------|
-| Size         | Dimensions of the characters in a font. | Enter any number between `1-100` or dynamically configure it using `fx` |
-| Weight       | Determines how bold or light your text will appear. | Select from `light`, `regular`, `semi-bold` or `bold` or dynamically configure it using `fx` |
-| Style        | Allows you to apply styles like italic or normal, altering the overall look of the text content. | Select from `normal`, `italic` or `oblique` or dynamically configure it using `fx` |
-| Color        | Sets the color of the text. | Choose a color using the color picker or dynamically configure it using `fx` |
-| Scroll        | Creates a scroll bar if the text exceeds the component's dimensions. | Choose between `enable` or `disable` or dynamically configure it using `fx` |
-| Line Height       | Determines the vertical space between lines of text within an element. | Enter a number as the value (example: `1.5`) or dynamically configure it using `fx`|
-| Text Indent       | Commonly used to create an indentation effect. | Enter a number as the value (example: `10`) or dynamically configure it using `fx`|
-| Alignment        | Sets the alignment of the text. | Select the available options to align the text vertically or horizontally or dynamically configure it using `fx`|
-| Text Decoration   | Adds an underline, overline, line-through, or a combination of lines to selected text. | Select one of the available options - `none(default)`, `underline`, `overline`, and `strike-through` or dynamically configure it using `fx` |
-| Transformation | Dictates the capitalization of text. | Select one of the available options - `none (default)`, `uppercase`, `lowercase`, `capitalize` or dynamically configure it using `fx`|
-| Letter spacing | Determines the space between each letter. | Enter a number as the value (example: `15`) or dynamically configure it using `fx`|
-| Word spacing | Determines the space between each word. | Enter a number as the value (example: `15`) or dynamically configure it using `fx`|
-| Font variant | Adjusts the text appearance by applying font variations. | Select one of the available options - `normal`, `inherit`, `small-caps`, `initial` or dynamically configure it using `fx`|
+| Size         | Dimensions of the characters in a font. | Enter any number between `1-100` or dynamically configure it using **fx** |
+| Weight       | Determines how bold or light your text will appear. | Select from `light`, `regular`, `semi-bold` or `bold` or dynamically configure it using **fx** |
+| Style        | Allows you to apply styles like italic or normal, altering the overall look of the text content. | Select from `normal`, `italic` or `oblique` or dynamically configure it using **fx** |
+| Color        | Sets the color of the text. | Choose a color using the color picker or dynamically configure it using **fx** |
+| Scroll        | Creates a scroll bar if the text exceeds the component's dimensions. | Choose between `enable` or `disable` or dynamically configure it using **fx** |
+| Line Height       | Determines the vertical space between lines of text within an element. | Enter a number as the value (example: `1.5`) or dynamically configure it using **fx**|
+| Text Indent       | Commonly used to create an indentation effect. | Enter a number as the value (example: `10`) or dynamically configure it using **fx**|
+| Alignment        | Sets the alignment of the text. | Select the available options to align the text vertically or horizontally or dynamically configure it using **fx**|
+| Text Decoration   | Adds an underline, overline, line-through, or a combination of lines to selected text. | Select one of the available options - `none(default)`, `underline`, `overline`, and `strike-through` or dynamically configure it using **fx** |
+| Transformation | Dictates the capitalization of text. | Select one of the available options - `none (default)`, `uppercase`, `lowercase`, `capitalize` or dynamically configure it using **fx**|
+| Letter spacing | Determines the space between each letter. | Enter a number as the value (example: `15`) or dynamically configure it using **fx**|
+| Word spacing | Determines the space between each word. | Enter a number as the value (example: `15`) or dynamically configure it using **fx**|
+| Font variant | Adjusts the text appearance by applying font variations. | Select one of the available options - `normal`, `inherit`, `small-caps`, `initial` or dynamically configure it using **fx**|
 
 
 
@@ -96,9 +96,9 @@ Makes the component visible in mobile view. You can set it with the toggle butto
 
 | <div style={{ width:"100px"}}> Field Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:----------------|:------------|:--------------|
-| Background        | Sets the background color of the component.                                                   | Select the color or click on `fx` and input code that programmatically returns a Hex color code         |
-| Border    | Sets the border color of the component.                                                       | Select the color or click on `fx` and input code that programmatically returns a Hex color code          |
-| Border radius   | Modifies the border radius of the component.                                                  | Enter a number or click on `fx` and enter a code that programmatically returns a numeric value          |
-| Box shadow      | Sets the box shadow properties of the component.                                              | Select the box shadow color and adjust the related properties or programmatically set it using `fx`                                            
+| Background        | Sets the background color of the component.                                                   | Select the color or click on **fx** and input code that programmatically returns a Hex color code         |
+| Border    | Sets the border color of the component.                                                       | Select the color or click on **fx** and input code that programmatically returns a Hex color code          |
+| Border radius   | Modifies the border radius of the component.                                                  | Enter a number or click on **fx** and enter a code that programmatically returns a numeric value          |
+| Box shadow      | Sets the box shadow properties of the component.                                              | Select the box shadow color and adjust the related properties or programmatically set it using **fx**                                            
 | Padding      | Adds padding to the component | Select `None` for no padding and `Default` for standard padding     
 
