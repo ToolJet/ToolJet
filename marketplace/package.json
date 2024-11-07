@@ -29,5 +29,8 @@
     "start:dev": "npm run build && npm run start:watch",
     "lint": "eslint .  '**/*.ts'",
     "format": "eslint . --fix '**/*.ts'"
+  },
+  "dependencies": {
+    "ssh2": "^1.15.0"
   }
 }

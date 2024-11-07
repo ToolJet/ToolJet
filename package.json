@@ -13,7 +13,7 @@
     "./server/{src,test,plugins,scripts,migrations}/**/*.ts": [
       "eslint --fix"
     ],
-    "./plugins/{packages}/**/*.ts": [
+    "./plugins/packages/**/*.ts": [
       "eslint --fix"
     ]
   },
