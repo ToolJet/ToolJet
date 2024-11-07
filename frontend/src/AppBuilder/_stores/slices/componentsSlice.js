@@ -4,12 +4,12 @@ import {
   resolveDynamicValues,
   // extractAndReplaceReferencesFromString,
   checkSubstringRegex,
+  hasArrayNotation,
+  parsePropertyPath,
 } from '@/AppBuilder/_stores/utils';
 import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast';
-import { componentTypeDefinitionMap } from '@/AppBuilder/WidgetManager';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
-import { v4 as uuidv4 } from 'uuid';
-import _, { cloneDeep, merge } from 'lodash';
+import { cloneDeep, merge, set as lodashSet } from 'lodash';
 import { computeComponentName, getAllChildComponents } from '@/AppBuilder/AppCanvas/appCanvasUtils';
 import { pageConfig } from '@/AppBuilder/RightSideBar/PageSettingsTab/pageConfig';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
@@ -243,7 +243,8 @@ export const createComponentsSlice = (set, get) => ({
     property,
     value,
     component,
-    componentResolvedValues = {}, // If componentResolvedValues is null, then it is from a setComponentProperty call
+    componentResolvedValues = {},
+    updatePassedValue = true,
     moduleId
   ) => {
     const {
@@ -281,7 +282,7 @@ export const createComponentsSlice = (set, get) => ({
           allRefs.push(customResolvablePath);
         }
       }
-      if (componentResolvedValues !== null)
+      if (updatePassedValue)
         setAllValueToComponent(
           componentDetails,
           valueWithBrackets,
@@ -294,7 +295,7 @@ export const createComponentsSlice = (set, get) => ({
 
       return { updatedValue: valueWithId, allRefs, unResolvedValue: valueWithBrackets, componentResolvedValues };
     } else {
-      if (componentResolvedValues !== null)
+      if (updatePassedValue)
         setAllValueToComponent(
           componentDetails,
           value,
@@ -317,7 +318,7 @@ export const createComponentsSlice = (set, get) => ({
     componentResolvedValues = {},
     moduleId
   ) => {
-    const { getAllExposedValues } = get();
+    const { getAllExposedValues, getComponentTypeFromId } = get();
     const { componentId, paramType, property } = componentDetails;
     const length = Object.keys(customResolvables).length;
     if (length === 0) {
@@ -334,12 +335,31 @@ export const createComponentsSlice = (set, get) => ({
         if (!componentResolvedValues[componentId][index][paramType]) {
           componentResolvedValues[componentId][index][paramType] = {};
         }
-        componentResolvedValues[componentId][index][paramType][property] = resolvedValue;
+        if (hasArrayNotation(property)) {
+          const keys = parsePropertyPath(property);
+          lodashSet(
+            componentResolvedValues,
+            [componentId, index, paramType, ...keys],
+            getComponentTypeFromId(componentId) === 'Table' ? value : resolvedValue
+          );
+        } else {
+          componentResolvedValues[componentId][index][paramType][property] = resolvedValue;
+        }
       } else {
         if (!componentResolvedValues[componentId][paramType]) {
           componentResolvedValues[componentId][paramType] = {};
         }
-        componentResolvedValues[componentId][paramType][property] = resolvedValue;
+
+        if (hasArrayNotation(property)) {
+          const keys = parsePropertyPath(property);
+          lodashSet(
+            componentResolvedValues,
+            [componentId, paramType, ...keys],
+            getComponentTypeFromId(componentId) === 'Table' ? value : resolvedValue
+          );
+        } else {
+          componentResolvedValues[componentId][paramType][property] = resolvedValue;
+        }
       }
     } else {
       // Loop all the index and set the resolved value
@@ -564,6 +584,63 @@ export const createComponentsSlice = (set, get) => ({
     };
   },
 
+  // This function checks whether the property value is an array or not and then resolves the value accordingly
+  // Cases like Table column, Dropdown options, etc.
+  checkValueAndResolve: (
+    componentId,
+    paramType,
+    property,
+    value,
+    component,
+    resolvedComponentValues,
+    updatePassedValue = true,
+    moduleId
+  ) => {
+    const { updateResolvedValues, generateDependencyGraphForRefs } = get();
+    const updatedPropertyValue = cloneDeep(value);
+    if (Array.isArray(value)) {
+      value.forEach((val, index) => {
+        Object.entries(val).forEach(([key, keyValue]) => {
+          const propertyWithArrayValue = `${property}[${index}].${key}`;
+          const keys = [key];
+          if (keyValue?.value) {
+            keys.push('value');
+          }
+          const { allRefs, unResolvedValue, updatedValue } = updateResolvedValues(
+            componentId,
+            paramType,
+            propertyWithArrayValue,
+            keyValue?.value ?? keyValue,
+            component,
+            resolvedComponentValues,
+            updatePassedValue,
+            moduleId
+          );
+          lodashSet(updatedPropertyValue, [index, ...keys], updatedValue);
+          if (allRefs.length) {
+            generateDependencyGraphForRefs(allRefs, componentId, paramType, propertyWithArrayValue, unResolvedValue);
+          }
+        });
+      });
+      return { updatedValue: updatedPropertyValue };
+    } else {
+      const { allRefs, unResolvedValue, updatedValue } = updateResolvedValues(
+        componentId,
+        paramType,
+        property,
+        value,
+        component,
+        resolvedComponentValues,
+        updatePassedValue,
+        moduleId
+      );
+      if (allRefs.length) {
+        generateDependencyGraphForRefs(allRefs, componentId, paramType, property, unResolvedValue);
+      }
+      return { allRefs, unResolvedValue, updatedValue };
+    }
+  },
+
   updateDependencyGraphAndResolvedValues: (
     moduleId,
     componentId,
@@ -572,22 +649,20 @@ export const createComponentsSlice = (set, get) => ({
     resolvedComponentValues = {},
     paramType
   ) => {
-    const { updateResolvedValues, generateDependencyGraphForRefs, setAllValueToComponent } = get();
+    const { checkValueAndResolve, setAllValueToComponent } = get();
     if (component.definition[paramType] === undefined) return;
     Object.entries(component.definition[paramType]).forEach(([property, value]) => {
       if (!value?.skipResolve) {
-        const { allRefs, unResolvedValue } = updateResolvedValues(
+        checkValueAndResolve(
           componentId,
           paramType,
           property,
           value?.value,
           component,
           resolvedComponentValues,
+          true,
           moduleId
         );
-        if (allRefs.length) {
-          generateDependencyGraphForRefs(allRefs, componentId, paramType, property, unResolvedValue);
-        }
       } else {
         const componentDetails = { componentId, paramType, property };
         setAllValueToComponent(componentDetails, value?.value, false, null, {}, resolvedComponentValues, moduleId);
@@ -925,11 +1000,10 @@ export const createComponentsSlice = (set, get) => ({
       saveComponentChanges,
       withUndoRedo,
       getComponentTypeFromId,
-      updateResolvedValues,
-      generateDependencyGraphForRefs,
       setResolvedComponent,
       getComponentDefinition,
       currentLayout,
+      checkValueAndResolve,
     } = get();
     let hasParentChanged = false;
     let oldParentId;
@@ -1003,19 +1077,16 @@ export const createComponentsSlice = (set, get) => ({
         objectsToUpdate.forEach((paramType) => {
           if (component.definition[paramType]) {
             Object.entries(component.definition[paramType]).forEach(([property, value]) => {
-              const { allRefs, unResolvedValue } = updateResolvedValues(
+              checkValueAndResolve(
                 componentId,
                 paramType,
                 property,
                 value.value,
                 component,
                 resolvedComponentValues,
+                true,
                 moduleId
               );
-
-              if (allRefs.length) {
-                generateDependencyGraphForRefs(allRefs, componentId, paramType, property, unResolvedValue, true);
-              }
             });
           }
         });
@@ -1066,22 +1137,65 @@ export const createComponentsSlice = (set, get) => ({
       removeDependency,
       getComponentDefinition,
       setValueToComponent,
+      checkValueAndResolve,
+      getResolvedComponent,
+      setResolvedComponent,
     } = get();
     const { component } = getComponentDefinition(componentId, moduleId);
+    const oldValue = component.definition[paramType][property];
+
+    if (Array.isArray(oldValue?.value)) {
+      const resolvedComponent = { [componentId]: deepClone(getResolvedComponent(componentId) ?? {}) };
+      const { updatedValue } = checkValueAndResolve(
+        componentId,
+        paramType,
+        property,
+        value,
+        component,
+        resolvedComponent,
+        true,
+        moduleId
+      );
+      setResolvedComponent(componentId, resolvedComponent[componentId], moduleId);
+
+      // If the value is not changed, return
+      if (oldValue?.[attr] === updatedValue || oldValue === updatedValue) return;
+
+      set(
+        withUndoRedo((state) => {
+          const pageComponent = state.modules[moduleId].pages[currentPageIndex].components[componentId].component;
+          lodashSet(pageComponent, ['definition', paramType, property, attr], updatedValue);
+        }, skipUndoRedo),
+        false,
+        'setComponentProperty'
+      );
+
+      const diff = {
+        [componentId]: { component: get().modules[moduleId].pages[currentPageIndex].components[componentId].component },
+      };
+
+      if (saveAfterAction) {
+        const currentMode = get().currentMode;
+        if (currentMode !== 'view') saveComponentChanges(diff, 'components', 'update');
+
+        get().multiplayer.broadcastUpdates({ componentId, property, value, paramType, attr }, 'components', 'update');
+      }
+      return;
+    }
+
     // Update the value and get new dependencies
     const { updatedValue, allRefs, unResolvedValue } =
       attr === 'value' && !skipResolve
-        ? updateResolvedValues(componentId, paramType, property, value, component, null, moduleId)
+        ? updateResolvedValues(componentId, paramType, property, value, component, null, false, moduleId)
         : { updatedValue: value, allRefs: [], unResolvedValue: value };
 
     // If the value is not changed, return
-    const oldValue = component.definition[paramType][property];
     if (oldValue?.[attr] === updatedValue || oldValue === updatedValue) return;
 
     set(
       withUndoRedo((state) => {
         const pageComponent = state.modules[moduleId].pages[currentPageIndex].components[componentId].component;
-        _.set(pageComponent, ['definition', paramType, property, attr], updatedValue);
+        lodashSet(pageComponent, ['definition', paramType, property, attr], updatedValue);
       }, skipUndoRedo),
       false,
       'setComponentProperty'
@@ -1130,9 +1244,8 @@ export const createComponentsSlice = (set, get) => ({
     const {
       currentPageIndex,
       saveComponentChanges,
-      updateResolvedValues,
+      checkValueAndResolve,
       getComponentDefinition,
-      generateDependencyGraphForRefs,
       getComponentTypeFromId,
       setResolvedComponent,
       withUndoRedo,
@@ -1189,19 +1302,16 @@ export const createComponentsSlice = (set, get) => ({
       objectsToUpdate.forEach((paramType) => {
         if (component.definition[paramType]) {
           Object.entries(component.definition[paramType]).forEach(([property, value]) => {
-            const { allRefs, unResolvedValue } = updateResolvedValues(
+            checkValueAndResolve(
               componentId,
               paramType,
               property,
               value.value,
               component,
               resolvedComponentValues,
+              true,
               moduleId
             );
-
-            if (allRefs.length) {
-              generateDependencyGraphForRefs(allRefs, componentId, paramType, property, unResolvedValue, true);
-            }
           });
         }
       });
@@ -1427,6 +1537,8 @@ export const createComponentsSlice = (set, get) => ({
       getNodeData,
       getEntityResolvedValueLength,
       updateChildComponentResolvedValues,
+      getComponentTypeFromId,
+      getResolvedComponent,
     } = get();
     const dependecies = getDependencies(path, moduleId);
     if (dependecies?.length) {
@@ -1436,7 +1548,8 @@ export const createComponentsSlice = (set, get) => ({
         if (itemsLength) {
           updateChildComponentResolvedValues(dependency, path, itemsLength, moduleId);
         } else {
-          const [entityType, entityId, type, key] = dependency.split('.');
+          const [entityType, entityId, type, ...keys] = dependency.split('.');
+          const key = keys.join('.');
           const unResolvedValue = getNodeData(dependency);
           const resolvedValue = resolveDynamicValues(unResolvedValue, getAllExposedValues(), {}, false, []);
 
@@ -1455,13 +1568,46 @@ export const createComponentsSlice = (set, get) => ({
               ? get().debugger.validateProperty(entityId, type, key, resolvedValue)
               : resolvedValue;
 
-            set(
-              (state) => {
-                state.resolvedStore.modules[moduleId][entityType][entityId][type][key] = validatedValue;
-              },
-              false,
-              'updateDependencyValues'
-            );
+            // logic to handle the key like options[0].visible. It will resolve the visible directly and update the resolved store
+            if (hasArrayNotation(key)) {
+              const keys = parsePropertyPath(key);
+              // Triggering a re-render of the table component if any of the dependent component is updated
+              // This is done to calculate the callValues in the table component
+              // Need to find a better way to handle this
+              if (getComponentTypeFromId(entityId, moduleId) === 'Table') {
+                set(
+                  (state) => {
+                    lodashSet(
+                      state.resolvedStore.modules[moduleId][entityType][entityId],
+                      ['properties', 'shouldRender'],
+                      (getResolvedComponent(entityId)?.['properties']?.['shouldRender'] ?? 0) + 1
+                    );
+                  },
+                  false,
+                  'updateDependencyValues'
+                );
+              } else {
+                set(
+                  (state) => {
+                    lodashSet(
+                      state.resolvedStore.modules[moduleId][entityType][entityId],
+                      [type, ...keys],
+                      getComponentTypeFromId(entityId, moduleId) === 'Table' ? unResolvedValue + ' ' : validatedValue
+                    );
+                  },
+                  false,
+                  'updateDependencyValues'
+                );
+              }
+            } else {
+              set(
+                (state) => {
+                  state.resolvedStore.modules[moduleId][entityType][entityId][type][key] = validatedValue;
+                },
+                false,
+                'updateDependencyValues'
+              );
+            }
           }
         }
       });
