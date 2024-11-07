@@ -21,9 +21,9 @@ Any property having **fx** button next to its field can be **programmatically co
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 |:----------- |:----------- |:----------------- |
-| Placeholder |  Specifies a hint that describes the expected value.| This field requires a `String` value |
-| Mode |  Specifies the language to be used for the code-editor.| See `info` below for the list of all supported languages |
-| Show line number | Show or hides line numbers to the left of the editor.| This fields expects a boolean value `{{true}}` or `{{false}}` |
+| Placeholder |  Specifies a hint that describes the expected value.| This field requires a `String` value. |
+| Mode |  Specifies the language to be used for the code-editor.| See `info` below for the list of all supported languages. |
+| Show line number | Show or hides line numbers to the left of the editor.| This fields expects a boolean value `{{true}}` or `{{false}}`. |
 
 :::info
 <details>
@@ -179,7 +179,7 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 | <div style={{ width:"100px"}}> Variables </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 |:----------- |:----------- |:---------- |
-| value | Holds the current input value entered by the user in the code editor. | Access this value dynamically using JavaScript (e.g., `{{components.codeeditor1.value}}`) or by triggering it through an event. |
+| value | Holds the current input value entered by the user in the code editor. | Accessible dynamically with JS (for e.g., `{{components.codeeditor1.value}}`). |
 
 </div>
 
@@ -200,8 +200,8 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 | <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"100px"}}> Expected Value </div> |
 |:----------- |:----------- |:---------- |
-| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.|
-| Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.|
+| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.|
+| Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.|
 
 </div>
 
