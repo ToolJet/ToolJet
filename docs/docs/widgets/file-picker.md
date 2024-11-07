@@ -4,7 +4,7 @@ title: File Picker
 ---
 # File Picker
 
-**File Picker** widget allows the user to drag and drop files or upload files by browsing the filesystem and selecting one or more files in a directory.
+**File Picker** component allows the user to drag and drop files or upload files by browsing the filesystem and selecting one or more files in a directory.
 
 :::info
  File types must be a valid [MIME](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types) type according to input element specification or a valid file extension.
@@ -16,7 +16,7 @@ title: File Picker
 [MIME](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types) type determination is not reliable across platforms. CSV files, for example, are reported as text/plain under macOS but as application/vnd.ms-excel under Windows.
 :::
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Properties
 
@@ -39,45 +39,45 @@ Any file that does not have a size in the range of `Max size limit` and `Min siz
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Events
 
 | <div style={{ width:"135px"}}> Event </div> | <div style={{ width:"100px"}}> Description </div> |
 |:----------- |:----------- |
-| On file selected | On file selected event is triggered when one or more files are selected by the selector dialogue box. |
-| On file loaded | On file loaded event is triggered when a file is loaded in the browser. |
-| On file deselected | On file selected event can be triggered when one or more files are removed from the picker. |
+| On file selected | Triggers whenever one or more files are selected by the selector dialogue box. |
+| On file loaded | Triggers whenever a file is loaded in the browser. |
+| On file deselected | Triggers whenever one or more files are removed from the picker. |
 
 :::info
-Checkout **[this](/docs/how-to/loading-image-pdf-from-db)** guide to learn how to refer or display images/PDFs using base64 string
+Checkout **[this](/docs/how-to/loading-image-pdf-from-db)** guide to learn how to refer or display images/PDFs using base64 string.
 :::
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Component Specific Actions (CSA)
 
 
 
 | Actions | Description | How To Access |
-|:--------|:-----------:|:------------:|
-| <div style={{ width:"100px"}}> clearFiles() </div> | You can clear the selected files on the filepicker component via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.filepicker1.clearFiles()` |
+|:--------|:-----------|:------------|
+| <div style={{ width:"100px"}}> clearFiles() </div> | Clears the selected files from the file picker component. | Employ a RunJS query (for e.g., `await components.filepicker1.clearFiles()`) or trigger it using an event. |
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Exposed Variables
 
 | <div style={{ width:"100px"}}> Variables </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{ width:"200px"}}> How To Access </div> |
 |:----------- |:----------- |:-------- |
-| file | This variable holds the array of objects where each object represents the file loaded on the file picker component. Each object has the following keys: **name**, **type**, **content**, **dataURL**, **base64Data**, **parsedData**, **filePath**. | The values can be accesed using `{{components.filepicker1.file[0].base64Data}}`|
+| file | Holds an array of file objects loaded in the file picker, each with properties: **name**, **type**, **content**, **dataURL**, **base64Data**, **parsedData**, **filePath**. | Accessible dynamically with JS (for e.g., `{{components.filepicker1.file[0].base64Data}}`). |
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Options
 
@@ -93,40 +93,42 @@ Checkout **[this](/docs/how-to/loading-image-pdf-from-db)** guide to learn how t
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## General
 ### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the component.
 
-Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
+Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the component will display the string as the tooltip.
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
-## Layout
+## Devices
 
-| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 |:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
-| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
-| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on mobile  | Makes the component visible in mobile view.  | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
+
+---
 
 ## Styles
 
 | <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"100px"}}> Default Value </div> |
 |:----------- |:----------- |:----------- |
-| Visibility | This is to control the visibility of the widget. If `{{false}}` the widget will not visible after the app is deployed. It can only have boolean values i.e. either `{{true}}` or `{{false}}`. | By default, it's set to `{{true}}`.  |
-| Disable | This property only accepts boolean values. If set to `{{true}}`, the widget will be locked and becomes non-functional. | By default, its value is set to `{{false}}`. |
-| Border radius | Use this property to modify the border radius of the File Picker widget. The field expects only numerical value from `1` to `100`. | By default, its value is set to `0`. |
+| Visibility | This is to control the visibility of the component. If `{{false}}` the component will not visible after the app is deployed. It can only have boolean values i.e. either `{{true}}` or `{{false}}`. | By default, it's set to `{{true}}`.  |
+| Disable | This property only accepts boolean values. If set to `{{true}}`, the component will be locked and becomes non-functional. | By default, its value is set to `{{false}}`. |
+| Border radius | Use this property to modify the border radius of the File Picker component. The field expects only numerical value from `1` to `100`. | By default, its value is set to `0`. |
 
 :::info
-Any property having `Fx` button next to its field can be **programmatically configured**.
+Any property having **fx** button next to its field can be **programmatically configured**.
 :::
 
 </div>

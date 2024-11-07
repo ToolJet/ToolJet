@@ -85,6 +85,7 @@ To remove a plugin, follow these steps:
 - **[Portkey](./plugins/marketplace-plugin-portkey)**
 - **[PrestoDB](./plugins/marketplace-plugin-prestodb)**
 - **[Salesforce](./plugins/marketplace-plugin-salesforce)**
+- **[Sharepoint](./plugins/marketplace-plugin-sharepoint)**
 - **[Supabase](./plugins/marketplace-plugin-supabase)**
 :::info For Plugin Developers
 Refer to the **[Plugin Development guide](../contributing-guide/marketplace/marketplace-setup)** to learn how to create plugins for the ToolJet Marketplace.
