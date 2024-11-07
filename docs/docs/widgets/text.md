@@ -45,10 +45,10 @@ Check the **component specific actions** available for this component **[here](/
 
 | Variable | Description | How To Access |
 |:--------:|:-----------:|:------------:|
-| <div style={{ width:"100px"}}> text </div> | Holds the value of the component's label. | Accessible dynamically with JS (for e.g., `{{components.text1.text}}`) |
-| <div style={{ width:"100px"}}> isLoading </div> | Indicates if the component is loading. | Accessible dynamically with JS (for e.g., `{{components.text1.isLoading}}`) |
-| <div style={{ width:"100px"}}> isVisible </div> | Indicates if the component is visible. | Accessible dynamically with JS (for e.g., `{{components.text1.isVisible}}`) |
-| <div style={{ width:"100px"}}> isDisabled </div> | Indicates if the component is disabled. | Accessible dynamically with JS (for e.g., `{{components.text1.isDisabled}}`) |
+| <div style={{ width:"100px"}}> text </div> | Holds the value of the component's label. | Accessible dynamically with JS (for e.g., `{{components.text1.text}}`). |
+| <div style={{ width:"100px"}}> isLoading </div> | Indicates if the component is loading. | Accessible dynamically with JS (for e.g., `{{components.text1.isLoading}}`). |
+| <div style={{ width:"100px"}}> isVisible </div> | Indicates if the component is visible. | Accessible dynamically with JS (for e.g., `{{components.text1.isVisible}}`). |
+| <div style={{ width:"100px"}}> isDisabled </div> | Indicates if the component is disabled. | Accessible dynamically with JS (for e.g., `{{components.text1.isDisabled}}`). |
 
 ## Additional Actions
 
@@ -57,12 +57,11 @@ Check the **component specific actions** available for this component **[here](/
 | Loading state      | Enables a loading spinner, often used with `isLoading` to indicate progress. Toggle or set dynamically.   | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Visibility         | Controls component visibility. Toggle or set dynamically.                                                 | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Disable            | Enables or disables the component. Toggle or set dynamically.                                            | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Tooltip            | Provides additional information on hover. Set a string value for display.                                 | String (e.g., `Enter your name here.` )                    |
+| Tooltip            | Provides additional information on hover. Set a string value for display.                                 | String (e.g., `Enter your name here.` ).                    |
 
 ## Devices
 
-## Devices
-| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Expected Value </div>|
 |------------|:-------------|:-----------------|
 | Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
