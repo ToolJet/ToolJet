@@ -122,15 +122,15 @@
             "type": "password",
             "description": "Enter password"
           }
-        },
-        "ca_certificate": {
-          "ca_cert": {
-            "label": "CA Cert",
-            "key": "ca_cert",
-            "type": "textarea",
-            "encrypted": true,
-            "description": "Enter ca certificate"
-          }
+        }
+      },
+      "ca_certificate": {
+        "ca_cert": {
+          "label": "CA Cert",
+          "key": "ca_cert",
+          "type": "textarea",
+          "encrypted": true,
+          "description": "Enter ca certificate"
         }
       }
     },
