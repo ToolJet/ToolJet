@@ -36,8 +36,7 @@ If this parameter is not specified, then PostgREST refuses authentication reques
 | PGRST_JWT_SECRET             | JWT token client provided for authentication    |
 | PGRST_DB_URI                 | database connection string for tooljet database |
 | PGRST_LOG_LEVEL              | `info`                                          |
-| TOOLJET_DB_RECONFIG          | `true` or `false`                               |
-| TOOLJET_DB_STATEMENT_TIMEOUT | statement timeout in milliseconds               |
+| PGRST_DB_PRE_CONFIG          | postgrest.pre_config                            |
 
 :::info
 Please make sure that DB_URI is given in the format `postgres://[USERNAME]:[PASSWORD]@[HOST]:[PORT]/[DATABASE]`
@@ -50,7 +49,6 @@ Please make sure that DB_URI is given in the format `postgres://[USERNAME]:[PASS
 
 | <div style={{ width:"100px"}}> Variable </div>           | <div style={{ width:"100px"}}> Description </div>                                  |
 | ------------------ | -------------------------------------------- |
-| ENABLE_TOOLJET_DB  | `true` or `false`                            |
 | TOOLJET_DB         | Default value is `tooljet_db`                |
 | TOOLJET_DB_HOST    | database host                                |
 | TOOLJET_DB_USER    | database username                            |

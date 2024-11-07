@@ -92,7 +92,6 @@ You can learn more about this feature [here](/docs/tooljet-database).
 
 Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration might break, checkout the following docs to know more about new major version, including breaking changes that require you to adjust your applications accordingly:
 - [Self Hosted](./upgrade-to-v3.md)
-- [Cloud](./cloud-v3-migration.md)
 
 Follow the steps below to deploy ToolJet Database on DigitalOcean:
 
