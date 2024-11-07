@@ -11,7 +11,14 @@ export default class SlackQueryService implements QueryService {
     return `https://slack.com/oauth/v2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${fullUrl}oauth2/authorize`;
   }
 
-  async accessDetailsFrom(authCode: string): Promise<object> {
+  async accessDetailsFrom(authCode: string, options: any, resetSecureData = false): Promise<object> {
+    if (resetSecureData) {
+      return [
+        ['access_token', ''],
+        ['refresh_token', ''],
+      ];
+    }
+
     const accessTokenUrl = 'https://slack.com/api/oauth.v2.access';
     const clientId = process.env.SLACK_CLIENT_ID;
     const clientSecret = process.env.SLACK_CLIENT_SECRET;

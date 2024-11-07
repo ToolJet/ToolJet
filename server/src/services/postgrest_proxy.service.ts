@@ -6,27 +6,51 @@ import * as proxy from 'express-http-proxy';
 import * as jwt from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
 import { maybeSetSubPath } from '../helpers/utils.helper';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
 import { PostgrestError, TooljetDatabaseError, TooljetDbActions } from 'src/modules/tooljet_db/tooljet-db.types';
 import { QueryError } from 'src/modules/data_sources/query.errors';
 import got from 'got';
 
 @Injectable()
 export class PostgrestProxyService {
-  constructor(private readonly manager: EntityManager, private readonly configService: ConfigService) {}
+  constructor(
+    private readonly manager: EntityManager,
+    private readonly configService: ConfigService,
+    private eventEmitter: EventEmitter2
+  ) {}
 
   // NOTE: This method forwards request directly to PostgREST Using express middleware
   // If additional functionalities from http proxy isn't used, we can deprecate this
   // and start explicitly making request and handle the responses accordingly
   async proxy(req, res, next) {
     const organizationId = req.headers['tj-workspace-id'] || req.dataQuery?.app?.organizationId;
+
+    const dbUser = `user_${organizationId}`;
+    const dbSchema = `workspace_${organizationId}`;
+    const authToken = 'Bearer ' + this.signJwtPayload(dbUser);
+
     req.url = await this.replaceTableNamesAtPlaceholder(req.url, organizationId);
-    const authToken = 'Bearer ' + this.signJwtPayload(this.configService.get<string>('PG_USER'));
     req.headers = {};
     req.headers['Authorization'] = authToken;
     // https://postgrest.org/en/v12/references/api/preferences.html#prefer-header
-    req.headers['Prefer'] = 'count=exact, return=representation';
+    req.headers['Prefer'] = `count=exact, return=representation`;
+    if (['GET', 'HEAD'].includes(req.method)) req.headers['Accept-Profile'] = dbSchema;
+    if (['POST', 'PATCH', 'PUT', 'DELETE'].includes(req.method)) req.headers['Content-Profile'] = dbSchema;
 
     res.set('Access-Control-Expose-Headers', 'Content-Range');
+
+    if (!isEmpty(req.dataQuery) && !isEmpty(req.user)) {
+      this.eventEmitter.emit('auditLogEntry', {
+        userId: req.user.id,
+        organizationId,
+        resourceId: req.dataQuery.id,
+        resourceName: req.dataQuery.name,
+        resourceType: ResourceTypes.DATA_QUERY,
+        actionType: ActionTypes.DATA_QUERY_RUN,
+        metadata: {},
+      });
+    }
 
     const tableId = req.url.split('?')[0].split('/').pop();
     const internalTable = await this.manager.findOne(InternalTable, {
@@ -53,7 +77,9 @@ export class PostgrestProxyService {
     body: Record<string, any> = {}
   ) {
     try {
-      const authToken = 'Bearer ' + this.signJwtPayload(this.configService.get<string>('PG_USER'));
+      const dbUser = `user_${headers['tj-workspace-id']}`;
+      const dbSchema = `workspace_${headers['tj-workspace-id']}`;
+      const authToken = 'Bearer ' + this.signJwtPayload(dbUser);
       const updatedPath = replaceUrlForPostgrest(url);
       let postgrestUrl = (this.configService.get<string>('PGRST_HOST') || 'http://localhost:3001') + updatedPath;
 
@@ -80,12 +106,15 @@ export class PostgrestProxyService {
         ...headers,
         Authorization: authToken,
         Prefer: 'count=exact, return=representation',
+        ...(['GET', 'HEAD'].includes(method) && { 'Accept-Profile': dbSchema }),
+        ...(['POST', 'PATCH', 'PUT', 'DELETE'].includes(method) && { 'Content-Profile': dbSchema }),
       };
 
       const response = await got(postgrestUrl, {
         method,
         headers: reqHeaders,
         responseType: 'json',
+        throwHttpErrors: true,
         ...(!isEmpty(body) && { body: JSON.stringify(body) }),
       });
 

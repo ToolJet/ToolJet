@@ -12,7 +12,7 @@ export default function Settings({ darkMode, checkForUnsavedChanges }) {
   const [showOverlay, setShowOverlay] = useState(false);
   const currentUserValue = authenticationService.currentSessionValue;
   const admin = currentUserValue?.admin;
-  const marketplaceEnabled = admin && window.public_config?.ENABLE_MARKETPLACE_FEATURE == 'true';
+  const marketplaceEnabled = admin;
 
   const { t } = useTranslation();
 

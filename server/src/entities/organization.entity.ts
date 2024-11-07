@@ -8,11 +8,13 @@ import {
   JoinColumn,
   BaseEntity,
 } from 'typeorm';
-import { GroupPermission } from './group_permission.entity';
 import { SSOConfigs } from './sso_config.entity';
 import { OrganizationUser } from './organization_user.entity';
 import { InternalTable } from './internal_table.entity';
 import { AppEnvironment } from './app_environments.entity';
+import { GroupPermissions } from './group_permissions.entity';
+import { GroupPermission } from './group_permission.entity';
+import { OrganizationTjdbConfigurations } from './organization_tjdb_configurations.entity';
 
 @Entity({ name: 'organizations' })
 export class Organization extends BaseEntity {
@@ -40,6 +42,10 @@ export class Organization extends BaseEntity {
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
 
+  @OneToMany(() => GroupPermissions, (groupPermissions) => groupPermissions.organization, { onDelete: 'CASCADE' })
+  permissionGroups: GroupPermissions[];
+
+  //Depreciated
   @OneToMany(() => GroupPermission, (groupPermission) => groupPermission.organization, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'organization_id' })
   groupPermissions: GroupPermission[];
@@ -56,4 +62,10 @@ export class Organization extends BaseEntity {
 
   @OneToMany(() => InternalTable, (internalTable) => internalTable.organization)
   internalTable: InternalTable[];
+
+  @OneToMany(
+    () => OrganizationTjdbConfigurations,
+    (organizationTjdbConfiguration) => organizationTjdbConfiguration.organizationId
+  )
+  organizationTjdbConfigurations: OrganizationTjdbConfigurations[];
 }

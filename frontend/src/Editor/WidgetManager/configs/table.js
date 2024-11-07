@@ -45,6 +45,11 @@ export const tableConfig = {
     columnData: {
       type: 'code',
       displayName: 'Column data',
+      validation: {
+        schema: { type: 'array', element: { type: 'object' } },
+        defaultValue:
+          "{{[{name: 'email', key: 'email', id: '1'}, {name: 'Full name', key: 'name', id: '2', isEditable: true}]}}}",
+      },
     },
     rowsPerPage: {
       type: 'code',

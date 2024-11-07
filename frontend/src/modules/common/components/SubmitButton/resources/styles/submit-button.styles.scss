@@ -1,0 +1,41 @@
+.submit-button {
+    height: 40px;
+    width: fit-content;
+    min-width: 87px;
+    border-radius: var(--Border-radius, 10px);
+    margin: 10px;
+    padding: 10px 20px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--Border-gap, 8px);
+
+    .button-text {
+        color: var(--Text-on-color, #FFF);
+        font-size: 14px;
+        font-style: normal;
+        font-family: 'IBM Plex Sans';
+        font-weight: 500;
+        line-height: 20px;
+    }
+
+    &:disabled {
+        background-color: var(--Disabled, #C2CFFD) !important;
+        opacity: 0.8;
+
+        svg>path {
+            fill: #FFF !important;
+        }
+    }
+}
+
+.dark-theme {
+    .submit-button {
+        &:disabled {
+            background: var(--slate6) !important;
+            color: var(--slate9) !important;
+            cursor: auto !important;
+        }
+    }
+}

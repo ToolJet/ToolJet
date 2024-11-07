@@ -23,7 +23,7 @@ export class CreatePageDto {
   disabled: boolean;
 
   @IsOptional()
-  hidden: boolean;
+  hidden: Record<string, any>;
 
   @IsOptional()
   autoComputeLayout: boolean;

@@ -529,7 +529,7 @@ export default function DragContainer({
               isDraggingRef.current = false;
             }
 
-            if (draggedSubContainer) {
+            if (draggedSubContainer || !e.lastEvent) {
               return;
             }
 
@@ -568,8 +568,8 @@ export default function DragContainer({
 
             const _gridWidth = useGridStore.getState().subContainerWidths[draggedOverElemId] || gridWidth;
             const currentParentId = boxes.find(({ id: widgetId }) => e.target.id === widgetId)?.component?.parent;
-            let left = e.lastEvent.translate[0];
-            let top = e.lastEvent.translate[1];
+            let left = e.lastEvent?.translate[0];
+            let top = e.lastEvent?.translate[1];
 
             if (['Listview', 'Kanban'].includes(widgets[draggedOverElemId]?.component?.component)) {
               const elemContainer = e.target.closest('.real-canvas');
@@ -819,16 +819,11 @@ function findChildrenAndGrandchildren(parentId, widgets) {
   if (isEmpty(widgets)) {
     return [];
   }
-  const type = widgets.find(({ id }) => id === parentId)?.component?.component;
-  let pid = parentId;
-  if (type === 'Kanban') {
-    pid = pid + '-modal';
-  }
-  const children = widgets.filter((widget) => widget?.component?.parent === pid);
+  const children = widgets.filter((widget) => widget?.component?.parent?.startsWith(parentId));
   let result = [];
   for (const child of children) {
     result.push(child.id);
-    result = result.concat(...findChildrenAndGrandchildren(child.id));
+    result = result.concat(...findChildrenAndGrandchildren(child.id, widgets));
   }
   return result;
 }

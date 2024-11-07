@@ -37,6 +37,10 @@
       },
       "connection_options": {
         "type": "array"
+      },
+      "connection_string": {
+        "type": "string",
+        "encrypted": true
       }
     },
     "exposedVariables": {
@@ -46,6 +50,9 @@
     }
   },
   "defaults": {
+    "connection_type": {
+      "value": "manual"
+    },
     "host": {
       "value": "localhost"
     },
@@ -69,99 +76,127 @@
     }
   },
   "properties": {
-    "ssl_certificate": {
-      "label": "SSL Certificate",
-      "key": "ssl_certificate",
+    "connection_type": {
+      "label": "Connection type",
+      "key": "connection_type",
       "type": "dropdown-component-flip",
-      "description": "Single select dropdown for choosing certificates",
+      "description": "Single select dropdown for connection_type",
       "list": [
         {
-          "value": "ca_certificate",
-          "name": "CA certificate"
+          "name": "Manual connection",
+          "value": "manual"
         },
         {
-          "value": "self_signed",
-          "name": "Self-signed certificate"
-        },
-        {
-          "value": "none",
-          "name": "None"
+          "name": "Connection string",
+          "value": "string"
         }
-      ],
-      "commonFields": {
-        "host": {
-          "label": "Host",
-          "key": "host",
-          "type": "text",
-          "description": "Enter host"
+      ]
+    },
+    "manual": {
+      "ssl_certificate": {
+        "label": "SSL certificate",
+        "key": "ssl_certificate",
+        "type": "dropdown-component-flip",
+        "description": "Single select dropdown for choosing certificates",
+        "list": [
+          {
+            "value": "ca_certificate",
+            "name": "CA certificate"
+          },
+          {
+            "value": "self_signed",
+            "name": "Self-signed certificate"
+          },
+          {
+            "value": "none",
+            "name": "None"
+          }
+        ],
+        "commonFields": {
+          "host": {
+            "label": "Host",
+            "key": "host",
+            "type": "text",
+            "description": "Enter host"
+          },
+          "port": {
+            "label": "Port",
+            "key": "port",
+            "type": "text",
+            "description": "Enter port"
+          },
+          "ssl_enabled": {
+            "label": "SSL",
+            "key": "ssl_enabled",
+            "type": "toggle",
+            "description": "Toggle for ssl_enabled"
+          },
+          "database": {
+            "label": "Database name",
+            "key": "database",
+            "type": "text",
+            "description": "Name of the database"
+          },
+          "username": {
+            "label": "Username",
+            "key": "username",
+            "type": "text",
+            "description": "Enter username"
+          },
+          "password": {
+            "label": "Password",
+            "key": "password",
+            "type": "password",
+            "description": "Enter password"
+          },
+          "connection_options": {
+            "label": "Connection options",
+            "key": "connection_options",
+            "type": "react-component-headers",
+            "width":"316px"
+          }
+        }
+      },
+      "ca_certificate": {
+        "ca_cert": {
+          "label": "CA Cert",
+          "key": "ca_cert",
+          "type": "textarea",
+          "encrypted": true,
+          "description": "Enter ca certificate"
+        }
+      },
+      "self_signed": {
+        "client_key": {
+          "label": "Client Key",
+          "key": "client_key",
+          "type": "textarea",
+          "encrypted": true,
+          "description": "Enter client key"
         },
-        "port": {
-          "label": "Port",
-          "key": "port",
-          "type": "text",
-          "description": "Enter port"
+        "client_cert": {
+          "label": "Client Cert",
+          "key": "client_cert",
+          "type": "textarea",
+          "encrypted": true,
+          "description": "Enter client certificate"
         },
-        "ssl_enabled": {
-          "label": "SSL",
-          "key": "ssl_enabled",
-          "type": "toggle",
-          "description": "Toggle for ssl_enabled"
-        },
-        "database": {
-          "label": "Database Name",
-          "key": "database",
-          "type": "text",
-          "description": "Name of the database"
-        },
-        "username": {
-          "label": "Username",
-          "key": "username",
-          "type": "text",
-          "description": "Enter username"
-        },
-        "password": {
-          "label": "Password",
-          "key": "password",
-          "type": "password",
-          "description": "Enter password"
-        },
-        "connection_options": {
-          "label": "Connection Options",
-          "key": "connection_options",
-          "type": "react-component-headers"
+        "root_cert": {
+          "label": "Root Cert",
+          "key": "root_cert",
+          "type": "textarea",
+          "encrypted": true,
+          "description": "Enter root certificate"
         }
       }
     },
-    "ca_certificate": {
-      "ca_cert": {
-        "label": "CA Cert",
-        "key": "ca_cert",
-        "type": "textarea",
+    "string": {
+      "connection_string": {
+        "label": "Connection string",
+        "key": "connection_string",
+        "type": "text",
         "encrypted": true,
-        "description": "Enter ca certificate"
-      }
-    },
-    "self_signed": {
-      "client_key": {
-        "label": "Client Key",
-        "key": "client_key",
-        "type": "textarea",
-        "encrypted": true,
-        "description": "Enter client key"
-      },
-      "client_cert": {
-        "label": "Client Cert",
-        "key": "client_cert",
-        "type": "textarea",
-        "encrypted": true,
-        "description": "Enter client certificate"
-      },
-      "root_cert": {
-        "label": "Root Cert",
-        "key": "root_cert",
-        "type": "textarea",
-        "encrypted": true,
-        "description": "Enter root certificate"
+        "description": "postgres://username:password@hostname:port/database?sslmode=require"
       }
     }
   },

@@ -10,13 +10,14 @@ import { PoliciesGuard } from 'src/modules/casl/policies.guard';
 import { User as UserEntity } from 'src/entities/user.entity';
 import { OrganizationCreateDto, OrganizationUpdateDto } from '@dto/organization.dto';
 import { Response } from 'express';
+import { ORGANIZATION_RESOURCE_ACTIONS } from 'src/constants/global.constant';
 
 @Controller('organizations')
 export class OrganizationsController {
   constructor(private organizationsService: OrganizationsService, private authService: AuthService) {}
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can('viewAllUsers', UserEntity))
+  @CheckPolicies((ability: AppAbility) => ability.can(ORGANIZATION_RESOURCE_ACTIONS.VIEW_ALL_USERS, UserEntity))
   @Get('users')
   async getUsers(@User() user, @Query() query) {
     const { page, searchText, status } = query;
@@ -93,7 +94,7 @@ export class OrganizationsController {
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can('updateOrganizations', UserEntity))
+  @CheckPolicies((ability: AppAbility) => ability.can(ORGANIZATION_RESOURCE_ACTIONS.UPDATE, UserEntity))
   @Get('/configs')
   async getConfigs(@User() user) {
     const result = await this.organizationsService.fetchOrganizationDetails(user.organizationId);
@@ -104,7 +105,7 @@ export class OrganizationsController {
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can('updateOrganizations', UserEntity))
+  @CheckPolicies((ability: AppAbility) => ability.can(ORGANIZATION_RESOURCE_ACTIONS.UPDATE, UserEntity))
   @Patch()
   async update(@Body() organizationUpdateDto: OrganizationUpdateDto, @User() user) {
     await this.organizationsService.updateOrganization(user.organizationId, organizationUpdateDto);
@@ -112,7 +113,7 @@ export class OrganizationsController {
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can('updateOrganizations', UserEntity))
+  @CheckPolicies((ability: AppAbility) => ability.can(ORGANIZATION_RESOURCE_ACTIONS.UPDATE, UserEntity))
   @Patch('/configs')
   async updateConfigs(@Body() body, @User() user) {
     const result: any = await this.organizationsService.updateOrganizationConfigs(user.organizationId, body);
@@ -123,5 +124,10 @@ export class OrganizationsController {
   @Get('/is-unique')
   async checkWorkspaceUnique(@User() user, @Query('name') name: string, @Query('slug') slug: string) {
     return this.organizationsService.checkWorkspaceUniqueness(name, slug);
+  }
+
+  @Get('/workspace-name/unique')
+  async checkUniqueWorkspaceName(@User() user, @Query('name') name: string) {
+    return this.organizationsService.checkWorkspaceNameUniqueness(name);
   }
 }

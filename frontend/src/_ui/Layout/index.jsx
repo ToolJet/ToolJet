@@ -25,7 +25,6 @@ function Layout({
   const router = useRouter();
   const currentUserValue = authenticationService.currentSessionValue;
   const admin = currentUserValue?.admin;
-  const marketplaceEnabled = admin && window.public_config?.ENABLE_MARKETPLACE_FEATURE == 'true';
   fetchWhiteLabelDetails();
   const whiteLabelLogo = retrieveWhiteLabelLogo();
 
@@ -47,10 +46,7 @@ function Layout({
   };
 
   const canCreateVariableOrConstant = () => {
-    return canAnyGroupPerformAction(
-      'org_environment_variable_create',
-      authenticationService.currentSessionValue.group_permissions
-    );
+    return authenticationService.currentSessionValue.user_permissions?.org_constant_c_r_u_d;
   };
 
   return (
@@ -90,7 +86,7 @@ function Layout({
                     </Link>
                   </ToolTip>
                 </li>
-                {window.public_config?.ENABLE_TOOLJET_DB == 'true' && admin && (
+                {admin && (
                   <li className="text-center  cursor-pointer" data-cy={`database-icon`}>
                     <ToolTip message="ToolJet Database" placement="right">
                       <Link

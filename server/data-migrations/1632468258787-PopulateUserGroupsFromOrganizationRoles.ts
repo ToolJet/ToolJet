@@ -1,4 +1,4 @@
-import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
+import { EntityManager, In, MigrationInterface, QueryRunner } from 'typeorm';
 import { Organization } from '../src/entities/organization.entity';
 import { GroupPermission } from '../src/entities/group_permission.entity';
 import { AppGroupPermission } from '../src/entities/app_group_permission.entity';
@@ -60,7 +60,10 @@ async function setupInitialGroupPermissions(
 
   const groupPermissionRepository = entityManager.getRepository(GroupPermission);
 
-  return await groupPermissionRepository.findByIds(createdGroupPermissionIds, {
+  return await groupPermissionRepository.find({
+    where: {
+      id: In(createdGroupPermissionIds),
+    },
     select: ['id', 'group', 'organizationId'],
   });
 }

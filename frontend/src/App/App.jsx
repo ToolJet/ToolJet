@@ -6,17 +6,12 @@ import { authenticationService, tooljetService } from '@/_services';
 import { withRouter } from '@/_hoc/withRouter';
 import { PrivateRoute, AdminRoute, AppsRoute, SwitchWorkspaceRoute, OrganizationInviteRoute } from '@/Routes';
 import { HomePage } from '@/HomePage';
-import { LoginPage } from '@/LoginPage';
-import { SignupPage } from '@/SignupPage';
 import { TooljetDatabase } from '@/TooljetDatabase';
-import { OrganizationInvitationPage } from '@/ConfirmationPage';
 import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
-import { Viewer } from '@/Editor';
+import { Viewer } from '@/AppBuilder/Viewer/Viewer.jsx';
 import { OrganizationSettings } from '@/OrganizationSettingsPage';
 import { SettingsPage } from '../SettingsPage/SettingsPage';
-import { ForgotPassword } from '@/ForgotPassword';
-import { ResetPassword } from '@/ResetPassword';
 import { MarketplacePage } from '@/MarketplacePage';
 import SwitchWorkspacePage from '@/HomePage/SwitchWorkspacePage';
 import { GlobalDatasources } from '@/GlobalDatasources';
@@ -25,28 +20,35 @@ import Toast from '@/_ui/Toast';
 import { VerificationSuccessInfoScreen } from '@/SuccessInfoScreen';
 import '@/_styles/theme.scss';
 import { AppLoader } from '@/AppLoader';
-import SetupScreenSelfHost from '../SuccessInfoScreen/SetupScreenSelfHost';
 export const BreadCrumbContext = React.createContext({});
 import 'react-tooltip/dist/react-tooltip.css';
 import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/routes';
 import ErrorPage from '@/_components/ErrorComponents/ErrorPage';
 import WorkspaceConstants from '@/WorkspaceConstants';
-import { AuthRoute } from '@/Routes/AuthRoute';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import cx from 'classnames';
 import useAppDarkMode from '@/_hooks/useAppDarkMode';
 import { ManageOrgUsers } from '@/ManageOrgUsers';
-import { ManageGroupPermissions } from '@/ManageGroupPermissions';
 import OrganizationLogin from '@/_components/OrganizationLogin/OrganizationLogin';
 import { ManageOrgVars } from '@/ManageOrgVars';
+import { ManageGroupPermissionsV2 } from '@/ManageGroupPermissionsV2/ManageGroupPermissionsV2';
 import { setFaviconAndTitle } from '@white-label/whiteLabelling';
+import { onboarding, auth } from '@/modules';
+import { shallow } from 'zustand/shallow';
+import useStore from '@/AppBuilder/_stores/store';
 
 const AppWrapper = (props) => {
   const { isAppDarkMode } = useAppDarkMode();
+  const { updateIsTJDarkMode } = useStore(
+    (state) => ({
+      updateIsTJDarkMode: state.updateIsTJDarkMode,
+    }),
+    shallow
+  );
   return (
     <Suspense fallback={null}>
       <BrowserRouter basename={window.public_config?.SUB_PATH || '/'}>
-        <AppWithRouter props={props} isAppDarkMode={isAppDarkMode} />
+        <AppWithRouter props={props} isAppDarkMode={isAppDarkMode} updateIsTJDarkMode={updateIsTJDarkMode} />
       </BrowserRouter>
     </Suspense>
   );
@@ -105,8 +107,18 @@ class AppComponent extends React.Component {
 
   switchDarkMode = (newMode) => {
     this.setState({ darkMode: newMode });
-    useAppDataStore.getState().actions.updateIsTJDarkMode(newMode);
+    this.props.updateIsTJDarkMode(newMode);
     localStorage.setItem('darkMode', newMode);
+  };
+
+  isEditorOrViewerFromPath = () => {
+    const pathname = this.props.location.pathname;
+    if (pathname.includes('/apps/')) {
+      return 'editor';
+    } else if (pathname.includes('/applications/')) {
+      return 'viewer';
+    }
+    return '';
   };
 
   render() {
@@ -134,7 +146,7 @@ class AppComponent extends React.Component {
       <>
         <div
           className={cx('main-wrapper', {
-            'theme-dark dark-theme': !isEditorOrViewer && darkMode,
+            'theme-dark dark-theme': !this.isEditorOrViewerFromPath() && darkMode,
           })}
           data-cy="main-wrapper"
         >
@@ -165,49 +177,10 @@ class AppComponent extends React.Component {
           )}
           <BreadCrumbContext.Provider value={{ sidebarNav, updateSidebarNAV }}>
             <Routes>
-              <Route
-                path="/login/:organizationId"
-                exact
-                element={
-                  <AuthRoute {...this.props}>
-                    <LoginPage {...this.props} />
-                  </AuthRoute>
-                }
-              />
-              <Route
-                path="/login"
-                exact
-                element={
-                  <AuthRoute {...this.props}>
-                    <LoginPage {...this.props} />
-                  </AuthRoute>
-                }
-              />
-              <Route path="/setup" exact element={<SetupScreenSelfHost {...this.props} darkMode={darkMode} />} />
+              {onboarding(this.props)}
+              {auth(this.props)}
               <Route path="/sso/:origin/:configId" exact element={<Oauth {...this.props} />} />
               <Route path="/sso/:origin" exact element={<Oauth {...this.props} />} />
-              <Route
-                path="/signup/:organizationId"
-                exact
-                element={
-                  <AuthRoute {...this.props}>
-                    <SignupPage {...this.props} />
-                  </AuthRoute>
-                }
-              />
-              <Route
-                path="/signup"
-                exact
-                element={
-                  <AuthRoute {...this.props}>
-                    <SignupPage {...this.props} />
-                  </AuthRoute>
-                }
-              />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password/:token" element={<ResetPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/invitations/:token" element={<VerificationSuccessInfoScreen />} />
               <Route
                 path="/invitations/:token/workspaces/:organizationToken"
                 element={
@@ -217,23 +190,11 @@ class AppComponent extends React.Component {
                 }
               />
               <Route
-                path="/organization-invitations/:token"
-                element={
-                  <OrganizationInviteRoute {...this.props} isOrgazanizationOnlyInvite={true}>
-                    <OrganizationInvitationPage {...this.props} darkMode={darkMode} />
-                  </OrganizationInviteRoute>
-                }
-              />
-              <Route
                 exact
                 path="/:workspaceId/apps/:slug/:pageHandle?/*"
                 element={
                   <AppsRoute componentType="editor">
-                    <AppLoader
-                      switchDarkMode={this.switchDarkMode}
-                      darkMode={darkMode}
-                      setEditorOrViewer={(value) => this.setState({ isEditorOrViewer: value })}
-                    />
+                    <AppLoader switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                   </AppsRoute>
                 }
               />
@@ -251,11 +212,7 @@ class AppComponent extends React.Component {
                 path="/applications/:slug/:pageHandle?"
                 element={
                   <AppsRoute componentType="viewer">
-                    <Viewer
-                      switchDarkMode={this.switchDarkMode}
-                      darkMode={this.props.isAppDarkMode}
-                      setEditorOrViewer={(value) => this.setState({ isEditorOrViewer: value })}
-                    />
+                    <Viewer switchDarkMode={this.switchDarkMode} darkMode={this.props.isAppDarkMode} />
                   </AppsRoute>
                 }
               />
@@ -264,11 +221,7 @@ class AppComponent extends React.Component {
                 path="/applications/:slug/versions/:versionId/:pageHandle?"
                 element={
                   <AppsRoute componentType="viewer">
-                    <Viewer
-                      switchDarkMode={this.switchDarkMode}
-                      darkMode={this.props.isAppDarkMode}
-                      setEditorOrViewer={(value) => this.setState({ isEditorOrViewer: value })}
-                    />
+                    <Viewer switchDarkMode={this.switchDarkMode} darkMode={this.props.isAppDarkMode} />
                   </AppsRoute>
                 }
               />
@@ -310,7 +263,7 @@ class AppComponent extends React.Component {
                   path="groups"
                   element={
                     <AdminRoute>
-                      <ManageGroupPermissions switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                      <ManageGroupPermissionsV2 switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                     </AdminRoute>
                   }
                 />
@@ -337,29 +290,27 @@ class AppComponent extends React.Component {
                   </PrivateRoute>
                 }
               />
-              {window.public_config?.ENABLE_TOOLJET_DB == 'true' && (
-                <Route
-                  exact
-                  path="/:workspaceId/database"
-                  element={
-                    <PrivateRoute>
-                      <TooljetDatabase switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                    </PrivateRoute>
-                  }
-                />
-              )}
 
-              {window.public_config?.ENABLE_MARKETPLACE_FEATURE === 'true' && (
-                <Route
-                  exact
-                  path="/integrations"
-                  element={
-                    <AdminRoute {...this.props}>
-                      <MarketplacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                    </AdminRoute>
-                  }
-                />
-              )}
+              <Route
+                exact
+                path="/:workspaceId/database"
+                element={
+                  <PrivateRoute>
+                    <TooljetDatabase switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </PrivateRoute>
+                }
+              />
+
+              <Route
+                exact
+                path="/integrations"
+                element={
+                  <AdminRoute {...this.props}>
+                    <MarketplacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </AdminRoute>
+                }
+              />
+
               <Route exact path="/" element={<Navigate to="/:workspaceId" />} />
               <Route
                 exact

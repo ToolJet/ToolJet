@@ -27,7 +27,7 @@ export default function LogoNavDropdown({ darkMode }) {
           <span>Back to apps</span>
         </Link>
         <div className="divider"></div>
-        {window.public_config?.ENABLE_TOOLJET_DB == 'true' && admin && (
+        {admin && (
           <Link
             target="_blank"
             to={getPrivateRoute('database')}
@@ -38,16 +38,17 @@ export default function LogoNavDropdown({ darkMode }) {
             <span>Database</span>
           </Link>
         )}
-        <Link
-          to={getPrivateRoute('data_sources')}
-          className="dropdown-item tj-text tj-text-xsm"
-          target="_blank"
-          data-cy="data-source-option"
-        >
-          <SolidIcon name="datasource" width="20" />
-          <span>Data sources</span>
-        </Link>
-
+        {admin && (
+          <Link
+            to={getPrivateRoute('data_sources')}
+            className="dropdown-item tj-text tj-text-xsm"
+            target="_blank"
+            data-cy="data-source-option"
+          >
+            <SolidIcon name="datasource" width="20" />
+            <span>Data sources</span>
+          </Link>
+        )}
         <Link
           to={getPrivateRoute('workspace_constants')}
           className="dropdown-item tj-text tj-text-xsm"

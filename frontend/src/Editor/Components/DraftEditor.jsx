@@ -169,11 +169,11 @@ class DraftEditor extends React.Component {
     if (prevProps.defaultValue !== this.props.defaultValue) {
       const newContentState = ContentState.createFromText(this.props.defaultValue);
       const newEditorState = EditorState.createWithContent(newContentState);
-      const newEditorStateWithFocus = EditorState.moveFocusToEnd(newEditorState);
       const html = stateToHTML(newContentState);
 
       this.props.handleChange(html);
-      this.setState({ editorState: newEditorStateWithFocus });
+
+      this.setState({ editorState: newEditorState });
     }
   }
 

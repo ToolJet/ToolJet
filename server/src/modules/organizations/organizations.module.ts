@@ -11,16 +11,12 @@ import { UsersService } from 'src/services/users.service';
 import { CaslModule } from '../casl/casl.module';
 import { EmailService } from '@services/email.service';
 import { FilesService } from '@services/files.service';
-import { GroupPermission } from 'src/entities/group_permission.entity';
 import { App } from 'src/entities/app.entity';
 import { File } from 'src/entities/file.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { AuthService } from '@services/auth.service';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { GroupPermissionsService } from '@services/group_permissions.service';
-import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
-import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { EncryptionService } from '@services/encryption.service';
 import { AppConfigService } from '@services/app_config.service';
 import { Plugin } from 'src/entities/plugin.entity';
@@ -36,6 +32,8 @@ import { Metadata } from 'src/entities/metadata.entity';
 import { MetadataService } from '@services/metadata.service';
 import { SessionService } from '@services/session.service';
 import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
+import { UserResourcePermissionsModule } from '@modules/user_resource_permissions/user_resource_permissions.module';
+import { InstanceSettingsModule } from '@instance-settings/module';
 
 @Module({
   imports: [
@@ -44,11 +42,8 @@ import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
       OrganizationUser,
       User,
       File,
-      GroupPermission,
       App,
       SSOConfigs,
-      AppGroupPermission,
-      UserGroupPermission,
       DataSource,
       Credential,
       Plugin,
@@ -65,6 +60,8 @@ import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
       },
       inject: [ConfigService],
     }),
+    UserResourcePermissionsModule,
+    InstanceSettingsModule,
     TooljetDbModule,
   ],
   providers: [
@@ -75,7 +72,6 @@ import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
     EmailService,
     FilesService,
     AuthService,
-    GroupPermissionsService,
     EncryptionService,
     DataSourcesService,
     CredentialsService,

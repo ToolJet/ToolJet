@@ -5,10 +5,11 @@ import { CaslModule } from '../casl/casl.module';
 import { ThreadController } from '../../controllers/thread.controller';
 import { ThreadService } from '../../services/thread.service';
 import { ThreadRepository } from '../../repositories/thread.repository';
+import { Thread } from 'src/entities/thread.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ThreadRepository]), CaslModule],
+  imports: [TypeOrmModule.forFeature([Thread]), CaslModule],
   controllers: [ThreadController],
-  providers: [ThreadService],
+  providers: [ThreadService, ThreadRepository],
 })
 export class ThreadModule {}

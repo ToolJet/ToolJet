@@ -1,10 +1,11 @@
 import { User } from 'src/entities/user.entity';
 import { InferSubjects, AbilityBuilder, Ability, AbilityClass, ExtractSubjectType } from '@casl/ability';
 import { Injectable } from '@nestjs/common';
-import { UsersService } from 'src/services/users.service';
 import { Plugin } from 'src/entities/plugin.entity';
+import { AbilityService } from '@services/permissions-ability.service';
+import { PLUGIN_RESOURCE_ACTION } from 'src/constants/global.constant';
 
-type Actions = 'installPlugin' | 'updatePlugin' | 'deletePlugin';
+type Actions = PLUGIN_RESOURCE_ACTION.INSTALL | PLUGIN_RESOURCE_ACTION.UPDATE | PLUGIN_RESOURCE_ACTION.DELETE;
 
 type Subjects = InferSubjects<typeof User | typeof Plugin> | 'all';
 
@@ -12,21 +13,18 @@ export type PluginsAbility = Ability<[Actions, Subjects]>;
 
 @Injectable()
 export class PluginsAbilityFactory {
-  constructor(private usersService: UsersService) {}
+  constructor(private abilityService: AbilityService) {}
 
   async pluginActions(user: User) {
     const { can, build } = new AbilityBuilder<Ability<[Actions, Subjects]>>(Ability as AbilityClass<PluginsAbility>);
 
-    if (await this.usersService.userCan(user, 'create', 'Plugin')) {
-      can('installPlugin', Plugin);
-    }
+    const userPermission = await this.abilityService.resourceActionsPermission(user, {
+      organizationId: user.organizationId,
+    });
+    const pluginPermission = userPermission.isAdmin;
 
-    if (await this.usersService.userCan(user, 'update', 'Plugin')) {
-      can('updatePlugin', Plugin);
-    }
-
-    if (await this.usersService.userCan(user, 'delete', 'Plugin')) {
-      can('deletePlugin', Plugin);
+    if (pluginPermission) {
+      can([PLUGIN_RESOURCE_ACTION.INSTALL, PLUGIN_RESOURCE_ACTION.UPDATE, PLUGIN_RESOURCE_ACTION.DELETE], Plugin);
     }
 
     return build({

@@ -1,5 +1,6 @@
 import { QueryOptions } from './types';
 const JSON5 = require('json5');
+const querystring = require('querystring');
 
 function parseJSON(json: any) {
   if (!json) {
@@ -27,7 +28,7 @@ export async function customerOpeations(WooCommerce, queryOptions: QueryOptions,
         ...(email?.length > 0 && { email }),
         ...(role?.length > 0 && { role }),
       };
-      const data = await WooCommerce.get('customers', searchParams)
+      const data = await WooCommerce.get(generateEndpointWithQueryParams('customers', searchParams))
         .then((response) => {
           returnValue = { statusCode: response.status, ...response?.data };
           return returnValue;
@@ -161,7 +162,7 @@ export async function productOperations(WooCommerce, queryOptions: QueryOptions,
         ...(parent_exclude?.length > 0 && { parent_exclude }),
         ...(parent?.length > 0 && { parent }),
       };
-      return await WooCommerce.get('products', searchParams)
+      return await WooCommerce.get(generateEndpointWithQueryParams('products', searchParams))
         .then((response) => {
           returnValue = { statusCode: response.status, ...response?.data };
           return returnValue;
@@ -272,7 +273,7 @@ export async function orderOperations(WooCommerce, queryOptions: QueryOptions, o
         ...(product && { product }),
         ...(dp && { dp }),
       };
-      return await WooCommerce.get('orders', searchParams)
+      return await WooCommerce.get(generateEndpointWithQueryParams('orders', searchParams))
         .then((response) => {
           returnValue = { statusCode: response.status, ...response?.data };
           return returnValue;
@@ -359,7 +360,7 @@ export async function couponOperations(WooCommerce, queryOptions: QueryOptions, 
         ...(after?.length > 0 && { after }),
         ...(code?.length > 0 && { code }),
       };
-      return await WooCommerce.get(`coupons`, searchParams)
+      return await WooCommerce.get(generateEndpointWithQueryParams(`coupons`, searchParams))
         .then((response) => {
           returnValue = { statusCode: response.status, ...response?.data };
           return returnValue;
@@ -381,3 +382,9 @@ export async function couponOperations(WooCommerce, queryOptions: QueryOptions, 
       throw Error('Invalid operation');
   }
 }
+
+const generateEndpointWithQueryParams = (resource: string, searchParams) => {
+  const queryString = querystring.stringify(searchParams);
+  const endpoint = queryString ? `${resource}?${queryString}` : resource;
+  return endpoint;
+};

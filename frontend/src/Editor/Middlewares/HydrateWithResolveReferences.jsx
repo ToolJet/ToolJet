@@ -28,19 +28,17 @@ const HydrateWithResolveReferences = ({ id, mode, component, customResolvables, 
 
   const resolvedGeneralStyles = resolveGeneralStyles(component, {}, null, customResolvables);
 
-  const [validatedProperties, propertyErrors] =
-    mode === 'edit' && component.validate
-      ? validateProperties(resolvedProperties, componentMeta.properties)
-      : [resolvedProperties, []];
+  const [validatedProperties, propertyErrors] = component.validate
+    ? validateProperties(resolvedProperties, componentMeta.properties)
+    : [resolvedProperties, []];
 
   if (shouldAddBoxShadowAndVisibility.includes(component.component)) {
     validatedProperties.visibility = validatedProperties.visibility !== false ? true : false;
   }
 
-  const [validatedStyles, styleErrors] =
-    mode === 'edit' && component.validate
-      ? validateProperties(resolvedStyles, componentMeta.styles)
-      : [resolvedStyles, []];
+  const [validatedStyles, styleErrors] = component.validate
+    ? validateProperties(resolvedStyles, componentMeta.styles)
+    : [resolvedStyles, []];
 
   if (!shouldAddBoxShadowAndVisibility.includes(component.component)) {
     validatedStyles.visibility = validatedStyles.visibility !== false ? true : false;
@@ -50,10 +48,9 @@ const HydrateWithResolveReferences = ({ id, mode, component, customResolvables, 
     ? validateProperties(resolvedGeneralProperties, componentMeta.general)
     : [resolvedGeneralProperties, []];
 
-  const [validatedGeneralStyles, generalStylesErrors] =
-    mode === 'edit' && component.validate
-      ? validateProperties(resolvedGeneralStyles, componentMeta.generalStyles)
-      : [resolvedGeneralStyles, []];
+  const [validatedGeneralStyles, generalStylesErrors] = component.validate
+    ? validateProperties(resolvedGeneralStyles, componentMeta.generalStyles)
+    : [resolvedGeneralStyles, []];
 
   useEffect(() => {
     const isEditorReady = useCurrentStateStore.getState().isEditorReady;

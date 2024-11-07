@@ -15,8 +15,6 @@ import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { AppUser } from 'src/entities/app_user.entity';
 import { FolderApp } from 'src/entities/folder_app.entity';
-import { GroupPermission } from 'src/entities/group_permission.entity';
-import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UsersService } from '@services/users.service';
 import { User } from 'src/entities/user.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
@@ -28,9 +26,11 @@ import { PluginsHelper } from 'src/helpers/plugins.helper';
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
 import { AppEnvironmentService } from '@services/app_environments.service';
 import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
+import { UserResourcePermissionsModule } from '@modules/user_resource_permissions/user_resource_permissions.module';
 
 @Module({
   imports: [
+    UserResourcePermissionsModule,
     TypeOrmModule.forFeature([
       App,
       File,
@@ -41,8 +41,6 @@ import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
       Credential,
       DataSource,
       FolderApp,
-      GroupPermission,
-      AppGroupPermission,
       User,
       OrganizationUser,
       Organization,

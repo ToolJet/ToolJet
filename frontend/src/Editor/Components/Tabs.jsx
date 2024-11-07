@@ -17,12 +17,13 @@ export const Tabs = function Tabs({
   styles,
   darkMode,
   dataCy,
+  properties,
 }) {
   const { tabWidth, boxShadow } = styles;
+  const { defaultTab } = properties;
 
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
-  const defaultTab = component.definition.properties.defaultTab.value;
   // config for tabs. Includes title
   const tabs = isExpectedDataType(resolveWidgetFieldValue(component.definition.properties?.tabs?.value), 'array');
   let parsedTabs = tabs;
@@ -43,7 +44,6 @@ export const Tabs = function Tabs({
 
   // Default tab
   let parsedDefaultTab = defaultTab;
-  parsedDefaultTab = resolveWidgetFieldValue(parsedDefaultTab, 1);
 
   const parsedDisabledState =
     typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState) : disabledState;
@@ -95,11 +95,11 @@ export const Tabs = function Tabs({
   useEffect(() => {
     const exposedVariables = {
       setTab: async function (id) {
-        if (id !== undefined) { 
-          const tabId = Number(id); 
+        if (id !== undefined && currentTab !== id) {
+          const tabId = Number(id);
           setCurrentTab(tabId);
           setExposedVariable('currentTab', tabId);
-          fireEvent('onTabSwitch')        
+          fireEvent('onTabSwitch');
         }
       },
       currentTab: currentTab,
@@ -138,11 +138,10 @@ export const Tabs = function Tabs({
     }
     return true; // Render by default if no specific conditions are met
   }
-
   return (
     <div
       data-disabled={parsedDisabledState}
-      className="jet-tabs card"
+      className="jet-tabs card tabs-component"
       style={{ height, display: parsedWidgetVisibility ? 'flex' : 'none', backgroundColor: bgColor, boxShadow }}
       data-cy={dataCy}
     >
@@ -161,6 +160,7 @@ export const Tabs = function Tabs({
             className="nav-item"
             style={{ opacity: tab?.disabled && '0.5', width: tabWidth == 'split' && '33.3%' }}
             onClick={() => {
+              if (currentTab === tab.id) return;
               setTabSwitchingOnProgress(true);
 
               !tab?.disabled && setCurrentTab(tab.id);

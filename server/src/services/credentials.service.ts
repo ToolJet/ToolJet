@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Credential } from '../../src/entities/credential.entity';
-import { getManager, Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { EncryptionService } from './encryption.service';
 
 @Injectable()
@@ -9,10 +9,11 @@ export class CredentialsService {
   constructor(
     private encryptionService: EncryptionService,
     @InjectRepository(Credential)
-    private credentialsRepository: Repository<Credential>
+    private credentialsRepository: Repository<Credential>,
+    private readonly _dataSource: DataSource
   ) {}
 
-  async create(value: string, entityManager = getManager()): Promise<Credential> {
+  async create(value: string, entityManager = this._dataSource.manager): Promise<Credential> {
     const credentialRepository = entityManager.getRepository(Credential);
     const newCredential = credentialRepository.create({
       valueCiphertext: await this.encryptionService.encryptColumnValue('credentials', 'value', value),

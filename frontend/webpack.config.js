@@ -194,10 +194,9 @@ module.exports = {
       apiUrl: `${stripTrailingSlash(API_URL[environment]) || ''}/api`,
       SERVER_IP: process.env.SERVER_IP,
       COMMENT_FEATURE_ENABLE: process.env.COMMENT_FEATURE_ENABLE ?? true,
-      ENABLE_TOOLJET_DB: process.env.ENABLE_TOOLJET_DB ?? true,
       ENABLE_MULTIPLAYER_EDITING: true,
-      ENABLE_MARKETPLACE_FEATURE: process.env.ENABLE_MARKETPLACE_FEATURE ?? true,
       ENABLE_MARKETPLACE_DEV_MODE: process.env.ENABLE_MARKETPLACE_DEV_MODE,
+      TJDB_SQL_MODE_DISABLE: process.env.TJDB_SQL_MODE_DISABLE ?? false,
       TOOLJET_MARKETPLACE_URL:
         process.env.TOOLJET_MARKETPLACE_URL || 'https://tooljet-plugins-production.s3.us-east-2.amazonaws.com',
     }),

@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Plus = ({ fill = '#C1C8CD', width = '25', className = '', viewBox = '0 0 25 25', dataCy = '', style }) => (
+const Plus = ({ fill = '#C1C8CD', width = '25', className = '', viewBox = '0 0 25 25', style, dataCy }) => (
   <svg
     width={width}
     height={width}

@@ -8,12 +8,12 @@ export default function SuccessNotificationInputs({ currentState, options, darkM
     return <div className="mb-3"></div>;
   }
   return (
-    <div className="me-4 mb-3 mt-2 pt-1" style={{ paddingLeft: '112px' }}>
-      <div className="d-flex">
-        <label className="form-label" data-cy={'label-success-message-input'} style={{ width: 150 }}>
+    <div className="flex-grow-1" style={{ margin: '16px 0px' }}>
+      <div className="d-flex" style={{ marginBottom: '16px' }}>
+        <label className="form-label align-items-center" data-cy={'label-success-message-input'} style={{ width: 150 }}>
           {t('editor.queryManager.successMessage', 'Message')}
         </label>
-        <div className="flex-grow-1">
+        <div className="flex-grow-1" style={{ maxWidth: '460px' }}>
           <CodeHinter
             type="basic"
             initialValue={options.successMessage}
@@ -24,10 +24,14 @@ export default function SuccessNotificationInputs({ currentState, options, darkM
         </div>
       </div>
       <div className="d-flex">
-        <label className="form-label" data-cy={'label-notification-duration-input'} style={{ width: 150 }}>
+        <label
+          className="form-label align-items-center"
+          data-cy={'label-notification-duration-input'}
+          style={{ width: 150 }}
+        >
           {t('editor.queryManager.notificationDuration', 'duration (s)')}
         </label>
-        <div className="flex-grow-1 query-manager-input-elem ">
+        <div className="flex-grow-1 query-manager-input-elem" style={{ maxWidth: '460px' }}>
           <input
             type="number"
             disabled={!options.showSuccessNotification}

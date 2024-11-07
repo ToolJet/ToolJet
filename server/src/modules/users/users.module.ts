@@ -9,9 +9,14 @@ import { UsersController } from 'src/controllers/users.controller';
 import { OrganizationsModule } from '../organizations/organizations.module';
 import { App } from 'src/entities/app.entity';
 import { FilesService } from '@services/files.service';
+import { UserResourcePermissionsModule } from '@modules/user_resource_permissions/user_resource_permissions.module';
 
 @Module({
-  imports: [OrganizationsModule, TypeOrmModule.forFeature([User, File, Organization, OrganizationUser, App])],
+  imports: [
+    OrganizationsModule,
+    UserResourcePermissionsModule,
+    TypeOrmModule.forFeature([User, File, Organization, OrganizationUser, App]),
+  ],
   providers: [UsersService, FilesService],
   controllers: [UsersController],
   exports: [UsersService],

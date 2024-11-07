@@ -2,33 +2,38 @@ import { groupsSelector } from "Selectors/manageGroups";
 import { groupsText } from "Texts/manageGroups";
 import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
-import { navigateToAllUserGroup, createGroup, navigateToManageGroups } from "Support/utils/common";
-import { cyParamName } from "../../constants/selectors/common";
+import {
+  navigateToAllUserGroup,
+  createGroup,
+  navigateToManageGroups,
+} from "Support/utils/common";
+import { cyParamName } from "Selectors/common";
 
 export const manageGroupsElements = () => {
-  cy.get(groupsSelector.groupLink("All users")).verifyVisibleElement(
+  cy.get('[data-cy="page-title"]').should(($el) => {
+    expect($el.contents().last().text().trim()).to.eq("Groups");
+  });
+
+  cy.get('[data-cy="admin-list-item"]').verifyVisibleElement(
     "have.text",
-    groupsText.allUsers
+    "Admin"
   );
+  cy.get('[data-cy="user-role-title"]').verifyVisibleElement(
+    "have.text",
+    "USER ROLE"
+  );
+  cy.get('[data-cy="admin-title"]').verifyVisibleElement(
+    "have.text",
+    "Admin (1)"
+  );
+
   cy.get(groupsSelector.groupLink("Admin")).verifyVisibleElement(
     "have.text",
     groupsText.admin
   );
-
-  navigateToAllUserGroup();
-
-  cy.get(groupsSelector.groupPageTitle("All Users")).verifyVisibleElement(
-    "have.text",
-    groupsText.allUsers
-  );
   cy.get(groupsSelector.createNewGroupButton).verifyVisibleElement(
     "have.text",
     groupsText.createNewGroupButton
-  );
-
-  cy.get(groupsSelector.appsLink).verifyVisibleElement(
-    "have.text",
-    groupsText.appsLink
   );
   cy.get(groupsSelector.usersLink).verifyVisibleElement(
     "have.text",
@@ -38,66 +43,183 @@ export const manageGroupsElements = () => {
     "have.text",
     groupsText.permissionsLink
   );
+  cy.get('[data-cy="granular-access-link"]').verifyVisibleElement(
+    "have.text",
+    "Granular access"
+  );
 
-  cy.get(groupsSelector.appsLink).click();
+  // cy.get(groupsSelector.appsLink).click();
 
   cy.get(groupsSelector.textDefaultGroup).verifyVisibleElement(
     "have.text",
     groupsText.textDefaultGroup
   );
 
-  cy.get(groupsSelector.searchBox).should("be.visible");
-  cy.get(groupsSelector.selectAddButton).verifyVisibleElement(
-    "have.text",
-    groupsText.addButton
-  );
-
   cy.get(groupsSelector.nameTableHeader).verifyVisibleElement(
     "have.text",
-    groupsText.textAppName
+    groupsText.userNameTableHeader
+  );
+  cy.get(groupsSelector.emailTableHeader).verifyVisibleElement(
+    "have.text",
+    groupsText.emailTableHeader
   );
 
+  cy.get(groupsSelector.permissionsLink).click();
+  cy.get('[data-cy="helper-text-admin-app-access"]')
+    .eq(0)
+    .verifyVisibleElement(
+      "have.text",
+      " Admin has edit access to all apps. These are not editableread documentation to know more !"
+    );
+  cy.get(groupsSelector.resourcesApps).verifyVisibleElement(
+    "have.text",
+    groupsText.resourcesApps
+  );
   cy.get(groupsSelector.permissionstableHedaer).verifyVisibleElement(
     "have.text",
     groupsText.permissionstableHedaer
   );
 
-  cy.get("body").then(($title) => {
-    if ($title.find(groupsSelector.helperTextNoAppsAdded).length > 0) {
-      cy.get(groupsSelector.helperTextNoAppsAdded)
-        .eq(0)
-        .verifyVisibleElement("have.text", groupsText.helperTextNoAppsAdded);
-      cy.get(groupsSelector.helperTextPermissions)
-        .eq(0)
-        .verifyVisibleElement("have.text", groupsText.helperTextPermissions);
-    }
-  });
-
-  cy.get(groupsSelector.createNewGroupButton).should("be.visible").click();
-  cy.get(groupsSelector.addNewGroupModalTitle).verifyVisibleElement(
+  cy.get(groupsSelector.resourcesApps).verifyVisibleElement(
     "have.text",
-    groupsText.cardTitle
-  );
-  cy.get(groupsSelector.groupNameInput).should("be.visible");
-  cy.get(groupsSelector.cancelButton).verifyVisibleElement(
-    "have.text",
-    groupsText.cancelButton
-  );
-  cy.get(groupsSelector.createGroupButton).verifyVisibleElement(
-    "have.text",
-    groupsText.createGroupButton
-  );
-  cy.get(groupsSelector.cancelButton).click();
-  cy.get(groupsSelector.helperTextAllUsersIncluded).verifyVisibleElement(
-    "have.text",
-    groupsText.helperTextAllUsersIncluded
+    groupsText.resourcesApps
   );
 
-  // cy.get(groupsSelector.usersLink).click();
-  // cy.get(groupsSelector.helperTextAllUsersIncluded).verifyVisibleElement(
-  //   "have.text",
-  //   groupsText.helperTextAllUsersIncluded
-  // );
+  cy.get(groupsSelector.appsCreateCheck)
+    .should("be.visible")
+    .and("have.attr", "disabled");
+
+  cy.get(groupsSelector.appsCreateLabel).verifyVisibleElement(
+    "have.text",
+    groupsText.createLabel
+  );
+  cy.get('[data-cy="app-create-helper-text"]').verifyVisibleElement(
+    "have.text",
+    "Create apps in this workspace"
+  );
+  cy.get(groupsSelector.appsDeleteCheck)
+    .should("be.visible")
+    .and("have.attr", "disabled");
+  cy.get(groupsSelector.appsDeleteLabel).verifyVisibleElement(
+    "have.text",
+    groupsText.deleteLabel
+  );
+  cy.get('[data-cy="app-delete-helper-text"]').verifyVisibleElement(
+    "have.text",
+    "Delete any app in this workspace"
+  );
+
+  cy.get(groupsSelector.resourcesFolders).verifyVisibleElement(
+    "have.text",
+    groupsText.resourcesFolders
+  );
+  cy.get(groupsSelector.foldersCreateCheck)
+    .should("be.visible")
+    .and("have.attr", "disabled");
+  cy.get(groupsSelector.foldersCreateLabel).verifyVisibleElement(
+    "have.text",
+    groupsText.folderCreateLabel
+  );
+  cy.get('[data-cy="folder-helper-text"]').verifyVisibleElement(
+    "have.text",
+    "All operations on folders"
+  );
+
+  cy.get(groupsSelector.resourcesWorkspaceVar).verifyVisibleElement(
+    "have.text",
+    groupsText.resourcesWorkspaceVar
+  );
+  cy.get(groupsSelector.workspaceVarCheckbox)
+    .should("be.visible")
+    .and("have.attr", "disabled");
+  cy.get('[data-cy="workspace-constants-helper-text"]').verifyVisibleElement(
+    "have.text",
+    "All operations on workspace constants"
+  );
+
+  cy.get('[data-cy="granular-access-link"]').click();
+  cy.get(groupsSelector.nameTableHeader).verifyVisibleElement(
+    "have.text",
+    "Name"
+  );
+
+  cy.get(groupsSelector.permissionstableHedaer).verifyVisibleElement(
+    "have.text",
+    "Permission"
+  );
+  cy.get('[data-cy="resource-header"]:eq(1)').verifyVisibleElement(
+    "have.text",
+    "Resource"
+  );
+  cy.get('[data-cy="apps-text"]').verifyVisibleElement("have.text", "  Apps");
+  cy.get('[data-cy="app-edit-radio"]')
+    .should("be.visible")
+    .and("have.attr", "disabled");
+  cy.get('[data-cy="app-edit-radio"]').should("be.checked");
+  cy.get('[data-cy="app-edit-label"]').verifyVisibleElement(
+    "have.text",
+    "Edit"
+  );
+  cy.get('[data-cy="app-edit-helper-text"]').verifyVisibleElement(
+    "have.text",
+    "Access to app builder"
+  );
+
+  cy.get('[data-cy="app-view-radio"]')
+    .should("be.visible")
+    .and("have.attr", "disabled");
+  cy.get('[data-cy="app-view-label"]').verifyVisibleElement(
+    "have.text",
+    "View"
+  );
+  cy.get('[data-cy="app-view-helper-text"]').verifyVisibleElement(
+    "have.text",
+    "Only access released version of apps"
+  );
+  cy.get('[data-cy="app-hide-from-dashboard-radio"]')
+    .should("be.visible")
+    .and("have.attr", "disabled");
+
+  cy.get(
+    '[data-cy="app-hide-from-dashboard-helper-text"]'
+  ).verifyVisibleElement("have.text", "App will be accessible by URL only");
+  cy.get('[data-cy="group-chip"]').verifyVisibleElement(
+    "have.text",
+    "All apps"
+  );
+  cy.get('[data-cy="add-apps-buton"]').verifyVisibleElement(
+    "have.text",
+    "Add apps"
+  );
+
+  cy.get(groupsSelector.groupLink("Builder")).click();
+  cy.get(groupsSelector.groupLink("Builder")).verifyVisibleElement(
+    "have.text",
+    "Builder"
+  );
+
+  cy.get('[data-cy="builder-title"]').verifyVisibleElement(
+    "have.text",
+    "Builder (1)"
+  );
+
+  cy.get(groupsSelector.createNewGroupButton).verifyVisibleElement(
+    "have.text",
+    groupsText.createNewGroupButton
+  );
+  cy.get(groupsSelector.usersLink).verifyVisibleElement(
+    "have.text",
+    groupsText.usersLink
+  );
+  cy.get(groupsSelector.permissionsLink).verifyVisibleElement(
+    "have.text",
+    groupsText.permissionsLink
+  );
+  cy.get('[data-cy="granular-access-link"]').verifyVisibleElement(
+    "have.text",
+    "Granular access"
+  );
+  cy.get(groupsSelector.usersLink).click();
   cy.get(groupsSelector.nameTableHeader).verifyVisibleElement(
     "have.text",
     groupsText.userNameTableHeader
@@ -121,7 +243,13 @@ export const manageGroupsElements = () => {
     "have.text",
     groupsText.resourcesApps
   );
-  cy.get(groupsSelector.appsCreateCheck).should("be.visible").check();
+  cy.get(groupsSelector.appsCreateCheck).should("be.visible").and("be.checked");
+  cy.get(groupsSelector.appsCreateCheck).uncheck();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    groupsText.permissionUpdatedToast
+  );
+  cy.get(groupsSelector.appsCreateCheck).check();
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
     groupsText.permissionUpdatedToast
@@ -130,76 +258,155 @@ export const manageGroupsElements = () => {
     "have.text",
     groupsText.createLabel
   );
-  cy.get(groupsSelector.appsCreateCheck).uncheck();
-  cy.get(groupsSelector.appsDeleteCheck).should("be.visible").check();
+  cy.get('[data-cy="app-create-helper-text"]').verifyVisibleElement(
+    "have.text",
+    "Create apps in this workspace"
+  );
+  cy.get(groupsSelector.appsDeleteCheck).should("be.visible").and("be.checked");
   cy.get(groupsSelector.appsDeleteLabel).verifyVisibleElement(
     "have.text",
     groupsText.deleteLabel
   );
+  cy.get('[data-cy="app-delete-helper-text"]').verifyVisibleElement(
+    "have.text",
+    "Delete any app in this workspace"
+  );
+
   cy.get(groupsSelector.appsDeleteCheck).uncheck();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    groupsText.permissionUpdatedToast
+  );
+  cy.get(groupsSelector.appsDeleteCheck).check();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    groupsText.permissionUpdatedToast
+  );
 
   cy.get(groupsSelector.resourcesFolders).verifyVisibleElement(
     "have.text",
     groupsText.resourcesFolders
   );
-  cy.get(groupsSelector.foldersCreateCheck).should("be.visible").check();
+  cy.get(groupsSelector.foldersCreateCheck)
+    .should("be.visible")
+    .and("be.checked");
   cy.get(groupsSelector.foldersCreateLabel).verifyVisibleElement(
     "have.text",
     groupsText.folderCreateLabel
   );
+  cy.get('[data-cy="folder-helper-text"]').verifyVisibleElement(
+    "have.text",
+    "All operations on folders"
+  );
   cy.get(groupsSelector.foldersCreateCheck).uncheck();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    groupsText.permissionUpdatedToast
+  );
+  cy.get(groupsSelector.foldersCreateCheck).check();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    groupsText.permissionUpdatedToast
+  );
 
   cy.get(groupsSelector.resourcesWorkspaceVar).verifyVisibleElement(
     "have.text",
     groupsText.resourcesWorkspaceVar
+  );
+  cy.get(groupsSelector.workspaceVarCheckbox)
+    .should("be.visible")
+    .and("be.checked");
+  cy.get('[data-cy="workspace-constants-helper-text"]').verifyVisibleElement(
+    "have.text",
+    "All operations on workspace constants"
+  );
+  cy.get(groupsSelector.workspaceVarCheckbox).uncheck();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    groupsText.permissionUpdatedToast
   );
   cy.get(groupsSelector.workspaceVarCheckbox).check();
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
     groupsText.permissionUpdatedToast
   );
-  cy.get(groupsSelector.workspaceVarCheckbox).uncheck();
 
-  navigateToAllUserGroup();
-  cy.get(groupsSelector.groupLink("Admin")).click();
-  cy.get(groupsSelector.groupLink("Admin")).verifyVisibleElement(
-    "have.text",
-    groupsText.admin
-  );
-
-  cy.get(groupsSelector.appsLink).click();
-  cy.get(groupsSelector.textDefaultGroup).verifyVisibleElement(
-    "have.text",
-    groupsText.textDefaultGroup
-  );
-
+  cy.get('[data-cy="granular-access-link"]').click();
   cy.get(groupsSelector.nameTableHeader).verifyVisibleElement(
     "have.text",
-    groupsText.textAppName
+    "Name"
   );
 
   cy.get(groupsSelector.permissionstableHedaer).verifyVisibleElement(
     "have.text",
-    groupsText.permissionstableHedaer
+    "Permission"
   );
-
-  cy.get("body").then(($title) => {
-    if ($title.find(groupsSelector.helperTextNoAppsAdded).length > 0) {
-      cy.get(groupsSelector.helperTextNoAppsAdded)
-        .eq(0)
-        .verifyVisibleElement("have.text", groupsText.helperTextNoAppsAdded);
-      cy.get(groupsSelector.helperTextPermissions)
-        .eq(0)
-        .verifyVisibleElement("have.text", groupsText.helperTextPermissions);
-    }
-  });
-
-  cy.get(groupsSelector.usersLink).click();
-  cy.get(groupsSelector.multiSelectSearch).should("be.visible");
-  cy.get(groupsSelector.mutiSelectAddButton("Admin")).verifyVisibleElement(
+  cy.get('[data-cy="resource-header"]:eq(1)').verifyVisibleElement(
     "have.text",
-    groupsText.addUsersButton
+    "Resource"
   );
+  cy.get('[data-cy="apps-text"]').verifyVisibleElement("have.text", "  Apps");
+  cy.get('[data-cy="app-edit-radio"]').should("be.visible").and("be.checked");
+  cy.get('[data-cy="app-edit-label"]').verifyVisibleElement(
+    "have.text",
+    "Edit"
+  );
+  cy.get('[data-cy="app-edit-helper-text"]').verifyVisibleElement(
+    "have.text",
+    "Access to app builder"
+  );
+
+  cy.get('[data-cy="app-view-radio"]').should("be.visible");
+  cy.get('[data-cy="app-view-label"]').verifyVisibleElement(
+    "have.text",
+    "View"
+  );
+  cy.get('[data-cy="app-view-helper-text"]').verifyVisibleElement(
+    "have.text",
+    "Only access released version of apps"
+  );
+  cy.get('[data-cy="app-hide-from-dashboard-radio"]').should("be.visible");
+
+  cy.get(
+    '[data-cy="app-hide-from-dashboard-helper-text"]'
+  ).verifyVisibleElement("have.text", "App will be accessible by URL only");
+  cy.get('[data-cy="group-chip"]').verifyVisibleElement(
+    "have.text",
+    "All apps"
+  );
+  cy.get('[data-cy="add-apps-buton"]').verifyVisibleElement(
+    "have.text",
+    "Add apps"
+  );
+
+  cy.get(groupsSelector.groupLink("End-user")).click();
+  cy.get(groupsSelector.groupLink("End-user")).verifyVisibleElement(
+    "have.text",
+    "End-user"
+  );
+
+  cy.get('[data-cy="end-user-title"]').verifyVisibleElement(
+    "have.text",
+    "End-user (0)"
+  );
+
+  cy.get(groupsSelector.createNewGroupButton).verifyVisibleElement(
+    "have.text",
+    groupsText.createNewGroupButton
+  );
+  cy.get(groupsSelector.usersLink).verifyVisibleElement(
+    "have.text",
+    groupsText.usersLink
+  );
+  cy.get(groupsSelector.permissionsLink).verifyVisibleElement(
+    "have.text",
+    groupsText.permissionsLink
+  );
+  cy.get('[data-cy="granular-access-link"]').verifyVisibleElement(
+    "have.text",
+    "Granular access"
+  );
+  cy.get(groupsSelector.usersLink).click();
   cy.get(groupsSelector.nameTableHeader).verifyVisibleElement(
     "have.text",
     groupsText.userNameTableHeader
@@ -223,15 +430,109 @@ export const manageGroupsElements = () => {
     "have.text",
     groupsText.resourcesApps
   );
-  cy.get(groupsSelector.appsCreateCheck).verifyVisibleElement("be.disabled");
-  cy.get(groupsSelector.appsDeleteCheck).verifyVisibleElement("be.disabled");
+  cy.get(groupsSelector.appsCreateCheck)
+    .should("be.visible")
+    .and("have.attr", "disabled");
+
+  cy.get(groupsSelector.appsCreateLabel).verifyVisibleElement(
+    "have.text",
+    groupsText.createLabel
+  );
+  cy.get('[data-cy="app-create-helper-text"]').verifyVisibleElement(
+    "have.text",
+    "Create apps in this workspace"
+  );
+  cy.get(groupsSelector.appsDeleteCheck)
+    .should("be.visible")
+    .and("have.attr", "disabled");
+  cy.get(groupsSelector.appsDeleteLabel).verifyVisibleElement(
+    "have.text",
+    groupsText.deleteLabel
+  );
+  cy.get('[data-cy="app-delete-helper-text"]').verifyVisibleElement(
+    "have.text",
+    "Delete any app in this workspace"
+  );
+
+  cy.get(groupsSelector.resourcesFolders).verifyVisibleElement(
+    "have.text",
+    groupsText.resourcesFolders
+  );
+  cy.get(groupsSelector.foldersCreateCheck)
+    .should("be.visible")
+    .and("have.attr", "disabled");
   cy.get(groupsSelector.foldersCreateLabel).verifyVisibleElement(
     "have.text",
     groupsText.folderCreateLabel
   );
-  cy.get(groupsSelector.foldersCreateCheck).verifyVisibleElement("be.disabled");
-  cy.get(groupsSelector.workspaceVarCheckbox).verifyVisibleElement(
-    "be.disabled"
+  cy.get('[data-cy="folder-helper-text"]').verifyVisibleElement(
+    "have.text",
+    "All operations on folders"
+  );
+
+  cy.get(groupsSelector.resourcesWorkspaceVar).verifyVisibleElement(
+    "have.text",
+    groupsText.resourcesWorkspaceVar
+  );
+  cy.get(groupsSelector.workspaceVarCheckbox)
+    .should("be.visible")
+    .and("have.attr", "disabled");
+  cy.get('[data-cy="workspace-constants-helper-text"]').verifyVisibleElement(
+    "have.text",
+    "All operations on workspace constants"
+  );
+
+  cy.get('[data-cy="granular-access-link"]').click();
+  cy.get(groupsSelector.nameTableHeader).verifyVisibleElement(
+    "have.text",
+    "Name"
+  );
+
+  cy.get(groupsSelector.permissionstableHedaer).verifyVisibleElement(
+    "have.text",
+    "Permission"
+  );
+  cy.get('[data-cy="resource-header"]:eq(1)').verifyVisibleElement(
+    "have.text",
+    "Resource"
+  );
+  cy.get('[data-cy="apps-text"]').verifyVisibleElement("have.text", "  Apps");
+  cy.get('[data-cy="app-edit-radio"]')
+    .should("be.visible")
+    .and("have.attr", "disabled");
+  cy.get('[data-cy="app-edit-label"]').verifyVisibleElement(
+    "have.text",
+    "Edit"
+  );
+  cy.get('[data-cy="app-edit-helper-text"]').verifyVisibleElement(
+    "have.text",
+    "Access to app builder"
+  );
+
+  cy.get('[data-cy="app-view-radio"]')
+    .should("be.visible")
+    .and("have.attr", "disabled");
+  cy.get('[data-cy="app-view-radio"]').should("be.checked");
+  cy.get('[data-cy="app-view-label"]').verifyVisibleElement(
+    "have.text",
+    "View"
+  );
+  cy.get('[data-cy="app-view-helper-text"]').verifyVisibleElement(
+    "have.text",
+    "Only access released version of apps"
+  );
+  cy.get('[data-cy="app-hide-from-dashboard-radio"]').should("be.visible");
+
+  cy.get(
+    '[data-cy="app-hide-from-dashboard-helper-text"]'
+  ).verifyVisibleElement("have.text", "App will be accessible by URL only");
+  cy.get('[data-cy="group-chip"]').verifyVisibleElement(
+    "have.text",
+    "All apps"
+  );
+  cy.get('[data-cy="add-apps-buton"]').verifyVisibleElement(
+    "have.text",
+    "Add apps"
   );
 };
 
@@ -341,9 +642,13 @@ export const verifyGroupCardOptions = (groupName) => {
   );
 };
 
-export const groupPermission = (fieldsToCheckOrUncheck, groupName = "All users", shouldCheck = false,) => {
+export const groupPermission = (
+  fieldsToCheckOrUncheck,
+  groupName = "All users",
+  shouldCheck = false
+) => {
   navigateToManageGroups();
-  cy.get(groupsSelector.groupLink(groupName))
+  cy.get(groupsSelector.groupLink(groupName));
   cy.get(groupsSelector.permissionsLink).click();
 
   fieldsToCheckOrUncheck.forEach((field) => {
@@ -362,5 +667,5 @@ export const groupPermission = (fieldsToCheckOrUncheck, groupName = "All users",
 
 export const duplicateGroup = () => {
   OpenGroupCardOption(groupName);
-  cy.get(groupsSelector.duplicateOption).click()
-}
+  cy.get(groupsSelector.duplicateOption).click();
+};

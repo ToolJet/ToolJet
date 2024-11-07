@@ -107,6 +107,26 @@ const EditorSelecto = ({ selectionRef, canvasContainerRef, setSelectedComponent,
         onScroll={(e) => {
           canvasContainerRef.current.scrollBy(e.direction[0] * 10, e.direction[1] * 10);
         }}
+        dragCondition={(e) => {
+          // clear browser selection on drag
+          const selection = window.getSelection();
+          if (selection) {
+            selection.removeAllRanges();
+          }
+          const target = e.inputEvent.target;
+          if (target.getAttribute('id') === 'real-canvas') {
+            return true;
+          }
+          // if clicked on a component, select it and return false to prevent drag
+          if (target.closest('.moveable-box')) {
+            const closest = target.closest('.moveable-box');
+            const id = closest.getAttribute('widgetid');
+            const component = appDefinition.pages[currentPageId].components[id].component;
+            const isMultiSelect = e.inputEvent.shiftKey;
+            setSelectedComponent(id, component, isMultiSelect);
+          }
+          return false;
+        }}
       />
     </>
   );

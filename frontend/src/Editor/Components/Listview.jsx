@@ -106,6 +106,16 @@ export const Listview = function Listview({
     );
     const filteredData = deepClone(childrenData);
     if (filteredData?.[0]) {
+      // update the name of the component in the data
+      Object.keys(filteredData?.[0]).forEach((item) => {
+        const { id } = _.get(filteredData?.[0], item, {});
+        const oldName = item;
+        const newName = _.get(childComponents, `${id}.component.name`, '');
+        if (oldName !== newName) {
+          _.set(filteredData[0], newName, _.get(filteredData[0], oldName));
+          _.unset(filteredData[0], oldName);
+        }
+      });
       Object.keys(filteredData?.[0]).forEach((item) => {
         if (!componentNamesSet?.has(item)) {
           for (const key in filteredData) {
@@ -173,13 +183,17 @@ export const Listview = function Listview({
               removeComponent={removeComponent}
               listViewItemOptions={{ index }}
               exposedVariables={childrenData[index]}
-              onOptionChange={function ({ component, optionName, value }) {
+              onOptionChange={function ({ component, optionName, value, componentId }) {
                 setChildrenData((prevData) => {
                   const changedData = { [component.name]: { [optionName]: value } };
                   const existingDataAtIndex = prevData[index] ?? {};
                   const newDataAtIndex = {
                     ...prevData[index],
-                    [component.name]: { ...existingDataAtIndex[component.name], ...changedData[component.name] },
+                    [component.name]: {
+                      ...existingDataAtIndex[component.name],
+                      ...changedData[component.name],
+                      id: componentId,
+                    },
                   };
                   const newChildrenData = { ...prevData, [index]: newDataAtIndex };
                   return { ...prevData, ...newChildrenData };
@@ -192,7 +206,7 @@ export const Listview = function Listview({
       {enablePagination && _.isArray(data) && (
         <div
           className="fixed-bottom position-fixed"
-          style={{ border: '1px solid', borderColor, margin: '1px', borderTop: 0 }}
+          style={{ border: '1px solid', borderColor, margin: '1px', borderTop: 0, left: '1px', right: '1px' }}
         >
           <div style={{ backgroundColor }}>
             {data?.length > 0 ? (

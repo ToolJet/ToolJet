@@ -5,7 +5,8 @@ export const usersSelector = {
   buttonAddUsers: "[data-cy=button-invite-new-user]",
   usersElements: {
     usersTableNameColumnHeader: '[data-cy="users-table-name-column-header"]',
-    usersTableEmailColumnHeader: '[data-cy="users-table-email-column-header"]',
+    usersTableRolesColumnHeader: '[data-cy="users-table-roles-column-header"]',
+    usersTableGroupsColumnHeader: '[data-cy="users-table-groups-column-header"]',
     usersTableStatusColumnHeader:
       '[data-cy="users-table-status-column-header"]',
     usersFilterLabel: '[data-cy="users-filter-label"]',

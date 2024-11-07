@@ -18562,8 +18562,8 @@
                             "globalSettings": {
                                 "hideHeader": true,
                                 "appInMaintenance": false,
-                                "canvasMaxWidth": "5000",
-                                "canvasMaxWidthType": "px",
+                                "canvasMaxWidth": "100",
+                                "canvasMaxWidthType": "%",
                                 "canvasMaxHeight": 2400,
                                 "canvasBackgroundColor": "#ffffff",
                                 "backgroundFxQuery": "{{queries.colorPalette.data[\"canvasBg_\"+globals.theme.name]}}"
@@ -43171,8 +43171,8 @@
                                 "globalSettings": {
                                     "hideHeader": true,
                                     "appInMaintenance": false,
-                                    "canvasMaxWidth": "5000",
-                                    "canvasMaxWidthType": "px",
+                                    "canvasMaxWidth": "100",
+                                    "canvasMaxWidthType": "%",
                                     "canvasMaxHeight": 2400,
                                     "canvasBackgroundColor": "#ffffff",
                                     "backgroundFxQuery": "{{queries.colorPalette.data[\"canvasBg_\"+globals.theme.name]}}"

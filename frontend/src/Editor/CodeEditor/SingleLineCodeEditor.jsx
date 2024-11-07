@@ -19,6 +19,7 @@ import { getAutocompletion } from './autocompleteExtensionConfig';
 import ErrorBoundary from '../ErrorBoundary';
 import CodeHinter from './CodeHinter';
 import { EditorContext } from '../Context/EditorContextWrapper';
+import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
 
 const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, componentId, ...restProps }) => {
   const { initialValue, onChange, enablePreview = true, portalProps } = restProps;
@@ -156,7 +157,7 @@ const EditorInput = ({
         const lastBracesFromPos = queryInput.lastIndexOf('{{', currentCursorPos);
         currentWord = queryInput.substring(lastBracesFromPos, currentCursorPos);
         //remove curly braces from the current word as will append it later
-        currentWord = currentWord.replace(/{{|}}/g, '');
+        currentWord = removeNestedDoubleCurlyBraces(currentWord);
       }
 
       if (currentWord.includes(' ')) {
@@ -329,6 +330,10 @@ const DynamicEditorBridge = (props) => {
   const { isFxNotRequired } = fieldMeta;
   const { t } = useTranslation();
   const [_, error, value] = type === 'fxEditor' ? resolveReferences(initialValue) : [];
+
+  useEffect(() => {
+    setForceCodeBox(fxActive);
+  }, [component]);
 
   const fxClass = isEventManagerParam ? 'justify-content-start' : 'justify-content-end';
   return (

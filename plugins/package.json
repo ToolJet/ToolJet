@@ -39,6 +39,7 @@
     "@tooljet-plugins/graphql": "file:packages/graphql",
     "@tooljet-plugins/grpc": "file:packages/grpc",
     "@tooljet-plugins/influxdb": "file:packages/influxdb",
+    "@tooljet-plugins/jira": "file:packages/jira",
     "@tooljet-plugins/mailgun": "file:packages/mailgun",
     "@tooljet-plugins/mariadb": "file:packages/mariadb",
     "@tooljet-plugins/minio": "file:packages/minio",

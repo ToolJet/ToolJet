@@ -1,29 +1,15 @@
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 import { shallow } from 'zustand/shallow';
-import { useEditorStore } from '@/_stores/editorStore';
-import { useAppDataStore } from '@/_stores/appDataStore';
+import useStore from '@/AppBuilder/_stores/store';
 
 const useAppDarkMode = () => {
-  const { appMode, setAppMode } = useEditorStore(
+  const { appMode, globalSettingsChanged, isTJDarkMode } = useStore(
     (state) => ({
-      appMode: state.appMode,
-      setAppMode: state.actions.setAppMode,
-    }),
-    shallow
-  );
-
-  const { isTJDarkMode } = useAppDataStore(
-    (state) => ({
+      appMode: state.globalSettings.appMode,
+      globalSettingsChanged: state.globalSettingsChanged,
       isTJDarkMode: state.isTJDarkMode,
     }),
     shallow
-  );
-
-  const handleAppModeChange = useCallback(
-    (appMode = 'auto') => {
-      setAppMode(appMode);
-    },
-    [setAppMode]
   );
 
   const isAppDarkMode = useMemo(() => {
@@ -37,7 +23,7 @@ const useAppDarkMode = () => {
   }, [appMode, isTJDarkMode]);
 
   return {
-    onAppModeChange: handleAppModeChange,
+    onAppModeChange: globalSettingsChanged,
     appMode,
     isAppDarkMode,
   };

@@ -17,12 +17,25 @@ export enum SOURCE {
   SIGNUP = 'signup',
   GOOGLE = 'google',
   GIT = 'git',
+  OPENID = 'openid',
+  LDAP = 'ldap',
+  SAML = 'saml',
   WORKSPACE_SIGNUP = 'workspace_signup',
 }
 
 export enum WORKSPACE_USER_SOURCE {
   INVITE = 'invite',
   SIGNUP = 'signup',
+}
+
+export enum USER_TYPE {
+  INSTANCE = 'instance',
+  WORKSPACE = 'workspace',
+}
+
+export enum WORKSPACE_STATUS {
+  ACTIVE = 'active',
+  ARCHIVE = 'archived',
 }
 
 export enum USER_STATUS {
@@ -32,12 +45,19 @@ export enum USER_STATUS {
   ARCHIVED = 'archived',
 }
 
+export enum LIMIT_TYPE {
+  TOTAL = 'total',
+  EDITOR = 'editor',
+  VIEWER = 'viewer',
+  ALL = 'all',
+}
+
 export const URL_SSO_SOURCE = 'sso';
 
 export function getUserErrorMessages(status: any) {
   switch (status) {
     case USER_STATUS.ARCHIVED:
-      return 'The user has been archived, please contact the administrator to activate the account';
+      return 'You have been archived from this instance. Contact super admin to know more.';
     default:
       return 'The user is not active, please use the invite link shared to activate';
   }
@@ -107,5 +127,5 @@ export enum WORKSPACE_USER_STATUS {
   ARCHIVED = 'archived',
 }
 
-type source = 'google' | 'git' | 'signup' | 'invite' | 'workspace_signup';
+type source = 'google' | 'git' | 'signup' | 'invite' | 'openid' | 'ldap' | 'saml' | 'workspace_signup';
 type status = 'invited' | 'verified' | 'active' | 'archived';

@@ -91,7 +91,7 @@ export const Statistics = function Statistics({ width, height, properties, style
           >
             {primaryValueLabel}
           </p>
-          <h2 style={primaryStyle}>{primaryValue}</h2>
+          <h2 style={primaryStyle}>{String(primaryValue)}</h2>
           {hideSecondary ? (
             ''
           ) : (
