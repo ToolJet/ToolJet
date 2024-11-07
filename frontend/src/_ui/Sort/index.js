@@ -26,14 +26,9 @@ export default ({
   }
 
   function keyValuePairValueChanged(value, keyIndex, index) {
-    if (!isRenderedAsQueryEditor) {
-      const newOptions = deepClone(options);
-      newOptions[index][keyIndex] = value;
-      options.length - 1 === index ? addNewKeyValuePair(newOptions) : optionchanged(getter, newOptions);
-    } else {
-      options[index][keyIndex] = value;
-      optionchanged(getter, options);
-    }
+    const newOptions = deepClone(options);
+    newOptions[index][keyIndex] = value;
+    options.length - 1 === index ? addNewKeyValuePair(newOptions) : optionchanged(getter, newOptions);
   }
 
   const commonProps = {
