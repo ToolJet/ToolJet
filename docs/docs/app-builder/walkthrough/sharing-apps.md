@@ -1,6 +1,6 @@
 ---
 id: sharing-apps
-title: Previewing, Testing and Sharing Apps 
+title: Preview, Test and Share Apps 
 ---
 
  ToolJet's App-Builder provides critical tools for app preview, development and deployment. Let's take a look at how you can use it throughout the development process.
