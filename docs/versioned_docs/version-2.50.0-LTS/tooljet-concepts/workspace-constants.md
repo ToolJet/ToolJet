@@ -26,4 +26,4 @@ Access to creating, updating, or deleting Workspace Constants is restricted to A
 
 </div>
 
-For a deep-dive in workspace constants, go through **[this](/docs/org-management/workspaces/workspace_constants/)** documentation.
+For a deep-dive in workspace constants, go through **[this](../org-management/workspaces/workspace_constants/)** documentation.

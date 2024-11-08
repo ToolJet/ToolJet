@@ -38,7 +38,7 @@ In ToolJet, components can be easily connected to various data sources like data
 
 ## Custom Components
 
-ToolJet allows for the creation of custom components using React. This feature is invaluable for developers who require functionalities beyond the 45+ built-in components that ToolJet offers. To create a custom component, you can drag and drop a **[Custom Component](/docs/widgets/custom-component/)** on the canvas and configure its data and code. 
+ToolJet allows for the creation of custom components using React. This feature is invaluable for developers who require functionalities beyond the 45+ built-in components that ToolJet offers. To create a custom component, you can drag and drop a **[Custom Component](../widgets/custom-component/)** on the canvas and configure its data and code. 
 
 <div style={{textAlign: 'center'}}>
     <img className="screenshot-full" src="/img/tooljet-concepts/what-are-components/custom-components.png" alt="Custom Components" />
@@ -48,7 +48,7 @@ By incorporating custom React components, you can significantly extend the capab
 </div>
 
 
-To explore the full list of components in ToolJet, go through the **[Component Library](/docs/widgets/bounded-box)**.
+To explore the full list of components in ToolJet, go through the **[Component Library](../widgets/bounded-box)**.
 
 
 

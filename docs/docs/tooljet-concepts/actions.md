@@ -24,8 +24,8 @@ ToolJet supports a variety of actions. For instance, Show alert action displays 
 
 ## Ways to Configure Actions
 
-Actions can be triggered in response to various events, such as button presses or successful query executions. To set up actions, you can establish a **[new event](/docs/tooljet-concepts/what-are-events/)** within the configuration settings of any component or query. Alternatively, for more dynamic interactions, you can utilize a **[RunJS query](/docs/how-to/run-actions-from-runjs/)**. This approach enables action triggering based on user interactions or even at designated time intervals.
+Actions can be triggered in response to various events, such as button presses or successful query executions. To set up actions, you can establish a **[new event](../tooljet-concepts/what-are-events/)** within the configuration settings of any component or query. Alternatively, for more dynamic interactions, you can utilize a **[RunJS query](../how-to/run-actions-from-runjs/)**. This approach enables action triggering based on user interactions or even at designated time intervals.
 
 </div>
 
-Checkout all the available actions under the **[Actions Reference](/docs/actions/show-alert)** dropdown for more information.
+Checkout all the available actions under the **[Actions Reference](../actions/show-alert)** dropdown for more information.

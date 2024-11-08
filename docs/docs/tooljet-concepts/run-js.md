@@ -29,7 +29,7 @@ Run JavaScript code also supports advanced functionalities such as setting and u
 
 To learn more about Run JavaScript code, go through the below list of documents:
 
-- **[Use Axios in RunJS](/docs/how-to/use-axios-in-runjs/)**
-- **[Run Actions From RunJS](/docs/how-to/run-actions-from-runjs/)**
-- **[Import External Libraries Using RunJS](/docs/how-to/import-external-libraries-using-runjs/)**
-- **[Access a User's Location Using RunJS](/docs/how-to/access-users-location/)**
+- **[Use Axios in RunJS](../how-to/use-axios-in-runjs/)**
+- **[Run Actions From RunJS](../how-to/run-actions-from-runjs/)**
+- **[Import External Libraries Using RunJS](../how-to/import-external-libraries-using-runjs/)**
+- **[Access a User's Location Using RunJS](../how-to/access-users-location/)**

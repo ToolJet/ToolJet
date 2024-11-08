@@ -20,4 +20,4 @@ The Inspector panel is divided into six main sections: **Queries, Components, Gl
 
 </div>
 
-To learn more about the Inspector option in the sidebar, go through this **[how-to](/docs/how-to/use-inspector)** guide. 
+To learn more about the Inspector option in the sidebar, go through this **[how-to](../how-to/use-inspector)** guide. 

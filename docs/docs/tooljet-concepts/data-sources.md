@@ -33,4 +33,4 @@ Adding a new data source is as easy as filling out a form; users can click on th
 
 </div>
 
-To see a full list of compatible data sources and their set up details, checkout the **[Datasource Catalog](/docs/data-sources/overview)**.
+To see a full list of compatible data sources and their set up details, checkout the **[Datasource Catalog](../data-sources/overview)**.

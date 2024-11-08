@@ -27,7 +27,7 @@ By injecting **Custom CSS**, users can easily override default styles, offering 
 
 </div>
 
-Continue reading about Custom CSS **[here](/docs/app-builder/customstyles/)**.
+Continue reading about Custom CSS **[here](../app-builder/customstyles/)**.
 
 
 

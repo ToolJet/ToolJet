@@ -9,4 +9,4 @@ Component Specific Actions are specialized actions that are unique to each compo
     <iframe width="560" height="315" src="https://www.youtube.com/embed/_x8-1UON3QY?si=9NUA1Y2eGV5x8Bg2&rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 </div>
 
-Read more about how you can utilize Component Specific Actions **[here](/docs/actions/control-component/)**.
+Read more about how you can utilize Component Specific Actions **[here](../actions/control-component/)**.

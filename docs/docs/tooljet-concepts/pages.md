@@ -27,4 +27,4 @@ ToolJet's Pages panel also includes advanced features like Page Handle, which is
 
 </div>
 
-To understand each functionality associated with Pages, read this **[document](/docs/tutorial/pages/)**.
+To understand each functionality associated with Pages, read this **[document](../tutorial/pages/)**.
