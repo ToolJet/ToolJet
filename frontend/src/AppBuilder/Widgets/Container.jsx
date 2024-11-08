@@ -1,6 +1,7 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { Container as ContainerComponent } from '@/AppBuilder/AppCanvas/Container';
 import Spinner from '@/_ui/Spinner';
+import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 
 export const Container = ({
   id,
@@ -12,76 +13,19 @@ export const Container = ({
   setExposedVariables,
   setExposedVariable,
 }) => {
+  const renderCount = useRef(0);
+  renderCount.current += 1;
+
+  console.log(`Container has re-rendered ${renderCount.current} times`);
   const { disabledState, borderRadius, borderColor, boxShadow } = styles;
 
-  const [isDisabled, setDisable] = useState(disabledState || properties.loadingState);
-  const [isVisible, setVisibility] = useState(properties.visible);
-  const [isLoading, setLoading] = useState(properties.loadingState);
-
-  useEffect(() => {
-    isDisabled !== disabledState && setDisable(disabledState);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [disabledState]);
-
-  useEffect(() => {
-    isVisible !== properties.visible && setVisibility(properties.visible);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.visible]);
-
-  useEffect(() => {
-    isLoading !== properties.loadingState && setLoading(properties.loadingState);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.loadingState]);
-
-  const exposedVariables = {
-    setDisable: async (value) => setDisable(value),
-    setVisibility: async (value) => setVisibility(value),
-    setLoading: async (value) => setLoading(value),
-  };
-
-  useEffect(() => {
-    setExposedVariables(exposedVariables);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isDisabled]);
-
-  useEffect(() => {
-    setExposedVariable('setLoading', async function (loading) {
-      setLoading(loading);
-      setExposedVariable('isLoading', loading);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.loadingState]);
-
-  useEffect(() => {
-    setExposedVariable('setVisibility', async function (state) {
-      setVisibility(state);
-      setExposedVariable('isVisible', state);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.visible]);
-
-  useEffect(() => {
-    setExposedVariable('setDisable', async function (disable) {
-      setDisable(disable);
-      setExposedVariable('isDisabled', disable);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [disabledState]);
-
-  useEffect(() => {
-    setExposedVariable('isLoading', isLoading);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading]);
-
-  useEffect(() => {
-    setExposedVariable('isVisible', isVisible);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isVisible]);
-
-  useEffect(() => {
-    setExposedVariable('isDisabled', isDisabled);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isDisabled]);
+  const { isDisabled, isVisible, isLoading } = useExposeState(
+    properties.loadingState,
+    properties.visible,
+    disabledState,
+    setExposedVariables,
+    setExposedVariable
+  );
 
   const bgColor = useMemo(() => {
     return {
