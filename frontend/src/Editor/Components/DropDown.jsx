@@ -146,6 +146,16 @@ export const DropDown = function DropDown({
   }, []);
 
   useEffect(() => {
+    const exposedVariables = {
+      selectOption: async function (value) {
+        selectOption(value);
+      },
+    };
+
+    setExposedVariables(exposedVariables);
+  }, [JSON.stringify(properties.values)]);
+
+  useEffect(() => {
     let newValue = undefined;
     let index = null;
     if (values?.includes(value)) {
