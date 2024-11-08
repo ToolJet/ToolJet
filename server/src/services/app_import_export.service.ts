@@ -325,6 +325,20 @@ export class AppImportExportService {
         await manager.save(toUpdateDataQueries);
       }
     }
+    // update Global settings of created versions
+    const appVersionIds = Object.values(resourceMapping.appVersionMapping);
+    const newAppVersions = await manager.find(AppVersion, {
+      where: {
+        id: In(appVersionIds),
+      },
+      select: ['id', 'globalSettings'],
+    });
+    for (const appVersion of newAppVersions) {
+      if (appVersion.globalSettings) {
+        const updatedGlobalSettings = updateEntityReferences(appVersion.globalSettings, mappings);
+        await manager.update(AppVersion, { id: appVersion.id }, { globalSettings: updatedGlobalSettings });
+      }
+    }
   }
 
   async createImportedAppForUser(manager: EntityManager, appParams: any, user: User, isGitApp = false): Promise<App> {
