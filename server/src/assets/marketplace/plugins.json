@@ -111,5 +111,21 @@
     "id": "jira",
     "author": "Tooljet",
     "timestamp": "Thu, 08 Aug 2024 11:04:36 GMT"
+  },
+  {
+    "name": "Portkey",
+    "description": "Plugin for Portkey APIs",
+    "version": "1.0.0",
+    "id": "portkey",
+    "author": "Portkey",
+    "timestamp": "Sat, 29 Jun 2024 09:40:13 GMT"
+  },
+  {
+    "name": "Pinecone",
+    "description": "Plugin for Pinecone Vector DB",
+    "version": "1.0.0",
+    "id": "pinecone",
+    "author": "Tooljet",
+    "timestamp": "Mon, 28 Oct 2024 08:08:28 GMT"
   }
 ]
