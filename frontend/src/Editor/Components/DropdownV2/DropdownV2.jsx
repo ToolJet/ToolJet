@@ -90,7 +90,6 @@ export const DropdownV2 = ({
   } = styles;
   const isInitialRender = useRef(true);
   const [currentValue, setCurrentValue] = useState(() => (advanced ? findDefaultItem(schema) : value));
-  const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const isMandatory = validation?.mandatory ?? false;
   const options = properties?.options;
   const [validationStatus, setValidationStatus] = useState(validate(currentValue));
@@ -115,12 +114,12 @@ export const DropdownV2 = ({
     let _options = advanced ? schema : options;
     if (Array.isArray(_options)) {
       let _selectOptions = _options
-        .filter((data) => getResolvedValue(advanced ? data?.visible : data?.visible?.value) ?? true)
+        .filter((data) => data?.visible ?? true)
         .map((data) => ({
           ...data,
-          label: String(getResolvedValue(data?.label)),
-          value: getResolvedValue(data?.value),
-          isDisabled: getResolvedValue(advanced ? data?.disable : data?.disable?.value) ?? false,
+          label: data?.label,
+          value: data?.value,
+          isDisabled: data?.disable ?? false,
         }));
 
       return _selectOptions;
@@ -177,9 +176,16 @@ export const DropdownV2 = ({
   useEffect(() => {
     if (advanced) {
       setInputValue(findDefaultItem(schema));
-    } else setInputValue(value);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [advanced, value, JSON.stringify(schema)]);
+  }, [advanced, JSON.stringify(schema)]);
+
+  useEffect(() => {
+    if (!advanced) {
+      setInputValue(value);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [advanced, value]);
 
   useEffect(() => {
     document.addEventListener('mousedown', handleOutsideClick);

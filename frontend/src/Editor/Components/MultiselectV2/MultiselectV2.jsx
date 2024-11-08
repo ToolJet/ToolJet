@@ -72,7 +72,6 @@ export const MultiselectV2 = ({
   const valueContainerRef = React.useRef(null);
   const [visibility, setVisibility] = useState(properties.visibility);
   const [isMultiSelectLoading, setIsMultiSelectLoading] = useState(multiSelectLoadingState);
-  const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const [isMultiSelectDisabled, setIsMultiSelectDisabled] = useState(disabledState);
   const [isSelectAllSelected, setIsSelectAllSelected] = useState(false);
   const [searchInputValue, setSearchInputValue] = useState('');
@@ -91,12 +90,12 @@ export const MultiselectV2 = ({
     const _options = advanced ? schema : options;
     let _selectOptions = Array.isArray(_options)
       ? _options
-          .filter((data) => getResolvedValue(advanced ? data?.visible : data?.visible?.value) ?? true)
+          .filter((data) => data?.visible ?? true)
           .map((data) => ({
             ...data,
-            label: getResolvedValue(data?.label),
-            value: getResolvedValue(data?.value),
-            isDisabled: getResolvedValue(advanced ? data?.disable : data?.disable?.value) ?? false,
+            label: data?.label,
+            value: data?.value,
+            isDisabled: data?.disable ?? false,
           }))
       : [];
     return _selectOptions;
@@ -129,9 +128,10 @@ export const MultiselectV2 = ({
   }
   const onChangeHandler = (items, action) => {
     setInputValue(items);
-    if (action.action === 'select-option') {
-      fireEvent('onSelect');
-    }
+    fireEvent('onSelect');
+    // if (action.action === 'select-option') {
+    //   fireEvent('onSelect');
+    // }
   };
 
   useEffect(() => {
@@ -141,10 +141,20 @@ export const MultiselectV2 = ({
   }, [selectOptions]);
 
   useEffect(() => {
-    let foundItem = findDefaultItem(values, advanced, true);
-    setInputValue(foundItem);
+    if (advanced) {
+      let foundItem = findDefaultItem(values, advanced, true);
+      setInputValue(foundItem);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [advanced, JSON.stringify(schema), JSON.stringify(values)]);
+  }, [advanced, JSON.stringify(values), JSON.stringify(schema)]);
+
+  useEffect(() => {
+    if (!advanced) {
+      let foundItem = findDefaultItem(values, advanced, true);
+      setInputValue(foundItem);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [advanced, JSON.stringify(values)]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
@@ -487,7 +497,12 @@ export const MultiselectV2 = ({
             containerRef={valueContainerRef}
             showAllOption={showAllOption}
             isSelectAllSelected={isSelectAllSelected}
-            setIsSelectAllSelected={setIsSelectAllSelected}
+            setIsSelectAllSelected={(value) => {
+              setIsSelectAllSelected(value);
+              if (!value) {
+                fireEvent('onSelect');
+              }
+            }}
             setSelected={setInputValue}
             iconColor={iconColor}
             optionsLoadingState={optionsLoadingState && advanced}

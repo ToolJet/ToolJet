@@ -600,27 +600,47 @@ export const createComponentsSlice = (set, get) => ({
     const updatedPropertyValue = cloneDeep(value);
     if (Array.isArray(value)) {
       value.forEach((val, index) => {
-        Object.entries(val).forEach(([key, keyValue]) => {
-          const propertyWithArrayValue = `${property}[${index}].${key}`;
-          const keys = [key];
-          if (keyValue?.value) {
-            keys.push('value');
-          }
+        //This code assumes that the array always consists of objects the else condition is to handle the case when the value is an array of strings/numbers
+        if (typeof val === 'object') {
+          Object.entries(val).forEach(([key, keyValue]) => {
+            const propertyWithArrayValue = `${property}[${index}].${key}`;
+            const keys = [key];
+            if (keyValue?.value) {
+              keys.push('value');
+            }
+            const { allRefs, unResolvedValue, updatedValue } = updateResolvedValues(
+              componentId,
+              paramType,
+              propertyWithArrayValue,
+              keyValue?.value ?? keyValue,
+              component,
+              resolvedComponentValues,
+              updatePassedValue,
+              moduleId
+            );
+            lodashSet(updatedPropertyValue, [index, ...keys], updatedValue);
+            if (allRefs.length) {
+              generateDependencyGraphForRefs(allRefs, componentId, paramType, propertyWithArrayValue, unResolvedValue);
+            }
+          });
+        } else {
+          const propertyWithArrayValue = `${property}[${index}]`;
           const { allRefs, unResolvedValue, updatedValue } = updateResolvedValues(
             componentId,
             paramType,
             propertyWithArrayValue,
-            keyValue?.value ?? keyValue,
+            val,
             component,
             resolvedComponentValues,
             updatePassedValue,
             moduleId
           );
-          lodashSet(updatedPropertyValue, [index, ...keys], updatedValue);
+          updatedPropertyValue[index] = updatedValue;
+          console.log('updatedPropertyValue', updatedPropertyValue);
           if (allRefs.length) {
             generateDependencyGraphForRefs(allRefs, componentId, paramType, propertyWithArrayValue, unResolvedValue);
           }
-        });
+        }
       });
       return { updatedValue: updatedPropertyValue };
     } else {
@@ -1155,6 +1175,10 @@ export const createComponentsSlice = (set, get) => ({
         resolvedComponent,
         true,
         moduleId
+      );
+      resolvedComponent[componentId][paramType][property] = resolvedComponent[componentId][paramType][property].slice(
+        0,
+        value.length
       );
       setResolvedComponent(componentId, resolvedComponent[componentId], moduleId);
 

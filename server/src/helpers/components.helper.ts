@@ -36,11 +36,13 @@ export const buildComponentMetaDefinition = (components = {}) => {
         componentMeta.definition.properties,
         currentComponentData?.component?.definition?.properties,
         (objValue, srcValue) => {
-          if (
-            ['Table', 'DropdownV2', 'MultiselectV2'].includes(currentComponentData?.component?.component) &&
+          if (['Table'].includes(currentComponentData?.component?.component) && isArray(objValue)) {
+            return srcValue;
+          } else if (
+            ['DropdownV2', 'MultiselectV2'].includes(currentComponentData?.component?.component) &&
             isArray(objValue)
           ) {
-            return srcValue;
+            return isArray(srcValue) ? srcValue : Object.values(srcValue);
           }
         }
       ),
