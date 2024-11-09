@@ -1166,6 +1166,8 @@ export const createComponentsSlice = (set, get) => ({
 
     if (Array.isArray(oldValue?.value)) {
       const resolvedComponent = { [componentId]: deepClone(getResolvedComponent(componentId) ?? {}) };
+      resolvedComponent[componentId][paramType][property] = [];
+
       const { updatedValue } = checkValueAndResolve(
         componentId,
         paramType,
@@ -1175,10 +1177,6 @@ export const createComponentsSlice = (set, get) => ({
         resolvedComponent,
         true,
         moduleId
-      );
-      resolvedComponent[componentId][paramType][property] = resolvedComponent[componentId][paramType][property].slice(
-        0,
-        value.length
       );
       setResolvedComponent(componentId, resolvedComponent[componentId], moduleId);
 
