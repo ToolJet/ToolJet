@@ -21,8 +21,9 @@ export default ({
   }
 
   function removeKeyValuePair(index) {
-    options.splice(index, 1);
-    optionchanged(getter, options);
+    const newOptions = [...options];
+    newOptions.splice(index, 1);
+    optionchanged(getter, newOptions);
   }
 
   function keyValuePairValueChanged(value, keyIndex, index) {
