@@ -95,11 +95,12 @@ export const DropdownV2 = ({
   const [validationStatus, setValidationStatus] = useState(validate(currentValue));
   const { isValid, validationError } = validationStatus;
   const ref = React.useRef(null);
+  const dropdownRef = React.useRef(null);
   const [visibility, setVisibility] = useState(properties.visibility);
   const [isDropdownLoading, setIsDropdownLoading] = useState(dropdownLoadingState);
   const [isDropdownDisabled, setIsDropdownDisabled] = useState(disabledState);
-  const [isFocused, setIsFocused] = useState(false);
   const [searchInputValue, setSearchInputValue] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
   const labelRef = useRef();
   function findDefaultItem(schema) {
@@ -156,8 +157,13 @@ export const DropdownV2 = ({
   const handleOutsideClick = (e) => {
     let menu = ref.current.querySelector('.select__menu');
     if (!ref.current.contains(e.target) || !menu || !menu.contains(e.target)) {
-      setIsFocused(false);
       setSearchInputValue('');
+    }
+    if (dropdownRef.current && !dropdownRef.current?.contains(e.target) && !menu && !menu?.contains(e.target)) {
+      if (isDropdownOpen) {
+        fireEvent('onBlur');
+      }
+      setIsDropdownOpen(false);
     }
   };
 
@@ -192,7 +198,7 @@ export const DropdownV2 = ({
     return () => {
       document.removeEventListener('mousedown', handleOutsideClick);
     };
-  }, []);
+  }, [isDropdownOpen]);
 
   useEffect(() => {
     if (visibility !== properties.visibility) setVisibility(properties.visibility);
@@ -407,6 +413,7 @@ export const DropdownV2 = ({
   return (
     <>
       <div
+        ref={dropdownRef}
         data-cy={`label-${String(componentName).toLowerCase()} `}
         className={cx('dropdown-widget', 'd-flex', {
           [alignment === 'top' &&
@@ -443,7 +450,16 @@ export const DropdownV2 = ({
           _width={_width}
           top={'1px'}
         />
-        <div className="w-100 px-0 h-100" ref={ref}>
+        <div
+          className="w-100 px-0 h-100"
+          onClick={() => {
+            if (!isDropdownDisabled) {
+              fireEvent('onFocus');
+              setIsDropdownOpen((prev) => !prev);
+            }
+          }}
+          ref={ref}
+        >
           <Select
             isDisabled={isDropdownDisabled}
             value={selectOptions.filter((option) => option.value === currentValue)[0] ?? null}
@@ -455,20 +471,14 @@ export const DropdownV2 = ({
                 setInputValue(selectedOption.value);
                 fireEvent('onSelect');
               }
-              setIsFocused(false);
+              setIsDropdownOpen(false);
             }}
             options={selectOptions}
             styles={customStyles}
             isLoading={isDropdownLoading}
+            menuIsOpen={isDropdownOpen}
             onInputChange={onSearchTextChange}
             inputValue={searchInputValue}
-            onMenuOpen={() => {
-              fireEvent('onFocus');
-            }}
-            onMenuInputFocus={() => setIsFocused(true)}
-            onBlur={() => {
-              fireEvent('onBlur');
-            }}
             placeholder={placeholder}
             menuPortalTarget={document.body}
             components={{
@@ -480,11 +490,6 @@ export const DropdownV2 = ({
               ClearIndicator: CustomClearIndicator,
             }}
             isClearable
-            {...{
-              menuIsOpen: isFocused || undefined,
-              isFocused: isFocused || undefined,
-            }}
-            // select props
             icon={icon}
             doShowIcon={iconVisibility}
             iconColor={iconColor}
