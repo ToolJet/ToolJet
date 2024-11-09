@@ -4,7 +4,7 @@
   "description": "A schema defining restapi datasource",
   "type": "api",
   "source": {
-    "name": "Rest API",
+    "name": "REST API",
     "kind": "restapi",
     "options": {
       "url": {
