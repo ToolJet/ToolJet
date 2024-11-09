@@ -401,8 +401,8 @@ export const createResolvedSlice = (set, get) => ({
       } = components[componentId];
       if (parentId) {
         // if parent is form get exposed values from children
-        const { component: parentComopnent } = components[parentId];
-        if (parentComopnent.component === 'Form') {
+        const { component: parentComopnent } = components?.[parentId] || {};
+        if (parentComopnent?.component === 'Form') {
           return get().resolvedStore.modules[moduleId].exposedValues.components[parentId].children[componentName] || {};
         }
       }
