@@ -649,7 +649,16 @@ export class DataQueriesService {
           const variables = resolvedValue.match(/\{\{(.*?)\}\}/g);
 
           for (const variable of variables || []) {
-            resolvedValue = resolvedValue.replace(variable, options[variable]);
+            let replacement = options[variable];
+            // Check if the replacement is an object
+            if (typeof replacement === 'object' && replacement !== null) {
+              // Ensure parent is a non-empty array before attempting to access its first element
+              if (Array.isArray(parent) && parent.length > 0) {
+                // Assign replacement value based on the first item in the parent array
+                replacement = replacement[parent[0]];
+              }
+            }
+            resolvedValue = resolvedValue.replace(variable, replacement);
           }
           if (parent && key !== null) {
             parent[key] = resolvedValue;

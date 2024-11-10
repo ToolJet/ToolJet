@@ -4,7 +4,7 @@
   "description": "A schema defining restapi datasource",
   "type": "api",
   "source": {
-    "name": "Rest API",
+    "name": "REST API",
     "kind": "restapi",
     "options": {
       "url": {
@@ -166,7 +166,7 @@
   },
   "properties": {
     "renderForm":{
-      "type":"react-form-component",
+      "type": "react-form-component",
       "credentialsInputs": {
         "title": "CREDENTIALS",
         "inputs": {
@@ -208,7 +208,7 @@
       },
       "authenticationInputs": {
         "title": "AUTHENTICATION",
-        "inputs":{
+        "inputs": {
           "auth_type": {
             "label": "Authentication type",
             "key": "auth_type",
@@ -219,7 +219,7 @@
       },
       "sslInputs": {
         "title": "SECURE SOCKETS LAYER",
-        "inputs":{
+        "inputs": {
           "ssl_certificate": {
             "label": "SSL Certificate",
             "key": "ssl_certificate",
@@ -262,6 +262,18 @@
               "encrypted": true,
               "description": "Enter CA certificate"
             }
+          }
+        }
+      },
+      "generalSettingInputs": {
+        "title": "GENERAL SETTINGS",
+        "inputs": {
+          "retry_network_errors": {
+            "text": "Retry on network errors",
+            "subtext": "By default, ToolJet tries to hit API endpoint 3 times before declaring query failed as server did not respond",
+            "key": "retry_network_errors",
+            "type": "toggle",
+            "description": "key-value pair headers for rest api"
           }
         }
       }
