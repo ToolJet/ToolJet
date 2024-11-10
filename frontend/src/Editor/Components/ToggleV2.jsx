@@ -18,7 +18,6 @@ const Switch = ({
 }) => {
   const handleToggleChange = () => {
     setOn(!on);
-    setExposedVariable('value', !on);
     fireEvent('onChange');
     setUserInteracted(true);
   };
@@ -126,9 +125,10 @@ export const ToggleSwitchV2 = ({
 
   const setInputValue = (value) => {
     setOn(value);
+    setExposedVariable('value', value);
     const validationStatus = validate(value);
     setValidationStatus(validationStatus);
-    setExposedVariables({ value, isValid: validationStatus?.isValid });
+    setExposedVariable('isValid', validationStatus?.isValid);
   };
 
   useEffect(() => {
@@ -170,6 +170,13 @@ export const ToggleSwitchV2 = ({
     setExposedVariable('isMandatory', isMandatory);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMandatory]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    const validationStatus = validate(on);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
+  }, [validate]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
@@ -275,7 +282,7 @@ export const ToggleSwitchV2 = ({
             properties={properties}
             setShowValidationError={setShowValidationError}
             borderColor={borderColor}
-            setOn={setOn}
+            setOn={setInputValue}
             styles={styles}
             setExposedVariable={setExposedVariable}
             fireEvent={fireEvent}

@@ -114,10 +114,18 @@ export const NumberInput = function NumberInput({
     visibility !== properties.visibility && setVisibility(properties.visibility);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility]);
+
   useEffect(() => {
     loading !== loadingState && setLoading(loadingState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadingState]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    const validationStatus = validate(value);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
+  }, [validate]);
 
   useEffect(() => {
     const exposedVariables = {
@@ -259,9 +267,12 @@ export const NumberInput = function NumberInput({
 
   const setInputValue = (value) => {
     setValue(value);
+    if (!isNaN(value)) {
+      setExposedVariable('value', value);
+    }
     const validationStatus = validate(value);
     setValidationStatus(validationStatus);
-    setExposedVariables({ ...(!isNaN(value) && { value }), isValid: validationStatus?.isValid });
+    setExposedVariable('isValid', validationStatus?.isValid);
   };
 
   const loaderStyle = {

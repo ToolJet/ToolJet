@@ -157,6 +157,13 @@ export const TextInput = function TextInput({
 
   useEffect(() => {
     if (isInitialRender.current) return;
+    const validationStatus = validate(value);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
+  }, [validate]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
     if (properties.value === undefined) {
       setInputValue('');
     } else {
@@ -240,9 +247,10 @@ export const TextInput = function TextInput({
 
   const setInputValue = (value) => {
     setValue(value);
+    setExposedVariable('value', value);
     const validationStatus = validate(value);
     setValidationStatus(validationStatus);
-    setExposedVariables({ value, isValid: validationStatus?.isValid });
+    setExposedVariable('isValid', validationStatus?.isValid);
   };
 
   const iconName = styles.icon; // Replace with the name of the icon you want

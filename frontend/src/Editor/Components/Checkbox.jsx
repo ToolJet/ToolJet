@@ -100,6 +100,13 @@ export const Checkbox = ({
 
   useEffect(() => {
     if (isInitialRender.current) return;
+    const validationStatus = validate(checked);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
+  }, [validate]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
     setExposedVariable('toggle', async function () {
       setInputValue(!checked);
       fireEvent('onChange');
@@ -168,9 +175,10 @@ export const Checkbox = ({
 
   const setInputValue = (value) => {
     setChecked(value);
+    setExposedVariable('value', value);
     const validationStatus = validate(value);
     setValidationStatus(validationStatus);
-    setExposedVariables({ value, isValid: validationStatus?.isValid });
+    setExposedVariable('isValid', validationStatus?.isValid);
   };
 
   const renderCheckBox = () => (

@@ -191,6 +191,13 @@ export const MultiselectV2 = ({
   }, [isMandatory]);
 
   useEffect(() => {
+    if (isInitialRender.current) return;
+    const validationStatus = validate(selected?.length ? selected?.map((option) => option.value) : null);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
+  }, [validate]);
+
+  useEffect(() => {
     const defaultItems = findDefaultItem(values, advanced, true);
 
     const exposedVariables = {
@@ -280,13 +287,13 @@ export const MultiselectV2 = ({
 
   const setInputValue = (values) => {
     setSelected(values);
-    const validationStatus = validate(values?.length ? values?.map((option) => option.value) : null);
-    setValidationStatus(validationStatus);
     setExposedVariables({
       values: values.map((item) => item.value),
-      isValid: validationStatus?.isValid,
       selectedOptions: Array.isArray(values) && values?.map(({ label, value }) => ({ label, value })),
     });
+    const validationStatus = validate(values?.length ? values?.map((option) => option.value) : null);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
   };
 
   useEffect(() => {

@@ -169,14 +169,14 @@ export const DropdownV2 = ({
 
   const setInputValue = (value) => {
     setCurrentValue(value);
-    const validationStatus = validate(value);
-    setValidationStatus(validationStatus);
     const _selectedOption = selectOptions.find((option) => option.value === value);
     setExposedVariables({
       value,
-      isValid: validationStatus?.isValid,
       selectedOption: pick(_selectedOption, ['label', 'value']),
     });
+    const validationStatus = validate(value);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
   };
 
   useEffect(() => {
@@ -252,6 +252,13 @@ export const DropdownV2 = ({
     if (isInitialRender.current) return;
     setExposedVariable('isMandatory', isMandatory);
   }, [isMandatory]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    const validationStatus = validate(currentValue);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
+  }, [validate]);
 
   useEffect(() => {
     const _options = selectOptions?.map(({ label, value }) => ({ label, value }));

@@ -73,6 +73,13 @@ export const Datepicker = function Datepicker({
   }, [disabledDates, format]);
 
   useEffect(() => {
+    if (isInitialRender.current) return;
+    const validationStatus = validate(computeDateString(date));
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
+  }, [validate]);
+
+  useEffect(() => {
     const dateMomentInstance = defaultValue && moment(defaultValue, selectedDateFormat);
     setInputValue(dateMomentInstance && dateMomentInstance.isValid() ? dateMomentInstance.toDate() : null);
     isInitialRender.current = false;
@@ -81,9 +88,10 @@ export const Datepicker = function Datepicker({
 
   const setInputValue = (value) => {
     setDate(value);
+    setExposedVariable('value', value ? computeDateString(value) : undefined);
     const validationStatus = validate(computeDateString(value));
     setValidationStatus(validationStatus);
-    setExposedVariables({ value: value ? computeDateString(value) : undefined, isValid: validationStatus?.isValid });
+    setExposedVariable('isValid', validationStatus?.isValid);
   };
 
   return (

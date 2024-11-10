@@ -92,6 +92,13 @@ export const DropDown = function DropDown({
 
   useEffect(() => {
     if (isInitialRender.current) return;
+    const validationStatus = validate(currentValue);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
+  }, [validate]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
     if (advanced) {
       setExposedVariable(
         'optionLabels',
@@ -168,9 +175,10 @@ export const DropDown = function DropDown({
 
   const setInputValue = (value, label) => {
     setCurrentValue(value);
+    setExposedVariables({ value, selectedOptionLabel: label });
     const validationStatus = validate(value);
     setValidationStatus(validationStatus);
-    setExposedVariables({ value, isValid: validationStatus?.isValid, selectedOptionLabel: label });
+    setExposedVariable('isValid', validationStatus?.isValid);
   };
 
   const customStyles = {

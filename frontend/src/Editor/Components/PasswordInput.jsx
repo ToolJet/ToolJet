@@ -184,6 +184,13 @@ export const PasswordInput = function PasswordInput({
   }, [properties.value]);
 
   useEffect(() => {
+    if (isInitialRender.current) return;
+    const validationStatus = validate(passwordValue);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
+  }, [validate]);
+
+  useEffect(() => {
     const exposedVariables = {
       setFocus: async function () {
         textInputRef.current.focus();
@@ -248,9 +255,10 @@ export const PasswordInput = function PasswordInput({
 
   const setInputValue = (value) => {
     setPasswordValue(value);
+    setExposedVariable('value', value);
     const validationStatus = validate(value);
     setValidationStatus(validationStatus);
-    setExposedVariables({ value, isValid: validationStatus?.isValid });
+    setExposedVariable('isValid', validationStatus?.isValid);
   };
 
   const renderInput = () => (
