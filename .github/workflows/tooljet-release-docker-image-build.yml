@@ -21,19 +21,19 @@ jobs:
 
     steps:
       - name: Checkout code to main
-        if: "!contains(github.event.release.tag_name, 'CE-LTS')"
+        if: "contains(github.event.release.tag_name, '-ce-beta')"
         uses: actions/checkout@v2
         with:
           ref: refs/heads/main
 
       - name: Checkout code to LTS-2.50
-        if: "contains(github.event.release.tag_name, 'CE-LTS-2.50')"
+        if: "startsWith(github.event.release.tag_name, '2.50') && contains(github.event.release.tag_name, '-ce-lts')"
         uses: actions/checkout@v2
         with:
           ref: refs/heads/lts-2.50
 
       - name: Checkout code to LTS-3.0
-        if: "contains(github.event.release.tag_name, 'CE-LTS-3.0')"
+        if: "startsWith(github.event.release.tag_name, '3') && contains(github.event.release.tag_name, '-ce-lts')"
         uses: actions/checkout@v2
         with:
           ref: refs/heads/lts-3.0
