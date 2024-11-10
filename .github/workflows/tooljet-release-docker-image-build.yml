@@ -59,14 +59,14 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and Push Docker image for non-LTS tag
+      - name: Build and Push Docker image for beta tag
         if: "contains(github.event.release.tag_name, '-ce-beta')"
         uses: docker/build-push-action@v4
         with:
           context: .
           file: docker/production.Dockerfile
           push: true
-          tags: tooljet/tooljet-ce:${{ github.event.release.tag_name }}
+          tags: tooljet/tooljet-ce:${{ github.event.release.tag_name }},tooljet/tooljet-ce:ce-beta-latest
           platforms: linux/amd64
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
