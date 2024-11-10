@@ -60,7 +60,20 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and Push Docker image for non-LTS tag
-        if: "!contains(github.event.release.tag_name, 'CE-LTS-2.50')"
+        if: "contains(github.event.release.tag_name, '-ce-beta')"
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: docker/production.Dockerfile
+          push: true
+          tags: tooljet/tooljet-ce:${{ github.event.release.tag_name }}
+          platforms: linux/amd64
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push Docker image for LTS 2.50 tag
+        if:  "startsWith(github.event.release.tag_name, '2.50') && contains(github.event.release.tag_name, '-ce-lts')"
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -73,26 +86,13 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and Push Docker image for LTS 3.0 tag
-        if: "contains(github.event.release.tag_name, 'CE-LTS-3.0')"
+        if: "startsWith(github.event.release.tag_name, '3') && contains(github.event.release.tag_name, '-ce-lts')"
         uses: docker/build-push-action@v4
         with:
           context: .
           file: docker/production.Dockerfile
           push: true
-          tags: tooljet/tooljet-ce:${{ github.event.release.tag_name }},tooljet/tooljet-ce:CE-LTS-latest
-          platforms: linux/amd64
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Build and Push Docker image for LTS 2.50 tag
-        if: "contains(github.event.release.tag_name, 'CE-LTS-2.50')"
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: docker/production.Dockerfile
-          push: true
-          tags: tooljet/tooljet-ce:${{ github.event.release.tag_name }},tooljet/tooljet-ce:CE-LTS-latest
+          tags: tooljet/tooljet-ce:${{ github.event.release.tag_name }},tooljet/tooljet-ce:ce-lts-latest
           platforms: linux/amd64
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
