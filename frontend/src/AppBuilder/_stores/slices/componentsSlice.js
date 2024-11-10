@@ -601,7 +601,7 @@ export const createComponentsSlice = (set, get) => ({
     if (Array.isArray(value)) {
       value.forEach((val, index) => {
         //This code assumes that the array always consists of objects the else condition is to handle the case when the value is an array of strings/numbers
-        if (typeof val === 'object') {
+        if (val && typeof val === 'object') {
           Object.entries(val).forEach(([key, keyValue]) => {
             const propertyWithArrayValue = `${property}[${index}].${key}`;
             const keys = [key];
