@@ -31,12 +31,12 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
   const currentLayout = useStore((state) => state.currentLayout, shallow);
   const queryPanelHeight = useStore((state) => state?.queryPanel?.queryPanelHeight || 0);
   const isDraggingQueryPane = useStore((state) => state.queryPanel.isDraggingQueryPane, shallow);
+  const { isAppDarkMode } = useAppDarkMode();
   const canvasBgColor = useStore((state) => state.getCanvasBackgroundColor('canvas', isAppDarkMode), shallow);
   const canvasContainerHeight = computeCanvasContainerHeight(queryPanelHeight, isDraggingQueryPane);
   const isAutoMobileLayout = useStore((state) => state.getIsAutoMobileLayout(), shallow);
   const setIsComponentLayoutReady = useStore((state) => state.setIsComponentLayoutReady, shallow);
   const canvasMaxWidth = useAppCanvasMaxWidth({ mode: currentMode });
-  const { isAppDarkMode } = useAppDarkMode();
   const editorMarginLeft = useSidebarMargin(canvasContainerRef);
   const pageSwitchInProgress = useStore((state) => state.pageSwitchInProgress);
   const setPageSwitchInProgress = useStore((state) => state.setPageSwitchInProgress);
@@ -71,8 +71,8 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
           // transform: `scale(1)`,
           borderLeft: editorMarginLeft + 'px solid',
           height: currentMode === 'edit' ? canvasContainerHeight : '100%',
-          // backgroundColor: canvasBgColor,
-          background: !isAppDarkMode ? '#EBEBEF' : '#2E3035',
+          backgroundColor: canvasBgColor,
+          // background: !isAppDarkMode ? '#EBEBEF' : '#2E3035',
           marginLeft:
             isViewerSidebarPinned && currentLayout !== 'mobile' && currentMode !== 'edit'
               ? pageSidebarStyle === 'icon'

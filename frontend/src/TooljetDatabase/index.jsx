@@ -6,6 +6,7 @@ import { authenticationService } from '../_services/authentication.service';
 import { BreadCrumbContext } from '@/App/App';
 import { useNavigate } from 'react-router-dom';
 import { pageTitles, fetchAndSetWindowTitle } from '@white-label/whiteLabelling';
+import { hasBuilderRole } from '@/_helpers/utils';
 
 export const TooljetDatabaseContext = createContext({
   organizationId: null,
@@ -72,8 +73,9 @@ export const TooljetDatabase = (props) => {
   };
   const navigate = useNavigate();
   const { admin } = authenticationService.currentSessionValue;
+  const isBuilder = hasBuilderRole(authenticationService?.currentSessionValue?.role ?? {});
 
-  if (!admin) {
+  if (!admin && !isBuilder) {
     navigate('/');
   }
 

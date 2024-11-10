@@ -1465,3 +1465,14 @@ export const validatePassword = (value) => {
     return 'Password can be at max 100 characters long';
   }
 };
+
+export const checkConditionsForRoute = (conditions, conditionsObj) => {
+  if (!conditions || conditions.length === 0) {
+    return true;
+  }
+  return conditions.every((condition) => conditionsObj?.[condition] === true);
+};
+
+export const hasBuilderRole = (roleObj) => {
+  return roleObj.name === 'builder';
+};
