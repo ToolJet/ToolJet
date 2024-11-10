@@ -180,8 +180,13 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
         appName: appData.name,
         appId: appData.id,
         slug: appData.slug,
-        currentAppEnvironmentId: editorEnvironmentId,
-        isMaintenanceOn: result.is_maintenance_on,
+        currentAppEnvironmentId: editorEnvironment.id,
+        isMaintenanceOn:
+          'is_maintenance_on' in result
+            ? result.is_maintenance_on
+            : 'isMaintenanceOn' in result
+            ? result.isMaintenanceOn
+            : false,
         organizationId: appData.organizationId || appData.organization_id,
         homePageId: homePageId,
         isPublic: appData.is_public,
@@ -339,7 +344,12 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
           appId: appData.id,
           slug: appData.slug,
           creationMode: appData.creationMode,
-          isMaintenanceOn: appData.is_maintenance_on,
+          isMaintenanceOn:
+            'is_maintenance_on' in appData
+              ? appData.is_maintenance_on
+              : 'isMaintenanceOn' in appData
+              ? appData.isMaintenanceOn
+              : false,
           organizationId: appData.organizationId || appData.organization_id,
           homePageId: appData.editing_version.homePageId,
           isPublic: appData.isPublic,
