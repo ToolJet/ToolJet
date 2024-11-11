@@ -81,6 +81,7 @@ To remove a plugin, follow these steps:
 - **[HarperDB](/docs/marketplace/plugins/marketplace-plugin-harperdb)**
 - **[Jira](/docs/marketplace/plugins/marketplace-plugin-jira)**
 - **[OpenAI](/docs/marketplace/plugins/marketplace-plugin-openai)**
+- **[Pinecone](/docs/marketplace/plugins/marketplace-plugin-pinecone)**
 - **[Plivo](/docs/marketplace/plugins/marketplace-plugin-plivo)**
 - **[Pocketbase](/docs/marketplace/plugins/marketplace-plugin-pocketbase)**
 - **[Portkey](/docs/marketplace/plugins/marketplace-plugin-portkey)**
