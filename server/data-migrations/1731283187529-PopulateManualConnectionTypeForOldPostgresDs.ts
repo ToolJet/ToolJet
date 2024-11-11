@@ -2,22 +2,27 @@ import { DataSource } from '@entities/data_source.entity';
 import { DataSourceOptions } from '@entities/data_source_options.entity';
 import { MigrationProgress } from '@helpers/migration.helper';
 import { processDataInBatches } from '@helpers/utils.helper';
-import { EntityManager, In, MigrationInterface, QueryRunner } from 'typeorm';
+import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
 
 export class PopulateManualConnectionTypeForOldPostgresDs1731283187529 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const entityManager = queryRunner.manager;
-    const dataSourceIds = (
-      await entityManager.find(DataSource, {
-        where: { kind: 'postgresql' },
-        select: ['id'],
-      })
-    ).map((d) => d.id);
 
     const batchSize = 100;
-    const datasourceOptionsCount = await entityManager.count(DataSourceOptions, {
-      where: { dataSourceId: In(dataSourceIds) },
-    });
+    const datasourceOptionsCount = await entityManager
+      .createQueryBuilder(DataSourceOptions, 'dso')
+      .innerJoin(DataSource, 'ds', 'dso.dataSourceId = ds.id')
+      .where('ds.kind = :kind', { kind: 'postgresql' })
+      .andWhere(
+        `
+        NOT EXISTS (
+          SELECT 1
+          FROM jsonb_object_keys(dso.options::jsonb) AS keys
+          WHERE keys = 'connection_type'
+        )
+      `
+      )
+      .getCount();
 
     const migrationProgress = new MigrationProgress(
       'PopulateManualConnectionTypeForOldPostgresDs1731283187529',
@@ -29,11 +34,22 @@ export class PopulateManualConnectionTypeForOldPostgresDs1731283187529 implement
       skip: number,
       take: number
     ): Promise<DataSourceOptions[]> => {
-      return await entityManager.find(DataSourceOptions, {
-        where: { dataSourceId: In(dataSourceIds) },
-        take,
-        skip,
-      });
+      return await entityManager
+        .createQueryBuilder(DataSourceOptions, 'dso')
+        .innerJoin(DataSource, 'ds', 'dso.dataSourceId = ds.id')
+        .where('ds.kind = :kind', { kind: 'postgresql' })
+        .andWhere(
+          `
+          NOT EXISTS (
+            SELECT 1
+            FROM jsonb_object_keys(dso.options::jsonb) AS keys
+            WHERE keys = 'connection_type'
+          )
+        `
+        )
+        .skip(skip)
+        .take(take)
+        .getMany();
     };
 
     const processDataSourceOptionsBatch = async (
