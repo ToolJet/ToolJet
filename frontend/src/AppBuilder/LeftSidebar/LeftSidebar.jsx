@@ -67,7 +67,7 @@ export const LeftSidebar = ({ darkMode = false, switchDarkMode }) => {
   }, [queryPanelHeight]);
 
   const renderPopoverContent = () => {
-    if (selectedSidebarItem === null) return null;
+    if (selectedSidebarItem === null || !isSidebarOpen) return null;
     switch (selectedSidebarItem) {
       case 'page':
         return (
