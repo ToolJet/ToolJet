@@ -14,6 +14,7 @@ export class PopulateManualConnectionTypeForOldPostgresDs1731283187529 implement
       })
     ).map((d) => d.id);
 
+    const batchSize = 100;
     const datasourceOptionsCount = await entityManager.count(DataSourceOptions, {
       where: { dataSourceId: In(dataSourceIds) },
     });
@@ -40,7 +41,7 @@ export class PopulateManualConnectionTypeForOldPostgresDs1731283187529 implement
       dataSourceOptions: DataSourceOptions[]
     ): Promise<void> => {
       for (const dataSourceOption of dataSourceOptions) {
-        if (dataSourceOption.options.connection_type) {
+        if (dataSourceOption.options?.connection_type) {
           migrationProgress.show();
           continue;
         }
@@ -55,7 +56,7 @@ export class PopulateManualConnectionTypeForOldPostgresDs1731283187529 implement
       }
     };
 
-    await processDataInBatches(entityManager, getDataSourceOptionsToUpdate, processDataSourceOptionsBatch);
+    await processDataInBatches(entityManager, getDataSourceOptionsToUpdate, processDataSourceOptionsBatch, batchSize);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {}
