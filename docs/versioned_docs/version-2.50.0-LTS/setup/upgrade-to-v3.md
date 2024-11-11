@@ -1,8 +1,7 @@
 ---
 id: upgrade-to-v3
-title: ToolJet 3.0 (Beta) Migration Guide Self-Hosted
+title: ToolJet 3.0 Migration Guide Self-Hosted
 ---
-# ToolJet 3.0 (Beta) Migration Guide Self-Hosted 
 
 This documentation will help you upgrade your application from ToolJet v2.50.0-LTS to the pre-release/beta version of ToolJet 3.0.
 
@@ -14,11 +13,11 @@ Before upgrading, we recommend reviewing your existing applications for any usag
 For complex applications, we also recommend setting up thorough testing procedures to ensure your apps function correctly after the upgrade.
 :::
 
-## Upgrading to 3.0 Beta Preview
+## Upgrading to 3.0
 
 ### Prerequisites ⚠️
 
-Before attempting to upgrade to the 3.0 Beta Preview:
+Before attempting to upgrade to the ToolJet 3.0:
 
 - **Database Backup**: Create a complete backup of your database
 - **Application Review**: Check your apps for breaking and deprecated features listed in this guide.
@@ -197,7 +196,7 @@ After the 3.0 upgrade, applications with the old Kanban Board component will cra
 
 Workspace Constants are designed to be resolved on the server-side only, ensuring a high level of security. You can assign users to a specific role and provide create, update, and delete access to Workspace Constants.
 
-For detailed instructions on migrating from Workspace Variables to Workspace Constants, please refer to our [Workspace Variables Migration Guide](https://docs.tooljet.com/docs/beta/org-management/workspaces/workspace-variables-migration).
+For detailed instructions on migrating from Workspace Variables to Workspace Constants, please refer to our [Workspace Variables Migration Guide](../org-management/workspaces/workspace-variables-migration).
 
 
 ## Response Headers and Metadata
@@ -225,15 +224,7 @@ The `metadata` object will contain detailed information about the request and re
 
 ### ToolJet Database
 
-ToolJet Database is now a core requirement for the 3.0 beta. You'll need to manually enable the ToolJet Database feature at the instance level. This is a temporary requirement - in the final 3.0.0 LTS release, the ToolJet Database will be automatically enabled and configured by default.
-
-#### Beta Testing Requirements
-
-- Enable ToolJet Database for your instance (see required environment variables [here](/docs/beta/setup/env-vars/#enable-tooljet-database--optional-))
-
-:::note
-This manual configuration is only needed during the beta testing phase. When 3.0.0 LTS is released, the ToolJet Database will be automatically enabled and ready to use out of the box.
-:::
+ToolJet Database is now a core requirement for the 3.0. The ToolJet Database will be automatically enabled and configured by default.
 
 ## Help and Support
 
