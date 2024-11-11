@@ -45,8 +45,8 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 | <div style={{ width:"100px"}}> Variables </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 |:----------- |:----------- |:--------- |
-| endDate | Holds the date selected as the end date in the component. | Accessible dynamically with JS (e.g., `{{components.daterangepicker1.endDate}})`). |
-| startDate | Holds the date selected as the start date in the component. | Accessible dynamically with JS (e.g., `{{components.daterangepicker1.startDate}})`). |
+| endDate | Holds the date selected as the end date in the component. | Accessible dynamically with JS (e.g., `{{components.daterangepicker1.endDate}}`). |
+| startDate | Holds the date selected as the start date in the component. | Accessible dynamically with JS (e.g., `{{components.daterangepicker1.startDate}}`). |
 
 </div>
 
