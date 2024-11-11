@@ -182,7 +182,7 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
         appName: appData.name,
         appId: appData.id,
         slug: appData.slug,
-        currentAppEnvironmentId: editorEnvironment.id,
+        currentAppEnvironmentId: editorEnvironmentId,
         isMaintenanceOn:
           'is_maintenance_on' in result
             ? result.is_maintenance_on
