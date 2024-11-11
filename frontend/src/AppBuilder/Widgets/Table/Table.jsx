@@ -566,12 +566,12 @@ export const Table = React.memo(
 
     useEffect(() => {
       if (
-        tableData.length != 0 &&
+        properties.data.length != 0 &&
         properties.autogenerateColumns &&
         (useDynamicColumn || mode === 'edit' || mode === 'view')
       ) {
         const generatedColumnFromData = autogenerateColumns(
-          tableData,
+          properties.data,
           properties.columns,
           properties?.columnDeletionHistory ?? [],
           useDynamicColumn,
@@ -597,7 +597,8 @@ export const Table = React.memo(
           setGeneratedColumn(generatedColumnFromData);
         }
       }
-    }, [JSON.stringify(tableData), JSON.stringify(dynamicColumn)]);
+      // }, [tableData, JSON.stringify(dynamicColumn)]);
+    }, [JSON.stringify(properties.data), JSON.stringify(dynamicColumn)]);
 
     const computedStyles = {
       // width: `${width}px`,
