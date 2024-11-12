@@ -645,7 +645,11 @@ export class DataQueriesService {
         }
 
         // c: Replace all occurrences of {{ }} variables
-        if (resolvedValue?.match(/\{\{(.*?)\}\}/g)?.length > 0) {
+        if (
+          typeof resolvedValue === 'string' &&
+          resolvedValue?.match(/\{\{(.*?)\}\}/g)?.length > 0 &&
+          !(resolvedValue.startsWith('{{') && resolvedValue.endsWith('}}'))
+        ) {
           const variables = resolvedValue.match(/\{\{(.*?)\}\}/g);
 
           for (const variable of variables || []) {
@@ -655,10 +659,17 @@ export class DataQueriesService {
               // Ensure parent is a non-empty array before attempting to access its first element
               if (Array.isArray(parent) && parent.length > 0) {
                 // Assign replacement value based on the first item in the parent array
-                replacement = replacement[parent[0]];
+                replacement = replacement[parent[0]] || replacement;
               }
             }
-            resolvedValue = resolvedValue.replace(variable, replacement);
+            // Check type of replacement and assign accordingly
+            if (typeof replacement === 'string' || typeof replacement === 'number') {
+              // If replacement is a string, perform the replace
+              resolvedValue = resolvedValue.replace(variable, String(replacement));
+            } else {
+              // If replacement is an object or an array, assign the whole value to resolvedValue
+              resolvedValue = resolvedValue.replace(variable, JSON.stringify(replacement));
+            }
           }
           if (parent && key !== null) {
             parent[key] = resolvedValue;
