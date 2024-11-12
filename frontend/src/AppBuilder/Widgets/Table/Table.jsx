@@ -236,8 +236,9 @@ export const Table = React.memo(
       });
       const changesToBeSavedAndExposed = { dataUpdates: newDataUpdates, changeSet: newChangeset };
       mergeToTableDetails(changesToBeSavedAndExposed);
+      setExposedVariables({ ...changesToBeSavedAndExposed, updatedData: clonedTableData });
       fireEvent('onCellValueChanged');
-      return setExposedVariables({ ...changesToBeSavedAndExposed, updatedData: clonedTableData });
+      return;
     }
 
     const copyOfTableDetails = useRef(tableDetails);
