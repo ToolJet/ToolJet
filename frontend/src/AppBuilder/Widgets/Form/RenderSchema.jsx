@@ -3,7 +3,7 @@ import { getComponentToRender } from '@/AppBuilder/_helpers/editorHelpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 
-const RenderSchema = ({ component, id, onOptionChange, onOptionsChange }) => {
+const RenderSchema = ({ darkMode, component, id, onOptionChange, onOptionsChange }) => {
   const ComponentToRender = useMemo(() => getComponentToRender(component?.component), [component?.component]);
   const validateWidget = useStore((state) => state.validateWidget, shallow);
 
@@ -31,6 +31,10 @@ const RenderSchema = ({ component, id, onOptionChange, onOptionsChange }) => {
     [component.definition.validation]
   );
 
+  const fireEvent = useCallback(() => {
+    return Promise.resolve();
+  }, []);
+
   return (
     <ComponentToRender
       properties={component?.definition?.properties}
@@ -42,7 +46,8 @@ const RenderSchema = ({ component, id, onOptionChange, onOptionsChange }) => {
       setExposedVariable={setExposedVariable}
       setExposedVariables={setExposedVariables}
       validate={validate}
-      fireEvent={() => {}}
+      darkMode={darkMode}
+      fireEvent={fireEvent}
     />
   );
 };
