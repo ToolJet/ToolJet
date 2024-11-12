@@ -13,7 +13,7 @@ Before upgrading, we recommend reviewing your existing applications for any usag
 For complex applications, we also recommend setting up thorough testing procedures to ensure your apps function correctly after the upgrade.
 :::
 
-## Upgrading to 3.0
+## Upgrading to ToolJet 3.0 
 
 ### Prerequisites ⚠️
 
@@ -218,14 +218,14 @@ Now, you should use:
 {{queries.<queryName>.metadata}}
 ```
 
-The `metadata` object will contain detailed information about the request and response, including request URL, method, headers, parameters, response status code, and headers. You can read more about metadata [here](/docs/beta/data-sources/restapi/metadata-and-cookies/#metadata).
+The `metadata` object will contain detailed information about the request and response, including request URL, method, headers, parameters, response status code, and headers. You can read more about metadata [here](../data-sources/restapi/metadata-and-cookies/#metadata).
 
 ## System Changes
 
 ### ToolJet Database
 
-ToolJet Database is now a core requirement for the 3.0. 
-To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. Please [follow the instructions here](./env-vars/#enable-tooljet-database-required).
+ToolJet Database is now a core requirement for the ToolJet 3.0. 
+To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. Please [follow the instructions here](../env-vars/#enable-tooljet-database-required).
 
 
 ## Help and Support
