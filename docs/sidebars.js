@@ -460,6 +460,8 @@ const sidebars = {
             'marketplace/plugins/marketplace-plugin-portkey',
             'marketplace/plugins/marketplace-plugin-prestodb',
             'marketplace/plugins/marketplace-plugin-jira',
+            'marketplace/plugins/marketplace-plugin-sharepoint',
+            'marketplace/plugins/marketplace-plugin-pinecone'
           ],
         },
       ],
@@ -478,6 +480,7 @@ const sidebars = {
           'label': 'Roadmap',
           'href': 'https://github.com/orgs/ToolJet/projects/15',
         },
+        'versions'
       ],
     },
     {
