@@ -45,7 +45,6 @@ export default class PineconeService implements QueryService {
           throw new QueryError('Query could not be completed', 'Invalid operation', {});
       }
     } catch (error) {
-      console.log(error);
       let errorMessage = 'Query could not be completed';
       let errorDetails: any = {};
   
