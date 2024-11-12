@@ -301,6 +301,7 @@ If you intend to use client separately then can set `SERVE_CLIENT` to `false`.
 | PGRST_JWT_SECRET | JWT token client provided for authentication    |
 | PGRST_DB_URI     | database connection string for tooljet database |
 | PGRST_LOG_LEVEL  | `info`                                          |
+| PGRST_DB_PRE_CONFIG          | postgrest.pre_config                         |
 
 If you intent to make changes in the above configuration. Please refer [PostgREST configuration docs](https://postgrest.org/en/stable/configuration.html#environment-variables).
 
