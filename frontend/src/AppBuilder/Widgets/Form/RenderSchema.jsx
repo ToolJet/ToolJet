@@ -3,7 +3,7 @@ import { getComponentToRender } from '@/AppBuilder/_helpers/editorHelpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 
-const RenderSchema = ({ darkMode, component, id, onOptionChange, onOptionsChange }) => {
+const RenderSchema = ({ component, parent, id, onOptionChange, onOptionsChange, darkMode }) => {
   const ComponentToRender = useMemo(() => getComponentToRender(component?.component), [component?.component]);
   const validateWidget = useStore((state) => state.validateWidget, shallow);
 
@@ -35,6 +35,7 @@ const RenderSchema = ({ darkMode, component, id, onOptionChange, onOptionsChange
     return Promise.resolve();
   }, []);
 
+  const formId = `${parent}-${id}`;
   return (
     <ComponentToRender
       properties={component?.definition?.properties}
@@ -48,6 +49,7 @@ const RenderSchema = ({ darkMode, component, id, onOptionChange, onOptionsChange
       validate={validate}
       darkMode={darkMode}
       fireEvent={fireEvent}
+      formId={formId}
     />
   );
 };
