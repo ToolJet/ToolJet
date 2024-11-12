@@ -845,7 +845,7 @@ export class OrganizationsService {
         ...(slug && { slug }),
       },
     });
-    if (result) throw new ConflictException(`${name ? 'Name' : 'Slug'} must be unique`);
+    if (result) throw new ConflictException(`Workspace ${name ? 'name' : 'slug'} already exists`);
     return;
   }
 
