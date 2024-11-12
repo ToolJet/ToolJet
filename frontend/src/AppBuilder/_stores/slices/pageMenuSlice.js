@@ -111,8 +111,8 @@ export const createPageMenuSlice = (set, get) => {
       set((state) => {
         state.editingPage = page;
         if (ref) {
-          state.showEditingPopover = true;
           state.popoverTargetId = ref?.current?.id;
+          state.showEditingPopover = true;
         }
       }),
 

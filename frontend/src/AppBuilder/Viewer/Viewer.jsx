@@ -63,8 +63,8 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
     }),
     shallow
   );
-  const getCurrentPageComponents = useStore((state) => state.getCurrentPageComponents, shallow);
-  const currentPageComponents = useMemo(() => getCurrentPageComponents(), [getCurrentPageComponents]);
+  const getCurrentPageComponents = useStore((state) => state.getCurrentPageComponents(), shallow);
+  const currentPageComponents = useMemo(() => getCurrentPageComponents, [getCurrentPageComponents]);
   const changeDarkMode = useStore((state) => state.changeDarkMode);
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
   const canvasBgColor = useStore((state) => state.getCanvasBackgroundColor('canvas', darkMode), shallow);
@@ -200,6 +200,7 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
                                 maxWidth: isMobilePreviewMode ? '450px' : computeCanvasMaxWidth(),
                                 margin: 0,
                                 padding: 0,
+                                position: 'relative',
                               }}
                             >
                               {currentLayout === 'mobile' && isMobilePreviewMode && (

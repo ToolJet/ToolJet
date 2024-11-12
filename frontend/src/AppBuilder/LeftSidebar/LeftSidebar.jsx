@@ -62,8 +62,9 @@ export const LeftSidebar = ({ darkMode = false, switchDarkMode }) => {
   };
 
   useEffect(() => {
-    setPopoverContentHeight(((window.innerHeight - queryPanelHeight - 45) / window.innerHeight) * 100);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setPopoverContentHeight(
+      ((window.innerHeight - (queryPanelHeight == 0 ? 40 : queryPanelHeight) - 45) / window.innerHeight) * 100
+    ); // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryPanelHeight]);
 
   const renderPopoverContent = () => {

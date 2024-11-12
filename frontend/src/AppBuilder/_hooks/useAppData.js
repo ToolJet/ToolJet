@@ -193,8 +193,7 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
       );
 
       setPages(pages, moduleId);
-      setPageSettings(deepCamelCase(appData?.editing_version?.page_settings));
-
+      setPageSettings(deepCamelCase(appData?.editing_version?.page_settings ?? appData?.page_settings));
       // set starting page as homepage initially
       let startingPage = appData.pages.find((page) => page.id === homePageId);
 

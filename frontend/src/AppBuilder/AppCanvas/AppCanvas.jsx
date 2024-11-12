@@ -38,6 +38,7 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
   const setIsComponentLayoutReady = useStore((state) => state.setIsComponentLayoutReady, shallow);
   const canvasMaxWidth = useAppCanvasMaxWidth({ mode: currentMode });
   const editorMarginLeft = useSidebarMargin(canvasContainerRef);
+  const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
   const pageSwitchInProgress = useStore((state) => state.pageSwitchInProgress);
   const setPageSwitchInProgress = useStore((state) => state.setPageSwitchInProgress);
   useEffect(() => {
@@ -60,6 +61,8 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
 
   return (
     <div className={cx(`main main-editor-canvas`, {})} id="main-editor-canvas" onMouseUp={handleCanvasContainerMouseUp}>
+      {creationMode === 'GIT' && <FreezeVersionInfo info={'Apps imported from git repository cannot be edited'} />}
+      {creationMode !== 'GIT' && <FreezeVersionInfo hide={currentMode !== 'edit'} />}
       <div
         ref={canvasContainerRef}
         className={cx(
@@ -69,12 +72,12 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
         )}
         style={{
           // transform: `scale(1)`,
-          borderLeft: editorMarginLeft + 'px solid',
+          borderLeft: currentMode === 'edit' && editorMarginLeft + 'px solid',
           height: currentMode === 'edit' ? canvasContainerHeight : '100%',
           backgroundColor: canvasBgColor,
           // background: !isAppDarkMode ? '#EBEBEF' : '#2E3035',
           marginLeft:
-            isViewerSidebarPinned && currentLayout !== 'mobile' && currentMode !== 'edit'
+            isViewerSidebarPinned && !isPagesSidebarHidden && currentLayout !== 'mobile' && currentMode !== 'edit'
               ? pageSidebarStyle === 'icon'
                 ? '65px'
                 : '210px'
@@ -88,8 +91,6 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
           className={`app-${appId}`}
         >
           <AutoComputeMobileLayoutAlert currentLayout={currentLayout} darkMode={isAppDarkMode} />
-          {creationMode === 'GIT' && <FreezeVersionInfo info={'Apps imported from git repository cannot be edited'} />}
-          {creationMode !== 'GIT' && <FreezeVersionInfo hide={currentMode !== 'edit'} />}
           <DeleteWidgetConfirmation darkMode={isAppDarkMode} />
           <HotkeyProvider mode={currentMode} canvasMaxWidth={canvasMaxWidth} currentLayout={currentLayout}>
             {environmentLoadingState !== 'loading' && (

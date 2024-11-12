@@ -88,7 +88,7 @@ const MobileHeader = ({
     );
   };
 
-  if (!showHeader) {
+  if (!showHeader && isVersionReleased) {
     return <>{showViewerNavigation ? _renderMobileNavigationMenu() : _renderDarkModeBtn()}</>;
   }
 
