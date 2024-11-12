@@ -223,7 +223,7 @@ The `metadata` object will contain detailed information about the request and re
 ### ToolJet Database
 
 ToolJet Database is now a core requirement for the ToolJet 3.0. 
-To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. Please [follow the instructions here](./env-vars/#enable-tooljet-database-required).
+To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. Please [follow the instructions here](../setup/env-vars/#enable-tooljet-database-required).
 
 
 ## Help and Support
