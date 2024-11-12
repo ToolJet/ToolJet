@@ -16,7 +16,7 @@ docker run \
   -p 80:80 \
   --platform linux/amd64 \
   -v tooljet_data:/var/lib/postgresql/13/main \
-  tooljet/try:latest
+  tooljet/try:ee-lts-latest
 ```
 
 #### Setup information
