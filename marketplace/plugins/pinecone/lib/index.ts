@@ -45,8 +45,22 @@ export default class PineconeService implements QueryService {
           throw new QueryError('Query could not be completed', 'Invalid operation', {});
       }
     } catch (error) {
-      throw new QueryError('Query could not be completed', error?.message, {});
-    }
+      console.log(error);
+      let errorMessage = 'Query could not be completed';
+      let errorDetails: any = {};
+  
+      if (error.response) {
+          try {
+              const errorResponse = JSON.parse(error.response.body);
+              errorMessage = errorResponse.message || errorMessage;
+              errorDetails = errorResponse.error || {};
+          } catch (parseError) {
+              console.error('Failed to parse Pinecone error response:', parseError);
+          }
+      }
+
+      throw new QueryError(errorMessage, error.message, errorDetails);
+  }  
 
     return {
       status: 'ok',
