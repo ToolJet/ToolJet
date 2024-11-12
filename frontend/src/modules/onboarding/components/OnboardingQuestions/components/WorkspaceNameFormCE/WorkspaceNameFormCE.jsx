@@ -47,7 +47,12 @@ const WorkspaceNameFormCE = () => {
     shallow
   );
   useEnterKeyPress(() => handleSubmit());
-
+  const { setOnboardingStepsCompleted } = useOnboardingStore(
+    (state) => ({
+      setOnboardingStepsCompleted: state.setOnboardingStepsCompleted,
+    }),
+    shallow
+  );
   const [formData, setFormData] = useState({ workspaceName: workspaceName });
   const [error, setError] = useState('');
   const [isFormValid, setIsFormValid] = useState(true);
@@ -121,6 +126,7 @@ const WorkspaceNameFormCE = () => {
       try {
         await setWorkspaceName(formData.workspaceName);
         await onboardUserOrCreateAdmin();
+        setOnboardingStepsCompleted();
       } catch (error) {
         const errorMessage = error?.error || 'Something went wrong. Please try again.';
         toast.error(errorMessage);

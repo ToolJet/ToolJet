@@ -21,6 +21,7 @@ const useCEOnboardingStore = create(
     currentStep: 0,
     totalSteps: 1,
     accountCreated: false,
+    isOnboardingStepsCompleted: false,
 
     // Action to update admin details
     setAdminDetails: (details) =>
@@ -40,6 +41,7 @@ const useCEOnboardingStore = create(
     // action to set current step
     setCurrentStep: (step) => set({ currentStep: step }),
 
+    setOnboardingStepsCompleted: () => set({ isOnboardingStepsCompleted: true }),
     // Action to reset the store
     resetStore: () =>
       set({
@@ -75,7 +77,9 @@ const useCEOnboardingStore = create(
       const path = getSubpath()
         ? `${getSubpath()}/${session?.current_organization_slug}/apps/${appId}`
         : `/${session?.current_organization_slug}/apps/${appId}`;
-      window.location.href = path;
+      // window.location.href = path;
+      history.pushState(null, null, path);
+      window.location.reload();
     },
 
     setAccountCreated: (value) => set({ accountCreated: value }),
