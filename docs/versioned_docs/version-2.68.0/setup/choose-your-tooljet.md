@@ -14,7 +14,7 @@ Please find the latest LTS version here: <br/>
 
 | Version | Release Date | Docker Pull Command |
 |---------|--------------|----------------------|
-| Latest EE-LTS | N/A | `docker pull tooljet/tooljet:EE-LTS-latest` |
+| Latest EE-LTS | N/A | `docker pull tooljet/tooljet:ee-lts-latest` |
 | [EE-LTS-2.50.9.41](https://hub.docker.com/layers/tooljet/tooljet/EE-LTS-2.50.9.41/images/sha256-d36444747af6f81d4456ca4d1f7dcf92c3e77e13e23ca9407c22de1c62451bd7?context=explore) | September 24 , 2024 | `docker pull tooljet/tooljet:EE-LTS-2.50.9.41` |
 | [EE-LTS-2.50.9.40](https://hub.docker.com/layers/tooljet/tooljet/EE-LTS-2.50.9.40/images/sha256-26338b926568dc514c26988f6cd01f84bb3edf950fac08982365fabb95900f78?context=explore) | September 18 , 2024 | `docker pull tooljet/tooljet:EE-LTS-2.50.9.40` |
 | [EE-LTS-2.50.9.39](https://hub.docker.com/layers/tooljet/tooljet/EE-LTS-2.50.9.39/images/sha256-6f1b7a00432e0e29a05adb375d3ddd9da877d6eb53d489be14ca0061953bbb57?context=explore) | September 12 , 2024 | `docker pull tooljet/tooljet:EE-LTS-2.50.9.39` |

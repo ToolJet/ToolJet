@@ -87,7 +87,7 @@ Follow the steps below to deploy ToolJet on a ECS cluster.
 
   Specify your container name ex: `ToolJet`
 
-  Set the image you intend to deploy. ex: `tooljet/tooljet:EE-LTS-latest`
+  Set the image you intend to deploy. ex: `tooljet/tooljet:ee-lts-latest`
 
   Update port mappings at container port `3000` for tcp protocol.
 

@@ -22,9 +22,9 @@ Follow the steps below to deploy ToolJet on Cloud run with `gcloud` CLI.
 
 ```bash
   gcloud auth configure-docker
-  docker pull tooljet/tooljet:EE-LTS-latest
-  docker tag tooljet/tooljet:EE-LTS-latest gcr.io/replace-with-your-project-id/tooljet/tooljet:EE-LTS-latest
-  docker push gcr.io/replace-with-your-project-id/tooljet/tooljet:EE-LTS-latest
+  docker pull tooljet/tooljet:ee-lts-latest
+  docker tag tooljet/tooljet:ee-lts-latest gcr.io/replace-with-your-project-id/tooljet/tooljet:ee-lts-latest
+  docker push gcr.io/replace-with-your-project-id/tooljet/tooljet:ee-lts-latest
 ```
 
   Please run the above command by launching GoogleCLI which will help to push the Tooljet application image to Google container registry. 
