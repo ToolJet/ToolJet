@@ -26,7 +26,7 @@ Before attempting to upgrade to the ToolJet 3.0:
 To upgrade, update your Docker image to:
 
 ```bash
-tooljet/tooljet:v3.0.0-ee-beta.1
+tooljet/tooljet:v3.0.0-ee-lts
 ```
 :::warning
 This is a beta release. Test thoroughly in a non-production environment first.
@@ -224,7 +224,9 @@ The `metadata` object will contain detailed information about the request and re
 
 ### ToolJet Database
 
-ToolJet Database is now a core requirement for the 3.0. The ToolJet Database will be automatically enabled and configured by default.
+ToolJet Database is now a core requirement for the 3.0. 
+To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. Please [follow the instructions here](./env-vars/#enable-tooljet-database-required).
+
 
 ## Help and Support
 
