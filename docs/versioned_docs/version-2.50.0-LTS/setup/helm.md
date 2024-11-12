@@ -15,19 +15,19 @@ helm repo add tooljet https://github.com/ToolJet/helm-charts.git
 helm install tooljet tooljet/tooljet
 ```
 
-### From the source
+### From the Source
 1. Clone the repository and navigate to this directory
-2. Run `helm dependency update
+2. Run `helm dependency update`
 3. It is recommended but optional to modify the values in the `values.yaml` file, such as usernames, passwords, persistence settings, etc.
 4. Run `helm install -n $NAMESPACE --create-namespace $RELEASE .`
 
 Remember to replace the variables with your specific configuration values.
 
-**ToolJet Database**
+## ToolJet Database
 
 ToolJet offers a hosted database solution that allows you to build applications quickly and manage your data effortlessly. The ToolJet database requires no setup and provides a user-friendly interface for data management.
 
-For more information about the ToolJet database, you can visit [here](/docs/tooljet-database).
+For more information about the ToolJet database, you can visit [here](../tooljet-db/tooljet-database).
 
 You need to set up and deploy the PostgREST server, which facilitates querying the ToolJet Database.
 

@@ -19,7 +19,7 @@ Follow the steps below to deploy ToolJet on a AKS Kubernetes cluster.
      curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/AKS/deployment.yaml
    ```
 
-Make sure to edit the environment variables in the `deployment.yaml`. We advise to use secrets to setup sensitive information. You can check out the available options [here](https://docs.tooljet.com/docs/setup/env-vars).
+Make sure to edit the environment variables in the `deployment.yaml`. We advise to use secrets to setup sensitive information. You can check out the available options [here](./env-vars).
 
 :::info
         For the setup, ToolJet requires:
@@ -36,7 +36,7 @@ Make sure to edit the environment variables in the `deployment.yaml`. We advise 
         - **LOCKBOX_KEY**
         </ul>
         <br/>
-        Read **[environment variables reference](https://docs.tooljet.com/docs/setup/env-vars)**
+        Read **[environment variables reference](./env-vars)**
 :::
 
 :::info
@@ -58,7 +58,7 @@ You will be able to access your ToolJet installation once the pods and services 
 
 ## ToolJet Database
 
-To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. Please [follow the instructions here](/docs/setup/env-vars/#enable-tooljet-database--optional-).
+To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. Please [follow the instructions here](./env-vars/#enable-tooljet-database-required).
 
 1. Setup PostgREST server
 

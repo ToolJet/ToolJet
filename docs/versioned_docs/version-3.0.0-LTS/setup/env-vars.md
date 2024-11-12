@@ -92,11 +92,10 @@ Use this environment variable to enable/disable the developement mode that allow
 | ---------------- | ----------------------------------------------- |
 | USER_SESSION_EXPIRY | This variable controls the user session expiry time. By default, the session expires after **10** days. The variable expects the value in minutes. ex: USER_SESSION_EXPIRY = 120 which is 2 hours |
 
-### Enable ToolJet Database ( optional )
+### Enable ToolJet Database (required)
 
 | variable                     | description                                  |
 | -----------------------------| -------------------------------------------- |
-| ENABLE_TOOLJET_DB            | `true` or `false`                            |
 | TOOLJET_DB                   | Default value is `tooljet_db`                |
 | TOOLJET_DB_HOST              | database host                                |
 | TOOLJET_DB_USER              | database username                            |
@@ -104,8 +103,7 @@ Use this environment variable to enable/disable the developement mode that allow
 | TOOLJET_DB_PORT              | database port                                |
 | PGRST_JWT_SECRET             | JWT token client provided for authentication |
 | PGRST_HOST                   | postgrest database host                      |
-| TOOLJET_DB_RECONFIG          | `true` or `false`                            |
-| TOOLJET_DB_STATEMENT_TIMEOUT | statement timeout in milliseconds            |
+| PGRST_DB_PRE_CONFIG          | postgrest.pre_config                         |
 
 Use `ENABLE_TOOLJET_DB` to enable/disable the feature that allows users to work with inbuilt data store to build apps with. In order to set it up, [follow the instructions here](/docs/tooljet-db/tooljet-database/#enabling-the-tooljet-database-for-your-instance).
 
@@ -296,7 +294,7 @@ This can be an absolute path, or relative to main HTML file.
 By default the client build will be done to be served with ToolJet server.
 If you intend to use client separately then can set `SERVE_CLIENT` to `false`.
 
-## PostgREST server (Optional)
+## PostgREST server (required)
 
 | variable         | description                                     |
 | ---------------- | ----------------------------------------------- |

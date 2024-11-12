@@ -31,7 +31,7 @@ gcloud compute addresses create tj-static-ip --global
 curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/GKE/deployment.yaml
 ```
 
-Make sure to edit the environment variables in the `deployment.yaml`. You can check out the available options [here](https://docs.tooljet.com/docs/setup/env-vars).
+Make sure to edit the environment variables in the `deployment.yaml`. You can check out the available options [here](./env-vars).
 
 :::info
         For the setup, ToolJet requires:
@@ -47,8 +47,7 @@ Make sure to edit the environment variables in the `deployment.yaml`. You can ch
         - **SECRET_KEY_BASE** 
         - **LOCKBOX_KEY**
         </ul>
-        <br/>
-        Read **[environment variables reference](https://docs.tooljet.com/docs/setup/env-vars)**
+        Read **[environment variables reference](./env-vars)**
 :::
 
 :::info
@@ -83,7 +82,7 @@ You will be able to access your ToolJet installation once the pods, service and 
 
 ## ToolJet Database
 
-To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. Please [follow the instructions here](/docs/setup/env-vars/#enable-tooljet-database--optional-).
+To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. Please [follow the instructions here](./env-vars/#enable-tooljet-database-required).
 
 1. Setup PostgREST server
 

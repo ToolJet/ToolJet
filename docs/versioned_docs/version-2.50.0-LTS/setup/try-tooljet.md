@@ -23,7 +23,7 @@ docker run \
 
 - Runs the ToolJet server on the port 80 on your machine.
 - Container has postgres already configured within. All the data will be available in the docker volume `tooljet_data`.
-- You can make use of `--env` or `--env-file` flag to test against various env configurables mentioned [here](https://docs.tooljet.com/docs/setup/env-vars).
+- You can make use of `--env` or `--env-file` flag to test against various env configurables mentioned [here](./env-vars).
 - Use `docker stop tooljet` to stop the container and `docker start tooljet` to start the container thereafter.
 
 #### Dynamic Port Setup

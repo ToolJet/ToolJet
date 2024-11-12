@@ -85,7 +85,7 @@ Follow the steps below to deploy ToolJet on a ECS cluster.
         - **LOCKBOX_KEY**
         </ul>
         <br/>
-        Read **[environment variables reference](https://docs.tooljet.com/docs/setup/env-vars)**
+        Read **[environment variables reference](./env-vars)**
         :::
 
         Additionally, include the Redis environment variables within the ToolJet container mentioned above if you have followed the previous steps to create Redis.
@@ -180,7 +180,7 @@ Follow the steps below to deploy PostgREST on a ECS cluster.
 
   </div>
 
-Update ToolJet deployment with the appropriate env variables [here](https://docs.tooljet.com/docs/setup/env-vars/#enable-tooljet-database--optional-) and apply the changes.
+Update ToolJet deployment with the appropriate env variables [here](./env-vars/#enable-tooljet-database-required) and apply the changes.
 
 </div>
 

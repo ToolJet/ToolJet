@@ -78,7 +78,7 @@ Follow the steps below to deploy ToolJet on AWS EC2 instances.
 
 ToolJet AMI comes inbuilt with PostgREST. If you intend to use this feature, you'd only have to setup the environment variables in `~/app/.env` file and run `./setup_app` script.
 
-You can learn more about this feature [here](/docs/tooljet-database).
+You can learn more about this feature [here](../tooljet-db/tooljet-database).
 
 ## Upgrading to the Latest LTS Version
 
