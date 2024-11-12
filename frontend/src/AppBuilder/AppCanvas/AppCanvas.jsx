@@ -7,7 +7,7 @@ import { HotkeyProvider } from './HotkeyProvider';
 import './appCanvas.scss';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import { getCanvasWidth } from './appCanvasUtils';
+import { getCanvasWidth, computeViewerBackgroundColor } from './appCanvasUtils';
 import { NO_OF_GRIDS } from './appCanvasConstants';
 import cx from 'classnames';
 import FreezeVersionInfo from '@/AppBuilder/Header/FreezeVersionInfo';
@@ -38,8 +38,7 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
   const setIsComponentLayoutReady = useStore((state) => state.setIsComponentLayoutReady, shallow);
   const canvasMaxWidth = useAppCanvasMaxWidth({ mode: currentMode });
   const editorMarginLeft = useSidebarMargin(canvasContainerRef);
-  const pageSwitchInProgress = useStore((state) => state.pageSwitchInProgress);
-  const setPageSwitchInProgress = useStore((state) => state.setPageSwitchInProgress);
+
   useEffect(() => {
     // Need to remove this if we shift setExposedVariable Logic outside of components
     // Currently present to run onLoadQueries after the component is mounted
@@ -71,8 +70,12 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
           // transform: `scale(1)`,
           borderLeft: editorMarginLeft + 'px solid',
           height: currentMode === 'edit' ? canvasContainerHeight : '100%',
-          backgroundColor: canvasBgColor,
-          // background: !isAppDarkMode ? '#EBEBEF' : '#2E3035',
+          background:
+            currentMode === 'view'
+              ? computeViewerBackgroundColor(isAppDarkMode, canvasBgColor)
+              : !isAppDarkMode
+              ? '#EBEBEF'
+              : '#2F3C4C',
           marginLeft:
             isViewerSidebarPinned && currentLayout !== 'mobile' && currentMode !== 'edit'
               ? pageSidebarStyle === 'icon'

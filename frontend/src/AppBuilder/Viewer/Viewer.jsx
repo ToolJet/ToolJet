@@ -13,8 +13,6 @@ import DesktopHeader from './DesktopHeader';
 import MobileHeader from './MobileHeader';
 import ViewerSidebarNavigation from './ViewerSidebarNavigation';
 import { shallow } from 'zustand/shallow';
-import { computeCanvasBackgroundColor } from '@/AppBuilder/AppCanvas/appCanvasUtils';
-import { resolveReferences } from '@/_helpers/utils';
 import Popups from '../Popups';
 import TooljetBanner from './TooljetBanner';
 import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
@@ -63,9 +61,7 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
     }),
     shallow
   );
-  const getCurrentPageComponents = useStore((state) => state.getCurrentPageComponents, shallow);
-  const currentPageComponents = useMemo(() => getCurrentPageComponents(), [getCurrentPageComponents]);
-  const changeDarkMode = useStore((state) => state.changeDarkMode);
+  const currentPageComponents = useStore((state) => state.getCurrentPageComponents(), shallow);
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
   const canvasBgColor = useStore((state) => state.getCanvasBackgroundColor('canvas', darkMode), shallow);
 
