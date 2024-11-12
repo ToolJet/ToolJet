@@ -15,9 +15,6 @@ const SetupAdminPageCE = () => {
     }),
     shallow
   );
-  useEffect(() => {
-    console.log('isOnboardingStepsCompleted', isOnboardingStepsCompleted);
-  }, [isOnboardingStepsCompleted]);
   if (isOnboardingStepsCompleted && PostOnboardingComponent) {
     return <PostOnboardingComponent />;
   } else if (currentStep > 0) {
