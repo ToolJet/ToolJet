@@ -69,7 +69,7 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
         )}
         style={{
           // transform: `scale(1)`,
-          borderLeft: editorMarginLeft + 'px solid',
+          borderLeft: currentMode === 'edit' && editorMarginLeft + 'px solid',
           height: currentMode === 'edit' ? canvasContainerHeight : '100%',
           backgroundColor: canvasBgColor,
           // background: !isAppDarkMode ? '#EBEBEF' : '#2E3035',
