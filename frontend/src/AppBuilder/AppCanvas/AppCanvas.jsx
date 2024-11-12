@@ -38,6 +38,7 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
   const setIsComponentLayoutReady = useStore((state) => state.setIsComponentLayoutReady, shallow);
   const canvasMaxWidth = useAppCanvasMaxWidth({ mode: currentMode });
   const editorMarginLeft = useSidebarMargin(canvasContainerRef);
+  const isSidebarOpen = useStore((state) => state.isSidebarOpen, shallow);
 
   useEffect(() => {
     // Need to remove this if we shift setExposedVariable Logic outside of components
@@ -63,8 +64,8 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
         ref={canvasContainerRef}
         className={cx(
           'canvas-container align-items-center page-container',
-          { 'dark-theme theme-dark': isAppDarkMode, close: !isViewerSidebarPinned }
-          // { 'hide-sidebar': !showLeftSidebar }
+          { 'dark-theme theme-dark': isAppDarkMode, close: !isViewerSidebarPinned },
+          { 'overflow-x-auto': (currentMode === 'edit' && isSidebarOpen) || currentMode === 'view' }
         )}
         style={{
           // transform: `scale(1)`,
