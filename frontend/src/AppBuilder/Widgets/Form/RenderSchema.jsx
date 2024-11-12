@@ -21,12 +21,15 @@ const RenderSchema = ({ component, id, onOptionChange, onOptionsChange }) => {
     [id, onOptionsChange]
   );
 
-  const validate = (value) => {
-    return validateWidget({
-      ...{ widgetValue: value },
-      ...{ validationObject: component.definition.validation },
-    });
-  };
+  const validate = useCallback(
+    (value) => {
+      return validateWidget({
+        ...{ widgetValue: value },
+        ...{ validationObject: component.definition.validation },
+      });
+    },
+    [component.definition.validation]
+  );
 
   return (
     <ComponentToRender
