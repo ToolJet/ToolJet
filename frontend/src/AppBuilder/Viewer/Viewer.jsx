@@ -61,7 +61,8 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
     }),
     shallow
   );
-  const currentPageComponents = useStore((state) => state.getCurrentPageComponents(), shallow);
+  const getCurrentPageComponents = useStore((state) => state.getCurrentPageComponents(), shallow);
+  const currentPageComponents = useMemo(() => getCurrentPageComponents, [getCurrentPageComponents]);
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
   const canvasBgColor = useStore((state) => state.getCanvasBackgroundColor('canvas', darkMode), shallow);
 
