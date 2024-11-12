@@ -16,7 +16,7 @@ docker run \
   -p 80:80 \
   --platform linux/amd64 \
   -v tooljet_data:/var/lib/postgresql/13/main \
-  tooljet/try:latest
+  tooljet/try:ee-lts-latest
 ```
 
 #### Setup information
@@ -37,7 +37,7 @@ docker run \
   -e PORT=8080 \
   --platform linux/amd64 \
   -v tooljet_data:/var/lib/postgresql/13/main \
-  tooljet/try:EE-LTS-latest
+  tooljet/try:ee-lts-latest
 ```
 
 - This command will start the ToolJet server on port 8080.
