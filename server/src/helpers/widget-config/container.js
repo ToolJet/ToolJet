@@ -20,16 +20,41 @@ export const containerConfig = {
         defaultValue: false,
       },
     },
+    showHeader: {
+      type: 'toggle',
+      displayName: 'Show header',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
   },
   events: {},
   styles: {
     backgroundColor: {
       type: 'color',
-      displayName: 'Background color',
+      displayName: 'Background',
       validation: {
         schema: { type: 'string' },
         defaultValue: '#fff',
       },
+    },
+    headerBackgroundColor: {
+      type: 'color',
+      displayName: 'Header',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#fff',
+      },
+    },
+    headerHeight: {
+      type: 'numberInput',
+      displayName: 'Header height',
+      validation: {
+        schema: { type: 'number' },
+        defaultValue: 80,
+      },
+      accordian: 'field',
     },
     borderRadius: {
       type: 'code',
@@ -68,6 +93,26 @@ export const containerConfig = {
     },
   },
   exposedVariables: {},
+  defaultChildren: [
+    {
+      componentName: 'Text',
+      layout: {
+        top: 20,
+        left: 1,
+        height: 40,
+      },
+      displayName: 'ContainerText',
+      properties: ['text'],
+      accessorKey: 'text',
+      styles: ['fontWeight', 'textSize', 'textColor'],
+      defaultValue: {
+        text: 'Header',
+        fontWeight: 'bold',
+        textSize: 16,
+        textColor: '#000',
+      },
+    },
+  ],
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },
@@ -76,14 +121,21 @@ export const containerConfig = {
     properties: {
       visible: { value: '{{true}}' },
       loadingState: { value: `{{false}}` },
+      showHeader: {
+        value: `{{false}}`
+      },
     },
     events: [],
     styles: {
       backgroundColor: { value: '#fff' },
+      headerBackgroundColor: { value: '#fff' },
       borderRadius: { value: '4' },
       borderColor: { value: '#fff' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
+      headerHeight: {
+        value: `{{80}}`,
+      },
     },
   },
 };
