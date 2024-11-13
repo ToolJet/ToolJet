@@ -13,6 +13,7 @@ export const RichTextEditor = function RichTextEditor({
   const { visibility, disabledState, boxShadow } = styles;
   const placeholder = properties.placeholder;
   const defaultValue = properties?.defaultValue ?? '';
+  const isLoading = properties?.loadingState;
 
   // exposing the default value at first
   useEffect(() => {
@@ -36,6 +37,7 @@ export const RichTextEditor = function RichTextEditor({
         width={width}
         placeholder={placeholder}
         defaultValue={defaultValue}
+        isLoading={isLoading}
       ></DraftEditor>
     </div>
   );

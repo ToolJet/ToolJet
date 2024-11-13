@@ -20,6 +20,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'DropdownV2',
   'MultiselectV2',
   'Button',
+  'RichTextEditor',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
