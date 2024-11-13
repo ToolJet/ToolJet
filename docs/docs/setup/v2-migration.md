@@ -8,8 +8,8 @@ ToolJet version 2 comes with a bunch of exciting features, with the major ones b
 1. Multi page
 2. Multi env
 3. Forms widget
-4. [Database](../tooljet-db/tooljet-database) (Requires opt-in)
-5. [Marketplace](../marketplace/marketplace-overview) (Requires opt-in)
+4. [Database](/docs/tooljet-db/tooljet-database) (Requires opt-in)
+5. [Marketplace](/docs/marketplace/marketplace_overview) (Requires opt-in)
 
 Checkout the latest changelog for v2 [here](https://github.com/ToolJet/ToolJet/releases).
 

@@ -90,7 +90,7 @@ To use ToolJet Database, you'd have to set up and deploy PostgREST server which 
 
     <img className="screenshot-full" src="/img/cloud-run/port-and-capacity-postgrest.png" alt="port-and-capacity-postgrest" />
   
-4. Under environmental variable please add corresponding ToolJet database env variables. You can also refer [env variable](./env-vars/#enable-tooljet-database-required).
+4. Under environmental variable please add corresponding ToolJet database env variables. You can also refer [env variable](/docs/setup/env-vars/#enable-tooljet-database-required).
 
 5. Please go to connection tab. Under Cloud SQL instance please select the PostgreSQL database which you have set-up for ToolJet application or the separate PostgreSQL database created respective to ToolJet Database from the drop-down option.
 
