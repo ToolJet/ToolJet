@@ -1,8 +1,10 @@
 /* eslint-disable react/no-string-refs */
 import React from 'react';
-import { Editor, EditorState, RichUtils, getDefaultKeyBinding, ContentState } from 'draft-js';
+import { Editor, EditorState, RichUtils, getDefaultKeyBinding, ContentState, convertFromHTML } from 'draft-js';
 import 'draft-js/dist/Draft.css';
 import { stateToHTML } from 'draft-js-export-html';
+import Loader from '@/ToolJetUI/Loader/Loader';
+import DOMPurify from 'dompurify';
 
 // Custom overrides for "code" style.
 const styleMap = {
@@ -148,8 +150,11 @@ const InlineStyleControls = (props) => {
 class DraftEditor extends React.Component {
   constructor(props) {
     super(props);
+    const blocksFromHTML = convertFromHTML(DOMPurify.sanitize(this.props.defaultValue));
     this.state = {
-      editorState: EditorState.createWithContent(ContentState.createFromText(this.props.defaultValue)),
+      editorState: EditorState.createWithContent(
+        ContentState.createFromBlockArray(blocksFromHTML.contentBlocks, blocksFromHTML.entityMap)
+      ),
     };
 
     this.focus = () => this.refs.editor.focus();
@@ -167,7 +172,8 @@ class DraftEditor extends React.Component {
 
   componentDidUpdate(prevProps) {
     if (prevProps.defaultValue !== this.props.defaultValue) {
-      const newContentState = ContentState.createFromText(this.props.defaultValue);
+      const blocksFromHTML = convertFromHTML(DOMPurify.sanitize(this.props.defaultValue));
+      const newContentState = ContentState.createFromBlockArray(blocksFromHTML.contentBlocks, blocksFromHTML.entityMap);
       const newEditorState = EditorState.createWithContent(newContentState);
       const html = stateToHTML(newContentState);
 
@@ -218,7 +224,13 @@ class DraftEditor extends React.Component {
       }
     }
 
-    return (
+    return this.props.isLoading ? (
+      <div style={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <center>
+          <Loader width="16" absolute={false} />
+        </center>
+      </div>
+    ) : (
       <div className="RichEditor-root">
         <div className="RichEditor-controls">
           <BlockStyleControls editorState={editorState} onToggle={this.toggleBlockType} />
@@ -232,7 +244,13 @@ class DraftEditor extends React.Component {
             handleKeyCommand={this.handleKeyCommand}
             keyBindingFn={this.mapKeyToEditorCommand}
             onChange={this.onChange}
-            placeholder={this.props.placeholder}
+            placeholder={
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: DOMPurify.sanitize(this.props.placeholder || ''),
+                }}
+              />
+            }
             ref="editor"
             spellCheck={true}
           />

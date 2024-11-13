@@ -28,6 +28,15 @@ export const richtextareaConfig = {
         defaultValue: 'Default text',
       },
     },
+    loadingState: {
+      type: 'toggle',
+      displayName: 'Show loading state',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
   },
   events: {},
   styles: {
@@ -63,6 +72,7 @@ export const richtextareaConfig = {
     properties: {
       placeholder: { value: 'Placeholder text' },
       defaultValue: { value: '' },
+      loadingState: { value: `{{false}}` },
     },
     events: [],
     styles: {
