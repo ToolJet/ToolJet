@@ -38,11 +38,10 @@ Check [Action Reference](/docs/category/actions-reference) docs to get the detai
 
 Following actions of the component can be controlled using the component specific actions(CSA):
 
-| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"135px"}}> Description </div>                                                             | <div style={{ width:"135px"}}> How To Access </div>                                                              |
-| :-------------------------------------------- | :------------------------------------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------------------------------------- |
-| setVisibility()                                 | Sets the visibility of the component. | Employ a RunJS query (for e.g.,
-`await components.icon1.setVisibility(false)`) or trigger it using an event. |
-| click()                                         | Regulate the click on the icon.  | Employ a RunJS query to execute component-specific actions such as `await components.icon1.click()` or trigger it using an event.              |
+| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div>   |
+| :-------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------- |
+| setVisibility()                                 | Sets the visibility of the component. | Employ a RunJS query (for e.g., `await components.icon1.setVisibility(false)`) or trigger it using an event. |
+| click()                                         | Regulate the click on the icon.  | Employ a RunJS query (for e.g., `await components.icon1.click()`) or trigger it using an event.              |
 
 </div>
 
