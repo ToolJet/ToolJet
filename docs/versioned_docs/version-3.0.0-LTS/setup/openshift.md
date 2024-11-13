@@ -25,7 +25,7 @@ Follow the steps below to deploy ToolJet on Openshift.
  - **SECRET_KEY_BASE** 
  - **LOCKBOX_KEY**
 
-Read **[environment variables reference](./env-vars)**
+Read **[environment variables reference](/docs/setup/env-vars)**
 
 3. Once you have logged into the Openshift developer dashboard click on `+Add` tab. Select import YAML from the local machine.
 
@@ -68,9 +68,9 @@ If there are self signed HTTPS endpoints that Tooljet needs to connect to, pleas
 
 ## ToolJet Database
 
-You can know more about tooljet database [here](../tooljet-db/tooljet-database)
+You can know more about tooljet database [here](/docs/tooljet-db/tooljet-database)
 
-To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. Please [follow the instructions here](./env-vars/#enable-tooljet-database-required).
+To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. Please [follow the instructions here](/docs/setup/env-vars/#enable-tooljet-database-required).
 
 ```
 https://tooljet-deployments.s3.us-west-1.amazonaws.com/openshift/postgrest.yaml

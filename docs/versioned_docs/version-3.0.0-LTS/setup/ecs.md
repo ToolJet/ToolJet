@@ -85,7 +85,7 @@ Follow the steps below to deploy ToolJet on a ECS cluster.
         - **LOCKBOX_KEY**
         </ul>
         <br/>
-        Read **[environment variables reference](./env-vars)**
+        Read **[environment variables reference](/docs/setup/env-vars)**
         :::
 
         Additionally, include the Redis environment variables within the ToolJet container mentioned above if you have followed the previous steps to create Redis.
@@ -122,7 +122,7 @@ The setup above is just a template. Feel free to update the task definition and 
 
 ## ToolJet Database
 
-To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. You can learn more about this feature [here](../tooljet-db/tooljet-database).
+To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. You can learn more about this feature [here](/docs/tooljet-db/tooljet-database).
 
 Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration might break, checkout the following docs to know more about new major version, including breaking changes that require you to adjust your applications accordingly:
 - [Self Hosted](./upgrade-to-v3.md)
@@ -146,7 +146,7 @@ Follow the steps below to deploy PostgREST on a ECS cluster.
 
   </div>
   
-  Under environmental variable please add corresponding PostgREST env variables. You can also refer [env variable](https://docs.tooljet.com/docs/setup/env-vars/#postgrest-server-optional).
+  Under environmental variable please add corresponding PostgREST env variables. You can also refer [env variable](/docs/setup/env-vars/#postgrest-server-required).
 
   <div style={{textAlign: 'center'}}>
 
@@ -180,7 +180,7 @@ Follow the steps below to deploy PostgREST on a ECS cluster.
 
   </div>
 
-Update ToolJet deployment with the appropriate env variables [here](./env-vars/#enable-tooljet-database-required) and apply the changes.
+Update ToolJet deployment with the appropriate env variables [here](/docs/setup/env-vars/#enable-tooljet-database-required) and apply the changes.
 
 </div>
 
