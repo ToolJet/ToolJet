@@ -73,7 +73,6 @@ export class AppController {
     return await this.authService.validateInvitedUserSession(user, invitedUser, tokens);
   }
 
-  @UseGuards(SignupDisableGuard)
   @UseGuards(FirstUserSignupDisableGuard)
   @Post('activate-account-with-token')
   async activateAccountWithToken(
