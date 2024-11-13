@@ -291,7 +291,7 @@ export const Folders = function Folders({
       {isLoading && <Skeleton count={3} height={22} className="mb-1" />}
       {!isLoading &&
         filteredData &&
-        filteredData.length > 0 &&
+        filteredData.length > 0 ?
         filteredData.map((folder, index) => (
           <a
             key={index}
@@ -324,7 +324,18 @@ export const Folders = function Folders({
               />
             )}
           </a>
-        ))}
+        )) :
+        <div className="workspace-settings-table-wrap">
+          <div className="d-flex justify-content-center flex-column tj-user-table-wrapper">
+            <span className="text-center font-weight-bold" data-cy="text-no-result-found">
+              No result found
+            </span>
+            <small className="text-center text-muted" data-cy="text-try-changing-filters">
+              Try changing the filters
+            </small>
+          </div>
+        </div>
+      }
 
       <Modal
         show={showForm || showUpdateForm}
