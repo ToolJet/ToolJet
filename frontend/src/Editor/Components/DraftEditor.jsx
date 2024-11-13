@@ -183,6 +183,40 @@ class DraftEditor extends React.Component {
     }
   }
 
+  componentDidMount() {
+    const exposedVariables = {
+      value: this.props.defaultValue,
+      isDisabled: this.props.isDisabled,
+      isVisible: this.props.isVisible,
+      isLoading: this.props.isLoading,
+      setValue: async (text) => {
+        const blocksFromHTML = convertFromHTML(DOMPurify.sanitize(text));
+        const newContentState = ContentState.createFromBlockArray(
+          blocksFromHTML.contentBlocks,
+          blocksFromHTML.entityMap
+        );
+        const newEditorState = EditorState.createWithContent(newContentState);
+        const html = stateToHTML(newContentState);
+        this.props.handleChange(html);
+        this.setState({ editorState: newEditorState });
+      },
+      setDisable: async (value) => {
+        this.props.setExposedVariable('isDisabled', value);
+        this.props.setIsDisabled(value);
+      },
+      setVisibility: async (value) => {
+        this.props.setExposedVariable('isVisible', value);
+        this.props.setIsVisible(value);
+      },
+      setLoading: async (value) => {
+        this.props.setExposedVariable('isLoading', value);
+        this.props.setIsLoading(value);
+      },
+    };
+    this.props.setExposedVariables(exposedVariables);
+    this.props.isInitialRender.current = false;
+  }
+
   _handleKeyCommand(command, editorState) {
     const newState = RichUtils.handleKeyCommand(editorState, command);
     if (newState) {
