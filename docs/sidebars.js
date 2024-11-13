@@ -480,6 +480,7 @@ const sidebars = {
           'label': 'Roadmap',
           'href': 'https://github.com/orgs/ToolJet/projects/15',
         },
+        'versions'
       ],
     },
     {

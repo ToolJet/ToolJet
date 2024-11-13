@@ -90,7 +90,7 @@ ToolJet server and client can be deployed as standalone applications. If you do 
 ## Deploying ToolJet Database
 
 If you intend to use this feature, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database.
-You can learn more about this feature [here](/docs/tooljet-database).
+You can learn more about this feature [here](../tooljet-db/tooljet-database).
 
 Follow the steps below to deploy ToolJet Database on DigitalOcean:
 
