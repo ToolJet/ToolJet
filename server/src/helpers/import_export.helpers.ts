@@ -1,6 +1,34 @@
 import * as acorn from 'acorn';
 import * as walk from 'acorn-walk';
 
+function findExpression(input) {
+  const matches = [];
+  let startIdx = -1;
+  let braceCount = 0;
+
+  for (let i = 0; i < input.length; i++) {
+    if (input[i] === '{' && input[i + 1] === '{' && braceCount === 0) {
+      startIdx = i;
+      braceCount = 2;
+      i++; // Skip the second '{'
+    } else if (input[i] === '{' && braceCount > 0) {
+      braceCount++;
+    } else if (input[i] === '}' && braceCount > 0) {
+      braceCount--;
+      if (braceCount === 0 && startIdx !== -1) {
+        matches.push({
+          fullMatch: input.slice(startIdx, i + 1),
+          expression: input.slice(startIdx + 2, i - 1).trim(),
+          index: startIdx,
+        });
+        startIdx = -1;
+      }
+    }
+  }
+
+  return matches;
+}
+
 export function updateEntityReferences(node, resourceMapping: Record<string, string> = {}) {
   if (typeof node === 'object') {
     for (const key in node) {
@@ -23,7 +51,8 @@ export function isValidUUID(uuid) {
 
 export function extractAndReplaceReferencesFromString(input, componentIdNameMapping = {}, queryIdNameMapping = {}) {
   // Quick check for relevant keywords
-  const regexForQuickCheck = /\b(components|queries|globals|variables|page|parameters|secrets)(?:\[\S*|\.\S*|\?\.\S*)/;
+  const regexForQuickCheck =
+    /\b(components|queries|globals|variables|page|parameters|secrets|constants)(?:\[\S*|\.\S*|\?\.\S*)/;
   if (!regexForQuickCheck.test(input)) {
     return {
       allRefs: [],
@@ -32,7 +61,7 @@ export function extractAndReplaceReferencesFromString(input, componentIdNameMapp
     };
   }
 
-  const relevantKeywords = /\b(components|queries|globals|variables|page|parameters|secrets)\b/;
+  const relevantKeywords = /\b(components|queries|globals|variables|page|parameters|secrets|constants)\b/;
   const expressionRegex = /{{(.*?)}}/gs;
   const results = [];
   let lastIndex = 0;
@@ -44,12 +73,93 @@ export function extractAndReplaceReferencesFromString(input, componentIdNameMapp
     /\b(components|queries)(\??\.|\??\.?\[['"]?)([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(['"]?\])?/g;
 
   let match;
+  if (input.startsWith('{{{') && input.endsWith('}}}')) {
+    input = input.replace(/\{\{(.*)\}\}/, '{{($1)}}');
+    const matches = findExpression(input);
+    for (const match of matches) {
+      const { fullMatch, expression, index } = match;
+
+      // Check if the expression contains relevant keywords
+      if (!relevantKeywords.test(expression)) {
+        replacedString += input.slice(lastIndex, index);
+        bracketNotationString += input.slice(lastIndex, index);
+        replacedString += fullMatch;
+        bracketNotationString += fullMatch;
+        lastIndex = index + fullMatch.length;
+        continue;
+      }
+
+      try {
+        const { processedExpression, uuidMappings } = preprocessExpression(
+          expression,
+          uuidRegex,
+          componentIdNameMapping,
+          queryIdNameMapping
+        );
+        const parsedResult = parseExpression(
+          processedExpression,
+          componentIdNameMapping,
+          queryIdNameMapping,
+          uuidMappings
+        );
+
+        replacedString += input.slice(lastIndex, index);
+        bracketNotationString += input.slice(lastIndex, index);
+
+        const replacedExpression = replaceIdsInExpression(
+          processedExpression,
+          componentIdNameMapping,
+          queryIdNameMapping,
+          false,
+          uuidMappings
+        );
+        const bracketNotationExpression = replaceIdsInExpression(
+          processedExpression,
+          componentIdNameMapping,
+          queryIdNameMapping,
+          true,
+          uuidMappings
+        );
+
+        replacedString += `{{${replacedExpression}}}`;
+        bracketNotationString += `{{${bracketNotationExpression}}}`;
+
+        results.push({
+          allRefs: parsedResult.references,
+          valueWithId: `{{${replacedExpression}}}`,
+          valueWithBrackets: `{{${bracketNotationExpression}}}`,
+        });
+      } catch (error) {
+        replacedString += fullMatch;
+        bracketNotationString += fullMatch;
+        results.push({
+          allRefs: [],
+          valueWithId: fullMatch,
+          valueWithBrackets: fullMatch,
+        });
+      }
+
+      lastIndex = index + fullMatch.length;
+    }
+
+    replacedString += input.slice(lastIndex);
+    bracketNotationString += input.slice(lastIndex);
+    // remove the parentheses that were added
+
+    return {
+      valueWithId: `{{${replacedString.slice(3, -3)}}}`,
+      valueWithBrackets: `{{${bracketNotationString.slice(3, -3)}}}`,
+      allRefs: results.flatMap((r) => r.allRefs),
+    };
+  }
   while ((match = expressionRegex.exec(input)) !== null) {
     const fullMatch = match[0];
     const expression = match[1].trim();
 
     // Check if the expression contains relevant keywords
     if (!relevantKeywords.test(expression)) {
+      replacedString += input.slice(lastIndex, match.index);
+      bracketNotationString += input.slice(lastIndex, match.index);
       replacedString += fullMatch;
       bracketNotationString += fullMatch;
       lastIndex = match.index + fullMatch.length;
