@@ -194,7 +194,7 @@ After the 3.0 upgrade, applications with the old Kanban Board component will cra
 
 Workspace Constants are designed to be resolved on the server-side only, ensuring a high level of security. You can assign users to a specific role and provide create, update, and delete access to Workspace Constants.
 
-For detailed instructions on migrating from Workspace Variables to Workspace Constants, please refer to our [Workspace Variables Migration Guide](../org-management/workspaces/workspace-variables-migration).
+For detailed instructions on migrating from Workspace Variables to Workspace Constants, please refer to our [Workspace Variables Migration Guide](/docs/org-management/workspaces/workspace-variables-migration).
 
 
 ## Response Headers and Metadata
@@ -216,7 +216,7 @@ Now, you should use:
 {{queries.<queryName>.metadata}}
 ```
 
-The `metadata` object will contain detailed information about the request and response, including request URL, method, headers, parameters, response status code, and headers. You can read more about metadata [here](../data-sources/restapi/metadata-and-cookies/#metadata).
+The `metadata` object will contain detailed information about the request and response, including request URL, method, headers, parameters, response status code, and headers. You can read more about metadata [here](/docs/data-sources/restapi/metadata-and-cookies/#metadata).
 
 ## System Changes
 
