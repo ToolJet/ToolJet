@@ -10100,7 +10100,7 @@ tbody {
 .invite-user-drawer-wrap {
   display: grid;
   grid-template-rows: auto 1fr auto;
-  height: 100vh;
+  height: calc(100vh - 10px);
 }
 
 .manage-users-drawer-footer {
