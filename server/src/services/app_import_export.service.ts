@@ -1274,9 +1274,9 @@ export class AppImportExportService {
     return appResourceMappings;
   }
 
-  createViewerNavigationVisibilityForImportedApp(newVersion: AppVersion, importedVersion: AppVersion) {
+  createViewerNavigationVisibilityForImportedApp(importedVersion: AppVersion) {
     let pageSettings = {};
-    if (newVersion.pageSettings) {
+    if (importedVersion.pageSettings) {
       pageSettings = { ...importedVersion.pageSettings };
     } else {
       pageSettings = {
@@ -1331,7 +1331,7 @@ export class AppImportExportService {
         version.showViewerNavigation = appVersion.showViewerNavigation;
         version.homePageId = appVersion.homePageId;
         version.globalSettings = appVersion.globalSettings;
-        version.pageSettings = this.createViewerNavigationVisibilityForImportedApp(version, appVersion);
+        version.pageSettings = this.createViewerNavigationVisibilityForImportedApp(appVersion);
       } else {
         version.showViewerNavigation = appVersion.definition?.showViewerNavigation || true;
         version.homePageId = appVersion.definition?.homePageId;
@@ -1349,7 +1349,7 @@ export class AppImportExportService {
           };
         } else {
           version.globalSettings = appVersion.definition?.globalSettings;
-          version.pageSettings = this.createViewerNavigationVisibilityForImportedApp(version, appVersion);
+          version.pageSettings = this.createViewerNavigationVisibilityForImportedApp(appVersion);
         }
       }
 
