@@ -9207,6 +9207,17 @@ tbody {
 .spin-loader {
   position: fixed;
   width: 100%;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+
+  &.theme-dark {
+    background-color: #1f2936;
+
+    .load {
+      background-color: #1f2936;
+    }
+  }
 
   .load {
     display: flex;
