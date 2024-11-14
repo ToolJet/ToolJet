@@ -30,7 +30,7 @@ import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
 import { v4 as uuid } from 'uuid';
-import { updateEntityReferences } from 'src/helpers/import_export.helpers';
+import { findAllEntityReferences, isValidUUID, updateEntityReferences } from 'src/helpers/import_export.helpers';
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
   dataQueryMapping: Record<string, string>;
@@ -290,7 +290,13 @@ export class AppImportExportService {
         .getMany();
 
       const toUpdateComponents = components.filter((component) => {
-        return updateEntityReferences(component, mappings);
+        const entityReferencesInComponentDefinitions = findAllEntityReferences(component, []).filter(
+          (entity) => entity && isValidUUID(entity)
+        );
+
+        if (entityReferencesInComponentDefinitions.length > 0) {
+          return updateEntityReferences(component, mappings);
+        }
       });
 
       if (!isEmpty(toUpdateComponents)) {
@@ -306,7 +312,13 @@ export class AppImportExportService {
         .getMany();
 
       const toUpdateDataQueries = dataQueries.filter((dataQuery) => {
-        return updateEntityReferences(dataQuery, mappings);
+        const entityReferencesInQueryOptions = findAllEntityReferences(dataQuery, []).filter(
+          (entity) => entity && isValidUUID(entity)
+        );
+
+        if (entityReferencesInQueryOptions.length > 0) {
+          return updateEntityReferences(dataQuery, mappings);
+        }
       });
 
       if (!isEmpty(toUpdateDataQueries)) {

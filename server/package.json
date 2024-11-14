@@ -53,8 +53,6 @@
     "@sentry/tracing": "6.17.6",
     "@tooljet/plugins": "../plugins",
     "@types/express-serve-static-core": "^4.19.5",
-    "acorn": "^8.13.0",
-    "acorn-walk": "^8.3.4",
     "ajv": "^8.14.0",
     "bcrypt": "^5.0.1",
     "class-transformer": "^0.5.1",
