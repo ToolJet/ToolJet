@@ -325,6 +325,20 @@ export class AppImportExportService {
         await manager.save(toUpdateDataQueries);
       }
     }
+    // update Global settings of created versions
+    const appVersionIds = Object.values(resourceMapping.appVersionMapping);
+    const newAppVersions = await manager.find(AppVersion, {
+      where: {
+        id: In(appVersionIds),
+      },
+      select: ['id', 'globalSettings'],
+    });
+    for (const appVersion of newAppVersions) {
+      if (appVersion.globalSettings) {
+        const updatedGlobalSettings = updateEntityReferences(appVersion.globalSettings, mappings);
+        await manager.update(AppVersion, { id: appVersion.id }, { globalSettings: updatedGlobalSettings });
+      }
+    }
   }
 
   async createImportedAppForUser(manager: EntityManager, appParams: any, user: User, isGitApp = false): Promise<App> {
@@ -1260,6 +1274,23 @@ export class AppImportExportService {
     return appResourceMappings;
   }
 
+  createViewerNavigationVisibilityForImportedApp(importedVersion: AppVersion) {
+    let pageSettings = {};
+    if (importedVersion.pageSettings) {
+      pageSettings = { ...importedVersion.pageSettings };
+    } else {
+      pageSettings = {
+        properties: {
+          disableMenu: {
+            value: `{{${!importedVersion.showViewerNavigation}}}`,
+            fxActive: false,
+          },
+        },
+      };
+    }
+    return pageSettings;
+  }
+
   async createAppVersionsForImportedApp(
     manager: EntityManager,
     user: User,
@@ -1300,7 +1331,7 @@ export class AppImportExportService {
         version.showViewerNavigation = appVersion.showViewerNavigation;
         version.homePageId = appVersion.homePageId;
         version.globalSettings = appVersion.globalSettings;
-        version.pageSettings = appVersion.pageSettings;
+        version.pageSettings = this.createViewerNavigationVisibilityForImportedApp(appVersion);
       } else {
         version.showViewerNavigation = appVersion.definition?.showViewerNavigation || true;
         version.homePageId = appVersion.definition?.homePageId;
@@ -1318,7 +1349,7 @@ export class AppImportExportService {
           };
         } else {
           version.globalSettings = appVersion.definition?.globalSettings;
-          version.pageSettings = appVersion.definition?.pageSettings;
+          version.pageSettings = this.createViewerNavigationVisibilityForImportedApp(appVersion);
         }
       }
 
