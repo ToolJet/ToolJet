@@ -16,7 +16,7 @@ import { usePrevious } from '@dnd-kit/utilities';
 import { deepCamelCase } from '@/_helpers/appUtils';
 import { useEventActions } from '../_stores/slices/eventsSlice';
 import useRouter from '@/_hooks/use-router';
-import { navigate } from '../_utils/misc';
+import { extractEnvironmentConstantsFromConstantsList, navigate } from '../_utils/misc';
 import { getWorkspaceId } from '@/_helpers/utils';
 import { shallow } from 'zustand/shallow';
 import { fetchAndSetWindowTitle, pageTitles, defaultWhiteLabellingSettings } from '@white-label/whiteLabelling';
@@ -175,6 +175,8 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
         isPublicAccess && appData.is_public
           ? await orgEnvironmentConstantService.getConstantsFromPublicApp(slug)
           : await orgEnvironmentConstantService.getConstantsFromApp();
+
+      constantsResp.constants = extractEnvironmentConstantsFromConstantsList(constantsResp?.constants, 'production');
 
       const pages = appData.pages.map((page) => {
         return page;
