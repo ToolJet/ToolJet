@@ -72,7 +72,7 @@ const SignupPage = ({ configs, organizationId }) => {
           toast.error(e?.error || 'Something went wrong!', {
             position: 'top-center',
           });
-          onFailure(); // Fix spelling here too
+          onFailure();
         });
     }
   };
