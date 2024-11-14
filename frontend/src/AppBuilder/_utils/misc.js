@@ -24,6 +24,26 @@ export async function copyToClipboard(text) {
   }
 }
 
+export const extractEnvironmentConstantsFromConstantsList = (constantsList = [], environmentName = 'development') => {
+  try {
+    return constantsList.map((constant) => {
+      if (constant.values && Array.isArray(constant.values)) {
+        const { value } = constant.values.find((value) => value.environmentName === environmentName);
+        return {
+          id: constant.id,
+          name: constant.name,
+          value,
+          type: constant.type,
+        };
+      } else {
+        return constant;
+      }
+    });
+  } catch (error) {
+    return [];
+  }
+};
+
 export function setTablePageIndex(tableId, index) {
   if (_.isEmpty(tableId)) {
     console.log('No table is associated with this event.');
