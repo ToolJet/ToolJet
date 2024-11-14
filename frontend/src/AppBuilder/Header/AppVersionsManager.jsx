@@ -125,10 +125,7 @@ export const AppVersionsManager = function ({ darkMode }) {
     deleteVersionAction(
       appId,
       versionId,
-      (newVersionDef) => {
-        if (newVersionDef) {
-          setCurrentVersionId(newVersionDef.id);
-        }
+      () => {
         toast.dismiss(deleteingToastId);
         toast.success(`Version - ${decodeEntities(versionName)} Deleted`);
         resetDeleteModal();

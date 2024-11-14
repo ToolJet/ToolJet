@@ -165,10 +165,23 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
         };
       }
 
-      const constantsResp =
-        isPublicAccess && appData.is_public
-          ? await orgEnvironmentConstantService.getConstantsFromPublicApp(slug)
-          : await orgEnvironmentConstantService.getConstantsFromApp();
+      let constantsResp;
+      if (mode === 'edit') {
+        let defaultEnvId = null;
+        if (editorEnvironment?.id == null) {
+          const envs = await appEnvironmentService.getAllEnvironments(appId);
+          const defaultEnv = envs.environments.find((env) => env?.is_default === true);
+          defaultEnvId = defaultEnv ? defaultEnv.id : null;
+        }
+        constantsResp = await orgEnvironmentConstantService.getConstantsFromEnvironment(
+          editorEnvironment?.id || defaultEnvId
+        );
+      } else {
+        constantsResp =
+          isPublicAccess && appData.is_public
+            ? await orgEnvironmentConstantService.getConstantsFromPublicApp(slug)
+            : await orgEnvironmentConstantService.getConstantsFromApp(slug);
+      }
 
       const pages = appData.pages.map((page) => {
         return page;
