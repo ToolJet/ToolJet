@@ -394,7 +394,22 @@ export const createResolvedSlice = (set, get) => ({
     return get().resolvedStore?.modules?.[moduleId]?.components?.[componentId];
   },
   getExposedValueOfComponent: (componentId, moduleId = 'canvas') => {
-    return get().resolvedStore.modules[moduleId].exposedValues.components[componentId] || {};
+    try {
+      const components = get().getCurrentPageComponents();
+      const {
+        component: { parent: parentId, name: componentName },
+      } = components[componentId];
+      if (parentId) {
+        // if parent is form get exposed values from children
+        const { component: parentComopnent } = components?.[parentId] || {};
+        if (parentComopnent?.component === 'Form') {
+          return get().resolvedStore.modules[moduleId].exposedValues.components[parentId].children[componentName] || {};
+        }
+      }
+      return get().resolvedStore.modules[moduleId].exposedValues.components[componentId] || {};
+    } catch (error) {
+      return {};
+    }
   },
   getAllExposedValues: (moduleId = 'canvas') => {
     return get().resolvedStore.modules[moduleId].exposedValues;

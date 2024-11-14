@@ -18,7 +18,6 @@ const Switch = ({
 }) => {
   const handleToggleChange = () => {
     setOn(!on);
-    setExposedVariable('value', !on);
     fireEvent('onChange');
     setUserInteracted(true);
   };
@@ -105,7 +104,8 @@ export const ToggleSwitchV2 = ({
   const [on, setOn] = useState(Boolean(defaultValue));
   const label = properties.label;
   const isMandatory = validation?.mandatory ?? false;
-  const { isValid, validationError } = validate(on);
+  const [validationStatus, setValidationStatus] = useState(validate(on));
+  const { isValid, validationError } = validationStatus;
   const [showValidationError, setShowValidationError] = useState(true);
   const [loading, setLoading] = useState(properties?.loadingState);
   const [disable, setDisable] = useState(properties.disabledState || properties.loadingState);
@@ -123,17 +123,24 @@ export const ToggleSwitchV2 = ({
   };
   // Exposing the initially set false value once on load
 
+  const setInputValue = (value) => {
+    setOn(value);
+    setExposedVariable('value', value);
+    const validationStatus = validate(value);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
+  };
+
   useEffect(() => {
     if (isInitialRender.current) return;
-    setExposedVariable('value', defaultValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
 
-    setOn(defaultValue);
+    setInputValue(defaultValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultValue]);
 
   const toggle = () => {
-    setOn(!on);
+    setInputValue(!on);
     setUserInteracted(true);
   };
 
@@ -166,6 +173,13 @@ export const ToggleSwitchV2 = ({
 
   useEffect(() => {
     if (isInitialRender.current) return;
+    const validationStatus = validate(on);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
+  }, [validate]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
     setExposedVariable('isLoading', loading);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading]);
@@ -180,17 +194,11 @@ export const ToggleSwitchV2 = ({
     setExposedVariable('isDisabled', disable);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disable]);
-  useEffect(() => {
-    if (isInitialRender.current) return;
-    setExposedVariable('isValid', isValid);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isValid]);
 
   useEffect(() => {
     const exposedVariables = {
       setValue: async function (value) {
-        setOn(value);
-        setExposedVariable('value', value);
+        setInputValue(value);
         setUserInteracted(true);
       },
       setVisibility: async function (state) {
@@ -214,15 +222,13 @@ export const ToggleSwitchV2 = ({
       value: defaultValue,
     };
     setExposedVariables(exposedVariables);
-    setOn(defaultValue);
     isInitialRender.current = false;
   }, []);
 
   useEffect(() => {
     setExposedVariable('toggle', async function () {
-      setExposedVariable('value', !on);
+      setInputValue(!on);
       fireEvent('onChange');
-      setOn(!on);
       setUserInteracted(true);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -276,7 +282,7 @@ export const ToggleSwitchV2 = ({
             properties={properties}
             setShowValidationError={setShowValidationError}
             borderColor={borderColor}
-            setOn={setOn}
+            setOn={setInputValue}
             styles={styles}
             setExposedVariable={setExposedVariable}
             fireEvent={fireEvent}

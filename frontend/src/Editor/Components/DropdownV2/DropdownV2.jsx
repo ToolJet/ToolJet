@@ -90,17 +90,17 @@ export const DropdownV2 = ({
   } = styles;
   const isInitialRender = useRef(true);
   const [currentValue, setCurrentValue] = useState(() => (advanced ? findDefaultItem(schema) : value));
-  const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const isMandatory = validation?.mandatory ?? false;
   const options = properties?.options;
-  const validationData = validate(currentValue);
-  const { isValid, validationError } = validationData;
+  const [validationStatus, setValidationStatus] = useState(validate(currentValue));
+  const { isValid, validationError } = validationStatus;
   const ref = React.useRef(null);
+  const dropdownRef = React.useRef(null);
   const [visibility, setVisibility] = useState(properties.visibility);
   const [isDropdownLoading, setIsDropdownLoading] = useState(dropdownLoadingState);
   const [isDropdownDisabled, setIsDropdownDisabled] = useState(disabledState);
-  const [isFocused, setIsFocused] = useState(false);
   const [searchInputValue, setSearchInputValue] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
   const labelRef = useRef();
   function findDefaultItem(schema) {
@@ -115,12 +115,12 @@ export const DropdownV2 = ({
     let _options = advanced ? schema : options;
     if (Array.isArray(_options)) {
       let _selectOptions = _options
-        .filter((data) => getResolvedValue(advanced ? data?.visible : data?.visible?.value) ?? true)
+        .filter((data) => data?.visible ?? true)
         .map((data) => ({
           ...data,
-          label: String(getResolvedValue(data?.label)),
-          value: getResolvedValue(data?.value),
-          isDisabled: getResolvedValue(advanced ? data?.disable : data?.disable?.value) ?? false,
+          label: data?.label,
+          value: data?.value,
+          isDisabled: data?.disable ?? false,
         }));
 
       return _selectOptions;
@@ -132,7 +132,7 @@ export const DropdownV2 = ({
   function selectOption(value) {
     const val = selectOptions.filter((option) => !option.isDisabled)?.find((option) => option.value === value);
     if (val) {
-      setCurrentValue(value);
+      setInputValue(value);
       fireEvent('onSelect');
     }
   }
@@ -157,24 +157,48 @@ export const DropdownV2 = ({
   const handleOutsideClick = (e) => {
     let menu = ref.current.querySelector('.select__menu');
     if (!ref.current.contains(e.target) || !menu || !menu.contains(e.target)) {
-      setIsFocused(false);
       setSearchInputValue('');
     }
+    if (dropdownRef.current && !dropdownRef.current?.contains(e.target) && !menu && !menu?.contains(e.target)) {
+      if (isDropdownOpen) {
+        fireEvent('onBlur');
+      }
+      setIsDropdownOpen(false);
+    }
+  };
+
+  const setInputValue = (value) => {
+    setCurrentValue(value);
+    const _selectedOption = selectOptions.find((option) => option.value === value);
+    setExposedVariables({
+      value,
+      selectedOption: pick(_selectedOption, ['label', 'value']),
+    });
+    const validationStatus = validate(value);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
   };
 
   useEffect(() => {
     if (advanced) {
-      setCurrentValue(findDefaultItem(schema));
-    } else setCurrentValue(value);
+      setInputValue(findDefaultItem(schema));
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [advanced, value, JSON.stringify(schema)]);
+  }, [advanced, JSON.stringify(schema)]);
+
+  useEffect(() => {
+    if (!advanced) {
+      setInputValue(value);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [advanced, value]);
 
   useEffect(() => {
     document.addEventListener('mousedown', handleOutsideClick);
     return () => {
       document.removeEventListener('mousedown', handleOutsideClick);
     };
-  }, []);
+  }, [isDropdownOpen]);
 
   useEffect(() => {
     if (visibility !== properties.visibility) setVisibility(properties.visibility);
@@ -185,18 +209,6 @@ export const DropdownV2 = ({
   }, [properties.visibility, dropdownLoadingState, disabledState]);
 
   // Exposed variables
-
-  useEffect(() => {
-    if (isInitialRender.current) return;
-    setExposedVariable('value', currentValue);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentValue]);
-
-  useEffect(() => {
-    const _selectedOption = selectOptions.find((option) => option.value === currentValue);
-    setExposedVariable('selectedOption', pick(_selectedOption, ['label', 'value']));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentValue, JSON.stringify(selectOptions)]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
@@ -223,11 +235,6 @@ export const DropdownV2 = ({
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    setExposedVariable('isValid', isValid);
-  }, [isValid]);
-
-  useEffect(() => {
-    if (isInitialRender.current) return;
     setExposedVariable('isVisible', properties.visibility);
   }, [properties.visibility]);
 
@@ -247,10 +254,17 @@ export const DropdownV2 = ({
   }, [isMandatory]);
 
   useEffect(() => {
+    if (isInitialRender.current) return;
+    const validationStatus = validate(currentValue);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
+  }, [validate]);
+
+  useEffect(() => {
     const _options = selectOptions?.map(({ label, value }) => ({ label, value }));
     const exposedVariables = {
       clear: async function () {
-        setCurrentValue(null);
+        setInputValue(null);
       },
       setVisibility: async function (value) {
         setVisibility(value);
@@ -406,6 +420,7 @@ export const DropdownV2 = ({
   return (
     <>
       <div
+        ref={dropdownRef}
         data-cy={`label-${String(componentName).toLowerCase()} `}
         className={cx('dropdown-widget', 'd-flex', {
           [alignment === 'top' &&
@@ -442,32 +457,35 @@ export const DropdownV2 = ({
           _width={_width}
           top={'1px'}
         />
-        <div className="w-100 px-0 h-100" ref={ref}>
+        <div
+          className="w-100 px-0 h-100"
+          onClick={() => {
+            if (!isDropdownDisabled) {
+              fireEvent('onFocus');
+              setIsDropdownOpen((prev) => !prev);
+            }
+          }}
+          ref={ref}
+        >
           <Select
             isDisabled={isDropdownDisabled}
             value={selectOptions.filter((option) => option.value === currentValue)[0] ?? null}
             onChange={(selectedOption, actionProps) => {
               if (actionProps.action === 'clear') {
-                setCurrentValue(null);
+                setInputValue(null);
               }
               if (actionProps.action === 'select-option') {
-                setCurrentValue(selectedOption.value);
+                setInputValue(selectedOption.value);
                 fireEvent('onSelect');
               }
-              setIsFocused(false);
+              setIsDropdownOpen(false);
             }}
             options={selectOptions}
             styles={customStyles}
             isLoading={isDropdownLoading}
+            menuIsOpen={isDropdownOpen}
             onInputChange={onSearchTextChange}
             inputValue={searchInputValue}
-            onMenuOpen={() => {
-              fireEvent('onFocus');
-            }}
-            onMenuInputFocus={() => setIsFocused(true)}
-            onBlur={() => {
-              fireEvent('onBlur');
-            }}
             placeholder={placeholder}
             menuPortalTarget={document.body}
             components={{
@@ -479,11 +497,6 @@ export const DropdownV2 = ({
               ClearIndicator: CustomClearIndicator,
             }}
             isClearable
-            {...{
-              menuIsOpen: isFocused || undefined,
-              isFocused: isFocused || undefined,
-            }}
-            // select props
             icon={icon}
             doShowIcon={iconVisibility}
             iconColor={iconColor}
