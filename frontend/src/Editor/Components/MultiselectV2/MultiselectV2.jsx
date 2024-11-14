@@ -12,8 +12,6 @@ import Label from '@/_ui/Label';
 const tinycolor = require('tinycolor2');
 import { CustomDropdownIndicator, CustomClearIndicator } from '../DropdownV2/DropdownV2';
 import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor } from '../DropdownV2/utils';
-import useStore from '@/AppBuilder/_stores/store';
-import { shallow } from 'zustand/shallow';
 
 export const MultiselectV2 = ({
   id,
@@ -28,7 +26,6 @@ export const MultiselectV2 = ({
   validate,
   validation,
   componentName,
-  width,
 }) => {
   let {
     label,
@@ -76,6 +73,7 @@ export const MultiselectV2 = ({
   const [isSelectAllSelected, setIsSelectAllSelected] = useState(false);
   const [searchInputValue, setSearchInputValue] = useState('');
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
+  const [userInteracted, setUserInteracted] = useState(false);
 
   const [isMultiselectOpen, setIsMultiselectOpen] = useState(false);
   useEffect(() => {
@@ -129,9 +127,7 @@ export const MultiselectV2 = ({
   const onChangeHandler = (items, action) => {
     setInputValue(items);
     fireEvent('onSelect');
-    // if (action.action === 'select-option') {
-    //   fireEvent('onSelect');
-    // }
+    setUserInteracted(true);
   };
 
   useEffect(() => {
@@ -332,6 +328,7 @@ export const MultiselectV2 = ({
           accentColor,
           isLoading: isMultiSelectLoading,
           isDisabled: isMultiSelectDisabled,
+          userInteracted,
         }),
         backgroundColor: getInputBackgroundColor({
           fieldBackgroundColor,
@@ -420,7 +417,6 @@ export const MultiselectV2 = ({
     }),
   };
   const _width = (labelWidth / 100) * 70; // Max width which label can go is 70% for better UX calculate width based on this value
-
   return (
     <>
       <div
@@ -520,19 +516,20 @@ export const MultiselectV2 = ({
           />
         </div>
       </div>
-      <div
-        className={`${isValid ? '' : visibility ? 'd-flex' : 'none'}`}
-        style={{
-          color: errTextColor,
-          justifyContent: direction === 'right' ? 'flex-start' : 'flex-end',
-          fontSize: '11px',
-          fontWeight: '400',
-          lineHeight: '16px',
-          display: visibility ? 'block' : 'none',
-        }}
-      >
-        {!isValid && validationError}
-      </div>
+      {userInteracted && visibility && !isValid && (
+        <div
+          className={'d-flex'}
+          style={{
+            color: errTextColor,
+            justifyContent: direction === 'right' ? 'flex-start' : 'flex-end',
+            fontSize: '11px',
+            fontWeight: '400',
+            lineHeight: '16px',
+          }}
+        >
+          {validationError}
+        </div>
+      )}
     </>
   );
 };

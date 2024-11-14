@@ -12,7 +12,6 @@ const Switch = ({
   borderColor,
   setOn,
   styles,
-  setExposedVariable,
   fireEvent,
   setUserInteracted,
 }) => {
@@ -106,7 +105,6 @@ export const ToggleSwitchV2 = ({
   const isMandatory = validation?.mandatory ?? false;
   const [validationStatus, setValidationStatus] = useState(validate(on));
   const { isValid, validationError } = validationStatus;
-  const [showValidationError, setShowValidationError] = useState(true);
   const [loading, setLoading] = useState(properties?.loadingState);
   const [disable, setDisable] = useState(properties.disabledState || properties.loadingState);
   const [visibility, setVisibility] = useState(properties.visibility);
@@ -276,15 +274,11 @@ export const ToggleSwitchV2 = ({
             onChange={toggleValue}
             color={toggleSwitchColor}
             alignment={alignment}
-            validationError={validationError}
             isValid={isValid}
-            showValidationError={showValidationError}
             properties={properties}
-            setShowValidationError={setShowValidationError}
             borderColor={borderColor}
             setOn={setInputValue}
             styles={styles}
-            setExposedVariable={setExposedVariable}
             fireEvent={fireEvent}
             setUserInteracted={setUserInteracted}
           />
@@ -300,7 +294,7 @@ export const ToggleSwitchV2 = ({
       }}
     >
       {renderInput()}
-      {showValidationError && isMandatory && userInteracted && !on && visibility && (
+      {userInteracted && visibility && !isValid && (
         <div
           data-cy={`${String(componentName).toLowerCase()}-invalid-feedback`}
           style={{
