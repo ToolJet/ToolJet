@@ -179,6 +179,7 @@
 .datasource-list-container {
     overflow-y: auto;
     max-height: calc(100vh - 64px);
+    padding-left: 20px;
 
     .datasource-list {
         width: 976px;

@@ -158,7 +158,15 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
       let editorEnvironment = result.editorEnvironment;
       const editorEnvironmentId = result.editing_version?.current_environment_id;
       if (isPreviewForVersion) {
+        const rawDataQueries = appData?.data_queries;
+        const rawEditingVersionDataQueries = appData?.editing_version?.data_queries;
         appData = convertAllKeysToSnakeCase(appData);
+
+        appData.data_queries = rawDataQueries;
+        if (appData.editing_version && rawEditingVersionDataQueries) {
+          appData.editing_version.data_queries = rawEditingVersionDataQueries;
+        }
+
         editorEnvironment = {
           id: environmentId,
           name: queryParams.env,

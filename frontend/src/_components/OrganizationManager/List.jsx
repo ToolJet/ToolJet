@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { authenticationService } from '@/_services';
 import { CustomSelect } from './CustomSelect';
 import { getAvatar, decodeEntities } from '@/_helpers/utils';
@@ -29,13 +29,20 @@ export const OrganizationList = function () {
     fetchOrganizations();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const switchOrganization = (id) => {
+  const newTabRef = useRef(false);
+  const switchOrganization = (id, newTab = false) => {
+    newTabRef.current = newTab;
     const organization = organizationList.find((org) => org.id === id);
     if (![id, organization.slug].includes(getWorkspaceIdOrSlugFromURL())) {
       const newPath = appendWorkspaceId(organization.slug || id, location.pathname, true);
-      window.open(newPath, '_blank');
+      newTab ? window.open(newPath, '_blank') : (window.location = newPath);
     }
+  };
+  const handleOnChange = (id) => {
+    if (!newTabRef.current) {
+      switchOrganization(id, false);
+    }
+    newTabRef.current = false;
   };
 
   const options = organizationList
@@ -81,7 +88,7 @@ export const OrganizationList = function () {
                 <div
                   className="current-org-indicator"
                   data-cy="current-org-indicator"
-                  onClick={() => switchOrganization(org.id)}
+                  onClick={() => switchOrganization(org.id, true)}
                 >
                   <SolidIcon name="newtab" fill="var(--icon-strong)" width="16" className="add-new-workspace-icon" />
                 </div>
@@ -103,7 +110,7 @@ export const OrganizationList = function () {
         isLoading={isGettingOrganizations}
         options={options}
         value={current_organization_id}
-        onChange={(id) => switchOrganization(id)}
+        onChange={handleOnChange}
         className={`tj-org-select  ${darkMode && 'dark-theme'}`}
       />
     </div>

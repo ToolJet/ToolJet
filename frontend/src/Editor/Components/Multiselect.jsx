@@ -165,7 +165,7 @@ export const Multiselect = function Multiselect({
         <label
           style={{ marginRight: label ? '1rem' : '', marginBottom: 0 }}
           className={`form-label py-1 ${darkMode ? 'text-light' : 'text-secondary'}`}
-          data-cy={`multiselect-label-${componentName.toLowerCase()}`}
+          data-cy={`multiselect-label-${componentName?.toLowerCase()}`}
         >
           {label}
         </label>
