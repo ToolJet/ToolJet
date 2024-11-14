@@ -72,7 +72,7 @@ Once the Service is created and live, to make the  Cloud Service URL public. Ple
 ## Deploying ToolJet Database 
 
 To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration might break, checkout the following docs to know more about new major version, including breaking changes that require you to adjust your applications accordingly:
-- [Self Hosted](./upgrade-to-v3.md)
+- [Self Hosted](/docs/setup/upgrade-to-v3)
 
 1. Cloud Run requires prebuilt image to be present within cloud registry. You can pull specific PostgREST image from docker hub and then tag with your project to push it to cloud registry.
     ```bash

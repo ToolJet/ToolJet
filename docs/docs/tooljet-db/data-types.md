@@ -24,7 +24,7 @@ ToolJet Database supports several data types to accommodate various kinds of inf
 
 ## Permissible Constraints per Data Type
 
-The following table shows which constraints are permissible for each data type. For more detailed explanations of each constraint type, please refer to the [Column Constraints](./database-editor#column-constraints) section.
+The following table shows which constraints are permissible for each data type. For more detailed explanations of each constraint type, please refer to the [Column Constraints](/docs/tooljet-db/database-editor#column-constraints) section.
 
 | Data Type | Primary Key | Foreign Key | Unique | Not Null |
 |:-----------:|:--------------:|:-------------:|:--------:|:----------:|

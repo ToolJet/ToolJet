@@ -15,13 +15,13 @@ Getting started is straightforward – design your interface, connect your data 
 
 Explore these hands-on guides to start building your first app. The step-by-step guides will walk you through the App-Builder's essential features:
 
-- **[Create UIs Using Pre-Built Components](../app-builder/walkthrough/create-ui)**
-- **[Create Queries to Interact With Data Sources](../app-builder/walkthrough/create-queries)**
-- **[Use Custom Code](../app-builder/walkthrough/using-code)**
-- **[Access and Referring Values Withing The App-Builder](../app-builder/walkthrough/accessing-values)**
-- **[Create and Managing Variables](../app-builder/walkthrough/variables)**
-- **[Use Gitsync to Sync your Application with a Git Repository](../gitsync)**
-- **[Versioning and Release](../tutorial/versioning-and-release)**
-- **[Import and Export Apps](../app-builder/importing-exporting-applications)**
+- **[Create UIs Using Pre-Built Components](/docs/app-builder/walkthrough/create-ui)**
+- **[Create Queries to Interact With Data Sources](/docs/app-builder/walkthrough/create-queries)**
+- **[Use Custom Code](/docs/app-builder/walkthrough/using-code)**
+- **[Access and Referring Values Withing The App-Builder](/docs/app-builder/walkthrough/accessing-values)**
+- **[Create and Managing Variables](/docs/app-builder/walkthrough/variables)**
+- **[Use Gitsync to Sync your Application with a Git Repository](/docs/gitsync)**
+- **[Versioning and Release](/docs/tutorial/versioning-and-release)**
+- **[Import and Export Apps](/docs/app-builder/walkthrough/importing-exporting-applications)**
 
 

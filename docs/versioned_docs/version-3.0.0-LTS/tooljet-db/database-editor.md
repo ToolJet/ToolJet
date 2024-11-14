@@ -35,7 +35,7 @@ To create a new table in the ToolJet Database:
 | **Option** | **Description** |
 | --- | --- |
 | **Column name** | Enter a unique name for the column. |
-| **Data type** | Select the appropriate data type for the column from the dropdown menu. For more information on available data types, see the [Supported Data Types](./data-types#supported-data-types) section. |
+| **Data type** | Select the appropriate data type for the column from the dropdown menu. For more information on available data types, see the [Supported Data Types](/docs/tooljet-db/data-types#supported-data-types) section. |
 | **Default value (optional)** | Specify any default value to be assigned to the column. If left blank, the column will allow null values. |
 | **Primary Key** | Check this box to designate the column as the [Primary Key](#primary-key). Multiple columns can be selected, creating a composite primary key. |
 | **NULL/NOT NULL toggle** | Use this toggle to determine whether the column should allow null values or require a value. By default, null values are permitted. |
@@ -60,7 +60,7 @@ ToolJet Database supports several column constraints to maintain data integrity 
 
 **Not Null**: The not null constraint ensures that the designated column(s) cannot have null values, requiring a value for every row in the table.
 
-For a detailed overview of which constraints are allowed for each data type, refer to the [Permissible Constraints per Data Type](./data-types#permissible-constraints-per-data-type) table.
+For a detailed overview of which constraints are allowed for each data type, refer to the [Permissible Constraints per Data Type](/docs/tooljet-db/data-types#permissible-constraints-per-data-type) table.
 
 ## Primary Key
 
@@ -281,7 +281,7 @@ To add a new column to a table, either click on the kebab menu icon on the right
 A drawer from the right will open up where you can enter the details for the new column:
 
 - **Column Name**: Enter a unique name for the new column, serving as its key identifier.
-- **Data Type**: Choose the appropriate data type for the column from the [available options](./data-types#supported-data-types). For more information on data types and their associated constraints, see the [Supported Data Types](./data-types#supported-data-types) and [Permissible Constraints per Data Type](./data-types#permissible-constraints-per-data-type) sections.
+- **Data Type**: Choose the appropriate data type for the column from the [available options](/docs/tooljet-db/data-types#supported-data-types). For more information on data types and their associated constraints, see the [Supported Data Types](/docs/tooljet-db/data-types#supported-data-types) and [Permissible Constraints per Data Type](/docs/tooljet-db/data-types#permissible-constraints-per-data-type) sections.
 - **Default Value**: Specify any default value that should be assigned to the column. Optionally, users can leave this field blank. When a table contains rows and NOT NULL is applied to one of its existing or new columns, specifying a default value becomes compulsory.
 - **Foreign Key Relation**: Click on the toggle to add a foreign key relationship to the column. This will open a menu where you can select the target table and column to reference.
 
