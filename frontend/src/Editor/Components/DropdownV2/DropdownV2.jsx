@@ -101,6 +101,8 @@ export const DropdownV2 = ({
   const [isDropdownDisabled, setIsDropdownDisabled] = useState(disabledState);
   const [searchInputValue, setSearchInputValue] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [userInteracted, setUserInteracted] = useState(false);
+
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
   const labelRef = useRef();
   function findDefaultItem(schema) {
@@ -317,6 +319,7 @@ export const DropdownV2 = ({
           accentColor,
           isLoading: isDropdownLoading,
           isDisabled: isDropdownDisabled,
+          userInteracted,
         }),
         backgroundColor: getInputBackgroundColor({
           fieldBackgroundColor,
@@ -479,6 +482,7 @@ export const DropdownV2 = ({
                 fireEvent('onSelect');
               }
               setIsDropdownOpen(false);
+              setUserInteracted(true);
             }}
             options={selectOptions}
             styles={customStyles}
@@ -507,19 +511,20 @@ export const DropdownV2 = ({
           />
         </div>
       </div>
-      <div
-        className={`${isValid ? '' : visibility ? 'd-flex' : 'none'}`}
-        style={{
-          color: errTextColor,
-          justifyContent: direction === 'right' ? 'flex-start' : 'flex-end',
-          fontSize: '11px',
-          fontWeight: '400',
-          lineHeight: '16px',
-          display: visibility ? 'block' : 'none',
-        }}
-      >
-        {!isValid && validationError}
-      </div>
+      {userInteracted && visibility && !isValid && (
+        <div
+          className={'d-flex'}
+          style={{
+            color: errTextColor,
+            justifyContent: direction === 'right' ? 'flex-start' : 'flex-end',
+            fontSize: '11px',
+            fontWeight: '400',
+            lineHeight: '16px',
+          }}
+        >
+          {validationError}
+        </div>
+      )}
     </>
   );
 };

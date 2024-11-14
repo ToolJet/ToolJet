@@ -253,7 +253,7 @@ export const Checkbox = ({
           </>
         )}
       </div>
-      {validationError && visibility && !checked && userInteracted && (
+      {!isValid && visibility && userInteracted && (
         <div
           data-cy={`${String(componentName).toLowerCase()}-invalid-feedback`}
           style={{

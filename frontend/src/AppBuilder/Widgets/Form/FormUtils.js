@@ -149,7 +149,7 @@ export function generateUIComponents(JSONSchema, advanced, componentName = '') {
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['display_values'] = value?.displayValues;
             if (value?.label) uiComponentsDraft[index * 2 + 1]['definition']['properties']['label'] = value?.label;
             if (value?.value) uiComponentsDraft[index * 2 + 1]['definition']['properties']['value'] = value?.value;
-            if (value?.values) uiComponentsDraft[index * 2 + 1]['definition']['properties']['value'] = value?.values;
+            if (value?.values) uiComponentsDraft[index * 2 + 1]['definition']['properties']['values'] = value?.values;
             if (value?.loading)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['loadingState'] = value?.loading;
             break;
@@ -363,7 +363,7 @@ export function generateUIComponents(JSONSchema, advanced, componentName = '') {
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['display_values'] = value?.displayValues;
             if (value?.label) uiComponentsDraft[index * 2 + 1]['definition']['properties']['label'] = value?.label;
             if (value?.value) uiComponentsDraft[index * 2 + 1]['definition']['properties']['value'] = value?.value;
-            if (value?.values) uiComponentsDraft[index * 2 + 1]['definition']['properties']['value'] = value?.values;
+            if (value?.values) uiComponentsDraft[index * 2 + 1]['definition']['properties']['values'] = value?.values;
             if (value?.showAllOption)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['showAllOption'] = value?.showAllOption;
             break;
