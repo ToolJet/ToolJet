@@ -5,95 +5,47 @@ export const useExposeState = (loadingState, visibleState, disabledState, setExp
   const [isVisible, setVisibility] = useState(visibleState || true);
   const [isLoading, setLoading] = useState(loadingState || false);
 
-  // Wrapping state update functions with useCallback prevent rerenders
-  const setDisableIfChangedWithSideEffect = useCallback(
-    (newValue) => {
-      setDisable((prev) => {
-        if (prev !== newValue) {
-          setExposedVariable('isDisabled', newValue);
-          return newValue;
-        }
-        return prev;
-      });
-    },
-    [setExposedVariable]
-  );
-
-  const setVisibilityIfChangedWithSideEffect = useCallback(
-    (newValue) => {
-      setVisibility((prev) => {
-        if (prev !== newValue) {
-          setExposedVariable('isVisible', newValue);
-          return newValue;
-        }
-        return prev;
-      });
-    },
-    [setExposedVariable]
-  );
-
-  const setLoadingIfChangedWithSideEffect = useCallback(
-    (newValue) => {
-      setLoading((prev) => {
-        if (prev !== newValue) {
-          setExposedVariable('isLoading', newValue);
-          return newValue;
-        }
-        return prev;
-      });
-    },
-    [setExposedVariable]
-  );
-
-  // Effect to conditionally update states with side effects
+  // Effect to conditionally update state from properties passed to widget
   useEffect(() => {
     setDisable(disabledState);
-    setExposedVariable('isDisabled', disabledState);
-  }, [disabledState, setDisable, setExposedVariable]);
+  }, [disabledState]);
 
   useEffect(() => {
     setVisibility(visibleState);
-    setExposedVariable('isVisible', visibleState);
-  }, [visibleState, setVisibility, setExposedVariable]);
+  }, [visibleState]);
 
   useEffect(() => {
     setLoading(loadingState);
-    setExposedVariable('isLoading', loadingState);
-  }, [loadingState, setLoading, setExposedVariable]);
+  }, [loadingState]);
 
-  useEffect(() => {
-    setDisableIfChangedWithSideEffect(disabledState);
-    setVisibilityIfChangedWithSideEffect(visibleState);
-    setLoadingIfChangedWithSideEffect(loadingState);
-  }, [
-    loadingState,
-    visibleState,
-    disabledState,
-    setDisableIfChangedWithSideEffect,
-    setVisibilityIfChangedWithSideEffect,
-    setLoadingIfChangedWithSideEffect,
-  ]);
-
-  // exposed variables with state and async setters
+  // exposed variables with state and async setters, happens on first time load
   useEffect(() => {
     setExposedVariables({
-      setDisable: async (value) => setDisableIfChangedWithSideEffect(value),
-      setVisibility: async (value) => setVisibilityIfChangedWithSideEffect(value),
-      setLoading: async (value) => setLoadingIfChangedWithSideEffect(value),
+      setDisable: async (value) => setDisable(value),
+      setVisibility: async (value) => setVisibility(value),
+      setLoading: async (value) => setLoading(value),
     });
-  }, [
-    setExposedVariables,
-    setDisableIfChangedWithSideEffect,
-    setVisibilityIfChangedWithSideEffect,
-    setLoadingIfChangedWithSideEffect,
-  ]);
+  }, [setExposedVariables]);
+
+  //Side effect to state variables, these will run after the state is set and the values will be exposed
+  useEffect(() => {
+    setExposedVariable('isDisabled', isDisabled);
+  }, [isDisabled, setExposedVariable]);
+
+  useEffect(() => {
+    setExposedVariable('isVisible', isVisible);
+  }, [isVisible, setExposedVariable]);
+
+  useEffect(() => {
+    setExposedVariable('isLoading', isLoading);
+  }, [isLoading, setExposedVariable]);
 
   return {
     isDisabled,
-    setDisable: setDisableIfChangedWithSideEffect,
+    setDisable,
     isVisible,
-    setVisibility: setVisibilityIfChangedWithSideEffect,
+    setVisibility,
     isLoading,
-    setLoading: setLoadingIfChangedWithSideEffect,
+    setLoading,
   };
 };
