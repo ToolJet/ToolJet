@@ -93,7 +93,9 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
           }}
           className={`app-${appId}`}
         >
-          <AutoComputeMobileLayoutAlert currentLayout={currentLayout} darkMode={isAppDarkMode} />
+          {currentMode === 'edit' && (
+            <AutoComputeMobileLayoutAlert currentLayout={currentLayout} darkMode={isAppDarkMode} />
+          )}
           <DeleteWidgetConfirmation darkMode={isAppDarkMode} />
           <HotkeyProvider mode={currentMode} canvasMaxWidth={canvasMaxWidth} currentLayout={currentLayout}>
             {environmentLoadingState !== 'loading' && (
