@@ -1236,8 +1236,16 @@ export const createComponentsSlice = (set, get) => ({
       );
     }
 
+    const oldComponent = get().modules[moduleId].pages[currentPageIndex].components[componentId].component;
+    const { events, exposedVariables, ...filteredDefinition } = oldComponent.definition || {};
+
     const diff = {
-      [componentId]: { component: get().modules[moduleId].pages[currentPageIndex].components[componentId].component },
+      [componentId]: {
+        component: {
+          ...oldComponent,
+          definition: filteredDefinition,
+        },
+      },
     };
 
     if (saveAfterAction) {
