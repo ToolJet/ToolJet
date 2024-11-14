@@ -6,6 +6,7 @@ import DependencyGraph from './DependencyClass';
 import { getWorkspaceId } from '@/_helpers/utils';
 import { navigate } from '@/AppBuilder/_utils/misc';
 import queryString from 'query-string';
+import { replaceEntityReferencesWithIds } from '../utils';
 
 const initialState = {
   app: {},
@@ -63,15 +64,19 @@ export const createAppSlice = (set, get) => ({
       }
     });
   },
-  globalSettingsChanged: async (newOptions) => {
-    for (const [key, value] of Object.entries(newOptions)) {
+  globalSettingsChanged: async (options) => {
+    const componentNameIdMapping = get().modules.canvas.componentNameIdMapping;
+    const queryNameIdMapping = get().modules.canvas.queryNameIdMapping;
+    for (const [key, value] of Object.entries(options)) {
       if (value?.[1]?.a == undefined) {
-        newOptions[key] = value;
+        options[key] = value;
       } else {
         const hexCode = `${value?.[0]}${decimalToHex(value?.[1]?.a)}`;
-        newOptions[key] = hexCode;
+        options[key] = hexCode;
       }
     }
+    // Replace entity references with ids if present
+    const newOptions = replaceEntityReferencesWithIds(options, componentNameIdMapping, queryNameIdMapping);
     const { app, currentVersionId, currentPageId } = get();
     try {
       const res = await appVersionService.autoSaveApp(

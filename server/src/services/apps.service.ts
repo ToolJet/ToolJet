@@ -392,6 +392,15 @@ export class AppsService {
           dataQueryMapping: oldDataQueryToNewMapping,
         });
 
+        if (appVersion.globalSettings) {
+          const globalSettings = appVersion.globalSettings;
+          const updatedGlobalSettings = updateEntityReferences(globalSettings, {
+            ...oldDataQueryToNewMapping,
+            ...oldComponentToNewComponentMapping,
+          });
+          await manager.update(AppVersion, { id: appVersion.id }, { globalSettings: updatedGlobalSettings });
+        }
+
         await this.updateEventActionsForNewVersionWithNewMappingIds(
           manager,
           appVersion.id,

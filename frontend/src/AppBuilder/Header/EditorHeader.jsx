@@ -18,13 +18,6 @@ export const EditorHeader = ({ darkMode }) => {
       isSaving: state.app.isSaving,
       saveError: state.app.saveError,
       isVersionReleased: state.isVersionReleased,
-      user: state.user,
-      app: state.app,
-      appId: state.app.appId,
-      editingVersion: state.editingVersion,
-      updateReleasedVersionId: state.updateReleasedVersionId,
-      updateEditingVersion: state.updateEditingVersion,
-      featureAccess: state.featureAccess,
     }),
     shallow
   );

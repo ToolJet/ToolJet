@@ -7,6 +7,7 @@ import FolderList from '@/_ui/FolderList/FolderList';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import useStore from '@/AppBuilder/_stores/store';
 import { APP_HEADER_HEIGHT } from '../AppCanvas/appCanvasConstants';
+import OverflowTooltip from '@/_components/OverflowTooltip';
 
 export const ViewerSidebarNavigation = ({
   isMobileDevice,
@@ -21,6 +22,7 @@ export const ViewerSidebarNavigation = ({
   const { definition: { styles = {}, properties = {} } = {} } = useStore((state) => state.pageSettings) || {};
   const selectedVersionName = useStore((state) => state.selectedVersion?.name);
   const selectedEnvironmentName = useStore((state) => state.selectedEnvironment?.name);
+  const homePageId = useStore((state) => state.app.homePageId);
 
   if (isMobileDevice) {
     return null;
@@ -127,8 +129,10 @@ export const ViewerSidebarNavigation = ({
         ></ButtonSolid>
         <div className={cx('page-handler-wrapper', { 'dark-theme': darkMode })}>
           {pages.map((page) => {
+            const isHomePage = page.id === homePageId;
+            const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
             // eslint-disable-next-line import/namespace
-            const IconElement = Icons?.[page.icon] ?? Icons?.['IconHome2'];
+            const IconElement = Icons?.[iconName] ?? Icons?.['IconFileDescription'];
             return page.hidden || page.disabled ? null : (
               <FolderList
                 key={page.handle}
@@ -139,8 +143,10 @@ export const ViewerSidebarNavigation = ({
                 darkMode={darkMode}
               >
                 {!labelStyle?.label?.hidden && (
-                  <span data-cy={`pages-name-${String(page?.name).toLowerCase()}`} className="mx-2 text-wrap page-name">
-                    {_.truncate(page?.name, { length: 18 })}
+                  <span data-cy={`pages-name-${String(page?.name).toLowerCase()}`}>
+                    <OverflowTooltip style={{ width: '110px' }} childrenClassName={'mx-2 page-name'}>
+                      {page.name}
+                    </OverflowTooltip>
                   </span>
                 )}
               </FolderList>

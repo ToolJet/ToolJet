@@ -21,20 +21,22 @@ export const QueryDataPane = ({ darkMode }) => {
   const { t } = useTranslation();
 
   const loadingDataQueries = useStore((state) => state.queryPanel.loadingDataQueries);
+  const setQueryPanelSearchTerm = useStore((state) => state.queryPanel.setQueryPanelSearchTerm);
+  const storedSearchTerm = useStore((state) => state.queryPanel.queryPanelSearchTem);
 
   const dataQueries = useStore((state) => state.dataQuery.queries.modules.canvas);
   const dataSources = useStore((state) => state.dataSources);
   const [filteredQueries, setFilteredQueries] = useState(dataQueries);
-  const [showSearchBox, setShowSearchBox] = useState(false);
+  const [showSearchBox, setShowSearchBox] = useState(!!storedSearchTerm);
   const searchBoxRef = useRef(null);
   const [dataSourcesForFilters, setDataSourcesForFilters] = useState([]);
-  const [searchTermForFilters, setSearchTermForFilters] = useState();
-
+  const [searchTermForFilters, setSearchTermForFilters] = useState(storedSearchTerm ?? '');
   function isDataSourceLocal(dataQuery) {
     return dataSources.some((dataSource) => dataSource.id === dataQuery.data_source_id);
   }
 
   useEffect(() => {
+    setQueryPanelSearchTerm(searchTermForFilters);
     // Create a copy of the dataQueries array to perform filtering without modifying the original data.
     let filteredDataQueries = [...dataQueries];
 
@@ -84,7 +86,7 @@ export const QueryDataPane = ({ darkMode }) => {
   };
 
   useEffect(() => {
-    showSearchBox && searchBoxRef.current.focus();
+    showSearchBox && !storedSearchTerm && searchBoxRef.current.focus();
   }, [showSearchBox]);
 
   return (
@@ -135,6 +137,7 @@ export const QueryDataPane = ({ darkMode }) => {
                 placeholder={t('globals.search', 'Search')}
                 customClass="query-manager-search-box-wrapper flex-grow-1"
                 showClearButton
+                clearTextOnBlur={false}
               />
               <ButtonSolid
                 size="sm"

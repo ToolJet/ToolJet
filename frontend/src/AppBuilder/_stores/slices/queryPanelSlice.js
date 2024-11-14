@@ -26,11 +26,20 @@ const initialState = {
   previewPanelExpanded: false,
   loadingDataQueries: false,
   isPreviewQueryLoading: false,
+  queryPanelSearchTem: '',
 };
 
 export const createQueryPanelSlice = (set, get) => ({
   queryPanel: {
     ...initialState,
+    setQueryPanelSearchTerm: (searchTerm) =>
+      set(
+        (state) => {
+          state.queryPanel.queryPanelSearchTem = searchTerm;
+        },
+        false,
+        'setQueryPanelSearchTerm'
+      ),
     setIsDraggingQueryPane: (isDraggingQueryPane) =>
       set(
         (state) => {

@@ -1,21 +1,23 @@
-const selectedItem = localStorage.getItem('selectedSidebarItem');
-const isLeftSideBarPinned = !!selectedItem;
-const selectedSidebarItem = selectedItem;
+const validSidebarItems = ['page', 'inspect', 'debugger', 'settings'];
+const storedIsSidebarPinned = localStorage.getItem('isLeftSideBarPinned') === 'true' ? true : false;
+const storedSelectedSidebarItem = !storedIsSidebarPinned
+  ? null
+  : localStorage.getItem('selectedSidebarItem') &&
+    validSidebarItems.includes(localStorage.getItem('selectedSidebarItem'))
+  ? localStorage.getItem('selectedSidebarItem')
+  : 'page';
 
 const initialState = {
-  isSidebarOpen: isLeftSideBarPinned || !!selectedSidebarItem,
-  isLeftSideBarPinned,
-  selectedSidebarItem,
+  isLeftSideBarPinned: storedIsSidebarPinned,
+  selectedSidebarItem: storedIsSidebarPinned ? storedSelectedSidebarItem : null,
+  isSidebarOpen: storedIsSidebarPinned,
 };
 
-export const createLeftSideBarSlice = (set, get) => ({
+export const createLeftSideBarSlice = (set) => ({
   ...initialState,
   setIsLeftSideBarPinned: (status) => {
-    status
-      ? localStorage.setItem('selectedSidebarItem', get().selectedSidebarItem)
-      : localStorage.removeItem('selectedSidebarItem');
-
-    set(() => ({ isLeftSideBarPinned: status }));
+    localStorage.setItem('isLeftSideBarPinned', status === true ? 'true' : 'false');
+    set(() => ({ isLeftSideBarPinned: status }), false, 'setIsLeftSideBarPinned');
   },
   setSelectedSidebarItem: (selectedSidebarItem) =>
     set(() => ({ selectedSidebarItem }), false, 'setSelectedSidebarItem'),
