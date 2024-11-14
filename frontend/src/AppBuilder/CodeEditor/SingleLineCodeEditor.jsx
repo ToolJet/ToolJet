@@ -30,6 +30,12 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
   const [currentValue, setCurrentValue] = useState('');
   const [errorStateActive, setErrorStateActive] = useState(false);
   const [cursorInsidePreview, setCursorInsidePreview] = useState(false);
+  const componentDefinition = useStore((state) => state.getComponentDefinition(componentId), shallow);
+  const parentId = componentDefinition?.component?.parent;
+  const customResolvables = useStore((state) => state.resolvedStore.modules.canvas?.customResolvables, shallow);
+
+  const customVariables = customResolvables?.[parentId]?.[0] || {};
+
   const isPreviewFocused = useRef(false);
   const wrapperRef = useRef(null);
 
@@ -52,8 +58,10 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
     //   ? resolveReferences(newInitialValue, validation, customVariables)
     //   : [true, null];
 
-    // Need to add customVariables while resolving the value like above
-    const [valid, _error] = !isEmpty(validation) ? resolveReferences(newInitialValue, validation) : [true, null];
+    //!TODO use the updated new resolver
+    const [valid, _error] = !isEmpty(validation)
+      ? resolveReferences(newInitialValue, validation, customVariables)
+      : [true, null];
 
     if (!valid) {
       setErrorStateActive(true);
@@ -90,6 +98,7 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
       style={{ width: '100%', height: restProps?.lang === 'jsx' && '320px' }}
     >
       <PreviewBox.Container
+        customVariables={customVariables}
         enablePreview={enablePreview}
         currentValue={currentValue}
         isFocused={isFocused}
@@ -103,7 +112,6 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
         errorStateActive={errorStateActive}
         previewPlacement={restProps?.cyLabel === 'canvas-bg-colour' ? 'top' : 'left-start'}
         isPortalOpen={restProps?.portalProps?.isOpen}
-        // customVariables={customVariables}
       >
         <div className="code-editor-basic-wrapper d-flex">
           <div className="codehinter-container w-100">

@@ -93,7 +93,9 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
     if (pageSwitchInProgress) {
       const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === currentPageId);
       setPageSwitchInProgress(false);
-      handleEvent('onPageLoad', currentPageEvents, {});
+      setTimeout(() => {
+        handleEvent('onPageLoad', currentPageEvents, {});
+      }, 0);
     }
   }, [pageSwitchInProgress, currentPageId]);
 
@@ -181,7 +183,12 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
         appId: appData.id,
         slug: appData.slug,
         currentAppEnvironmentId: editorEnvironmentId,
-        isMaintenanceOn: result.is_maintenance_on,
+        isMaintenanceOn:
+          'is_maintenance_on' in result
+            ? result.is_maintenance_on
+            : 'isMaintenanceOn' in result
+            ? result.isMaintenanceOn
+            : false,
         organizationId: appData.organizationId || appData.organization_id,
         homePageId: homePageId,
         isPublic: appData.is_public,
@@ -339,7 +346,12 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
           appId: appData.id,
           slug: appData.slug,
           creationMode: appData.creationMode,
-          isMaintenanceOn: appData.is_maintenance_on,
+          isMaintenanceOn:
+            'is_maintenance_on' in appData
+              ? appData.is_maintenance_on
+              : 'isMaintenanceOn' in appData
+              ? appData.isMaintenanceOn
+              : false,
           organizationId: appData.organizationId || appData.organization_id,
           homePageId: appData.editing_version.homePageId,
           isPublic: appData.isPublic,
