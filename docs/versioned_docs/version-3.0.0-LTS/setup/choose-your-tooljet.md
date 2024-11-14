@@ -15,6 +15,9 @@ Please find the latest LTS version here: <br/>
 | Version | Release Date | Docker Pull Command |
 |---------|--------------|----------------------|
 | Latest EE-LTS | N/A | `docker pull tooljet/tooljet:ee-lts-latest` |
+| [v3.0.2-ee-lts](https://hub.docker.com/layers/tooljet/tooljet/v3.0.2-ee-lts/images/sha256-6cb558e5e3337c7fc1b9ffc830ce7096f19253ff5f2fad177afdb46fb0b0ea9d?context=explore) | November 13, 2024 | `docker pull tooljet/tooljet:v3.0.2-ee-lts` |
+| [v3.0.1-ee-lts](https://hub.docker.com/layers/tooljet/tooljet/v3.0.1-ee-lts/images/sha256-b4f2e0779f76db07606ddd8a688cb7e06824837be3f507026ff91bb235efcc1d?context=explore) | November 12, 2024 | `docker pull tooljet/tooljet:v3.0.1-ee-lts` |
+| [v3.0.0-ee-lts](https://hub.docker.com/layers/tooljet/tooljet/v3.0.0-ee-lts/images/sha256-989f1370c502e97555dd7e669f896ef6ba2ad1d4f317c53335105bf937b5b189?context=explore) | November 12, 2024 | `docker pull tooljet/tooljet:v3.0.0-ee-lts` |
 | [EE-LTS-2.50.9.45](https://hub.docker.com/layers/tooljet/tooljet/EE-LTS-2.50.9.45/images/sha256-cb0030d66415ac52d156608fee2de8ce400cd4b2a7b3f865be331d13d939c883?context=explore) | October 24, 2024 | `docker pull tooljet/tooljet:EE-LTS-2.50.9.45` |
 | [EE-LTS-2.50.9.44](https://hub.docker.com/layers/tooljet/tooljet/EE-LTS-2.50.9.44/images/sha256-739781626ba3b7a61890d5e6b633099fee12e0e14aa3d176ceafe102f4b4ca98?context=explore) | October 9, 2024 | `docker pull tooljet/tooljet:EE-LTS-2.50.9.44` |
 | [EE-LTS-2.50.9.43](https://hub.docker.com/layers/tooljet/tooljet/EE-LTS-2.50.9.43/images/sha256-5d1cdd349872279ff23da9332dc0ec71c4ad637b35b728c44211f21fd206fa1c?context=explore) | October 3, 2024 | `docker pull tooljet/tooljet:EE-LTS-2.50.9.43` |
@@ -28,9 +31,6 @@ Please find the latest LTS version here: <br/>
 | [EE-LTS-2.50.9.35](https://hub.docker.com/layers/tooljet/tooljet/EE-LTS-2.50.9.35/images/sha256-8a1b0014d470aff108ad75fd6982e01696740f2154a3bb49f08671b93d55485b?context=explore) | September 3, 2024 | `docker pull tooljet/tooljet:EE-LTS-2.50.9.35` |
 | [EE-LTS-2.50.9.34](https://hub.docker.com/layers/tooljet/tooljet/EE-LTS-2.50.9.34/images/sha256-95af52997ec5b42fd5435bfef2f8996d0acc8234ae0541e155705ea4c689b272?context=explore) | August 30, 2024 | `docker pull tooljet/tooljet:EE-LTS-2.50.9.34` |
 | [EE-LTS-2.50.9.33](https://hub.docker.com/layers/tooljet/tooljet/EE-LTS-2.50.9.33/images/sha256-e231b959a7e5e1455235d344ceffeaa34b482d925d9676e5169f58e966c59fbb?context=explore) | August 26, 2024 | `docker pull tooljet/tooljet:EE-LTS-2.50.9.33` |
-| [EE-LTS-2.50.9.32](https://hub.docker.com/layers/tooljet/tooljet/EE-LTS-2.50.9.32/images/sha256-e231b959a7e5e1455235d344ceffeaa34b482d925d9676e5169f58e966c59fbb?context=explore) | August 26, 2024 | `docker pull tooljet/tooljet:EE-LTS-2.50.9.32` |
-| [EE-LTS-2.50.9.31](https://hub.docker.com/layers/tooljet/tooljet/EE-LTS-2.50.9.31/images/sha256-9610b8a125ea622a4b07c17657c44e04e1b582df8a18c228bab3a876cdc49407?context=explore) | August 26, 2024 | `docker pull tooljet/tooljet:EE-LTS-2.50.9.31` |
-| [EE-LTS-2.50.9.30](https://hub.docker.com/layers/tooljet/tooljet/EE-LTS-2.50.9.30/images/sha256-a7b0967aca4c4d29e423a78e91a7084073e2750d0a67fa2a8926d0da5eaf4ad4?context=explore) | August 21, 2024 | `docker pull tooljet/tooljet:EE-LTS-2.50.9.30` |
 
 :::info
 Users are encouraged to upgrade to the latest LTS version to ensure they benefit from the latest improvements and maintain a secure and efficient environment. 

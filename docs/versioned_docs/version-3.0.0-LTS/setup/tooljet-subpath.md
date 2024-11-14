@@ -14,7 +14,7 @@ You'll need to setup the following environment variables if ToolJet installation
 
 
 :::info
-See all **[Environment Variables](./env-vars)** here.
+See all **[Environment Variables](/docs/setup/env-var)** here.
 :::
 
 ## Upgrading to the Latest Version

@@ -19,6 +19,6 @@ For Docker setups on Mac systems, it's advisable to use a machine with 16GB RAM 
 
 ## Bare-Metal Setup
 
-For those who prefer a [bare-metal](https://docs.tooljet.com/docs/contributing-guide/setup/docker) setup over Docker, a minimum of 8GB RAM is recommended for smooth operation.
+For those who prefer a [bare-metal](/docs/contributing-guide/setup/docker) setup over Docker, a minimum of 8GB RAM is recommended for smooth operation.
 
 Before initiating the installation process, please verify that your system meets these specified requirements. It's essential to customize server specifications based on the unique demands of your deployment scenario.

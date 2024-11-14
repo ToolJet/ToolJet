@@ -21,7 +21,7 @@ ToolJet has three default user roles, each with different levels of access:
 - **Custom Groups**: Can be created to assign specific permissions to sets of users.
 
 :::info
-For detailed information on Users and Groups, refer to the [Managing Users and Groups](../tutorial/manage-users-groups.md) documentation.
+For detailed information on Users and Groups, refer to the [Managing Users and Groups](/docs/tutorial/manage-users-groups) documentation.
 :::
 
 ## Permission Levels

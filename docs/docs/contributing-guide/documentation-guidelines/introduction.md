@@ -35,6 +35,6 @@ The quality of our documentation isn't just determined by how well it's writtenâ
 
 ## Next Steps...
 
-Once you've set up your local environment, take some time to explore our [Style Guide](style-guide.md), understand our page structures, and learn how to work with Docusaurus, the framework we use for our documentation.
+Once you've set up your local environment, take some time to explore our [Style Guide](/docs/contributing-guide/documentation-guidelines/style-guide), understand our page structures, and learn how to work with Docusaurus, the framework we use for our documentation.
 
 We look forward to your contributions and are excited to see how you'll help make ToolJet documentation even better!
