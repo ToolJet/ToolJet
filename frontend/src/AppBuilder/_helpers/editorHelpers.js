@@ -12,6 +12,7 @@ import { DropDown } from '@/Editor/Components/DropDown';
 import { DropdownV2 } from '@/Editor/Components/DropdownV2/DropdownV2';
 import { Checkbox } from '@/Editor/Components/Checkbox';
 import { Datepicker } from '@/Editor/Components/Datepicker';
+import { DatepickerV2 } from '@/AppBuilder/Widgets/DatepickerV2/DatepickerV2';
 import { DaterangePicker } from '@/Editor/Components/DaterangePicker';
 import { Multiselect } from '@/Editor/Components/Multiselect';
 import { MultiselectV2 } from '@/Editor/Components/MultiselectV2/MultiselectV2';
@@ -97,6 +98,7 @@ export const AllComponents = {
   DropdownV2,
   Checkbox,
   Datepicker,
+  DatepickerV2,
   DaterangePicker,
   Multiselect,
   MultiselectV2,

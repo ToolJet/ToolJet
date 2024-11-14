@@ -18,7 +18,6 @@ import _ from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useDataQueries } from '@/_stores/dataQueriesStore';
-import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import Tabs from '@/ToolJetUI/Tabs/Tabs';
 import Tab from '@/ToolJetUI/Tabs/Tab';
@@ -35,7 +34,7 @@ import { EMPTY_ARRAY } from '@/_stores/editorStore';
 import { Select } from './Components/Select';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
-import { componentTypes } from '@/Editor/WidgetManager/components';
+import { componentTypes } from '@/AppBuilder/WidgetManager/componentTypes';
 import { copyComponents } from '@/AppBuilder/AppCanvas/appCanvasUtils.js';
 
 const INSPECTOR_HEADER_OPTIONS = [
@@ -64,6 +63,7 @@ const NEW_REVAMPED_COMPONENTS = [
   'Table',
   'ToggleSwitchV2',
   'Checkbox',
+  'DatepickerV2',
   'DropdownV2',
   'MultiselectV2',
   'RadioButtonV2',
