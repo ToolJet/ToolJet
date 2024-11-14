@@ -3872,6 +3872,18 @@ input[type="text"] {
   }
 }
 
+.form-ele{
+  .DateRangePicker_picker{
+    top: 40px !important;
+  }
+
+  .daterange-picker-widget{
+    .DateInput_fang {
+      visibility: hidden !important;
+    }
+  }
+}
+
 .fw-400 {
   font-weight: 400;
 }
@@ -12693,7 +12705,7 @@ color: var(--text-default);
   position: absolute;
   display: flex;
   justify-content: center;
-  top: 55px;
+  top: 65px;
 
   .released-version-popup-cover {
     width: 250px;

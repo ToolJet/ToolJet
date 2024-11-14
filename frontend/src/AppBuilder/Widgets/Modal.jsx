@@ -72,34 +72,22 @@ export const Modal = function Modal({
         setShowModal(true);
       },
       close: async function () {
-        setShowModal(false);
         setExposedVariable('show', false);
+        setShowModal(false);
       },
     };
     setExposedVariables(exposedVariables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    if (isInitialRender.current) {
-      isInitialRender.current = false;
-      return;
-    }
-
-    fireEvent(!showModal ? 'onClose' : 'onOpen');
-    const inputRef = document?.getElementsByClassName('tj-text-input-widget')?.[0];
-    inputRef?.blur();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showModal]);
-
   function hideModal() {
-    setShowModal(false);
     setExposedVariable('show', false);
+    setShowModal(false);
   }
 
   function openModal() {
-    setShowModal(true);
     setExposedVariable('show', true);
+    setShowModal(true);
   }
 
   useEffect(() => {
@@ -149,6 +137,19 @@ export const Modal = function Modal({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showModal, modalHeight]);
+
+  useEffect(() => {
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
+    }
+
+    fireEvent(!showModal ? 'onClose' : 'onOpen');
+    const inputRef = document?.getElementsByClassName('tj-text-input-widget')?.[0];
+    inputRef?.blur();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showModal]);
+
   const backwardCompatibilityCheck = height == '34' || modalHeight != undefined ? true : false;
 
   const customStyles = {

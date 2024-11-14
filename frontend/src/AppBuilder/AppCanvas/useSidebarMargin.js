@@ -6,11 +6,13 @@ import { LEFT_SIDEBAR_WIDTH } from './appCanvasConstants';
 
 const useSidebarMargin = (canvasContainerRef) => {
   const [editorMarginLeft, setEditorMarginLeft] = useState(0);
-  const selectedSidebarItem = useStore((state) => state.selectedSidebarItem, shallow);
+  const isSidebarOpen = useStore((state) => state.isSidebarOpen, shallow);
+  const mode = useStore((state) => state.currentMode, shallow);
 
   useEffect(() => {
-    setEditorMarginLeft(selectedSidebarItem ? LEFT_SIDEBAR_WIDTH : 0);
-  }, [selectedSidebarItem]);
+    if (mode !== 'view') setEditorMarginLeft(isSidebarOpen ? LEFT_SIDEBAR_WIDTH : 0);
+    else setEditorMarginLeft(0);
+  }, [isSidebarOpen, mode]);
 
   useEffect(() => {
     if (!isEmpty(canvasContainerRef?.current)) {

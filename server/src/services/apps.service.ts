@@ -27,7 +27,7 @@ import { Component } from 'src/entities/component.entity';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
 import { VersionReleaseDto } from '@dto/version-release.dto';
 
-import { findAllEntityReferences, isValidUUID, updateEntityReferences } from 'src/helpers/import_export.helpers';
+import { updateEntityReferences } from 'src/helpers/import_export.helpers';
 import { isEmpty } from 'lodash';
 import { AppBase } from 'src/entities/app_base.entity';
 import { LayoutDimensionUnits } from 'src/helpers/components.helper';
@@ -392,6 +392,15 @@ export class AppsService {
           dataQueryMapping: oldDataQueryToNewMapping,
         });
 
+        if (appVersion.globalSettings) {
+          const globalSettings = appVersion.globalSettings;
+          const updatedGlobalSettings = updateEntityReferences(globalSettings, {
+            ...oldDataQueryToNewMapping,
+            ...oldComponentToNewComponentMapping,
+          });
+          await manager.update(AppVersion, { id: appVersion.id }, { globalSettings: updatedGlobalSettings });
+        }
+
         await this.updateEventActionsForNewVersionWithNewMappingIds(
           manager,
           appVersion.id,
@@ -426,13 +435,7 @@ export class AppsService {
         .getMany();
 
       const toUpdateComponents = components.filter((component) => {
-        const entityReferencesInComponentDefinitions = findAllEntityReferences(component, []).filter(
-          (entity) => entity && isValidUUID(entity)
-        );
-
-        if (entityReferencesInComponentDefinitions.length > 0) {
-          return updateEntityReferences(component, mappings);
-        }
+        return updateEntityReferences(component, mappings);
       });
 
       if (!isEmpty(toUpdateComponents)) {
@@ -448,13 +451,7 @@ export class AppsService {
         .getMany();
 
       const toUpdateDataQueries = dataQueries.filter((dataQuery) => {
-        const entityReferencesInQueryOptions = findAllEntityReferences(dataQuery, []).filter(
-          (entity) => entity && isValidUUID(entity)
-        );
-
-        if (entityReferencesInQueryOptions.length > 0) {
-          return updateEntityReferences(dataQuery, mappings);
-        }
+        return updateEntityReferences(dataQuery, mappings);
       });
 
       if (!isEmpty(toUpdateDataQueries)) {

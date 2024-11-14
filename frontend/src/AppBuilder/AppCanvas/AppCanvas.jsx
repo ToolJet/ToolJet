@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Container } from './Container';
 import Grid from './Grid';
 import { EditorSelecto } from './Selecto';
-import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
 import { HotkeyProvider } from './HotkeyProvider';
 import './appCanvas.scss';
 import useStore from '@/AppBuilder/_stores/store';
@@ -39,6 +38,7 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
   const canvasMaxWidth = useAppCanvasMaxWidth({ mode: currentMode });
   const editorMarginLeft = useSidebarMargin(canvasContainerRef);
   const isSidebarOpen = useStore((state) => state.isSidebarOpen, shallow);
+  const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
 
   useEffect(() => {
     // Need to remove this if we shift setExposedVariable Logic outside of components
@@ -60,6 +60,8 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
 
   return (
     <div className={cx(`main main-editor-canvas`, {})} id="main-editor-canvas" onMouseUp={handleCanvasContainerMouseUp}>
+      {creationMode === 'GIT' && <FreezeVersionInfo info={'Apps imported from git repository cannot be edited'} />}
+      {creationMode !== 'GIT' && <FreezeVersionInfo hide={currentMode !== 'edit'} />}
       <div
         ref={canvasContainerRef}
         className={cx(
@@ -69,7 +71,7 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
         )}
         style={{
           // transform: `scale(1)`,
-          borderLeft: editorMarginLeft + 'px solid',
+          borderLeft: currentMode === 'edit' && editorMarginLeft + 'px solid',
           height: currentMode === 'edit' ? canvasContainerHeight : '100%',
           background:
             currentMode === 'view'
@@ -78,7 +80,7 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
               ? '#EBEBEF'
               : '#2F3C4C',
           marginLeft:
-            isViewerSidebarPinned && currentLayout !== 'mobile' && currentMode !== 'edit'
+            isViewerSidebarPinned && !isPagesSidebarHidden && currentLayout !== 'mobile' && currentMode !== 'edit'
               ? pageSidebarStyle === 'icon'
                 ? '65px'
                 : '210px'
@@ -92,8 +94,6 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
           className={`app-${appId}`}
         >
           <AutoComputeMobileLayoutAlert currentLayout={currentLayout} darkMode={isAppDarkMode} />
-          {creationMode === 'GIT' && <FreezeVersionInfo info={'Apps imported from git repository cannot be edited'} />}
-          {creationMode !== 'GIT' && <FreezeVersionInfo hide={currentMode !== 'edit'} />}
           <DeleteWidgetConfirmation darkMode={isAppDarkMode} />
           <HotkeyProvider mode={currentMode} canvasMaxWidth={canvasMaxWidth} currentLayout={currentLayout}>
             {environmentLoadingState !== 'loading' && (

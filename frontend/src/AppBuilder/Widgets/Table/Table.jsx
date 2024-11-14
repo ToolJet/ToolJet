@@ -236,8 +236,9 @@ export const Table = React.memo(
       });
       const changesToBeSavedAndExposed = { dataUpdates: newDataUpdates, changeSet: newChangeset };
       mergeToTableDetails(changesToBeSavedAndExposed);
+      setExposedVariables({ ...changesToBeSavedAndExposed, updatedData: clonedTableData });
       fireEvent('onCellValueChanged');
-      return setExposedVariables({ ...changesToBeSavedAndExposed, updatedData: clonedTableData });
+      return;
     }
 
     const copyOfTableDetails = useRef(tableDetails);
@@ -565,12 +566,12 @@ export const Table = React.memo(
 
     useEffect(() => {
       if (
-        tableData.length != 0 &&
+        properties.data.length != 0 &&
         properties.autogenerateColumns &&
         (useDynamicColumn || mode === 'edit' || mode === 'view')
       ) {
         const generatedColumnFromData = autogenerateColumns(
-          tableData,
+          properties.data,
           properties.columns,
           properties?.columnDeletionHistory ?? [],
           useDynamicColumn,
@@ -579,9 +580,25 @@ export const Table = React.memo(
           properties.autogenerateColumns ?? false,
           id
         );
-        useDynamicColumn && setGeneratedColumn(generatedColumnFromData);
+        if (useDynamicColumn) {
+          const dynamicColumnHasId = dynamicColumn && dynamicColumn.every((column) => 'id' in column);
+          if (!dynamicColumnHasId) {
+            // if dynamic columns do not have an id then we need to manually compare the generated columns with the columns in the state because the id that we generate for columns without id is a uuid and it will be different every time
+            const generatedColumnsWithoutIds = generatedColumnFromData.map(({ id, ...rest }) => ({
+              ...rest,
+            }));
+            const columnsFromStateWithoutIds = generatedColumn.map(({ id, ...rest }) => ({
+              ...rest,
+            }));
+            !isEqual(generatedColumnsWithoutIds, columnsFromStateWithoutIds) &&
+              setGeneratedColumn(generatedColumnFromData);
+            return;
+          }
+          setGeneratedColumn(generatedColumnFromData);
+        }
       }
-    }, [tableData, JSON.stringify(dynamicColumn)]);
+      // }, [tableData, JSON.stringify(dynamicColumn)]);
+    }, [JSON.stringify(properties.data), JSON.stringify(dynamicColumn)]);
 
     const computedStyles = {
       // width: `${width}px`,
@@ -865,7 +882,6 @@ export const Table = React.memo(
           currentData: data,
           selectedRow: [],
           selectedRowId: null,
-          pageIndex: pageIndex + 1,
         });
         if (tableDetails.selectedRowId || !isEmpty(tableDetails.selectedRowDetails)) {
           toggleAllRowsSelected(false);

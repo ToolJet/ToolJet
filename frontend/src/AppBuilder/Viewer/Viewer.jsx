@@ -197,6 +197,7 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
                                 maxWidth: isMobilePreviewMode ? '450px' : computeCanvasMaxWidth(),
                                 margin: 0,
                                 padding: 0,
+                                position: 'relative',
                               }}
                             >
                               {currentLayout === 'mobile' && isMobilePreviewMode && (

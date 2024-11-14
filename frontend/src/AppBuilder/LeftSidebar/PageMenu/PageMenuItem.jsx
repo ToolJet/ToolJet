@@ -47,8 +47,9 @@ export const PageMenuItem = withRouter(
 
     const isEditingPage = editingPage?.id === page?.id;
     const icon = () => {
+      const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
       if (!isDisabled && !isHidden) {
-        return <IconSelector iconColor={computedStyles?.icon?.color} iconName={page.icon} pageId={page.id} />;
+        return <IconSelector iconColor={computedStyles?.icon?.color} iconName={iconName} pageId={page.id} />;
       }
       if (isDisabled || (isDisabled && isHidden)) {
         return (
@@ -136,8 +137,21 @@ export const PageMenuItem = withRouter(
       setCurrentPageHandle(page.handle);
     }, [currentPageId, page.id, page.handle, switchPage, setCurrentPageHandle]);
 
+    const handlePageMenuSettings = useCallback(
+      (event) => {
+        event.stopPropagation();
+        openPageEditPopover(page, popoverRef);
+      },
+      [popoverRef.current, page]
+    );
+
     return (
-      <div onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
+      <div
+        ref={popoverRef}
+        id={`edit-popover-${page.id}`}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
         {editingPageName && editingPage?.id === page?.id ? (
           <>
             <RenameInput
@@ -160,9 +174,9 @@ export const PageMenuItem = withRouter(
             >
               <div className="left">
                 {icon()}
-                <div style={{ ...computedStyles?.text }} className="page-name">
-                  <OverflowTooltip>{page.name}</OverflowTooltip>
-                </div>
+                <OverflowTooltip childrenClassName="page-name" style={{ ...computedStyles?.text }}>
+                  {page.name}
+                </OverflowTooltip>
                 <span
                   style={{
                     marginLeft: '8px',
@@ -188,10 +202,7 @@ export const PageMenuItem = withRouter(
                       }),
                     }}
                     className="edit-page-overlay-toggle"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      openPageEditPopover(page, popoverRef);
-                    }}
+                    onClick={handlePageMenuSettings}
                   >
                     <SolidIcon width="20" dataCy={`page-menu`} name="morevertical" />
                   </button>
@@ -200,15 +211,6 @@ export const PageMenuItem = withRouter(
             </div>
           </>
         )}
-        <div
-          id={`edit-popover-${page.id}`}
-          style={{
-            position: 'absolute',
-            right: 0,
-            top: 0,
-          }}
-          ref={popoverRef}
-        ></div>
       </div>
     );
   })

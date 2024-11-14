@@ -67,7 +67,7 @@ export const Pagination = function Pagination({
         {!serverSide && tableWidth > 460 && (
           <ButtonSolid
             variant="ghostBlack"
-            className="tj-text-xsm"
+            className="tj-text-xsm table-pagination-btn"
             style={{
               minWidth: '28px',
               width: '28px',
@@ -92,7 +92,7 @@ export const Pagination = function Pagination({
         )}
         <ButtonSolid
           variant="ghostBlack"
-          className="tj-text-xsm"
+          className="tj-text-xsm table-pagination-btn"
           style={{
             minWidth: '28px',
             width: '28px',
@@ -144,7 +144,7 @@ export const Pagination = function Pagination({
       <div className="d-flex">
         <ButtonSolid
           variant="ghostBlack"
-          className="tj-text-xsm"
+          className="tj-text-xsm table-pagination-btn"
           style={{
             minWidth: '28px',
             width: '28px',
@@ -169,7 +169,7 @@ export const Pagination = function Pagination({
         {!serverSide && tableWidth > 460 && (
           <ButtonSolid
             variant="ghostBlack"
-            className="tj-text-xsm"
+            className="tj-text-xsm table-pagination-btn"
             style={{
               minWidth: '28px',
               width: '28px',

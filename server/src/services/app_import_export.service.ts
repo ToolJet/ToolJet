@@ -30,7 +30,7 @@ import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
 import { v4 as uuid } from 'uuid';
-import { findAllEntityReferences, isValidUUID, updateEntityReferences } from 'src/helpers/import_export.helpers';
+import { updateEntityReferences } from 'src/helpers/import_export.helpers';
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
   dataQueryMapping: Record<string, string>;
@@ -290,13 +290,7 @@ export class AppImportExportService {
         .getMany();
 
       const toUpdateComponents = components.filter((component) => {
-        const entityReferencesInComponentDefinitions = findAllEntityReferences(component, []).filter(
-          (entity) => entity && isValidUUID(entity)
-        );
-
-        if (entityReferencesInComponentDefinitions.length > 0) {
-          return updateEntityReferences(component, mappings);
-        }
+        return updateEntityReferences(component, mappings);
       });
 
       if (!isEmpty(toUpdateComponents)) {
@@ -312,17 +306,25 @@ export class AppImportExportService {
         .getMany();
 
       const toUpdateDataQueries = dataQueries.filter((dataQuery) => {
-        const entityReferencesInQueryOptions = findAllEntityReferences(dataQuery, []).filter(
-          (entity) => entity && isValidUUID(entity)
-        );
-
-        if (entityReferencesInQueryOptions.length > 0) {
-          return updateEntityReferences(dataQuery, mappings);
-        }
+        return updateEntityReferences(dataQuery, mappings);
       });
 
       if (!isEmpty(toUpdateDataQueries)) {
         await manager.save(toUpdateDataQueries);
+      }
+    }
+    // update Global settings of created versions
+    const appVersionIds = Object.values(resourceMapping.appVersionMapping);
+    const newAppVersions = await manager.find(AppVersion, {
+      where: {
+        id: In(appVersionIds),
+      },
+      select: ['id', 'globalSettings'],
+    });
+    for (const appVersion of newAppVersions) {
+      if (appVersion.globalSettings) {
+        const updatedGlobalSettings = updateEntityReferences(appVersion.globalSettings, mappings);
+        await manager.update(AppVersion, { id: appVersion.id }, { globalSettings: updatedGlobalSettings });
       }
     }
   }
@@ -1260,6 +1262,23 @@ export class AppImportExportService {
     return appResourceMappings;
   }
 
+  createViewerNavigationVisibilityForImportedApp(newVersion: AppVersion, importedVersion: AppVersion) {
+    let pageSettings = {};
+    if (newVersion.pageSettings) {
+      pageSettings = { ...importedVersion.pageSettings };
+    } else {
+      pageSettings = {
+        properties: {
+          disableMenu: {
+            value: `{{${!importedVersion.showViewerNavigation}}}`,
+            fxActive: false,
+          },
+        },
+      };
+    }
+    return pageSettings;
+  }
+
   async createAppVersionsForImportedApp(
     manager: EntityManager,
     user: User,
@@ -1300,7 +1319,7 @@ export class AppImportExportService {
         version.showViewerNavigation = appVersion.showViewerNavigation;
         version.homePageId = appVersion.homePageId;
         version.globalSettings = appVersion.globalSettings;
-        version.pageSettings = appVersion.pageSettings;
+        version.pageSettings = this.createViewerNavigationVisibilityForImportedApp(version, appVersion);
       } else {
         version.showViewerNavigation = appVersion.definition?.showViewerNavigation || true;
         version.homePageId = appVersion.definition?.homePageId;
@@ -1318,7 +1337,7 @@ export class AppImportExportService {
           };
         } else {
           version.globalSettings = appVersion.definition?.globalSettings;
-          version.pageSettings = appVersion.definition?.pageSettings;
+          version.pageSettings = this.createViewerNavigationVisibilityForImportedApp(version, appVersion);
         }
       }
 

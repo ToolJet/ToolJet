@@ -10,10 +10,10 @@ export function SortableList({ items, onChange, renderItem }) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { delay: 150 },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
     })
+    // useSensor(KeyboardSensor, {
+    //   coordinateGetter: sortableKeyboardCoordinates,
+    // })
   );
 
   const shouldFreeze = useStore((state) => state.isVersionReleased || state.isEditorFreezed);

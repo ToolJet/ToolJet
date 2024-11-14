@@ -39,11 +39,12 @@ export const Datepicker = function Datepicker({
     }
   };
 
+  const [validationStatus, setValidationStatus] = useState(validate(computeDateString(date)));
+  const { isValid, validationError } = validationStatus;
+
   const onDateChange = (date) => {
     setShowValidationError(true);
-    setDate(date);
-    const dateString = computeDateString(date);
-    setExposedVariable('value', dateString);
+    setInputValue(date);
     fireEvent('onSelect');
   };
 
@@ -51,11 +52,9 @@ export const Datepicker = function Datepicker({
     if (isInitialRender.current) return;
     const dateMomentInstance = defaultValue && moment(defaultValue, selectedDateFormat);
     if (dateMomentInstance && dateMomentInstance.isValid()) {
-      setDate(dateMomentInstance.toDate());
-      setExposedVariable('value', defaultValue);
+      setInputValue(dateMomentInstance.toDate());
     } else {
-      setDate(null);
-      setExposedVariable('value', undefined);
+      setInputValue(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultValue]);
@@ -73,31 +72,27 @@ export const Datepicker = function Datepicker({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabledDates, format]);
 
-  const validationData = validate(computeDateString(date));
-  const { isValid, validationError } = validationData;
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    const validationStatus = validate(computeDateString(date));
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
+  }, [validate]);
 
   useEffect(() => {
-    isInitialRender.current = false;
-    setExposedVariable('isValid', isValid);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isValid]);
-
-  useEffect(() => {
-    const exposedVariables = {
-      isValid,
-    };
     const dateMomentInstance = defaultValue && moment(defaultValue, selectedDateFormat);
-    if (dateMomentInstance && dateMomentInstance.isValid()) {
-      setDate(dateMomentInstance.toDate());
-      exposedVariables.value = defaultValue;
-    } else {
-      setDate(null);
-      exposedVariables.value = undefined;
-    }
-    setExposedVariables(exposedVariables);
+    setInputValue(dateMomentInstance && dateMomentInstance.isValid() ? dateMomentInstance.toDate() : null);
     isInitialRender.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const setInputValue = (value) => {
+    setDate(value);
+    setExposedVariable('value', value ? computeDateString(value) : undefined);
+    const validationStatus = validate(computeDateString(value));
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
+  };
 
   return (
     <div
