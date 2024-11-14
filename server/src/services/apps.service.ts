@@ -27,7 +27,7 @@ import { Component } from 'src/entities/component.entity';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
 import { VersionReleaseDto } from '@dto/version-release.dto';
 
-import { updateEntityReferences } from 'src/helpers/import_export.helpers';
+import { findAllEntityReferences, isValidUUID, updateEntityReferences } from 'src/helpers/import_export.helpers';
 import { isEmpty } from 'lodash';
 import { AppBase } from 'src/entities/app_base.entity';
 import { LayoutDimensionUnits } from 'src/helpers/components.helper';
@@ -435,7 +435,13 @@ export class AppsService {
         .getMany();
 
       const toUpdateComponents = components.filter((component) => {
-        return updateEntityReferences(component, mappings);
+        const entityReferencesInComponentDefinitions = findAllEntityReferences(component, []).filter(
+          (entity) => entity && isValidUUID(entity)
+        );
+
+        if (entityReferencesInComponentDefinitions.length > 0) {
+          return updateEntityReferences(component, mappings);
+        }
       });
 
       if (!isEmpty(toUpdateComponents)) {
@@ -451,7 +457,13 @@ export class AppsService {
         .getMany();
 
       const toUpdateDataQueries = dataQueries.filter((dataQuery) => {
-        return updateEntityReferences(dataQuery, mappings);
+        const entityReferencesInQueryOptions = findAllEntityReferences(dataQuery, []).filter(
+          (entity) => entity && isValidUUID(entity)
+        );
+
+        if (entityReferencesInQueryOptions.length > 0) {
+          return updateEntityReferences(dataQuery, mappings);
+        }
       });
 
       if (!isEmpty(toUpdateDataQueries)) {
