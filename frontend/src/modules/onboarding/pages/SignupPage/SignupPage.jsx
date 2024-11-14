@@ -40,8 +40,6 @@ const SignupPage = ({ configs, organizationId }) => {
 
   const handleSignup = (formData, onSuccess = () => {}, onFailure = () => {}) => {
     const { email, name, password } = formData;
-    console.log('formdata', formData);
-
     if (organizationToken) {
       authenticationService
         .activateAccountWithToken(email, password, organizationToken)
