@@ -1262,6 +1262,23 @@ export class AppImportExportService {
     return appResourceMappings;
   }
 
+  createViewerNavigationVisibilityForImportedApp(newVersion: AppVersion, importedVersion: AppVersion) {
+    let pageSettings = {};
+    if (newVersion.pageSettings) {
+      pageSettings = { ...importedVersion.pageSettings };
+    } else {
+      pageSettings = {
+        properties: {
+          disableMenu: {
+            value: `{{${!importedVersion.showViewerNavigation}}}`,
+            fxActive: false,
+          },
+        },
+      };
+    }
+    return pageSettings;
+  }
+
   async createAppVersionsForImportedApp(
     manager: EntityManager,
     user: User,
@@ -1302,7 +1319,7 @@ export class AppImportExportService {
         version.showViewerNavigation = appVersion.showViewerNavigation;
         version.homePageId = appVersion.homePageId;
         version.globalSettings = appVersion.globalSettings;
-        version.pageSettings = appVersion.pageSettings;
+        version.pageSettings = this.createViewerNavigationVisibilityForImportedApp(version, appVersion);
       } else {
         version.showViewerNavigation = appVersion.definition?.showViewerNavigation || true;
         version.homePageId = appVersion.definition?.homePageId;
@@ -1320,7 +1337,7 @@ export class AppImportExportService {
           };
         } else {
           version.globalSettings = appVersion.definition?.globalSettings;
-          version.pageSettings = appVersion.definition?.pageSettings;
+          version.pageSettings = this.createViewerNavigationVisibilityForImportedApp(version, appVersion);
         }
       }
 
