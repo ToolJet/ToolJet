@@ -19,6 +19,7 @@ import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { EventManager } from '@/AppBuilder/RightSideBar/Inspector/EventManager';
+import NotificationBanner from '../../../../../frontend/src/_components/NotificationBanner';
 
 export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) => {
   const { t } = useTranslation();
@@ -318,6 +319,11 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
         canDeleteDataSource()
       : true;
 
+  useEffect(() => {
+    console.log('selected ds', selectedDataSource);
+    console.log('selected query', selectedQuery);
+  }, [selectedDataSource, selectedQuery]);
+
   return (
     <div
       className={`query-details ${selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''} ${
@@ -330,7 +336,15 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
       }} // 40px for preview header height
     >
       {selectedDataSource === null || !selectedQuery ? (
-        renderDataSourcesList()
+        selectedDataSource == null && selectedQuery ? (
+          <>
+            <span>Deprecated data source testing</span>
+            <NotificationBanner />
+            {renderChangeDataSource()}
+          </>
+        ) : (
+          renderDataSourcesList()
+        )
       ) : (
         <>
           {selectedQuery?.data_source_id && activeTab === 1 && renderChangeDataSource()}
