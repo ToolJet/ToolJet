@@ -10,12 +10,16 @@ import { SourceOptions, QueryOptions } from './types';
 import knex, { Knex } from 'knex';
 import { isEmpty } from '@tooljet-plugins/common';
 
-const STATEMENT_TIMEOUT = 10000;
-
 export default class PostgresqlQueryService implements QueryService {
   private static _instance: PostgresqlQueryService;
+  private STATEMENT_TIMEOUT;
 
   constructor() {
+    this.STATEMENT_TIMEOUT =
+      process.env?.PLUGINS_SQL_DB_STATEMENT_TIMEOUT && !isNaN(Number(process.env?.PLUGINS_SQL_DB_STATEMENT_TIMEOUT))
+        ? Number(process.env.PLUGINS_SQL_DB_STATEMENT_TIMEOUT)
+        : 120000;
+
     if (PostgresqlQueryService._instance) {
       return PostgresqlQueryService._instance;
     }
@@ -51,7 +55,7 @@ export default class PostgresqlQueryService implements QueryService {
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const knexInstance = await this.getConnection(sourceOptions, {}, false);
-    await knexInstance.raw('SELECT version();').timeout(STATEMENT_TIMEOUT);
+    await knexInstance.raw('SELECT version();').timeout(this.STATEMENT_TIMEOUT);
     return { status: 'ok' };
   }
 
@@ -75,9 +79,7 @@ export default class PostgresqlQueryService implements QueryService {
 
   private async executeQuery(knexInstance: Knex, query: string, sanitizedQueryParams: Record<string, any> = {}) {
     if (isEmpty(query)) throw new Error('Query is empty');
-
-    const { rows } = await knexInstance.raw(query, sanitizedQueryParams).timeout(STATEMENT_TIMEOUT);
-
+    const { rows } = await knexInstance.raw(query, sanitizedQueryParams);
     return rows;
   }
 
@@ -100,6 +102,7 @@ export default class PostgresqlQueryService implements QueryService {
         password: sourceOptions.password,
         port: sourceOptions.port,
         ssl: this.getSslConfig(sourceOptions),
+        statement_timeout: this.STATEMENT_TIMEOUT,
       };
     } else if (sourceOptions.connection_type === 'string' && sourceOptions.connection_string) {
       connectionConfig = {
@@ -111,7 +114,7 @@ export default class PostgresqlQueryService implements QueryService {
       client: 'pg',
       connection: connectionConfig,
       pool: { min: 0, max: 10, acquireTimeoutMillis: 10000 },
-      acquireConnectionTimeout: 10000,
+      acquireConnectionTimeout: 60000,
       ...this.connectionOptions(sourceOptions),
     };
 
