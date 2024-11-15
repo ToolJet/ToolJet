@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 
 export const useExposeState = (loadingState, visibleState, disabledState, setExposedVariables, setExposedVariable) => {
   const [isDisabled, setDisable] = useState(disabledState || false);
