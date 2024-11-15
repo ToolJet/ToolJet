@@ -31,6 +31,7 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
   const selectedDataSource = useStore((state) => state.queryPanel.selectedDataSource);
   const changeDataQuery = useStore((state) => state.dataQuery.changeDataQuery);
   const updateDataQuery = useStore((state) => state.dataQuery.updateDataQuery);
+  const [showNotificationBanner, setShowNotificationBanner] = useState(false);
 
   const [dataSourceMeta, setDataSourceMeta] = useState(null);
   /* - Added the below line to cause re-rendering when the query is switched
@@ -48,6 +49,9 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
   const defaultOptions = useRef({});
 
   const isFreezed = useStore((state) => state.getShouldFreeze());
+  useEffect(() => {
+    console.log('sampleDataSource', sampleDataSource);
+  }, [sampleDataSource]);
 
   useEffect(() => {
     setDataSourceMeta(
@@ -281,7 +285,7 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
     return (
       <>
         <div className="" ref={paramListContainerRef}>
-          {selectedQuery && (
+          {selectedQuery && !showNotificationBanner && (
             <ParameterList
               parameters={options.parameters}
               handleAddParameter={handleAddParameter}
@@ -311,6 +315,23 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
       </>
     );
   };
+  useEffect(() => {
+    // Evaluate the condition
+    const shouldShowBanner =
+      selectedDataSource == null &&
+      selectedQuery &&
+      selectedDataSource?.kind !== 'runjs' &&
+      selectedDataSource?.kind !== 'runpy' &&
+      selectedDataSource?.kind !== 'tooljetdb' &&
+      (selectedDataSource?.kind !== 'restapi' || selectedDataSource?.type !== 'default');
+
+    // If the condition is met, update the state
+    if (shouldShowBanner) {
+      setShowNotificationBanner(true);
+    } else {
+      setShowNotificationBanner(false);
+    }
+  }, [selectedDataSource, selectedQuery]);
 
   const hasPermissions =
     selectedDataSource?.scope === 'global' && selectedDataSource?.type !== DATA_SOURCE_TYPE.SAMPLE
