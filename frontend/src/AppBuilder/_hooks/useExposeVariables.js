@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 
 export const useExposeState = (loadingState, visibleState, disabledState, setExposedVariables, setExposedVariable) => {
-  const [isDisabled, setDisable] = useState(loadingState || disabledState);
+  const [isDisabled, setDisable] = useState(disabledState || false);
   const [isVisible, setVisibility] = useState(visibleState || true);
   const [isLoading, setLoading] = useState(loadingState || false);
 
