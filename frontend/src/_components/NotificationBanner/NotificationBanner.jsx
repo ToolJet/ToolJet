@@ -44,3 +44,5 @@ const NotificationBanner = ({
 };
 
 export default NotificationBanner;
+
+// To Do later:  Expand this component properly to make it generic notification component

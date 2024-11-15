@@ -322,6 +322,8 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
   useEffect(() => {
     console.log('selected ds', selectedDataSource);
     console.log('selected query', selectedQuery);
+    console.log('selected ds kind', selectedDataSource?.kind);
+    console.log('selected ds id', selectedDataSource?.id == 'null');
   }, [selectedDataSource, selectedQuery]);
 
   return (
@@ -335,10 +337,9 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
         scrollbarWidth: 'none',
       }} // 40px for preview header height
     >
-      {selectedDataSource === null || !selectedQuery ? (
-        selectedDataSource == null && selectedQuery ? (
+      {selectedDataSource === null || !selectedQuery || selectedDataSource?.id == 'null' ? (
+        (selectedDataSource == null && selectedQuery) || selectedDataSource?.id == 'null' ? (
           <>
-            <span>Deprecated data source testing</span>
             <NotificationBanner />
             {renderChangeDataSource()}
           </>
