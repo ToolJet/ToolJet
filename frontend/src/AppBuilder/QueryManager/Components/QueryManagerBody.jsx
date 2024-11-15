@@ -358,8 +358,8 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
         scrollbarWidth: 'none',
       }} // 40px for preview header height
     >
-      {selectedDataSource === null || !selectedQuery || selectedDataSource?.id == 'null' ? (
-        (selectedDataSource == null && selectedQuery) || selectedDataSource?.id == 'null' ? (
+      {selectedDataSource === null || !selectedQuery ? (
+        showNotificationBanner ? (
           <>
             <NotificationBanner />
             {renderChangeDataSource()}
