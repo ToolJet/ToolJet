@@ -31,7 +31,7 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
   const selectedDataSource = useStore((state) => state.queryPanel.selectedDataSource);
   const changeDataQuery = useStore((state) => state.dataQuery.changeDataQuery);
   const updateDataQuery = useStore((state) => state.dataQuery.updateDataQuery);
-  const [showNotificationBanner, setShowNotificationBanner] = useState(false);
+  const [showLocalDataDeprecationBanner, setshowLocalDataDeprecationBanner] = useState(false);
 
   const [dataSourceMeta, setDataSourceMeta] = useState(null);
   /* - Added the below line to cause re-rendering when the query is switched
@@ -285,7 +285,7 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
     return (
       <>
         <div className="" ref={paramListContainerRef}>
-          {selectedQuery && !showNotificationBanner && (
+          {selectedQuery && !showLocalDataDeprecationBanner && (
             <ParameterList
               parameters={options.parameters}
               handleAddParameter={handleAddParameter}
@@ -316,8 +316,7 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
     );
   };
   useEffect(() => {
-    // Evaluate the condition
-    const shouldShowBanner =
+    const showDeprecationBanner =
       selectedDataSource == null &&
       selectedQuery &&
       selectedDataSource?.kind !== 'runjs' &&
@@ -325,11 +324,10 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
       selectedDataSource?.kind !== 'tooljetdb' &&
       (selectedDataSource?.kind !== 'restapi' || selectedDataSource?.type !== 'default');
 
-    // If the condition is met, update the state
-    if (shouldShowBanner) {
-      setShowNotificationBanner(true);
+    if (showDeprecationBanner) {
+      setshowLocalDataDeprecationBanner(true);
     } else {
-      setShowNotificationBanner(false);
+      setshowLocalDataDeprecationBanner(false);
     }
   }, [selectedDataSource, selectedQuery]);
 
@@ -359,7 +357,7 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
       }} // 40px for preview header height
     >
       {selectedDataSource === null || !selectedQuery ? (
-        showNotificationBanner ? (
+        showLocalDataDeprecationBanner ? (
           <>
             <NotificationBanner />
             {renderChangeDataSource()}
