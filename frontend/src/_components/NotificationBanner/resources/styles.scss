@@ -8,6 +8,8 @@
     flex: 1 0 0;
     border-radius: var(--3, 6px);
     background: var(--background-warning-weak, #FAEFE7);
+    border: none !important;
+    outline: none !important;
 
     // Custom CSS to align the svg to the center
     img {
