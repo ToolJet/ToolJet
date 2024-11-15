@@ -11,13 +11,11 @@
     border: none !important;
     outline: none !important;
 
-    // Custom CSS to align the svg to the center
     img {
         margin-top: -5px !important;
     }
 }
 
-// Separate media query without nesting
 @media screen and (min-width: 1200px) {
     .notification-banner {
         justify-content: center !important;
@@ -29,18 +27,6 @@
     }
 
 }
-
-// .notification-banner-component {
-//     text-align: center;
-//     background: var(--background-warning-weak, #FAEFE7) !important;
-//     margin-bottom: 0px !important;
-//     padding-bottom: 0px !important;
-//     position: relative;
-//     top: 0;
-//     left: 0;
-//     right: 0;
-//     margin: 0;
-// }
 
 .notification-content {
     color: var(--text-default, #1B1F24);
