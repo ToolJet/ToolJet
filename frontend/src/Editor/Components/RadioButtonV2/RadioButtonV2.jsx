@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState, useRef } from 'react';
 import Label from '@/_ui/Label';
 import cx from 'classnames';
 import './radioButtonV2.scss';
+import Loader from '@/ToolJetUI/Loader/Loader';
 
 export const RadioButtonV2 = ({
   id,
@@ -136,15 +137,6 @@ export const RadioButtonV2 = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility, loadingState, disabledState, isMandatory, label, isValid]);
 
-  if (loadingState) {
-    return (
-      <div className="d-flex align-items-center justify-content-center" style={{ width: '100%', height }}>
-        <center>
-          <div className="spinner-border" role="status"></div>
-        </center>
-      </div>
-    );
-  }
   const _width = (labelWidth / 100) * 70; // Max width which label can go is 70% for better UX calculate width based on this value
 
   return (
@@ -183,37 +175,41 @@ export const RadioButtonV2 = ({
         />
 
         <div className="px-0 h-100 w-100" ref={radioBtnRef}>
-          <div className="">
-            {selectOptions.map((option, index) => {
-              const isChecked = checkedValue == option.value;
-              return (
-                <label key={index} className="radio-button-container">
-                  <span style={{ color: optionsTextColor }}>{option.label}</span>
-                  <input
-                    style={{
-                      marginTop: '1px',
-                      backgroundColor: checkedValue === option.value ? `${activeColor}` : 'white',
-                    }}
-                    checked={checkedValue == option.value}
-                    type="radio"
-                    value={option.value}
-                    onChange={() => onSelect(option.value)}
-                    disabled={option.isDisabled}
-                  />
-                  <span
-                    className="checkmark"
-                    style={{
-                      backgroundColor: !isChecked && switchOffBackgroundColor,
-                      '--selected-background-color': switchOnBackgroundColor,
-                      '--selected-border-color': borderColor,
-                      '--selected-handle-color': handleColor,
-                      border: !isChecked && `1px solid ${borderColor}`,
-                    }}
-                  ></span>
-                </label>
-              );
-            })}
-          </div>
+          {loadingState || optionsLoadingState ? (
+            <Loader style={{ right: '50%', zIndex: 3, position: 'absolute' }} width="20" />
+          ) : (
+            <div className="">
+              {selectOptions.map((option, index) => {
+                const isChecked = checkedValue == option.value;
+                return (
+                  <label key={index} className="radio-button-container">
+                    <span style={{ color: optionsTextColor }}>{option.label}</span>
+                    <input
+                      style={{
+                        marginTop: '1px',
+                        backgroundColor: checkedValue === option.value ? `${activeColor}` : 'white',
+                      }}
+                      checked={checkedValue == option.value}
+                      type="radio"
+                      value={option.value}
+                      onChange={() => onSelect(option.value)}
+                      disabled={option.isDisabled}
+                    />
+                    <span
+                      className="checkmark"
+                      style={{
+                        backgroundColor: !isChecked && switchOffBackgroundColor,
+                        '--selected-background-color': switchOnBackgroundColor,
+                        '--selected-border-color': borderColor,
+                        '--selected-handle-color': handleColor,
+                        border: !isChecked && `1px solid ${borderColor}`,
+                      }}
+                    ></span>
+                  </label>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
       <div
