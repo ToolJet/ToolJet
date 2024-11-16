@@ -1,21 +1,29 @@
  /* label container */
  .radio-button-container {
-    color: rgba(0,0,0,0.75);
-    display: block;
+    // color: rgba(0,0,0,0.75);
+    // display: block;
     position: relative;
-    padding-left: 24px;
+    padding-left: 22px;
     line-height: 20px;
     margin-bottom: 8px;
-    margin-right: 1rem;
+    margin-right: 20px;
     cursor: pointer;
     font-size: 12px;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+    font-size: 14px
+    // .radio-button-label-container {
+    //   padding: 1px;
+    //   margin-right: 20px;
+    //   .radio-button-label-text {
+    //     padding-left: 6px;
+    //   }
+    // }
   }
   
-  /* Hide the browser's default radio button */
+  // /* Hide the browser's default radio button */
   .radio-button-container input {
     position: absolute;
     opacity: 0;
@@ -29,18 +37,15 @@
     left: 0;
     height: 16px;
     width: 16px;
-    // background-color: red;
     border-radius: 50%;
-    border: 1px solid;
-    transition: all 0.3s;
   }
   
-  /* On mouse-over, add a grey background color */
+  // /* On mouse-over, add a grey background color */
   .radio-button-container:hover input ~ .checkmark {
     border-color: rgba(0,0,0,0.5);
   }
   
-  /* When the radio button is checked */
+  // /* When the radio button is checked */
   .radio-button-container input:checked ~ .checkmark {
     // background-color:yellow;
     // border-color: yellow;
@@ -49,25 +54,24 @@
   }
   
   
-  /* Create the indicator (the dot/circle - hidden when not checked) */
+  // /* Create the indicator (the dot/circle - hidden when not checked) */
   .checkmark:after {
     content: "";
     position: absolute;
     display: none;
   }
   
-  /* Show the indicator (dot/circle) when checked */
+  // /* Show the indicator (dot/circle) when checked */
   .radio-button-container input:checked ~ .checkmark:after {
     display: block;
   }
   
-  /* Style the indicator (dot/circle) */
+  // /* Style the indicator (dot/circle) */
   .radio-button-container .checkmark:after {
-      top: 3.25px;
-      left: 3.21px;
+      transform: translate(50%, 50%);
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: var(--selected-handle-color);
+      background: var(--selected-handle-color); 
     }
   
