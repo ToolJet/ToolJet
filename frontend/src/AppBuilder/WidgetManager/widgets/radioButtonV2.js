@@ -4,7 +4,7 @@ export const radiobuttonV2Config = {
   description: 'Select one from multiple choices',
   component: 'RadioButtonV2',
   defaultSize: {
-    width: 12,
+    width: 10,
     height: 40,
   },
   others: {
@@ -12,7 +12,11 @@ export const radiobuttonV2Config = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   validation: {
-    customRule: { type: 'code', displayName: 'Custom validation' },
+    customRule: {
+      type: 'code',
+      displayName: 'Custom validation',
+      placeholder: `{{components.text2.text=='yes'&&'valid'}}`,
+    },
     mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
   },
   properties: {
@@ -21,7 +25,9 @@ export const radiobuttonV2Config = {
       displayName: 'Label',
       validation: {
         schema: { type: 'string' },
+        defaultValue: 'Select',
       },
+      accordian: 'Data',
     },
     advanced: {
       type: 'toggle',
@@ -34,27 +40,24 @@ export const radiobuttonV2Config = {
     value: {
       type: 'code',
       displayName: 'Default value',
-      validation: {
-        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }] },
+      conditionallyRender: {
+        key: 'advanced',
+        value: false,
       },
-      accordian: 'Options',
-    },
-    values: {
-      type: 'code',
-      displayName: 'Option values',
       validation: {
         schema: {
-          type: 'array',
-          element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }] },
+          type: 'union',
+          schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }],
         },
       },
       accordian: 'Options',
     },
-    display_values: {
+    schema: {
       type: 'code',
-      displayName: 'Option labels',
-      validation: {
-        schema: { type: 'array', element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+      displayName: 'Schema',
+      conditionallyRender: {
+        key: 'advanced',
+        value: true,
       },
       accordian: 'Options',
     },
@@ -68,51 +71,48 @@ export const radiobuttonV2Config = {
     },
     loadingState: {
       type: 'toggle',
-      displayName: 'Show loading state',
-      validation: {
-        schema: { type: 'boolean' },
-      },
+      displayName: 'Loading state',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
       section: 'additionalActions',
     },
     visibility: {
       type: 'toggle',
       displayName: 'Visibility',
-      validation: {
-        schema: { type: 'boolean' },
-      },
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+
       section: 'additionalActions',
     },
     disabledState: {
       type: 'toggle',
       displayName: 'Disable',
-      validation: {
-        schema: { type: 'boolean' },
-      },
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
       section: 'additionalActions',
     },
-    toolltip: {
+    tooltip: {
       type: 'code',
       displayName: 'Tooltip',
-      validation: { schema: { type: 'string' } },
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'Enter tooltip text',
+      },
       section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
     },
   },
   events: {
     onSelectionChange: { displayName: 'On select' },
   },
   styles: {
-    textColor: {
+    labelColor: {
       type: 'color',
       displayName: 'Color',
-      validation: {
-        schema: { type: 'string' },
-      },
+      validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
       accordian: 'label',
     },
-    labelAlignment: {
+    alignment: {
       type: 'switch',
       displayName: 'Alignment',
-      validation: { schema: { type: 'string' } },
+      validation: { schema: { type: 'string' }, defaultValue: 'side' },
       options: [
         { displayName: 'Side', value: 'side' },
         { displayName: 'Top', value: 'top' },
@@ -122,18 +122,48 @@ export const radiobuttonV2Config = {
     direction: {
       type: 'switch',
       displayName: 'Direction',
-      validation: { schema: { type: 'string' } },
+      validation: { schema: { type: 'string' }, defaultValue: 'left' },
       showLabel: false,
       isIcon: true,
       options: [
-        { displayName: 'alignleftinspector', value: 'alignLeft', iconName: 'alignleftinspector' },
-        { displayName: 'alignrightinspector', value: 'alignRight', iconName: 'alignrightinspector' },
+        { displayName: 'alignleftinspector', value: 'left', iconName: 'alignleftinspector' },
+        { displayName: 'alignrightinspector', value: 'right', iconName: 'alignrightinspector' },
       ],
       accordian: 'label',
     },
-    switchOffBorderColor: {
+    labelWidth: {
+      type: 'slider',
+      displayName: 'Width',
+      accordian: 'label',
+      conditionallyRender: {
+        key: 'alignment',
+        value: 'side',
+      },
+      isFxNotRequired: true,
+    },
+    auto: {
+      type: 'checkbox',
+      displayName: 'auto',
+      showLabel: false,
+      validation: { schema: { type: 'boolean' } },
+      accordian: 'label',
+      conditionallyRender: {
+        key: 'alignment',
+        value: 'side',
+      },
+      isFxNotRequired: true,
+    },
+    borderColor: {
       type: 'color',
-      displayName: 'Off border',
+      displayName: 'Border',
+      validation: {
+        schema: { type: 'string' },
+      },
+      accordian: 'switch',
+    },
+    switchOnBackgroundColor: {
+      type: 'color',
+      displayName: 'Checked background',
       validation: {
         schema: { type: 'string' },
       },
@@ -141,23 +171,7 @@ export const radiobuttonV2Config = {
     },
     switchOffBackgroundColor: {
       type: 'color',
-      displayName: 'Off background',
-      validation: {
-        schema: { type: 'string' },
-      },
-      accordian: 'switch',
-    },
-    switchOnBorderColor: {
-      type: 'color',
-      displayName: 'On border',
-      validation: {
-        schema: { type: 'string' },
-      },
-      accordian: 'switch',
-    },
-    activeColor: {
-      type: 'color',
-      displayName: 'On background',
+      displayName: 'Unchecked background',
       validation: {
         schema: { type: 'string' },
       },
@@ -171,38 +185,22 @@ export const radiobuttonV2Config = {
       },
       accordian: 'switch',
     },
-    optionTextColor: {
+    optionsTextColor: {
       type: 'color',
-      displayName: 'Color',
+      displayName: 'Text',
       validation: {
         schema: { type: 'string' },
       },
-      accordian: 'Text',
-    },
-    optionAlignment: {
-      type: 'switch',
-      displayName: 'Alignment',
-      validation: { schema: { type: 'string' } },
-      options: [
-        { displayName: 'Horizontal', value: 'horizontal' },
-        { displayName: 'Vertical', value: 'vertical' },
-      ],
-      accordian: 'Text',
-    },
-    whileResizing: {
-      type: 'switch',
-      displayName: 'While Resizing',
-      validation: { schema: { type: 'string' } },
-      options: [
-        { displayName: 'Wrap', value: 'wrap' },
-        { displayName: 'Hide', value: 'hide' },
-      ],
-      accordian: 'Text',
+      accordian: 'switch',
     },
     padding: {
       type: 'switch',
       displayName: 'Padding',
-      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: 'default',
+      },
+      isFxNotRequired: true,
       options: [
         { displayName: 'Default', value: 'default' },
         { displayName: 'None', value: 'none' },
@@ -230,6 +228,31 @@ export const radiobuttonV2Config = {
     },
     properties: {
       label: { value: 'Select' },
+      options: {
+        value: [
+          {
+            label: 'option1',
+            value: '1',
+            disable: { value: false },
+            visible: { value: true },
+            default: { value: false },
+          },
+          {
+            label: 'option2',
+            value: '2',
+            disable: { value: false },
+            visible: { value: true },
+            default: { value: true },
+          },
+          {
+            label: 'option3',
+            value: '3',
+            disable: { value: false },
+            visible: { value: true },
+            default: { value: false },
+          },
+        ],
+      },
       value: { value: '{{"1"}}' },
       values: { value: '{{["1","2","3"]}}' },
       display_values: { value: '{{["Option1", "Option2", "Option3"]}}' },
@@ -246,17 +269,16 @@ export const radiobuttonV2Config = {
     },
     events: [],
     styles: {
-      textColor: { value: '#11181C' },
-      labelAlignment: { value: 'side' },
-      direction: { value: 'alignLeft' },
-      whileResizing: { value: 'wrap' },
-      switchOffBorderColor: { value: '#F4F4F4' },
+      labelColor: { value: '#1B1F24' },
+      direction: { value: 'left' },
+      alignment: { value: 'side' },
+      auto: { value: '{{true}}' },
+      labelWidth: { value: '33' },
+      borderColor: { value: '#FFFFFF' },
       switchOffBackgroundColor: { value: '#FFFFFF' },
-      switchOnBorderColor: { value: '#3E63DD' },
-      activeColor: { value: '#FFFFFF' },
-      handleColor: { value: '#3E63DD' },
-      optionTextColor: { value: '#11181C' },
-      optionAlignment: { value: 'horizontal' },
+      switchOnBackgroundColor: { value: '#4368E3' },
+      handleColor: { value: '#FFFFFF' },
+      optionsTextColor: { value: '#1B1F24' },
       padding: { value: 'default' },
     },
   },
