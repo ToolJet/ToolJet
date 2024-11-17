@@ -1,5 +1,5 @@
 export const radiobuttonV2Config = {
-  name: 'Radio-button',
+  name: 'RadioButton',
   displayName: 'Radio Button',
   description: 'Select one from multiple choices',
   component: 'RadioButtonV2',
@@ -216,14 +216,39 @@ export const radiobuttonV2Config = {
   },
   actions: [
     {
-      handle: 'selectOption',
-      displayName: 'Select Option',
+      handle: 'selectOptions',
+      displayName: 'Select Options',
       params: [
         {
           handle: 'option',
           displayName: 'Option',
         },
       ],
+    },
+    {
+      handle: 'deselectOptions',
+      displayName: 'Deselect Options',
+      params: [
+        {
+          handle: 'option',
+          displayName: 'Option',
+        },
+      ],
+    },
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'setVisibility', displayName: 'Value', defaultValue: `{{true}}`, type: 'toggle' }],
+    },
+    {
+      handle: 'setLoading',
+      displayName: 'Set loading',
+      params: [{ handle: 'setLoading', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
+    },
+    {
+      handle: 'setDisable',
+      displayName: 'Set disable',
+      params: [{ handle: 'setDisable', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
     },
   ],
   exposedVariables: {},
@@ -260,8 +285,6 @@ export const radiobuttonV2Config = {
         ],
       },
       value: { value: '{{"1"}}' },
-      values: { value: '{{["1","2","3"]}}' },
-      display_values: { value: '{{["Option1", "Option2", "Option3"]}}' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
@@ -270,7 +293,7 @@ export const radiobuttonV2Config = {
       optionDisable: { value: '{{[false, false, false]}}' },
       schema: {
         value:
-          "{{[\t{label: 'Option1',value: '1',disable: false,visible: true,default: true},{label: 'Option2',value: '2',disable: false,visible: true},{label: 'Option3',value: '3',disable: false,visible: true}\t]}}",
+          "{{[\t{label: 'option1',value: '1',disable: false,visible: true,default: true},{label: 'option2',value: '2',disable: false,visible: true},{label: 'option3',value: '3',disable: false,visible: true}\t]}}",
       },
     },
     events: [],

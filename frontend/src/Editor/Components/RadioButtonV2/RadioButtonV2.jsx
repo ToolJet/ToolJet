@@ -5,6 +5,7 @@ import Label from '@/_ui/Label';
 import cx from 'classnames';
 import './radioButtonV2.scss';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import { has, isObject, pick } from 'lodash';
 
 export const RadioButtonV2 = ({
   id,
@@ -21,24 +22,10 @@ export const RadioButtonV2 = ({
   componentName,
   validate,
 }) => {
-  const {
-    label,
-    value,
-    values,
-    display_values,
-    disabledState,
-    optionVisibility,
-    optionDisable,
-    advanced,
-    schema,
-    optionsLoadingState,
-    loadingState,
-  } = properties;
+  const { label, value, disabledState, advanced, schema, optionsLoadingState, loadingState } = properties;
 
   const {
     activeColor,
-    boxShadow,
-    labelAlignment,
     direction,
     auto: labelAutoWidth,
     labelWidth,
@@ -47,10 +34,8 @@ export const RadioButtonV2 = ({
     switchOffBackgroundColor,
     handleColor,
     switchOnBackgroundColor,
-    padding,
     labelColor,
     alignment,
-    errTextColor,
   } = styles;
 
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
@@ -87,29 +72,15 @@ export const RadioButtonV2 = ({
 
   function onSelect(selection) {
     setValue(selection);
-    setExposedVariable('value', selection);
-    fireEvent('onSelectionChange');
+    // setExposedVariable('value', selection);
+    // fireEvent('onSelectionChange');
   }
 
   function deselectOption() {
     setValue(null);
-    setExposedVariable('value', null);
-    fireEvent('onSelectionChange');
+    // setExposedVariable('value', null);
+    // fireEvent('onSelectionChange');
   }
-
-  useEffect(() => {
-    const exposedVariables = {
-      value: value,
-      selectOption: async function (option) {
-        onSelect(option);
-      },
-      deselectOption: async function () {
-        deselectOption();
-      },
-    };
-    setExposedVariables(exposedVariables);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, setValue]);
 
   useEffect(() => {
     if (visibility !== properties.visibility) setVisibility(properties.visibility);
@@ -127,6 +98,26 @@ export const RadioButtonV2 = ({
     setExposedVariable('label', label);
     setExposedVariable('options', selectOptions);
     setExposedVariable('isValid', isValid);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.visibility, loadingState, disabledState, isMandatory, label, isValid]);
+
+  useEffect(() => {
+    const _options = selectOptions?.map(({ label, value }) => ({ label, value }));
+    setExposedVariable('options', _options);
+    setExposedVariable('selectOption', async function (value) {
+      let _value = value;
+      if (isObject(value) && has(value, 'value')) _value = value?.value;
+      setValue(_value);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectOptions]);
+
+  useEffect(() => {
+    setExposedVariable('value', checkedValue);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [checkedValue]);
+
+  useEffect(() => {
     setExposedVariable('setVisibility', async function (value) {
       setVisibility(value);
     });
@@ -136,8 +127,16 @@ export const RadioButtonV2 = ({
     setExposedVariable('setDisabled', async function (value) {
       setIsDisabled(value);
     });
+    setExposedVariable('selectOption', async function (value) {
+      let _value = value;
+      if (isObject(value) && has(value, 'value')) _value = value?.value;
+      setValue(_value);
+    });
+    setExposedVariable('deselectOption', async function () {
+      setValue(null);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.visibility, loadingState, disabledState, isMandatory, label, isValid]);
+  }, []);
 
   const _width = (labelWidth / 100) * 70; // Max width which label can go is 70% for better UX calculate width based on this value
 
