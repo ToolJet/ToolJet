@@ -5,19 +5,14 @@ import Label from '@/_ui/Label';
 import cx from 'classnames';
 import './radioButtonV2.scss';
 import Loader from '@/ToolJetUI/Loader/Loader';
-import { has, isObject, pick } from 'lodash';
+import { has, isObject } from 'lodash';
 
 export const RadioButtonV2 = ({
-  id,
-  height,
-  width,
   properties,
   styles,
   fireEvent,
   setExposedVariable,
-  setExposedVariables,
   darkMode,
-  dataCy,
   component,
   componentName,
   validate,
@@ -38,8 +33,7 @@ export const RadioButtonV2 = ({
     alignment,
   } = styles;
 
-  const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
-  const [checkedValue, setValue] = useState(() => value);
+  const [checkedValue, setCheckedValue] = useState(advanced ? findDefaultItem(schema) : value);
   const currentState = useCurrentState();
   const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
   const options = component?.definition?.properties?.options?.value;
@@ -51,7 +45,14 @@ export const RadioButtonV2 = ({
   const labelRef = useRef();
   const radioBtnRef = useRef();
 
-  useEffect(() => setValue(value), [value]);
+  function findDefaultItem(schema) {
+    let _schema = schema;
+    if (!Array.isArray(schema)) {
+      _schema = [];
+    }
+    const foundItem = _schema?.find((item) => item?.default === true);
+    return !hasVisibleFalse(foundItem?.value) ? foundItem?.value : undefined;
+  }
 
   const selectOptions = useMemo(() => {
     let _options = advanced ? schema : options;
@@ -70,17 +71,33 @@ export const RadioButtonV2 = ({
     }
   }, [advanced, schema, options]);
 
-  function onSelect(selection) {
-    setValue(selection);
-    // setExposedVariable('value', selection);
-    // fireEvent('onSelectionChange');
+  function onSelect(value) {
+    let _value = value;
+    if (isObject(value) && has(value, 'value')) _value = value?.value;
+    setCheckedValue(_value);
+    fireEvent('onSelectionChange');
   }
 
   function deselectOption() {
-    setValue(null);
-    // setExposedVariable('value', null);
-    // fireEvent('onSelectionChange');
+    setCheckedValue(null);
+    fireEvent('onSelectionChange');
   }
+
+  function hasVisibleFalse(value) {
+    for (let i = 0; i < schema?.length; i++) {
+      if (schema[i].value === value && schema[i].visible === false) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  useEffect(() => {
+    if (advanced) {
+      setCheckedValue(findDefaultItem(schema));
+    } else setCheckedValue(value);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [advanced, value, JSON.stringify(schema)]);
 
   useEffect(() => {
     if (visibility !== properties.visibility) setVisibility(properties.visibility);
@@ -104,11 +121,6 @@ export const RadioButtonV2 = ({
   useEffect(() => {
     const _options = selectOptions?.map(({ label, value }) => ({ label, value }));
     setExposedVariable('options', _options);
-    setExposedVariable('selectOption', async function (value) {
-      let _value = value;
-      if (isObject(value) && has(value, 'value')) _value = value?.value;
-      setValue(_value);
-    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectOptions]);
 
@@ -127,14 +139,8 @@ export const RadioButtonV2 = ({
     setExposedVariable('setDisabled', async function (value) {
       setIsDisabled(value);
     });
-    setExposedVariable('selectOption', async function (value) {
-      let _value = value;
-      if (isObject(value) && has(value, 'value')) _value = value?.value;
-      setValue(_value);
-    });
-    setExposedVariable('deselectOption', async function () {
-      setValue(null);
-    });
+    setExposedVariable('selectOption', onSelect);
+    setExposedVariable('deselectOption', deselectOption);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -185,7 +191,18 @@ export const RadioButtonV2 = ({
                 const isChecked = checkedValue == option.value;
                 return (
                   <label key={index} className="radio-button-container">
-                    <span style={{ color: optionsTextColor }}>{option.label}</span>
+                    <span
+                      style={{
+                        color:
+                          optionsTextColor !== '#1B1F24'
+                            ? optionsTextColor
+                            : isDisabled || isLoading
+                            ? 'var(--text-disabled)'
+                            : 'var(--text-primary)',
+                      }}
+                    >
+                      {option.label}
+                    </span>
                     <input
                       style={{
                         marginTop: '1px',
