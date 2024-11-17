@@ -1,7 +1,5 @@
  /* label container */
  .radio-button-container {
-    // color: rgba(0,0,0,0.75);
-    // display: block;
     position: relative;
     padding-left: 22px;
     line-height: 20px;
@@ -14,13 +12,6 @@
     -ms-user-select: none;
     user-select: none;
     font-size: 14px
-    // .radio-button-label-container {
-    //   padding: 1px;
-    //   margin-right: 20px;
-    //   .radio-button-label-text {
-    //     padding-left: 6px;
-    //   }
-    // }
   }
   
   // /* Hide the browser's default radio button */
@@ -40,15 +31,13 @@
     border-radius: 50%;
   }
   
-  // /* On mouse-over, add a grey background color */
-  .radio-button-container:hover input ~ .checkmark {
-    border-color: rgba(0,0,0,0.5);
-  }
+  // // /* On mouse-over, add a grey background color */
+  // .radio-button-container:focus input ~ .checkmark {
+  //   border-color: red
+  // }
   
   // /* When the radio button is checked */
   .radio-button-container input:checked ~ .checkmark {
-    // background-color:yellow;
-    // border-color: yellow;
     background-color: var(--selected-background-color);
     border-color: var(--selected-border-color);
   }
