@@ -596,7 +596,10 @@ export default function Grid({ gridWidth, currentLayout }) {
             isDragOnTableORCalendar = tableElem.contains(e.inputEvent.target);
           }
           if (box?.component?.component === 'Calendar') {
-            const calenderElem = e.target.querySelector('.rbc-month-view');
+            const calenderElem =
+              e.target.querySelector('.rbc-month-view') ||
+              e.target.querySelector('.rbc-time-view') ||
+              e.target.querySelector('.rbc-day-view');
             isDragOnTableORCalendar = calenderElem.contains(e.inputEvent.target);
           }
 
