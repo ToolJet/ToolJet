@@ -19,7 +19,6 @@ export const Form = function Form(props) {
     component,
     width,
     height,
-    removeComponent,
     styles,
     setExposedVariable,
     setExposedVariables,
@@ -28,11 +27,6 @@ export const Form = function Form(props) {
     properties,
     resetComponent = () => {},
     dataCy,
-    paramUpdated,
-    currentLayout,
-    mode,
-    getContainerProps,
-    containerProps,
   } = props;
   const childComponents = useStore((state) => state.getChildComponents(id), shallow);
   const { visibility, disabledState, borderRadius, borderColor, boxShadow } = styles;

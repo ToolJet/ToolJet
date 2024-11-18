@@ -50,6 +50,7 @@ const RenderSchema = ({ component, parent, id, onOptionChange, onOptionsChange, 
       darkMode={darkMode}
       fireEvent={fireEvent}
       formId={formId}
+      id={id}
     />
   );
 };
