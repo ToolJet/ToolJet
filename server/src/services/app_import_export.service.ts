@@ -517,6 +517,7 @@ export class AppImportExportService {
                 autoComputeLayout: page.autoComputeLayout || false,
                 isPageGroup: page.isPageGroup || false,
                 pageGroupIndex: page.pageGroupIndex || null,
+                icon: page.icon || null,
               });
               const pageCreated = await transactionalEntityManager.save(newPage);
 
@@ -784,6 +785,7 @@ export class AppImportExportService {
           disabled: page.disabled || false,
           hidden: page.hidden || false,
           autoComputeLayout: page.autoComputeLayout || false,
+          icon: page.icon || null,
         });
 
         const pageCreated = await manager.save(newPage);
