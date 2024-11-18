@@ -49,9 +49,6 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
   const defaultOptions = useRef({});
 
   const isFreezed = useStore((state) => state.getShouldFreeze());
-  useEffect(() => {
-    console.log('sampleDataSource', sampleDataSource);
-  }, [sampleDataSource]);
 
   useEffect(() => {
     setDataSourceMeta(
