@@ -11,7 +11,7 @@ import { EventsService } from './events_handler.service';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { EventHandler } from 'src/entities/event_handler.entity';
-import { findAllEntityReferences, isValidUUID, updateEntityReferences } from 'src/helpers/import_export.helpers';
+import { updateEntityReferences } from 'src/helpers/import_export.helpers';
 import { isEmpty } from 'class-validator';
 import { PageHelperService } from '@apps/services/pages/service.helper';
 import * as _ from 'lodash';
@@ -243,13 +243,7 @@ export class PageService {
       }
 
       const toUpdateComponents = clonedComponents.filter((component) => {
-        const entityReferencesInComponentDefinitions = findAllEntityReferences(component, []).filter(
-          (entity) => entity && isValidUUID(entity)
-        );
-
-        if (entityReferencesInComponentDefinitions.length > 0) {
-          return updateEntityReferences(component, componentsIdMap);
-        }
+        return updateEntityReferences(component, componentsIdMap);
       });
 
       if (!isEmpty(toUpdateComponents)) {

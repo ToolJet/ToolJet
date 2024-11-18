@@ -54,7 +54,8 @@ export function extractAndReplaceReferencesFromString(input, componentIdNameMapp
 
   let match;
   if (input.startsWith('{{{') && input.endsWith('}}}')) {
-    input = input.replace(/\{\{(.*)\}\}/, '{{($1)}}');
+    const inputContent = input.slice(3, -3);
+    input = `{{({${inputContent}})}}`;
     const matches = findExpression(input);
     for (const match of matches) {
       const { fullMatch, expression, index } = match;
