@@ -141,22 +141,22 @@ export async function getServiceAndRpcNames(protoDefinition) {
 export function generatePayloadForLimits(currentCount: number, totalCount: any, licenseStatus: object, label?: string) {
   return totalCount !== LICENSE_LIMIT.UNLIMITED
     ? {
-        percentage: (currentCount / totalCount) * 100,
-        total: totalCount,
-        current: currentCount,
-        licenseStatus,
-        label,
-        canAddUnlimited: false,
-      }
+      percentage: (currentCount / totalCount) * 100,
+      total: totalCount,
+      current: currentCount,
+      licenseStatus,
+      label,
+      canAddUnlimited: false,
+    }
     : {
-        canAddUnlimited: true,
-        licenseStatus,
-        label,
-      };
+      canAddUnlimited: true,
+      licenseStatus,
+      label,
+    };
 }
 export class MigrationProgress {
   private progress = 0;
-  constructor(private fileName: string, private totalCount: number) {}
+  constructor(private fileName: string, private totalCount: number) { }
 
   show() {
     this.progress++;
@@ -241,9 +241,8 @@ export const generateOrgInviteURL = (
 ) => {
   const host = process.env.TOOLJET_HOST;
   const subpath = process.env.SUB_PATH;
-  return `${fullUrl ? `${host}${subpath ? subpath : '/'}` : '/'}organization-invitations/${organizationToken}${
-    organizationId ? `?oid=${organizationId}` : ''
-  }${redirectTo ? `&redirectTo=${redirectTo}` : ''}`;
+  return `${fullUrl ? `${host}${subpath ? subpath : '/'}` : '/'}organization-invitations/${organizationToken}${organizationId ? `?oid=${organizationId}` : ''
+    }${redirectTo ? `&redirectTo=${redirectTo}` : ''}`;
 };
 
 export function extractMajorVersion(version) {
@@ -424,3 +423,13 @@ export function mergeDeep(target, source, seen = new WeakMap()) {
 
   return target;
 }
+export const getSubpath = () => {
+  const subpath = process.env.SUB_PATH || '';
+  // Ensure subpath starts and ends with slashes
+  if (subpath) {
+    if (!subpath.startsWith('/') || !subpath.endsWith('/')) {
+      throw new Error('SUB_PATH must start and end with a slash');
+    }
+  }
+  return subpath;
+};

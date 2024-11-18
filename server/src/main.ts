@@ -13,8 +13,8 @@ import { bootstrap as globalAgentBootstrap } from 'global-agent';
 import { join } from 'path';
 import * as helmet from 'helmet';
 import * as express from 'express';
-
-const fs = require('fs');
+import * as fs from 'fs';
+import { getSubpath } from '@helpers/utils.helper';
 
 globalThis.TOOLJET_VERSION = fs.readFileSync('./.version', 'utf8').trim();
 process.env['RELEASE_VERSION'] = globalThis.TOOLJET_VERSION;
@@ -100,7 +100,15 @@ function setSecurityHeaders(app, configService) {
 
   app.use((req, res, next) => {
     res.setHeader('Permissions-Policy', 'geolocation=(self), camera=(), microphone=()');
-    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+
+    const subpath = getSubpath();
+    const path = req.path.replace(subpath, '/');
+    if (path.startsWith('/api/')) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    } else {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    }
+
     return next();
   });
 }
