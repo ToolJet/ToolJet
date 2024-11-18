@@ -328,7 +328,16 @@
       "items": [
         "tooljet-db/tooljet-database",
         "tooljet-db/database-editor",
+        {
+          "type": "category",
+          "label": "Column Constraints",
+          "items": [
+            "tooljet-db/constraints/primary-key",
+            "tooljet-db/constraints/foreign-key"
+          ]
+        },
         "tooljet-db/data-types",
+        "tooljet-db/table-operations",
         "tooljet-db/querying-tooljet-db"
       ]
     },
