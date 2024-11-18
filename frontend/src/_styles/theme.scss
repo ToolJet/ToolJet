@@ -15569,9 +15569,10 @@ color: var(--text-default);
   background-color: var(--page-default);
   height: calc(100vh - 64px);
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding-top: 1.5rem;
+  //Uncomment for EE
+  // align-items: center;
+  // justify-content: center;
+  // padding-top: 1.5rem;
 }
 
 .blank-page-wrapper {
