@@ -127,7 +127,8 @@ const sidebars = {
                       'label': 'Chart',
                       'items': [
                         'widgets/chart/chart-properties',
-                        'widgets/chart/chart-examples'
+                        'widgets/chart/chart-examples',
+                        'widgets/chart/transforming-data-for-charts'
                       ]
                     },
                     'widgets/checkbox',
@@ -171,6 +172,17 @@ const sidebars = {
                         'widgets/table/table-properties',
                         'widgets/table/table-columns',
                         'widgets/table/table-csa-and-variables',
+                        {
+                          'type': 'category',
+                          'label': 'Serverside Operations',
+                          'items' : [
+                            'widgets/table/serverside-operations/overview',
+                            'widgets/table/serverside-operations/search',
+                            'widgets/table/serverside-operations/sort',
+                            'widgets/table/serverside-operations/filter',
+                            'widgets/table/serverside-operations/pagination'
+                          ]
+                        }
                       ]
                     },
                     'widgets/tabs',
