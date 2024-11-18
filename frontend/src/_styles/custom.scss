@@ -45,6 +45,9 @@ div[data-disabled='true'] {
   -ms-filter: 'progid:DXImageTransform.Microsoft.Alpha(Opacity=50)';
   -moz-opacity: 0.5;
   -khtml-opacity: 0.5;
+  &.text-widget{
+    pointer-events: auto;
+  }
 }
 
 .queries-container .btn-px-1 {

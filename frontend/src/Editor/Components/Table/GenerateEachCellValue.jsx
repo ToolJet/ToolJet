@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import _ from 'lodash';
 import { validateWidget } from '@/_helpers/utils';
 import { useMounted } from '@/_hooks/use-mount';
@@ -65,7 +65,7 @@ export default function GenerateEachCellValue({
     }
   }
   useEffect(() => {
-    if (mounted && _.isEmpty(rowChangeSet)) {
+    if (_.isEmpty(rowChangeSet)) {
       setHighlighterCells(true);
     }
     //In the dependency array to ingnore linting warning, added mounted but it's not working out, any way to avoid ingnoring dependency array
@@ -115,7 +115,9 @@ export default function GenerateEachCellValue({
       }}
       className={`w-100 h-100 ${columnType === 'selector' && 'd-flex align-items-center justify-content-center'}`}
     >
-      {!isColumnTypeAction && columnTypeAllowToRenderMarkElement.includes(columnType) && showHighlightedCells ? (
+      {!isColumnTypeAction &&
+      columnTypeAllowToRenderMarkElement.includes(columnType) &&
+      (showHighlightedCells || !isEditable) ? (
         <div className="d-flex justify-content-center flex-column w-100 h-100 generate-cell-value-component-div-wrapper">
           <div
             style={{
