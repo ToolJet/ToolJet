@@ -13,8 +13,9 @@ import { bootstrap as globalAgentBootstrap } from 'global-agent';
 import { join } from 'path';
 import * as helmet from 'helmet';
 import * as express from 'express';
-import * as fs from 'fs';
 import { getSubpath } from '@helpers/utils.helper';
+
+const fs = require('fs');
 
 globalThis.TOOLJET_VERSION = fs.readFileSync('./.version', 'utf8').trim();
 process.env['RELEASE_VERSION'] = globalThis.TOOLJET_VERSION;
