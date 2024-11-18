@@ -163,6 +163,10 @@ After November 11th, applications with the old Kanban Board component will crash
 - Update all queries and components using these data sources
 - Test all affected components and queries after migration
 
+#### Action Required After Upgrade
+
+If you haven't migrated your local data sources to global data sources, you will encounter an error message indicating that local data sources are no longer supported. For detailed instructions on migrating from Local Data Sources to the new Data Sources, please refer to our [Local Data Sources Migration Guide](/docs/data-sources/local-data-sources-migration).
+
 ### Workspace Variables
 
 #### Action Required
