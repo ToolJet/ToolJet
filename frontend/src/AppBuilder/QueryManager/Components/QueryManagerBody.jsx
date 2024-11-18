@@ -337,14 +337,6 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
         canReadDataSource(selectedQuery?.data_source_id) ||
         canDeleteDataSource()
       : true;
-
-  useEffect(() => {
-    console.log('selected ds', selectedDataSource);
-    console.log('selected query', selectedQuery);
-    console.log('selected ds kind', selectedDataSource?.kind);
-    console.log('selected ds id', selectedDataSource?.id == 'null');
-  }, [selectedDataSource, selectedQuery]);
-
   return (
     <div
       className={`query-details ${selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''} ${
