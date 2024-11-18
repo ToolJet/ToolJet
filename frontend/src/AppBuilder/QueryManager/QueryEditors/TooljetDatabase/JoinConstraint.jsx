@@ -371,7 +371,7 @@ const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
             variant="ghostBlue"
             size="sm"
             onClick={() => {
-              const newData = { ...data };
+              const newData = deepClone(data);
               set(newData, 'conditions.conditionsList', [...conditionsList, { operator: '=' }]);
               onChange(newData);
             }}

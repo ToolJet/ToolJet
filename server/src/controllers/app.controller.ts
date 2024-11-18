@@ -73,7 +73,6 @@ export class AppController {
     return await this.authService.validateInvitedUserSession(user, invitedUser, tokens);
   }
 
-  @UseGuards(SignupDisableGuard)
   @UseGuards(FirstUserSignupDisableGuard)
   @Post('activate-account-with-token')
   async activateAccountWithToken(
@@ -164,7 +163,6 @@ export class AppController {
     return await this.authService.acceptOrganizationInvite(response, user, acceptInviteDto);
   }
 
-  @UseGuards(SignupDisableGuard)
   @UseGuards(FirstUserSignupDisableGuard)
   @Post('signup')
   async signup(@Body() appSignUpDto: AppSignupDto, @Res({ passthrough: true }) response: Response) {

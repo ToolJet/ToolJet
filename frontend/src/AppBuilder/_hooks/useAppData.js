@@ -16,7 +16,7 @@ import { usePrevious } from '@dnd-kit/utilities';
 import { deepCamelCase } from '@/_helpers/appUtils';
 import { useEventActions } from '../_stores/slices/eventsSlice';
 import useRouter from '@/_hooks/use-router';
-import { navigate } from '../_utils/misc';
+import { extractEnvironmentConstantsFromConstantsList, navigate } from '../_utils/misc';
 import { getWorkspaceId } from '@/_helpers/utils';
 import { shallow } from 'zustand/shallow';
 import { fetchAndSetWindowTitle, pageTitles, defaultWhiteLabellingSettings } from '@white-label/whiteLabelling';
@@ -93,7 +93,9 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
     if (pageSwitchInProgress) {
       const currentPageEvents = events.filter((event) => event.target === 'page' && event.sourceId === currentPageId);
       setPageSwitchInProgress(false);
-      handleEvent('onPageLoad', currentPageEvents, {});
+      setTimeout(() => {
+        handleEvent('onPageLoad', currentPageEvents, {});
+      }, 0);
     }
   }, [pageSwitchInProgress, currentPageId]);
 
@@ -156,17 +158,40 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
       let editorEnvironment = result.editorEnvironment;
       const editorEnvironmentId = result.editing_version?.current_environment_id;
       if (isPreviewForVersion) {
+        const rawDataQueries = appData?.data_queries;
+        const rawEditingVersionDataQueries = appData?.editing_version?.data_queries;
         appData = convertAllKeysToSnakeCase(appData);
+
+        appData.data_queries = rawDataQueries;
+        if (appData.editing_version && rawEditingVersionDataQueries) {
+          appData.editing_version.data_queries = rawEditingVersionDataQueries;
+        }
+
         editorEnvironment = {
           id: environmentId,
           name: queryParams.env,
         };
       }
 
-      const constantsResp =
-        isPublicAccess && appData.is_public
-          ? await orgEnvironmentConstantService.getConstantsFromPublicApp(slug)
-          : await orgEnvironmentConstantService.getConstantsFromApp();
+      let constantsResp;
+      if (mode === 'edit') {
+        let defaultEnvId = null;
+        if (editorEnvironment?.id == null) {
+          const envs = await appEnvironmentService.getAllEnvironments(appId);
+          const defaultEnv = envs.environments.find((env) => env?.is_default === true);
+          defaultEnvId = defaultEnv ? defaultEnv.id : null;
+        }
+        constantsResp = await orgEnvironmentConstantService.getConstantsFromEnvironment(
+          editorEnvironment?.id || defaultEnvId
+        );
+      } else {
+        constantsResp =
+          isPublicAccess && appData.is_public
+            ? await orgEnvironmentConstantService.getConstantsFromPublicApp(slug)
+            : await orgEnvironmentConstantService.getConstantsFromApp(slug);
+      }
+
+      constantsResp.constants = extractEnvironmentConstantsFromConstantsList(constantsResp?.constants, 'production');
 
       const pages = appData.pages.map((page) => {
         return page;
@@ -181,7 +206,12 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
         appId: appData.id,
         slug: appData.slug,
         currentAppEnvironmentId: editorEnvironmentId,
-        isMaintenanceOn: result.is_maintenance_on,
+        isMaintenanceOn:
+          'is_maintenance_on' in result
+            ? result.is_maintenance_on
+            : 'isMaintenanceOn' in result
+            ? result.isMaintenanceOn
+            : false,
         organizationId: appData.organizationId || appData.organization_id,
         homePageId: homePageId,
         isPublic: appData.is_public,
@@ -194,7 +224,6 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
 
       setPages(pages, moduleId);
       setPageSettings(deepCamelCase(appData?.editing_version?.page_settings ?? appData?.page_settings));
-
       // set starting page as homepage initially
       let startingPage = appData.pages.find((page) => page.id === homePageId);
 
@@ -339,7 +368,12 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
           appId: appData.id,
           slug: appData.slug,
           creationMode: appData.creationMode,
-          isMaintenanceOn: appData.is_maintenance_on,
+          isMaintenanceOn:
+            'is_maintenance_on' in appData
+              ? appData.is_maintenance_on
+              : 'isMaintenanceOn' in appData
+              ? appData.isMaintenanceOn
+              : false,
           organizationId: appData.organizationId || appData.organization_id,
           homePageId: appData.editing_version.homePageId,
           isPublic: appData.isPublic,

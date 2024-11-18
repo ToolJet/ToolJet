@@ -69,7 +69,9 @@ export class AddingUsersToRespectiveRolesBuilderAndEndUsers1720365772516 impleme
               organizationId,
             }
           )
-          .innerJoin('users.apps', 'apps')
+          .innerJoin('users.apps', 'apps', 'apps.organizationId = :organizationId', {
+            organizationId,
+          })
           .select('users.id')
           .distinct()
           .getMany()

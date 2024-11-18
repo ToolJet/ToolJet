@@ -17,6 +17,7 @@ import { GranularPermissions } from 'src/entities/granular_permissions.entity';
 import { TOOLJET_RESOURCE } from 'src/constants/global.constant';
 import { getUserPermissionsQuery } from '@modules/permissions/utility/permission-ability.utility';
 import { AppBase } from 'src/entities/app_base.entity';
+import { getUserRoleQuery } from '@modules/user_resource_permissions/utility/group-permissions.utility';
 
 @Injectable()
 export class AbilityService {
@@ -97,5 +98,15 @@ export class AbilityService {
     });
 
     return userAppsPermissions;
+  }
+
+  async isBuilder(user: User): Promise<boolean> {
+    return USER_ROLE.BUILDER === (await this.getUserRole(user.id, user.organizationId));
+  }
+
+  async getUserRole(userId: string, organizationId: string): Promise<string> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return (await getUserRoleQuery(userId, organizationId, manager).getOne()).name;
+    });
   }
 }

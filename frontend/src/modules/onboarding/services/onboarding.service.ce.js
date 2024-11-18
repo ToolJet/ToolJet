@@ -2,6 +2,7 @@ import config from 'config';
 import { handleResponse } from '@/_helpers';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import queryString from 'query-string';
+import { getCountryByTimeZone } from '@/modules/common/helpers/timeUtils';
 
 function setupFirstUser({ companyName, buildPurpose, name, workspaceName, password, email }) {
   const requestOptions = {
@@ -15,6 +16,7 @@ function setupFirstUser({ companyName, buildPurpose, name, workspaceName, passwo
       workspaceName,
       email,
       password,
+      region: getCountryByTimeZone(),
     }),
   };
   return fetch(`${config.apiUrl}/onboarding/setup-first-user`, requestOptions)

@@ -50,7 +50,7 @@ export class MetadataService {
   async finishOnboarding(name, email, companyName, companySize, role) {
     if (process.env.NODE_ENV == 'production') {
       const metadata = await this.getMetaData();
-      void this.finishInstallation(name, email, companyName, companySize, role, metadata);
+      void this.finishInstallation(name, email, companyName, null, companySize, role, metadata);
 
       await this.updateMetaData({
         onboarded: true,
@@ -58,10 +58,10 @@ export class MetadataService {
     }
   }
 
-  async finishOnboardingCE(name: string, email: string, companyName: string) {
+  async finishOnboardingCE(name: string, email: string, companyName: string, region: string) {
     if (process.env.NODE_ENV == 'production') {
       const metadata = await this.getMetaData();
-      void this.finishInstallation(name, email, companyName, null, null, metadata);
+      void this.finishInstallation(name, email, companyName, region, null, null, metadata);
 
       await this.updateMetaData({
         onboarded: true,
@@ -73,6 +73,7 @@ export class MetadataService {
     name: string,
     email: string,
     org: string,
+    region: string,
     companySize?: string,
     role?: string,
     metadata?: Metadata
@@ -88,6 +89,7 @@ export class MetadataService {
           org,
           companySize,
           role,
+          region,
         },
       });
     } catch (error) {

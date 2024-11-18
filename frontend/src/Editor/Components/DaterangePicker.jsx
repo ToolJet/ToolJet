@@ -16,6 +16,7 @@ export const DaterangePicker = function DaterangePicker({
   fireEvent,
   dataCy,
   id,
+  formId,
 }) {
   const isInitialRender = useRef(true);
   const { borderRadius, visibility, disabledState, boxShadow } = styles;
@@ -82,10 +83,14 @@ export const DaterangePicker = function DaterangePicker({
 
   function focusChanged(focus) {
     setFocusedInput(focus);
-    if (focus) {
-      document.querySelector(`.ele-${id}`).style.zIndex = 3;
-    } else {
-      document.querySelector(`.ele-${id}`).style.zIndex = '';
+    const currentComponent = document.querySelector(`.ele-${id}`);
+    if (currentComponent) {
+      currentComponent.style.zIndex = focus ? 3 : '';
+    }
+
+    const formComponent = formId && document.querySelector(`.form-${formId}`);
+    if (formComponent) {
+      formComponent.style.zIndex = focus ? 4 : '';
     }
   }
 

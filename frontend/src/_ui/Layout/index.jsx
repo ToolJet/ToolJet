@@ -13,6 +13,8 @@ import { ConfirmDialog } from '@/_components';
 import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
 import Settings from '@/_components/Settings';
 import { retrieveWhiteLabelLogo, fetchWhiteLabelDetails } from '@white-label/whiteLabelling';
+import '../../_styles/left-sidebar.scss';
+import { hasBuilderRole } from '@/_helpers/utils';
 
 function Layout({
   children,
@@ -27,6 +29,7 @@ function Layout({
   const admin = currentUserValue?.admin;
   fetchWhiteLabelDetails();
   const whiteLabelLogo = retrieveWhiteLabelLogo();
+  const isBuilder = hasBuilderRole(authenticationService?.currentSessionValue?.role ?? {});
 
   const {
     checkForUnsavedChanges,
@@ -86,7 +89,7 @@ function Layout({
                     </Link>
                   </ToolTip>
                 </li>
-                {admin && (
+                {(admin || isBuilder) && (
                   <li className="text-center  cursor-pointer" data-cy={`database-icon`}>
                     <ToolTip message="ToolJet Database" placement="right">
                       <Link

@@ -347,7 +347,7 @@ export class AuthService {
 
     return dbTransactionWrap(async (manager: EntityManager) => {
       // Check if the configs allows user signups
-      if (this.configService.get<string>('DISABLE_SIGNUPS') === 'true') {
+      if (!organizationId && this.configService.get<string>('DISABLE_SIGNUPS') === 'true') {
         throw new NotAcceptableException();
       }
 

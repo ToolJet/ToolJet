@@ -21,19 +21,15 @@ export default ({
   }
 
   function removeKeyValuePair(index) {
-    options.splice(index, 1);
-    optionchanged(getter, options);
+    const newOptions = [...options];
+    newOptions.splice(index, 1);
+    optionchanged(getter, newOptions);
   }
 
   function keyValuePairValueChanged(value, keyIndex, index) {
-    if (!isRenderedAsQueryEditor) {
-      const newOptions = deepClone(options);
-      newOptions[index][keyIndex] = value;
-      options.length - 1 === index ? addNewKeyValuePair(newOptions) : optionchanged(getter, newOptions);
-    } else {
-      options[index][keyIndex] = value;
-      optionchanged(getter, options);
-    }
+    const newOptions = deepClone(options);
+    newOptions[index][keyIndex] = value;
+    options.length - 1 === index ? addNewKeyValuePair(newOptions) : optionchanged(getter, newOptions);
   }
 
   const commonProps = {

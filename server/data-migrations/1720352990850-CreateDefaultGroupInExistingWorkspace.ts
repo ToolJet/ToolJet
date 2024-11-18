@@ -106,7 +106,9 @@ export class CreateDefaultGroupInExistingWorkspace1720352990850 implements Migra
               admin: 'admin',
             })
             .getMany();
-          const userIds = adminsUsers.map((userGroup) => userGroup.userId);
+          const uniqueUserIds = new Set(adminsUsers.map((userGroup) => userGroup.userId));
+          if (uniqueUserIds.size === 0) continue;
+          const userIds = [...uniqueUserIds];
           await this.migrateUserGroup(manager, userIds, group.id);
         }
       }

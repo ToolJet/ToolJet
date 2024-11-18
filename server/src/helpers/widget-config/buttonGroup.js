@@ -146,8 +146,8 @@ export const buttonGroupConfig = {
       visibility: { value: '{{true}}' },
       borderRadius: { value: '{{4}}' },
       disabledState: { value: '{{false}}' },
-      selectedTextColor: { value: '' },
-      selectedBackgroundColor: { value: '' },
+      selectedTextColor: { value: '#FFFFFF' },
+      selectedBackgroundColor: { value: '#4368E3' },
     },
   },
 };

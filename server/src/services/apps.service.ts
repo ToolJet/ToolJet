@@ -28,7 +28,7 @@ import { EventHandler, Target } from 'src/entities/event_handler.entity';
 import { VersionReleaseDto } from '@dto/version-release.dto';
 
 import { findAllEntityReferences, isValidUUID, updateEntityReferences } from 'src/helpers/import_export.helpers';
-import { isEmpty } from 'lodash';
+import { isEmpty, set } from 'lodash';
 import { AppBase } from 'src/entities/app_base.entity';
 import { LayoutDimensionUnits } from 'src/helpers/components.helper';
 import { AbilityService } from './permissions-ability.service';
@@ -392,6 +392,15 @@ export class AppsService {
           dataQueryMapping: oldDataQueryToNewMapping,
         });
 
+        if (appVersion.globalSettings) {
+          const globalSettings = appVersion.globalSettings;
+          const updatedGlobalSettings = updateEntityReferences(globalSettings, {
+            ...oldDataQueryToNewMapping,
+            ...oldComponentToNewComponentMapping,
+          });
+          await manager.update(AppVersion, { id: appVersion.id }, { globalSettings: updatedGlobalSettings });
+        }
+
         await this.updateEventActionsForNewVersionWithNewMappingIds(
           manager,
           appVersion.id,
@@ -523,9 +532,9 @@ export class AppsService {
 
     let homePageId = prevHomePagePage;
 
-    const newComponents = [];
+    let newComponents = [];
     const newComponentLayouts = [];
-    const oldComponentToNewComponentMapping = {};
+    let oldComponentToNewComponentMapping = {};
     const oldPageToNewPageMapping = {};
 
     const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
@@ -651,9 +660,14 @@ export class AppsService {
           await manager.save(newEvent);
         });
       });
-
       newComponents.forEach((component) => {
         let parentId = component.parent ? component.parent : null;
+        // re establish mapping relationship
+        if (component?.properties?.buttonToSubmit) {
+          const newButtonToSubmitValue =
+            oldComponentToNewComponentMapping[component?.properties?.buttonToSubmit?.value];
+          if (newButtonToSubmitValue) set(component, 'properties.buttonToSubmit.value', newButtonToSubmitValue);
+        }
 
         if (!parentId) return;
 
@@ -679,6 +693,8 @@ export class AppsService {
 
       await manager.save(newComponents);
       await manager.save(newComponentLayouts);
+      newComponents = [];
+      oldComponentToNewComponentMapping = {};
     }
 
     await manager.update(AppVersion, { id: appVersion.id }, { homePageId });

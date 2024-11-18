@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { isEmpty } from 'lodash';
+import { isEmpty, set } from 'lodash';
 import { App } from 'src/entities/app.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
@@ -325,6 +325,20 @@ export class AppImportExportService {
         await manager.save(toUpdateDataQueries);
       }
     }
+    // update Global settings of created versions
+    const appVersionIds = Object.values(resourceMapping.appVersionMapping);
+    const newAppVersions = await manager.find(AppVersion, {
+      where: {
+        id: In(appVersionIds),
+      },
+      select: ['id', 'globalSettings'],
+    });
+    for (const appVersion of newAppVersions) {
+      if (appVersion.globalSettings) {
+        const updatedGlobalSettings = updateEntityReferences(appVersion.globalSettings, mappings);
+        await manager.update(AppVersion, { id: appVersion.id }, { globalSettings: updatedGlobalSettings });
+      }
+    }
   }
 
   async createImportedAppForUser(manager: EntityManager, appParams: any, user: User, isGitApp = false): Promise<App> {
@@ -503,6 +517,7 @@ export class AppImportExportService {
                 autoComputeLayout: page.autoComputeLayout || false,
                 isPageGroup: page.isPageGroup || false,
                 pageGroupIndex: page.pageGroupIndex || null,
+                icon: page.icon || null,
               });
               const pageCreated = await transactionalEntityManager.save(newPage);
 
@@ -770,6 +785,7 @@ export class AppImportExportService {
           disabled: page.disabled || false,
           hidden: page.hidden || false,
           autoComputeLayout: page.autoComputeLayout || false,
+          icon: page.icon || null,
         });
 
         const pageCreated = await manager.save(newPage);
@@ -795,6 +811,10 @@ export class AppImportExportService {
           const newComponent = new Component();
 
           let parentId = component.parent ? component.parent : null;
+          if (component?.properties?.buttonToSubmit) {
+            const newButtonToSubmitValue = newComponentIdsMap[component?.properties?.buttonToSubmit?.value];
+            if (newButtonToSubmitValue) set(component, 'properties.buttonToSubmit.value', newButtonToSubmitValue);
+          }
 
           const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pageComponents, parentId, true);
 
@@ -1260,6 +1280,23 @@ export class AppImportExportService {
     return appResourceMappings;
   }
 
+  createViewerNavigationVisibilityForImportedApp(importedVersion: AppVersion) {
+    let pageSettings = {};
+    if (importedVersion.pageSettings) {
+      pageSettings = { ...importedVersion.pageSettings };
+    } else {
+      pageSettings = {
+        properties: {
+          disableMenu: {
+            value: `{{${!importedVersion.showViewerNavigation}}}`,
+            fxActive: false,
+          },
+        },
+      };
+    }
+    return pageSettings;
+  }
+
   async createAppVersionsForImportedApp(
     manager: EntityManager,
     user: User,
@@ -1300,7 +1337,7 @@ export class AppImportExportService {
         version.showViewerNavigation = appVersion.showViewerNavigation;
         version.homePageId = appVersion.homePageId;
         version.globalSettings = appVersion.globalSettings;
-        version.pageSettings = appVersion.pageSettings;
+        version.pageSettings = this.createViewerNavigationVisibilityForImportedApp(appVersion);
       } else {
         version.showViewerNavigation = appVersion.definition?.showViewerNavigation || true;
         version.homePageId = appVersion.definition?.homePageId;
@@ -1318,7 +1355,7 @@ export class AppImportExportService {
           };
         } else {
           version.globalSettings = appVersion.definition?.globalSettings;
-          version.pageSettings = appVersion.definition?.pageSettings;
+          version.pageSettings = this.createViewerNavigationVisibilityForImportedApp(appVersion);
         }
       }
 

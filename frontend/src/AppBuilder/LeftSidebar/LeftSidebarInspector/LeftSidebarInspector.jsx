@@ -85,7 +85,7 @@ const LeftSidebarInspector = ({ darkMode, pinned, setPinned }) => {
 
     return jsontreeData;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sortedComponents, sortedQueries, sortedVariables, sortedConstants, sortedPageVariables]);
+  }, [sortedComponents, sortedQueries, sortedVariables, sortedConstants, sortedPageVariables, sortedGlobalVariables]);
 
   return (
     <div

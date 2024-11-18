@@ -573,7 +573,6 @@ export class DataQueriesService {
     finalResult += str.slice(lastIndex);
     return finalResult;
   }
-
   async parseQueryOptions(
     object: any,
     options: object,
@@ -581,10 +580,8 @@ export class DataQueriesService {
     environmentId?: string
   ): Promise<object> {
     const stack: any[] = [{ obj: object, key: null, parent: null }];
-
     while (stack.length > 0) {
       const { obj, key, parent } = stack.pop();
-
       // Case 1: Object
       if (typeof obj === 'object' && obj !== null && !Array.isArray(obj)) {
         Object.keys(obj).forEach((k) => {
@@ -592,7 +589,6 @@ export class DataQueriesService {
         });
         continue;
       }
-
       // Case 2: Array
       if (Array.isArray(obj)) {
         obj.forEach((element, index) => {
@@ -600,64 +596,82 @@ export class DataQueriesService {
         });
         continue;
       }
-
       // Case 3: String
       if (typeof obj === 'string') {
         let resolvedValue = obj.replace(/\n/g, ' ');
-
         // a: Handle strings with both {{ }} and %%
-        if (resolvedValue.includes('{{') && resolvedValue.includes('}}') && resolvedValue.includes('%%')) {
+        if (
+          typeof resolvedValue === 'string' &&
+          resolvedValue.includes('{{') &&
+          resolvedValue.includes('}}') &&
+          resolvedValue?.includes('%%')
+        ) {
           let resolvedVar = options[resolvedValue];
-
           // find all server variables in the string
-          if (resolvedValue.includes(`server.`)) {
+          if (typeof resolvedValue === 'string' && resolvedValue.includes(`server.`)) {
             let serverVariables: string[] = resolvedValue.match(/server.(.*?)%%/g) || [];
-
             // Map each variable by replacing '%%' and 'server.'
             serverVariables = serverVariables?.map((variable) => {
               return variable.replace('%%', '').replace('server.', '');
             });
-
             const resolvedOrgVar: string[] = [];
-
             for (const variable of serverVariables || []) {
               const resolvedVariable = await this.resolveVariable(variable, organization_id);
               resolvedOrgVar.push(resolvedVariable);
             }
-
             serverVariables?.forEach((i) => {
               resolvedVar = resolvedVar.replace('HiddenEnvironmentVariable', resolvedOrgVar[i]);
             });
           }
-
           if (parent && key !== null) {
             parent[key] = resolvedVar;
           }
         }
-
         // b: Handle {{constants.}} or {{secrets.}}
-        if (resolvedValue?.includes('{{constants.') || resolvedValue.includes('{{secrets.')) {
+        if (
+          (typeof resolvedValue === 'string' && resolvedValue.includes('{{constants.')) ||
+          resolvedValue.includes('{{secrets.')
+        ) {
           const resolvingConstant = await this.resolveConstants(resolvedValue, organization_id, environmentId);
           resolvedValue = resolvingConstant;
           if (parent && key !== null) {
             parent[key] = resolvedValue;
           }
         }
-
         // c: Replace all occurrences of {{ }} variables
-        if (resolvedValue?.match(/\{\{(.*?)\}\}/g)?.length > 0) {
+        if (
+          typeof resolvedValue === 'string' &&
+          resolvedValue?.match(/\{\{(.*?)\}\}/g)?.length > 0 &&
+          !(resolvedValue.startsWith('{{') && resolvedValue.endsWith('}}'))
+        ) {
           const variables = resolvedValue.match(/\{\{(.*?)\}\}/g);
 
           for (const variable of variables || []) {
-            resolvedValue = resolvedValue.replace(variable, options[variable]);
+            let replacement = options[variable];
+            // Check if the replacement is an object
+            if (typeof replacement === 'object' && replacement !== null) {
+              // Ensure parent is a non-empty array before attempting to access its first element
+              if (Array.isArray(parent) && parent.length > 0) {
+                // Assign replacement value based on the first item in the parent array
+                replacement = replacement[parent[0]] || replacement;
+              }
+            }
+            // Check type of replacement and assign accordingly
+            if (typeof replacement === 'string' || typeof replacement === 'number') {
+              // If replacement is a string, perform the replace
+              resolvedValue = resolvedValue.replace(variable, String(replacement));
+            } else {
+              // If replacement is an object or an array, assign the whole value to resolvedValue
+              resolvedValue = resolvedValue.replace(variable, JSON.stringify(replacement));
+            }
           }
           if (parent && key !== null) {
             parent[key] = resolvedValue;
           }
         }
-
         // d: Simple variable replacement for single {{variable}}
         if (
+          typeof resolvedValue === 'string' &&
           resolvedValue.startsWith('{{') &&
           resolvedValue.endsWith('}}') &&
           (resolvedValue.match(/{{/g) || [])?.length === 1
@@ -667,9 +681,9 @@ export class DataQueriesService {
             parent[key] = resolvedValue;
           }
         }
-
         // e: Handle strings with %%
         if (
+          typeof resolvedValue === 'string' &&
           resolvedValue.startsWith('%%') &&
           resolvedValue.endsWith('%%') &&
           (resolvedValue.match(/%%/g) || [])?.length === 2
@@ -683,9 +697,9 @@ export class DataQueriesService {
             parent[key] = resolvedValue;
           }
         }
-
         // f: Replace all %% variables
-        const variables = resolvedValue?.match(/%%(.*?)%%/g);
+        //disallow strings with spaces in between '%%' eg. '%% hghgh hg %%'
+        const variables = typeof resolvedValue === 'string' && resolvedValue?.match(/%%(?:client|server)\.[^\s%%]+%%/g);
         if (variables?.length > 0) {
           for (const variable of variables) {
             if (variable.includes(`server.`)) {
@@ -701,7 +715,6 @@ export class DataQueriesService {
         }
       }
     }
-
     return object;
   }
 

@@ -100,6 +100,11 @@ export class CreateAdminDto {
   @IsNotEmpty()
   @Transform(({ value }) => sanitizeInput(value))
   workspaceName: string;
+
+  @IsString()
+  @IsOptional()
+  @Transform(({ value }) => sanitizeInput(value))
+  region?: string;
 }
 export class OnboardUserDto extends CreateUserDto {
   @IsString()
