@@ -38,13 +38,15 @@ const SignupPage = ({ configs, organizationId }) => {
     });
   }, []);
 
-  const handleSignup = (formData, onSuccess = () => {}, onFaluire = () => {}) => {
+  const handleSignup = (formData, onSuccess = () => {}, onFailure = () => {}) => {
     const { email, name, password } = formData;
-
     if (organizationToken) {
       authenticationService
         .activateAccountWithToken(email, password, organizationToken)
-        .then((response) => onInvitedUserSignUpSuccess(response, navigate))
+        .then((response) => {
+          onInvitedUserSignUpSuccess(response, navigate);
+          onSuccess();
+        })
         .catch((errorObj) => {
           let errorMessage;
           const isThereAnyErrorsArray = errorObj?.error?.length && typeof errorObj?.error?.[0] === 'string';
@@ -54,6 +56,7 @@ const SignupPage = ({ configs, organizationId }) => {
             errorMessage = errorObj?.error?.error;
           }
           errorMessage && toast.error(errorMessage);
+          onFailure();
         });
     } else {
       authenticationService
@@ -69,7 +72,7 @@ const SignupPage = ({ configs, organizationId }) => {
           toast.error(e?.error || 'Something went wrong!', {
             position: 'top-center',
           });
-          onFaluire();
+          onFailure();
         });
     }
   };
