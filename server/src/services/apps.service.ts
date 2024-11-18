@@ -522,7 +522,7 @@ export class AppsService {
 
     const newComponents = [];
     const newComponentLayouts = [];
-    let oldComponentToNewComponentMapping = {};
+    const oldComponentToNewComponentMapping = {};
     const oldPageToNewPageMapping = {};
 
     const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
