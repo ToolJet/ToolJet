@@ -60,7 +60,7 @@ export const CardContent = ({ className = '', children }) => (
 );
 
 export const CardTitle = ({ className = '', children }) => (
-    <h3 className={`text-xl font-semibold leading-none tracking-tight ${className}`}>
+    <h3 className={`text-xl font-semibold leading-none tracking-tight text-black ${className}`}>
         {children}
     </h3>
 );
@@ -101,7 +101,7 @@ export const IconCard = ({ icon: Icon, title, content, color, href }) => (
                 <CardTitle>{title}</CardTitle>
             </CardHeader>
             <CardContent className="flex-grow">
-                <p className="text-sm text-gray-500 line-clamp-4">{content}</p>
+                <p className="text-sm text-gray-600 line-clamp-5">{content}</p>
             </CardContent>
         </div>
     </Card>
@@ -114,7 +114,7 @@ export const SmallCard = ({ icon: Icon, title, href }) => (
                 <div className="w-10 h-10 rounded-lg shadow flex items-center justify-center">
                     <Icon className="w-5 h-5 text-blue-500" />
                 </div>
-                <span className="text-sm font-medium">{title}</span>
+                <span className="text-sm font-semibold text-black">{title}</span>
             </div>
         </div>
     </Card>
