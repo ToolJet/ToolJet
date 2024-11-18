@@ -10,6 +10,7 @@
 /** @type {import('@docusaurus/plugin-content-docs').SidebarsConfig} */
 const sidebars = {
   docs: [
+    "doc-home-page",
     {
       'type': 'category',
       'label': 'Getting Started',
