@@ -237,7 +237,8 @@ export const Table = React.memo(
       const changesToBeSavedAndExposed = { dataUpdates: newDataUpdates, changeSet: newChangeset };
       mergeToTableDetails(changesToBeSavedAndExposed);
       setExposedVariables({ ...changesToBeSavedAndExposed, updatedData: clonedTableData });
-      fireEvent('onCellValueChanged');
+      // Need to add a timeout here as changes are happening in the next render
+      setTimeout(() => fireEvent('onCellValueChanged'), 0);
       return;
     }
 
