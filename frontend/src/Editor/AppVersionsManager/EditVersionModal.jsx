@@ -87,7 +87,7 @@ export const EditVersion = ({ appId, setShowEditAppVersion, showEditAppVersion }
               {t('globals.cancel', 'Cancel')}
             </button>
             <button
-              disabled={!versionName}
+              disabled={!versionName || versionName === editingVersion?.name}
               className={`btn btn-primary ${isEditingVersion ? 'btn-loading' : ''}`}
               data-cy="save-button"
               type="submit"
