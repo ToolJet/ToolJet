@@ -65,30 +65,30 @@ export const CardTitle = ({ className = '', children }) => (
     </h3>
 );
 
-export const Button = ({ 
-  variant = "default", 
-  className = '', 
-  children, 
+export const Button = ({
+    variant = "default",
+    className = '',
+    children,
 }) => {
-  const baseStyles = "cursor-pointer inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background";
-  const variantStyles = {
-    default: "bg-primary text-primary-foreground hover:bg-primary/90",
-    outline: "border border-input hover:bg-accent hover:text-accent-foreground",
-    secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-    ghost: "hover:bg-accent hover:text-accent-foreground",
-    link: "text-primary border-none",
-  };
+    const baseStyles = "cursor-pointer inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background";
+    const variantStyles = {
+        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        outline: "border border-input hover:bg-accent hover:text-accent-foreground",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
+        link: "text-primary border-none",
+    };
 
-  return (
-    <div className="text-center">
-      <button 
-        className={`${baseStyles} ${variantStyles[variant]} ${className} bg-white text-blue-600 hover:bg-blue-200 hover:text-blue-800 px-4 py-2`}
-      >
-        {children}
-        <ArrowRight className="ml-2 w-4 h-4 inline" />
-      </button>
-    </div>
-  );
+    return (
+        <div className="text-center">
+            <button
+                className={`${baseStyles} ${variantStyles[variant]} ${className} bg-white text-blue-600 hover:bg-blue-200 hover:text-blue-800 px-4 py-2`}
+            >
+                {children}
+                <ArrowRight className="ml-2 w-4 h-4 inline" />
+            </button>
+        </div>
+    );
 };
 
 export const IconCard = ({ icon: Icon, title, content, color, href }) => (
@@ -138,10 +138,10 @@ export const SectionContainer = ({ title, description, children }) => (
 className="absolute top-0 right-0 w-96 h-96 pointer-events-none"
 style={{
     backgroundImage: `
-    linear-gradient(to left, rgba(59, 130, 246, 0.1) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(59, 130, 246, 0.1) 1px, transparent 1px)
+    linear-gradient(to left, rgba(59, 130, 246, 0.1) 2px, transparent 2px),
+    linear-gradient(to bottom, rgba(59, 130, 246, 0.1) 2px, transparent 2px)
     `,
-    backgroundSize: '64px 64px',
+    backgroundSize: '110px 64px',
     maskImage: 'linear-gradient(to left, rgba(0, 0, 0, 1.0) 20%, transparent 80%)',
     WebkitMaskImage: 'linear-gradient(to left, rgba(0, 0, 0, 1.0) 20%, transparent 80%)'
 }}
