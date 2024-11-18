@@ -103,7 +103,7 @@ function setSecurityHeaders(app, configService) {
     res.setHeader('Permissions-Policy', 'geolocation=(self), camera=(), microphone=()');
 
     const subpath = getSubpath();
-    const path = req.path.replace(subpath, '/');
+    const path = req.path.replace(subpath, subpath ? '/' : '');
     if (path.startsWith('/api/')) {
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     } else {
