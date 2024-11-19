@@ -12,6 +12,7 @@ import CodeHinter from '@/Editor/CodeEditor';
 import GoogleSheets from '@/_components/Googlesheets';
 import Slack from '@/_components/Slack';
 import Zendesk from '@/_components/Zendesk';
+import ApiEndpointInput from '@/_components/ApiEndpointInput';
 import { ConditionFilter, CondtionSort, MultiColumn } from '@/_components/MultiConditions';
 import Salesforce from '@/_components/Salesforce';
 import ToolJetDbOperations from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/ToolJetDbOperations';
@@ -150,6 +151,8 @@ const DynamicForm = ({
         return ConditionFilter;
       case 'sorts':
         return CondtionSort;
+      case 'react-component-api-endpoint':
+        return ApiEndpointInput;
       case 'react-component-salesforce':
         return Salesforce;
       default:
@@ -184,6 +187,7 @@ const DynamicForm = ({
     encrypted,
     editorType = 'basic',
     placeholders = {},
+    specUrl = '',
     disabled = false,
   }) => {
     const source = schema?.source?.kind;
@@ -309,7 +313,15 @@ const DynamicForm = ({
           selectedDataSource,
           darkMode,
         };
-      case 'codehinter':
+      case 'codehinter': {
+        let theme;
+        if (darkMode) {
+          theme = 'monokai';
+        } else if (lineNumbers) {
+          theme = 'duotone-light';
+        } else {
+          theme = 'default';
+        }
         return {
           type: editorType,
           initialValue: options[key]
@@ -321,6 +333,7 @@ const DynamicForm = ({
           lineNumbers,
           className: className ? className : lineNumbers ? 'query-hinter' : 'codehinter-query-editor-input',
           onChange: (value) => optionchanged(key, value),
+          theme: theme,
           placeholder,
           height,
           width,
@@ -329,6 +342,7 @@ const DynamicForm = ({
           disabled,
           delayOnChange: false,
         };
+      }
       case 'react-component-openapi-validator':
         return {
           format: options.format?.value,
@@ -375,6 +389,13 @@ const DynamicForm = ({
           onChange: (value) => optionchanged(key, value),
           placeholders,
         };
+      case 'react-component-api-endpoint':
+        return {
+          specUrl: specUrl,
+          optionsChanged,
+          options,
+          darkMode,
+        };
       default:
         return {};
     }
@@ -417,7 +438,7 @@ const DynamicForm = ({
         {Object.keys(obj).map((key) => {
           const { label, type, encrypted, className, key: propertyKey } = obj[key];
           const Element = getElement(type);
-          const isSpecificComponent = ['tooljetdb-operations'].includes(type);
+          const isSpecificComponent = ['tooljetdb-operations', 'react-component-api-endpoint'].includes(type);
 
           return (
             <div
