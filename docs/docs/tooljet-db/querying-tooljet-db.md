@@ -143,9 +143,8 @@ The date with time column stores data in the ISO 8601 format. When querying a ta
 1. Connect the query to the Table Component and navigate to its properties panel.
 2. In the Columns section, select the column that stores the date with time.
 3. Change the column type from String to **Date Picker**.
-4. In the **Parse format** section, enable the **Parse in unix timestamp** and **Unix timestamp** options as needed.
-5. Under the date format section, toggle on the **Enable date** and **Enable time** options accordingly.
-6. In the transformation field, the `{{cellValue}}` variable contains the ISO 8601 formatted date. Convert it to a Date object using `{{new Date(cellValue)}}`, then format the Date object to meet your requirements.
+4. Under the date format section, toggle on the **Enable date** and **Enable time** options accordingly.
+5. In the transformation field, the `{{cellValue}}` variable contains the ISO 8601 formatted date. Convert it to a Date object using `{{new Date(cellValue)}}`, then format the Date object to meet your requirements.
     <img style={{marginTop:'15px'}} className="screenshot-full" src="/img/v2-beta/database/newui/date-with-time-column.png" alt="ToolJet Database Date" />
 
 </div>
