@@ -344,6 +344,7 @@ const sidebars = {
           ],
         },
         'tutorial/transformations',
+        'data-sources/local-data-sources-migration',
       ],
     },
     {
