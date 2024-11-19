@@ -36,6 +36,7 @@ import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { componentTypes } from '@/AppBuilder/WidgetManager/componentTypes';
 import { copyComponents } from '@/AppBuilder/AppCanvas/appCanvasUtils.js';
+import DatepickerV2 from './Components/DatepickerV2.jsx';
 
 const INSPECTOR_HEADER_OPTIONS = [
   {
@@ -705,6 +706,9 @@ const GetAccordion = React.memo(
       case 'MultiselectV2':
       case 'RadioButtonV2':
         return <Select {...restProps} />;
+
+      case 'DatepickerV2':
+        return <DatepickerV2 {...restProps} />;
 
       default: {
         return <DefaultComponent {...restProps} />;

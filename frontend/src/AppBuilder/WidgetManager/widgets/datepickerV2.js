@@ -1,3 +1,5 @@
+import _ from 'lodash';
+
 export const datepickerV2Config = {
   name: 'Datepicker',
   displayName: 'Date Picker',
@@ -8,7 +10,56 @@ export const datepickerV2Config = {
     height: 43,
   },
   validation: {
-    customRule: { type: 'code', displayName: 'Custom validation' },
+    minDate: {
+      type: 'datepicker',
+      placeholder: 'MM/DD/YYYY',
+      displayName: 'Min Date',
+      isFxNotRequired: true,
+      showLabel: false,
+      label: 'Min Date',
+      options: { className: 'datepicker-validation-half' },
+    },
+    maxDate: {
+      type: 'datepicker',
+      placeholder: 'MM/DD/YYYY',
+      displayName: 'Min Date',
+      isFxNotRequired: true,
+      showLabel: false,
+      label: 'Max Date',
+      options: { className: 'datepicker-validation-half' },
+    },
+    minTime: {
+      type: 'timepicker',
+      placeholder: 'HH:mm',
+      displayName: 'Min Time',
+      isFxNotRequired: true,
+      showLabel: false,
+      label: 'Min Time',
+      options: { className: 'datepicker-validation-half' },
+    },
+    maxTime: {
+      type: 'timepicker',
+      placeholder: 'HH:mm',
+      displayName: 'Max Time',
+      isFxNotRequired: true,
+      showLabel: false,
+      label: 'Max Time',
+      options: { className: 'datepicker-validation-half' },
+    },
+    disabledDates: {
+      type: 'code',
+      displayName: 'Disabled dates',
+      validation: {
+        schema: { type: 'array', element: { type: 'string' } },
+        defaultValue: "['01/01/2022']",
+      },
+      options: { className: 'datepicker-validation-full' },
+    },
+    customRule: {
+      type: 'code',
+      displayName: 'Custom validation',
+      options: { className: 'datepicker-validation-full' },
+    },
   },
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -31,6 +82,53 @@ export const datepickerV2Config = {
         schema: { type: 'string' },
         defaultValue: '01/01/2022',
       },
+    },
+    isDateSelectionEnabled: {
+      type: 'toggle',
+      displayName: 'Enable Date Selection',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'custom',
+    },
+    isTimeSelectionEnabled: {
+      type: 'toggle',
+      displayName: 'Enable Time Selection',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'custom',
+    },
+    is24HourFormatEnabled: {
+      type: 'toggle',
+      displayName: 'Enable 24 Hour Selection',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'innerCustom',
+    },
+    loadingState: {
+      type: 'toggle',
+      displayName: 'Loading state',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+
+      section: 'additionalActions',
+    },
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disable',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'Enter tooltip text',
+      },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
     },
   },
   events: {
@@ -188,11 +286,26 @@ export const datepickerV2Config = {
       showOnMobile: { value: '{{false}}' },
     },
     validation: {
+      minDate: { value: '' },
+      maxDate: { value: '' },
+      minTime: { value: '' },
+      maxTime: { value: '' },
+      disabledDates: { value: '{{[]}}' },
       customRule: { value: '' },
     },
     properties: {
       label: { value: 'Label' },
       defaultValue: { value: '01/01/2022' },
+      isDateSelectionEnabled: { value: '{{false}}' },
+      dateFormat: { value: ' DD/MM/YYYY' },
+      isTimeSelectionEnabled: { value: '{{false}}' },
+      timeFormat: { value: 'HH:mm' },
+      is24HourFormatEnabled: { value: '{{false}}' },
+      timezoneInterval: { value: 'UTC' },
+      loadingState: { value: '{{false}}' },
+      visibility: { value: '{{true}}' },
+      disabledState: { value: '{{false}}' },
+      tooltip: { value: '' },
     },
     events: [],
     styles: {

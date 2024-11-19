@@ -16246,6 +16246,16 @@ fieldset:disabled {
   &:active {
     background-color: var(--slate5) !important;
   }
+}
 
+.datepicker-validation-half {
+  flex:1 1 calc(50% - 8px);
+}
 
+.datepicker-validation-full {
+  flex:1 1 100%;
+}
+
+.tj-inspector-datepicker {
+  background-color: #fff !important;
 }

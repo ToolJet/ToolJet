@@ -329,6 +329,8 @@ export const FxParamTypeMapping = Object.freeze({
   toggle: 'Toggle',
   select: 'Select',
   alignButtons: 'AlignButtons',
+  datepicker: 'Datepicker',
+  timepicker: 'TimePicker',
   number: 'Number',
   boxShadow: 'BoxShadow',
   clientServerSwitch: 'ClientServerSwitch',
