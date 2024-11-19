@@ -370,7 +370,20 @@ const sidebars = {
       'type': 'category',
       'label': 'Org Management',
       'items': [
-        'dashboard',
+        {
+          "type": "category",
+          "label": "Dashboard",
+          "items": [
+            "org-management/dashboard/overview",
+            "org-management/dashboard/workspace-manager",
+            "org-management/dashboard/create-app",
+            "org-management/dashboard/folders",
+            "org-management/dashboard/app-cards",
+            "org-management/dashboard/app-menu",
+            "org-management/dashboard/app-search",
+            "org-management/dashboard/current-version",
+          ]
+        },
         {
           "type": "category",
           "label": "Workspaces",
