@@ -331,7 +331,8 @@
             "data-sources/zendesk"
           ]
         },
-        "tutorial/transformations"
+        "tutorial/transformations",
+        "data-sources/local-data-sources-migration"
       ]
     },
     {
