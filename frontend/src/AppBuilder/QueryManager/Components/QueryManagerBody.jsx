@@ -19,7 +19,7 @@ import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { EventManager } from '@/AppBuilder/RightSideBar/Inspector/EventManager';
-import NotificationBanner from '../../../../../frontend/src/_components/NotificationBanner';
+import NotificationBanner from '@/_components/NotificationBanner';
 
 export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) => {
   const { t } = useTranslation();
@@ -31,7 +31,7 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
   const selectedDataSource = useStore((state) => state.queryPanel.selectedDataSource);
   const changeDataQuery = useStore((state) => state.dataQuery.changeDataQuery);
   const updateDataQuery = useStore((state) => state.dataQuery.updateDataQuery);
-  const [showLocalDataDeprecationBanner, setshowLocalDataDeprecationBanner] = useState(false);
+  const [showLocalDataSourceDeprecationBanner, setshowLocalDataSourceDeprecationBanner] = useState(false);
 
   const [dataSourceMeta, setDataSourceMeta] = useState(null);
   /* - Added the below line to cause re-rendering when the query is switched
@@ -282,7 +282,7 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
     return (
       <>
         <div className="" ref={paramListContainerRef}>
-          {selectedQuery && !showLocalDataDeprecationBanner && (
+          {selectedQuery && !showLocalDataSourceDeprecationBanner && (
             <ParameterList
               parameters={options.parameters}
               handleAddParameter={handleAddParameter}
@@ -313,18 +313,18 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
     );
   };
   useEffect(() => {
+    const staticDataSources = ['runjs', 'runpy', 'tooljetdb'];
+    // added specific check for rest api - as it is a part of both : default and global data sources
     const showDeprecationBanner =
       selectedDataSource == null &&
       selectedQuery &&
-      selectedDataSource?.kind !== 'runjs' &&
-      selectedDataSource?.kind !== 'runpy' &&
-      selectedDataSource?.kind !== 'tooljetdb' &&
+      !staticDataSources.includes(selectedDataSource?.kind) &&
       (selectedDataSource?.kind !== 'restapi' || selectedDataSource?.type !== 'default');
 
     if (showDeprecationBanner) {
-      setshowLocalDataDeprecationBanner(true);
+      setshowLocalDataSourceDeprecationBanner(true);
     } else {
-      setshowLocalDataDeprecationBanner(false);
+      setshowLocalDataSourceDeprecationBanner(false);
     }
   }, [selectedDataSource, selectedQuery]);
 
@@ -346,9 +346,9 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
       }} // 40px for preview header height
     >
       {selectedDataSource === null || !selectedQuery ? (
-        showLocalDataDeprecationBanner ? (
+        showLocalDataSourceDeprecationBanner ? (
           <>
-            <NotificationBanner />
+            <NotificationBanner darkMode={darkMode} />
             {renderChangeDataSource()}
           </>
         ) : (
