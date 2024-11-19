@@ -99,7 +99,7 @@ export const Tabs = function Tabs({
           const tabId = Number(id);
           setCurrentTab(tabId);
           setExposedVariable('currentTab', tabId);
-          fireEvent('onTabSwitch');
+          fireEvent('onTabSwitch')
         }
       },
       currentTab: currentTab,
