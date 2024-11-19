@@ -185,7 +185,8 @@ body {
 
 .video-container {
   position: relative;
-  padding-bottom: 56.25%; /* 16:9 */
+  padding-bottom: 56.25%;
+  /* 16:9 */
   height: 0;
   clip-path: inset(1px 1px);
 }
@@ -201,9 +202,9 @@ body {
 img {
   max-width: 100%;
   max-height: 100%;
-  border: 0 ;
+  border: 0;
   border-radius: 10px;
-  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2) 
+  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2)
 }
 
 .card-icon img {
@@ -350,8 +351,9 @@ img {
 }
 
 @media (max-width: 1000px) {
+
   /* Styles for screens smaller than 1000px */
-  [data-theme='dark'] .clean-btn{
+  [data-theme='dark'] .clean-btn {
     background-color: #272729;
     color: #fff;
     border-radius: 4px;
@@ -364,4 +366,56 @@ img {
     border-bottom-left-radius: 5px;
     border-bottom-right-radius: 5px;
   }
+}
+
+.docs-doc-id-doc-home-page {
+
+  /* Container styles */
+  .container {
+    min-width: 100%;
+  }
+
+  /* Layout resets */
+  article {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .col {
+    padding-right: 0 !important;
+    padding-left: 0 !important;
+  }
+
+  .row {
+    margin: 0 !important;
+  }
+
+  /* Hidden elements */
+  .theme-doc-breadcrumbs,
+  .theme-doc-version-banner,
+  .theme-doc-version-badge,
+  header,
+  .theme-doc-footer,
+  .pagination-nav {
+    display: none;
+  }
+
+  /* Spacing resets */
+  .padding-top--md {
+    padding: 0 !important;
+  }
+
+  .padding-bottom--lg {
+    padding: 0;
+    margin: 0;
+  }
+
+  p {
+    margin-bottom: 0 !important;
+  }
+}
+
+/* Menu link styles */
+.menu__link--active {
+  max-width: 98%;
 }
