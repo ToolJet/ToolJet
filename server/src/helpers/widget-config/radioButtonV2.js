@@ -4,8 +4,8 @@ export const radiobuttonV2Config = {
   description: 'Select one from multiple choices',
   component: 'RadioButtonV2',
   defaultSize: {
-    width: 10,
-    height: 40,
+    width: 12,
+    height: 43,
   },
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -34,21 +34,6 @@ export const radiobuttonV2Config = {
       displayName: 'Dynamic options',
       validation: {
         schema: { type: 'boolean' },
-      },
-      accordian: 'Options',
-    },
-    value: {
-      type: 'code',
-      displayName: 'Default value',
-      conditionallyRender: {
-        key: 'advanced',
-        value: false,
-      },
-      validation: {
-        schema: {
-          type: 'union',
-          schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }],
-        },
       },
       accordian: 'Options',
     },
@@ -257,8 +242,12 @@ export const radiobuttonV2Config = {
       showOnDesktop: { value: '{{true}}' },
       showOnMobile: { value: '{{false}}' },
     },
+    validation: {
+      mandatory: { value: '{{false}}' },
+    },
     properties: {
       label: { value: 'Select' },
+      advanced: { value: `{{false}}` },
       options: {
         value: [
           {
@@ -284,7 +273,6 @@ export const radiobuttonV2Config = {
           },
         ],
       },
-      value: { value: '{{"1"}}' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
@@ -298,16 +286,16 @@ export const radiobuttonV2Config = {
     },
     events: [],
     styles: {
-      labelColor: { value: '#1B1F24' },
+      labelColor: { value: '#11181C' },
       direction: { value: 'left' },
       alignment: { value: 'side' },
-      auto: { value: '{{true}}' },
-      labelWidth: { value: '33' },
+      auto: { value: '{{false}}' },
+      labelWidth: { value: '20' },
       borderColor: { value: '#FFFFFF' },
       switchOffBackgroundColor: { value: '#FFFFFF' },
       switchOnBackgroundColor: { value: '#4368E3' },
       handleColor: { value: '#FFFFFF' },
-      optionsTextColor: { value: '#1B1F24' },
+      optionsTextColor: { value: '#11181C' },
       padding: { value: 'default' },
     },
   },

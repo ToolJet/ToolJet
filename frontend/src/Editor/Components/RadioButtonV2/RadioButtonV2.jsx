@@ -12,12 +12,13 @@ export const RadioButtonV2 = ({
   styles,
   fireEvent,
   setExposedVariable,
+  setExposedVariables,
   darkMode,
-  component,
   componentName,
   validate,
+  validation,
 }) => {
-  const { label, value, disabledState, advanced, schema, optionsLoadingState, loadingState } = properties;
+  const { label, options, disabledState, advanced, schema, optionsLoadingState, loadingState } = properties;
 
   const {
     activeColor,
@@ -33,26 +34,39 @@ export const RadioButtonV2 = ({
     alignment,
   } = styles;
 
-  const [checkedValue, setCheckedValue] = useState(advanced ? findDefaultItem(schema) : value);
   const currentState = useCurrentState();
-  const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
-  const options = component?.definition?.properties?.options?.value;
+
+  const [checkedValue, setCheckedValue] = useState(advanced ? findDefaultItem(schema) : findDefaultItem(options));
   const [visibility, setVisibility] = useState(properties.visibility);
   const [isLoading, setIsLoading] = useState(loadingState);
   const [isDisabled, setIsDisabled] = useState(disabledState);
+
+  const isMandatory = validation?.mandatory ?? false;
   const validationData = validate(checkedValue);
   const { isValid, validationError } = validationData;
+
   const labelRef = useRef();
   const radioBtnRef = useRef();
 
-  function findDefaultItem(schema) {
-    let _schema = schema;
-    if (!Array.isArray(schema)) {
-      _schema = [];
+  function findDefaultItem(optionSchema) {
+    if (!Array.isArray(optionSchema)) {
+      return undefined;
     }
-    const foundItem = _schema?.find((item) => item?.default === true);
-    return !hasVisibleFalse(foundItem?.value) ? foundItem?.value : undefined;
+    let foundItem;
+    if (advanced) {
+      foundItem = optionSchema?.find((item) => item?.default === true && item?.visible === true);
+    } else {
+      foundItem = optionSchema?.find((item) => item?.default?.value === true && item?.visible?.value === true);
+    }
+    return foundItem?.value;
   }
+
+  useEffect(() => {
+    if (advanced) {
+      setCheckedValue(findDefaultItem(schema));
+    } else setCheckedValue(findDefaultItem(options));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [advanced, JSON.stringify(schema), JSON.stringify(options)]);
 
   const selectOptions = useMemo(() => {
     let _options = advanced ? schema : options;
@@ -82,22 +96,6 @@ export const RadioButtonV2 = ({
     setCheckedValue(null);
     fireEvent('onSelectionChange');
   }
-
-  function hasVisibleFalse(value) {
-    for (let i = 0; i < schema?.length; i++) {
-      if (schema[i].value === value && schema[i].visible === false) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  useEffect(() => {
-    if (advanced) {
-      setCheckedValue(findDefaultItem(schema));
-    } else setCheckedValue(value);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [advanced, value, JSON.stringify(schema)]);
 
   useEffect(() => {
     if (visibility !== properties.visibility) setVisibility(properties.visibility);
