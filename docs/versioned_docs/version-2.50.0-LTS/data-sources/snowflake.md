@@ -3,21 +3,21 @@ id: snowflake
 title: Snowflake
 ---
 
-# Snowflake
-
 ToolJet can connect to Snowflake databases to read and write data.
 
-- [Connection](#connection)
-- [Getting Started](#querying-snowflake)
+<div style={{paddingTop:'24px'}}>
 
 ## Connection
 
-Please make sure the host/ip of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please whitelist our IP. You can find snowflake docs on network policies **[here](https://docs.snowflake.com/en/user-guide/network-policies.html)**.
+To establish a connection with the Snowflake data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview/)** page from the ToolJet dashboard and choose Snowflake as the data source.
 
+:::info
+Please make sure the **Host/IP** of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please **whitelist** our IP.
 
-To add a new Snowflake database, click on the `+` button on data sources panel at the left-bottom corner of the app editor. Select Snowflake from the modal that pops up.
+You can find snowflake docs on network policies **[here](https://docs.snowflake.com/en/user-guide/network-policies.html)**.
+:::
 
-ToolJet requires the following to connect to your Snowflake database.
+ToolJet requires the following to connect to Snowflake database.
 
 - **Account**
 - **Username**
@@ -27,26 +27,27 @@ ToolJet requires the following to connect to your Snowflake database.
 You can also configure for **[additional optional parameters](https://docs.snowflake.com/en/user-guide/nodejs-driver-use.html#additional-connection-options)**.
 :::
 
-<div style={{textAlign: 'center'}}>
-
-![ToolJet - Snowflake connection](/img/datasource-reference/snowflake/snowflake-connect.png)
+<img className="screenshot-full" src="/img/datasource-reference/snowflake/snowflake-connect-v2.png" alt="ToolJet - Snowflake connection" />
 
 </div>
+
+<div style={{paddingTop:'24px'}}>
 
 ## Querying Snowflake
 
-Click on `+` button of the query manager at the bottom panel of the editor and select the database added in the previous step as the datasource. Query manager then can be used to write raw SQL queries.
+1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
+2. Select the **Snowflake** datasource added in previous step.
+3. Select the **SQL Mode** form the dropdown and enter the query.
+4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
-<div style={{textAlign: 'center'}}>
+<img className="screenshot-full" src="/img/datasource-reference/snowflake/snowflake-query-v2.png" alt="ToolJet - Snowflake query" />
 
-![ToolJet - Snowflake query](/img/datasource-reference/snowflake/snowflake-query.png)
-
-</div>
-
-Click on the `run` button to run the query. 
-
-**NOTE:** Query should be saved before running.
+```sql
+select * from "SNOWFLAKE_SAMPLE_DATA"."WEATHER"."DAILY_14_TOTAL" limit 10;
+```
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/tutorial/transformations)
+Query results can be transformed using transformations. Read our [transformations](/docs/tutorial/transformations) documentation to learn more.
 :::
+
+</div>

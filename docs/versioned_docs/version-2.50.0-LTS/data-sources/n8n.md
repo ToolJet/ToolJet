@@ -9,7 +9,7 @@ ToolJet can trigger n8n workflows using webhook URLs. Please refer [this](https:
 
 ## Connection
 
-To establish a connection with the n8n data source, click on the **+ Add new Data source** button located on the query panel or navigate to the [Data Sources](https://docs.tooljet.com/docs/data-sources/overview) page from the ToolJet dashboard.
+To establish a connection with the n8n data source, click on the **+ Add new Data source** button located on the query panel or navigate to the [Data Sources](/docs/data-sources/overview) page from the ToolJet dashboard.
 
 Webhooks in n8n can be configured to operate with or without **Authentication**. If no authentication is required, select `None` as the **Authentication type**. For webhooks that require authentication, choose the appropriate method from the dropdown and provide the corresponding credentials.
 

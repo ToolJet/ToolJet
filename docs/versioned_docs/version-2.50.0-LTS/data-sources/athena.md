@@ -9,7 +9,7 @@ ToolJet can connect to **Amazon Athena** which is an interactive query service t
 
 ## Connection
 
-To establish a connection with the **Amazon Athena** data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](https://docs.tooljet.com/docs/data-sources/overview)** page from the ToolJet dashboard and choose **Amazon Athena** as the data source.
+To establish a connection with the **Amazon Athena** data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page from the ToolJet dashboard and choose **Amazon Athena** as the data source.
 
 ToolJet requires the following to connect to your Athena.
 

@@ -58,7 +58,9 @@
         "setup/http-proxy",
         "setup/tooljet-subpath",
         "setup/v2-migration-guide",
-        "setup/upgrade-to-lts"
+        "setup/upgrade-to-lts",
+        "setup/upgrade-to-v3",
+        "setup/cloud-v3-migration"
       ]
     },
     {
@@ -208,6 +210,7 @@
         "how-to/use-url-params-on-load",
         "how-to/pass-query-params-in-custom-components",
         "how-to/use-custom-parameters",
+        "how-to/pass-values-in-rest-api",
         "how-to/build-dynamic-forms",
         "how-to/setup-rsyslog",
         "how-to/conditionally-display-components",
@@ -355,7 +358,8 @@
                   ]
                 },
                 "user-authentication/sso/ldap",
-                "user-authentication/sso/saml"
+                "user-authentication/sso/saml",
+                "user-authentication/sso/auto-sso-login"
               ]
             }
           ]
@@ -417,7 +421,9 @@
             "marketplace/plugins/marketplace-plugin-salesforce",
             "marketplace/plugins/marketplace-plugin-supabase",
             "marketplace/plugins/marketplace-plugin-pocketbase",
-            "marketplace/plugins/marketplace-plugin-prestodb"
+            "marketplace/plugins/marketplace-plugin-portkey",
+            "marketplace/plugins/marketplace-plugin-prestodb",
+            "marketplace/plugins/marketplace-plugin-sharepoint"
           ]
         }
       ]
