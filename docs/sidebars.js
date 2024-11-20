@@ -91,7 +91,6 @@ const sidebars = {
             'app-builder/importing-exporting-applications',
           ],
         },   
-        'app-builder/anti-patterns',
         {
           'type': 'category',
           'label': 'References',
@@ -236,6 +235,7 @@ const sidebars = {
             },
           ],
         },
+        'app-builder/anti-patterns',
         'tutorial/keyboard-shortcuts',
       ],
     },
