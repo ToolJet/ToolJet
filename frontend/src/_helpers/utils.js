@@ -1476,3 +1476,8 @@ export const checkConditionsForRoute = (conditions, conditionsObj) => {
 export const hasBuilderRole = (roleObj) => {
   return roleObj.name === 'builder';
 };
+
+export function checkIfToolJetCloud(version) {
+  const parsed = version.split('-');
+  return parsed[1] === 'cloud';
+}
