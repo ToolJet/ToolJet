@@ -18,7 +18,7 @@ export const RadioButtonV2 = ({
   validate,
   validation,
 }) => {
-  const { label, options, disabledState, advanced, schema, optionsLoadingState, loadingState } = properties;
+  const { label, value, options, disabledState, advanced, schema, optionsLoadingState, loadingState } = properties;
 
   const {
     activeColor,
@@ -34,9 +34,10 @@ export const RadioButtonV2 = ({
     alignment,
   } = styles;
 
+  const isInitialRender = useRef(true);
   const currentState = useCurrentState();
 
-  const [checkedValue, setCheckedValue] = useState(advanced ? findDefaultItem(schema) : findDefaultItem(options));
+  const [checkedValue, setCheckedValue] = useState(advanced ? findDefaultItem(schema) : value);
   const [visibility, setVisibility] = useState(properties.visibility);
   const [isLoading, setIsLoading] = useState(loadingState);
   const [isDisabled, setIsDisabled] = useState(disabledState);
@@ -47,26 +48,6 @@ export const RadioButtonV2 = ({
 
   const labelRef = useRef();
   const radioBtnRef = useRef();
-
-  function findDefaultItem(optionSchema) {
-    if (!Array.isArray(optionSchema)) {
-      return undefined;
-    }
-    let foundItem;
-    if (advanced) {
-      foundItem = optionSchema?.find((item) => item?.default === true && item?.visible === true);
-    } else {
-      foundItem = optionSchema?.find((item) => item?.default?.value === true && item?.visible?.value === true);
-    }
-    return foundItem?.value;
-  }
-
-  useEffect(() => {
-    if (advanced) {
-      setCheckedValue(findDefaultItem(schema));
-    } else setCheckedValue(findDefaultItem(options));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [advanced, JSON.stringify(schema), JSON.stringify(options)]);
 
   const selectOptions = useMemo(() => {
     let _options = advanced ? schema : options;
@@ -85,17 +66,27 @@ export const RadioButtonV2 = ({
     }
   }, [advanced, schema, options]);
 
+  function findDefaultItem(optionSchema) {
+    if (!Array.isArray(optionSchema)) {
+      return undefined;
+    }
+    const foundItem = optionSchema?.find((item) => item?.default === true && item?.visible === true);
+    return foundItem?.value;
+  }
+
   function onSelect(value) {
-    let _value = value;
-    if (isObject(value) && has(value, 'value')) _value = value?.value;
+    const _value = isObject(value) && has(value, 'value') ? value?.value : value;
     setCheckedValue(_value);
     fireEvent('onSelectionChange');
   }
 
-  function deselectOption() {
-    setCheckedValue(null);
-    fireEvent('onSelectionChange');
-  }
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    if (advanced) {
+      setCheckedValue(findDefaultItem(schema));
+    } else setCheckedValue(value);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [advanced, JSON.stringify(schema), value]);
 
   useEffect(() => {
     if (visibility !== properties.visibility) setVisibility(properties.visibility);
@@ -106,39 +97,87 @@ export const RadioButtonV2 = ({
   }, [properties.visibility, loadingState, disabledState]);
 
   useEffect(() => {
-    setExposedVariable('isVisible', properties.visibility);
-    setExposedVariable('isLoading', loadingState);
-    setExposedVariable('isDisabled', disabledState);
-    setExposedVariable('isMandatory', isMandatory);
-    setExposedVariable('label', label);
-    setExposedVariable('options', selectOptions);
-    setExposedVariable('isValid', isValid);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.visibility, loadingState, disabledState, isMandatory, label, isValid]);
-
-  useEffect(() => {
-    const _options = selectOptions?.map(({ label, value }) => ({ label, value }));
-    setExposedVariable('options', _options);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectOptions]);
-
-  useEffect(() => {
+    if (isInitialRender.current) return;
     setExposedVariable('value', checkedValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [checkedValue]);
 
   useEffect(() => {
-    setExposedVariable('setVisibility', async function (value) {
-      setVisibility(value);
-    });
-    setExposedVariable('setLoading', async function (value) {
-      setIsLoading(value);
-    });
-    setExposedVariable('setDisabled', async function (value) {
-      setIsDisabled(value);
-    });
-    setExposedVariable('selectOption', onSelect);
-    setExposedVariable('deselectOption', deselectOption);
+    if (isInitialRender.current) return;
+    const _options = selectOptions?.map(({ label, value }) => ({ label, value }));
+    setExposedVariable('options', _options);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(selectOptions)]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('label', label);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [label]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isValid', isValid);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isValid]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isMandatory', isMandatory);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMandatory]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isLoading', loadingState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadingState]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isVisible', properties.visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.visibility]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isDisabled', disabledState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disabledState]);
+
+  useEffect(() => {
+    const _options = selectOptions?.map(({ label, value }) => ({ label, value }));
+    const exposedVariables = {
+      value: checkedValue,
+      label: label,
+      options: _options,
+      isValid: isValid,
+      isMandatory: isMandatory,
+      isLoading: loadingState,
+      isVisible: properties.visibility,
+      isDisabled: disabledState,
+      selectOption: async function (value) {
+        onSelect(value);
+      },
+      deselectOption: async function () {
+        setCheckedValue(null);
+        fireEvent('onSelectionChange');
+      },
+      setVisibility: async function (value) {
+        setVisibility(value);
+        setExposedVariable('isVisible', value);
+      },
+      setDisable: async function (value) {
+        setIsDisabled(value);
+        setExposedVariable('isDisabled', value);
+      },
+      setLoading: async function (value) {
+        setIsLoading(value);
+        setExposedVariable('isLoading', value);
+      },
+    };
+    setExposedVariables(exposedVariables);
+    isInitialRender.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -148,7 +187,7 @@ export const RadioButtonV2 = ({
     <>
       <div
         data-cy={`label-${String(componentName).toLowerCase()} `}
-        data-disabled={disabledState}
+        data-disabled={isDisabled}
         id={String(componentName)}
         className={cx('radio-button,', 'd-flex', {
           [alignment === 'top' &&
@@ -181,7 +220,7 @@ export const RadioButtonV2 = ({
         />
 
         <div className="px-0 h-100 w-100" ref={radioBtnRef}>
-          {loadingState || optionsLoadingState ? (
+          {isLoading || optionsLoadingState ? (
             <Loader style={{ right: '50%', zIndex: 3, position: 'absolute' }} width="20" />
           ) : (
             <div className="">
