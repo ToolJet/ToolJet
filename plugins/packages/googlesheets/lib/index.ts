@@ -1,5 +1,5 @@
 import { QueryError, QueryResult, QueryService, OAuthUnauthorizedClientError } from '@tooljet-plugins/common';
-import { readData, appendData, deleteData, batchUpdateToSheet } from './operations';
+import { readData, appendData, deleteData, batchUpdateToSheet, createSpreadSheet, listAllSheets } from './operations';
 import got, { Headers } from 'got';
 import { SourceOptions, QueryOptions } from './types';
 
@@ -111,6 +111,14 @@ export default class GooglesheetsQueryService implements QueryService {
 
         case 'read':
           result = await readData(spreadsheetId, spreadsheetRange, queryOptions.sheet, this.authHeader(accessToken));
+          break;
+
+        case 'create':
+          result = await createSpreadSheet(queryOptions.title, this.authHeader(accessToken));
+          break;
+
+        case 'list_all':
+          result = await listAllSheets(queryOptions.spreadsheet_id, this.authHeader(accessToken));
           break;
 
         case 'append':
