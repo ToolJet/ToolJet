@@ -90,7 +90,8 @@ const sidebars = {
             'app-builder/walkthrough/variables',
             'app-builder/importing-exporting-applications',
           ],
-        },                    
+        },   
+        'app-builder/anti-patterns',
         {
           'type': 'category',
           'label': 'References',
