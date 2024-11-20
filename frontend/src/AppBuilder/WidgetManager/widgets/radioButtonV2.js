@@ -201,24 +201,14 @@ export const radiobuttonV2Config = {
   },
   actions: [
     {
-      handle: 'selectOptions',
-      displayName: 'Select Options',
-      params: [
-        {
-          handle: 'option',
-          displayName: 'Option',
-        },
-      ],
+      handle: 'selectOption',
+      displayName: 'Select option',
+      params: [{ handle: 'option', displayName: 'Option' }],
     },
     {
-      handle: 'deselectOptions',
-      displayName: 'Deselect Options',
-      params: [
-        {
-          handle: 'option',
-          displayName: 'Option',
-        },
-      ],
+      handle: 'deselectOption',
+      displayName: 'Deselect option',
+      params: [{ handle: 'option', displayName: 'Option' }],
     },
     {
       handle: 'setVisibility',
@@ -236,7 +226,9 @@ export const radiobuttonV2Config = {
       params: [{ handle: 'setDisable', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
     },
   ],
-  exposedVariables: {},
+  exposedVariables: {
+    label: 'Select',
+  },
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },
@@ -247,6 +239,7 @@ export const radiobuttonV2Config = {
     },
     properties: {
       label: { value: 'Select' },
+      value: { value: '{{"2"}}' },
       advanced: { value: `{{false}}` },
       options: {
         value: [
