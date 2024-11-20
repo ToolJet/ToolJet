@@ -105,6 +105,11 @@
         background: var(--indigo9);
     }
 
+    &:disabled {
+        background: var(--button-primary-disabled) !important;
+        color: var(--text-disabled-on-solid) !important;
+        border: none !important;
+    }
 }
 
 .tj-zBlack-btn {
