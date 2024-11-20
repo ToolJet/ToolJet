@@ -63,11 +63,11 @@ When building applications with ToolJet, it's essential to follow best practices
 
 ---
 
-## 8. Using Non-Blocking Commands in `Run JS` for Synchronous Operations
+## 8. Using Non-Blocking Commands in JavaScript for Synchronous Operations
 
 - **Anti-Pattern**: Using non-blocking commands like `Promise.all` and `setTimeout` in the `Run JS` query when an accurate `isLoading` state is needed.
-- **Solution**: **Avoid non-blocking operations in `Run JS` if you require an accurate `isLoading` status. Ensure your code is synchronous within the `Run JS` query.**
-- **Reason**: Non-blocking operations can cause `Run JS` to exit before these commands complete, leading to an incorrect `isLoading` status and potentially confusing users.
+- **Solution**: **Avoid non-blocking operations in JavaScript Queries if you require an accurate `isLoading` status. Ensure your code is synchronous within the Run JavaScript code query.**
+- **Reason**: Non-blocking operations can cause **Run JavaScript code** query to exit before these commands complete, leading to an incorrect `isLoading` status and potentially confusing users.
 
 ---
 
