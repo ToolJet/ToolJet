@@ -8,7 +8,7 @@ const DEFAULT_CONFIG = {
 
 const DEFAULT_MESSAGES = {
   prefix: 'This query is connected to a local data source which has been',
-  highlightedText: 'deprecated',
+  highlightedText: 'discontinued',
   middle: 'Please create a global data source connection to reconnect your query.',
   suffix: 'to know more.',
   linkText: 'Read documentation',
@@ -20,6 +20,7 @@ const NotificationBanner = ({
   darkMode = false,
   highlightedText = DEFAULT_MESSAGES.highlightedText,
   highlightedClassName = 'highlighted-text',
+  enhanceDisabledVisibility = false,
 }) => {
   const currentDocsLink = docsLink || DEFAULT_CONFIG.docsLink;
 
@@ -37,7 +38,7 @@ const NotificationBanner = ({
   return (
     <div className="notification-banner-component">
       <Alert svg="info-icon" cls="notification-banner" useDarkMode={darkMode}>
-        <div className="notification-content">{bannerMessage}</div>
+        <div className={`notification-content ${enhanceDisabledVisibility ? 'disabled' : ''}`}>{bannerMessage}</div>
       </Alert>
     </div>
   );

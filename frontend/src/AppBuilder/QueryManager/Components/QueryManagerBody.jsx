@@ -348,7 +348,7 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
       {selectedDataSource === null || !selectedQuery ? (
         showLocalDataSourceDeprecationBanner ? (
           <>
-            <NotificationBanner darkMode={darkMode} />
+            <NotificationBanner enhanceDisabledVisibility={!hasPermissions || isFreezed} darkMode={darkMode} />
             {renderChangeDataSource()}
           </>
         ) : (
