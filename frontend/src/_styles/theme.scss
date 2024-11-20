@@ -7000,6 +7000,25 @@ input.hide-input-arrows {
   }
 }
 
+.filter-header{
+  width: 100%;
+  height: 56px;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--text-default);
+  border-bottom: 1px solid var(--border-weak);
+
+  .filter-heading{
+    font-family: IBM Plex Sans;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    text-align: left;
+  }
+}
+
 tbody {
   width: 100% !important;
   flex-grow: 1;
@@ -10387,6 +10406,7 @@ tbody {
 .tj-db-filter-btn {
   width: 100%;
   height: 28px;
+  display: flex;
   border-radius: 6px;
   background: transparent;
   color: var(--slate12);
@@ -10408,6 +10428,20 @@ tbody {
   border-radius: 6px !important;
 }
 
+.tj-db-filter-btn-applied,
+.tj-db-filter-clear-icon{
+  background-color: var(--indigo4) !important;
+  color: var(--indigo9) !important;
+
+  &:hover{
+    background-color: var(--button-secondary-pressed) !important;
+  }
+}
+
+.tj-db-filter-clear-icon{
+  border-radius: 0px 6px 6px 0px;
+}
+
 .tj-db-filter-btn-active,
 .tj-db-sort-btn-active {
   display: flex !important;
@@ -10419,6 +10453,23 @@ tbody {
   border-radius: 6px !important;
   background: var(--indigo4) !important;
   color: var(--indigo9) !important;
+}
+
+.tj-db-filter-btn-active{
+  background: var(--button-outline-pressed) !important;
+  color: var(--text-default) !important;
+}
+
+.tj-db-filter-btn-active-filter{
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: center !important;
+  align-items: center !important;
+  width: 100% !important;
+  height: 28px !important;
+  border-radius: 6px !important;
+  background: var(--button-secondary-pressed) !important;
+  color: var(--text-brand) !important;
 }
 
 .tj-db-header-add-new-row-btn {
