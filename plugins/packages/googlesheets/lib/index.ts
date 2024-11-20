@@ -148,11 +148,28 @@ export default class GooglesheetsQueryService implements QueryService {
       }
     } catch (error) {
       console.error({ statusCode: error?.response?.statusCode, message: error?.response?.body });
+      let errorDetails = {};
+      if (error.response) {
+        const errorRespose = JSON.parse(error.response.body);
+        errorDetails = {
+          message: errorRespose?.error?.message,
+          status: errorRespose?.error?.status,
+        };
+      }
+
+      if (error.message.replace(/\s+/g, ' ').trim().includes('Unexpected token in JSON')) {
+        errorDetails = {
+          message: 'Invalid JSON',
+        };
+      }
 
       if (error?.response?.statusCode === 401 || error?.response?.statusCode === 403) {
-        throw new OAuthUnauthorizedClientError('Query could not be completed', error.message, { ...error });
+        throw new OAuthUnauthorizedClientError('Query could not be completed', error.message, {
+          ...error,
+          ...errorDetails,
+        });
       }
-      throw new QueryError('Query could not be completed', error.message, {});
+      throw new QueryError('Query could not be completed', error.message, errorDetails);
     }
 
     return {
