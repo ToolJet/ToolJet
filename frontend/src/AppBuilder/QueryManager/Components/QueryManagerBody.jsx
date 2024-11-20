@@ -19,6 +19,7 @@ import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { EventManager } from '@/AppBuilder/RightSideBar/Inspector/EventManager';
+import NotificationBanner from '@/_components/NotificationBanner';
 
 export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) => {
   const { t } = useTranslation();
@@ -30,6 +31,7 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
   const selectedDataSource = useStore((state) => state.queryPanel.selectedDataSource);
   const changeDataQuery = useStore((state) => state.dataQuery.changeDataQuery);
   const updateDataQuery = useStore((state) => state.dataQuery.updateDataQuery);
+  const [showLocalDataSourceDeprecationBanner, setshowLocalDataSourceDeprecationBanner] = useState(false);
 
   const [dataSourceMeta, setDataSourceMeta] = useState(null);
   /* - Added the below line to cause re-rendering when the query is switched
@@ -280,7 +282,7 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
     return (
       <>
         <div className="" ref={paramListContainerRef}>
-          {selectedQuery && (
+          {selectedQuery && !showLocalDataSourceDeprecationBanner && (
             <ParameterList
               parameters={options.parameters}
               handleAddParameter={handleAddParameter}
@@ -310,6 +312,21 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
       </>
     );
   };
+  useEffect(() => {
+    const staticDataSources = ['runjs', 'runpy', 'tooljetdb'];
+    // added specific check for rest api - as it is a part of both : default and global data sources
+    const showDeprecationBanner =
+      selectedDataSource == null &&
+      selectedQuery &&
+      !staticDataSources.includes(selectedDataSource?.kind) &&
+      (selectedDataSource?.kind !== 'restapi' || selectedDataSource?.type !== 'default');
+
+    if (showDeprecationBanner) {
+      setshowLocalDataSourceDeprecationBanner(true);
+    } else {
+      setshowLocalDataSourceDeprecationBanner(false);
+    }
+  }, [selectedDataSource, selectedQuery]);
 
   // if (selectedQueryId !== selectedQuery?.id) return;
   const hasPermissions =
@@ -318,7 +335,6 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
         canReadDataSource(selectedQuery?.data_source_id) ||
         canDeleteDataSource()
       : true;
-
   return (
     <div
       className={`query-details ${selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''} ${
@@ -331,7 +347,14 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
       }} // 40px for preview header height
     >
       {selectedDataSource === null || !selectedQuery ? (
-        renderDataSourcesList()
+        showLocalDataSourceDeprecationBanner ? (
+          <>
+            <NotificationBanner enhanceDisabledVisibility={!hasPermissions || isFreezed} darkMode={darkMode} />
+            {renderChangeDataSource()}
+          </>
+        ) : (
+          renderDataSourcesList()
+        )
       ) : (
         <>
           {selectedQuery?.data_source_id && activeTab === 1 && renderChangeDataSource()}
