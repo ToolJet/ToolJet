@@ -86,8 +86,11 @@ export async function batchUpdateToSheet(
   filterOperator: string,
   authHeader: any
 ) {
+  if (!spreadSheetId) {
+    throw new Error('SpreadSheetId is required');
+  }
   if (!filterOperator) {
-    return new Error('filterOperator is required');
+    throw new Error('filterOperator is required');
   }
 
   const lookUpData = await lookUpSheetData(spreadSheetId, spreadsheetRange, sheet, authHeader);
