@@ -46,7 +46,7 @@ Please note that you need to set up a PostgreSQL database manually to be used by
    - **PG_PASS**
    - **SECRET_KEY_BASE** 
    - **LOCKBOX_KEY**
-
+ 
    For redis connection ensure below environment variables are added:
    - **REDIS_HOST**
    - **REDIS_PORT**

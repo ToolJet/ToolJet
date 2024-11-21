@@ -62,10 +62,10 @@ Each object in the array should include the following key-value pairs:
 
 | <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 |:-------- |:----------- |:--------- |
-| Value | Holds the value of the currently selected item on the dropdown.|  Value can be accesed using `{{components.dropdown1.value}}` |
-| searchText | This variable is initially empty and will hold the value whenever the user searches on the dropdown. | searchText's value can be accesed using`{{components.dropdown1.searchText}}` |
-| label | The variable label holds the label name of the dropdown. | label's value can be accesed using`{{components.dropdown1.searchText}}` |
-| optionLabels | The optionLabels holds the option labels for the values of the dropdown. | optionLabels can be accesed using`{{components.dropdown1.optionLabels}}` for all the option labels in the array form or `{{components.dropdown1.optionLabels[0]}}` for particular option label |
+| Value | Holds the value of the currently selected item on the dropdown.|  Value can be accessed using `{{components.dropdown1.value}}` |
+| searchText | This variable is initially empty and will hold the value whenever the user searches on the dropdown. | searchText's value can be accessed using`{{components.dropdown1.searchText}}` |
+| label | The variable label holds the label name of the dropdown. | label's value can be accessed using`{{components.dropdown1.searchText}}` |
+| optionLabels | The optionLabels holds the option labels for the values of the dropdown. | optionLabels can be accessed using`{{components.dropdown1.optionLabels}}` for all the option labels in the array form or `{{components.dropdown1.optionLabels[0]}}` for particular option label |
 | selectedOptionLabel | The variable holds the label of the selected option in the dropdown components. | The selected option label can be accessed dynamically using `{{components.dropdown1.selectedOptionLabel}}` |
 
 </div>
