@@ -39,7 +39,7 @@ export class OauthService {
     private readonly googleOAuthService: GoogleOAuthService,
     private readonly gitOAuthService: GitOAuthService,
     private configService: ConfigService
-  ) {}
+  ) { }
 
   async #findOrCreateUser(
     { firstName, lastName, email, sso }: UserResponse,
@@ -56,7 +56,7 @@ export class OauthService {
     );
 
     if (organizationUser?.status === WORKSPACE_USER_STATUS.ARCHIVED) {
-      throw new UnauthorizedException('User does not exist in the workspace');
+      throw new UnauthorizedException('User is archived in the workspace');
     }
 
     if (!user) {
