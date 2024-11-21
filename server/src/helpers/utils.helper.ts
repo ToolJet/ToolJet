@@ -424,3 +424,13 @@ export function mergeDeep(target, source, seen = new WeakMap()) {
 
   return target;
 }
+export const getSubpath = () => {
+  const subpath = process.env.SUB_PATH || '';
+  // Ensure subpath starts and ends with slashes
+  if (subpath) {
+    if (!subpath.startsWith('/') || !subpath.endsWith('/')) {
+      throw new Error('SUB_PATH must start and end with a slash');
+    }
+  }
+  return subpath;
+};

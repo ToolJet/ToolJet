@@ -148,9 +148,9 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
       setSlug({ value: defaultValue, error: '' });
 
       const checkWorkspaceUniqueness = async () => {
+        sluginput.current.value = defaultValue;
         try {
           await organizationService.checkWorkspaceUniqueness(null, defaultValue);
-          sluginput.current.value = defaultValue;
         } catch (errResponse) {
           let error = {
             status: false,
