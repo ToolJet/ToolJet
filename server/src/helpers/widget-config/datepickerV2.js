@@ -310,7 +310,7 @@ export const datepickerV2Config = {
     events: [],
     styles: {
       labelColor: { value: '#1B1F24' },
-      alignment: { value: 'top' },
+      alignment: { value: 'side' },
       direction: { value: 'left' },
       labelWidth: { value: '20' },
       auto: { value: '{{true}}' },
@@ -322,7 +322,7 @@ export const datepickerV2Config = {
       icon: { value: 'IconHome2' },
       iconVisibility: { value: false }, //Test
       iconDirection: { value: 'left' },
-      fieldBorderRadius: { value: '{{14}}' },
+      fieldBorderRadius: { value: '{{4}}' },
       boxShadow: { value: '0px 0px 0px 0px #121212' },
       padding: { value: 'default' },
     },
