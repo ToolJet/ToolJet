@@ -25,6 +25,7 @@ import {
   sanitizeParams,
   checkIfContentTypeIsURLenc,
   checkIfContentTypeIsMultipartFormData,
+  checkIfContentTypeIsJson,
   validateAndSetRequestOptionsBasedOnAuthType,
 } from './oauth';
 
@@ -50,6 +51,7 @@ export {
   sanitizeSearchParams,
   checkIfContentTypeIsURLenc,
   checkIfContentTypeIsMultipartFormData,
+  checkIfContentTypeIsJson,
   validateAndSetRequestOptionsBasedOnAuthType,
   fetchHttpsCertsForCustomCA,
   redactHeaders,
