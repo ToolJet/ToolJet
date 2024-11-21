@@ -67,6 +67,13 @@ export const codeEditorConfig = {
   exposedVariables: {
     value: '',
   },
+  actions: [
+    {
+      handle: 'setValue',
+      displayName: 'Set value',
+      params: [{ handle: 'setValue', defaultValue: '' }],
+    },
+  ],
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },
