@@ -183,7 +183,7 @@ export const createResolvedSlice = (set, get) => ({
     );
 
     Object.entries(details).forEach(([key, value]) => {
-      if (['isLoading', 'data', 'rawData'].includes(key)) {
+      if (['isLoading', 'data', 'rawData', 'request', 'response', 'responseHeaders', 'metadata'].includes(key)) {
         if (typeof value !== 'function') get().updateDependencyValues(`queries.${queryId}.${key}`);
       }
     });

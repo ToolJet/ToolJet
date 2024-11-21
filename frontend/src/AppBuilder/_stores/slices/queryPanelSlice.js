@@ -441,7 +441,9 @@ export const createQueryPanelSlice = (set, get) => ({
                 isLoading: false,
                 data: finalData,
                 rawData,
-                metadata: data.metadata,
+                metadata: data?.metadata,
+                request: data?.metadata?.request,
+                response: data?.metadata?.response,
               });
 
               resolve({ status: 'ok', data: finalData });
