@@ -95,63 +95,53 @@ Here's an example using the custom schema of **Text Input**, **Number Input** an
 {{{
    "title":"Event Registration",
    "properties":{
-      "textinput1":{
-         "type":"textinput",
-         "value":"",
-         "placeholder":"Enter Full Name",
-         "label":"Full Name",
-         "validation":{
-            "maxLength":30,
-            "minLength":5
-         },
-         "styles":{
-            "backgroundColor":"#00000000",
-            "borderRadius":5,
-            "borderColor":"#4299e1",
-            "errorTextColor":"#4299e1",
-            "disabled":false,
-            "visibility":"true",
-            "textColor":"#4299e1"
-         }
+      textinput1: {
+          type: 'textinput',
+          value: 'John',
+          placeholder: 'Enter First Name Here',
+          label: 'First Name',
+          validation: {
+              maxLength: 6
+          },
+          styles: {
+              backgroundColor: '#f6f5ff',
+              borderRadius: 5,
+              borderColor: 'black',
+              errorTextColor: '#025aa3',
+              disabled: false,
+              visibility: true,
+              textColor: '#025aa3'
+          }
       },
-      "numberInput1":{
-         "type":"number",
-         "styles":{
-            "backgroundColor":"#f6f5ff",
-            "borderRadius":5,
-            "textColor":"#4299e1",
-            "borderColor":"#4299e1",
-            "disabled":false,
-            "visibility":"true"
-         },
-         "value":22,
-         "maxValue":100,
-         "minValue":14,
-         "placeholder":"Enter your age",
-         "label":"Age"
+      numberInput1: {
+          type: 'number',
+          styles: {
+              backgroundColor: '#f6f5ff',
+              borderRadius: 5,
+              textColor: '#025aa3',
+              borderColor: 'black',
+              disabled: false,
+              visibility: 'true'
+          },
+          value: 22,
+          maxValue: 100,
+          minValue: 14,
+          placeholder: 'Enter your age',
+          label: 'Age'
       },
-      "dropdown1":{
-         "type":"dropdown",
-         "values":[
-            1,
-            2,
-            3
-         ],
-         "displayValues":[
-            "Male",
-            "Female",
-            "Prefer not to Answer"
-         ],
-         "loading":false,
-         "value":3,
-         "label":"Gender",
-         "styles":{
-            "disabled":false,
-            "visibility":"true",
-            "borderRadius":5,
-            "borderColor":"#4299e1",
-            "justifyContent":"center"
-         }
+      dropdown1: {
+          type: 'dropdown',
+          displayValues: ['Male', 'Female', 'Prefer not to Answer'],
+          values: [1, 2, 3],
+          loading: false,
+          value: '1',
+          label: 'Gender',
+          styles: {
+            disabled: false,
+            visibility: 'true',
+            borderRadius: 5,
+            justifyContent: 'start'
+          }
       }
    },
    "submitButton":{
@@ -161,8 +151,7 @@ Here's an example using the custom schema of **Text Input**, **Number Input** an
          "borderColor":"#595959"
       }
    }
-}
-}}
+}}}
 ```
 
 
@@ -290,8 +279,8 @@ numberInput1: {
     type: 'number',
     styles: {
         backgroundColor: '#f6f5ff',
-        borderRadius: 20,
-        textColor: 'red',
+        borderRadius: 3,
+        textColor: '#025aa3',
         borderColor: 'blue',
         disabled: false,
         visibility: 'true'
@@ -299,7 +288,7 @@ numberInput1: {
     value: 10,
     maxValue: 12,
     minValue: 6,
-    placeholder: 'test',
+    placeholder: 'Enter a number',
     label: 'Number Input'
 }
 ```
@@ -333,7 +322,7 @@ passwordInput1: {
     type: 'password',
     styles: {
         backgroundColor: '#f6f5ff',
-        borderRadius: 10,
+        borderRadius: 5,
         disabled: false,
         visibility: 'true'
     },
@@ -343,7 +332,7 @@ passwordInput1: {
         regex: `'^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$'`
     },
     placeholder: 'Enter a password',
-    label: ''
+    label: 'Password'
 }
 ```
 
@@ -374,9 +363,9 @@ passwordInput1: {
 checkbox1: {
     type: 'checkbox',
     styles: {
-        checkboxColor: 'red',
+        checkboxColor: '#025aa3',
         disabled: false,
-        textColor: 'red',
+        textColor: '#025aa3',
         visibility: 'true'
     },
     value: false,
@@ -407,10 +396,10 @@ checkbox1: {
 toggleswitch1: {
     type: 'toggle',
     styles: {
-        textColor: 'blue',
+        textColor: '#025aa3',
         disabled: false,
         visibility: 'true',
-        toggleSwitchColor: 'red'
+        toggleSwitchColor: '#025aa3'
     },
     value: true,
     label: 'Toggle switch'
@@ -442,7 +431,7 @@ textArea1: {
     styles: {
         disabled: false,
         visibility: 'true',
-        borderRadius: 20
+        borderRadius: 5
     },
     value: 'This is a text area',
     placeholder: 'Enter text here',
@@ -547,12 +536,12 @@ starRating1: {
     styles: {
         disabled: false,
         visibility: 'true',
-        textColor: 'yellow',
-        labelColor: 'red'
+        textColor: 'gold',
+        labelColor: '#025aa3'
     },
     allowHalfStar: true,
-    defaultSelected: 4.5,
-    maxRating: 10,
+    defaultSelected: 3.5,
+    maxRating: 5,
     tooltips: ['one', 'two', 'three', 'four'],
     label: 'Select a rating'
 }
@@ -626,19 +615,19 @@ filepicker1: {
 ```js
 textinput1: {
     type: 'textinput',
-    value: 'Random text',
-    placeholder: 'enter first name here',
-    label: 'First name',
+    value: 'John',
+    placeholder: 'enter the name here',
+    label: 'First Name',
     validation: {
         maxLength: 6
     },
     styles: {
-        backgroundColor: 'red',
-        borderRadius: 20,
-        errorTextColor: 'green',
+        backgroundColor: '#f6f5ff',
+        borderRadius: 5,
+        errorTextColor: '#025aa3',
         disabled: false,
         visibility: false,
-        textColor: 'yellow'
+        textColor: '#025aa3'
     }
 }
 ```
@@ -670,16 +659,16 @@ textinput1: {
 ```js
 dropdown1: {
     type: 'dropdown',
-    displayValues: [1, 2, 3],
-    values: ['one', 'two', 'three'],
+    displayValues: ['One', 'Two', 'Three'],
+    values: [1, 2, 3],
     loading: false,
-    value: 'two',
+    value: 2,
     label: 'Select a number',
     styles: {
         disabled: false,
         visibility: 'true',
         borderRadius: 5,
-        justifyContent: 'end'
+        justifyContent: 'start'
     }
 }
 ```
@@ -712,10 +701,10 @@ button1: {
     value: 'Submit',
     label: '',
     styles: {
-        backgroundColor: 'blue',
+        backgroundColor: '#3A433B',
         textColor: 'white',
         borderRadius: 5,
-        borderColor: 'black',
+        borderColor: '#595959',
         loaderColor: 'gray',
         visibility: 'true',
         disabled: true
@@ -752,9 +741,9 @@ text1: {
     label: '',
     styles: {
         backgroundColor: '#f6f5ff',
-        textColor: 'red',
-        fontSize: 24,
-        fontWeight: 30
+        textColor: '#025aa3',
+        fontSize: 12,
+        fontWeight: 500,
     }
 }
 ```
@@ -786,10 +775,10 @@ radioButton1: {
         disabled: false,
         visibility: 'true'
     },
-    displayValues: ['option 1', 'option 2', 'option 3'],
+    displayValues: ['Yes', 'No'],
     label: 'Radio Buttons',
-    value: 2,
-    values: [1, 2, 3]
+    value: 1,
+    values: [1, 2]
 }
 ```
 
