@@ -109,15 +109,14 @@ export const Modal = function Modal({
       const modalBackdropEl = document.getElementsByClassName('modal-backdrop')[0];
       const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
       const modalCanvasEl = document.getElementById(`canvas-${id}`);
-      if (canvasElement && modalBackdropEl && modalCanvasEl && realCanvasEl) {
-        realCanvasEl.style.height = '100vh';
-        realCanvasEl.style.position = 'absolute';
-        realCanvasEl.style.overflow = 'hidden';
+      const modalContainer = realCanvasEl.querySelector(':scope > .modal');
 
-        modalBackdropEl.style.height = '100vh';
-        modalBackdropEl.style.minHeight = '100vh';
-        modalBackdropEl.style.minHeight = '100vh';
-        modalCanvasEl.style.height = modalHeight;
+      if (canvasElement && modalBackdropEl && modalCanvasEl && realCanvasEl) {
+        const currentScroll = canvasElement.scrollTop;
+        canvasElement.style.overflow = 'hidden';
+
+        modalContainer.style.height = `${canvasElement.offsetHeight}px`;
+        modalContainer.style.top = `${currentScroll}px`;
       }
     };
 
@@ -131,6 +130,7 @@ export const Modal = function Modal({
         realCanvasEl.style.position = '';
 
         realCanvasEl.style.overflow = 'auto';
+        canvasElement.style.overflow = 'auto';
       }
     };
     if (showModal) {
