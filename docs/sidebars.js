@@ -10,6 +10,7 @@
 /** @type {import('@docusaurus/plugin-content-docs').SidebarsConfig} */
 const sidebars = {
   docs: [
+    "doc-home-page",
     {
       'type': 'category',
       'label': 'Getting Started',
@@ -127,7 +128,8 @@ const sidebars = {
                       'label': 'Chart',
                       'items': [
                         'widgets/chart/chart-properties',
-                        'widgets/chart/chart-examples'
+                        'widgets/chart/chart-examples',
+                        'widgets/chart/transforming-data-for-charts'
                       ]
                     },
                     'widgets/checkbox',
@@ -171,6 +173,17 @@ const sidebars = {
                         'widgets/table/table-properties',
                         'widgets/table/table-columns',
                         'widgets/table/table-csa-and-variables',
+                        {
+                          'type': 'category',
+                          'label': 'Serverside Operations',
+                          'items' : [
+                            'widgets/table/serverside-operations/overview',
+                            'widgets/table/serverside-operations/search',
+                            'widgets/table/serverside-operations/sort',
+                            'widgets/table/serverside-operations/filter',
+                            'widgets/table/serverside-operations/pagination'
+                          ]
+                        }
                       ]
                     },
                     'widgets/tabs',
@@ -331,6 +344,7 @@ const sidebars = {
           ],
         },
         'tutorial/transformations',
+        'data-sources/local-data-sources-migration',
       ],
     },
     {
@@ -339,7 +353,16 @@ const sidebars = {
       'items': [
         'tooljet-db/tooljet-database',
         'tooljet-db/database-editor',
+        {
+          'type': 'category',
+          'label': 'Column Constraints',
+          'items': [
+            'tooljet-db/constraints/primary-key',
+            'tooljet-db/constraints/foreign-key'
+          ]
+        },
         'tooljet-db/data-types',
+        'tooljet-db/table-operations',
         'tooljet-db/querying-tooljet-db',
       ]
     },

@@ -38,10 +38,10 @@ Check [Action Reference](/docs/category/actions-reference) docs to get the detai
 
 Following actions of the component can be controlled using the component specific actions(CSA):
 
-| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"135px"}}> Description </div>                                                             | <div style={{ width:"135px"}}> How To Access </div>                                                              |
-| :-------------------------------------------- | :------------------------------------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------------------------------------- |
-| setVisibility                                 | You can toggle the visibility of the Icon component via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.icon1.setVisibility(false)`. |
-| click                                         | You can trigger the click action on Icon component via a component-specific action within any event handler.  | Employ a RunJS query to execute component-specific actions such as `await components.icon1.click()`.              |
+| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div>   |
+| :-------------------------------------------- | :------------------------------------------------ | :---------------------------------------------------- |
+| setVisibility()                                 | Sets the visibility of the component. | Employ a RunJS query (for e.g., `await components.icon1.setVisibility(false)`) or trigger it using an event. |
+| click()                                         | Regulate the click on the icon.  | Employ a RunJS query (for e.g., `await components.icon1.click()`) or trigger it using an event.              |
 
 </div>
 
@@ -63,12 +63,12 @@ There are currently no exposed variables for the component.
 
 <div style={{paddingTop:'24px'}}>
 
-## Layout
+## Devices
 
-| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div>                                                            |
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div>                                                            |
 | :------------------------------------------- | :------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------- |
-| Show on desktop                              | Toggle on or off to display desktop view.         | You can programmatically determining the value by clicking on **fx** to set the value `{{true}}` or `{{false}}`. |
-| Show on mobile                               | Toggle on or off to display mobile view.          | You can programmatically determining the value by clicking on **fx** to set the value `{{true}}` or `{{false}}`. |
+| Show on desktop                              | Makes the component visible in desktop view.         | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on mobile                               | Makes the component visible in mobile view.          | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 </div>
 

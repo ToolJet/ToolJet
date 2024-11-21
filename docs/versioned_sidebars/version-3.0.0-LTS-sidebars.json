@@ -117,7 +117,8 @@
                       "label": "Chart",
                       "items": [
                         "widgets/chart/chart-properties",
-                        "widgets/chart/chart-examples"
+                        "widgets/chart/chart-examples",
+                        "widgets/chart/transforming-data-for-charts"
                       ]
                     },
                     "widgets/checkbox",
@@ -160,7 +161,18 @@
                       "items": [
                         "widgets/table/table-properties",
                         "widgets/table/table-columns",
-                        "widgets/table/table-csa-and-variables"
+                        "widgets/table/table-csa-and-variables",
+                        {
+                          "type": "category",
+                          "label": "Serverside Operations",
+                          "items" : [
+                            "widgets/table/serverside-operations/overview",
+                            "widgets/table/serverside-operations/search",
+                            "widgets/table/serverside-operations/sort",
+                            "widgets/table/serverside-operations/filter",
+                            "widgets/table/serverside-operations/pagination"
+                          ]
+                        }
                       ]
                     },
                     "widgets/tabs",
@@ -319,7 +331,8 @@
             "data-sources/zendesk"
           ]
         },
-        "tutorial/transformations"
+        "tutorial/transformations",
+        "data-sources/local-data-sources-migration"
       ]
     },
     {
@@ -328,7 +341,16 @@
       "items": [
         "tooljet-db/tooljet-database",
         "tooljet-db/database-editor",
+        {
+          "type": "category",
+          "label": "Column Constraints",
+          "items": [
+            "tooljet-db/constraints/primary-key",
+            "tooljet-db/constraints/foreign-key"
+          ]
+        },
         "tooljet-db/data-types",
+        "tooljet-db/table-operations",
         "tooljet-db/querying-tooljet-db"
       ]
     },
