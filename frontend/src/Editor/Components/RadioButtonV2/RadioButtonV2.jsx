@@ -217,6 +217,7 @@ export const RadioButtonV2 = ({
           auto={labelAutoWidth}
           isMandatory={isMandatory}
           _width={_width}
+          top={alignment !== 'top' && '2px'}
         />
 
         <div className="px-0 h-100 w-100" ref={radioBtnRef}>

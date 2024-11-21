@@ -2,15 +2,16 @@
  .radio-button-container {
     position: relative;
     padding-left: 22px;
-    line-height: 20px;
     margin-bottom: 8px;
     margin-right: 20px;
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 500;
     cursor: pointer;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-    font-size: 14px
   }
   
   // /* Hide the browser's default radio button */
@@ -23,7 +24,7 @@
   /* Create a custom radio button */
   .checkmark {
     position: absolute;
-    top: 0;
+    top: 2px;
     left: 0;
     height: 16px;
     width: 16px;
