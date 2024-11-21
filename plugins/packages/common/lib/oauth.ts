@@ -18,6 +18,14 @@ export function checkIfContentTypeIsMultipartFormData(headers: [string, string][
   return contentType?.toLowerCase().startsWith('multipart/form-data') ?? false;
 }
 
+export function checkIfContentTypeIsJson(headers: [string, string][] = []): boolean {
+  const contentType = headers.find(([key, _]) => key.toLowerCase() === 'content-type')?.[1];
+  return (
+    (contentType?.toLowerCase().startsWith('application/json') || contentType?.toLowerCase().startsWith('text/json')) ??
+    false
+  );
+}
+
 export function sanitizeParams(customArray: any) {
   const params = Object.fromEntries(customArray ?? []);
   Object.keys(params).forEach((key) => (params[key] === '' ? delete params[key] : {}));
