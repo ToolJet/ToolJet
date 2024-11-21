@@ -90,7 +90,7 @@ const ConstantTable = ({
               <tbody>
                 {constants.map((constant) => (
                   <tr key={constant.id}>
-                    <td className="p-3">
+                    <td className="p-3-constants">
                       <span
                         data-cy={`${constant.name.toLowerCase().replace(/\s+/g, '-')}-workspace-constant-name`}
                         data-tooltip-id="tooltip-for-org-constant-cell"
@@ -101,7 +101,7 @@ const ConstantTable = ({
                           : constant.name}
                       </span>
                     </td>
-                    <td className="text-muted p-3" style={{ width: '350px' }}>
+                    <td className="text-muted p-3-constants" style={{ width: '350px' }}>
                       <a
                         className="text-reset user-email"
                         data-cy={`${constant.name.toLowerCase().replace(/\s+/g, '-')}-workspace-constant-value`}
@@ -111,7 +111,7 @@ const ConstantTable = ({
                     </td>
 
                     {canUpdateDeleteConstant && (
-                      <td className="p-3">
+                      <td className="p-3-constants">
                         <div
                           style={{ display: 'flex', justifyContent: 'space-between', gap: 5 }}
                           data-cy={`${constant.name.toLowerCase().replace(/\s+/g, '-')}-workspace-constant-update`}
