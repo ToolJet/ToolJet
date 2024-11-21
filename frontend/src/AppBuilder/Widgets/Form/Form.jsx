@@ -310,6 +310,7 @@ export const Form = function Form(props) {
                   <RenderSchema
                     component={item}
                     id={index}
+                    darkMode={darkMode}
                     onOptionChange={onComponentOptionChangedForSubcontainer}
                     onOptionsChange={onComponentOptionsChangedForSubcontainer}
                   />

@@ -77,6 +77,7 @@ export function generateUIComponents(JSONSchema, advanced, componentName = '') {
       const itemType = typeResolver(value?.type);
       if (itemType) {
         uiComponentsDraft.push(getComponentDefinition('Text'));
+        uiComponentsDraft.push(getComponentDefinition(itemType));
         //only add if there is a valid item type
       } else {
         // useCurrentStateStore.getState().actions.setErrors({
@@ -89,8 +90,8 @@ export function generateUIComponents(JSONSchema, advanced, componentName = '') {
         //   },
         // });
         uiComponentsDraft.push(undefined);
+        uiComponentsDraft.push(undefined);
       }
-      uiComponentsDraft.push(getComponentDefinition(itemType));
     });
     Object.entries(JSONSchema?.properties).forEach(([key, value], index) => {
       if (uiComponentsDraft?.length > 0 && uiComponentsDraft[index * 2 + 1]) {
