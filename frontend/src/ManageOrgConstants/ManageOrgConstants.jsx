@@ -445,7 +445,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
           <OrganizationList />
         </div>
 
-        <div className="page-wrapper mt-4">
+        <div className="page-wrapper mt-4" style={{ marginLeft: '50px' }}>
           <div className="container-xl" style={{ width: '880px' }}>
             <div className="align-items-center d-flex justify-content-between">
               <div className="tj-text-sm font-weight-500" data-cy="env-name">
