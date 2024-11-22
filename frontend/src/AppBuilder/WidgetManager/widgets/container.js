@@ -20,6 +20,22 @@ export const containerConfig = {
         defaultValue: false,
       },
     },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+    },
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disable',
+      validation: {
+        schema: { type: 'boolean' },
+      },
+      defaultValue: false,
+    },
   },
   events: {},
   styles: {
@@ -50,24 +66,29 @@ export const containerConfig = {
         defaultValue: '#fff',
       },
     },
-    visibility: {
-      type: 'toggle',
-      displayName: 'Visibility',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: true,
-      },
-    },
-    disabledState: {
-      type: 'toggle',
-      displayName: 'Disable',
-      validation: {
-        schema: { type: 'boolean' },
-      },
-      defaultValue: false,
-    },
   },
-  exposedVariables: {},
+  exposedVariables: {
+    isVisible: true,
+    isDisabled: false,
+    isLoading: false,
+  },
+  actions: [
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setDisable',
+      displayName: 'Set disable',
+      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setLoading',
+      displayName: 'Set loading',
+      params: [{ handle: 'loading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+  ],
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },
@@ -76,14 +97,14 @@ export const containerConfig = {
     properties: {
       visible: { value: '{{true}}' },
       loadingState: { value: `{{false}}` },
+      visibility: { value: '{{true}}' },
+      disabledState: { value: '{{false}}' },
     },
     events: [],
     styles: {
       backgroundColor: { value: '#fff' },
       borderRadius: { value: '4' },
       borderColor: { value: '#fff' },
-      visibility: { value: '{{true}}' },
-      disabledState: { value: '{{false}}' },
     },
   },
 };

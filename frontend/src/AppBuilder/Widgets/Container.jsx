@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo } from 'react';
 import { Container as ContainerComponent } from '@/AppBuilder/AppCanvas/Container';
 import Spinner from '@/_ui/Spinner';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
@@ -13,16 +13,12 @@ export const Container = ({
   setExposedVariables,
   setExposedVariable,
 }) => {
-  const renderCount = useRef(0);
-  renderCount.current += 1;
-
-  console.log(`Container has re-rendered ${renderCount.current} times`);
-  const { disabledState, borderRadius, borderColor, boxShadow } = styles;
+  const { borderRadius, borderColor, boxShadow } = styles;
 
   const { isDisabled, isVisible, isLoading } = useExposeState(
     properties.loadingState,
-    properties.visible,
-    disabledState,
+    properties.visibility,
+    properties.disabledState,
     setExposedVariables,
     setExposedVariable
   );
