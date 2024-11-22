@@ -71,6 +71,9 @@ export const NumberInput = function NumberInput({
 
   useEffect(() => {
     setValue(Number(parseFloat(properties.value).toFixed(properties.decimalPlaces)));
+    if (isNaN(Number(parseFloat(properties.value).toFixed(properties.decimalPlaces)))) {
+      setExposedVariable('value', null);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.value]);
 
@@ -84,7 +87,9 @@ export const NumberInput = function NumberInput({
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    if (!isNaN(value)) {
+    if (value === '') {
+      setExposedVariable('value', null);
+    } else if (!isNaN(value)) {
       setExposedVariable('value', value);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -151,7 +156,6 @@ export const NumberInput = function NumberInput({
       },
       clear: async function () {
         setValue('');
-        setExposedVariable('value', '');
         fireEvent('onChange');
       },
       setLoading: async function (loading) {
@@ -175,7 +179,8 @@ export const NumberInput = function NumberInput({
     };
     if (!isNaN(value)) {
       exposedVariables.value = value;
-    }
+    } else exposedVariables.value = null;
+
     setExposedVariables(exposedVariables);
 
     isInitialRender.current = false;
