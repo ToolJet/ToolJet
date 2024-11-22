@@ -1,5 +1,5 @@
 /* eslint-disable import/no-unresolved */
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
@@ -45,21 +45,11 @@ export const CodeEditor = ({ id, height, darkMode, properties, styles, setExpose
   };
 
   const theme = darkMode ? okaidia : githubLight;
-  const langExtention = langSupport[mode?.toLowerCase()] ?? null;
+  const langExtention = langSupport?.[mode?.toLowerCase()];
 
   const editorHeight = React.useMemo(() => {
     return height || 'auto';
   }, [height]);
-
-  useEffect(() => {
-    const _setValue = (value) => {
-      if (typeof value === 'string') {
-        codeChanged(value);
-      }
-    };
-    setExposedVariable('setValue', _setValue);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return (
     <div data-disabled={disabledState} style={editorStyles} data-cy={dataCy}>
@@ -82,7 +72,7 @@ export const CodeEditor = ({ id, height, darkMode, properties, styles, setExpose
           maxHeight="100%"
           width="100%"
           theme={theme}
-          extensions={[langExtention]}
+          extensions={langExtention ? [langExtention] : undefined}
           onChange={codeChanged}
           basicSetup={setupConfig}
           style={{
