@@ -7871,11 +7871,12 @@ tbody {
 
 .marketplace-page-sidebar {
   height: calc(100vh - 64px);
-  max-width: 288px;
+  max-width: 272px;
   background-color: var(--page-default);
   border-right: 1px solid var(--slate5) !important;
   display: grid !important;
   grid-template-rows: auto 1fr auto !important;
+  position: fixed;
 }
 
 .home-page-sidebar {
@@ -13099,6 +13100,26 @@ color: var(--text-default);
   }
 }
 
+.tag-container{
+  width: 38px;
+  height: 18px;
+  background: linear-gradient(271.34deg, rgba(255, 95, 109, 0.12) -88.47%, rgba(255, 195, 113, 0.12) 94.89%);
+  border-radius: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 7px;
+
+  span{
+    font-size: 11px;
+    line-height: 16px;
+    font-weight: 500;
+    background: linear-gradient(96.1deg, #FF5F6D -15.44%, #FFC371 99.37%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}
+
 .template-source-name {
   color: var(--slate12) !important;
 }
@@ -16052,7 +16073,7 @@ color: var(--text-default);
   }
 }
 
-div.ds-svg-container svg {
+div.ds-svg-container img {
   padding: 2px;
 }
 
