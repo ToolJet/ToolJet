@@ -21,7 +21,8 @@
     "version": "1.0.0",
     "id": "openai",
     "author": "Tooljet",
-    "timestamp": "Mon, 10 Apr 2023 06:33:21 GMT"
+    "timestamp": "Mon, 10 Apr 2023 06:33:21 GMT",
+    "tags": ["AI"]
   },
   {
     "name": "AWS Textract",
@@ -118,7 +119,8 @@
     "version": "1.0.0",
     "id": "portkey",
     "author": "Portkey",
-    "timestamp": "Sat, 29 Jun 2024 09:40:13 GMT"
+    "timestamp": "Sat, 29 Jun 2024 09:40:13 GMT",
+    "tags": ["AI"]
   },
   {
     "name": "Pinecone",
@@ -126,6 +128,7 @@
     "version": "1.0.0",
     "id": "pinecone",
     "author": "Tooljet",
-    "timestamp": "Mon, 28 Oct 2024 08:08:28 GMT"
+    "timestamp": "Mon, 28 Oct 2024 08:08:28 GMT",
+    "tags": ["AI"]
   }
 ]
