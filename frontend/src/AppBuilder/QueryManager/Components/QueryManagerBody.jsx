@@ -152,6 +152,7 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
       return;
     return (
       <Transformation
+        key={selectedQuery?.id} // key is needed to create a new instance of the Transformation component whenever the selectedQuery changes
         changeOption={optionchanged}
         options={options ?? {}}
         darkMode={darkMode}
