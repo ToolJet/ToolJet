@@ -224,6 +224,7 @@
             }
           ]
         },
+        "app-builder/anti-patterns",
         "tutorial/keyboard-shortcuts"
       ]
     },

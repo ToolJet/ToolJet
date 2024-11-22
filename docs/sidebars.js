@@ -90,7 +90,7 @@ const sidebars = {
             'app-builder/walkthrough/variables',
             'app-builder/importing-exporting-applications',
           ],
-        },                    
+        },   
         {
           'type': 'category',
           'label': 'References',
@@ -235,6 +235,7 @@ const sidebars = {
             },
           ],
         },
+        'app-builder/anti-patterns',
         'tutorial/keyboard-shortcuts',
       ],
     },
