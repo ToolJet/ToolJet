@@ -8,7 +8,7 @@ import FxButton from '@/AppBuilder/CodeBuilder/Elements/FxButton';
 import useStore from '@/AppBuilder/_stores/store';
 import styles from '@/_ui/Select/styles';
 
-const DATE_FORMAT_OPTIONS = [
+export const DATE_FORMAT_OPTIONS = [
   {
     label: 'DD/MM/YYYY',
     value: 'DD/MM/YYYY',
@@ -27,7 +27,7 @@ const DATE_FORMAT_OPTIONS = [
   },
 ];
 
-const TIMEZONE_OPTIONS = [
+export const TIMEZONE_OPTIONS = [
   { name: 'UTC', value: 'Etc/UTC' },
   { name: '-12:00', value: 'Etc/GMT+12' },
   { name: '-11:00', value: 'Etc/GMT+11' },
@@ -63,6 +63,11 @@ const TIMEZONE_OPTIONS = [
   { name: '+13:00', value: 'Pacific/Auckland' },
 ];
 
+export const TIMEZONE_OPTIONS_MAP = TIMEZONE_OPTIONS.reduce((acc, curr) => {
+  acc[curr.name] = curr.value;
+  return acc;
+}, {});
+
 const DatepickerV2 = ({ componentMeta, darkMode, ...restProps }) => {
   const {
     layoutPropertyChanged,
@@ -78,31 +83,27 @@ const DatepickerV2 = ({ componentMeta, darkMode, ...restProps }) => {
   const items = [];
   const additionalActions = [];
   const properties = [];
-  const customProperties = [];
-  const innerCustom = [];
+  const formatting = [];
   const validations = Object.keys(componentMeta.validation || {});
   const resolvedProperties = useStore((state) => state.getResolvedComponent(component.id)?.properties);
-  const isDateSelectionEnabled = resolvedProperties?.isDateSelectionEnabled;
-  const isTimeSelectionEnabled = resolvedProperties?.isTimeSelectionEnabled;
   const isDateDisplayFormatFxOn = componentMeta?.definition?.properties?.dateFormat?.fxActive || false;
   const dateFormat = resolvedProperties?.dateFormat;
   const timeFormat = resolvedProperties?.timeFormat;
-  const timezoneInterval = resolvedProperties?.timezoneInterval;
+  const isTimezoneEnabled = resolvedProperties?.isTimezoneEnabled;
+  const displayTimezone = resolvedProperties?.displayTimezone;
+  const storeTimezone = resolvedProperties?.storeTimezone;
 
   for (const [key] of Object.entries(componentMeta?.properties)) {
     if (componentMeta?.properties[key]?.section === 'additionalActions') {
       additionalActions.push(key);
-    } else if (componentMeta?.properties[key]?.section === 'custom') {
-      customProperties.push(key);
-    } else if (componentMeta?.properties[key]?.section === 'innerCustom') {
-      innerCustom.push(key);
+    } else if (componentMeta?.properties[key]?.section === 'formatting') {
+      formatting.push(key);
     } else {
       properties.push(key);
     }
   }
-  console.log('resolvedProperties', resolvedProperties);
-  console.log('componentMeta', componentMeta);
-  console.log('isDateTimeSelectionEnabled', isDateSelectionEnabled);
+
+  console.log('formatting', formatting);
   items.push({
     title: 'Data',
     isOpen: true,
@@ -121,156 +122,122 @@ const DatepickerV2 = ({ componentMeta, darkMode, ...restProps }) => {
             darkMode
           )
         )}
-        {customProperties?.map((property, index) => (
-          <div
-            className="grey-bg-section mb-2"
-            style={{ background: 'var(--surfaces-surface-02)', padding: '12px 16px 4px 16px', borderRadius: '6px' }}
-            key={index}
-          >
-            {renderElement(
-              component,
-              componentMeta,
-              paramUpdated,
-              dataQueries,
-              property,
-              'properties',
-              currentState,
-              allComponents,
-              darkMode
-            )}
-            {property === 'isDateSelectionEnabled' && isDateSelectionEnabled && (
-              <div
-                data-cy={`input-date-display-format`}
-                className="field mb-2 w-100"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="d-flex justify-content-between">
-                  <label data-cy={`label-date-display-format`} className="form-label">
-                    Date format
-                  </label>
-                  <span>
-                    <FxButton
-                      active={isDateDisplayFormatFxOn}
-                      onPress={() => {
-                        // let resultFxActiveFields = column?.notActiveFxActiveFields || [];
-                        // let resultFxActiveFields = [];
-                        // if (truth) {
-                        //   resultFxActiveFields.push('dateFormat');
-                        // } else {
-                        //   resultFxActiveFields = resultFxActiveFields.filter((field) => field !== 'dateFormat');
-                        // }
-                        // paramUpdated(
-                        //   { name: 'isDateSelectionEnabled' },
-                        //   'fxActive',
-                        //   !isDateDisplayFormatFxOn,
-                        //   'properties'
-                        // );
-                        // setIsDateDisplayFormatFxOn(!isDateDisplayFormatFxOn);
-                        // onColumnItemChange(index, 'notActiveFxActiveFields', resultFxActiveFields);
-                        paramUpdated({ name: 'dateFormat' }, 'fxActive', !isDateDisplayFormatFxOn, 'properties');
-                      }}
-                    />
-                  </span>
-                </div>
-                {isDateDisplayFormatFxOn ? (
-                  <CodeHinter
-                    initialValue={dateFormat}
-                    theme={darkMode ? 'monokai' : 'default'}
-                    mode="javascript"
-                    lineNumbers={false}
-                    // placeholder={validation?.placeholder ?? ''}
-                    onChange={(value) => paramUpdated({ name: 'dateFormat' }, 'value', value, 'properties')}
-                  />
-                ) : (
-                  <Select
-                    options={DATE_FORMAT_OPTIONS}
-                    value={dateFormat ?? 'DD/MM/YYYY'}
-                    search={true}
-                    closeOnSelect={true}
-                    onChange={(value) => {
-                      paramUpdated({ name: 'dateFormat' }, 'value', value, 'properties');
-                    }}
-                    fuzzySearch
-                    placeholder="Select.."
-                    useCustomStyles={true}
-                    styles={styles(darkMode, '100%')}
-                  />
-                )}
-              </div>
-            )}
-            {property === 'isTimeSelectionEnabled' && isTimeSelectionEnabled && (
-              <>
-                {!isDateDisplayFormatFxOn && (
-                  <div className="field mb-2" onClick={(e) => e.stopPropagation()}>
-                    <label className="form-label"> Time Format</label>
-                    <Select
-                      options={[
-                        {
-                          label: 'HH:mm',
-                          value: 'HH:mm',
-                        },
-                      ]}
-                      value={timeFormat ?? 'HH:mm'}
-                      search={true}
-                      closeOnSelect={true}
-                      onChange={(value) => {
-                        paramUpdated({ name: 'timeFormat' }, 'value', value, 'properties');
-                      }}
-                      fuzzySearch
-                      placeholder="Select.."
-                      useCustomStyles={true}
-                      styles={styles(darkMode, '100%')}
-                    />
-                  </div>
-                )}
-                <div>
-                  {renderElement(
-                    component,
-                    componentMeta,
-                    paramUpdated,
-                    dataQueries,
-                    'is24HourFormatEnabled',
-                    'properties',
-                    currentState,
-                    allComponents,
-                    darkMode
-                  )}
-                  {/* <ProgramaticallyHandleProperties
-                    label="Enable 24 hr time format"
-                    currentState={currentState}
-                    index={index}
-                    darkMode={darkMode}
-                    // callbackFunction={onColumnItemChange}
-                    property="isTwentyFourHrFormatEnabled"
-                    // props={column}
-                    component={component}
-                    paramType="properties"
-                    paramMeta={{ type: 'toggle', displayName: 'Enable 24 hr time format' }}
-                  /> */}
-                </div>
+      </>
+    ),
+  });
 
-                <div data-cy={`input-display-time-zone`} className="field mb-2" onClick={(e) => e.stopPropagation()}>
-                  <label data-cy={`label-display-time-zone`} className="form-label">
-                    Time zone
-                  </label>
-                  <Select
-                    options={TIMEZONE_OPTIONS}
-                    value={timezoneInterval ?? 'UTC'}
-                    search={true}
-                    closeOnSelect={true}
-                    onChange={(value) => {
-                      paramUpdated({ name: 'timezoneInterval' }, 'value', value, 'properties');
-                    }}
-                    fuzzySearch
-                    placeholder="Select.."
-                    useCustomStyles={true}
-                    styles={styles(darkMode, '100%')}
-                  />
-                </div>
-              </>
-            )}
-          </div>
-        ))}
+  items.push({
+    title: 'Formatting',
+    isOpen: true,
+    children: (
+      <>
+        <div data-cy={`input-date-display-format`} className="field mb-2 w-100" onClick={(e) => e.stopPropagation()}>
+          {isDateDisplayFormatFxOn ? (
+            <CodeHinter
+              initialValue={dateFormat}
+              theme={darkMode ? 'monokai' : 'default'}
+              mode="javascript"
+              lineNumbers={false}
+              onChange={(value) => paramUpdated({ name: 'dateFormat' }, 'value', value, 'properties')}
+            />
+          ) : (
+            <div className="field mb-2" onClick={(e) => e.stopPropagation()}>
+              <label className="form-label"> Date Format</label>
+              <Select
+                options={DATE_FORMAT_OPTIONS}
+                value={dateFormat ?? 'DD/MM/YYYY'}
+                search={true}
+                closeOnSelect={true}
+                onChange={(value) => {
+                  paramUpdated({ name: 'dateFormat' }, 'value', value, 'properties');
+                }}
+                fuzzySearch
+                placeholder="Select.."
+                useCustomStyles={true}
+                styles={styles(darkMode, '100%')}
+              />
+            </div>
+          )}
+        </div>
+
+        <>
+          {!isDateDisplayFormatFxOn && (
+            <div className="field mb-2" onClick={(e) => e.stopPropagation()}>
+              <label className="form-label"> Time Format</label>
+              <Select
+                options={[
+                  {
+                    label: 'HH:mm',
+                    value: 'HH:mm',
+                  },
+                ]}
+                value={timeFormat ?? 'HH:mm'}
+                search={true}
+                closeOnSelect={true}
+                onChange={(value) => {
+                  paramUpdated({ name: 'timeFormat' }, 'value', value, 'properties');
+                }}
+                fuzzySearch
+                placeholder="Select.."
+                useCustomStyles={true}
+                styles={styles(darkMode, '100%')}
+              />
+            </div>
+          )}
+
+          {renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'isTimezoneEnabled',
+            'properties',
+            currentState,
+            allComponents,
+            darkMode
+          )}
+
+          {isTimezoneEnabled && (
+            <div style={{ paddingLeft: '16px', borderLeft: '1px solid #E4E7EB' }}>
+              <div data-cy={`input-display-time-zone`} className="field mb-2" onClick={(e) => e.stopPropagation()}>
+                <label data-cy={`label-display-time-zone`} className="form-label">
+                  Display in
+                </label>
+                <Select
+                  options={TIMEZONE_OPTIONS}
+                  value={displayTimezone || 'UTC'}
+                  search={true}
+                  closeOnSelect={true}
+                  onChange={(value) => {
+                    paramUpdated({ name: 'displayTimezone' }, 'value', value, 'properties');
+                  }}
+                  fuzzySearch
+                  placeholder="Select.."
+                  useCustomStyles={true}
+                  styles={styles(darkMode, '100%')}
+                />
+              </div>
+              <div data-cy={`input-display-time-zone`} className="field mb-2" onClick={(e) => e.stopPropagation()}>
+                <label data-cy={`label-display-time-zone`} className="form-label">
+                  Store in
+                </label>
+                <Select
+                  options={TIMEZONE_OPTIONS}
+                  value={storeTimezone || 'UTC'}
+                  search={true}
+                  closeOnSelect={true}
+                  onChange={(value) => {
+                    paramUpdated({ name: 'storeTimezone' }, 'value', value, 'properties');
+                  }}
+                  fuzzySearch
+                  placeholder="Select.."
+                  useCustomStyles={true}
+                  styles={styles(darkMode, '100%')}
+                />
+              </div>
+            </div>
+          )}
+        </>
       </>
     ),
   });

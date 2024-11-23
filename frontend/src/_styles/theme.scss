@@ -16259,3 +16259,28 @@ fieldset:disabled {
 .tj-inspector-datepicker {
   background-color: #fff !important;
 }
+
+
+  .react-datepicker__day--disabled {
+    color: #ccc !important;
+  }
+  
+  .react-datepicker__time-list{
+      li.react-datepicker__time-list-item--disabled.react-datepicker__time-list-item {
+        color: #ccc !important;
+      }
+  }
+
+  .inspector-validation-date-picker {
+    .react-datepicker-wrapper{
+      input {
+        background-color: #fff;
+      }
+      input.dark-theme {
+        background-color: var(--slate3);
+        color: var(--slate12);
+      }
+
+    }
+    
+  }

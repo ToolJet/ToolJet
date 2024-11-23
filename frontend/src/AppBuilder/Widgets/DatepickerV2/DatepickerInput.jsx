@@ -17,7 +17,7 @@ export const DatepickerInput = forwardRef(
     IconElement,
   }) => {
     return (
-      <div>
+      <>
         <input
           className={cx('table-column-datepicker-input text-truncate')}
           value={value}
@@ -28,16 +28,13 @@ export const DatepickerInput = forwardRef(
             setFocus(true);
             onDateChange(e.target.value);
           }}
-          onFocus={() => {
-            onDateChange(value);
-          }}
           disabled={disable || loading}
         />
         {loading && <Loader style={{ ...loaderStyles }} width="16" />}
         <span className="cell-icon-display">
           <IconElement style={iconStyles} width="16" className="table-column-datepicker-input-icon" />
         </span>
-      </div>
+      </>
     );
   }
 );

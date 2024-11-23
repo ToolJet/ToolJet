@@ -1,5 +1,3 @@
-import _ from 'lodash';
-
 export const datepickerV2Config = {
   name: 'Datepicker',
   displayName: 'Date Picker',
@@ -60,6 +58,11 @@ export const datepickerV2Config = {
       displayName: 'Custom validation',
       options: { className: 'datepicker-validation-full' },
     },
+    mandatory: {
+      type: 'toggle',
+      displayName: 'Make this field mandatory',
+      options: { className: 'datepicker-validation-full' },
+    },
   },
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -83,23 +86,11 @@ export const datepickerV2Config = {
         defaultValue: '01/01/2022',
       },
     },
-    isDateSelectionEnabled: {
+    isTimezoneEnabled: {
       type: 'toggle',
-      displayName: 'Enable Date Selection',
-      validation: { schema: { type: 'boolean' }, defaultValue: true },
-      section: 'custom',
-    },
-    isTimeSelectionEnabled: {
-      type: 'toggle',
-      displayName: 'Enable Time Selection',
-      validation: { schema: { type: 'boolean' }, defaultValue: true },
-      section: 'custom',
-    },
-    is24HourFormatEnabled: {
-      type: 'toggle',
-      displayName: 'Enable 24 Hour Selection',
-      validation: { schema: { type: 'boolean' }, defaultValue: true },
-      section: 'innerCustom',
+      displayName: 'Manage time zones',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'formatting',
     },
     loadingState: {
       type: 'toggle',
@@ -136,6 +127,27 @@ export const datepickerV2Config = {
     onFocus: { displayName: 'On focus' },
     onBlur: { displayName: 'On blur' },
   },
+  actions: [
+    {
+      handle: 'clearValue',
+      displayName: 'Clear value',
+    },
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'setVisibility', displayName: 'Value', defaultValue: `{{true}}`, type: 'toggle' }],
+    },
+    {
+      handle: 'setLoading',
+      displayName: 'Set loading',
+      params: [{ handle: 'setLoading', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
+    },
+    {
+      handle: 'setDisable',
+      displayName: 'Set disable',
+      params: [{ handle: 'setDisable', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
+    },
+  ],
   styles: {
     labelColor: {
       type: 'color',
@@ -292,16 +304,16 @@ export const datepickerV2Config = {
       maxTime: { value: '' },
       disabledDates: { value: '{{[]}}' },
       customRule: { value: '' },
+      mandatory: { value: '{{false}}' },
     },
     properties: {
       label: { value: 'Label' },
       defaultValue: { value: '01/01/2022' },
-      isDateSelectionEnabled: { value: '{{false}}' },
-      dateFormat: { value: ' DD/MM/YYYY' },
-      isTimeSelectionEnabled: { value: '{{false}}' },
+      dateFormat: { value: 'DD/MM/YYYY' },
       timeFormat: { value: 'HH:mm' },
-      is24HourFormatEnabled: { value: '{{false}}' },
-      timezoneInterval: { value: 'UTC' },
+      isTimezoneEnabled: { value: '{{false}}' },
+      displayTimezone: { value: 'UTC' },
+      storeTimezone: { value: 'UTC' },
       loadingState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
@@ -320,7 +332,7 @@ export const datepickerV2Config = {
       selectedTextColor: { value: '#11181C' },
       errTextColor: { value: '#E54D2E' },
       icon: { value: 'IconHome2' },
-      iconVisibility: { value: false }, //Test
+      iconVisibility: { value: false },
       iconDirection: { value: 'left' },
       fieldBorderRadius: { value: '{{4}}' },
       boxShadow: { value: '0px 0px 0px 0px #121212' },

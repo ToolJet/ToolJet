@@ -6,8 +6,18 @@ import CustomDatePickerHeader from '@/AppBuilder/CodeBuilder/Elements/CustomDate
 import * as Icons from '@tabler/icons-react';
 import { DatepickerInput } from './DatepickerInput';
 import moment from 'moment';
+import { TIMEZONE_OPTIONS_MAP } from '@/AppBuilder/RightSideBar/Inspector/Components/DatepickerV2';
 
 const DISABLED_DATE_FORMAT = 'MM/DD/YYYY';
+
+const getSafeTime = (hour, minute) => {
+  try {
+    const time = moment().hours(hour).minutes(minute);
+    return time.toDate();
+  } catch (error) {
+    return null;
+  }
+};
 
 export const DatepickerV2 = ({
   height,
@@ -25,18 +35,10 @@ export const DatepickerV2 = ({
   dataCy,
 }) => {
   const dateInputRef = useRef(null);
-  const {
-    label,
-    defaultValue,
-    dateFormat,
-    timeFormat,
-    isDateSelectionEnabled,
-    isTimeSelectionEnabled,
-    is24HourFormatEnabled,
-    timezoneInterval,
-  } = properties;
+  const { label, defaultValue, dateFormat, timeFormat, is24HourFormatEnabled, timezoneInterval } = properties;
 
-  const { disabledDates } = validation;
+  const { disabledDates, mandatory: isMandatory } = validation;
+
   const {
     selectedTextColor,
     fieldBorderRadius,
@@ -57,26 +59,44 @@ export const DatepickerV2 = ({
     accentColor,
     padding,
   } = styles;
-
+  const isInitialRender = useRef(true);
   const [date, setDate] = useState(defaultValue);
   const [visibility, setVisibility] = useState(properties.visibility);
   const [loading, setLoading] = useState(properties.loadingState);
   const [disable, setDisable] = useState(properties.disabledState);
   const [excludedDates, setExcludedDates] = React.useState([]);
   const [focus, setFocus] = useState(false);
+  const [minDate, setMinDateState] = useState(new Date(validation.minDate));
+  const [maxDate, setMaxDateState] = useState(new Date(validation.maxDate));
+  const [selectedTimezone, setSelectedTimezone] = useState(timezoneInterval);
+  const [minHour, minMinute] = validation.minTime.split(':');
+  const [minTime, setMinTimeState] = useState(getSafeTime(minHour, minMinute));
+  const [maxHour, maxMinute] = validation.maxTime.split(':');
+  const [maxTime, setMaxTimeState] = useState(getSafeTime(maxHour, maxMinute));
 
-  const selectedDateFormat = isTimeSelectionEnabled ? `${dateFormat} ${timeFormat}` : dateFormat;
+  const displayFormat = `${dateFormat} ${timeFormat}`;
 
   const computeDateString = (date) => {
-    console.log('This is the weird date', date);
-    if (isDateSelectionEnabled) {
-      console.log('moment(date).format(selectedDateFormat)', moment(date).format(selectedDateFormat));
-      return moment(date).format(selectedDateFormat);
-    }
+    if (date === null) return 'Invalid Date';
 
-    if (!isDateSelectionEnabled && isTimeSelectionEnabled) {
-      return moment(date).format('LT');
-    }
+    const isUnixTimeStamp =
+      typeof date === 'number' || (typeof date === 'string' && !isNaN(date) && date.trim() !== '');
+
+    // if (isTimeSelectionEnabled) {
+    //   // const formattedDate = selectedTimezone
+    //   //   ? moment(date).tz(selectedTimezone).format(selectedDateFormat)
+    //   //   : moment(date).format(selectedDateFormat);
+
+    //   const formattedDate = isUnixTimeStamp
+    //     ? moment.unix(date).format(selectedDateFormat)
+    //     : moment(date).format(selectedDateFormat);
+
+    //   return formattedDate;
+
+    //   // return isUnixTimeStamp ? formattedDate : moment(date).format(selectedDateFormat);
+    // }
+
+    return isUnixTimeStamp ? moment.unix(date).format(displayFormat) : moment(date).format(displayFormat);
   };
 
   const onDateChange = (date) => {
@@ -86,7 +106,9 @@ export const DatepickerV2 = ({
   };
 
   const setInputValue = (value) => {
-    setDate(value);
+    const isUnixTimeStamp =
+      typeof value === 'number' || (typeof value === 'string' && !isNaN(value) && value.trim() !== '');
+    setDate(isUnixTimeStamp ? moment.unix(value).toDate() : value);
     setExposedVariable('value', value ? computeDateString(value) : undefined);
     const validationStatus = validate(computeDateString(value));
     // setValidationStatus(validationStatus);
@@ -94,16 +116,164 @@ export const DatepickerV2 = ({
   };
 
   useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isVisible', properties.visibility);
     setVisibility(properties.visibility);
   }, [properties.visibility]);
 
   useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isLoading', properties.loadingState);
     setLoading(properties.loadingState);
   }, [properties.loadingState]);
 
   useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isDisabled', properties.disabledState);
     setDisable(properties.disabledState);
   }, [properties.disabledState]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('errTextColor', errTextColor);
+  }, []);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isMandatory', isMandatory);
+  }, [isMandatory]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isMandatory', isMandatory);
+  }, [isMandatory]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('label', label);
+  }, [label]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('dateFormat', dateFormat);
+  }, [dateFormat]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('timeFormat', timeFormat);
+  }, [timeFormat]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setSelectedTimezone(timezoneInterval);
+    setExposedVariable('selectedTimeZone', timezoneInterval);
+  }, [timezoneInterval]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setMinDateState(new Date(validation.minDate));
+  }, [validation.minDate]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setMaxDateState(new Date(validation.maxDate));
+  }, [validation.maxDate]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    const [hour, minute] = validation.minTime.split(':');
+    setMinTimeState(getSafeTime(hour, minute));
+  }, [validation.minTime]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    const [hour, minute] = validation.maxTime.split(':');
+    setMaxTimeState(getSafeTime(hour, minute));
+  }, [validation.maxTime]);
+
+  useEffect(() => {
+    const exposedVariables = {
+      label: label,
+      dateFormat: dateFormat,
+      timeFormat: timeFormat,
+      selectedTimeZone: timezoneInterval,
+      isVisible: properties.visibility,
+      isLoading: properties.loadingState,
+      isDisabled: properties.disabledState,
+      isMandatory: isMandatory,
+      setValue: () => {
+        setInputValue();
+      },
+      clearValue: () => {
+        setInputValue(null); //Done
+      },
+      setDate: (date) => {
+        setInputValue(date);
+      },
+      setTime: (time) => {
+        setInputValue(time);
+      },
+      setValueinTimeStamp: (timeStamp) => {
+        //For the most part done need to fix setDate after toggle has been changed
+        setInputValue(timeStamp);
+      },
+      setDisabledDates: (dates) => {
+        //Done
+        setExcludedDates(dates);
+      },
+      clearDisabledDates: () => {
+        //Done
+        setExcludedDates([]);
+      },
+      setMinDate: (date) => {
+        const momentDate = moment(date);
+        if (momentDate.isValid()) {
+          setMinDateState(momentDate.toDate()); //Done
+        }
+      },
+      setMaxDate: (date) => {
+        const momentDate = moment(date);
+        if (momentDate.isValid()) {
+          setMaxDateState(momentDate.toDate()); //Done
+        }
+      },
+      setMinTime: (time) => {
+        const [hour, minute] = time.split(':');
+        setMinTimeState(getSafeTime(hour, minute));
+      }, //Done
+      setMaxTime: (time) => {
+        const [hour, minute] = time.split(':');
+        setMaxDateState(getSafeTime(hour, minute));
+      }, //Done
+      setTimezone: (timezone) => {
+        const value = TIMEZONE_OPTIONS_MAP[timezone];
+        if (value) {
+          setSelectedTimezone(value);
+          setExposedVariable('selectedTimeZone', value);
+        }
+      }, // Done
+      setVisibility: (visibility) => {
+        setExposedVariable('isVisible', visibility); //Done
+        setVisibility(visibility);
+      },
+      setLoading: (loading) => {
+        setExposedVariable('isLoading', loading); //Done
+        setLoading(loading);
+      },
+      setDisable: (disable) => {
+        setExposedVariable('isDisabled', disable); //Done
+        setDisable(disable);
+      },
+      setFocus: (focus) => {
+        setFocus(focus); //Done
+      },
+      setBlur: () => {
+        setFocus(false); //Done
+      },
+    };
+    setExposedVariables(exposedVariables);
+    isInitialRender.current = false;
+  }, []);
 
   useEffect(() => {
     if (Array.isArray(disabledDates) && disabledDates.length > 0) {
@@ -119,7 +289,7 @@ export const DatepickerV2 = ({
   }, [disabledDates]);
 
   useEffect(() => {
-    const dateMomentInstance = defaultValue && moment(defaultValue, selectedDateFormat);
+    const dateMomentInstance = defaultValue && moment(defaultValue, displayFormat);
     setInputValue(dateMomentInstance && dateMomentInstance.isValid() ? dateMomentInstance.toDate() : null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -181,7 +351,7 @@ export const DatepickerV2 = ({
 
   return (
     <div
-      data-cy={`label-${String(componentName).toLowerCase()} `}
+      data-cy={`label-${String(componentName).toLowerCase()}`}
       className={cx('d-flex', {
         [alignment === 'top' &&
         ((labelWidth != 0 && label?.length != 0) || (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
@@ -207,25 +377,24 @@ export const DatepickerV2 = ({
         defaultAlignment={alignment}
         direction={direction}
         auto={labelAutoWidth}
-        // isMandatory={isMandatory}
+        isMandatory={isMandatory}
         _width={_width}
         top={'1px'}
       />
       <div className="w-100 px-0 h-100">
         <DatePickerComponent
           className={`input-field form-control validation-without-icon px-2`}
-          popperClassName={cx('tj-table-datepicker', {
-            'tj-timepicker-widget': !isDateSelectionEnabled && isTimeSelectionEnabled,
-            'tj-datepicker-widget': isDateSelectionEnabled,
+          popperClassName={cx('tj-table-datepicker tj-datepicker-widget', {
             'theme-dark dark-theme': darkMode,
           })}
           onChange={(date) => {
             setFocus(true);
             onDateChange(date);
           }}
-          // selected={date}
-          value={date !== null ? computeDateString(date) : 'select date'}
-          dateFormat={!isDateSelectionEnabled && isTimeSelectionEnabled ? 'HH:mm' : dateFormat}
+          selected={date}
+          value={date !== null ? computeDateString(date) : 'Select date'}
+          // dateFormat={!isDateSelectionEnabled && isTimeSelectionEnabled ? 'HH:mm' : dateFormat}
+          displayFormat={displayFormat}
           customInput={
             <DatepickerInput
               dateInputRef={dateInputRef}
@@ -239,8 +408,7 @@ export const DatepickerV2 = ({
               onDateChange={onDateChange}
             />
           }
-          showTimeSelect={isTimeSelectionEnabled}
-          showTimeSelectOnly={!isDateSelectionEnabled && isTimeSelectionEnabled}
+          showTimeSelect
           showMonthDropdown
           showYearDropdown
           dropdownMode="select"
@@ -251,6 +419,10 @@ export const DatepickerV2 = ({
           popperProps={{ strategy: 'fixed' }}
           timeIntervals={15}
           timeFormat={is24HourFormatEnabled ? 'HH:mm' : 'h:mm aa'}
+          minDate={minDate !== 'Invalid Date' ? minDate : null}
+          maxDate={maxDate !== 'Invalid Date' ? maxDate : null}
+          minTime={!minTime || minTime === 'Invalid Date' ? moment().hours(0).minutes(0).toDate() : minTime}
+          maxTime={!maxTime || maxTime === 'Invalid Date' ? moment().hours(23).minutes(59).toDate() : maxTime}
           onCalendarClose={() => {
             setFocus(false);
           }}
