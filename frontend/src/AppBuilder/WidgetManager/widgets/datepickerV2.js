@@ -4,7 +4,7 @@ export const datepickerV2Config = {
   description: 'Choose date and time',
   component: 'DatepickerV2',
   defaultSize: {
-    width: 12,
+    width: 6,
     height: 43,
   },
   validation: {
@@ -221,7 +221,7 @@ export const datepickerV2Config = {
     selectedTextColor: {
       type: 'color',
       displayName: 'Text',
-      validation: { schema: { type: 'string' }, defaultValue: '#11181C' },
+      validation: { schema: { type: 'string' }, defaultValue: '#1B1F24' },
       accordian: 'field',
     },
     errTextColor: {
@@ -329,7 +329,7 @@ export const datepickerV2Config = {
       fieldBackgroundColor: { value: '#fff' },
       fieldBorderColor: { value: '#DFE3E6' },
       accentColor: { value: '#4368E3' },
-      selectedTextColor: { value: '#11181C' },
+      selectedTextColor: { value: '#1B1F24' },
       errTextColor: { value: '#E54D2E' },
       icon: { value: 'IconHome2' },
       iconVisibility: { value: false },

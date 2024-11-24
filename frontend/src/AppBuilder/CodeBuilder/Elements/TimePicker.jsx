@@ -7,11 +7,7 @@ import cx from 'classnames';
 export const TimePicker = ({ value, onChange, meta }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   return (
-    <div
-      //   data-cy={validation.dataCy}
-      className="field flex-fill inspector-validation-date-picker"
-      key={meta.property}
-    >
+    <div className="field flex-fill inspector-validation-date-picker" key={meta.property}>
       <label className="form-label">{meta.label}</label>
       <Timepicker
         selected={getDate(value, 'HH:mm')}
@@ -20,6 +16,7 @@ export const TimePicker = ({ value, onChange, meta }) => {
         placeholderText={meta?.placeholder ?? ''}
         timeFormat={'HH:mm'}
         darkMode={darkMode}
+        isInspectorField={true}
       />
     </div>
   );

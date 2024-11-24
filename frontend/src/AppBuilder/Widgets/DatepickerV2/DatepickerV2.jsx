@@ -7,6 +7,8 @@ import * as Icons from '@tabler/icons-react';
 import { DatepickerInput } from './DatepickerInput';
 import moment from 'moment';
 import { TIMEZONE_OPTIONS_MAP } from '@/AppBuilder/RightSideBar/Inspector/Components/DatepickerV2';
+import TimepickerInput from './TimepickerInput';
+const tinycolor = require('tinycolor2');
 
 const DISABLED_DATE_FORMAT = 'MM/DD/YYYY';
 
@@ -294,8 +296,20 @@ export const DatepickerV2 = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  console.log(!['#1B1F24', '#000', '#000000ff'].includes(selectedTextColor), selectedTextColor);
   const computedStyles = {
     height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
+    width: '100%',
+    borderColor: focus
+      ? accentColor != '4368E3'
+        ? accentColor
+        : 'var(--primary-accent-strong)'
+      : fieldBorderColor != '#CCD1D5'
+      ? fieldBorderColor
+      : disable || loading
+      ? '1px solid var(--borders-disabled-on-white)'
+      : 'var(--borders-default)',
+    '--tblr-input-border-color-darker': tinycolor(fieldBorderColor).darken(24).toString(),
     borderRadius: `${fieldBorderRadius}px`,
     color: !['#1B1F24', '#000', '#000000ff'].includes(selectedTextColor)
       ? selectedTextColor
@@ -311,6 +325,10 @@ export const DatepickerV2 = ({
           ? 'var(--surfaces-app-bg-default)'
           : 'var(--surfaces-surface-03)'
         : 'var(--surfaces-surface-01)',
+    paddingLeft: '10px',
+    ...(iconVisibility && {
+      ...(iconDirection === 'left' ? { paddingLeft: '30px' } : { paddingRight: '30px' }),
+    }),
   };
 
   const loaderStyles = {
@@ -341,6 +359,7 @@ export const DatepickerV2 = ({
     color: iconColor !== '#CFD3D859' ? iconColor : 'var(--icons-weak-disabled)',
     zIndex: 3,
     display: iconVisibility ? 'block' : 'none',
+    [iconDirection]: '10px',
   };
 
   const _width = (labelWidth / 100) * 70;
@@ -352,7 +371,7 @@ export const DatepickerV2 = ({
   return (
     <div
       data-cy={`label-${String(componentName).toLowerCase()}`}
-      className={cx('d-flex', {
+      className={cx('d-flex datetimepicker-component', {
         [alignment === 'top' &&
         ((labelWidth != 0 && label?.length != 0) || (labelAutoWidth && labelWidth == 0 && label && label?.length != 0))
           ? 'flex-column'
@@ -408,14 +427,15 @@ export const DatepickerV2 = ({
               onDateChange={onDateChange}
             />
           }
-          showTimeSelect
+          showTimeInput
+          customTimeInput={<TimepickerInput currentDate={date} darkMode={darkMode} />}
           showMonthDropdown
           showYearDropdown
           dropdownMode="select"
           excludeDates={excludedDates}
           showPopperArrow={false}
           renderCustomHeader={(headerProps) => <CustomDatePickerHeader {...headerProps} />}
-          shouldCloseOnSelect
+          shouldCloseOnSelect={false}
           popperProps={{ strategy: 'fixed' }}
           timeIntervals={15}
           timeFormat={is24HourFormatEnabled ? 'HH:mm' : 'h:mm aa'}
@@ -425,6 +445,9 @@ export const DatepickerV2 = ({
           maxTime={!maxTime || maxTime === 'Invalid Date' ? moment().hours(23).minutes(59).toDate() : maxTime}
           onCalendarClose={() => {
             setFocus(false);
+          }}
+          onCalendarOpen={() => {
+            setFocus(true);
           }}
         />
       </div>

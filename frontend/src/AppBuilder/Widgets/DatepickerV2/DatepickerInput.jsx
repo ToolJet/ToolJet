@@ -30,10 +30,10 @@ export const DatepickerInput = forwardRef(
           }}
           disabled={disable || loading}
         />
-        {loading && <Loader style={{ ...loaderStyles }} width="16" />}
         <span className="cell-icon-display">
           <IconElement style={iconStyles} width="16" className="table-column-datepicker-input-icon" />
         </span>
+        {loading && <Loader style={{ ...loaderStyles }} width="16" />}
       </>
     );
   }
