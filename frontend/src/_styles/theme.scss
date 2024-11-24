@@ -16284,3 +16284,131 @@ fieldset:disabled {
     }
     
   }
+
+
+.datetimepicker-component {
+  .react-datepicker{
+    display: grid;
+    grid-auto-flow: column;
+    border-top-right-radius: 0rem;
+    border-bottom-right-radius: 0rem;
+  }
+
+  .react-datepicker__month-container {
+    width: 100%;
+    width:250px;
+  }
+
+  .react-datepicker__input-time-container {
+    margin: 0px;
+    width: 100%;
+    border-top-right-radius: 0.3rem;
+    border-bottom-right-radius: 0.3rem;
+    box-shadow: 8px 8px 16px 0px #3032331A;
+  }
+  
+  
+  .react-datepicker-time__input {
+    margin-left: 0px !important;
+
+    .dark-time-input {
+      color:#f4f6fa !important;
+      background-color: var(--surfaces-surface-01) !important;
+    }
+  }
+
+  .react-datepicker-wrapper {
+    width: 100%;
+  }
+  
+  .react-datepicker-time__caption {
+    display:none;
+  }
+
+  .custom-time-input {
+    background-color: #fff;
+    border-left: 1px solid #CCD1D5;
+  }
+
+  .time-header {
+    width: 62px;
+    height: 35px;
+    padding: 8px 6px 7px 6px;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    border-bottom: 1px solid #CCD1D5;
+    font-weight: 500;
+    font-family: 'IBM Plex Sans';
+    color:#ACB2B9;
+  }
+  
+  .time-input-body {
+    padding-bottom: 12px;
+  }
+
+  .time-col {
+    margin-top: 5px;
+    overflow-y: auto; 
+    overflow-x: hidden;
+    scrollbar-width: none; 
+    height: 265px;
+    width: 62px;
+  }
+
+  .selected-time {
+    background-color: #4368E3 !important;
+    border-radius: 6px;
+    color:#fff;
+  }
+
+  .time-item {
+    width: 50px; 
+    height:22px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 2px 6px;
+    font-size: 11px;
+    cursor: pointer;
+  }
+
+  .time-item:hover {
+    background-color: var(--interactive-overlays-fill-hover);
+    border-radius: 6px;
+  }
+
+  .react-datepicker-popper[data-placement^=top] {
+    padding-bottom: 0px;
+  }
+}
+
+
+.tj-inspector-timepicker.dark-theme {
+  .react-datepicker  {
+    color:#f4f6fa !important;
+    background-color: var(--surfaces-surface-01) !important;
+  }
+
+  .react-datepicker, .react-datepicker__header {
+    border: 1px solid var(--borders-default);
+    background-color: #1f2936;
+
+    .react-datepicker-time__header{
+      color: #fff !important;
+    }
+
+  }
+}
+
+.tj-inspector-timepicker {
+  padding:0px !important;
+
+  .react-datepicker__time-list {
+      scrollbar-width: none;
+  }
+
+  .react-datepicker__triangle {
+    display:none;
+  }
+}
