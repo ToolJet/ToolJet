@@ -4,6 +4,8 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import classNames from 'classnames';
 import { computeColor } from '@/_helpers/utils';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { Tooltip } from 'react-bootstrap';
 
 export const Color = ({
   value,
@@ -12,11 +14,12 @@ export const Color = ({
   cyLabel,
   asBoxShadowPopover = true,
   meta,
+  outerWidth = '142px',
   component,
   styleDefinition,
+  onReset,
 }) => {
   value = component == 'Button' ? computeColor(styleDefinition, value, meta) : value;
-
   const [showPicker, setShowPicker] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const colorPickerPosition = meta?.colorPickerPosition ?? '';
@@ -28,7 +31,7 @@ export const Color = ({
     left: '0px',
   };
   const outerStyles = {
-    width: '142px',
+    width: outerWidth,
     height: '32px',
     borderRadius: ' 6px',
     display: 'flex',
@@ -109,6 +112,15 @@ export const Color = ({
         <div className="col tj-text-xsm p-0 color-slate12" data-cy={`${String(cyLabel)}-value`}>
           {value}
         </div>
+        {typeof onReset === 'function' && (
+          <div className="col-auto p-0">
+            <OverlayTrigger placement="left" overlay={<Tooltip id="reset-default-color">Reset to default</Tooltip>}>
+              <div onClick={onReset} className="color-reset">
+                <SolidIcon name="reset" />
+              </div>
+            </OverlayTrigger>
+          </div>
+        )}
       </div>
     );
   };

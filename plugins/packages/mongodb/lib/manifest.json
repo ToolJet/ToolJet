@@ -59,7 +59,7 @@
   },
   "properties": {
     "connection_type": {
-      "label": "",
+      "label": "Connection type",
       "key": "connection_type",
       "type": "dropdown-component-flip",
       "description": "Single select dropdown for connection_type",

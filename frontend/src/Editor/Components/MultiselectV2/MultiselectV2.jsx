@@ -1,7 +1,5 @@
-import { resolveReferences } from '@/_helpers/utils';
-import { useCurrentState } from '@/_stores/currentStateStore';
-import _, { has, isEmpty, isObject } from 'lodash';
-import React, { useState, useEffect, useMemo } from 'react';
+import _, { has, isObject } from 'lodash';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Select from 'react-select';
 import './multiselectV2.scss';
 import CustomMenuList from '../DropdownV2/CustomMenuList';
@@ -17,7 +15,6 @@ import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor } fr
 
 export const MultiselectV2 = ({
   id,
-  component,
   height,
   properties,
   styles,
@@ -27,12 +24,11 @@ export const MultiselectV2 = ({
   darkMode,
   fireEvent,
   validate,
-  width,
+  validation,
+  componentName,
 }) => {
   let {
     label,
-    values,
-    options,
     showAllOption,
     disabledState,
     advanced,
@@ -59,13 +55,17 @@ export const MultiselectV2 = ({
     padding,
     accentColor,
   } = styles;
+  const isInitialRender = useRef(true);
   const [selected, setSelected] = useState([]);
-  const currentState = useCurrentState();
-  const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
+  const options = properties?.options;
+  const values = properties?.values;
+  const isMandatory = validation?.mandatory ?? false;
   const multiselectRef = React.useRef(null);
   const labelRef = React.useRef(null);
-  const validationData = validate(selected?.length ? selected?.map((option) => option.value) : null);
-  const { isValid, validationError } = validationData;
+  const [validationStatus, setValidationStatus] = useState(
+    validate(selected?.length ? selected?.map((option) => option.value) : null)
+  );
+  const { isValid, validationError } = validationStatus;
   const valueContainerRef = React.useRef(null);
   const [visibility, setVisibility] = useState(properties.visibility);
   const [isMultiSelectLoading, setIsMultiSelectLoading] = useState(multiSelectLoadingState);
@@ -73,6 +73,7 @@ export const MultiselectV2 = ({
   const [isSelectAllSelected, setIsSelectAllSelected] = useState(false);
   const [searchInputValue, setSearchInputValue] = useState('');
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
+  const [userInteracted, setUserInteracted] = useState(false);
 
   const [isMultiselectOpen, setIsMultiselectOpen] = useState(false);
   useEffect(() => {
@@ -87,10 +88,12 @@ export const MultiselectV2 = ({
     const _options = advanced ? schema : options;
     let _selectOptions = Array.isArray(_options)
       ? _options
-          .filter((data) => data?.visible?.value)
-          .map((value) => ({
-            ...value,
-            isDisabled: value?.disable?.value,
+          .filter((data) => data?.visible ?? true)
+          .map((data) => ({
+            ...data,
+            label: data?.label,
+            value: data?.value,
+            isDisabled: data?.disable ?? false,
           }))
       : [];
     return _selectOptions;
@@ -122,50 +125,80 @@ export const MultiselectV2 = ({
     return false;
   }
   const onChangeHandler = (items, action) => {
-    setSelected(items);
-    if (action.action === 'select-option') {
-      fireEvent('onSelect');
-    }
+    setInputValue(items);
+    fireEvent('onSelect');
+    setUserInteracted(true);
   };
+
   useEffect(() => {
     let foundItem = findDefaultItem(values, advanced);
-    setSelected(foundItem);
+    setInputValue(foundItem);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectOptions]);
 
   useEffect(() => {
-    let foundItem = findDefaultItem(values, advanced, true);
-    setSelected(foundItem);
+    if (advanced) {
+      let foundItem = findDefaultItem(values, advanced, true);
+      setInputValue(foundItem);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [advanced, JSON.stringify(schema), JSON.stringify(values)]);
+  }, [advanced, JSON.stringify(values), JSON.stringify(schema)]);
 
   useEffect(() => {
-    setExposedVariable(
-      'selectedOptions',
-      Array.isArray(selected) && selected?.map(({ label, value }) => ({ label, value }))
-    );
+    if (!advanced) {
+      let foundItem = findDefaultItem(values, advanced, true);
+      setInputValue(foundItem);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [advanced, JSON.stringify(values)]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
     setExposedVariable(
       'options',
       Array.isArray(selectOptions) && selectOptions?.map(({ label, value }) => ({ label, value }))
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(selected), selectOptions]);
+  }, [selectOptions]);
 
   useEffect(() => {
+    if (isInitialRender.current) return;
     setExposedVariable('label', label);
-    setExposedVariable('isVisible', properties.visibility);
-    setExposedVariable('isLoading', multiSelectLoadingState);
-    setExposedVariable('isDisabled', disabledState);
-    setExposedVariable('isMandatory', isMandatory);
-    setExposedVariable('isValid', isValid);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [label, properties.visibility, multiSelectLoadingState, disabledState, isMandatory, isValid]);
+  }, [label]);
 
   useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isVisible', properties.visibility);
+  }, [properties.visibility]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isLoading', multiSelectLoadingState);
+  }, [multiSelectLoadingState]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isDisabled', disabledState);
+  }, [disabledState]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isMandatory', isMandatory);
+  }, [isMandatory]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    const validationStatus = validate(selected?.length ? selected?.map((option) => option.value) : null);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
+  }, [validate]);
+
+  useEffect(() => {
+    const defaultItems = findDefaultItem(values, advanced, true);
+
     const exposedVariables = {
       clear: async function () {
-        setSelected([]);
+        setInputValue([]);
       },
       setVisibility: async function (value) {
         setVisibility(value);
@@ -176,8 +209,17 @@ export const MultiselectV2 = ({
       setDisable: async function (value) {
         setIsMultiSelectDisabled(value);
       },
+      label: label,
+      isVisible: properties.visibility,
+      isLoading: multiSelectLoadingState,
+      isDisabled: disabledState,
+      isMandatory: isMandatory,
+      isValid: isValid,
+      selectedOptions: Array.isArray(defaultItems) && defaultItems?.map(({ label, value }) => ({ label, value })),
+      options: Array.isArray(selectOptions) && selectOptions?.map(({ label, value }) => ({ label, value })),
     };
     setExposedVariables(exposedVariables);
+    isInitialRender.current = false;
   }, []);
 
   useEffect(() => {
@@ -200,7 +242,7 @@ export const MultiselectV2 = ({
             newSelected.push(...optionsToAdd);
           }
         });
-        setSelected(newSelected);
+        setInputValue(newSelected);
       }
     });
 
@@ -210,11 +252,11 @@ export const MultiselectV2 = ({
         // Check if array provided is a list of objects with value key
         const _value = value.map((val) => (isObject(val) && has(val, 'value') ? val.value : val));
         const newSelected = selected.filter((option) => !_value.includes(option.value));
-        setSelected(newSelected);
+        setInputValue(newSelected);
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectOptions, selected, setSelected]);
+  }, [selectOptions, selected]);
 
   const onSearchTextChange = (searchText, actionProps) => {
     if (actionProps.action === 'input-change') {
@@ -237,6 +279,17 @@ export const MultiselectV2 = ({
         setSearchInputValue('');
       }
     }
+  };
+
+  const setInputValue = (values) => {
+    setSelected(values);
+    setExposedVariables({
+      values: values.map((item) => item.value),
+      selectedOptions: Array.isArray(values) && values?.map(({ label, value }) => ({ label, value })),
+    });
+    const validationStatus = validate(values?.length ? values?.map((option) => option.value) : null);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
   };
 
   useEffect(() => {
@@ -275,6 +328,7 @@ export const MultiselectV2 = ({
           accentColor,
           isLoading: isMultiSelectLoading,
           isDisabled: isMultiSelectDisabled,
+          userInteracted,
         }),
         backgroundColor: getInputBackgroundColor({
           fieldBackgroundColor,
@@ -367,7 +421,7 @@ export const MultiselectV2 = ({
     <>
       <div
         ref={multiselectRef}
-        data-cy={`label-${String(component.name).toLowerCase()} `}
+        data-cy={`label-${String(componentName).toLowerCase()} `}
         className={cx('multiselect-widget', 'd-flex', {
           [alignment === 'top' &&
           ((labelWidth != 0 && label?.length != 0) || (auto && labelWidth == 0 && label && label?.length != 0))
@@ -384,15 +438,9 @@ export const MultiselectV2 = ({
           width: '100%',
         }}
         onMouseDown={(event) => {
-          onComponentClick(id, component, event);
+          onComponentClick(id);
           // This following line is needed because sometimes after clicking on canvas then also dropdown remains selected
           useEditorStore.getState().actions.setHoveredComponent('');
-        }}
-        onClick={() => {
-          if (!isMultiSelectDisabled) {
-            fireEvent('onFocus');
-          }
-          setIsMultiselectOpen(!isMultiselectOpen);
         }}
       >
         <Label
@@ -406,8 +454,17 @@ export const MultiselectV2 = ({
           auto={auto}
           isMandatory={isMandatory}
           _width={_width}
+          top={'1px'}
         />
-        <div className="w-100 px-0 h-100">
+        <div
+          className="w-100 px-0 h-100"
+          onClick={() => {
+            if (!isMultiSelectDisabled) {
+              fireEvent('onFocus');
+              setIsMultiselectOpen(!isMultiselectOpen);
+            }
+          }}
+        >
           <Select
             menuId={id}
             isDisabled={isMultiSelectDisabled}
@@ -443,10 +500,15 @@ export const MultiselectV2 = ({
             containerRef={valueContainerRef}
             showAllOption={showAllOption}
             isSelectAllSelected={isSelectAllSelected}
-            setIsSelectAllSelected={setIsSelectAllSelected}
-            setSelected={setSelected}
+            setIsSelectAllSelected={(value) => {
+              setIsSelectAllSelected(value);
+              if (!value) {
+                fireEvent('onSelect');
+              }
+            }}
+            setSelected={setInputValue}
             iconColor={iconColor}
-            optionsLoadingState={optionsLoadingState}
+            optionsLoadingState={optionsLoadingState && advanced}
             darkMode={darkMode}
             fireEvent={() => fireEvent('onSelect')}
             menuPlacement="auto"
@@ -454,18 +516,20 @@ export const MultiselectV2 = ({
           />
         </div>
       </div>
-      <div
-        className={`${isValid ? '' : visibility ? 'd-flex' : 'none'}`}
-        style={{
-          color: errTextColor,
-          justifyContent: direction === 'right' ? 'flex-start' : 'flex-end',
-          fontSize: '11px',
-          fontWeight: '400',
-          lineHeight: '16px',
-        }}
-      >
-        {!isValid && validationError}
-      </div>
+      {userInteracted && visibility && !isValid && (
+        <div
+          className={'d-flex'}
+          style={{
+            color: errTextColor,
+            justifyContent: direction === 'right' ? 'flex-start' : 'flex-end',
+            fontSize: '11px',
+            fontWeight: '400',
+            lineHeight: '16px',
+          }}
+        >
+          {validationError}
+        </div>
+      )}
     </>
   );
 };

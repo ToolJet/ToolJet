@@ -20,9 +20,6 @@ import { FoldersService } from '@services/folders.service';
 import { Folder } from 'src/entities/folder.entity';
 import { FolderApp } from 'src/entities/folder_app.entity';
 import { DataSource } from 'src/entities/data_source.entity';
-import { GroupPermission } from 'src/entities/group_permission.entity';
-import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
-import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { AppImportExportService } from '@services/app_import_export.service';
 import { DataSourcesService } from '@services/data_sources.service';
 import { CredentialsService } from '@services/credentials.service';
@@ -41,11 +38,16 @@ import { Layout } from 'src/entities/layout.entity';
 
 import { ComponentsService } from '@services/components.service';
 import { PageService } from '@services/page.service';
+import { PageHelperService } from '@apps/services/pages/service.helper';
 import { EventsService } from '@services/events_handler.service';
 import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
+import { UserResourcePermissionsModule } from '@modules/user_resource_permissions/user_resource_permissions.module';
+import { AppsSubscriber } from 'src/entity-subscribers/apps.subscriber';
+import { AppsServiceSep } from '@apps/services/apps.service.sep';
 
 @Module({
   imports: [
+    UserResourcePermissionsModule,
     TypeOrmModule.forFeature([
       App,
       AppVersion,
@@ -57,9 +59,6 @@ import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
       User,
       Organization,
       DataSource,
-      GroupPermission,
-      AppGroupPermission,
-      UserGroupPermission,
       Credential,
       File,
       Plugin,
@@ -73,6 +72,7 @@ import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
   ],
   providers: [
     AppsService,
+    AppsServiceSep,
     AppUsersService,
     UsersService,
     FoldersService,
@@ -87,6 +87,8 @@ import { TooljetDbModule } from '../tooljet_db/tooljet_db.module';
     ComponentsService,
     PageService,
     EventsService,
+    AppsSubscriber,
+    PageHelperService,
   ],
   controllers: [AppsController, AppsControllerV2, AppUsersController, AppsImportExportController],
 })

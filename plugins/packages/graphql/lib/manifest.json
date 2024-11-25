@@ -165,16 +165,18 @@
       "label": "Headers",
       "key": "headers",
       "type": "react-component-headers",
-      "description": "key-value pair headers for graphql api"
+      "description": "key-value pair headers for graphql api",
+      "width":"316px"
     },
     "url_params": {
       "label": "URL parameters",
       "key": "url_params",
       "type": "react-component-headers",
-      "description": "key-value pair url parameters for graphql api"
+      "description": "key-value pair url parameters for graphql api",
+      "width":"316px"
     },
     "auth_type": {
-      "label": "Authentication Type",
+      "label": "Authentication type",
       "key": "auth_type",
       "type": "react-component-oauth-authentication",
       "description": "key-value pair headers for graphQL api"

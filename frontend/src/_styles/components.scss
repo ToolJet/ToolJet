@@ -123,9 +123,12 @@ $btn-dark-color: #FFFFFF;
 
 
 .page-selector-panel-body {
-  height: 100%;
   padding: 12px 16px;
-  background-color: var(--base);
+  border-right: 1px solid #DFE3E6;
+
+  &.dark-theme {
+    border-right: 1px solid var(--slate7);
+  }
 
   .page-handler {
     height: 32px !important;

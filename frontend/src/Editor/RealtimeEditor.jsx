@@ -3,7 +3,7 @@ import React from 'react';
 import config from 'config';
 import { RoomProvider } from '@y-presence/react';
 import Spinner from '@/_ui/Spinner';
-import { Editor } from '@/Editor';
+import { Editor } from '@/AppBuilder';
 const Y = require('yjs');
 const psl = require('psl');
 const { WebsocketProvider } = require('y-websocket');

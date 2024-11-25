@@ -88,9 +88,12 @@ function BulkUploadDrawer({
             </h3>
           </div>
           <div className="card-body tjdb-bulkupload-drawer">
-            <div className="manage-users-drawer-content-bulk">
-              <div className="manage-users-drawer-content-bulk-download-prompt">
-                <div className="user-csv-template-wrap">
+            <div className="manage-users-drawer-content-bulk d-flex flex-column align-items-center m-0">
+              <div
+                className="manage-users-drawer-content-bulk-download-prompt"
+                style={{ justifyContent: 'flex-start' }}
+              >
+                <div className="user-csv-template-wrap" style={{ marginTop: '0px' }}>
                   <div>
                     <SolidIcon name="information" fill="#F76808" width="26" />
                   </div>

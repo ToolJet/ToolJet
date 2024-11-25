@@ -5,8 +5,7 @@ import Play from '@/_ui/Icon/solidIcons/Play';
 import cx from 'classnames';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import { previewQuery, checkExistingQueryName, runQuery } from '@/_helpers/appUtils';
-
+import { previewQuery, checkExistingQueryName, runQuery, updateQuerySuggestions } from '@/_helpers/appUtils';
 import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
 import {
   useSelectedQuery,
@@ -60,6 +59,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
 
     if (newName) {
       renameQuery(selectedQuery?.id, newName, editorRef);
+      updateQuerySuggestions(name, newName);
       return true;
     }
   };

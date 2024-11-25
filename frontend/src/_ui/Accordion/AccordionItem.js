@@ -31,17 +31,18 @@ const AccordionItem = ({ open = true, index, title, children }) => {
   }
   return (
     <div className="accordion-item">
-      <h2 onClick={() => setShow(!show)} className="accordion-header" id={`heading-${index}`}>
-        <button
-          className={cx('accordion-button', { collapsed: !show })}
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target={`collapse-${index}`}
-          aria-expanded="false"
-          data-cy={`widget-accordion-${title.toLowerCase()}`}
-        >
+      <h2 className="accordion-header" id={`heading-${index}`} data-cy={`widget-accordion-${title.toLowerCase()}`}>
+        <div className={cx('accordion-button inspector')}>
           <span className="text-capitalize accordion-title-text">{title}</span>
-        </button>
+          <div
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target={`collapse-${index}`}
+            aria-expanded="false"
+            className={cx('accordion-item-trigger', { collapsed: !show })}
+            onClick={() => setShow((prev) => !prev)}
+          ></div>
+        </div>
       </h2>
       <div
         id={`collapse-${index}`}
