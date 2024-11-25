@@ -187,6 +187,7 @@ export function Table({
   const [hoverAdded, setHoverAdded] = useState(false);
   const [generatedColumn, setGeneratedColumn] = useState([]);
   const [isCellValueChanged, setIsCellValueChanged] = useState(false);
+  const [ tableButtonHoveredId, setTableButtonHoveredId ] = useState("");
 
   const mergeToTableDetails = (payload) => dispatch(reducerActions.mergeToTableDetails(payload));
   const mergeToFilterDetails = (payload) => dispatch(reducerActions.mergeToFilterDetails(payload));
@@ -1103,6 +1104,12 @@ export function Table({
       onClick={(event) => {
         onComponentClick(id, component, event);
       }}
+      onMouseEnter={(event) => {
+        setTableButtonHoveredId(id);
+      }}
+      onMouseLeave={(event) => {
+        setTableButtonHoveredId("");
+      }}
       ref={tableRef}
     >
       {(displaySearchBox || showFilterButton) && (
@@ -1780,7 +1787,7 @@ export function Table({
               )}
               {!loadingState && showAddNewRowButton && (
                 <>
-                  <Tooltip id="tooltip-for-add-new-row" className="tooltip" />
+                  <Tooltip id={ `tooltip-for-add-new-row-${id}` } className="tooltip" />
                   <ButtonSolid
                     variant="ghostBlack"
                     fill={`var(--icons-default)`}
@@ -1796,14 +1803,14 @@ export function Table({
                       }
                     }}
                     size="md"
-                    data-tooltip-id="tooltip-for-add-new-row"
+                    data-tooltip-id={ tableButtonHoveredId === id ? `tooltip-for-add-new-row-${id}` : "" }
                     data-tooltip-content="Add new row"
                   ></ButtonSolid>
                 </>
               )}
               {!loadingState && showDownloadButton && (
                 <div>
-                  <Tooltip id="tooltip-for-download" className="tooltip" />
+                  <Tooltip id={`tooltip-for-download-${id}`} className="tooltip" />
                   <OverlayTriggerComponent
                     trigger="click"
                     overlay={downlaodPopover()}
@@ -1820,7 +1827,7 @@ export function Table({
                       fill={`var(--icons-default)`}
                       iconWidth="16"
                       size="md"
-                      data-tooltip-id="tooltip-for-download"
+                      data-tooltip-id={ tableButtonHoveredId === id ? `tooltip-for-download-${id}` : "" }
                       data-tooltip-content="Download"
                       onClick={(e) => {
                         if (document.activeElement === e.currentTarget) {
@@ -1833,7 +1840,7 @@ export function Table({
               )}
               {!loadingState && !hideColumnSelectorButton && (
                 <>
-                  <Tooltip id="tooltip-for-manage-columns" className="tooltip" />
+                  <Tooltip id={`tooltip-for-manage-columns-${id}`} className="tooltip" />
                   <OverlayTriggerComponent
                     trigger="click"
                     rootClose={true}
@@ -1854,7 +1861,7 @@ export function Table({
                           e.currentTarget.blur();
                         }
                       }}
-                      data-tooltip-id="tooltip-for-manage-columns"
+                      data-tooltip-id={ tableButtonHoveredId === id ? `tooltip-for-manage-columns-${id}` : "" }
                       data-tooltip-content="Manage columns"
                     ></ButtonSolid>
                   </OverlayTriggerComponent>
