@@ -146,7 +146,7 @@ export class OrganizationsService {
         enable_sign_up: this.configService.get<string>('DISABLE_SIGNUPS') !== 'true',
         enabled: true,
       },
-      enableSignUp: this.configService.get<string>('SSO_DISABLE_SIGNUPS') !== 'true',
+      enableSignUp: this.configService.get<string>('DISABLE_SIGNUPS') !== 'true',
     };
   }
 

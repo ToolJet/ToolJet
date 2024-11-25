@@ -13,8 +13,6 @@ import DesktopHeader from './DesktopHeader';
 import MobileHeader from './MobileHeader';
 import ViewerSidebarNavigation from './ViewerSidebarNavigation';
 import { shallow } from 'zustand/shallow';
-import { computeCanvasBackgroundColor } from '@/AppBuilder/AppCanvas/appCanvasUtils';
-import { resolveReferences } from '@/_helpers/utils';
 import Popups from '../Popups';
 import TooljetBanner from './TooljetBanner';
 import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
@@ -41,6 +39,7 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
     homePageId,
     isMaintenanceOn,
     setIsViewer,
+    toggleCurrentLayout,
   } = useStore(
     (state) => ({
       isEditorLoading: state.isEditorLoading,
@@ -60,14 +59,15 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
       updateCanvasHeight: state.updateCanvasBottomHeight,
       isMaintenanceOn: state.app.isMaintenanceOn,
       setIsViewer: state.setIsViewer,
+      toggleCurrentLayout: state.toggleCurrentLayout,
     }),
     shallow
   );
-  const getCurrentPageComponents = useStore((state) => state.getCurrentPageComponents, shallow);
-  const currentPageComponents = useMemo(() => getCurrentPageComponents(), [getCurrentPageComponents]);
-  const changeDarkMode = useStore((state) => state.changeDarkMode);
+  const getCurrentPageComponents = useStore((state) => state.getCurrentPageComponents(), shallow);
+  const currentPageComponents = useMemo(() => getCurrentPageComponents, [getCurrentPageComponents]);
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
   const canvasBgColor = useStore((state) => state.getCanvasBackgroundColor('canvas', darkMode), shallow);
+  const deviceWindowWidth = window.screen.width - 5;
 
   const computeCanvasMaxWidth = useCallback(() => {
     if (globalSettings?.maxCanvasWidth) {
@@ -92,7 +92,6 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
   const isLoading = false;
   const isMobilePreviewMode = selectedVersion?.id && currentLayout === 'mobile';
   const isAppLoaded = !!editingVersion;
-  const deviceWindowWidth = window.screen.width - 5;
   const isMobileDevice = deviceWindowWidth < 600;
   const switchPage = useStore((state) => state.switchPage);
 
@@ -106,6 +105,8 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
     switchDarkMode(newMode);
   };
   useEffect(() => {
+    const isMobileDevice = deviceWindowWidth < 600;
+    toggleCurrentLayout(isMobileDevice ? 'mobile' : 'desktop');
     setIsViewer(true);
     return () => {
       setIsViewer(false);
@@ -170,7 +171,7 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
                         }}
                       >
                         <div className={`areas d-flex flex-rows app-${appId}`}>
-                          {!isPagesSidebarHidden && (
+                          {currentLayout !== 'mobile' && !isPagesSidebarHidden && (
                             <ViewerSidebarNavigation
                               showHeader={showHeader}
                               isMobileDevice={currentLayout === 'mobile'}
@@ -200,6 +201,7 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
                                 maxWidth: isMobilePreviewMode ? '450px' : computeCanvasMaxWidth(),
                                 margin: 0,
                                 padding: 0,
+                                position: 'relative',
                               }}
                             >
                               {currentLayout === 'mobile' && isMobilePreviewMode && (

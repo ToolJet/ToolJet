@@ -80,7 +80,7 @@ const RenderWidget = ({
         ...{ validationObject: unResolvedValidation },
         customResolveObjects: customResolvables,
       }),
-    [validateWidget, customResolvables, unResolvedValidation]
+    [validateWidget, customResolvables, unResolvedValidation, resolvedValidation]
   );
 
   const resetComponent = useCallback(() => {

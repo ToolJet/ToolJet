@@ -7,8 +7,16 @@ export const getInputFocusedColor = ({ accentColor }) => {
   return 'var(--primary-accent-strong)';
 };
 
-export const getInputBorderColor = ({ isValid, isFocused, fieldBorderColor, accentColor, isLoading, isDisabled }) => {
-  if (!isValid) {
+export const getInputBorderColor = ({
+  isValid,
+  isFocused,
+  fieldBorderColor,
+  accentColor,
+  isLoading,
+  isDisabled,
+  userInteracted,
+}) => {
+  if (userInteracted && !isValid) {
     return 'var(--status-error-strong)';
   }
 
