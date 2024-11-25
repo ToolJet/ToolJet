@@ -301,7 +301,7 @@ const sidebars = {
             'data-sources/dynamodb',
             'data-sources/elasticsearch',
             'data-sources/gcs',
-            'data-sources/google.sheets',
+            'data-sources/googlesheets',
             'data-sources/graphql',
             'data-sources/grpc',
             'data-sources/influxdb',
