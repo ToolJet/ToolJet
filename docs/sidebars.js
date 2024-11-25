@@ -482,7 +482,7 @@ const sidebars = {
             'marketplace/plugins/marketplace-plugin-supabase',
             'marketplace/plugins/marketplace-plugin-pocketbase',
             'marketplace/plugins/marketplace-plugin-portkey',
-            'marketplace/plugins/marketplace-plugin-prestodb',
+            'marketplace/plugins/marketplace-plugin-Presto',
             'marketplace/plugins/marketplace-plugin-jira',
             'marketplace/plugins/marketplace-plugin-sharepoint',
             'marketplace/plugins/marketplace-plugin-pinecone'

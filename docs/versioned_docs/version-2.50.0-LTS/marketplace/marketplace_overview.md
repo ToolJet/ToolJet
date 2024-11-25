@@ -83,7 +83,7 @@ To remove a plugin, follow these steps:
 - **[Plivo](/docs/marketplace/plugins/marketplace-plugin-plivo)**
 - **[Pocketbase](/docs/marketplace/plugins/marketplace-plugin-pocketbase)**
 - **[Portkey](/docs/marketplace/plugins/marketplace-plugin-portkey)**
-- **[PrestoDB](/docs/marketplace/plugins/marketplace-plugin-prestodb)**
+- **[PrestoDB](/docs/marketplace/plugins/marketplace-plugin-Presto)**
 - **[Salesforce](/docs/marketplace/plugins/marketplace-plugin-salesforce)**
 - **[Sharepoint](/docs/marketplace/plugins/marketplace-plugin-sharepoint)**
 - **[Supabase](/docs/marketplace/plugins/marketplace-plugin-supabase)**
