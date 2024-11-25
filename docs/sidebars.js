@@ -470,7 +470,7 @@ const sidebars = {
           'type': 'category',
           'label': 'Marketplace Plugins',
           'items': [
-            'marketplace/plugins/marketplace-plugin-redshift',
+            'marketplace/plugins/marketplace-plugin-awsredshift',
             'marketplace/plugins/marketplace-plugin-textract',
             'marketplace/plugins/marketplace-plugin-aws-lambda',
             'marketplace/plugins/marketplace-plugin-engagespot',
