@@ -20,6 +20,8 @@
   "devDependencies": {
     "@tooljet/cli": "^0.0.13",
     "eslint": "^8.56.0",
+    "eslint-plugin-jest": "^28.6.0",
+    "eslint-plugin-prettier": "^5.1.3",
     "husky": "^8.0.3",
     "lint-staged": "^13.1.2"
   },
@@ -52,5 +54,9 @@
     "heroku-postbuild": "./heroku-postbuild.sh",
     "prepare": "husky install",
     "update-version": "node update-version.js"
+  },
+  "dependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.12.0",
+    "eslint-config-prettier": "^9.1.0"
   }
 }

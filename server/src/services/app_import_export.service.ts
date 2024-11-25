@@ -2,23 +2,21 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { isEmpty } from 'lodash';
 import { App } from 'src/entities/app.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
-import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
-import { GroupPermission } from 'src/entities/group_permission.entity';
 import { User } from 'src/entities/user.entity';
-import { EntityManager, In } from 'typeorm';
+import { EntityManager, In, DeepPartial } from 'typeorm';
 import { DataSourcesService } from './data_sources.service';
 import {
-  dbTransactionWrap,
   defaultAppEnvironments,
   catchDbException,
   extractMajorVersion,
   isTooljetVersionWithNormalizedAppDefinitionSchem,
   isVersionGreaterThanOrEqual,
 } from 'src/helpers/utils.helper';
+import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { LayoutDimensionUnits, resolveGridPositionForComponent } from 'src/helpers/components.helper';
 import { AppEnvironmentService } from './app_environments.service';
 import { convertAppDefinitionFromSinglePageToMultiPage } from '../../lib/single-page-to-and-from-multipage-definition-conversion';
@@ -219,6 +217,7 @@ export class AppImportExportService {
     appParamsObj: any,
     appName: string,
     externalResourceMappings = {},
+    isGitApp = false,
     tooljetVersion = '',
     cloning = false
   ): Promise<App> {
@@ -246,8 +245,9 @@ export class AppImportExportService {
       ? true
       : isTooljetVersionWithNormalizedAppDefinitionSchem(importedAppTooljetVersion);
 
-    const importedApp = await this.createImportedAppForUser(this.entityManager, schemaUnifiedAppParams, user);
     const currentTooljetVersion = !cloning ? tooljetVersion : null;
+
+    const importedApp = await this.createImportedAppForUser(this.entityManager, schemaUnifiedAppParams, user, isGitApp);
 
     const resourceMapping = await this.setupImportedAppAssociations(
       this.entityManager,
@@ -258,7 +258,6 @@ export class AppImportExportService {
       isNormalizedAppDefinitionSchema,
       currentTooljetVersion
     );
-    await this.createAdminGroupPermissions(this.entityManager, importedApp);
     await this.updateEntityReferencesForImportedApp(this.entityManager, resourceMapping);
 
     // NOTE: App slug updation callback doesn't work while wrapped in transaction
@@ -328,7 +327,7 @@ export class AppImportExportService {
     }
   }
 
-  async createImportedAppForUser(manager: EntityManager, appParams: any, user: User): Promise<App> {
+  async createImportedAppForUser(manager: EntityManager, appParams: any, user: User, isGitApp = false): Promise<App> {
     return await catchDbException(async () => {
       const importedApp = manager.create(App, {
         name: appParams.name,
@@ -336,6 +335,7 @@ export class AppImportExportService {
         userId: user.id,
         slug: null,
         icon: appParams.icon,
+        creationMode: `${isGitApp ? 'GIT' : 'DEFAULT'}`,
         isPublic: false,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -463,7 +463,7 @@ export class AppImportExportService {
 
       if (!isNormalizedAppDefinitionSchema) {
         for (const importingAppVersion of importingAppVersions) {
-          const updatedDefinition = this.replaceDataQueryIdWithinDefinitions(
+          const updatedDefinition: DeepPartial<any> = this.replaceDataQueryIdWithinDefinitions(
             importingAppVersion.definition,
             appResourceMappings.dataQueryMapping
           );
@@ -501,6 +501,8 @@ export class AppImportExportService {
                 disabled: page.disabled || false,
                 hidden: page.hidden || false,
                 autoComputeLayout: page.autoComputeLayout || false,
+                isPageGroup: page.isPageGroup || false,
+                pageGroupIndex: page.pageGroupIndex || null,
               });
               const pageCreated = await transactionalEntityManager.save(newPage);
 
@@ -797,13 +799,14 @@ export class AppImportExportService {
           const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pageComponents, parentId, true);
 
           if (isParentTabOrCalendar) {
-            const childTabId = component.parent.split('-')[component.parent.split('-').length - 1];
-            const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+            const childTabId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[2] : null;
+
+            const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
             const mappedParentId = newComponentIdsMap[_parentId];
 
             parentId = `${mappedParentId}-${childTabId}`;
           } else if (isChildOfKanbanModal(component, pageComponents, parentId, true)) {
-            const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+            const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
             const mappedParentId = newComponentIdsMap[_parentId];
 
             parentId = `${mappedParentId}-modal`;
@@ -1297,8 +1300,9 @@ export class AppImportExportService {
         version.showViewerNavigation = appVersion.showViewerNavigation;
         version.homePageId = appVersion.homePageId;
         version.globalSettings = appVersion.globalSettings;
+        version.pageSettings = appVersion.pageSettings;
       } else {
-        version.showViewerNavigation = appVersion.definition.showViewerNavigation || true;
+        version.showViewerNavigation = appVersion.definition?.showViewerNavigation || true;
         version.homePageId = appVersion.definition?.homePageId;
 
         if (!appVersion.definition?.globalSettings) {
@@ -1314,6 +1318,7 @@ export class AppImportExportService {
           };
         } else {
           version.globalSettings = appVersion.definition?.globalSettings;
+          version.pageSettings = appVersion.definition?.pageSettings;
         }
       }
 
@@ -1348,31 +1353,6 @@ export class AppImportExportService {
     const lastVersionIdToUpdate = appVersionMapping[lastVersionFromImport.id];
 
     await manager.update(AppVersion, { id: lastVersionIdToUpdate }, { updatedAt: new Date() });
-  }
-
-  async createAdminGroupPermissions(manager: EntityManager, app: App) {
-    const orgDefaultGroupPermissions = await manager.find(GroupPermission, {
-      where: {
-        organizationId: app.organizationId,
-        group: 'admin',
-      },
-    });
-
-    const adminPermissions = {
-      read: true,
-      update: true,
-      delete: true,
-    };
-
-    for (const groupPermission of orgDefaultGroupPermissions) {
-      const appGroupPermission = manager.create(AppGroupPermission, {
-        groupPermissionId: groupPermission.id,
-        appId: app.id,
-        ...adminPermissions,
-      });
-
-      return await manager.save(AppGroupPermission, appGroupPermission);
-    }
   }
 
   async createDatasourceOption(
@@ -1421,7 +1401,7 @@ export class AppImportExportService {
   }
 
   replaceDataQueryIdWithinDefinitions(
-    definition: QueryDeepPartialEntity<any>,
+    definition: DeepPartial<any>,
     dataQueryMapping: Record<string, string>
   ): QueryDeepPartialEntity<any> {
     if (definition?.pages) {
@@ -1788,6 +1768,10 @@ export class AppImportExportService {
         eventDefinition.modal = oldComponentToNewComponentMapping[eventDefinition.modal];
       }
 
+      if (eventDefinition?.actionId == 'set-table-page' && oldComponentToNewComponentMapping[eventDefinition.table]) {
+        eventDefinition.table = oldComponentToNewComponentMapping[eventDefinition.table];
+      }
+
       event.event = eventDefinition;
 
       await manager.save(event);
@@ -1795,7 +1779,7 @@ export class AppImportExportService {
   }
 }
 
-function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
+export function convertSinglePageSchemaToMultiPageSchema(appParams: any) {
   const appParamsWithMultipageSchema = {
     ...appParams,
     appVersions: appParams.appVersions?.map((appVersion: { definition: any }) => ({
@@ -1908,13 +1892,13 @@ function transformComponentData(
     );
 
     if (isParentTabOrCalendar) {
-      const childTabId = component.parent.split('-')[component.parent.split('-').length - 1];
-      const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+      const childTabId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[2] : null;
+      const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
       const mappedParentId = componentsMapping[_parentId];
 
       parentId = `${mappedParentId}-${childTabId}`;
-    } else if (isChildOfKanbanModal(component, allComponents, parentId, true)) {
-      const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+    } else if (isChildOfKanbanModal(component, allComponents, parentId, isNormalizedAppDefinitionSchema)) {
+      const _parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
       const mappedParentId = componentsMapping[_parentId];
 
       parentId = `${mappedParentId}-modal`;
@@ -1963,7 +1947,7 @@ const isChildOfTabsOrCalendar = (
   isNormalizedAppDefinitionSchema: boolean
 ) => {
   if (componentParentId) {
-    const parentId = component?.parent?.split('-').slice(0, -1).join('-');
+    const parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
 
     const parentComponent = allComponents.find((comp) => comp.id === parentId);
 
@@ -1987,7 +1971,7 @@ const isChildOfKanbanModal = (
 ) => {
   if (!componentParentId || !componentParentId.includes('modal')) return false;
 
-  const parentId = component?.parent?.split('-').slice(0, -1).join('-');
+  const parentId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1] : null;
 
   const parentComponent = allComponents.find((comp) => comp.id === parentId);
 
@@ -1995,5 +1979,5 @@ const isChildOfKanbanModal = (
     return parentComponent.component.component === 'Kanban';
   }
 
-  return parentComponent.type === 'Kanban';
+  return parentComponent?.type === 'Kanban';
 };

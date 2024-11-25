@@ -109,12 +109,12 @@ const Text = ({
       <span
         style={{
           maxHeight: isMaxRowHeightAuto
-            ? 'auto'
+            ? 'fit-content'
             : maxRowHeightValue
-            ? maxRowHeightValue - 16 // decreasing 16px for padding fix
+            ? `${maxRowHeightValue}px`
             : cellSize === 'condensed'
-            ? '23px'
-            : '29px',
+            ? '39px'
+            : '45px',
         }}
         ref={nonEditableCellValueRef}
       >

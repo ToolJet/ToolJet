@@ -9,6 +9,7 @@ import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg'
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { SearchBox } from '@/_components/SearchBox';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
+import FolderSkeleton from '@/_ui/FolderSkeleton/FolderSkeleton';
 
 export const List = ({ updateSelectedDatasource }) => {
   const {
@@ -110,61 +111,62 @@ export const List = ({ updateSelectedDatasource }) => {
     <>
       <div style={{ overflow: 'hidden' }}>
         <div className="w-100 datasource-inner-sidebar-wrap" data-cy="datasource-Label">
-          {isLoading ? (
-            <Skeleton containerClassName="datasource-loader" count={3} height={30} />
-          ) : (
-            <>
-              <div className="d-flex justify-content-between datasources-search" style={{ marginBottom: '8px' }}>
-                {!showInput ? (
-                  <>
-                    <div className="datasources-info tj-text-xsm" data-cy="added-ds-label">
-                      Data sources added{' '}
-                      {!isLoading && filteredData && filteredData.length > 0 && `(${filteredData.length})`}
-                    </div>
-                    <div
-                      className="datasources-search-btn"
-                      onClick={() => {
-                        setShowInput(true);
-                      }}
-                      data-cy="added-ds-search-icon"
-                    >
-                      <SolidIcon name="search" width="14" fill={darkMode ? '#ECEDEE' : '#11181C'} />
-                    </div>
-                  </>
-                ) : (
-                  <SearchBox
-                    width="248px"
-                    callBack={handleSearch}
-                    placeholder={'Search for Data sources'}
-                    customClass="tj-common-search-input"
-                    onClearCallback={handleClose}
-                    autoFocus={true}
-                    dataCy={'added-ds'}
-                  />
-                )}
-              </div>
-              {!isLoading && filteredData?.length ? (
-                <div className="list-group">
-                  {filteredData?.map((source, idx) => {
-                    const sanpleDBtoolTipText =
-                      source.type == DATA_SOURCE_TYPE.SAMPLE ? 'Sample data source\ncannot be deleted' : '';
-                    return (
-                      <ListItem
-                        dataSource={source}
-                        key={idx}
-                        toolTipText={sanpleDBtoolTipText}
-                        active={selectedDataSource?.id === source?.id}
-                        onDelete={deleteDataSource}
-                        updateSelectedDatasource={updateSelectedDatasource}
-                      />
-                    );
-                  })}
-                </div>
+          <>
+            <div className="d-flex justify-content-between datasources-search" style={{ marginBottom: '8px' }}>
+              {!showInput ? (
+                <>
+                  <div className="datasources-info tj-text-xsm" data-cy="added-ds-label">
+                    Data sources added{' '}
+                    {!isLoading && filteredData && filteredData.length > 0 && `(${filteredData.length})`}
+                  </div>
+                  <div
+                    className="datasources-search-btn"
+                    onClick={() => {
+                      setShowInput(true);
+                    }}
+                    data-cy="added-ds-search-icon"
+                  >
+                    <SolidIcon name="search" width="14" fill={darkMode ? '#ECEDEE' : '#11181C'} />
+                  </div>
+                </>
               ) : (
-                <EmptyState />
+                <SearchBox
+                  width="248px"
+                  callBack={handleSearch}
+                  placeholder={'Search for Data sources'}
+                  customClass="tj-common-search-input"
+                  onClearCallback={handleClose}
+                  autoFocus={true}
+                  dataCy={'added-ds'}
+                />
               )}
-            </>
-          )}
+            </div>
+            {isLoading && (
+              <div className="p-2">
+                <FolderSkeleton />
+              </div>
+            )}
+            {!isLoading && filteredData?.length ? (
+              <div className="list-group">
+                {filteredData?.map((source, idx) => {
+                  const sanpleDBtoolTipText =
+                    source.type == DATA_SOURCE_TYPE.SAMPLE ? 'Sample data source\ncannot be deleted' : '';
+                  return (
+                    <ListItem
+                      dataSource={source}
+                      key={idx}
+                      toolTipText={sanpleDBtoolTipText}
+                      active={selectedDataSource?.id === source?.id}
+                      onDelete={deleteDataSource}
+                      updateSelectedDatasource={updateSelectedDatasource}
+                    />
+                  );
+                })}
+              </div>
+            ) : (
+              <EmptyState />
+            )}
+          </>
         </div>
       </div>
       <ConfirmDialog

@@ -21,7 +21,8 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { BreadCrumbContext } from '@/App';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
-
+import HeaderSkeleton from '../../_ui/FolderSkeleton/HeaderSkeleton';
+import Skeleton from 'react-loading-skeleton';
 export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasource }) => {
   const containerRef = useRef(null);
   const [plugins, setPlugins] = useState([]);
@@ -30,9 +31,8 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
   const [addingDataSource, setAddingDataSource] = useState(false);
   const [suggestingDataSource, setSuggestingDataSource] = useState(false);
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const { admin } = authenticationService.currentSessionValue;
-  const marketplaceEnabled = admin && window.public_config?.ENABLE_MARKETPLACE_FEATURE == 'true';
+  const marketplaceEnabled = admin;
   const [modalProps, setModalProps] = useState({
     backdrop: false,
     dialogClassName: `datasource-edit-modal`,
@@ -191,6 +191,32 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
     }
   };
 
+  const loadingState = () => {
+    return (
+      <div className="datasource-list-container">
+        <div className="datasource-list">
+          <div className="mb-2">
+            <HeaderSkeleton />
+          </div>
+          <Skeleton count={1} height={20} width={120} className="mb-2" />
+          {Array.from(Array(2)).map((_, rowIndex) => (
+            <div className="row skeleton-container mb-3 mt-3" key={rowIndex}>
+              {Array.from(Array(6)).map((_, index) => (
+                <div className="col" key={rowIndex * 3 + index}>
+                  {rowIndex === 1 && index > 2 ? (
+                    <></>
+                  ) : (
+                    <Skeleton count={1} height={104} width={128} className="mb-1" />
+                  )}
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   const segregateDataSources = () => {
     const datasources = queryString && queryString.length > 0 ? filteredDataSources : datasourcesGroups();
 
@@ -269,34 +295,6 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
   };
 
   const renderCardGroup = (source, type) => {
-    if (type === 'Plugins' && source.length === 0) {
-      return (
-        <div className="add-plugins-container">
-          <div className="warning-container mb-2">
-            <SolidIcon name="warning" />
-          </div>
-          <div className="tj-text-sm font-weight-500 tj-text">No plugins added</div>
-          {admin && (
-            <>
-              <div className="tj-text-xsm font-weight-400 mt-2 mb-3">
-                Browse through plugins in marketplace to add them as a Data Source.{' '}
-              </div>
-              <ButtonSolid
-                onClick={() => {
-                  marketplaceEnabled
-                    ? navigate('/integrations')
-                    : toast.error('Please enable marketplace to add plugins');
-                }}
-                style={{ margin: 'auto' }}
-                variant="secondary"
-              >
-                Add plugins
-              </ButtonSolid>
-            </>
-          )}
-        </div>
-      );
-    }
     const addDataSourceBtn = (item) => (
       <ButtonSolid
         disabled={addingDataSource}
@@ -332,13 +330,43 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
               title={item.title}
               src={item?.src}
               usePluginIcon={isEmpty(item?.iconFile?.data)}
-              height="35px"
-              width="35px"
+              height={'35px'}
+              width={'35px'}
               actionButton={addDataSourceBtn(item)}
               className="datasource-card"
               titleClassName={'datasource-card-title'}
             />
           ))}
+          {type === 'Plugins' && (
+            <div style={{ height: '122px', width: '164px' }} className={`col-md-2  mb-4 `}>
+              <div
+                className="card add-plugin-card"
+                role="button"
+                onClick={() => {
+                  if (marketplaceEnabled) {
+                    window.open('/integrations', '_blank');
+                  } else {
+                    toast.error('Please enable marketplace to add plugins');
+                  }
+                }}
+                data-cy={`data-source-add-plugin`}
+              >
+                <div className="card-body">
+                  <center style={{ paddingTop: '5px' }}>
+                    <SolidIcon
+                      name="plus"
+                      fill={'var(--icon-default)'}
+                      width={35}
+                      height={35}
+                      style={{ marginBottom: '8px' }}
+                    />
+                    <br></br>
+                    <span className={`datasource-card-title add-plugin-card-title`}>Add plugin</span>
+                  </center>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </>
     );
@@ -412,6 +440,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
             updateSelectedDatasource={updateSelectedDatasource}
           />
         )}
+        {isLoading && loadingState()}
         {!selectedDataSource && activeDatasourceList && !isLoading && segregateDataSources()}
       </div>
     </div>

@@ -1,0 +1,41 @@
+.onboarding-questions-form {
+    padding-top: 92px;
+
+    .form-header {
+        font-size: 28px;
+        font-style: normal;
+        line-height: normal;
+        letter-spacing: -0.56px;
+        margin-top: 0px;
+    }
+
+    .steps {
+        display: flex;
+        align-items: center;
+        color: var(--Text-brand, #4368E3);
+        font-family: "IBM Plex Sans";
+        font-size: 12px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 18px;
+
+        span {
+            font-weight: 500;
+            margin: 0 3px 0 6px;
+        }
+
+        &__back {
+            display: flex;
+            cursor: pointer;
+        }
+    }
+
+    .disabled {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+}
+
+.__ce {
+    padding-top: 24px !important;
+}

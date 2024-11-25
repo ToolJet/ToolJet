@@ -1,6 +1,7 @@
-import { IsArray, IsEmail, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsEmail, IsEnum, IsOptional, IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { lowercaseString, sanitizeInput } from '../helpers/utils.helper';
+import { USER_ROLE } from '@modules/user_resource_permissions/constants/group-permissions.constant';
 
 export class InviteNewUserDto {
   @IsString()
@@ -21,4 +22,8 @@ export class InviteNewUserDto {
   @IsString({ each: true })
   @IsOptional()
   groups: string[];
+
+  @IsString()
+  @IsEnum(USER_ROLE)
+  role: USER_ROLE;
 }

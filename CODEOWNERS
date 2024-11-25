@@ -1,0 +1,22 @@
+# Code owners for specific package.json and package-lock.json files
+/server/package.json @shah21 @gsmithun4 @adishm98
+/server/package-lock.json @shah21 @gsmithun4 @adishm98
+
+/frontend/package.json @shah21 @gsmithun4 @adishm98
+/frontend/package-lock.json @shah21 @gsmithun4 @adishm98
+
+/marketplace/package.json @shah21 @gsmithun4 @adishm98
+/marketplace/package-lock.json @shah21 @gsmithun4 @adishm98
+
+/cypress/package.json @shah21 @gsmithun4 @adishm98
+/cypress/package-lock.json @shah21 @gsmithun4 @adishm98
+
+/plugins/package.json @shah21 @gsmithun4 @adishm98
+/plugins/package-lock.json @shah21 @gsmithun4 @adishm98
+
+/package.json @shah21 @gsmithun4 @adishm98
+/package-lock.json @shah21 @gsmithun4 @adishm98
+
+# Server service files
+/server/src/services/email.service.ts @shah21 @gsmithun4
+/server/src/mails @shah21 @gsmithun4

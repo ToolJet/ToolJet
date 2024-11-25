@@ -4,7 +4,8 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { authenticationService } from '@/_services';
 import { getPrivateRoute, redirectToDashboard, dashboardUrl } from '@/_helpers/routes';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import AppLogo from './AppLogo';
+import AppLogo from '@/_components/AppLogo';
+import { hasBuilderRole } from '@/_helpers/utils';
 
 export default function LogoNavDropdown({ darkMode }) {
   const handleBackClick = (e) => {
@@ -15,6 +16,16 @@ export default function LogoNavDropdown({ darkMode }) {
 
   const getOverlay = () => {
     const { admin } = authenticationService?.currentSessionValue ?? {};
+    const data_source_group_permissions = authenticationService?.currentSessionValue?.data_source_group_permissions;
+    const showDataSource =
+      authenticationService?.currentSessionValue?.user_permissions?.data_source_create === true ||
+      authenticationService?.currentSessionValue?.user_permissions?.data_source_delete === true ||
+      data_source_group_permissions?.usable_data_sources_id?.length ||
+      data_source_group_permissions?.is_all_usable ||
+      data_source_group_permissions?.configurable_data_source_id?.length ||
+      data_source_group_permissions?.is_all_configurable;
+    const isBuilder = hasBuilderRole(authenticationService?.currentSessionValue?.role ?? {});
+
     return (
       <div className={`logo-nav-card settings-card card ${darkMode && 'dark-theme'}`}>
         <Link
@@ -27,7 +38,7 @@ export default function LogoNavDropdown({ darkMode }) {
           <span>Back to apps</span>
         </Link>
         <div className="divider"></div>
-        {window.public_config?.ENABLE_TOOLJET_DB == 'true' && admin && (
+        {(admin || isBuilder) && (
           <Link
             target="_blank"
             to={getPrivateRoute('database')}
@@ -38,16 +49,17 @@ export default function LogoNavDropdown({ darkMode }) {
             <span>Database</span>
           </Link>
         )}
-        <Link
-          to={getPrivateRoute('data_sources')}
-          className="dropdown-item tj-text tj-text-xsm"
-          target="_blank"
-          data-cy="data-source-option"
-        >
-          <SolidIcon name="datasource" width="20" />
-          <span>Data sources</span>
-        </Link>
-
+        {admin && (
+          <Link
+            to={getPrivateRoute('data_sources')}
+            className="dropdown-item tj-text tj-text-xsm"
+            target="_blank"
+            data-cy="data-source-option"
+          >
+            <SolidIcon name="datasource" width="20" />
+            <span>Data sources</span>
+          </Link>
+        )}
         <Link
           to={getPrivateRoute('workspace_constants')}
           className="dropdown-item tj-text tj-text-xsm"

@@ -1,0 +1,14 @@
+.onboarding-form-description {
+    color: var(--text-placeholder, #6A727C);
+    font-family: "IBM Plex Sans";
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 18px;
+    margin-top: -8px;
+}
+
+/* Dark mode styles */
+.dark-mode .onboarding-form-description {
+    color: var(--text-placeholder, #858C94);
+}

@@ -1,7 +1,5 @@
-import { resolveReferences } from '@/_helpers/utils';
-import { useCurrentState } from '@/_stores/currentStateStore';
-import _, { has, isEmpty, isObject } from 'lodash';
-import React, { useState, useEffect, useMemo } from 'react';
+import _, { has, isObject } from 'lodash';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Select from 'react-select';
 import './multiselectV2.scss';
 import CustomMenuList from '../DropdownV2/CustomMenuList';
@@ -14,10 +12,11 @@ import Label from '@/_ui/Label';
 const tinycolor = require('tinycolor2');
 import { CustomDropdownIndicator, CustomClearIndicator } from '../DropdownV2/DropdownV2';
 import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor } from '../DropdownV2/utils';
+import useStore from '@/AppBuilder/_stores/store';
+import { shallow } from 'zustand/shallow';
 
 export const MultiselectV2 = ({
   id,
-  component,
   height,
   properties,
   styles,
@@ -27,12 +26,12 @@ export const MultiselectV2 = ({
   darkMode,
   fireEvent,
   validate,
+  validation,
+  componentName,
   width,
 }) => {
   let {
     label,
-    values,
-    options,
     showAllOption,
     disabledState,
     advanced,
@@ -59,9 +58,11 @@ export const MultiselectV2 = ({
     padding,
     accentColor,
   } = styles;
+  const isInitialRender = useRef(true);
   const [selected, setSelected] = useState([]);
-  const currentState = useCurrentState();
-  const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
+  const options = properties?.options;
+  const values = properties?.values;
+  const isMandatory = validation?.mandatory ?? false;
   const multiselectRef = React.useRef(null);
   const labelRef = React.useRef(null);
   const validationData = validate(selected?.length ? selected?.map((option) => option.value) : null);
@@ -69,6 +70,7 @@ export const MultiselectV2 = ({
   const valueContainerRef = React.useRef(null);
   const [visibility, setVisibility] = useState(properties.visibility);
   const [isMultiSelectLoading, setIsMultiSelectLoading] = useState(multiSelectLoadingState);
+  const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const [isMultiSelectDisabled, setIsMultiSelectDisabled] = useState(disabledState);
   const [isSelectAllSelected, setIsSelectAllSelected] = useState(false);
   const [searchInputValue, setSearchInputValue] = useState('');
@@ -87,10 +89,12 @@ export const MultiselectV2 = ({
     const _options = advanced ? schema : options;
     let _selectOptions = Array.isArray(_options)
       ? _options
-          .filter((data) => data?.visible?.value)
-          .map((value) => ({
-            ...value,
-            isDisabled: value?.disable?.value,
+          .filter((data) => getResolvedValue(advanced ? data?.visible : data?.visible?.value) ?? true)
+          .map((data) => ({
+            ...data,
+            label: getResolvedValue(data?.label),
+            value: getResolvedValue(data?.value),
+            isDisabled: getResolvedValue(advanced ? data?.disable : data?.disable?.value) ?? false,
           }))
       : [];
     return _selectOptions;
@@ -124,6 +128,10 @@ export const MultiselectV2 = ({
   const onChangeHandler = (items, action) => {
     setSelected(items);
     if (action.action === 'select-option') {
+      setExposedVariable(
+        'values',
+        items.map((item) => item.value)
+      );
       fireEvent('onSelect');
     }
   };
@@ -140,6 +148,7 @@ export const MultiselectV2 = ({
   }, [advanced, JSON.stringify(schema), JSON.stringify(values)]);
 
   useEffect(() => {
+    if (isInitialRender.current) return;
     setExposedVariable(
       'selectedOptions',
       Array.isArray(selected) && selected?.map(({ label, value }) => ({ label, value }))
@@ -152,15 +161,34 @@ export const MultiselectV2 = ({
   }, [JSON.stringify(selected), selectOptions]);
 
   useEffect(() => {
+    if (isInitialRender.current) return;
     setExposedVariable('label', label);
-    setExposedVariable('isVisible', properties.visibility);
-    setExposedVariable('isLoading', multiSelectLoadingState);
-    setExposedVariable('isDisabled', disabledState);
-    setExposedVariable('isMandatory', isMandatory);
-    setExposedVariable('isValid', isValid);
+  }, [label]);
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [label, properties.visibility, multiSelectLoadingState, disabledState, isMandatory, isValid]);
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isVisible', properties.visibility);
+  }, [properties.visibility]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isLoading', multiSelectLoadingState);
+  }, [multiSelectLoadingState]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isDisabled', disabledState);
+  }, [disabledState]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isMandatory', isMandatory);
+  }, [isMandatory]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isValid', isValid);
+  }, [isValid]);
 
   useEffect(() => {
     const exposedVariables = {
@@ -176,8 +204,17 @@ export const MultiselectV2 = ({
       setDisable: async function (value) {
         setIsMultiSelectDisabled(value);
       },
+      label: label,
+      isVisible: properties.visibility,
+      isLoading: multiSelectLoadingState,
+      isDisabled: disabledState,
+      isMandatory: isMandatory,
+      isValid: isValid,
+      selectedOptions: Array.isArray(selected) && selected?.map(({ label, value }) => ({ label, value })),
+      options: Array.isArray(selectOptions) && selectOptions?.map(({ label, value }) => ({ label, value })),
     };
     setExposedVariables(exposedVariables);
+    isInitialRender.current = false;
   }, []);
 
   useEffect(() => {
@@ -214,7 +251,7 @@ export const MultiselectV2 = ({
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectOptions, selected, setSelected]);
+  }, [selectOptions, selected]);
 
   const onSearchTextChange = (searchText, actionProps) => {
     if (actionProps.action === 'input-change') {
@@ -363,11 +400,12 @@ export const MultiselectV2 = ({
     }),
   };
   const _width = (labelWidth / 100) * 70; // Max width which label can go is 70% for better UX calculate width based on this value
+
   return (
     <>
       <div
         ref={multiselectRef}
-        data-cy={`label-${String(component.name).toLowerCase()} `}
+        data-cy={`label-${String(componentName).toLowerCase()} `}
         className={cx('multiselect-widget', 'd-flex', {
           [alignment === 'top' &&
           ((labelWidth != 0 && label?.length != 0) || (auto && labelWidth == 0 && label && label?.length != 0))
@@ -384,15 +422,9 @@ export const MultiselectV2 = ({
           width: '100%',
         }}
         onMouseDown={(event) => {
-          onComponentClick(id, component, event);
+          onComponentClick(id);
           // This following line is needed because sometimes after clicking on canvas then also dropdown remains selected
           useEditorStore.getState().actions.setHoveredComponent('');
-        }}
-        onClick={() => {
-          if (!isMultiSelectDisabled) {
-            fireEvent('onFocus');
-          }
-          setIsMultiselectOpen(!isMultiselectOpen);
         }}
       >
         <Label
@@ -406,8 +438,17 @@ export const MultiselectV2 = ({
           auto={auto}
           isMandatory={isMandatory}
           _width={_width}
+          top={'1px'}
         />
-        <div className="w-100 px-0 h-100">
+        <div
+          className="w-100 px-0 h-100"
+          onClick={() => {
+            if (!isMultiSelectDisabled) {
+              fireEvent('onFocus');
+              setIsMultiselectOpen(!isMultiselectOpen);
+            }
+          }}
+        >
           <Select
             menuId={id}
             isDisabled={isMultiSelectDisabled}
@@ -446,7 +487,7 @@ export const MultiselectV2 = ({
             setIsSelectAllSelected={setIsSelectAllSelected}
             setSelected={setSelected}
             iconColor={iconColor}
-            optionsLoadingState={optionsLoadingState}
+            optionsLoadingState={optionsLoadingState && advanced}
             darkMode={darkMode}
             fireEvent={() => fireEvent('onSelect')}
             menuPlacement="auto"
@@ -462,6 +503,7 @@ export const MultiselectV2 = ({
           fontSize: '11px',
           fontWeight: '400',
           lineHeight: '16px',
+          display: visibility ? 'block' : 'none',
         }}
       >
         {!isValid && validationError}

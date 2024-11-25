@@ -1,30 +1,55 @@
-import { BadRequestException, Injectable, NotFoundException, Optional, ConflictException } from '@nestjs/common';
-import { EntityManager, In, ObjectLiteral, SelectQueryBuilder, Table, TableColumn, TableForeignKey } from 'typeorm';
+import { BadRequestException, Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Connection,
+  EntityManager,
+  In,
+  ObjectLiteral,
+  QueryFailedError,
+  SelectQueryBuilder,
+  Table,
+  TableColumn,
+  TableForeignKey,
+} from 'typeorm';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
+import { LicenseService } from '@licensing/service';
+import { LICENSE_FIELD, LICENSE_LIMIT, LICENSE_LIMITS_LABEL } from '@licensing/helper';
+import { generatePayloadForLimits } from 'src/helpers/utils.helper';
 import { isString, isEmpty, camelCase } from 'lodash';
-import { TooljetDatabaseError, TooljetDbActions } from 'src/modules/tooljet_db/tooljet-db.types';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
+import {
+  findTenantSchema,
+  encryptTooljetDatabasePassword,
+  createNewTjdbRole,
+  createAndGrantSchemaPrivilege,
+  grantSequencePrivilege,
+  createAndGrantTablePrivilege,
+  updatePasswordToOrganizationTable,
+  concatSchemaAndTableName,
+  createTooljetDatabaseConnection,
+  decryptTooljetDatabasePassword,
+  grantTenantRoleToTjdbAdminRole,
+} from 'src/helpers/tooljet_db.helper';
+import { OrganizationTjdbConfigurations } from 'src/entities/organization_tjdb_configurations.entity';
+const crypto = require('crypto');
+import {
+  PostgrestError,
+  TooljetDatabaseColumn,
+  TooljetDatabaseDataTypes,
+  TooljetDatabaseError,
+  TooljetDatabaseForeignKey,
+  TooljetDbActions,
+  TJDB,
+} from 'src/modules/tooljet_db/tooljet-db.types';
+import { v4 as uuidv4 } from 'uuid';
+import { QueryError } from '@tooljet/plugins/packages/common';
+import { ConfigService } from '@nestjs/config';
 
-export type TableColumnSchema = {
-  column_name: string;
-  data_type: SupportedDataTypes;
-  column_default: string | null;
-  character_maximum_length: number | null;
-  numeric_precision: number | null;
-  is_nullable: 'YES' | 'NO';
-  constraint_type: string | null;
-  keytype: string | null;
-};
-
-export type ForeignKeyDetails = {
-  column_names: Array<string>;
-  referenced_table_name: string;
-  referenced_column_names: Array<string>;
-  on_delete: string;
-  on_update: string;
-};
-
-export type SupportedDataTypes = 'character varying' | 'integer' | 'bigint' | 'serial' | 'double precision' | 'boolean';
+enum AggregateFunctions {
+  sum = 'SUM',
+  count = 'COUNT',
+}
 
 // Patching TypeORM SelectQueryBuilder to handle for right and full outer joins
 declare module 'typeorm' {
@@ -49,18 +74,21 @@ SelectQueryBuilder.prototype.fullOuterJoin = function (entityOrProperty, alias, 
 export class TooljetDbService {
   constructor(
     private readonly manager: EntityManager,
-    // TODO: remove optional decorator when
-    // ENABLE_TOOLJET_DB flag is deprecated
-    @Optional()
     @InjectEntityManager('tooljetDb')
-    private readonly tooljetDbManager: EntityManager
-  ) {}
+    private readonly tooljetDbManager: EntityManager,
+    private eventEmitter: EventEmitter2,
+    private licenseService: LicenseService,
+    private readonly configService: ConfigService
+  ) { }
 
   async perform(
     organizationId: string,
     action: string,
     params = {},
-    connectionManagers: Record<string, EntityManager> = { appManager: this.manager, tjdbManager: this.tooljetDbManager }
+    connectionManagers: Record<string, EntityManager> = {
+      appManager: this.manager,
+      tjdbManager: this.tooljetDbManager,
+    }
   ) {
     const actionHandler = this.getActionHandler(action);
     if (!actionHandler) {
@@ -90,8 +118,15 @@ export class TooljetDbService {
   private async viewTable(
     organizationId: string,
     params,
-    connectionManagers: Record<string, EntityManager> = { appManager: this.manager, tjdbManager: this.tooljetDbManager }
-  ): Promise<{ foreign_keys: ForeignKeyDetails[]; columns: TableColumnSchema[] }> {
+    connectionManagers: Record<string, EntityManager> = {
+      appManager: this.manager,
+      tjdbManager: this.tooljetDbManager,
+    }
+  ): Promise<{
+    foreign_keys: TooljetDatabaseForeignKey[];
+    columns: TooljetDatabaseColumn[];
+    configurations: any;
+  }> {
     const { table_name: tableName, id: id } = params;
     const { appManager, tjdbManager } = connectionManagers;
 
@@ -104,10 +139,10 @@ export class TooljetDbService {
     });
 
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
-
+    const tenantSchema = findTenantSchema(organizationId);
     let foreign_keys = await tjdbManager.query(`
       select
-        pgc.confrelid::regclass as referenced_table_name, 
+        (SELECT pgcls.relname FROM pg_class as pgcls where pgcls.oid = pgc.confrelid) as referenced_table_name,
         pgc.conname as constraint_name,
         ARRAY(SELECT attname FROM pg_attribute WHERE attrelid = pgc.conrelid AND attnum = any(pgc.conkey)) AS column_names,
         ARRAY(select attname from pg_attribute where attrelid = pgc.confrelid and attnum = any(pgc.confkey)) as referenced_column_names,
@@ -127,17 +162,19 @@ export class TooljetDbService {
           when 'd' then 'SET DEFAULT'
         end as on_delete
       from pg_constraint as pgc 
-      where pgc.conrelid = '${internalTable.id}'::regclass and pgc.contype = 'f'
+      join pg_class as cls on cls.oid = pgc.conrelid
+      join pg_namespace as ns on ns.oid = cls.relnamespace
+      where cls.relname = '${internalTable.id}' and pgc.contype = 'f' and ns.nspname = '${tenantSchema}'
     `);
 
     // Transforming the Query response
     const referenced_table_list = [];
     foreign_keys = foreign_keys.map((foreign_key_detail) => {
       const { referenced_table_name, column_names, referenced_column_names } = foreign_key_detail;
-      referenced_table_list.push(referenced_table_name.slice(1, -1));
+      referenced_table_list.push(referenced_table_name);
       return {
         ...foreign_key_detail,
-        referenced_table_name: referenced_table_name.slice(1, -1),
+        referenced_table_name: referenced_table_name,
         column_names: column_names.slice(1, -1).split(','),
         referenced_column_names: referenced_column_names.slice(1, -1).split(','),
       };
@@ -219,6 +256,7 @@ export class TooljetDbService {
     return {
       foreign_keys,
       columns,
+      configurations: internalTable.configurations,
     };
   }
 
@@ -235,11 +273,20 @@ export class TooljetDbService {
     return value;
   }
 
+  private addQuotesIfMissing(value) {
+    if (!!value && !value.includes("'")) return `'${value}'`;
+    return value;
+  }
+
   private async createTable(
     organizationId: string,
     params,
-    connectionManagers: Record<string, EntityManager> = { appManager: this.manager, tjdbManager: this.tooljetDbManager }
+    connectionManagers: Record<string, EntityManager> = {
+      appManager: this.manager,
+      tjdbManager: this.tooljetDbManager,
+    }
   ) {
+    const tenantSchema = findTenantSchema(organizationId);
     const primaryKeyColumnList = params.columns
       .filter((column) => column.constraints_type.is_primary_key)
       .map((column) => column.column_name);
@@ -249,8 +296,10 @@ export class TooljetDbService {
     const { table_name: tableName, foreign_keys = [] } = params;
     const { appManager, tjdbManager } = connectionManagers;
     const tableWithSameName = await appManager.findOne(InternalTable, {
-      tableName,
-      organizationId,
+      where: {
+        tableName,
+        organizationId,
+      },
     });
 
     if (!isEmpty(tableWithSameName)) throw new ConflictException(`Table with with name "${tableName}" already exists`);
@@ -286,23 +335,47 @@ export class TooljetDbService {
     await tjdbQueryRunner.startTransaction();
 
     try {
+      const columnNames = {};
+      const columnConfigrations = {};
+      for (const column of params.columns) {
+        const columnUuid = uuidv4();
+        columnNames[column.column_name] = columnUuid;
+        columnConfigrations[columnUuid] = column?.configurations || {};
+      }
+
+      const configurations = {
+        columns: {
+          column_names: columnNames,
+          configurations: columnConfigrations,
+        },
+      };
+
       const internalTable = queryRunner.manager.create(InternalTable, {
         tableName,
         organizationId,
+        configurations,
       });
 
       await queryRunner.manager.save(internalTable);
 
       await tjdbQueryRunner.createTable(
         new Table({
+          schema: tenantSchema,
           name: internalTable.id,
           columns: this.prepareColumnListForCreateTable(params.columns),
           ...(foreign_keys.length && {
-            foreignKeys: this.prepareForeignKeyDetailsJSON(foreign_keys, referenced_tables_info),
+            foreignKeys: this.prepareForeignKeyDetailsJSON(foreign_keys, referenced_tables_info, tenantSchema),
           }),
         })
       );
-      await tjdbQueryRunner.createPrimaryKey(internalTable.id, primaryKeyColumnList);
+
+      const tableNameWithSchema = concatSchemaAndTableName(tenantSchema, internalTable.id);
+      await tjdbQueryRunner.createPrimaryKey(tableNameWithSchema, primaryKeyColumnList);
+      // await tjdbQueryRunner.createPrimaryKey(
+      //   new Table({ schema: tenantSchema, name: internalTable.id }),
+      //   primaryKeyColumnList
+      // );
+
       await queryRunner.commitTransaction();
       await tjdbQueryRunner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
@@ -345,22 +418,26 @@ export class TooljetDbService {
 
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
 
+    const tenantSchema = findTenantSchema(organizationId);
     const queryRunner = this.manager.connection.createQueryRunner();
+    const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
+
     await queryRunner.connect();
+    await tjdbQueryRunner.connect();
+
     await queryRunner.startTransaction();
+    await tjdbQueryRunner.startTransaction();
 
     try {
       await queryRunner.manager.delete(InternalTable, { id: internalTable.id });
-
-      const query = `DROP TABLE "${internalTable.id}"`;
-      // if tooljetdb query fails in this connection, we must rollback internal table
-      // created in the other connection
-      await this.tooljetDbManager.query(query);
+      await tjdbQueryRunner.dropTable(new Table({ schema: tenantSchema, name: internalTable.id }));
 
       await queryRunner.commitTransaction();
+      await tjdbQueryRunner.commitTransaction();
       return true;
     } catch (err) {
       await queryRunner.rollbackTransaction();
+      await tjdbQueryRunner.rollbackTransaction();
       throw new TooljetDatabaseError(
         err.message,
         {
@@ -372,6 +449,7 @@ export class TooljetDbService {
     } finally {
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
       await queryRunner.release();
+      await tjdbQueryRunner.release();
     }
   }
 
@@ -391,12 +469,20 @@ export class TooljetDbService {
     const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
     await tjdbQueryRunner.connect();
     await tjdbQueryRunner.startTransaction();
+    const tenantSchema = findTenantSchema(organizationId);
 
     try {
+      const tableName = concatSchemaAndTableName(tenantSchema, internalTable.id);
       const updatedPrimaryKeys = [];
       const columnstoBeUpdated = [];
       const columnsToBeInserted = [];
       const columnsToBeDeleted = [];
+      const columnConfigurationMap = {};
+
+      columns.forEach((column) => {
+        const { new_column = {} } = column;
+        columnConfigurationMap[new_column.column_name] = new_column?.configurations || {};
+      });
 
       columns.forEach((column) => {
         const { old_column = {}, new_column = {} } = column;
@@ -425,11 +511,11 @@ export class TooljetDbService {
               type: new_column.data_type,
               ...(new_column?.column_default &&
                 new_column.data_type !== 'serial' && {
-                  default:
-                    new_column.data_type === 'character varying'
-                      ? this.addQuotesIfString(new_column.column_default)
-                      : new_column.column_default,
-                }),
+                default:
+                  new_column.data_type === 'character varying'
+                    ? this.addQuotesIfString(new_column.column_default)
+                    : new_column.column_default,
+              }),
               isNullable: !new_column?.constraints_type.is_not_null,
               isUnique: new_column?.constraints_type.is_unique && !is_primary_key_column ? true : false,
               isPrimary: new_column?.constraints_type.is_primary_key || false,
@@ -443,11 +529,11 @@ export class TooljetDbService {
               type: new_column.data_type,
               ...(new_column?.column_default &&
                 new_column.data_type !== 'serial' && {
-                  default:
-                    new_column.data_type === 'character varying'
-                      ? this.addQuotesIfString(new_column.column_default)
-                      : new_column.column_default,
-                }),
+                default:
+                  new_column.data_type === 'character varying'
+                    ? this.addQuotesIfString(new_column.column_default)
+                    : new_column.column_default,
+              }),
               isNullable: !new_column?.constraints_type.is_not_null,
               isUnique: new_column?.constraints_type.is_unique && !is_primary_key_column ? true : false,
               isPrimary: new_column?.constraints_type.is_primary_key || false,
@@ -457,11 +543,11 @@ export class TooljetDbService {
               type: new_column.data_type,
               ...(new_column?.column_default &&
                 new_column.data_type !== 'serial' && {
-                  default:
-                    new_column.data_type === 'character varying'
-                      ? this.addQuotesIfString(new_column.column_default)
-                      : new_column.column_default,
-                }),
+                default:
+                  new_column.data_type === 'character varying'
+                    ? this.addQuotesIfString(new_column.column_default)
+                    : new_column.column_default,
+              }),
               isNullable: !new_column?.constraints_type.is_not_null,
               isUnique: new_column?.constraints_type.is_unique && !is_primary_key_column ? true : false,
               isPrimary: new_column?.constraints_type.is_primary_key || false,
@@ -478,11 +564,11 @@ export class TooljetDbService {
               type: old_column.data_type,
               ...(old_column?.column_default &&
                 old_column.data_type !== 'serial' && {
-                  default:
-                    old_column.data_type === 'character varying'
-                      ? this.addQuotesIfString(old_column.column_default)
-                      : old_column.column_default,
-                }),
+                default:
+                  old_column.data_type === 'character varying'
+                    ? this.addQuotesIfString(old_column.column_default)
+                    : old_column.column_default,
+              }),
               isNullable: !old_column?.constraints_type.is_not_null,
               isUnique: old_column?.constraints_type.is_unique,
               isPrimary: old_column?.constraints_type.is_primary_key || false,
@@ -492,11 +578,11 @@ export class TooljetDbService {
               type: new_column.data_type,
               ...(new_column?.column_default &&
                 new_column.data_type !== 'serial' && {
-                  default:
-                    new_column.data_type === 'character varying'
-                      ? this.addQuotesIfString(new_column.column_default)
-                      : new_column.column_default,
-                }),
+                default:
+                  new_column.data_type === 'character varying'
+                    ? this.addQuotesIfString(new_column.column_default)
+                    : new_column.column_default,
+              }),
               isNullable: !new_column?.constraints_type.is_not_null,
               isUnique: new_column?.constraints_type.is_unique && !is_primary_key_column ? true : false,
               isPrimary: new_column?.constraints_type.is_primary_key || false,
@@ -505,11 +591,54 @@ export class TooljetDbService {
         }
       });
 
+      const columnNames = internalTable.configurations.columns.column_names;
+      const columnConfigurations = internalTable.configurations.columns.configurations;
+
+      columnstoBeUpdated.forEach((column) => {
+        const newColumn = column.newColumn;
+        const oldColumn = column.oldColumn;
+        const columnUuid = columnNames[oldColumn.name];
+        if (columnUuid) {
+          columnNames[newColumn.name] = columnUuid;
+          if (newColumn.type !== oldColumn.type) {
+            columnConfigurations[columnUuid] = {};
+          }
+          columnConfigurations[columnUuid] = {
+            ...columnConfigurations[columnUuid],
+            ...columnConfigurationMap[newColumn.name],
+          };
+          if (oldColumn.name !== newColumn.name) {
+            delete columnNames[oldColumn.name];
+          }
+        }
+      });
+
+      columnsToBeDeleted.forEach((column) => {
+        const columnUuid = columnNames[column];
+        delete columnNames[column];
+        delete columnConfigurations[columnUuid];
+      });
+
+      columnsToBeInserted.forEach((column) => {
+        const columnUuid = uuidv4();
+        columnNames[column.name] = columnUuid;
+        columnConfigurations[columnUuid] = columnConfigurationMap[column.name];
+      });
+
+      const configurations = {
+        columns: {
+          column_names: columnNames,
+          configurations: columnConfigurations,
+        },
+      };
+
+      await queryRunner.manager.update(InternalTable, { id: internalTable.id }, { configurations });
+
       if (isEmpty(updatedPrimaryKeys)) throw new BadRequestException('Primary key is mandatory');
 
-      if (!isEmpty(columnsToBeDeleted)) await tjdbQueryRunner.dropColumns(internalTable.id, columnsToBeDeleted);
-      if (!isEmpty(columnsToBeInserted)) await tjdbQueryRunner.addColumns(internalTable.id, columnsToBeInserted);
-      if (!isEmpty(columnstoBeUpdated)) await tjdbQueryRunner.changeColumns(internalTable.id, columnstoBeUpdated);
+      if (!isEmpty(columnsToBeDeleted)) await tjdbQueryRunner.dropColumns(tableName, columnsToBeDeleted);
+      if (!isEmpty(columnsToBeInserted)) await tjdbQueryRunner.addColumns(tableName, columnsToBeInserted);
+      if (!isEmpty(columnstoBeUpdated)) await tjdbQueryRunner.changeColumns(tableName, columnstoBeUpdated);
 
       if (params.new_table_name) {
         const { new_table_name } = params;
@@ -564,13 +693,33 @@ export class TooljetDbService {
         'Foreign key cannot be created as the referenced column is in the composite primary key.'
       );
 
+    const tenantSchema = findTenantSchema(organizationId);
     const tjdbQueryRunnner = this.tooljetDbManager.connection.createQueryRunner();
     await tjdbQueryRunnner.connect();
     await tjdbQueryRunnner.startTransaction();
 
+    const queryRunner = this.manager.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
+      const tableName = concatSchemaAndTableName(tenantSchema, internalTable.id);
+      const columnNames = internalTable.configurations.columns.column_names;
+      const columnConfigurations = internalTable.configurations.columns.configurations;
+      const columnUuid = uuidv4();
+      columnNames[column['column_name']] = columnUuid;
+      columnConfigurations[columnUuid] = column?.configurations || {};
+      const configurations = {
+        columns: {
+          column_names: columnNames,
+          configurations: columnConfigurations,
+        },
+      };
+
+      await queryRunner.manager.update(InternalTable, { id: internalTable.id }, { configurations });
+
       await tjdbQueryRunnner.addColumn(
-        internalTable.id,
+        tableName,
         new TableColumn({
           name: column['column_name'],
           type: column['data_type'],
@@ -587,18 +736,22 @@ export class TooljetDbService {
       );
 
       if (foreign_keys.length) {
-        const foreignKeys = this.prepareForeignKeyDetailsJSON(foreign_keys, referenced_tables_info).map(
+        const foreignKeys = this.prepareForeignKeyDetailsJSON(foreign_keys, referenced_tables_info, tenantSchema).map(
           (foreignkeydetail) => new TableForeignKey({ ...foreignkeydetail })
         );
-        await tjdbQueryRunnner.createForeignKeys(internalTable.id, foreignKeys);
+        await tjdbQueryRunnner.createForeignKeys(tableName, foreignKeys);
       }
 
+      await queryRunner.commitTransaction();
       await tjdbQueryRunnner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
+      await queryRunner.release();
       await tjdbQueryRunnner.release();
     } catch (err) {
       await tjdbQueryRunnner.rollbackTransaction();
       await tjdbQueryRunnner.release();
+      await queryRunner.rollbackTransaction();
+      await queryRunner.release();
       const referencedColumnInfoForError = Object.entries(referenced_tables_info).map(
         ([tableName, tableId]): { id: string; tableName: string } => {
           return {
@@ -610,7 +763,10 @@ export class TooljetDbService {
 
       throw new TooljetDatabaseError(
         err.message,
-        { origin: 'add_column', internalTables: [internalTable, ...referencedColumnInfoForError] },
+        {
+          origin: 'add_column',
+          internalTables: [internalTable, ...referencedColumnInfoForError],
+        },
         err
       );
     }
@@ -624,23 +780,71 @@ export class TooljetDbService {
 
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
 
-    // const query = `ALTER TABLE "${internalTable.id}" DROP COLUMN "${column['column_name']}"`;
     const tjdbQueryRunnner = this.tooljetDbManager.connection.createQueryRunner();
+    const queryRunner = this.manager.connection.createQueryRunner();
+
     await tjdbQueryRunnner.connect();
+    await queryRunner.connect();
+
+    await queryRunner.startTransaction();
+    await tjdbQueryRunnner.startTransaction();
+
+    const tenantSchema = findTenantSchema(organizationId);
+
     try {
-      const result = await tjdbQueryRunnner.dropColumn(internalTable.id, column['column_name']);
+      const columnNames = internalTable.configurations.columns.column_names;
+      const columnConfigurations = internalTable.configurations.columns.configurations;
+      const columnUuid = columnNames[column['column_name']];
+      delete columnNames[column['column_name']];
+      delete columnConfigurations[columnUuid];
+      const configurations = {
+        columns: {
+          column_names: columnNames,
+          configurations: columnConfigurations,
+        },
+      };
+      await queryRunner.manager.update(InternalTable, { id: internalTable.id }, { configurations });
+
+      const tableName = concatSchemaAndTableName(tenantSchema, internalTable.id);
+      const result = await tjdbQueryRunnner.dropColumn(tableName, column['column_name']);
+
+      await tjdbQueryRunnner.commitTransaction();
+      await queryRunner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
+
       return result;
     } catch (error) {
+      await tjdbQueryRunnner.rollbackTransaction();
+      await queryRunner.rollbackTransaction();
       throw new TooljetDatabaseError(error.message, { origin: 'drop_column', internalTables: [internalTable] }, error);
     } finally {
+      await queryRunner.release();
       await tjdbQueryRunnner.release();
     }
   }
 
-  private async joinTable(organizationId: string, params: Record<string, unknown>) {
-    const { joinQueryJson } = params;
+  async getTablesLimit() {
+    const licenseTerms = await this.licenseService.getLicenseTerms([LICENSE_FIELD.TABLE_COUNT, LICENSE_FIELD.STATUS]);
+    return {
+      tablesCount: generatePayloadForLimits(
+        licenseTerms[LICENSE_FIELD.TABLE_COUNT] !== LICENSE_LIMIT.UNLIMITED
+          ? await this.manager.createQueryBuilder(InternalTable, 'internal_table').getCount()
+          : 0,
+        licenseTerms[LICENSE_FIELD.TABLE_COUNT],
+        licenseTerms[LICENSE_FIELD.STATUS],
+        LICENSE_LIMITS_LABEL.TABLES
+      ),
+    };
+  }
+
+  private async joinTable(organizationId: string, params: Record<string, any>) {
+    const { joinQueryJson, dataQuery, user } = params;
     if (!Object.keys(joinQueryJson).length) throw new BadRequestException("Input can't be empty");
+
+    const tjdbTenantConfigs = await this.manager.findOne(OrganizationTjdbConfigurations, {
+      where: { organizationId },
+    });
+    if (!tjdbTenantConfigs) throw new NotFoundException(`Tooljet database schema configuration doesn't exists`);
 
     // Gathering tables used, from Join coditions
     const tableSet = new Set();
@@ -667,7 +871,7 @@ export class TooljetDbService {
     if (!tables?.length) throw new BadRequestException('Tables are not chosen');
 
     const tableIdList: Array<string> = tables
-      .filter((table) => table.type === 'Table')
+      .filter((table) => table.type === 'Table' && !isEmpty(table.name))
       .map((filteredTable) => filteredTable.name);
 
     const internalTables = await this.findOrFailInternalTableFromTableId(tableIdList, organizationId);
@@ -678,34 +882,100 @@ export class TooljetDbService {
       };
     }, {});
 
+    const { pgPassword, pgUser } = tjdbTenantConfigs;
+    const tjdbPassKey = await decryptTooljetDatabasePassword(pgPassword);
+    const tenantSchema = findTenantSchema(organizationId);
+    const { tooljetDbTenantConnection } = await createTooljetDatabaseConnection(tjdbPassKey, pgUser, tenantSchema);
+
     try {
-      const queryBuilder = this.buildJoinQuery(joinQueryJson, internalTableIdToNameMap);
+      const queryBuilder = this.buildJoinQuery(joinQueryJson, internalTableIdToNameMap, tooljetDbTenantConnection);
       return await queryBuilder.getRawMany();
     } catch (error) {
-      throw new TooljetDatabaseError(
+      const errorObj = new QueryFailedError(error, [], new PostgrestError(error));
+      const tjdbErrorObj = new TooljetDatabaseError(
         error.message,
         {
           origin: 'join_tables',
           internalTables: internalTables,
         },
-        error
+        errorObj
       );
+      const alteredErrorMessage = tjdbErrorObj.toString();
+      throw new QueryError(alteredErrorMessage, alteredErrorMessage, {});
+    } finally {
+      await tooljetDbTenantConnection.destroy();
+      if (!isEmpty(dataQuery) && !isEmpty(user)) {
+        this.eventEmitter.emit('auditLogEntry', {
+          userId: user.id,
+          organizationId,
+          resourceId: dataQuery.id,
+          resourceName: dataQuery.name,
+          resourceType: ResourceTypes.DATA_QUERY,
+          actionType: ActionTypes.DATA_QUERY_RUN,
+          metadata: {},
+        });
+      }
     }
   }
 
-  private buildJoinQuery(queryJson, internalTableIdToNameMap): SelectQueryBuilder<any> {
-    const queryBuilder: SelectQueryBuilder<any> = this.tooljetDbManager.createQueryBuilder();
+  private buildJoinQuery(
+    queryJson,
+    internalTableIdToNameMap,
+    // eslint-disable-next-line deprecation/deprecation
+    tooljetDbTenantConnection: Connection
+  ): SelectQueryBuilder<any> {
+    const queryBuilder: SelectQueryBuilder<any> = tooljetDbTenantConnection.createQueryBuilder();
 
-    // mandatory attributes
-    if (isEmpty(queryJson.fields)) throw new BadRequestException('Select statement is empty');
-    if (isEmpty(queryJson.from)) throw new BadRequestException('From table is not selected');
+    // Mandatory attributes
+    if (isEmpty(queryJson.fields) && isEmpty(queryJson.aggregates))
+      throw new BadRequestException('The Select and Aggregate statement is not present.');
+    if (isEmpty(queryJson.from)) throw new BadRequestException('From table is not selected.');
 
-    // select with aliased column names
-    queryJson.fields.forEach((field) => {
-      const fieldName = `"${internalTableIdToNameMap[field.table]}"."${field.name}"`;
-      const fieldAlias = `${internalTableIdToNameMap[field.table]}_${field.name}`;
-      queryBuilder.addSelect(fieldName, fieldAlias);
-    });
+    // Building `SELECT` statement with aliased column names
+    if (!isEmpty(queryJson.fields) && isEmpty(queryJson.aggregates)) {
+      queryJson.fields.forEach((field) => {
+        const fieldName = `"${internalTableIdToNameMap[field.table]}"."${field.name}"`;
+        const fieldAlias = `${internalTableIdToNameMap[field.table]}_${field.name}`;
+        queryBuilder.addSelect(fieldName, fieldAlias);
+      });
+    }
+
+    // Building `AGGREGATE` statement :
+    if (!isEmpty(queryJson.aggregates)) {
+      Object.entries(queryJson.aggregates).forEach(([_key, aggregateParams]) => {
+        const { aggFx, column, table_id: tableId } = aggregateParams as any;
+        if (isEmpty(column) || isEmpty(aggFx))
+          throw new Error('There are empty values in certain aggregate conditions.');
+
+        const allowedAggFunctions = ['sum', 'count'];
+        if (!allowedAggFunctions.includes(aggFx)) {
+          throw new BadRequestException('Invalid aggregate function');
+        }
+
+        queryBuilder.addSelect(
+          `${AggregateFunctions[aggFx]}("${internalTableIdToNameMap[tableId]}"."${column}")`,
+          `${internalTableIdToNameMap[tableId]}_${column}_${aggFx}`
+        );
+      });
+    }
+
+    // Building `GROUP_BY` statement :
+    if (!isEmpty(queryJson.group_by)) {
+      Object.entries(queryJson.group_by).forEach(([groupByTableId, groupByColumList]: [string, Array<string>]) => {
+        if (!isEmpty(groupByColumList)) {
+          groupByColumList.forEach((groupByColum) => {
+            // The 'SELECT' statement needs to have 'GROUP_BY' columns added.
+            queryBuilder.addSelect(
+              `"${internalTableIdToNameMap[groupByTableId]}"."${groupByColum}"`,
+              `${internalTableIdToNameMap[groupByTableId]}_${groupByColum}`
+            );
+
+            // Building `GROUP_BY` statement
+            queryBuilder.addGroupBy(`"${internalTableIdToNameMap[groupByTableId]}"."${groupByColum}"`);
+          });
+        }
+      });
+    }
 
     // from table
     queryBuilder.from(queryJson.from.name, internalTableIdToNameMap[queryJson.from.name]);
@@ -810,13 +1080,40 @@ export class TooljetDbService {
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
 
     const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
+    const queryRunner = this.manager.connection.createQueryRunner();
     await tjdbQueryRunner.connect();
+    await queryRunner.connect();
+
     await tjdbQueryRunner.startTransaction();
+    await queryRunner.startTransaction();
+    const tenantSchema = findTenantSchema(organizationId);
 
     try {
-      if (foreign_key_id_to_delete) await tjdbQueryRunner.dropForeignKey(internalTable.id, foreign_key_id_to_delete);
+      const columnNames = internalTable.configurations.columns.column_names;
+      const columnConfigurations = internalTable.configurations.columns.configurations;
+      const columnUuid = columnNames[column.column_name];
+      columnConfigurations[columnUuid] = {
+        ...columnConfigurations[columnUuid],
+        ...(column?.configurations || {}),
+      };
+      if (column?.new_column_name) {
+        columnNames[column.new_column_name] = columnUuid;
+        delete columnNames[column.column_name];
+      }
+
+      const configurations = {
+        columns: {
+          column_names: columnNames,
+          configurations: columnConfigurations,
+        },
+      };
+
+      await queryRunner.manager.update(InternalTable, { id: internalTable.id }, { configurations });
+
+      const tableName = concatSchemaAndTableName(tenantSchema, internalTable.id);
+      if (foreign_key_id_to_delete) await tjdbQueryRunner.dropForeignKey(tableName, foreign_key_id_to_delete);
       await tjdbQueryRunner.changeColumn(
-        internalTable.id,
+        tableName,
         column.column_name,
         new TableColumn({
           name: column.column_name,
@@ -834,31 +1131,45 @@ export class TooljetDbService {
       );
 
       if (column?.column_name && column?.new_column_name) {
-        await tjdbQueryRunner.renameColumn(internalTable.id, column?.column_name, column?.new_column_name);
+        await tjdbQueryRunner.renameColumn(tableName, column?.column_name, column?.new_column_name);
       }
 
       await tjdbQueryRunner.commitTransaction();
+      await queryRunner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
       await tjdbQueryRunner.release();
+      await queryRunner.release();
     } catch (error) {
       await tjdbQueryRunner.rollbackTransaction();
       await tjdbQueryRunner.release();
+      await queryRunner.rollbackTransaction();
+      await queryRunner.release();
       throw new TooljetDatabaseError(error.message, { origin: 'edit_column', internalTables: [internalTable] }, error);
     }
   }
 
-  private prepareColumnListForCreateTable(columns) {
+  private prepareColumnListForCreateTable(columns: TooljetDatabaseColumn[]) {
     const columnList = columns.map((column) => {
-      const { column_name, constraints_type = {} } = column;
+      const { column_name, constraints_type = {} as any } = column;
       const is_primary_key_column = constraints_type?.is_primary_key || false;
 
-      const prepareDataTypeAndDefault = (column): { data_type: SupportedDataTypes; column_default: unknown } => {
+      const prepareDataTypeAndDefault = (column): { data_type: TooljetDatabaseDataTypes; column_default: unknown } => {
         const { data_type, column_default = undefined } = column;
-        const isSerial = () => data_type === 'integer' && /^nextval\(/.test(column_default);
-        const isCharacterVarying = () => data_type === 'character varying';
+        const isSerial = () => data_type === TJDB.integer && /^nextval\(/.test(column_default);
+        const isCharacterVarying = () => data_type === TJDB.character_varying;
+        const isTimestampWithTimeZone = () => data_type === TJDB.timestampz;
 
-        if (isSerial()) return { data_type: 'serial', column_default: undefined };
-        if (isCharacterVarying()) return { data_type, column_default: this.addQuotesIfString(column_default) };
+        if (isSerial()) return { data_type: TJDB.serial, column_default: undefined };
+        if (isCharacterVarying())
+          return {
+            data_type,
+            column_default: this.addQuotesIfString(column_default),
+          };
+        if (isTimestampWithTimeZone())
+          return {
+            data_type,
+            column_default: this.addQuotesIfMissing(column_default),
+          };
 
         return { data_type, column_default };
       };
@@ -876,7 +1187,11 @@ export class TooljetDbService {
     return columnList;
   }
 
-  private prepareForeignKeyDetailsJSON(foreign_keys, referenced_tables_info) {
+  private prepareForeignKeyDetailsJSON(
+    foreign_keys: TooljetDatabaseForeignKey[],
+    referenced_tables_info,
+    tenantSchema
+  ) {
     if (!foreign_keys.length) return [];
     const foreignKeyList = foreign_keys.map((foreignKeyDetail) => {
       const {
@@ -891,6 +1206,7 @@ export class TooljetDbService {
         columnNames: column_names,
         referencedTableName: referenced_tables_info[referenced_table_name],
         referencedColumnNames: referenced_column_names,
+        referencedSchema: tenantSchema,
         ...(on_delete && { onDelete: on_delete }),
         ...(on_update && { onUpdate: on_update }),
       };
@@ -946,11 +1262,15 @@ export class TooljetDbService {
   private async createForeignKey(
     organizationId: string,
     params,
-    connectionManagers: Record<string, EntityManager> = { appManager: this.manager, tjdbManager: this.tooljetDbManager }
+    connectionManagers: Record<string, EntityManager> = {
+      appManager: this.manager,
+      tjdbManager: this.tooljetDbManager,
+    }
   ) {
-    const { table_name, foreign_keys } = params;
+    const { table_name, foreign_keys, shouldDestroyDbConnection = true } = params;
     const { appManager, tjdbManager } = connectionManagers;
     if (!foreign_keys?.length) throw new BadRequestException('Foreign key details are missing');
+
     const internalTable = await appManager.findOne(InternalTable, {
       where: { organizationId: organizationId, tableName: table_name },
     });
@@ -979,38 +1299,51 @@ export class TooljetDbService {
     const tjdbQueryRunner = tjdbManager?.queryRunner || tjdbManager.connection.createQueryRunner();
     await tjdbQueryRunner.connect();
     await tjdbQueryRunner.startTransaction();
+    const tenantSchema = findTenantSchema(organizationId);
+
     try {
-      const foreignKeys = this.prepareForeignKeyDetailsJSON(foreign_keys, referenced_tables_info).map(
+      const tableName = concatSchemaAndTableName(tenantSchema, internalTable.id);
+      const foreignKeys = this.prepareForeignKeyDetailsJSON(foreign_keys, referenced_tables_info, tenantSchema).map(
         (foreignkeydetail) => new TableForeignKey({ ...foreignkeydetail })
       );
-      await tjdbQueryRunner.createForeignKeys(internalTable.id, foreignKeys);
+      await tjdbQueryRunner.createForeignKeys(tableName, foreignKeys);
       await tjdbQueryRunner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
       //@ts-expect-error queryRunner has property transactionDepth which is not defined in type EntityManager
       if (!tjdbQueryRunner?.transactionDepth || tjdbQueryRunner.transactionDepth < 1) await tjdbQueryRunner.release();
 
-      return { statusCode: 200, message: 'Foreign key relation created successfully!' };
+      return {
+        statusCode: 200,
+        message: 'Foreign key relation created successfully!',
+      };
     } catch (err) {
-      await tjdbQueryRunner.rollbackTransaction();
-      await tjdbQueryRunner.release();
+      // Error code: 42710 - indicates FK constraint exists
+      if (!shouldDestroyDbConnection && err.code === '42710') {
+        await tjdbQueryRunner.rollbackTransaction();
+      }
 
-      const referencedColumnInfoForError = Object.entries(referenced_tables_info).map(
-        ([tableName, tableId]): { id: string; tableName: string } => {
-          return {
-            id: tableId as string,
-            tableName: tableName,
-          };
-        }
-      );
+      if (shouldDestroyDbConnection) {
+        await tjdbQueryRunner.rollbackTransaction();
+        await tjdbQueryRunner.release();
 
-      throw new TooljetDatabaseError(
-        err.message,
-        {
-          origin: 'create_foreign_key',
-          internalTables: [internalTable, ...referencedColumnInfoForError],
-        },
-        err
-      );
+        const referencedColumnInfoForError = Object.entries(referenced_tables_info).map(
+          ([tableName, tableId]): { id: string; tableName: string } => {
+            return {
+              id: tableId as string,
+              tableName: tableName,
+            };
+          }
+        );
+
+        throw new TooljetDatabaseError(
+          err.message,
+          {
+            origin: 'create_foreign_key',
+            internalTables: [internalTable, ...referencedColumnInfoForError],
+          },
+          err
+        );
+      }
     }
   }
 
@@ -1045,19 +1378,24 @@ export class TooljetDbService {
     const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
     await tjdbQueryRunner.connect();
     await tjdbQueryRunner.startTransaction();
+    const tenantSchema = findTenantSchema(organizationId);
 
     try {
-      await tjdbQueryRunner.dropForeignKey(internalTable.id, foreign_key_id);
+      const tableName = concatSchemaAndTableName(tenantSchema, internalTable.id);
+      await tjdbQueryRunner.dropForeignKey(tableName, foreign_key_id);
 
-      const foreignKeys = this.prepareForeignKeyDetailsJSON(foreign_keys, referenced_tables_info).map(
+      const foreignKeys = this.prepareForeignKeyDetailsJSON(foreign_keys, referenced_tables_info, tenantSchema).map(
         (foreignkeydetail) => new TableForeignKey({ ...foreignkeydetail })
       );
-      await tjdbQueryRunner.createForeignKeys(internalTable.id, foreignKeys);
+      await tjdbQueryRunner.createForeignKeys(tableName, foreignKeys);
 
       await tjdbQueryRunner.commitTransaction();
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
       await tjdbQueryRunner.release();
-      return { statusCode: 200, message: 'Foreign key relation created successfully!' };
+      return {
+        statusCode: 200,
+        message: 'Foreign key relation created successfully!',
+      };
     } catch (err) {
       await tjdbQueryRunner.rollbackTransaction();
       await tjdbQueryRunner.release();
@@ -1088,11 +1426,17 @@ export class TooljetDbService {
     });
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + table_name);
     try {
+      const tenantSchema = findTenantSchema(organizationId);
+      const tableName = concatSchemaAndTableName(tenantSchema, internalTable.id);
       const tjdbQueryRunner = this.tooljetDbManager.connection.createQueryRunner();
+
       await tjdbQueryRunner.connect();
-      await tjdbQueryRunner.dropForeignKey(internalTable.id, foreign_key_id);
+      await tjdbQueryRunner.dropForeignKey(tableName, foreign_key_id);
       await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
-      return { statusCode: 200, message: 'Foreign key relation deleted successfully!' };
+      return {
+        statusCode: 200,
+        message: 'Foreign key relation deleted successfully!',
+      };
     } catch (error) {
       throw new TooljetDatabaseError(
         error.message,
@@ -1108,7 +1452,10 @@ export class TooljetDbService {
   private async checkIfForeignKeyReferencedColumnsAreFromCompositePrimaryKey(
     foreignKeys,
     organizationId,
-    connectionManagers: Record<string, EntityManager> = { appManager: this.manager, tjdbManager: this.tooljetDbManager }
+    connectionManagers: Record<string, EntityManager> = {
+      appManager: this.manager,
+      tjdbManager: this.tooljetDbManager,
+    }
   ) {
     if (!foreignKeys.length) return;
     let isFKfromCompositePK = false;
@@ -1137,5 +1484,38 @@ export class TooljetDbService {
       }
     }
     return isFKfromCompositePK;
+  }
+
+  async createTooljetDbTenantSchemaAndRole(organizationId: string, entityManager: EntityManager) {
+    const dbUser = `user_${organizationId}`;
+    const dbSchema = `workspace_${organizationId}`;
+    const dbPassword = crypto.randomBytes(8).toString('hex');
+    const tjDbName = this.configService.get('TOOLJET_DB');
+    const tooljetDbAdminUser = this.configService.get('TOOLJET_DB_USER');
+
+    const encryptedValue = await encryptTooljetDatabasePassword(dbPassword);
+    await updatePasswordToOrganizationTable(entityManager, organizationId, encryptedValue, dbUser);
+
+    await this.tooljetDbManager.transaction(async (tooljetDbTransactionManager) => {
+      await createNewTjdbRole(tooljetDbTransactionManager, dbUser, dbPassword, tjDbName);
+      await createAndGrantSchemaPrivilege(tooljetDbTransactionManager, dbSchema, dbUser);
+      await createAndGrantTablePrivilege(tooljetDbTransactionManager, dbSchema, dbUser, tooljetDbAdminUser);
+      await grantSequencePrivilege(tooljetDbTransactionManager, dbSchema, dbUser, tooljetDbAdminUser);
+      await grantTenantRoleToTjdbAdminRole(tooljetDbTransactionManager, dbUser, tooljetDbAdminUser);
+      await tooljetDbTransactionManager.query("NOTIFY pgrst, 'reload schema'");
+    });
+  }
+
+  async deleteTooljetDbTenantSchemaAndRole(organizationId: string) {
+    const dbUser = `user_${organizationId}`;
+    const dbSchema = `workspace_${organizationId}`;
+
+    await this.tooljetDbManager.transaction(async (tooljetDbTransactionManager) => {
+      await tooljetDbTransactionManager.query(`REVOKE USAGE ON SCHEMA "${dbSchema}" FROM "${dbUser}";`);
+      await tooljetDbTransactionManager.query(`DROP SCHEMA "${dbSchema}" CASCADE;`);
+
+      await tooljetDbTransactionManager.query(`DROP OWNED BY "${dbUser}"`);
+      await tooljetDbTransactionManager.query(`DROP ROLE "${dbUser}";`);
+    });
   }
 }

@@ -6,6 +6,7 @@ services:
       context: ./
       dockerfile: ./docker/plugins.Dockerfile.dev
     image: tooljet-plugins:development
+    container_name: plugins
     platform: linux/x86_64
     volumes:
       - ./plugins:/app/plugins
@@ -16,6 +17,7 @@ services:
       context: ./
       dockerfile: ./docker/client.Dockerfile.dev
     image: tooljet-client:development
+    container_name: client
     platform: linux/x86_64
     volumes:
       - ./frontend:/app/frontend:delegated
@@ -34,10 +36,10 @@ services:
       context: ./
       dockerfile: ./docker/server.Dockerfile.dev
     image: tooljet-server:development
+    container_name: server
     platform: linux/x86_64
     depends_on:
-      postgres:
-        condition: service_healthy
+      - postgres
     volumes:
       - ./server:/app/server:delegated
       - ./plugins:/app/plugins
@@ -52,29 +54,27 @@ services:
     command: npm run --prefix server start:dev
 
   postgrest:
+    container_name: postgrest
     image: postgrest/postgrest:v12.0.2
     ports:
       - "3001:3000"
     env_file:
       - .env
     depends_on:
-      postgres:
-        condition: service_healthy
+      - postgres
 
   postgres:
+    container_name: ${PG_HOST}
     image: postgres:13
     restart: always
     ports:
       - 5432:5432
     volumes:
       - postgres:/data/postgres
+    env_file: .env
     environment:
-      - POSTGRES_PASSWORD=postgres
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - POSTGRES_USER=${PG_USER}
+      - POSTGRES_PASSWORD=${PG_PASS}
 
 volumes:
   postgres:

@@ -17,10 +17,7 @@ export default function WorkspaceConstants({ darkMode, switchDarkMode }) {
   };
 
   const canCreateVariableOrConstant = () => {
-    return canAnyGroupPerformAction(
-      'org_environment_variable_create',
-      authenticationService.currentSessionValue.group_permissions
-    );
+    return authenticationService.currentSessionValue.user_permissions.org_constant_c_r_u_d;
   };
 
   useEffect(() => {

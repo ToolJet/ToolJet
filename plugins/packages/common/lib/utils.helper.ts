@@ -1,5 +1,4 @@
 import { QueryError } from './query.error';
-import { Headers } from 'got';
 import * as tls from 'tls';
 import { readFileSync } from 'fs';
 
@@ -78,18 +77,42 @@ export const getCurrentToken = (isMultiAuthEnabled: boolean, tokenData: any, use
   }
 };
 
-export const sanitizeHeaders = (sourceOptions: any, queryOptions: any, hasDataSource = true): Headers => {
-  const _headers = (queryOptions.headers || []).filter((o) => {
+export const sanitizeHeaders = (
+  sourceOptions: any,
+  queryOptions: any,
+  hasDataSource = true
+): { [k: string]: string } => {
+  const cleanHeaders = (headers) => headers.filter(([k, _]) => k !== '').map(([k, v]) => [k.trim(), v]);
+
+  const _queryHeaders = cleanHeaders(queryOptions.headers || []);
+  const queryHeaders = Object.fromEntries(_queryHeaders);
+
+  if (!hasDataSource) return queryHeaders;
+
+  const _sourceHeaders = cleanHeaders(sourceOptions.headers || []);
+  const sourceHeaders = Object.fromEntries(_sourceHeaders);
+
+  return { ...queryHeaders, ...sourceHeaders };
+};
+
+export const sanitizeCookies = (sourceOptions: any, queryOptions: any, hasDataSource = true): object => {
+  const _cookies = (queryOptions.cookies || []).filter((o) => {
     return o.some((e) => !isEmpty(e));
   });
 
-  if (!hasDataSource) return Object.fromEntries(_headers);
+  if (!hasDataSource) return Object.fromEntries(_cookies);
 
-  const headerData = _headers.concat(sourceOptions.headers || []);
-  const headers = Object.fromEntries(headerData);
-  Object.keys(headers).forEach((key) => (headers[key] === '' ? delete headers[key] : {}));
+  const cookieData = _cookies.concat(sourceOptions.cookies || []);
+  const cookies = Object.fromEntries(cookieData);
+  Object.keys(cookies).forEach((key) => (cookies[key] === '' ? delete cookies[key] : {}));
 
-  return headers;
+  return cookies;
+};
+
+export const cookiesToString = (cookies: object): string => {
+  return Object.entries(cookies)
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value as string)}`)
+    .join('; ');
 };
 
 export const sanitizeSearchParams = (sourceOptions: any, queryOptions: any, hasDataSource = true): Array<string> => {
@@ -103,6 +126,13 @@ export const sanitizeSearchParams = (sourceOptions: any, queryOptions: any, hasD
   return urlParams;
 };
 
+export const sanitizeSortPairs = (options): Array<[string, string]> => {
+  const sanitizedOptions = (options || []).filter((o) => {
+    return o.every((e) => !isEmpty(e));
+  });
+  return sanitizedOptions;
+};
+
 export const fetchHttpsCertsForCustomCA = () => {
   if (!process.env.NODE_EXTRA_CA_CERTS) return {};
 
@@ -111,4 +141,96 @@ export const fetchHttpsCertsForCustomCA = () => {
       certificateAuthority: [...tls.rootCertificates, readFileSync(process.env.NODE_EXTRA_CA_CERTS)].join('\n'),
     },
   };
+};
+
+// Headers to be redacted
+// For more information on OWASP Secure Headers Project, visit:
+// https://owasp.org/www-project-secure-headers/#prevent-information-disclosure-via-http-headers
+
+const headersToRedact = [
+  '$wsep',
+  'Host-Header',
+  'K-Proxy-Request',
+  'Liferay-Portal',
+  'OracleCommerceCloud-Version',
+  'Pega-Host',
+  'Powered-By',
+  'Product',
+  'Server',
+  'SourceMap',
+  'X-AspNet-Version',
+  'X-AspNetMvc-Version',
+  'X-Atmosphere-error',
+  'X-Atmosphere-first-request',
+  'X-Atmosphere-tracking-id',
+  'X-B3-ParentSpanId',
+  'X-B3-Sampled',
+  'X-B3-SpanId',
+  'X-B3-TraceId',
+  'X-BEServer',
+  'X-CF-Powered-By',
+  'X-CMS',
+  'X-CalculatedBETarget',
+  'X-Cocoon-Version',
+  'X-Content-Encoded-By',
+  'X-DiagInfo',
+  'X-Envoy-Attempt-Count',
+  'X-Envoy-External-Address',
+  'X-Envoy-Internal',
+  'X-Envoy-Original-Dst-Host',
+  'X-Envoy-Upstream-Service-Time',
+  'X-FEServer',
+  'X-Framework',
+  'X-Generated-By',
+  'X-Generator',
+  'X-Jitsi-Release',
+  'X-Kubernetes-PF-FlowSchema-UI',
+  'X-Kubernetes-PF-PriorityLevel-UID',
+  'X-LiteSpeed-Cache',
+  'X-LiteSpeed-Purge',
+  'X-LiteSpeed-Tag',
+  'X-LiteSpeed-Vary',
+  'X-Litespeed-Cache-Control',
+  'X-Mod-Pagespeed',
+  'X-Nextjs-Cache',
+  'X-Nextjs-Matched-Path',
+  'X-Nextjs-Page',
+  'X-Nextjs-Redirect',
+  'X-OWA-Version',
+  'X-Old-Content-Length',
+  'X-OneAgent-JS-Injection',
+  'X-Page-Speed',
+  'X-Php-Version',
+  'X-Powered-By',
+  'X-Powered-By-Plesk',
+  'X-Powered-CMS',
+  'X-Redirect-By',
+  'X-Server-Powered-By',
+  'X-SourceFiles',
+  'X-SourceMap',
+  'X-Turbo-Charged-By',
+  'X-Umbraco-Version',
+  'X-Varnish-Backend',
+  'X-Varnish-Server',
+  'X-dtAgentId',
+  'X-dtHealthCheck',
+  'X-dtInjectedServlet',
+  'X-ruxit-JS-Agent',
+  'server',
+  // Additional headers explicitly defined for redaction
+  'authorization', // Contains sensitive authentication information
+  'x-api-key', // Often used for API authentication
+  'proxy-authorization', // Similar to authorization, but for proxy authentication
+  'www-authenticate', // Contains authentication scheme information
+  'authentication-info', // Provides additional authentication details
+];
+
+export const redactHeaders = (headers) => {
+  const redactedHeaders = { ...headers };
+  headersToRedact.forEach((key) => {
+    if (Object.prototype.hasOwnProperty.call(redactedHeaders, key)) {
+      redactedHeaders[key] = '[REDACTED]';
+    }
+  });
+  return redactedHeaders;
 };

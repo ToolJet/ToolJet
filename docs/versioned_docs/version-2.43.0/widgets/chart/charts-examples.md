@@ -36,7 +36,7 @@ In the **JSON description**, the value needs to be the `data` array with x and y
 ### Line
 Displays trends and patterns in data over time.
 
-```bash
+```js
 {
     "data": [
         {
@@ -62,7 +62,7 @@ Displays trends and patterns in data over time.
 ### Line Chart With Annotations
 Displays trends and patterns in data over time with annotations.
 
-```bash
+```js
 {
   "data": [
     {
@@ -122,7 +122,7 @@ Displays trends and patterns in data over time with annotations.
 ### Bar
 Compares categories of data or visualizes changes in a variable across different groups.
 
-```bash
+```js
 {
     "data": [
         {
@@ -168,7 +168,7 @@ Compares categories of data or visualizes changes in a variable across different
 ### Candlestick
 Analyzes the price movement of financial instruments (stocks, currencies, etc.) over a specific time frame.
 
-```bash
+```js
 {
   "data": [
     {
@@ -233,7 +233,7 @@ Reveals the density or magnitude of data points across two dimensions, using col
 
 Displays hierarchical data in a nested structure, ideal for understanding the relative sizes of parts within a whole.
 
-```bash
+```js
 {
     "data": [
         {
@@ -253,7 +253,7 @@ Displays hierarchical data in a nested structure, ideal for understanding the re
 
 Represents three-dimensional surfaces, often used in scientific or engineering data visualization.
 
-```bash
+```js
 {
     "data": [
         {
