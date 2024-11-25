@@ -1,5 +1,3 @@
-import { resolveReferences } from '@/_helpers/utils';
-import { useCurrentState } from '@/_stores/currentStateStore';
 import React, { useEffect, useMemo, useState, useRef } from 'react';
 import Label from '@/_ui/Label';
 import cx from 'classnames';
@@ -35,7 +33,6 @@ export const RadioButtonV2 = ({
   } = styles;
 
   const isInitialRender = useRef(true);
-  const currentState = useCurrentState();
 
   const [checkedValue, setCheckedValue] = useState(advanced ? findDefaultItem(schema) : value);
   const [visibility, setVisibility] = useState(properties.visibility);
@@ -53,12 +50,12 @@ export const RadioButtonV2 = ({
     let _options = advanced ? schema : options;
     if (Array.isArray(_options)) {
       let _selectOptions = _options
-        .filter((data) => resolveReferences(advanced ? data?.visible : data?.visible?.value, currentState))
+        .filter((data) => data?.visible ?? true)
         .map((data) => ({
           ...data,
-          label: resolveReferences(data?.label, currentState),
-          value: resolveReferences(data?.value, currentState),
-          isDisabled: resolveReferences(advanced ? data?.disable : data?.disable?.value, currentState),
+          label: data?.label,
+          value: data?.value,
+          isDisabled: data?.disable ?? false,
         }));
       return _selectOptions;
     } else {
