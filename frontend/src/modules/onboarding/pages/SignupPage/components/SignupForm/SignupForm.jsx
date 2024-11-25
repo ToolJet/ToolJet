@@ -118,9 +118,11 @@ const SignupForm = ({
       onSubmit(
         formData,
         () => {
+          // Success callback
           setIsLoading(false);
         },
         () => {
+          // Error callback
           setIsLoading(false);
         }
       );

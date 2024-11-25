@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { isEmpty } from 'lodash';
+import { isEmpty, set } from 'lodash';
 import { App } from 'src/entities/app.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
@@ -30,7 +30,7 @@ import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
 import { v4 as uuid } from 'uuid';
-import { findAllEntityReferences, isValidUUID, updateEntityReferences } from 'src/helpers/import_export.helpers';
+import { updateEntityReferences } from 'src/helpers/import_export.helpers';
 interface AppResourceMappings {
   defaultDataSourceIdMapping: Record<string, string>;
   dataQueryMapping: Record<string, string>;
@@ -290,13 +290,7 @@ export class AppImportExportService {
         .getMany();
 
       const toUpdateComponents = components.filter((component) => {
-        const entityReferencesInComponentDefinitions = findAllEntityReferences(component, []).filter(
-          (entity) => entity && isValidUUID(entity)
-        );
-
-        if (entityReferencesInComponentDefinitions.length > 0) {
-          return updateEntityReferences(component, mappings);
-        }
+        return updateEntityReferences(component, mappings);
       });
 
       if (!isEmpty(toUpdateComponents)) {
@@ -312,13 +306,7 @@ export class AppImportExportService {
         .getMany();
 
       const toUpdateDataQueries = dataQueries.filter((dataQuery) => {
-        const entityReferencesInQueryOptions = findAllEntityReferences(dataQuery, []).filter(
-          (entity) => entity && isValidUUID(entity)
-        );
-
-        if (entityReferencesInQueryOptions.length > 0) {
-          return updateEntityReferences(dataQuery, mappings);
-        }
+        return updateEntityReferences(dataQuery, mappings);
       });
 
       if (!isEmpty(toUpdateDataQueries)) {
@@ -517,6 +505,7 @@ export class AppImportExportService {
                 autoComputeLayout: page.autoComputeLayout || false,
                 isPageGroup: page.isPageGroup || false,
                 pageGroupIndex: page.pageGroupIndex || null,
+                icon: page.icon || null,
               });
               const pageCreated = await transactionalEntityManager.save(newPage);
 
@@ -784,6 +773,7 @@ export class AppImportExportService {
           disabled: page.disabled || false,
           hidden: page.hidden || false,
           autoComputeLayout: page.autoComputeLayout || false,
+          icon: page.icon || null,
         });
 
         const pageCreated = await manager.save(newPage);
@@ -809,6 +799,10 @@ export class AppImportExportService {
           const newComponent = new Component();
 
           let parentId = component.parent ? component.parent : null;
+          if (component?.properties?.buttonToSubmit) {
+            const newButtonToSubmitValue = newComponentIdsMap[component?.properties?.buttonToSubmit?.value];
+            if (newButtonToSubmitValue) set(component, 'properties.buttonToSubmit.value', newButtonToSubmitValue);
+          }
 
           const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pageComponents, parentId, true);
 

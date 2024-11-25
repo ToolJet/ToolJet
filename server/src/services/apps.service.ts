@@ -27,8 +27,8 @@ import { Component } from 'src/entities/component.entity';
 import { EventHandler, Target } from 'src/entities/event_handler.entity';
 import { VersionReleaseDto } from '@dto/version-release.dto';
 
-import { findAllEntityReferences, isValidUUID, updateEntityReferences } from 'src/helpers/import_export.helpers';
-import { isEmpty } from 'lodash';
+import { updateEntityReferences } from 'src/helpers/import_export.helpers';
+import { isEmpty, set } from 'lodash';
 import { AppBase } from 'src/entities/app_base.entity';
 import { LayoutDimensionUnits } from 'src/helpers/components.helper';
 import { AbilityService } from './permissions-ability.service';
@@ -435,13 +435,7 @@ export class AppsService {
         .getMany();
 
       const toUpdateComponents = components.filter((component) => {
-        const entityReferencesInComponentDefinitions = findAllEntityReferences(component, []).filter(
-          (entity) => entity && isValidUUID(entity)
-        );
-
-        if (entityReferencesInComponentDefinitions.length > 0) {
-          return updateEntityReferences(component, mappings);
-        }
+        return updateEntityReferences(component, mappings);
       });
 
       if (!isEmpty(toUpdateComponents)) {
@@ -457,13 +451,7 @@ export class AppsService {
         .getMany();
 
       const toUpdateDataQueries = dataQueries.filter((dataQuery) => {
-        const entityReferencesInQueryOptions = findAllEntityReferences(dataQuery, []).filter(
-          (entity) => entity && isValidUUID(entity)
-        );
-
-        if (entityReferencesInQueryOptions.length > 0) {
-          return updateEntityReferences(dataQuery, mappings);
-        }
+        return updateEntityReferences(dataQuery, mappings);
       });
 
       if (!isEmpty(toUpdateDataQueries)) {
@@ -660,9 +648,14 @@ export class AppsService {
           await manager.save(newEvent);
         });
       });
-
       newComponents.forEach((component) => {
         let parentId = component.parent ? component.parent : null;
+        // re establish mapping relationship
+        if (component?.properties?.buttonToSubmit) {
+          const newButtonToSubmitValue =
+            oldComponentToNewComponentMapping[component?.properties?.buttonToSubmit?.value];
+          if (newButtonToSubmitValue) set(component, 'properties.buttonToSubmit.value', newButtonToSubmitValue);
+        }
 
         if (!parentId) return;
 

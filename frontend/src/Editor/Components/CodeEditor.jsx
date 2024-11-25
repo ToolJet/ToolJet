@@ -1,5 +1,5 @@
 /* eslint-disable import/no-unresolved */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
@@ -50,6 +50,16 @@ export const CodeEditor = ({ id, height, darkMode, properties, styles, setExpose
   const editorHeight = React.useMemo(() => {
     return height || 'auto';
   }, [height]);
+
+  useEffect(() => {
+    const _setValue = (value) => {
+      if (typeof value === 'string') {
+        codeChanged(value);
+      }
+    };
+    setExposedVariable('setValue', _setValue);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div data-disabled={disabledState} style={editorStyles} data-cy={dataCy}>

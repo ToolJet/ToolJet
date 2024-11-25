@@ -7864,7 +7864,7 @@ tbody {
 
 .marketplace-page-sidebar {
   height: calc(100vh - 64px);
-  max-width: 288px;
+  max-width: 272px;
   background-color: var(--page-default);
   border-right: 1px solid var(--slate5) !important;
   display: grid !important;
@@ -12830,6 +12830,11 @@ color: var(--text-default);
     padding: 16px;
     padding-top: 0px;
     padding-bottom: 0px;
+
+    .p-3-constants{
+      padding: 1rem !important;
+      padding-left: 0px !important;
+    }
   }
 
   .card-footer {
@@ -15569,9 +15574,10 @@ color: var(--text-default);
   background-color: var(--page-default);
   height: calc(100vh - 64px);
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding-top: 1.5rem;
+  //Uncomment for EE
+  // align-items: center;
+  // justify-content: center;
+  // padding-top: 1.5rem;
 }
 
 .blank-page-wrapper {

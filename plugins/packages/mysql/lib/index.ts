@@ -10,12 +10,16 @@ import {
 import { SourceOptions, QueryOptions } from './types';
 import { isEmpty } from '@tooljet-plugins/common';
 
-const STATEMENT_TIMEOUT = 10000;
-
 export default class MysqlQueryService implements QueryService {
   private static _instance: MysqlQueryService;
+  private STATEMENT_TIMEOUT;
 
   constructor() {
+    this.STATEMENT_TIMEOUT =
+      process.env?.PLUGINS_SQL_DB_STATEMENT_TIMEOUT && !isNaN(Number(process.env?.PLUGINS_SQL_DB_STATEMENT_TIMEOUT))
+        ? Number(process.env.PLUGINS_SQL_DB_STATEMENT_TIMEOUT)
+        : 120000;
+
     if (MysqlQueryService._instance) {
       return MysqlQueryService._instance;
     }
@@ -51,7 +55,7 @@ export default class MysqlQueryService implements QueryService {
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const knexInstance = await this.getConnection(sourceOptions, {}, false);
-    await knexInstance.raw('select @@version;').timeout(STATEMENT_TIMEOUT);
+    await knexInstance.raw('select @@version;').timeout(this.STATEMENT_TIMEOUT);
     knexInstance.destroy();
     return { status: 'ok' };
   }
@@ -77,7 +81,7 @@ export default class MysqlQueryService implements QueryService {
   private async executeQuery(knexInstance: Knex, query: string, sanitizedQueryParams: Record<string, any> = {}) {
     if (isEmpty(query)) throw new Error('Query is empty');
 
-    const result = await knexInstance.raw(query, sanitizedQueryParams).timeout(STATEMENT_TIMEOUT);
+    const result = await knexInstance.raw(query, sanitizedQueryParams).timeout(this.STATEMENT_TIMEOUT);
     return result;
   }
 

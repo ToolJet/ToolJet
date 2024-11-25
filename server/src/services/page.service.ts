@@ -11,9 +11,10 @@ import { EventsService } from './events_handler.service';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { EventHandler } from 'src/entities/event_handler.entity';
-import { findAllEntityReferences, isValidUUID, updateEntityReferences } from 'src/helpers/import_export.helpers';
+import { updateEntityReferences } from 'src/helpers/import_export.helpers';
 import { isEmpty } from 'class-validator';
 import { PageHelperService } from '@apps/services/pages/service.helper';
+import * as _ from 'lodash';
 
 @Injectable()
 export class PageService {
@@ -101,19 +102,25 @@ export class PageService {
       const componentsIdMap = {};
 
       // Clone components
+      // array to store maapings and update them later with path
+      const mappingsToUpdate = [];
       const clonedComponents = await Promise.all(
         pageComponents.map(async (component) => {
           const clonedComponent = { ...component, id: undefined, pageId: clonePageId };
           const newComponent = await manager.save(manager.create(Component, clonedComponent));
-
           componentsIdMap[component.id] = newComponent.id;
           const componentLayouts = await manager.find(Layout, { where: { componentId: component.id } });
+          if (component?.properties?.buttonToSubmit?.value) {
+            mappingsToUpdate.push({
+              component: newComponent,
+              pathToUpdate: 'properties.buttonToSubmit.value',
+            });
+          }
           const clonedLayouts = componentLayouts.map((layout) => ({
             ...layout,
             id: undefined,
             componentId: newComponent.id,
           }));
-
           // Clone component events
           const clonedComponentEvents = await this.eventHandlerService.findAllEventsWithSourceId(component.id);
           const clonedEvents = clonedComponentEvents.map((event) => {
@@ -150,7 +157,18 @@ export class PageService {
           return newComponent;
         })
       );
-
+      // re estabilish mappings
+      await Promise.all(
+        mappingsToUpdate.map((itemToUpdate) => {
+          const { component, pathToUpdate: path } = itemToUpdate;
+          const oldId = _.get(component, path);
+          const newId = componentsIdMap[oldId];
+          if (newId) {
+            _.set(component, path, newId);
+          }
+          manager.save(component);
+        })
+      );
       // Clone events
       await Promise.all(
         pageEvents.map(async (event) => {
@@ -225,13 +243,7 @@ export class PageService {
       }
 
       const toUpdateComponents = clonedComponents.filter((component) => {
-        const entityReferencesInComponentDefinitions = findAllEntityReferences(component, []).filter(
-          (entity) => entity && isValidUUID(entity)
-        );
-
-        if (entityReferencesInComponentDefinitions.length > 0) {
-          return updateEntityReferences(component, componentsIdMap);
-        }
+        return updateEntityReferences(component, componentsIdMap);
       });
 
       if (!isEmpty(toUpdateComponents)) {
