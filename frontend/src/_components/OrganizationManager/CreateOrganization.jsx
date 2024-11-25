@@ -93,19 +93,20 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
       }
     }
 
-    const disabled = !error?.status;
     const updatedValue = {
       value,
       error: error?.errorMsg,
     };
+    const trimmedValue = updatedValue?.value?.trim();
+    const disabled = !error?.status || !trimmedValue?.length;
 
     if (field === 'slug') {
       setSlug(updatedValue);
       setSlugDisabled(disabled);
       setSlugProgress(false);
     }
-    if (field === 'name') {
-      setName(updatedValue);
+    if (field === 'name') { 
+      setName(trimmedValue);
       setNameDisabled(disabled);
       setWorkspaceNameProgress(false);
     }
