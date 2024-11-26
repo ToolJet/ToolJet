@@ -1,5 +1,5 @@
 ---
-id: marketplace-plugin-prestodb
+id: marketplace-plugin-Presto
 title: PrestoDB
 ---
 
