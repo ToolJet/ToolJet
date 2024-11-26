@@ -40,8 +40,8 @@ export const RadioButtonV2 = ({
   const [isDisabled, setIsDisabled] = useState(disabledState);
 
   const isMandatory = validation?.mandatory ?? false;
-  const validationData = validate(checkedValue);
-  const { isValid, validationError } = validationData;
+  const [validationStatus, setValidationStatus] = useState(validate(checkedValue));
+  const { isValid, validationError } = validationStatus;
 
   const labelRef = useRef();
   const radioBtnRef = useRef();
@@ -74,14 +74,17 @@ export const RadioButtonV2 = ({
   function onSelect(value) {
     const _value = isObject(value) && has(value, 'value') ? value?.value : value;
     setCheckedValue(_value);
-    fireEvent('onSelectionChange');
+    setExposedVariable('value', _value);
+    const validationStatus = validate(_value);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
   }
 
   useEffect(() => {
     if (isInitialRender.current) return;
     if (advanced) {
-      setCheckedValue(findDefaultItem(schema));
-    } else setCheckedValue(value);
+      onSelect(findDefaultItem(schema));
+    } else onSelect(value);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [advanced, JSON.stringify(schema), value]);
 
@@ -95,14 +98,13 @@ export const RadioButtonV2 = ({
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    setExposedVariable('value', checkedValue);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [checkedValue]);
-
-  useEffect(() => {
-    if (isInitialRender.current) return;
     const _options = selectOptions?.map(({ label, value }) => ({ label, value }));
     setExposedVariable('options', _options);
+
+    setExposedVariable('selectOption', async function (value) {
+      onSelect(value);
+      fireEvent('onSelectionChange');
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(selectOptions)]);
 
@@ -114,9 +116,11 @@ export const RadioButtonV2 = ({
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    setExposedVariable('isValid', isValid);
+    const validationStatus = validate(checkedValue);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isValid]);
+  }, [validate]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
@@ -155,9 +159,10 @@ export const RadioButtonV2 = ({
       isDisabled: disabledState,
       selectOption: async function (value) {
         onSelect(value);
+        fireEvent('onSelectionChange');
       },
       deselectOption: async function () {
-        setCheckedValue(null);
+        onSelect(null);
         fireEvent('onSelectionChange');
       },
       setVisibility: async function (value) {
@@ -246,7 +251,10 @@ export const RadioButtonV2 = ({
                       checked={checkedValue == option.value}
                       type="radio"
                       value={option.value}
-                      onChange={() => onSelect(option.value)}
+                      onChange={() => {
+                        onSelect(option.value);
+                        fireEvent('onSelectionChange');
+                      }}
                       disabled={option.isDisabled}
                     />
                     <span
