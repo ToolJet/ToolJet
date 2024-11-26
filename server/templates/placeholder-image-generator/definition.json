@@ -5,7 +5,7 @@
         "appV2": {
           "type": "front-end",
           "id": "975ec429-db94-477f-ab7a-cc93ac7ca608",
-          "name": "ImageGeneratorTool",
+          "name": "Placeholder Image Generator",
           "slug": "975ec429-db94-477f-ab7a-cc93ac7ca608",
           "isPublic": false,
           "isMaintenanceOn": false,
@@ -17,7 +17,7 @@
           "workflowEnabled": false,
           "createdAt": "2024-11-20T11:10:39.040Z",
           "creationMode": "DEFAULT",
-          "updatedAt": "2024-11-23T12:24:25.079Z",
+          "updatedAt": "2024-11-26T20:37:51.676Z",
           "editingVersion": {
             "id": "4f3f50b8-e904-471c-9ab2-6b619581f33c",
             "name": "v1",
@@ -2228,25 +2228,25 @@
               "id": "02350e5d-3003-446b-8ab2-996e23443ce0",
               "name": "downloadImage",
               "options": {
-                "code": "async function downloadImage(imageUrl) {\n    try {\n        // Extract the file extension from the URL\n        const format = imageUrl.split('.').pop().toLowerCase();\n\n        // Fetch the image as a blob\n        const response = await fetch(imageUrl);\n        if (!response.ok) {\n            throw new Error(`Failed to fetch image: ${response.statusText}`);\n        }\n        const blob = await response.blob();\n\n        // Create an Image object to load the blob\n        const img = new Image();\n        const blobUrl = URL.createObjectURL(blob);\n\n        img.onload = function () {\n            // Create a canvas and draw the image\n            const canvas = document.createElement(\"canvas\");\n            canvas.width = img.naturalWidth;\n            canvas.height = img.naturalHeight;\n            const ctx = canvas.getContext(\"2d\");\n            ctx.drawImage(img, 0, 0);\n\n            // Convert to the desired format\n            const dataUrl = canvas.toDataURL(`image/${format}`);\n\n            // Trigger download\n            const link = document.createElement(\"a\");\n            link.href = dataUrl;\n            link.download = `downloaded_image.${format}`;\n            link.click();\n\n            // Clean up\n            URL.revokeObjectURL(blobUrl);\n        };\n\n        img.src = blobUrl;\n    } catch (error) {\n        console.error(\"Error:\", error);\n    }\n}\n\ndownloadImage(queries.runjs.data);\n",
+                "code": "async function downloadImage(imageUrl) {\n    try {\n        // Extract the file extension correctly, ignoring query parameters\n        const urlWithoutQuery = imageUrl.split('?')[0]; // Remove query parameters\n        const format = urlWithoutQuery.split('.').pop().toLowerCase();\n\n        // Fetch the image as a blob\n        const response = await fetch(imageUrl);\n        if (!response.ok) {\n            throw new Error(`Failed to fetch image: ${response.statusText}`);\n        }\n        const blob = await response.blob();\n\n        if (format === \"svg\") {\n            // Directly download the SVG as a file\n            const link = document.createElement(\"a\");\n            link.href = URL.createObjectURL(blob);\n            link.download = `downloaded_image.${format}`;\n            link.click();\n\n            // Clean up\n            URL.revokeObjectURL(link.href);\n        } else {\n            // Create an Image object to load the blob for other formats\n            const img = new Image();\n            const blobUrl = URL.createObjectURL(blob);\n\n            img.onload = function () {\n                // Create a canvas and draw the image\n                const canvas = document.createElement(\"canvas\");\n                canvas.width = img.naturalWidth;\n                canvas.height = img.naturalHeight;\n                const ctx = canvas.getContext(\"2d\");\n                ctx.drawImage(img, 0, 0);\n\n                // Convert to the desired format\n                const mimeType = format === \"jpg\" ? \"image/jpeg\" : `image/${format}`;\n                const dataUrl = canvas.toDataURL(mimeType);\n\n                // Trigger download\n                const link = document.createElement(\"a\");\n                link.href = dataUrl;\n                link.download = `downloaded_image.${format}`;\n                link.click();\n\n                // Clean up\n                URL.revokeObjectURL(blobUrl);\n            };\n\n            img.src = blobUrl;\n        }\n    } catch (error) {\n        console.error(\"Error:\", error);\n    }\n}\n\ndownloadImage(queries.runjs.data)",
                 "parameters": []
               },
               "dataSourceId": "f7b67acb-9c91-4926-b9c5-23281c149ab1",
               "appVersionId": "4f3f50b8-e904-471c-9ab2-6b619581f33c",
               "createdAt": "2024-11-23T10:55:47.541Z",
-              "updatedAt": "2024-11-23T11:49:02.041Z"
+              "updatedAt": "2024-11-26T21:18:08.784Z"
             },
             {
               "id": "f9cc8906-a1c2-446a-9653-34ddf09cab8f",
               "name": "copyImageToClipboard",
               "options": {
-                "code": "async function copyImageToClipboard(imageUrl) {\n    try {\n        // Convert the image URL to .png format\n        const pngUrl = imageUrl.replace(/\\.\\w+$/, \".png\");\n\n        // Fetch the image as a blob\n        const response = await fetch(pngUrl);\n        if (!response.ok) {\n            throw new Error(`Failed to fetch image: ${response.statusText}`);\n        }\n\n        const blob = await response.blob();\n\n        // Copy the image blob to the clipboard\n        await navigator.clipboard.write([\n            new ClipboardItem({\n                [blob.type]: blob,\n            }),\n        ]);\n    } catch (error) {\n        alert(\"Something went wrong: \" + error.message);\n    }\n}\n\ncopyImageToClipboard(queries.runjs.data);\n",
+                "code": "async function copyImageToClipboard(imageUrl) {\n    try {\n        // Ensure the page is focused\n        if (!document.hasFocus()) {\n            throw new Error(\"Document is not focused. Please interact with the page before copying.\");\n        }\n\n        const pngUrl = imageUrl.replace(/\\.(svg|jpeg|jpg|gif|png)(?=\\?|$)/i, \".png\");\n\n        // Fetch the image as a blob\n        const response = await fetch(pngUrl);\n        if (!response.ok) {\n            throw new Error(`Failed to fetch image: ${response.statusText}`);\n        }\n\n        const blob = await response.blob();\n\n        // Copy the image blob to the clipboard\n        await navigator.clipboard.write([\n            new ClipboardItem({\n                [blob.type]: blob,\n            }),\n        ]);\n    } catch (error) {\n        alert(\"Something went wrong: \" + error.message);\n    }\n}\n\ncopyImageToClipboard(queries.runjs.data);\n",
                 "parameters": []
               },
               "dataSourceId": "f7b67acb-9c91-4926-b9c5-23281c149ab1",
               "appVersionId": "4f3f50b8-e904-471c-9ab2-6b619581f33c",
               "createdAt": "2024-11-23T11:44:34.486Z",
-              "updatedAt": "2024-11-26T08:36:22.085Z"
+              "updatedAt": "2024-11-26T21:11:30.503Z"
             }
           ],
           "dataSources": [
