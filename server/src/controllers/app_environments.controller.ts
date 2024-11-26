@@ -8,12 +8,14 @@ import { GlobalDataSourceAbilityFactory } from 'src/modules/casl/abilities/globa
 import { DataSource } from 'src/entities/data_source.entity';
 import { OrgEnvironmentVariablesAbilityFactory } from 'src/modules/casl/abilities/org-environment-variables-ability.factory';
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
+import { AbilityService } from '@services/permissions-ability.service';
 import { AppEnvironmentActionParametersDto } from '@dto/environment_action_parameters.dto';
 
 @Controller('app-environments')
 export class AppEnvironmentsController {
   constructor(
     private appEnvironmentServices: AppEnvironmentService,
+    private service: AbilityService,
     private globalDataSourcesAbilityFactory: GlobalDataSourceAbilityFactory,
     private orgEnvironmentVariablesAbilityFactory: OrgEnvironmentVariablesAbilityFactory
   ) {}

@@ -3,7 +3,15 @@ import { useDropzone } from 'react-dropzone';
 import BulkIcon from '@/_ui/Icon/BulkIcons';
 import { toast } from 'react-hot-toast';
 
-export function FileDropzone({ handleClick, hiddenFileInput, errors, handleFileChange, inviteBulkUsers, onDrop }) {
+export function FileDropzone({
+  handleClick,
+  hiddenFileInput,
+  errors,
+  handleFileChange,
+  inviteBulkUsers,
+  onDrop,
+  setFileUpload,
+}) {
   const [fileData, setFileData] = useState();
   const { getRootProps, getInputProps, isDragActive, acceptedFiles } = useDropzone({
     accept: { parsedFileType: ['text/csv'] },
@@ -53,11 +61,15 @@ export function FileDropzone({ handleClick, hiddenFileInput, errors, handleFileC
             onChange={(e) => {
               const file = e.target.files[0];
               setFileData(file);
+              if (file === undefined) {
+                setFileUpload(false);
+              }
               if (Math.round(file.size / 1024) > 1024) {
                 toast.error('File size cannot exceed more than 1MB');
                 e.target.value = null;
               } else {
                 handleFileChange(file);
+                setFileUpload(true);
               }
             }}
             accept=".csv"

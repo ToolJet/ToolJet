@@ -8,6 +8,7 @@ import {
   confirmInviteElements,
   selectUserGroup,
   inviteUserWithUserGroups,
+  inviteUserWithUserRole,
   fetchAndVisitInviteLink,
 } from "Support/utils/manageUsers";
 import {
@@ -23,7 +24,6 @@ import { addNewUser, visitWorkspaceInvitation } from "Support/utils/onboarding";
 import { commonText } from "Texts/common";
 
 const data = {};
-data.groupName = fake.firstName.replaceAll("[^A-Za-z]", "");
 
 describe("Manage Users", () => {
   beforeEach(() => {
@@ -45,31 +45,17 @@ describe("Manage Users", () => {
     cy.get(usersSelector.usersPageTitle).should("be.visible");
     cy.get(usersSelector.buttonAddUsers).click();
 
-    cy.get(usersSelector.buttonInviteUsers).click();
-    cy.get(usersSelector.fullNameError).verifyVisibleElement(
-      "have.text",
-      usersText.errorTextFieldRequired
-    );
-    cy.get(usersSelector.emailError).verifyVisibleElement(
-      "have.text",
-      usersText.errorTextFieldRequired
-    );
+    cy.get(usersSelector.buttonInviteUsers).should('be.disabled');
+
 
     cy.clearAndType(commonSelectors.inputFieldFullName, data.firstName);
+    cy.clearAndType(commonSelectors.inputFieldEmailAddress, data.email);
     cy.get(commonSelectors.inputFieldEmailAddress).clear();
-    cy.get(usersSelector.buttonInviteUsers).click();
     cy.get(usersSelector.emailError).verifyVisibleElement(
       "have.text",
-      usersText.errorTextFieldRequired
+      "Email is not valid"
     );
-
-    cy.get(commonSelectors.inputFieldFullName).clear();
-    cy.clearAndType(commonSelectors.inputFieldEmailAddress, data.email);
-    cy.get(usersSelector.buttonInviteUsers).click();
-    cy.get(usersSelector.fullNameError).verifyVisibleElement(
-      "have.text",
-      usersText.errorTextFieldRequired
-    );
+    cy.get(usersSelector.buttonInviteUsers).should('be.disabled');
 
     cy.clearAndType(commonSelectors.inputFieldFullName, data.firstName);
     cy.clearAndType(
@@ -78,16 +64,18 @@ describe("Manage Users", () => {
     );
     cy.get(usersSelector.buttonInviteUsers).click();
 
-    cy.get(commonSelectors.newToastMessage).should(
-      "have.text",
-      usersText.exsitingEmail
-    );
+    cy.get('[data-cy="modal-icon"]').should('be.visible')
+    cy.get('[data-cy="modal-header"]').verifyVisibleElement("have.text", "Duplicate email");
+    cy.get(commonSelectors.modalMessage).verifyVisibleElement("have.text", "Duplicate email found. Please provide a unique email address.")
+    cy.get('[data-cy="close-button"]:eq(1)').should('be.visible').click();
+    cy.get(commonSelectors.inputFieldEmailAddress).should("have.value", usersText.adminUserEmail)
+
   });
 
   it("Should verify the confirm invite page and new user account", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
-    cy.removeAssignedApps();
+    // cy.removeAssignedApps();
 
     navigateToManageUsers();
     fillUserInviteForm(data.firstName, data.email);
@@ -208,6 +196,10 @@ describe("Manage Users", () => {
   it("Should verify the user onboarding with groups", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
+    data.groupName1 = fake.firstName.replaceAll("[^A-Za-z]", "");
+    data.groupName2 = fake.firstName.replaceAll("[^A-Za-z]", "");
+
+
     const groupNames = ["All users", "Admin"];
 
     navigateToManageUsers();
@@ -233,13 +225,10 @@ describe("Manage Users", () => {
     cy.get(commonSelectors.cancelButton).click();
 
     cy.get(usersSelector.buttonAddUsers).click();
-    cy.get(".css-1jqq78o-placeholder").should(
-      "have.text",
-      "Select groups to add for this user"
-    );
+    cy.get('.selected-value').should('have.text', "End-user")
     cy.get(commonSelectors.cancelButton).click();
 
-    inviteUserWithUserGroups(data.firstName, data.email, "All users", "Admin");
+    inviteUserWithUserRole(data.firstName, data.email, "Admin");
 
     navigateToManageGroups();
     cy.get(groupsSelector.groupLink("Admin")).click();
@@ -250,25 +239,31 @@ describe("Manage Users", () => {
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
 
     cy.get(groupsSelector.createNewGroupButton).click();
-    cy.clearAndType(groupsSelector.groupNameInput, data.groupName);
+    cy.clearAndType(groupsSelector.groupNameInput, data.groupName1);
     cy.get(groupsSelector.createGroupButton).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       groupsText.groupCreatedToast
     );
+    cy.get(groupsSelector.createNewGroupButton).click();
+    cy.clearAndType(groupsSelector.groupNameInput, data.groupName2);
+    cy.get(groupsSelector.createGroupButton).click();
 
     navigateToManageUsers();
     inviteUserWithUserGroups(
       data.firstName,
       data.email,
-      "All users",
-      data.groupName
+      data.groupName1,
+      data.groupName2
     );
     logout();
 
     cy.defaultWorkspaceLogin();
     navigateToManageGroups();
-    cy.get(groupsSelector.groupLink(data.groupName)).click();
+    cy.get(groupsSelector.groupLink(data.groupName1)).click();
+    cy.get(groupsSelector.usersLink).click();
+    cy.get(groupsSelector.userRow(data.email)).should("be.visible");
+    cy.get(groupsSelector.groupLink(data.groupName2)).click();
     cy.get(groupsSelector.usersLink).click();
     cy.get(groupsSelector.userRow(data.email)).should("be.visible");
   });
@@ -341,13 +336,55 @@ describe("Manage Users", () => {
     cy.get('[data-cy="group-check-input"]').eq(0).check();
 
     cy.get(usersSelector.buttonInviteUsers).click();
+
+    cy.get('[data-cy="modal-title"] > .tj-text-md').verifyVisibleElement("have.text", "Edit user role")
+    cy.get('[data-cy="user-email"]').verifyVisibleElement("have.text", data.email);
+    cy.get('[data-cy="modal-body"]>').verifyVisibleElement("have.text", "Are you sure you want to continue?");
+    cy.get('.modal-footer > [data-cy="cancel-button"]').verifyVisibleElement("have.text", "Cancel");
+    cy.get('[data-cy="confim-button"]').verifyVisibleElement("have.text", "Continue");
+    cy.get('[data-cy="modal-close-button"]').should('be.visible').click();
+
+    cy.get(usersSelector.userActionButton).click();
+    cy.get(usersSelector.editUserDetailsButton).click();
+    cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type("Admin");
+    cy.wait(1000);
+    cy.get('[data-cy="group-check-input"]').eq(0).check();
+
+    cy.get(commonSelectors.cancelButton).click();
+
+    cy.get(usersSelector.userActionButton).click();
+    cy.get(usersSelector.editUserDetailsButton).click();
+    cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type("Admin");
+    cy.wait(1000);
+    cy.get('[data-cy="group-check-input"]').eq(0).check();
+
+    cy.get(usersSelector.buttonInviteUsers).click();
+    cy.get('.modal-footer > [data-cy="cancel-button"]').click()
+
+    cy.get(usersSelector.userActionButton).click();
+    cy.get(usersSelector.editUserDetailsButton).click();
+    cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type("Admin");
+    cy.wait(1000);
+    cy.get('[data-cy="group-check-input"]').eq(0).check();
+
+    cy.get(commonSelectors.cancelButton).click();
+
+    cy.get(usersSelector.userActionButton).click();
+    cy.get(usersSelector.editUserDetailsButton).click();
+    cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type("Admin");
+    cy.wait(1000);
+    cy.get('[data-cy="group-check-input"]').eq(0).check();
+
+    cy.get(usersSelector.buttonInviteUsers).click();
+    cy.get('[data-cy="confim-button"]').click()
+
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       "User has been updated"
     );
 
     searchUser(data.email);
-    cy.get(usersSelector.groupChip).eq(1).should("have.text", "Admin");
+    cy.get('[data-name="role-header"] [data-cy="group-chip"]').should("have.text", "Admin");
   });
 
   it("Should verify exisiting user invite flow", () => {

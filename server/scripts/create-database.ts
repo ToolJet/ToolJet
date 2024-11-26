@@ -37,9 +37,7 @@ async function createDatabase(): Promise<void> {
     await createDb(envVars, dbNameFromArg);
   } else {
     await createDb(envVars, envVars.PG_DB);
-    if (process.env.ENABLE_TOOLJET_DB === 'true') {
-      await createTooljetDb(envVars, envVars.TOOLJET_DB);
-    }
+    await createTooljetDb(envVars, envVars.TOOLJET_DB);
   }
 }
 
@@ -81,6 +79,9 @@ async function createTooljetDb(envVars, dbName): Promise<void> {
   if (isEmpty(dbName)) {
     throw new Error('Database name cannot be empty');
   }
+
+  if (envVars.PG_DB === dbName)
+    throw new Error(`The name of the App database and the ToolJet database must not be identical.`);
 
   try {
     executeCreateDb(

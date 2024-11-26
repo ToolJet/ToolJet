@@ -3,6 +3,7 @@
         "readDocumentation": "Leer la documentación",
         "cancel": "Cancelar",
         "save": "Guardar",
+        "savechanges": "Guardar cambios",
         "back": "Atrás",
         "edit": "Editar",
         "search": "Buscar",
@@ -16,7 +17,7 @@
         "yes": "Si",
         "submit": "Enviar",
         "select": "Seleccionar",
-        "environmentVar": "Variables de entorno",
+        "environmentVar": "Variables/Constantes de entorno",
         "saving": "Guardando...",
         "saveDatasource": "Guardar fuente de datos",
         "authorize": "Autorizar",
@@ -35,14 +36,17 @@
         "header": "HEADER",
         "path": "PATH",
         "query": "QUERY",
-        "requestBody": "REQUEST BODY"
+        "requestBody": "REQUEST BODY",
+        "page": "Página",
+        "searchItem": "Busca apps en este espacio de trabajo",
+        "searchComponents": "Buscar componentes"
     },
     "errorBoundary": "Algo salió mal. Por favor, inténtelo de nuevo.",
     "viewer": "¡Lo sentimos!. Esta aplicación está bajo mantenimiento.",
     "app": {
         "updateAvailable": "Actualización disponible",
-        "newVersionReleased": "Una nueva versión de Tooljet ha sido desplegada.",
-        "readReleaseNotes": "Leer las notas del lanzamiento & actualizar.",
+        "newVersionReleased": "Una nueva versión de Tooljet ha sido lanzada.",
+        "readReleaseNotes": "Leer las notas del lanzamiento y actualizar.",
         "skipVersion": "Saltar esta versión."
     },
     "stripe": "Por favor espere mientras cargamos la especificación de OpenAPI para Stripe",
@@ -67,27 +71,48 @@
         "toGoogleSheets": "a Google Sheets"
     },
     "profile": {
-        "profileSettings": "Preferencias de perfil"
+        "profileSettings": "Configuración de Perfil"
+    },
+    "verificationSuccessPage": {
+        "workEmail": "Correo electrónico",
+        "enterFullName": "Ingresa tu nombre completo",
+        "enterNewPassword": "Ingresa tu nueva contraseña",
+        "name": "Nombre",
+        "password": "Contraseña",
+        "acceptInvite": "Aceptar invitación",
+        "successfullyVerifiedEmail": "Correo verificado con éxito",
+        "setupTooljet": "Configurar ToolJet"
     },
     "loginSignupPage": {
         "forgotPassword": "Olvidaste la contraseña",
         "emailAddress": "Dirección de correo electrónico",
         "enterEmail": "Ingrese correo electrónico",
-        "resetPassword": "Restaurar contraseña",
-        "dontHaveAccount": "¿Aún no tienes una cuenta?",
-        "signIn": "Acceder",
-        "signUp": "Registrarte",
-        "createToolJetAccount": "Crear una cuenta de ToolJet",
-        "enterBusinessEmail": "Ingrese el correo electrónico de su empresa",
-        "alreadyHaveAnAccount": "¿Ya tiene una cuenta?",
+        "dontHaveAccount": "¿Aun no tienes una cuenta?",
+        "enterBusinessEmail": "Ingresa tu correo electrónico empresarial",
+        "alreadyHaveAnAccount": "¿Ya tienes una cuenta?",
+        "resetPassword": "Reiniciar contraseña",
+        "signIn": "Iniciar sesión",
+        "signUp": "Registrarse",
+        "createToolJetAccount": "Crea una cuenta",
         "password": "Contraseña",
         "showPassword": "Mostrar contraseña",
-        "loginTo": "Acceder a",
-        "yourAccount": "Su cuenta",
-        "noLoginMethodsEnabled": "No hay métodos de inicio de sesión habilitados para este espacio de trabajo",
-        "emailConfirmLink": "Compruebe su correo electrónico para ver el enlace de confirmación por favor",
-        "newPassword": "Nueva Contraseña",
-        "passwordConfirmation": "Confirmación de contraseña"
+        "loginTo": "Iniciar sesión",
+        "yourAccount": "tu cuenta",
+        "noLoginMethodsEnabled": "No hay metodos de inicio de sesión activados para este espacio de trabajo",
+        "emailConfirmLink": "Por favor revisa tu correo para el link de confirmación",
+        "newPassword": "Nueva contraseña",
+        "passwordConfirmation": "Confirmar contraseña",
+        "newToTooljet": "¿Nuevo en ToolJet?",
+        "newToWorkspace": "¿Nuevo en este espacio de trabajo?",
+        "enterWorkEmail": "Ingresa tu correo electrónico",
+        "enterPassword": "Ingresa tu contraseña",
+        "forgot": "¿Lo olvidaste?",
+        "workEmail": "Correo electrónico",
+        "joinTooljet": "Unete a ToolJet",
+        "getStartedForFree": "Empieza gratis",
+        "passwordCharacter": "La contraseña debe contener al menos 5 carácteres",
+        "enterFullName": "Ingresa tu nombre completo",
+        "enterNewPassword": "Ingresa tu nueva contraseña"
     },
     "editor": {
         "preview": "Prevista",
@@ -205,6 +230,7 @@
             "view": "Ver"
         },
         "organization": {
+            "addNewWorkSpace": "Añadir nuevo espacio de trabajo",
             "loadOrganizations": "Cargar organizaciones",
             "createWorkspace": "Crear espacio de trabajo",
             "workspaceName": "Nombre del espacio de trabajo",
@@ -220,17 +246,20 @@
                 "manageUsers": {
                     "usersAndPermission": "Usuarios y Permisos",
                     "inviteNewUser": "Invitar un nuevo usuario",
+                    "inviteUsers": "Invitar usuarios",
                     "name": "NOMBRE",
                     "email": "CORREO ELECTRÓNICO",
-                    "status": "ESTADO",
-                    "archive": "Archivar",
-                    "unarchive": "Desarchivar",
-                    "addNewUser": "Añadir un nuevo usuario",
+                    "status": "ESTATUS",
+                    "archive": "ARCHIVAR",
+                    "unarchive": "DESARCHIVAR",
+                    "addNewUser": "Añadir usuarios",
                     "emailAddress": "Dirección de correo electrónico",
-                    "createUser": "Crear usuario",
-                    "enterFirstName": "Ingrese su Nombre",
-                    "enterLastName": "Ingrese su Apellido",
-                    "enterEmail": "Ingrese correo electrónico"
+                    "createUser": "Crear Usuario",
+                    "enterFirstName": "Ingesar el nombre",
+                    "enterLastName": "Ingresar el apellido",
+                    "enterEmail": "Ingresar el id del correo electrónico",
+                    "enterFullName": "Ingresar nombre completo",
+                    "inviteNewUsers": "Invitar nuevos usuarios"
                 },
                 "manageGroups": {
                     "permissions": {
@@ -254,6 +283,10 @@
                         "resource": "Recurso",
                         "createUpdateDelete": "Crear/Actualizar/Eliminar",
                         "folder": "Carpeta"
+                    },
+                    "groupOptions":{
+                        "deleteGroup":"Borrar Grupo",
+                        "duplicateGroup":"Duplicar Grupo"
                     }
                 },
                 "manageSSO": {
@@ -331,7 +364,8 @@
             "newPassword": "Nueva contraseña",
             "confirmNewPassword": "Confirmar nueva contraseña",
             "enterCurrentPassword": "Introduzca contraseña actual",
-            "enterNewPassword": "Ingrese nueva contraseña"
+            "enterNewPassword": "Ingrese nueva contraseña",
+            "inviteUsers": "Invitar usuarios"
         },
         "profile": "Perfil",
         "logout": "Cerrar Sesión"
@@ -377,11 +411,11 @@
         "pagination": {
             "showing": "Mostrando",
             "of": "de",
-            "to": "para"
+            "to": "hasta"
         },
         "noApplicationFound": "No se encontraron aplicaciones",
         "thisFolderIsEmpty": "Esta carpeta está vacía",
-        "deleteAppAndData": "La aplicación y los datos asociados se eliminarán permanentemente, ¿desea continuar?",
+        "deleteAppAndData": "La aplicación {{appName}} y los datos asociados se eliminarán permanentemente, ¿desea continuar?",
         "removeAppFromFolder": "La aplicación se eliminará de esta carpeta, ¿desea continuar?",
         "change": "Cambiar",
         "templateCard": {
@@ -689,7 +723,11 @@
             "remove": "Eliminar",
             "addButton": "+ Agregar botón",
             "addColumn": "+ Agregar columna",
-            "noActionMessage": "Esta tabla no tiene botones de acción"
+            "addNewColumn": "Agregar nueva columna",
+            "noActionMessage": "Esta tabla no tiene botones de acción",
+            "textAlignment":"Alineacion del texto",
+            "deciamalPlaces":"Decimales",
+            "imageFit":"Ajuste de imagen"
         },
         "Button": {
             "displayName": "Botón",
@@ -907,7 +945,9 @@
             "maintenanceMode": "Modo de mantenimiento",
             "maxWidthOfCanvas": "Ancho máximo del lienzo",
             "maxHeightOfCanvas": "Altura máxima del lienzo",
-            "backgroundColorOfCanvas": "Color de fondo del lienzo"
+            "backgroundColorOfCanvas": "Color de fondo del lienzo",
+            "appMode": "Modo de la app",
+            "exportApp": "Exportar aplicación"
         },
         "Back": {
             "text": "Atrás",

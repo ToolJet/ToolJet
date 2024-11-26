@@ -95,7 +95,7 @@ function DrawerFooter({
   const documentationLink = drawerDocumentationsLinks[initiator];
 
   return (
-    <div className="position-sticky bottom-0 right-0 w-100  mt-auto z-2">
+    <div className="position-sticky bottom-0 right-0 w-100  mt-auto ">
       <div
         className={cx(
           { 'd-flex justify-content-end drawer-footer-btn-wrap': !isDrawerWithDocumentation },
@@ -228,7 +228,8 @@ function DrawerFooter({
                   leftIcon="floppydisk"
                   size="md"
                 >
-                  Save changes <SolidIcon name="enterbutton" width={16} fill="#FDFDFE" />
+                  Save changes
+                  <SolidIcon name="enterbutton" width={16} fill="#FDFDFE" />
                 </ButtonSolid>
               )}
               {!isEditMode && (

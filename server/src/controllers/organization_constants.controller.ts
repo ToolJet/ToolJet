@@ -20,6 +20,9 @@ import { OrganizationConstantsAbilityFactory } from 'src/modules/casl/abilities/
 import { AppDecorator as App } from 'src/decorators/app.decorator';
 import { OrgEnvironmentVariablesAbilityFactory } from 'src/modules/casl/abilities/org-environment-variables-ability.factory';
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
+import { OrganizationConstantType } from 'src/entities/organization_constants.entity';
+import { OrganizationConstant } from 'src/entities/organization_constants.entity';
+import { ORGANIZATION_CONSTANT_RESOURCE_ACTIONS } from 'src/constants/global.constant';
 
 @Controller('organization-constants')
 export class OrganizationConstantController {
@@ -31,24 +34,61 @@ export class OrganizationConstantController {
 
   @UseGuards(JwtAuthGuard)
   @Get()
-  async get(@User() user) {
-    const result = await this.organizationConstantsService.allEnvironmentConstants(user.organizationId);
+  async get(@User() user, @Query('type') type: OrganizationConstantType) {
+    const ability = await this.organizationConstantsAbilityFactory.organizationConstantActions(user, null);
+    const decrypt =
+      ability.can(ORGANIZATION_CONSTANT_RESOURCE_ACTIONS.CREATE, OrganizationConstant) ||
+      ability.can(ORGANIZATION_CONSTANT_RESOURCE_ACTIONS.DELETE, OrganizationConstant);
+    const result = await this.organizationConstantsService.allEnvironmentConstants(user.organizationId, decrypt, type);
     return { constants: result };
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('secrets')
+  async getAllSecrets(@User() user) {
+    const result = await this.organizationConstantsService.allEnvironmentConstants(
+      user.organizationId,
+      false,
+      OrganizationConstantType.SECRET
+    );
+    return { constants: result };
+  }
+
+  //by default, this api fetches only global constants (for public apps, need to fetch app to get orgId in the public guard)
   @UseGuards(IsPublicGuard)
+  @Get('public/:app_slug')
+  async getConstantsFromPublicApp(@App() app) {
+    const result = await this.organizationConstantsService.allEnvironmentConstants(
+      app.organizationId,
+      false,
+      OrganizationConstantType.GLOBAL
+    );
+    return { constants: result };
+  }
+
+  //by default, this api fetches only global constants
+  @UseGuards(JwtAuthGuard)
   @Get(':app_slug')
-  async getConstantsFromApp(@App() app, @User() user) {
-    const result = await this.organizationConstantsService.allEnvironmentConstants(app.organizationId);
+  async getConstantsFromApp(@User() user) {
+    const result = await this.organizationConstantsService.allEnvironmentConstants(
+      user.organizationId,
+      false,
+      OrganizationConstantType.GLOBAL
+    );
     return { constants: result };
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('/environment/:environmentId')
-  async getConstantsFromEnvironment(@User() user, @Param('environmentId') environmentId) {
+  async getConstantsFromEnvironment(
+    @User() user,
+    @Param('environmentId') environmentId,
+    @Query('type') type: OrganizationConstantType
+  ) {
     const result = await this.organizationConstantsService.getConstantsForEnvironment(
       user.organizationId,
-      environmentId
+      environmentId,
+      type
     );
     return { constants: result };
   }

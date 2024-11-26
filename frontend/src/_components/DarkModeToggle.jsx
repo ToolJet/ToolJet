@@ -4,6 +4,8 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
 import { useTranslation } from 'react-i18next';
 import classnames from 'classnames';
+import useStore from '@/AppBuilder/_stores/store';
+import { shallow } from 'zustand/shallow';
 
 export const DarkModeToggle = function DarkModeToggle({
   darkMode = false,
@@ -11,8 +13,14 @@ export const DarkModeToggle = function DarkModeToggle({
   tooltipPlacement = 'bottom',
   showText = false,
 }) {
+  const setResolvedGlobals = useStore((state) => state.setResolvedGlobals, shallow);
+  const appMode = useStore((state) => state.globalSettings.appMode, shallow);
+
   const toggleDarkMode = () => {
     switchDarkMode(!darkMode);
+    if (appMode === 'auto') {
+      setResolvedGlobals('theme', { name: !darkMode ? 'dark' : 'light' });
+    }
   };
 
   const { t } = useTranslation();
@@ -102,7 +110,9 @@ export const DarkModeToggle = function DarkModeToggle({
         </animated.svg>
 
         {showText && (
-          <span className="dark-theme-toggle-btn-text">Switch to {!darkMode ? 'dark mode' : 'light mode'}</span>
+          <span className="dark-theme-toggle-btn-text" onClick={toggleDarkMode}>
+            Switch to {!darkMode ? 'dark mode' : 'light mode'}
+          </span>
         )}
       </div>
     </OverlayTrigger>

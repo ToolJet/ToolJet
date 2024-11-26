@@ -1,5 +1,3 @@
-import { resolveReferences } from '@/_helpers/utils';
-import { useCurrentState } from '@/_stores/currentStateStore';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Select, { components } from 'react-select';
 import ClearIndicatorIcon from '@/_ui/Icon/bulkIcons/ClearIndicator';
@@ -16,6 +14,8 @@ import CustomOption from './CustomOption';
 import Label from '@/_ui/Label';
 import cx from 'classnames';
 import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor } from './utils';
+import useStore from '@/AppBuilder/_stores/store';
+import { shallow } from 'zustand/shallow';
 
 const { DropdownIndicator, ClearIndicator } = components;
 const INDICATOR_CONTAINER_WIDTH = 60;
@@ -55,8 +55,8 @@ export const DropdownV2 = ({
   darkMode,
   onComponentClick,
   id,
-  component,
-  exposedVariables,
+  componentName,
+  validation,
   dataCy,
 }) => {
   const {
@@ -67,7 +67,7 @@ export const DropdownV2 = ({
     placeholder,
     loadingState: dropdownLoadingState,
     disabledState,
-    options,
+    optionsLoadingState,
   } = properties;
   const {
     selectedTextColor,
@@ -88,21 +88,23 @@ export const DropdownV2 = ({
     accentColor,
     padding,
   } = styles;
+  const isInitialRender = useRef(true);
   const [currentValue, setCurrentValue] = useState(() => (advanced ? findDefaultItem(schema) : value));
-  const { value: exposedValue } = exposedVariables;
-  const currentState = useCurrentState();
-  const isMandatory = resolveReferences(component?.definition?.validation?.mandatory?.value, currentState);
-  const validationData = validate(currentValue);
-  const { isValid, validationError } = validationData;
+  const isMandatory = validation?.mandatory ?? false;
+  const options = properties?.options;
+  const [validationStatus, setValidationStatus] = useState(validate(currentValue));
+  const { isValid, validationError } = validationStatus;
   const ref = React.useRef(null);
+  const dropdownRef = React.useRef(null);
   const [visibility, setVisibility] = useState(properties.visibility);
   const [isDropdownLoading, setIsDropdownLoading] = useState(dropdownLoadingState);
   const [isDropdownDisabled, setIsDropdownDisabled] = useState(disabledState);
-  const [isFocused, setIsFocused] = useState(false);
   const [searchInputValue, setSearchInputValue] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [userInteracted, setUserInteracted] = useState(false);
+
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
   const labelRef = useRef();
-
   function findDefaultItem(schema) {
     let _schema = schema;
     if (!Array.isArray(schema)) {
@@ -111,16 +113,18 @@ export const DropdownV2 = ({
     const foundItem = _schema?.find((item) => item?.default === true);
     return !hasVisibleFalse(foundItem?.value) ? foundItem?.value : undefined;
   }
-
   const selectOptions = useMemo(() => {
     let _options = advanced ? schema : options;
     if (Array.isArray(_options)) {
       let _selectOptions = _options
-        .filter((data) => data?.visible?.value)
-        .map((value) => ({
-          ...value,
-          isDisabled: value?.disable?.value,
+        .filter((data) => data?.visible ?? true)
+        .map((data) => ({
+          ...data,
+          label: data?.label,
+          value: data?.value,
+          isDisabled: data?.disable ?? false,
         }));
+
       return _selectOptions;
     } else {
       return [];
@@ -130,7 +134,7 @@ export const DropdownV2 = ({
   function selectOption(value) {
     const val = selectOptions.filter((option) => !option.isDisabled)?.find((option) => option.value === value);
     if (val) {
-      setCurrentValue(value);
+      setInputValue(value);
       fireEvent('onSelect');
     }
   }
@@ -147,6 +151,7 @@ export const DropdownV2 = ({
   const onSearchTextChange = (searchText, actionProps) => {
     if (actionProps.action === 'input-change') {
       setSearchInputValue(searchText);
+      setExposedVariable('searchText', searchText);
       fireEvent('onSearchTextChanged');
     }
   };
@@ -154,24 +159,48 @@ export const DropdownV2 = ({
   const handleOutsideClick = (e) => {
     let menu = ref.current.querySelector('.select__menu');
     if (!ref.current.contains(e.target) || !menu || !menu.contains(e.target)) {
-      setIsFocused(false);
       setSearchInputValue('');
     }
+    if (dropdownRef.current && !dropdownRef.current?.contains(e.target) && !menu && !menu?.contains(e.target)) {
+      if (isDropdownOpen) {
+        fireEvent('onBlur');
+      }
+      setIsDropdownOpen(false);
+    }
+  };
+
+  const setInputValue = (value) => {
+    setCurrentValue(value);
+    const _selectedOption = selectOptions.find((option) => option.value === value);
+    setExposedVariables({
+      value,
+      selectedOption: pick(_selectedOption, ['label', 'value']),
+    });
+    const validationStatus = validate(value);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
   };
 
   useEffect(() => {
     if (advanced) {
-      setCurrentValue(findDefaultItem(schema));
-    } else setCurrentValue(value);
+      setInputValue(findDefaultItem(schema));
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [advanced, value, JSON.stringify(schema)]);
+  }, [advanced, JSON.stringify(schema)]);
+
+  useEffect(() => {
+    if (!advanced) {
+      setInputValue(value);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [advanced, value]);
 
   useEffect(() => {
     document.addEventListener('mousedown', handleOutsideClick);
     return () => {
       document.removeEventListener('mousedown', handleOutsideClick);
     };
-  }, []);
+  }, [isDropdownOpen]);
 
   useEffect(() => {
     if (visibility !== properties.visibility) setVisibility(properties.visibility);
@@ -182,11 +211,9 @@ export const DropdownV2 = ({
   }, [properties.visibility, dropdownLoadingState, disabledState]);
 
   // Exposed variables
+
   useEffect(() => {
-    if (exposedValue !== currentValue) {
-      const _selectedOption = selectOptions.find((option) => option.value === currentValue);
-      setExposedVariable('selectedOption', pick(_selectedOption, ['label', 'value']));
-    }
+    if (isInitialRender.current) return;
     const _options = selectOptions?.map(({ label, value }) => ({ label, value }));
     setExposedVariable('options', _options);
 
@@ -199,33 +226,77 @@ export const DropdownV2 = ({
   }, [currentValue, JSON.stringify(selectOptions)]);
 
   useEffect(() => {
+    if (isInitialRender.current) return;
     setExposedVariable('label', label);
-    setExposedVariable('searchText', searchInputValue);
-    setExposedVariable('isValid', isValid);
-    setExposedVariable('isVisible', properties.visibility);
-    setExposedVariable('isLoading', dropdownLoadingState);
-    setExposedVariable('isDisabled', disabledState);
-    setExposedVariable('isMandatory', isMandatory);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.visibility, dropdownLoadingState, disabledState, isMandatory, label, searchInputValue, isValid]);
+  }, [label]);
 
   useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('searchText', searchInputValue);
+  }, [searchInputValue]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isVisible', properties.visibility);
+  }, [properties.visibility]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isLoading', dropdownLoadingState);
+  }, [dropdownLoadingState]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isDisabled', disabledState);
+  }, [disabledState]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isMandatory', isMandatory);
+  }, [isMandatory]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    const validationStatus = validate(currentValue);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
+  }, [validate]);
+
+  useEffect(() => {
+    const _options = selectOptions?.map(({ label, value }) => ({ label, value }));
     const exposedVariables = {
       clear: async function () {
-        setCurrentValue(null);
+        setInputValue(null);
       },
       setVisibility: async function (value) {
         setVisibility(value);
+        setExposedVariable('isVisible', value);
       },
       setLoading: async function (value) {
         setIsDropdownLoading(value);
+        setExposedVariable('isLoading', value);
       },
       setDisable: async function (value) {
         setIsDropdownDisabled(value);
+        setExposedVariable('isDisabled', value);
       },
+      selectOption: async function (value) {
+        let _value = value;
+        if (isObject(value) && has(value, 'value')) _value = value?.value;
+        selectOption(_value);
+      },
+      options: _options,
+      value: currentValue,
+      label: label,
+      searchText: searchInputValue,
+      isValid: isValid,
+      isVisible: properties.visibility,
+      isLoading: dropdownLoadingState,
+      isDisabled: disabledState,
+      isMandatory: isMandatory,
     };
     setExposedVariables(exposedVariables);
+    isInitialRender.current = false;
   }, []);
 
   const customStyles = {
@@ -248,6 +319,7 @@ export const DropdownV2 = ({
           accentColor,
           isLoading: isDropdownLoading,
           isDisabled: isDropdownDisabled,
+          userInteracted,
         }),
         backgroundColor: getInputBackgroundColor({
           fieldBackgroundColor,
@@ -351,7 +423,8 @@ export const DropdownV2 = ({
   return (
     <>
       <div
-        data-cy={`label-${String(component.name).toLowerCase()} `}
+        ref={dropdownRef}
+        data-cy={`label-${String(componentName).toLowerCase()} `}
         className={cx('dropdown-widget', 'd-flex', {
           [alignment === 'top' &&
           ((labelWidth != 0 && label?.length != 0) ||
@@ -369,7 +442,7 @@ export const DropdownV2 = ({
           width: '100%',
         }}
         onMouseDown={(event) => {
-          onComponentClick(id, component, event);
+          onComponentClick(id);
           // This following line is needed because sometimes after clicking on canvas then also dropdown remains selected
           useEditorStore.getState().actions.setHoveredComponent('');
         }}
@@ -385,33 +458,38 @@ export const DropdownV2 = ({
           auto={labelAutoWidth}
           isMandatory={isMandatory}
           _width={_width}
+          top={'1px'}
         />
-        <div className="w-100 px-0 h-100" ref={ref}>
+        <div
+          className="w-100 px-0 h-100"
+          onClick={() => {
+            if (!isDropdownDisabled) {
+              fireEvent('onFocus');
+              setIsDropdownOpen((prev) => !prev);
+            }
+          }}
+          ref={ref}
+        >
           <Select
             isDisabled={isDropdownDisabled}
             value={selectOptions.filter((option) => option.value === currentValue)[0] ?? null}
             onChange={(selectedOption, actionProps) => {
               if (actionProps.action === 'clear') {
-                setCurrentValue(null);
+                setInputValue(null);
               }
               if (actionProps.action === 'select-option') {
-                setCurrentValue(selectedOption.value);
+                setInputValue(selectedOption.value);
                 fireEvent('onSelect');
               }
-              setIsFocused(false);
+              setIsDropdownOpen(false);
+              setUserInteracted(true);
             }}
             options={selectOptions}
             styles={customStyles}
             isLoading={isDropdownLoading}
+            menuIsOpen={isDropdownOpen}
             onInputChange={onSearchTextChange}
             inputValue={searchInputValue}
-            onFocus={() => {
-              fireEvent('onFocus');
-            }}
-            onMenuInputFocus={() => setIsFocused(true)}
-            onBlur={() => {
-              fireEvent('onBlur');
-            }}
             placeholder={placeholder}
             menuPortalTarget={document.body}
             components={{
@@ -423,33 +501,30 @@ export const DropdownV2 = ({
               ClearIndicator: CustomClearIndicator,
             }}
             isClearable
-            {...{
-              menuIsOpen: isFocused || undefined,
-              isFocused: isFocused || undefined,
-            }}
-            // select props
             icon={icon}
             doShowIcon={iconVisibility}
             iconColor={iconColor}
             isSearchable={false}
             darkMode={darkMode}
-            optionsLoadingState={properties.optionsLoadingState}
+            optionsLoadingState={optionsLoadingState && advanced}
             menuPlacement="auto"
           />
         </div>
       </div>
-      <div
-        className={`${isValid ? '' : visibility ? 'd-flex' : 'none'}`}
-        style={{
-          color: errTextColor,
-          justifyContent: direction === 'right' ? 'flex-start' : 'flex-end',
-          fontSize: '11px',
-          fontWeight: '400',
-          lineHeight: '16px',
-        }}
-      >
-        {!isValid && validationError}
-      </div>
+      {userInteracted && visibility && !isValid && (
+        <div
+          className={'d-flex'}
+          style={{
+            color: errTextColor,
+            justifyContent: direction === 'right' ? 'flex-start' : 'flex-end',
+            fontSize: '11px',
+            fontWeight: '400',
+            lineHeight: '16px',
+          }}
+        >
+          {validationError}
+        </div>
+      )}
     </>
   );
 };

@@ -12,7 +12,6 @@ import {
 } from '@nestjs/common';
 import { Response, Express } from 'express';
 import { OrganizationUsersService } from 'src/services/organization_users.service';
-import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { AppAbility } from 'src/modules/casl/casl-ability.factory';
 import { PoliciesGuard } from 'src/modules/casl/policies.guard';
@@ -22,6 +21,7 @@ import { User } from 'src/decorators/user.decorator';
 import { InviteNewUserDto } from '../dto/invite-new-user.dto';
 import { OrganizationsService } from '@services/organizations.service';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { ORGANIZATION_RESOURCE_ACTIONS } from 'src/constants/global.constant';
 
 const MAX_CSV_FILE_SIZE = 1024 * 1024 * 1; // 1MB
 @Controller('organization_users')
@@ -33,7 +33,7 @@ export class OrganizationUsersController {
 
   // Endpoint for inviting new organization users
   @UseGuards(JwtAuthGuard, PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can('inviteUser', UserEntity))
+  @CheckPolicies((ability: AppAbility) => ability.can(ORGANIZATION_RESOURCE_ACTIONS.USER_INVITE, UserEntity))
   @Post()
   async create(@User() user, @Body() inviteNewUserDto: InviteNewUserDto) {
     await this.organizationsService.inviteNewUser(user, inviteNewUserDto);
@@ -41,7 +41,7 @@ export class OrganizationUsersController {
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can('inviteUser', UserEntity))
+  @CheckPolicies((ability: AppAbility) => ability.can(ORGANIZATION_RESOURCE_ACTIONS.USER_INVITE, UserEntity))
   @UseInterceptors(FileInterceptor('file'))
   @Post('upload_csv')
   async bulkUploadUsers(@User() user, @UploadedFile() file: Express.Multer.File, @Res() res: Response) {
@@ -53,7 +53,7 @@ export class OrganizationUsersController {
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can('archiveUser', UserEntity))
+  @CheckPolicies((ability: AppAbility) => ability.can(ORGANIZATION_RESOURCE_ACTIONS.USER_ARCHIVE, UserEntity))
   @Post(':id/archive')
   async archive(@User() user, @Param('id') id: string) {
     await this.organizationUsersService.archive(id, user.organizationId);
@@ -61,27 +61,18 @@ export class OrganizationUsersController {
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can('updateUser', UserEntity))
+  @CheckPolicies((ability: AppAbility) => ability.can(ORGANIZATION_RESOURCE_ACTIONS.UPDATE_USERS, UserEntity))
   @Put(':id')
-  async updateUser(@Param('id') id: string, @Body() updateUserDto) {
-    await this.organizationUsersService.updateOrgUser(id, updateUserDto);
+  async updateUser(@Param('id') id: string, @Body() updateUserDto, @User() user) {
+    await this.organizationUsersService.updateOrgUser(id, updateUserDto, user.id);
     return;
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can('archiveUser', UserEntity))
+  @CheckPolicies((ability: AppAbility) => ability.can(ORGANIZATION_RESOURCE_ACTIONS.USER_ARCHIVE, UserEntity))
   @Post(':id/unarchive')
   async unarchive(@User() user, @Param('id') id: string) {
     await this.organizationUsersService.unarchive(user, id);
     return;
-  }
-
-  // Deprecated
-  @UseGuards(JwtAuthGuard, PoliciesGuard)
-  @CheckPolicies((ability: AppAbility) => ability.can('changeRole', UserEntity))
-  @Post(':id/change_role')
-  async changeRole(@Param('id') id, @Body('role') role) {
-    const result = await this.organizationUsersService.changeRole(id, role);
-    return decamelizeKeys({ result });
   }
 }

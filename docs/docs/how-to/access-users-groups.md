@@ -10,6 +10,8 @@ Let's take a look at the exposed variables of the currentUser property by clicki
 - **firstName** : The value can accessed using `{{globals.currentUser.firstName}}`
 - **lastName** : The value can accessed using `{{globals.currentUser.lastName}}`
 - **groups**: The `groups` attribute is an array representing the groups a user belongs to. By default, every user, including admins, is part of the `all_users` group. Additionally, admins are also part of the `admin` group. To access a specific group name, you need to specify the array index, such as `[0]` for the first group, `[1]` for the second, and so on. For example, you can retrieve the name of the second group a user belongs to with `{{globals.currentUser.groups[1]}}`.
+- **metadata** : The value can accessed using `{{globals.currentUser.metadata}}`.
+
 
 </div>
 
