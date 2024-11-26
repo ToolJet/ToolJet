@@ -1,6 +1,6 @@
 ---
 id: trigger-workflow-from-app
-title: Trigger Workflows from a ToolJet App
+title: Trigger Workflows Within ToolJet
 ---
 
 This guide will show you how to set up a workflow and it workflow from a ToolJet application. 
