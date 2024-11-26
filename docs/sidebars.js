@@ -459,6 +459,7 @@ const sidebars = {
         'workflows/workflow-triggers',
         'workflows/results',
         'workflows/permissions',
+        'workflows/trigger-workflow-from-app'
       ],
     },
     {
