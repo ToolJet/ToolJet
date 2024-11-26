@@ -1803,7 +1803,7 @@ export function Table({
                       }
                     }}
                     size="md"
-                    data-tooltip-id={tableButtonHoveredId === id ? `tooltip-for-add-new-row-${id}` : "" }
+                    data-tooltip-id={ tableButtonHoveredId === id ? `tooltip-for-add-new-row-${id}` : "" }
                     data-tooltip-content="Add new row"
                   ></ButtonSolid>
                 </>
