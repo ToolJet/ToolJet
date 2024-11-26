@@ -111,7 +111,7 @@ export const Modal = function Modal({
       const modalCanvasEl = document.getElementById(`canvas-${id}`);
       const modalContainer = realCanvasEl.querySelector(':scope > .modal');
 
-      if (canvasElement && modalBackdropEl && modalCanvasEl && realCanvasEl) {
+      if (canvasElement && modalBackdropEl && modalCanvasEl && realCanvasEl && modalContainer) {
         const currentScroll = canvasElement.scrollTop;
         canvasElement.style.overflow = 'hidden';
 
