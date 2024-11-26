@@ -5447,6 +5447,10 @@ fieldset:disabled .btn {
     margin: 0
 }
 
+.real-canvas .modal-dialog.modal-fullscreen {
+    width: 100%;
+}
+
 .modal-fullscreen .modal-content {
     height: 100%;
     border: 0;
@@ -5463,6 +5467,11 @@ fieldset:disabled .btn {
 
 .modal-fullscreen .modal-footer {
     border-radius: 0
+}
+
+.modal-dialog-scrollable.modal-fullscreen .modal-content.modal-component {
+    // Modal header height
+    padding-bottom: 56px;
 }
 
 @media (max-width:575.98px) {
