@@ -135,6 +135,7 @@ export const Table = React.memo(
       borderColor,
       isMaxRowHeightAuto,
       columnHeaderWrap,
+      headerCasing,
     } = loadPropertiesAndStyles(properties, styles, darkMode);
     const updatedDataReference = useRef([]);
     const preSelectRow = useRef(false);
@@ -1096,6 +1097,7 @@ export const Table = React.memo(
               columnHeaderWrap={columnHeaderWrap}
               setResizingColumnId={setResizingColumnId}
               resizingColumnId={resizingColumnId}
+              headerCasing={headerCasing}
             />
             {page.length > 0 && !loadingState && (
               <tbody

@@ -310,6 +310,16 @@ export const tableConfig = {
         { displayName: 'Wrap', value: 'wrap' },
       ],
     },
+    headerCasing: {
+      type: 'switch',
+      displayName: 'Header casing',
+      validation: { schema: { type: 'string' } },
+      accordian: 'Data',
+      options: [
+        { displayName: 'AA', value: 'uppercase' },
+        { displayName: 'As typed', value: 'none' },
+      ],
+    },
     tableType: {
       type: 'select',
       displayName: 'Row style',
@@ -652,6 +662,7 @@ export const tableConfig = {
     styles: {
       textColor: { value: '#000' },
       columnHeaderWrap: { value: 'fixed' },
+      headerCasing: { value: 'uppercase' },
       actionButtonRadius: { value: '0' },
       cellSize: { value: 'regular' },
       borderRadius: { value: '8' },
