@@ -1,4 +1,4 @@
-import { componentTypes } from '@/Editor/WidgetManager/components';
+import { componentTypes } from '@/AppBuilder/WidgetManager';
 import {
   resolveGeneralProperties,
   resolveGeneralStyles,

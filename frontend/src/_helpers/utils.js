@@ -13,7 +13,7 @@ import { getDateTimeFormat } from '@/AppBuilder/Widgets/Table/Datepicker';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useKeyboardShortcutStore } from '@/_stores/keyboardShortcutStore';
 import { validateMultilineCode } from './utility';
-import { componentTypes } from '@/Editor/WidgetManager/components';
+import { componentTypes } from '@/AppBuilder/WidgetManager';
 
 export const reservedKeyword = ['app', 'window'];
 

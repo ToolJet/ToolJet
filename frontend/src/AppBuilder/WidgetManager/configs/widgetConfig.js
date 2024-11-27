@@ -53,6 +53,7 @@ import {
   linkConfig,
   iconConfig,
   boundedBoxConfig,
+  kanbanBoardConfig,
 } from '../widgets';
 
 export const widgets = [
@@ -110,4 +111,5 @@ export const widgets = [
   linkConfig,
   iconConfig,
   boundedBoxConfig,
+  kanbanBoardConfig,
 ];
