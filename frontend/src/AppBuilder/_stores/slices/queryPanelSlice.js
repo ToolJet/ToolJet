@@ -201,6 +201,8 @@ export const createQueryPanelSlice = (set, get) => ({
       confirmed = undefined,
       mode = 'edit',
       userSuppliedParameters = {},
+      component,
+      eventId,
       shouldSetPreviewData = false,
       isOnLoad = false,
       moduleId = 'canvas'
@@ -247,7 +249,6 @@ export const createQueryPanelSlice = (set, get) => ({
       if (query) {
         dataQuery = JSON.parse(JSON.stringify(query));
       } else {
-        toast.error('No query has been associated with the action.');
         return;
       }
 
@@ -298,6 +299,7 @@ export const createQueryPanelSlice = (set, get) => ({
           isLoading: true,
           data: [],
           rawData: [],
+          id: queryId,
         });
 
         let queryExecutionPromise = null;

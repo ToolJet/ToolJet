@@ -16180,3 +16180,12 @@ fieldset:disabled {
 
 
 }
+
+.debugger-error-title {
+  padding: 4px;
+  border-radius: 4px;
+
+  &:hover {
+    background-color: var(--interactive-overlays-fill-hover) !important;
+  }
+}

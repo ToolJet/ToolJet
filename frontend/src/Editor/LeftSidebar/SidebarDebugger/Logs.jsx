@@ -8,8 +8,7 @@ import { useEditorActions, useEditorStore } from '@/_stores/editorStore';
 
 function Logs({ logProps, idx }) {
   const [open, setOpen] = React.useState(false);
-  let titleLogType = logProps?.type;
-  // need to change the titleLogType to query for transformations because if transformation fails, it is eventually a query failure
+  let titleLogType = logProps?.type !== 'event' ? logProps?.type : '';
   if (titleLogType === 'transformations') {
     titleLogType = 'query';
   }
@@ -23,17 +22,17 @@ function Logs({ logProps, idx }) {
       ? `Invalid property detected: ${logProps?.message}.`
       : `${startCase(logProps?.type)} failed: ${
           logProps?.description ||
-          logProps?.message ||
+          (isString(logProps?.message) && logProps?.message) ||
           (isString(logProps?.error?.description) && logProps?.error?.description) || //added string check since description can be an object. eg: runpy
-          logProps?.error?.message
+          logProps?.error?.message.trim()
         }`;
 
   const defaultStyles = {
-    transform: open ? 'rotate(90deg)' : 'rotate(0deg)',
+    transform: open ? 'rotate(-180deg)' : 'rotate(0deg)',
     transition: '0.2s all',
     display: logProps?.isQuerySuccessLog || logProps.type === 'navToDisablePage' ? 'none' : 'inline-block',
     cursor: 'pointer',
-    paddingTop: '8px',
+    top: '8px',
     pointerEvents: logProps?.isQuerySuccessLog || logProps.type === 'navToDisablePage' ? 'none' : 'default',
   };
 
@@ -85,20 +84,22 @@ function Logs({ logProps, idx }) {
         onClick={(e) => {
           setOpen((prev) => !prev);
         }}
-        style={{ pointerEvents: logProps?.isQuerySuccessLog ? 'none' : 'default' }}
+        style={{ pointerEvents: logProps?.isQuerySuccessLog ? 'none' : 'default', position: 'relative' }}
       >
         <span className={cx('position-absolute')} style={defaultStyles}>
-          <SolidIcon name="cheveronright" width="16" />
+          <SolidIcon name="downarrow" fill={`var(--icons-strong)`} width="16" />
         </span>
         <span className="w-100" style={{ paddingTop: '8px', paddingBottom: '8px', paddingLeft: '20px' }}>
           {logProps.type === 'navToDisablePage' ? (
             renderNavToDisabledPageMessage()
           ) : (
             <>
-              <span className="d-flex justify-content-between align-items-center  text-truncate">
-                <span className="text-truncate text-slate-12">{title}</span>
+              <div className={`d-flex justify-content-between align-items-center ${!open && 'text-truncate'}`}>
+                <span className={`text-slate-12 cursor-pointer debugger-error-title ${!open && 'text-truncate'}`}>
+                  {title}
+                </span>
                 <small className="text-slate-10 text-right ">{moment(logProps?.timestamp).fromNow()}</small>
-              </span>
+              </div>
               <span
                 className={cx('mx-1', {
                   'text-tomato-9': !logProps?.isQuerySuccessLog,
