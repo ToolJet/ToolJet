@@ -6,7 +6,7 @@ title: User Lifecycle
 # User Lifecycle
 
 :::info
-Check Workspace docs [here](/docs/tutorial/workspace_overview).
+Check Workspace docs [here](/docs/org-management/workspaces/workspace_overview).
 :::
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
