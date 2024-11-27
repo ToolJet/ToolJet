@@ -5,7 +5,7 @@ import { useDrop, useDragLayer } from 'react-dnd';
 import { ItemTypes, EditorConstants } from './editorConstants';
 import { DraggableBox } from './DraggableBox';
 import update from 'immutability-helper';
-import { componentTypes } from './WidgetManager/components';
+import { componentTypes } from '@/AppBuilder/WidgetManager';
 import { resolveWidgetFieldValue, getWorkspaceId } from '@/_helpers/utils';
 import Comments from './Comments';
 import { commentsService } from '@/_services';

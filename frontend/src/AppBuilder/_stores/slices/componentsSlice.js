@@ -1,5 +1,5 @@
 import { appVersionService } from '@/_services';
-import { componentTypes } from '@/Editor/WidgetManager/components';
+import { componentTypes } from '../../WidgetManager';
 import {
   resolveDynamicValues,
   // extractAndReplaceReferencesFromString,
