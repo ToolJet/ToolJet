@@ -14,8 +14,12 @@ const SignupSuccessInfo = ({ email, name, backToSignup, organizationId, redirect
       <div className="email-verification-wrapper" style={{ width: '356px' }}>
         <OnboardingUIWrapper>
           <FormHeader>Check your mail</FormHeader>
-          <p className="message">{message}</p>
-          <span className="message">{info}</span>
+          <p className="message" data-cy="email-message">
+            {message}
+          </p>
+          <span className="message" data-cy="email-info">
+            {info}
+          </span>
           <SepratorComponent />
           <ResendVerificationEmail email={email} organizationId={organizationId} redirectTo={redirectTo} />
           <div className="back-to-signup-button" data-cy={'back-to-signup'}>

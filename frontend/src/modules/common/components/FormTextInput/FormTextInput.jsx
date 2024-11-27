@@ -10,7 +10,7 @@ const FormTextInput = ({
   error,
   disabled,
   name,
-  dataCy,
+  dataCy = label ? label.toLowerCase().replace(/\s+/g, '-') : value ? value.toLowerCase().replace(/\s+/g, '-') : '',
   maxLength,
   disableStartAdornment = false,
 }) => {
@@ -33,7 +33,7 @@ const FormTextInput = ({
       )}
 
       {disabled ? (
-        <p className="form-input__field form-input__field--disabled" data-cy={dataCy}>
+        <p className="form-input__field form-input__field--disabled" data-cy={`{dataCy}-input-value`}>
           {value}
         </p>
       ) : (
@@ -47,7 +47,7 @@ const FormTextInput = ({
             value={value}
             onChange={handleChange}
             required
-            data-cy={dataCy}
+            data-cy={`${dataCy}-input`}
             autoComplete="off"
             {...(maxLength ? { maxLength } : {})}
           />
