@@ -1,6 +1,7 @@
 import React, { forwardRef, useEffect, useRef } from 'react';
 import cx from 'classnames';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import moment from 'moment-timezone';
 
 export const DatepickerInput = forwardRef(
   ({
@@ -9,11 +10,14 @@ export const DatepickerInput = forwardRef(
     inputStyles,
     dateInputRef,
     setFocus,
-    onDateChange,
     iconStyles,
     loaderStyles,
     loading,
     disable,
+    onInputChange,
+    displayFormat,
+    setDisplayTimestamp,
+    setTextInputFocus,
     IconElement,
   }) => {
     return (
@@ -22,11 +26,18 @@ export const DatepickerInput = forwardRef(
           className={cx('table-column-datepicker-input text-truncate')}
           value={value}
           onClick={onClick}
+          onFocus={() => setTextInputFocus(true)}
+          onBlur={() => setTextInputFocus(false)}
           ref={dateInputRef}
           style={inputStyles}
           onChange={(e) => {
+            const inputVal = e.target.value;
+            setDisplayTimestamp(inputVal);
+            const parsedDate = moment(inputVal, displayFormat);
+            if (parsedDate.isValid()) {
+              onInputChange(parsedDate.toDate());
+            }
             setFocus(true);
-            onDateChange(e.target.value);
           }}
           disabled={disable || loading}
         />

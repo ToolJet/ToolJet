@@ -27,6 +27,25 @@ export const DATE_FORMAT_OPTIONS = [
   },
 ];
 
+export const TIME_FORMAT_OPTIONS = [
+  {
+    label: 'hh:mm A',
+    value: 'hh:mm A',
+  },
+  {
+    label: 'h:mm A',
+    value: 'h:mm A',
+  },
+  {
+    label: 'HH:mm',
+    value: 'HH:mm',
+  },
+  {
+    label: 'H:mm',
+    value: 'H:mm',
+  },
+];
+
 export const TIMEZONE_OPTIONS = [
   { name: 'UTC', value: 'Etc/UTC' },
   { name: '-12:00', value: 'Etc/GMT+12' },
@@ -86,7 +105,8 @@ const DatepickerV2 = ({ componentMeta, darkMode, ...restProps }) => {
   const formatting = [];
   const validations = Object.keys(componentMeta.validation || {});
   const resolvedProperties = useStore((state) => state.getResolvedComponent(component.id)?.properties);
-  const isDateDisplayFormatFxOn = componentMeta?.definition?.properties?.dateFormat?.fxActive || false;
+  const isDateFormatFxOn = componentMeta?.definition?.properties?.dateFormat?.fxActive || false;
+  const isTimeFormatFxOn = componentMeta?.definition?.properties?.timeFormat?.fxActive || false;
   const dateFormat = resolvedProperties?.dateFormat;
   const timeFormat = resolvedProperties?.timeFormat;
   const isTimezoneEnabled = resolvedProperties?.isTimezoneEnabled;
@@ -132,17 +152,25 @@ const DatepickerV2 = ({ componentMeta, darkMode, ...restProps }) => {
     children: (
       <>
         <div data-cy={`input-date-display-format`} className="field mb-2 w-100" onClick={(e) => e.stopPropagation()}>
-          {isDateDisplayFormatFxOn ? (
-            <CodeHinter
-              initialValue={dateFormat}
-              theme={darkMode ? 'monokai' : 'default'}
-              mode="javascript"
-              lineNumbers={false}
-              onChange={(value) => paramUpdated({ name: 'dateFormat' }, 'value', value, 'properties')}
-            />
-          ) : (
-            <div className="field mb-2" onClick={(e) => e.stopPropagation()}>
+          <div className="field mb-2" onClick={(e) => e.stopPropagation()}>
+            <div className="d-flex justify-content-between mb-1">
               <label className="form-label"> Date Format</label>
+              <FxButton
+                active={isDateFormatFxOn}
+                onPress={() => {
+                  paramUpdated({ name: 'dateFormat' }, 'fxActive', !isDateFormatFxOn, 'properties');
+                }}
+              />
+            </div>
+            {isDateFormatFxOn ? (
+              <CodeHinter
+                initialValue={dateFormat}
+                theme={darkMode ? 'monokai' : 'default'}
+                mode="javascript"
+                lineNumbers={false}
+                onChange={(value) => paramUpdated({ name: 'dateFormat' }, 'value', value, 'properties')}
+              />
+            ) : (
               <Select
                 options={DATE_FORMAT_OPTIONS}
                 value={dateFormat ?? 'DD/MM/YYYY'}
@@ -156,21 +184,32 @@ const DatepickerV2 = ({ componentMeta, darkMode, ...restProps }) => {
                 useCustomStyles={true}
                 styles={styles(darkMode, '100%')}
               />
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         <>
-          {!isDateDisplayFormatFxOn && (
-            <div className="field mb-2" onClick={(e) => e.stopPropagation()}>
+          <div className="field mb-2" onClick={(e) => e.stopPropagation()}>
+            <div className="d-flex justify-content-between mb-1">
               <label className="form-label"> Time Format</label>
+              <FxButton
+                active={isTimeFormatFxOn}
+                onPress={() => {
+                  paramUpdated({ name: 'timeFormat' }, 'fxActive', !isTimeFormatFxOn, 'properties');
+                }}
+              />
+            </div>
+            {isTimeFormatFxOn ? (
+              <CodeHinter
+                initialValue={timeFormat}
+                theme={darkMode ? 'monokai' : 'default'}
+                mode="javascript"
+                lineNumbers={false}
+                onChange={(value) => paramUpdated({ name: 'timeFormat' }, 'value', value, 'properties')}
+              />
+            ) : (
               <Select
-                options={[
-                  {
-                    label: 'HH:mm',
-                    value: 'HH:mm',
-                  },
-                ]}
+                options={TIME_FORMAT_OPTIONS}
                 value={timeFormat ?? 'HH:mm'}
                 search={true}
                 closeOnSelect={true}
@@ -182,8 +221,8 @@ const DatepickerV2 = ({ componentMeta, darkMode, ...restProps }) => {
                 useCustomStyles={true}
                 styles={styles(darkMode, '100%')}
               />
-            </div>
-          )}
+            )}
+          </div>
 
           {renderElement(
             component,

@@ -16286,7 +16286,7 @@ fieldset:disabled {
   }
 
 
-.datetimepicker-component {
+.datetimepicker-component, #component-portal{
   .react-datepicker{
     display: grid;
     grid-auto-flow: column;
@@ -16306,7 +16306,6 @@ fieldset:disabled {
     border-bottom-right-radius: 0.3rem;
     box-shadow: 8px 8px 16px 0px #3032331A;
   }
-  
   
   .react-datepicker-time__input {
     margin-left: 0px !important;

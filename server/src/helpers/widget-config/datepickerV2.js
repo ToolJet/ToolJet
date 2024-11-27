@@ -129,8 +129,57 @@ export const datepickerV2Config = {
   },
   actions: [
     {
+      handle: 'setValue',
+      displayName: 'Set value',
+      params: [{ handle: 'setValue', displayName: 'Value', type: 'string' }],
+    },
+    {
       handle: 'clearValue',
       displayName: 'Clear value',
+    },
+    {
+      handle: 'setValueinTimeStamp',
+      displayName: 'Set value in timestamp',
+      params: [{ handle: 'setValueinTimeStamp', displayName: 'Value', type: 'string' }],
+    },
+    {
+      handle: 'setDisabledDates',
+      displayName: 'Set disabled dates',
+      params: [{ handle: 'setDisabledDates', displayName: 'Value', type: 'array' }],
+    },
+    {
+      handle: 'clearDisabledDates',
+      displayName: 'Clear disabled dates',
+    },
+    {
+      handle: 'setMinDate',
+      displayName: 'Set min date',
+      params: [{ handle: 'setMinDate', displayName: 'Value', type: 'string' }],
+    },
+    {
+      handle: 'setMaxDate',
+      displayName: 'Set max date',
+      params: [{ handle: 'setMaxDate', displayName: 'Value', type: 'string' }],
+    },
+    {
+      handle: 'setMinTime',
+      displayName: 'Set min time',
+      params: [{ handle: 'setMinTime', displayName: 'Value', type: 'string' }],
+    },
+    {
+      handle: 'setMaxTime',
+      displayName: 'Set max time',
+      params: [{ handle: 'setMaxTime', displayName: 'Value', type: 'string' }],
+    },
+    {
+      handle: 'setDisplayTimezone',
+      displayName: 'Set Display timezone',
+      params: [{ handle: 'setDisplayTimezone', displayName: 'Value', type: 'string' }],
+    },
+    {
+      handle: 'setStoreTimezone',
+      displayName: 'Set store timezone',
+      params: [{ handle: 'setStoreTimezone', displayName: 'Value', type: 'string' }],
     },
     {
       handle: 'setVisibility',
@@ -146,6 +195,14 @@ export const datepickerV2Config = {
       handle: 'setDisable',
       displayName: 'Set disable',
       params: [{ handle: 'setDisable', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
+    },
+    {
+      handle: 'setFocus',
+      displayName: 'Set focus',
+    },
+    {
+      handle: 'setBlur',
+      displayName: 'Set blur',
     },
   ],
   styles: {

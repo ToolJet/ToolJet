@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
+import moment from 'moment-timezone';
 import cx from 'classnames';
-const TimepickerInput = ({ currentDate, isTwentyFourHourMode, darkMode }) => {
+
+const TimepickerInput = ({ currentTimestamp, isTwentyFourHourMode, darkMode, onTimeChange }) => {
   const [headers, setHeaders] = React.useState(['Hours', 'Minutes']);
   useEffect(() => {
     if (!isTwentyFourHourMode) {
@@ -8,12 +10,13 @@ const TimepickerInput = ({ currentDate, isTwentyFourHourMode, darkMode }) => {
     }
   }, [isTwentyFourHourMode]);
 
-  const selectedHour = currentDate.getHours();
-  const selectedMinute = currentDate.getMinutes();
-  const selectedAmPm = currentDate.getHours() >= 12 ? 'PM' : 'AM';
+  const momentObj = currentTimestamp ? moment(currentTimestamp) : null;
+  const selectedHour = momentObj?.hour() || 0;
+  const selectedMinute = momentObj?.minute() || 0;
+  const selectedAmPm = selectedHour >= 12 ? 'PM' : 'AM';
 
   return (
-    <div className={cx('custom-time-input', { 'dark-time-input': darkMode })}>
+    <div className={cx('custom-time-input ', { 'dark-time-input': darkMode })}>
       <div className={cx('d-flex')}>
         {headers.map((header) => (
           <span key={header} className={cx('time-header')}>
@@ -28,8 +31,11 @@ const TimepickerInput = ({ currentDate, isTwentyFourHourMode, darkMode }) => {
               <div
                 key={hour}
                 className={cx('time-item', {
-                  'selected-time': selectedHour === hour,
+                  'selected-time': selectedHour === hour || (!isTwentyFourHourMode && selectedHour - 12 === hour),
                 })}
+                onClick={() => {
+                  onTimeChange(hour, 'hours');
+                }}
               >
                 {String(hour).padStart(2, '0')}
               </div>
@@ -37,15 +43,37 @@ const TimepickerInput = ({ currentDate, isTwentyFourHourMode, darkMode }) => {
           </div>
           <div className={cx('time-col')}>
             {[...Array(60).keys()].map((minute) => (
-              <div key={minute} className={cx('time-item', { 'selected-time': selectedMinute === minute })}>
+              <div
+                key={minute}
+                className={cx('time-item', { 'selected-time': selectedMinute === minute })}
+                onClick={() => onTimeChange(minute, 'minutes')}
+              >
                 {String(minute).padStart(2, '0')}
               </div>
             ))}
           </div>
           {!isTwentyFourHourMode && (
             <div className={cx('time-col')}>
-              <div className={cx('time-item', { 'selected-time': selectedAmPm === 'AM' })}>AM</div>
-              <div className={cx('time-item', { 'selected-time': selectedAmPm === 'PM' })}>PM</div>
+              <div
+                className={cx('time-item', { 'selected-time': selectedAmPm === 'AM' })}
+                onClick={() => {
+                  const newHour = selectedHour >= 12 ? selectedHour - 12 : selectedHour;
+                  console.log('newHour', newHour);
+                  onTimeChange(newHour, 'hours');
+                }}
+              >
+                AM
+              </div>
+              <div
+                className={cx('time-item', { 'selected-time': selectedAmPm === 'PM' })}
+                onClick={() => {
+                  const newHour = selectedHour < 12 ? selectedHour + 12 : selectedHour;
+                  console.log('newHour', newHour);
+                  onTimeChange(newHour, 'hours');
+                }}
+              >
+                PM
+              </div>
             </div>
           )}
         </div>
