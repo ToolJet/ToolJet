@@ -3,11 +3,11 @@ id: use-custom-component
 title: Use Custom Component
 ---
 
-In this guide we will see how to use **[Custom Component](/docs/widgets/custom-component/)** in ToolJet.
+This guide explains how to use **[Custom Component](/docs/widgets/custom-component/)** in ToolJet.
 
 ## Data
 
-We can pass data to our custom react component, using the **Data** property. The data needs to be an object.
+Data can be passed to a custom component using the **Data** property. The data should be structured as an object.
 
 #### Example:
 ```json
@@ -34,32 +34,77 @@ We can pass data to our custom react component, using the **Data** property. The
 
 ## Code
 
-We can write React code our custom component in the "Code" field. ToolJet provides three key properties to interact with the app:
+The ReactJS code for a custom component can be added in the **Code** field. ToolJet provides three key properties for interacting with the app.
 - **data**: Access the passed data.
 - **updateData**: Update the data object.
 - **runQuery**: Run a query by its name.
 
 #### Example:
+
 ```js
 import React from 'https://cdn.skypack.dev/react';
-  import ReactDOM from 'https://cdn.skypack.dev/react-dom';
-  import { Button, Container } from 'https://cdn.skypack.dev/@material-ui/core';
-  const MyCustomComponent = ({data, updateData, runQuery}) => (
-    <Container>
-        <h1>{data.title}</h1>
-        <Button
-          color="primary"
-          variant="outlined"
-          onClick={() => {updateData({title: 'Hello World!!'})}}
-        >
-          {data.buttonText}
-        </Button>
-      </Container>
-  );
-  const ConnectedComponent = Tooljet.connectComponent(MyCustomComponent);
-  ReactDOM.render(<ConnectedComponent />, document.body);
+import ReactDOM from 'https://cdn.skypack.dev/react-dom';
+import { Button, Container } from 'https://cdn.skypack.dev/@material-ui/core';
+  
+const MyCustomComponent = ({data, updateData, runQuery}) => (
+  <Container>
+      <h1>{data.title}</h1>
+      <Button
+        color="primary"
+        variant="outlined"
+        onClick={() => {updateData({title: 'Hello World!!'})}}
+      >
+        {data.buttonText}
+      </Button>
+  </Container>
+);
+
+const ConnectedComponent = Tooljet.connectComponent(MyCustomComponent);
+ReactDOM.render(<ConnectedComponent />, document.body);
 ```
 
 <img className="screenshot-full" src="/img/how-to/use-custom-component/code.png" alt="Custom Component Data" />
+
+</div>
+
+<div style={{paddingTop:'24px'}}>
+
+## Running Queries Using Custom Component
+
+Custom components in ToolJet can be used to trigger queries.
+
+Specify the query name in the Data property of the custom component.
+
+<img className="screenshot-full" style={{marginBottom:'15px'}} src="/img/how-to/use-custom-component/run-query-data.png" alt="Custom Component Run Query Data" />
+
+Write the code and use the `runQuery` function to execute the query dynamically when a specific action occurs, such as a button click.
+
+#### Example
+
+```js
+import React from "https://cdn.skypack.dev/react";
+import ReactDOM from "https://cdn.skypack.dev/react-dom";
+import { Button, Container, Typography } from "https://cdn.skypack.dev/@material-ui/core";
+
+const MyCustomComponent = ({ data, updateData, runQuery }) => (
+  <Container style={{ textAlign: "center", marginTop : "8px"}}>
+    <Button
+      color="primary"
+      variant="contained"
+      onClick={() => {
+        runQuery(data.queryName);
+      }}
+    >
+      Check Score
+    </Button>
+  </Container>
+);
+
+const ConnectedComponent = Tooljet.connectComponent(MyCustomComponent);
+
+ReactDOM.render(<ConnectedComponent />, document.body);
+```
+
+<img className="screenshot-full" src="/img/how-to/use-custom-component/run-query-code.png" alt="Custom Component Run Query code" />
 
 </div>
