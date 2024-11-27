@@ -3,34 +3,36 @@ id: dynamic-column
 title: Dynamic Columns
 ---
 
-ToolJet allows user to dynamically set the columns of the Table using a JSON value. In this guide we will see how we can use dynamic columns in ToolJet.
+ToolJet allows users to dynamically set the columns of a **Table** component using a JSON value. This guide explains how to configure dynamic columns in ToolJet.
 
 <div style={{paddingTop:'24px'}}>
 
 ## Using Dynamic Column
 
-1. **Add a Table Component** <br/>
-    To start with, we need to add a table component, you can drag it from the right-side component library to the canvas.
-2. **Add data** <br/>
-    You can add data to the table using a query.
-3. Enable **Use dynamic column** <br/>
-    You can use the toggle button to enable the dynamic column or you can click on a the **fx** button and add a logical expression. <br/>
-    Now enter the JSON to display the dynamic column. <br/>
-    For example, if you enter the below JSON, the table will display a column labeled "Name" where the data entries are editable strings, restricted in length between 5 and 20 characters, displayed in white text on a black background.
-    ```json
-    {
-        "name":"Name",
-        "columnType":"string",
-        "key":"first_name",
-        "cellBackgroundColor":"#000",
-        "textColor":"#fff",
-        "isEditable":true,
-        "regex":"",
-        "maxLength":20,
-        "minLength":5,
-        "customRule":""
-    }
-    ```
+1. Drag a **Table** component from the right-side component library onto the canvas.
+
+2. Populate the **Table** component with data by connecting it to a query.
+
+3. Toggle the Use dynamic column option.
+
+4. Enter JSON to define the **Table's** columns dynamically. For example:
+
+```json 
+{
+  "name": "Name",
+  "columnType": "string",
+  "key": "first_name",
+  "cellBackgroundColor": "#000",
+  "textColor": "#fff",
+  "isEditable": true,
+  "regex": "",
+  "maxLength": 20,
+  "minLength": 5,
+  "customRule": ""
+}
+```
+
+This configuration displays a column labeled Name with editable string data restricted to lengths between 5 and 20 characters, with white text on a black background.
 
 </div>
 
@@ -38,28 +40,26 @@ ToolJet allows user to dynamically set the columns of the Table using a JSON val
 
 ## Displaying Different Table Schema Based on the Current User
 
-In this example, we will see how we can display different table schema based on the current user using dynamic columns.
-
-**Orignial Table Schema:**
+You can use dynamic columns to display different table schemas depending on the current user. Let's look at an example with the below schema:
 
 | ID | Name | Email | Department | Salary | Performance | Login |
 |----|------|-------|------------|--------|-------------|-------|
 
-We need to display two different schema based on the current user as follow:
+Here, two different schemas are to be displayed based on the current user.
 
-**For Admin**
+**For Admin:**
 
 | ID | Name | Email | Department | Salary | Performance | Login |
 |----|------|-------|------------|--------|-------------|-------|
 
-**For Employees**
+**For Employees:**
 
 | ID | Name | Email | Department | Login |
 |----|------|-------|------------|-------|
 
-To perform the above operation, go ahead and enable **Use dynamic column** following the steps mentioned [above](#using-dynamic-column).
+1. To configure the schema as per the user, enable Use dynamic column property.
 
-Now, add the following JSON, this JSON runs an if-else statement by fetching the current user using `globals.currentUser.groups`
+2. Use the following JSON logic to dynamically adjust the schema based on the current user's role:
 
 ```json
 {{globals.currentUser.groups.includes("admin") ? [
@@ -85,20 +85,22 @@ Now, add the following JSON, this JSON runs an if-else statement by fetching the
 
 ## Specifiying the Column Type
 
-In this example, we will see how we can specify a column type using dynamic columns.
+Dynamic columns in ToolJet support various types, such as strings, numbers, dates, and links. 
 
-In ToolJet, the table component supports various types of column type, you can check them out [here](./columns.md).
+In this example, you can see how you can specify a column type using dynamic columns.
 
-We are going to add a table with the following columns and column types:
+1. Add a **Table** component with the following columns and column types:
 - Profile Photo - Image
 - Name - String
 - Contact Number - Number
 - Date of Birth - Datepicker
 - Website URL - Link
 
-To perform the above operation, go ahead and enable **Use dynamic column** following the steps mentioned [above](#using-dynamic-column).
+2. Toggle the Use dynamic column option enter the below JSON schema:
 
-And now add the following JSON:
+
+3. Add the following JSON to define the columns::
+
 ```json
 {{[
   {name: 'Profile', key: 'photo',columnType: 'image', id: '1'},
@@ -108,5 +110,7 @@ And now add the following JSON:
   {name: 'Website', key: 'website', columnType:'link', id: '5'}
 ]}}
 ```
+
+This configuration will create a table with the specified column types.
 
 </div>
