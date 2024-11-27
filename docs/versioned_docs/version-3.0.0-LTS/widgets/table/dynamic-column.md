@@ -95,7 +95,7 @@ In this example, you can see how you can specify a column type using dynamic col
 
 2. Toggle the Use dynamic column option.
 
-3. Add the following JSON to define the columns::
+3. Add the following JSON to define the columns:
 
 ```json
 {{[
