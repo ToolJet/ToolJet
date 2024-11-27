@@ -20,6 +20,13 @@ export const Datepicker = ({ value, onChange, meta }) => {
         popperClassName={cx('tj-table-datepicker', {
           'theme-dark dark-theme': darkMode,
         })}
+        popperModifiers={[
+          {
+            name: 'flip',
+            enabled: false,
+          },
+        ]}
+        popperPlacement="bottom-start"
       />
     </div>
   );

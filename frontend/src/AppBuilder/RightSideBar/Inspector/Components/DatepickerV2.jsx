@@ -298,7 +298,7 @@ const DatepickerV2 = ({ componentMeta, darkMode, ...restProps }) => {
     title: 'Validation',
     isOpen: true,
     children: (
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+      <>
         {validations.map((property) =>
           renderElement(
             component,
@@ -309,10 +309,11 @@ const DatepickerV2 = ({ componentMeta, darkMode, ...restProps }) => {
             'validation',
             currentState,
             allComponents,
-            darkMode
+            darkMode,
+            componentMeta.validation?.[property]?.placeholder
           )
         )}
-      </div>
+      </>
     ),
   });
 

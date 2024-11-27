@@ -9,7 +9,6 @@ export const DatepickerInput = forwardRef(
     onClick,
     inputStyles,
     dateInputRef,
-    setFocus,
     iconStyles,
     loaderStyles,
     loading,
@@ -19,15 +18,27 @@ export const DatepickerInput = forwardRef(
     setDisplayTimestamp,
     setTextInputFocus,
     IconElement,
+    showValidationError,
+    setShowValidationError,
+    isValid,
+    validationError,
+    visibility,
+    errTextColor,
+    direction,
   }) => {
     return (
       <>
         <input
-          className={cx('table-column-datepicker-input text-truncate')}
+          className={cx('table-column-datepicker-input text-truncate', {
+            'is-invalid': !isValid && showValidationError,
+          })}
           value={value}
           onClick={onClick}
           onFocus={() => setTextInputFocus(true)}
-          onBlur={() => setTextInputFocus(false)}
+          onBlur={() => {
+            setTextInputFocus(false);
+            setShowValidationError(true);
+          }}
           ref={dateInputRef}
           style={inputStyles}
           onChange={(e) => {
@@ -37,12 +48,27 @@ export const DatepickerInput = forwardRef(
             if (parsedDate.isValid()) {
               onInputChange(parsedDate.toDate());
             }
-            setFocus(true);
           }}
           disabled={disable || loading}
         />
         <span className="cell-icon-display">
           <IconElement style={iconStyles} width="16" className="table-column-datepicker-input-icon" />
+        </span>
+        <span>
+          {!isValid && showValidationError && visibility && (
+            <div
+              style={{
+                color: errTextColor,
+                fontSize: '11px',
+                fontWeight: '400',
+                lineHeight: '16px',
+                position: 'absolute',
+                [direction == 'left' ? 'right' : 'left']: '0',
+              }}
+            >
+              {showValidationError && validationError}
+            </div>
+          )}
         </span>
         {loading && <Loader style={{ ...loaderStyles }} width="16" />}
       </>
