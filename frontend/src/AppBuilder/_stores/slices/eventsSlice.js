@@ -725,13 +725,14 @@ export const createEventsSlice = (set, get) => ({
               // let component = Object.values(getCurrentState()?.components ?? {}).filter(
               //   (component) => component.id === event.componentId
               // )[0];
-              if (!event.componentId) {
-                throw new Error('No component ID provided for control-component action.');
-              }
+              const { event } = eventObj;
               if (!event.componentSpecificActionHandle) {
                 throw new Error('No component-specific action handle provided.');
               }
               const component = getExposedValueOfComponent(event.componentId);
+              if (!event.componentId || !Object.keys(component).length) {
+                throw new Error('No component ID provided for control-component action.');
+              }
               const action = component?.[event.componentSpecificActionHandle];
               // let action = '';
               // let actionArguments = '';

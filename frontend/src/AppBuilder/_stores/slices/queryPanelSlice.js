@@ -249,7 +249,7 @@ export const createQueryPanelSlice = (set, get) => ({
       if (query) {
         dataQuery = JSON.parse(JSON.stringify(query));
       } else {
-        return;
+        throw new Error('No query selected');
       }
 
       if (_.isEmpty(parameters)) {
