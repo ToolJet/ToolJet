@@ -9,7 +9,7 @@ import { authenticationService } from '@/_services/authentication.service';
 import { getCurrentState, useCurrentStateStore } from '@/_stores/currentStateStore';
 import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed, eraseRedirectUrl } from './routes';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
-import { getDateTimeFormat } from '@/Editor/Components/Table/Datepicker';
+import { getDateTimeFormat } from '@/AppBuilder/Widgets/Table/Datepicker';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useKeyboardShortcutStore } from '@/_stores/keyboardShortcutStore';
 import { validateMultilineCode } from './utility';
