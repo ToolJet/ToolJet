@@ -183,7 +183,8 @@ const sidebars = {
                             'widgets/table/serverside-operations/filter',
                             'widgets/table/serverside-operations/pagination'
                           ]
-                        }
+                        },
+                        'widgets/table/dynamic-column'
                       ]
                     },
                     'widgets/tabs',
