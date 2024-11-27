@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import moment from 'moment-timezone';
 import cx from 'classnames';
 
-const TimepickerInput = ({ currentTimestamp, isTwentyFourHourMode, darkMode, onTimeChange }) => {
+const TimepickerInput = ({ currentTimestamp, isTwentyFourHourMode, darkMode, onTimeChange, minTime, maxTime }) => {
   const [headers, setHeaders] = React.useState(['Hours', 'Minutes']);
   useEffect(() => {
     if (!isTwentyFourHourMode) {
@@ -14,6 +14,16 @@ const TimepickerInput = ({ currentTimestamp, isTwentyFourHourMode, darkMode, onT
   const selectedHour = momentObj?.hour() || 0;
   const selectedMinute = momentObj?.minute() || 0;
   const selectedAmPm = selectedHour >= 12 ? 'PM' : 'AM';
+
+  const [minHour, minMinute] = minTime.split(':');
+  const [maxHour, maxMinute] = maxTime.split(':');
+
+  const addHours = (time) => {
+    if (!isTwentyFourHourMode && selectedAmPm === 'PM') {
+      return time + 12;
+    }
+    return time;
+  };
 
   return (
     <div className={cx('custom-time-input ', { 'dark-time-input': darkMode })}>
@@ -32,9 +42,10 @@ const TimepickerInput = ({ currentTimestamp, isTwentyFourHourMode, darkMode, onT
                 key={hour}
                 className={cx('time-item', {
                   'selected-time': selectedHour === hour || (!isTwentyFourHourMode && selectedHour - 12 === hour),
+                  'disabled-time': (minHour && addHours(hour) < minHour) || (maxHour && addHours(hour) > maxHour),
                 })}
                 onClick={() => {
-                  onTimeChange(hour, 'hours');
+                  onTimeChange(addHours(hour), 'hours');
                 }}
               >
                 {String(hour).padStart(2, '0')}
@@ -45,7 +56,18 @@ const TimepickerInput = ({ currentTimestamp, isTwentyFourHourMode, darkMode, onT
             {[...Array(60).keys()].map((minute) => (
               <div
                 key={minute}
-                className={cx('time-item', { 'selected-time': selectedMinute === minute })}
+                className={cx('time-item', {
+                  'selected-time': selectedMinute === minute,
+                  'disabled-time':
+                    (minHour && selectedHour < minHour) ||
+                    (maxHour && selectedHour > maxHour) ||
+                    (minHour &&
+                      selectedHour == minHour &&
+                      ((minMinute && minute < minMinute) || (maxMinute && minute > maxMinute))) ||
+                    (maxHour &&
+                      selectedHour == maxHour &&
+                      ((maxMinute && minute > maxMinute) || (minMinute && minute < minMinute))),
+                })}
                 onClick={() => onTimeChange(minute, 'minutes')}
               >
                 {String(minute).padStart(2, '0')}
@@ -55,20 +77,24 @@ const TimepickerInput = ({ currentTimestamp, isTwentyFourHourMode, darkMode, onT
           {!isTwentyFourHourMode && (
             <div className={cx('time-col')}>
               <div
-                className={cx('time-item', { 'selected-time': selectedAmPm === 'AM' })}
+                className={cx('time-item', {
+                  'selected-time': selectedAmPm === 'AM',
+                  'disabled-time': minHour && minHour > 11,
+                })}
                 onClick={() => {
                   const newHour = selectedHour >= 12 ? selectedHour - 12 : selectedHour;
-                  console.log('newHour', newHour);
                   onTimeChange(newHour, 'hours');
                 }}
               >
                 AM
               </div>
               <div
-                className={cx('time-item', { 'selected-time': selectedAmPm === 'PM' })}
+                className={cx('time-item', {
+                  'selected-time': selectedAmPm === 'PM',
+                  'disabled-time': maxHour && maxHour < 12,
+                })}
                 onClick={() => {
                   const newHour = selectedHour < 12 ? selectedHour + 12 : selectedHour;
-                  console.log('newHour', newHour);
                   onTimeChange(newHour, 'hours');
                 }}
               >
