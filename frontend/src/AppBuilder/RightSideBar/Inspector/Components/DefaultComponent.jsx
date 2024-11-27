@@ -12,6 +12,7 @@ import { shallow } from 'zustand/shallow';
 
 const SHOW_ADDITIONAL_ACTIONS = [
   'Text',
+  'Container',
   'TextInput',
   'NumberInput',
   'PasswordInput',

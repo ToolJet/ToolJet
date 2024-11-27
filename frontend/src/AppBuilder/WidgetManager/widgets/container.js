@@ -15,6 +15,7 @@ export const containerConfig = {
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
+      section: 'additionalActions',
       validation: {
         schema: { type: 'boolean' },
         defaultValue: false,
@@ -23,6 +24,7 @@ export const containerConfig = {
     visibility: {
       type: 'toggle',
       displayName: 'Visibility',
+      section: 'additionalActions',
       validation: {
         schema: { type: 'boolean' },
         defaultValue: true,
@@ -31,10 +33,11 @@ export const containerConfig = {
     disabledState: {
       type: 'toggle',
       displayName: 'Disable',
+      section: 'additionalActions',
       validation: {
         schema: { type: 'boolean' },
+        defaultValue: false,
       },
-      defaultValue: false,
     },
   },
   events: {},
@@ -95,7 +98,6 @@ export const containerConfig = {
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
-      visible: { value: '{{true}}' },
       loadingState: { value: `{{false}}` },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
