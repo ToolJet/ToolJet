@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import cx from 'classnames';
 import { isEmpty } from 'lodash';
@@ -21,7 +21,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { EventManager } from '@/AppBuilder/RightSideBar/Inspector/EventManager';
 import NotificationBanner from '@/_components/NotificationBanner';
 
-export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) => {
+export const QueryManagerBody = ({ darkMode, activeTab }) => {
   const { t } = useTranslation();
   const dataSources = useStore((state) => state.dataSources);
   const globalDataSources = useStore((state) => state.globalDataSources);
@@ -33,6 +33,7 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
   const updateDataQuery = useStore((state) => state.dataQuery.updateDataQuery);
   const [showLocalDataSourceDeprecationBanner, setshowLocalDataSourceDeprecationBanner] = useState(false);
 
+  const options = useMemo(() => selectedQuery?.options, [selectedQuery]);
   const [dataSourceMeta, setDataSourceMeta] = useState(null);
   /* - Added the below line to cause re-rendering when the query is switched
        - QueryEditors are not updating when the query is switched
@@ -75,8 +76,6 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
 
   const validateNewOptions = (newOptions) => {
     const updatedOptions = cleanFocusedFields(newOptions);
-    setOptions((options) => ({ ...options, ...updatedOptions }));
-
     updateDataQuery(deepClone({ ...options, ...updatedOptions }));
   };
 
@@ -94,7 +93,6 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
     optionchanged(option, !currentValue);
   };
   const optionsChangedforParams = (newOptions) => {
-    setOptions(newOptions);
     updateDataQuery(deepClone(newOptions));
   };
 
@@ -327,7 +325,6 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
       setshowLocalDataSourceDeprecationBanner(false);
     }
   }, [selectedDataSource, selectedQuery]);
-
   // if (selectedQueryId !== selectedQuery?.id) return;
   const hasPermissions =
     selectedDataSource?.scope === 'global' && selectedDataSource?.type !== DATA_SOURCE_TYPE.SAMPLE
@@ -335,6 +332,7 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
         canReadDataSource(selectedQuery?.data_source_id) ||
         canDeleteDataSource()
       : true;
+
   return (
     <div
       className={`query-details ${selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''} ${
