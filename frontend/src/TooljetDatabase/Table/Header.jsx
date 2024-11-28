@@ -36,6 +36,7 @@ const Header = ({
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const [isAddNewDataMenuOpen, setIsAddNewDataMenuOpen] = useState(false);
   const [bulkUploadFile, setBulkUploadFile] = useState(null);
+  const [activeFilters, setActiveFilters] = useState(0);
   const [isBulkUploading, setIsBulkUploading] = useState(false);
   const [errors, setErrors] = useState({ client: [], server: [] });
   const [uploadResult, setUploadResult] = useState(null);
@@ -173,7 +174,7 @@ const Header = ({
                           </ButtonSolid>
                         </span>
                       </AddNewDataPopOver>
-                      <div style={{ width: '70px' }}>
+                      <div style={{ width: '83px', marginRight: activeFilters > 0 ? '20px' : '0px' }}>
                         <Filter
                           filters={queryFilters}
                           setFilters={setQueryFilters}
@@ -181,6 +182,7 @@ const Header = ({
                           resetFilterQuery={resetFilterQuery}
                           setFilterEnable={setFilterEnable}
                           filterEnable={filterEnable}
+                          setActiveFilters={setActiveFilters}
                         />
                       </div>
                       <div style={{ width: '70px' }}>
