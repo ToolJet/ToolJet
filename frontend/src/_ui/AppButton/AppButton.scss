@@ -21,6 +21,16 @@
         align-items: center;
     }
 
+    &.table-pagination-btn{
+        &:disabled {
+            svg {
+                path {
+                    fill: var(--slate8) !important;
+                }
+            }
+        }
+    }
+
     &:disabled {
         background: var(--slate6) !important;
         color: var(--slate9) !important;

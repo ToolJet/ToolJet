@@ -742,9 +742,9 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                 <p className="tj-text-sm d-flex align-items-center">
                                   <Avatar
                                     className="name-avatar"
-                                    avatarId={user.avatarId}
-                                    text={`${user.first_name ? user.first_name[0] : ''}${
-                                      user.last_name ? user.last_name[0] : ''
+                                    avatarId={user?.avatarId}
+                                    text={`${user.firstName ? user.firstName[0] : ''}${
+                                      user.lastName ? user.lastName[0] : ''
                                     }`}
                                   />
                                   <span>{`${user?.firstName ?? ''} ${user?.lastName ?? ''}`}</span>

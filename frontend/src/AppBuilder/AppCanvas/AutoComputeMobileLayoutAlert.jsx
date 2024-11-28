@@ -77,6 +77,7 @@ export default function AutoComputeMobileLayoutAlert({ currentLayout, darkMode }
           padding: 'var(--7, 16px)',
           background: 'var(--base)',
           margin: '10px',
+          zIndex: '1',
         }}
         className="d-flex flex-row"
       >

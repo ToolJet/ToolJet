@@ -1,7 +1,9 @@
 import { NO_OF_GRIDS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { debounce } from 'lodash';
 
 const initialState = {
   hoveredComponentForGrid: '',
+  triggerCanvasUpdater: false,
 };
 
 export const createGridSlice = (set, get) => ({
@@ -9,8 +11,13 @@ export const createGridSlice = (set, get) => ({
   setHoveredComponentForGrid: (id) =>
     set(() => ({ hoveredComponentForGrid: id }), false, { type: 'setHoveredComponentForGrid', id }),
   getHoveredComponentForGrid: () => get().hoveredComponentForGrid,
+  toggleCanvasUpdater: () =>
+    set((state) => ({ triggerCanvasUpdater: !state.triggerCanvasUpdater }), false, { type: 'toggleCanvasUpdater' }),
+  debouncedToggleCanvasUpdater: debounce(() => {
+    get().toggleCanvasUpdater();
+  }, 200),
   moveComponentPosition: (direction) => {
-    const { setComponentLayout, currentLayout, getSelectedComponentsDefinition } = get();
+    const { setComponentLayout, currentLayout, getSelectedComponentsDefinition, debouncedToggleCanvasUpdater } = get();
     let layouts = {};
     const selectedComponents = getSelectedComponentsDefinition();
     selectedComponents.forEach((selectedComponent) => {
@@ -53,5 +60,6 @@ export const createGridSlice = (set, get) => ({
       };
     });
     setComponentLayout(layouts);
+    debouncedToggleCanvasUpdater();
   },
 });

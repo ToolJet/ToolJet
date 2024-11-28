@@ -22,8 +22,8 @@ export const DropDown = function DropDown({
   const { selectedTextColor, borderRadius, visibility, disabledState, justifyContent, boxShadow } = styles;
   const [currentValue, setCurrentValue] = useState(() => (advanced ? findDefaultItem(schema) : value));
   const [showValidationError, setShowValidationError] = useState(false);
-  const validationData = validate(value);
-  const { isValid, validationError } = validationData;
+  const [validationStatus, setValidationStatus] = useState(validate(value));
+  const { isValid, validationError } = validationStatus;
   function findDefaultItem(schema) {
     const foundItem = schema?.find((item) => item?.default === true);
     return !hasVisibleFalse(foundItem?.value) ? foundItem?.value : undefined;
@@ -59,15 +59,11 @@ export const DropDown = function DropDown({
   }
 
   const setExposedItem = (value, index, onSelectFired = false) => {
-    setCurrentValue(value);
+    const selectedOptionLabel = index === undefined ? undefined : display_values?.[index];
+    setInputValue(value, selectedOptionLabel);
     if (onSelectFired) {
       fireEvent('onSelect');
     }
-    const exposedVariables = {
-      value,
-      selectedOptionLabel: index === undefined ? undefined : display_values?.[index],
-    };
-    setExposedVariables(exposedVariables);
   };
 
   function selectOption(value) {
@@ -80,17 +76,6 @@ export const DropDown = function DropDown({
       setExposedItem(undefined, undefined, true);
     }
   }
-  useEffect(() => {
-    if (isInitialRender.current) return;
-    setExposedVariable('isValid', isValid);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isValid]);
-
-  useEffect(() => {
-    if (isInitialRender.current) return;
-    setExposedVariable('value', currentValue);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentValue]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
@@ -107,13 +92,20 @@ export const DropDown = function DropDown({
 
   useEffect(() => {
     if (isInitialRender.current) return;
+    const validationStatus = validate(currentValue);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
+  }, [validate]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
     if (advanced) {
       setExposedVariable(
         'optionLabels',
         schema?.filter((item) => item?.visible)?.map((item) => item.label)
       );
       if (hasVisibleFalse(currentValue)) {
-        setCurrentValue(findDefaultItem(schema));
+        setInputValue(findDefaultItem(schema));
       }
     } else setExposedVariable('optionLabels', display_values);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -137,13 +129,20 @@ export const DropDown = function DropDown({
     };
 
     setExposedVariables(exposedVariables);
-    if (hasVisibleFalse(currentValue)) {
-      setCurrentValue(findDefaultItem(schema));
-    }
     isInitialRender.current = false;
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    const exposedVariables = {
+      selectOption: async function (value) {
+        selectOption(value);
+      },
+    };
+
+    setExposedVariables(exposedVariables);
+  }, [JSON.stringify(properties.values)]);
 
   useEffect(() => {
     let newValue = undefined;
@@ -182,6 +181,14 @@ export const DropDown = function DropDown({
       setExposedVariable('searchText', searchText);
       fireEvent('onSearchTextChanged');
     }
+  };
+
+  const setInputValue = (value, label) => {
+    setCurrentValue(value);
+    setExposedVariables({ value, selectedOptionLabel: label });
+    const validationStatus = validate(value);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
   };
 
   const customStyles = {
@@ -276,10 +283,8 @@ export const DropDown = function DropDown({
             onChange={(selectedOption, actionProps) => {
               setShowValidationError(true);
               if (actionProps.action === 'select-option') {
-                setCurrentValue(selectedOption.value);
-                setExposedVariable('value', selectedOption.value);
+                setInputValue(selectedOption.value, selectedOption.label);
                 fireEvent('onSelect');
-                setExposedVariable('selectedOptionLabel', selectedOption.label);
               }
             }}
             options={selectOptions}
