@@ -314,7 +314,7 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
               }}
             />
             <div>
-              {`To know more about querying ${selectedDataSource.kind} data,`}
+              {`To know more about querying ${selectedDataSource?.kind} data,`}
               &nbsp;
               <a
                 href={docLink}
