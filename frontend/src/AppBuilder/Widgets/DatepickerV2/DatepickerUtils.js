@@ -12,7 +12,7 @@ export const getSelectedTimestampFromUnixTimestamp = (unixTimestamp, displayTime
   const localTimeOffset = moment(unixTimestamp).utcOffset();
   const selectedTimeOffset = moment(unixTimestamp).tz(displayTimezone).utcOffset();
   const modifiedTime = moment(unixTimestamp).subtract(localTimeOffset - selectedTimeOffset, 'minutes');
-  return modifiedTime.valueOf() ? null : modifiedTime.valueOf();
+  return modifiedTime.valueOf() === 'Invalid date' ? null : modifiedTime.valueOf();
 };
 
 export const getUnixTimestampFromSelectedTimestamp = (selectedTime, displayTimezone, isTimezoneEnabled) => {

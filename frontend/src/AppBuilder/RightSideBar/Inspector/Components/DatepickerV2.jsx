@@ -123,7 +123,6 @@ const DatepickerV2 = ({ componentMeta, darkMode, ...restProps }) => {
     }
   }
 
-  console.log('formatting', formatting);
   items.push({
     title: 'Data',
     isOpen: true,

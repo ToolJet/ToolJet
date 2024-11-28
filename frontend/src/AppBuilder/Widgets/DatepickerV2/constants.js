@@ -1,0 +1,1 @@
+export const DISABLED_DATE_FORMAT = 'DD/MM/YYYY';
