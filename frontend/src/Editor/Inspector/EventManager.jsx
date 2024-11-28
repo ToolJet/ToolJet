@@ -7,7 +7,7 @@ import { SwitchPage } from './ActionConfigurationPanels/SwitchPage';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import useDraggableInPortal from '@/_hooks/useDraggableInPortal';
 import _ from 'lodash';
-import { componentTypes } from '../WidgetManager/components';
+import { componentTypes } from '@/AppBuilder/WidgetManager';
 import Select from '@/_ui/Select';
 import defaultStyles from '@/_ui/Select/styles';
 import { useTranslation } from 'react-i18next';
