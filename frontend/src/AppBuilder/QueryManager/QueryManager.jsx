@@ -19,7 +19,6 @@ const QueryManager = ({ mode, darkMode }) => {
   const setSelectedDataSource = useStore((state) => state.queryPanel.setSelectedDataSource);
   const setQueryToBeRun = useStore((state) => state.queryPanel.setQueryToBeRun);
 
-  const [options, setOptions] = useState({});
   const [activeTab, setActiveTab] = useState(1);
 
   useEffect(() => {
@@ -27,10 +26,6 @@ const QueryManager = ({ mode, darkMode }) => {
       setActiveTab(1);
     }
   }, [selectedQuery?.id]);
-
-  useEffect(() => {
-    setOptions(selectedQuery?.options || {});
-  }, [selectedQuery?.options]);
 
   useEffect(() => {
     if (queryToBeRun !== null) {
@@ -64,13 +59,7 @@ const QueryManager = ({ mode, darkMode }) => {
         'd-none': loadingDataSources,
       })}
     >
-      <QueryManagerHeader
-        darkMode={darkMode}
-        options={options}
-        setOptions={setOptions}
-        setActiveTab={setActiveTab}
-        activeTab={activeTab}
-      />
+      <QueryManagerHeader darkMode={darkMode} setActiveTab={setActiveTab} activeTab={activeTab} />
       <CodeHinterContext.Provider
         value={{
           parameters: selectedQuery?.options?.parameters?.reduce(
@@ -82,7 +71,7 @@ const QueryManager = ({ mode, darkMode }) => {
           ),
         }}
       >
-        <QueryManagerBody darkMode={darkMode} options={options} setOptions={setOptions} activeTab={activeTab} />
+        <QueryManagerBody darkMode={darkMode} activeTab={activeTab} />
       </CodeHinterContext.Provider>
     </div>
   );
