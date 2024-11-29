@@ -10,7 +10,7 @@ function ControlledTabs({
   options,
   theme,
   onChange,
-  onRawBodyChange,
+  onJsonBodyChange,
   removeKeyValuePair,
   addNewKeyValuePair,
   darkMode,
@@ -34,7 +34,7 @@ function ControlledTabs({
           </ListGroup>
           {key === 'body' && (
             <div className="text-nowrap d-flex align-items-center">
-              Raw &nbsp;&nbsp;
+              Raw JSON&nbsp;&nbsp;
               <CustomToggleSwitch
                 toggleSwitchFunction={setBodyToggle}
                 action="bodyToggle"
@@ -78,10 +78,9 @@ function ControlledTabs({
                 removeKeyValuePair={removeKeyValuePair}
                 addNewKeyValuePair={addNewKeyValuePair}
                 onChange={onChange}
-                onRawBodyChange={onRawBodyChange}
+                onJsonBodyChange={onJsonBodyChange}
                 options={options['body']}
-                jsonBody={options['json_body']} // FIXME: Remove this once data migration to raw_body is complete
-                rawBody={options['raw_body']}
+                jsonBody={options['json_body']}
                 theme={theme}
                 bodyToggle={bodyToggle}
                 darkMode={darkMode}
