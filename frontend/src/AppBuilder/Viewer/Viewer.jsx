@@ -24,6 +24,8 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
   const { t } = useTranslation();
   const [isSidebarPinned, setIsSidebarPinned] = useState(localStorage.getItem('isPagesSidebarPinned') !== 'false');
   useAppData(appId, moduleId, 'view', { environmentId, versionId });
+  // const renderCount = useRef(0);
+  // renderCount.current += 1;
 
   const {
     isEditorLoading,
@@ -64,7 +66,7 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
     shallow
   );
   const getCurrentPageComponents = useStore((state) => state.getCurrentPageComponents, shallow);
-  const currentPageComponents = useMemo(() => getCurrentPageComponents(), [getCurrentPageComponents]);
+  const currentPageComponents = getCurrentPageComponents();
   const changeDarkMode = useStore((state) => state.changeDarkMode);
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
   const canvasBgColor = useStore((state) => state.getCanvasBackgroundColor('canvas', darkMode), shallow);
@@ -169,6 +171,10 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
                           backgroundColor: canvasBgColor,
                         }}
                       >
+                        {/* <p>
+                          This component has re-rendered <strong>{renderCount.current}</strong> times.
+                        </p> */}
+
                         <div className={`areas d-flex flex-rows app-${appId}`}>
                           {!isPagesSidebarHidden && (
                             <ViewerSidebarNavigation

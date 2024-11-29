@@ -65,14 +65,46 @@ export const Modal = function Modal({
   }, [showModal, id, mode]);
   /**** End - Logic to reset the zIndex of modal control box ****/
 
+  // Side effects for modal, which include dom manipulation to hide overflow when opening
+  // And cleaning up dom when modal is closed
+
+  const onShowSideEffects = () => {
+    openModal();
+    const canvasElement = document.querySelector('.page-container.canvas-container');
+    const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
+    const modalContainer = realCanvasEl.querySelector('.modal');
+
+    if (canvasElement && realCanvasEl && modalContainer) {
+      const currentScroll = canvasElement.scrollTop;
+      canvasElement.style.overflow = 'hidden';
+
+      modalContainer.style.height = `${canvasElement.offsetHeight}px`;
+      modalContainer.style.top = `${currentScroll}px`;
+    }
+  };
+
+  const onHideSideEffects = () => {
+    const canvasElement = document.querySelector('.page-container.canvas-container');
+    const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
+    const modalContainer = realCanvasEl.querySelector('.modal');
+
+    if (canvasElement && realCanvasEl && modalContainer) {
+      canvasElement.style.overflow = 'auto';
+      modalContainer.style.height = ``;
+      modalContainer.style.top = ``;
+    }
+
+    hideModal();
+  };
+
   useEffect(() => {
     const exposedVariables = {
       open: async function () {
         setExposedVariable('show', true);
-        setShowModal(true);
+        onShowSideEffects();
       },
       close: async function () {
-        setShowModal(false);
+        onHideSideEffects();
         setExposedVariable('show', false);
       },
     };
@@ -92,6 +124,24 @@ export const Modal = function Modal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showModal]);
 
+  useEffect(() => {
+    if (showModal) {
+      onShowSideEffects();
+    } else {
+      if (document.getElementsByClassName('modal-content')[0] == undefined) {
+        onHideSideEffects();
+      }
+    }
+
+    // Cleanup the effect
+    return () => {
+      if (document.getElementsByClassName('modal-content')[0] == undefined) {
+        onHideSideEffects();
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modalHeight]);
+
   function hideModal() {
     setShowModal(false);
     setExposedVariable('show', false);
@@ -102,53 +152,6 @@ export const Modal = function Modal({
     setExposedVariable('show', true);
   }
 
-  useEffect(() => {
-    const handleModalOpen = () => {
-      openModal();
-      const canvasElement = document.getElementsByClassName('canvas-container')[0];
-      const modalBackdropEl = document.getElementsByClassName('modal-backdrop')[0];
-      const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
-      const modalCanvasEl = document.getElementById(`canvas-${id}`);
-      const modalContainer = realCanvasEl.querySelector(':scope > .modal');
-
-      if (canvasElement && modalBackdropEl && modalCanvasEl && realCanvasEl && modalContainer) {
-        const currentScroll = canvasElement.scrollTop;
-        canvasElement.style.overflow = 'hidden';
-
-        modalContainer.style.height = `${canvasElement.offsetHeight}px`;
-        modalContainer.style.top = `${currentScroll}px`;
-      }
-    };
-
-    const handleModalClose = () => {
-      const canvasElement = document.getElementsByClassName('canvas-container')[0];
-      const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
-      const canvasHeight = realCanvasEl?.getAttribute('canvas-height');
-
-      if (canvasElement && realCanvasEl && canvasHeight) {
-        realCanvasEl.style.height = canvasHeight;
-        realCanvasEl.style.position = '';
-
-        realCanvasEl.style.overflow = 'auto';
-        canvasElement.style.overflow = 'auto';
-      }
-    };
-    if (showModal) {
-      handleModalOpen();
-    } else {
-      if (document.getElementsByClassName('modal-content')[0] == undefined) {
-        handleModalClose();
-      }
-    }
-
-    // Cleanup the effect
-    return () => {
-      if (document.getElementsByClassName('modal-content')[0] == undefined) {
-        handleModalClose();
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showModal, modalHeight]);
   const backwardCompatibilityCheck = height == '34' || modalHeight != undefined ? true : false;
 
   const customStyles = {
@@ -180,7 +183,7 @@ export const Modal = function Modal({
         const modalRef = parentRef?.current?.parentElement?.parentElement?.parentElement;
 
         if (modalRef && modalRef === event.target) {
-          hideModal();
+          onHideSideEffects();
         }
       };
 
@@ -235,7 +238,9 @@ export const Modal = function Modal({
         keyboard={true}
         enforceFocus={false}
         animation={false}
-        onEscapeKeyDown={() => hideOnEsc && hideModal()}
+        onShow={() => onShowSideEffects()}
+        onHide={() => onHideSideEffects()}
+        onEscapeKeyDown={() => hideOnEsc && onHideSideEffects()}
         id="modal-container"
         component-id={id}
         backdrop={'static'}
@@ -258,7 +263,7 @@ export const Modal = function Modal({
             <SubContainer
               id={`${id}`}
               canvasHeight={modalHeight}
-              styles={{ backgroundColor: customStyles.modalBody.backgroundColor }}
+              styles={{ backgroundColor: customStyles.modalBody.backgroundColor, height: modalHeight }}
               canvasWidth={modalWidth}
               darkMode={darkMode}
             />
@@ -276,19 +281,12 @@ export const Modal = function Modal({
 };
 
 const Component = ({ children, ...restProps }) => {
-  const {
-    customStyles,
-    parentRef,
-    id,
-    title,
-    titleAlignment,
-    hideTitleBar,
-    hideCloseButton,
-    hideModal,
-    showConfigHandler,
-  } = restProps['modalProps'];
+  const { customStyles, parentRef, id, title, titleAlignment, hideTitleBar, hideCloseButton, showConfigHandler } =
+    restProps['modalProps'];
 
   const setSelectedComponentAsModal = useStore((state) => state.setSelectedComponentAsModal, shallow);
+
+  console.log('Show modal', restProps.show);
   return (
     <BootstrapModal {...restProps}>
       {showConfigHandler && (
@@ -302,7 +300,11 @@ const Component = ({ children, ...restProps }) => {
         />
       )}
       {!hideTitleBar && (
-        <BootstrapModal.Header style={{ ...customStyles.modalHeader }} data-cy={`modal-header`}>
+        <BootstrapModal.Header
+          style={{ ...customStyles.modalHeader }}
+          data-cy={`modal-header`}
+          closeButton={!hideCloseButton}
+        >
           <BootstrapModal.Title
             style={{
               textAlign: titleAlignment,
@@ -313,35 +315,6 @@ const Component = ({ children, ...restProps }) => {
           >
             {title}
           </BootstrapModal.Title>
-          {!hideCloseButton && (
-            <span
-              className="cursor-pointer"
-              data-cy={`modal-close-button`}
-              size="sm"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                hideModal();
-              }}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="icon icon-tabler icon-tabler-x"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                strokeWidth="2"
-                stroke="currentColor"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </span>
-          )}
         </BootstrapModal.Header>
       )}
       <BootstrapModal.Body style={{ ...customStyles.modalBody }} ref={parentRef} id={id} data-cy={`modal-body`}>
