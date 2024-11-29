@@ -115,16 +115,21 @@ const RenderFilterFields = ({
   updateFilterOptionsChanged,
   deleteRowsOptions,
   darkMode,
+  jsonpath = '',
 }) => {
-  let displayColumns = columns.map(({ accessor }) => ({
+  let displayColumns = columns.map(({ accessor, dataType }) => ({
     value: accessor,
     label: accessor,
+    icon: dataType,
   }));
 
   operator = operators.find((val) => val.value === operator);
 
   const handleColumnChange = (selectedOption) => {
-    updateFilterOptionsChanged({ ...deleteRowsOptions?.where_filters[id], ...{ column: selectedOption.value } });
+    updateFilterOptionsChanged({
+      ...deleteRowsOptions?.where_filters[id],
+      ...{ column: selectedOption.value, columnDataType: selectedOption?.dataType || '' },
+    });
   };
 
   const handleOperatorChange = (selectedOption) => {
@@ -134,6 +139,15 @@ const RenderFilterFields = ({
   const handleValueChange = (newValue) => {
     updateFilterOptionsChanged({ ...deleteRowsOptions?.where_filters[id], ...{ value: newValue } });
   };
+
+  const handleJsonPathChange = (value) => {
+    updateFilterOptionsChanged({
+      ...deleteRowsOptions?.where_filters[id],
+      jsonpath: value,
+    });
+  };
+
+  const isSelectedColumnJsonbType = columns.find((col) => col.accessor === column)?.dataType === 'jsonb';
 
   return (
     <RenderFilterSectionUI
@@ -149,6 +163,9 @@ const RenderFilterFields = ({
       handleValueChange={handleValueChange}
       removeFilterConditionPair={removeFilterConditionPair}
       id={id}
+      isSelectedColumnJsonbType={isSelectedColumnJsonbType}
+      handleJsonPathChange={handleJsonPathChange}
+      jsonpath={jsonpath}
     />
   );
 };

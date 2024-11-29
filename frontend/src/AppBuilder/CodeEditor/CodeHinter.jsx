@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useResolveStore } from '@/_stores/resolverStore';
-import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import './styles.scss';
 import SingleLineCodeEditor from './SingleLineCodeEditor';
@@ -11,12 +10,14 @@ import Tooltip from 'react-bootstrap/Tooltip';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { isNumber } from 'lodash';
 import { Alert } from '@/_ui/Alert/Alert';
+import TJDBCodeEditor from './TJDBHinter';
 
 const CODE_EDITOR_TYPE = {
   fxEditor: SingleLineCodeEditor.EditorBridge,
   basic: SingleLineCodeEditor,
   multiline: MultiLineCodeEditor,
   extendedSingleLine: SingleLineCodeEditor,
+  tjdbHinter: TJDBCodeEditor,
 };
 
 const CodeHinter = ({ type = 'basic', initialValue, componentName, disabled, ...restProps }) => {
@@ -93,7 +94,7 @@ const PopupIcon = ({ callback, icon, tip, position, isMultiEditor = false }) => 
         overlay={<Tooltip id="button-tooltip">{tip}</Tooltip>}
       >
         <img
-          // style={{ zIndex: 10000 }}
+          style={{ zIndex: 10000 }}
           className="svg-icon m-2 popup-btn"
           src={`assets/images/icons/${icon}.svg`}
           width={size}
