@@ -223,7 +223,10 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
       );
 
       setPages(pages, moduleId);
-      setPageSettings(deepCamelCase(appData?.editing_version?.page_settings ?? appData?.page_settings));
+      setPageSettings(
+        computePageSettings(deepCamelCase(appData?.editing_version?.page_settings ?? appData?.page_settings))
+      );
+
       // set starting page as homepage initially
       let startingPage = appData.pages.find((page) => page.id === homePageId);
 
@@ -308,7 +311,6 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
           editorEnvironmentId
         );
       }
-      computePageSettings();
       useStore.getState().updateEditingVersion(appData.editing_version?.id || appData.current_version_id); //check if this is needed
       updateReleasedVersionId(appData.current_version_id);
 

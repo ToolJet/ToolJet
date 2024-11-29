@@ -341,7 +341,6 @@ export const QueryManagerBody = ({ darkMode, activeTab }) => {
       setshowLocalDataSourceDeprecationBanner(false);
     }
   }, [selectedDataSource, selectedQuery]);
-
   // if (selectedQueryId !== selectedQuery?.id) return;
   const hasPermissions =
     selectedDataSource?.scope === 'global' && selectedDataSource?.type !== DATA_SOURCE_TYPE.SAMPLE
@@ -349,6 +348,7 @@ export const QueryManagerBody = ({ darkMode, activeTab }) => {
         canReadDataSource(selectedQuery?.data_source_id) ||
         canDeleteDataSource()
       : true;
+
   return (
     <div
       className={`query-details ${selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''} ${
