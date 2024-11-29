@@ -22,8 +22,6 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
   const { t } = useTranslation();
   const [isSidebarPinned, setIsSidebarPinned] = useState(localStorage.getItem('isPagesSidebarPinned') !== 'false');
   useAppData(appId, moduleId, 'view', { environmentId, versionId });
-  // const renderCount = useRef(0);
-  // renderCount.current += 1;
 
   const {
     isEditorLoading,
@@ -172,10 +170,6 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
                           backgroundColor: canvasBgColor,
                         }}
                       >
-                        {/* <p>
-                          This component has re-rendered <strong>{renderCount.current}</strong> times.
-                        </p> */}
-
                         <div className={`areas d-flex flex-rows app-${appId}`}>
                           {currentLayout !== 'mobile' && !isPagesSidebarHidden && (
                             <ViewerSidebarNavigation
