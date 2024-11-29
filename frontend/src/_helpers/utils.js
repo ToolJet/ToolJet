@@ -1474,5 +1474,6 @@ export const checkConditionsForRoute = (conditions, conditionsObj) => {
 };
 
 export const hasBuilderRole = (roleObj) => {
-  return roleObj.name === 'builder';
+  if (roleObj.name) return roleObj.name === 'builder';
+  return false;
 };
