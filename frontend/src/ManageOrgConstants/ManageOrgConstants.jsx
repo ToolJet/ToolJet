@@ -17,6 +17,7 @@ import { BreadCrumbContext } from '@/App';
 import './ConstantFormStyle.scss';
 import { Constants, redirectToWorkspace } from '@/_helpers/utils';
 import { SearchBox } from '@/_components/SearchBox';
+import { OrganizationList } from '@/_components/OrganizationManager/List';
 const MODES = Object.freeze({
   CREATE: 'create',
   EDIT: 'edit',
@@ -429,156 +430,166 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
           />
         </Drawer>
       )}
-      <div className="align-items-center d-flex justify-content-between" style={{ marginBottom: '10px' }}>
-        <div className="tj-text-sm font-weight-500" data-cy="env-name">
-          {capitalize(activeTabEnvironment?.name)} ({globalCount + secretCount})
-        </div>
-        <div className="workspace-setting-buttons-wrap">
-          {canCreateVariable() && (
-            <ButtonSolid
-              data-cy="add-new-constant-button"
-              variant="primary"
-              onClick={() => {
-                setMode(() => MODES.CREATE);
-                setIsManageVarDrawerOpen(() => true);
-              }}
-              className="add-new-constant-button"
-              customStyles={{ minWidth: '200px', height: '32px' }}
-              disabled={isManageVarDrawerOpen}
-            >
-              + Create new constant
-            </ButtonSolid>
-          )}
-        </div>
-      </div>
-      <div className="constant-page-wrapper">
-        <div className="container-xl">
-          <div>
-            <div className="workspace-constant-header">
-              <div className="tabs-and-search">
-                <div className="tabs">
-                  <button
-                    className={`tab ${activeTab === Constants.Global ? 'active' : ''}`}
-                    onClick={() => handleTabChange(Constants.Global)}
-                  >
-                    Global constants
-                    <span className={`tab-count ${activeTab === Constants.Global ? 'active' : ''}`}>
-                      ({globalCount})
-                    </span>
-                  </button>
-                  <button
-                    className={`tab ${activeTab === Constants.Secret ? 'active' : ''}`}
-                    onClick={() => handleTabChange(Constants.Secret)}
-                  >
-                    Secrets
-                    <span className={`tab-count ${activeTab === Constants.Secret ? 'active' : ''}`}>
-                      ({secretCount})
-                    </span>
-                  </button>
-                </div>
 
-                <div className="search-bar">
-                  <SearchBox
-                    width={250}
-                    callBack={handleSearchChange}
-                    customClass="tj-common-search-input-group"
-                    autoFocus={true}
-                    placeholder={activeTab === Constants.Global ? 'Search global constants' : 'Search secrets'}
-                    onClearCallback={handleSearchClear}
-                  />
-                </div>
+      <div className="row gx-0">
+        <div className="organization-page-sidebar col">
+          <div className="workspace-nav-list-wrap">
+            <ManageOrgConstantsComponent.EnvironmentsTabs
+              allEnvironments={environments}
+              currentEnvironment={activeTabEnvironment}
+              setActiveTabEnvironment={setActiveTabEnvironment}
+              isLoading={isLoading}
+              allConstants={constants}
+            />
+          </div>
+          <OrganizationList />
+        </div>
+
+        <div className="page-wrapper mt-4" style={{ marginLeft: '50px' }}>
+          <div className="container-xl" style={{ width: '880px' }}>
+            <div className="align-items-center d-flex justify-content-between">
+              <div className="tj-text-sm font-weight-500" data-cy="env-name">
+                {capitalize(activeTabEnvironment?.name)} ({globalCount + secretCount})
+              </div>
+              <div className="workspace-setting-buttons-wrap">
+                {canCreateVariable() && (
+                  <ButtonSolid
+                    data-cy="add-new-constant-button"
+                    variant="primary"
+                    onClick={() => {
+                      setMode(() => MODES.CREATE);
+                      setIsManageVarDrawerOpen(() => true);
+                    }}
+                    className="add-new-constant-button"
+                    customStyles={{ minWidth: '200px', height: '32px' }}
+                    disabled={isManageVarDrawerOpen}
+                  >
+                    + Create new constant
+                  </ButtonSolid>
+                )}
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="workspace-variable-container-wrap mt-2">
-          <div className="container-xl" style={{ width: '880px', padding: '0px' }}>
-            <div className="workspace-constant-table-card">
-              <div className="mt-3">
-                <Alert svg="tj-info">
-                  <div
-                    className="d-flex align-items-center"
-                    style={{
-                      justifyContent: 'space-between',
-                      flexWrap: 'wrap',
-                      width: '100%',
-                    }}
-                  >
-                    <div className="text-muted" data-cy="workspace-constant-helper-text">
-                      {activeTab === Constants.Global ? (
-                        <>
-                          To resolve a global workspace constant use{' '}
-                          <strong style={{ fontWeight: 500, color: '#3E63DD' }}>{'{{constants.access_token}}'}</strong>
-                        </>
-                      ) : (
-                        <>
-                          To resolve a secret workspace constant use{' '}
-                          <strong style={{ fontWeight: 500, color: '#3E63DD' }}>{'{{secrets.access_token}}'}</strong>
-                        </>
-                      )}
-                    </div>
-
-                    <div>
-                      <Button
-                        // Todo: Update link to documentation: workspace constants
-                        onClick={() =>
-                          window.open(
-                            'https://docs.tooljet.com/docs/org-management/workspaces/workspace_constants/',
-                            '_blank'
-                          )
-                        }
-                        darkMode={darkMode}
-                        size="sm"
-                        styles={{
-                          width: '100%',
-                          fontSize: '12px',
-                          fontWeight: 500,
-                        }}
-                      >
-                        <Button.Content title={'Read documentation'} iconSrc="assets/images/icons/student.svg" />
-                      </Button>
-                    </div>
+          <div className="workspace-variable-container-wrap constants-list mt-2">
+            <div className="container-xl constant-page-wrapper">
+              <div className="workspace-constant-header">
+                <div className="tabs-and-search">
+                  <div className="tabs">
+                    <button
+                      className={`tab ${activeTab === Constants.Global ? 'active' : ''}`}
+                      onClick={() => handleTabChange(Constants.Global)}
+                    >
+                      Global constants
+                      <span className={`tab-count ${activeTab === Constants.Global ? 'active' : ''}`}>
+                        ({globalCount})
+                      </span>
+                    </button>
+                    <button
+                      className={`tab ${activeTab === Constants.Secret ? 'active' : ''}`}
+                      onClick={() => handleTabChange(Constants.Secret)}
+                    >
+                      Secrets
+                      <span className={`tab-count ${activeTab === Constants.Secret ? 'active' : ''}`}>
+                        ({secretCount})
+                      </span>
+                    </button>
                   </div>
-                </Alert>
-              </div>
-              <div className="manage-sso-container h-100">
-                <div className="d-flex manage-constant-wrapper-card">
-                  <ManageOrgConstantsComponent.EnvironmentsTabs
-                    allEnvironments={environments}
-                    currentEnvironment={activeTabEnvironment}
-                    setActiveTabEnvironment={setActiveTabEnvironment}
-                    isLoading={isLoading}
-                    allConstants={constants}
-                  />
-                  {(activeTab === Constants.Global && globalCount > 0) ||
-                  (activeTab === Constants.Secret && secretCount > 0) ? (
-                    <div className="w-100">
-                      <ConstantTable
-                        constants={currentTableData}
-                        onEditBtnClicked={onEditBtnClicked}
-                        onDeleteBtnClicked={onDeleteBtnClicked}
-                        isLoading={isLoading}
-                        canUpdateDeleteConstant={canUpdateVariable() || canDeleteVariable()}
-                      />
-                      <ManageOrgConstantsComponent.Footer
-                        darkMode={darkMode}
-                        totalPage={totalPages}
-                        pageCount={currentPage}
-                        dataLoading={false}
-                        gotoNextPage={goToNextPage}
-                        gotoPreviousPage={goToPreviousPage}
-                        showPagination={constants.length > 0}
-                      />
-                    </div>
-                  ) : (
-                    <EmptyState
-                      canCreateVariable={canCreateVariable()}
-                      setIsManageVarDrawerOpen={setIsManageVarDrawerOpen}
-                      isLoading={isLoading}
-                      searchTerm={searchTerm}
+
+                  <div className="search-bar">
+                    <SearchBox
+                      width={250}
+                      callBack={handleSearchChange}
+                      customClass="tj-common-search-input-group"
+                      autoFocus={true}
+                      placeholder={activeTab === Constants.Global ? 'Search global constants' : 'Search secrets'}
+                      onClearCallback={handleSearchClear}
                     />
-                  )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="workspace-constant-table-card">
+                <div className="mt-3">
+                  <Alert svg="tj-info">
+                    <div
+                      className="d-flex align-items-center"
+                      style={{
+                        justifyContent: 'space-between',
+                        flexWrap: 'wrap',
+                        width: '100%',
+                      }}
+                    >
+                      <div className="text-muted" data-cy="workspace-constant-helper-text">
+                        {activeTab === Constants.Global ? (
+                          <>
+                            To resolve a global workspace constant use{' '}
+                            <strong style={{ fontWeight: 500, color: '#3E63DD' }}>
+                              {'{{constants.access_token}}'}
+                            </strong>
+                          </>
+                        ) : (
+                          <>
+                            To resolve a secret workspace constant use{' '}
+                            <strong style={{ fontWeight: 500, color: '#3E63DD' }}>{'{{secrets.access_token}}'}</strong>
+                          </>
+                        )}
+                      </div>
+
+                      <div>
+                        <Button
+                          onClick={() =>
+                            window.open(
+                              'https://docs.tooljet.com/docs/org-management/workspaces/workspace_constants/',
+                              '_blank'
+                            )
+                          }
+                          darkMode={darkMode}
+                          size="sm"
+                          styles={{
+                            width: '100%',
+                            fontSize: '12px',
+                            fontWeight: 500,
+                          }}
+                        >
+                          <Button.Content title={'Read documentation'} iconSrc="assets/images/icons/student.svg" />
+                        </Button>
+                      </div>
+                    </div>
+                  </Alert>
+                </div>
+
+                <div className="manage-sso-container h-100">
+                  <div className="d-flex manage-constant-wrapper-card">
+                    {(activeTab === Constants.Global && globalCount > 0) ||
+                    (activeTab === Constants.Secret && secretCount > 0) ? (
+                      <div className="w-100">
+                        <ConstantTable
+                          constants={currentTableData}
+                          onEditBtnClicked={onEditBtnClicked}
+                          onDeleteBtnClicked={onDeleteBtnClicked}
+                          isLoading={isLoading}
+                          canUpdateDeleteConstant={canUpdateVariable() || canDeleteVariable()}
+                        />
+                        <ManageOrgConstantsComponent.Footer
+                          darkMode={darkMode}
+                          totalPage={totalPages}
+                          pageCount={currentPage}
+                          dataLoading={false}
+                          gotoNextPage={goToNextPage}
+                          gotoPreviousPage={goToPreviousPage}
+                          showPagination={constants.length > 0}
+                        />
+                      </div>
+                    ) : (
+                      <EmptyState
+                        canCreateVariable={canCreateVariable()}
+                        setIsManageVarDrawerOpen={setIsManageVarDrawerOpen}
+                        isLoading={isLoading}
+                        searchTerm={searchTerm}
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

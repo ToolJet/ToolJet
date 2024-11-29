@@ -106,6 +106,7 @@ export const Modal = function Modal({
       close: async function () {
         onHideSideEffects();
         setExposedVariable('show', false);
+        setShowModal(false);
       },
     };
     setExposedVariables(exposedVariables);
@@ -123,6 +124,16 @@ export const Modal = function Modal({
     inputRef?.blur();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showModal]);
+
+  function hideModal() {
+    setExposedVariable('show', false);
+    setShowModal(false);
+  }
+
+  function openModal() {
+    setExposedVariable('show', true);
+    setShowModal(true);
+  }
 
   useEffect(() => {
     if (showModal) {
@@ -142,15 +153,17 @@ export const Modal = function Modal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modalHeight]);
 
-  function hideModal() {
-    setShowModal(false);
-    setExposedVariable('show', false);
-  }
+  useEffect(() => {
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
+    }
 
-  function openModal() {
-    setShowModal(true);
-    setExposedVariable('show', true);
-  }
+    fireEvent(!showModal ? 'onClose' : 'onOpen');
+    const inputRef = document?.getElementsByClassName('tj-text-input-widget')?.[0];
+    inputRef?.blur();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showModal]);
 
   const backwardCompatibilityCheck = height == '34' || modalHeight != undefined ? true : false;
 

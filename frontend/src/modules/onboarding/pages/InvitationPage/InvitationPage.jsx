@@ -7,8 +7,9 @@ import invitationsStore from '@/modules/onboarding/stores/invitationsStore';
 import { LinkExpiredPage } from '@/ConfirmationPage/LinkExpiredPage';
 import { utils } from '@/modules/common/helpers';
 import { getSubpath } from '@/_helpers/routes';
-
-const PostOnboardingComponent = () => null;
+import { TJLoader } from '@/_ui/TJLoader/TJLoader';
+import useOnboardingStore from '@/modules/onboarding/stores/onboardingStore';
+const PostOnboardingComponent = () => <TJLoader />;
 
 export const InvitationPage = (darkMode = false) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -23,8 +24,8 @@ export const InvitationPage = (darkMode = false) => {
   const source = searchParams.get('source');
   const redirectTo = searchParams.get('redirectTo');
 
-  const { initiateInvitedUserOnboarding, isOnboardingStepsCompleted } = invitationsStore();
-
+  const { initiateInvitedUserOnboarding } = invitationsStore();
+  const { isOnboardingStepsCompleted } = useOnboardingStore();
   useEffect(() => {
     getUserDetails();
     // eslint-disable-next-line react-hooks/exhaustive-deps

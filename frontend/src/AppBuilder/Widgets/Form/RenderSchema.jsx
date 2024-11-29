@@ -3,7 +3,7 @@ import { getComponentToRender } from '@/AppBuilder/_helpers/editorHelpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 
-const RenderSchema = ({ component, id, onOptionChange, onOptionsChange }) => {
+const RenderSchema = ({ component, parent, id, onOptionChange, onOptionsChange, darkMode }) => {
   const ComponentToRender = useMemo(() => getComponentToRender(component?.component), [component?.component]);
   const validateWidget = useStore((state) => state.validateWidget, shallow);
 
@@ -21,13 +21,21 @@ const RenderSchema = ({ component, id, onOptionChange, onOptionsChange }) => {
     [id, onOptionsChange]
   );
 
-  const validate = (value) => {
-    return validateWidget({
-      ...{ widgetValue: value },
-      ...{ validationObject: component.definition.validation },
-    });
-  };
+  const validate = useCallback(
+    (value) => {
+      return validateWidget({
+        ...{ widgetValue: value },
+        ...{ validationObject: component.definition.validation },
+      });
+    },
+    [component.definition.validation]
+  );
 
+  const fireEvent = useCallback(() => {
+    return Promise.resolve();
+  }, []);
+
+  const formId = `${parent}-${id}`;
   return (
     <ComponentToRender
       properties={component?.definition?.properties}
@@ -39,7 +47,10 @@ const RenderSchema = ({ component, id, onOptionChange, onOptionsChange }) => {
       setExposedVariable={setExposedVariable}
       setExposedVariables={setExposedVariables}
       validate={validate}
-      fireEvent={() => {}}
+      darkMode={darkMode}
+      fireEvent={fireEvent}
+      formId={formId}
+      id={id}
     />
   );
 };

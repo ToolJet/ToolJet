@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Calendar as ReactCalendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -54,7 +54,7 @@ export const Calendar = function ({
 
   const [currentDate, setCurrentDate] = useState(defaultDate);
   const [eventPopoverOptions, setEventPopoverOptions] = useState({ show: false });
-  const [defaultView, setDefaultValue] = useState(allowedCalendarViews[0]);
+  const isInitialRender = useRef(true);
 
   const eventPropGetter = (event) => {
     const backgroundColor = event.color;
@@ -100,10 +100,10 @@ export const Calendar = function ({
     const view = allowedCalendarViews.includes(properties.defaultView)
       ? properties.defaultView
       : allowedCalendarViews[0];
-    if (currentView !== view) {
-      setDefaultValue(view);
+    if (currentView !== view || isInitialRender.current) {
       setExposedVariable('currentView', view);
       setCurrentView(view);
+      isInitialRender.current = false;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.defaultView]);
@@ -145,10 +145,9 @@ export const Calendar = function ({
         endAccessor="end"
         style={style}
         views={allowedCalendarViews}
-        defaultView={defaultView}
-        view={defaultView}
+        defaultView={properties.defaultView || allowedCalendarViews[0]}
+        view={currentView}
         onView={(view) => {
-          setDefaultValue(view);
           setExposedVariable('currentView', view);
           setCurrentView(view);
           fireEvent('onCalendarViewChange');

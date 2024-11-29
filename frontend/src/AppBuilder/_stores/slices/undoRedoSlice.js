@@ -106,6 +106,7 @@ export const createUndoRedoSlice = (set, get) => {
           componenetPropertiesToUpdate.paramType,
           componenetPropertiesToUpdate.attr,
           undefined,
+          undefined,
           { skipUndoRedo: true }
         );
       }

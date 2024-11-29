@@ -201,8 +201,9 @@ export const CreateVersion = ({ showCreateAppVersion, setShowCreateAppVersion })
                 width: '100%',
               }}
             >
+              {/* EE - change to development */}
               <div className="" data-cy="workspace-constant-helper-text">
-                The new version will be created in development environment
+                The new version will be created in production environment
               </div>
             </div>
           </Alert>

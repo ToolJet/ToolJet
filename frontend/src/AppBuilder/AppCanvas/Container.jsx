@@ -5,7 +5,7 @@ import WidgetWrapper from './WidgetWrapper';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useDrop } from 'react-dnd';
-import { addChildrenWidgetsToParent, addNewWidgetToTheEditor } from './appCanvasUtils';
+import { addChildrenWidgetsToParent, addNewWidgetToTheEditor, computeViewerBackgroundColor } from './appCanvasUtils';
 import { CANVAS_WIDTHS, NO_OF_GRIDS, WIDGETS_WITH_DEFAULT_CHILDREN } from './appCanvasConstants';
 import { useGridStore } from '@/_stores/gridStore';
 import NoComponentCanvasContainer from './NoComponentCanvasContainer';
@@ -40,7 +40,6 @@ export const Container = React.memo(
     const components = useStore((state) => state.getContainerChildrenMapping(id), shallow);
     const componentType = useStore((state) => state.getComponentTypeFromId(id), shallow);
     const addComponentToCurrentPage = useStore((state) => state.addComponentToCurrentPage, shallow);
-    const setSelectedComponents = useStore((state) => state.setSelectedComponents, shallow);
     const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab, shallow);
     const canvasBgColor = useStore(
       (state) => (id === 'canvas' ? state.getCanvasBackgroundColor('canvas', darkMode) : ''),
@@ -124,7 +123,12 @@ export const Container = React.memo(
           height: id === 'canvas' ? `${canvasHeight}` : '100%',
           // backgroundSize: '25.3953px 10px',
           backgroundSize: `${gridWidth}px 10px`,
-          backgroundColor: id === 'canvas' ? canvasBgColor : '#f0f0f0',
+          backgroundColor:
+            currentMode === 'view'
+              ? computeViewerBackgroundColor(darkMode, canvasBgColor)
+              : id === 'canvas'
+              ? canvasBgColor
+              : '#f0f0f0',
           width: getCanvasWidth(),
           maxWidth: (() => {
             // For Main Canvas
