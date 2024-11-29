@@ -63,7 +63,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
   };
 
   const previewButtonOnClick = () => {
-    const _options = { ...selectedQuery.options };
+    const _options = { ...selectedQuery?.options };
     const query = {
       data_source_id: selectedDataSource.id === 'null' ? null : selectedDataSource.id,
       pluginId: selectedDataSource.pluginId,

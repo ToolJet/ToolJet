@@ -5,6 +5,7 @@ import { ConfigHandle } from '@/AppBuilder/AppCanvas/ConfigHandle/ConfigHandle';
 import { useGridStore } from '@/_stores/gridStore';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { debounce } from 'lodash';
 var tinycolor = require('tinycolor2');
 
 export const Modal = function Modal({
@@ -109,6 +110,11 @@ export const Modal = function Modal({
       }
     };
 
+    // Add debounced version of handleModalOpen
+    const debouncedModalOpen = debounce(() => {
+      handleModalOpen();
+    }, 10);
+
     const handleModalClose = () => {
       const canvasElement = document.getElementsByClassName('canvas-container')[0];
       const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
@@ -122,11 +128,11 @@ export const Modal = function Modal({
       }
     };
     if (showModal) {
-      handleModalOpen();
+      debouncedModalOpen();
     } else {
-      if (document.getElementsByClassName('modal-content')[0] == undefined) {
-        handleModalClose();
-      }
+      // if (document.getElementsByClassName('modal-content')[0] == undefined) {
+      handleModalClose();
+      // }
     }
 
     // Cleanup the effect
