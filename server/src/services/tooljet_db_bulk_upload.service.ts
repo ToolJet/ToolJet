@@ -231,6 +231,8 @@ export class TooljetDbBulkUploadService {
       case TJDB.double_precision:
       case TJDB.bigint:
         return this.convertNumber(columnValue, supportedDataType);
+      case TJDB.jsonb:
+        return JSON.parse(columnValue);
       default:
         return columnValue;
     }

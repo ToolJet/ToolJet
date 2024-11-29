@@ -22,6 +22,7 @@ const ColumnsForm = ({
   createForeignKeyInEdit = false,
   selectedTable,
   setForeignKeys,
+  handleInputError,
 }) => {
   const [columnSelection, setColumnSelection] = useState({ index: 0, value: '', configurations: {} });
   const [hoveredColumn, setHoveredColumn] = useState(null);
@@ -117,6 +118,7 @@ const ColumnsForm = ({
           indexHover={hoveredColumn}
           foreignKeyDetails={foreignKeyDetails}
           existingForeignKeyDetails={existingForeignKeyDetails} // foreignKeys from context state
+          handleInputError={handleInputError}
         />
 
         <div className="d-flex mb-2 mt-2 border-none" style={{ maxHeight: '32px' }}>

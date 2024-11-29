@@ -7644,13 +7644,29 @@ fieldset:disabled .btn {
 }
 
 .rounded {
-    border-radius: 4px !important
+    border-radius: 4px ;
 }
 
 .rounded-0 {
     border-radius: 0 !important
 }
 
+.rounded-top-left{
+    border-top-left-radius: 4px;
+}
+
+.rounded-top-left-0{
+    border-top-left-radius: 0 !important;
+}
+.rounded-top-right-0{
+    border-top-right-radius: 0 !important;
+}
+.rounded-bottom-left-0{
+    border-bottom-left-radius: 0 !important;
+}
+.rounded-bottom-right-0{
+    border-bottom-right-radius: 0 !important;
+}
 .rounded-1 {
     border-radius: 2px !important
 }

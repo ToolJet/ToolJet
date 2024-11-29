@@ -29,6 +29,8 @@ import Skeleton from 'react-loading-skeleton';
 import Tick from '@/_ui/Icon/bulkIcons/Tick';
 import DateTimePicker from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/DateTimePicker';
 import { getLocalTimeZone, timeZonesWithOffsets } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/util';
+import CodeHinter from '@/AppBuilder/CodeEditor';
+import { resolveReferences } from '@/AppBuilder/CodeEditor/utils';
 
 const ColumnForm = ({
   onClose,
@@ -75,6 +77,7 @@ const ColumnForm = ({
   const [onDelete, setOnDelete] = useState([]);
   const [onUpdate, setOnUpdate] = useState([]);
   const isTimestamp = dataType === 'timestamp with time zone';
+  const isJsonbColumnType = dataType === 'jsonb';
   const { Option } = components;
 
   //  this is for DropDownDetails component which is react select
@@ -462,6 +465,37 @@ const ColumnForm = ({
     return matchingColumn;
   }
 
+  const [disabledSaveButton, setDisabledSaveButton] = useState(true);
+
+  useEffect(() => {
+    setDisabledSaveButton(columnName === '');
+  }, [columnName]);
+
+  const handleInputError = (bool = false) => {
+    setDisabledSaveButton(bool);
+  };
+
+  const codehinterCallback = React.useCallback(() => {
+    return (
+      <CodeHinter
+        type="tjdbHinter"
+        inEditor={false}
+        initialValue={defaultValue ? JSON.stringify(defaultValue) : ''}
+        lang="javascript"
+        onChange={(value) => {
+          const [_, __, resolvedValue] = resolveReferences(`{{${value}}}`);
+          setDefaultValue(resolvedValue);
+        }}
+        componentName={`{} ${columnName}`}
+        errorCallback={handleInputError}
+        lineNumbers={false}
+        placeholder="{}"
+        columnName={columnName}
+        showErrorMessage={true}
+      />
+    );
+  }, [defaultValue]);
+
   return (
     <>
       <div className="drawer-card-wrapper ">
@@ -586,7 +620,6 @@ const ColumnForm = ({
               />
             </div>
           )}
-
           <div className="mb-3 tj-app-input">
             <div className="form-label" data-cy="default-value-input-field-label">
               Default value
@@ -606,6 +639,10 @@ const ColumnForm = ({
                     isClearable={true}
                     isPlaceholderEnabled={true}
                   />
+                ) : isJsonbColumnType ? (
+                  <div className="tjdb-codehinter-wrapper-drawer" onKeyDown={(e) => e.stopPropagation()}>
+                    {codehinterCallback()}
+                  </div>
                 ) : !isMatchingForeignKeyColumn(selectedColumn?.Header) ? (
                   <input
                     value={selectedColumn?.dataType !== 'serial' ? defaultValue : null}
@@ -679,9 +716,7 @@ const ColumnForm = ({
               </span>
             ) : null}
           </div>
-
           {/* foreign key toggle */}
-
           <div className="row mb-3">
             <ToolTip
               message={
@@ -691,6 +726,8 @@ const ColumnForm = ({
                   ? 'Foreign key relation cannot be created for boolean type column'
                   : dataType === 'timestamp with time zone'
                   ? 'Foreign key relation cannot be created for this data type'
+                  : dataType === 'jsonb'
+                  ? 'Foreign key relation cannot be created for JSON data type'
                   : 'Fill in column details to create a foreign key relation'
               }
               placement="top"
@@ -698,7 +735,7 @@ const ColumnForm = ({
               show={
                 isEmpty(dataType) ||
                 isEmpty(columnName) ||
-                ['boolean', 'serial', 'timestamp with time zone'].includes(dataType)
+                ['boolean', 'serial', 'timestamp with time zone', 'jsonb'].includes(dataType)
               }
             >
               <div className="col-1">
@@ -721,7 +758,7 @@ const ColumnForm = ({
                       dataType?.value === 'serial' ||
                       isEmpty(dataType) ||
                       isEmpty(columnName) ||
-                      ['boolean', 'serial', 'timestamp with time zone'].includes(dataType)
+                      ['boolean', 'serial', 'timestamp with time zone', 'jsonb'].includes(dataType)
                     }
                   />
                 </label>
@@ -799,9 +836,7 @@ const ColumnForm = ({
               initiator="ForeignKeyTableForm"
             />
           </Drawer>
-
           {/* <ForeignKeyRelation tableName={selectedTable.table_name} columns={columns} /> */}
-
           <ToolTip
             message={
               selectedColumn.constraints_type.is_primary_key === true
@@ -844,63 +879,70 @@ const ColumnForm = ({
               </div>
             </div>
           </ToolTip>
-          {!['boolean', 'timestamp with time zone'].includes(dataType) && (
-            <ToolTip
-              message={
-                selectedColumn.constraints_type.is_primary_key === true
-                  ? 'Primary key values must be unique'
-                  : selectedColumn.dataType === 'serial' &&
-                    (selectedColumn.constraints_type.is_primary_key !== true ||
-                      selectedColumn.constraints_type.is_primary_key === true)
-                  ? 'Serial data type value must be unique'
-                  : null
-              }
-              placement="top"
-              tooltipClassName="tooltip-table-edit-column"
-              style={toolTipPlacementStyle}
-              show={
-                selectedColumn.constraints_type?.is_primary_key === true ||
-                (selectedColumn.dataType === 'serial' &&
+
+          <ToolTip
+            message={
+              selectedColumn.constraints_type.is_primary_key === true
+                ? 'Primary key values must be unique'
+                : selectedColumn.dataType === 'serial' &&
                   (selectedColumn.constraints_type.is_primary_key !== true ||
-                    selectedColumn.constraints_type.is_primary_key === true))
-              }
-            >
-              <div className="row mb-1">
-                <div className="col-1">
-                  <label className={`form-switch`}>
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      checked={
-                        !isUniqueConstraint && selectedColumn?.constraints_type?.is_primary_key
-                          ? true
-                          : isUniqueConstraint
-                      }
-                      onChange={(e) => {
-                        setIsUniqueConstraint(e.target.checked);
-                      }}
-                      disabled={
-                        selectedColumn?.dataType === 'serial' || selectedColumn?.constraints_type?.is_primary_key
-                      }
-                    />
-                  </label>
-                </div>
-                <div className="col d-flex flex-column">
-                  <p className="m-0 p-0 fw-500 tj-switch-text">{'UNIQUE'}</p>
-                  <p className="fw-400 secondary-text tj-text-xsm tj-switch-text">
-                    This constraint restricts entry of duplicate values in this column.
-                  </p>
-                </div>
+                    selectedColumn.constraints_type.is_primary_key === true)
+                ? 'Serial data type value must be unique'
+                : selectedColumn.dataType === 'boolean'
+                ? 'Unique constraint cannot be added for boolean type column'
+                : selectedColumn.dataType === 'timestamp with time zone'
+                ? 'Unique constraint cannot be added for this type column'
+                : selectedColumn.dataType === 'jsonb'
+                ? 'Unique constraint cannot be added for JSON type column'
+                : null
+            }
+            placement="top"
+            tooltipClassName="tooltip-table-edit-column"
+            style={toolTipPlacementStyle}
+            show={
+              selectedColumn.constraints_type?.is_primary_key === true ||
+              (selectedColumn.dataType === 'serial' &&
+                (selectedColumn.constraints_type.is_primary_key !== true ||
+                  selectedColumn.constraints_type.is_primary_key === true)) ||
+              ['boolean', 'timestamp with time zone', 'jsonb'].includes(selectedColumn.dataType)
+            }
+          >
+            <div className="row mb-1">
+              <div className="col-1">
+                <label className={`form-switch`}>
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    checked={
+                      !isUniqueConstraint && selectedColumn?.constraints_type?.is_primary_key
+                        ? true
+                        : isUniqueConstraint
+                    }
+                    onChange={(e) => {
+                      setIsUniqueConstraint(e.target.checked);
+                    }}
+                    disabled={
+                      ['serial', 'boolean', 'timestamp with time zone', 'jsonb'].includes(selectedColumn?.dataType) ||
+                      selectedColumn?.constraints_type?.is_primary_key
+                    }
+                  />
+                </label>
               </div>
-            </ToolTip>
-          )}
+              <div className="col d-flex flex-column">
+                <p className="m-0 p-0 fw-500 tj-switch-text">{'UNIQUE'}</p>
+                <p className="fw-400 secondary-text tj-text-xsm tj-switch-text">
+                  This constraint restricts entry of duplicate values in this column.
+                </p>
+              </div>
+            </div>
+          </ToolTip>
         </div>
         <DrawerFooter
           isEditMode={true}
           fetching={fetching}
           onClose={onClose}
           onEdit={handleEdit}
-          shouldDisableCreateBtn={columnName === ''}
+          shouldDisableCreateBtn={disabledSaveButton}
           showToolTipForFkOnReadDocsSection={true}
           initiator={initiator}
         />

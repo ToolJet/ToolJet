@@ -8,7 +8,9 @@ export function ReactPortal({ children, parent, className, componentName }) {
     const target = parent && parent.appendChild ? parent : document.body;
     const classList = ['portal-container', componentName];
     if (className) className.split(' ').forEach((item) => classList.push(item));
+
     classList.forEach((item) => el.classList.add(item));
+
     target.appendChild(el);
     return () => {
       el.remove();
