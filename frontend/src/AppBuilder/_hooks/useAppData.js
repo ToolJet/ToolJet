@@ -311,7 +311,6 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
           editorEnvironmentId
         );
       }
-      computePageSettings();
       useStore.getState().updateEditingVersion(appData.editing_version?.id || appData.current_version_id); //check if this is needed
       updateReleasedVersionId(appData.current_version_id);
 
