@@ -726,7 +726,7 @@ export const createComponentsSlice = (set, get) => ({
   getOtherFieldsToBeResolved: (moduleId) => {
     return {
       canvasBackgroundColor: get().globalSettings.backgroundFxQuery,
-      isPagesSidebarHidden: get().pageSettings?.properties?.disableMenu?.value,
+      isPagesSidebarHidden: get().pageSettings?.definition?.properties?.disableMenu?.value,
     };
   },
 
@@ -1651,22 +1651,17 @@ export const createComponentsSlice = (set, get) => ({
       });
     }
   },
-  computePageSettings: (moduleId, cb) => {
+  computePageSettings: (currentPageSettings) => {
     try {
       const { pageSettings: currentPageSettings } = get();
       const pageSettingMeta = cloneDeep(pageConfig);
       const mergedSettings = merge({}, pageSettingMeta.definition, currentPageSettings);
-      set((state) => {
-        state.pageSettings = {
-          ...pageConfig,
-          definition: {
-            ...mergedSettings,
-          },
-        };
-      });
-      if (cb) {
-        cb(mergedSettings.properties.disableMenu.value);
-      }
+      return {
+        ...pageConfig,
+        definition: {
+          ...mergedSettings,
+        },
+      };
     } catch (error) {
       console.log(error);
       return Promise.reject(error);
