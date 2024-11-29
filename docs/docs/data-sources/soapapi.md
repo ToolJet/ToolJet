@@ -9,9 +9,9 @@ ToolJet can establish connections with SOAP APIs using its REST API integration.
 
 ## Setting up a SOAP API Data Source
 
-To establish a connection with the SOAP API data source you will need to add REST API data source since ToolJet handles SOAP APIs using REST API configurations. 
+To establish a connection with a SOAP API data source, you will need to add a REST API data source, as ToolJet handles SOAP APIs using REST API configurations.
 
-You can refer [REST API Configuration Documentation](/docs/data-sources/restapi/) for more information.
+You can refer to [REST API Configuration Documentation](/docs/data-sources/restapi/) for more information.
 
 </div>
 
@@ -23,11 +23,11 @@ Once you have connected to the REST API data source, you can easily write querie
 
 1. Click on the **+ Add** button in the query manager at the bottom panel of the editor.
 2. Select **REST API** from the Data Source section.
-3. Select POST Method and enter your SOAP API endpoint.
+3. Select the **POST** Method and enter your SOAP API endpoint.
 4. Add Headers
-    - **Content-Type** : **text/xml** (To specify that the request body is XML.)
+    - **Content-Type** : **text/xml** (Specifies that the request body is XML.)
     - Include any other required headers (e.g., Authorization, SOAPAction).
-5. Add Request Body in XML format.
+5. Add Request **Body** in XML format.
 6. Click **Preview** to view the data returned from the query or click **Run** to execute the query.
 
 :::tip
