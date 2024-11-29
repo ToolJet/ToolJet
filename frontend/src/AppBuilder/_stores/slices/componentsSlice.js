@@ -1653,7 +1653,6 @@ export const createComponentsSlice = (set, get) => ({
   },
   computePageSettings: (currentPageSettings) => {
     try {
-      const { pageSettings: currentPageSettings } = get();
       const pageSettingMeta = cloneDeep(pageConfig);
       const mergedSettings = merge({}, pageSettingMeta.definition, currentPageSettings);
       return {
