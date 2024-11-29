@@ -518,7 +518,20 @@ Dynamic queries in MongoDB can be used to create flexible and parameterized quer
 { createdAt: new Date('01/10/2020') }
 ```
 
-Reference on [mongodb extended JSON](https://docs.mongodb.com/manual/reference/mongodb-extended-json/) supported data types
+Reference on [mongodb extended JSON](https://docs.mongodb.com/manual/reference/mongodb-extended-json/) supported data types.
+
+</div>
+
+<div style={{paddingTop:'24px'}}>
+
+## Secure Sockets Layer (SSL)
+
+- **SSL Certificate**: SSL certificate to use with MongoDB. Supported Types:
+  - **None**: No SSL certificate verification.
+  - **CA Certificate**: Requires a CA certificate to verify the server certificate.
+  - **Client Certificate**: Requires a client certificate, client key, and CA certificate to authenticate with the server.
+
+<img className="screenshot-full" src="/img/datasource-reference/mongo-db/ssl.png" alt="MongoDB - SSL Certificate" />
 
 </div>
 
