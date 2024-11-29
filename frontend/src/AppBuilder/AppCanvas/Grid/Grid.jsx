@@ -602,6 +602,10 @@ export default function Grid({ gridWidth, currentLayout }) {
               e.target.querySelector('.rbc-day-view');
             isDragOnTableORCalendar = calenderElem.contains(e.inputEvent.target);
           }
+          if (box?.component?.component === 'DropdownV2') {
+            const targetElem = e.target.querySelector('.dropdownV2-widget');
+            isDragOnTableORCalendar = targetElem.contains(e.inputEvent.target);
+          }
 
           if (
             ['RangeSlider', 'Container', 'BoundedBox', 'Kanban'].includes(box?.component?.component) ||
