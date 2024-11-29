@@ -106,7 +106,7 @@ export const containerConfig = {
       accessorKey: 'text',
       styles: ['fontWeight', 'textSize', 'textColor'],
       defaultValue: {
-        text: 'Header',
+        text: 'Container title',
         fontWeight: 'bold',
         textSize: 16,
         textColor: '#000',
@@ -134,7 +134,7 @@ export const containerConfig = {
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       headerHeight: {
-        value: `{{80}}`,
+        value: `80`,
       },
     },
   },
