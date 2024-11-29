@@ -13,7 +13,6 @@ import {
   getRefreshedToken,
   checkIfContentTypeIsURLenc,
   checkIfContentTypeIsMultipartFormData,
-  checkIfContentTypeIsJson,
   isEmpty,
   validateAndSetRequestOptionsBasedOnAuthType,
   sanitizeHeaders,
@@ -48,21 +47,13 @@ interface RestAPIResult extends QueryResult {
 
 export default class RestapiQueryService implements QueryService {
   /* Body params of the source will be overridden by body params of the query */
-  body(sourceOptions: any, queryOptions: any, hasDataSource: boolean): any {
+  body(sourceOptions: any, queryOptions: any, hasDataSource: boolean): object {
     const bodyToggle = queryOptions['body_toggle'];
     if (bodyToggle) {
-      // Use the generalized raw body if provided; otherwise, fall back to the legacy raw JSON body
-      const rawBody = queryOptions['raw_body'];
-      if (!rawBody) {
-        // For backward compatibility, check if JSON body was previously used
-        // FIXME: Remove the code inside this if condition and return undefined once data migration is complete
-        const jsonBody = queryOptions['json_body'];
-        if (!jsonBody) return undefined;
-        if (typeof jsonBody === 'string') return { key: 'json_body', value: JSON5.parse(jsonBody) };
-        else return { key: 'json_body', value: jsonBody };
-      } else {
-        return { key: 'raw_body', value: rawBody };
-      }
+      const jsonBody = queryOptions['json_body'];
+      if (!jsonBody) return undefined;
+      if (typeof jsonBody === 'string') return JSON5.parse(jsonBody);
+      else return jsonBody;
     } else {
       const _body = (queryOptions.body || []).filter((o) => {
         return o.some((e) => !isEmpty(e));
@@ -97,14 +88,13 @@ export default class RestapiQueryService implements QueryService {
     const headerEntries = Object.entries(headers);
     const isUrlEncoded = checkIfContentTypeIsURLenc(headerEntries);
     const isMultipartFormData = checkIfContentTypeIsMultipartFormData(headerEntries);
-    const isJson = checkIfContentTypeIsJson(headerEntries);
 
     /* Prefixing the base url of datasource if datasource exists */
     const url = hasDataSource ? `${sourceOptions.url || ''}${queryOptions.url || ''}` : queryOptions.url;
 
     const method = queryOptions['method'];
     const retryOnNetworkError = queryOptions['retry_network_errors'] === true;
-    const _body = method !== 'get' ? this.body(sourceOptions, queryOptions, hasDataSource) : undefined;
+    const json = method !== 'get' ? this.body(sourceOptions, queryOptions, hasDataSource) : undefined;
     const paramsFromUrl = urrl.parse(url, true).query;
     const searchParams = new URLSearchParams();
 
@@ -150,11 +140,11 @@ export default class RestapiQueryService implements QueryService {
     };
 
     if (isUrlEncoded) {
-      _requestOptions.form = _body;
-    } else if (isMultipartFormData && hasFiles(_body)) {
+      _requestOptions.form = json;
+    } else if (isMultipartFormData && hasFiles(json)) {
       const form = new FormData();
-      for (const key in _body) {
-        const value = _body[key];
+      for (const key in json) {
+        const value = json[key];
         if (isFileObject(value)) {
           const fileBuffer = Buffer.from(value?.base64Data || '', 'base64');
           form.append(key, fileBuffer, {
@@ -168,16 +158,8 @@ export default class RestapiQueryService implements QueryService {
       }
       _requestOptions.body = form;
       _requestOptions.headers = { ..._requestOptions.headers, ...form.getHeaders() };
-    } else if (_body && _body.key === 'json_body') {
-      // For backward compatibility
-      // FIXME: Remove this if condition once data migration is complete
-      _requestOptions.json = _body.value;
-    } else if (_body) {
-      if (isJson) {
-        _requestOptions.json = JSON5.parse(_body.value);
-      } else {
-        _requestOptions.body = _body.value;
-      }
+    } else {
+      _requestOptions.json = json;
     }
 
     const authValidatedRequestOptions = await validateAndSetRequestOptionsBasedOnAuthType(
