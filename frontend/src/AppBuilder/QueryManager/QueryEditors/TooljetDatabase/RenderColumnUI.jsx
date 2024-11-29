@@ -1,4 +1,5 @@
 import CodeHinter from '@/AppBuilder/CodeEditor';
+import { resolveReferences } from '@/Editor/CodeEditor/utils';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import React from 'react';
@@ -14,12 +15,14 @@ const RenderColumnUI = ({
   handleValueChange,
   removeColumnOptionsPair,
   id,
+  currentColumnType = '',
 }) => {
   column = typeof column === 'object' && column !== null ? column : { label: column, value: column };
+  const isJSonTypeColumn = currentColumnType === 'jsonb';
   return (
-    <div className="">
+    <div className="" key={id}>
       <Container fluid className="p-0">
-        <Row className="mb-2 mx-0">
+        <Row className="mx-0">
           <Col sm="6" className="p-0">
             <DropDownSelect
               useMenuPortal={true}
@@ -38,7 +41,15 @@ const RenderColumnUI = ({
               initialValue={value ? (typeof value === 'string' ? value : JSON.stringify(value)) : value}
               className="codehinter-plugins"
               placeholder="key"
-              onChange={(newValue) => handleValueChange(newValue)}
+              onChange={(newValue) => {
+                if (isJSonTypeColumn) {
+                  const [_, __, resolvedValue] = resolveReferences(`{{${newValue}}}`);
+                  handleValueChange(resolvedValue);
+                } else {
+                  handleValueChange(newValue);
+                }
+              }}
+              {...(isJSonTypeColumn && { lang: 'javascript' })}
             />
             <ButtonSolid
               size="sm"
@@ -53,6 +64,7 @@ const RenderColumnUI = ({
             </ButtonSolid>
           </Col>
         </Row>
+        {isJSonTypeColumn && <span>Use SQL mode to update values in nested JSON field </span>}
       </Container>
     </div>
   );

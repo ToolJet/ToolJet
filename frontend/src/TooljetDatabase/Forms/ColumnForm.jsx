@@ -21,6 +21,8 @@ import Skeleton from 'react-loading-skeleton';
 import DateTimePicker from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/DateTimePicker';
 import { getLocalTimeZone, timeZonesWithOffsets } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/util';
 import defaultStyles from '@/_ui/Select/styles';
+import CodeHinter from '@/AppBuilder/CodeEditor';
+import { resolveReferences } from '@/AppBuilder/CodeEditor/utils';
 
 const ColumnForm = ({
   onCreate,
@@ -57,6 +59,7 @@ const ColumnForm = ({
     label: '',
   });
   const isTimestamp = dataType?.value === 'timestamp with time zone';
+  const isJsonbColumnType = dataType?.value === 'jsonb';
 
   const tzOptions = useMemo(() => timeZonesWithOffsets(), []);
 
@@ -240,6 +243,37 @@ const ColumnForm = ({
     setOnDeletePopup(true);
   };
 
+  const [disabledSaveButton, setDisabledSaveButton] = useState(true);
+
+  useEffect(() => {
+    setDisabledSaveButton(columnName === '');
+  }, [columnName]);
+
+  const handleInputError = (bool = false) => {
+    setDisabledSaveButton(bool);
+  };
+
+  const codehinterCallback = React.useCallback(() => {
+    return (
+      <CodeHinter
+        type="tjdbHinter"
+        inEditor={false}
+        initialValue={defaultValue ? JSON.stringify(defaultValue) : ''}
+        lang="javascript"
+        onChange={(value) => {
+          const [_, __, resolvedValue] = resolveReferences(`{{${value}}}`);
+          setDefaultValue(resolvedValue);
+        }}
+        componentName={`{} ${columnName}`}
+        errorCallback={handleInputError}
+        lineNumbers={false}
+        placeholder="{}"
+        columnName={columnName}
+        showErrorMessage={true}
+      />
+    );
+  }, [defaultValue]);
+
   return (
     <div className="drawer-card-wrapper ">
       <div className="drawer-card-title ">
@@ -326,6 +360,10 @@ const ColumnForm = ({
                   isClearable={true}
                   isPlaceholderEnabled={true}
                 />
+              ) : isJsonbColumnType ? (
+                <div className="tjdb-codehinter-wrapper-drawer" onKeyDown={(e) => e.stopPropagation()}>
+                  {codehinterCallback()}
+                </div>
               ) : !foreignKeyDetails?.length > 0 && !isForeignKey ? (
                 <input
                   value={defaultValue}
@@ -387,7 +425,6 @@ const ColumnForm = ({
             </span>
           ) : null}
         </div>
-
         <div className="row mb-3">
           <ToolTip
             message={
@@ -397,6 +434,8 @@ const ColumnForm = ({
                 ? 'Foreign key relation cannot be created for boolean type column'
                 : dataType?.value === 'timestamp with time zone'
                 ? 'Foreign key relation cannot be created with this data type'
+                : isJsonbColumnType
+                ? 'Foreign key relation cannot be created for jsonb type column'
                 : 'Fill in column details to create a foreign key relation'
             }
             placement="top"
@@ -404,7 +443,7 @@ const ColumnForm = ({
             show={
               isEmpty(dataType) ||
               isEmpty(columnName) ||
-              ['boolean', 'serial', 'timestamp with time zone'].includes(dataType?.value)
+              ['boolean', 'serial', 'timestamp with time zone', 'jsonb'].includes(dataType?.value)
             }
           >
             <div className="col-1">
@@ -425,7 +464,7 @@ const ColumnForm = ({
                   disabled={
                     isEmpty(dataType) ||
                     isEmpty(columnName) ||
-                    ['serial', 'boolean', 'timestamp with time zone'].includes(dataType?.value)
+                    ['serial', 'boolean', 'timestamp with time zone', 'jsonb'].includes(dataType?.value)
                   }
                 />
               </label>
@@ -460,7 +499,6 @@ const ColumnForm = ({
             )} */}
           </div>
         </div>
-
         <Drawer
           isOpen={isForeignKeyDraweOpen}
           position="right"
@@ -499,7 +537,6 @@ const ColumnForm = ({
             initiator="ForeignKeyTableForm"
           />
         </Drawer>
-
         <div className="row mb-3">
           <div className="col-1">
             <label className={`form-switch`}>
@@ -521,8 +558,21 @@ const ColumnForm = ({
             </p>
           </div>
         </div>
-        {!['boolean', 'timestamp with time zone'].includes(dataType?.value) && (
-          <div className="row mb-3">
+        <div className="row mb-3">
+          <ToolTip
+            message={
+              dataType?.value === 'boolean'
+                ? 'Unique constraint cannot be added for boolean type column'
+                : dataType?.value === 'timestamp with time zone'
+                ? 'Unique constraint cannot be added for this type column'
+                : isJsonbColumnType
+                ? 'Unique constraint cannot be added for JSON type column'
+                : ''
+            }
+            placement="top"
+            tooltipClassName="tootip-table"
+            show={['boolean', 'timestamp with time zone', 'jsonb'].includes(dataType?.value)}
+          >
             <div className="col-1">
               <label className={`form-switch`}>
                 <input
@@ -532,18 +582,18 @@ const ColumnForm = ({
                   onChange={(e) => {
                     setIsUniqueConstraint(e.target.checked);
                   }}
-                  disabled={dataType?.value === 'serial'}
+                  disabled={['serial', 'boolean', 'timestamp with time zone', 'jsonb'].includes(dataType?.value)}
                 />
               </label>
             </div>
-            <div className="col d-flex flex-column">
-              <p className="m-0 p-0 fw-500 tj-switch-text">{'UNIQUE'}</p>
-              <p className="fw-400 secondary-text tj-text-xsm">
-                This constraint restricts entry of duplicate values in this column.
-              </p>
-            </div>
+          </ToolTip>
+          <div className="col d-flex flex-column">
+            <p className="m-0 p-0 fw-500 tj-switch-text">{'UNIQUE'}</p>
+            <p className="fw-400 secondary-text tj-text-xsm">
+              This constraint restricts entry of duplicate values in this column.
+            </p>
           </div>
-        )}
+        </div>
       </div>
       <DrawerFooter
         fetching={fetching}
@@ -552,7 +602,8 @@ const ColumnForm = ({
         shouldDisableCreateBtn={
           isEmpty(columnName) ||
           isEmpty(dataType) ||
-          (isNotNull === true && rows.length > 0 && isEmpty(defaultValue) && dataType?.value !== 'serial')
+          (isNotNull === true && rows.length > 0 && isEmpty(defaultValue) && dataType?.value !== 'serial') ||
+          disabledSaveButton
         }
         showToolTipForFkOnReadDocsSection={true}
         initiator={initiator}
