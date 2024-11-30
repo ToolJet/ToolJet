@@ -3815,10 +3815,13 @@ fieldset:disabled .btn {
 }
 
 .tab-content>.tab-pane {
-    @include scrollable();
     display: none
 }
 
+.user-group-scrollable {
+    @include scrollable(60vh); /* Adjust the max-height if necessary */
+}
+  
 .tab-content>.active {
     display: block
 }
