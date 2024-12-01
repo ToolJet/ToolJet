@@ -10,12 +10,12 @@ export const datepickerV2Config = {
   validation: {
     minDate: {
       type: 'code',
-      placeholder: 'DD/MM/YYYY',
+      placeholder: 'MM/DD/YYYY',
       displayName: 'Min Date',
     },
     maxDate: {
       type: 'code',
-      placeholder: 'DD/MM/YYYY',
+      placeholder: 'MM/DD/YYYY',
       displayName: 'Max Date',
     },
     minTime: {
@@ -112,21 +112,40 @@ export const datepickerV2Config = {
     {
       handle: 'setValue',
       displayName: 'Set value',
-      params: [{ handle: 'setValue', displayName: 'Value', type: 'string' }],
+      params: [
+        { handle: 'value', displayName: 'Value' },
+        { handle: 'format', displayName: 'Format' },
+      ],
     },
     {
       handle: 'clearValue',
       displayName: 'Clear value',
     },
     {
-      handle: 'setValueinTimeStamp',
+      handle: 'setDate',
+      displayName: 'Set date',
+      params: [
+        { handle: 'date', displayName: 'Value' },
+        { handle: 'format', displayName: 'Format' },
+      ],
+    },
+    {
+      handle: 'setTime',
+      displayName: 'Set time',
+      params: [
+        { handle: 'setTime', displayName: 'Value' },
+        { handle: 'format', displayName: 'Format' },
+      ],
+    },
+    {
+      handle: 'setValueInTimeStamp',
       displayName: 'Set value in timestamp',
-      params: [{ handle: 'setValueinTimeStamp', displayName: 'Value', type: 'string' }],
+      params: [{ handle: 'setValueinTimeStamp', displayName: 'Value' }],
     },
     {
       handle: 'setDisabledDates',
       displayName: 'Set disabled dates',
-      params: [{ handle: 'setDisabledDates', displayName: 'Value', type: 'array' }],
+      params: [{ handle: 'setDisabledDates', displayName: 'Value' }],
     },
     {
       handle: 'clearDisabledDates',
@@ -135,32 +154,32 @@ export const datepickerV2Config = {
     {
       handle: 'setMinDate',
       displayName: 'Set min date',
-      params: [{ handle: 'setMinDate', displayName: 'Value', type: 'string' }],
+      params: [{ handle: 'setMinDate', displayName: 'Value' }],
     },
     {
       handle: 'setMaxDate',
       displayName: 'Set max date',
-      params: [{ handle: 'setMaxDate', displayName: 'Value', type: 'string' }],
+      params: [{ handle: 'setMaxDate', displayName: 'Value' }],
     },
     {
       handle: 'setMinTime',
       displayName: 'Set min time',
-      params: [{ handle: 'setMinTime', displayName: 'Value', type: 'string' }],
+      params: [{ handle: 'setMinTime', displayName: 'Value' }],
     },
     {
       handle: 'setMaxTime',
       displayName: 'Set max time',
-      params: [{ handle: 'setMaxTime', displayName: 'Value', type: 'string' }],
+      params: [{ handle: 'setMaxTime', displayName: 'Value' }],
     },
     {
       handle: 'setDisplayTimezone',
-      displayName: 'Set Display timezone',
-      params: [{ handle: 'setDisplayTimezone', displayName: 'Value', type: 'string' }],
+      displayName: 'Set display timezone',
+      params: [{ handle: 'setDisplayTimezone', displayName: 'Value' }],
     },
     {
       handle: 'setStoreTimezone',
       displayName: 'Set store timezone',
-      params: [{ handle: 'setStoreTimezone', displayName: 'Value', type: 'string' }],
+      params: [{ handle: 'setStoreTimezone', displayName: 'Value' }],
     },
     {
       handle: 'setVisibility',

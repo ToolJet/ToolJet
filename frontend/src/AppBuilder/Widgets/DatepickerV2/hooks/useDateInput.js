@@ -4,7 +4,8 @@ import { DISABLED_DATE_FORMAT } from '../constants';
 
 const useDateInput = ({ validation, setExposedVariable, setExposedVariables }) => {
   const isInitialRender = useRef(true);
-
+  const { disabledDates } = validation;
+  const [excludedDates, setExcludedDates] = useState([]);
   const [minDate, setMinDate] = useState(moment(validation.minDate, DISABLED_DATE_FORMAT).toDate());
   const [maxDate, setMaxDate] = useState(moment(validation.maxDate, DISABLED_DATE_FORMAT).toDate());
 
@@ -50,12 +51,33 @@ const useDateInput = ({ validation, setExposedVariable, setExposedVariables }) =
           setExposedVariable('maxDate', date);
         }
       },
+      setDisabledDates: (dates) => {
+        setExcludedDates(dates);
+      },
+      clearDisabledDates: () => {
+        setExcludedDates([]);
+      },
     };
     setExposedVariables(exposedVariables);
 
     isInitialRender.current = false;
   }, []);
-  return { minDate, maxDate };
+
+  useEffect(() => {
+    if (Array.isArray(disabledDates) && disabledDates.length > 0) {
+      const _exluded = [];
+      disabledDates?.map((item) => {
+        if (moment(item, DISABLED_DATE_FORMAT).isValid()) {
+          _exluded.push(moment(item, DISABLED_DATE_FORMAT).toDate());
+        }
+      });
+
+      setExcludedDates(_exluded);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disabledDates]);
+
+  return { minDate, maxDate, excludedDates };
 };
 
 export default useDateInput;

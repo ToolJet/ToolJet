@@ -31,7 +31,7 @@ const useTimeInput = ({ validation, setExposedVariable, setExposedVariables }) =
       },
     };
     setExposedVariables(exposedVariables);
-    if (isInitialRender.current) return;
+    isInitialRender.current = false;
   }, []);
 
   return { minTime, maxTime };

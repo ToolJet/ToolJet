@@ -15,6 +15,7 @@ export const BaseDateComponent = ({
   loading,
   darkMode,
   label,
+  focus,
   visibility,
   isMandatory,
   componentName,
@@ -47,7 +48,7 @@ export const BaseDateComponent = ({
     height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
     width: '100%',
     borderColor: focus
-      ? accentColor != '4368E3'
+      ? accentColor != '#4368E3'
         ? accentColor
         : 'var(--primary-accent-strong)'
       : fieldBorderColor != '#CCD1D5'

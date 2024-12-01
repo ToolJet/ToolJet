@@ -1,6 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import moment from 'moment-timezone';
-import { DISABLED_DATE_FORMAT } from '../constants';
 
 const useDatetimeInput = ({
   properties,
@@ -12,11 +10,10 @@ const useDatetimeInput = ({
   datePickerRef,
 }) => {
   const isInitialRender = useRef(true);
-  const { disabledDates, mandatory: isMandatory } = validation;
+  const { mandatory: isMandatory } = validation;
   const [visibility, setVisibility] = useState(properties.visibility);
   const [loading, setLoading] = useState(properties.loadingState);
   const [disable, setDisable] = useState(properties.disabledState);
-  const [excludedDates, setExcludedDates] = useState([]);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [textInputFocus, setTextInputFocus] = useState(false);
 
@@ -90,12 +87,6 @@ const useDatetimeInput = ({
         setExposedVariable('isDisabled', disable);
         setDisable(disable);
       },
-      setDisabledDates: (dates) => {
-        setExcludedDates(dates);
-      },
-      clearDisabledDates: () => {
-        setExcludedDates([]);
-      },
       setFocus: () => {
         setIsCalendarOpen(true);
         setTextInputFocus(true);
@@ -109,29 +100,15 @@ const useDatetimeInput = ({
     isInitialRender.current = false;
   }, []);
 
-  useEffect(() => {
-    if (Array.isArray(disabledDates) && disabledDates.length > 0) {
-      const _exluded = [];
-      disabledDates?.map((item) => {
-        if (moment(item, DISABLED_DATE_FORMAT).isValid()) {
-          _exluded.push(moment(item, DISABLED_DATE_FORMAT).toDate());
-        }
-      });
-
-      setExcludedDates(_exluded);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [disabledDates]);
-
   return {
     visibility,
     loading,
     disable,
-    excludedDates,
     isMandatory,
     textInputFocus,
     setTextInputFocus,
     setIsCalendarOpen,
+    focus,
   };
 };
 

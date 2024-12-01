@@ -46,17 +46,9 @@ export const DatepickerV2 = ({
   const dateLogic = useDateInput(inputProps);
   const timeLogic = useTimeInput(inputProps);
 
-  const {
-    disable,
-    loading,
-    visibility,
-    excludedDates,
-    isMandatory,
-    textInputFocus,
-    setTextInputFocus,
-    setIsCalendarOpen,
-  } = dateTimeLogic;
-  const { minDate, maxDate } = dateLogic;
+  const { disable, loading, focus, visibility, isMandatory, textInputFocus, setTextInputFocus, setIsCalendarOpen } =
+    dateTimeLogic;
+  const { minDate, maxDate, excludedDates } = dateLogic;
   const { minTime, maxTime } = timeLogic;
   const { label, defaultValue, dateFormat, timeFormat, isTimezoneEnabled } = properties;
   const { customRule } = validation;
@@ -78,8 +70,8 @@ export const DatepickerV2 = ({
   );
   const [datepickerMode, setDatePickerMode] = useState('date');
 
-  const setInputValue = (date) => {
-    const unixTimestamp = getUnixTime(date, displayFormat);
+  const setInputValue = (date, format) => {
+    const unixTimestamp = getUnixTime(date, format ? format : displayFormat);
     const selectedTimestamp = getSelectedTimestampFromUnixTimestamp(unixTimestamp, displayTimezone, isTimezoneEnabled);
     setUnixTimestamp(unixTimestamp);
     setSelectedTimestamp(selectedTimestamp);
@@ -202,8 +194,8 @@ export const DatepickerV2 = ({
 
   useEffect(() => {
     setExposedVariables({
-      setValue: (value) => {
-        setInputValue(value);
+      setValue: (value, format) => {
+        setInputValue(value, format);
       },
       clearValue: () => {
         setInputValue(null);
@@ -211,39 +203,39 @@ export const DatepickerV2 = ({
       setValueInTimestamp: (timeStamp) => {
         setInputValue(timeStamp);
       },
-      setDate: (date) => {
-        const [day, month, year] = date.split('/');
-        const updatedSelectedTimestamp = moment(selectedTimestamp);
-        updatedSelectedTimestamp.set('year', year);
-        updatedSelectedTimestamp.set('month', month - 1);
-        updatedSelectedTimestamp.set('date', day);
-        const unixTimestamp = getUnixTimestampFromSelectedTimestamp(
-          updatedSelectedTimestamp.valueOf(),
+      setDate: (date, format) => {
+        const momentObj = moment(date, [format ? format : dateFormat, displayFormat]);
+        const updatedUnixTimestamp = moment(unixTimestamp);
+        updatedUnixTimestamp.set('year', momentObj.year());
+        updatedUnixTimestamp.set('month', momentObj.month());
+        updatedUnixTimestamp.set('date', momentObj.date());
+        const selectedTimestamp = getSelectedTimestampFromUnixTimestamp(
+          updatedUnixTimestamp.valueOf(),
           displayTimezone,
           isTimezoneEnabled
         );
-        setUnixTimestamp(unixTimestamp);
-        setSelectedTimestamp(updatedSelectedTimestamp.valueOf());
-        setExposedDateVariables(unixTimestamp, updatedSelectedTimestamp.valueOf());
+        setUnixTimestamp(updatedUnixTimestamp.valueOf());
+        setSelectedTimestamp(selectedTimestamp);
+        setExposedDateVariables(updatedUnixTimestamp.valueOf(), selectedTimestamp);
         fireEvent('onSelect');
       },
-      setTime: (time) => {
-        const [hour, minute] = time.split(':');
-        const updatedSelectedTimestamp = moment(selectedTimestamp);
-        updatedSelectedTimestamp.set('hour', hour);
-        updatedSelectedTimestamp.set('minute', minute);
-        const updatedUnixTimestamp = getUnixTimestampFromSelectedTimestamp(
-          updatedSelectedTimestamp.valueOf(),
+      setTime: (time, format) => {
+        const momentObj = moment(time, [format ? format : timeFormat, displayFormat]);
+        const updatedUnixTimestamp = moment(unixTimestamp);
+        updatedUnixTimestamp.set('hour', momentObj.hour());
+        updatedUnixTimestamp.set('minute', momentObj.minute());
+        const selectedTimestamp = getSelectedTimestampFromUnixTimestamp(
+          updatedUnixTimestamp.valueOf(),
           displayTimezone,
           isTimezoneEnabled
         );
-        setUnixTimestamp(updatedUnixTimestamp);
-        setSelectedTimestamp(updatedSelectedTimestamp.valueOf());
-        setExposedDateVariables(updatedUnixTimestamp, updatedSelectedTimestamp.valueOf());
+        setUnixTimestamp(updatedUnixTimestamp.valueOf());
+        setSelectedTimestamp(selectedTimestamp);
+        setExposedDateVariables(updatedUnixTimestamp.valueOf(), selectedTimestamp);
         fireEvent('onSelect');
       },
     });
-  }, [selectedTimestamp, unixTimestamp, displayTimezone, isTimezoneEnabled, displayFormat]);
+  }, [selectedTimestamp, unixTimestamp, displayTimezone, isTimezoneEnabled, dateFormat, timeFormat, displayFormat]);
 
   useEffect(() => {
     setExposedVariables({
@@ -346,6 +338,7 @@ export const DatepickerV2 = ({
       loading={loading}
       darkMode={darkMode}
       label={label}
+      focus={focus}
       visibility={visibility}
       isMandatory={isMandatory}
       componentName={componentName}
