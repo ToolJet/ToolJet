@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import cx from 'classnames';
 import moment from 'moment-timezone';
-import { TIMEZONE_OPTIONS_MAP } from '@/AppBuilder/RightSideBar/Inspector/Components/DatepickerV2';
+import { TIMEZONE_OPTIONS_MAP } from '@/AppBuilder/RightSideBar/Inspector/Components/DatetimePickerV2';
 
 import {
   convertToIsoWithTimezoneOffset,
@@ -11,12 +11,12 @@ import {
   getUnixTimestampFromSelectedTimestamp,
   is24HourFormat,
   isDateValid,
-} from './DatepickerUtils';
+} from './utils';
 
 import { BaseDateComponent } from './BaseDateComponent';
 import { useDateInput, useTimeInput, useDatetimeInput } from './hooks';
 
-export const DatepickerV2 = ({
+export const DatetimePickerV2 = ({
   height,
   properties,
   validation,

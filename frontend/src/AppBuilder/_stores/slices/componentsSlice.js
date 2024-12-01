@@ -1829,7 +1829,7 @@ export const createComponentsSlice = (set, get) => ({
         'NumberInput',
         'DropdownV2',
         'MultiselectV2',
-        'DatepickerV2',
+        'DatetimePickerV2',
         'RadioButtonV2',
       ].includes(componentType)
     ) {

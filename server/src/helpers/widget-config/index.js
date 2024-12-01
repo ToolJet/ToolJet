@@ -54,7 +54,7 @@ import { linkConfig } from './link';
 import { iconConfig } from './icon';
 import { boundedBoxConfig } from './boundedBox';
 import { kanbanBoardConfig } from './kanbanBoard';
-import { datepickerV2Config } from './datepickerV2';
+import { datetimePickerV2Config } from './datetimepickerV2';
 
 const widgets = {
   buttonConfig,
@@ -66,7 +66,7 @@ const widgets = {
   numberinputConfig,
   passinputConfig,
   datepickerConfig,
-  datepickerV2Config,
+  datetimePickerV2Config,
   checkboxConfig,
   radiobuttonConfig, //!Depreciated
   radiobuttonV2Config,

@@ -1,8 +1,8 @@
-export const datepickerV2Config = {
-  name: 'Datepicker',
-  displayName: 'Date Picker',
+export const datetimePickerV2Config = {
+  name: 'DatetimePicker',
+  displayName: 'Datetime Picker',
   description: 'Choose date and time',
-  component: 'DatepickerV2',
+  component: 'DatetimePickerV2',
   defaultSize: {
     width: 6,
     height: 43,

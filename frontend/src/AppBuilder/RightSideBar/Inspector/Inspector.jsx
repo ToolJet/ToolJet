@@ -36,7 +36,7 @@ import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { componentTypes } from '@/AppBuilder/WidgetManager/componentTypes';
 import { copyComponents } from '@/AppBuilder/AppCanvas/appCanvasUtils.js';
-import DatepickerV2 from './Components/DatepickerV2.jsx';
+import DatetimePickerV2 from './Components/DatetimePickerV2.jsx';
 
 const INSPECTOR_HEADER_OPTIONS = [
   {
@@ -64,7 +64,7 @@ const NEW_REVAMPED_COMPONENTS = [
   'Table',
   'ToggleSwitchV2',
   'Checkbox',
-  'DatepickerV2',
+  'DatetimePickerV2',
   'DropdownV2',
   'MultiselectV2',
   'RadioButtonV2',
@@ -707,8 +707,8 @@ const GetAccordion = React.memo(
       case 'RadioButtonV2':
         return <Select {...restProps} />;
 
-      case 'DatepickerV2':
-        return <DatepickerV2 {...restProps} />;
+      case 'DatetimePickerV2':
+        return <DatetimePickerV2 {...restProps} />;
 
       default: {
         return <DefaultComponent {...restProps} />;

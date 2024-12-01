@@ -87,7 +87,7 @@ export const TIMEZONE_OPTIONS_MAP = TIMEZONE_OPTIONS.reduce((acc, curr) => {
   return acc;
 }, {});
 
-const DatepickerV2 = ({ componentMeta, darkMode, ...restProps }) => {
+const DatetimePickerV2 = ({ componentMeta, darkMode, ...restProps }) => {
   const {
     layoutPropertyChanged,
     component,
@@ -359,4 +359,4 @@ const DatepickerV2 = ({ componentMeta, darkMode, ...restProps }) => {
   return <Accordion items={items} />;
 };
 
-export default DatepickerV2;
+export default DatetimePickerV2;

@@ -19,7 +19,7 @@ const shouldAddBoxShadowAndVisibility = [
   'DropdownV2',
   'MultiselectV2',
   'RadioButtonV2',
-  'DatepickerV2',
+  'DatetimePickerV2',
 ];
 
 const RenderWidget = ({
