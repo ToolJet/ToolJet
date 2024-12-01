@@ -8,7 +8,11 @@ export const getUnixTime = (date, displayFormat) => {
   return val === 'Invalid date' ? null : val;
 };
 
-export const getSelectedTimestampFromUnixTimestamp = (unixTimestamp, displayTimezone, isTimezoneEnabled) => {
+export const getSelectedTimestampFromUnixTimestamp = (
+  unixTimestamp,
+  displayTimezone = moment.tz.guess(),
+  isTimezoneEnabled = false
+) => {
   if (!isTimezoneEnabled || !unixTimestamp) return unixTimestamp;
   const localTimeOffset = moment(unixTimestamp).utcOffset();
   const selectedTimeOffset = moment(unixTimestamp).tz(displayTimezone).utcOffset();
@@ -16,7 +20,11 @@ export const getSelectedTimestampFromUnixTimestamp = (unixTimestamp, displayTime
   return modifiedTime.valueOf() === 'Invalid date' ? null : modifiedTime.valueOf();
 };
 
-export const getUnixTimestampFromSelectedTimestamp = (selectedTime, displayTimezone, isTimezoneEnabled) => {
+export const getUnixTimestampFromSelectedTimestamp = (
+  selectedTime,
+  displayTimezone = moment.tz.guess(),
+  isTimezoneEnabled = false
+) => {
   if (!isTimezoneEnabled || !selectedTime) return selectedTime;
   const localTimeOffset = moment(selectedTime).utcOffset();
   const selectedTimeOffset = moment(selectedTime).tz(displayTimezone).utcOffset();

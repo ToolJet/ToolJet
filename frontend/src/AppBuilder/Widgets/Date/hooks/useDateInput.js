@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import moment from 'moment-timezone';
 import { DISABLED_DATE_FORMAT } from '../constants';
 
-const useDateInput = ({ validation, setExposedVariable, setExposedVariables }) => {
+const useDateInput = ({ validation = {}, setExposedVariable, setExposedVariables }) => {
   const isInitialRender = useRef(true);
   const { disabledDates } = validation;
   const [excludedDates, setExcludedDates] = useState([]);

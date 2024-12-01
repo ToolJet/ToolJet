@@ -4,7 +4,7 @@ const useDatetimeInput = ({
   properties,
   setExposedVariable,
   setExposedVariables,
-  validation,
+  validation = {},
   fireEvent,
   dateInputRef,
   datePickerRef,

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-const useTimeInput = ({ validation, setExposedVariable, setExposedVariables }) => {
+const useTimeInput = ({ validation = {}, setExposedVariable, setExposedVariables }) => {
   const isInitialRender = useRef(true);
   const [minTime, setMinTime] = useState(validation.minTime);
   const [maxTime, setMaxTime] = useState(validation.maxTime);

@@ -16288,6 +16288,44 @@ fieldset:disabled {
 
 .datetimepicker-component, #component-portal {
 
+  .datepicker-component {
+    .react-datepicker {
+      border-radius: 10px;
+      box-shadow: 8px 8px 16px 0px #3032331A;
+      height:auto;
+    }
+  }
+  
+
+  .react-datepicker-time-component {
+    border-radius: 10px;
+    width:auto;
+
+    .custom-time-input{
+      border-left:none;
+      border-radius:10px;
+      box-shadow: 8px 8px 16px 0px #3032331A;
+    }
+
+    .time-input-body {
+      padding-bottom:0px;
+    }
+    
+    .time-col {
+      height: 200px;
+    }
+
+    .react-datepicker {
+      border-radius: 10px;
+      box-shadow: 8px 8px 16px 0px #3032331A;
+    }
+    
+    .react-datepicker-time__input-container{
+      border-radius:10px;
+    }
+  }
+
+  
   .dark-theme {
     .react-datepicker__year-text, .react-datepicker__month-text {
       color: #fff;

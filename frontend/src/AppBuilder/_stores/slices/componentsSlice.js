@@ -1831,6 +1831,8 @@ export const createComponentsSlice = (set, get) => ({
         'MultiselectV2',
         'DatetimePickerV2',
         'RadioButtonV2',
+        'DatePickerV2',
+        'TimePickerV2',
       ].includes(componentType)
     ) {
       return layoutData?.height;

@@ -13,6 +13,8 @@ import { DropdownV2 } from '@/Editor/Components/DropdownV2/DropdownV2';
 import { Checkbox } from '@/Editor/Components/Checkbox';
 import { Datepicker } from '@/Editor/Components/Datepicker';
 import { DatetimePickerV2 } from '@/AppBuilder/Widgets/Date/DatetimePickerV2';
+import { DatePickerV2 } from '@/AppBuilder/Widgets/Date/DatePickerV2';
+import { TimePickerV2 } from '../Widgets/Date/TimePickerV2';
 import { DaterangePicker } from '@/Editor/Components/DaterangePicker';
 import { Multiselect } from '@/Editor/Components/Multiselect';
 import { MultiselectV2 } from '@/Editor/Components/MultiselectV2/MultiselectV2';
@@ -57,7 +59,6 @@ import { BoundedBox } from '@/Editor/Components/BoundedBox/BoundedBox';
 import { isPDFSupported } from '@/_helpers/appUtils';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { useEditorStore } from '@/_stores/editorStore';
-
 import { Container } from '@/AppBuilder/Widgets/Container';
 import { Listview } from '@/AppBuilder/Widgets/Listview';
 import { Tabs } from '@/AppBuilder/Widgets/Tabs';
@@ -99,6 +100,8 @@ export const AllComponents = {
   Checkbox,
   Datepicker,
   DatetimePickerV2,
+  DatePickerV2,
+  TimePickerV2,
   DaterangePicker,
   Multiselect,
   MultiselectV2,

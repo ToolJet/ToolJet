@@ -708,7 +708,9 @@ const GetAccordion = React.memo(
         return <Select {...restProps} />;
 
       case 'DatetimePickerV2':
-        return <DatetimePickerV2 {...restProps} />;
+      case 'DatePickerV2':
+      case 'TimePickerV2':
+        return <DatetimePickerV2 {...restProps} componentName={componentName} />;
 
       default: {
         return <DefaultComponent {...restProps} />;
