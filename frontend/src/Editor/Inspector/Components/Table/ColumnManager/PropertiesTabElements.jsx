@@ -7,7 +7,7 @@ import { ProgramaticallyHandleProperties } from '../ProgramaticallyHandlePropert
 import { OptionsList } from '../SelectOptionsList/OptionsList';
 import { ValidationProperties } from './ValidationProperties';
 import DatepickerProperties from './DatepickerProperties';
-import { Option } from '@/Editor/CodeBuilder/Elements/Select';
+import { Option } from '@/AppBuilder/CodeBuilder/Elements/Select';
 import DeprecatedColumnTypeMsg from './DeprecatedColumnTypeMsg';
 import CustomSelect from '@/_ui/Select';
 import defaultStyles from '@/_ui/Select/styles';

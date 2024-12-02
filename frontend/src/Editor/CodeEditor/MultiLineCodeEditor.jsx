@@ -13,7 +13,7 @@ import { githubLight } from '@uiw/codemirror-theme-github';
 import { findNearestSubstring, generateHints } from './autocompleteExtensionConfig';
 import ErrorBoundary from '../ErrorBoundary';
 import CodeHinter from './CodeHinter';
-import { CodeHinterContext } from '../CodeBuilder/CodeHinterContext';
+import { CodeHinterContext } from '@/AppBuilder/CodeBuilder/CodeHinterContext';
 import { createReferencesLookup } from '@/_stores/utils';
 import { PreviewBox } from './PreviewBox';
 import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';

@@ -7,7 +7,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { useEditorStore } from '@/_stores/editorStore';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { resolveReferences } from '@/_helpers/utils';
-import FxButton from '@/Editor/CodeBuilder/Elements/FxButton';
+import FxButton from '@/AppBuilder/CodeBuilder/Elements/FxButton';
 import { useTranslation } from 'react-i18next';
 import { Confirm } from '@/Editor/Viewer/Confirm';
 import { shallow } from 'zustand/shallow';
