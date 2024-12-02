@@ -19,14 +19,7 @@ import {
   sanitizeSortPairs,
 } from './utils.helper';
 import { ConnectionTestResult } from './connection_test_result.type';
-import {
-  getRefreshedToken,
-  getAuthUrl,
-  sanitizeParams,
-  checkIfContentTypeIsURLenc,
-  checkIfContentTypeIsMultipartFormData,
-  validateAndSetRequestOptionsBasedOnAuthType,
-} from './oauth';
+import { getRefreshedToken, getAuthUrl, sanitizeParams, validateAndSetRequestOptionsBasedOnAuthType } from './oauth';
 
 export {
   QueryError,
@@ -48,8 +41,6 @@ export {
   sanitizeHeaders,
   sanitizeCookies,
   sanitizeSearchParams,
-  checkIfContentTypeIsURLenc,
-  checkIfContentTypeIsMultipartFormData,
   validateAndSetRequestOptionsBasedOnAuthType,
   fetchHttpsCertsForCustomCA,
   redactHeaders,
