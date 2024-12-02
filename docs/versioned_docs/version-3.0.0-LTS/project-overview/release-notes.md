@@ -30,7 +30,7 @@ This document outlines the key improvements introduced in ToolJet 3.0, a major u
 
 ## ToolJet Database (TJ DB)
 
-1. **[Custom primary key](/docs/tooljet-db/database-editor/#primary-key)** and **[foreign key support](/docs/tooljet-db/database-editor/#foreign-key)**
+1. **[Custom primary key](/docs/tooljet-db/constraints/primary-key)** and **[foreign key support](/docs/tooljet-db/constraints/foreign-key)**
 2. Support for more data types for advanced use cases
 3. **[SQL mode](/docs/tooljet-db/querying-tooljet-db#sql-editor)** for complex querying 
 4. Bulk upload using CSV 
