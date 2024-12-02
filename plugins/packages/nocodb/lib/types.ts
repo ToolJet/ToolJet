@@ -3,6 +3,6 @@ export type QueryOptions = {
   operation: string;
   table_id: string;
   record_id: number;
-  before_id: number;
   body: string;
+  query_string: string;
 };

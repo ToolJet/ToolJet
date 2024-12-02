@@ -22,10 +22,14 @@ export default class Nocodb implements QueryService {
     const host = sourceOptions.nocodb_host;
     const baseURL = host === 'nocodb_cloud' ? 'https://app.nocodb.com' : sourceOptions.base_url;
 
+    let query_string = queryOptions.query_string || ''
+    if (query_string[0] === '?') {
+      query_string = query_string.slice(1)
+    }
     try {
       switch (operation) {
         case 'list_records': {
-          response = await got(`${baseURL}/api/v2/tables/${tableId}/records`, {
+          response = await got(`${baseURL}/api/v2/tables/${tableId}/records?${query_string}`, {
             method: 'get',
             headers: this.authHeader(apiToken),
           });
@@ -35,7 +39,7 @@ export default class Nocodb implements QueryService {
         }
 
         case 'get_count': {
-          response = await got(`${baseURL}/api/v2/tables/${tableId}/records/count`, {
+          response = await got(`${baseURL}/api/v2/tables/${tableId}/records/count?${query_string}`, {
             method: 'get',
             headers: this.authHeader(apiToken),
           });
@@ -46,7 +50,7 @@ export default class Nocodb implements QueryService {
 
         case 'get_record': {
           const record_id = queryOptions.record_id;
-          response = await got(`${baseURL}/api/v2/tables/${tableId}/records/${record_id}`, {
+          response = await got(`${baseURL}/api/v2/tables/${tableId}/records/${record_id}?${query_string}`, {
             method: 'get',
             headers: this.authHeader(apiToken),
           });
@@ -67,7 +71,7 @@ export default class Nocodb implements QueryService {
         }
 
         case 'update_record': {
-          const record_id = queryOptions.record_id;
+          const record_id = Number(queryOptions.record_id) ?? 0;
           response = await got(`${baseURL}/api/v2/tables/${tableId}/records`, {
             method: 'patch',
             headers: this.authHeader(apiToken),
@@ -82,7 +86,7 @@ export default class Nocodb implements QueryService {
         }
 
         case 'delete_record': {
-          const record_id = queryOptions.record_id;
+          const record_id = Number(queryOptions.record_id) ?? 0;
           response = await got(`${baseURL}/api/v2/tables/${tableId}/records`, {
             method: 'delete',
             headers: this.authHeader(apiToken),
