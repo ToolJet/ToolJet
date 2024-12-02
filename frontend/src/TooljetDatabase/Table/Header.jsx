@@ -14,6 +14,7 @@ import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services';
 import { isEmpty } from 'lodash';
 import DeleteIcon from '../Icons/DeleteIcon.svg';
+import config from 'config';
 
 const Header = ({
   isCreateColumnDrawerOpen,
@@ -124,8 +125,9 @@ const Header = ({
   const handleFileValidation = () => {
     const fileValidationErrors = [];
 
-    if (bulkUploadFile && bulkUploadFile.size / 1024 > 2 * 1024) {
-      fileValidationErrors.push('File size cannot exceed 2mb');
+    const maxFileSizeInMB = config.TOOLJET_DB_BULK_UPLOAD_MAX_CSV_FILE_SIZE_MB || 5;
+    if (bulkUploadFile && bulkUploadFile.size / 1024 > maxFileSizeInMB * 1024) {
+      fileValidationErrors.push(`File size cannot exceed ${maxFileSizeInMB}mb`);
     }
 
     setErrors({ server: [], client: fileValidationErrors });
