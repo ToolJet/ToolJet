@@ -52,21 +52,13 @@ export default class RestapiQueryService implements QueryService {
     context?: { user?: User; app?: App }
   ): Promise<RestAPIResult> {
     const hasDataSource = dataSourceId !== undefined;
-    const headers = sanitizeHeaders(sourceOptions, queryOptions, hasDataSource);
-    const method = queryOptions['method'];
     const url = this.constructUrl(sourceOptions, queryOptions, hasDataSource);
-    const searchParams = this.buildSearchParams(sourceOptions, queryOptions, hasDataSource, url);
-    const body = this.prepareRequestBody(sourceOptions, queryOptions, hasDataSource);
-
     const _requestOptions = await this.prepareValidatedRequestOptions(
       context,
       sourceOptions,
       queryOptions,
       hasDataSource,
-      method,
-      headers,
-      searchParams,
-      body
+      url
     );
 
     if (_requestOptions.status === 'needs_oauth') return _requestOptions;
@@ -94,11 +86,11 @@ export default class RestapiQueryService implements QueryService {
     sourceOptions: any,
     queryOptions: any,
     hasDataSource: boolean,
-    method: any,
-    headers: { [k: string]: string },
-    searchParams: URLSearchParams,
-    body: any
+    url: string
   ) {
+    const headers = sanitizeHeaders(sourceOptions, queryOptions, hasDataSource);
+    const method = queryOptions['method'];
+    const searchParams = this.buildSearchParams(sourceOptions, queryOptions, hasDataSource, url);
     const _requestOptions = {
       method,
       ...this.fetchHttpsCertsForCustomCA(sourceOptions),
@@ -107,6 +99,8 @@ export default class RestapiQueryService implements QueryService {
       ...(queryOptions['retry_network_errors'] === true ? {} : { retry: 0 }),
     };
     this.addCookiesToRequest(sourceOptions, queryOptions, hasDataSource, _requestOptions);
+
+    const body = this.prepareRequestBody(sourceOptions, queryOptions, hasDataSource);
     this.addBodyToRequest(_requestOptions, body);
 
     const authValidatedRequestOptions = await validateAndSetRequestOptionsBasedOnAuthType(
@@ -117,7 +111,6 @@ export default class RestapiQueryService implements QueryService {
     return authValidatedRequestOptions;
   }
 
-  /* Body params of the source will be overridden by body params of the query */
   prepareRequestBody(
     sourceOptions: any,
     queryOptions: any,
@@ -134,7 +127,7 @@ export default class RestapiQueryService implements QueryService {
     const _body = (queryOptions.body || []).filter((o) => {
       return o.some((e) => !isEmpty(e));
     });
-
+    // Body params of the source will be overridden by body params of the query
     if (!hasDataSource) return Object.fromEntries(_body);
 
     const bodyParams = _body.concat(sourceOptions.body || []);
