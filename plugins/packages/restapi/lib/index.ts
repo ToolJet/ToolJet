@@ -115,7 +115,7 @@ export default class RestapiQueryService implements QueryService {
     sourceOptions: any,
     queryOptions: any,
     hasDataSource: boolean
-  ): string | Record<string, unknown> | undefined {
+  ): undefined | string | Record<string, unknown> {
     if (queryOptions.method === 'get') return undefined;
     if (queryOptions['body_toggle']) {
       // For backward compatibility, check if JSON body was previously used
@@ -146,7 +146,7 @@ export default class RestapiQueryService implements QueryService {
   private maybeParseJson(body: string): any {
     try {
       return JSON5.parse(body);
-    } catch (error) {
+    } catch {
       return body;
     }
   }
