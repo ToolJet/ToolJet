@@ -33,7 +33,7 @@ const FormTextInput = ({
       )}
 
       {disabled ? (
-        <p className="form-input__field form-input__field--disabled" data-cy={`{dataCy}-input-value`}>
+        <p className="form-input__field form-input__field--disabled" data-cy={`${dataCy}-input-value`}>
           {value}
         </p>
       ) : (
@@ -51,7 +51,12 @@ const FormTextInput = ({
             autoComplete="off"
             {...(maxLength ? { maxLength } : {})}
           />
-          <span className={`tj-input-error form-input__error${error ? '__error-enabled' : ''}`}>{error}</span>
+          <span
+            className={`tj-input-error form-input__error${error ? '__error-enabled' : ''}`}
+            data-cy={`${dataCy}-error-message`}
+          >
+            {error}
+          </span>
         </>
       )}
     </div>
