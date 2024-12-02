@@ -9,7 +9,7 @@ This guide explains how to perform a server side search operation on the **Table
 
 ## Add Table Component
 
-Before performing the search operation, add the **Table** component and populate it with data.:
+Before performing the search operation, add the **Table** component and populate it with data:
 
 1. Drag a **Table** component from the right component library to the canvas.
 2. Select a data source and create a new query using the query panel at the bottom. We are going to use ToolJet’s sample data source (Postgres) in this guide. Add the following query to fetch the data from the database:
@@ -31,7 +31,7 @@ LIMIT 100
 
 Follow the mentioned steps to perform server side search operation on the **Table** component:
 
-1. Enable Server side Search under the **Table** properties.
+1. Enable Server side Search under the **Table** component properties.
     
 <img className="screenshot-full" src="/img/widgets/table/serverside-operations/search-property.png" alt="Enable server side search operation" />
     
@@ -49,7 +49,7 @@ LIMIT 100
     
 The above query searches for the searched text in the city, state and country columns on the server side and returns the data. *Note: Make sure to replace table1 with your **Table** component name.*
     
-3. Add an Event Handler in **Table** component:<br/>
+3. Add an Event Handler to the **Table** component:<br/>
     Event: **Search**<br/>
     Action: **Run Query**   
     Query: **Select Your Query**<br/>
@@ -62,6 +62,6 @@ This will run the query and fetch the data every time something is searched.
     
 <img className="screenshot-full" src="/img/widgets/table/serverside-operations/search-loading.png" alt="Add loading state" />
 
-This is how server-side search operation is implemented in ToolJet's **Table** component. Now when a search is performed in the **Table** component, the query is executed on the server, allowing the search to be applied across the entire dataset.
+This is how server side search operation is implemented in ToolJet's **Table** component. Now when a search is performed in the **Table** component, the query is executed on the server, allowing the search to be applied across the entire dataset.
 
 </div>
