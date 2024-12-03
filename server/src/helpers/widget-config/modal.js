@@ -36,6 +36,34 @@ export const modalConfig = {
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
+    triggerVisibility: {
+      type: 'toggle',
+      displayName: 'Modal trigger visibility',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+    },
+    disabledTrigger: {
+      type: 'toggle',
+      displayName: 'Disable modal trigger',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
+    disabledModal: {
+      type: 'toggle',
+      displayName: 'Disable modal window',
+      section: 'additionalActions',
       validation: {
         schema: { type: 'boolean' },
         defaultValue: false,

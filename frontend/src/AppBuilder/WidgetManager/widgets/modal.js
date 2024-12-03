@@ -27,6 +27,34 @@ export const modalConfig = {
         schema: { type: 'boolean' },
         defaultValue: false,
       },
+      section: 'additionalActions',
+    },
+    triggerVisibility: {
+      type: 'toggle',
+      displayName: 'Modal trigger visibility',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+      section: 'additionalActions',
+    },
+    disabledTrigger: {
+      type: 'toggle',
+      displayName: 'Disable modal trigger',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
+    disabledModal: {
+      type: 'toggle',
+      displayName: 'Disable modal window',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
     },
     useDefaultButton: {
       type: 'toggle',
