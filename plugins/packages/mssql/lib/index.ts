@@ -16,8 +16,8 @@ const recognizedBooleans = {
   no: false,
 };
 
-function interpretValue(value: string): string | boolean {
-  return recognizedBooleans[value.toLowerCase()] ?? value;
+function interpretValue(value: string): string | boolean | number {
+  return recognizedBooleans[value.toLowerCase()] ?? (!isNaN(Number.parseInt(value)) ? Number.parseInt(value) : value);
 }
 
 export default class MssqlQueryService implements QueryService {
