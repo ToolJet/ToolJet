@@ -27,6 +27,7 @@ export const modalConfig = {
         schema: { type: 'boolean' },
         defaultValue: false,
       },
+      section: 'additionalActions',
     },
     triggerVisibility: {
       type: 'toggle',
@@ -35,6 +36,7 @@ export const modalConfig = {
         schema: { type: 'boolean' },
         defaultValue: true,
       },
+      section: 'additionalActions',
     },
     disabledTrigger: {
       type: 'toggle',
@@ -43,6 +45,7 @@ export const modalConfig = {
         schema: { type: 'boolean' },
         defaultValue: false,
       },
+      section: 'additionalActions',
     },
     disabledModal: {
       type: 'toggle',
@@ -51,6 +54,7 @@ export const modalConfig = {
         schema: { type: 'boolean' },
         defaultValue: false,
       },
+      section: 'additionalActions',
     },
     useDefaultButton: {
       type: 'toggle',
