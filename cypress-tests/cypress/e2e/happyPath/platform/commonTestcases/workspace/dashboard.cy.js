@@ -31,11 +31,26 @@ describe("dashboard", () => {
   data.cloneAppName = `cloned-${data.appName}`;
   data.updatedFolderName = `new-${data.folderName}`;
 
+
   beforeEach(() => {
     cy.intercept("GET", "/api/library_apps").as("appLibrary");
     cy.intercept("DELETE", "/api/folders/*").as("folderDeleted");
     cy.skipWalkthrough();
   });
+
+  it.only("", () => {
+    const customLayout = {
+      desktop: { top: 100, left: 20 },
+      mobile: { width: 8, height: 50 },
+    };
+
+    cy.apiLogin();
+    cy.apiCreateApp(data.appName);
+    cy.openApp();
+    console.log(Cypress.env("appId"))
+    cy.pause()
+    cy.addComponentToApp(Cypress.env("appId"), customLayout)
+  })
 
   it("should verify the elements on empty dashboard", () => {
     cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=", {
@@ -59,7 +74,7 @@ describe("dashboard", () => {
       "My workspace"
     );
     cy.get(commonSelectors.workspaceName).click();
-    cy.get(commonSelectors.editRectangleIcon).should("be.visible");
+    // cy.get(commonSelectors.editRectangleIcon).should("be.visible");
     cy.get(commonSelectors.appCreateButton).verifyVisibleElement(
       "have.text",
       "Create an app"

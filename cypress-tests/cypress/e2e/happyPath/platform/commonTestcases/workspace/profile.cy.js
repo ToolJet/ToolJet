@@ -185,15 +185,15 @@ describe("Profile Settings", () => {
     common.logout();
 
     cy.clearAndType(commonSelectors.workEmailInputField, commonText.email);
-    cy.clearAndType(commonSelectors.passwordInputField, commonText.password);
-    cy.get(commonSelectors.loginButton).click();
+    cy.clearAndType(onboardingSelectors.passwordInput, commonText.password);
+    cy.get(onboardingSelectors.signInButton).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       profileText.loginErrorToast
     );
 
     cy.clearAndType(
-      commonSelectors.passwordInputField,
+      onboardingSelectors.passwordInput,
       profileText.newPassword
     );
     cy.get(commonSelectors.signInButton).click();
@@ -213,7 +213,7 @@ describe("Profile Settings", () => {
 
     common.logout();
 
-    cy.login(commonText.email, profileText.password);
+    cy.appUILogin(commonText.email, profileText.password);
     common.logout();
   });
 });

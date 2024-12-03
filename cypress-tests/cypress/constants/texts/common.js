@@ -52,7 +52,7 @@ export const commonText = {
   },
   closeButton: "modal close",
   workEmailLabel: "Email",
-  emailInputError: "Invalid Email",
+  emailInputError: "Email is invalid",
   passwordLabel: "Password",
   forgotPasswordLink: "Forgot?",
   loginButton: " Login",
@@ -100,11 +100,11 @@ export const commonText = {
   onboardingSeperatorText: "OR",
   getStartedButton: "Get started for free",
   emailPageHeader: "Check your mail",
-  spamMessage: "Did not receive an email? Check your spam folder.",
+  spamMessage: "Did not receive an email? Check your spam folder!",
   resendEmailButton: "Resend verification mail",
   editEmailButton: "Edit email address",
   emailVerifiedText: "Successfully verified email",
-  continueToSetUp: "Continue to set up your workspace to start using ToolJet.",
+  continueToSetUp: "Set up workspaces to manage users, applications & resources across various teams",
   createAccountCheckPoint: "Create account",
   verifyEmailCheckPoint: "Verify email",
   inalidInvitationLinkHeader: "Invalid verification link",
@@ -114,15 +114,15 @@ export const commonText = {
   forgotPasswordPageHeader: "Forgot Password",
   newToTooljetText: "New to ToolJet?",
   emailAddressLabel: "Email address",
-  resetPasswordLinkButton: " Send a reset link",
+  resetPasswordLinkButton: "Send a reset link",
   passwordResetEmailToast:
-    "Please check your email/inbox for the password reset link",
+    "Please check your email for the password reset link",
   passwordResetPageHeader: "Reset Password",
   passwordResetSuccessPageHeader: "Password has been reset",
-  newPasswordInputLabel: "New Password",
-  confirmPasswordInputFieldLabel: "Re-enter the password",
+  newPasswordInputLabel: "New Password *",
+  confirmPasswordInputFieldLabel: "Re-enter the password *",
   passwordResetSuccessToast: "Password reset successfully",
-  backToLoginButton: "Back to log in",
+  backToLoginButton: "Back to login",
   resetPasswordPageDescription:
     "Your password has been reset successfully, log into ToolJet to continue your session",
   labelFullNameInput: "Enter full name",
@@ -135,13 +135,13 @@ export const commonText = {
   addNewDataSourceButton: "Add new datasource",
 
   emailPageDescription: (email) => {
-    return `We’ve sent an email to ${email} with a verification link. Please use that to verify your email address.`;
+    return `We've sent a verification email to ${email}. Click the link inside to confirm your email and continue. This helps us ensure account security.`
   },
   companyPageHeader: (userName) => {
     return `Where do you work ${userName}?`;
   },
   resetPasswordEmailDescription: (email) => {
-    return `We’ve sent an email to ${email} with a password reset link. Please click on that link to reset your password.`;
+    return `We've sent a password reset link to ${email}. Click the link inside to reset your password and continue.`;
   },
   userJobRole: {
     HeadOfEngineering: "Head of engineering",

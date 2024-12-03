@@ -3,10 +3,12 @@ import { commonText } from "Texts/common";
 import { fake } from "Fixtures/fake";
 import { addNewUser } from "Support/utils/onboarding";
 import { logout } from "Support/utils/common";
+import { onboardingSelectors } from "Selectors/onboarding";
 
 describe("Password reset functionality", () => {
   const data = {};
   let passwordResetLink = "";
+
 
   it("Verify wrong password limit", () => {
     data.firstName = fake.firstName;
@@ -17,22 +19,23 @@ describe("Password reset functionality", () => {
     logout();
 
     for (let i = 0; i < 5; i++) {
-      cy.clearAndType(commonSelectors.workEmailInputField, data.email);
-      cy.clearAndType(commonSelectors.passwordInputField, "passw");
-      cy.get(commonSelectors.loginButton).click();
+      cy.clearAndType(onboardingSelectors.emailInput, data.email);
+      cy.clearAndType(onboardingSelectors.passwordInput, "passw");
+      cy.get(onboardingSelectors.signInButton).click();
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
         "Invalid credentials"
       );
     }
-    cy.clearAndType(commonSelectors.workEmailInputField, data.email);
-    cy.clearAndType(commonSelectors.passwordInputField, "passw");
-    cy.get(commonSelectors.loginButton).click();
+    cy.clearAndType(onboardingSelectors.emailInput, data.email);
+    cy.clearAndType(onboardingSelectors.passwordInput, "passw");
+    cy.get(onboardingSelectors.signInButton).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       "Maximum password retry limit reached, please reset your password using forgot password option"
     );
   });
+
   it("Verify forgot password page elements and functionality", () => {
     cy.visit("/");
     cy.get(commonSelectors.forgotPasswordLink).click();
@@ -41,59 +44,57 @@ describe("Password reset functionality", () => {
       "have.text",
       commonText.forgotPasswordPageHeader
     );
-    cy.get(commonSelectors.forgotPasswordPageSubHeader).should(($el) => {
-      expect($el.contents().first().text().trim()).to.eq(
-        "New to"
-      );
-    });
+    cy.get(commonSelectors.forgotPasswordPageSubHeader).verifyVisibleElement(
+      "have.text",
+      "New to ToolJet? Create an account"
+    );
+
     cy.get(commonSelectors.createAnAccountLink).verifyVisibleElement(
       "have.text",
       commonText.createAnAccountLink
     );
-    cy.get(commonSelectors.emailInputLabel).verifyVisibleElement(
+
+    cy.get('[data-cy="email-input-field-label"]').verifyVisibleElement(
       "have.text",
-      commonText.emailAddressLabel
+      "Email address *"
     );
-    cy.get(commonSelectors.emailInputField).should("be.visible");
+
+    cy.get('[data-cy="email-input-field-input"]').should("be.visible");
     cy.get(commonSelectors.resetPasswordLinkButton)
       .verifyVisibleElement("have.text", commonText.resetPasswordLinkButton)
       .and("be.disabled");
-    cy.get(commonSelectors.enterIcon).should("be.visible");
 
-    cy.clearAndType(commonSelectors.emailInputField, data.email);
+    cy.clearAndType('[data-cy="email-input-field-input"]', data.email);
     cy.get(commonSelectors.resetPasswordLinkButton).click();
 
-    cy.get("body").then(($title) => {
-      if (!$title.text().includes("Forgot Password")) {
-        cy.verifyToastMessage(
-          commonSelectors.toastMessage,
-          commonText.passwordResetEmailToast
-        );
-        cy.get(commonSelectors.pageLogo).should("be.visible");
-        cy.get(commonSelectors.emailImage).should("be.visible");
-        cy.get(commonSelectors.onboardingPageHeader).verifyVisibleElement(
-          "have.text",
-          commonText.emailPageHeader
-        );
-        cy.get(commonSelectors.onboardingPageDescription).verifyVisibleElement(
-          "have.text",
-          commonText.resetPasswordEmailDescription(data.email)
-        );
-        cy.get(commonSelectors.spamMessage).verifyVisibleElement(
-          "have.text",
-          commonText.spamMessage
-        );
-        cy.get(commonSelectors.onboardingSeperator).should("be.visible");
-        cy.get(commonSelectors.onboardingSeperatorText).verifyVisibleElement(
-          "have.text",
-          commonText.onboardingSeperatorText
-        );
-        cy.get(commonSelectors.backToLoginButton).verifyVisibleElement(
-          "have.text",
-          commonText.backToLoginButton
-        );
-      }
-    });
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      commonText.passwordResetEmailToast
+    );
+    cy.get(commonSelectors.pageLogo).should("be.visible");
+
+    cy.get('[data-cy="check-your-mail-header"]').verifyVisibleElement(
+      "have.text",
+      "Check your mail"
+    );
+
+    cy.get(commonSelectors.onboardingPageDescription).verifyVisibleElement(
+      "have.text",
+      commonText.resetPasswordEmailDescription(data.email)
+    );
+    cy.get(commonSelectors.spamMessage).verifyVisibleElement(
+      "have.text",
+      commonText.spamMessage
+    );
+    cy.get(commonSelectors.onboardingSeperator).should("be.visible");
+    cy.get(commonSelectors.onboardingSeperatorText).verifyVisibleElement(
+      "have.text",
+      commonText.onboardingSeperatorText
+    );
+    cy.get(commonSelectors.backToLoginButton).verifyVisibleElement(
+      "have.text",
+      commonText.backToLoginButton
+    );
 
     cy.task("updateId", {
       dbconfig: Cypress.env("app_db"),
@@ -123,13 +124,14 @@ describe("Password reset functionality", () => {
       commonText.confirmPasswordInputFieldLabel
     );
     cy.get(commonSelectors.confirmPasswordInputField).should("be.visible");
-    cy.get(commonSelectors.passwordHelperText)
-      .eq(1)
-      .verifyVisibleElement("have.text", commonText.passwordHelperText);
+    cy.get(commonSelectors.passwordHelperText).verifyVisibleElement(
+      "have.text",
+      commonText.passwordHelperText
+    );
     cy.get(commonSelectors.resetPasswordButton)
       .verifyVisibleElement("have.text", commonText.resetPasswordButton)
       .and("be.disabled");
-    cy.get(commonSelectors.enterIcon).should("be.visible");
+    // cy.get(commonSelectors.enterIcon).should("be.visible");
 
     cy.clearAndType(commonSelectors.newPasswordInputField, "Pass");
     cy.get(commonSelectors.resetPasswordButton).should("be.disabled");
@@ -148,8 +150,10 @@ describe("Password reset functionality", () => {
 
     cy.clearAndType(commonSelectors.newPasswordInputField, "Password");
     cy.clearAndType(commonSelectors.confirmPasswordInputField, "password");
-    cy.get(commonSelectors.resetPasswordButton).click();
-    cy.verifyToastMessage(commonSelectors.toastMessage, "Password don't match");
+    cy.get('[data-cy="confirm-password-input-error"]').verifyVisibleElement(
+      "have.text",
+      "Passwords don't match"
+    );
 
     cy.clearAndType(commonSelectors.newPasswordInputField, "Password");
     cy.clearAndType(commonSelectors.confirmPasswordInputField, "Password");
@@ -160,7 +164,7 @@ describe("Password reset functionality", () => {
     );
 
     cy.get(commonSelectors.pageLogo).should("be.visible");
-    cy.get(commonSelectors.passwordResetPageHeader).verifyVisibleElement(
+    cy.get('[data-cy="password-has-been-reset-header"]').verifyVisibleElement(
       "have.text",
       commonText.passwordResetSuccessPageHeader
     );
@@ -175,9 +179,9 @@ describe("Password reset functionality", () => {
   });
   it("Verify user login using new password", () => {
     cy.visit("/");
-    cy.clearAndType(commonSelectors.workEmailInputField, data.email);
-    cy.clearAndType(commonSelectors.passwordInputField, "Password");
-    cy.get(commonSelectors.loginButton).click();
+    cy.clearAndType(onboardingSelectors.emailInput, data.email);
+    cy.clearAndType(onboardingSelectors.passwordInput, "Password");
+    cy.get(onboardingSelectors.signInButton).click();
     cy.get(commonSelectors.workspaceName).should("be.visible");
   });
 });

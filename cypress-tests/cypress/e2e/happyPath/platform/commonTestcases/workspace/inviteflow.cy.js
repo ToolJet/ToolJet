@@ -53,16 +53,16 @@ describe("user invite flow cases", () => {
         SignUpPageElements();
 
         cy.clearAndType(commonSelectors.nameInputField, data.signUpName);
-        cy.clearAndType(commonSelectors.emailInputField, data.email);
-        cy.clearAndType(commonSelectors.passwordInputField, commonText.password);
+        cy.clearAndType(onboardingSelectors.emailInput, data.email);
+        cy.clearAndType(onboardingSelectors.passwordInput, commonText.password);
         cy.get(commonSelectors.signUpButton).click();
         signUpLink(data.email);
         cy.get(commonSelectors.setUpToolJetButton).click();
         verifyOnboardingQuestions(data.signUpName, data.workspaceName);
         visitWorkspaceInvitation(data.email, "My workspace");
         cy.clearAndType(commonSelectors.workEmailInputField, data.email);
-        cy.clearAndType(commonSelectors.passwordInputField, usersText.password);
-        cy.get(commonSelectors.loginButton).click();
+        cy.clearAndType(onboardingSelectors.passwordInput, usersText.password);
+        cy.get(onboardingSelectors.signInButton).click();
 
         cy.get(commonSelectors.invitedUserName).verifyVisibleElement(
             "have.text",
@@ -99,8 +99,8 @@ describe("user invite flow cases", () => {
         );
 
         cy.clearAndType(commonSelectors.nameInputField, data.signUpName);
-        cy.clearAndType(commonSelectors.emailInputField, data.email);
-        cy.clearAndType(commonSelectors.passwordInputField, commonText.password);
+        cy.clearAndType(onboardingSelectors.emailInput, data.email);
+        cy.clearAndType(onboardingSelectors.passwordInput, commonText.password);
         cy.get(commonSelectors.signUpButton).click();
         cy.verifyToastMessage(
             commonSelectors.toastMessage,
@@ -121,8 +121,8 @@ describe("user invite flow cases", () => {
 
         cy.get(commonSelectors.createAnAccountLink).click();
         cy.clearAndType(commonSelectors.nameInputField, data.firstName);
-        cy.clearAndType(commonSelectors.emailInputField, data.email);
-        cy.clearAndType(commonSelectors.passwordInputField, commonText.password);
+        cy.clearAndType(onboardingSelectors.emailInput, data.email);
+        cy.clearAndType(onboardingSelectors.passwordInput, commonText.password);
         cy.get(commonSelectors.signUpButton).click();
         cy.verifyToastMessage(
             commonSelectors.toastMessage,
@@ -137,8 +137,8 @@ describe("user invite flow cases", () => {
 
         cy.get(commonSelectors.createAnAccountLink).click();
         cy.clearAndType(commonSelectors.nameInputField, data.firstName);
-        cy.clearAndType(commonSelectors.emailInputField, data.email);
-        cy.clearAndType(commonSelectors.passwordInputField, commonText.password);
+        cy.clearAndType(onboardingSelectors.emailInput, data.email);
+        cy.clearAndType(onboardingSelectors.passwordInput, commonText.password);
         cy.get(commonSelectors.signUpButton).click();
 
         cy.defaultWorkspaceLogin();

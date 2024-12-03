@@ -7,7 +7,7 @@ Cypress.Commands.add(
     redirection = "/"
   ) => {
     cy.request({
-      url: `http://localhost:3000/api/authenticate/${workspaceId}`,
+      url: `${Cypress.env("server_host")}/api/authenticate/${workspaceId}`,
       method: "POST",
       body: {
         email: userEmail,
@@ -273,3 +273,4 @@ Cypress.Commands.add(
     });
   }
 );
+

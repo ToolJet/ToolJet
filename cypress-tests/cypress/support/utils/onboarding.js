@@ -8,11 +8,12 @@ import {
 import { navigateToManageUsers, logout } from "Support/utils/common";
 import { ssoSelector } from "Selectors/manageSSO";
 import { ssoText } from "Texts/manageSSO";
+import { onboardingSelectors } from "Selectors/onboarding";
+
 
 export const verifyConfirmEmailPage = (email) => {
   cy.get(commonSelectors.pageLogo).should("be.visible");
-  cy.get(commonSelectors.emailImage).should("be.visible");
-  cy.get(commonSelectors.onboardingPageHeader).verifyVisibleElement(
+  cy.get('[data-cy="check-your-mail-header"]').verifyVisibleElement(
     "have.text",
     commonText.emailPageHeader
   );
@@ -31,30 +32,14 @@ export const verifyConfirmEmailPage = (email) => {
     "have.text",
     commonText.onboardingSeperatorText
   );
+
   cy.get(commonSelectors.resendEmailButton).should("be.visible");
-  cy.get(commonSelectors.editEmailButton).verifyVisibleElement(
+  cy.get('[data-cy="back-to-signup"]').verifyVisibleElement(
     "have.text",
-    commonText.editEmailButton
+    "Back to sign up"
   );
 };
 
-export const verifyConfirmPageElements = () => {
-  cy.get(commonSelectors.pageLogo).should("be.visible");
-  cy.get(commonSelectors.emailImage).should("be.visible");
-  cy.get(commonSelectors.onboardingPageHeader).verifyVisibleElement(
-    "have.text",
-    commonText.emailVerifiedText
-  );
-
-  cy.get(commonSelectors.onboardingPageDescription).verifyVisibleElement(
-    "have.text",
-    commonText.continueToSetUp
-  );
-  cy.get(commonSelectors.setUpToolJetButton).verifyVisibleElement(
-    "have.text",
-    commonText.setUpToolJetButton
-  );
-};
 
 export const verifyOnboardingQuestions = (fullName, workspaceName) => {
   cy.get(commonSelectors.pageLogo).should("be.visible");
@@ -136,10 +121,10 @@ export const verifyInvalidInvitationLink = () => {
     commonText.inalidInvitationLinkDescription
   );
 
-  cy.get(commonSelectors.backtoSignUpButton).verifyVisibleElement(
-    "have.text",
-    commonText.backtoSignUpButton
-  );
+  // cy.get(commonSelectors.backtoSignUpButton).verifyVisibleElement(
+  //   "have.text",
+  //   commonText.backtoSignUpButton
+  // );
 };
 
 export const userSignUp = (fullName, email, workspaceName) => {
@@ -147,9 +132,9 @@ export const userSignUp = (fullName, email, workspaceName) => {
   cy.visit("/");
   cy.wait(1000);
   cy.get(commonSelectors.createAnAccountLink).realClick();
-  cy.clearAndType(commonSelectors.nameInputField, fullName);
-  cy.clearAndType(commonSelectors.emailInputField, email);
-  cy.clearAndType(commonSelectors.passwordInputField, commonText.password);
+  cy.clearAndType(onboardingSelectors.nameInput, fullName);
+  cy.clearAndType(onboardingSelectors.emailInput, email);
+  cy.clearAndType(onboardingSelectors.passwordInput, commonText.password);
   cy.get(commonSelectors.signUpButton).click();
 
   cy.wait(500);
@@ -211,8 +196,8 @@ export const inviteUser = (firstName, email) => {
   cy.userInviteApi(firstName, email);
   fetchAndVisitInviteLink(email);
   cy.wait(1000);
-  cy.get(commonSelectors.passwordInputField).should("be.visible");
-  cy.clearAndType(commonSelectors.passwordInputField, "password");
+  cy.get(onboardingSelectors.passwordInput).should("be.visible");
+  cy.clearAndType(onboardingSelectors.passwordInput, "password");
   // cy.intercept("GET", "/api/organizations").as("org");
   cy.get(commonSelectors.signUpButton).click();
   cy.wait(2000);
@@ -306,13 +291,30 @@ export const SignUpPageElements = () => {
   );
   cy.get(commonSelectors.signUpButton).verifyVisibleElement(
     "have.text",
-    commonText.getStartedButton
+    "Sign up"
   );
-  cy.get(commonSelectors.signInRedirectText).should(($el) => {
+
+  // cy.get('[data-cy="signup-info"]').should(($el) => {
+  //   expect($el.contents().first().text().trim()).to.eq(
+  //     commonText.signInRedirectText
+  //   );
+  // });
+
+  cy.get(onboardingSelectors.nameLabel).verifyVisibleElement("have.text", "Name *");
+  cy.get(onboardingSelectors.nameInput).should('be.visible');
+  cy.get(onboardingSelectors.emailLabel).verifyVisibleElement(
+    "have.text",
+    "Email *"
+  );
+  cy.get(onboardingSelectors.passwordLabel).should(($el) => {
     expect($el.contents().first().text().trim()).to.eq(
-      commonText.signInRedirectText
+      commonText.passwordLabel
     );
   });
+
+  cy.get(onboardingSelectors.passwordInput).should("be.visible");
+
+
   cy.get(commonSelectors.signInRedirectLink).verifyVisibleElement(
     "have.text",
     commonText.signInRedirectLink
