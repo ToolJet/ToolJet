@@ -173,7 +173,7 @@ class DraftEditor extends React.Component {
     this.resizeObserver = new ResizeObserver(() => {
       if (this.controlsRef.current && this.editorContainerRef.current) {
         const controlsHeight = this.controlsRef.current.offsetHeight;
-        const editorHeight = this.props.height - 36 - controlsHeight;
+        const editorHeight = this.props.height - 46 - controlsHeight;
         this.editorContainerRef.current.style.height = `${editorHeight}px`;
       }
     });
@@ -243,7 +243,7 @@ class DraftEditor extends React.Component {
     }
 
     return (
-      <div className="RichEditor-root">
+      <div className="RichEditor-root" style={{ overflowY: 'scroll', scrollbarWidth: 'none' }}>
         <div className="RichEditor-controls" ref={this.controlsRef}>
           <BlockStyleControls editorState={editorState} onToggle={this.toggleBlockType} />
           <InlineStyleControls editorState={editorState} onToggle={this.toggleInlineStyle} />
