@@ -10,6 +10,17 @@ import {
 import { SourceOptions, QueryOptions } from './types';
 import { isEmpty } from '@tooljet-plugins/common';
 
+const recognizedBooleans = {
+  true: true,
+  false: false,
+  yes: true,
+  no: false,
+};
+
+function interpretValue(value: string): string | boolean {
+  return recognizedBooleans[value.toLowerCase()] ?? value;
+}
+
 export default class MssqlQueryService implements QueryService {
   private static _instance: MssqlQueryService;
   private STATEMENT_TIMEOUT;
@@ -20,25 +31,18 @@ export default class MssqlQueryService implements QueryService {
         ? Number(process.env.PLUGINS_SQL_DB_STATEMENT_TIMEOUT)
         : 120000;
 
-    if (MssqlQueryService._instance) {
-      return MssqlQueryService._instance;
+    if (!MssqlQueryService._instance) {
+      MssqlQueryService._instance = this;
     }
-
-    MssqlQueryService._instance = this;
     return MssqlQueryService._instance;
   }
 
   connectionOptions(sourceOptions: SourceOptions) {
-    const _connectionOptions = (sourceOptions?.connection_options || []).filter((o) => {
-      return o.some((e) => !isEmpty(e));
-    });
+    const _connectionOptions = (sourceOptions.connection_options || [])
+      .filter((o) => o.every((e) => !!e))
+      .map(([key, value]) => [key, interpretValue(value)]);
 
-    const connectionOptions = Object.fromEntries(_connectionOptions);
-    Object.keys(connectionOptions).forEach((key) =>
-      connectionOptions[key] === '' ? delete connectionOptions[key] : {}
-    );
-
-    return connectionOptions;
+    return Object.fromEntries(_connectionOptions);
   }
 
   async run(
@@ -124,6 +128,7 @@ export default class MssqlQueryService implements QueryService {
         options: {
           encrypt: sourceOptions.azure ?? false,
           instanceName: sourceOptions.instanceName,
+          ...this.connectionOptions(sourceOptions),
         },
         pool: { min: 0 },
       },
