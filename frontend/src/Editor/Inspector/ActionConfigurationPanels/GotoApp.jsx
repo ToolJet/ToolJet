@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Select from '@/_ui/Select';
 import defaultStyles from '@/_ui/Select/styles';
 import { useTranslation } from 'react-i18next';
-import CodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/AppBuilder/CodeEditor';
 
 export function GotoApp({ getAllApps, event, handlerChanged, eventIndex, darkMode }) {
   const [isLoading, setIsLoading] = useState(true);

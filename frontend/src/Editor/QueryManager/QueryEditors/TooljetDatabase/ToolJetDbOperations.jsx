@@ -17,7 +17,7 @@ import { useNavigate } from 'react-router-dom';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 import './styles.scss';
-import CodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/AppBuilder/CodeEditor';
 import { useCurrentState } from '@/_stores/currentStateStore';
 
 const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLayout, optionsChanged }) => {

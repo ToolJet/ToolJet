@@ -10,7 +10,7 @@ import JoinConstraint from './JoinConstraint';
 import JoinSelect from './JoinSelect';
 import JoinSort from './JoinSort';
 import { filterOperatorOptions, nullOperatorOptions } from './util';
-import CodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/AppBuilder/CodeEditor';
 import { AggregateFilter } from './AggregateUI';
 import { NoCondition } from './NoConditionUI';
 

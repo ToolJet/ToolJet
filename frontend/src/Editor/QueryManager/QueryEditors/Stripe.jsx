@@ -5,7 +5,7 @@ import Select from '@/_ui/Select';
 import { openapiService } from '@/_services';
 import { withTranslation } from 'react-i18next';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
-import CodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/AppBuilder/CodeEditor';
 
 const operationColorMapping = {
   get: 'azure',

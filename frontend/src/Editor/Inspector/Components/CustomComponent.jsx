@@ -1,7 +1,7 @@
 import React from 'react';
 import { renderElement } from '../Utils';
 import Accordion from '@/_ui/Accordion';
-import CodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/AppBuilder/CodeEditor';
 
 export const CustomComponent = function CustomComponent({
   dataQueries,

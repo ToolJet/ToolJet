@@ -1,7 +1,7 @@
 import React from 'react';
 import { changeOption } from './utils';
 import { defaults } from 'lodash';
-import CodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/AppBuilder/CodeEditor';
 
 export class Runpy extends React.Component {
   constructor(props) {

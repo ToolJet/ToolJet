@@ -1,6 +1,6 @@
 import { resolveReferences } from '@/_helpers/utils';
 
-import { resolveReferences as newResolveReference } from './CodeEditor/utils';
+import { resolveReferences as newResolveReference } from '@/AppBuilder/CodeEditor/utils';
 
 const handleResolveReferences = (initialValue, defaultValue, customResolvers) => {
   const [_, error, value] = newResolveReference(initialValue, {}, customResolvers);

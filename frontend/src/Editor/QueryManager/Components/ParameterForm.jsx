@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Form, Popover, Col, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import Information from '@/_ui/Icon/solidIcons/Information';
-import CodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/AppBuilder/CodeEditor';
 
 const isValidVariableName = (str) => /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(str);
 const isConstant = (str) => {
