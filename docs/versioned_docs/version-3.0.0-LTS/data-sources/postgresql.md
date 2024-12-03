@@ -29,7 +29,7 @@ To connect to PostgreSQL using Manual connection parameters, select **Manual con
 - **Connection Options**
 - **SSL Certificate**
 
-<img className="screenshot-full" src="/img/datasource-reference/postgresql/pgconnection-v2.png" alt="PG connection"/>
+<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/postgresql/pgconnection-v2.png" alt="PG connection"/>
 
 ### Connection String
 
@@ -39,7 +39,7 @@ To connect to PostgreSQL using a connection string, select **Connection String**
 
 <img className="screenshot-full" src="/img/datasource-reference/postgresql/pgconnection-string.png" alt="PG connection string"/>
 
-<br/><br/><br/>
+<br/><br/>
 
 **Note:** We recommend creating a new PostgreSQL database user to have control over ToolJet's access levels.
 
@@ -75,9 +75,9 @@ ToolJet offers support for parameterized SQL queries, which enhance security by 
 3. The keys should match the parameter names used in the query (without the colon).
 4. The values can be static values or dynamic values using the `{{ }}` notation.
 
-<img className="screenshot-full" src="/img/datasource-reference/postgresql/parameterized-query.png" alt="Postgresql parameterized SQL queries"/>
+<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/postgresql/parameterized-query.png" alt="Postgresql parameterized SQL queries"/>
 
-**Example:**
+##### Example:
 
 ```yaml
 Query: SELECT * FROM users WHERE username = :username
@@ -85,6 +85,10 @@ SQL Parameters:
   Key: username
   Value: oliver // or {{ components.username.value }}
 ```
+
+#### Query Timeout
+
+You can set the timeout duration for SQL queries by adding the `PLUGINS_SQL_DB_STATEMENT_TIMEOUT` variable to the environment configuration file. By default, it is set to 120,000 ms.
 
 ### GUI Mode
 
