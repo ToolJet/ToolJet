@@ -29,7 +29,7 @@ import { withRouter } from '@/_hoc/withRouter';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import './dataSourceManager.theme.scss';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
-
+import { canUpdateDataSource } from '@/_helpers';
 class DataSourceManagerComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -807,67 +807,86 @@ class DataSourceManagerComponent extends React.Component {
             {...this.props.modalProps}
           >
             <Modal.Header className={'d-block'}>
-              <div className="d-flex">
-                {selectedDataSource && this.props.showBackButton && (
-                  <div
-                    className={`back-btn me-3 mt-3 ${this.props.darkMode ? 'dark' : ''}`}
-                    role="button"
-                    onClick={() => this.setState({ selectedDataSource: false }, () => this.onExit())}
-                  >
-                    <img
-                      data-cy="button-back-ds-connection-modal"
-                      className="m-0"
-                      src="assets/images/icons/back.svg"
-                      width="30"
-                      height="30"
-                    />
-                  </div>
-                )}
-                <Modal.Title className="mt-3">
-                  {selectedDataSource && !isSampleDb ? (
-                    <div className="row selected-ds">
-                      {getSvgIcon(dataSourceMeta?.kind?.toLowerCase(), 35, 35, selectedDataSourceIcon)}
-                      <div className="input-icon" style={{ width: '160px' }}>
-                        <input
-                          type="text"
-                          onChange={(e) => this.onNameChanged(e.target.value)}
-                          className="form-control-plaintext form-control-plaintext-sm color-slate12"
-                          value={decodeEntities(selectedDataSource.name)}
-                          style={{ width: '160px' }}
-                          data-cy="data-source-name-input-filed"
-                          autoFocus
-                          autoComplete="off"
-                        />
-                        {!this.props.isEditing && (
-                          <span className="input-icon-addon">
-                            <img src="assets/images/icons/edit-source.svg" width="12" height="12" />
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="row">
-                      <div className="col-md-2">
-                        <SolidIcon name="tooljet" />
-                      </div>
-                      <div className="col-md-10"> Sample data source</div>
+              <div className="d-flex align-items-center justify-content-between">
+                <div className="d-flex">
+                  {selectedDataSource && this.props.showBackButton && (
+                    <div
+                      className={`back-btn me-3 mt-3 ${this.props.darkMode ? 'dark' : ''}`}
+                      role="button"
+                      onClick={() => this.setState({ selectedDataSource: false }, () => this.onExit())}
+                    >
+                      <img
+                        data-cy="button-back-ds-connection-modal"
+                        className="m-0"
+                        src="assets/images/icons/back.svg"
+                        width="30"
+                        height="30"
+                      />
                     </div>
                   )}
-                  {!selectedDataSource && (
-                    <span className="" data-cy="title-add-new-datasource">
-                      {this.props.t('editor.queryManager.dataSourceManager.addNewDataSource', 'Add new datasource')}
+                  <Modal.Title className="mt-3">
+                    {selectedDataSource && !isSampleDb ? (
+                      <div className="row selected-ds">
+                        {getSvgIcon(dataSourceMeta?.kind?.toLowerCase(), 35, 35, selectedDataSourceIcon)}
+                        <div className="input-icon" style={{ width: '160px' }}>
+                          <input
+                            type="text"
+                            onChange={(e) => this.onNameChanged(e.target.value)}
+                            className="form-control-plaintext form-control-plaintext-sm color-slate12"
+                            value={decodeEntities(selectedDataSource.name)}
+                            style={{ width: '160px' }}
+                            data-cy="data-source-name-input-filed"
+                            autoFocus
+                            autoComplete="off"
+                            disabled={!canUpdateDataSource(selectedDataSource.id)}
+                          />
+                          {!this.props.isEditing && (
+                            <span className="input-icon-addon">
+                              <img src="assets/images/icons/edit-source.svg" width="12" height="12" />
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="row">
+                        <div className="col-md-2">
+                          <SolidIcon name="tooljet" />
+                        </div>
+                        <div className="col-md-10" data-cy="sample-data-source-title">
+                          {' '}
+                          Sample data source
+                        </div>
+                      </div>
+                    )}
+                    {!selectedDataSource && (
+                      <span className="" data-cy="title-add-new-datasource">
+                        {this.props.t('editor.queryManager.dataSourceManager.addNewDataSource', 'Add new datasource')}
+                      </span>
+                    )}
+                  </Modal.Title>
+                  {!this.props.isEditing && (
+                    <span
+                      data-cy="button-close-ds-connection-modal"
+                      className={`close-btn mx-4 mt-3 ${this.props.darkMode ? 'dark' : ''}`}
+                      onClick={() => this.hideModal()}
+                    >
+                      <SolidIcon name="remove" width="20" fill={'var(--slate12)'} />
                     </span>
                   )}
-                </Modal.Title>
-                {!this.props.isEditing && (
-                  <span
-                    data-cy="button-close-ds-connection-modal"
-                    className={`close-btn mx-4 mt-3 ${this.props.darkMode ? 'dark' : ''}`}
-                    onClick={() => this.hideModal()}
-                  >
-                    <SolidIcon name="remove" width="20" fill={'var(--slate12)'} />
-                  </span>
-                )}
+                </div>
+                <div className="tw-pt-[15px]">
+                  {this.props.tags &&
+                    this.props.tags.map((tag) => {
+                      if (tag === 'AI') {
+                        return (
+                          <div key={tag} className="tag-container">
+                            <SolidIcon name="AI-tag" />
+                            <span>{tag}</span>
+                          </div>
+                        );
+                      }
+                    })}
+                </div>
               </div>
               {this.renderEnvironmentsTab(selectedDataSource)}
             </Modal.Header>

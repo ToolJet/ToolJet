@@ -3,11 +3,14 @@ import config from 'config';
 import cx from 'classnames';
 import { toast } from 'react-hot-toast';
 import { pluginsService } from '@/_services';
-import { capitalizeFirstLetter } from './utils';
+import { capitalizeFirstLetter, useTagsByPluginId } from './utils';
+import Icon from '@/_ui/Icon/SolidIcons';
 
 export const MarketplaceCard = ({ id, name, repo, description, version, isInstalled = false }) => {
   const [installed, setInstalled] = React.useState(isInstalled);
   const [installing, setInstalling] = React.useState(false);
+
+  const { tags } = useTagsByPluginId(id);
 
   React.useEffect(() => {
     setInstalled(isInstalled);
@@ -53,7 +56,19 @@ export const MarketplaceCard = ({ id, name, repo, description, version, isInstal
               </span>
             </div>
             <div className="col">
-              <div className="font-weight-medium text-capitalize">{name}</div>
+              <div className="tw-flex tw-items-center tw-gap-[6px]">
+                <div className="font-weight-medium text-capitalize">{name}</div>
+                {tags.map((tag) => {
+                  if (tag === 'AI') {
+                    return (
+                      <div key={tag} className="tag-container">
+                        <Icon name="AI-tag" />
+                        <span>{tag}</span>
+                      </div>
+                    );
+                  }
+                })}
+              </div>
               <div>{description}</div>
             </div>
           </div>

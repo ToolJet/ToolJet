@@ -45,11 +45,17 @@ export default class PostgresqlQueryService implements QueryService {
           throw new Error("Invalid query mode. Must be either 'sql' or 'gui'.");
       }
     } catch (err) {
-      throw new QueryError(
-        'Query could not be completed',
-        err instanceof Error ? err.message : 'An unknown error occurred',
-        {}
-      );
+      const errorMessage = err.message || 'An unknown error occurred';
+      const errorDetails: any = {};
+      if (err && err instanceof Error) {
+        const postgresError = err as any;
+        const { code, detail, hint, routine } = postgresError;
+        errorDetails.code = code || null;
+        errorDetails.detail = detail || null;
+        errorDetails.hint = hint || null;
+        errorDetails.routine = routine || null;
+      }
+      throw new QueryError('Query could not be completed', errorMessage, errorDetails);
     }
   }
 
