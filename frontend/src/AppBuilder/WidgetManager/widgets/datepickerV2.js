@@ -9,12 +9,12 @@ export const datePickerV2Config = {
   },
   validation: {
     minDate: {
-      type: 'code',
+      type: 'datepicker',
       placeholder: 'MM/DD/YYYY',
       displayName: 'Min Date',
     },
     maxDate: {
-      type: 'code',
+      type: 'datepicker',
       placeholder: 'MM/DD/YYYY',
       displayName: 'Max Date',
     },
@@ -114,14 +114,14 @@ export const datePickerV2Config = {
       ],
     },
     {
-      handle: 'setValueInTimeStamp',
+      handle: 'setValueInTimestamp',
       displayName: 'Set value in timestamp',
-      params: [{ handle: 'setValueinTimeStamp', displayName: 'Value' }],
+      params: [{ handle: 'value', displayName: 'Value' }],
     },
     {
       handle: 'setDisabledDates',
       displayName: 'Set disabled dates',
-      params: [{ handle: 'setDisabledDates', displayName: 'Value' }],
+      params: [{ handle: 'value', displayName: 'Value' }],
     },
     {
       handle: 'clearDisabledDates',
@@ -130,27 +130,27 @@ export const datePickerV2Config = {
     {
       handle: 'setMinDate',
       displayName: 'Set min date',
-      params: [{ handle: 'setMinDate', displayName: 'Value' }],
+      params: [{ handle: 'value', displayName: 'Value' }],
     },
     {
       handle: 'setMaxDate',
       displayName: 'Set max date',
-      params: [{ handle: 'setMaxDate', displayName: 'Value' }],
+      params: [{ handle: 'value', displayName: 'Value' }],
     },
     {
       handle: 'setVisibility',
       displayName: 'Set visibility',
-      params: [{ handle: 'setVisibility', displayName: 'Value', defaultValue: `{{true}}`, type: 'toggle' }],
+      params: [{ handle: 'value', displayName: 'Value', defaultValue: `{{true}}`, type: 'toggle' }],
     },
     {
       handle: 'setLoading',
       displayName: 'Set loading',
-      params: [{ handle: 'setLoading', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
+      params: [{ handle: 'value', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
     },
     {
       handle: 'setDisable',
       displayName: 'Set disable',
-      params: [{ handle: 'setDisable', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
+      params: [{ handle: 'value', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
     },
     {
       handle: 'setFocus',

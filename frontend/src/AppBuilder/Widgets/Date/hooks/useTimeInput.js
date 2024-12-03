@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
+import moment from 'moment-timezone';
+import { DISABLED_TIME_FORMAT } from '../constants';
 
 const useTimeInput = ({ validation = {}, setExposedVariable, setExposedVariables }) => {
   const isInitialRender = useRef(true);
@@ -22,12 +24,18 @@ const useTimeInput = ({ validation = {}, setExposedVariable, setExposedVariables
       minTime: validation.minTime,
       maxTime: validation.maxTime,
       setMinTime: (time) => {
-        setMinTime(time);
-        setExposedVariable('minTime', time);
+        const momentTime = moment(time, DISABLED_TIME_FORMAT);
+        if (momentTime.isValid()) {
+          setMinTime(time);
+          setExposedVariable('minTime', time);
+        }
       },
       setMaxTime: (time) => {
-        setMaxTime(time);
-        setExposedVariable('maxTime', time);
+        const momentTime = moment(time, DISABLED_TIME_FORMAT);
+        if (momentTime.isValid()) {
+          setMaxTime(time);
+          setExposedVariable('maxTime', time);
+        }
       },
     };
     setExposedVariables(exposedVariables);

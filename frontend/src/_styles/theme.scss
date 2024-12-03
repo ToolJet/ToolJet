@@ -16252,8 +16252,11 @@ fieldset:disabled {
   flex:1 1 calc(50% - 8px);
 }
 
-.datepicker-validation-full {
-  flex:1 1 100%;
+
+.date-validation-wrapper {
+  .code-flex-wrapper {
+    flex-wrap:wrap;
+  }
 }
 
 .tj-inspector-datepicker {
@@ -16286,7 +16289,8 @@ fieldset:disabled {
   }
 
 
-.datetimepicker-component, #component-portal {
+
+.datetimepicker-component, #component-portal, .custom-inspector-validation-time-picker {
 
   .datepicker-component {
     .react-datepicker {
@@ -16490,6 +16494,8 @@ fieldset:disabled {
   .custom-time-input {
     background-color: #fff;
     border-left: 1px solid #CCD1D5;
+    border-top-right-radius: 10px; 
+    border-bottom-right-radius: 10px;
   }
 
   .time-header {
@@ -16573,4 +16579,61 @@ fieldset:disabled {
   .react-datepicker__triangle {
     display:none;
   }
+}
+
+.custom-inspector-validation-date-picker, .custom-inspector-validation-time-picker {
+  flex-basis: 100% !important;
+  font-family: monospace;
+  font-size: 12px;
+  height:32px;
+  margin-top:2px;
+  margin-bottom: 2px;
+
+ 
+  .react-datepicker-wrapper {
+    width: 100%;
+    input {
+      width: 100%;
+      border: 1px solid var(--slate7);
+      padding: 5px 5px;
+      background-color: var(--base);
+      background-color: #fff;
+      color: rgb(0, 92, 197);
+      height:32px;
+    }
+
+    input.dark-theme {
+      background-color: #272822;
+      color: rgb(174, 129, 255);
+      
+    }
+  }
+  
+
+  .dark-theme {
+    .react-datepicker__day {
+      color: white;
+    }
+  }
+}
+
+.custom-inspector-validation-time-picker {
+  .custom-time-input {
+    border-left:none;
+    border-radius:10px;
+  }
+
+  .time-col {
+    height: 200px;
+  }
+
+  .react-datepicker__input-time-container {
+    border-radius:10px;
+  }
+
+  
+}
+
+.custom-inspector-validation-time-picker-popper {
+  border-radius:10px;
 }

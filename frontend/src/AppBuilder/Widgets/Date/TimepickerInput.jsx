@@ -41,8 +41,8 @@ const TimepickerInput = ({ currentTimestamp, isTwentyFourHourMode, darkMode, onT
               <div
                 key={hour}
                 className={cx('time-item', {
-                  'selected-time': selectedHour === hour || (!isTwentyFourHourMode && selectedHour - 12 === hour),
-                  'disabled-time': (minHour && addHours(hour) < minHour) || (maxHour && addHours(hour) > maxHour),
+                  'selected-time': selectedHour == hour || (!isTwentyFourHourMode && selectedHour - 12 == hour),
+                  'disabled-time': addHours(hour) < minHour || addHours(hour) > maxHour,
                 })}
                 onClick={() => {
                   onTimeChange(addHours(hour), 'hours');
@@ -59,14 +59,10 @@ const TimepickerInput = ({ currentTimestamp, isTwentyFourHourMode, darkMode, onT
                 className={cx('time-item', {
                   'selected-time': selectedMinute === minute,
                   'disabled-time':
-                    (minHour && selectedHour < minHour) ||
-                    (maxHour && selectedHour > maxHour) ||
-                    (minHour &&
-                      selectedHour == minHour &&
-                      ((minMinute && minute < minMinute) || (maxMinute && minute > maxMinute))) ||
-                    (maxHour &&
-                      selectedHour == maxHour &&
-                      ((maxMinute && minute > maxMinute) || (minMinute && minute < minMinute))),
+                    selectedHour < minHour ||
+                    selectedHour > maxHour ||
+                    (selectedHour == minHour && minute < minMinute) ||
+                    (selectedHour == maxHour && minute > maxMinute),
                 })}
                 onClick={() => onTimeChange(minute, 'minutes')}
               >
@@ -79,7 +75,7 @@ const TimepickerInput = ({ currentTimestamp, isTwentyFourHourMode, darkMode, onT
               <div
                 className={cx('time-item', {
                   'selected-time': selectedAmPm === 'AM',
-                  'disabled-time': minHour && minHour > 11,
+                  'disabled-time': minHour > 11,
                 })}
                 onClick={() => {
                   const newHour = selectedHour >= 12 ? selectedHour - 12 : selectedHour;
@@ -91,7 +87,7 @@ const TimepickerInput = ({ currentTimestamp, isTwentyFourHourMode, darkMode, onT
               <div
                 className={cx('time-item', {
                   'selected-time': selectedAmPm === 'PM',
-                  'disabled-time': maxHour && maxHour < 12,
+                  'disabled-time': maxHour < 12,
                 })}
                 onClick={() => {
                   const newHour = selectedHour < 12 ? selectedHour + 12 : selectedHour;

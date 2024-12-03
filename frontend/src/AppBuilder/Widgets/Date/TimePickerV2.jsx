@@ -46,7 +46,7 @@ export const TimePickerV2 = ({
   const { disable, loading, focus, visibility, isMandatory, textInputFocus, setTextInputFocus, setIsCalendarOpen } =
     dateTimeLogic;
   const { minTime, maxTime } = timeLogic;
-  const { label, defaultValue, dateFormat, timeFormat, isTimezoneEnabled } = properties;
+  const { label, defaultValue, timeFormat, isTimezoneEnabled } = properties;
   const { customRule } = validation;
 
   const [displayTimezone, setDisplayTimezone] = useState(
@@ -113,11 +113,6 @@ export const TimePickerV2 = ({
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    setExposedVariable('dateFormat', dateFormat);
-  }, [dateFormat]);
-
-  useEffect(() => {
-    if (isInitialRender.current) return;
     setExposedVariable('timeFormat', timeFormat);
   }, [timeFormat]);
 
@@ -164,6 +159,11 @@ export const TimePickerV2 = ({
   }, [isTimezoneEnabled, storeTimezone]);
 
   useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isValid', isValid);
+  }, [isValid]);
+
+  useEffect(() => {
     const selectedTime = getFormattedSelectTimestamp(selectedTimestamp, timeFormat);
     const displayValue = getFormattedSelectTimestamp(selectedTimestamp, timeFormat);
     const value = convertToIsoWithTimezoneOffset(unixTimestamp, storeTimezone);
@@ -172,8 +172,8 @@ export const TimePickerV2 = ({
       selectedTime: selectedTime,
       unixTimestamp: unixTimestamp,
       displayValue: displayValue,
-      dateFormat: dateFormat,
       timeFormat: timeFormat,
+      isValid: isValid,
       storeTimezone: isTimezoneEnabled ? storeTimezone : moment.tz.guess(),
       displayTimezone: isTimezoneEnabled ? displayTimezone : moment.tz.guess(),
     };
@@ -194,7 +194,8 @@ export const TimePickerV2 = ({
       },
       setTime: (time, format) => {
         const momentObj = moment(time, [format ? format : timeFormat, timeFormat]);
-        const updatedUnixTimestamp = moment(unixTimestamp);
+        let updatedUnixTimestamp = moment(unixTimestamp);
+        if (!momentObj.isValid()) updatedUnixTimestamp = moment();
         updatedUnixTimestamp.set('hour', momentObj.hour());
         updatedUnixTimestamp.set('minute', momentObj.minute());
         const selectedTimestamp = getSelectedTimestampFromUnixTimestamp(
@@ -268,6 +269,7 @@ export const TimePickerV2 = ({
     dateInputRef,
     onInputChange: onDateSelect,
     displayFormat: timeFormat,
+    setDisplayTimestamp,
     setTextInputFocus,
     setShowValidationError,
     showValidationError,

@@ -301,20 +301,22 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
     isOpen: true,
     children: (
       <>
-        {validations.map((property) =>
-          renderElement(
-            component,
-            componentMeta,
-            paramUpdated,
-            dataQueries,
-            property,
-            'validation',
-            currentState,
-            allComponents,
-            darkMode,
-            componentMeta.validation?.[property]?.placeholder
-          )
-        )}
+        {validations.map((property, index) => (
+          <div key={index} className={'date-validation-wrapper'}>
+            {renderElement(
+              component,
+              componentMeta,
+              paramUpdated,
+              dataQueries,
+              property,
+              'validation',
+              currentState,
+              allComponents,
+              darkMode,
+              componentMeta.validation?.[property]?.placeholder
+            )}
+          </div>
+        ))}
       </>
     ),
   });

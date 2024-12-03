@@ -89,7 +89,10 @@ export const DatetimePickerV2 = ({
   };
 
   const onTimeChange = (time, type) => {
-    const updatedSelectedTimestamp = moment(selectedTimestamp);
+    let updatedSelectedTimestamp = moment(selectedTimestamp);
+    if (!updatedSelectedTimestamp.isValid()) {
+      updatedSelectedTimestamp = moment();
+    }
     updatedSelectedTimestamp.set(type, time);
     const updatedUnixTimestamp = getUnixTimestampFromSelectedTimestamp(
       updatedSelectedTimestamp.valueOf(),
@@ -132,6 +135,11 @@ export const DatetimePickerV2 = ({
     setDisplayTimezone(val);
     setExposedVariable('displayTimezone', val);
   }, [properties.displayTimezone, isTimezoneEnabled]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isValid', isValid);
+  }, [isValid]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
@@ -187,6 +195,7 @@ export const DatetimePickerV2 = ({
       timeFormat: timeFormat,
       storeTimezone: isTimezoneEnabled ? storeTimezone : moment.tz.guess(),
       displayTimezone: isTimezoneEnabled ? displayTimezone : moment.tz.guess(),
+      isValid: isValid,
     };
     setExposedVariables(exposedVariables);
     isInitialRender.current = false;
@@ -205,7 +214,10 @@ export const DatetimePickerV2 = ({
       },
       setDate: (date, format) => {
         const momentObj = moment(date, [format ? format : dateFormat, displayFormat]);
-        const updatedUnixTimestamp = moment(unixTimestamp);
+        let updatedUnixTimestamp = moment(unixTimestamp);
+        if (!updatedUnixTimestamp.isValid()) {
+          updatedUnixTimestamp = moment();
+        }
         updatedUnixTimestamp.set('year', momentObj.year());
         updatedUnixTimestamp.set('month', momentObj.month());
         updatedUnixTimestamp.set('date', momentObj.date());
@@ -221,7 +233,10 @@ export const DatetimePickerV2 = ({
       },
       setTime: (time, format) => {
         const momentObj = moment(time, [format ? format : timeFormat, displayFormat]);
-        const updatedUnixTimestamp = moment(unixTimestamp);
+        let updatedUnixTimestamp = moment(unixTimestamp);
+        if (!updatedUnixTimestamp.isValid()) {
+          updatedUnixTimestamp = moment();
+        }
         updatedUnixTimestamp.set('hour', momentObj.hour());
         updatedUnixTimestamp.set('minute', momentObj.minute());
         const selectedTimestamp = getSelectedTimestampFromUnixTimestamp(

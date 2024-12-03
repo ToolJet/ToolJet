@@ -104,6 +104,11 @@ export const DatePickerV2 = ({
   }, [selectedTimestamp, dateFormat, textInputFocus]);
 
   useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isValid', isValid);
+  }, [isValid]);
+
+  useEffect(() => {
     const selectedDate = getFormattedSelectTimestamp(selectedTimestamp, dateFormat);
     const displayValue = getFormattedSelectTimestamp(selectedTimestamp, dateFormat);
     const value = convertToIsoWithTimezoneOffset(unixTimestamp, moment.tz.guess());
@@ -113,6 +118,7 @@ export const DatePickerV2 = ({
       unixTimestamp: unixTimestamp,
       displayValue: displayValue,
       dateFormat: dateFormat,
+      isValid: isValid,
     };
     setExposedVariables(exposedVariables);
     isInitialRender.current = false;
@@ -130,7 +136,8 @@ export const DatePickerV2 = ({
         setInputValue(timeStamp);
       },
       setDate: (date, format) => {
-        const momentObj = moment(date, [format ? format : dateFormat]);
+        let momentObj = moment(date, [format ? format : dateFormat]);
+        if (!momentObj.isValid()) momentObj = moment();
         const updatedUnixTimestamp = moment(unixTimestamp);
         updatedUnixTimestamp.set('year', momentObj.year());
         updatedUnixTimestamp.set('month', momentObj.month());

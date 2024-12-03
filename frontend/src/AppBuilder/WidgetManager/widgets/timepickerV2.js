@@ -9,12 +9,12 @@ export const timePickerV2Config = {
   },
   validation: {
     minTime: {
-      type: 'code',
+      type: 'timepicker',
       placeholder: 'HH:mm',
       displayName: 'Min Time',
     },
     maxTime: {
-      type: 'code',
+      type: 'timepicker',
       placeholder: 'HH:mm',
       displayName: 'Max Time',
     },
@@ -46,7 +46,7 @@ export const timePickerV2Config = {
       displayName: 'Default value',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '01/01/2022',
+        defaultValue: '00:00',
       },
     },
     isTimezoneEnabled: {
@@ -107,49 +107,49 @@ export const timePickerV2Config = {
       handle: 'setTime',
       displayName: 'Set time',
       params: [
-        { handle: 'setTime', displayName: 'Value' },
+        { handle: 'value', displayName: 'Value' },
         { handle: 'format', displayName: 'Format' },
       ],
     },
     {
-      handle: 'setValueInTimeStamp',
+      handle: 'setValueInTimestamp',
       displayName: 'Set value in timestamp',
-      params: [{ handle: 'setValueinTimeStamp', displayName: 'Value' }],
+      params: [{ handle: 'value', displayName: 'Value' }],
     },
     {
       handle: 'setMinTime',
       displayName: 'Set min time',
-      params: [{ handle: 'setMinTime', displayName: 'Value' }],
+      params: [{ handle: 'value', displayName: 'Value' }],
     },
     {
       handle: 'setMaxTime',
       displayName: 'Set max time',
-      params: [{ handle: 'setMaxTime', displayName: 'Value' }],
+      params: [{ handle: 'value', displayName: 'Value' }],
     },
     {
       handle: 'setDisplayTimezone',
       displayName: 'Set display timezone',
-      params: [{ handle: 'setDisplayTimezone', displayName: 'Value' }],
+      params: [{ handle: 'value', displayName: 'Value' }],
     },
     {
       handle: 'setStoreTimezone',
       displayName: 'Set store timezone',
-      params: [{ handle: 'setStoreTimezone', displayName: 'Value' }],
+      params: [{ handle: 'value', displayName: 'Value' }],
     },
     {
       handle: 'setVisibility',
       displayName: 'Set visibility',
-      params: [{ handle: 'setVisibility', displayName: 'Value', defaultValue: `{{true}}`, type: 'toggle' }],
+      params: [{ handle: 'value', displayName: 'Value', defaultValue: `{{true}}`, type: 'toggle' }],
     },
     {
       handle: 'setLoading',
       displayName: 'Set loading',
-      params: [{ handle: 'setLoading', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
+      params: [{ handle: 'value', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
     },
     {
       handle: 'setDisable',
       displayName: 'Set disable',
-      params: [{ handle: 'setDisable', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
+      params: [{ handle: 'value', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
     },
     {
       handle: 'setFocus',
@@ -317,7 +317,7 @@ export const timePickerV2Config = {
     },
     properties: {
       label: { value: 'Label' },
-      defaultValue: { value: '01/01/2022' },
+      defaultValue: { value: '00:00' },
       timeFormat: { value: 'HH:mm' },
       isTimezoneEnabled: { value: '{{false}}' },
       displayTimezone: { value: 'UTC' },
