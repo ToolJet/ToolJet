@@ -3,6 +3,9 @@ import { fake } from "Fixtures/fake";
 import { commonText, path } from "Texts/common";
 import { onboardingSelectors } from "Selectors/onboarding";
 
+import { onboardingSelectors } from "Selectors/onboarding";
+import { dashboardSelector } from "Selectors/dashboard";
+
 
 describe("Login functionality", () => {
   let user;
@@ -28,7 +31,7 @@ describe("Login functionality", () => {
     );
     cy.get(onboardingSelectors.passwordLabel).should(($el) => {
       expect($el.contents().first().text().trim()).to.eq(
-        commonText.passwordLabel
+        commonText.LoginpasswordLabel
       );
     });
     cy.get(commonSelectors.forgotPasswordLink).verifyVisibleElement(
@@ -43,9 +46,22 @@ describe("Login functionality", () => {
 
     cy.get(onboardingSelectors.emailInput).should("be.visible");
     cy.get(onboardingSelectors.passwordInput).should("be.visible");
+    cy.get(onboardingSelectors.LoginEmailInput).should("be.visible");
+    cy.get(onboardingSelectors.LoginPasswordInput).should("be.visible");
+
   });
+
+  it("Should be able to login with valid credentials", () => {
+    cy.appUILogin(user.email, user.password);
+    cy.get(commonSelectors.settingsIcon).click();
+    cy.get(dashboardSelector.logoutLink);
+  });
+
   it("Should not be able to login with invalid credentials", () => {
     cy.clearAndType(onboardingSelectors.emailInput,
+      "test"
+    );
+    cy.clearAndType(onboardingSelectors.LoginEmailInput,
       "test"
     );
     cy.get(commonSelectors.emailInputError).verifyVisibleElement(
@@ -71,5 +87,20 @@ describe("Login functionality", () => {
   });
   it("Should be able to login with valid credentials", () => {
     cy.appUILogin(user.email, user.password);
+
+    cy.get(onboardingSelectors.LoginEmailInput).clear();
+    cy.clearAndType(onboardingSelectors.LoginPasswordInput, invalidPassword);
+    cy.get(onboardingSelectors.signInButton).should('be.disabled');
+
+    cy.clearAndType(onboardingSelectors.LoginEmailInput, user.email);
+    cy.get(onboardingSelectors.LoginPasswordInput).clear();
+    cy.get(onboardingSelectors.signInButton).should('be.disabled');
+
+    cy.clearAndType(onboardingSelectors.LoginEmailInput, user.email);
+    cy.clearAndType(onboardingSelectors.LoginPasswordInput, "Pass")
+    cy.get(onboardingSelectors.passwordError).verifyVisibleElement("have.text", "Password must be at least 5 characters long")
+    cy.clearAndType(onboardingSelectors.LoginPasswordInput, invalidPassword);
+    cy.get(onboardingSelectors.signInButton).click();
+    cy.verifyToastMessage(commonSelectors.toastMessage, "Invalid credentials")
   });
 });

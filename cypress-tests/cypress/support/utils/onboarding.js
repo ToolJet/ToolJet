@@ -308,7 +308,7 @@ export const SignUpPageElements = () => {
   );
   cy.get(onboardingSelectors.passwordLabel).should(($el) => {
     expect($el.contents().first().text().trim()).to.eq(
-      commonText.passwordLabel
+      commonText.LoginpasswordLabel
     );
   });
 

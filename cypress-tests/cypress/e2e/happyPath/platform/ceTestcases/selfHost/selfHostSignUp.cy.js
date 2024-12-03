@@ -2,34 +2,18 @@ import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
 import * as signup from "Support/utils/selfHostSignUp";
 import { logout } from "Support/utils/common";
+import { onboardingSelectors } from "Selectors/onboarding";
 
 describe("Self host onboarding", () => {
   beforeEach(() => {
-    cy.visit('/setup');
+    cy.visit("/setup");
   });
 
   it("verify elements on self host onboarding page", () => {
-    cy.get(commonSelectors.selfHostSetUpBanner).should("be.visible");
-    cy.get(commonSelectors.selfHostSetUpSubBanner).should("be.visible");
-    cy.get(commonSelectors.selfHostSetUpCard).should("be.visible");
-    cy.get(commonSelectors.selfHostSetUpCardImage).should("be.visible");
-    cy.get(commonSelectors.selfHostSetUpCardHeader).verifyVisibleElement(
-      "have.text",
-      commonText.selfHostSetUpCardHeader
-    );
-    cy.get(commonSelectors.selfHostSetUpCardSubHeader).verifyVisibleElement(
-      "have.text",
-      commonText.selfHostSetUpCardSubHeader
-    );
-    cy.get(commonSelectors.setUpToolJetButton)
-      .verifyVisibleElement("have.text", commonText.setUpToolJetButton)
-      .click();
-
-    signup.selfHostCommonElements();
-    cy.get(commonSelectors.onboardingPageHeader).verifyVisibleElement(
-      "have.text",
-      commonText.setUpAdminHeader
-    );
+    cy.get(commonSelectors.HostBanner).should("be.visible");
+    cy.get(commonSelectors.pageLogo).should("be.visible");
+    cy.get(commonSelectors.AdminSetup).should("be.visible");
+    cy.get(commonSelectors.SignupTerms).should("be.visible");
 
     cy.get(commonSelectors.userNameInputLabel).verifyVisibleElement(
       "have.text",
@@ -46,7 +30,6 @@ describe("Self host onboarding", () => {
       commonText.passwordLabel
     );
     cy.get(onboardingSelectors.passwordInput).should("be.visible");
-
     cy.get(commonSelectors.passwordHelperText).verifyVisibleElement(
       "have.text",
       commonText.passwordHelperText
@@ -72,10 +55,9 @@ describe("Self host onboarding", () => {
     cy.get(commonSelectors.continueButton).click();
 
     signup.selfHostCommonElements();
-    cy.get(commonSelectors.userAccountNameAvatar).should("be.visible");
-    cy.get(commonSelectors.onboardingPageHeader).verifyVisibleElement(
+    cy.get(commonSelectors.setUpworkspaceCheckPoint).verifyVisibleElement(
       "have.text",
-      "Set up your workspace"
+      "Set up your workspace!"
     );
     cy.get(commonSelectors.workspaceNameInputLabel).verifyVisibleElement(
       "have.text",
@@ -83,84 +65,18 @@ describe("Self host onboarding", () => {
     );
     cy.get(commonSelectors.workspaceNameInputField).should("be.visible");
     cy.clearAndType(commonSelectors.workspaceNameInputField, "My workspace");
-    cy.get(commonSelectors.continueButton).click();
+    cy.get(commonSelectors.OnbordingContinue).click();
 
-    signup.selfHostCommonElements();
-    signup.commonElementsWorkspaceSetup();
-    cy.get(commonSelectors.onboardingPageHeader).verifyVisibleElement(
+    cy.get(commonSelectors.Skipbutton).click();
+    cy.get(commonSelectors.BackLogo).click();
+    cy.get(commonSelectors.Backtoapps).click();
+
+    logout();
+    cy.appUILogin();
+
+    cy.get(commonSelectors.workspaceName).verifyVisibleElement(
       "have.text",
-      commonText.companyPageHeader("The Developer")
+      "My workspace"
     );
-    cy.get(commonSelectors.companyNameInputField).should("be.visible");
-    cy.clearAndType(commonSelectors.companyNameInputField, "ToolJet");
-    cy.get(commonSelectors.continueButton).click();
-
-    signup.selfHostCommonElements();
-    signup.commonElementsWorkspaceSetup();
-    cy.get(commonSelectors.onboardingPageHeader).verifyVisibleElement(
-      "have.text",
-      commonText.userRolePageHeader
-    );
-    signup.verifyandModifyUserRole();
-
-    signup.selfHostCommonElements();
-    signup.commonElementsWorkspaceSetup();
-    cy.get(commonSelectors.onboardingPageHeader).verifyVisibleElement(
-      "have.text",
-      commonText.sizeOftheCompanyHeader
-    );
-
-    signup.verifyandModifySizeOftheCompany();
-
-    cy.get(commonSelectors.pageLogo).should("be.visible");
-    cy.get(commonSelectors.setUpadminCheckPoint).verifyVisibleElement(
-      "have.text",
-      commonText.setUpadminCheckPoint
-    );
-    cy.get(commonSelectors.setUpworkspaceCheckPoint).verifyVisibleElement(
-      "have.text",
-      commonText.setUpworkspaceCheckPoint
-    );
-    cy.get(commonSelectors.companyProfileCheckPoint).verifyVisibleElement(
-      "have.text",
-      commonText.companyProfileCheckPoint
-    );
-    cy.get(commonSelectors.onboardingPageSubHeader).verifyVisibleElement(
-      "have.text",
-      commonText.onboardingPageSubHeader
-    );
-    cy.get(commonSelectors.continueButton).verifyVisibleElement(
-      "have.text",
-      commonText.continueButton
-    );
-
-    signup.commonElementsWorkspaceSetup();
-    cy.get(commonSelectors.onboardingPageHeader).verifyVisibleElement(
-      "have.text",
-      "Enter your phone number"
-    );
-
-    cy.get(".form-control").should("be.visible");
-    cy.get(".tj-onboarding-phone-input-wrapper")
-      .find("input")
-      .type("919876543210");
-    cy.get(commonSelectors.continueButton).click();
-
-    cy.get("body").then(($title) => {
-      if (!$title.text().includes("Enter your phone number")) {
-        cy.get(commonSelectors.workspaceName).verifyVisibleElement(
-          "have.text",
-          "My workspace"
-        );
-
-        logout();
-        cy.appUILogin();
-
-        cy.get(commonSelectors.workspaceName).verifyVisibleElement(
-          "have.text",
-          "My workspace"
-        );
-      }
-    });
   });
 });
