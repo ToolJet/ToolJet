@@ -16637,3 +16637,18 @@ fieldset:disabled {
 .custom-inspector-validation-time-picker-popper {
   border-radius:10px;
 }
+
+.input-date-display-format, .input-date-time-format {
+
+  .hide-fx {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  &:hover {
+    .hide-fx {
+      opacity: 1;
+    }
+  }
+}
+

@@ -5,6 +5,7 @@ import { EventManager } from '../EventManager';
 import Select from '@/_ui/Select';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import FxButton from '@/AppBuilder/CodeBuilder/Elements/FxButton';
+import cx from 'classnames';
 import useStore from '@/AppBuilder/_stores/store';
 import styles from '@/_ui/Select/styles';
 
@@ -151,16 +152,26 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
     children: (
       <>
         {componentName !== 'TimePickerV2' && (
-          <div data-cy={`input-date-display-format`} className="field mb-2 w-100" onClick={(e) => e.stopPropagation()}>
+          <div
+            data-cy={`input-date-display-format`}
+            className="field mb-2 w-100 input-date-display-format"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="field mb-2" onClick={(e) => e.stopPropagation()}>
               <div className="d-flex justify-content-between mb-1">
                 <label className="form-label"> Date Format</label>
-                <FxButton
-                  active={isDateFormatFxOn}
-                  onPress={() => {
-                    paramUpdated({ name: 'dateFormat' }, 'fxActive', !isDateFormatFxOn, 'properties');
-                  }}
-                />
+                <div
+                  className={cx({
+                    'hide-fx': !isDateFormatFxOn,
+                  })}
+                >
+                  <FxButton
+                    active={isDateFormatFxOn}
+                    onPress={() => {
+                      paramUpdated({ name: 'dateFormat' }, 'fxActive', !isDateFormatFxOn, 'properties');
+                    }}
+                  />
+                </div>
               </div>
               {isDateFormatFxOn ? (
                 <CodeHinter
@@ -190,15 +201,17 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
         )}
         {componentName !== 'DatePickerV2' && (
           <>
-            <div className="field mb-2" onClick={(e) => e.stopPropagation()}>
+            <div className="field mb-2 input-date-time-format" onClick={(e) => e.stopPropagation()}>
               <div className="d-flex justify-content-between mb-1">
                 <label className="form-label"> Time Format</label>
-                <FxButton
-                  active={isTimeFormatFxOn}
-                  onPress={() => {
-                    paramUpdated({ name: 'timeFormat' }, 'fxActive', !isTimeFormatFxOn, 'properties');
-                  }}
-                />
+                <div className={cx({ 'hide-fx': !isTimeFormatFxOn })}>
+                  <FxButton
+                    active={isTimeFormatFxOn}
+                    onPress={() => {
+                      paramUpdated({ name: 'timeFormat' }, 'fxActive', !isTimeFormatFxOn, 'properties');
+                    }}
+                  />
+                </div>
               </div>
               {isTimeFormatFxOn ? (
                 <CodeHinter
