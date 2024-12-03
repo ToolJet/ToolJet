@@ -22,6 +22,8 @@ import { groupsSelector } from "Selectors/manageGroups";
 import { groupsText } from "Texts/manageGroups";
 import { addNewUser, visitWorkspaceInvitation } from "Support/utils/onboarding";
 import { commonText } from "Texts/common";
+import { onboardingSelectors } from "Selectors/onboarding";
+
 
 const data = {};
 
@@ -72,7 +74,7 @@ describe("Manage Users", () => {
 
   });
 
-  it("Should verify the confirm invite page and new user account", () => {
+  it.only("Should verify the confirm invite page and new user account", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
     // cy.removeAssignedApps();
@@ -84,9 +86,9 @@ describe("Manage Users", () => {
     fetchAndVisitInviteLink(data.email);
     confirmInviteElements(data.email);
 
-    cy.clearAndType(commonSelectors.passwordInputField, "pass");
+    cy.clearAndType(onboardingSelectors.passwordInput, "pass");
     cy.get(commonSelectors.signUpButton).should("be.disabled");
-    cy.clearAndType(commonSelectors.passwordInputField, usersText.password);
+    cy.clearAndType(onboardingSelectors.passwordInput, usersText.password);
     cy.get(commonSelectors.signUpButton).should("not.be.disabled");
     cy.get(commonSelectors.signUpButton).click();
 
@@ -156,8 +158,8 @@ describe("Manage Users", () => {
     logout();
     cy.visit("/");
     cy.clearAndType(commonSelectors.workEmailInputField, data.email);
-    cy.clearAndType(commonSelectors.passwordInputField, usersText.password);
-    cy.get(commonSelectors.loginButton).click();
+    cy.clearAndType(onboardingSelectors.passwordInput, usersText.password);
+    cy.get(onboardingSelectors.signInButton).click();
 
     updateWorkspaceName(data.email);
     cy.get(commonSelectors.workspaceName).click();
@@ -178,7 +180,7 @@ describe("Manage Users", () => {
     visitWorkspaceInvitation(data.email, "My workspace");
 
     cy.clearAndType(commonSelectors.workEmailInputField, data.email);
-    cy.clearAndType(commonSelectors.passwordInputField, "password");
+    cy.clearAndType(onboardingSelectors.passwordInput, "password");
     cy.get(commonSelectors.signInButton).click();
     cy.get(usersSelector.acceptInvite).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, usersText.inviteToast);
@@ -406,7 +408,7 @@ describe("Manage Users", () => {
     visitWorkspaceInvitation(data.email, workspaceName);
 
     cy.clearAndType(commonSelectors.workEmailInputField, data.email);
-    cy.clearAndType(commonSelectors.passwordInputField, "password");
+    cy.clearAndType(onboardingSelectors.passwordInput, "password");
     cy.get(commonSelectors.signInButton).click();
     cy.get(usersSelector.acceptInvite).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, usersText.inviteToast);

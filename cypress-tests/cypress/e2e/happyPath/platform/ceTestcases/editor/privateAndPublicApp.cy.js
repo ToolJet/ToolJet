@@ -72,7 +72,7 @@ describe(
 
       logout();
       cy.wait(4000);
-      cy.get(commonSelectors.loginButton, { timeout: 20000 }).should(
+      cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should(
         "be.visible"
       );
       cy.visitSlug({
@@ -80,13 +80,13 @@ describe(
       });
       cy.wait(3000);
 
-      cy.get(commonSelectors.loginButton, { timeout: 20000 }).should(
+      cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should(
         "be.visible"
       );
 
       cy.clearAndType(commonSelectors.workEmailInputField, "dev@tooljet.io");
-      cy.clearAndType(commonSelectors.passwordInputField, "password");
-      cy.get(commonSelectors.loginButton).click();
+      cy.clearAndType(onboardingSelectors.passwordInput, "password");
+      cy.get(onboardingSelectors.signInButton).click();
 
       cy.wait(500);
       cy.get('[data-cy="draggable-widget-table1"]').should("be.visible");
@@ -104,7 +104,7 @@ describe(
 
       logout();
       cy.wait(4000);
-      cy.get(commonSelectors.loginButton, { timeout: 20000 }).should(
+      cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should(
         "be.visible"
       );
       cy.visitSlug({
@@ -149,13 +149,13 @@ describe(
 
       logout();
       cy.wait(4000);
-      cy.get(commonSelectors.loginButton, { timeout: 20000 }).should(
+      cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should(
         "be.visible"
       );
 
       cy.visitSlug({ actualUrl: `/applications/${data.slug}` });
 
-      cy.login("test@tooljet.com", "password");
+      cy.appUILogin("test@tooljet.com", "password");
       cy.get(commonSelectors.allApplicationLink).verifyVisibleElement(
         "have.text",
         commonText.allApplicationLink
@@ -188,7 +188,7 @@ describe(
       cy.wait(1000);
 
       cy.clearAndType(commonSelectors.workEmailInputField, data.email);
-      cy.clearAndType(commonSelectors.passwordInputField, "password");
+      cy.clearAndType(onboardingSelectors.passwordInput, "password");
       cy.get(commonSelectors.signInButton).click();
       cy.wait(1000);
       cy.get(ssoSelector.workspaceSubHeader).verifyVisibleElement(
@@ -211,7 +211,7 @@ describe(
 
       logout();
       cy.wait(4000);
-      cy.get(commonSelectors.loginButton, { timeout: 20000 }).should(
+      cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should(
         "be.visible"
       );
       cy.visitSlug({ actualUrl: `/applications/${data.slug}` });
@@ -258,8 +258,8 @@ describe(
       cy.get(commonSelectors.createAnAccountLink).click();
 
       cy.clearAndType(commonSelectors.nameInputField, data.firstName);
-      cy.clearAndType(commonSelectors.emailInputField, data.email);
-      cy.clearAndType(commonSelectors.passwordInputField, commonText.password);
+      cy.clearAndType(onboardingSelectors.emailInput, data.email);
+      cy.clearAndType(onboardingSelectors.passwordInput, commonText.password);
       cy.get(commonSelectors.signUpButton).click();
 
       cy.apiLogin();

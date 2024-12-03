@@ -1,6 +1,8 @@
 import { commonSelectors } from "Selectors/common";
 import { fake } from "Fixtures/fake";
 import { commonText, path } from "Texts/common";
+import { onboardingSelectors } from "Selectors/onboarding";
+
 
 describe("Login functionality", () => {
   let user;
@@ -20,11 +22,11 @@ describe("Login functionality", () => {
       "have.text",
       commonText.signInHeader
     );
-    cy.get(commonSelectors.workEmailLabel).verifyVisibleElement(
+    cy.get(onboardingSelectors.emailLabel).verifyVisibleElement(
       "have.text",
-      commonText.workEmailLabel
+      "Email *"
     );
-    cy.get(commonSelectors.passwordLabel).should(($el) => {
+    cy.get(onboardingSelectors.passwordLabel).should(($el) => {
       expect($el.contents().first().text().trim()).to.eq(
         commonText.passwordLabel
       );
@@ -33,53 +35,41 @@ describe("Login functionality", () => {
       "have.text",
       commonText.forgotPasswordLink
     );
-    cy.get(commonSelectors.loginButton).verifyVisibleElement(
+    cy.get(onboardingSelectors.signInButton).verifyVisibleElement(
       "have.text",
-      commonText.loginButton
+      "Sign in"
     );
+    cy.get(onboardingSelectors.signInButton).should('be.disabled')
 
-    cy.get(commonSelectors.workEmailInputField).should("be.visible");
-    cy.get(commonSelectors.passwordInputField).should("be.visible");
+    cy.get(onboardingSelectors.emailInput).should("be.visible");
+    cy.get(onboardingSelectors.passwordInput).should("be.visible");
   });
   it("Should not be able to login with invalid credentials", () => {
-    cy.get(commonSelectors.loginButton).click();
+    cy.clearAndType(onboardingSelectors.emailInput,
+      "test"
+    );
     cy.get(commonSelectors.emailInputError).verifyVisibleElement(
       "have.text",
       commonText.emailInputError
     );
+    cy.get(onboardingSelectors.signInButton).should('be.disabled');
 
-    cy.clearAndType(commonSelectors.workEmailInputField, invalidEmail);
-    cy.get(commonSelectors.loginButton).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      commonText.loginErrorToast
-    );
+    cy.get(onboardingSelectors.emailInput).clear();
+    cy.clearAndType(onboardingSelectors.passwordInput, invalidPassword);
+    cy.get(onboardingSelectors.signInButton).should('be.disabled');
 
-    cy.get(commonSelectors.workEmailInputField).clear();
-    cy.clearAndType(commonSelectors.passwordInputField, invalidPassword);
-    cy.get(commonSelectors.loginButton).click();
-    cy.get(commonSelectors.emailInputError).verifyVisibleElement(
-      "have.text",
-      commonText.emailInputError
-    );
+    cy.clearAndType(onboardingSelectors.emailInput, user.email);
+    cy.get(onboardingSelectors.passwordInput).clear();
+    cy.get(onboardingSelectors.signInButton).should('be.disabled');
 
-    cy.clearAndType(commonSelectors.workEmailInputField, user.email);
-    cy.get(commonSelectors.passwordInputField).clear();
-    cy.get(commonSelectors.loginButton).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      commonText.loginErrorToast
-    );
-
-    cy.get(commonSelectors.workEmailInputField).clear();
-    cy.clearAndType(commonSelectors.passwordInputField, user.password);
-    cy.get(commonSelectors.loginButton).click();
-    cy.get(commonSelectors.emailInputError).verifyVisibleElement(
-      "have.text",
-      commonText.emailInputError
-    );
+    cy.clearAndType(onboardingSelectors.emailInput, user.email);
+    cy.clearAndType(onboardingSelectors.passwordInput, "Pass")
+    cy.get(onboardingSelectors.passwordError).verifyVisibleElement("have.text", "Password must be at least 5 characters long")
+    cy.clearAndType(onboardingSelectors.passwordInput, invalidPassword);
+    cy.get(onboardingSelectors.signInButton).click();
+    cy.verifyToastMessage(commonSelectors.toastMessage, "Invalid credentials")
   });
   it("Should be able to login with valid credentials", () => {
-    cy.login(user.email, user.password);
+    cy.appUILogin(user.email, user.password);
   });
 });

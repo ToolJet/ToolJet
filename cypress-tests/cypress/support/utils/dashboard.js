@@ -12,8 +12,8 @@ import {
 export const login = () => {
   cy.visit("/");
   cy.clearAndType(commonSelectors.workEmailInputField, "dev@tooljet.io");
-  cy.clearAndType(commonSelectors.passwordInputField, "password");
-  cy.get(commonSelectors.loginButton).click();
+  cy.clearAndType(onboardingSelectors.passwordInput, "password");
+  cy.get(onboardingSelectors.signInButton).click();
 };
 
 export const modifyAndVerifyAppCardIcon = (appName) => {

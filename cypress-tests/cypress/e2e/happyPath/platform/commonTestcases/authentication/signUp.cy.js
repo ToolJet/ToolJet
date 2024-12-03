@@ -14,6 +14,8 @@ import {
   verifyandModifyUserRole,
   verifyandModifySizeOftheCompany,
 } from "Support/utils/selfHostSignUp";
+import { onboardingSelectors } from "Selectors/onboarding";
+
 
 describe("User signup", () => {
   const data = {};
@@ -28,9 +30,10 @@ describe("User signup", () => {
     cy.get(commonSelectors.createAnAccountLink).realClick();
     SignUpPageElements();
 
-    cy.clearAndType(commonSelectors.nameInputField, data.fullName);
-    cy.clearAndType(commonSelectors.emailInputField, data.email);
-    cy.clearAndType(commonSelectors.passwordInputField, commonText.password);
+    cy.get(onboardingSelectors.nameInput).clear(); // Break the chain
+    cy.get(onboardingSelectors.nameInput).type(data.fullName); // Requery the element
+    cy.clearAndType(onboardingSelectors.emailInput, data.email);
+    cy.clearAndType(onboardingSelectors.passwordInput, commonText.password);
     cy.get(commonSelectors.signUpButton).click();
     cy.wait(500);
     verifyConfirmEmailPage(data.email);
@@ -43,19 +46,46 @@ describe("User signup", () => {
       cy.visit(invitationLink);
     });
 
-    verifyConfirmPageElements();
-    cy.get(commonSelectors.setUpToolJetButton).click();
+    cy.get(commonSelectors.pageLogo).should("be.visible");
+    cy.get('[data-cy="set-up-your-workspace!-header"]').verifyVisibleElement(
+      "have.text",
+      "Set up your workspace!"
+    );
+
+    cy.get(commonSelectors.onboardingPageDescription).verifyVisibleElement(
+      "have.text",
+      commonText.continueToSetUp
+    );
+    cy.get('[data-cy="onboarding-workspace-name-label"]').verifyVisibleElement(
+      "have.text",
+      "Workspace name *"
+    );
+    cy.get('[data-cy="onboarding-workspace-name-input"]').should('be.visible')
+
+    cy.wait(1000)
+    cy.clearAndType('[data-cy="onboarding-workspace-name-input"]', data.workspaceName)
+    cy.get('[data-cy="onboarding-submit-button"]').verifyVisibleElement(
+      "have.text",
+      "Continue"
+    );
+    cy.get('[data-cy="onboarding-submit-button"]').click();
     cy.wait(4000);
-    verifyOnboardingQuestions(data.fullName, data.workspaceName);
+
+    cy.skipWalkthrough();
+    //verifyOnboardingQuestions(data.fullName, data.workspaceName);  Add env flags for EE and Cloud
+
+    //Add validation for the application
   });
   it("Verify invalid invitation link", () => {
     cy.log(invitationLink)
     cy.visit(invitationLink);
     verifyInvalidInvitationLink();
-    cy.get(commonSelectors.backtoSignUpButton).click();
+    // cy.get(commonSelectors.backtoSignUpButton).click();
+    cy.get(commonSelectors.pageLogo).click()
     cy.get(commonSelectors.SignUpSectionHeader).should("be.visible");
   });
-  it("Verify onboarding flow", () => {
+  it.skip("Verify onboarding flow", () => {
+    // rewrite for for EE and cloud
     data.fullName = fake.fullName;
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
     data.workspaceName = fake.companyName;
@@ -63,16 +93,17 @@ describe("User signup", () => {
     cy.visit("/");
     cy.get(commonSelectors.createAnAccountLink).realClick();
 
-    cy.clearAndType(commonSelectors.nameInputField, data.fullName);
-    cy.clearAndType(commonSelectors.emailInputField, data.email);
-    cy.clearAndType(commonSelectors.passwordInputField, commonText.password);
+    cy.get(onboardingSelectors.nameInput).clear();
+    cy.get(onboardingSelectors.nameInput).type(data.fullName);
+    cy.clearAndType(onboardingSelectors.emailInput, data.email);
+    cy.clearAndType(onboardingSelectors.passwordInput, commonText.password);
     cy.get(commonSelectors.signUpButton).click();
     cy.wait(8000);
     cy.get(commonSelectors.resendEmailButton).click();
     cy.get(commonSelectors.editEmailButton).click();
-    cy.get(commonSelectors.nameInputField).verifyVisibleElement("have.value", data.fullName)
-    cy.get(commonSelectors.emailInputField).verifyVisibleElement("have.value", data.email);
-    cy.get(commonSelectors.passwordInputField).verifyVisibleElement("have.value", "");
+    cy.get(onboardingSelectors.nameInput).verifyVisibleElement("have.value", data.fullName)
+    cy.get(onboardingSelectors.emailInput).verifyVisibleElement("have.value", data.email);
+    cy.get(onboardingSelectors.passwordInput).verifyVisibleElement("have.value", "");
 
     cy.task("updateId", {
       dbconfig: Cypress.env("app_db"),

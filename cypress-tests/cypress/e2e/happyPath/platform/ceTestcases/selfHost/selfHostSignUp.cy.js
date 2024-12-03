@@ -40,12 +40,12 @@ describe("Self host onboarding", () => {
       "have.text",
       commonText.emailInputLabel
     );
-    cy.get(commonSelectors.emailInputField).should("be.visible");
+    cy.get(onboardingSelectors.emailInput).should("be.visible");
     cy.get(commonSelectors.passwordLabel).verifyVisibleElement(
       "have.text",
       commonText.passwordLabel
     );
-    cy.get(commonSelectors.passwordInputField).should("be.visible");
+    cy.get(onboardingSelectors.passwordInput).should("be.visible");
 
     cy.get(commonSelectors.passwordHelperText).verifyVisibleElement(
       "have.text",
@@ -67,8 +67,8 @@ describe("Self host onboarding", () => {
       .and("equal", "https://www.tooljet.com/privacy");
 
     cy.clearAndType(commonSelectors.nameInputField, "The Developer");
-    cy.clearAndType(commonSelectors.emailInputField, "dev@tooljet.io");
-    cy.clearAndType(commonSelectors.passwordInputField, "password");
+    cy.clearAndType(onboardingSelectors.emailInput, "dev@tooljet.io");
+    cy.clearAndType(onboardingSelectors.passwordInput, "password");
     cy.get(commonSelectors.continueButton).click();
 
     signup.selfHostCommonElements();
