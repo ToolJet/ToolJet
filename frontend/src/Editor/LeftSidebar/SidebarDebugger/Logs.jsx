@@ -12,7 +12,11 @@ function Logs({ logProps, idx }) {
   if (titleLogType === 'transformations') {
     titleLogType = 'query';
   }
-  const title = ` [${capitalize(titleLogType)} ${logProps?.key}]`;
+  let title;
+  if (logProps?.type === 'event') {
+    title = logProps.key;
+  } else title = ` [${capitalize(titleLogType)} ${logProps?.key}]`;
+
   const message =
     logProps?.type === 'navToDisablePage'
       ? logProps?.message
@@ -28,7 +32,7 @@ function Logs({ logProps, idx }) {
         }`;
 
   const defaultStyles = {
-    transform: open ? 'rotate(-180deg)' : 'rotate(0deg)',
+    transform: open ? 'rotate(270deg)' : 'rotate(0deg)',
     transition: '0.2s all',
     display: logProps?.isQuerySuccessLog || logProps.type === 'navToDisablePage' ? 'none' : 'inline-block',
     cursor: 'pointer',
@@ -87,7 +91,7 @@ function Logs({ logProps, idx }) {
         style={{ pointerEvents: logProps?.isQuerySuccessLog ? 'none' : 'default', position: 'relative' }}
       >
         <span className={cx('position-absolute')} style={defaultStyles}>
-          <SolidIcon name="downarrow" fill={`var(--icons-strong)`} width="16" />
+          <SolidIcon name="rightarrrow" fill={`var(--icons-strong)`} width="16" />
         </span>
         <span className="w-100" style={{ paddingTop: '8px', paddingBottom: '8px', paddingLeft: '20px' }}>
           {logProps.type === 'navToDisablePage' ? (
@@ -95,9 +99,10 @@ function Logs({ logProps, idx }) {
           ) : (
             <>
               <div className={`d-flex justify-content-between align-items-center ${!open && 'text-truncate'}`}>
-                <span className={`text-slate-12 cursor-pointer debugger-error-title ${!open && 'text-truncate'}`}>
-                  {title}
-                </span>
+                <span
+                  dangerouslySetInnerHTML={{ __html: title }}
+                  className={`text-slate-12 cursor-pointer debugger-error-title ${!open && 'text-truncate'}`}
+                ></span>
                 <small className="text-slate-10 text-right ">{moment(logProps?.timestamp).fromNow()}</small>
               </div>
               <span

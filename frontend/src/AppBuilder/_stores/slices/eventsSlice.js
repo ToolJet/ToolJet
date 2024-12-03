@@ -421,7 +421,7 @@ export const createEventsSlice = (set, get) => ({
 
       const getQueryName = () => {
         const queries = get().dataQuery.queries.modules.canvas;
-        return Object.keys(queries).find((key) => queries[key].id === eventObj.sourceId) || '';
+        return queries.find((query) => query.id === eventObj?.sourceId || '')?.name || '';
       };
 
       const constructErrorHeader = () => {
@@ -430,13 +430,14 @@ export const createEventsSlice = (set, get) => ({
         const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 
         const headerMap = {
-          component: `${capitalize(`Component ${event.component} - ${event.actionId} on ${pageName} page`)}`,
-          page: `${capitalize(`Event ${event.actionId} on ${pageName} page`)}`,
-          query: `${capitalize(`Query ${getQueryName()} - ${event.actionId}`)}`,
+          component: `[Page <b>${pageName}</b>] [Component <b>${event.component}</b>] [Event <b>${event.eventId}</b>] [Action <b>${event.actionId}</b>]`,
+          page: `[Page <b>${pageName}</b>] [Event <b>${event.eventId}</b>] [Action <b>${event.actionId}</b>]`,
+          query: `[Query <b>${getQueryName()}</b>] [Event <b>${event.eventId}</b>] [Action <b>${event.actionId}</b>]`,
         };
 
         return headerMap[source] || '';
       };
+      const componentId = get().modules['canvas'].componentNameIdMapping?.[event.component];
       useStore.getState().debugger.log({
         logLevel: 'error',
         type: 'event',
@@ -445,6 +446,7 @@ export const createEventsSlice = (set, get) => ({
         error: {
           message: error.message,
           description: JSON.stringify(error.message, null, 2),
+          ...(event.component && componentId && { componentId: componentId }),
         },
         options: options,
         strace: 'app_level',
