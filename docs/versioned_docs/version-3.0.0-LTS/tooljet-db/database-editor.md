@@ -118,6 +118,8 @@ To delete one or many records/rows, click the checkbox to the right of the recor
 
 ## Filter
 
+### Add Filter
+
 You can add as many filters as you want into the table by clicking on the **Filter** button present on the top of the database editor.
 
 #### Adding a filter on the table data
@@ -141,7 +143,13 @@ You can add as many filters as you want into the table by clicking on the **Filt
 | **in** | This operation is used to check if the value of the column is in the list of values entered in the input field. ex: `(1,2,3)` |
 | **is** | This operation is used to check if the value of the column is equal to the value entered in the input field. This operation is used for boolean data types. |
 
-<img className="screenshot-full" src="/img/v2-beta/database/ux2/filter-data-v2.png" alt="ToolJet database" />
+<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/v2-beta/database/ux2/filter-data-v2.png" alt="ToolJet database" />
+
+### Clear Filter
+
+You can either delete filters individually or clear all the filters together.
+
+<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/v2-beta/database/ux2/clear-all.png" alt="ToolJet database" />
 
 </div>
 
