@@ -238,6 +238,13 @@
     margin-top: 0px !important;
     margin-bottom: 16px !important;
   }
+
+  .error-target {
+    background-color: var(--interactive-overlays-fill-hover) !important;
+    padding: 4px 7px;
+    border-radius: 7px;
+    color: var(--slate10)
+  }
 }
 
 

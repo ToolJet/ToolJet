@@ -369,6 +369,7 @@ export const createQueryPanelSlice = (set, get) => ({
                 kind: query.kind,
                 key: query.name,
                 message: errorData?.description,
+                errorTarget: 'Queries',
                 error:
                   query.kind === 'restapi'
                     ? {

@@ -12,7 +12,7 @@ function Logs({ logProps, idx }) {
   if (titleLogType === 'transformations') {
     titleLogType = 'query';
   }
-  const title = ` [${capitalize(titleLogType)} ${logProps?.key}]`;
+  const title = logProps?.type !== 'event' ? ` [${capitalize(titleLogType)} ${logProps?.key}]` : logProps?.key;
   const message =
     logProps?.type === 'navToDisablePage'
       ? logProps?.message
@@ -28,7 +28,7 @@ function Logs({ logProps, idx }) {
         }`;
 
   const defaultStyles = {
-    transform: open ? 'rotate(-180deg)' : 'rotate(0deg)',
+    transform: open ? 'rotate(0deg)' : 'rotate(-90deg)',
     transition: '0.2s all',
     display: logProps?.isQuerySuccessLog || logProps.type === 'navToDisablePage' ? 'none' : 'inline-block',
     cursor: 'pointer',
@@ -94,11 +94,14 @@ function Logs({ logProps, idx }) {
             renderNavToDisabledPageMessage()
           ) : (
             <>
+              <div className="d-flex align-items-center justify-content-between">
+                <div className="error-target cursor-pointer">{logProps?.errorTarget}</div>
+                <small className="text-slate-10 text-right ">{moment(logProps?.timestamp).fromNow()}</small>
+              </div>
               <div className={`d-flex justify-content-between align-items-center ${!open && 'text-truncate'}`}>
                 <span className={`text-slate-12 cursor-pointer debugger-error-title ${!open && 'text-truncate'}`}>
                   {title}
                 </span>
-                <small className="text-slate-10 text-right ">{moment(logProps?.timestamp).fromNow()}</small>
               </div>
               <span
                 className={cx('mx-1', {

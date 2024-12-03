@@ -427,16 +427,28 @@ export const createEventsSlice = (set, get) => ({
       const constructErrorHeader = () => {
         const source = getSource();
         const pageName = currentPage.name;
-        const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 
         const headerMap = {
-          component: `${capitalize(`Component ${event.component} - ${event.actionId} on ${pageName} page`)}`,
-          page: `${capitalize(`Event ${event.actionId} on ${pageName} page`)}`,
-          query: `${capitalize(`Query ${getQueryName()} - ${event.actionId}`)}`,
+          component: `[Page ${pageName}] [Component ${event.component}] [Event ${event?.eventId}] [Action ${event.actionId}]`,
+          page: `[Page ${pageName}] [Event ${event.eventId}] [Action ${event.actionId}]`,
+          query: `[Query ${getQueryName()}] [Event ${event.eventId}] [Action ${event.actionId}]`,
         };
 
         return headerMap[source] || '';
       };
+
+      const constructErrorTarget = () => {
+        const source = getSource();
+
+        const errorTargetMap = {
+          page: 'Event Errors with page',
+          component: 'Component Event',
+          query: 'Event Errors with query',
+        };
+
+        return errorTargetMap[source];
+      };
+
       useStore.getState().debugger.log({
         logLevel: 'error',
         type: 'event',
@@ -446,6 +458,7 @@ export const createEventsSlice = (set, get) => ({
           message: error.message,
           description: JSON.stringify(error.message, null, 2),
         },
+        errorTarget: constructErrorTarget(),
         options: options,
         strace: 'app_level',
         timestamp: moment().toISOString(),
