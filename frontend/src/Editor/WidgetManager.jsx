@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { SearchBox } from '@/_components';
-import { LEGACY_ITEMS } from './WidgetManager/constants';
+import { LEGACY_ITEMS } from '@/AppBuilder/RightSideBar/ComponentsManagerTab/constants.js';
 
 export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel, darkMode, disabled }) {
   const [filteredComponents, setFilteredComponents] = useState(componentTypes);

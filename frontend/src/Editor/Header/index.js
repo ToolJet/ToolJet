@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import EditAppName from './EditAppName';
 import HeaderActions from './HeaderActions';
 import RealtimeAvatars from '../RealtimeAvatars';
-import { AppVersionsManager } from '@/Editor/AppVersionsManager/AppVersionsManager';
+import { AppVersionsManager } from '@/AppBuilder/Header/AppVersionsManager';
 import cx from 'classnames';
 import config from 'config';
 // eslint-disable-next-line import/no-unresolved

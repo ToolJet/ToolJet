@@ -7,7 +7,7 @@ import { shallow } from 'zustand/shallow';
 import './DragContainer.css';
 import _, { isEmpty } from 'lodash';
 import { flushSync } from 'react-dom';
-import { restrictedWidgetsObj } from './WidgetManager/restrictedWidgetsConfig';
+import { restrictedWidgetsObj } from '@/AppBuilder/WidgetManager/configs/restrictedWidgetsConfig.js';
 import { useGridStore, useIsGroupHandleHoverd, useOpenModalWidgetId } from '@/_stores/gridStore';
 import toast from 'react-hot-toast';
 import { individualGroupableProps } from './gridUtils';

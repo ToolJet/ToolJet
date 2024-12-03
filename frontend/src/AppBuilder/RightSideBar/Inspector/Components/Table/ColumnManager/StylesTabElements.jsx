@@ -8,7 +8,7 @@ import AlignLeft from '@/_ui/Icon/solidIcons/AlignLeft';
 import AlignCenter from '@/_ui/Icon/solidIcons/AlignCenter';
 import AlignRight from '@/_ui/Icon/solidIcons/AlignRight';
 import { ProgramaticallyHandleProperties } from '../ProgramaticallyHandleProperties';
-import { Select } from '@/Editor/CodeBuilder/Elements/Select';
+import { Select } from '@/AppBuilder/CodeBuilder/Elements/Select';
 
 export const StylesTabElements = ({
   column,

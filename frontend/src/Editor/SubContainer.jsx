@@ -14,10 +14,10 @@ import {
 } from '@/_helpers/appUtils';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
-import { restrictedWidgetsObj } from '@/Editor/WidgetManager/restrictedWidgetsConfig';
+import { restrictedWidgetsObj } from '@/AppBuilder/WidgetManager/configs/restrictedWidgetsConfig.js';
 import { getCurrentState } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
-import { componentTypes } from './WidgetManager/components';
+import { componentTypes } from '@/AppBuilder/WidgetManager';
 
 import { useEditorStore } from '@/_stores/editorStore';
 

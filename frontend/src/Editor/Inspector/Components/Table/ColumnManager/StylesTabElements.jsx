@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import CodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/AppBuilder/CodeEditor';
 import { Color } from '../../../Elements/Color';
 import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
 import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
@@ -8,7 +8,7 @@ import AlignLeft from '@/_ui/Icon/solidIcons/AlignLeft';
 import AlignCenter from '@/_ui/Icon/solidIcons/AlignCenter';
 import AlignRight from '@/_ui/Icon/solidIcons/AlignRight';
 import { ProgramaticallyHandleProperties } from '../ProgramaticallyHandleProperties';
-import { Select } from '@/Editor/CodeBuilder/Elements/Select';
+import { Select } from '@/AppBuilder/CodeBuilder/Elements/Select';
 
 export const StylesTabElements = ({
   column,

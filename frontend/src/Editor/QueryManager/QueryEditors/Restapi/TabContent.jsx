@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
-import CodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/AppBuilder/CodeEditor';
 import InfoIcon from '@assets/images/icons/info.svg';
 
 export default ({

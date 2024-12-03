@@ -7,7 +7,7 @@ import { SwitchPage } from './ActionConfigurationPanels/SwitchPage';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import useDraggableInPortal from '@/_hooks/useDraggableInPortal';
 import _ from 'lodash';
-import { componentTypes } from '../WidgetManager/components';
+import { componentTypes } from '@/AppBuilder/WidgetManager';
 import Select from '@/_ui/Select';
 import defaultStyles from '@/_ui/Select/styles';
 import { useTranslation } from 'react-i18next';
@@ -20,7 +20,7 @@ import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
 import NoListItem from './Components/Table/NoListItem';
 import ManageEventButton from './ManageEventButton';
 import { EditorContext } from '../Context/EditorContextWrapper';
-import CodeHinter from '../CodeEditor';
+import CodeHinter from '@/AppBuilder/CodeEditor';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { useEditorStore } from '@/_stores/editorStore';

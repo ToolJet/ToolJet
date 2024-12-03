@@ -6,7 +6,7 @@ import { renderElement } from '../Utils';
 import i18next from 'i18next';
 import { resolveReferences } from '@/_helpers/utils';
 // import { AllComponents } from '@/Editor/Box';
-import { AllComponents } from '@/_helpers/editorHelpers';
+import { AllComponents } from '@/AppBuilder/_helpers/editorHelpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 

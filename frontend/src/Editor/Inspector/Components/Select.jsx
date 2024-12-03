@@ -6,7 +6,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import List from '@/ToolJetUI/List/List';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import CodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/AppBuilder/CodeEditor';
 import { resolveReferences } from '@/_helpers/utils';
 import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
 import ListGroup from 'react-bootstrap/ListGroup';

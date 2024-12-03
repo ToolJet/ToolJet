@@ -14,7 +14,7 @@ import { Container } from './Container';
 import { EditorKeyHooks } from './EditorKeyHooks';
 import { CustomDragLayer } from './CustomDragLayer';
 import { LeftSidebar } from './LeftSidebar';
-import { componentTypes } from './WidgetManager/components';
+import { componentTypes } from '@/AppBuilder/WidgetManager';
 import { Inspector } from './Inspector/Inspector';
 import QueryPanel from './QueryPanel/QueryPanel';
 import {
@@ -51,7 +51,7 @@ import { getWorkspaceId, isValidUUID, Constants } from '@/_helpers/utils';
 import { fetchAndSetWindowTitle, pageTitles, defaultWhiteLabellingSettings } from '@white-label/whiteLabelling';
 import '@/_styles/editor/react-select-search.scss';
 import { withRouter } from '@/_hoc/withRouter';
-import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError';
+import { ReleasedVersionError } from '@/AppBuilder/Header/ReleasedVersionError';
 import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useAppVersionStore, useAppVersionActions } from '@/_stores/appVersionStore';
@@ -91,7 +91,7 @@ import {
 } from '@/_helpers/editorHelpers';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import cx from 'classnames';
-import { resolveReferences } from './CodeEditor/utils';
+import { resolveReferences } from '@/AppBuilder/CodeEditor/utils';
 
 setAutoFreeze(false);
 enablePatches();
