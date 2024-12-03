@@ -5,6 +5,7 @@ export type SourceOptions = {
   port: string;
   username: string;
   password: string;
+  connection_options: string[][];
   azure: boolean;
 };
 export type QueryOptions = {

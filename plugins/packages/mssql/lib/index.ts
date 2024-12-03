@@ -9,16 +9,33 @@ import {
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
 
+const recognizedBooleans = {
+  true: true,
+  false: false,
+  yes: true,
+  no: false,
+};
+
+function interpretValue(value: string): string | boolean {
+  return recognizedBooleans[value.toLowerCase()] ?? value;
+}
+
 export default class MssqlQueryService implements QueryService {
   private static _instance: MssqlQueryService;
 
   constructor() {
-    if (MssqlQueryService._instance) {
-      return MssqlQueryService._instance;
+    if (!MssqlQueryService._instance) {
+      MssqlQueryService._instance = this;
     }
-
-    MssqlQueryService._instance = this;
     return MssqlQueryService._instance;
+  }
+
+  connectionOptions(sourceOptions: SourceOptions) {
+    const _connectionOptions = (sourceOptions.connection_options || [])
+      .filter((o) => o.every((e) => !!e))
+      .map(([key, value]) => [key, interpretValue(value)]);
+
+    return Object.fromEntries(_connectionOptions);
   }
 
   async run(
@@ -67,6 +84,7 @@ export default class MssqlQueryService implements QueryService {
         options: {
           encrypt: sourceOptions.azure ?? false,
           instanceName: sourceOptions.instanceName,
+          ...this.connectionOptions(sourceOptions),
         },
         pool: { min: 0 },
       },
