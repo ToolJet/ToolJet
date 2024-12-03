@@ -386,11 +386,11 @@ const DynamicEditorBridge = (props) => {
     <div className={cx({ 'codeShow-active': codeShow }, 'wrapper-div-code-editor')}>
       <div className={cx('d-flex align-items-center justify-content-between')}>
         {paramLabel !== ' ' && !HIDDEN_CODE_HINTER_LABELS.includes(paramLabel) && (
-          <div className={`field ${className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
+          <div className={`field text-truncate d-flex ${className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
             <ToolTip
               label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
               meta={fieldMeta}
-              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'mb-2' : 'mb-0'} ${
+              labelClass={`tj-text-xsm color-slate12 w-100 text-truncate ${codeShow ? 'mb-2' : 'mb-0'} ${
                 darkMode && 'color-whitish-darkmode'
               }`}
             />

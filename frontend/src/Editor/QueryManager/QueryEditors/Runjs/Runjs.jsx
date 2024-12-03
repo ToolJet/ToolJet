@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { defaults } from 'lodash';
 import { Card } from 'react-bootstrap';
 import ParameterList from '../../Components/ParameterList';
-import CodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/AppBuilder/CodeEditor';
 
 const Runjs = (props) => {
   const initialOptions = defaults({ ...props.options }, { code: '//Type your JavaScript code here' });

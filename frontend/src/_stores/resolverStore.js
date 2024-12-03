@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 import { createReferencesLookup, findAllEntityReferences, findEntityId } from './utils';
-import { createJavaScriptSuggestions } from '../Editor/CodeEditor/utils';
+import { createJavaScriptSuggestions } from '@/AppBuilder/CodeEditor/utils';
 import { v4 as uuid } from 'uuid';
 import _ from 'lodash';
 import { dfs, removeAppSuggestions } from './handleReferenceTransactions';

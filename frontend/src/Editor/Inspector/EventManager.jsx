@@ -20,7 +20,7 @@ import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
 import NoListItem from './Components/Table/NoListItem';
 import ManageEventButton from './ManageEventButton';
 import { EditorContext } from '../Context/EditorContextWrapper';
-import CodeHinter from '../CodeEditor';
+import CodeHinter from '@/AppBuilder/CodeEditor';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { useEditorStore } from '@/_stores/editorStore';

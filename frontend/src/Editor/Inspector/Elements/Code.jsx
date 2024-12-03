@@ -1,7 +1,7 @@
 import React from 'react';
 import _ from 'lodash';
 import { useCurrentState } from '@/_stores/currentStateStore';
-import CodeEditor from '@/Editor/CodeEditor';
+import CodeEditor from '@/AppBuilder/CodeEditor';
 import { getDefinitionInitialValue } from './utils';
 
 const CLIENT_SERVER_TOGGLE_FIELDS = ['serverSidePagination', 'serverSideSort', 'serverSideFilter'];
