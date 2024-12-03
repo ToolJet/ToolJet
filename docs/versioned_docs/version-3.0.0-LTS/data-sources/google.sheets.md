@@ -52,21 +52,49 @@ When connecting to a Google Sheets datasource, you can choose between two permis
 
 Using Google sheets data source you can perform several operations from your applications like:
 
-  1. **[Read data from a spreadsheet](#read-data-from-a-spreadsheet)**
-  2. **[Append data to a spreadsheet](#append-data-to-a-spreadsheet)**
-  3. **[Update single row of a spreadsheet](#update-single-row-of-a-spreadsheet)**
-  4. **[Delete row from a spreadsheet](#delete-row-from-a-spreadsheet)**
+  1. **[Create a spreadsheet](#create-a-spreadsheet)**
+  2. **[List all sheets of a spreadsheet](#list-all-sheets-of-a-spreadsheet)**
+  3. **[Read data from a spreadsheet](#read-data-from-a-spreadsheet)**
+  4. **[Append data to a spreadsheet](#append-data-to-a-spreadsheet)**
   5. **[Get spreadsheet info](#get-spreadsheet-info)**
+  6. **[Update single row of a spreadsheet](#update-single-row-of-a-spreadsheet)**
+  7. **[Delete row from a spreadsheet](#delete-row-from-a-spreadsheet)**
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/google-sheets/operations-v2.png" alt="Google Sheet Operations" style={{marginBottom:'15px'}} />
+<img className="screenshot-full" src="/img/datasource-reference/google-sheets/operations-v3.png" alt="Google Sheet Operations" style={{marginBottom:'15px'}} />
 
 </div>
 
 :::info
 **Spreadsheet ID** can be obtained from the URL of the spreadsheet. For example, in the URL `https://docs.google.com/spreadsheets/d/1W2S4re7zNaPk9vqv6_CqOpPdm_mDEqmLmzjVe7Nb9WM/edit#gid=0`, the `1W2S4re7zNaPk9vqv6_CqOpPdm_mDEqmLmzjVe7Nb9WM` represents the spreadsheet ID.
 :::
+
+### Create a Spreadsheet
+
+This operation can be used to create a new spreadsheet.
+
+#### Required Parameter
+- **Title**
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/datasource-reference/google-sheets/create-sheet.png" alt="create a spreadsheet" style={{marginBottom:'15px'}} />
+
+</div>
+
+### List All Sheets of a Spreadsheet
+
+This operation can be used to list all sheets of a spreadsheet.
+
+#### Required Parameter
+- **Spreadsheet ID**
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/datasource-reference/google-sheets/list-all-sheets.png" alt="create a spreadsheet" style={{marginBottom:'15px'}} />
+
+</div>
 
 ### Read Data From a Spreadsheet
 
@@ -129,6 +157,16 @@ Add additional rows to a table by using the append operation.
 ]
 ```
 
+### Get Spreadsheet Info
+
+This operation allows you to retrieve basic information about the spreadsheet, including the number of sheets, theme, time zone, format, and URL, among others.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/datasource-reference/google-sheets/info-v2.png" alt="google sheets get info" style={{marginBottom:'15px'}} />
+
+</div>
+
 ### Update Single Row of a Spreadsheet
 
 This operation allows you to update existing data in a sheet.
@@ -176,16 +214,6 @@ This operation allows you to delete a specific row from the sheet.
 <div style={{textAlign: 'center'}}>
 
 <img className="screenshot-full" src="/img/datasource-reference/google-sheets/del-v2.png" alt="google sheets delete" style={{marginBottom:'15px'}} />
-
-</div>
-
-### Get Spreadsheet Info
-
-This operation allows you to retrieve basic information about the spreadsheet, including the number of sheets, theme, time zone, format, and URL, among others.
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/datasource-reference/google-sheets/info-v2.png" alt="google sheets get info" />
 
 </div>
 
