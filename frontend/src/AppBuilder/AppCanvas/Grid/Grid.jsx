@@ -685,7 +685,9 @@ export default function Grid({ gridWidth, currentLayout }) {
             let left = e.lastEvent?.translate[0];
             let top = e.lastEvent?.translate[1];
             if (
-              ['Listview', 'Kanban'].includes(boxList.find((box) => box.id === draggedOverElemId)?.component?.component)
+              ['Listview', 'Kanban', 'Container'].includes(
+                boxList.find((box) => box.id === draggedOverElemId)?.component?.component
+              )
             ) {
               const elemContainer = e.target.closest('.real-canvas');
               const containerHeight = elemContainer.clientHeight;
@@ -702,10 +704,19 @@ export default function Grid({ gridWidth, currentLayout }) {
             if (draggedOverElemId !== currentParentId) {
               if (isParentChangeAllowed) {
                 const draggedOverWidget = boxList.find((box) => box.id === draggedOverElemId);
+
+                let parentWidgetType = boxList.find((box) => box.id === draggedOverElemId)?.component?.component;
+                // @TODO - When dropping back to container from canvas, the boxList doesn't have canvas header,
+                // boxList will return null. But we need to tell getMouseDistanceFromParentDiv parentWidgetType is container
+                // As container id is like 'canvas-2375e23765e-123234'
+                if (parentId && !parentWidgetType && draggedOverElemId.includes('-header')) {
+                  parentWidgetType = 'Container';
+                }
+
                 let { left: _left, top: _top } = getMouseDistanceFromParentDiv(
                   e,
                   draggedOverWidget?.component?.component === 'Kanban' ? draggedOverElem : draggedOverElemId,
-                  boxList.find((box) => box.id === draggedOverElemId)?.component?.component
+                  parentWidgetType
                 );
                 left = _left;
                 top = _top;
