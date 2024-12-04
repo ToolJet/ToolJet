@@ -22,7 +22,12 @@ const MobileHeader = ({
   setAppDefinitionFromVersion,
   showViewerNavigation,
 }) => {
-  const isVersionReleased = useStore((state) => state.isVersionReleased);
+  const { isReleasedVersionId } = useStore(
+    (state) => ({
+      isReleasedVersionId: state?.releasedVersionId == state.currentVersionId || state.isVersionReleased,
+    }),
+    shallow
+  );
   const editingVersion = useStore((state) => state.editingVersion);
   const showDarkModeToggle = useStore((state) => state.globalSettings.appMode === 'auto');
 
@@ -33,7 +38,7 @@ const MobileHeader = ({
   const _renderAppNameAndLogo = () => (
     <div
       className={classNames('d-flex', 'align-items-center')}
-      style={{ visibility: showHeader || isVersionReleased ? 'visible' : 'hidden' }}
+      style={{ visibility: showHeader || isReleasedVersionId ? 'visible' : 'hidden' }}
     >
       <h1 className="navbar-brand d-none-navbar-horizontal pe-0">
         <Link
@@ -66,14 +71,15 @@ const MobileHeader = ({
     />
   );
 
-  const _renderPreviewSettings = () => (
-    <PreviewSettings
-      isMobileLayout
-      showHeader={showHeader}
-      setAppDefinitionFromVersion={setAppDefinitionFromVersion}
-      darkMode={darkMode}
-    />
-  );
+  const _renderPreviewSettings = () =>
+    !isReleasedVersionId && (
+      <PreviewSettings
+        isMobileLayout
+        showHeader={showHeader}
+        setAppDefinitionFromVersion={setAppDefinitionFromVersion}
+        darkMode={darkMode}
+      />
+    );
 
   const _renderDarkModeBtn = (args) => {
     if (!showDarkModeToggle) return null;
@@ -88,11 +94,11 @@ const MobileHeader = ({
     );
   };
 
-  if (!showHeader) {
+  if (!showHeader && isReleasedVersionId) {
     return <>{showViewerNavigation ? _renderMobileNavigationMenu() : _renderDarkModeBtn()}</>;
   }
 
-  if (!showHeader && !isVersionReleased) {
+  if (!showHeader && !isReleasedVersionId) {
     return (
       <>
         <Header
@@ -122,7 +128,7 @@ const MobileHeader = ({
         <span style={{}}>{_renderAppNameAndLogo()}</span>
         {_renderMobileNavigationMenu()}
       </div>
-      {!isVersionReleased && !isEmpty(editingVersion) && _renderPreviewSettings()}
+      {!isReleasedVersionId && !isEmpty(editingVersion) && _renderPreviewSettings()}
       {!showViewerNavigation && _renderDarkModeBtn({ styles: { top: '2px' } })}
     </Header>
   );

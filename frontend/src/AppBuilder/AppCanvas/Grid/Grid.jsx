@@ -44,7 +44,8 @@ export default function Grid({ gridWidth, currentLayout }) {
   const isGroupHandleHoverd = useIsGroupHandleHoverd();
   const openModalWidgetId = useOpenModalWidgetId();
   const moveableRef = useRef(null);
-  const [triggerCanvasUpdater, setTriggerCanvasUpdater] = useState(false);
+  const triggerCanvasUpdater = useStore((state) => state.triggerCanvasUpdater, shallow);
+  const toggleCanvasUpdater = useStore((state) => state.toggleCanvasUpdater, shallow);
   const groupResizeDataRef = useRef([]);
   const isDraggingRef = useRef(false);
   const canvasWidth = NO_OF_GRIDS * gridWidth;
@@ -347,7 +348,7 @@ export default function Grid({ gridWidth, currentLayout }) {
         return layouts;
       }, {});
       setComponentLayout(updatedLayouts, newParent, undefined, { updateParent: true });
-      setTriggerCanvasUpdater((prev) => !prev);
+      toggleCanvasUpdater();
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [boxList, currentLayout, gridWidth]
@@ -488,7 +489,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             console.error('ResizeEnd error ->', error);
           }
           useGridStore.getState().actions.setDragTarget();
-          setTriggerCanvasUpdater((prev) => !prev);
+          toggleCanvasUpdater();
         }}
         onResizeStart={(e) => {
           if (!isComponentVisible(e.target.id)) {
@@ -575,7 +576,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           } catch (error) {
             console.error('Error resizing group', error);
           }
-          setTriggerCanvasUpdater((prev) => !prev);
+          toggleCanvasUpdater();
         }}
         checkInput
         onDragStart={(e) => {
@@ -600,7 +601,10 @@ export default function Grid({ gridWidth, currentLayout }) {
             isDragOnInnerElement = tableElem.contains(e.inputEvent.target);
           }
           if (box?.component?.component === 'Calendar') {
-            const calenderElem = e.target.querySelector('.rbc-month-view');
+            const calenderElem =
+              e.target.querySelector('.rbc-month-view') ||
+              e.target.querySelector('.rbc-time-view') ||
+              e.target.querySelector('.rbc-day-view');
             isDragOnInnerElement = calenderElem.contains(e.inputEvent.target);
           }
 
@@ -731,7 +735,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             element.classList.add('hide-grid');
           });
           document.getElementById('real-canvas')?.classList.remove('show-grid');
-          setTriggerCanvasUpdater((prev) => !prev);
+          toggleCanvasUpdater();
         }}
         onDrag={(e) => {
           // Since onDrag is called multiple times when dragging, hence we are using isDraggingRef to prevent setting state again and again
@@ -866,7 +870,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           } catch (error) {
             console.error('Error dragging group', error);
           }
-          setTriggerCanvasUpdater((prev) => !prev);
+          toggleCanvasUpdater();
         }}
         // throttleDrag={1}
         // edgeDraggable={false}

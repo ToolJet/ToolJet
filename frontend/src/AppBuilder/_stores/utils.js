@@ -672,3 +672,34 @@ export function convertAllKeysToSnakeCase(o) {
 
 //   return { suggestionList, hintsMap, resolvedRefs };
 // }
+
+export const hasArrayNotation = (property) => {
+  // Regular expression to match array notation pattern
+  const arrayPattern = /\[\d+\]/;
+  return arrayPattern.test(property);
+};
+
+export const parsePropertyPath = (property) => {
+  // Split the property path into segments
+  const segments = property.split('.');
+  const result = [];
+
+  for (const segment of segments) {
+    // Check if segment contains array notation
+    if (hasArrayNotation(segment)) {
+      // Extract the property name and array index
+      const [name, ...rest] = segment.split('[');
+      if (name) result.push(name);
+
+      // Extract and clean up array indices
+      for (const item of rest) {
+        const index = parseInt(item.replace(']', ''));
+        result.push(index);
+      }
+    } else {
+      result.push(segment);
+    }
+  }
+
+  return result;
+};

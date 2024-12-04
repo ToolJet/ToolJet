@@ -1,7 +1,6 @@
-import React, { useContext, useEffect, useRef } from 'react';
+import React from 'react';
 import { Overlay, Popover } from 'react-bootstrap';
 import { Button } from '@/_ui/LeftSidebar';
-import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 
 export const PageHandlerMenu = ({ darkMode }) => {
@@ -57,7 +56,7 @@ export const PageHandlerMenu = ({ darkMode }) => {
 
   return (
     <Overlay
-      placement="auto"
+      placement="right"
       target={targetContainer}
       show={showMenu}
       rootClose
@@ -228,8 +227,8 @@ const Field = ({ id, text, iconSrc, customClass = '', closeMenu, disabled = fals
   const handleOnClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    closeMenu();
     callback(id);
+    closeMenu();
   };
 
   return (

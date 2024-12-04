@@ -48,7 +48,8 @@ export const PasswordInput = function PasswordInput({
   const [disable, setDisable] = useState(disabledState || loadingState);
   const [passwordValue, setPasswordValue] = useState(properties.value);
   const [visibility, setVisibility] = useState(properties.visibility);
-  const { isValid, validationError } = validate(passwordValue);
+  const [validationStatus, setValidationStatus] = useState(validate(passwordValue));
+  const { isValid, validationError } = validationStatus;
   const [showValidationError, setShowValidationError] = useState(false);
   const [labelWidth, setLabelWidth] = useState(0);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
@@ -154,12 +155,6 @@ export const PasswordInput = function PasswordInput({
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    setExposedVariable('isValid', isValid);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isValid]);
-
-  useEffect(() => {
-    if (isInitialRender.current) return;
     setExposedVariable('isMandatory', isMandatory);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMandatory]);
@@ -184,10 +179,16 @@ export const PasswordInput = function PasswordInput({
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    setPasswordValue(properties.value);
-    setExposedVariable('value', properties?.value ?? '');
+    setInputValue(properties?.value || '');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.value]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    const validationStatus = validate(passwordValue);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
+  }, [validate]);
 
   useEffect(() => {
     const exposedVariables = {
@@ -198,13 +199,11 @@ export const PasswordInput = function PasswordInput({
         textInputRef.current.blur();
       },
       setText: async function (text) {
-        setPasswordValue(text);
-        setExposedVariable('value', text);
+        setInputValue(text);
         fireEvent('onChange');
       },
       clear: async function () {
-        setPasswordValue('');
-        setExposedVariable('value', '');
+        setInputValue('');
         fireEvent('onChange');
       },
       setLoading: async function (loading) {
@@ -228,7 +227,6 @@ export const PasswordInput = function PasswordInput({
       value: properties?.value ?? '',
     };
 
-    setPasswordValue(properties.value ?? '');
     setExposedVariables(exposedVariables);
     isInitialRender.current = false;
 
@@ -254,6 +252,15 @@ export const PasswordInput = function PasswordInput({
     }
     return false;
   });
+
+  const setInputValue = (value) => {
+    setPasswordValue(value);
+    setExposedVariable('value', value);
+    const validationStatus = validate(value);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
+  };
+
   const renderInput = () => (
     <>
       <div
@@ -361,14 +368,12 @@ export const PasswordInput = function PasswordInput({
           autoComplete="new-password"
           onKeyUp={(e) => {
             if (e.key === 'Enter') {
-              setPasswordValue(e.target.value);
-              setExposedVariable('value', e.target.value);
+              setInputValue(e.target.value);
               fireEvent('onEnterPressed');
             }
           }}
           onChange={(e) => {
-            setPasswordValue(e.target.value);
-            setExposedVariable('value', e.target.value);
+            setInputValue(e.target.value);
             fireEvent('onChange');
           }}
           onBlur={(e) => {

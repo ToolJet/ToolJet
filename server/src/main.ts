@@ -13,6 +13,7 @@ import { bootstrap as globalAgentBootstrap } from 'global-agent';
 import { join } from 'path';
 import * as helmet from 'helmet';
 import * as express from 'express';
+import { getSubpath } from '@helpers/utils.helper';
 
 const fs = require('fs');
 
@@ -100,7 +101,15 @@ function setSecurityHeaders(app, configService) {
 
   app.use((req, res, next) => {
     res.setHeader('Permissions-Policy', 'geolocation=(self), camera=(), microphone=()');
-    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+
+    const subpath = getSubpath();
+    const path = req.path.replace(subpath, subpath ? '/' : '');
+    if (path.startsWith('/api/')) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    } else {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    }
+
     return next();
   });
 }

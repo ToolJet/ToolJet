@@ -85,16 +85,20 @@ export const TableRow = React.memo(
             : ''
         }`}
         {...rowProps}
-        onClickCapture={async () => {
+        onClickCapture={() => {
           // toggleRowSelected will triggered useRededcuer function in useTable and in result will get the selectedFlatRows consisting row which are selected
+          const selectedRow = row.original;
+          const selectedRowId = row.id;
+          setExposedVariables({ selectedRow, selectedRowId });
+          fireEvent('onRowClicked');
+        }}
+        onClick={async () => {
           if (allowSelection) {
             await toggleRowSelected(row.id);
           }
           const selectedRow = row.original;
           const selectedRowId = row.id;
-          setExposedVariables({ selectedRow, selectedRowId });
           mergeToTableDetails({ selectedRow, selectedRowId });
-          fireEvent('onRowClicked');
         }}
         onMouseOver={() => {
           if (hoverAdded) {
