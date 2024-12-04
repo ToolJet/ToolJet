@@ -5,6 +5,7 @@ import { profileText } from "Texts/profile";
 import { commonSelectors } from "Selectors/common";
 import { fake } from "Fixtures/fake";
 import { commonText } from "Texts/common";
+import { onboardingSelectors } from "Selectors/onboarding";
 
 describe("Profile Settings", () => {
   const randomFirstName = fake.firstName;
@@ -184,7 +185,7 @@ describe("Profile Settings", () => {
 
     common.logout();
 
-    cy.clearAndType(commonSelectors.workEmailInputField, commonText.email);
+    cy.clearAndType(onboardingSelectors.emailInput, commonText.email);
     cy.clearAndType(onboardingSelectors.passwordInput, commonText.password);
     cy.get(onboardingSelectors.signInButton).click();
     cy.verifyToastMessage(
@@ -192,11 +193,8 @@ describe("Profile Settings", () => {
       profileText.loginErrorToast
     );
 
-    cy.clearAndType(
-      onboardingSelectors.passwordInput,
-      profileText.newPassword
-    );
-    cy.get(commonSelectors.signInButton).click();
+    cy.clearAndType(onboardingSelectors.passwordInput, profileText.newPassword);
+    cy.get(onboardingSelectors.signInButton).click();
     common.navigateToProfile();
 
     cy.clearAndType(
