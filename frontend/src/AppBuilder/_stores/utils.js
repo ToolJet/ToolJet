@@ -483,7 +483,6 @@ export function createReferencesLookup(currentState, forQueryParams = false, ini
     'setPageVariable',
     'unsetPageVariable',
     'switchPage',
-    'logInfo',
   ];
 
   const suggestionList = [];
