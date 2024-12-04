@@ -53,7 +53,7 @@ export default class RestapiQueryService implements QueryService {
   ): Promise<RestAPIResult> {
     const hasDataSource = dataSourceId !== undefined;
     const url = this.constructUrl(sourceOptions, queryOptions, hasDataSource);
-    const _requestOptions = await this.prepareValidatedRequestOptions(
+    const _requestOptions = await this.constructValidatedRequestOptions(
       context,
       sourceOptions,
       queryOptions,
@@ -81,7 +81,7 @@ export default class RestapiQueryService implements QueryService {
     }
   }
 
-  private async prepareValidatedRequestOptions(
+  private async constructValidatedRequestOptions(
     context: { user?: User; app?: App },
     sourceOptions: any,
     queryOptions: any,
@@ -100,7 +100,7 @@ export default class RestapiQueryService implements QueryService {
     };
     this.addCookiesToRequest(sourceOptions, queryOptions, hasDataSource, _requestOptions);
 
-    const body = this.prepareRequestBody(sourceOptions, queryOptions, hasDataSource);
+    const body = this.constructRequestBody(sourceOptions, queryOptions, hasDataSource);
     this.addBodyToRequest(_requestOptions, body);
 
     const authValidatedRequestOptions = await validateAndSetRequestOptionsBasedOnAuthType(
@@ -111,7 +111,7 @@ export default class RestapiQueryService implements QueryService {
     return authValidatedRequestOptions;
   }
 
-  prepareRequestBody(
+  constructRequestBody(
     sourceOptions: any,
     queryOptions: any,
     hasDataSource: boolean
