@@ -353,6 +353,7 @@ export default function Grid({ gridWidth, currentLayout }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [boxList, currentLayout, gridWidth]
   );
+
   if (mode !== 'edit') return null;
 
   return (
@@ -425,6 +426,22 @@ export default function Grid({ gridWidth, currentLayout }) {
             document.getElementById('resize-ghost-widget').style.height = `${e.target.clientHeight}px`;
           }
         }}
+        onResizeStart={(e) => {
+          if (
+            e.target.id &&
+            useGridStore.getState().resizingComponentId !== e.target.id &&
+            !e.target.classList.contains('delete-icon')
+          ) {
+            // When clicked on widget boundary/resizer, select the component
+            setSelectedComponents([e.target.id]);
+          }
+
+          if (!isComponentVisible(e.target.id)) {
+            return false;
+          }
+          useGridStore.getState().actions.setResizingComponentId(e.target.id);
+          e.setMin([gridWidth, 10]);
+        }}
         onResizeEnd={(e) => {
           try {
             useGridStore.getState().actions.setResizingComponentId(null);
@@ -490,13 +507,6 @@ export default function Grid({ gridWidth, currentLayout }) {
           }
           useGridStore.getState().actions.setDragTarget();
           toggleCanvasUpdater();
-        }}
-        onResizeStart={(e) => {
-          if (!isComponentVisible(e.target.id)) {
-            return false;
-          }
-          useGridStore.getState().actions.setResizingComponentId(e.target.id);
-          e.setMin([gridWidth, 10]);
         }}
         onResizeGroupStart={({ events }) => {
           const parentElm = events[0].target.closest('.real-canvas');
