@@ -235,7 +235,7 @@ export const workspaceLoginPageElements = (workspaceName) => {
 };
 
 export const passwordLoginVisible = () => {
-  cy.get(commonSelectors.workEmailInputField).should("be.visible");
+  cy.get(onboardingSelectors.emailInput).should("be.visible");
   cy.get(onboardingSelectors.passwordInput).should("be.visible");
   cy.get(onboardingSelectors.signInButton).verifyVisibleElement(
     "have.text",
@@ -244,7 +244,7 @@ export const passwordLoginVisible = () => {
 };
 
 export const workspaceLogin = (workspaceName) => {
-  cy.clearAndType(commonSelectors.workEmailInputField, "dev@tooljet.io");
+  cy.clearAndType(onboardingSelectors.emailInput, "dev@tooljet.io");
   cy.clearAndType(onboardingSelectors.passwordInput, "password");
   cy.get(onboardingSelectors.signInButton).click();
   cy.wait(2000);
@@ -300,7 +300,7 @@ export const signInPageElements = () => {
     commonText.loginButton
   );
 
-  cy.get(commonSelectors.workEmailInputField).should("be.visible");
+  cy.get(onboardingSelectors.emailInput).should("be.visible");
   cy.get(onboardingSelectors.passwordInput).should("be.visible");
 
   cy.get("body").then(($el) => {
