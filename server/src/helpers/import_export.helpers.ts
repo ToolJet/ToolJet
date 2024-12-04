@@ -12,7 +12,9 @@ export function updateEntityReferences(node, resourceMapping: Record<string, str
             matches.forEach((match) => {
               // remove curly braces and extract the entity "component.entityName.something"
               const ref = match.slice(2, -2).trim();
-              const entityName = ref.split('.')[1];
+              const entityRegex = /(components|queries|globals|variables|page|parameters|secrets|constants)\.[^{}]*/g;
+              const entityMatches = ref.match(entityRegex)?.[0] || ref;
+              const entityName = entityMatches.split('.')[1];
 
               if (resourceMapping[entityName]) {
                 const newValue = value.replace(entityName, resourceMapping[entityName]);
@@ -67,7 +69,9 @@ export function findAllEntityReferences(node, allRefs): [] {
           if (matches) {
             matches.forEach((match) => {
               const ref = match.slice(2, -2).trim(); // Remove {{ and }}
-              const entityName = ref.split('.')[1];
+              const entityRegex = /(components|queries|globals|variables|page|parameters|secrets|constants)\.[^{}]*/g;
+              const entityMatches = ref.match(entityRegex)?.[0] || ref;
+              const entityName = entityMatches.split('.')[1];
               if (entityName && !allRefs.includes(entityName)) {
                 allRefs.push(entityName);
               }
