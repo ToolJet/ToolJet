@@ -90,7 +90,7 @@ const sidebars = {
             'app-builder/walkthrough/variables',
             'app-builder/importing-exporting-applications',
           ],
-        },                    
+        },   
         {
           'type': 'category',
           'label': 'References',
@@ -183,7 +183,8 @@ const sidebars = {
                             'widgets/table/serverside-operations/filter',
                             'widgets/table/serverside-operations/pagination'
                           ]
-                        }
+                        },
+                        'widgets/table/dynamic-column'
                       ]
                     },
                     'widgets/tabs',
@@ -235,6 +236,7 @@ const sidebars = {
             },
           ],
         },
+        'app-builder/anti-patterns',
         'tutorial/keyboard-shortcuts',
       ],
     },
@@ -289,7 +291,7 @@ const sidebars = {
             'data-sources/amazonses',
             'data-sources/appwrite',
             'data-sources/athena',
-            'data-sources/azureblob',
+            'data-sources/azureblobstorage',
             'data-sources/baserow',
             'data-sources/bigquery',
             'data-sources/firestore',
@@ -300,7 +302,7 @@ const sidebars = {
             'data-sources/dynamodb',
             'data-sources/elasticsearch',
             'data-sources/gcs',
-            'data-sources/google.sheets',
+            'data-sources/googlesheets',
             'data-sources/graphql',
             'data-sources/grpc',
             'data-sources/influxdb',
@@ -457,6 +459,7 @@ const sidebars = {
         'workflows/workflow-triggers',
         'workflows/results',
         'workflows/permissions',
+        'workflows/trigger-workflow-from-app'
       ],
     },
     {
@@ -469,7 +472,7 @@ const sidebars = {
           'type': 'category',
           'label': 'Marketplace Plugins',
           'items': [
-            'marketplace/plugins/marketplace-plugin-redshift',
+            'marketplace/plugins/marketplace-plugin-awsredshift',
             'marketplace/plugins/marketplace-plugin-textract',
             'marketplace/plugins/marketplace-plugin-aws-lambda',
             'marketplace/plugins/marketplace-plugin-engagespot',
@@ -481,7 +484,7 @@ const sidebars = {
             'marketplace/plugins/marketplace-plugin-supabase',
             'marketplace/plugins/marketplace-plugin-pocketbase',
             'marketplace/plugins/marketplace-plugin-portkey',
-            'marketplace/plugins/marketplace-plugin-prestodb',
+            'marketplace/plugins/marketplace-plugin-Presto',
             'marketplace/plugins/marketplace-plugin-jira',
             'marketplace/plugins/marketplace-plugin-sharepoint',
             'marketplace/plugins/marketplace-plugin-pinecone'

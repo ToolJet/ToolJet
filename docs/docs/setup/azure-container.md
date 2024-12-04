@@ -32,10 +32,10 @@ Please note that you need to set up a PostgreSQL database manually to be used by
  
  </div>
  
-  - Make sure to provide the image tag, and then enter `server/entrypoint.sh, npm, run, start:prod` in the "Command override" field.
+  - Make sure to provide the image tag, and then enter `server/entrypoint.sh, npm, run, start:prod` in the "Arguments override" field.
   - Add the following ToolJet application variables under the "Environmental variable" section. You can refer to this [**documentation**](/docs/setup/env-vars) for more information on environment variables.
 
-  **Note**: ToolJet requires: 
+  **Note**: ToolJet requires:
    - **TOOLJET_DB** 
    - **TOOLJET_DB_HOST**
    - **TOOLJET_DB_USER**
@@ -46,6 +46,14 @@ Please note that you need to set up a PostgreSQL database manually to be used by
    - **PG_PASS**
    - **SECRET_KEY_BASE** 
    - **LOCKBOX_KEY**
+ 
+   For redis connection ensure below environment variables are added:
+   - **REDIS_HOST**
+   - **REDIS_PORT**
+   - **REDIS_USER**
+
+   If using Azure Database for Postgresql-Flexible server, add:
+   - **PGSSLMODE = require**
   
    <div style={{textAlign: 'center'}}>
  
