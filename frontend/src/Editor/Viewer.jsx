@@ -25,7 +25,7 @@ import {
 } from '@/_helpers/appUtils';
 import queryString from 'query-string';
 import ViewerLogoIcon from './Icons/viewer-logo.svg';
-import { DataSourceTypes } from './DataSourceManager/SourceComponents';
+import { DataSourceTypes } from '@/AppBuilder/DataSourceManager/SourceComponents';
 import { resolveReferences, isQueryRunnable, isValidUUID, Constants } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import _ from 'lodash';

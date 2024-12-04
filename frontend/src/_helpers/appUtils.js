@@ -27,7 +27,7 @@ import { allSvgs } from '@tooljet/plugins/client';
 import urlJoin from 'url-join';
 import { authenticationService } from '@/_services/authentication.service';
 import { setCookie } from '@/_helpers/cookie';
-import { DataSourceTypes } from '@/Editor/DataSourceManager/SourceComponents';
+import { DataSourceTypes } from '@/AppBuilder/DataSourceManager/SourceComponents';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useCurrentStateStore, getCurrentState } from '@/_stores/currentStateStore';

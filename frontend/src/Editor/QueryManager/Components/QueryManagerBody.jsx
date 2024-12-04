@@ -12,7 +12,7 @@ import { ChangeDataSource } from './ChangeDataSource';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
 import { EventManager } from '@/Editor/Inspector/EventManager';
 import { staticDataSources, customToggles, mockDataQueryAsComponent, RestAPIToggles } from '../constants';
-import { DataSourceTypes } from '../../DataSourceManager/SourceComponents';
+import { DataSourceTypes } from '@/AppBuilder/DataSourceManager/SourceComponents';
 import { useDataSources, useGlobalDataSources, useSampleDataSource } from '@/_stores/dataSourcesStore';
 import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
 import { useSelectedQuery, useSelectedDataSource } from '@/_stores/queryPanelStore';

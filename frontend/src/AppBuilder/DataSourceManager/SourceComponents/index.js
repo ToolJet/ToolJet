@@ -14,7 +14,7 @@ export const CommonlyUsedDataSources = Object.keys(allManifests)
   .reduce((accumulator, currentValue) => {
     const sourceName = allManifests[currentValue]?.source?.name;
     if (
-      sourceName === 'Rest API' ||
+      sourceName === 'REST API' ||
       sourceName === 'MongoDB' ||
       sourceName === 'Airtable' ||
       sourceName === 'Google Sheets' ||
@@ -28,7 +28,7 @@ export const CommonlyUsedDataSources = Object.keys(allManifests)
     return accumulator;
   }, [])
   .sort((a, b) => {
-    const order = ['Rest API', 'PostgreSQL', 'Google Sheets', 'Airtable', 'MongoDB'];
+    const order = ['REST API', 'PostgreSQL', 'Google Sheets', 'Airtable', 'MongoDB'];
     return order.indexOf(a.name) - order.indexOf(b.name);
   });
 

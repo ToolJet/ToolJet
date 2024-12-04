@@ -12,7 +12,7 @@ import { staticDataSources } from '../constants';
 import { useQueryPanelActions } from '@/_stores/queryPanelStore';
 import Search from '@/_ui/Icon/solidIcons/Search';
 import { Tooltip } from 'react-tooltip';
-import { DataBaseSources, ApiSources, CloudStorageSources } from '@/Editor/DataSourceManager/SourceComponents';
+import { DataBaseSources, ApiSources, CloudStorageSources } from '@/AppBuilder/DataSourceManager/SourceComponents';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import './../queryManager.theme.scss';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';

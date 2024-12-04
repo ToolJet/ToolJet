@@ -30,7 +30,6 @@ import { shallow } from 'zustand/shallow';
 import { useDataSourcesStore } from '../../_stores/dataSourcesStore';
 import { withRouter } from '@/_hoc/withRouter';
 import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
-import { LicenseTooltip } from '@/LicenseTooltip';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import './dataSourceManager.theme.scss';
 
@@ -769,65 +768,19 @@ class DataSourceManagerComponent extends React.Component {
   };
 
   renderEnvironmentsTab = (selectedDataSource) => {
-    const multiEnvironmentEnabled = this.props?.featureAccess?.multiEnvironment;
-    const isTrial = this.props?.featureAccess?.licenseStatus?.licenseType === 'trial';
-    const licenseValid =
-      !this.props?.featureAccess?.licenseStatus?.isExpired && this.props?.featureAccess?.licenseStatus?.isLicenseValid;
     return (
       selectedDataSource &&
-      this.props.environments?.length > 1 && (
+      this.props.environment?.length > 1 && (
         <nav className="nav nav-tabs mt-3">
-          {this.props?.environments.map((env, key) => {
-            const Wrapper = ({ children }) =>
-              !env?.enabled ? (
-                <LicenseTooltip
-                  placement="bottom"
-                  feature={'multi-environments'}
-                  isAvailable={env?.enabled}
-                  noTooltipIfValid={true}
-                  customMessage={
-                    !this.props?.featureAccess?.isLicenseValid || this.props?.featureAccess?.isExpired
-                      ? 'Multi-environments are available only in paid plans'
-                      : 'Multi-environments are not included in your current plan'
-                  }
-                >
-                  {children}
-                </LicenseTooltip>
-              ) : (
-                <>{children}</>
-              );
-            return (
-              <Wrapper key={key}>
-                <a
-                  key={env?.id}
-                  onClick={() =>
-                    this.props.handleActions(() => {
-                      if (env?.enabled) {
-                        !selectedDataSource?.id && this.resetOptions();
-                        this.props.environmentChanged(env, selectedDataSource?.id);
-                      }
-                    })
-                  }
-                  disabled={!env?.enabled}
-                  className={cx('nav-item nav-link', { active: this.props.currentEnvironment?.name === env.name })}
-                  data-cy={`${env.name}-label`}
-                >
-                  <ToolTip
-                    message={'Multi-environments is a paid plan feature'}
-                    show={isTrial && licenseValid}
-                    placement="bottom"
-                  >
-                    <div className="d-flex align-items-center">
-                      {capitalize(env.name)}
-                      {env.priority > 1 && (!multiEnvironmentEnabled || isTrial) && (
-                        <SolidIcon className="mx-1" name="enterprisesmall" />
-                      )}
-                    </div>
-                  </ToolTip>
-                </a>
-              </Wrapper>
-            );
-          })}
+          {this.props?.environments.map((env) => (
+            <a
+              key={env?.id}
+              onClick={() => this.props.environmentChanged(env, selectedDataSource?.id)}
+              className={cx('nav-item nav-link', { active: this.props.currentEnvironment?.name === env.name })}
+            >
+              {capitalize(env.name)}
+            </a>
+          ))}
         </nav>
       )
     );
@@ -1329,9 +1282,7 @@ const withStore = (Component) => (props) => {
     shallow
   );
 
-  const { handleActions } = useGlobalDatasourceUnsavedChanges();
-
-  return <Component {...props} setGlobalDataSourceStatus={setGlobalDataSourceStatus} handleActions={handleActions} />;
+  return <Component {...props} setGlobalDataSourceStatus={setGlobalDataSourceStatus} />;
 };
 
 export const DataSourceManager = withTranslation()(withRouter(withStore(DataSourceManagerComponent)));
