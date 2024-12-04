@@ -248,7 +248,7 @@ export const removeNestedDoubleCurlyBraces = (str) => {
   iter = 0;
   let shouldRemoveSpace = true;
   while (iter < str.length) {
-    if (transformedInput[iter] === ' ' && shouldRemoveSpace) {
+    if (shouldRemoveSpace && [' ', '\n', '\t'].includes(transformedInput[iter])) {
       transformedInput[iter] = '';
     } else if (transformedInput[iter] === 'le') {
       shouldRemoveSpace = true;
@@ -262,7 +262,7 @@ export const removeNestedDoubleCurlyBraces = (str) => {
   iter = str.length - 1;
   shouldRemoveSpace = true;
   while (iter >= 0) {
-    if (transformedInput[iter] === ' ' && shouldRemoveSpace) {
+    if (shouldRemoveSpace && [' ', '\n', '\t'].includes(transformedInput[iter])) {
       transformedInput[iter] = '';
     } else if (transformedInput[iter] === 'ri') {
       shouldRemoveSpace = true;
