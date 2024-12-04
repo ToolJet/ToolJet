@@ -32,7 +32,7 @@ Enter the following parameters:
 - Key: **student_id** *(Enter your desired variable name)*
 - Value: `{{components.table1.selectedRow.id}}`
 
-This event will save the student id value in the entered variable name, which can be accessed on another page to fetch related data.
+This event will save the student id value in the specified variable, which can be accessed on another page. Similarly, you can save all the required values in different separate variables to access on another page.
 
 <img className="screenshot-full" src="/img/how-to/display-table-record-on-new-page/set-variable.png" alt="Add event handler to set variables"/>
 
@@ -52,40 +52,8 @@ This event will switch the page whenever a record is clicked.
 
 ## Displaying Details on Another Page
 
-This can be achieved in two ways:
-1. [Passing Data via Variables](#passing-data-via-variables) 
-2. [Fetching Data with a Query](#fetching-data-with-a-query)
-
-### Passing Data via Variables
-
-If you don't want to run a new query then you can store all the required values in variables from the first page by [setting up event handlers](#setting-up-event-handlers) and then display them on the second page.
+Now, can access the values stored in the variables from the previous page. Set the default value of the text input component using `{{variables.<variable_name>}}`.
 
 <img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/how-to/display-table-record-on-new-page/passing-var.png" alt="Passing Data via Variables"/>
-
-### Fetching Data with a Query
-
-You can access the value of student id via the variable you set in the previous page, now create a new query from the query panel located at the bottom.
-
-1. Select your desired data source.
-2. Select operation as **List rows**.
-3. In the filters section add a new filter, select the column name, select the operation as “equals”, and in the value section enter `{{variables.student_id}}` to access the value we set in the previous page.
-
-Now this query will fetch all the details of the student who was selected on the last page.
-
-<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/how-to/display-table-record-on-new-page/query.png" alt="Add query to fetch data"/>
-
-Again go back to your home page and add a new event handler between the previous two event handlers and enter the following parameters:
-
-- Event: **Row Clicked**
-- Action: **Run Query**
-- Page: **tooljetdb2** *(Select the last added query to fetch selected student details)*
-
-<img className="screenshot-full" src="/img/how-to/display-table-record-on-new-page/query-second.png" alt="Add query to fetch data"/>
-
-Now to display the data you can set the default value of a text input component to `{{queries.<queryname>.data[0].<key>}}`.
-
-**Note**: Make sure to replace *queryname* with your query name and *key* with the desired key you wish to display.
-
-<img className="screenshot-full" src="/img/how-to/display-table-record-on-new-page/display-data.png" alt="Display data on the new page"/>
 
 </div>
