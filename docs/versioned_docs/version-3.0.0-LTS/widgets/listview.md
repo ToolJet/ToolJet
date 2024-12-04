@@ -210,7 +210,7 @@ Use `{{listItem.key}}` to display data on the nested components. Example: For di
 
 All the child components of the List View component are exposed through the `children` variable. This variable is an array of objects, where each object represents a record in the listview and contains the data of the child components.
 
-The components inside the list view can be controlled using the javascipt queries. For example, if you want to disable the `button1` component in the first record, you can use the following expression:
+The components inside the list view can be controlled using the javascript queries. For example, if you want to disable the `button1` component in the first record, you can use the following expression:
 
 ```js
 components.listview1.children[0].button1.disable(true) // disables the button1 component in the first record
