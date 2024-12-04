@@ -31,7 +31,7 @@
         "type": "string",
         "encrypted": true
       },
-      "connection_options": {
+      "driver_options": {
         "type": "array"
       }
     }
@@ -96,9 +96,9 @@
       "type": "password",
       "description": "Enter password"
     },
-    "connection_options": {
-      "label": "Connection Options",
-      "key": "connection_options",
+    "driver_options": {
+      "label": "Driver Options",
+      "key": "driver_options",
       "type": "react-component-headers"
     },
     "azure": {

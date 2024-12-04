@@ -13,8 +13,6 @@ import { isEmpty } from '@tooljet-plugins/common';
 const recognizedBooleans = {
   true: true,
   false: false,
-  yes: true,
-  no: false,
 };
 
 function interpretValue(value: string): string | boolean | number {
@@ -37,8 +35,8 @@ export default class MssqlQueryService implements QueryService {
     return MssqlQueryService._instance;
   }
 
-  connectionOptions(sourceOptions: SourceOptions) {
-    const _connectionOptions = (sourceOptions.connection_options || [])
+  sanitizeOptions(options: string[][]) {
+    const _connectionOptions = (options || [])
       .filter((o) => o.every((e) => !!e))
       .map(([key, value]) => [key, interpretValue(value)]);
 
@@ -128,11 +126,11 @@ export default class MssqlQueryService implements QueryService {
         options: {
           encrypt: sourceOptions.azure ?? false,
           instanceName: sourceOptions.instanceName,
-          ...this.connectionOptions(sourceOptions),
+          ...(sourceOptions.driver_options && this.sanitizeOptions(sourceOptions.driver_options)),
         },
         pool: { min: 0 },
       },
-      ...this.connectionOptions(sourceOptions),
+      ...(sourceOptions.connection_options && this.sanitizeOptions(sourceOptions.connection_options)),
     };
 
     return knex(config);
