@@ -12,11 +12,11 @@ This guide demonstrates how to display the details of a selected row from the **
 Let’s get started by building the app first.
 
 1. Drag and drop a **Table** component from the component library on the right to the canvas and set other required components.
-        <img style={{marginTop:'10px'}} className="screenshot-full" src="/img/how-to/display-table-record-on-new-page/build-app.png" alt="Build the app" />
+<img className="screenshot-full" src="/img/how-to/display-table-record-on-new-page/build-app.png" alt="Build the app" />
 2. Now add another page inside the app using the panel on the left.
-        <img style={{marginTop:'10px'}} className="screenshot-full" src="/img/how-to/display-table-record-on-new-page/add-new-page.png" alt="Add a new page" />
+<img className="screenshot-full" src="/img/how-to/display-table-record-on-new-page/add-new-page.png" alt="Add a new page" />
 3. Set up the second page with the required fields and components.
-        <img style={{marginTop:'10px'}} className="screenshot-full" src="/img/how-to/display-table-record-on-new-page/setup-second-page.png" alt="Setup the second page" />
+<img className="screenshot-full" src="/img/how-to/display-table-record-on-new-page/setup-second-page.png" alt="Setup the second page" />
 
 </div>
 
@@ -52,13 +52,27 @@ This event will switch the page whenever a record is clicked.
 
 ## Displaying Details on Another Page
 
-Now you can access the value of the variable you set in the previous page, create a new query from the bottom query panel.
+This can be achieved in two ways:
+1. [Passing Data via Variables](#passing-data-via-variables) 
+2. [Fetching Data with a Query](#fetching-data-with-a-query)
 
-Select your desired data source and select operation as **List rows**, in the filters section add a new filter, select the column name, select the operation as “equals”, and in the value section enter `{{variables.student_id}}` to access the value we set in the previous page.
+### Passing Data via Variables
+
+If you don't want to run a new query then you can store all the required values in variables from the first page by [setting up event handlers](#setting-up-event-handlers) and then display them on the second page.
+
+<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/how-to/display-table-record-on-new-page/passing-var.png" alt="Passing Data via Variables"/>
+
+### Fetching Data with a Query
+
+You can access the value of student id via the variable you set in the previous page, now create a new query from the query panel located at the bottom.
+
+1. Select your desired data source.
+2. Select operation as **List rows**.
+3. In the filters section add a new filter, select the column name, select the operation as “equals”, and in the value section enter `{{variables.student_id}}` to access the value we set in the previous page.
 
 Now this query will fetch all the details of the student who was selected on the last page.
 
-<img className="screenshot-full" src="/img/how-to/display-table-record-on-new-page/query.png" alt="Add query to fetch data"/>
+<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/how-to/display-table-record-on-new-page/query.png" alt="Add query to fetch data"/>
 
 Again go back to your home page and add a new event handler between the previous two event handlers and enter the following parameters:
 
