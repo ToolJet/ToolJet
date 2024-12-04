@@ -93,8 +93,8 @@ Here's an example using the custom schema of **Text Input**, **Number Input** an
 
 ```js
 {{{
-   "title":"Event Registration",
-   "properties":{
+   title:'Event Registration',
+   properties:{
       textinput1: {
           type: 'textinput',
           value: 'John',
@@ -126,7 +126,7 @@ Here's an example using the custom schema of **Text Input**, **Number Input** an
           value: 22,
           maxValue: 100,
           minValue: 14,
-          placeholder: 'Enter your age',
+          placeholder: 'Enter Your Age',
           label: 'Age'
       },
       dropdown1: {
@@ -144,11 +144,11 @@ Here's an example using the custom schema of **Text Input**, **Number Input** an
           }
       }
    },
-   "submitButton":{
-      "value":"Submit",
-      "styles":{
-         "backgroundColor":"#3A433B",
-         "borderColor":"#595959"
+   submitButton:{
+      value:'Submit',
+      styles:{
+         backgroundColor:'#3A433B',
+         borderColor:'#595959'
       }
    }
 }}}
@@ -249,7 +249,7 @@ datepicker1: {
     disabledDates: ['08/09/2023'],
     enableTime: true,
     format: 'DD/MM/YYYY',
-    label: 'Select a date' 
+    label: 'Select a Date' 
 }
 ```
 
@@ -288,7 +288,7 @@ numberInput1: {
     value: 10,
     maxValue: 12,
     minValue: 6,
-    placeholder: 'Enter a number',
+    placeholder: 'Enter a Number',
     label: 'Number Input'
 }
 ```
@@ -331,7 +331,7 @@ passwordInput1: {
         minLength: 5,
         regex: `'^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$'`
     },
-    placeholder: 'Enter a password',
+    placeholder: 'Enter Password',
     label: 'Password'
 }
 ```
@@ -434,7 +434,7 @@ textArea1: {
         borderRadius: 5
     },
     value: 'This is a text area',
-    placeholder: 'Enter text here',
+    placeholder: 'Enter Text Here',
     label: 'Text Area'
 }
 ```
@@ -469,7 +469,7 @@ daterangepicker1: {
     defaultEndDate: '12/04/2022',
     defaultStartDate: '1/04/2022',
     format: 'DD/MM/YYYY',
-    label: 'Select a date range'
+    label: 'Select a Date Range'
 }
 ```
 
@@ -502,7 +502,7 @@ multiselect1: {
         borderRadius: 5
     },
     displayValues: ["one", "two", "three"],
-    label: 'Select options of your choice',
+    label: 'Select Options of Your Choice',
     value: [2, 3],
     values: [1, 2, 3],
     showAllOption: true
@@ -543,7 +543,7 @@ starRating1: {
     defaultSelected: 3.5,
     maxRating: 5,
     tooltips: ['one', 'two', 'three', 'four'],
-    label: 'Select a rating'
+    label: 'Select a Rating'
 }
 ```
 
@@ -584,7 +584,7 @@ filepicker1: {
     minSize: 25,
     parseContent: true,
     parseFileType: 'csv',
-    label: 'Select a file'
+    label: 'Select a File'
 }
 ```
 
@@ -616,7 +616,7 @@ filepicker1: {
 textinput1: {
     type: 'textinput',
     value: 'John',
-    placeholder: 'enter the name here',
+    placeholder: 'Enter the Name Here',
     label: 'First Name',
     validation: {
         maxLength: 6
@@ -663,7 +663,7 @@ dropdown1: {
     values: [1, 2, 3],
     loading: false,
     value: 2,
-    label: 'Select a number',
+    label: 'Select a Number',
     styles: {
         disabled: false,
         visibility: 'true',
