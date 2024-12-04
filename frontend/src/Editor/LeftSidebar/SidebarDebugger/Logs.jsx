@@ -99,8 +99,8 @@ function Logs({ logProps, idx }) {
                 <small className="text-slate-10 text-right ">{moment(logProps?.timestamp).fromNow()}</small>
               </div>
               <div className={`d-flex justify-content-between align-items-center ${!open && 'text-truncate'}`}>
-                <span className={`text-slate-12 cursor-pointer debugger-error-title ${!open && 'text-truncate'}`}>
-                  {title}
+                <span className={` cursor-pointer debugger-error-title ${!open && 'text-truncate'}`}>
+                  <HighlightSecondWord text={title} />
                 </span>
               </div>
               <span
@@ -138,3 +138,22 @@ function Logs({ logProps, idx }) {
 let isString = (value) => typeof value === 'string' || value instanceof String;
 
 export default Logs;
+
+const HighlightSecondWord = ({ text }) => {
+  const processedText = text.split(/(\[.*?\])/).map((segment, index) => {
+    if (segment.startsWith('[') && segment.endsWith(']')) {
+      const content = segment.slice(1, -1).split(' ');
+      const firstWord = content[0];
+      const secondWord = content[1];
+
+      return (
+        <span key={index}>
+          [{firstWord} <b>{secondWord}</b>]
+        </span>
+      );
+    }
+    return segment;
+  });
+
+  return <span>{processedText}</span>;
+};
