@@ -181,22 +181,25 @@ class Chart extends React.Component {
           ),
         });
       }
+    }
 
-      items.push({
-        title: 'Options',
-        children: (
-          <>
-            {renderElement(
-              component,
-              componentMeta,
-              paramUpdated,
-              dataQueries,
-              'loadingState',
-              'properties',
-              currentState
-            )}
-            {renderElement(component, componentMeta, paramUpdated, dataQueries, 'showAxes', 'properties', currentState)}
-            {renderElement(
+    items.push({
+      title: 'Options',
+      children: (
+        <>
+          {renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'loadingState',
+            'properties',
+            currentState
+          )}
+          {chartType !== 'pie' &&
+            renderElement(component, componentMeta, paramUpdated, dataQueries, 'showAxes', 'properties', currentState)}
+          {chartType !== 'pie' &&
+            renderElement(
               component,
               componentMeta,
               paramUpdated,
@@ -205,10 +208,9 @@ class Chart extends React.Component {
               'properties',
               currentState
             )}
-          </>
-        ),
-      });
-    }
+        </>
+      ),
+    });
 
     items.push({
       title: 'Events',
