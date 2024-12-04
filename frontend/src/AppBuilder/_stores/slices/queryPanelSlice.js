@@ -201,6 +201,8 @@ export const createQueryPanelSlice = (set, get) => ({
       confirmed = undefined,
       mode = 'edit',
       userSuppliedParameters = {},
+      component,
+      eventId,
       shouldSetPreviewData = false,
       isOnLoad = false,
       moduleId = 'canvas'
@@ -247,8 +249,7 @@ export const createQueryPanelSlice = (set, get) => ({
       if (query) {
         dataQuery = JSON.parse(JSON.stringify(query));
       } else {
-        toast.error('No query has been associated with the action.');
-        return;
+        throw new Error('No query selected');
       }
 
       if (_.isEmpty(parameters)) {
@@ -298,6 +299,7 @@ export const createQueryPanelSlice = (set, get) => ({
           isLoading: true,
           data: [],
           rawData: [],
+          id: queryId,
         });
 
         let queryExecutionPromise = null;
@@ -367,6 +369,7 @@ export const createQueryPanelSlice = (set, get) => ({
                 kind: query.kind,
                 key: query.name,
                 message: errorData?.description,
+                errorTarget: 'Queries',
                 error:
                   query.kind === 'restapi'
                     ? {
@@ -435,6 +438,7 @@ export const createQueryPanelSlice = (set, get) => ({
                 key: query.name,
                 message: 'Query executed successfully',
                 isQuerySuccessLog: true,
+                errorTarget: 'Queries',
               });
 
               setResolvedQuery(queryId, {
@@ -760,6 +764,7 @@ export const createQueryPanelSlice = (set, get) => ({
         error: result,
         isTransformation: true,
         isQuerySuccessLog: result?.status === 'failed' ? false : true,
+        errorTarget: 'Queries',
       });
       return result;
     },
