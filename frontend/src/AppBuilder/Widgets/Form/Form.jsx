@@ -44,6 +44,13 @@ export const Form = function Form(props) {
     boxShadow,
   };
 
+  const childIdNameMap = useMemo(() => {
+    return Object.keys(childComponents).reduce((acc, id) => {
+      const component = childComponents[id]?.component?.component;
+      return { ...acc, [id]: component?.name };
+    }, {});
+  }, [childComponents]);
+
   const parentRef = useRef(null);
   const childDataRef = useRef({});
 
@@ -148,7 +155,7 @@ export const Form = function Form(props) {
     };
     setExposedVariables(exposedVariables);
     setValidation(childValidation);
-  }, [childrenData, advanced]);
+  }, [childrenData, advanced, JSON.stringify(childIdNameMap)]);
 
   useEffect(() => {
     document.addEventListener('submitForm', handleFormSubmission);
