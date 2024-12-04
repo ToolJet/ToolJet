@@ -438,6 +438,7 @@ export const createQueryPanelSlice = (set, get) => ({
                 key: query.name,
                 message: 'Query executed successfully',
                 isQuerySuccessLog: true,
+                errorTarget: 'Queries',
               });
 
               setResolvedQuery(queryId, {
@@ -763,6 +764,7 @@ export const createQueryPanelSlice = (set, get) => ({
         error: result,
         isTransformation: true,
         isQuerySuccessLog: result?.status === 'failed' ? false : true,
+        errorTarget: 'Queries',
       });
       return result;
     },

@@ -12,7 +12,8 @@ function Logs({ logProps, idx }) {
   if (titleLogType === 'transformations') {
     titleLogType = 'query';
   }
-  const title = logProps?.type !== 'event' ? ` [${capitalize(titleLogType)} ${logProps?.key}]` : logProps?.key;
+  const title = logProps?.key;
+  console.log({ logProps });
   const message =
     logProps?.type === 'navToDisablePage'
       ? logProps?.message
@@ -20,6 +21,8 @@ function Logs({ logProps, idx }) {
       ? 'Completed'
       : logProps?.type === 'component'
       ? `Invalid property detected: ${logProps?.message}.`
+      : logProps?.type === 'Custom Log'
+      ? logProps?.description
       : `${startCase(logProps?.type)} failed: ${
           logProps?.description ||
           (isString(logProps?.message) && logProps?.message) ||
@@ -87,7 +90,7 @@ function Logs({ logProps, idx }) {
         style={{ pointerEvents: logProps?.isQuerySuccessLog ? 'none' : 'default', position: 'relative' }}
       >
         <span className={cx('position-absolute')} style={defaultStyles}>
-          <SolidIcon name="downarrow" fill={`var(--icons-strong)`} width="16" />
+          <SolidIcon name="rightarrrow" fill={`var(--icons-strong)`} width="16" />
         </span>
         <span className="w-100" style={{ paddingTop: '8px', paddingBottom: '8px', paddingLeft: '20px' }}>
           {logProps.type === 'navToDisablePage' ? (
@@ -140,6 +143,7 @@ let isString = (value) => typeof value === 'string' || value instanceof String;
 export default Logs;
 
 const HighlightSecondWord = ({ text }) => {
+  console.log({ text });
   const processedText = text.split(/(\[.*?\])/).map((segment, index) => {
     if (segment.startsWith('[') && segment.endsWith(']')) {
       const content = segment.slice(1, -1).split(' ');

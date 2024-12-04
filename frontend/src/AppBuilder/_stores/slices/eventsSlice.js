@@ -399,8 +399,8 @@ export const createEventsSlice = (set, get) => ({
         await get().eventsSlice.executeAction(event, mode, customVariables);
       }
     },
-    logError(errorType, errorKind, error, eventObj = '', options = {}) {
-      const { event = {} } = eventObj;
+    logError(errorType, errorKind, error, eventObj = '', options = {}, logLevel) {
+      const { event = eventObj } = eventObj;
       const pages = get().modules.canvas.pages;
       const currentPageId = get().currentPageId;
       const currentPage = pages.find((page) => page.id === currentPageId);
@@ -421,7 +421,7 @@ export const createEventsSlice = (set, get) => ({
 
       const getQueryName = () => {
         const queries = get().dataQuery.queries.modules.canvas;
-        return Object.keys(queries).find((key) => queries[key].id === eventObj.sourceId) || '';
+        return queries.find((query) => query.id === eventObj?.sourceId || '')?.name || '';
       };
 
       const constructErrorHeader = () => {
@@ -432,6 +432,7 @@ export const createEventsSlice = (set, get) => ({
           component: `[Page ${pageName}] [Component ${event.component}] [Event ${event?.eventId}] [Action ${event.actionId}]`,
           page: `[Page ${pageName}] [Event ${event.eventId}] [Action ${event.actionId}]`,
           query: `[Query ${getQueryName()}] [Event ${event.eventId}] [Action ${event.actionId}]`,
+          customLog: event.description,
         };
 
         return headerMap[source] || '';
@@ -444,19 +445,21 @@ export const createEventsSlice = (set, get) => ({
           page: 'Event Errors with page',
           component: 'Component Event',
           query: 'Event Errors with query',
+          customLog: 'Custom Log',
         };
 
         return errorTargetMap[source];
       };
-
+      const componentId = get().modules['canvas'].componentNameIdMapping?.[event.component];
       useStore.getState().debugger.log({
-        logLevel: 'error',
-        type: 'event',
+        logLevel: logLevel ? logLevel : 'error',
+        type: errorType ? errorType : 'event',
         kind: errorKind,
         key: constructErrorHeader(),
         error: {
           message: error.message,
           description: JSON.stringify(error.message, null, 2),
+          ...(event.component && componentId && { componentId: componentId }),
         },
         errorTarget: constructErrorTarget(),
         options: options,
@@ -465,10 +468,10 @@ export const createEventsSlice = (set, get) => ({
       });
     },
     executeAction: debounce(async (eventObj, mode, customVariables = {}) => {
-      const { event } = eventObj;
+      const { event = eventObj } = eventObj;
       const { getExposedValueOfComponent, getResolvedValue } = get();
 
-      if (event.runOnlyIf) {
+      if (event?.runOnlyIf) {
         const shouldRun = getResolvedValue(event.runOnlyIf, customVariables);
         if (!shouldRun) {
           return false;
@@ -497,6 +500,12 @@ export const createEventsSlice = (set, get) => ({
                 break;
             }
             return Promise.resolve();
+          }
+          case 'log-info': {
+            get().eventsSlice.logError('Custom Log', 'Custom-log', '', eventObj, {
+              eventId: event.eventId,
+            });
+            break;
           }
           case 'run-query': {
             try {
@@ -1056,6 +1065,11 @@ export const createEventsSlice = (set, get) => ({
         return executeAction(event, mode, {});
       };
 
+      const logInfo = (log) => {
+        const event = { actionId: 'log-info', description: log, eventType: 'customLog' };
+        return executeAction(event, mode, {});
+      };
+
       return {
         runQuery,
         setVariable,
@@ -1073,6 +1087,7 @@ export const createEventsSlice = (set, get) => ({
         getPageVariable,
         unsetPageVariable,
         switchPage,
+        logInfo,
       };
     },
     // Selectors
