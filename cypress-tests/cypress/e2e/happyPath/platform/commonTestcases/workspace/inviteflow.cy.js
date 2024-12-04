@@ -60,7 +60,7 @@ describe("user invite flow cases", () => {
         cy.get(commonSelectors.setUpToolJetButton).click();
         verifyOnboardingQuestions(data.signUpName, data.workspaceName);
         visitWorkspaceInvitation(data.email, "My workspace");
-        cy.clearAndType(commonSelectors.workEmailInputField, data.email);
+        cy.clearAndType(onboardingSelectors.emailInput, data.email);
         cy.clearAndType(onboardingSelectors.passwordInput, usersText.password);
         cy.get(onboardingSelectors.signInButton).click();
 

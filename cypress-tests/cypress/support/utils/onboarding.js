@@ -129,10 +129,14 @@ export const verifyInvalidInvitationLink = () => {
 
 export const userSignUp = (fullName, email, workspaceName) => {
   let invitationLink;
+  cy.intercept("GET", "/api/organizations/public-configs").as("publicConfig");
   cy.visit("/");
-  cy.wait(1000);
-  cy.get(commonSelectors.createAnAccountLink).realClick();
-  cy.clearAndType(onboardingSelectors.nameInput, fullName);
+  cy.wait("@publicConfig"); // Wait for the API response
+  cy.get(commonSelectors.createAnAccountLink).realClick(); // Proceed to click the link
+  cy.get(onboardingSelectors.nameInput).should('not.be.disabled');
+  cy.wait(3000)
+  cy.get(onboardingSelectors.nameInput).clear();
+  cy.get(onboardingSelectors.nameInput).type(fullName);
   cy.clearAndType(onboardingSelectors.emailInput, email);
   cy.clearAndType(onboardingSelectors.passwordInput, commonText.password);
   cy.get(commonSelectors.signUpButton).click();
@@ -144,10 +148,9 @@ export const userSignUp = (fullName, email, workspaceName) => {
   }).then((resp) => {
     invitationLink = `/invitations/${resp.rows[0].invitation_token}`;
     cy.visit(invitationLink);
-    cy.get(commonSelectors.setUpToolJetButton).click();
     cy.wait(4000);
-    verifyOnboardingQuestions(fullName, workspaceName);
-    updateWorkspaceName(email, workspaceName);
+    cy.clearAndType('[data-cy="onboarding-workspace-name-input"]', workspaceName)
+    cy.get('[data-cy="onboarding-submit-button"]').click();
   });
 };
 

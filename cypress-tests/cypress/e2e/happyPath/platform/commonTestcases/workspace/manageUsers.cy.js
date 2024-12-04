@@ -157,7 +157,7 @@ describe("Manage Users", () => {
 
     logout();
     cy.visit("/");
-    cy.clearAndType(commonSelectors.workEmailInputField, data.email);
+    cy.clearAndType(onboardingSelectors.emailInput, data.email);
     cy.clearAndType(onboardingSelectors.passwordInput, usersText.password);
     cy.get(onboardingSelectors.signInButton).click();
 
@@ -179,9 +179,9 @@ describe("Manage Users", () => {
 
     visitWorkspaceInvitation(data.email, "My workspace");
 
-    cy.clearAndType(commonSelectors.workEmailInputField, data.email);
+    cy.clearAndType(onboardingSelectors.emailInput, data.email);
     cy.clearAndType(onboardingSelectors.passwordInput, "password");
-    cy.get(commonSelectors.signInButton).click();
+    cy.get(onboardingSelectors.signInButton).click();
     cy.get(usersSelector.acceptInvite).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, usersText.inviteToast);
     logout();
@@ -407,9 +407,9 @@ describe("Manage Users", () => {
     cy.wait(2000);
     visitWorkspaceInvitation(data.email, workspaceName);
 
-    cy.clearAndType(commonSelectors.workEmailInputField, data.email);
+    cy.clearAndType(onboardingSelectors.emailInput, data.email);
     cy.clearAndType(onboardingSelectors.passwordInput, "password");
-    cy.get(commonSelectors.signInButton).click();
+    cy.get(onboardingSelectors.signInButton).click();
     cy.get(usersSelector.acceptInvite).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, usersText.inviteToast);
     logout();
