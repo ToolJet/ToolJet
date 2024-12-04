@@ -1803,7 +1803,7 @@ export function Table({
                       }
                     }}
                     size="md"
-                    data-tooltip-id={tableButtonHoveredId === id ? `tooltip-for-add-new-row-${id}` : "" }
+                    data-tooltip-id={ tableButtonHoveredId === id ? `tooltip-for-add-new-row-${id}` : "" }
                     data-tooltip-content="Add new row"
                   ></ButtonSolid>
                 </>
@@ -1827,7 +1827,7 @@ export function Table({
                       fill={`var(--icons-default)`}
                       iconWidth="16"
                       size="md"
-                      data-tooltip-id={tableButtonHoveredId === id ? `tooltip-for-download-${id}` : "" }
+                      data-tooltip-id={ tableButtonHoveredId === id ? `tooltip-for-download-${id}` : "" }
                       data-tooltip-content="Download"
                       onClick={(e) => {
                         if (document.activeElement === e.currentTarget) {
@@ -1861,7 +1861,7 @@ export function Table({
                           e.currentTarget.blur();
                         }
                       }}
-                      data-tooltip-id={tableButtonHoveredId === id ? `tooltip-for-manage-columns-${id}` : "" }
+                      data-tooltip-id={ tableButtonHoveredId === id ? `tooltip-for-manage-columns-${id}` : "" }
                       data-tooltip-content="Manage columns"
                     ></ButtonSolid>
                   </OverlayTriggerComponent>
