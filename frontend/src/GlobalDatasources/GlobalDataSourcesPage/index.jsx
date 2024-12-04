@@ -6,13 +6,13 @@ import { useTranslation } from 'react-i18next';
 import { isEmpty } from 'lodash';
 import { Sidebar } from '../Sidebar';
 import { GlobalDataSourcesContext } from '..';
-import { DataSourceManager } from '@/Editor/DataSourceManager';
+import { DataSourceManager } from '@/AppBuilder/DataSourceManager';
 import {
   DataBaseSources,
   ApiSources,
   CloudStorageSources,
   CommonlyUsedDataSources,
-} from '@/Editor/DataSourceManager/SourceComponents';
+} from '@/AppBuilder/DataSourceManager/SourceComponents';
 import { pluginsService, globalDatasourceService, authenticationService, marketplaceService } from '@/_services';
 import { Card } from '@/_ui/Card';
 import { SegregatedList } from '../SegregatedList';
