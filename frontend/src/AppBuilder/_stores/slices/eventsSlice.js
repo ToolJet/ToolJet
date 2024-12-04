@@ -404,6 +404,11 @@ export const createEventsSlice = (set, get) => ({
       const pages = get().modules.canvas.pages;
       const currentPageId = get().currentPageId;
       const currentPage = pages.find((page) => page.id === currentPageId);
+      const componentIdMapping = get().modules['canvas'].componentNameIdMapping;
+      const componentName = Object.keys(componentIdMapping).find(
+        (key) => componentIdMapping[key] === eventObj?.sourceId
+      );
+      const componentId = eventObj?.sourceId;
 
       const getSource = () => {
         if (eventObj.eventType) {
@@ -429,7 +434,7 @@ export const createEventsSlice = (set, get) => ({
         const pageName = currentPage.name;
 
         const headerMap = {
-          component: `[Page ${pageName}] [Component ${event.component}] [Event ${event?.eventId}] [Action ${event.actionId}]`,
+          component: `[Page ${pageName}] [Component ${componentName}] [Event ${event?.eventId}] [Action ${event.actionId}]`,
           page: `[Page ${pageName}] [Event ${event.eventId}] [Action ${event.actionId}]`,
           query: `[Query ${getQueryName()}] [Event ${event.eventId}] [Action ${event.actionId}]`,
           customLog: event.description,
@@ -450,7 +455,6 @@ export const createEventsSlice = (set, get) => ({
 
         return errorTargetMap[source];
       };
-      const componentId = get().modules['canvas'].componentNameIdMapping?.[event.component];
       useStore.getState().debugger.log({
         logLevel: logLevel ? logLevel : 'error',
         type: errorType ? errorType : 'event',

@@ -13,7 +13,6 @@ function Logs({ logProps, idx }) {
     titleLogType = 'query';
   }
   const title = logProps?.key;
-  console.log({ logProps });
   const message =
     logProps?.type === 'navToDisablePage'
       ? logProps?.message
@@ -143,7 +142,6 @@ let isString = (value) => typeof value === 'string' || value instanceof String;
 export default Logs;
 
 const HighlightSecondWord = ({ text }) => {
-  console.log({ text });
   const processedText = text.split(/(\[.*?\])/).map((segment, index) => {
     if (segment.startsWith('[') && segment.endsWith(']')) {
       const content = segment.slice(1, -1).split(' ');
