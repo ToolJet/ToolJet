@@ -52,7 +52,7 @@ This event will switch the page whenever a record is clicked.
 
 ## Displaying Details on Another Page
 
-Now, can access the values stored in the variables from the previous page. Set the default value of the text input component using `{{variables.<variable_name>}}`.
+Now, you can access the values stored in the variables from the previous page. Set the default value of the text input component using `{{variables.<variable_name>}}`.
 
 <img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/how-to/display-table-record-on-new-page/passing-var.png" alt="Passing Data via Variables"/>
 
