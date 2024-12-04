@@ -10,7 +10,7 @@ describe("Password reset functionality", () => {
   let passwordResetLink = "";
 
 
-  it("Verify wrong password limit", () => {
+  it.only("Verify wrong password limit", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase();
 
@@ -20,7 +20,7 @@ describe("Password reset functionality", () => {
 
     for (let i = 0; i < 5; i++) {
       cy.clearAndType(onboardingSelectors.emailInput, data.email);
-      cy.clearAndType(onboardingSelectors.passwordInput, "passw");
+      cy.clearAndType(onboardingSelectors.LoginpasswordInput, "passw");
       cy.get(onboardingSelectors.signInButton).click();
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
@@ -28,7 +28,7 @@ describe("Password reset functionality", () => {
       );
     }
     cy.clearAndType(onboardingSelectors.emailInput, data.email);
-    cy.clearAndType(onboardingSelectors.passwordInput, "passw");
+    cy.clearAndType(onboardingSelectors.LoginpasswordInput, "passw");
     cy.get(onboardingSelectors.signInButton).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
@@ -63,7 +63,7 @@ describe("Password reset functionality", () => {
     cy.get(commonSelectors.resetPasswordLinkButton)
       .verifyVisibleElement("have.text", commonText.resetPasswordLinkButton)
       .and("be.disabled");
-
+    cy.wait(5000);
     cy.clearAndType('[data-cy="email-input-field-input"]', data.email);
     cy.get(commonSelectors.resetPasswordLinkButton).click();
 

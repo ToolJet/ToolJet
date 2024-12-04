@@ -11,8 +11,8 @@ Cypress.Commands.add(
   "appUILogin",
   (email = "dev@tooljet.io", password = "password") => {
     cy.visit("/");
-    cy.clearAndType(onboardingSelectors.emailInput, email);
-    cy.clearAndType(onboardingSelectors.passwordInput, password);
+    cy.clearAndType(onboardingSelectors.Loginemailinput, email);
+    cy.clearAndType(onboardingSelectors.LoginpasswordInput, password);
     cy.get(onboardingSelectors.signInButton).click();
 
     cy.intercept("GET", "api/library_apps").as(

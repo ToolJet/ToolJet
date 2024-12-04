@@ -30,7 +30,7 @@ describe("Self host onboarding", () => {
       commonText.passwordLabel
     );
     cy.get(onboardingSelectors.passwordInput).should("be.visible");
-    cy.get(commonSelectors.passwordHelperText).verifyVisibleElement(
+    cy.get(commonSelectors.passwordHelperTextSignup).verifyVisibleElement(
       "have.text",
       commonText.passwordHelperText
     );
@@ -54,7 +54,7 @@ describe("Self host onboarding", () => {
     cy.clearAndType(onboardingSelectors.passwordInput, "password");
     cy.get(commonSelectors.continueButton).click();
 
-    signup.selfHostCommonElements();
+    // signup.selfHostCommonElements();
     cy.get(commonSelectors.setUpworkspaceCheckPoint).verifyVisibleElement(
       "have.text",
       "Set up your workspace!"

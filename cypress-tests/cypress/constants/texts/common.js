@@ -95,6 +95,7 @@ export const commonText = {
   continueButton: "Continue",
   resetPasswordButton: "Reset password",
   setUpWorkspaceHeader: "Set up your workspace",
+  LoginpasswordLabel: "Password *",
   userRolePageHeader: "What best describes your role?",
   sizeOftheCompanyHeader: "What is the size of your company?",
   workspaceNameInputLabel: "Workspace name *",
