@@ -157,6 +157,9 @@ class DraftEditor extends React.Component {
       ),
     };
 
+    this.editorContainerRef = React.createRef();
+    this.controlsRef = React.createRef();
+
     this.focus = () => this.refs.editor.focus();
     this.onChange = (editorState) => {
       let html = stateToHTML(editorState.getCurrentContent());
@@ -170,20 +173,20 @@ class DraftEditor extends React.Component {
     this.toggleInlineStyle = this._toggleInlineStyle.bind(this);
   }
 
-  componentDidUpdate(prevProps) {
-    if (prevProps.defaultValue !== this.props.defaultValue) {
-      const blocksFromHTML = convertFromHTML(DOMPurify.sanitize(this.props.defaultValue));
-      const newContentState = ContentState.createFromBlockArray(blocksFromHTML.contentBlocks, blocksFromHTML.entityMap);
-      const newEditorState = EditorState.createWithContent(newContentState);
-      const html = stateToHTML(newContentState);
-
-      this.props.handleChange(html);
-
-      this.setState({ editorState: newEditorState });
-    }
-  }
-
   componentDidMount() {
+    //For resizing the editor container based on the height of rich text editor controls
+    this.resizeObserver = new ResizeObserver(() => {
+      if (this.controlsRef.current && this.editorContainerRef.current) {
+        const controlsHeight = this.controlsRef.current.offsetHeight;
+        const editorHeight = this.props.height - 46 - controlsHeight;
+        this.editorContainerRef.current.style.height = `${editorHeight}px`;
+      }
+    });
+
+    if (this.controlsRef.current) {
+      this.resizeObserver.observe(this.controlsRef.current);
+    }
+
     const exposedVariables = {
       value: this.props.defaultValue,
       isDisabled: this.props.isDisabled,
@@ -215,6 +218,25 @@ class DraftEditor extends React.Component {
     };
     this.props.setExposedVariables(exposedVariables);
     this.props.isInitialRender.current = false;
+  }
+
+  componentWillUnmount() {
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.defaultValue !== this.props.defaultValue) {
+      const blocksFromHTML = convertFromHTML(DOMPurify.sanitize(this.props.defaultValue));
+      const newContentState = ContentState.createFromBlockArray(blocksFromHTML.contentBlocks, blocksFromHTML.entityMap);
+      const newEditorState = EditorState.createWithContent(newContentState);
+      const html = stateToHTML(newContentState);
+
+      this.props.handleChange(html);
+
+      this.setState({ editorState: newEditorState });
+    }
   }
 
   _handleKeyCommand(command, editorState) {
@@ -265,12 +287,12 @@ class DraftEditor extends React.Component {
         </center>
       </div>
     ) : (
-      <div className="RichEditor-root">
-        <div className="RichEditor-controls">
+      <div className="RichEditor-root" style={{ overflowY: 'scroll', scrollbarWidth: 'none' }}>
+        <div className="RichEditor-controls" ref={this.controlsRef}>
           <BlockStyleControls editorState={editorState} onToggle={this.toggleBlockType} />
           <InlineStyleControls editorState={editorState} onToggle={this.toggleInlineStyle} />
         </div>
-        <div className={className} style={{ height: `${this.props.height - 60}px` }} onClick={this.focus}>
+        <div className={className} ref={this.editorContainerRef} onClick={this.focus}>
           <Editor
             blockStyleFn={getBlockStyle}
             customStyleMap={styleMap}
