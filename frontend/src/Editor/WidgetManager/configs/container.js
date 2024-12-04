@@ -15,6 +15,25 @@ export const containerConfig = {
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+    },
+    disabledState: {
+      type: 'toggle',
+      section: 'additionalActions',
+      displayName: 'Disable',
       validation: {
         schema: { type: 'boolean' },
         defaultValue: false,
@@ -95,32 +114,38 @@ export const containerConfig = {
         defaultValue: '#fff',
       },
     },
-    visibility: {
-      type: 'toggle',
-      displayName: 'Visibility',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: true,
-      },
-    },
-    disabledState: {
-      type: 'toggle',
-      displayName: 'Disable',
-      validation: {
-        schema: { type: 'boolean' },
-      },
-      defaultValue: false,
-    },
   },
-  exposedVariables: {},
+  exposedVariables: {
+    isVisible: true,
+    isDisabled: false,
+    isLoading: false,
+  },
+  actions: [
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'setVisibility', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setLoading',
+      displayName: 'Set disable',
+      params: [{ handle: 'setLoading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setLoading',
+      displayName: 'Set loading',
+      params: [{ handle: 'setLoading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+  ],
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
-      visible: { value: '{{true}}' },
       loadingState: { value: `{{false}}` },
+      visibility: { value: '{{true}}' },
+      disabledState: { value: '{{false}}' },
     },
     events: [],
     styles: {

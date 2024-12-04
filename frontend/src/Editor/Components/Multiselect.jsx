@@ -35,6 +35,7 @@ export const Multiselect = function Multiselect({
   fireEvent,
   componentName,
   dataCy,
+  formId,
 }) {
   const { label, value, values, display_values, showAllOption } = properties;
   const { borderRadius, visibility, disabledState, boxShadow } = styles;
@@ -209,6 +210,11 @@ export const Multiselect = function Multiselect({
                   element.style.zIndex = '';
                 }
               });
+            }
+
+            const formComponent = formId && document.querySelector(`.form-${formId}`);
+            if (formComponent) {
+              formComponent.style.zIndex = isOpen ? 4 : '';
             }
           }}
         />

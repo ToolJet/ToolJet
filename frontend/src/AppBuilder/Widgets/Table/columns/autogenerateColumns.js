@@ -107,7 +107,14 @@ export default function autogenerateColumns(
     finalKeys.includes(column?.key || column?.name)
   );
 
-  setTimeout(() => setProperty(id, 'columns', finalColumns, 'properties'), 10);
+  setTimeout(
+    () =>
+      setProperty(id, 'columns', finalColumns, 'properties', 'value', false, 'canvas', {
+        skipUndoRedo: true,
+        saveAfterAction: true,
+      }),
+    10
+  );
 }
 
 const dataTypeToColumnTypeMapping = {

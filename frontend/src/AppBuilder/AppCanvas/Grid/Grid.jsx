@@ -44,7 +44,8 @@ export default function Grid({ gridWidth, currentLayout }) {
   const isGroupHandleHoverd = useIsGroupHandleHoverd();
   const openModalWidgetId = useOpenModalWidgetId();
   const moveableRef = useRef(null);
-  const [triggerCanvasUpdater, setTriggerCanvasUpdater] = useState(false);
+  const triggerCanvasUpdater = useStore((state) => state.triggerCanvasUpdater, shallow);
+  const toggleCanvasUpdater = useStore((state) => state.toggleCanvasUpdater, shallow);
   const groupResizeDataRef = useRef([]);
   const isDraggingRef = useRef(false);
   const canvasWidth = NO_OF_GRIDS * gridWidth;
@@ -347,11 +348,12 @@ export default function Grid({ gridWidth, currentLayout }) {
         return layouts;
       }, {});
       setComponentLayout(updatedLayouts, newParent, undefined, { updateParent: true });
-      setTriggerCanvasUpdater((prev) => !prev);
+      toggleCanvasUpdater();
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [boxList, currentLayout, gridWidth]
   );
+
   if (mode !== 'edit') return null;
 
   return (
@@ -424,6 +426,22 @@ export default function Grid({ gridWidth, currentLayout }) {
             document.getElementById('resize-ghost-widget').style.height = `${e.target.clientHeight}px`;
           }
         }}
+        onResizeStart={(e) => {
+          if (
+            e.target.id &&
+            useGridStore.getState().resizingComponentId !== e.target.id &&
+            !e.target.classList.contains('delete-icon')
+          ) {
+            // When clicked on widget boundary/resizer, select the component
+            setSelectedComponents([e.target.id]);
+          }
+
+          if (!isComponentVisible(e.target.id)) {
+            return false;
+          }
+          useGridStore.getState().actions.setResizingComponentId(e.target.id);
+          e.setMin([gridWidth, 10]);
+        }}
         onResizeEnd={(e) => {
           try {
             useGridStore.getState().actions.setResizingComponentId(null);
@@ -488,14 +506,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             console.error('ResizeEnd error ->', error);
           }
           useGridStore.getState().actions.setDragTarget();
-          setTriggerCanvasUpdater((prev) => !prev);
-        }}
-        onResizeStart={(e) => {
-          if (!isComponentVisible(e.target.id)) {
-            return false;
-          }
-          useGridStore.getState().actions.setResizingComponentId(e.target.id);
-          e.setMin([gridWidth, 10]);
+          toggleCanvasUpdater();
         }}
         onResizeGroupStart={({ events }) => {
           const parentElm = events[0].target.closest('.real-canvas');
@@ -575,13 +586,18 @@ export default function Grid({ gridWidth, currentLayout }) {
           } catch (error) {
             console.error('Error resizing group', error);
           }
-          setTriggerCanvasUpdater((prev) => !prev);
+          toggleCanvasUpdater();
         }}
         checkInput
         onDragStart={(e) => {
           e?.moveable?.controlBox?.removeAttribute('data-off-screen');
           const box = boxList.find((box) => box.id === e.target.id);
-          let isDragOnTableORCalendar = false;
+
+          //  This flag indicates whether the drag event originated on a child element within a component
+          //  (e.g., inside a Table's columns, Calendar's dates, or Kanban's cards).
+          //  When true, it prevents the parent component from being dragged, allowing the inner elements
+          //  to handle their own interactions like column resizing or card dragging
+          let isDragOnInnerElement = false;
 
           /* If the drag or click is on a calender popup draggable interactions are not executed so that popups and other components inside calender popup works. 
             Also user dont need to drag an calender from using popup */
@@ -592,17 +608,24 @@ export default function Grid({ gridWidth, currentLayout }) {
           /* Checking if the dragged elemenent is a table. If its a table drag is disabled since it will affect column resizing and reordering */
           if (box?.component?.component === 'Table') {
             const tableElem = e.target.querySelector('.jet-data-table');
-            isDragOnTableORCalendar = tableElem.contains(e.inputEvent.target);
+            isDragOnInnerElement = tableElem.contains(e.inputEvent.target);
           }
           if (box?.component?.component === 'Calendar') {
-            const calenderElem = e.target.querySelector('.rbc-month-view');
-            isDragOnTableORCalendar = calenderElem.contains(e.inputEvent.target);
+            const calenderElem =
+              e.target.querySelector('.rbc-month-view') ||
+              e.target.querySelector('.rbc-time-view') ||
+              e.target.querySelector('.rbc-day-view');
+            isDragOnInnerElement = calenderElem.contains(e.inputEvent.target);
           }
 
-          if (
-            ['RangeSlider', 'Container', 'BoundedBox', 'Kanban'].includes(box?.component?.component) ||
-            isDragOnTableORCalendar
-          ) {
+          if (box?.component?.component === 'Kanban') {
+            const handleContainers = e.target.querySelectorAll('.handle-container');
+            isDragOnInnerElement = Array.from(handleContainers).some((container) =>
+              container.contains(e.inputEvent.target)
+            );
+          }
+
+          if (['RangeSlider', 'BoundedBox'].includes(box?.component?.component) || isDragOnInnerElement) {
             const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
             const isHandle = targetElems.find((ele) => ele.classList.contains('handle-content'));
             if (!isHandle) {
@@ -733,7 +756,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             element.classList.add('hide-grid');
           });
           document.getElementById('real-canvas')?.classList.remove('show-grid');
-          setTriggerCanvasUpdater((prev) => !prev);
+          toggleCanvasUpdater();
         }}
         onDrag={(e) => {
           // Since onDrag is called multiple times when dragging, hence we are using isDraggingRef to prevent setting state again and again
@@ -868,7 +891,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           } catch (error) {
             console.error('Error dragging group', error);
           }
-          setTriggerCanvasUpdater((prev) => !prev);
+          toggleCanvasUpdater();
         }}
         // throttleDrag={1}
         // edgeDraggable={false}

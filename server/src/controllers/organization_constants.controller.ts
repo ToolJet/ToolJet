@@ -59,7 +59,7 @@ export class OrganizationConstantController {
   @Get('public/:app_slug')
   async getConstantsFromPublicApp(@App() app) {
     const result = await this.organizationConstantsService.allEnvironmentConstants(
-      app.OrganizationId,
+      app.organizationId,
       false,
       OrganizationConstantType.GLOBAL
     );

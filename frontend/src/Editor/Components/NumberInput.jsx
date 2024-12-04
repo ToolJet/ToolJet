@@ -49,7 +49,8 @@ export const NumberInput = function NumberInput({
   const [loading, setLoading] = useState(loadingState);
   const [showValidationError, setShowValidationError] = useState(false);
   const [value, setValue] = React.useState(Number(parseFloat(properties.value).toFixed(properties.decimalPlaces)));
-  const { isValid, validationError } = validate(value);
+  const [validationStatus, setValidationStatus] = useState(validate(value));
+  const { isValid, validationError } = validationStatus;
   const [isFocused, setIsFocused] = useState(false);
 
   const inputRef = useRef(null);
@@ -65,31 +66,25 @@ export const NumberInput = function NumberInput({
   }, [label]);
 
   useEffect(() => {
-    setValue(Number(parseFloat(value).toFixed(properties.decimalPlaces)));
+    setInputValue(Number(parseFloat(value).toFixed(properties.decimalPlaces)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.decimalPlaces]);
 
   useEffect(() => {
-    setValue(Number(parseFloat(properties.value).toFixed(properties.decimalPlaces)));
+    setInputValue(Number(parseFloat(properties.value).toFixed(properties.decimalPlaces)));
+    if (isNaN(Number(parseFloat(properties.value).toFixed(properties.decimalPlaces)))) {
+      setExposedVariable('value', null);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.value]);
 
   const handleBlur = (e) => {
-    setValue(Number(parseFloat(e.target.value).toFixed(properties.decimalPlaces)));
+    setInputValue(Number(parseFloat(e.target.value).toFixed(properties.decimalPlaces)));
     setShowValidationError(true);
     e.stopPropagation();
     fireEvent('onBlur');
     setIsFocused(false);
   };
-
-  useEffect(() => {
-    if (isInitialRender.current) return;
-    if (!isNaN(value)) {
-      setExposedVariable('value', value);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value]);
-
   useEffect(() => {
     if (isInitialRender.current) return;
     setExposedVariable('isMandatory', isMandatory);
@@ -115,12 +110,6 @@ export const NumberInput = function NumberInput({
   }, [disable]);
 
   useEffect(() => {
-    if (isInitialRender.current) return;
-    setExposedVariable('isValid', isValid);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isValid]);
-
-  useEffect(() => {
     disable !== disabledState && setDisable(disabledState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabledState]);
@@ -128,10 +117,18 @@ export const NumberInput = function NumberInput({
     visibility !== properties.visibility && setVisibility(properties.visibility);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility]);
+
   useEffect(() => {
     loading !== loadingState && setLoading(loadingState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadingState]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    const validationStatus = validate(value);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
+  }, [validate]);
 
   useEffect(() => {
     const exposedVariables = {
@@ -144,14 +141,13 @@ export const NumberInput = function NumberInput({
       setText: async function (text) {
         if (text) {
           const newValue = Number(parseFloat(text));
-          setValue(newValue);
-          setExposedVariable('value', text);
+          setInputValue(newValue);
           fireEvent('onChange');
         }
       },
       clear: async function () {
-        setValue('');
-        setExposedVariable('value', '');
+        setInputValue('');
+        setExposedVariable('value', null);
         fireEvent('onChange');
       },
       setLoading: async function (loading) {
@@ -175,7 +171,8 @@ export const NumberInput = function NumberInput({
     };
     if (!isNaN(value)) {
       exposedVariables.value = value;
-    }
+    } else exposedVariables.value = null;
+
     setExposedVariables(exposedVariables);
 
     isInitialRender.current = false;
@@ -244,14 +241,13 @@ export const NumberInput = function NumberInput({
   // eslint-disable-next-line import/namespace
 
   const handleChange = (e) => {
-    setValue(Number(parseFloat(e.target.value)));
     if (e.target.value == '') {
-      setValue(null);
-      setExposedVariable('value', null);
+      setInputValue(null);
       fireEvent('onChange');
+    } else {
+      setInputValue(Number(parseFloat(e.target.value)));
     }
     if (!isNaN(Number(parseFloat(e.target.value)))) {
-      setExposedVariable('value', Number(parseFloat(e.target.value)));
       fireEvent('onChange');
     }
   };
@@ -260,20 +256,28 @@ export const NumberInput = function NumberInput({
     e.preventDefault(); // Prevent the default button behavior (form submission, page reload)
 
     const newValue = (value || 0) + 1;
-    setValue(newValue);
+    setInputValue(newValue);
     if (!isNaN(newValue)) {
-      setExposedVariable('value', newValue);
       fireEvent('onChange');
     }
   };
   const handleDecrement = (e) => {
     e.preventDefault();
     const newValue = (value || 0) - 1;
-    setValue(newValue);
+    setInputValue(newValue);
     if (!isNaN(newValue)) {
-      setExposedVariable('value', newValue);
       fireEvent('onChange');
     }
+  };
+
+  const setInputValue = (value) => {
+    setValue(value);
+    if (!isNaN(value)) {
+      setExposedVariable('value', value);
+    }
+    const validationStatus = validate(value);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
   };
 
   const loaderStyle = {
@@ -375,8 +379,7 @@ export const NumberInput = function NumberInput({
             autoComplete="off"
             onKeyUp={(e) => {
               if (e.key === 'Enter') {
-                setValue(e.target.value);
-                setExposedVariable('value', e.target.value);
+                setInputValue(e.target.value);
                 fireEvent('onEnterPressed');
               }
             }}

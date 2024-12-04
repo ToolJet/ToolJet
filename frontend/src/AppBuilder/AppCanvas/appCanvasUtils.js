@@ -354,7 +354,14 @@ export function pasteComponents(parentId, copiedComponentObj) {
   const currentPageId = useStore.getState().getCurrentPageId();
   const { isCut = false, newComponents: pastedComponents = [], pageId, isCloning = false } = copiedComponentObj;
   // Prevent pasting if the parent subcontainer was deleted during a cut operation
-  if (parentId && !Object.keys(components).find((key) => parentId === key)) {
+  if (
+    parentId &&
+    !Object.keys(components).find(
+      (key) =>
+        parentId === key ||
+        (components?.[key]?.component.component === 'Tabs' && parentId?.split('-')?.slice(0, -1)?.join('-') === key)
+    )
+  ) {
     return;
   }
   if (parentId) {
@@ -448,12 +455,11 @@ export const getCanvasWidth = (currentLayout) => {
   }
 };
 
-export const computeCanvasBackgroundColor = (isAppDarkMode, canvasBgColor) => {
-  const canvasBackgroundColor = canvasBgColor ? canvasBgColor : '#edeff5';
-  if (['#2f3c4c', '#edeff5'].includes(canvasBackgroundColor)) {
-    return isAppDarkMode ? '#2f3c4c' : '#edeff5';
+export const computeViewerBackgroundColor = (isAppDarkMode, canvasBgColor) => {
+  if (['#2f3c4c', '#F2F2F5', '#edeff5'].includes(canvasBgColor)) {
+    return isAppDarkMode ? '#2f3c4c' : '#F2F2F5';
   }
-  return canvasBackgroundColor;
+  return canvasBgColor;
 };
 
 export const getParentComponentIdByType = (child, parentComponent, parentId) => {

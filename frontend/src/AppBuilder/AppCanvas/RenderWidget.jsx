@@ -18,6 +18,7 @@ const shouldAddBoxShadowAndVisibility = [
   'ToggleSwitchV2',
   'DropdownV2',
   'MultiselectV2',
+  'RadioButtonV2',
 ];
 
 const RenderWidget = ({
@@ -80,7 +81,7 @@ const RenderWidget = ({
         ...{ validationObject: unResolvedValidation },
         customResolveObjects: customResolvables,
       }),
-    [validateWidget, customResolvables, unResolvedValidation]
+    [validateWidget, customResolvables, unResolvedValidation, resolvedValidation]
   );
 
   const resetComponent = useCallback(() => {
