@@ -75,94 +75,81 @@ To provide the form schema in JSON format, we'll pass a JavaScript object with *
 
 This **[list](/docs/widgets/form#custom-schema-examples)** provides examples of Custom Schema for all components that can be used in a Form component.  
 
-```js
-{{
-  {
-    title: '', // Provide title for Form
-    properties: {
+```json
+{{{
+  "title": "", // Provide title for Form
+  "properties": {
 
-    }, // Provide schema of the components that will be inside the form
-    submitButton: {
+  }, // Provide schema of the components that will be inside the form
+  "submitButton": {
 
-    } // Provide schema of the submit button
-  }
-}}
+  } // Provide schema of the submit button
+}}}
 ```
 
 Here's an example using the custom schema of **Text Input**, **Number Input** and **Dropdown** components:
 
-```js
+```json
 {{{
-   "title":"Event Registration",
-   "properties":{
-      "textinput1":{
-         "type":"textinput",
-         "value":"",
-         "placeholder":"Enter Full Name",
-         "label":"Full Name",
-         "validation":{
-            "maxLength":30,
-            "minLength":5
-         },
-         "styles":{
-            "backgroundColor":"#00000000",
-            "borderRadius":5,
-            "borderColor":"#4299e1",
-            "errorTextColor":"#4299e1",
-            "disabled":false,
-            "visibility":"true",
-            "textColor":"#4299e1"
-         }
+  "title": "Event Registration",
+  "properties": {
+    "textinput1": {
+      "type": "textinput",
+      "value": "John",
+      "placeholder": "Enter First Name Here",
+      "label": "First Name",
+      "validation": {
+        "maxLength": 6
       },
-      "numberInput1":{
-         "type":"number",
-         "styles":{
-            "backgroundColor":"#f6f5ff",
-            "borderRadius":5,
-            "textColor":"#4299e1",
-            "borderColor":"#4299e1",
-            "disabled":false,
-            "visibility":"true"
-         },
-         "value":22,
-         "maxValue":100,
-         "minValue":14,
-         "placeholder":"Enter your age",
-         "label":"Age"
+      "styles": {
+        "backgroundColor": "#f6f5ff",
+        "borderRadius": 5,
+        "borderColor": "black",
+        "errorTextColor": "#025aa3",
+        "disabled": false,
+        "visibility": true,
+        "textColor": "#025aa3"
+      }
+    },
+    "numberInput1": {
+      "type": "number",
+      "styles": {
+        "backgroundColor": "#f6f5ff",
+        "borderRadius": 5,
+        "textColor": "#025aa3",
+        "borderColor": "black",
+        "disabled": false,
+        "visibility": "true"
       },
-      "dropdown1":{
-         "type":"dropdown",
-         "values":[
-            1,
-            2,
-            3
-         ],
-         "displayValues":[
-            "Male",
-            "Female",
-            "Prefer not to Answer"
-         ],
-         "loading":false,
-         "value":3,
-         "label":"Gender",
-         "styles":{
-            "disabled":false,
-            "visibility":"true",
-            "borderRadius":5,
-            "borderColor":"#4299e1",
-            "justifyContent":"center"
-         }
+      "value": 22,
+      "maxValue": 100,
+      "minValue": 14,
+      "placeholder": "Enter Your Age",
+      "label": "Age"
+    },
+    "dropdown1": {
+      "type": "dropdown",
+      "displayValues": ["Male", "Female", "Prefer not to Answer"],
+      "values": [1, 2, 3],
+      "loading": false,
+      "value": "1",
+      "label": "Gender",
+      "styles": {
+        "disabled": false,
+        "visibility": "true",
+        "borderRadius": 5,
+        "justifyContent": "start"
       }
-   },
-   "submitButton":{
-      "value":"Submit",
-      "styles":{
-         "backgroundColor":"#3A433B",
-         "borderColor":"#595959"
-      }
-   }
-}
-}}
+    }
+  },
+  "submitButton": {
+    "value": "Submit",
+    "styles": {
+      "backgroundColor": "#3A433B",
+      "borderColor": "#595959"
+    }
+  }
+}}}
 ```
 
 
@@ -248,20 +235,20 @@ A Tooltip is often used to specify the extra information when the user hovers th
 
 Properties that can be used in Datepicker schema are:
 
-```js
-datepicker1: {
-    type: 'datepicker',
-    styles: {
-        borderRadius: 5, 
-        disabled: false, 
-        visibility: 'true'
+```json
+  "datepicker1": {
+    "type": "datepicker",
+    "styles": {
+      "borderRadius": 5,
+      "disabled": false,
+      "visibility": "true"
     },
-    value: '09/09/2023',
-    disabledDates: ['08/09/2023'],
-    enableTime: true,
-    format: 'DD/MM/YYYY',
-    label: 'Select a date' 
-}
+    "value": "09/09/2023",
+    "disabledDates": ["08/09/2023"],
+    "enableTime": true,
+    "format": "DD/MM/YYYY",
+    "label": "Select a Date"
+  }
 ```
 
 | <div style={{ width:"100px"}}> Key </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
@@ -285,22 +272,22 @@ datepicker1: {
 
 **Properties**
 
-```js
-numberInput1: {
-    type: 'number',
-    styles: {
-        backgroundColor: '#f6f5ff',
-        borderRadius: 20,
-        textColor: 'red',
-        borderColor: 'blue',
-        disabled: false,
-        visibility: 'true'
-    },
-    value: 10,
-    maxValue: 12,
-    minValue: 6,
-    placeholder: 'test',
-    label: 'Number Input'
+```json
+"numberInput1": {
+  "type": "number",
+  "styles": {
+    "backgroundColor": "#f6f5ff",
+    "borderRadius": 3,
+    "textColor": "#025aa3",
+    "borderColor": "blue",
+    "disabled": false,
+    "visibility": "true"
+  },
+  "value": 10,
+  "maxValue": 12,
+  "minValue": 6,
+  "placeholder": "Enter a Number",
+  "label": "Number Input"
 }
 ```
 
@@ -328,22 +315,22 @@ numberInput1: {
 
 **Properties**
 
-```js
-passwordInput1: {
-    type: 'password',
-    styles: {
-        backgroundColor: '#f6f5ff',
-        borderRadius: 10,
-        disabled: false,
-        visibility: 'true'
-    },
-    validation: {
-        maxLength: 9,
-        minLength: 5,
-        regex: `'^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$'`
-    },
-    placeholder: 'Enter a password',
-    label: ''
+```json
+"passwordInput1": {
+  "type": "password",
+  "styles": {
+    "backgroundColor": "#f6f5ff",
+    "borderRadius": 5,
+    "disabled": false,
+    "visibility": "true"
+  },
+  "validation": {
+    "maxLength": 9,
+    "minLength": 5,
+    "regex": "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$"
+  },
+  "placeholder": "Enter Password",
+  "label": "Password"
 }
 ```
 
@@ -370,17 +357,17 @@ passwordInput1: {
 
 **Properties**
 
-```js
-checkbox1: {
-    type: 'checkbox',
-    styles: {
-        checkboxColor: 'red',
-        disabled: false,
-        textColor: 'red',
-        visibility: 'true'
-    },
-    value: false,
-    label: 'Checkbox'
+```json
+"checkbox1": {
+  "type": "checkbox",
+  "styles": {
+    "checkboxColor": "#025aa3",
+    "disabled": false,
+    "textColor": "#025aa3",
+    "visibility": "true"
+  },
+  "value": false,
+  "label": "Checkbox"
 }
 ```
 
@@ -403,17 +390,17 @@ checkbox1: {
 
 **Properties**
 
-```js
-toggleswitch1: {
-    type: 'toggle',
-    styles: {
-        textColor: 'blue',
-        disabled: false,
-        visibility: 'true',
-        toggleSwitchColor: 'red'
-    },
-    value: true,
-    label: 'Toggle switch'
+```json
+"toggleswitch1": {
+  "type": "toggle",
+  "styles": {
+    "textColor": "#025aa3",
+    "disabled": false,
+    "visibility": "true",
+    "toggleSwitchColor": "#025aa3"
+  },
+  "value": true,
+  "label": "Toggle switch"
 }
 ```
 
@@ -436,17 +423,17 @@ toggleswitch1: {
 
 **Properties**
 
-```js
-textArea1: {
-    type: 'textarea',
-    styles: {
-        disabled: false,
-        visibility: 'true',
-        borderRadius: 20
-    },
-    value: 'This is a text area',
-    placeholder: 'Enter text here',
-    label: 'Text Area'
+```json
+"textArea1": {
+  "type": "textarea",
+  "styles": {
+    "disabled": false,
+    "visibility": "true",
+    "borderRadius": 5
+  },
+  "value": "This is a text area",
+  "placeholder": "Enter Text Here",
+  "label": "Text Area"
 }
 ```
 
@@ -469,18 +456,18 @@ textArea1: {
 
 **Properties**
 
-```js
-daterangepicker1: {
-    type: 'daterangepicker',
-    styles: {
-        disabled: true,
-        visibility: 'true',
-        borderRadius: 5
-    },
-    defaultEndDate: '12/04/2022',
-    defaultStartDate: '1/04/2022',
-    format: 'DD/MM/YYYY',
-    label: 'Select a date range'
+```json
+"daterangepicker1": {
+  "type": "daterangepicker",
+  "styles": {
+    "disabled": true,
+    "visibility": "true",
+    "borderRadius": 5
+  },
+  "defaultEndDate": "12/04/2022",
+  "defaultStartDate": "1/04/2022",
+  "format": "DD/MM/YYYY",
+  "label": "Select a Date Range"
 }
 ```
 
@@ -504,19 +491,19 @@ daterangepicker1: {
 
 **Properties**
 
-```js
-multiselect1: {
-    type: 'multiselect',
-    styles: {
-        disabled: false,
-        visibility: 'true',
-        borderRadius: 5
-    },
-    displayValues: ["one", "two", "three"],
-    label: 'Select options of your choice',
-    value: [2, 3],
-    values: [1, 2, 3],
-    showAllOption: true
+```json
+"multiselect1": {
+  "type": "multiselect",
+  "styles": {
+    "disabled": false,
+    "visibility": "true",
+    "borderRadius": 5
+  },
+  "displayValues": ["one", "two", "three"],
+  "label": "Select Options of Your Choice",
+  "value": [2, 3],
+  "values": [1, 2, 3],
+  "showAllOption": true
 }
 ```
 
@@ -541,20 +528,20 @@ multiselect1: {
 
 **Properties**
 
-```js
-starRating1: {
-    type: 'starrating',
-    styles: {
-        disabled: false,
-        visibility: 'true',
-        textColor: 'yellow',
-        labelColor: 'red'
-    },
-    allowHalfStar: true,
-    defaultSelected: 4.5,
-    maxRating: 10,
-    tooltips: ['one', 'two', 'three', 'four'],
-    label: 'Select a rating'
+```json
+"starRating1": {
+  "type": "starrating",
+  "styles": {
+    "disabled": false,
+    "visibility": "true",
+    "textColor": "gold",
+    "labelColor": "#025aa3"
+  },
+  "allowHalfStar": true,
+  "defaultSelected": 3.5,
+  "maxRating": 5,
+  "tooltips": ["one", "two", "three", "four"],
+  "label": "Select a Rating"
 }
 ```
 
@@ -580,22 +567,22 @@ starRating1: {
 
 **Properties**
 
-```js
-filepicker1: {
-    type: 'filepicker',
-    styles: {
-        visibility: 'true',
-        borderRadius: 10
-    },
-    enableMultiple: true,
-    fileType: '*/*',
-    instructionText: 'Click here to select files',
-    maxFileCount: 5,
-    maxSize: 6000000,
-    minSize: 25,
-    parseContent: true,
-    parseFileType: 'csv',
-    label: 'Select a file'
+```json
+"filepicker1": {
+  "type": "filepicker",
+  "styles": {
+    "visibility": "true",
+    "borderRadius": 10
+  },
+  "enableMultiple": true,
+  "fileType": "*/*",
+  "instructionText": "Click here to select files",
+  "maxFileCount": 5,
+  "maxSize": 6000000,
+  "minSize": 25,
+  "parseContent": true,
+  "parseFileType": "csv",
+  "label": "Select a File"
 }
 ```
 
@@ -623,23 +610,23 @@ filepicker1: {
 
 **Properties**
 
-```js
-textinput1: {
-    type: 'textinput',
-    value: 'Random text',
-    placeholder: 'enter first name here',
-    label: 'First name',
-    validation: {
-        maxLength: 6
-    },
-    styles: {
-        backgroundColor: 'red',
-        borderRadius: 20,
-        errorTextColor: 'green',
-        disabled: false,
-        visibility: false,
-        textColor: 'yellow'
-    }
+```json
+"textinput1": {
+  "type": "textinput",
+  "value": "John",
+  "placeholder": "Enter the Name Here",
+  "label": "First Name",
+  "validation": {
+    "maxLength": 6
+  },
+  "styles": {
+    "backgroundColor": "#f6f5ff",
+    "borderRadius": 5,
+    "errorTextColor": "#025aa3",
+    "disabled": false,
+    "visibility": false,
+    "textColor": "#025aa3"
+  }
 }
 ```
 
@@ -667,20 +654,20 @@ textinput1: {
 
 **Properties**
 
-```js
-dropdown1: {
-    type: 'dropdown',
-    displayValues: [1, 2, 3],
-    values: ['one', 'two', 'three'],
-    loading: false,
-    value: 'two',
-    label: 'Select a number',
-    styles: {
-        disabled: false,
-        visibility: 'true',
-        borderRadius: 5,
-        justifyContent: 'end'
-    }
+```json
+"dropdown1": {
+  "type": "dropdown",
+  "displayValues": ["One", "Two", "Three"],
+  "values": [1, 2, 3],
+  "loading": false,
+  "value": 2,
+  "label": "Select a Number",
+  "styles": {
+    "disabled": false,
+    "visibility": "true",
+    "borderRadius": 5,
+    "justifyContent": "start"
+  }
 }
 ```
 
@@ -706,20 +693,20 @@ dropdown1: {
 
 **Properties**
 
-```js
-button1: {
-    type: 'button',
-    value: 'Submit',
-    label: '',
-    styles: {
-        backgroundColor: 'blue',
-        textColor: 'white',
-        borderRadius: 5,
-        borderColor: 'black',
-        loaderColor: 'gray',
-        visibility: 'true',
-        disabled: true
-    }
+```json
+"button1": {
+  "type": "button",
+  "value": "Submit",
+  "label": "",
+  "styles": {
+    "backgroundColor": "#3A433B",
+    "textColor": "white",
+    "borderRadius": 5,
+    "borderColor": "#595959",
+    "loaderColor": "gray",
+    "visibility": "true",
+    "disabled": true
+  }
 }
 ```
 
@@ -745,17 +732,17 @@ button1: {
 
 **Properties**
 
-```js
-text1: {
-    type: 'text',
-    value: 'This is a text component',
-    label: '',
-    styles: {
-        backgroundColor: '#f6f5ff',
-        textColor: 'red',
-        fontSize: 24,
-        fontWeight: 30
-    }
+```json
+"text1": {
+  "type": "text",
+  "value": "This is a text component",
+  "label": "",
+  "styles": {
+    "backgroundColor": "#f6f5ff",
+    "textColor": "#025aa3",
+    "fontSize": 12,
+    "fontWeight": 500
+  }
 }
 ```
 
@@ -778,18 +765,18 @@ text1: {
 
 **Properties**
 
-```js
-radioButton1: {
-    type: 'radio',
-    styles: {
-        textColor: 'black',
-        disabled: false,
-        visibility: 'true'
-    },
-    displayValues: ['option 1', 'option 2', 'option 3'],
-    label: 'Radio Buttons',
-    value: 2,
-    values: [1, 2, 3]
+```json
+"radioButton1": {
+  "type": "radio",
+  "styles": {
+    "textColor": "black",
+    "disabled": false,
+    "visibility": "true"
+  },
+  "displayValues": ["Yes", "No"],
+  "label": "Radio Buttons",
+  "value": 1,
+  "values": [1, 2]
 }
 ```
 
