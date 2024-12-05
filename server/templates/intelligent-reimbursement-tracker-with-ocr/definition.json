@@ -2548,7 +2548,7 @@
               "environmentId": "5b7f33b3-b9a9-43b0-a9b2-82bb37fca4d4",
               "options": {
                 "access_key": {
-                  "value": "AKIATFA53SDS6E4F7NHW",
+                  "value": "",
                   "encrypted": false
                 },
                 "secret_key": {
@@ -2581,7 +2581,7 @@
               "environmentId": "1071e258-9bd6-496c-a11c-9fe8670eedcc",
               "options": {
                 "access_key": {
-                  "value": "AKIATFA53SDS6E4F7NHW",
+                  "value": "",
                   "encrypted": false
                 },
                 "secret_key": {
@@ -2614,7 +2614,7 @@
               "environmentId": "1841fd5c-f11a-4a1a-97b2-f2312316cb8d",
               "options": {
                 "access_key": {
-                  "value": "AKIATFA53SDS6E4F7NHW",
+                  "value": "",
                   "encrypted": false
                 },
                 "secret_key": {
