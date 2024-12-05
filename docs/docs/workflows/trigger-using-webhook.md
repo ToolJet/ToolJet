@@ -7,11 +7,11 @@ This guide demonstrates how to trigger a workflow using a webhook.
 
 <div style={{paddingTop:'24px'}}>
 
-## Create Workflow
+## Creating a Workflow
 
 To create a workflow follow the following steps:
 
-1. Navigate to the **Workflows** Section from the left navigation bar on the dashboard.
+1. Navigate to the **Workflows** Section on the dashboard.
 
 <img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/workflows/trigger-using-webhook/workflow-section.png" alt="Navigate to Workflow Section" />
 
@@ -23,7 +23,7 @@ To create a workflow follow the following steps:
 
 <img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/workflows/trigger-using-webhook/configure-wf.png" alt="Configure workflow" />
 
-4. In the left panel, locate the Trigger section, which includes the webhook option.
+4. In the left panel, locate the Trigger section, which includes the webhooks option.
     
 <img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/workflows/trigger-using-webhook/trigger-section.png" alt="Webhook option on the left panel" />
 
@@ -43,28 +43,30 @@ To create a workflow follow the following steps:
 
 <div style={{paddingTop:'24px'}}>
 
-## Setup Webhook
+## Triggering a Webhook
+
+Let's take a look at an example of triggering a webhook using Postman. 
 
 1. Go to [Postman](https://www.postman.com/), and click **New Request**.
 
-<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/workflows/trigger-using-webhook/postman.png" alt="Go to Postman.com"/>
+<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/workflows/trigger-using-webhook/postman.png" alt="Postman preview"/>
 
 2. Select the **POST** Method and paste the **Endpoint URL** we copied from the workflow.
 
 <img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/workflows/trigger-using-webhook/postman-url.png" alt="Paste URL in Postman"/>
 
-3. Navigate to the Authorization tab, select Bearer Token as the Auth Type, and enter the API token copied from the workflow.
+3. Navigate to the **Authorization** tab, select **Bearer Token** as the **Auth Type**, and enter the API token copied from the workflow.
 
 <img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/workflows/trigger-using-webhook/api-token.png" alt="Enter the API Token"/>
 
-4. Go to the Body tab, select Raw, and input the required parameters in JSON format.
+4. Go to the **Body** tab, select **Raw**, and enter the required parameters in JSON format.
 
 <img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/workflows/trigger-using-webhook/parameters-postman.png" alt="Enter the parameters in postman"/>
 
-5. Click Send to test the webhook. It will fetch the response from the workflow.
+5. Click on **Send** to test the webhook. It will fetch the response from the created workflow.
 
 <img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/workflows/trigger-using-webhook/response.png" alt="Final Response"/>
 
 </div>
 
-Refer to this guide to learn how to  [Trigger Workflows within ToolJet](/docs/workflows/trigger-workflow-from-app).
+If you want to learn how to trigger workflows withing ToolJet, refer to **[this guide](/docs/workflows/trigger-workflow-from-app)**.
