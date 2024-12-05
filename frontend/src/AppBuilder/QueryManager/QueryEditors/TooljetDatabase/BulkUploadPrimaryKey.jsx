@@ -8,7 +8,7 @@ export const BulkUploadPrimaryKey = () => {
     columns,
     bulkUpdatePrimaryKey,
     handleBulkUpdateWithPrimaryKeysRowsUpdateOptionChanged,
-    handlePrimaryKeyOptionChangedForBultUpdate,
+    handlePrimaryKeyOptionChangedForBulkUpdate,
   } = useContext(TooljetDatabaseContext);
 
   useEffect(() => {
@@ -20,7 +20,7 @@ export const BulkUploadPrimaryKey = () => {
         return acc;
       }, [])
       .join();
-    handlePrimaryKeyOptionChangedForBultUpdate(primaryKeys);
+    handlePrimaryKeyOptionChangedForBulkUpdate(primaryKeys);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [columns]);
 

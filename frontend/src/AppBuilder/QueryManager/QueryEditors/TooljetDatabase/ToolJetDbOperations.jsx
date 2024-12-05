@@ -234,7 +234,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     setBulkUpdatePrimaryKey((prev) => ({ ...prev, rows_update: value }));
   };
 
-  const handlePrimaryKeyOptionChangedForBultUpdate = (value) => {
+  const handlePrimaryKeyOptionChangedForBulkUpdate = (value) => {
     setBulkUpdatePrimaryKey((prev) => ({ ...prev, primary_key: value }));
   };
 
@@ -341,7 +341,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
       setTableForeignKeyInfo,
       bulkUpdatePrimaryKey,
       handleBulkUpdateWithPrimaryKeysRowsUpdateOptionChanged,
-      handlePrimaryKeyOptionChangedForBultUpdate,
+      handlePrimaryKeyOptionChangedForBulkUpdate,
     }),
     [
       organizationId,
