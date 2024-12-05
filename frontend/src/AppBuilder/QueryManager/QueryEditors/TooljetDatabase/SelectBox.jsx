@@ -447,7 +447,8 @@ function DataSourceSelect({
                   show={
                     (foreignKeyAccess && props.data.dataType === 'serial') ||
                     props.data.dataType === 'boolean' ||
-                    props.data.dataType === 'timestamp with time zone'
+                    props.data.dataType === 'timestamp with time zone' ||
+                    props.data.dataType === 'jsonb'
                   }
                 >
                   <div
@@ -480,13 +481,7 @@ function DataSourceSelect({
                       (isValidElement(props.data.icon) ? (
                         props.data.icon
                       ) : (
-                        <SolidIcon
-                          name={props.data.icon}
-                          style={{ height: 16, width: 16 }}
-                          width={20}
-                          height={17}
-                          viewBox=""
-                        />
+                        <SolidIcon name={props.data.icon} width={16} />
                       ))}
 
                     <ToolTip

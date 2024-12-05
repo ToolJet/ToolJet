@@ -31,3 +31,28 @@
 	  line-height: 20px;
 	}
   }
+
+.tjdb-codehinter-border-none{
+	.cm-editor{
+		border: none !important;
+	}
+}
+.tjdb-codehinter-jsonpath{
+	.cm-editor{
+		border-radius: 0 0 4px 4px !important;
+		border-top: 0 !important;
+		height: 30px ;
+		min-height: 30px;
+	}
+}
+
+.border-top-left-rounded{
+	border-top-left-radius: 4px;
+	
+}
+.border-top-right-rounded{
+	border-top-right-radius: 4px;
+}
+.custom-gap-6{
+	gap: 6px;
+}

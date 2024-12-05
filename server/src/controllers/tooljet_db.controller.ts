@@ -41,12 +41,12 @@ import { TooljetDbJoinExceptionFilter } from 'src/filters/tooljetdb-join-excepti
 import { Logger } from 'nestjs-pino';
 import { TooljetDbExceptionFilter } from 'src/filters/tooljetdb-exception-filter';
 
-const MAX_CSV_FILE_SIZE = 1024 * 1024 * 2; // 2MB
-
 @Controller('tooljet-db')
 @UseFilters(TooljetDbExceptionFilter)
 export class TooljetDbController {
   private readonly pinoLogger: Logger;
+  private MAX_CSV_FILE_SIZE;
+
   constructor(
     private readonly tooljetDbService: TooljetDbService,
     private readonly postgrestProxyService: PostgrestProxyService,
@@ -54,6 +54,11 @@ export class TooljetDbController {
     private readonly logger: Logger
   ) {
     this.pinoLogger = logger;
+    this.MAX_CSV_FILE_SIZE =
+      process.env?.TOOLJET_DB_BULK_UPLOAD_MAX_CSV_FILE_SIZE_MB &&
+      !isNaN(Number(process.env.TOOLJET_DB_BULK_UPLOAD_MAX_CSV_FILE_SIZE_MB))
+        ? 1024 * 1024 * Number(process.env.TOOLJET_DB_BULK_UPLOAD_MAX_CSV_FILE_SIZE_MB)
+        : 1024 * 1024 * 5; // 5MB
   }
 
   @All('/proxy/*')
@@ -150,8 +155,8 @@ export class TooljetDbController {
   @UseInterceptors(FileInterceptor('file'))
   @Post('/organizations/:organizationId/table/:tableName/bulk-upload')
   async bulkUpload(@Param('organizationId') organizationId, @Param('tableName') tableName, @UploadedFile() file: any) {
-    if (file?.size > MAX_CSV_FILE_SIZE) {
-      throw new BadRequestException('File size cannot be greater than 2MB');
+    if (file?.size > this.MAX_CSV_FILE_SIZE) {
+      throw new BadRequestException(`File size cannot be greater than ${this.MAX_CSV_FILE_SIZE / (1024 * 1024)}MB`);
     }
     const result = await this.tooljetDbBulkUploadService.perform(organizationId, tableName, file?.buffer);
 
