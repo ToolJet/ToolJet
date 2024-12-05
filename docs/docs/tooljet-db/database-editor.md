@@ -108,6 +108,12 @@ Once the CSV file is ready, click on the file picker to select the file or drag 
 - There is a limit of 1000 rows per CSV file that can be uploaded to the ToolJet database.
 - The CSV file should not exceed 2MB in size.
 
+:::info
+You can overcome the above limitations in the self-hosted version by adding the following environment variables:
+- `TOOLJET_DB_BULK_UPLOAD_MAX_ROWS`: Specifies the maximum number of rows that can be uploaded. The default is 1,000 rows.
+- `TOOLJET_DB_BULK_UPLOAD_MAX_CSV_FILE_SIZE_MB`: Specifies the maximum CSV file size for bulk uploads. The default maximum size is 5 MB.
+:::
+
 <img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/v2-beta/database/ux2/bulk-upload-data-v2.png" alt="ToolJet database" />
 
 ### Delete Records
