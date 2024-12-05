@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import { resolveReferences } from '@/AppBuilder/CodeEditor/utils';
 import CodeHinter from '@/AppBuilder/CodeEditor';
@@ -47,8 +47,8 @@ export const BulkUploadPrimaryKey = () => {
           />
         </div>
       </div>
-      <div className="field-container d-flex tooljetdb-worflow-operations delete-limit">
-        <label className="form-label flex-shrink-0" data-cy="label-column-limit">
+      <div className="field-container d-flex tooljetdb-worflow-operations">
+        <label className="form-label flex-shrink-0" data-cy="">
           Rows to update
         </label>
         <div className="field flex-grow-1 minw-400-w-400">
