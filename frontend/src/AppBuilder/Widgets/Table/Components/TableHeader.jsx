@@ -17,6 +17,7 @@ export const TableHeader = ({
   columnHeaderWrap,
   setResizingColumnId,
   resizingColumnId,
+  headerCasing,
 }) => {
   const calculateWidthOfActionColumnHeader = (position) => {
     let totalWidth = null;
@@ -193,6 +194,7 @@ export const TableHeader = ({
                                       'text-truncate': getResolvedValue(columnHeaderWrap) === 'fixed',
                                       'wrap-wrapper': getResolvedValue(columnHeaderWrap) === 'wrap',
                                     })}
+                                    style={{ textTransform: headerCasing === 'uppercase' ? 'uppercase' : 'none' }}
                                   >
                                     {column.render('Header')}
                                   </div>

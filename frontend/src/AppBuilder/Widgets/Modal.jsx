@@ -299,9 +299,18 @@ const Component = ({ children, ...restProps }) => {
 
   const setSelectedComponentAsModal = useStore((state) => state.setSelectedComponentAsModal, shallow);
 
-  console.log('Show modal', restProps.show);
+  // When the modal body is clicked capture it and use the callback to set the selected component as modal
+  const handleModalBodyClick = (event) => {
+    const clickedComponentId = event.target.getAttribute('component-id');
+
+    // Check if the clicked element is part of the modal canvas & same widget with id
+    if (id === clickedComponentId) {
+      setSelectedComponentAsModal(id);
+    }
+  };
+
   return (
-    <BootstrapModal {...restProps}>
+    <BootstrapModal {...restProps} onClick={handleModalBodyClick}>
       {showConfigHandler && (
         <ConfigHandle
           id={id}
