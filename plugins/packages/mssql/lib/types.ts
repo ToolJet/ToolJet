@@ -5,7 +5,6 @@ export type SourceOptions = {
   port: string;
   username: string;
   password: string;
-  driver_options: string[][];
   azure: boolean;
   connection_options: string[][];
 };

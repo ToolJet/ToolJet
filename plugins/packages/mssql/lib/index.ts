@@ -126,11 +126,10 @@ export default class MssqlQueryService implements QueryService {
         options: {
           encrypt: sourceOptions.azure ?? false,
           instanceName: sourceOptions.instanceName,
-          ...(sourceOptions.driver_options && this.sanitizeOptions(sourceOptions.driver_options)),
+          ...(sourceOptions.connection_options && this.sanitizeOptions(sourceOptions.connection_options)),
         },
         pool: { min: 0 },
       },
-      ...(sourceOptions.connection_options && this.sanitizeOptions(sourceOptions.connection_options)),
     };
 
     return knex(config);
