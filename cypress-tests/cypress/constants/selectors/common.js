@@ -262,7 +262,7 @@ export const commonSelectors = {
 
 export const commonWidgetSelector = {
   widgetBox: (widgetName) => {
-    return `[data-cy=widget-list-box-${cyParamName(widgetName)}]`;
+    return `[data-cy=widget-list-box-${cyParamName(widgetName)}]:eq(0)`;
   },
 
   draggableWidget: (widgetName) => {

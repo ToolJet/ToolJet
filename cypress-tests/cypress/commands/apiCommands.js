@@ -127,10 +127,21 @@ Cypress.Commands.add(
     appId = Cypress.env("appId"),
     componentSelector = "[data-cy='empty-editor-text']"
   ) => {
+    cy.intercept('GET', '/api/v2/apps/*').as('getAppData');
     cy.window({ log: false }).then((win) => {
       win.localStorage.setItem("walkthroughCompleted", "true");
     });
     cy.visit(`/${workspaceId}/apps/${appId}`);
+    cy.wait('@getAppData').then((interception) => {
+      // Assuming the response body is a JSON object
+      const responseData = interception.response.body;
+
+      // Set the response data as an environment variable
+      Cypress.env('apiResponseData', responseData);
+
+      // You can log it to check if the env var is set correctly
+      cy.log(Cypress.env('apiResponseData'));
+    });
     cy.get(componentSelector, { timeout: 10000 });
   }
 );
