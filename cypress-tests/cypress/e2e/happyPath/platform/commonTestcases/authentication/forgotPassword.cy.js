@@ -10,7 +10,7 @@ describe("Password reset functionality", () => {
   let passwordResetLink = "";
 
 
-  it.only("Verify wrong password limit", () => {
+  it("Verify wrong password limit", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase();
 
@@ -19,7 +19,7 @@ describe("Password reset functionality", () => {
     logout();
 
     for (let i = 0; i < 5; i++) {
-      cy.clearAndType(onboardingSelectors.emailInput, data.email);
+      cy.clearAndType(onboardingSelectors.SignupEmailInput, data.email);
       cy.clearAndType(onboardingSelectors.LoginpasswordInput, "passw");
       cy.get(onboardingSelectors.signInButton).click();
       cy.verifyToastMessage(
@@ -27,7 +27,7 @@ describe("Password reset functionality", () => {
         "Invalid credentials"
       );
     }
-    cy.clearAndType(onboardingSelectors.emailInput, data.email);
+    cy.clearAndType(onboardingSelectors.SignupEmailInput, data.email);
     cy.clearAndType(onboardingSelectors.LoginpasswordInput, "passw");
     cy.get(onboardingSelectors.signInButton).click();
     cy.verifyToastMessage(
@@ -179,8 +179,8 @@ describe("Password reset functionality", () => {
   });
   it("Verify user login using new password", () => {
     cy.visit("/");
-    cy.clearAndType(onboardingSelectors.emailInput, data.email);
-    cy.clearAndType(onboardingSelectors.passwordInput, "Password");
+    cy.clearAndType(onboardingSelectors.SignupEmailInput, data.email);
+    cy.clearAndType(onboardingSelectors.LoginpasswordInput, "Password");
     cy.get(onboardingSelectors.signInButton).click();
     cy.get(commonSelectors.workspaceName).should("be.visible");
   });

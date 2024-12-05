@@ -16,4 +16,5 @@ export const onboardingSelectors = {
   nameLabel: '[data-cy="name-input-label"]',
   SignupNameLabel: '[data-cy="name-label"]',
   ForgotEmailInput: '[data-cy="email-input-field-input"]',
+  createAnAccountLink: '[data-cy="create-an-account-link"]',
 } 

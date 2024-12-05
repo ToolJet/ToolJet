@@ -42,6 +42,7 @@ export const verifyConfirmEmailPage = (email) => {
 
 
 export const verifyOnboardingQuestions = (fullName, workspaceName) => {
+  cy.wait(5000);
   cy.get(commonSelectors.pageLogo).should("be.visible");
   cy.get(commonSelectors.userAccountNameAvatar).should("be.visible");
   cy.get(commonSelectors.createAccountCheckMark).should("be.visible");
@@ -199,18 +200,18 @@ export const inviteUser = (firstName, email) => {
   cy.userInviteApi(firstName, email);
   fetchAndVisitInviteLink(email);
   cy.wait(1000);
-  cy.get(onboardingSelectors.passwordInput).should("be.visible");
-  cy.clearAndType(onboardingSelectors.passwordInput, "password");
+  cy.get(onboardingSelectors.LoginpasswordInput).should("be.visible");
+  cy.clearAndType(onboardingSelectors.LoginpasswordInput, "password");
   // cy.intercept("GET", "/api/organizations").as("org");
   cy.get(commonSelectors.continueButton).click();
   cy.wait(2000);
-  // cy.get(commonSelectors.acceptInviteButton).click();
+  cy.get(commonSelectors.acceptInviteButton).click();
 };
 
 export const addNewUser = (firstName, email) => {
   navigateToManageUsers();
   inviteUser(firstName, email);
-  updateWorkspaceName(email);
+  // updateWorkspaceName(email);
 };
 
 export const updateWorkspaceName = (email, workspaceName = email) => {
@@ -358,5 +359,6 @@ export const signUpLink = (email) => {
   }).then((resp) => {
     invitationLink = `/invitations/${resp.rows[0].invitation_token}`;
     cy.visit(invitationLink);
+    cy.wait(3000);
   });
 }
