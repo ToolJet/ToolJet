@@ -7,7 +7,6 @@ export type SourceOptions = {
   password: string;
   connection_options: string[][];
   azure: boolean;
-  connection_options: string[][];
 };
 export type QueryOptions = {
   operation: string;

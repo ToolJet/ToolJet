@@ -102,7 +102,7 @@
       "type": "react-component-headers"
     },
     "azure": {
-      "label": "Azure (set 'encrypt' to true)",
+      "label": "Azure (encrypt connection)",
       "key": "azure",
       "type": "toggle",
       "description": "Toggle for azure"
