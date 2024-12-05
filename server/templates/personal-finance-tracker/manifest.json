@@ -1,0 +1,20 @@
+{
+  "name": "Personal finance tracker",
+  "description": "Track spending and budget in real-time with ToolJet DB, helping users stay on top of their finances effortlessly.",
+  "widgets": [
+    "Table",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "personal-finance-tracker",
+  "category": "financial-services"
+}

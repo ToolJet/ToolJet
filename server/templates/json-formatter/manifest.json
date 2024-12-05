@@ -1,5 +1,5 @@
 {
-    "name": "Json formatter",
+    "name": "JSON formatter",
     "description": "Format and customize JSON data display for improved readability and easier manipulation, streamlining debugging processes.",
     "widgets": [
         "Table",

@@ -6,6 +6,7 @@ const categoryTitles = {
   'customer-support': 'Customer support',
   'data-and-analytics': 'Data and analytics',
   'developer-utilities': 'Developer utilities',
+  'educational-technology': 'Educational technology',
   'financial-services': 'Financial services',
   'human-resources': 'Human resources',
   operations: 'Operations',
