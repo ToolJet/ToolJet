@@ -384,7 +384,7 @@ export const createEventsSlice = (set, get) => ({
         await get().eventsSlice.executeAction(event.event, mode, customVariables);
       }
     },
-    executeAction: debounce(async (event, mode, customVariables = {}) => {
+    executeAction: debounce((event, mode, customVariables = {}) => {
       const { getExposedValueOfComponent, getResolvedValue } = get();
 
       if (event.runOnlyIf) {
