@@ -28,8 +28,33 @@ ToolJet requires the following to connect to your PostgreSQL database.
 
 Driver Server is responsible for establishing a secure and efficient connection between the application and the SQL database.
 
-<img className="screenshot-full" src="/img/datasource-reference/mssql/connect-v2.png" alt="ToolJet - Redis connection"/>
+<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/mssql/connect-v2.png" alt="ToolJet - Redis connection"/>
 
+### Connection Options
+
+You can add optional configurations in **key-value pairs** for the MS SQL data source connection. 
+
+#### Example:
+| Key                     | Value  |
+|:--------------------------|:--------|
+| trustServerCertificate| true |
+
+These options allow you to fine-tune the connection, such as enabling encryption when using a self-signed certificate.
+
+### Enabling Encryption with a Self-Signed Certificate
+
+To enhance security during data transfer, encryption can be enabled even with a self-signed certificate.
+
+#### Server-Side Configuration
+1. **Create and Install a Self-Signed Certificate:**
+   - Generate a self-signed certificate and install it on the SQL Server instance.
+2. **Force Encryption:**
+   - Configure the SQL Server instance to force encrypted connections.
+   - For Azure SQL databases, turn on the **Encryption** toggle in the Azure portal.
+
+#### Client-Side Configuration
+1. Set the connection option `trustServerCertificate` to `true`.
+   - This bypasses certificate chain validation and is necessary when using a self-signed certificate.
 
 </div>
 
