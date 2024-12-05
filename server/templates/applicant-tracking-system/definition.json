@@ -2326,8 +2326,7 @@
                                                             "value": "#3e63ddff"
                                                         },
                                                         "visibility": {
-                                                            "value": "",
-                                                            "fxActive": false
+                                                            "value": "{{true}}"
                                                         },
                                                         "borderRadius": {
                                                             "value": "{{5}}"
@@ -2401,7 +2400,7 @@
                                                             {
                                                                 "handle": "visible",
                                                                 "displayName": "Value",
-                                                                "defaultValue": "{{false}}",
+                                                                "defaultValue": "{{true}}",
                                                                 "type": "toggle"
                                                             }
                                                         ]
@@ -11799,7 +11798,7 @@
                                                             {
                                                                 "handle": "visible",
                                                                 "displayName": "Value",
-                                                                "defaultValue": "{{false}}",
+                                                                "defaultValue": "{{true}}",
                                                                 "type": "toggle"
                                                             }
                                                         ]
@@ -19708,8 +19707,7 @@
                                     "value": "#3e63ddff"
                                 },
                                 "visibility": {
-                                    "value": "",
-                                    "fxActive": false
+                                    "value": "{{true}}"
                                 },
                                 "borderRadius": {
                                     "value": "{{5}}"
@@ -25697,8 +25695,7 @@
                                                                 "value": "#3e63ddff"
                                                             },
                                                             "visibility": {
-                                                                "value": "",
-                                                                "fxActive": false
+                                                                "value": "{{true}}"
                                                             },
                                                             "borderRadius": {
                                                                 "value": "{{5}}"
