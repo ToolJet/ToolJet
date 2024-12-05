@@ -48,6 +48,7 @@ export const Modal = function Modal({
   const size = properties.size ?? 'lg';
   const [modalWidth, setModalWidth] = useState();
   const mode = useStore((state) => state.currentMode, shallow);
+  const isFullScreen = properties.size === 'fullscreen';
 
   /**** Start - Logic to reset the zIndex of modal control box ****/
   useEffect(() => {
@@ -65,13 +66,37 @@ export const Modal = function Modal({
   }, [showModal, id, mode]);
   /**** End - Logic to reset the zIndex of modal control box ****/
 
+  // Adjust height as viewport height changes
+  const useViewportHeightChange = (callback) => {
+    useEffect(() => {
+      window.addEventListener('resize', onShowSideEffects);
+
+      // Cleanup event listener on unmount
+      return () => {
+        window.removeEventListener('resize', onShowSideEffects);
+      };
+    }, [callback]);
+  };
+
+  useViewportHeightChange();
+
+  function hideModal() {
+    setExposedVariable('show', false);
+    setShowModal(false);
+  }
+
+  function openModal() {
+    setExposedVariable('show', true);
+    setShowModal(true);
+  }
+
   // Side effects for modal, which include dom manipulation to hide overflow when opening
   // And cleaning up dom when modal is closed
 
   const onShowSideEffects = () => {
-    openModal();
     const canvasElement = document.querySelector('.page-container.canvas-container');
     const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
+    const modalCanvasEl = document.getElementById(`canvas-${id}`);
     const modalContainer = realCanvasEl.querySelector('.modal');
 
     if (canvasElement && realCanvasEl && modalContainer) {
@@ -80,6 +105,7 @@ export const Modal = function Modal({
 
       modalContainer.style.height = `${canvasElement.offsetHeight}px`;
       modalContainer.style.top = `${currentScroll}px`;
+      modalCanvasEl.style.height = isFullScreen ? '100%' : modalHeight;
     }
   };
 
@@ -97,16 +123,23 @@ export const Modal = function Modal({
     hideModal();
   };
 
+  const onShowModal = () => {
+    openModal();
+    onShowSideEffects();
+  };
+
+  const onHideModal = () => {
+    onHideSideEffects();
+    hideModal();
+  };
+
   useEffect(() => {
     const exposedVariables = {
       open: async function () {
-        setExposedVariable('show', true);
-        onShowSideEffects();
+        onShowModal();
       },
       close: async function () {
-        onHideSideEffects();
-        setExposedVariable('show', false);
-        setShowModal(false);
+        onHideModal();
       },
     };
     setExposedVariables(exposedVariables);
@@ -125,29 +158,19 @@ export const Modal = function Modal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showModal]);
 
-  function hideModal() {
-    setExposedVariable('show', false);
-    setShowModal(false);
-  }
-
-  function openModal() {
-    setExposedVariable('show', true);
-    setShowModal(true);
-  }
-
   useEffect(() => {
     if (showModal) {
-      onShowSideEffects();
+      onShowModal();
     } else {
       if (document.getElementsByClassName('modal-content')[0] == undefined) {
-        onHideSideEffects();
+        onHideModal();
       }
     }
 
     // Cleanup the effect
     return () => {
       if (document.getElementsByClassName('modal-content')[0] == undefined) {
-        onHideSideEffects();
+        onHideModal();
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -251,9 +274,9 @@ export const Modal = function Modal({
         keyboard={true}
         enforceFocus={false}
         animation={false}
-        onShow={() => onShowSideEffects()}
-        onHide={() => onHideSideEffects()}
-        onEscapeKeyDown={() => hideOnEsc && onHideSideEffects()}
+        onShow={() => onShowModal()}
+        onHide={() => onHideModal()}
+        onEscapeKeyDown={() => hideOnEsc && onHideModal()}
         id="modal-container"
         component-id={id}
         backdrop={'static'}
@@ -269,6 +292,7 @@ export const Modal = function Modal({
           hideModal,
           component,
           showConfigHandler: mode === 'edit',
+          fullscreen: isFullScreen,
         }}
       >
         {!loadingState ? (
@@ -294,14 +318,22 @@ export const Modal = function Modal({
 };
 
 const Component = ({ children, ...restProps }) => {
-  const { customStyles, parentRef, id, title, titleAlignment, hideTitleBar, hideCloseButton, showConfigHandler } =
-    restProps['modalProps'];
+  const {
+    customStyles,
+    parentRef,
+    id,
+    title,
+    titleAlignment,
+    hideTitleBar,
+    hideCloseButton,
+    showConfigHandler,
+    fullscreen,
+  } = restProps['modalProps'];
 
   const setSelectedComponentAsModal = useStore((state) => state.setSelectedComponentAsModal, shallow);
 
-  console.log('Show modal', restProps.show);
   return (
-    <BootstrapModal {...restProps}>
+    <BootstrapModal {...restProps} fullscreen={fullscreen}>
       {showConfigHandler && (
         <ConfigHandle
           id={id}
