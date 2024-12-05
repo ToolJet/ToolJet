@@ -21,11 +21,14 @@ ToolJet requires the following to connect to your PostgreSQL database.
 - **Port**
 - **Username**
 - **Password**
+- **Driver Options**
 - **Azure**  (Select this option if you are using Azure SQL databases)
 
 **Note:** It is recommended to create a new database user so that you can control the access levels of ToolJet. 
 
-<img className="screenshot-full" src="/img/datasource-reference/mssql/connect.png" alt="ToolJet - Redis connection"/>
+Driver Server is responsible for establishing a secure and efficient connection between the application and the SQL database.
+
+<img className="screenshot-full" src="/img/datasource-reference/mssql/connect-v2.png" alt="ToolJet - Redis connection"/>
 
 
 </div>
@@ -54,7 +57,7 @@ SELECT * FROM users
 
 <img className="screenshot-full" src="/img/datasource-reference/mssql/sql mode.png" alt="ToolJet mssql sql mode" style={{marginBottom:'15px'}}/>
 
-#### **Parameterized queries**:
+#### Parameterized queries:
 
 ToolJet offers support for parameterized SQL queries, which enhance security by preventing SQL injection and allow for dynamic query construction. To implement parameterized queries:
 
