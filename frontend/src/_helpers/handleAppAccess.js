@@ -68,7 +68,8 @@ const handleError = (componentType, error, redirectPath, editPermission, appSlug
           return;
         }
         case 401: {
-          window.location = `${getSubpath() ?? ''}/login/${getWorkspaceId()}?redirectTo=${redirectPath}`;
+          const errorObj = safelyParseJSON(error.data?.message);
+          window.location = `${getSubpath() ?? ''}/login/${errorObj?.organizationId}?redirectTo=${redirectPath}`;
           return;
         }
         case 501: {
