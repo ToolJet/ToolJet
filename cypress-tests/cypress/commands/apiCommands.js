@@ -122,7 +122,7 @@ Cypress.Commands.add("apiDeleteApp", (appId = Cypress.env("appId")) => {
 
 Cypress.Commands.add(
   "openApp",
-  (
+  (slug = '',
     workspaceId = Cypress.env("workspaceId"),
     appId = Cypress.env("appId"),
     componentSelector = "[data-cy='empty-editor-text']"
@@ -131,7 +131,7 @@ Cypress.Commands.add(
     cy.window({ log: false }).then((win) => {
       win.localStorage.setItem("walkthroughCompleted", "true");
     });
-    cy.visit(`/${workspaceId}/apps/${appId}`);
+    cy.visit(`/${workspaceId}/apps/${appId}${slug}`);
     cy.wait('@getAppData').then((interception) => {
       // Assuming the response body is a JSON object
       const responseData = interception.response.body;
