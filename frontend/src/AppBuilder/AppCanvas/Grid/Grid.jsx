@@ -354,6 +354,29 @@ export default function Grid({ gridWidth, currentLayout }) {
     [boxList, currentLayout, gridWidth]
   );
 
+  // Add event listeners for config handle visibility when hovering over widget boundary
+  React.useEffect(() => {
+    const moveableBox = document.querySelector(`.moveable-control-box`);
+    const showConfigHandle = (e) => {
+      const targetId = e.target.offsetParent.getAttribute('target-id');
+      const configHandle = document.querySelector(`.config-handle[widget-id="${targetId}"]`);
+      configHandle.classList.add('config-handle-visible');
+    };
+    const hideConfigHandle = (e) => {
+      const targetId = e.target.offsetParent.getAttribute('target-id');
+      const configHandle = document.querySelector(`.config-handle[widget-id="${targetId}"]`);
+      configHandle.classList.remove('config-handle-visible');
+    };
+    if (moveableBox) {
+      moveableBox.addEventListener('mouseover', showConfigHandle);
+      moveableBox.addEventListener('mouseout', hideConfigHandle);
+    }
+    return () => {
+      moveableBox.removeEventListener('mouseover', showConfigHandle);
+      moveableBox.removeEventListener('mouseout', hideConfigHandle);
+    };
+  }, []);
+
   if (mode !== 'edit') return null;
 
   return (
