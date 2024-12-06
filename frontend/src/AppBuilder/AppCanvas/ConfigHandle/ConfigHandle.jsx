@@ -31,8 +31,8 @@ export const ConfigHandle = ({
   const setComponentToInspect = useStore((state) => state.setComponentToInspect);
 
   const _showHandle = useStore((state) => {
-    const isWidgetHovered = state.getHoveredComponentForGrid() === id;
-    const anyComponentHovered = state.getHoveredComponentForGrid() !== '';
+    const isWidgetHovered = state.getHoveredComponentForGrid() === id || state.hoveredComponentBoundaryId === id;
+    const anyComponentHovered = state.getHoveredComponentForGrid() !== '' || state.hoveredComponentBoundaryId !== '';
     // If one component is hovered and one is selected, show the handle for the hovered component
     return (
       isWidgetHovered ||
@@ -41,7 +41,6 @@ export const ConfigHandle = ({
         !anyComponentHovered)
     );
   }, shallow);
-
   let height = visibility === false ? 10 : widgetHeight;
 
   return (

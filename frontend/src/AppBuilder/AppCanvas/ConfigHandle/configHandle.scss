@@ -8,6 +8,10 @@
     transition: all .15s ease-in-out;
 }
 
+.config-handle-visible {
+  visibility: visible !important;
+}
+
 .multiple-components-config-handle {
   position: absolute;
   left: 54px;
