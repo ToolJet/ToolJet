@@ -1,0 +1,53 @@
+.login-form {
+    .form-header {
+        margin-bottom: 0px;
+    }
+
+    .onboarding-form-wrapper {
+        padding-bottom: 10px !important;
+    }
+
+    .login-form-signup-redirect {
+        color: var(--text-placeholder, #6A727C);
+        font-size: 12px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 18px;
+        margin-bottom: 24px;
+    }
+
+    .signup-info {
+        margin-bottom: 24px;
+        color: var(--text-placeholder, #6A727C);
+        font-size: 12px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 20px;
+
+        .workspace-name {
+            color: var(--text-placeholder, #6A727C);
+            font-style: normal;
+            font-weight: 500;
+        }
+    }
+
+    .signin-link {
+        color: #4368E3;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .signin-link:hover {
+        text-decoration: underline;
+    }
+
+    .form-input-area {
+        margin-top: 0px;
+        margin-bottom: 0px;
+    }
+
+    .separator-signup .separator h2 {
+        margin-top: 24px !important;
+    }
+}
+

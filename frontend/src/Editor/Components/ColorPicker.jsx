@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { SketchPicker } from 'react-color';
 
 export const ColorPicker = function ({
@@ -11,11 +11,13 @@ export const ColorPicker = function ({
   height,
   fireEvent,
   dataCy,
+  id,
 }) {
   const { visibility, boxShadow } = styles;
   const defaultColor = properties.defaultColor;
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [color, setColor] = useState(defaultColor);
+  const colorPickerRef = useRef(null);
 
   const getRGBAValueFromHex = (hex) => {
     let c = hex.substring(1).split('');
@@ -47,6 +49,13 @@ export const ColorPicker = function ({
   };
 
   useEffect(() => {
+    const element = document.querySelector(`.ele-${id}`);
+    if (element) {
+      element.style.zIndex = showColorPicker ? '3' : '';
+    }
+  }, [showColorPicker, id]);
+
+  useEffect(() => {
     let exposedVariables = {};
     setExposedVariable('setColor', async function (colorCode) {
       if (/^#(([\dA-Fa-f]{3}){1,2}|([\dA-Fa-f]{4}){1,2})$/.test(colorCode)) {
@@ -74,21 +83,19 @@ export const ColorPicker = function ({
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setColor]);
+  }, []);
 
   useEffect(() => {
     let exposedVariables = {};
     if (/^#(([\dA-Fa-f]{3}){1,2}|([\dA-Fa-f]{4}){1,2})$/.test(defaultColor)) {
-      if (defaultColor !== color) {
-        exposedVariables = {
-          selectedColorHex: defaultColor,
-          selectedColorRGB: hexToRgb(defaultColor),
-          selectedColorRGBA: hexToRgba(defaultColor),
-        };
-        setExposedVariables(exposedVariables);
+      exposedVariables = {
+        selectedColorHex: defaultColor,
+        selectedColorRGB: hexToRgb(defaultColor),
+        selectedColorRGBA: hexToRgba(defaultColor),
+      };
+      setExposedVariables(exposedVariables);
 
-        setColor(defaultColor);
-      }
+      setColor(defaultColor);
     } else {
       exposedVariables = {
         selectedColorHex: undefined,
@@ -101,6 +108,21 @@ export const ColorPicker = function ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultColor]);
+
+  useEffect(() => {
+    if (showColorPicker) {
+      const handleClickOutside = (event) => {
+        if (colorPickerRef.current && !colorPickerRef.current.contains(event.target)) {
+          setShowColorPicker(false);
+        }
+      };
+
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [showColorPicker]);
 
   const handleColorChange = (colorCode) => {
     let exposedVariables = {};
@@ -139,23 +161,20 @@ export const ColorPicker = function ({
     : { display: 'none' };
 
   return (
-    <div style={{ baseStyle, boxShadow }} className="form-control" data-cy={dataCy}>
-      <div className="d-flex h-100 justify-content-between align-items-center" onClick={() => setShowColorPicker(true)}>
-        <span>{color}</span>
-        {!(color === `Invalid Color`) && <div style={backgroundColorDivStyle}></div>}
+    <div>
+      <div style={{ baseStyle, boxShadow }} className="form-control" data-cy={dataCy}>
+        <div
+          className="d-flex h-100 justify-content-between align-items-center"
+          onClick={() => setShowColorPicker(true)}
+        >
+          <span>{color}</span>
+          {!(color === `Invalid Color`) && <div style={backgroundColorDivStyle}></div>}
+        </div>
       </div>
       {showColorPicker && (
-        <>
-          <div
-            className="position-absolute bottom-0"
-            style={{ left: 0, right: 0 }}
-            onMouseLeave={() => setShowColorPicker(false)}
-            width={width}
-          >
-            <SketchPicker color={color} onChangeComplete={handleColorChange} />
-          </div>
-          <div className="comment-overlay" onClick={() => setShowColorPicker(false)}></div>
-        </>
+        <div className="position-relative top-0 mt-1" ref={colorPickerRef} width={width}>
+          <SketchPicker color={color} onChangeComplete={handleColorChange} />
+        </div>
       )}
     </div>
   );

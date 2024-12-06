@@ -122,8 +122,8 @@ export const manageUsersElements = () => {
     "have.text",
     usersText.buttonDownloadTemplate
   );
-  cy.wait(3000)
   cy.exec("cd ./cypress/downloads/ && rm -rf *");
+  cy.wait(3000)
   cy.get(usersSelector.buttonDownloadTemplate).click();
   cy.wait(4000)
   cy.exec("ls ./cypress/downloads/").then((result) => {
@@ -339,4 +339,41 @@ export const fetchAndVisitInviteLink = (email) => {
       });
     });
   });
+};
+
+
+export const inviteUserWithUserRole = (
+  firstName,
+  email,
+  role,
+
+) => {
+  fillUserInviteForm(firstName, email);
+
+  cy.wait(2000);
+
+  cy.get("body").then(($body) => {
+    const selectDropdown = $body.find('[data-cy="user-group-select"]>>>>>');
+
+    if (selectDropdown.length === 0) {
+      cy.get('[data-cy="user-group-select"]>>>>>').click();
+    }
+    cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(role);
+    cy.wait(1000);
+    cy.get('[data-cy="group-check-input"]').eq(0).check()
+    cy.wait(1000);
+  });
+
+  cy.get(usersSelector.buttonInviteUsers).click();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    usersText.userCreatedToast
+  );
+
+  cy.wait(1000);
+  fetchAndVisitInviteLink(email);
+  cy.clearAndType(commonSelectors.passwordInputField, "password");
+  cy.get(commonSelectors.signUpButton).click();
+  cy.wait(2000);
+  cy.get(commonSelectors.acceptInviteButton).click();
 };

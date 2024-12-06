@@ -33,6 +33,7 @@ import Copy from '@/_ui/Icon/solidIcons/Copy';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import classNames from 'classnames';
 import { useEditorStore, EMPTY_ARRAY } from '@/_stores/editorStore';
+import { Select } from './Components/Select';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 const INSPECTOR_HEADER_OPTIONS = [
@@ -59,9 +60,11 @@ const NEW_REVAMPED_COMPONENTS = [
   'PasswordInput',
   'NumberInput',
   'Table',
-  'Button',
   'ToggleSwitchV2',
   'Checkbox',
+  'DropdownV2',
+  'MultiselectV2',
+  'Button',
 ];
 
 export const Inspector = ({
@@ -169,7 +172,7 @@ export const Inspector = ({
     return null;
   };
 
-  function paramUpdated(param, attr, value, paramType, isParamFromTableColumn = false) {
+  function paramUpdated(param, attr, value, paramType, isParamFromTableColumn = false, props = {}) {
     let newComponent = JSON.parse(JSON.stringify(component));
     let newDefinition = deepClone(newComponent.component.definition);
     let allParams = newDefinition[paramType] || {};
@@ -233,6 +236,67 @@ export const Inspector = ({
     componentDefinitionChanged(newComponent, {
       componentPropertyUpdated: true,
       isParamFromTableColumn: isParamFromTableColumn,
+      ...props,
+    });
+  }
+
+  // use following function when more than one property needs to be updated
+
+  function paramsUpdated(array, isParamFromTableColumn = false) {
+    let newComponent = JSON.parse(JSON.stringify(component));
+    let newDefinition = _.cloneDeep(newComponent.component.definition);
+    array.map((item) => {
+      const { param, attr, value, paramType } = item;
+      let allParams = newDefinition[paramType] || {};
+      const paramObject = allParams[param.name];
+      if (!paramObject) {
+        allParams[param.name] = {};
+      }
+      if (attr) {
+        allParams[param.name][attr] = value;
+        const defaultValue = getDefaultValue(value);
+        // This is needed to have enable pagination in Table as backward compatible
+        // Whenever enable pagination is false, we turn client and server side pagination as false
+        if (
+          component.component.component === 'Table' &&
+          param.name === 'enablePagination' &&
+          !resolveReferences(value, currentState)
+        ) {
+          if (allParams?.['clientSidePagination']?.[attr]) {
+            allParams['clientSidePagination'][attr] = value;
+          }
+          if (allParams['serverSidePagination']?.[attr]) {
+            allParams['serverSidePagination'][attr] = value;
+          }
+        }
+        // This case is required to handle for older apps when serverSidePagination is connected to Fx
+        if (param.name === 'serverSidePagination' && !allParams?.['enablePagination']?.[attr]) {
+          allParams = {
+            ...allParams,
+            enablePagination: {
+              value: true,
+            },
+          };
+        }
+        if (param.type === 'select' && defaultValue) {
+          allParams[defaultValue.paramName]['value'] = defaultValue.value;
+        }
+        if (param.name === 'secondarySignDisplay') {
+          if (value === 'negative') {
+            newDefinition['styles']['secondaryTextColour']['value'] = '#EE2C4D';
+          } else if (value === 'positive') {
+            newDefinition['styles']['secondaryTextColour']['value'] = '#36AF8B';
+          }
+        }
+      } else {
+        allParams[param.name] = value;
+      }
+      newDefinition[paramType] = allParams;
+      newComponent.component.definition = newDefinition;
+    });
+    componentDefinitionChanged(newComponent, {
+      componentPropertyUpdated: true,
+      isParamFromTableColumn,
     });
   }
 
@@ -326,6 +390,7 @@ export const Inspector = ({
         layoutPropertyChanged={layoutPropertyChanged}
         component={component}
         paramUpdated={paramUpdated}
+        paramsUpdated={paramsUpdated}
         dataQueries={dataQueries}
         componentMeta={componentMeta}
         components={allComponents}
@@ -365,6 +430,8 @@ export const Inspector = ({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ showHeaderActionsMenu })]);
+
+  console.log('componentMeta', componentMeta);
 
   return (
     <div className="inspector">
@@ -476,11 +543,22 @@ export const Inspector = ({
   );
 };
 const getDocsLink = (componentMeta) => {
-  return componentMeta.component == 'ToggleSwitchV2'
-    ? `https://docs.tooljet.io/docs/widgets/toggle-switch`
-    : `https://docs.tooljet.io/docs/widgets/${convertToKebabCase(componentMeta?.component ?? '')}`;
+  const component = componentMeta?.component ?? '';
+  switch (component) {
+    case 'ToggleSwitchV2':
+      return 'https://docs.tooljet.io/docs/widgets/toggle-switch';
+    case 'DropdownV2':
+      return 'https://docs.tooljet.com/docs/widgets/dropdown';
+    case 'DropDown':
+      return 'https://docs.tooljet.com/docs/widgets/dropdown';
+    case 'MultiselectV2':
+      return 'https://docs.tooljet.com/docs/widgets/multiselect';
+    case 'DaterangePicker':
+      return 'https://docs.tooljet.com/docs/widgets/date-range-picker';
+    default:
+      return `https://docs.tooljet.io/docs/widgets/${convertToKebabCase(component)}`;
+  }
 };
-
 const widgetsWithStyleConditions = {
   Modal: {
     conditions: [
@@ -633,6 +711,10 @@ const GetAccordion = React.memo(
 
       case 'Form':
         return <Form {...restProps} />;
+
+      case 'DropdownV2':
+      case 'MultiselectV2':
+        return <Select {...restProps} />;
 
       default: {
         return <DefaultComponent {...restProps} />;

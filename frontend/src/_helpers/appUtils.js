@@ -9,6 +9,7 @@ import {
   generateAppActions,
   loadPyodide,
   isQueryRunnable,
+  resolveWidgetFieldValue,
 } from '@/_helpers/utils';
 import { dataqueryService } from '@/_services';
 import _, { isArray, isEmpty } from 'lodash';
@@ -39,6 +40,7 @@ import { useResolveStore } from '@/_stores/resolverStore';
 import { handleLowPriorityWork } from './editorHelpers';
 import { updateParentNodes } from './utility';
 import { deepClone } from './utilities/utils.helpers';
+import useStore from '@/AppBuilder/_stores/store';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -68,7 +70,7 @@ export function setCurrentStateAsync(_ref, changes) {
   });
 }
 
-const debouncedChange = _.debounce(() => {
+const debouncedChange = _.debounce((duplicateCurrentState) => {
   const newComponentsState = {};
   for (const [key, value] of Object.entries(getCurrentState().components)) {
     if (duplicateCurrentState[key]) {
@@ -81,16 +83,20 @@ const debouncedChange = _.debounce(() => {
   useCurrentStateStore.getState().actions.setCurrentState({
     components: newComponentsState,
   });
+  const isPageSwitched = useResolveStore.getState().isPageSwitched;
+  useResolveStore.getState().actions.addAppSuggestions({
+    components: !isPageSwitched ? getCurrentState().components : {},
+  });
 }, 100);
 
 export function onComponentOptionsChanged(component, options, id) {
+  const resolveStoreActions = useResolveStore.getState().actions;
+  options.forEach((option) => resolveStoreActions.resetHintsByKey([`components.${component?.name}.${option[0]}`]));
   let componentName = component.name;
   const { isEditorReady, page } = useCurrentStateStore.getState();
 
-  if (!isEditorReady || !useEditorStore.getState().appDefinition.pages[page.id]) return;
-
   if (id) {
-    const _component = useEditorStore.getState().appDefinition.pages[page.id].components[id];
+    const _component = useEditorStore.getState()?.appDefinition?.pages[page.id]?.components[id];
     const _componentName = _component?.component?.name || componentName;
     if (_componentName !== componentName) {
       componentName = _componentName;
@@ -138,6 +144,14 @@ export function onComponentOptionsChanged(component, options, id) {
 
         if (shouldUpdateRef) {
           shouldUpdateResolvedRefsOfHints.push({ hint: path, newRef: componentData[option[0]] });
+          if (component.component === 'Table' && option[0] === 'selectedRow') {
+            const basePath = `components.${componentName}.${option[0]}`;
+            useResolveStore.getState().actions.removeAppSuggestions([basePath]);
+
+            useResolveStore.getState().actions.addAppSuggestions({
+              [basePath]: option[1],
+            });
+          }
         }
       }
 
@@ -166,19 +180,21 @@ export function onComponentOptionsChanged(component, options, id) {
 
     duplicateCurrentState = { ...components, [componentName]: componentData };
 
-    debouncedChange();
+    debouncedChange(duplicateCurrentState);
   }
   return Promise.resolve();
 }
 
 export function onComponentOptionChanged(component, option_name, value, id) {
+  const resolveStoreActions = useResolveStore.getState().actions;
+  resolveStoreActions.resetHintsByKey(`components.${component?.name}.${option_name}`);
   if (!useEditorStore.getState()?.appDefinition?.pages[getCurrentState()?.page?.id]?.components) return;
 
   let componentName = component.name;
 
   if (id) {
     //? component passed as argument contains previous state of the component data, component name is not updated
-    const _component = useEditorStore.getState().appDefinition.pages[getCurrentState().page.id].components[id];
+    const _component = useEditorStore.getState()?.appDefinition?.pages[getCurrentState().page.id]?.components[id];
     const _componentName = _component?.component?.name || componentName;
     if (_componentName !== componentName) {
       componentName = _componentName;
@@ -186,8 +202,6 @@ export function onComponentOptionChanged(component, option_name, value, id) {
   }
 
   const { isEditorReady, components: currentComponents } = getCurrentState();
-
-  if (!currentComponents) return;
 
   const components = duplicateCurrentState === null ? currentComponents : duplicateCurrentState;
   let componentData = deepClone(components[componentName]) || {};
@@ -237,7 +251,7 @@ export function onComponentOptionChanged(component, option_name, value, id) {
   } else {
     // Update the duplicate state if editor is not ready
     duplicateCurrentState = { ...components, [componentName]: componentData };
-    debouncedChange();
+    debouncedChange(duplicateCurrentState);
   }
 
   return Promise.resolve();
@@ -395,9 +409,6 @@ export async function runTransformation(
         currentState.page
       );
     } catch (err) {
-      const $error = err.name;
-      const $errorMessage = _.has(ERROR_TYPES, $error) ? `${$error} : ${err.message}` : err || 'Unknown error';
-      if (mode === 'edit') toast.error($errorMessage);
       result = {
         message: err.stack.split('\n')[0],
         status: 'failed',
@@ -455,7 +466,6 @@ function showModal(_ref, modal, show) {
     console.log('No modal is associated with this event.');
     return Promise.resolve();
   }
-  useEditorStore.getState().actions.updateComponentsNeedsUpdateOnNextRender([modalId]);
   const modalMeta = _ref.appDefinition.pages[_ref.currentPageId].components[modalId]; //! NeedToFix
 
   const _components = {
@@ -468,6 +478,7 @@ function showModal(_ref, modal, show) {
   useCurrentStateStore.getState().actions.setCurrentState({
     components: _components,
   });
+  useEditorStore.getState().actions.updateComponentsNeedsUpdateOnNextRender([modalId]);
   return Promise.resolve();
 }
 
@@ -512,7 +523,9 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
     }
     switch (event.actionId) {
       case 'show-alert': {
-        const message = resolveReferences(event.message, undefined, customVariables);
+        let message = resolveReferences(event.message, undefined, customVariables);
+        if (typeof message === 'object') message = JSON.stringify(message);
+
         switch (event.alertType) {
           case 'success':
           case 'error':
@@ -617,21 +630,26 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'set-table-page': {
-        setTablePageIndex(event.table, event.pageIndex, _ref);
+        setTablePageIndex(event.table, event.pageIndex);
         break;
       }
 
       case 'set-custom-variable': {
-        const key = resolveReferences(event.key, undefined, customVariables);
-        const value = resolveReferences(event.value, undefined, customVariables);
-        const customAppVariables = { ...getCurrentState().variables };
+        const state = useCurrentStateStore.getState();
+        const key = resolveReferences(event.key, state, undefined, customVariables);
+        const value = resolveReferences(event.value, state, undefined, customVariables);
+        const customAppVariables = { ...state.variables };
         customAppVariables[key] = value;
-        useResolveStore.getState().actions.addAppSuggestions({
-          variables: customAppVariables,
-        });
-        return useCurrentStateStore.getState().actions.setCurrentState({
-          variables: customAppVariables,
-        });
+        // const resp = useCurrentStateStore.getState().actions.setCurrentState({
+        //   variables: customAppVariables,
+        // });
+
+        // return useStore.getState().setVariable(key, value);
+
+        // useResolveStore.getState().actions.resetHintsByKey(`variables.${key}`);
+
+        // return resp;
+        break;
       }
 
       case 'get-custom-variable': {
@@ -669,12 +687,16 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
           },
         });
 
-        return useCurrentStateStore.getState().actions.setCurrentState({
+        const resp = useCurrentStateStore.getState().actions.setCurrentState({
           page: {
             ...getCurrentState().page,
             variables: customPageVariables,
           },
         });
+
+        useResolveStore.getState().actions.resetHintsByKey(`page.variables.${key}`);
+
+        return resp;
       }
 
       case 'get-page-variable': {
@@ -938,12 +960,12 @@ export function getQueryVariables(options, state) {
         const vars =
           options.includes('{{constants.') && !options.includes('%%')
             ? 'HiddenOrganizationConstant'
-            : resolveReferences(options);
+            : resolveReferences(options, state);
         queryVariables[options] = vars;
       } else {
         const dynamicVariables = getDynamicVariables(options) || [];
         dynamicVariables.forEach((variable) => {
-          queryVariables[variable] = resolveReferences(variable);
+          queryVariables[variable] = resolveReferences(variable, state);
         });
       }
 
@@ -974,9 +996,12 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
   let parameters = userSuppliedParameters;
   const queryPanelState = useQueryPanelStore.getState();
   const { queryPreviewData } = queryPanelState;
-  const { setPreviewLoading, setPreviewData } = queryPanelState.actions;
-
+  const { setPreviewLoading, setPreviewData, setPreviewPanelExpanded } = queryPanelState.actions;
+  const queryEvents = useAppDataStore
+    .getState()
+    .events.filter((event) => event.target === 'data_query' && event.sourceId === query.id);
   setPreviewLoading(true);
+  setPreviewPanelExpanded(true);
   if (queryPreviewData) {
     setPreviewData('');
   }
@@ -1012,26 +1037,8 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
       .then(async (data) => {
         let finalData = data.data;
 
-        if (query.options.enableTransformation) {
-          finalData = await runTransformation(
-            _ref,
-            finalData,
-            query.options.transformation,
-            query.options.transformationLanguage,
-            query,
-            'edit'
-          );
-        }
-
-        if (calledFromQuery) {
-          setPreviewLoading(false);
-        } else {
-          setPreviewLoading(false);
-          setPreviewData(finalData);
-        }
         let queryStatusCode = data?.status ?? null;
         const queryStatus = query.kind === 'runpy' ? data?.data?.status ?? 'ok' : data.status;
-
         switch (true) {
           // Note: Need to move away from statusText -> statusCode
           case queryStatus === 'Bad Request' ||
@@ -1041,8 +1048,40 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
             queryStatusCode === 400 ||
             queryStatusCode === 404 ||
             queryStatusCode === 422: {
-            const err = query.kind == 'tooljetdb' ? data?.error || data : _.isEmpty(data.data) ? data : data.data;
-            toast.error(`${err.message}`);
+            let errorData = {};
+            switch (query.kind) {
+              case 'runpy':
+                errorData = data.data;
+                break;
+              case 'tooljetdb':
+                if (data?.error) {
+                  errorData = {
+                    message: data?.error?.message || 'Something went wrong',
+                    description: data?.error?.message || 'Something went wrong',
+                    status: data?.statusText || 'Failed',
+                    data: data?.error || {},
+                  };
+                } else {
+                  errorData = data;
+                  errorData.description = data.errorMessage || 'Something went wrong';
+                }
+                break;
+              default:
+                errorData = data;
+                break;
+            }
+
+            onEvent(_ref, 'onDataQueryFailure', queryEvents);
+            useCurrentStateStore.getState().actions.setErrors({
+              [query.name]: {
+                type: 'query',
+                kind: query.kind,
+                data: errorData,
+                options: options,
+              },
+            });
+            if (!calledFromQuery) setPreviewData(errorData);
+
             break;
           }
           case queryStatus === 'needs_oauth': {
@@ -1055,16 +1094,50 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
             queryStatus === 'Created' ||
             queryStatus === 'Accepted' ||
             queryStatus === 'No Content': {
-            toast(`Query ${'(' + query.name + ') ' || ''}completed.`, {
-              icon: '🚀',
+            if (query.options.enableTransformation) {
+              finalData = await runTransformation(
+                _ref,
+                finalData,
+                query.options.transformation,
+                query.options.transformationLanguage,
+                query,
+                'edit'
+              );
+              if (finalData.status === 'failed') {
+                useCurrentStateStore.getState().actions.setErrors({
+                  [query.name]: {
+                    type: 'transformations',
+                    data: finalData,
+                    options: options,
+                  },
+                });
+                onEvent(_ref, 'onDataQueryFailure', queryEvents);
+                setPreviewLoading(false);
+                resolve({ status: data.status, data: finalData });
+                if (!calledFromQuery) setPreviewData(finalData);
+                return;
+              }
+            }
+
+            useCurrentStateStore.getState().actions.setCurrentState({
+              succededQuery: {
+                [query.name]: {
+                  type: 'query',
+                  kind: query.kind,
+                },
+              },
             });
+            if (!calledFromQuery) setPreviewData(finalData);
+            onEvent(_ref, 'onDataQuerySuccess', queryEvents, 'edit');
             break;
           }
         }
+        setPreviewLoading(false);
 
         resolve({ status: data.status, data: finalData });
       })
-      .catch(({ error, data }) => {
+      .catch((err) => {
+        const { error, data } = err;
         setPreviewLoading(false);
         setPreviewData(data);
         toast.error(error);
@@ -1083,6 +1156,10 @@ export function runQuery(
   shouldSetPreviewData = false,
   isOnLoad = false
 ) {
+  //for resetting the hints when the query is run for large number of items and also child attributes
+  const resolveStoreActions = useResolveStore.getState().actions;
+  resolveStoreActions.resetHintsByKey(`queries.${queryName}`);
+
   let parameters = userSuppliedParameters;
   const query = useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId);
   const queryEvents = useAppDataStore
@@ -1094,8 +1171,13 @@ export function runQuery(
   // const { setPreviewLoading, setPreviewData } = useQueryPanelStore.getState().actions;
   const queryPanelState = useQueryPanelStore.getState();
   const { queryPreviewData } = queryPanelState;
-  const { setPreviewLoading, setPreviewData } = queryPanelState.actions;
+  const { setPreviewLoading, setPreviewData, setPreviewPanelExpanded } = queryPanelState.actions;
 
+  if (shouldSetPreviewData) {
+    setPreviewPanelExpanded(true);
+    setPreviewLoading(true);
+    queryPreviewData && setPreviewData('');
+  }
   if (query) {
     dataQuery = JSON.parse(JSON.stringify(query));
   } else {
@@ -1211,6 +1293,7 @@ export function runQuery(
                   };
                 } else {
                   errorData = data;
+                  errorData.description = data.errorMessage || 'Something went wrong';
                 }
                 break;
               default:
@@ -1265,11 +1348,17 @@ export function runQuery(
               const err = query.kind == 'tooljetdb' ? data?.error || data : data;
               toast.error(err?.message ? err?.message : 'Something went wrong');
             }
+            useResolveStore.getState().actions.addAppSuggestions({
+              queries: {
+                [queryName]: {
+                  isLoading: false,
+                },
+              },
+            });
             return;
           } else {
             let rawData = data.data;
             let finalData = data.data;
-
             if (dataQuery.options.enableTransformation) {
               finalData = await runTransformation(
                 _ref,
@@ -1299,6 +1388,8 @@ export function runQuery(
                 });
                 resolve(finalData);
                 onEvent(_self, 'onDataQueryFailure', queryEvents);
+                setPreviewLoading(false);
+                if (shouldSetPreviewData) setPreviewData(finalData);
                 return;
               }
             }
@@ -1376,7 +1467,7 @@ export function runQuery(
   });
 }
 
-export function setTablePageIndex(tableId, index, _ref) {
+export function setTablePageIndex(tableId, index) {
   if (_.isEmpty(tableId)) {
     console.log('No table is associated with this event.');
     return Promise.resolve();
@@ -1632,6 +1723,7 @@ export const cloneComponents = (
   isCloning = true,
   isCut = false
 ) => {
+  let addedComponent = {};
   if (selectedComponents.length < 1) return getSelectedText();
 
   const { components: allComponents } = appDefinition.pages[currentPageId];
@@ -1684,7 +1776,7 @@ export const cloneComponents = (
   if (isCloning) {
     const parentId = allComponents[selectedComponents[0]?.id]?.['component']?.parent ?? undefined;
 
-    addComponents(currentPageId, appDefinition, updateAppDefinition, parentId, newComponentObj, true);
+    addedComponent = addComponents(currentPageId, appDefinition, updateAppDefinition, parentId, newComponentObj, true);
     toast.success('Component cloned succesfully');
   } else if (isCut) {
     navigator.clipboard.writeText(JSON.stringify(newComponentObj));
@@ -1699,6 +1791,7 @@ export const cloneComponents = (
   return new Promise((resolve) => {
     useEditorStore.getState().actions.updateEditorState({
       currentSidebarTab: 2,
+      ...(isCloning && { selectedComponents: [{ id: addedComponent.id, component: addedComponent }] }),
     });
     resolve();
   });
@@ -1763,7 +1856,7 @@ const updateComponentLayout = (components, parentId, isCut = false) => {
 };
 //
 const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
-  const parentId = componentParentId ?? component.component?.parent?.split('-').slice(0, -1).join('-');
+  const parentId = componentParentId ?? component.component?.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1];
 
   const parentComponent = allComponents.find((comp) => comp.componentId === parentId);
 
@@ -1774,83 +1867,84 @@ const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentI
   return false;
 };
 
-export const addComponents = (
-  pageId,
-  appDefinition,
-  appDefinitionChanged,
-  parentId = undefined,
-  newComponentObj,
-  fromClipboard = false
-) => {
-  const finalComponents = {};
-  const componentMap = {};
-  let parentComponent = undefined;
-  const { isCloning, isCut, newComponents: pastedComponents = [], currentPageId } = newComponentObj;
+export const addComponents = _.debounce(
+  (pageId, appDefinition, appDefinitionChanged, parentId = undefined, newComponentObj, fromClipboard = false) => {
+    const finalComponents = {};
+    const componentMap = {};
+    let newComponent = {};
+    let parentComponent = undefined;
+    const { isCloning, isCut, newComponents: pastedComponents = [], currentPageId } = newComponentObj;
 
-  if (parentId) {
-    const id = Object.keys(appDefinition.pages[pageId].components).filter((key) => parentId.startsWith(key));
-    parentComponent = JSON.parse(JSON.stringify(appDefinition.pages[pageId].components[id[0]]));
-  }
+    if (parentId) {
+      const id = Object.keys(appDefinition.pages[pageId].components).filter((key) => parentId.startsWith(key));
+      parentComponent = JSON.parse(JSON.stringify(appDefinition.pages[pageId].components[id[0]]));
+    }
 
-  pastedComponents.forEach((component) => {
-    const newComponentId = isCut ? component.componentId : uuidv4();
-    const componentName = computeComponentName(component.component.component, {
-      ...appDefinition.pages[pageId].components,
-      ...finalComponents,
+    pastedComponents.forEach((component) => {
+      const newComponentId = isCut ? component.componentId : uuidv4();
+      const componentName = computeComponentName(component.component.component, {
+        ...appDefinition.pages[pageId].components,
+        ...finalComponents,
+      });
+
+      const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pastedComponents, parentId);
+      const parentRef = isParentTabOrCalendar
+        ? component.component.parent.split('-').slice(0, -1).join('-')
+        : component.component.parent;
+      const isParentAlsoCopied = parentRef && componentMap[parentRef];
+
+      componentMap[component.componentId] = newComponentId;
+      let isChild = isParentAlsoCopied ? component.component.parent : parentId;
+      const componentData = JSON.parse(JSON.stringify(component.component));
+
+      if (isCloning && parentId && !componentData.parent) {
+        isChild = component.component.parent;
+      }
+
+      if (!parentComponent && !isParentAlsoCopied && fromClipboard) {
+        isChild = undefined;
+        componentData.parent = undefined;
+      }
+
+      if (!isCloning && parentComponent && fromClipboard) {
+        componentData.parent = isParentAlsoCopied ?? parentId;
+      } else if (isChild && isChildOfTabsOrCalendar(component, pastedComponents, parentId)) {
+        const parentId = component.component.parent.split('-').slice(0, -1).join('-');
+        const childTabId = component.component.parent.split('-').at(-1);
+
+        componentData.parent = `${componentMap[parentId]}-${childTabId}`;
+      } else if (isChild) {
+        const isParentInMap = componentMap[isChild] !== undefined;
+
+        componentData.parent = isParentInMap ? componentMap[isChild] : isChild;
+      }
+
+      newComponent = {
+        component: {
+          ...componentData,
+          name: componentName,
+        },
+        layouts: component.layouts,
+        id: newComponentId,
+      };
+
+      finalComponents[newComponentId] = newComponent;
+
+      // const doesComponentHaveChildren = getAllChildComponents
     });
 
-    const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pastedComponents, parentId);
-    const parentRef = isParentTabOrCalendar
-      ? component.component.parent.split('-').slice(0, -1).join('-')
-      : component.component.parent;
-    const isParentAlsoCopied = parentRef && componentMap[parentRef];
-
-    componentMap[component.componentId] = newComponentId;
-    let isChild = isParentAlsoCopied ? component.component.parent : parentId;
-    const componentData = JSON.parse(JSON.stringify(component.component));
-
-    if (isCloning && parentId && !componentData.parent) {
-      isChild = component.component.parent;
+    if (currentPageId === pageId) {
+      updateComponentLayout(pastedComponents, parentId, isCut);
     }
 
-    if (!parentComponent && !isParentAlsoCopied && fromClipboard) {
-      isChild = undefined;
-      componentData.parent = undefined;
+    updateNewComponents(pageId, appDefinition, finalComponents, appDefinitionChanged, componentMap, isCut);
+    if (!isCloning) {
+      toast.success('Component pasted succesfully');
     }
-
-    if (!isCloning && parentComponent && fromClipboard) {
-      componentData.parent = isParentAlsoCopied ?? parentId;
-    } else if (isChild && isChildOfTabsOrCalendar(component, pastedComponents, parentId)) {
-      const parentId = component.component.parent.split('-').slice(0, -1).join('-');
-      const childTabId = component.component.parent.split('-').at(-1);
-
-      componentData.parent = `${componentMap[parentId]}-${childTabId}`;
-    } else if (isChild) {
-      const isParentInMap = componentMap[isChild] !== undefined;
-
-      componentData.parent = isParentInMap ? componentMap[isChild] : isChild;
-    }
-
-    const newComponent = {
-      component: {
-        ...componentData,
-        name: componentName,
-      },
-      layouts: component.layouts,
-    };
-
-    finalComponents[newComponentId] = newComponent;
-
-    // const doesComponentHaveChildren = getAllChildComponents
-  });
-
-  if (currentPageId === pageId) {
-    updateComponentLayout(pastedComponents, parentId, isCut);
-  }
-
-  updateNewComponents(pageId, appDefinition, finalComponents, appDefinitionChanged, componentMap, isCut);
-  !isCloning && toast.success('Component pasted succesfully');
-};
+    return newComponent;
+  },
+  100
+);
 
 export const addNewWidgetToTheEditor = (
   componentMeta,
@@ -2004,18 +2098,17 @@ export const removeSelectedComponent = (pageId, newDefinition, selectedComponent
   useResolveStore.getState().actions.removeAppSuggestions(allHintsAssociatedWithQuery);
 
   updateAppDefinition(newDefinition, { componentDefinitionChanged: true, componentDeleted: true, componentCut: true });
+  return toDeleteComponents;
 };
 
 const getSelectedText = () => {
+  let selectedText = '';
   if (window.getSelection) {
-    navigator.clipboard.writeText(window.getSelection());
+    selectedText = window.getSelection().toString();
+  } else if (window.document.selection) {
+    selectedText = document.selection.createRange().text;
   }
-  if (window.document.getSelection) {
-    navigator.clipboard.writeText(window.document.getSelection());
-  }
-  if (window.document.selection) {
-    navigator.clipboard.writeText(window.document.selection.createRange().text);
-  }
+  return selectedText || null;
 };
 
 function convertMapSet(obj) {
@@ -2239,4 +2332,75 @@ function extractVersion(versionStr) {
 // Select multiple components using Selecto via drag
 export const setMultipleComponentsSelected = (components) => {
   useEditorStore.getState().actions.selectMultipleComponents(components);
+};
+
+export const calculateMoveableBoxHeight = (componentType, layoutData, stylesDefinition, label) => {
+  // Early return for non input components
+  if (!['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2', 'MultiselectV2'].includes(componentType)) {
+    return layoutData?.height;
+  }
+  const { alignment = { value: null }, width = { value: null }, auto = { value: null } } = stylesDefinition ?? {};
+
+  const resolvedLabel = label?.value?.length ?? 0;
+  const resolvedWidth = resolveWidgetFieldValue(width?.value) ?? 0;
+  const resolvedAuto = resolveWidgetFieldValue(auto?.value) ?? false;
+
+  let newHeight = layoutData?.height;
+  if (alignment.value && resolveWidgetFieldValue(alignment.value) === 'top') {
+    if ((resolvedLabel > 0 && resolvedWidth > 0) || (resolvedAuto && resolvedWidth === 0 && resolvedLabel > 0)) {
+      newHeight += 20;
+    }
+  }
+
+  return newHeight;
+};
+
+// Used for updating suggestion list on query renaming
+export const updateQuerySuggestions = (oldName, newName) => {
+  const currentState = useCurrentStateStore.getState();
+  const { queries } = currentState;
+
+  if (!queries[oldName]) {
+    return;
+  }
+
+  const updatedQueries = {
+    ...queries,
+    [newName]: {
+      ...queries[oldName],
+      name: newName,
+    },
+  };
+
+  delete updatedQueries[oldName];
+
+  const oldSuggestions = Object.keys(queries[oldName]).map((key) => `queries.${oldName}.${key}`);
+  useResolveStore.getState().actions.removeAppSuggestions(oldSuggestions);
+
+  useCurrentStateStore.getState().actions.setCurrentState({
+    ...currentState,
+    queries: updatedQueries,
+  });
+};
+
+export const updateSuggestionsFromCurrentState = () => {
+  const currentStateObj = useCurrentStateStore.getState();
+  useResolveStore.getState().actions.addAppSuggestions({
+    queries: currentStateObj.queries,
+    components: currentStateObj.components,
+    page: currentStateObj.page,
+  });
+};
+
+export const deepCamelCase = (obj) => {
+  if (Array.isArray(obj)) {
+    return obj.map((item) => deepCamelCase(item));
+  } else if (typeof obj === 'object' && obj !== null) {
+    return Object.keys(obj).reduce((acc, key) => {
+      const camelCaseKey = _.camelCase(key);
+      acc[camelCaseKey] = deepCamelCase(obj[key]);
+      return acc;
+    }, {});
+  }
+  return obj;
 };

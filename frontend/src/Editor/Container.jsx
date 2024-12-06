@@ -12,9 +12,14 @@ import { commentsService } from '@/_services';
 import config from 'config';
 import Spinner from '@/_ui/Spinner';
 import { useHotkeys } from 'react-hotkeys-hook';
-import { addComponents, addNewWidgetToTheEditor, isPDFSupported } from '@/_helpers/appUtils';
+import {
+  addComponents,
+  addNewWidgetToTheEditor,
+  isPDFSupported,
+  calculateMoveableBoxHeight,
+} from '@/_helpers/appUtils';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
-import { useEditorStore } from '@/_stores/editorStore';
+import { useEditorStore, flushComponentsToRender } from '@/_stores/editorStore';
 import { useAppInfo } from '@/_stores/appDataStore';
 import { shallow } from 'zustand/shallow';
 import _, { isEmpty } from 'lodash';
@@ -116,7 +121,7 @@ export const Container = ({
   // const [isResizing, setIsResizing] = useState(false);
   const [commentsPreviewList, setCommentsPreviewList] = useState([]);
   const [newThread, addNewThread] = useState({});
-  const [isContainerFocused, setContainerFocus] = useState(false);
+  const [isContainerFocused, setContainerFocus] = useState(true);
   const [canvasHeight, setCanvasHeight] = useState(null);
 
   useEffect(() => {
@@ -157,7 +162,7 @@ export const Container = ({
         if (navigator.clipboard && typeof navigator.clipboard.readText === 'function') {
           try {
             const cliptext = await navigator.clipboard.readText();
-            addComponents(
+            const newComponent = addComponents(
               currentPageId,
               appDefinition,
               appDefinitionChanged,
@@ -165,6 +170,7 @@ export const Container = ({
               JSON.parse(cliptext),
               true
             );
+            setSelectedComponent(newComponent.id, newComponent.component);
           } catch (err) {
             console.log(err);
           }
@@ -236,6 +242,7 @@ export const Container = ({
   const noOfBoxs = Object.values(boxes || []).length;
   useEffect(() => {
     updateCanvasHeight(boxes);
+    noOfBoxs != 0 && setContainerFocus(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [noOfBoxs]);
 
@@ -581,11 +588,15 @@ export const Container = ({
       if (parent) {
         const parentElem = document.getElementById(`canvas-${parent}`);
         const parentId = copyOfBoxes[parent] ? parent : parent?.split('-').slice(0, -1).join('-');
-        const compoenentType = copyOfBoxes[parentId]?.component.component;
+        const componentType = copyOfBoxes[parentId]?.component.component;
         var parentHeight = parentElem?.clientHeight || _height;
-        if (_height > parentHeight && ['Tabs', 'Listview'].includes(compoenentType)) {
+        if (_height > parentHeight && ['Tabs', 'Listview'].includes(componentType)) {
           _height = parentHeight;
           y = 0;
+        }
+
+        if (componentType === 'Listview' && y > parentHeight) {
+          y = y % parentHeight;
         }
       }
 
@@ -647,8 +658,13 @@ export const Container = ({
         return;
       }
       if (Object.keys(value)?.length > 0) {
-        setBoxes((boxes) =>
-          update(boxes, {
+        setBoxes((boxes) => {
+          // Ensure boxes[id] exists. This can happen is page is already switched and the component attributes change gets triggered after that
+          if (!boxes[id]) {
+            console.error(`Box with id ${id} does not exist`);
+            return boxes;
+          }
+          return update(boxes, {
             [id]: {
               $merge: {
                 component: {
@@ -663,8 +679,8 @@ export const Container = ({
                 },
               },
             },
-          })
-        );
+          });
+        });
         if (!_.isEmpty(opts)) {
           paramUpdatesOptsRef.current = opts;
         }
@@ -866,12 +882,6 @@ export const Container = ({
           })
             .filter(([, box]) => isEmpty(box?.component?.parent))
             .map(([id, box]) => {
-              const canShowInCurrentLayout =
-                box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
-
-              if (box.parent || !resolveWidgetFieldValue(canShowInCurrentLayout)) {
-                return '';
-              }
               return (
                 <WidgetWrapper
                   isResizing={resizingComponentId === id}
@@ -883,6 +893,7 @@ export const Container = ({
                   mode={mode}
                   propertiesDefinition={box?.component?.definition?.properties}
                   stylesDefinition={box?.component?.definition?.styles}
+                  otherDefinition={box?.component?.definition?.others}
                   componentType={box?.component?.component}
                 >
                   <DraggableBox
@@ -1006,19 +1017,37 @@ const WidgetWrapper = ({
   propertiesDefinition,
   stylesDefinition,
   componentType,
+  otherDefinition,
 }) => {
   const isGhostComponent = id === 'resizingComponentId';
   const {
     component: { parent },
     layouts,
   } = widget;
-  const { isSelected, isHovered } = useEditorStore((state) => {
+  const { isSelected, isHovered, shouldRerender } = useEditorStore((state) => {
     const isSelected = !!(state.selectedComponents || []).find((selected) => selected?.id === id);
     const isHovered = state?.hoveredComponent == id;
-    return { isSelected, isHovered };
+    /*
+     `shouldRerender` is added only for re-rendering the component when visibility/showOnMobile/showOnDesktop 
+     updates since these attributes need update or WidgetWrapper rather than actual Widget itself
+     */
+    const shouldRerender = state.componentsNeedsUpdateOnNextRender.some((compId) => compId === id);
+    return { isSelected, isHovered, shouldRerender };
   }, shallow);
 
   const isDragging = useGridStore((state) => state?.draggingComponentId === id);
+
+  const canShowInCurrentLayout = otherDefinition[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
+
+  if (parent || !resolveWidgetFieldValue(canShowInCurrentLayout)) {
+    /*
+      Remove the component from the re-render queue
+      This is necessary because child components are not rendered,
+      so their flush functions won't be called from ControlledComponentToRender
+    */
+    shouldRerender && flushComponentsToRender(id);
+    return '';
+  }
 
   let layoutData = layouts?.[currentLayout];
   if (isEmpty(layoutData)) {
@@ -1027,26 +1056,6 @@ const WidgetWrapper = ({
   // const width = (canvasWidth * layoutData.width) / NO_OF_GRIDS;
   const width = gridWidth * layoutData.width;
 
-  const calculateMoveableBoxHeight = () => {
-    // Early return for non input components
-    if (!['TextInput', 'PasswordInput', 'NumberInput'].includes(componentType)) {
-      return layoutData?.height;
-    }
-    const { alignment = { value: null }, width = { value: null }, auto = { value: null } } = stylesDefinition ?? {};
-
-    const resolvedLabel = label?.value?.length ?? 0;
-    const resolvedWidth = resolveWidgetFieldValue(width?.value) ?? 0;
-    const resolvedAuto = resolveWidgetFieldValue(auto?.value) ?? false;
-
-    let newHeight = layoutData?.height;
-    if (alignment.value && resolveWidgetFieldValue(alignment.value) === 'top') {
-      if ((resolvedLabel > 0 && resolvedWidth > 0) || (resolvedAuto && resolvedWidth === 0 && resolvedLabel > 0)) {
-        newHeight += 20;
-      }
-    }
-
-    return newHeight;
-  };
   const isWidgetActive = (isSelected || isDragging) && mode !== 'view';
 
   const { label = { value: null } } = propertiesDefinition ?? {};
@@ -1055,7 +1064,9 @@ const WidgetWrapper = ({
 
   const styles = {
     width: width + 'px',
-    height: resolvedVisibility ? calculateMoveableBoxHeight() + 'px' : '10px',
+    height: resolvedVisibility
+      ? calculateMoveableBoxHeight(componentType, layoutData, stylesDefinition, label) + 'px'
+      : '10px',
     transform: `translate(${layoutData.left * gridWidth}px, ${layoutData.top}px)`,
     ...(isGhostComponent ? { opacity: 0.5 } : {}),
     ...(isWidgetActive ? { zIndex: 3 } : {}),

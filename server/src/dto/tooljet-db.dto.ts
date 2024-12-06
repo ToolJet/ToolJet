@@ -19,7 +19,7 @@ import {
   IsObject,
   IsIn,
 } from 'class-validator';
-import { sanitizeInput, validateDefaultValue } from 'src/helpers/utils.helper';
+import { sanitizeInput, formatTimestamp, validateDefaultValue } from 'src/helpers/utils.helper';
 
 export function Match(property: string, validationOptions?: ValidationOptions) {
   return (object: any, propertyName: string) => {
@@ -48,7 +48,7 @@ export class MatchTypeConstraint implements ValidatorConstraintInterface {
   }
 
   matchType(value, relatedType) {
-    if (relatedType === 'character varying') {
+    if (relatedType === 'character varying' || relatedType === 'timestamp with time zone') {
       return typeof value === 'string';
     }
 
@@ -198,7 +198,8 @@ export class PostgrestTableColumnDto {
   @IsOptional()
   @Transform(({ value, obj }) => {
     const sanitizedValue = sanitizeInput(value);
-    return validateDefaultValue(sanitizedValue, obj);
+    const transformedData = formatTimestamp(sanitizedValue, obj);
+    return validateDefaultValue(transformedData, obj);
   })
   @Match('data_type', {
     message: 'Default value must match the data type',
@@ -208,6 +209,9 @@ export class PostgrestTableColumnDto {
 
   @IsOptional()
   constraints_type: ConstraintTypeDto;
+
+  @IsOptional()
+  configurations: Record<string, any>;
 }
 
 export class EditTableColumnsDto {
@@ -293,7 +297,8 @@ export class EditColumnTableDto {
   @IsOptional()
   @Transform(({ value, obj }) => {
     const sanitizedValue = sanitizeInput(value);
-    return validateDefaultValue(sanitizedValue, obj);
+    const transformedData = formatTimestamp(sanitizedValue, obj);
+    return validateDefaultValue(transformedData, obj);
   })
   @Match('data_type', {
     message: 'Default value must match the data type',
@@ -303,6 +308,9 @@ export class EditColumnTableDto {
 
   @IsOptional()
   constraints_type: ConstraintTypeDto;
+
+  @IsOptional()
+  configurations: any;
 }
 
 export class AddColumnDto {

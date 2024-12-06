@@ -1,6 +1,6 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-marketplace/common';
 import { SourceOptions, QueryOptions, Operation } from './types';
-import OpenAI from 'openai';  // Correct import for SDK 4.56.0
+import OpenAI from 'openai'; // Correct import for SDK 4.56.0
 import { getCompletion, getChatCompletion, generateImage } from './query_operations';
 
 export default class Openai implements QueryService {
@@ -38,11 +38,12 @@ export default class Openai implements QueryService {
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const openai: OpenAI = await this.getConnection(sourceOptions);
-    console.log()
+    console.log();
     try {
       const response = await openai.models.list(); // The response doesn't have a 'status'
-      
-      if (response.data.length > 0) { // Checking if models exist in the response
+
+      if (response.data.length > 0) {
+        // Checking if models exist in the response
         return {
           status: 'ok',
         };
@@ -66,7 +67,7 @@ export default class Openai implements QueryService {
 
     // Initialize OpenAI instance directly with API key
     const openai = new OpenAI({
-      apiKey: apiKey, 
+      apiKey: apiKey,
     });
 
     return openai;

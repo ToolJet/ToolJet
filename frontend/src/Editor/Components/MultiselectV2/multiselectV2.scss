@@ -1,0 +1,38 @@
+.value-container-selected-option {
+    display: flex;
+    align-items: center;
+    border-radius: 6px;
+    border: 1px solid #ECEEF0;
+    background-color:  var(--surfaces-surface-03);
+    padding-right: 2px;
+    margin-right: 4px;
+    line-height: 20px;
+    padding: 1px 3px 1px 6px;
+    color: var(--text-primary);
+    font-weight: 500;
+    &:hover {
+        background-color: var(--interactive-overlays-fill-pressed);
+    }
+    .value-container-selected-option-delete-icon {
+      margin-left: 6px;
+      cursor: pointer;
+    }
+  }
+  
+  .value-container-selected-option-popover {
+    display: flex;
+    flex-wrap: wrap;
+    gap : 6px;
+    padding: 16px;
+    color: var(--text-primary);
+    border-radius: 6px;
+    background-color: var(--surfaces-surface-01);
+    font-weight: 500;  
+  }
+
+  .multiselect-widget-show-more-popover {
+    background-color: var(--surfaces-surface-01) !important;
+    .popover-body {
+      background-color: var(--surfaces-surface-01) !important
+    }
+  }

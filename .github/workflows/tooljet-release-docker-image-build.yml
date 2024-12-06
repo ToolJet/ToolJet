@@ -20,17 +20,23 @@ jobs:
     if: "${{ github.event.release }}"
 
     steps:
-      - name: Checkout code
-        if: "!contains(github.event.release.tag_name, 'CE-LTS')"
+      - name: Checkout code to main
+        if: "!contains(github.event.release.tag_name, 'ce-lts')"
         uses: actions/checkout@v2
         with:
           ref: refs/heads/main
 
-      - name: Checkout code
-        if: "contains(github.event.release.tag_name, 'CE-LTS')"
+      - name: Checkout code to LTS-2.50
+        if: "contains(github.event.release.tag_name, '2.50')"
         uses: actions/checkout@v2
         with:
           ref: refs/heads/lts-2.50
+
+      - name: Checkout code to LTS-3.0
+        if: "contains(github.event.release.tag_name, '-ce-lts')"
+        uses: actions/checkout@v2
+        with:
+          ref: refs/heads/lts-3.0
 
       # Create Docker Buildx builder with platform configuration
       - name: Set up Docker Buildx
@@ -53,27 +59,40 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and Push Docker image for non-LTS tag
-        if: "!contains(github.event.release.tag_name, 'CE-LTS')"
+      - name: Build and Push Docker image for beta tag
+        if: "!contains(github.event.release.tag_name, '-ce-lts')"
         uses: docker/build-push-action@v4
         with:
           context: .
           file: docker/production.Dockerfile
           push: true
-          tags: tooljet/tooljet-ce:${{ github.event.release.tag_name }},tooljet/tooljet-ce:latest
+          tags: tooljet/tooljet-ce:${{ github.event.release.tag_name }},tooljet/tooljet-ce:ce-latest
           platforms: linux/amd64
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and Push Docker image for LTS tag
-        if: "contains(github.event.release.tag_name, 'CE-LTS')"
+      - name: Build and Push Docker image for LTS 2.50 tag
+        if:  "contains(github.event.release.tag_name, '2.50')"
         uses: docker/build-push-action@v4
         with:
           context: .
           file: docker/production.Dockerfile
           push: true
-          tags: tooljet/tooljet-ce:${{ github.event.release.tag_name }},tooljet/tooljet-ce:CE-LTS-latest
+          tags: tooljet/tooljet-ce:${{ github.event.release.tag_name }}
+          platforms: linux/amd64
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push Docker image for LTS 3.0 tag
+        if: "contains(github.event.release.tag_name, '-ce-lts')"
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: docker/production.Dockerfile
+          push: true
+          tags: tooljet/tooljet-ce:${{ github.event.release.tag_name }},tooljet/tooljet-ce:ce-lts-latest
           platforms: linux/amd64
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
@@ -156,7 +175,6 @@ jobs:
           fi
 
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
-
 
   update-lts-machine:
     runs-on: ubuntu-latest

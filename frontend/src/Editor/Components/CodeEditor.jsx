@@ -1,5 +1,5 @@
 /* eslint-disable import/no-unresolved */
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
@@ -17,12 +17,14 @@ const langSupport = Object.freeze({
   css: sass(),
 });
 
-export const CodeEditor = ({ height, darkMode, properties, styles, exposedVariables, setExposedVariable, dataCy }) => {
+export const CodeEditor = ({ id, height, darkMode, properties, styles, setExposedVariable, dataCy }) => {
   const { enableLineNumber, mode, placeholder } = properties;
   const { visibility, disabledState } = styles;
+  const [value, setValue] = useState('');
 
   const codeChanged = debounce((code) => {
     setExposedVariable('value', code);
+    setValue(code);
   }, 500);
 
   const editorStyles = {
@@ -49,6 +51,16 @@ export const CodeEditor = ({ height, darkMode, properties, styles, exposedVariab
     return height || 'auto';
   }, [height]);
 
+  useEffect(() => {
+    const _setValue = (value) => {
+      if (typeof value === 'string') {
+        codeChanged(value);
+      }
+    };
+    setExposedVariable('setValue', _setValue);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div data-disabled={disabledState} style={editorStyles} data-cy={dataCy}>
       <div
@@ -63,7 +75,7 @@ export const CodeEditor = ({ height, darkMode, properties, styles, exposedVariab
         }}
       >
         <CodeMirror
-          value={exposedVariables.value}
+          value={value}
           placeholder={placeholder}
           height={'100%'}
           minHeight={editorHeight}

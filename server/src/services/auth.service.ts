@@ -20,15 +20,15 @@ import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, EntityManager, Repository } from 'typeorm';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
-import { CreateAdminDto, CreateUserDto } from '@dto/user.dto';
+import { CreateAdminDto, OnboardUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
 import {
-  dbTransactionWrap,
   fullName,
   generateInviteURL,
   generateNextNameAndSlug,
   generateOrgInviteURL,
   isValidDomain,
+  isHttpsEnabled,
 } from 'src/helpers/utils.helper';
 import {
   getUserErrorMessages,
@@ -46,9 +46,18 @@ import { CookieOptions, Response } from 'express';
 import { SessionService } from './session.service';
 import { RequestContext } from 'src/models/request-context.model';
 import * as requestIp from 'request-ip';
+import {
+  GROUP_PERMISSIONS_TYPE,
+  USER_ROLE,
+} from '@modules/user_resource_permissions/constants/group-permissions.constant';
 import { ActivateAccountWithTokenDto } from '@dto/activate-account-with-token.dto';
 import { AppAuthenticationDto, AppSignupDto } from '@dto/app-authentication.dto';
 import { SIGNUP_ERRORS } from 'src/helpers/errors.constants';
+import { UserRoleService } from './user-role.service';
+import { GroupPermissionsServiceV2 } from './group_permissions.service.v2';
+import { AbilityService } from './permissions-ability.service';
+import { TOOLJET_RESOURCE } from 'src/constants/global.constant';
+import { dbTransactionWrap } from 'src/helpers/database.helper';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 import { ResendInviteDto } from '@dto/resend-invite.dto';
@@ -68,6 +77,9 @@ export class AuthService {
     private metadataService: MetadataService,
     private configService: ConfigService,
     private sessionService: SessionService,
+    private userRoleService: UserRoleService,
+    private groupPermissionsService: GroupPermissionsServiceV2,
+    private abilityService: AbilityService,
     @InjectRepository(Organization)
     private organizationsRepository: Repository<Organization>
   ) {}
@@ -219,20 +231,32 @@ export class AuthService {
     });
   }
 
+  //TODO:this function is not used now
   async authorizeOrganization(user: User) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (user.defaultOrganizationId !== user.organizationId)
         await this.usersService.updateUser(user.id, { defaultOrganizationId: user.organizationId }, manager);
 
       const organization = await this.organizationsService.get(user.organizationId);
-
+      const permissions = await this.groupPermissionsService.getAllUserGroups(user.id, user.organizationId);
+      const userPermissions = await this.abilityService.resourceActionsPermission(user, {
+        organizationId: user.organizationId,
+        resources: [{ resource: TOOLJET_RESOURCE.APP }],
+      });
+      const isAdmin = !!permissions.find((permission) => permission.name === USER_ROLE.ADMIN);
+      const appGroupPermissions = userPermissions?.[TOOLJET_RESOURCE.APP];
+      delete userPermissions?.[TOOLJET_RESOURCE.APP];
       return decamelizeKeys({
         currentOrganizationId: user.organizationId,
         currentOrganizationSlug: organization.slug,
         currentOrganizationName: organization.name,
-        admin: await this.usersService.hasGroup(user, 'admin', null, manager),
-        groupPermissions: await this.usersService.groupPermissions(user, manager),
-        appGroupPermissions: await this.usersService.appGroupPermissions(user, null, manager),
+        admin: isAdmin,
+        userPermissions: userPermissions,
+        groupPermissions: permissions.filter(
+          (group) => group.type === GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP || group.name === USER_ROLE.ADMIN
+        ),
+        role: permissions.find((group) => group.type === GROUP_PERMISSIONS_TYPE.DEFAULT),
+        appGroupPermissions: appGroupPermissions,
         currentUser: {
           id: user.id,
           email: user.email,
@@ -323,7 +347,7 @@ export class AuthService {
 
     return dbTransactionWrap(async (manager: EntityManager) => {
       // Check if the configs allows user signups
-      if (this.configService.get<string>('DISABLE_SIGNUPS') === 'true') {
+      if (!organizationId && this.configService.get<string>('DISABLE_SIGNUPS') === 'true') {
         throw new NotAcceptableException();
       }
 
@@ -403,7 +427,7 @@ export class AuthService {
           ...lifeCycleParms,
         },
         personalWorkspace.id,
-        ['all_users', 'admin'],
+        USER_ROLE.ADMIN,
         existingUser,
         true,
         null,
@@ -419,7 +443,11 @@ export class AuthService {
           manager,
           WORKSPACE_USER_SOURCE.SIGNUP
         );
-        await this.usersService.attachUserGroup(['all_users'], signingUpOrganization.id, user.id, manager);
+        await this.userRoleService.addUserRole(
+          { userId: user.id, role: USER_ROLE.END_USER },
+          signingUpOrganization.id,
+          manager
+        );
 
         this.emailService
           .sendWelcomeEmail(
@@ -627,7 +655,11 @@ export class AuthService {
   };
 
   async addUserToTheWorkspace(existingUser: User, signingUpOrganization: Organization, manager: EntityManager) {
-    await this.usersService.attachUserGroup(['all_users'], signingUpOrganization.id, existingUser.id, manager);
+    await this.userRoleService.addUserRole(
+      { userId: existingUser.id, role: USER_ROLE.END_USER },
+      signingUpOrganization.id,
+      manager
+    );
     return this.organizationUsersService.create(
       existingUser,
       signingUpOrganization,
@@ -702,7 +734,8 @@ export class AuthService {
   async forgotPassword(email: string) {
     const user = await this.usersService.findByEmail(email);
     if (!user) {
-      throw new BadRequestException('Email address not found');
+      // No need to throw error - To prevent Username Enumeration vulnerability
+      return;
     }
     const forgotPasswordToken = uuid.v4();
     await this.usersService.updateUser(user.id, { forgotPasswordToken });
@@ -751,6 +784,7 @@ export class AuthService {
         null,
         manager
       );
+
       const user = await this.usersService.create(
         {
           email,
@@ -764,12 +798,13 @@ export class AuthService {
           phoneNumber,
         },
         organization.id,
-        ['all_users', 'admin'],
+        USER_ROLE.ADMIN,
         null,
         false,
         null,
         manager
       );
+
       await this.organizationUsersService.create(user, organization, false, manager);
       return this.generateLoginResultPayload(response, user, organization, false, true, null, manager);
     });
@@ -778,7 +813,7 @@ export class AuthService {
     return result;
   }
 
-  async setupAccountFromInvitationToken(response: Response, userCreateDto: CreateUserDto) {
+  async setupAccountFromInvitationToken(response: Response, userCreateDto: OnboardUserDto) {
     const {
       companyName,
       companySize,
@@ -788,6 +823,7 @@ export class AuthService {
       password: userPassword,
       source,
       phoneNumber,
+      workspaceName,
     } = userCreateDto;
     let password = userPassword;
 
@@ -848,6 +884,14 @@ export class AuthService {
 
         // Activate default workspace
         await this.organizationUsersService.activateOrganization(defaultOrganizationUser, manager);
+        if (workspaceName) {
+          //TODO: Check if the workspace name is already taken from frontend
+          const { slug } = generateNextNameAndSlug('My workspace');
+          await this.organizationsService.updateOrganization(defaultOrganizationUser.organizationId, {
+            name: workspaceName,
+            slug: slug,
+          });
+        }
       } else {
         throw new BadRequestException('Invalid invitation link');
       }
@@ -1078,6 +1122,7 @@ export class AuthService {
     if (organization) user.organizationId = organization.id;
 
     const cookieOptions: CookieOptions = {
+      secure: isHttpsEnabled(),
       httpOnly: true,
       sameSite: 'strict',
       maxAge: 2 * 365 * 24 * 60 * 60 * 1000, // maximum expiry 2 years
@@ -1211,6 +1256,7 @@ export class AuthService {
 
     const cookieOptions: CookieOptions = {
       httpOnly: true,
+      secure: isHttpsEnabled(),
       sameSite: 'strict',
       maxAge: 2 * 365 * 24 * 60 * 60 * 1000, // maximum expiry 2 years
     };

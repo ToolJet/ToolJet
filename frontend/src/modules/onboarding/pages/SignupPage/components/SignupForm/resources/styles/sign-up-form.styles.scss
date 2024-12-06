@@ -1,0 +1,56 @@
+.signup-form {
+    .form-header {
+        margin-bottom: 0px;
+    }
+
+    .signup-info {
+        color: var(--text-placeholder, #6A727C);
+        font-size: 12px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 18px;
+        margin-bottom: 24px;
+
+        .workspace-name {
+            color: var(--text-placeholder, #6A727C);
+            font-style: normal;
+            font-weight: 500;
+        }
+    }
+
+    .signin-link {
+        color: var(--text-accent, #4368E3);
+        font-weight: 500;
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
+    .form-input-area {
+        margin-top: 24px;
+        margin-bottom: 0px;
+    }
+
+    .separator-signup {
+        .separator {
+            h2 {
+                margin-top: 24px !important;
+            }
+        }
+    }
+
+    .password-input-wrapper {
+        margin-bottom: 24px;
+    }
+
+    // SSO module styles
+    .sso-buttons-container {
+        margin-top: 24px;
+    }
+
+    .sso-button {
+        margin-bottom: 12px;
+    }
+}

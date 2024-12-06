@@ -8,11 +8,18 @@ import {
   getCachedConnection,
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions } from './types';
+import { isEmpty } from '@tooljet-plugins/common';
 
 export default class MssqlQueryService implements QueryService {
   private static _instance: MssqlQueryService;
+  private STATEMENT_TIMEOUT;
 
   constructor() {
+    this.STATEMENT_TIMEOUT =
+      process.env?.PLUGINS_SQL_DB_STATEMENT_TIMEOUT && !isNaN(Number(process.env?.PLUGINS_SQL_DB_STATEMENT_TIMEOUT))
+        ? Number(process.env.PLUGINS_SQL_DB_STATEMENT_TIMEOUT)
+        : 120000;
+
     if (MssqlQueryService._instance) {
       return MssqlQueryService._instance;
     }
@@ -21,33 +28,73 @@ export default class MssqlQueryService implements QueryService {
     return MssqlQueryService._instance;
   }
 
+  connectionOptions(sourceOptions: SourceOptions) {
+    const _connectionOptions = (sourceOptions?.connection_options || []).filter((o) => {
+      return o.some((e) => !isEmpty(e));
+    });
+
+    const connectionOptions = Object.fromEntries(_connectionOptions);
+    Object.keys(connectionOptions).forEach((key) =>
+      connectionOptions[key] === '' ? delete connectionOptions[key] : {}
+    );
+
+    return connectionOptions;
+  }
+
   async run(
     sourceOptions: SourceOptions,
     queryOptions: QueryOptions,
     dataSourceId: string,
     dataSourceUpdatedAt: string
   ): Promise<QueryResult> {
-    let result = {};
-    let query = queryOptions.query;
-    const knexInstance = await this.getConnection(sourceOptions, {}, true, dataSourceId, dataSourceUpdatedAt);
-
     try {
-      if (queryOptions.mode === 'gui') {
-        if (queryOptions.operation === 'bulk_update_pkey') {
-          query = this.buildBulkUpdateQuery(queryOptions);
-        }
+      const knexInstance = await this.getConnection(sourceOptions, {}, true, dataSourceId, dataSourceUpdatedAt);
+
+      switch (queryOptions.mode) {
+        case 'sql':
+          return await this.handleRawQuery(knexInstance, queryOptions);
+        case 'gui':
+          return await this.handleGuiQuery(knexInstance, queryOptions);
+        default:
+          throw new Error("Invalid query mode. Must be either 'sql' or 'gui'.");
       }
-      result = await knexInstance.raw(query);
     } catch (err) {
-      throw new QueryError('Query could not be completed', err.message, {});
+      throw new QueryError(
+        'Query could not be completed',
+        err instanceof Error ? err.message : 'An unknown error occurred',
+        {}
+      );
     }
+  }
+
+  private async handleGuiQuery(knexInstance: Knex, queryOptions: QueryOptions): Promise<any> {
+    if (queryOptions.operation !== 'bulk_update_pkey') {
+      return { rows: [] };
+    }
+
+    const query = this.buildBulkUpdateQuery(queryOptions);
+    return await this.executeQuery(knexInstance, query);
+  }
+
+  private async handleRawQuery(knexInstance: Knex, queryOptions: QueryOptions): Promise<QueryResult> {
+    const { query, query_params } = queryOptions;
+    const queryParams = query_params || [];
+    const sanitizedQueryParams: Record<string, any> = Object.fromEntries(queryParams.filter(([key]) => !isEmpty(key)));
+    const result = await this.executeQuery(knexInstance, query, sanitizedQueryParams);
 
     return { status: 'ok', data: result };
   }
 
+  private async executeQuery(knexInstance: Knex, query: string, sanitizedQueryParams: Record<string, any> = {}) {
+    if (isEmpty(query)) throw new Error('Query is empty');
+
+    const result = await knexInstance.raw(query, sanitizedQueryParams).timeout(this.STATEMENT_TIMEOUT);
+    return result;
+  }
+
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const knexInstance = await this.getConnection(sourceOptions, {}, false);
-    await knexInstance.raw('select @@version;');
+    await knexInstance.raw('select @@version;').timeout(this.STATEMENT_TIMEOUT);
     knexInstance.destroy();
 
     return {
@@ -55,7 +102,7 @@ export default class MssqlQueryService implements QueryService {
     };
   }
 
-  async buildConnection(sourceOptions: SourceOptions) {
+  async buildConnection(sourceOptions: SourceOptions): Promise<Knex> {
     const config: Knex.Config = {
       client: 'mssql',
       connection: {
@@ -70,6 +117,7 @@ export default class MssqlQueryService implements QueryService {
         },
         pool: { min: 0 },
       },
+      ...this.connectionOptions(sourceOptions),
     };
 
     return knex(config);
@@ -81,7 +129,7 @@ export default class MssqlQueryService implements QueryService {
     checkCache: boolean,
     dataSourceId?: string,
     dataSourceUpdatedAt?: string
-  ): Promise<any> {
+  ): Promise<Knex> {
     if (checkCache) {
       let connection = await getCachedConnection(dataSourceId, dataSourceUpdatedAt);
 

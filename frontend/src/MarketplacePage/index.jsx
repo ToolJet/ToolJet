@@ -69,7 +69,7 @@ const MarketplacePage = ({ darkMode, switchDarkMode }) => {
         <div className="marketplace-body">
           <div className="pt-3 px-3">
             <div className="row g-4">
-              <div className="marketplace-page-sidebar  mt-3">
+              <div className="marketplace-page-sidebar  mt-3 mx-3">
                 <div className="subheader mb-2">Plugins</div>
                 <div className="list-group mb-3">
                   {['Installed', 'Marketplace'].map((item, index) => (

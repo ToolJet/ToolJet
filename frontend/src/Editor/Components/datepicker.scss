@@ -1,0 +1,22 @@
+.tj-datepicker-widget {
+  select {
+    color: var(--text-primary) !important;
+    background-color: var(--surfaces-surface-01) !important
+  }
+  
+  select option {
+    color: var(--text-primary) !important;
+    background-color: var(--surfaces-surface-01) !important
+  }
+
+}
+
+  // .dark-theme {
+  //   select {
+  //     color: #fff !important
+  //   }
+      
+  //     select option {
+  //       color:  #fff !important // This needs to be black since this has no effect on mac but has on windows
+  //     }
+  // }

@@ -1063,7 +1063,7 @@ export const EventManager = ({
     return (
       <>
         {!hideEmptyEventsAlert && <NoListItem text={'No event handlers'} />}
-        {renderAddHandlerBtn()}
+        <div className="d-flex">{renderAddHandlerBtn()}</div>
       </>
     );
   }
@@ -1072,7 +1072,7 @@ export const EventManager = ({
 
   if (events.length === 0) {
     return (
-      <>
+      <div className="d-flex">
         {renderAddHandlerBtn()}
         {!hideEmptyEventsAlert ? (
           <div className="text-left">
@@ -1087,7 +1087,7 @@ export const EventManager = ({
             </small>
           </div>
         ) : null}
-      </>
+      </div>
     );
   }
 

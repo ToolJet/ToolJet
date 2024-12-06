@@ -5,24 +5,28 @@ import * as Icons from '@tabler/icons-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 const tinycolor = require('tinycolor2');
 import Label from '@/_ui/Label';
+import { useGridStore } from '@/_stores/gridStore';
 
 export const TextInput = function TextInput({
+  id,
   height,
-  validate,
   properties,
+  validation,
   styles,
   setExposedVariable,
   setExposedVariables,
   fireEvent,
-  component,
+  componentName,
   darkMode,
   dataCy,
-  isResizing,
+  validate,
 }) {
+  const isInitialRender = useRef(true);
   const textInputRef = useRef();
   const labelRef = useRef();
-
   const { loadingState, disabledState, label, placeholder } = properties;
+  const isResizing = useGridStore((state) => state.resizingComponentId === id);
+  const isMandatory = validation?.mandatory || false;
 
   const {
     padding,
@@ -43,10 +47,10 @@ export const TextInput = function TextInput({
   const [disable, setDisable] = useState(disabledState || loadingState);
   const [value, setValue] = useState(properties.value);
   const [visibility, setVisibility] = useState(properties.visibility);
-  const { isValid, validationError } = validate(value);
+  const [validationStatus, setValidationStatus] = useState(validate(value));
+  const { isValid, validationError } = validationStatus;
   const [showValidationError, setShowValidationError] = useState(false);
 
-  const isMandatory = resolveWidgetFieldValue(component?.definition?.validation?.mandatory?.value);
   const [labelWidth, setLabelWidth] = useState(0);
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
   const [loading, setLoading] = useState(loadingState);
@@ -56,7 +60,11 @@ export const TextInput = function TextInput({
   const computedStyles = {
     height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
     borderRadius: `${borderRadius}px`,
-    color: textColor !== '#1B1F24' ? textColor : disable || loading ? 'var(--text-disabled)' : 'var(--text-primary)',
+    color: !['#1B1F24', '#000', '#000000ff'].includes(textColor)
+      ? textColor
+      : disable || loading
+      ? 'var(--text-disabled)'
+      : 'var(--text-primary)',
     borderColor: isFocused
       ? accentColor != '4368E3'
         ? accentColor
@@ -76,7 +84,7 @@ export const TextInput = function TextInput({
           : 'var(--surfaces-surface-03)'
         : 'var(--surfaces-surface-01)',
     boxShadow: boxShadow,
-    padding: styles.iconVisibility
+    padding: styles?.iconVisibility
       ? height < 20
         ? '0px 10px 0px 29px'
         : '8px 10px 8px 29px'
@@ -117,7 +125,7 @@ export const TextInput = function TextInput({
     width,
     auto,
     defaultAlignment,
-    component?.definition?.styles?.iconVisibility?.value,
+    styles?.iconVisibility,
     label?.length,
     isMandatory,
     padding,
@@ -127,6 +135,7 @@ export const TextInput = function TextInput({
   ]);
 
   useEffect(() => {
+    if (isInitialRender.current) return;
     setExposedVariable('label', label);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [label]);
@@ -147,18 +156,57 @@ export const TextInput = function TextInput({
   }, [loadingState]);
 
   useEffect(() => {
-    setExposedVariable('isValid', isValid);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isValid]);
+    if (isInitialRender.current) return;
+    const validationStatus = validate(value);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
+  }, [validate]);
 
   useEffect(() => {
-    setValue(properties.value);
-    setExposedVariable('value', properties.value);
+    if (isInitialRender.current) return;
+    if (properties.value === undefined) {
+      setInputValue('');
+    } else {
+      setInputValue(properties.value);
+    }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.value]);
 
   useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isMandatory', isMandatory);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMandatory]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isLoading', loading);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isVisible', visibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibility]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isDisabled', disable);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disable]);
+
+  useEffect(() => {
     const exposedVariables = {
+      setText: async function (text) {
+        setInputValue(text);
+        fireEvent('onChange');
+      },
+      clear: async function () {
+        setInputValue('');
+        fireEvent('onChange');
+      },
       setFocus: async function () {
         textInputRef.current.focus();
       },
@@ -171,80 +219,49 @@ export const TextInput = function TextInput({
       visibility: async function (value) {
         setVisibility(value);
       },
+      setVisibility: async function (value) {
+        setVisibility(value);
+        setExposedVariable('isVisible', value);
+      },
+      setDisable: async function (value) {
+        setDisable(value);
+        setExposedVariable('isDisabled', value);
+      },
+      setLoading: async function (value) {
+        setLoading(value);
+        setExposedVariable('isLoading', value);
+      },
+      label: label,
+      isValid: isValid,
+      value: properties.value,
+      isMandatory: isMandatory,
+      isLoading: loading,
+      isVisible: visibility,
+      isDisabled: disable,
     };
+
     setExposedVariables(exposedVariables);
+    isInitialRender.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    const exposedVariables = {
-      setText: async function (text) {
-        setValue(text);
-        setExposedVariable('value', text);
-        fireEvent('onChange');
-      },
-      clear: async function () {
-        setValue('');
-        setExposedVariable('value', '');
-        fireEvent('onChange');
-      },
-    };
-    setExposedVariables(exposedVariables);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setValue]);
+  const setInputValue = (value) => {
+    setValue(value);
+    setExposedVariable('value', value);
+    const validationStatus = validate(value);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
+  };
+
   const iconName = styles.icon; // Replace with the name of the icon you want
   // eslint-disable-next-line import/namespace
   const IconElement = Icons[iconName] == undefined ? Icons['IconHome2'] : Icons[iconName];
   // eslint-disable-next-line import/namespace
 
-  useEffect(() => {
-    setExposedVariable('isMandatory', isMandatory);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMandatory]);
-
-  useEffect(() => {
-    setExposedVariable('isLoading', loading);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading]);
-
-  useEffect(() => {
-    setExposedVariable('setLoading', async function (loading) {
-      setLoading(loading);
-      setExposedVariable('isLoading', loading);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.loadingState]);
-
-  useEffect(() => {
-    setExposedVariable('isVisible', visibility);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visibility]);
-
-  useEffect(() => {
-    setExposedVariable('setVisibility', async function (state) {
-      setVisibility(state);
-      setExposedVariable('isVisible', state);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.visibility]);
-
-  useEffect(() => {
-    setExposedVariable('setDisable', async function (disable) {
-      setDisable(disable);
-      setExposedVariable('isDisabled', disable);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [disabledState]);
-
-  useEffect(() => {
-    setExposedVariable('isDisabled', disable);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [disable]);
-
   return (
     <>
       <div
-        data-cy={`label-${String(component.name).toLowerCase()} `}
+        data-cy={`label-${String(componentName).toLowerCase()} `}
         className={`text-input  d-flex  ${
           defaultAlignment === 'top' &&
           ((width != 0 && label?.length != 0) || (auto && width == 0 && label && label?.length != 0))
@@ -271,7 +288,7 @@ export const TextInput = function TextInput({
           isMandatory={isMandatory}
           _width={_width}
         />
-        {component?.definition?.styles?.iconVisibility?.value && !isResizing && (
+        {styles?.iconVisibility && !isResizing && (
           <IconElement
             data-cy={'text-input-icon'}
             style={{
@@ -308,14 +325,12 @@ export const TextInput = function TextInput({
           } validation-without-icon`}
           onKeyUp={(e) => {
             if (e.key === 'Enter') {
-              setValue(e.target.value);
-              setExposedVariable('value', e.target.value);
+              setInputValue(e.target.value);
               fireEvent('onEnterPressed');
             }
           }}
           onChange={(e) => {
-            setValue(e.target.value);
-            setExposedVariable('value', e.target.value);
+            setInputValue(e.target.value);
             fireEvent('onChange');
           }}
           onBlur={(e) => {
@@ -343,7 +358,7 @@ export const TextInput = function TextInput({
       </div>
       {showValidationError && visibility && (
         <div
-          data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
+          data-cy={`${String(componentName).toLowerCase()}-invalid-feedback`}
           style={{
             color: errTextColor,
             textAlign: direction == 'left' && 'end',

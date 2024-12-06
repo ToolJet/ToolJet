@@ -5,6 +5,8 @@ import { diff } from 'deep-object-diff';
 import { componentTypes } from '@/Editor/WidgetManager/components';
 import _ from 'lodash';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
+import { v4 as uuid } from 'uuid';
 
 export const zustandDevTools = (fn, options = {}) =>
   devtools(fn, { ...options, enabled: process.env.NODE_ENV === 'production' ? false : true });
@@ -111,12 +113,13 @@ export function isParamFromTableColumn(appDiff, definition) {
 }
 
 export const computeComponentPropertyDiff = (appDiff, definition, opts) => {
-  if (!opts?.isParamFromTableColumn) {
+  if (!opts?.isParamFromTableColumn && !opts?.isParamFromDropdownOptions) {
     return appDiff;
   }
   const columnsPath = generatePath(appDiff, 'columns');
   const actionsPath = generatePath(appDiff, 'actions');
   const deletionHistoryPath = generatePath(appDiff, 'columnDeletionHistory');
+  const optionsPath = generatePath(appDiff, 'options');
 
   let _diff = deepClone(appDiff);
 
@@ -135,6 +138,10 @@ export const computeComponentPropertyDiff = (appDiff, definition, opts) => {
     _diff = updateValueInJson(_diff, deletionHistoryPath, deletionHistoryValue);
   }
 
+  if (optionsPath) {
+    const optionsValue = getValueFromJson(definition, optionsPath);
+    _diff = updateValueInJson(_diff, optionsPath, optionsValue);
+  }
   return _diff;
 };
 
@@ -175,6 +182,7 @@ const updateFor = (appDiff, currentPageId, opts, currentLayout) => {
       try {
         return processingFunction(appDiff, currentPageId, optionsTypes, currentLayout);
       } catch (error) {
+        console.error('Error processing diff for update type: ', updateTypes, appDiff, error);
         return { error, updateDiff: {}, type: null, operation: null };
       }
     }
@@ -380,7 +388,7 @@ export function createReferencesLookup(refState, forQueryParams = false, initalL
   const buildMap = (data, path = '') => {
     const keys = Object.keys(data);
     keys.forEach((key, index) => {
-      const uniqueId = _.uniqueId();
+      const uniqueId = uuid();
       const value = data[key];
       const _type = Object.prototype.toString.call(value).slice(8, -1);
       const prevType = map.get(path)?.type;
@@ -436,24 +444,43 @@ export function createReferencesLookup(refState, forQueryParams = false, initalL
   return { suggestionList, hintsMap, resolvedRefs };
 }
 
+function containsBracketNotation(queryString) {
+  const bracketNotationRegex = /\[\s*['"][^'"]+['"]\s*\]/;
+  return bracketNotationRegex.test(queryString);
+}
+
 export function findAllEntityReferences(node, allRefs) {
+  const extractReferencesFromString = (str) => {
+    const regex = /{{(components|queries)\.[^{}]*}}/g;
+    const matches = str.match(regex);
+    if (matches) {
+      matches.forEach((match) => {
+        const ref = match.replace('{{', '').replace('}}', '');
+        const entityName = ref.split('.')[1];
+        allRefs.push(entityName);
+      });
+    }
+  };
+
   if (typeof node === 'object') {
     for (let key in node) {
       const value = node[key];
-      if (
-        typeof value === 'string' &&
-        value.includes('{{') &&
-        value.includes('}}') &&
-        (value.startsWith('{{components') || value.startsWith('{{queries'))
-      ) {
-        const referenceExists = value;
 
-        if (referenceExists) {
-          const ref = value.replace('{{', '').replace('}}', '');
+      if (typeof value === 'string') {
+        if (containsBracketNotation(value)) {
+          // Skip if the value is a bracket notation
+          break;
+        }
 
-          const entityName = ref.split('.')[1];
-
-          allRefs.push(entityName);
+        if (
+          value.includes('{{') &&
+          value.includes('}}') &&
+          (value.startsWith('{{components') || value.startsWith('{{queries'))
+        ) {
+          extractReferencesFromString(value);
+        } else {
+          // Handle cases where references are embedded within strings
+          extractReferencesFromString(value);
         }
       } else if (typeof value === 'object') {
         findAllEntityReferences(value, allRefs);

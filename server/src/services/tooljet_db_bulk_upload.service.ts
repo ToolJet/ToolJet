@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException, Optional } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import * as csv from 'fast-csv';
@@ -8,6 +8,7 @@ import { isEmpty } from 'lodash';
 import { pipeline } from 'stream/promises';
 import { PassThrough } from 'stream';
 import { v4 as uuid } from 'uuid';
+import { findTenantSchema } from 'src/helpers/tooljet_db.helper';
 import { TJDB, TooljetDatabaseColumn, TooljetDatabaseDataTypes } from 'src/modules/tooljet_db/tooljet-db.types';
 
 const MAX_ROW_COUNT = 1000;
@@ -16,13 +17,10 @@ const MAX_ROW_COUNT = 1000;
 export class TooljetDbBulkUploadService {
   constructor(
     private readonly manager: EntityManager,
-    // TODO: remove optional decorator when
-    // ENABLE_TOOLJET_DB flag is deprecated
-    @Optional()
     @InjectEntityManager('tooljetDb')
     private readonly tooljetDbManager: EntityManager,
     private readonly tooljetDbService: TooljetDbService
-  ) {}
+  ) { }
 
   async perform(organizationId: string, tableName: string, fileBuffer: Buffer) {
     const internalTable = await this.manager.findOne(InternalTable, {
@@ -39,13 +37,14 @@ export class TooljetDbBulkUploadService {
         table_name: tableName,
       });
 
-    return await this.bulkUploadCsv(internalTable.id, internalTableDatabaseColumn, fileBuffer);
+    return await this.bulkUploadCsv(internalTable.id, internalTableDatabaseColumn, fileBuffer, organizationId);
   }
 
   async bulkUploadCsv(
     internalTableId: string,
     internalTableDatabaseColumn: TooljetDatabaseColumn[],
-    fileBuffer: Buffer
+    fileBuffer: Buffer,
+    organizationId: string
   ): Promise<{ processedRows: number }> {
     const rowsToUpsert = [];
     const passThrough = new PassThrough();
@@ -103,7 +102,13 @@ export class TooljetDbBulkUploadService {
     await pipeline(passThrough, csvStream);
 
     await this.tooljetDbManager.transaction(async (tooljetDbManager) => {
-      await this.bulkUpsertRows(tooljetDbManager, rowsToUpsert, internalTableId, internalTableDatabaseColumn);
+      await this.bulkUpsertRows(
+        tooljetDbManager,
+        rowsToUpsert,
+        internalTableId,
+        internalTableDatabaseColumn,
+        organizationId
+      );
     });
 
     return { processedRows: rowsProcessed };
@@ -113,7 +118,8 @@ export class TooljetDbBulkUploadService {
     tooljetDbManager: EntityManager,
     rowsToUpsert: unknown[],
     internalTableId: string,
-    internalTableDatabaseColumn: TooljetDatabaseColumn[]
+    internalTableDatabaseColumn: TooljetDatabaseColumn[],
+    organizationId: string
   ) {
     if (isEmpty(rowsToUpsert)) return;
 
@@ -155,8 +161,9 @@ export class TooljetDbBulkUploadService {
 
     const primaryKeyColumnsQuoted = primaryKeyColumns.map((column) => `"${column}"`);
     const columnsQuoted = allColumns.map((column) => `"${column}"`);
+    const tenantSchema = findTenantSchema(organizationId);
     const queryText =
-      `INSERT INTO "${internalTableId}" (${columnsQuoted.join(', ')}) ` +
+      `INSERT INTO "${tenantSchema}"."${internalTableId}" (${columnsQuoted.join(', ')}) ` +
       `VALUES ${allValueSets.join(', ')} ` +
       `ON CONFLICT (${primaryKeyColumnsQuoted.join(', ')}) ` +
       `DO UPDATE SET ${onConflictUpdate};`;

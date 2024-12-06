@@ -22,7 +22,7 @@ import { AppsService } from '@services/apps.service';
 import { CreateDataQueryDto, UpdateDataQueryDto, UpdatingReferencesOptionsDto } from '@dto/data-query.dto';
 import { User } from 'src/decorators/user.decorator';
 import { decode } from 'js-base64';
-import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { EntityManager } from 'typeorm';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.constants';

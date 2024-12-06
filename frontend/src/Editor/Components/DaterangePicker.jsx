@@ -10,11 +10,15 @@ export const DaterangePicker = function DaterangePicker({
   properties,
   styles,
   setExposedVariable,
+  setExposedVariables,
   width,
   darkMode,
   fireEvent,
   dataCy,
+  id,
+  formId,
 }) {
+  const isInitialRender = useRef(true);
   const { borderRadius, visibility, disabledState, boxShadow } = styles;
   const { defaultStartDate, defaultEndDate } = properties;
   const formatProp = typeof properties.format === 'string' ? properties.format : '';
@@ -26,12 +30,28 @@ export const DaterangePicker = function DaterangePicker({
   const dateRangeRef = useRef(null);
 
   useEffect(() => {
+    if (isInitialRender.current) return;
+    setStartDate(moment(defaultStartDate, formatProp));
+    setExposedVariable('startDate', moment(defaultStartDate, formatProp).format(formatProp));
+  }, [defaultStartDate, formatProp]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setEndDate(moment(defaultEndDate, formatProp));
+    setExposedVariable('endDate', moment(defaultEndDate, formatProp).format(formatProp));
+  }, [defaultEndDate, formatProp]);
+
+  useEffect(() => {
+    const exposedVariables = {
+      startDate: moment(defaultStartDate, formatProp).format(formatProp),
+      endDate: moment(defaultEndDate, formatProp).format(formatProp),
+    };
+    setExposedVariables(exposedVariables);
     setStartDate(moment(defaultStartDate, formatProp));
     setEndDate(moment(defaultEndDate, formatProp));
-    setExposedVariable('startDate', startDate.format(formatProp));
-    setExposedVariable('endDate', endDate.format(formatProp));
+    isInitialRender.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [defaultEndDate, defaultStartDate, formatProp]);
+  }, []);
 
   useEffect(() => {
     dateRangeRef.current.container.querySelector('.DateRangePickerInput').style.borderRadius = `${Number.parseFloat(
@@ -63,6 +83,15 @@ export const DaterangePicker = function DaterangePicker({
 
   function focusChanged(focus) {
     setFocusedInput(focus);
+    const currentComponent = document.querySelector(`.ele-${id}`);
+    if (currentComponent) {
+      currentComponent.style.zIndex = focus ? 3 : '';
+    }
+
+    const formComponent = formId && document.querySelector(`.form-${formId}`);
+    if (formComponent) {
+      formComponent.style.zIndex = focus ? 4 : '';
+    }
   }
 
   return (

@@ -4,26 +4,26 @@ import { SortableContext, arrayMove, sortableKeyboardCoordinates } from '@dnd-ki
 import { SortableItem } from './components';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
+import useStore from '@/AppBuilder/_stores/store';
 
 export function SortableList({ items, onChange, renderItem }) {
   const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
+    useSensor(PointerSensor, {
+      activationConstraint: { delay: 150 },
     })
+    // useSensor(KeyboardSensor, {
+    //   coordinateGetter: sortableKeyboardCoordinates,
+    // })
   );
-  const { enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore(
-    (state) => ({
-      enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
-      isVersionReleased: state.isVersionReleased,
-    }),
-    shallow
-  );
+
+  const shouldFreeze = useStore((state) => state.isVersionReleased || state.isEditorFreezed);
+  const enableReleasedVersionPopupState = useStore((state) => state.enableReleasedVersionPopupState);
+
   return (
     <DndContext
       sensors={sensors}
       onDragEnd={({ active, over }) => {
-        if (isVersionReleased) {
+        if (shouldFreeze) {
           enableReleasedVersionPopupState();
           return;
         }

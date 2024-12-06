@@ -15,7 +15,38 @@ import { useKeyboardShortcutStore } from '@/_stores/keyboardShortcutStore';
 import { validateMultilineCode } from './utility';
 import { componentTypes } from '@/Editor/WidgetManager/components';
 
-const reservedKeyword = ['app', 'window'];
+export const reservedKeyword = ['app', 'window'];
+
+export const Constants = {
+  Global: 'Global',
+  Secret: 'Secret',
+};
+
+export const verifyConstant = (value, definedConstants = {}, definedSecrets = {}) => {
+  const globalConstantRegex = /{{constants\.([a-zA-Z0-9_]+)}}/g;
+  const secretConstantRegex = /{{secrets\.([a-zA-Z0-9_]+)}}/g;
+  if (typeof value !== 'string') {
+    return [];
+  }
+  const matches = [...(value.match(globalConstantRegex) || []), ...(value.match(secretConstantRegex) || [])];
+  if (!matches) {
+    return [];
+  }
+  const resolvedMatches = matches.map((match) => {
+    const cleanedMatch = match
+      .replace(/{{constants\./, '')
+      .replace(/{{secrets\./, '')
+      .replace(/}}/, '');
+
+    return Object.keys(definedConstants).includes(cleanedMatch) || Object.keys(definedSecrets).includes(cleanedMatch)
+      ? null
+      : cleanedMatch;
+  });
+  const invalidConstants = resolvedMatches?.filter((item) => item != null);
+  if (invalidConstants?.length) {
+    return invalidConstants;
+  }
+};
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -47,12 +78,12 @@ export const pluralize = (count, noun, suffix = 's') => `${count} ${noun}${count
 
 export function resolve(data, state) {
   if (data.startsWith('{{queries.') || data.startsWith('{{globals.') || data.startsWith('{{components.')) {
-    let prop = data.replace('{{', '').replace('}}', '');
+    let prop = removeNestedDoubleCurlyBraces(data);
     return findProp(state, prop, '');
   }
 }
 
-function resolveCode(code, state, customObjects = {}, withError = false, reservedKeyword, isJsCode) {
+export function resolveCode(code, state, customObjects = {}, withError = false, reservedKeyword, isJsCode) {
   let result = '';
   let error;
 
@@ -73,6 +104,7 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
           'client',
           'server',
           'constants',
+          'secrets',
           'parameters',
           'moment',
           '_',
@@ -90,6 +122,7 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
         isJsCode ? undefined : state?.client,
         isJsCode ? undefined : state?.server,
         state?.constants, // Passing constants as an argument allows the evaluated code to access and utilize the constants value correctly.
+        state?.secrets || {},
         state?.parameters,
         moment,
         _,
@@ -98,10 +131,8 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
       );
     } catch (err) {
       error = err;
-      // console.log('eval_error', err);
     }
   }
-
   if (withError) return [result, error];
   return result;
 }
@@ -114,7 +145,7 @@ export function resolveString(str, state, customObjects, reservedKeyword, withEr
 
   if (codeMatches) {
     codeMatches.forEach((codeMatch) => {
-      const code = codeMatch.replace('{{', '').replace('}}', '');
+      const code = removeNestedDoubleCurlyBraces(codeMatch);
 
       if (reservedKeyword.includes(code)) {
         resolvedStr = resolvedStr.replace(codeMatch, '');
@@ -153,39 +184,54 @@ export function resolveString(str, state, customObjects, reservedKeyword, withEr
   return resolvedStr;
 }
 
-export function resolveReferences(object, defaultValue, customObjects = {}, withError = false, forPreviewBox = false) {
+export function resolveReferences(
+  object,
+  _state,
+  defaultValue,
+  customObjects = {},
+  withError = false,
+  forPreviewBox = false
+) {
   if (object === '{{{}}}') return '';
 
   object = _.clone(object);
-  const currentState = useCurrentStateStore.getState();
   const objectType = typeof object;
   let error;
+
+  const state = _state ?? useCurrentStateStore.getState(); //!state=currentstate => The state passed down as an argument retains the previous state.
+
+  if (_state?.parameters) {
+    state.parameters = { ..._state.parameters };
+  }
+
   switch (objectType) {
     case 'string': {
       if (object.includes('{{') && object.includes('}}') && object.includes('%%') && object.includes('%%')) {
-        object = resolveString(object, currentState, customObjects, reservedKeyword, withError, forPreviewBox);
+        object = resolveString(object, state, customObjects, reservedKeyword, withError, forPreviewBox);
       }
 
       if (object.startsWith('{{') && object.endsWith('}}')) {
         if ((object.match(/{{/g) || []).length === 1) {
-          const code = object.replace('{{', '').replace('}}', '');
+          const code = removeNestedDoubleCurlyBraces(object);
 
-          const _reservedKeyword = ['app', 'window', 'this']; // Case-sensitive reserved keywords
-          const keywordRegex = new RegExp(`\\b(${_reservedKeyword.join('|')})\\b`, 'i');
+          //Will be remove in next release
 
-          if (code.match(keywordRegex)) {
-            error = `${code} is a reserved keyword`;
-            return [{}, error];
+          const { status, data } = validateMultilineCode(code);
+
+          if (status === 'failed') {
+            const errMessage = `${data.message} -  ${data.description}`;
+
+            return [{}, errMessage];
           }
 
-          return resolveCode(code, currentState, customObjects, withError, reservedKeyword, true);
+          return resolveCode(code, state, customObjects, withError, [], true);
         } else {
           const dynamicVariables = getDynamicVariables(object);
 
           for (const dynamicVariable of dynamicVariables) {
             const value = resolveString(
               dynamicVariable,
-              currentState,
+              state,
               customObjects,
               reservedKeyword,
               withError,
@@ -205,17 +251,17 @@ export function resolveReferences(object, defaultValue, customObjects = {}, with
           return [{}, error];
         }
 
-        return resolveCode(code, currentState, customObjects, withError, reservedKeyword, false);
+        return resolveCode(code, state, customObjects, withError, reservedKeyword, false);
       }
 
       const dynamicVariables = getDynamicVariables(object);
 
       if (dynamicVariables) {
         if (dynamicVariables.length === 1 && dynamicVariables[0] === object) {
-          object = resolveReferences(dynamicVariables[0], null, customObjects);
+          object = resolveReferences(dynamicVariables[0], state, null, customObjects, false, false);
         } else {
           for (const dynamicVariable of dynamicVariables) {
-            const value = resolveReferences(dynamicVariable, null, customObjects);
+            const value = resolveReferences(dynamicVariable, state, null, customObjects, false, false);
             if (typeof value !== 'function') {
               object = object.replace(dynamicVariable, value);
             }
@@ -239,7 +285,7 @@ export function resolveReferences(object, defaultValue, customObjects = {}, with
         return new_array;
       } else if (!_.isEmpty(object)) {
         Object.keys(object).forEach((key) => {
-          const resolved_object = resolveReferences(object[key]);
+          const resolved_object = resolveReferences(object[key], state);
           object[key] = resolved_object;
         });
         if (withError) return [object, error];
@@ -268,7 +314,7 @@ export function computeComponentName(componentType, currentComponents) {
   let currentNumber = currentComponentsForKind.length + 1;
   let _componentName = '';
   while (!found) {
-    _componentName = `${componentName.toLowerCase()}${currentNumber}`;
+    _componentName = `${componentName?.toLowerCase()}${currentNumber}`;
     if (
       Object.values(currentComponents).find((component) => component.component.name === _componentName) === undefined
     ) {
@@ -303,6 +349,29 @@ export function validateQueryName(name) {
   return nameRegex.test(name);
 }
 
+export function validateKebabCase(slug) {
+  const pattern = /^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$/;
+  if (slug === '') {
+    return { isValid: false, error: 'Handle cannot be empty.' };
+  }
+  if (!/^[a-zA-Z0-9]/.test(slug)) {
+    return { isValid: false, error: 'Handle must start with a letter or number.' };
+  }
+  if (/[^a-zA-Z0-9-]/.test(slug)) {
+    return { isValid: false, error: 'Handle can only contain letters, numbers, and hyphens.' };
+  }
+  if (/--/.test(slug)) {
+    return { isValid: false, error: 'Handle cannot contain consecutive hyphens.' };
+  }
+  if (slug.endsWith('-')) {
+    return { isValid: false, error: 'Handle cannot end with a hyphen.' };
+  }
+  if (!pattern.test(slug)) {
+    return { isValid: false, error: 'Handle does not match the kebab-case pattern.' };
+  }
+  return { isValid: true, error: null };
+}
+
 export const convertToKebabCase = (string) =>
   string
     .replace(/([a-z])([A-Z])/g, '$1-$2')
@@ -329,7 +398,8 @@ export function resolveWidgetFieldValue(prop, _default = [], customResolveObject
   const widgetFieldValue = prop;
 
   try {
-    return resolveReferences(widgetFieldValue, _default, customResolveObjects);
+    const state = getCurrentState();
+    return resolveReferences(widgetFieldValue, state, _default, customResolveObjects);
   } catch (err) {
     console.log(err);
   }
@@ -508,7 +578,7 @@ export function validateDates({ validationObject, widgetValue, currentState, cus
 
 export function validateEmail(email) {
   const emailRegex =
-    /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+    /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[a-zA-Z]{2,})$/i;
   return emailRegex.test(email);
 }
 
@@ -661,6 +731,24 @@ export const isJson = (str) => {
   return true;
 };
 
+export const isStringValidJson = (str) => {
+  try {
+    JSON.parse(str);
+  } catch (e) {
+    return false;
+  }
+  return true;
+};
+
+export const isObjectValidJson = (obj) => {
+  try {
+    JSON.stringify(obj);
+  } catch (e) {
+    return false;
+  }
+  return true;
+};
+
 export function buildURLWithQuery(url, query = {}) {
   return `${url}?${toQuery(query)}`;
 }
@@ -679,27 +767,27 @@ export const handleCircularStructureToJSON = () => {
   };
 };
 
-export function hasCircularDependency(obj) {
-  let seenObjects = new WeakSet();
-
-  function detect(obj) {
-    if (obj && typeof obj === 'object') {
-      if (seenObjects.has(obj)) {
-        // Circular reference found
-        return true;
-      }
-      seenObjects.add(obj);
-
-      for (let key in obj) {
-        if (obj.hasOwnProperty(key) && detect(obj[key])) {
-          return true;
-        }
-      }
-    }
+export function hasCircularDependency(obj, stack = new Set()) {
+  if (typeof obj !== 'object' || obj === null) {
     return false;
   }
 
-  return detect(obj);
+  if (stack.has(obj)) {
+    return true;
+  }
+
+  stack.add(obj);
+
+  for (let key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      if (hasCircularDependency(obj[key], new Set(stack))) {
+        return true;
+      }
+    }
+  }
+
+  stack.delete(obj);
+  return false;
 }
 
 export const hightlightMentionedUserInComment = (comment) => {
@@ -1031,7 +1119,7 @@ export const validateName = (
 ) => {
   const newName = name;
   let errorMsg = '';
-  if (emptyCheck && !newName) {
+  if (emptyCheck && (!newName || newName.trim().length === 0)) {
     errorMsg = `${nameType} can't be empty`;
     showError &&
       toast.error(errorMsg, {
@@ -1227,11 +1315,13 @@ export const USER_DRAWER_MODES = {
 
 export const humanizeifDefaultGroupName = (groupName) => {
   switch (groupName) {
-    case 'all_users':
-      return 'All users';
+    case 'end-user':
+      return 'End-user';
 
     case 'admin':
       return 'Admin';
+    case 'builder':
+      return 'Builder';
 
     default:
       return groupName;
@@ -1301,3 +1391,88 @@ export const triggerKeyboardShortcut = (keyCallbackFnArray, initiator) => {
 export function decodeEntities(encodedString) {
   return encodedString?.replace(/&lt;/gi, '<')?.replace(/&gt;/gi, '>')?.replace(/&amp;/gi, '&');
 }
+
+export const removeNestedDoubleCurlyBraces = (str) => {
+  const transformedInput = str.split('');
+  let iter = 0;
+  const stack = [];
+
+  while (iter < str.length - 1) {
+    if (transformedInput[iter] === '{' && transformedInput[iter + 1] === '{') {
+      transformedInput[iter] = 'le';
+      transformedInput[iter + 1] = 'le';
+      stack.push(2);
+      iter += 2;
+    } else if (transformedInput[iter] === '{') {
+      stack.push(1);
+      iter++;
+    } else if (transformedInput[iter] === '}' && stack.length > 0 && stack[stack.length - 1] === 1) {
+      stack.pop();
+      iter++;
+    } else if (
+      transformedInput[iter] === '}' &&
+      stack.length > 0 &&
+      transformedInput[iter + 1] === '}' &&
+      stack[stack.length - 1] === 2
+    ) {
+      stack.pop();
+      transformedInput[iter] = 'ri';
+      transformedInput[iter + 1] = 'ri';
+      iter += 2;
+    } else {
+      iter++;
+    }
+  }
+
+  iter = 0;
+  let shouldRemoveSpace = true;
+  while (iter < str.length) {
+    if (transformedInput[iter] === ' ' && shouldRemoveSpace) {
+      transformedInput[iter] = '';
+    } else if (transformedInput[iter] === 'le') {
+      shouldRemoveSpace = true;
+      transformedInput[iter] = '';
+    } else {
+      shouldRemoveSpace = false;
+    }
+    iter++;
+  }
+
+  iter = str.length - 1;
+  shouldRemoveSpace = true;
+  while (iter >= 0) {
+    if (transformedInput[iter] === ' ' && shouldRemoveSpace) {
+      transformedInput[iter] = '';
+    } else if (transformedInput[iter] === 'ri') {
+      shouldRemoveSpace = true;
+      transformedInput[iter] = '';
+    } else {
+      shouldRemoveSpace = false;
+    }
+    iter--;
+  }
+
+  return transformedInput.join('');
+};
+export const validatePassword = (value) => {
+  if (!value.trim()) {
+    return 'Password is required';
+  }
+  if (value.length < 5) {
+    return 'Password must be at least 5 characters long';
+  }
+  if (value.length > 100) {
+    return 'Password can be at max 100 characters long';
+  }
+};
+
+export const checkConditionsForRoute = (conditions, conditionsObj) => {
+  if (!conditions || conditions.length === 0) {
+    return true;
+  }
+  return conditions.every((condition) => conditionsObj?.[condition] === true);
+};
+
+export const hasBuilderRole = (roleObj) => {
+  return roleObj.name === 'builder';
+};

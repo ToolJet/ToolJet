@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
-import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { USER_STATUS } from 'src/helpers/user_lifecycle';
 import { UserSessions } from 'src/entities/user_sessions.entity';
 import { ConfigService } from '@nestjs/config';

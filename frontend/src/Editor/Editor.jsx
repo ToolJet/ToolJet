@@ -28,6 +28,7 @@ import {
   buildComponentMetaDefinition,
   getAllChildComponents,
   runQueries,
+  updateSuggestionsFromCurrentState,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 // eslint-disable-next-line import/no-unresolved
@@ -46,7 +47,7 @@ import { withTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
 import Skeleton from 'react-loading-skeleton';
 import EditorHeader from './Header';
-import { getWorkspaceId, isValidUUID } from '@/_helpers/utils';
+import { getWorkspaceId, isValidUUID, Constants } from '@/_helpers/utils';
 import { fetchAndSetWindowTitle, pageTitles, defaultWhiteLabellingSettings } from '@white-label/whiteLabelling';
 import '@/_styles/editor/react-select-search.scss';
 import { withRouter } from '@/_hoc/withRouter';
@@ -82,7 +83,12 @@ import { HotkeysProvider } from 'react-hotkeys-hook';
 import { useResolveStore } from '@/_stores/resolverStore';
 import { dfs } from '@/_stores/handleReferenceTransactions';
 import { decimalToHex, EditorConstants } from './editorConstants';
-import { handleLowPriorityWork, updateCanvasBackground, clearAllQueuedTasks } from '@/_helpers/editorHelpers';
+import {
+  handleLowPriorityWork,
+  updateCanvasBackground,
+  clearAllQueuedTasks,
+  checkAndExtractEntityId,
+} from '@/_helpers/editorHelpers';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import cx from 'classnames';
 import { resolveReferences } from './CodeEditor/utils';
@@ -223,12 +229,15 @@ const EditorComponent = (props) => {
 
     // Subscribe to changes in the current session using RxJS observable pattern
     const subscription = authenticationService.currentSession.subscribe((currentSession) => {
-      if (currentUser && currentSession?.group_permissions) {
+      if (currentUser && (currentSession?.group_permissions || currentSession?.role)) {
         const userVars = {
           email: currentUser.email,
           firstName: currentUser.first_name,
           lastName: currentUser.last_name,
-          groups: currentSession.group_permissions?.map((group) => group.group),
+          groups: currentSession?.group_permissions
+            ? ['all_users', ...currentSession.group_permissions.map((group) => group.name)]
+            : ['all_users'],
+          role: currentSession?.role?.name,
         };
 
         const appUserDetails = {
@@ -279,7 +288,6 @@ const EditorComponent = (props) => {
     if (didAppDefinitionChanged) {
       prevAppDefinition.current = appDefinition;
     }
-
     if (mounted && didAppDefinitionChanged && currentPageId) {
       const components = appDefinition?.pages[currentPageId]?.components || {};
 
@@ -287,7 +295,7 @@ const EditorComponent = (props) => {
 
       if (appDiffOptions?.skipAutoSave === true || appDiffOptions?.entityReferenceUpdated === true) return;
 
-      handleLowPriorityWork(() => autoSave());
+      autoSave();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ appDefinition, currentPageId, dataQueries })]);
@@ -304,14 +312,10 @@ const EditorComponent = (props) => {
       const isPageSwitched = useResolveStore.getState().isPageSwitched;
 
       if (isPageSwitched) {
-        const currentStateObj = useCurrentStateStore.getState();
-
-        useResolveStore.getState().actions.addAppSuggestions({
-          queries: currentStateObj.queries,
-          components: currentStateObj.components,
-          page: currentStateObj.page,
+        handleLowPriorityWork(() => {
+          updateSuggestionsFromCurrentState();
+          useResolveStore.getState().actions.pageSwitched(false);
         });
-        useResolveStore.getState().actions.pageSwitched(false);
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -399,19 +403,26 @@ const EditorComponent = (props) => {
     });
   };
 
-  const fetchOrgEnvironmentConstants = () => {
-    //! for @ee: get the constants from  `getConstantsFromEnvironment ` -- '/organization-constants/:environmentId'
-    orgEnvironmentConstantService.getAll().then(({ constants }) => {
+  const fetchOrgEnvironmentConstants = async (environmentId) => {
+    try {
+      const { constants } = await orgEnvironmentConstantService.getConstantsFromEnvironment(
+        environmentId,
+        Constants.Global
+      );
       const orgConstants = {};
-      constants.map((constant) => {
-        const constantValue = constant.values.find((value) => value.environmentName === 'production')['value'];
-        orgConstants[constant.name] = constantValue;
+
+      constants.forEach((constant) => {
+        orgConstants[constant.name] = constant.value;
       });
 
       useCurrentStateStore.getState().actions.setCurrentState({
         constants: orgConstants,
       });
-    });
+    } catch (error) {
+      toast.error('Failed to fetch organization environment constants', {
+        position: 'top-center',
+      });
+    }
   };
 
   const initComponentVersioning = () => {
@@ -620,7 +631,15 @@ const EditorComponent = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleRunQuery = (queryId, queryName) => runQuery(getEditorRef(), queryId, queryName);
+  const handleRunQuery = (queryId, queryName, additionalArgs = {}) => {
+    const {
+      confirmed = undefined,
+      mode = 'edit',
+      userSuppliedParameters = {},
+      shouldSetPreviewData = false,
+    } = additionalArgs;
+    runQuery(getEditorRef(), queryId, queryName, confirmed, mode, userSuppliedParameters, shouldSetPreviewData);
+  };
 
   const dataSourceModalHandler = () => {
     dataSourceModalRef.current.dataSourceModalToggleStateHandler();
@@ -708,7 +727,8 @@ const EditorComponent = (props) => {
     fetchAndSetWindowTitle({ page: pageTitles.EDITOR, appName });
     useAppVersionStore.getState().actions.updateEditingVersion(editing_version);
     current_version_id && useAppVersionStore.getState().actions.updateReleasedVersionId(current_version_id);
-    await fetchOrgEnvironmentConstants();
+    const environmentId = editing_version?.current_environment_id;
+    await fetchOrgEnvironmentConstants(environmentId);
     updateState({
       slug,
       isMaintenanceOn,
@@ -727,6 +747,7 @@ const EditorComponent = (props) => {
 
     await processNewAppDefinition(appData, startingPageHandle, false, ({ homePageId }) => {
       handleLowPriorityWork(() => {
+        updateSuggestionsFromCurrentState();
         useResolveStore.getState().actions.updateLastUpdatedRefs(['constants', 'client']);
         commonLowPriorityActions(events, { homePageId });
       });
@@ -819,6 +840,7 @@ const EditorComponent = (props) => {
       });
       processNewAppDefinition(appData, null, true, ({ homePageId }) => {
         handleLowPriorityWork(async () => {
+          updateSuggestionsFromCurrentState();
           await fetchDataSources(editing_version?.id);
           commonLowPriorityActions(events, homePageId);
         });
@@ -1037,26 +1059,24 @@ const EditorComponent = (props) => {
           }
 
           //Todo: Move this to a separate function or as a middleware of the api to createing a component
-          handleLowPriorityWork(() => {
-            if (updateDiff?.type === 'components' && updateDiff?.operation === 'create') {
-              const componentsFromCurrentState = getCurrentState().components;
-              const newComponentIds = Object.keys(updateDiff?.updateDiff);
-              const newComponentsExposedData = {};
-              const componentEntityArray = [];
-              Object.values(componentsFromCurrentState).filter((component) => {
-                if (newComponentIds.includes(component.id)) {
-                  const componentName = updateDiff?.updateDiff[component.id]?.name;
-                  newComponentsExposedData[componentName] = component;
-                  componentEntityArray.push({ id: component.id, name: componentName });
-                }
-              });
+          if (updateDiff?.type === 'components' && updateDiff?.operation === 'create') {
+            const componentsFromCurrentState = getCurrentState().components;
+            const newComponentIds = Object.keys(updateDiff?.updateDiff);
+            const newComponentsExposedData = {};
+            const componentEntityArray = [];
+            Object.values(componentsFromCurrentState).filter((component) => {
+              if (newComponentIds.includes(component.id)) {
+                const componentName = updateDiff?.updateDiff[component.id]?.name;
+                newComponentsExposedData[componentName] = component;
+                componentEntityArray.push({ id: component.id, name: componentName });
+              }
+            });
 
-              useResolveStore.getState().actions.addEntitiesToMap(componentEntityArray);
-              useResolveStore.getState().actions.addAppSuggestions({
-                components: newComponentsExposedData,
-              });
-            }
-          });
+            useResolveStore.getState().actions.addEntitiesToMap(componentEntityArray);
+            useResolveStore.getState().actions.addAppSuggestions({
+              components: newComponentsExposedData,
+            });
+          }
 
           if (
             updateDiff?.type === 'components' &&
@@ -1079,13 +1099,24 @@ const EditorComponent = (props) => {
             isUpdatingEditorStateInProcess: false,
           });
         })
-        .catch((err) => {
+        .catch((e) => {
+          const entityNotSaved =
+            e?.data?.statusCode === 500 && e?.error
+              ? checkAndExtractEntityId(e.error)
+              : { entityId: null, message: 'App could not be saved.' };
+
+          let errMessage = e?.data?.message || 'App could not be saved.';
+          if (entityNotSaved.entityId) {
+            const componentName =
+              appDefinition.pages[currentPageId].components[entityNotSaved.entityId]?.component?.name;
+            errMessage = `The component "${componentName}" could not be saved, so the last action is also not saved.`;
+          }
+
           updateEditorState({
             saveError: true,
             isUpdatingEditorStateInProcess: false,
           });
-          // toast.error('App could not save.');
-          toast.error(err?.error ?? 'App could not save.');
+          toast.error(errMessage);
         })
         .finally(() => {
           if (appDiffOptions?.cloningComponent) {
@@ -1561,7 +1592,12 @@ const EditorComponent = (props) => {
     if (!isVersionReleased && selectedComponents?.length > 1) {
       let newDefinition = JSON.parse(JSON.stringify(appDefinition));
 
-      removeSelectedComponent(currentPageId, newDefinition, selectedComponents, appDefinitionChanged);
+      const toDeleteComponents = removeSelectedComponent(
+        currentPageId,
+        newDefinition,
+        selectedComponents,
+        appDefinitionChanged
+      );
       const platform = navigator?.userAgentData?.platform || navigator?.platform || 'unknown';
       if (platform.toLowerCase().indexOf('mac') > -1) {
         toast('Selected components deleted! (⌘ + Z to undo)', {
@@ -1572,6 +1608,26 @@ const EditorComponent = (props) => {
           icon: '🗑️',
         });
       }
+
+      const allAppHints = useResolveStore.getState().suggestions.appHints ?? [];
+      const allHintsAssociatedWithQuery = [];
+
+      if (allAppHints.length > 0) {
+        toDeleteComponents.forEach((id) => {
+          const componentName = appDefinition.pages[currentPageId].components[id]?.component?.name;
+          if (componentName) {
+            allAppHints.forEach((suggestion) => {
+              if (suggestion?.hint.includes(componentName)) {
+                allHintsAssociatedWithQuery.push(suggestion.hint);
+              }
+            });
+          }
+        });
+      }
+
+      useResolveStore.getState().actions.removeEntitiesFromMap(toDeleteComponents);
+      useResolveStore.getState().actions.removeAppSuggestions(allHintsAssociatedWithQuery);
+
       updateEditorState({ selectedComponents: [] });
     } else if (isVersionReleased) {
       useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
@@ -1691,6 +1747,8 @@ const EditorComponent = (props) => {
     const pageHandle = useCurrentStateStore.getState().page?.handle;
 
     if (currentPageId === pageId && pageHandle === appDefinition?.pages[pageId]?.handle) {
+      useEditorStore.getState().actions.setPageProgress(false);
+      useCurrentStateStore.getState().actions.setEditorReady(true);
       return;
     }
     const { name, handle } = appDefinition.pages[pageId];
@@ -1968,9 +2026,11 @@ const EditorComponent = (props) => {
   }
 
   const handleCanvasContainerMouseUp = (e) => {
+    const selectedText = window.getSelection().toString();
     if (
       ['real-canvas', 'modal'].includes(e.target.className) &&
-      useEditorStore.getState()?.selectedComponents?.length
+      useEditorStore.getState()?.selectedComponents?.length &&
+      !selectedText
     ) {
       setSelectedComponents(EMPTY_ARRAY);
     }
@@ -2050,7 +2110,9 @@ const EditorComponent = (props) => {
                 }}
                 setSelectedComponent={setSelectedComponent}
                 removeComponent={removeComponent}
-                runQuery={(queryId, queryName) => handleRunQuery(queryId, queryName)}
+                runQuery={(queryId, queryName, additionalArgs = {}) =>
+                  handleRunQuery(queryId, queryName, additionalArgs)
+                }
                 ref={dataSourceModalRef}
                 currentPageId={currentPageId}
                 addNewPage={addNewPage}

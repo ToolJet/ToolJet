@@ -1,0 +1,33 @@
+.row-tabs {
+	background-color: #F1F3F5;
+	padding: 3px;
+	border-radius: 6px;
+	margin-bottom: 0.3rem;
+	width:max-content;
+  
+	.row-tab-content {
+	  cursor: pointer;
+	  padding: 3px 7px 3px 7px;
+	  border-radius: 6px;
+	  font-size: 12px;
+	  font-weight: 500;
+	  line-height: 20px;
+	}
+  }
+  
+  .row-tabs-dark {
+	background-color: #1c252f !important;
+	padding: 3px;
+	border-radius: 6px;
+	margin-bottom: 0.3rem;
+	width:max-content;
+  
+	.row-tab-content {
+	  cursor: pointer;
+	  padding: 3px 7px 3px 7px;
+	  border-radius: 6px;
+	  font-size: 12px;
+	  font-weight: 500;
+	  line-height: 20px;
+	}
+  }

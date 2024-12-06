@@ -9,6 +9,7 @@ export const TJDB = {
   serial: 'serial' as const,
   double_precision: 'double precision' as const,
   boolean: 'boolean' as const,
+  timestampz: 'timestamp with time zone' as const,
 };
 
 export type TooljetDatabaseDataTypes = (typeof TJDB)[keyof typeof TJDB];
@@ -53,6 +54,8 @@ enum PostgresErrorCode {
   ForeignKeyViolation = '23503',
   DuplicateColumn = '42701',
   UndefinedTable = '42P01',
+  PermissionDenied = '42501',
+  UndefinedFunction = '42883',
 }
 
 export type TooljetDbActions =
@@ -68,6 +71,7 @@ export type TooljetDbActions =
   | 'update_foreign_key'
   | 'view_table'
   | 'view_tables'
+  | 'sql_execution'
   | 'proxy_postgrest';
 
 type ErrorCodeMappingItem = Partial<Record<TooljetDbActions | 'default', string>>;
@@ -86,9 +90,18 @@ const errorCodeMapping: Partial<ErrorCodeMapping> = {
   },
   [PostgresErrorCode.UndefinedTable]: {
     default: 'Could not find the table {{table}}.',
+    sql_execution: `Could not find the table or schema`,
   },
   [PostgresErrorCode.ForeignKeyViolation]: {
     proxy_postgrest: 'Update or delete on  {{table}}.{{column}} with {{value}} violates foreign key constraint',
+    sql_execution: 'Update or delete on  {{table}}.{{column}} with {{value}} violates foreign key constraint',
+  },
+  [PostgresErrorCode.PermissionDenied]: {
+    default: 'Insufficient privilege',
+  },
+  [PostgresErrorCode.UndefinedFunction]: {
+    proxy_postgrest: '{{fxName}} - aggregate function requires serial, integer, float or big int column type',
+    join_tables: '{{fxName}} - aggregate function requires serial, integer, float or big int column type',
   },
 };
 
@@ -128,7 +141,7 @@ export class TooljetDatabaseError extends QueryFailedError {
   ) {
     super(message, errorObj.parameters, errorObj.driverError);
     this.context = context;
-    this.code = errorObj.driverError.code;
+    this.code = errorObj.driverError['code'];
     this.queryError = errorObj;
   }
 
@@ -158,6 +171,20 @@ export class TooljetDatabaseError extends QueryFailedError {
       }, errorMessage);
     };
 
+    const maskWorkspaceSchemaNameInErrorMessage = (errorMessage): string => {
+      let output = errorMessage
+        .replace(/workspace_[\w-]+\./g, '')
+        .replace(/'workspace_[\w-]+'\./g, "'")
+        .replace(/workspace_[\w-]+'?/g, '')
+        .replace(/\s*workspace_[\w-]+\s*/g, '')
+        .replace(/\s{2,}/g, ' ')
+        .replace(/"\s*"/g, '')
+        .trim();
+
+      output = output.trim();
+      return output;
+    };
+
     // Handle custom errors that are thrown from PostgREST with
     // specific parsers for the error code
     if (this.queryError.driverError instanceof PostgrestError) {
@@ -179,6 +206,7 @@ export class TooljetDatabaseError extends QueryFailedError {
     // Based on the internalTables in context replace table UUIDs in
     // the error message
     modifiedErrorMessage = replaceTableUUIDs(modifiedErrorMessage, internalTableEntries);
+    modifiedErrorMessage = maskWorkspaceSchemaNameInErrorMessage(modifiedErrorMessage);
     return modifiedErrorMessage;
   }
 
@@ -192,18 +220,25 @@ export class TooljetDatabaseError extends QueryFailedError {
         return { table, column: matches[1], value: matches[2] };
       },
       [PostgresErrorCode.UniqueViolation]: () => {
-        const errorMessage = this.queryError.driverError.details;
+        const errorMessage = this.queryError.driverError['details'];
         const regex = /Key \((.*?)\)=\((.*?)\) already exists\./;
         const matches = regex.exec(errorMessage);
         const table = this.context.internalTables[0].tableName;
         return { table, column: matches[1], value: matches[2] };
       },
       [PostgresErrorCode.ForeignKeyViolation]: () => {
-        const errorMessage = this.queryError.driverError.details;
+        const errorMessage = this.queryError.driverError['details'];
         const regex = /Key \((.*?)\)=\((.*?)\) (is still referenced from table|is not present in table) "(.*?)"\./;
         const matches = regex.exec(errorMessage);
         const table = this.context.internalTables[0].tableName;
         return { table, column: matches[1], value: matches[2], referencedTables: [matches[2]] };
+      },
+      [PostgresErrorCode.UndefinedFunction]: () => {
+        const errorMessage = this.queryError.driverError.message;
+        const regex = /function (\w+)\(([\w\s]+)\) does not exist/;
+        const matches = regex.exec(errorMessage);
+        const table = this.context.internalTables[0].tableName;
+        return { table, fxName: matches[1] };
       },
     };
     return parsers[this.code]?.() || null;
