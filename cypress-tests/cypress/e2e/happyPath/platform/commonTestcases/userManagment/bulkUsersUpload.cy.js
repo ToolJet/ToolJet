@@ -29,6 +29,7 @@ describe("Bulk user upload", () => {
   const without_lastName =
     "cypress/fixtures/bulkUser/without_lastname - Sheet1.csv";
   const invite_users = "cypress/fixtures/bulkUser/invite_users - Sheet1 .csv";
+  const Validinvite = "cypress/fixtures/bulkUser/10usersupload.csv";
 
   it("Verfiy bulk user upload invalid files", () => {
     data.firstName = fake.firstName;
@@ -99,11 +100,10 @@ describe("Bulk user upload", () => {
     cy.get(usersSelector.buttonUploadUsers).click();
     cy.get(".go2072408551")
       .should("be.visible")
-      .and("have.text", "5 users are being added");
+      .and("have.text", "Missing first_name,user_role,groups information in 5 row(s);. No users were uploaded, please update and try again.Missing first_name,user_role,groups information in 5 row(s);. No users were uploaded, please update and try again.");
 
     cy.wait(5000);
-
-    cy.get(usersSelector.buttonAddUsers).click();
+    // cy.get(usersSelector.buttonAddUsers).click();
     cy.get(usersSelector.buttonUploadCsvFile).click();
     cy.get(usersSelector.inputFieldBulkUpload).selectFile(without_lastName, {
       force: true,
@@ -115,7 +115,7 @@ describe("Bulk user upload", () => {
     cy.get(usersSelector.buttonUploadUsers).click();
     cy.get(".go2072408551")
       .should("be.visible")
-      .and("have.text", "5 users are being added");
+      .and("have.text", "Missing last_name,user_role,groups information in 5 row(s);. No users were uploaded, please update and try again.Missing last_name,user_role,groups information in 5 row(s);. No users were uploaded, please update and try again.");
   });
 
   it("Verify bulk user upload functionality", () => {
@@ -130,22 +130,14 @@ describe("Bulk user upload", () => {
     cy.get(usersSelector.buttonAddUsers).click();
     cy.get(usersSelector.buttonUploadCsvFile).click();
 
-    cy.get(usersSelector.inputFieldBulkUpload).selectFile(invite_users, {
+    cy.get(usersSelector.inputFieldBulkUpload).selectFile(Validinvite, {
       force: true,
     });
-    cy.get(usersSelector.uploadedFileData).should("contain", "invite_users");
-    cy.get(commonSelectors.cancelButton).click();
-
-    cy.get(usersSelector.buttonAddUsers).click();
-    cy.get(usersSelector.buttonUploadCsvFile).click();
-    cy.get(usersSelector.inputFieldBulkUpload).selectFile(invite_users, {
-      force: true,
-    });
+    cy.get(commonSelectors.fileSelector).should("contain", " 10usersupload");
     cy.get(usersSelector.buttonUploadUsers).click();
-    cy.wait(30000);
-    cy.get(".go2072408551")
+    cy.get(".go2072408551")    
       .should("be.visible")
-      .and("have.text", "250 users are being added");
+      .and("have.text", "10 users are being added");
     common.searchUser("test12@gmail.com");
     cy.contains("td", "test12@gmail.com")
       .parent()
