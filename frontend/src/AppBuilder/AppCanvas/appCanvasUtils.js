@@ -440,15 +440,14 @@ function calculateGroupPosition(components, existingComponents, layout, targetPa
 export const debouncedPasteComponents = debounce(pasteComponents, 300);
 
 export function pasteComponents(targetParentId, copiedComponentObj) {
-  const { newComponents: pastedComponents = [] } = copiedComponentObj;
-  const isGroup = findHighestLevelofSelection().length > 1;
-
   const finalComponents = [];
   const componentMap = {};
   let parentComponent = undefined;
   const components = useStore.getState().getCurrentPageComponents();
   const currentPageId = useStore.getState().getCurrentPageId();
-  const { isCut = false, pageId, isCloning = false } = copiedComponentObj;
+  const { isCut = false, pageId, isCloning = false, newComponents: pastedComponents = [] } = copiedComponentObj;
+  const isGroup = findHighestLevelofSelection().length > 1;
+
   // Prevent pasting if the parent subcontainer was deleted during a cut operation
   if (
     targetParentId &&
@@ -542,7 +541,7 @@ export function pasteComponents(targetParentId, copiedComponentObj) {
       // Add already processed components to existingComponents
       const processedComponents = finalComponentWithUpdatedLayout || [];
       existingComponents = [...existingComponents, ...processedComponents];
-      console.log(isGroup, 'isGroup');
+
       if (isGroup) {
         // Handle group positioning
         const groupPositions = calculateGroupPosition(
