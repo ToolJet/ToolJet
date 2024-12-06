@@ -289,7 +289,7 @@ export const copyComponents = ({ isCut = false, isCloning = false }) => {
       pageId: currentPageId,
     };
   }
-  useStore.getState().setLastClickPosition(null);
+  useStore.getState().setLastCanvasClickPosition(null);
   if (isCloning) {
     const parentId = allComponents[selectedComponents[0]?.id]?.parent ?? undefined;
     debouncedPasteComponents(parentId, newComponentObj);
@@ -330,15 +330,15 @@ function calculateComponentPosition(component, existingComponents, layout, targe
 
   const parentId = component.component?.parent ? component.component.parent : 'canvas';
   const gridWidth = useGridStore.getState().subContainerWidths[parentId];
-  const lastClickPosition = useStore.getState().lastClickPosition;
+  const lastCanvasClickPosition = useStore.getState().lastCanvasClickPosition;
 
   // Initialize position either from click or component layout
   let newLeft = component.layouts[layout].left;
   let newTop = component.layouts[layout].top;
 
-  if (lastClickPosition && (!component.component?.parent || component.component?.parent === targetParentId)) {
-    newLeft = Math.round(lastClickPosition.x / gridWidth);
-    newTop = Math.round(lastClickPosition.y / 10) * 10;
+  if (lastCanvasClickPosition && (!component.component?.parent || component.component?.parent === targetParentId)) {
+    newLeft = Math.round(lastCanvasClickPosition.x / gridWidth);
+    newTop = Math.round(lastCanvasClickPosition.y / 10) * 10;
   }
   // Ensure component stays within bounds
   if (newLeft + component.layouts[layout].width > NO_OF_GRIDS) {

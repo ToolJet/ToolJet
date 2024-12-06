@@ -51,7 +51,6 @@ export default function Grid({ gridWidth, currentLayout }) {
   const canvasWidth = NO_OF_GRIDS * gridWidth;
   const getHoveredComponentForGrid = useStore((state) => state.getHoveredComponentForGrid, shallow);
   const getResolvedComponent = useStore((state) => state.getResolvedComponent, shallow);
-  const setLastClickPosition = useStore((state) => state.setLastClickPosition, shallow);
 
   useEffect(() => {
     setBoxList(
@@ -354,27 +353,6 @@ export default function Grid({ gridWidth, currentLayout }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [boxList, currentLayout, gridWidth]
   );
-
-  const handleCanvasClick = useCallback(
-    (e) => {
-      const realCanvas = e.target.closest('.real-canvas');
-      if (realCanvas) {
-        const rect = realCanvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        setLastClickPosition({ x, y });
-      }
-    },
-    [setLastClickPosition]
-  );
-
-  useEffect(() => {
-    const realCanvas = document.getElementById('real-canvas');
-    if (realCanvas) {
-      realCanvas.addEventListener('click', handleCanvasClick);
-      return () => realCanvas.removeEventListener('click', handleCanvasClick);
-    }
-  }, [handleCanvasClick]);
 
   if (mode !== 'edit') return null;
 
