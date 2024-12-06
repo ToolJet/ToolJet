@@ -353,6 +353,29 @@ export default function Grid({ gridWidth, currentLayout }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [boxList, currentLayout, gridWidth]
   );
+
+  // Add event listeners for config handle visibility when hovering over widget boundary
+  // This is needed even though we have hovered widget state because when hovered on boundary,
+  // the hovered widget state is empty, hence created a separate state for boundary
+  React.useEffect(() => {
+    const moveableBox = document.querySelector(`.moveable-control-box`);
+    const showConfigHandle = (e) => {
+      const targetId = e.target.offsetParent.getAttribute('target-id');
+      useStore.getState().setHoveredComponentBoundaryId(targetId);
+    };
+    const hideConfigHandle = () => {
+      useStore.getState().setHoveredComponentBoundaryId('');
+    };
+    if (moveableBox) {
+      moveableBox.addEventListener('mouseover', showConfigHandle);
+      moveableBox.addEventListener('mouseout', hideConfigHandle);
+    }
+    return () => {
+      moveableBox.removeEventListener('mouseover', showConfigHandle);
+      moveableBox.removeEventListener('mouseout', hideConfigHandle);
+    };
+  }, []);
+
   if (mode !== 'edit') return null;
 
   return (

@@ -1,10 +1,8 @@
 import React from 'react';
-import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import './configHandle.scss';
 import useStore from '@/AppBuilder/_stores/store';
 import { findHighestLevelofSelection } from '../Grid/gridUtils';
-
 export const ConfigHandle = ({
   id,
   position,
@@ -26,8 +24,8 @@ export const ConfigHandle = ({
   const deleteComponents = useStore((state) => state.deleteComponents, shallow);
 
   const _showHandle = useStore((state) => {
-    const isWidgetHovered = state.getHoveredComponentForGrid() === id;
-    const anyComponentHovered = state.getHoveredComponentForGrid() !== '';
+    const isWidgetHovered = state.getHoveredComponentForGrid() === id || state.hoveredComponentBoundaryId === id;
+    const anyComponentHovered = state.getHoveredComponentForGrid() !== '' || state.hoveredComponentBoundaryId !== '';
     // If one component is hovered and one is selected, show the handle for the hovered component
     return (
       isWidgetHovered ||
@@ -36,12 +34,12 @@ export const ConfigHandle = ({
         !anyComponentHovered)
     );
   }, shallow);
-
   let height = visibility === false ? 10 : widgetHeight;
 
   return (
     <div
       className={`config-handle ${customClassName}`}
+      widget-id={id}
       style={{
         top: position === 'top' ? '-20px' : widgetTop + height - (widgetTop < 10 ? 15 : 10),
         visibility: _showHandle ? 'visible' : 'hidden',

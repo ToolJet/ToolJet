@@ -1,4 +1,3 @@
-
 .config-handle {
     position: fixed;
     max-height: 10px;
@@ -7,6 +6,10 @@
     display: block;
     visibility: hidden;
     transition: all .15s ease-in-out;
+}
+
+.config-handle-visible {
+  visibility: visible !important;
 }
 
 .multiple-components-config-handle {
@@ -22,7 +25,7 @@
   .handle-content {
     cursor: move;
     color: #ffffff;
-    background: rgb(77, 114, 250)
+    background: rgb(77, 114, 250);
   }
 
   .badge {
@@ -47,15 +50,6 @@
   }
 }
 
-.config-handle:hover,
-.config-handle {
-  visibility: visible;
-}
-
-.config-handle {
-  visibility: hidden;
-  transition: all .15s ease-in-out;
-}
 
 .canvas-area #modal-container .modal-component>.config-handle {
   visibility: visible !important;
