@@ -58,7 +58,7 @@ describe("Profile Settings", () => {
     common.logout();
   });
 
-  it.only("Should verify the password reset functionality", () => {
+  it("Should verify the password reset functionality", () => {
     cy.get(profileSelector.currentPasswordField).should("have.value", "");
     cy.get(profileSelector.newPasswordField).should("have.value", "");
     cy.get(profileSelector.currentPasswordField).should("have.value", "");
