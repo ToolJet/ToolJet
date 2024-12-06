@@ -93,4 +93,116 @@ body:
   attributes:
     value: >
       Thank you for your collaboration!
+
+- type: markdown
+  attributes:
+    value: >
+      **Performance Issue Report**
+        Please fill out the details below to report a performance issue.
+        
+- type: textarea
+  attributes:
+    label: Summary
+    description: >
+      Provide a brief summary of the performance issue.
+    placeholder: >-
+      The application experiences significant lag when loading the dashboard.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Steps to reproduce the issue
+    description: >-
+      Provide step by step instructions to reproduce the performance issue.
+    placeholder: >-
+      1. Open the application, 2. Navigate to the dashboard, 3. Observe the lag...
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Expected behavior
+    description: >-
+      Describe what you expected to happen.
+    placeholder: >-
+      The dashboard should load within 2 seconds.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Actual behavior
+    description: >-
+      Describe what actually happened.
+    placeholder: >-
+      The dashboard takes more than 10 seconds to load.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Additional Information
+    description: >-
+      Provide any additional information that may help in diagnosing the issue.
+    placeholder: >-
+      The issue occurs consistently during peak hours.
+  validations:
+    required: false
+
+- type: markdown
+  attributes:
+    value: >
+      **Security Vulnerability Report**
+        Please fill out the details below to report a security vulnerability.
+        
+- type: textarea
+  attributes:
+    label: Summary
+    description: >
+      Provide a brief summary of the security vulnerability.
+    placeholder: >-
+      The application is vulnerable to SQL injection attacks.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Steps to reproduce the issue
+    description: >-
+      Provide step by step instructions to reproduce the security vulnerability.
+    placeholder: >-
+      1. Open the application, 2. Navigate to the login page, 3. Enter a malicious SQL query...
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Expected behavior
+    description: >-
+      Describe what you expected to happen.
+    placeholder: >-
+      The application should sanitize user inputs to prevent SQL injection.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Actual behavior
+    description: >-
+      Describe what actually happened.
+    placeholder: >-
+      The application executes the malicious SQL query.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Additional Information
+    description: >-
+      Provide any additional information that may help in diagnosing the issue.
+    placeholder: >-
+      The issue occurs consistently when entering certain SQL queries.
+  validations:
+    required: false
 ...

@@ -44,3 +44,27 @@ This documentation explains the process of exporting and importing applications 
 </div>
 
 </div>
+
+## Additional Details
+
+### Exporting Applications
+
+When exporting an application, you have the option to include the ToolJet Database table schemas. This is useful if your application relies on specific database tables and you want to ensure that these tables are recreated when the application is imported into another workspace.
+
+### Importing Applications
+
+When importing an application, ToolJet will automatically create any necessary ToolJet Database tables if the export included the table schemas. This ensures that the application will function correctly in the new workspace without requiring additional setup.
+
+### Export and Import Limitations
+
+- **Data Sources**: The export and import process does not include data source configurations. You will need to manually configure any data sources required by the application after importing it.
+- **Environment Variables**: Environment variables are not included in the export. You will need to set up any required environment variables in the new workspace.
+- **File Uploads**: Any files uploaded to the application are not included in the export. You will need to manually upload any necessary files after importing the application.
+
+### Best Practices
+
+- **Version Control**: Use version control to keep track of changes to your applications. This makes it easier to manage different versions and revert to previous versions if needed.
+- **Testing**: Thoroughly test your application after importing it into a new workspace to ensure that all functionality is working as expected.
+- **Documentation**: Keep detailed documentation of your application's setup and configuration. This will make it easier to set up the application in a new workspace and troubleshoot any issues that arise.
+
+For more detailed information on exporting and importing applications, refer to the [ToolJet Documentation](https://docs.tooljet.com).
