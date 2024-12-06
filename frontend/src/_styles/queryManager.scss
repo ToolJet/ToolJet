@@ -1844,14 +1844,18 @@ $border-radius: 4px;
 }
 
 .empty-paramlist {
-  width: 156px;
-  height: 28px;
-  padding: 12px 6px;
+  height: 69px;
+  padding: 12px 0 12px;
   gap: 8px;
-  opacity: 0px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: var(--Grey-01, #F5F7FB);
-  margin-right: 4px;
+
+  span {
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 18px;
+    color: "#6A727C";
+  }
 }
