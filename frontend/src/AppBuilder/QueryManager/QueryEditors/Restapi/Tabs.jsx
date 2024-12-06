@@ -5,6 +5,7 @@ import Body from './TabBody';
 import Cookies from './TabCookies';
 import { Tab, ListGroup, Row } from 'react-bootstrap';
 import { CustomToggleSwitch } from '@/Editor/QueryManager/Components/CustomToggleSwitch';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 function ControlledTabs({
   options,
@@ -32,17 +33,32 @@ function ControlledTabs({
               </ListGroup.Item>
             ))}
           </ListGroup>
-          {key === 'body' && (
-            <div className="text-nowrap d-flex align-items-center">
-              Raw JSON&nbsp;&nbsp;
-              <CustomToggleSwitch
-                toggleSwitchFunction={setBodyToggle}
-                action="bodyToggle"
-                darkMode={darkMode}
-                isChecked={bodyToggle}
+          <div className="text-nowrap d-flex align-items-center">
+            {key === 'body' && (
+              <>
+                Raw JSON&nbsp;&nbsp;
+                <CustomToggleSwitch
+                  toggleSwitchFunction={setBodyToggle}
+                  action="bodyToggle"
+                  darkMode={darkMode}
+                  isChecked={bodyToggle}
+                />
+              </>
+            )}
+            {(key !== 'body' || bodyToggle === false) && (
+              <ButtonSolid
+                onClick={() => addNewKeyValuePair(key === 'params' ? 'url_params' : key)}
+                id="runjs-param-add-btn"
+                data-cy={`runjs-add-param-button`}
+                variant="ghostBlack"
+                size="sm"
+                leftIcon="plus"
+                fill={darkMode ? 'var(--icons-default)' : '#6A727C'}
+                iconWidth="18"
+                className="tw-px-[6px]"
               />
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         <div className={`col`}>
