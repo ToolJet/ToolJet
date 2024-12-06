@@ -445,12 +445,14 @@ function containsBracketNotation(queryString) {
 
 export function findAllEntityReferences(node, allRefs) {
   const extractReferencesFromString = (str) => {
-    const regex = /{{(components|queries)\.[^{}]*}}/g;
+    const regex = /{{.*?(components|queries)\.[^{}]*}}/g;
     const matches = str.match(regex);
     if (matches) {
       matches.forEach((match) => {
         const ref = match.replace('{{', '').replace('}}', '');
-        const entityName = ref.split('.')[1];
+        const extractionRegex = /(components|queries)\.[^{}]*/g;
+        const extractedRef = ref.match(extractionRegex)?.[0] || ref;
+        const entityName = extractedRef.split('.')[1];
         allRefs.push(entityName);
       });
     }

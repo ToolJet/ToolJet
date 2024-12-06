@@ -126,7 +126,10 @@ export const Form = function Form(props) {
     } else {
       Object.keys(childComponents ?? {}).forEach((childId) => {
         if (childrenData[childId]?.name) {
-          formattedChildData[childrenData[childId].name] = { ...omit(childrenData[childId], 'name'), id: childId };
+          formattedChildData[childComponents[childId]?.component?.name || childrenData[childId]?.name] = {
+            ...omit(childrenData[childId], 'name'),
+            id: childId,
+          };
           childValidation = childValidation && (childrenData[childId]?.isValid ?? true);
         }
       });
