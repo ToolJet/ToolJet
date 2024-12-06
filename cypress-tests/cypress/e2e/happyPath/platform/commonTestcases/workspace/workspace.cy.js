@@ -52,7 +52,7 @@ describe("Workspace", () => {
         );
         cy.get(dashboardSelector.slugField).verifyVisibleElement(
             "have.text",
-            "http://localhost:8082/<workspace-slug>"
+            `${Cypress.config('baseUrl')}/<workspace-slug>`
         );
         cy.get(commonSelectors.cancelButton).verifyVisibleElement(
             "have.text",
@@ -120,7 +120,7 @@ describe("Workspace", () => {
         );
         cy.get(dashboardSelector.slugField).verifyVisibleElement(
             "have.text",
-            `http://localhost:8082/${data.workspaceSlug}`
+            `${Cypress.config('baseUrl')}/${data.workspaceSlug}`
         );
         cy.get(dashboardSelector.slugErrorLabel).verifyVisibleElement(
             "have.text",
@@ -171,7 +171,7 @@ describe("Workspace", () => {
             "have.text",
             data.workspaceName
         );
-        cy.url().should("eq", `http://localhost:8082/${data.workspaceSlug}`);
+        cy.url().should("eq", `${Cypress.config('baseUrl')}/${data.workspaceSlug}`);
 
         cy.get(commonSelectors.workspaceName).click();
         cy.get(commonSelectors.editRectangleIcon).click();
@@ -211,7 +211,7 @@ describe("Workspace", () => {
         );
         cy.get(dashboardSelector.slugField).verifyVisibleElement(
             "have.text",
-            `http://localhost:8082/${data.workspaceSlug}`
+            `${Cypress.config('baseUrl')}/${data.workspaceSlug}`
         );
         cy.get(commonSelectors.cancelButton).verifyVisibleElement(
             "have.text",
@@ -299,6 +299,6 @@ describe("Workspace", () => {
             "have.text",
             data.workspaceName
         );
-        cy.url().should("eq", `http://localhost:8082/${data.workspaceSlug}`);
+        cy.url().should("eq", `${Cypress.config('baseUrl')}/${data.workspaceSlug}`);
     });
 });

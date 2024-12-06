@@ -1,13 +1,12 @@
-export const cyParamName = (paramName = "") => {
-    return paramName.toLowerCase().replace(/\s+/g, "-");
-};
+import { cyParamName } from "./common";
+
 
 export const workspaceConstantsSelectors = {
     workspaceConstantsHelperText: '[data-cy="workspace-constant-helper-text"]',
     emptyStateImage: '[data-cy="empty-state-image"]',
     emptyStateHeader: '[data-cy="empty-state-header"]',
     emptyStateText: '[data-cy="empty-state-text"]',
-    addNewConstantButton: '[data-cy="add-new-constant-button"]',
+    addNewConstantButton: '[data-cy="form-add-new-constant-button"]',
     contantFormTitle: '[data-cy="constant-form-title"]',
     addConstantButton: '[data-cy="add-constant-button"]',
     envName: '[data-cy="env-name"]',
@@ -29,5 +28,8 @@ export const workspaceConstantsSelectors = {
     },
     constHideButton: (constName) => {
         return `[data-cy="${cyParamName(constName)}-constant-visibility"]`;
+    },
+    constantsType: (type) => {
+        return `[data-cy="${cyParamName(type)}-constants-input"]`;
     },
 };
