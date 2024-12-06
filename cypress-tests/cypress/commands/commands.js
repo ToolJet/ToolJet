@@ -12,8 +12,8 @@ Cypress.Commands.add(
   (email = "dev@tooljet.io", password = "password") => {
     cy.visit("/");
     cy.wait(3000);
-    cy.clearAndType(onboardingSelectors.Loginemailinput, email);
-    cy.clearAndType(onboardingSelectors.LoginpasswordInput, password);
+    cy.clearAndType(onboardingSelectors.loginEmailInput, email);
+    cy.clearAndType(onboardingSelectors.loginPasswordInput, password);
     cy.get(onboardingSelectors.signInButton).click();
 
     cy.intercept("GET", "api/library_apps").as(

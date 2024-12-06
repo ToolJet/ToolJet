@@ -200,8 +200,8 @@ export const inviteUser = (firstName, email) => {
   cy.userInviteApi(firstName, email);
   fetchAndVisitInviteLink(email);
   cy.wait(1000);
-  cy.get(onboardingSelectors.LoginpasswordInput).should("be.visible");
-  cy.clearAndType(onboardingSelectors.LoginpasswordInput, "password");
+  cy.get(onboardingSelectors.loginPasswordInput).should("be.visible");
+  cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
   // cy.intercept("GET", "/api/organizations").as("org");
   cy.get(commonSelectors.continueButton).click();
   cy.wait(2000);
@@ -289,7 +289,7 @@ export const visitWorkspaceInvitation = (email, workspaceName) => {
 
 export const SignUpPageElements = () => {
   cy.get(commonSelectors.pageLogo).should("be.visible");
-  cy.get(commonSelectors.SignUpSectionHeader).verifyVisibleElement(
+  cy.get(commonSelectors.signUpSectionHeader).verifyVisibleElement(
     "have.text",
     "Sign up"
   );
@@ -304,15 +304,15 @@ export const SignUpPageElements = () => {
   //   );
   // });
 
-  cy.get(onboardingSelectors.SignupNameLabel).verifyVisibleElement("have.text", "Name *");
+  cy.get(onboardingSelectors.signupNameLabel).verifyVisibleElement("have.text", "Name *");
   cy.get(onboardingSelectors.nameInput).should('be.visible');
   cy.get(onboardingSelectors.emailLabel).verifyVisibleElement(
     "have.text",
     "Email *"
   );
-  // cy.get(commonSelectors.LoginpasswordLabel).verifyVisibleElement("have.text", "Password *");
+  // cy.get(commonSelectors.loginPasswordLabel).verifyVisibleElement("have.text", "Password *");
 
-  cy.get(onboardingSelectors.LoginpasswordInput).should("be.visible");
+  cy.get(onboardingSelectors.loginPasswordInput).should("be.visible");
 
 
   cy.get(commonSelectors.signInRedirectLink).verifyVisibleElement(

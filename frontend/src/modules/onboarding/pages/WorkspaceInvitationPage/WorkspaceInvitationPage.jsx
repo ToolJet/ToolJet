@@ -87,7 +87,7 @@ const WorkspaceInvitationPage = (props) => {
               value={userName}
               disabled={true}
               name="name"
-              dataCy="name"
+              dataCy="name-input"
               readOnly="true"
               disableStartAdornment={true}
             />
@@ -97,7 +97,7 @@ const WorkspaceInvitationPage = (props) => {
               disabled={true}
               readOnly="true"
               name="email"
-              dataCy="email"
+              dataCy="email-input"
             />
             <SubmitButton
               onClick={(e) => acceptInvite(e)}

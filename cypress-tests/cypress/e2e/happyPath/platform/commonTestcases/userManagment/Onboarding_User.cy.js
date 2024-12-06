@@ -4,16 +4,16 @@ import * as signup from "Support/utils/selfHostSignUp";
 import { logout } from "Support/utils/common";
 import { onboardingSelectors } from "Selectors/onboarding";
 
+//selfhostsetup
 describe("Self host onboarding", () => {
   beforeEach(() => {
     cy.visit("/setup");
   });
-
   it("verify elements on self host onboarding page", () => {
     cy.get(commonSelectors.HostBanner).should("be.visible");
     cy.get(commonSelectors.pageLogo).should("be.visible");
-    cy.get(commonSelectors.AdminSetup).should("be.visible");
-    cy.get(commonSelectors.SignupTerms).should("be.visible");
+    cy.get(commonSelectors.adminSetup).should("be.visible");
+    cy.get(commonSelectors.signupTerms).should("be.visible");
 
     cy.get(commonSelectors.userNameInputLabel).verifyVisibleElement(
       "have.text",
@@ -54,7 +54,6 @@ describe("Self host onboarding", () => {
     cy.clearAndType(onboardingSelectors.passwordInput, "password");
     cy.get(commonSelectors.continueButton).click();
 
-    // signup.selfHostCommonElements();
     cy.get(commonSelectors.setUpworkspaceCheckPoint).verifyVisibleElement(
       "have.text",
       "Set up your workspace!"
@@ -67,9 +66,9 @@ describe("Self host onboarding", () => {
     cy.clearAndType(commonSelectors.workspaceNameInputField, "My workspace");
     cy.get(commonSelectors.OnbordingContinue).click();
 
-    cy.get(commonSelectors.Skipbutton).click();
-    cy.get(commonSelectors.BackLogo).click();
-    cy.get(commonSelectors.Backtoapps).click();
+    cy.get(commonSelectors.skipbutton).click();
+    cy.get(commonSelectors.backLogo).click();
+    cy.get(commonSelectors.backtoapps).click();
 
     logout();
     cy.appUILogin();
@@ -80,3 +79,6 @@ describe("Self host onboarding", () => {
     );
   });
 });
+
+
+
