@@ -75,7 +75,7 @@ Cypress.Commands.add(
   "dragAndDropWidget",
   (
     widgetName,
-    positionX = 190,
+    positionX = 80,
     positionY = 80,
     widgetName2 = widgetName,
     canvas = commonSelectors.canvas
@@ -97,42 +97,47 @@ Cypress.Commands.add(
 );
 
 
-Cypress.Commands.add(
-  "clearAndTypeOnCodeMirror",
-  {
-    prevSubject: "optional",
-  },
-  (subject, value) => {
-    cy.wrap(subject)
-      .realClick()
-      .find("pre.CodeMirror-line")
-      .invoke("text")
-      .then((text) => {
-        cy
-          .wrap(subject)
-          .last()
-          .click()
-          .type(createBackspaceText(text), { delay: 0 }),
-        {
-          delay: 0,
-        };
-      });
-    if (!Array.isArray(value)) {
-      cy.wrap(subject).last().type(value, {
-        parseSpecialCharSequences: false,
-        delay: 0,
-      });
-    } else {
+Cypress.Commands.add("clearAndTypeOnCodeMirror", { prevSubject: "optional" }, (subject, value) => {
+  cy.wrap(subject)
+    .realClick()
+    .find(".cm-line")
+    .invoke("text")
+    .then((text) => {
       cy.wrap(subject)
         .last()
-        .type(value[1], {
-          parseSpecialCharSequences: false,
-          delay: 0,
-        })
-        .type(`{home}${value[0]}`, { delay: 0 });
-    }
+        .click()
+        .type(createBackspaceText(text), { delay: 0 });
+    });
+
+  const splitIntoFlatArray = (value) => {
+    const regex = /(\{\{)|([^{}]+)|(\}\})/g;
+    let prefix = "";
+    return value.match(regex)?.reduce((acc, part) => {
+      if (part === "{{") {
+        prefix = "{leftarrow}{leftarrow}";
+        acc.push(part); // Keep '{{' as is
+      } else if (part === "}}") {
+        // Skip '}}'
+      } else {
+        acc.push(prefix + part); // Add prefix to any other part, including spaces
+        prefix = ""; // Reset prefix
+      }
+      return acc;
+    }, []) || [];
+  };
+
+  if (Array.isArray(value)) {
+    cy.wrap(subject).last().realType(value, { parseSpecialCharSequences: false, delay: 0, force: true });
+  } else {
+    splitIntoFlatArray(value).forEach((i) => {
+      cy.wrap(subject)
+        .last()
+        .click()
+        .realType(`{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}{end}${i}`, { parseSpecialCharSequences: false, delay: 0, force: true });
+    });
   }
-);
+});
+
 
 Cypress.Commands.add("deleteApp", (appName) => {
   cy.intercept("DELETE", "/api/apps/*").as("appDeleted");
@@ -187,7 +192,7 @@ Cypress.Commands.add(
   (subject, value) => {
     cy.wrap(subject)
       .realClick()
-      .find("pre.CodeMirror-line")
+      .find(".cm-line")
       .invoke("text")
       .then((text) => {
         cy.wrap(subject).realType(createBackspaceText(text)),
