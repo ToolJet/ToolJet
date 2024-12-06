@@ -111,7 +111,13 @@ export const createEventsSlice = (set, get) => ({
       // if (mode === 'edit' && eventName === 'onClick') {
       //   onComponentClick(id, component);
       // }
-      handleEvent(eventName, componentEvents, { ...options, customVariables: { ...customResolvables } });
+      handleEvent(
+        eventName,
+        componentEvents,
+        { ...options, customVariables: { ...customResolvables } },
+        'canvas',
+        mode
+      );
     },
     onComponentClickEvent(id, mode = 'edit', moduleId = 'canvas') {
       const { eventsSlice } = get();
@@ -238,14 +244,14 @@ export const createEventsSlice = (set, get) => ({
 
       return Promise.resolve();
     },
-    handleEvent: (eventName, events, options, moduleId = 'canvas') => {
+    handleEvent: (eventName, events, options, moduleId = 'canvas', mode = 'edit') => {
       const latestEvents = get().eventsSlice.getModuleEvents(moduleId);
       const filteredEvents = latestEvents.filter((event) => {
         const foundEvent = events.find((e) => e.id === event.id);
         return foundEvent && foundEvent.name === eventName;
       });
       try {
-        return get().eventsSlice.onEvent(eventName, filteredEvents, options, 'edit');
+        return get().eventsSlice.onEvent(eventName, filteredEvents, options, mode);
       } catch (error) {
         console.error(error);
       }
@@ -384,7 +390,7 @@ export const createEventsSlice = (set, get) => ({
         await get().eventsSlice.executeAction(event.event, mode, customVariables);
       }
     },
-    executeAction: debounce(async (event, mode, customVariables = {}) => {
+    executeAction: debounce((event, mode, customVariables = {}) => {
       const { getExposedValueOfComponent, getResolvedValue } = get();
 
       if (event.runOnlyIf) {
@@ -466,7 +472,7 @@ export const createEventsSlice = (set, get) => ({
               if (queryPart.length > 0) url = url + `?${queryPart}`;
             }
             if (mode === 'view') {
-              navigate(url);
+              window.open(urlJoin(window.public_config?.TOOLJET_HOST, url));
             } else {
               if (confirm('The app will be opened in a new tab as the action is triggered from the editor.')) {
                 window.open(urlJoin(window.public_config?.TOOLJET_HOST, url));
