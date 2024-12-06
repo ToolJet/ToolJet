@@ -45,19 +45,18 @@ function ControlledTabs({
                 />
               </>
             )}
-            {(key !== 'body' || bodyToggle === false) && (
-              <ButtonSolid
-                onClick={() => addNewKeyValuePair(key === 'params' ? 'url_params' : key)}
-                id="runjs-param-add-btn"
-                data-cy={`runjs-add-param-button`}
-                variant="ghostBlack"
-                size="sm"
-                leftIcon="plus"
-                fill={darkMode ? 'var(--icons-default)' : '#6A727C'}
-                iconWidth="18"
-                className="tw-px-[6px]"
-              />
-            )}
+            <ButtonSolid
+              onClick={() => addNewKeyValuePair(key === 'params' ? 'url_params' : key)}
+              id="runjs-param-add-btn"
+              data-cy={`runjs-add-param-button`}
+              variant="ghostBlack"
+              size="sm"
+              leftIcon="plus"
+              fill={darkMode ? 'var(--icons-default)' : bodyToggle ? '#E4E7EB' : '#6A727C'}
+              iconWidth="18"
+              disabled={bodyToggle}
+              className="tw-px-[6px]"
+            />
           </div>
         </div>
 

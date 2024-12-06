@@ -20,7 +20,9 @@ export default ({
 
   return (
     <div className="tab-content-wrapper">
-      {options.length === 0 && <EmptyTabContent addNewKeyValuePair={addNewKeyValuePair} paramType={paramType} />}
+      {options.length === 0 && !bodyToggle && (
+        <EmptyTabContent addNewKeyValuePair={addNewKeyValuePair} paramType={paramType} />
+      )}
       {!bodyToggle &&
         options.map((option, index) => {
           return (
