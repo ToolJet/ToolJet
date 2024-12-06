@@ -49,6 +49,7 @@ const MultiLineCodeEditor = (props) => {
   } = props;
   const replaceIdsWithName = useStore((state) => state.replaceIdsWithName, shallow);
   const getSuggestions = useStore((state) => state.getSuggestions, shallow);
+  const isInsideQueryPane = !!document.querySelector('.code-hinter-wrapper')?.closest('.query-details');
 
   const context = useContext(CodeHinterContext);
 
@@ -220,13 +221,17 @@ const MultiLineCodeEditor = (props) => {
   }, [initialValue, replaceIdsWithName]);
 
   return (
-    <div className="code-hinter-wrapper position-relative" style={{ width: '100%' }}>
+    <div
+      className={`code-hinter-wrapper position-relative ${isInsideQueryPane ? 'code-editor-query-panel' : ''}`}
+      style={{ width: '100%' }}
+    >
       <div className={`${className} ${darkMode && 'cm-codehinter-dark-themed'}`}>
         <CodeHinter.PopupIcon
           callback={handleTogglePopupExapand}
           icon="portal-open"
           tip="Pop out code editor into a new window"
           isMultiEditor={true}
+          isQueryManager={isInsideQueryPane}
         />
         <CodeHinter.Portal
           isCopilotEnabled={false}
@@ -248,7 +253,7 @@ const MultiLineCodeEditor = (props) => {
                 placeholder={placeholder}
                 height={'100%'}
                 minHeight={heightInPx}
-                maxHeight={heightInPx}
+                {...(isInsideQueryPane ? { maxHeight: '100%' } : {})}
                 width="100%"
                 theme={theme}
                 extensions={[
@@ -278,7 +283,7 @@ const MultiLineCodeEditor = (props) => {
                 style={{
                   overflowY: 'auto',
                 }}
-                className={`codehinter-multi-line-input`}
+                className={`codehinter-multi-line-input ${isInsideQueryPane ? 'code-editor-query-panel' : ''}`}
                 indentWithTab={false}
                 readOnly={readOnly}
                 editable={editable} //for transformations in query manager
