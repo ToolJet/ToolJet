@@ -79,7 +79,7 @@ describe(
         "be.visible"
       );
       cy.visitSlug({
-        actualUrl: `http://localhost:8082/applications/${data.slug}`,
+        actualUrl: `${Cypress.config('baseUrl')}/applications/${data.slug}`,
       });
       cy.wait(3000);
 
@@ -111,7 +111,7 @@ describe(
         "be.visible"
       );
       cy.visitSlug({
-        actualUrl: `http://localhost:8082/applications/${data.slug}`,
+        actualUrl: `${Cypress.config('baseUrl')}/applications/${data.slug}`,
       });
       cy.wait(3000);
       cy.get(".text-widget-section > div").should("be.visible");

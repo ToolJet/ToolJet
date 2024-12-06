@@ -14,10 +14,29 @@ export const contantsNameValidation = (value, error) => {
     cy.get(workspaceConstantsSelectors.addConstantButton).should("be.disabled");
 };
 
-export const AddNewconstants = (name, value) => {
+export const AddNewconstants = (name, value, type = "global") => {
     cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
     cy.clearAndType(commonSelectors.nameInputField, name);
     cy.get(commonSelectors.valueInputField).click();
     cy.clearAndType(commonSelectors.valueInputField, value);
+    cy.get(workspaceConstantsSelectors.constantsType(type)).check();
     cy.get(workspaceConstantsSelectors.addConstantButton).click();
+};
+
+export const existingNameValidation = (
+    constName,
+    constValue,
+    type = "Global"
+) => {
+    cy.clearAndType(commonSelectors.nameInputField, constName);
+    cy.get(workspaceConstantsSelectors.constantsType(type)).check();
+    cy.get(commonSelectors.valueInputField).click();
+    cy.clearAndType(commonSelectors.valueInputField, constValue);
+    cy.get(workspaceConstantsSelectors.addConstantButton).click();
+    cy.get(commonSelectors.toastMessage)
+        .as("toast")
+        .should(
+            "contain.text",
+            workspaceConstantsText.constantsExisitToast("Global")
+        );
 };
