@@ -45,7 +45,7 @@ To create a workflow follow the following steps:
 
 ## Triggering a Webhook
 
-Let's take a look at an example of triggering a webhook using **Postman**. 
+Let's take a look at an example of triggering a webhook using Postman. 
 
 1. Visit [Postman](https://www.postman.com/), and click **New Request**.
 

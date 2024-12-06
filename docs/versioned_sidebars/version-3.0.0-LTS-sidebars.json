@@ -446,7 +446,15 @@
         "workflows/nodes",
         "workflows/workflow-triggers",
         "workflows/results",
-        "workflows/permissions"
+        "workflows/permissions",
+        {
+          "type": "category",
+          "label": "How-to",
+          "items": [
+            "workflows/trigger-using-webhook",
+            "workflows/trigger-workflow-from-app"
+          ]
+        }
       ]
     },
     {
