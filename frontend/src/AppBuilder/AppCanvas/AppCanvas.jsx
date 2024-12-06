@@ -39,7 +39,6 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
   const editorMarginLeft = useSidebarMargin(canvasContainerRef);
   const isSidebarOpen = useStore((state) => state.isSidebarOpen, shallow);
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
-  const setLastCanvasClickPosition = useStore((state) => state.setLastCanvasClickPosition, shallow);
 
   useEffect(() => {
     // Need to remove this if we shift setExposedVariable Logic outside of components
@@ -58,27 +57,6 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
 
     return () => window.removeEventListener('resize', handleResize);
   }, [currentLayout, canvasMaxWidth, isViewerSidebarPinned]);
-
-  const handleCanvasClick = useCallback(
-    (e) => {
-      const realCanvas = e.target.closest('.real-canvas');
-      if (realCanvas) {
-        const rect = realCanvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        setLastCanvasClickPosition({ x, y });
-      }
-    },
-    [setLastCanvasClickPosition]
-  );
-
-  useEffect(() => {
-    const realCanvas = document.getElementById('real-canvas');
-    if (realCanvas) {
-      realCanvas.addEventListener('click', handleCanvasClick);
-      return () => realCanvas.removeEventListener('click', handleCanvasClick);
-    }
-  }, [handleCanvasClick]);
 
   return (
     <div className={cx(`main main-editor-canvas`, {})} id="main-editor-canvas" onMouseUp={handleCanvasContainerMouseUp}>
