@@ -80,9 +80,7 @@ We are using a multi-container setup
 
   Update `TOOLJET_HOST` environment variable if you want to use the default url assigned with Cloud run after the initial deploy.
 
-  <div style={{textAlign: 'center'}}>
-  <img className="screenshot-full" src="/img/cloud-run/env-variable-tooljet.png" alt="env-variable-tooljet" />
-  </div>
+
 
 :::tip
 If you are using [Public IP](https://cloud.google.com/sql/docs/postgres/connect-run) for Cloud SQL, then database host connection (value for `PG_HOST`) needs to be set using unix socket format, `/cloudsql/<CLOUD_SQL_CONNECTION_NAME>`.  
@@ -103,9 +101,9 @@ Check for the option **ADD-CONTAINER**.
   <img className="screenshot-full" src="/img/cloud-run/add-container.png" alt="add-container" />
   </div>
 
-1. For the Postgrest container image `postgrest/postgrest:v12.0.2`.
+1. For the Postgrest container image `postgrest/postgrest:v12.2.0`.
 
-  **Note:** v12.0.2 is recommended for Postgrest.
+  **Note:** v12.2.0 is recommended for Postgrest.
 
 
 <div style={{textAlign: 'center'}}>
