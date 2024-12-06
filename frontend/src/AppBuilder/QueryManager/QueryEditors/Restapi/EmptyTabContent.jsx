@@ -3,16 +3,11 @@ import { useTranslation } from 'react-i18next';
 import Plus from '@/_ui/Icon/solidIcons/Plus';
 import FileDelete from './Icon/FileDelete.svg';
 
-const EmptyTabContent = ({ darkMode, addNewKeyValuePair, paramType }) => {
+const EmptyTabContent = ({ addNewKeyValuePair, paramType }) => {
   const { t } = useTranslation();
   return (
     <>
-      <div
-        className="empty-paramlist w-100"
-        style={{
-          background: darkMode && 'var(--interactive-default)',
-        }}
-      >
+      <div className="empty-paramlist w-100">
         <FileDelete />
         <span>This request does not have any parameters</span>
       </div>
@@ -26,15 +21,11 @@ const EmptyTabContent = ({ darkMode, addNewKeyValuePair, paramType }) => {
           border: 'none',
           marginLeft: 'auto',
           marginRight: 'auto',
-          display: 'flex',
-          alignItems: 'center',
         }}
       >
-        <p className="m-0 text-default">
+        <p className="m-0 text-default" style={{ display: 'flex', alignItems: 'center' }}>
           <Plus fill={'var(--icons-default)'} width={15} />
-          <span
-            style={{ marginLeft: '6px', fontWeight: '500', fontSize: '12px', lineHeight: '18px', color: '#1B1F24' }}
-          >
+          <span style={{ marginLeft: '6px', fontWeight: '500', fontSize: '12px', lineHeight: '18px' }}>
             {t('editor.inspector.eventManager.addKeyValueParam', 'Add parameter')}
           </span>
         </p>
