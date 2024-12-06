@@ -19,7 +19,6 @@ export function memoizeFunction(func) {
   };
 }
 
-export const AllComponents = {};
 
 export const getComponentToRender = (componentName) => {
   const shouldHideWidget = componentName === 'PDF' && !isPDFSupported();
