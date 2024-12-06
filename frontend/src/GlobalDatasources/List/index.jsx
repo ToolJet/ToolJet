@@ -71,6 +71,7 @@ export const List = ({ updateSelectedDatasource }) => {
         setSelectedDataSource(null);
         setLoading(false);
         toast.error(error);
+        fetchDataSources(true);
       });
   };
 

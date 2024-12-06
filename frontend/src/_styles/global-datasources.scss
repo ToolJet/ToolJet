@@ -228,7 +228,7 @@
 
 .datasource-card {
     height: 30px;
-    height: 122px !important;
+    height: 160px !important;
 
     button {
         display: none;
@@ -307,6 +307,7 @@
 .add-plugin-card{
     border: 1px dashed var(--border-default, #CCD1D5);
     background-color: var(--interactive-weak);
+    height: 160px;
 
     &:hover{
         border: 1px dashed var(--border-strong, #CCD1D5);
@@ -334,4 +335,36 @@
         background-color: var(--interactive-default);
     }
     }
+}
+
+
+.card-tag{
+    position: relative;
+    left: 85px;
+    bottom: 10px;
+}
+
+.tag{
+    flex-direction: row;
+    align-items: center;
+    padding: 1px 7px;
+    width: 38px;
+    height: 18px;
+    background: linear-gradient(271.34deg, rgba(255, 95, 109, 0.12) -88.47%, rgba(255, 195, 113, 0.12) 94.89%);
+    border-radius: 100px;
+
+    .p{
+        background: linear-gradient(96.1deg, #FF5F6D -15.44%, #FFC371 99.37%);
+    }
+}
+
+.ee-gradient-text {
+    background: linear-gradient(96.1deg, #FF5F6D -15.44%, #FFC371 99.37%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 16px;
+    margin-top: 0px;
+    margin-bottom: 0px;
 }

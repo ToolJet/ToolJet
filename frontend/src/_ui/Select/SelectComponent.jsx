@@ -29,9 +29,10 @@ export const SelectComponent = ({
     menuPlacement = 'auto',
     useCustomStyles = false,
     isDisabled = false,
+    borderRadius,
   } = restProps;
 
-  const customStyles = useCustomStyles ? styles : defaultStyles(isDarkMode, width, height, styles);
+  const customStyles = useCustomStyles ? styles : defaultStyles(isDarkMode, width, height, styles, borderRadius);
   const selectOptions =
     Array.isArray(options) && options.length === 0
       ? options

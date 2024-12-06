@@ -2,7 +2,7 @@ import got, { HTTPError, OptionsOfTextResponseBody } from 'got';
 import urrl from 'url';
 import { QueryError, OAuthUnauthorizedClientError } from './query.error';
 import { getCurrentToken } from './utils.helper';
-import { QueryResult, RequestBody } from './query_result.type';
+import { QueryResult } from './query_result.type';
 import { App } from './app.type';
 import { User } from './user.type';
 import { CookieJar } from 'tough-cookie';
@@ -161,26 +161,20 @@ async function getTokenForClientCredentialsGrant(sourceOptions: any) {
   const headersObject = sanitizeParams(sourceOptions.access_token_custom_headers);
 
   try {
-    const requestBody: RequestBody = {
-      grant_type: sourceOptions.grant_type,
+    const requestBody = new URLSearchParams({
+      grant_type: sourceOptions.grant_type || 'client_credentials',
       client_id: sourceOptions.client_id,
       client_secret: sourceOptions.client_secret,
-    };
-
-    if (sourceOptions.audience) {
-      requestBody.audience = sourceOptions.audience;
-    }
-
-    if (sourceOptions.scopes) {
-      requestBody.scope = sourceOptions.scopes;
-    }
+      ...(sourceOptions.audience ? { audience: sourceOptions.audience } : {}),
+      ...(sourceOptions.scopes ? { scope: sourceOptions.scopes } : {}),
+    });
 
     const response = await got.post(sourceOptions.access_token_url, {
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
         ...(Object.keys(headersObject).length > 0 && headersObject),
       },
-      json: requestBody,
+      body: requestBody.toString(),
       responseType: 'json',
     });
 

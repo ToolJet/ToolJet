@@ -10,6 +10,15 @@ import {
 import { SourceOptions, QueryOptions } from './types';
 import { isEmpty } from '@tooljet-plugins/common';
 
+const recognizedBooleans = {
+  true: true,
+  false: false,
+};
+
+function interpretValue(value: string): string | boolean | number {
+  return recognizedBooleans[value.toLowerCase()] ?? (!isNaN(Number.parseInt(value)) ? Number.parseInt(value) : value);
+}
+
 export default class MssqlQueryService implements QueryService {
   private static _instance: MssqlQueryService;
   private STATEMENT_TIMEOUT;
@@ -20,25 +29,18 @@ export default class MssqlQueryService implements QueryService {
         ? Number(process.env.PLUGINS_SQL_DB_STATEMENT_TIMEOUT)
         : 120000;
 
-    if (MssqlQueryService._instance) {
-      return MssqlQueryService._instance;
+    if (!MssqlQueryService._instance) {
+      MssqlQueryService._instance = this;
     }
-
-    MssqlQueryService._instance = this;
     return MssqlQueryService._instance;
   }
 
-  connectionOptions(sourceOptions: SourceOptions) {
-    const _connectionOptions = (sourceOptions?.connection_options || []).filter((o) => {
-      return o.some((e) => !isEmpty(e));
-    });
+  sanitizeOptions(options: string[][]) {
+    const _connectionOptions = (options || [])
+      .filter((o) => o.every((e) => !!e))
+      .map(([key, value]) => [key, interpretValue(value)]);
 
-    const connectionOptions = Object.fromEntries(_connectionOptions);
-    Object.keys(connectionOptions).forEach((key) =>
-      connectionOptions[key] === '' ? delete connectionOptions[key] : {}
-    );
-
-    return connectionOptions;
+    return Object.fromEntries(_connectionOptions);
   }
 
   async run(
@@ -59,11 +61,21 @@ export default class MssqlQueryService implements QueryService {
           throw new Error("Invalid query mode. Must be either 'sql' or 'gui'.");
       }
     } catch (err) {
-      throw new QueryError(
-        'Query could not be completed',
-        err instanceof Error ? err.message : 'An unknown error occurred',
-        {}
-      );
+      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+      const errorDetails: any = {};
+
+      if (err && err instanceof Error) {
+        const msSqlError = err as any;
+        const { code, severity, state, number, lineNumber, serverName, class: errorClass } = msSqlError;
+        errorDetails.code = code || null;
+        errorDetails.severity = severity || null;
+        errorDetails.state = state || null;
+        errorDetails.number = number || null;
+        errorDetails.lineNumber = lineNumber || null;
+        errorDetails.serverName = serverName || null;
+        errorDetails.class = errorClass || null;
+      }
+      throw new QueryError('Query could not be completed', errorMessage, errorDetails);
     }
   }
 
@@ -114,10 +126,10 @@ export default class MssqlQueryService implements QueryService {
         options: {
           encrypt: sourceOptions.azure ?? false,
           instanceName: sourceOptions.instanceName,
+          ...(sourceOptions.connection_options && this.sanitizeOptions(sourceOptions.connection_options)),
         },
         pool: { min: 0 },
       },
-      ...this.connectionOptions(sourceOptions),
     };
 
     return knex(config);
