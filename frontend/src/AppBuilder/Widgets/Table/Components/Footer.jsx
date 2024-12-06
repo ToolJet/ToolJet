@@ -58,6 +58,7 @@ export const Footer = React.memo(
     showAddNewRowPopup,
     downlaodPopover,
     getToggleHideAllColumnsProps,
+    isDownloadTableDataEventAssociated,
   }) => {
     function hideColumnsPopover() {
       return (
@@ -223,32 +224,57 @@ export const Footer = React.memo(
                 )}
                 {!loadingState && showDownloadButton && (
                   <div>
-                    <Tooltip id="tooltip-for-download" className="tooltip" />
-                    <OverlayTriggerComponent
-                      trigger="click"
-                      overlay={downlaodPopover()}
-                      rootClose={true}
-                      placement={'top-end'}
-                    >
-                      <ButtonSolid
-                        variant="ghostBlack"
-                        className={`tj-text-xsm `}
-                        customStyles={{
-                          minWidth: '32px',
-                        }}
-                        leftIcon="filedownload"
-                        fill={`var(--icons-default)`}
-                        iconWidth="16"
-                        size="md"
-                        data-tooltip-id="tooltip-for-download"
-                        data-tooltip-content="Download"
-                        onClick={(e) => {
-                          if (document.activeElement === e.currentTarget) {
-                            e.currentTarget.blur();
-                          }
-                        }}
-                      ></ButtonSolid>
-                    </OverlayTriggerComponent>
+                    {
+                      // if server side pagination is enabled and download event is associated with the table, then directly fire download event without displaying popover
+                      isDownloadTableDataEventAssociated && !clientSidePagination ? (
+                        <>
+                          <Tooltip id="tooltip-for-download-serverside-pagingation" className="tooltip" />
+                          <ButtonSolid
+                            variant="ghostBlack"
+                            className={`tj-text-xsm `}
+                            customStyles={{
+                              minWidth: '32px',
+                            }}
+                            leftIcon="filedownload"
+                            fill={`var(--icons-default)`}
+                            iconWidth="16"
+                            size="md"
+                            data-tooltip-id="tooltip-for-download-serverside-pagingation"
+                            data-tooltip-content="Download"
+                            onClick={() => fireEvent('onTableDataDownload')}
+                          ></ButtonSolid>
+                        </>
+                      ) : (
+                        <>
+                          <Tooltip id="tooltip-for-download" className="tooltip" />
+                          <OverlayTriggerComponent
+                            trigger="click"
+                            overlay={downlaodPopover()}
+                            rootClose={true}
+                            placement={'top-end'}
+                          >
+                            <ButtonSolid
+                              variant="ghostBlack"
+                              className={`tj-text-xsm `}
+                              customStyles={{
+                                minWidth: '32px',
+                              }}
+                              leftIcon="filedownload"
+                              fill={`var(--icons-default)`}
+                              iconWidth="16"
+                              size="md"
+                              data-tooltip-id="tooltip-for-download"
+                              data-tooltip-content="Download"
+                              onClick={(e) => {
+                                if (document.activeElement === e.currentTarget) {
+                                  e.currentTarget.blur();
+                                }
+                              }}
+                            ></ButtonSolid>
+                          </OverlayTriggerComponent>
+                        </>
+                      )
+                    }
                   </div>
                 )}
                 {!loadingState && !hideColumnSelectorButton && (

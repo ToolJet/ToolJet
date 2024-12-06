@@ -3,10 +3,10 @@ import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { componentTypes } from '../WidgetManager';
 import useStore from '@/AppBuilder/_stores/store';
 import { toast } from 'react-hot-toast';
-import { CANVAS_WIDTHS, NO_OF_GRIDS } from './appCanvasConstants';
 import _, { debounce } from 'lodash';
 import { useGridStore } from '@/_stores/gridStore';
 import { findHighestLevelofSelection } from './Grid/gridUtils';
+import { CANVAS_WIDTHS, NO_OF_GRIDS, WIDGETS_WITH_DEFAULT_CHILDREN } from './appCanvasConstants';
 
 export function snapToGrid(canvasWidth, x, y) {
   const gridX = canvasWidth / 43;
@@ -44,8 +44,6 @@ export const addNewWidgetToTheEditor = (componentType, eventMonitorObject, curre
     componentData.definition.others.showOnMobile.value = `{{true}}`;
   }
 
-  const widgetsWithDefaultComponents = ['Listview', 'Tabs', 'Form', 'Kanban'];
-
   const nonActiveLayout = currentLayout === 'desktop' ? 'mobile' : 'desktop';
   const newComponent = {
     id: uuidv4(),
@@ -68,7 +66,7 @@ export const addNewWidgetToTheEditor = (componentType, eventMonitorObject, curre
         height: defaultHeight,
       },
     },
-    withDefaultChildren: widgetsWithDefaultComponents.includes(componentData.component),
+    withDefaultChildren: WIDGETS_WITH_DEFAULT_CHILDREN.includes(componentData.component),
   };
 
   return newComponent;
@@ -138,13 +136,14 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
       }
 
       const nonActiveLayout = currentLayout === 'desktop' ? 'mobile' : 'desktop';
+      const _parent = getParentComponentIdByType(child, parentMeta.component, parentId);
 
       const newChildComponent = {
         id: uuidv4(),
         name: widgetName,
         component: {
           ...componentData,
-          parent: parentMeta.component === 'Tabs' ? parentId + '-' + tab : parentId,
+          parent: getParentComponentIdByType(child, parentMeta.component, parentId),
         },
         layouts: {
           [currentLayout]: {
@@ -195,7 +194,8 @@ export const getAllChildComponents = (allComponents, parentId) => {
     const isParentTabORCalendar =
       allComponents[parentId]?.component?.component === 'Tabs' ||
       allComponents[parentId]?.component?.component === 'Calendar' ||
-      allComponents[parentId]?.component?.component === 'Kanban';
+      allComponents[parentId]?.component?.component === 'Kanban' ||
+      allComponents[parentId]?.component?.component === 'Container';
 
     if (componentParentId && isParentTabORCalendar) {
       let childComponent = deepClone(allComponents[componentId]);
@@ -314,7 +314,11 @@ const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentI
   const parentComponent = allComponents?.[parentId];
 
   if (parentComponent) {
-    return parentComponent.component.component === 'Tabs' || parentComponent.component.component === 'Calendar';
+    return (
+      parentComponent.component.component === 'Tabs' ||
+      parentComponent.component.component === 'Calendar' ||
+      parentComponent.component.component === 'Container'
+    );
   }
 
   return false;
@@ -609,4 +613,12 @@ export const computeViewerBackgroundColor = (isAppDarkMode, canvasBgColor) => {
     return isAppDarkMode ? '#2f3c4c' : '#F2F2F5';
   }
   return canvasBgColor;
+};
+
+export const getParentComponentIdByType = (child, parentComponent, parentId) => {
+  const { tab } = child;
+
+  if (parentComponent === 'Tabs') return `${parentId}-${tab}`;
+  else if (parentComponent === 'Container') return `${parentId}-header`;
+  return parentId;
 };
