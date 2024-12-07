@@ -1,5 +1,5 @@
 {
-  "name": "Intelligent code explainer",
+  "name": "AI powered code explainer",
   "description": "Simplify code understanding with Gemini AI and Rest API, providing instant explanations and real-time insights.",
   "widgets": [
     "Table",
@@ -15,6 +15,6 @@
       "id": "runjs"
     }
   ],
-  "id": "intelligent-code-explainer",
+  "id": "ai-powered-code-explainer",
   "category": "developer-utilities"
 }
