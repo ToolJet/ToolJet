@@ -30,4 +30,7 @@ export class InternalTable extends BaseEntity {
   @OneToMany(() => Organization, (organization) => organization.id)
   @JoinColumn({ name: 'organization_id' })
   organization: Organization;
+
+  @Column({ type: 'jsonb', name: 'configurations' })
+  configurations: any;
 }

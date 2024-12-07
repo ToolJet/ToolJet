@@ -19,7 +19,7 @@ import { decode } from 'js-base64';
 import { PluginsAbilityFactory } from 'src/modules/casl/abilities/plugins-ability.factory';
 import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
 import { User } from 'src/decorators/user.decorator';
-import { IsPluginApiEnabledGuard } from 'src/modules/casl/plugins.guard';
+import { PLUGIN_RESOURCE_ACTION } from 'src/constants/global.constant';
 
 @Controller('plugins')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -32,7 +32,7 @@ export class PluginsController {
   async install(@User() user, @Body() createPluginDto: CreatePluginDto) {
     const ability = await this.pluginsAbilityFactory.pluginActions(user);
 
-    if (!ability.can('installPlugin', Plugin)) {
+    if (!ability.can(PLUGIN_RESOURCE_ACTION.INSTALL, Plugin)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
@@ -50,17 +50,15 @@ export class PluginsController {
   }
 
   @Get(':id')
-  @UseGuards(IsPluginApiEnabledGuard)
   findOne(@Param('id') id: string) {
     return this.pluginsService.findOne(id);
   }
 
   @Patch(':id')
-  @UseGuards(IsPluginApiEnabledGuard)
   async update(@User() user, @Param('id') id: string, @Body() updatePluginDto: UpdatePluginDto) {
     const ability = await this.pluginsAbilityFactory.pluginActions(user);
 
-    if (!ability.can('updatePlugin', Plugin)) {
+    if (!ability.can(PLUGIN_RESOURCE_ACTION.UPDATE, Plugin)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
@@ -68,11 +66,10 @@ export class PluginsController {
   }
 
   @Delete(':id')
-  @UseGuards(IsPluginApiEnabledGuard)
   async remove(@User() user, @Param('id') id: string) {
     const ability = await this.pluginsAbilityFactory.pluginActions(user);
 
-    if (!ability.can('deletePlugin', Plugin)) {
+    if (!ability.can(PLUGIN_RESOURCE_ACTION.DELETE, Plugin)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
@@ -80,7 +77,6 @@ export class PluginsController {
   }
 
   @Post(':id/reload')
-  @UseGuards(IsPluginApiEnabledGuard)
   async reload(@Param('id') id: string) {
     return this.pluginsService.reload(id);
   }

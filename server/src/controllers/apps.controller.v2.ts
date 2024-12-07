@@ -32,7 +32,10 @@ import { PageService } from '@services/page.service';
 import { EventsService } from '@services/events_handler.service';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { CreateEventHandlerDto, UpdateEventHandlerDto } from '@dto/event-handler.dto';
+import { APP_RESOURCE_ACTIONS } from 'src/constants/global.constant';
 import { VersionReleaseDto } from '@dto/version-release.dto';
+import { AppsServiceSep } from '@apps/services/apps.service.sep';
+import { mergeDefaultComponentData } from 'src/helpers/components.helper';
 
 @Controller({
   path: 'apps',
@@ -41,6 +44,7 @@ import { VersionReleaseDto } from '@dto/version-release.dto';
 export class AppsControllerV2 {
   constructor(
     private appsService: AppsService,
+    private appsServiceSep: AppsServiceSep,
     private componentsService: ComponentsService,
     private pageService: PageService,
     private eventsService: EventsService,
@@ -53,7 +57,7 @@ export class AppsControllerV2 {
   @Get(':id')
   async show(@User() user, @AppDecorator() app: App, @Query('access_type') accessType: string) {
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
-    if (!ability.can('viewApp', app)) {
+    if (!ability.can(APP_RESOURCE_ACTIONS.VIEW, app)) {
       throw new ForbiddenException(
         JSON.stringify({
           organizationId: app.organizationId,
@@ -61,7 +65,7 @@ export class AppsControllerV2 {
       );
     }
 
-    if (accessType === 'edit' && !ability.can('editApp', app)) {
+    if (accessType === 'edit' && !ability.can(APP_RESOURCE_ACTIONS.EDIT, app)) {
       throw new ForbiddenException(
         JSON.stringify({
           organizationId: app.organizationId,
@@ -90,17 +94,23 @@ export class AppsControllerV2 {
 
     response['data_queries'] = seralizedQueries;
     response['definition'] = app.editingVersion?.definition;
-    response['pages'] = pagesForVersion;
+    response['pages'] = mergeDefaultComponentData(pagesForVersion);
     response['events'] = eventsForVersion;
 
-    console.log({ app });
-
     //! if editing version exists, camelize the definition
-    if (app.editingVersion && app.editingVersion.definition) {
-      response['editing_version'] = {
-        ...response['editing_version'],
-        definition: camelizeKeys(app.editingVersion.definition),
-      };
+    if (app.editingVersion) {
+      const appTheme = await this.appsServiceSep.getTheme(
+        user.organizationId,
+        response['editing_version']['global_settings']?.['theme']?.['id']
+      );
+      response['editing_version']['global_settings']['theme'] = appTheme;
+
+      if (app.editingVersion.definition) {
+        response['editing_version'] = {
+          ...response['editing_version'],
+          definition: camelizeKeys(app.editingVersion.definition),
+        };
+      }
     }
 
     return response;
@@ -112,7 +122,7 @@ export class AppsControllerV2 {
     if (user) {
       const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
-      if (!ability.can('viewApp', app)) {
+      if (!ability.can(APP_RESOURCE_ACTIONS.VIEW, app)) {
         throw new ForbiddenException(
           JSON.stringify({
             organizationId: app.organizationId,
@@ -127,6 +137,7 @@ export class AppsControllerV2 {
 
     const pagesForVersion = app.editingVersion ? await this.pageService.findPagesForVersion(versionToLoad.id) : [];
     const eventsForVersion = app.editingVersion ? await this.eventsService.findEventsForVersion(versionToLoad.id) : [];
+    const appTheme = await this.appsServiceSep.getTheme(app.organizationId, versionToLoad?.globalSettings?.theme?.id);
 
     // serialize
     return {
@@ -138,10 +149,11 @@ export class AppsControllerV2 {
       name: app.name,
       slug: app.slug,
       events: eventsForVersion,
-      pages: pagesForVersion,
+      pages: mergeDefaultComponentData(pagesForVersion),
       homePageId: versionToLoad.homePageId,
-      globalSettings: versionToLoad.globalSettings,
+      globalSettings: { ...versionToLoad.globalSettings, theme: appTheme },
       showViewerNavigation: versionToLoad.showViewerNavigation,
+      pageSettings: versionToLoad?.pageSettings,
     };
   }
 
@@ -157,7 +169,7 @@ export class AppsControllerV2 {
     }
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
-    if (!ability.can('fetchVersions', app)) {
+    if (!ability.can(APP_RESOURCE_ACTIONS.VERSION_READ, app)) {
       throw new ForbiddenException(
         JSON.stringify({
           organizationId: app.organizationId,
@@ -178,10 +190,17 @@ export class AppsControllerV2 {
 
     delete appData['editingVersion'];
 
+    const editingVersion = camelizeKeys(appCurrentEditingVersion);
+
+    // Inject app theme
+    const appTheme = await this.appsServiceSep.getTheme(user.organizationId, editingVersion?.globalSettings?.theme?.id);
+
+    editingVersion['globalSettings']['theme'] = appTheme;
+
     return {
       ...appData,
-      editing_version: camelizeKeys(appCurrentEditingVersion),
-      pages: pagesForVersion,
+      editing_version: editingVersion,
+      pages: mergeDefaultComponentData(pagesForVersion),
       events: eventsForVersion,
     };
   }
@@ -203,7 +222,7 @@ export class AppsControllerV2 {
     }
     const ability = await this.appsAbilityFactory.appsActions(user, id);
 
-    if (!ability.can('updateVersions', app)) {
+    if (!ability.can(APP_RESOURCE_ACTIONS.VERSION_UPDATE, app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
@@ -212,7 +231,7 @@ export class AppsControllerV2 {
 
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ValidAppInterceptor)
-  @Put(':id/versions/:versionId/global_settings')
+  @Put([':id/versions/:versionId/global_settings', ':id/versions/:versionId/page_settings'])
   async updateGlobalSettings(
     @User() user,
     @Param('id') id,
@@ -227,7 +246,7 @@ export class AppsControllerV2 {
     }
     const ability = await this.appsAbilityFactory.appsActions(user, id);
 
-    if (!ability.can('updateVersions', app)) {
+    if (!ability.can(APP_RESOURCE_ACTIONS.VERSION_UPDATE, app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
@@ -252,7 +271,7 @@ export class AppsControllerV2 {
     }
     const ability = await this.appsAbilityFactory.appsActions(user, id);
 
-    if (!ability.can('updateVersions', app)) {
+    if (!ability.can(APP_RESOURCE_ACTIONS.VERSION_UPDATE, app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
@@ -276,7 +295,7 @@ export class AppsControllerV2 {
     }
     const ability = await this.appsAbilityFactory.appsActions(user, id);
 
-    if (!ability.can('updateVersions', app)) {
+    if (!ability.can(APP_RESOURCE_ACTIONS.VERSION_UPDATE, app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
@@ -300,7 +319,7 @@ export class AppsControllerV2 {
     }
     const ability = await this.appsAbilityFactory.appsActions(user, id);
 
-    if (!ability.can('updateVersions', app)) {
+    if (!ability.can(APP_RESOURCE_ACTIONS.VERSION_UPDATE, app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
@@ -324,7 +343,7 @@ export class AppsControllerV2 {
     }
     const ability = await this.appsAbilityFactory.appsActions(user, id);
 
-    if (!ability.can('updateVersions', app)) {
+    if (!ability.can(APP_RESOURCE_ACTIONS.VERSION_UPDATE, app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
@@ -349,7 +368,7 @@ export class AppsControllerV2 {
     }
     const ability = await this.appsAbilityFactory.appsActions(user, id);
 
-    if (!ability.can('updateVersions', app)) {
+    if (!ability.can(APP_RESOURCE_ACTIONS.VERSION_UPDATE, app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
@@ -364,7 +383,7 @@ export class AppsControllerV2 {
     const app = version.app;
     const ability = await this.appsAbilityFactory.appsActions(user, id);
 
-    if (!ability.can('updateVersions', app)) {
+    if (!ability.can(APP_RESOURCE_ACTIONS.VERSION_UPDATE, app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
@@ -383,11 +402,28 @@ export class AppsControllerV2 {
     }
     const ability = await this.appsAbilityFactory.appsActions(user, id);
 
-    if (!ability.can('updateVersions', app)) {
+    if (!ability.can(APP_RESOURCE_ACTIONS.VERSION_UPDATE, app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
     await this.pageService.updatePage(updatePageDto, versionId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ValidAppInterceptor)
+  @Put(':id/versions/:versionId/pages/reorder')
+  async reorderPages(@User() user, @Param('id') id, @Param('versionId') versionId, @Body() reorderPagesDto) {
+    const version = await this.appsService.findVersion(versionId);
+    const app = version.app;
+    if (app.id !== id) {
+      throw new BadRequestException();
+    }
+    const ability = await this.appsAbilityFactory.appsActions(user, id);
+    if (!ability.can(APP_RESOURCE_ACTIONS.VERSION_UPDATE, app)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+    console.log(reorderPagesDto, 'payload');
+    await this.pageService.reorderPages(reorderPagesDto, versionId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -402,7 +438,7 @@ export class AppsControllerV2 {
     }
     const ability = await this.appsAbilityFactory.appsActions(user, id);
 
-    if (!ability.can('updateVersions', app)) {
+    if (!ability.can(APP_RESOURCE_ACTIONS.VERSION_UPDATE, app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
@@ -424,7 +460,7 @@ export class AppsControllerV2 {
 
     const ability = await this.appsAbilityFactory.appsActions(user, id);
 
-    if (!ability.can('viewApp', app)) {
+    if (!ability.can(APP_RESOURCE_ACTIONS.VIEW, app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
@@ -452,7 +488,7 @@ export class AppsControllerV2 {
     }
     const ability = await this.appsAbilityFactory.appsActions(user, id);
 
-    if (!ability.can('updateVersions', app)) {
+    if (!ability.can(APP_RESOURCE_ACTIONS.VERSION_UPDATE, app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
@@ -475,7 +511,7 @@ export class AppsControllerV2 {
     }
     const ability = await this.appsAbilityFactory.appsActions(user, id);
 
-    if (!ability.can('updateVersions', app)) {
+    if (!ability.can(APP_RESOURCE_ACTIONS.VERSION_UPDATE, app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
@@ -496,7 +532,7 @@ export class AppsControllerV2 {
     }
     const ability = await this.appsAbilityFactory.appsActions(user, id);
 
-    if (!ability.can('updateVersions', app)) {
+    if (!ability.can(APP_RESOURCE_ACTIONS.VERSION_UPDATE, app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
@@ -513,7 +549,7 @@ export class AppsControllerV2 {
     @Body() versionReleaseDto: VersionReleaseDto
   ) {
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
-    if (!ability.can('updateParams', app)) {
+    if (!ability.can(APP_RESOURCE_ACTIONS.UPDATE, app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
     return await this.appsService.releaseVersion(app.id, versionReleaseDto);

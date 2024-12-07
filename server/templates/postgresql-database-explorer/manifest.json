@@ -6,8 +6,8 @@
   ],
   "sources": [
     {
-      "name": "ToolJet Database",
-      "id": "tooljetdb"
+      "name": "PostgreSQL",
+      "id": "postgresql"
     },
     {
       "name": "Run JavaScript",

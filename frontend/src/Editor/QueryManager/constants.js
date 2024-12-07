@@ -34,20 +34,31 @@ export const customToggles = {
   runOnPageLoad: {
     dataCy: 'run-on-app-load',
     action: 'runOnPageLoad',
-    label: 'Run this query on application load?',
+    label: 'Run this query on application load',
     translatedLabel: 'editor.queryManager.runQueryOnApplicationLoad',
   },
   requestConfirmation: {
     dataCy: 'confirmation-before-run',
     action: 'requestConfirmation',
-    label: 'Request confirmation before running query?',
+    label: 'Request confirmation before running query',
     translatedLabel: 'editor.queryManager.confirmBeforeQueryRun',
   },
   showSuccessNotification: {
     dataCy: 'notification-on-success',
     action: 'showSuccessNotification',
-    label: 'Show notification on success?',
+    label: 'Show notification on success',
     translatedLabel: 'editor.queryManager.notificationOnSuccess',
+  },
+};
+
+export const RestAPIToggles = {
+  retryOnNetworkError: {
+    dataCy: 'retry-on-network-error',
+    action: 'retry_network_errors', // This is the key for restapi query options
+    label: 'Retry on network errors',
+    subLabel:
+      'By default, ToolJet tries to hit the API endpoint 3 times before declaring the query failed as the server did not respond.',
+    translatedLabel: 'editor.queryManager.retryOnNetworkError',
   },
 };
 
@@ -69,9 +80,11 @@ export const schemaUnavailableOptions = {
     url: '',
     url_params: [['', '']],
     headers: [['', '']],
+    cookies: [['', '']],
     body: [['', '']],
     json_body: null,
     body_toggle: false,
+    retry_network_errors: null,
   },
   stripe: {},
   tooljetdb: {

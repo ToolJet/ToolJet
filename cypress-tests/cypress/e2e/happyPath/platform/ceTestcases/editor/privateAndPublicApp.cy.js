@@ -26,7 +26,7 @@ describe(
     const data = {};
     beforeEach(() => {
       cy.defaultWorkspaceLogin();
-      cy.removeAssignedApps();
+      // cy.removeAssignedApps();
       cy.skipWalkthrough();
     });
 

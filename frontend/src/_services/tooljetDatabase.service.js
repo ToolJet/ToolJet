@@ -43,7 +43,8 @@ function createColumn(
   isUniqueConstraint,
   isCheckSerialType = false,
   checkingValues = false,
-  foreignKeyArray
+  foreignKeyArray,
+  configurations = {}
 ) {
   return tooljetAdapter.post(`/tooljet-db/organizations/${organizationId}/table/${tableId}/column`, {
     column: {
@@ -54,6 +55,7 @@ function createColumn(
         is_not_null: isNotNull,
         is_unique: isUniqueConstraint,
       },
+      configurations,
     },
     ...(checkingValues && { foreign_keys: foreignKeyArray }),
   });

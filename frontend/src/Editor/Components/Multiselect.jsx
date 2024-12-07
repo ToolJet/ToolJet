@@ -1,6 +1,9 @@
 import _ from 'lodash';
 import React, { useState, useEffect } from 'react';
 import { MultiSelect } from 'react-multi-select-component';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import TriangleDownArrow from '@/_ui/Icon/bulkIcons/TriangleDownArrow';
+import TriangleUpArrow from '@/_ui/Icon/bulkIcons/TriangleUpArrow';
 
 const ItemRenderer = ({ checked, option, onClick, disabled }) => (
   <div className={`item-renderer ${disabled && 'disabled'}`}>
@@ -8,20 +11,31 @@ const ItemRenderer = ({ checked, option, onClick, disabled }) => (
     <span>{option.label}</span>
   </div>
 );
+const DropdownIndicator = ({ isOpen, toggleDropdown }) => {
+  return (
+    <div onClick={toggleDropdown}>
+      {isOpen ? (
+        <TriangleUpArrow width={'18'} className="cursor-pointer" fill={'var(--borders-strong)'} />
+      ) : (
+        <TriangleDownArrow width={'18'} className="cursor-pointer" fill={'var(--borders-strong)'} />
+      )}
+    </div>
+  );
+};
 
 export const Multiselect = function Multiselect({
   id,
-  component,
   height,
   properties,
   styles,
-  exposedVariables,
   setExposedVariable,
   setExposedVariables,
   onComponentClick,
   darkMode,
   fireEvent,
+  componentName,
   dataCy,
+  formId,
 }) {
   const { label, value, values, display_values, showAllOption } = properties;
   const { borderRadius, visibility, disabledState, boxShadow } = styles;
@@ -39,15 +53,15 @@ export const Multiselect = function Multiselect({
     console.log(err);
   }
 
-  useEffect(() => {
-    let newValues = [];
+  // useEffect(() => {
+  //   let newValues = [];
 
-    if (_.intersection(values, value)?.length === value?.length) newValues = value;
+  //   if (_.intersection(values, value)?.length === value?.length) newValues = value;
 
-    setExposedVariable('values', newValues);
-    setSelected(selectOptions.filter((option) => newValues.includes(option.value)));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(values), JSON.stringify(display_values)]);
+  //   setExposedVariable('values', newValues);
+  //   setSelected(selectOptions.filter((option) => newValues.includes(option.value)));
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [JSON.stringify(values), JSON.stringify(display_values)]);
 
   useEffect(() => {
     setExposedVariable('values', value);
@@ -56,14 +70,9 @@ export const Multiselect = function Multiselect({
   }, [JSON.stringify(value), JSON.stringify(display_values)]);
 
   useEffect(() => {
-    if (value && !selected) {
+    if (value) {
       setSelected(selectOptions.filter((option) => properties.value.includes(option.value)));
     }
-
-    if (JSON.stringify(exposedVariables.values) === '{}') {
-      setSelected(selectOptions.filter((option) => properties.value.includes(option.value)));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onChangeHandler = (items) => {
@@ -142,21 +151,21 @@ export const Multiselect = function Multiselect({
       ({ label, value }) => label != null && value != null && label.toLowerCase().includes(filter.toLowerCase())
     );
   };
-
   return (
     <div
       className="multiselect-widget row g-0"
       data-cy={dataCy}
       style={{ height, display: visibility ? '' : 'none' }}
-      onFocus={() => {
-        onComponentClick(this, id, component);
+      onClick={(event) => {
+        event.stopPropagation();
+        onComponentClick(id);
       }}
     >
       <div className="col-auto my-auto d-flex align-items-center">
         <label
           style={{ marginRight: label ? '1rem' : '', marginBottom: 0 }}
           className={`form-label py-1 ${darkMode ? 'text-light' : 'text-secondary'}`}
-          data-cy={`multiselect-label-${component.name.toLowerCase()}`}
+          data-cy={`multiselect-label-${componentName?.toLowerCase()}`}
         >
           {label}
         </label>
@@ -173,6 +182,41 @@ export const Multiselect = function Multiselect({
           ItemRenderer={ItemRenderer}
           filterOptions={filterOptions}
           debounceDuration={0}
+          // isOpen={isOpen}
+          // onMenuOpen={handleDropdownOpen}
+          // onMenuClose={handleDropdownClose}
+          // ArrowRenderer={() => <DropdownIndicator isOpen={isOpen} toggleDropdown={toggleDropdown} />}
+          onMenuToggle={(isOpen) => {
+            if (isOpen) {
+              // get all instances to handle for listview
+              const elements = document.querySelectorAll(`[id='${id}']`) || [];
+              elements.forEach((element) => {
+                // check if dropdown is open and set z-index
+                const child = element.querySelector(`.dropdown-container`);
+                if (child && child.hasAttribute('aria-expanded') && child.getAttribute('aria-expanded') === 'true') {
+                  const listViewParent = child?.closest('.list-item');
+                  if (listViewParent) listViewParent.style.zIndex = 1;
+                  element.style.zIndex = 3;
+                }
+              });
+            } else {
+              const elements = document.querySelectorAll(`[id='${id}']`) || [];
+              elements.forEach((element) => {
+                // check if dropdown is open and unset z-index
+                const child = element.querySelector(`.dropdown-container`);
+                if (child && child.hasAttribute('aria-expanded') && child.getAttribute('aria-expanded') === 'false') {
+                  const listViewParent = child?.closest('.list-item');
+                  if (listViewParent) listViewParent.style.zIndex = '';
+                  element.style.zIndex = '';
+                }
+              });
+            }
+
+            const formComponent = formId && document.querySelector(`.form-${formId}`);
+            if (formComponent) {
+              formComponent.style.zIndex = isOpen ? 4 : '';
+            }
+          }}
         />
       </div>
     </div>

@@ -12,6 +12,7 @@ import { shallow } from 'zustand/shallow';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { useEditorStore } from '@/_stores/editorStore';
 import DataSourceIcon from '@/Editor/QueryManager/Components/DataSourceIcon';
+import { useQueryPanelActions } from '@/_stores/queryPanelStore';
 
 const staticDataSources = [
   { kind: 'tooljetdb', id: 'null', name: 'Tooljet Database' },
@@ -30,6 +31,7 @@ export const LeftSidebarInspector = ({
   pinned,
 }) => {
   const dataSources = useGlobalDataSources();
+  const { setSelectedQuery } = useQueryPanelActions();
 
   const dataQueries = useDataQueries();
   const { isVersionReleased } = useAppVersionStore(
@@ -110,8 +112,9 @@ export const LeftSidebarInspector = ({
     if (!_.isEmpty(component) && component.name === key) {
       return {
         iconName: key,
-        iconPath: `assets/images/icons/widgets/${component.component.toLowerCase() === 'radiobutton' ? 'radio-button' : component.component.toLowerCase()
-          }.svg`,
+        iconPath: `assets/images/icons/widgets/${
+          component.component.toLowerCase() === 'radiobutton' ? 'radio-button' : component.component.toLowerCase()
+        }.svg`,
         className: 'component-icon',
       };
     }
@@ -228,7 +231,14 @@ export const LeftSidebarInspector = ({
   };
 
   const handleRunQuery = (query, currentNode) => {
-    runQuery(query.id, currentNode);
+    setSelectedQuery(query.id);
+    const additionalArgs = {
+      confirmed: undefined,
+      mode: 'edit',
+      userSuppliedParameters: {},
+      shouldSetPreviewData: true,
+    };
+    runQuery(query.id, currentNode, additionalArgs);
   };
 
   const copyToClipboard = (data) => {

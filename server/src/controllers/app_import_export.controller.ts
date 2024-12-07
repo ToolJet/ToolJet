@@ -7,6 +7,7 @@ import { App } from 'src/entities/app.entity';
 import { AppImportExportService } from '@services/app_import_export.service';
 import { User } from 'src/decorators/user.decorator';
 import { AppImportDto } from '@dto/app-import.dto';
+import { APP_RESOURCE_ACTIONS } from 'src/constants/global.constant';
 
 @Controller('apps')
 export class AppsImportExportController {
@@ -21,7 +22,7 @@ export class AppsImportExportController {
   async import(@User() user, @Body() appImportDto: AppImportDto) {
     const ability = await this.appsAbilityFactory.appsActions(user);
 
-    if (!ability.can('createApp', App)) {
+    if (!ability.can(APP_RESOURCE_ACTIONS.IMPORT, App)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
     const { name: appName, app: appContent } = appImportDto;
@@ -35,7 +36,7 @@ export class AppsImportExportController {
     const appToExport = await this.appsService.find(id);
     const ability = await this.appsAbilityFactory.appsActions(user, id);
 
-    if (!ability.can('cloneApp', appToExport)) {
+    if (!ability.can(APP_RESOURCE_ACTIONS.CLONE, appToExport)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 

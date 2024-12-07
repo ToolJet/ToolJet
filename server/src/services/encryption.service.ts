@@ -29,9 +29,9 @@ export class EncryptionService {
     const key = Buffer.from(derivedKey, 'hex');
     let ciphertext = Buffer.from(cipherText, 'base64');
 
-    const nonce = ciphertext.slice(0, 12);
-    const auth_tag = ciphertext.slice(-16);
-    ciphertext = ciphertext.slice(12, -16);
+    const nonce = ciphertext.subarray(0, 12);
+    const auth_tag = ciphertext.subarray(-16);
+    ciphertext = ciphertext.subarray(12, -16);
 
     const aesgcm = crypto.createDecipheriv('aes-256-gcm', key, nonce);
     aesgcm.setAuthTag(auth_tag);

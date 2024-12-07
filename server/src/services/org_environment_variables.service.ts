@@ -72,8 +72,10 @@ export class OrgEnvironmentVariablesService {
 
   async fetch(organizationId: string, variableId: string) {
     return await this.orgEnvironmentVariablesRepository.findOne({
-      organizationId: organizationId,
-      id: variableId,
+      where: {
+        organizationId,
+        id: variableId,
+      },
     });
   }
 
@@ -119,6 +121,9 @@ export class OrgEnvironmentVariablesService {
   }
 
   private async decryptSecret(workspaceId: string, value: string) {
+    if (!value) {
+      return value;
+    }
     return await this.encryptionService.decryptColumnValue('org_environment_variables', workspaceId, value);
   }
 }

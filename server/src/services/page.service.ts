@@ -6,13 +6,15 @@ import { Page } from 'src/entities/page.entity';
 import { ComponentsService } from './components.service';
 import { CreatePageDto, UpdatePageDto } from '@dto/pages.dto';
 import { AppsService } from './apps.service';
-import { dbTransactionWrap, dbTransactionForAppVersionAssociationsUpdate } from 'src/helpers/utils.helper';
+import { dbTransactionWrap, dbTransactionForAppVersionAssociationsUpdate } from 'src/helpers/database.helper';
 import { EventsService } from './events_handler.service';
 import { Component } from 'src/entities/component.entity';
 import { Layout } from 'src/entities/layout.entity';
 import { EventHandler } from 'src/entities/event_handler.entity';
-import { findAllEntityReferences, isValidUUID, updateEntityReferences } from 'src/helpers/import_export.helpers';
+import { updateEntityReferences } from 'src/helpers/import_export.helpers';
 import { isEmpty } from 'class-validator';
+import { PageHelperService } from '@apps/services/pages/service.helper';
+import * as _ from 'lodash';
 
 @Injectable()
 export class PageService {
@@ -21,13 +23,14 @@ export class PageService {
     private readonly pageRepository: Repository<Page>,
 
     private componentsService: ComponentsService,
+    private pageHelperService: PageHelperService,
     private eventHandlerService: EventsService,
     private appService: AppsService
   ) {}
 
   async findPagesForVersion(appVersionId: string): Promise<Page[]> {
-    const allPages = await this.pageRepository.find({ appVersionId });
-
+    // const allPages = await this.pageRepository.find({ where: { appVersionId }, order: { index: 'ASC' } });
+    const allPages = await this.pageHelperService.fetchPages(appVersionId);
     const pagesWithComponents = await Promise.all(
       allPages.map(async (page) => {
         const components = await this.componentsService.getAllComponents(page.id);
@@ -39,18 +42,12 @@ export class PageService {
   }
 
   async findOne(id: string): Promise<Page> {
-    return this.pageRepository.findOne(id);
+    return this.pageRepository.findOne({ where: { id } });
   }
 
   async createPage(page: CreatePageDto, appVersionId: string): Promise<Page> {
     return dbTransactionForAppVersionAssociationsUpdate(async (manager) => {
-      const newPage = new Page();
-      newPage.id = page.id;
-      newPage.name = page.name;
-      newPage.handle = page.handle;
-      newPage.index = page.index;
-      newPage.appVersionId = appVersionId;
-      newPage.autoComputeLayout = true;
+      const newPage = await this.pageHelperService.preparePageObject(page, appVersionId);
 
       return await manager.save(Page, newPage);
     }, appVersionId);
@@ -58,7 +55,9 @@ export class PageService {
 
   async clonePage(pageId: string, appVersionId: string) {
     return dbTransactionForAppVersionAssociationsUpdate(async (manager) => {
-      const pageToClone = await manager.findOne(Page, pageId);
+      const pageToClone = await manager.findOne(Page, {
+        where: { id: pageId },
+      });
 
       if (!pageToClone) {
         throw new Error('Page not found');
@@ -67,7 +66,7 @@ export class PageService {
       let pageName = `${pageToClone.name} (copy)`;
       let pageHandle = `${pageToClone.handle}-copy`;
 
-      const allPages = await this.pageRepository.find({ appVersionId });
+      const allPages = await this.pageRepository.find({ where: { appVersionId } });
 
       const pageNameORHandleExists = allPages.filter((page) => {
         return page.name.includes(pageName) || page.handle.includes(pageHandle);
@@ -98,55 +97,34 @@ export class PageService {
 
   async clonePageEventsAndComponents(pageId: string, clonePageId: string) {
     return dbTransactionWrap(async (manager: EntityManager) => {
-      const pageComponents = await manager.find(Component, { pageId });
+      const pageComponents = await manager.find(Component, { where: { pageId } });
       const pageEvents = await this.eventHandlerService.findAllEventsWithSourceId(pageId);
       const componentsIdMap = {};
 
-      // Clone events
-      await Promise.all(
-        pageEvents.map(async (event) => {
-          const eventDefinition = event.event;
-
-          if (eventDefinition?.actionId === 'control-component') {
-            eventDefinition.componentId = componentsIdMap[eventDefinition.componentId];
-          }
-
-          if (eventDefinition?.actionId == 'show-modal' || eventDefinition?.actionId === 'hide-modal') {
-            eventDefinition.modal = componentsIdMap[eventDefinition.modal];
-          }
-
-          event.event = eventDefinition;
-
-          const clonedEvent = new EventHandler();
-          clonedEvent.event = event.event;
-          clonedEvent.index = event.index;
-          clonedEvent.name = event.name;
-          clonedEvent.sourceId = clonePageId;
-          clonedEvent.target = event.target;
-          clonedEvent.appVersionId = event.appVersionId;
-
-          await manager.save(EventHandler, clonedEvent);
-        })
-      );
-
       // Clone components
+      // array to store maapings and update them later with path
+      const mappingsToUpdate = [];
       const clonedComponents = await Promise.all(
         pageComponents.map(async (component) => {
           const clonedComponent = { ...component, id: undefined, pageId: clonePageId };
           const newComponent = await manager.save(manager.create(Component, clonedComponent));
-
           componentsIdMap[component.id] = newComponent.id;
-          const componentLayouts = await manager.find(Layout, { componentId: component.id });
+          const componentLayouts = await manager.find(Layout, { where: { componentId: component.id } });
+          if (component?.properties?.buttonToSubmit?.value) {
+            mappingsToUpdate.push({
+              component: newComponent,
+              pathToUpdate: 'properties.buttonToSubmit.value',
+            });
+          }
           const clonedLayouts = componentLayouts.map((layout) => ({
             ...layout,
             id: undefined,
             componentId: newComponent.id,
           }));
-
           // Clone component events
           const clonedComponentEvents = await this.eventHandlerService.findAllEventsWithSourceId(component.id);
           const clonedEvents = clonedComponentEvents.map((event) => {
-            const eventDefinition = event.event;
+            const eventDefinition = updateEntityReferences(event.event, componentsIdMap);
 
             if (eventDefinition?.actionId === 'control-component') {
               eventDefinition.componentId = componentsIdMap[eventDefinition.componentId];
@@ -154,6 +132,10 @@ export class PageService {
 
             if (eventDefinition?.actionId == 'show-modal' || eventDefinition?.actionId === 'hide-modal') {
               eventDefinition.modal = componentsIdMap[eventDefinition.modal];
+            }
+
+            if (eventDefinition?.actionId === 'set-table-page') {
+              eventDefinition.table = componentsIdMap[eventDefinition.table];
             }
 
             event.event = eventDefinition;
@@ -175,10 +157,52 @@ export class PageService {
           return newComponent;
         })
       );
+      // re estabilish mappings
+      await Promise.all(
+        mappingsToUpdate.map((itemToUpdate) => {
+          const { component, pathToUpdate: path } = itemToUpdate;
+          const oldId = _.get(component, path);
+          const newId = componentsIdMap[oldId];
+          if (newId) {
+            _.set(component, path, newId);
+          }
+          manager.save(component);
+        })
+      );
+      // Clone events
+      await Promise.all(
+        pageEvents.map(async (event) => {
+          const eventDefinition = updateEntityReferences(event.event, componentsIdMap);
+
+          if (eventDefinition?.actionId === 'control-component') {
+            eventDefinition.componentId = componentsIdMap[eventDefinition.componentId];
+          }
+
+          if (eventDefinition?.actionId == 'show-modal' || eventDefinition?.actionId === 'hide-modal') {
+            eventDefinition.modal = componentsIdMap[eventDefinition.modal];
+          }
+
+          if (eventDefinition?.actionId == 'set-table-page' && componentsIdMap[eventDefinition.table]) {
+            eventDefinition.table = componentsIdMap[eventDefinition.table];
+          }
+
+          event.event = eventDefinition;
+
+          const clonedEvent = new EventHandler();
+          clonedEvent.event = event.event;
+          clonedEvent.index = event.index;
+          clonedEvent.name = event.name;
+          clonedEvent.sourceId = clonePageId;
+          clonedEvent.target = event.target;
+          clonedEvent.appVersionId = event.appVersionId;
+
+          await manager.save(EventHandler, clonedEvent);
+        })
+      );
 
       const hasParentIdSuffixed = (component, allComponents = [], componentParentId = undefined) => {
         if (componentParentId) {
-          const parentId = component?.parent?.split('-').slice(0, -1).join('-');
+          const parentId = component?.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1];
 
           const parentComponent = allComponents.find((comp) => comp.id === parentId);
 
@@ -193,15 +217,15 @@ export class PageService {
 
         return false;
       };
-
+      let index = 0;
       for (const component of clonedComponents) {
         let parentId = component.parent ? component.parent : null;
 
         const isParentIdSuffixed = hasParentIdSuffixed(component, pageComponents, parentId);
 
         if (isParentIdSuffixed) {
-          const childTabId = component.parent.split('-')[component.parent.split('-').length - 1];
-          const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+          const childTabId = component?.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[2];
+          const _parentId = component?.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1];
           const mappedParentId = componentsIdMap[_parentId];
 
           parentId = `${mappedParentId}-${childTabId}`;
@@ -211,17 +235,15 @@ export class PageService {
 
         if (parentId) {
           await manager.update(Component, component.id, { parent: parentId });
+          // update in variable too, so that parent field doesn't get overriden in next step
+          component.parent = parentId;
+          clonedComponents[index] = component;
         }
+        index++;
       }
 
       const toUpdateComponents = clonedComponents.filter((component) => {
-        const entityReferencesInComponentDefinitions = findAllEntityReferences(component, []).filter(
-          (entity) => entity && isValidUUID(entity)
-        );
-
-        if (entityReferencesInComponentDefinitions.length > 0) {
-          return updateEntityReferences(component, componentsIdMap);
-        }
+        return updateEntityReferences(component, componentsIdMap);
       });
 
       if (!isEmpty(toUpdateComponents)) {
@@ -230,12 +252,18 @@ export class PageService {
     });
   }
 
+  async reorderPages(diff, appVersionId: string) {
+    return this.pageHelperService.reorderPages(diff, appVersionId);
+  }
+
   async updatePage(pageUpdates: UpdatePageDto, appVersionId: string) {
     if (Object.keys(pageUpdates.diff).length > 1) {
-      return this.updatePagesOrder(pageUpdates.diff, appVersionId);
+      throw new Error('Can not update multiple pages');
     }
 
-    const currentPage = await this.pageRepository.findOne(pageUpdates.pageId);
+    const currentPage = await this.pageRepository.findOne({
+      where: { id: pageUpdates.pageId },
+    });
 
     if (!currentPage) {
       throw new Error('Page not found');
@@ -243,27 +271,12 @@ export class PageService {
     return this.pageRepository.update(pageUpdates.pageId, pageUpdates.diff);
   }
 
-  async updatePagesOrder(pages, appVersionId: string) {
-    const pagesToPage = Object.keys(pages).map((pageId) => {
-      return {
-        id: pageId,
-        index: pages[pageId].index,
-      };
-    });
-
-    return await dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
-      await Promise.all(
-        pagesToPage.map(async (page) => {
-          await manager.update(Page, page.id, page);
-        })
-      );
-    }, appVersionId);
-  }
-
-  async deletePage(pageId: string, appVersionId: string) {
+  async deletePage(pageId: string, appVersionId: string, deleteAssociatedPages: boolean = false) {
     const { editingVersion } = await this.appService.findAppFromVersion(appVersionId);
     return dbTransactionForAppVersionAssociationsUpdate(async (manager: EntityManager) => {
-      const pageExists = await manager.findOne(Page, pageId);
+      const pageExists = await manager.findOne(Page, {
+        where: { id: pageId },
+      });
 
       if (!pageExists) {
         throw new Error('Page not found');
@@ -272,38 +285,17 @@ export class PageService {
       if (editingVersion?.homePageId === pageId) {
         throw new Error('Cannot delete home page');
       }
+      // if (pageExists.isPageGroup) {
+      //   return await this.pageHelperService.deletePageGroup(pageExists, appVersionId, deleteAssociatedPages);
+      // }
       this.eventHandlerService.cascadeDeleteEvents(pageExists.id);
-      const pageDeletedIndex = pageExists.index;
       const pageDeleted = await this.pageRepository.delete(pageId);
 
       if (pageDeleted.affected === 0) {
         throw new Error('Page not deleted');
       }
 
-      const pages = await this.pageRepository.find({ appVersionId: pageExists.appVersionId });
-
-      const rearrangedPages = this.rearrangePagesOnDelete(pages, pageDeletedIndex);
-
-      return await Promise.all(
-        rearrangedPages.map(async (page) => {
-          await manager.update(Page, page.id, page);
-        })
-      );
+      return await this.pageHelperService.rearrangePagesOrderPostDeletion(pageExists, manager);
     }, appVersionId);
-  }
-
-  rearrangePagesOnDelete(pages: Page[], pageDeletedIndex: number) {
-    const rearrangedPages = pages.map((page, index) => {
-      if (index + 1 >= pageDeletedIndex) {
-        return {
-          ...page,
-          index: page.index - 1,
-        };
-      }
-
-      return page;
-    });
-
-    return rearrangedPages;
   }
 }

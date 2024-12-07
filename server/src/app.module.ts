@@ -1,6 +1,6 @@
 import { Module, OnModuleInit, RequestMethod, MiddlewareConsumer } from '@nestjs/common';
 
-import { Connection } from 'typeorm';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ormconfig, tooljetDbOrmconfig } from '../ormconfig';
 import { getEnvVars } from '../scripts/database-config-utils';
@@ -11,10 +11,8 @@ import { SeedsService } from '@services/seeds.service';
 import { LoggerModule } from 'nestjs-pino';
 import { SentryModule } from './modules/observability/sentry/sentry.module';
 import * as Sentry from '@sentry/node';
-import * as path from 'path';
 
 import { ConfigModule } from '@nestjs/config';
-import { ServeStaticModule } from '@nestjs/serve-static';
 import { CaslModule } from './modules/casl/casl.module';
 import { EmailService } from '@services/email.service';
 import { MetaModule } from './modules/meta/meta.module';
@@ -32,11 +30,9 @@ import { DataSourcesModule } from './modules/data_sources/data_sources.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
 import { CommentModule } from './modules/comments/comment.module';
 import { CommentUsersModule } from './modules/comment_users/comment_users.module';
-import { join } from 'path';
 import { LibraryAppModule } from './modules/library_app/library_app.module';
 import { ThreadModule } from './modules/thread/thread.module';
 import { EventsModule } from './events/events.module';
-import { GroupPermissionsModule } from './modules/group_permissions/group_permissions.module';
 import { TooljetDbModule } from './modules/tooljet_db/tooljet_db.module';
 import { PluginsModule } from './modules/plugins/plugins.module';
 import { CopilotModule } from './modules/copilot/copilot.module';
@@ -45,10 +41,23 @@ import { OrganizationConstantModule } from './modules/organization_constants/org
 import { RequestContextModule } from './modules/request_context/request-context.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ImportExportResourcesModule } from './modules/import_export_resources/import_export_resources.module';
-import { MailerModule } from '@nestjs-modules/mailer';
-import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { UserResourcePermissionsModule } from '@modules/user_resource_permissions/user_resource_permissions.module';
+import { PermissionsModule } from '@modules/permissions/permissions.module';
+import { GetConnection } from '@modules/database/getConnection';
+import { InstanceSettingsModule } from '@instance-settings/module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+import { LicenseModule } from '@licensing/module';
 
 const imports = [
+  EventEmitterModule.forRoot({
+    wildcard: false,
+    newListener: false,
+    removeListener: false,
+    maxListeners: 5,
+    verboseMemoryLeak: true,
+    ignoreErrors: false,
+  }),
   ScheduleModule.forRoot(),
   ConfigModule.forRoot({
     isGlobal: true,
@@ -80,46 +89,15 @@ const imports = [
       redact: ['req.headers.authorization'],
     },
   }),
-  MailerModule.forRoot({
-    transport:
-      process.env.NODE_ENV === 'development'
-        ? {
-            host: 'localhost',
-            ignoreTLS: true,
-            secure: false,
-          }
-        : {
-            host: process.env.SMTP_DOMAIN,
-            port: +process.env.SMTP_PORT || 587,
-            secure: process.env.SMTP_SSL === 'true',
-            auth: {
-              user: process.env.SMTP_USERNAME,
-              pass: process.env.SMTP_PASSWORD,
-            },
-          },
-    preview: process.env.NODE_ENV === 'development',
-    template: {
-      dir: join(__dirname, 'mails'),
-      adapter: new HandlebarsAdapter(),
-      options: {
-        strict: false,
-      },
-    },
-    options: {
-      partials: {
-        dir: path.join(__dirname, 'mails/base/partials'),
-        options: {
-          strict: false,
-        },
-      },
-    },
-  }),
   TypeOrmModule.forRoot(ormconfig),
+  TypeOrmModule.forRoot(tooljetDbOrmconfig),
   RequestContextModule,
+  InstanceSettingsModule,
   AppConfigModule,
   SeedsModule,
   AuthModule,
   UsersModule,
+  LicenseModule,
   AppsModule,
   FoldersModule,
   OrgEnvironmentVariablesModule,
@@ -130,7 +108,8 @@ const imports = [
   CaslModule,
   MetaModule,
   LibraryAppModule,
-  GroupPermissionsModule,
+  UserResourcePermissionsModule,
+  PermissionsModule,
   FilesModule,
   PluginsModule,
   EventsModule,
@@ -165,17 +144,13 @@ if (process.env.COMMENT_FEATURE_ENABLE !== 'false') {
   imports.unshift(CommentModule, ThreadModule, CommentUsersModule);
 }
 
-if (process.env.ENABLE_TOOLJET_DB === 'true') {
-  imports.unshift(TypeOrmModule.forRoot(tooljetDbOrmconfig));
-}
-
 @Module({
   imports,
   controllers: [AppController],
-  providers: [EmailService, SeedsService],
+  providers: [EmailService, SeedsService, GetConnection],
 })
 export class AppModule implements OnModuleInit {
-  constructor(private connection: Connection) {}
+  constructor() {}
 
   configure(consumer: MiddlewareConsumer): void {
     consumer.apply(Sentry.Handlers.requestHandler()).forRoutes({

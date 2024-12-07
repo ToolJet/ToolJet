@@ -5,6 +5,7 @@ import Skeleton from 'react-loading-skeleton';
 import { ButtonSolid } from '../AppButton/AppButton';
 import Overlay from 'react-bootstrap/Overlay';
 import cx from 'classnames';
+import { Tooltip } from 'react-tooltip'; // Import Tooltip
 
 function FolderList({
   overlayFunctionParam,
@@ -23,6 +24,10 @@ function FolderList({
   overLayComponent,
   darkMode,
   toolTipText,
+  disableHoverOption = false,
+  customStyles,
+  CustomIcon,
+  toolTipDisabled = false,
   ...restProps
 }) {
   const [isHovered, setIsHovered] = useState(false);
@@ -49,6 +54,8 @@ function FolderList({
     setIsHoveredInside(false);
   };
 
+  const computedStyles = customStyles ? customStyles(selectedItem, isHovered) : {};
+
   return (
     <>
       {!isLoading ? (
@@ -59,13 +66,17 @@ function FolderList({
             'tj-list-item-disabled': disabled,
             'tj-list-item-option-opened': showGroupOptions,
           })}
-          style={backgroundColor && { backgroundColor }}
+          style={{
+            ...(backgroundColor && { backgroundColor }),
+            ...{ ...computedStyles.pill, ...computedStyles.text },
+          }}
           onClick={isHoveredInside ? menuToggle : onClick}
           data-cy={`${dataCy}-list-item`}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           data-tooltip-content={toolTipText}
           data-tooltip-id="button-content"
+          data-tooltip-hidden={!toolTipDisabled}
         >
           {LeftIcon && (
             <div className="tj-list-item-icon">
@@ -73,10 +84,24 @@ function FolderList({
             </div>
           )}
 
+          {CustomIcon && (
+            <div className="custom-icon">
+              <CustomIcon
+                color={computedStyles?.icon?.color}
+                style={{
+                  width: '18px',
+                  height: '18px',
+                  color: computedStyles?.icon?.color,
+                  stroke: computedStyles?.icon?.color,
+                }}
+              />
+            </div>
+          )}
+
           {children}
 
           {RightIcon && <div className="tj-list-item-icon">{RightIcon && <SolidIcon name={RightIcon} />}</div>}
-          {overLayComponent && (isHovered || showGroupOptions) && (
+          {overLayComponent && ((!disableHoverOption && isHovered) || showGroupOptions) && (
             <>
               <div ref={target}>
                 <ButtonSolid
@@ -87,6 +112,7 @@ function FolderList({
                   variant="tertiary"
                   onMouseEnter={handleMouseEnterInside}
                   onMouseLeave={handleMouseLeaveInside}
+                  dataCy={'groups-list-option-button'}
                 ></ButtonSolid>
               </div>
               <Overlay
@@ -113,6 +139,8 @@ function FolderList({
       ) : (
         <Skeleton count={4} />
       )}
+
+      <Tooltip id="button-content" place="right" style={{ zIndex: 99999, width: '150px' }} show={toolTipDisabled} />
     </>
   );
 }

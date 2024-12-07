@@ -7,6 +7,7 @@ import { FoldersAbilityFactory } from 'src/modules/casl/abilities/folders-abilit
 import { Folder } from 'src/entities/folder.entity';
 import { CreateFolderDto } from '@dto/create-folder.dto';
 import { User } from 'src/decorators/user.decorator';
+import { FOLDER_RESOURCE_ACTION } from 'src/constants/global.constant';
 
 @Controller('folders')
 export class FoldersController {
@@ -22,9 +23,9 @@ export class FoldersController {
   @UseGuards(JwtAuthGuard)
   @Post()
   async create(@Request() req, @Body() createFolderDto: CreateFolderDto) {
-    const ability = await this.foldersAbilityFactory.folderActions(req.user, {});
+    const ability = await this.foldersAbilityFactory.folderActions(req.user);
 
-    if (!ability.can('createFolder', Folder)) {
+    if (!ability.can(FOLDER_RESOURCE_ACTION.CREATE, Folder)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
     const folder = await this.foldersService.create(req.user, createFolderDto.name);
@@ -34,9 +35,9 @@ export class FoldersController {
   @UseGuards(JwtAuthGuard)
   @Put(':id')
   async update(@User() user, @Param('id') id, @Body() createFolderDto: CreateFolderDto) {
-    const ability = await this.foldersAbilityFactory.folderActions(user, {});
+    const ability = await this.foldersAbilityFactory.folderActions(user);
 
-    if (!ability.can('updateFolder', Folder)) {
+    if (!ability.can(FOLDER_RESOURCE_ACTION.UPDATE, Folder)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
@@ -47,9 +48,9 @@ export class FoldersController {
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async delete(@User() user, @Param('id') id) {
-    const ability = await this.foldersAbilityFactory.folderActions(user, {});
+    const ability = await this.foldersAbilityFactory.folderActions(user);
 
-    if (!ability.can('deleteFolder', Folder)) {
+    if (!ability.can(FOLDER_RESOURCE_ACTION.DELETE, Folder)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 

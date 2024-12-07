@@ -1,6 +1,15 @@
 import React from 'react';
 import './Toggle.scss';
-function Toggle({ onChange, checked = false, className = {}, disabled = false, label = '', dataCy = '' }) {
+function Toggle({
+  onChange,
+  checked = false,
+  className = {},
+  disabled = false,
+  label = '',
+  text = '',
+  subtext = '',
+  dataCy = '',
+}) {
   return (
     <label className={`form-check form-switch ${className}`}>
       <input
@@ -11,9 +20,23 @@ function Toggle({ onChange, checked = false, className = {}, disabled = false, l
         disabled={disabled}
         data-cy={`${dataCy}-toggle-input`}
       />
-      <span className="tj-toggle-label" data-cy={`${dataCy}-toggle-label`}>
-        {label}
-      </span>
+      {label && (
+        <span className="tj-toggle-label" data-cy={`${dataCy}-toggle-label`}>
+          {label}
+        </span>
+      )}
+      <div className="text-wrappers">
+        {text && (
+          <span className="tj-toggle-text" data-cy={`${dataCy}-toggle-text`}>
+            {text}
+          </span>
+        )}
+        {subtext && (
+          <span className="tj-toggle-subtext" data-cy={`${dataCy}-toggle-subtext`}>
+            {subtext}
+          </span>
+        )}
+      </div>
     </label>
   );
 }

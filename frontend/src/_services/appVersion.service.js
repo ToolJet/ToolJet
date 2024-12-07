@@ -93,6 +93,9 @@ function autoSaveApp(
     global_settings: {
       update: { ...diff },
     },
+    page_settings: {
+      update: { ...diff },
+    },
   };
 
   const body = !type

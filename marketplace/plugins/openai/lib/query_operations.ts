@@ -1,8 +1,11 @@
-import OpenAI from 'openai';  // Updated SDK version
+import OpenAI from 'openai'; // Updated SDK version
 import { QueryOptions } from './types';
 
 // Updated utility function to handle size validation based on model
-const getSizeEnum = (model: string | undefined, size: string | undefined): '256x256' | '512x512' | '1024x1024' | '1792x1024' | '1024x1792' => {
+const getSizeEnum = (
+  model: string | undefined,
+  size: string | undefined
+): '256x256' | '512x512' | '1024x1024' | '1792x1024' | '1024x1792' => {
   // If the model is DALL-E 3, only allow 1024x1024, 1792x1024, or 1024x1792
   if (model === 'dall-e-3') {
     switch (size) {
@@ -35,7 +38,7 @@ const getSizeEnum = (model: string | undefined, size: string | undefined): '256x
   return '1024x1024';
 };
 
- //Utility function to convert number of images from string or number
+//Utility function to convert number of images from string or number
 /*const getNumberOfImages = (num_images: number | string | undefined): number => {
   const num = typeof num_images === 'string' ? parseInt(num_images) : num_images;
   return isNaN(num) ? 1 : Math.max(1, Math.min(10, num)); // Ensure it's between 1 and 10
@@ -101,7 +104,7 @@ export async function generateImage(
   openai: OpenAI,
   options: QueryOptions
 ): Promise<{ status: string; message: string; description?: string; data?: any }> {
-  const { model, prompt, size/* , n */ } = options;
+  const { model, prompt, size /* , n */ } = options;
 
   try {
     const response = await openai.images.generate({
@@ -112,19 +115,19 @@ export async function generateImage(
     });
 
     // Return the URL of the first image as a JSON object
-    return { 
-      status: "success",
-      message: "Image generated successfully",
-      data: { url: response.data[0].url } 
+    return {
+      status: 'success',
+      message: 'Image generated successfully',
+      data: { url: response.data[0].url },
     };
   } catch (error: any) {
-    console.error("Error in image generation:", error);
+    console.error('Error in image generation:', error);
 
     return {
-      status: "failed",
-      message: "Query could not be completed",
+      status: 'failed',
+      message: 'Query could not be completed',
       description: error?.response?.data?.error?.message || 'An unexpected error occurred',
-      data: error?.response?.data || {}
+      data: error?.response?.data || {},
     };
   }
 }

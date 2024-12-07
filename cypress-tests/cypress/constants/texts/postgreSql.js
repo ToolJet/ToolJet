@@ -5,13 +5,13 @@ export const postgreSqlText = {
   allDataSources: () => {
     return Cypress.env("marketplace_action")
       ? "All data sources (44)"
-      : "All data sources (41)";
+      : "All data sources (42)";
   },
   commonlyUsed: "Commonly used (5)",
   allDatabase: () => {
     return Cypress.env("marketplace_action")
       ? "Databases (20)"
-      : "Databases (17)";
+      : "Databases (18)";
   },
   allApis: "APIs (20)",
   allCloudStorage: "Cloud Storages (4)",
@@ -73,7 +73,7 @@ export const postgreSqlText = {
   yes: "Yes",
 
   guiOptionBulkUpdate: "Bulk update using primary key",
-  buttonTextTestConnection: "Test Connection",
+  buttonTextTestConnection: "Test connection",
 
   tabAdvanced: "Advanced",
   labelNoEventhandler: "No event handlers",

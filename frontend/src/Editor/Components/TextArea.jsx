@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 export const TextArea = function TextArea({
   height,
@@ -8,25 +8,35 @@ export const TextArea = function TextArea({
   setExposedVariables,
   dataCy,
 }) {
+  const isInitialRender = useRef(true);
   const [value, setValue] = useState(properties.value);
 
   useEffect(() => {
+    if (isInitialRender.current) return;
     setValue(properties.value);
+    setExposedVariable('value', properties.value);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.value]);
+
+  useEffect(() => {
     const exposedVariables = {
-      value: properties.value,
       setText: async function (text) {
         setValue(text);
         setExposedVariable('value', text);
       },
-      clear: async function (text) {
+      clear: async function () {
         setValue('');
         setExposedVariable('value', '');
       },
+      value: properties.value,
     };
     setExposedVariables(exposedVariables);
+    setValue(properties.value);
+    isInitialRender.current = false;
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.value, setValue]);
+  }, []);
 
   return (
     <textarea

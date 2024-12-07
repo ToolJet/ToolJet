@@ -1,27 +1,26 @@
-import { Injectable, ForbiddenException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { App } from 'src/entities/app.entity';
 import { FolderApp } from 'src/entities/folder_app.entity';
-import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
-import { getFolderQuery, viewableAppsQuery } from 'src/helpers/queries';
-import { createQueryBuilder, Repository, UpdateResult } from 'typeorm';
+import { getFolderQuery, getAllFoldersQuery } from 'src/helpers/queries';
+
 import { User } from '../../src/entities/user.entity';
 import { Folder } from '../entities/folder.entity';
-import { UsersService } from './users.service';
 import { catchDbException } from 'src/helpers/utils.helper';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 import { AppBase } from 'src/entities/app_base.entity';
+import { TOOLJET_RESOURCE } from 'src/constants/global.constant';
+import { AbilityService } from './permissions-ability.service';
+import { dbTransactionWrap } from 'src/helpers/database.helper';
+import { EntityManager, Repository, UpdateResult } from 'typeorm';
+import { UserAppsPermissions } from '@modules/permissions/interface/permissions-ability.interface';
 
 @Injectable()
 export class FoldersService {
   constructor(
     @InjectRepository(Folder)
     private foldersRepository: Repository<Folder>,
-    @InjectRepository(FolderApp)
-    private folderAppsRepository: Repository<FolderApp>,
-    @InjectRepository(App)
-    private appsRepository: Repository<App>,
-    private usersService: UsersService
+
+    private abilityService: AbilityService
   ) {}
 
   async create(user: User, folderName): Promise<Folder> {
@@ -43,147 +42,133 @@ export class FoldersService {
     }, [{ dbConstraint: DataBaseConstraints.FOLDER_NAME_UNIQUE, message: 'This folder name is already taken.' }]);
   }
 
-  async allFolders(user: User, searchKey?: string): Promise<Folder[]> {
-    const allViewableApps = await viewableAppsQuery(user, searchKey, ['id']).getMany();
+  async allFoldersWithAppCount(
+    user: User,
+    userAppPermissions: UserAppsPermissions,
+    searchKey?: string
+  ): Promise<Folder[]> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return await getFolderQuery(user.organizationId, manager, userAppPermissions, searchKey).distinct().getMany();
+    });
+  }
 
-    const allViewableAppIds = allViewableApps.map((app) => app.id);
-
-    if (await this.usersService.userCan(user, 'create', 'Folder')) {
-      return await getFolderQuery(true, allViewableAppIds, user.organizationId).distinct().getMany();
-    }
-
-    if (allViewableAppIds.length === 0) return [];
-
-    return await getFolderQuery(false, allViewableAppIds, user.organizationId).distinct().getMany();
+  async allFolders(user: User, type = 'front-end'): Promise<Folder[]> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return await getAllFoldersQuery(user.organizationId, manager, type).getMany();
+    });
   }
 
   async all(user: User, searchKey: string): Promise<Folder[]> {
+    const userAppPermissions = (
+      await this.abilityService.resourceActionsPermission(user, {
+        resources: [{ resource: TOOLJET_RESOURCE.APP }],
+        organizationId: user.organizationId,
+      })
+    ).App;
+
     const allFolderList = await this.allFolders(user);
-    if (!searchKey || !allFolderList || allFolderList.length === 0) {
+    if (allFolderList.length === 0) {
       return allFolderList;
     }
-    const folders = await this.allFolders(user, searchKey);
+
+    const folders = await this.allFoldersWithAppCount(user, userAppPermissions, searchKey);
+
     allFolderList.forEach((folder, index) => {
       const currentFolder = folders.find((f) => f.id === folder.id);
       if (currentFolder) {
-        allFolderList[index] = currentFolder;
+        allFolderList[index].folderApps = [...(currentFolder?.folderApps || [])];
+        allFolderList[index].generateCount();
+        console.log('folder found');
       } else {
         allFolderList[index].folderApps = [];
         allFolderList[index].generateCount();
+        console.log('folder  not found');
       }
     });
     return allFolderList;
   }
 
   async findOne(folderId: string): Promise<Folder> {
-    return await this.foldersRepository.findOneOrFail(folderId);
+    return await this.foldersRepository.findOneOrFail({ where: { id: folderId } });
   }
 
-  async userAppCount(user: User, folder: Folder, searchKey: string) {
-    const folderApps = await this.folderAppsRepository.find({
-      where: {
-        folderId: folder.id,
-      },
+  async getAppsFor(
+    user: User,
+    folder: Folder,
+    page: number,
+    searchKey: string
+  ): Promise<{
+    viewableApps: AppBase[];
+    totalCount: number;
+  }> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const folderApps = await manager
+        .createQueryBuilder(FolderApp, 'folderApp')
+        .innerJoin('folderApp.app', 'app', 'folderApp.folderId = :id', {
+          id: folder.id,
+        })
+        .where('LOWER(app.name) LIKE :name', { name: `%${(searchKey ?? '').toLowerCase()}%` })
+        .getMany();
+
+      const userPermission = await this.abilityService.resourceActionsPermission(user, {
+        resources: [{ resource: TOOLJET_RESOURCE.APP }],
+        organizationId: user.organizationId,
+      });
+      const userAppPermissions = userPermission?.[TOOLJET_RESOURCE.APP];
+
+      const folderAppIds = folderApps.map((folderApp) => folderApp.appId);
+      if (folderAppIds.length == 0) {
+        return {
+          viewableApps: [],
+          totalCount: 0,
+        };
+      }
+      const { isAllEditable, isAllViewable, hideAll } = userAppPermissions;
+      const viewableAppsTotal = isAllEditable
+        ? [null, ...folderAppIds]
+        : hideAll
+        ? [null, ...userAppPermissions.editableAppsId]
+        : isAllViewable
+        ? [null, ...folderAppIds].filter((id) => !userAppPermissions.hiddenAppsId.includes(id))
+        : [
+            null,
+            ...Array.from(
+              new Set([
+                ...userAppPermissions.editableAppsId,
+                ...userAppPermissions.viewableAppsId.filter((id) => !userAppPermissions.hiddenAppsId.includes(id)),
+              ])
+            ),
+          ];
+
+      const viewableAppIds = [null, ...viewableAppsTotal.filter((id) => folderAppIds.includes(id))];
+
+      const viewableAppsInFolder = manager
+        .createQueryBuilder(AppBase, 'apps')
+        .innerJoin('apps.user', 'user')
+        .addSelect(['user.firstName', 'user.lastName']);
+
+      viewableAppsInFolder.where('apps.id IN (:...viewableAppIds)', {
+        viewableAppIds: viewableAppIds,
+      });
+
+      const [viewableApps, totalCount] = await Promise.all([
+        viewableAppsInFolder
+          .take(9)
+          .skip(9 * (page - 1))
+          .orderBy('apps.createdAt', 'DESC')
+          .getMany(),
+        viewableAppsInFolder.getCount(),
+      ]);
+
+      return {
+        viewableApps,
+        totalCount,
+      };
     });
-    const folderAppIds = folderApps.map((folderApp) => folderApp.appId);
-
-    if (folderAppIds.length == 0) {
-      return 0;
-    }
-
-    const viewableAppsQb = viewableAppsQuery(user, searchKey);
-
-    const folderAppsQb = createQueryBuilder(App, 'apps_in_folder').whereInIds(folderAppIds);
-
-    return await createQueryBuilder(App, 'apps')
-      .innerJoin(
-        '(' + viewableAppsQb.getQuery() + ')',
-        'viewable_apps_join',
-        'apps.id = viewable_apps_join.viewable_apps_id'
-      )
-      .innerJoin(
-        '(' + folderAppsQb.getQuery() + ')',
-        'apps_in_folder_join',
-        'apps.id = apps_in_folder_join.apps_in_folder_id'
-      )
-      .setParameters({
-        ...folderAppsQb.getParameters(),
-        ...viewableAppsQb.getParameters(),
-      })
-      .getCount();
-  }
-
-  async getAppsFor(user: User, folder: Folder, page: number, searchKey: string): Promise<AppBase[]> {
-    const folderApps = await this.folderAppsRepository.find({
-      where: {
-        folderId: folder.id,
-      },
-    });
-
-    const folderAppIds = folderApps.map((folderApp) => folderApp.appId);
-
-    if (folderAppIds.length == 0) {
-      return [];
-    }
-
-    const viewableAppsQb = viewableAppsQuery(user, searchKey);
-
-    const folderAppsQb = createQueryBuilder(App, 'apps_in_folder').whereInIds(folderAppIds);
-
-    const viewableAppsInFolder = await createQueryBuilder(AppBase, 'apps')
-      .innerJoin(
-        '(' + viewableAppsQb.getQuery() + ')',
-        'viewable_apps_join',
-        'apps.id = viewable_apps_join.viewable_apps_id'
-      )
-      .innerJoin(
-        '(' + folderAppsQb.getQuery() + ')',
-        'apps_in_folder_join',
-        'apps.id = apps_in_folder_join.apps_in_folder_id'
-      )
-      .innerJoin('apps.user', 'user')
-      .addSelect(['user.firstName', 'user.lastName'])
-      .setParameters({
-        ...folderAppsQb.getParameters(),
-        ...viewableAppsQb.getParameters(),
-      })
-      .take(9)
-      .skip(9 * (page - 1))
-      .orderBy('apps.createdAt', 'DESC')
-      .getMany();
-
-    return viewableAppsInFolder;
   }
 
   async delete(user: User, id: string) {
-    const folder = await this.foldersRepository.findOneOrFail({ id, organizationId: user.organizationId });
-    const allViewableApps = await createQueryBuilder(App, 'apps')
-      .select('apps.id')
-      .innerJoin('apps.groupPermissions', 'group_permissions')
-      .innerJoin('apps.appGroupPermissions', 'app_group_permissions')
-      .innerJoin(
-        UserGroupPermission,
-        'user_group_permissions',
-        'app_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
-      )
-      .where('user_group_permissions.user_id = :userId', { userId: user.id })
-      .andWhere('app_group_permissions.read = :value', { value: true })
-      .orWhere('apps.user_id = :userId', {
-        value: true,
-        organizationId: user.organizationId,
-        userId: user.id,
-      })
-      .getMany();
-
-    const allViewableAppIds = allViewableApps.map((app) => app.id);
-
-    folder.folderApps.map((folderApp: FolderApp) => {
-      if (!allViewableAppIds.includes(folderApp.appId)) {
-        throw new ForbiddenException(
-          'Applications not authorised for you are included in the folder, please contact administrator to remove them and try again'
-        );
-      }
-    });
-    return await this.foldersRepository.delete({ id, organizationId: user.organizationId });
+    const folder = await this.foldersRepository.findOneOrFail({ where: { id, organizationId: user.organizationId } });
+    return await this.foldersRepository.delete({ id: folder.id, organizationId: user.organizationId });
   }
 }

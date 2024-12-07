@@ -2,6 +2,11 @@
     margin-left: 8px;
 }
 
+.form-check-input.tj-toggle-switch{
+    width: 28px !important;
+    height: 16px !important;
+}
+
 .form-check-input:checked {
     background-color: var(--indigo9);
 }
@@ -12,4 +17,19 @@
 
 .form-check>.form-check-input:not(:checked) {
     background-color: #ffffff;
+}
+.text-wrappers{
+    display: flex;
+    flex-direction: column;
+}
+.tj-toggle-text{
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 20px;
+}
+.tj-toggle-subtext{
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 18px;
+    color: #6A727C;
 }

@@ -34,18 +34,20 @@
   }
 
   .error-1 {
-    padding: 12px 0px 0px 10px !important;
-
+    margin: 12px 0px !important;
+    display: flex;
+    gap: 5px;
+    align-items: center;
     .file-upload-error {
       color: var(--tomato10) !important;
-      margin: 12px 0px 0px 10px !important;
     }
   }
 
   .error-2 {
+    margin: 12px 0px !important;
     .file-upload-error {
       color: var(--tomato10) !important;
-      margin: 12px 0px 0px 35px !important;
+      overflow-wrap: break-word;
     }
   }
 }
