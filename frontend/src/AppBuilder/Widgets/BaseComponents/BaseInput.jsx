@@ -4,6 +4,10 @@ import Loader from '@/ToolJetUI/Loader/Loader';
 import * as Icons from '@tabler/icons-react';
 const tinycolor = require('tinycolor2');
 
+const RenderInput = (props) => {
+  return props.inputType !== 'textarea' ? <input {...props} /> : <textarea {...props} />;
+};
+
 export const BaseInput = ({
   height,
   styles,
@@ -89,24 +93,40 @@ export const BaseInput = ({
     textOverflow: 'ellipsis',
   };
 
-  const loaderStyle = {
-    right:
-      direction === 'right' &&
-      defaultAlignment === 'side' &&
-      ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0))
-        ? `${labelWidth + 11}px`
-        : '11px',
-    top:
-      defaultAlignment === 'top'
-        ? ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)) &&
-          'calc(50% + 10px)'
-        : '',
-    transform:
-      defaultAlignment === 'top' &&
-      ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)) &&
-      ' translateY(-50%)',
-    zIndex: 3,
-  };
+  let loaderStyle;
+  // for textarea loader position is fixed on top right of input box.
+  if (inputType !== 'textarea') {
+    loaderStyle = {
+      right:
+        direction === 'right' &&
+        defaultAlignment === 'side' &&
+        ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0))
+          ? `${labelWidth + 11}px`
+          : '11px',
+      top:
+        defaultAlignment === 'top'
+          ? ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)) &&
+            'calc(50% + 10px)'
+          : '',
+      transform:
+        defaultAlignment === 'top' &&
+        ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)) &&
+        ' translateY(-50%)',
+      zIndex: 3,
+    };
+  } else {
+    loaderStyle = {
+      right:
+        direction === 'right' &&
+        defaultAlignment === 'side' &&
+        ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0))
+          ? `${labelWidth + 11}px`
+          : '11px',
+      top: defaultAlignment === 'top' ? '30px' : '10px',
+      transform: 'none',
+      zIndex: 3,
+    };
+  }
 
   // eslint-disable-next-line import/namespace
   const IconElement = Icons[icon] ?? Icons['IconHome2'];
@@ -161,7 +181,11 @@ export const BaseInput = ({
                   : '11px',
               position: 'absolute',
               top:
-                defaultAlignment === 'side'
+                inputType === 'textarea'
+                  ? defaultAlignment === 'top'
+                    ? '38px'
+                    : '18px'
+                  : defaultAlignment === 'side'
                   ? '50%'
                   : (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)
                   ? 'calc(50% + 10px)'
@@ -173,8 +197,8 @@ export const BaseInput = ({
             stroke={1.5}
           />
         )}
-
-        <input
+        <RenderInput
+          inputType={inputType}
           data-cy={dataCy}
           ref={inputRef}
           type={inputType}

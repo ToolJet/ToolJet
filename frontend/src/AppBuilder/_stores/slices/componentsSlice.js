@@ -1841,6 +1841,7 @@ export const createComponentsSlice = (set, get) => ({
         'DaterangePicker',
         'DatePickerV2',
         'TimePicker',
+        'TextareaV2',
       ].includes(componentType)
     ) {
       return layoutData?.height;

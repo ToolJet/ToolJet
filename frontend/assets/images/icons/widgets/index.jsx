@@ -180,6 +180,7 @@ const WidgetIcon = (props) => {
     case 'text':
       return <Text {...props} />;
     case 'textarea':
+    case 'textarealegacy':
       return <TextArea {...props} />;
     case 'textinput':
       return <Textinput {...props} />;

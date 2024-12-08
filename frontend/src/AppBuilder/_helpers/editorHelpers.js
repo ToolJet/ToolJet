@@ -5,6 +5,7 @@ import { Text } from '@/Editor/Components/Text';
 import { Table } from '@/AppBuilder/Widgets/Table/Table';
 
 import { TextInput } from '@/AppBuilder/Widgets/TextInput';
+import { TextareaV2 } from '@/AppBuilder/Widgets/TextareaV2';
 import { NumberInput } from '@/AppBuilder/Widgets/NumberInput';
 import { TextArea } from '@/Editor/Components/TextArea';
 import { RichTextEditor } from '@/Editor/Components/RichTextEditor';
@@ -90,6 +91,7 @@ export const AllComponents = {
   Image,
   Text,
   TextInput,
+  TextareaV2,
   NumberInput,
   Table,
   TextArea,

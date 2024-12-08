@@ -58,6 +58,7 @@ import {
   linkConfig,
   iconConfig,
   boundedBoxConfig,
+  textareaV2Config,
 } from '../widgets';
 
 export const widgets = [
@@ -80,6 +81,7 @@ export const widgets = [
   toggleswitchConfig,
   toggleSwitchV2Config,
   textareaConfig,
+  textareaV2Config,
   daterangepickerConfig,
   textConfig,
   imageConfig,

@@ -15735,6 +15735,11 @@ tbody {
   /* Set the desired width */
 }
 
+textarea.tj-text-input-widget{
+  resize: none !important;
+  overflow-y: auto !important;
+}
+
 .tj-text-input-widget {
   border: 1px solid var(--borders-default);
   background-color: var(--surfaces-surface-01);
