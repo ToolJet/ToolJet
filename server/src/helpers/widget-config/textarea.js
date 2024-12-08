@@ -1,6 +1,6 @@
 export const textareaConfig = {
-  name: 'Textarea',
-  displayName: 'Text Area',
+  name: 'TextareaLegacy',
+  displayName: 'Text Area (Legacy)',
   description: 'Multi-line text input',
   component: 'TextArea',
   defaultSize: {
