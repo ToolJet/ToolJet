@@ -438,6 +438,7 @@ export const createEventsSlice = (set, get) => ({
           component: `[Page ${pageName}] [Component ${componentName}] [Event ${event?.eventId}] [Action ${event.actionId}]`,
           page: `[Page ${pageName}] [Event ${event.eventId}] [Action ${event.actionId}]`,
           query: `[Query ${getQueryName()}] [Event ${event.eventId}] [Action ${event.actionId}]`,
+          customLog: event.description,
         };
 
         return headerMap[source] || '';
@@ -450,6 +451,7 @@ export const createEventsSlice = (set, get) => ({
           page: 'Event Errors with page',
           component: 'Component Event',
           query: 'Event Errors with query',
+          customLog: 'Custom Log',
         };
 
         return errorTargetMap[source];
@@ -503,6 +505,12 @@ export const createEventsSlice = (set, get) => ({
                 break;
             }
             return Promise.resolve();
+          }
+          case 'log-info': {
+            get().eventsSlice.logError('Custom Log', 'Custom-log', '', eventObj, {
+              eventId: event.eventId,
+            });
+            break;
           }
           case 'run-query': {
             try {
@@ -1062,6 +1070,11 @@ export const createEventsSlice = (set, get) => ({
         return executeAction(event, mode, {});
       };
 
+      const logInfo = (log) => {
+        const event = { actionId: 'log-info', description: log, eventType: 'customLog' };
+        return executeAction(event, mode, {});
+      };
+
       return {
         runQuery,
         setVariable,
@@ -1079,6 +1092,7 @@ export const createEventsSlice = (set, get) => ({
         getPageVariable,
         unsetPageVariable,
         switchPage,
+        logInfo,
       };
     },
     // Selectors

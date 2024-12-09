@@ -926,6 +926,20 @@ export const createQueryPanelSlice = (set, get) => ({
           data: await evalFn(...fnArgs),
         };
       } catch (err) {
+        const stackLines = err.stack.split('\n');
+        const errorMessage = stackLines[0];
+        const errorLocation = stackLines[1]?.match(/<anonymous>:(\d+):(\d+)/);
+
+        let lineNumber = null;
+        let columnNumber = null;
+
+        if (errorLocation) {
+          lineNumber = errorLocation[1];
+          columnNumber = errorLocation[2];
+        }
+
+        console.log({ lineNumber, columnNumber });
+
         console.log('JS execution failed: ', err);
         error = err.stack.split('\n')[0];
         result = { status: 'failed', data: { message: error, description: error } };
