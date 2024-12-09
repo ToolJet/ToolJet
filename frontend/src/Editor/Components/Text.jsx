@@ -14,6 +14,7 @@ const VERTICAL_ALIGNMENT_VS_CSS_VALUE = {
 let count = 0;
 
 export const Text = function Text({
+  id,
   height,
   properties,
   fireEvent,
@@ -22,6 +23,8 @@ export const Text = function Text({
   setExposedVariable,
   setExposedVariables,
   dataCy,
+  adjustComponentPositions,
+  currentLayout,
 }) {
   let {
     textSize,
@@ -44,13 +47,15 @@ export const Text = function Text({
     isScrollRequired,
   } = styles;
   const isInitialRender = useRef(true);
-  const { loadingState, textFormat, disabledState } = properties;
+  const { loadingState, textFormat, disabledState, dynamicHeight } = properties;
   const [text, setText] = useState(() => computeText());
   const [visibility, setVisibility] = useState(properties.visibility);
   const [isLoading, setLoading] = useState(loadingState);
   const [isDisabled, setIsDisabled] = useState(disabledState);
   const color = ['#000', '#000000'].includes(textColor) ? (darkMode ? '#fff' : '#000') : textColor;
   count = count + 1;
+  const prevDynamicHeight = useRef(dynamicHeight);
+
   useEffect(() => {
     if (visibility !== properties.visibility) setVisibility(properties.visibility);
     if (isLoading !== loadingState) setLoading(loadingState);
@@ -58,6 +63,28 @@ export const Text = function Text({
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility, loadingState, disabledState]);
+
+  useEffect(() => {
+    if (dynamicHeight) {
+      const element = document.querySelector(`.ele-${id}`);
+      if (element) {
+        element.style.height = 'auto';
+        // Wait for the next frame to ensure the height has updated
+        requestAnimationFrame(() => {
+          adjustComponentPositions(id, currentLayout, false);
+        });
+      }
+    } else if (!dynamicHeight && prevDynamicHeight.current) {
+      const element = document.querySelector(`.ele-${id}`);
+      if (element) {
+        element.style.height = `${height}px`;
+        requestAnimationFrame(() => {
+          adjustComponentPositions(id, currentLayout, false);
+        });
+      }
+    }
+    prevDynamicHeight.current = dynamicHeight;
+  }, [dynamicHeight, id, text, adjustComponentPositions, currentLayout, height]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
@@ -127,7 +154,7 @@ export const Text = function Text({
   };
 
   const computedStyles = {
-    height: `${height}px`,
+    height: dynamicHeight ? 'auto' : `${height}px`,
     backgroundColor: darkMode && ['#edeff5'].includes(backgroundColor) ? '#2f3c4c' : backgroundColor,
     color,
     display: visibility ? 'flex' : 'none',
@@ -150,12 +177,14 @@ export const Text = function Text({
   const commonStyles = {
     width: '100%',
     height: '100%',
-    overflowY: isScrollRequired == 'enabled' ? 'auto' : 'hidden',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: VERTICAL_ALIGNMENT_VS_CSS_VALUE[verticalAlignment],
     textAlign,
-    overflowX: isScrollRequired === 'disabled' && 'hidden',
+    ...(!dynamicHeight && {
+      overflowX: isScrollRequired === 'disabled' && 'hidden',
+      overflowY: isScrollRequired == 'enabled' ? 'auto' : 'hidden',
+    }),
   };
 
   const commonScrollStyle = {
