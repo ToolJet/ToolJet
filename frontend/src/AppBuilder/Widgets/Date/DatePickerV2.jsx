@@ -179,6 +179,8 @@ export const DatePickerV2 = ({
     excludeDates: excludedDates,
     showMonthYearPicker: datepickerMode === 'month',
     showYearPicker: datepickerMode === 'year',
+    minDate: moment(minDate).isValid() ? minDate : null,
+    maxDate: moment(maxDate).isValid() ? maxDate : null,
     value: displayTimestamp,
     showTimeInput: false,
     onCalendarClose: () => {

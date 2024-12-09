@@ -16610,11 +16610,6 @@ fieldset:disabled {
   }
   
 
-  .dark-theme {
-    .react-datepicker__day {
-      color: white;
-    }
-  }
 }
 
 .custom-inspector-validation-time-picker {
@@ -16630,6 +16625,7 @@ fieldset:disabled {
   .react-datepicker__input-time-container {
     border-radius:10px;
   }
+  
 
   
 }
@@ -16652,3 +16648,161 @@ fieldset:disabled {
   }
 }
 
+
+.tj-daterange-widget.dark-theme {
+  .react-datepicker__day {
+    color: white;
+  }
+
+  .react-datepicker__day:hover, .react-datepicker__day--selecting-range-end {
+    background-color: var(--interactive-overlays-fill-hover) !important ;
+  }
+
+  .react-datepicker__day--keyboard-selected {
+    background-color: var(--interactive-overlays-fill-pressed) !important;
+  }
+
+  .react-datepicker__month-container {
+    background-color: #1e2226;
+  }
+
+  .react-datepicker__day--outside-month {
+    color: #6d757d;
+  }
+
+  .react-datepicker__day-name {
+    color: #858c94;
+  }
+
+}
+
+.tj-daterange-widget {
+
+  border-radius:10px;
+  box-shadow: 0px 8px 16px 0px #3032331A !important;
+  font-family: 'IBM Plex Sans';
+
+  .react-datepicker__day--in-selecting-range, .react-datepicker__day--in-range {
+    border-radius:0px;
+    background-color: #4368E31A !important;
+  }
+  .react-datepicker__header{
+    background-color: var(--surfaces-surface-01);
+    padding: 6px 0px;
+    border: none;
+  }
+
+  .react-datepicker__day--selecting-range-end {
+    border-radius: 8px;
+    background-color: #ededee !important;
+  }
+
+  .react-datepicker__day--selecting-range-start, .react-datepicker__day--selected, .react-datepicker__day--range-end {
+    border-radius:8px !important;
+    background-color: #4368E3 !important;
+    color: #fff !important;
+  }
+
+  .react-datepicker__day--in-range:has(+ .react-datepicker__day--range-end),  .react-datepicker__day--in-selecting-range:has(+ .react-datepicker__day--selecting-range-end) {
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+  }
+  
+  .react-datepicker__day--in-range:has(+ .react-datepicker__day--range-end) {
+    box-shadow: 10px 0 0 0px #4368E31A;
+  }
+
+  .react-datepicker__day--range-start + .react-datepicker__day--in-range,  .react-datepicker__day--selecting-range-start + .react-datepicker__day--in-selecting-range{
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+  }
+
+  .react-datepicker__day--range-start + .react-datepicker__day--in-range {
+    box-shadow: -10px 0 0 0px #4368E31A;
+  }
+  
+  .react-datepicker__week {
+
+    .react-datepicker__day--in-range:first-of-type, 
+    .react-datepicker__day--in-selecting-range:first-of-type, 
+    .react-datepicker__day--outside-month + .react-datepicker__day--in-range,  
+    .react-datepicker__day--outside-month + .react-datepicker__day--in-selecting-range{
+      border-top-left-radius: 8px;
+      border-bottom-left-radius: 8px;
+    }
+
+    .react-datepicker__day--in-range:last-of-type, 
+    .react-datepicker__day--in-selecting-range:last-of-type, 
+    .react-datepicker__day--in-range:has(+ .react-datepicker__day--outside-month), 
+    .react-datepicker__day--in-selecting-range:has(+ .react-datepicker__day--outside-month){
+      border-top-right-radius: 8px;
+      border-bottom-right-radius: 8px;
+    }
+
+  }
+
+  .tj-datepicker-widget-arrows {
+    box-shadow: 0px 1px 0px 0px #0000000B;
+    border: 1px solid var(--borders-default);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    background-color: var(--surfaces-surface-01) !important;
+  }
+
+  .tj-datepicker-widget-right {
+      position: absolute;
+      right: 10px;
+  }
+
+  .tj-datepicker-widget-left {
+    position: absolute;
+    left: 10px;
+  }
+
+  .react-datepicker__day {
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 500;
+    color: var(--text-primary);
+    width: 34px;
+    margin: 0px;
+  }
+
+  .react-datepicker__week {
+    height: 24px;
+    margin-bottom: 11px;
+  }
+
+  .react-datepicker {
+    border-radius:10px !important;
+    border:none;
+  }
+  
+}
+
+.tj-daterangepicker-widget-month-selector, .tj-daterangepicker-widget-year-selector {
+    appearance: none;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    padding-right: 4px;
+    /* Add some padding on the right to create space for custom arrow */
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23424242" width="18px" height="18px"><path d="M7 10l5 5 5-5z" /></svg>');
+    /* Add a custom arrow (you can use your own SVG) */
+    background-repeat: no-repeat;
+    background-position: right center;
+    border: none;
+    /* Remove the default border */
+    padding: 8px;
+    /* Adjust padding as needed */
+    cursor: pointer;
+    /* Add pointer cursor for better usability */
+    background: none;
+    padding: 0px;
+    height: 24px;
+    text-align: center;
+    color: var(--text-primary);
+    font-weight: 500; 
+    width:auto;
+}
