@@ -35,6 +35,7 @@ describe("Password reset functionality", () => {
         "Maximum password retry limit reached, please reset your password using forgot password option"
       );
     });
+
     it("Verify forgot password page elements and functionality", () => {
       cy.visit("/");
       cy.get(commonSelectors.forgotPasswordLink).click();
@@ -102,6 +103,7 @@ describe("Password reset functionality", () => {
         passwordResetLink = `/reset-password/${resp.rows[0].forgot_password_token}`;
       });
     });
+
     it("Verify reset password page and functionality", () => {
       cy.visit(passwordResetLink);
       cy.get(commonSelectors.pageLogo).should("be.visible");
@@ -174,6 +176,7 @@ describe("Password reset functionality", () => {
         commonText.backToLoginButton
       );
     });
+    
     it("Verify user login using new password", () => {
       cy.visit("/");
       cy.clearAndType(onboardingSelectors.signupEmailInput, data.email);
