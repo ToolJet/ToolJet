@@ -147,7 +147,9 @@ export const baseComponentProperties = (
           'properties',
           currentState,
           allComponents,
-          darkMode
+          darkMode,
+          '',
+          component.component.properties[property]?.isDisabled ?? false
         )
       ),
     });

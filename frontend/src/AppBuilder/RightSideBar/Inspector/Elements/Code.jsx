@@ -18,6 +18,7 @@ export const Code = ({
   component,
   accordian,
   placeholder,
+  isDisabled,
 }) => {
   const currentState = useCurrentState();
 
@@ -46,6 +47,7 @@ export const Code = ({
     <div className={`field ${options.className}`} style={{ marginBottom: '8px' }}>
       <CodeEditor
         type="fxEditor"
+        disabled={isDisabled}
         initialValue={initialValue}
         paramName={param.name}
         paramLabel={paramMeta?.showLabel !== false ? displayName : ' '}
