@@ -151,6 +151,9 @@
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^14.4.3",
+    "@types/react": "^18.3.12",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
     "autoprefixer": "^10.4.17",
     "babel-loader": "^9.1.2",
     "babel-plugin-console-source": "^2.0.5",
@@ -181,6 +184,7 @@
     "style-loader": "^3.3.1",
     "tailwindcss": "^3.4.1",
     "terser-webpack-plugin": "^5.3.6",
+    "typescript": "^5.7.2",
     "webpack": "^5.75.0",
     "webpack-cli": "^5.0.1",
     "webpack-dev-server": "4.11.1"
