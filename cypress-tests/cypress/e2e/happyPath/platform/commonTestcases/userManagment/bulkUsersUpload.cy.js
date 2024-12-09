@@ -1,7 +1,7 @@
 import { commonSelectors } from "Selectors/common";
 import { usersText } from "Texts/manageUsers";
 import { usersSelector } from "Selectors/manageUsers";
-import { bulkUserUpload } from "Support/utils/manageUsers";
+import { bulkUserUpload,bulkUserUploadDuplicate} from "Support/utils/manageUsers";
 import * as common from "Support/utils/common";
 import { path } from "Texts/common";
 import { groupsSelector } from "Selectors/manageGroups";
@@ -14,8 +14,6 @@ describe("Bulk user upload", () => {
   const without_email = "cypress/fixtures/bulkUser/without_email - Sheet1.csv";
   const without_group = "cypress/fixtures/bulkUser/without_group - Sheet1.csv";
   const same_email = "cypress/fixtures/bulkUser/same_email - Sheet1.csv";
-  const invalid_group_name =
-    "cypress/fixtures/bulkUser/invalid_group_name - Sheet1.csv";
   const empty_first_and_last_name =
     "cypress/fixtures/bulkUser/empty_first_and_last_name - Sheet1.csv";
   const limit_exceeded_list =
@@ -24,10 +22,8 @@ describe("Bulk user upload", () => {
     "cypress/fixtures/bulkUser/non_existing_group -Sheet1 .csv";
   const multiple_groups =
     "cypress/fixtures/bulkUser/multiple_groups - Sheet1.csv";
-  const without_firstName =
-    "cypress/fixtures/bulkUser/without_firstname - Sheet1.csv";
-  const without_lastName =
-    "cypress/fixtures/bulkUser/without_lastname - Sheet1.csv";
+  const without_Role =
+    "cypress/fixtures/bulkUser/without_Role - Sheet1.csv";
   const invite_users = "cypress/fixtures/bulkUser/invite_users - Sheet1 .csv";
   const Validinvite = "cypress/fixtures/bulkUser/10usersupload.csv";
 
@@ -54,24 +50,13 @@ describe("Bulk user upload", () => {
       "without_email",
       "Missing email,groups information in 10 row(s);. No users were uploaded, please update and try again."
     );
-    // bulkUserUpload(
-    //   without_group,
-    //   "without_group",
-    //   "Invalid row(s): [groups] in [5] row(s). No users were uploaded."
-    // );
 
-    //Add automation for modal data-cy="close-button"
-    // bulkUserUpload(
-    //   same_email,
-    //   "same_email",
-    //   "Duplicate email found. Please provide a unique email address."
-    // );
+    bulkUserUploadDuplicate(
+      same_email,
+      "same_email",
+      "Duplicate email found. Please provide a unique email address."
+    );
 
-    // bulkUserUpload(
-    //   invalid_group_name,
-    //   "invalid_group_name",
-    //   "11 groups doesn't exist. No users were uploaded"
-    // );
     bulkUserUpload(
       empty_first_and_last_name,
       "empty_first_and_last_name",
@@ -89,6 +74,12 @@ describe("Bulk user upload", () => {
       "2 groups doesn't exist. No users were uploaded"
     );
 
+    bulkUserUpload(
+      without_Role,
+      "without_Role",
+      "Missing user_role,groups information in 5 row(s);. No users were uploaded, please update and try again."
+    );
+
     //add more groups and verify
 
     // bulkUserUpload(
@@ -97,32 +88,8 @@ describe("Bulk user upload", () => {
     //   "Conflicting Group Memberships: User cannot be in both the Admin group and other groups simultaneously."
     // );
 
-    // cy.get(usersSelector.inputFieldBulkUpload).selectFile(without_firstName, {
-    //   force: true,
-    // });
-    // cy.get(usersSelector.uploadedFileData).should(
-    //   "contain",
-    //   "without_firstname"
-    // );
-    // cy.get(usersSelector.buttonUploadUsers).click();
-    // cy.get(".go2072408551")
-    //   .should("be.visible")
-    //   .and("have.text", "Missing first_name,user_role,groups information in 5 row(s);. No users were uploaded, please update and try again.Missing first_name,user_role,groups information in 5 row(s);. No users were uploaded, please update and try again.");
-
-    //   cy.wait(5000);
-    //   // cy.get(usersSelector.buttonAddUsers).click();
-    //   cy.get(usersSelector.buttonUploadCsvFile).click();
-    //   cy.get(usersSelector.inputFieldBulkUpload).selectFile(without_lastName, {
-    //     force: true,
-    //   });
-    //   cy.get(usersSelector.uploadedFileData).should(
-    //     "contain",
-    //     "without_lastname"
     //   );
-    //   cy.get(usersSelector.buttonUploadUsers).click();
-    //   cy.get(".go2072408551")
-    //     .should("be.visible")
-    //     .and("have.text", "Missing last_name,user_role,groups information in 5 row(s);. No users were uploaded, please update and try again.Missing last_name,user_role,groups information in 5 row(s);. No users were uploaded, please update and try again.");
+
   });
 
   it("Verify bulk user upload functionality", () => {
