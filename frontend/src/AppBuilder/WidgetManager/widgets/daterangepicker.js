@@ -117,7 +117,10 @@ export const daterangepickerConfig = {
     {
       handle: 'setStartDate',
       displayName: 'Set Start Date',
-      params: [{ handle: 'value', displayName: 'Value' }],
+      params: [
+        { handle: 'value', displayName: 'Value' },
+        { handle: 'format', displayName: 'Format' },
+      ],
     },
     {
       handle: 'clearStartDate',
@@ -126,7 +129,10 @@ export const daterangepickerConfig = {
     {
       handle: 'setEndDate',
       displayName: 'Set End Date',
-      params: [{ handle: 'value', displayName: 'Value' }],
+      params: [
+        { handle: 'value', displayName: 'Value' },
+        { handle: 'format', displayName: 'Format' },
+      ],
     },
     {
       handle: 'clearEndDate',
@@ -138,6 +144,7 @@ export const daterangepickerConfig = {
       params: [
         { handle: 'startDate', displayName: 'Start Date' },
         { handle: 'endDate', displayName: 'End Date' },
+        { handle: 'format', displayName: 'Format' },
       ],
     },
     {

@@ -88,9 +88,9 @@ export const DaterangePicker = ({
           selectedDateRange: null,
         });
       },
-      setDateRange: (startDate, endDate) => {
-        const startDateObj = moment(startDate, format);
-        const endDateObj = moment(endDate, format);
+      setDateRange: (startDate, endDate, customFormat) => {
+        const startDateObj = moment(startDate, customFormat || format);
+        const endDateObj = moment(endDate, customFormat || format);
         setStartDate(startDateObj.isValid() ? startDateObj.toDate() : null);
         setEndDate(endDateObj.isValid() ? endDateObj.toDate() : null);
         setExposedVariables({
@@ -129,8 +129,8 @@ export const DaterangePicker = ({
   }, []);
 
   useEffect(() => {
-    setExposedVariable('setEndDate', () => {
-      const date = moment(defaultEndDate, format);
+    setExposedVariable('setEndDate', (end, customFormat) => {
+      const date = moment(end, customFormat || format);
       const endDate = date.isValid() ? date.toDate() : null;
       setEndDate(endDate);
       setExposedVariables({
@@ -141,8 +141,8 @@ export const DaterangePicker = ({
   }, [startDate, format]);
 
   useEffect(() => {
-    setExposedVariable('setStartDate', () => {
-      const date = moment(defaultStartDate, format);
+    setExposedVariable('setStartDate', (start, customFormat) => {
+      const date = moment(start, customFormat || format);
       const startDate = date.isValid() ? date.toDate() : null;
       setStartDate(startDate);
       setExposedVariables({
@@ -187,6 +187,7 @@ export const DaterangePicker = ({
 
   const customDateInputProps = {
     dateInputRef,
+    onInputChange: () => {},
     displayFormat: format,
     setTextInputFocus,
     setShowValidationError,
