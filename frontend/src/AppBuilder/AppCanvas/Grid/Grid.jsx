@@ -51,6 +51,7 @@ export default function Grid({ gridWidth, currentLayout }) {
   const canvasWidth = NO_OF_GRIDS * gridWidth;
   const getHoveredComponentForGrid = useStore((state) => state.getHoveredComponentForGrid, shallow);
   const getResolvedComponent = useStore((state) => state.getResolvedComponent, shallow);
+  const getTemporaryLayouts = useStore((state) => state.getTemporaryLayouts, shallow);
 
   useEffect(() => {
     setBoxList(
@@ -87,24 +88,26 @@ export default function Grid({ gridWidth, currentLayout }) {
 
   const handleResizeStop = useCallback(
     (boxList) => {
-      const transformedBoxes = boxList.reduce((acc, box) => {
-        acc[box.id] = box;
-        return acc;
-      }, {});
+      const temporaryLayouts = getTemporaryLayouts();
+
       boxList.forEach(({ id, height, width, x, y, gw }) => {
         const _canvasWidth = gw ? gw * NO_OF_GRIDS : canvasWidth;
         let newWidth = Math.round((width * NO_OF_GRIDS) / _canvasWidth);
-        y = Math.round(y / 10) * 10;
+
+        // Consider temporary layout position if it exists
+        const temporaryLayout = temporaryLayouts[id];
+        y = temporaryLayout?.top ?? Math.round(y / 10) * 10;
+
         gw = gw ? gw : gridWidth;
 
-        const parent = transformedBoxes[id]?.component?.parent;
+        const parent = boxList.find((box) => box.id === id)?.component?.parent;
         if (y < 0) {
           y = 0;
         }
         if (parent) {
           const parentElem = document.getElementById(`canvas-${parent}`);
           const parentId = parent.includes('-') ? parent?.split('-').slice(0, -1).join('-') : parent;
-          const componentType = transformedBoxes.find((box) => box.id === parentId)?.component.component;
+          const componentType = boxList.find((box) => box.id === parentId)?.component.component;
           var parentHeight = parentElem?.clientHeight || height;
           if (height > parentHeight && ['Tabs', 'Listview'].includes(componentType)) {
             height = parentHeight;
@@ -553,8 +556,12 @@ export default function Grid({ gridWidth, currentLayout }) {
         keepRatio={false}
         individualGroupableProps={individualGroupableProps}
         onResize={(e) => {
+          const temporaryLayouts = getTemporaryLayouts();
           const currentWidget = boxList.find(({ id }) => id === e.target.id);
+
           let _gridWidth = useGridStore.getState().subContainerWidths[currentWidget.component?.parent] || gridWidth;
+
+          // Show grid during resize
           if (currentWidget.component?.parent) {
             document.getElementById('canvas-' + currentWidget.component?.parent)?.classList.add('show-grid');
             useGridStore.getState().actions.setDragTarget(currentWidget.component?.parent);
@@ -562,46 +569,36 @@ export default function Grid({ gridWidth, currentLayout }) {
             document.getElementById('real-canvas').classList.add('show-grid');
           }
 
-          const currentWidth = currentWidget.width * _gridWidth;
-          const diffWidth = e.width - currentWidth;
-          const diffHeight = e.height - currentWidget.height;
-          const isLeftChanged = e.direction[0] === -1;
-          const isTopChanged = e.direction[1] === -1;
-
+          // Calculate positions considering temporary layouts
+          let transformY = temporaryLayouts[currentWidget.id]?.top ?? currentWidget.top;
           let transformX = currentWidget.left * _gridWidth;
-          let transformY = currentWidget.top;
-          if (isLeftChanged) {
-            transformX = currentWidget.left * _gridWidth - diffWidth;
+
+          const diffWidth = e.width - currentWidget.width * _gridWidth;
+          const diffHeight = e.height - currentWidget.height;
+
+          if (e.direction[0] === -1) {
+            // Left resize
+            transformX = transformX - diffWidth;
           }
-          if (isTopChanged) {
-            transformY = currentWidget.top - diffHeight;
+          if (e.direction[1] === -1) {
+            // Top resize
+            transformY = transformY - diffHeight;
           }
 
+          // Apply container bounds
           const elemContainer = e.target.closest('.real-canvas');
           const containerHeight = elemContainer.clientHeight;
           const containerWidth = elemContainer.clientWidth;
           const maxY = containerHeight - e.target.clientHeight;
           const maxLeft = containerWidth - e.target.clientWidth;
-          const maxWidthHit = transformX < 0 || transformX >= maxLeft;
-          const maxHeightHit = transformY < 0 || transformY >= maxY;
-          transformY = transformY < 0 ? 0 : transformY > maxY ? maxY : transformY;
-          transformX = transformX < 0 ? 0 : transformX > maxLeft ? maxLeft : transformX;
 
-          if (!maxWidthHit || e.width < e.target.clientWidth) {
-            e.target.style.width = `${e.width}px`;
-          }
-          if (!maxHeightHit || e.height < e.target.clientHeight) {
-            e.target.style.height = `${e.height}px`;
-          }
+          transformY = Math.max(0, Math.min(transformY, maxY));
+          transformX = Math.max(0, Math.min(transformX, maxLeft));
+
+          // Update element style
           e.target.style.transform = `translate(${transformX}px, ${transformY}px)`;
-          // Postion ghost element exactly with respect to resizing element
-          if (document.getElementById('resize-ghost-widget')) {
-            document.getElementById(
-              'resize-ghost-widget'
-            ).style.transform = `translate(${transformX}px, ${transformY}px)`;
-            document.getElementById('resize-ghost-widget').style.width = `${e.target.clientWidth}px`;
-            document.getElementById('resize-ghost-widget').style.height = `${e.target.clientHeight}px`;
-          }
+          if (e.width > 0) e.target.style.width = `${e.width}px`;
+          if (e.height > 0) e.target.style.height = `${e.height}px`;
         }}
         onResizeStart={(e) => {
           if (

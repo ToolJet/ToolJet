@@ -40,6 +40,7 @@ const RenderWidget = ({
 }) => {
   const componentDefinition = useStore((state) => state.getComponentDefinition(id), shallow);
   const getDefaultStyles = useStore((state) => state.debugger.getDefaultStyles, shallow);
+  const adjustComponentPositions = useStore((state) => state.adjustComponentPositions, shallow);
   const component = componentDefinition?.component;
   const componentName = component?.name;
   const [key, setKey] = useState(Math.random());
@@ -184,6 +185,7 @@ const RenderWidget = ({
             onComponentClick={onComponentClick}
             darkMode={darkMode}
             componentName={componentName}
+            adjustComponentPositions={adjustComponentPositions}
           />
         </div>
       </OverlayTrigger>
