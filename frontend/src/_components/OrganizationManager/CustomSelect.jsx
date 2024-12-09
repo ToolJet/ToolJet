@@ -3,15 +3,12 @@ import Select from '@/_ui/Select';
 import { components } from 'react-select';
 import { CreateOrganization } from './CreateOrganization';
 import { useTranslation } from 'react-i18next';
-import { authenticationService } from '@/_services';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components';
 import { decodeEntities } from '@/_helpers/utils';
 const Menu = (props) => {
   const { t } = useTranslation();
-  const { admin } = authenticationService.currentSessionValue;
   const darkMode = localStorage.getItem('darkMode') === 'true';
-
   return (
     <components.Menu {...props}>
       <div
@@ -22,19 +19,17 @@ const Menu = (props) => {
           <div className="org-custom-select-header-wrap" style={{ padding: '8px 12px' }}>
             <div className="row cursor-pointer d-flex align-items-center">
               <div className="col-10 select-header-font">Workspaces ({props.options.length})</div>
-              {admin && (
-                <ToolTip message={'Add new workspace'} position="top">
-                  <div className="col-1" style={{ paddingRight: '24px' }} onClick={props.selectProps.setShowCreateOrg}>
-                    <SolidIcon
-                      name="plus"
-                      fill="var(--icon-strong)"
-                      className=""
-                      dataCy="add-new-workspace-link"
-                      width="15"
-                    />
-                  </div>
-                </ToolTip>
-              )}
+              <ToolTip message={'Add new workspace'} position="top">
+                <div className="col-1" style={{ paddingRight: '24px' }} onClick={props.selectProps.setShowCreateOrg}>
+                  <SolidIcon
+                    name="plus"
+                    fill="var(--icon-strong)"
+                    className=""
+                    dataCy="add-new-workspace-link"
+                    width="15"
+                  />
+                </div>
+              </ToolTip>
             </div>
           </div>
         </>
