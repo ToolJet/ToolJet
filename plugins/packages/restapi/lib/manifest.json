@@ -4,7 +4,7 @@
   "description": "A schema defining restapi datasource",
   "type": "api",
   "source": {
-    "name": "Rest API",
+    "name": "REST API",
     "kind": "restapi",
     "options": {
       "url": {
@@ -31,6 +31,9 @@
       "client_secret": {
         "type": "string",
         "encrypted": true
+      },
+      "audience": {
+        "type": "string"
       },
       "password": {
         "encrypted": true
@@ -98,6 +101,9 @@
     "client_secret": {
       "value": ""
     },
+    "audience": {
+      "value": ""
+    },
     "scopes": {
       "value": "read, write"
     },
@@ -153,79 +159,123 @@
     },
     "ssl_certificate": {
       "value": "none"
+    },
+    "retry_network_errors": {
+      "value": true
     }
   },
   "properties": {
-    "ssl_certificate": {
-      "label": "SSL Certificate",
-      "key": "ssl_certificate",
-      "type": "dropdown-component-flip",
-      "description": "Single select dropdown for choosing certificates",
-      "list": [
-        {
-          "value": "ca_certificate",
-          "name": "CA certificate"
-        },
-        {
-          "value": "client_certificate",
-          "name": "Client certificate"
-        },
-        {
-          "value": "none",
-          "name": "None"
+    "renderForm":{
+      "type": "react-form-component",
+      "credentialsInputs": {
+        "title": "CREDENTIALS",
+        "inputs": {
+          "url": {
+            "label": "Base URL",
+            "key": "url",
+            "type": "text",
+            "description": "https://api.example.com/v1/"
+          },
+          "headers": {
+            "label": "Headers",
+            "key": "headers",
+            "type": "react-component-headers",
+            "description": "key-value pair headers for rest api",
+            "width": "300px"
+          },
+          "url_parameters": {
+            "label": "URL parameters",
+            "key": "url_parameters",
+            "type": "react-component-headers",
+            "description": "key-value pair headers for rest api",
+            "width": "300px"
+          },
+          "body": {
+            "label": "Body",
+            "key": "body",
+            "type": "react-component-headers",
+            "description": "key-value pair headers for rest api",
+            "width": "300px"
+          },
+          "cookies": {
+            "label": "Cookies",
+            "key": "cookies",
+            "type": "react-component-headers",
+            "description": "key-value pair headers for rest api",
+            "width": "300px"
+          }
         }
-      ],
-      "commonFields": {
-        "url": {
-          "label": "Base URL",
-          "key": "url",
-          "type": "text",
-          "description": "https://api.example.com/v1/"
-        },
-        "headers": {
-          "label": "Headers",
-          "key": "headers",
-          "type": "react-component-headers",
-          "description": "key-value pair headers for rest api"
-        },
-        "auth_type": {
-          "label": "Authentication Type",
-          "key": "auth_type",
-          "type": "react-component-oauth-authentication",
-          "description": "key-value pair headers for rest api"
+      },
+      "authenticationInputs": {
+        "title": "AUTHENTICATION",
+        "inputs": {
+          "auth_type": {
+            "label": "Authentication type",
+            "key": "auth_type",
+            "type": "react-component-oauth-authentication",
+            "description": "key-value pair headers for rest api"
+          }
         }
-      }
-    },
-    "ca_certificate": {
-      "ca_cert": {
-        "label": "CA Cert",
-        "key": "ca_cert",
-        "type": "textarea",
-        "encrypted": true,
-        "description": "Enter ca certificate"
-      }
-    },
-    "client_certificate": {
-      "client_key": {
-        "label": "Client Key",
-        "key": "client_key",
-        "type": "textarea",
-        "encrypted": true,
-        "description": "Enter client key"
       },
-      "client_cert": {
-        "label": "Client Cert",
-        "key": "client_cert",
-        "type": "textarea",
-        "encrypted": true,
-        "description": "Enter client certificate"
+      "sslInputs": {
+        "title": "SECURE SOCKETS LAYER",
+        "inputs": {
+          "ssl_certificate": {
+            "label": "SSL Certificate",
+            "key": "ssl_certificate",
+            "type": "dropdown-component-flip",
+            "description": "Single select dropdown for choosing certificates",
+            "list": [
+              { "value": "ca_certificate", "name": "CA certificate" },
+              { "value": "client_certificate", "name": "Client certificate" },
+              { "value": "none", "name": "None" }
+            ]
+          },
+          "ca_certificate": {
+            "ca_cert": {
+              "label": "CA Cert",
+              "key": "ca_cert",
+              "type": "textarea",
+              "encrypted": true,
+              "description": "Enter CA certificate"
+            }
+          },
+          "client_certificate": {
+            "client_key": {
+              "label": "Client Key",
+              "key": "client_key",
+              "type": "textarea",
+              "encrypted": true,
+              "description": "Enter client key"
+            },
+            "client_cert": {
+              "label": "Client Cert",
+              "key": "client_cert",
+              "type": "textarea",
+              "encrypted": true,
+              "description": "Enter client certificate"
+            },
+            "ca_cert": {
+              "label": "CA Cert",
+              "key": "ca_cert",
+              "type": "textarea",
+              "encrypted": true,
+              "description": "Enter CA certificate"
+            }
+          }
+        }
       },
-      "ca_cert": {
-        "label": "CA Cert",
-        "key": "ca_cert",
-        "type": "textarea",
-        "encrypted": true,
-        "description": "Enter ca certificate"
+      "generalSettingInputs": {
+        "title": "GENERAL SETTINGS",
+        "inputs": {
+          "retry_network_errors": {
+            "text": "Retry on network errors",
+            "subtext": "By default, ToolJet tries to hit API endpoint 3 times before declaring query failed as server did not respond",
+            "key": "retry_network_errors",
+            "type": "toggle",
+            "description": "key-value pair headers for rest api"
+          }
+        }
       }
     }
   },

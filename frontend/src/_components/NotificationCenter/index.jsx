@@ -72,7 +72,7 @@ export const NotificationCenter = ({ darkMode }) => {
               <p className="empty-title mb-1" data-cy="empty-notification-title">
                 {t('header.notificationCenter.youAreCaughtUp', `You're all caught up!`)}
               </p>
-              <p className="empty-subtitle text-muted" data-cy="empty-notification-subtitle">
+              <p className="empty-subtitle" data-cy="empty-notification-subtitle">
                 {`${t('header.notificationCenter.youDontHaveany', `You don't have any`)} ${
                   !isRead ? t('header.notificationCenter.un', 'un') : ''
                 }${t('header.notificationCenter.read', 'read')} ${t(
@@ -91,7 +91,7 @@ export const NotificationCenter = ({ darkMode }) => {
         </div>
         <div className="card-footer text-center margin-auto">
           <span
-            className="text-muted text-decoration-none cursor-pointer"
+            className="text-decoration-none cursor-pointer"
             onClick={() => setIsRead(!isRead)}
             data-cy="notifications-card-footer"
           >

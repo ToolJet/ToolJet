@@ -17,7 +17,6 @@ import {
   UseFilters,
   Put,
 } from '@nestjs/common';
-import { Express } from 'express';
 import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
 import { ActiveWorkspaceGuard } from 'src/modules/auth/active-workspace.guard';
 import { TooljetDbService } from '@services/tooljet_db.service';
@@ -72,12 +71,22 @@ export class TooljetDbController {
     return decamelizeKeys({ result });
   }
 
+  @Get('/tables/limits')
+  @UseGuards(TooljetDbGuard)
+  @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.ViewTables, 'all'))
+  async getTablesLimit(@Param('organizationId') organizationId) {
+    const data = await this.tooljetDbService.getTablesLimit();
+    return data;
+  }
+
   @Get('/organizations/:organizationId/table/:tableName')
   @UseGuards(JwtAuthGuard, ActiveWorkspaceGuard, TooljetDbGuard)
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.ViewTable, 'all'))
   async table(@Body() body, @Param('organizationId') organizationId, @Param('tableName') tableName) {
     const result = await this.tooljetDbService.perform(organizationId, 'view_table', { table_name: tableName });
-    return decamelizeKeys({ result });
+    const decamelizedResult = decamelizeKeys({ result });
+    decamelizedResult['result']['configurations'] = result.configurations || {};
+    return decamelizedResult;
   }
 
   @Post('/organizations/:organizationId/table')
@@ -140,26 +149,24 @@ export class TooljetDbController {
 
   @UseInterceptors(FileInterceptor('file'))
   @Post('/organizations/:organizationId/table/:tableName/bulk-upload')
-  async bulkUpload(
-    @Param('organizationId') organizationId,
-    @Param('tableName') tableName,
-    @UploadedFile() file: Express.Multer.File
-  ) {
-    if (file.size > MAX_CSV_FILE_SIZE) {
+  async bulkUpload(@Param('organizationId') organizationId, @Param('tableName') tableName, @UploadedFile() file: any) {
+    if (file?.size > MAX_CSV_FILE_SIZE) {
       throw new BadRequestException('File size cannot be greater than 2MB');
     }
-    const result = await this.tooljetDbBulkUploadService.perform(organizationId, tableName, file.buffer);
+    const result = await this.tooljetDbBulkUploadService.perform(organizationId, tableName, file?.buffer);
 
     return decamelizeKeys({ result });
   }
 
   @Post('/organizations/:organizationId/join')
   @UseFilters(new TooljetDbJoinExceptionFilter())
-  @UseGuards(TooljetDbGuard)
+  @UseGuards(OrganizationAuthGuard, TooljetDbGuard)
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.JoinTables, 'all'))
-  async joinTables(@Body() tooljetDbJoinDto: TooljetDbJoinDto, @Param('organizationId') organizationId) {
+  async joinTables(@Req() req, @Body() tooljetDbJoinDto: TooljetDbJoinDto, @Param('organizationId') organizationId) {
     const params = {
       joinQueryJson: { ...tooljetDbJoinDto },
+      dataQuery: req.dataQuery,
+      user: req.user,
     };
 
     const result = await this.tooljetDbService.perform(organizationId, 'join_tables', params);
@@ -194,6 +201,7 @@ export class TooljetDbController {
     const params = {
       table_name: tableName,
       foreign_keys: foreign_keys,
+      shouldDestroyDbConnection: true,
     };
     const result = await this.tooljetDbService.perform(organizationId, 'create_foreign_key', params);
     return decamelizeKeys({ result });

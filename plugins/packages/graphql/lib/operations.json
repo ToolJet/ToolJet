@@ -27,7 +27,8 @@
       "type": "react-component-headers",
       "description": "key-value pair headers for graphql api",
       "height": "150px",
-      "editorType": "extendedSingleLine"
+      "editorType": "extendedSingleLine",
+      "buttonText": "Add Header"
     }
   },
   "required": [

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import cx from 'classnames';
 import { tooljetDatabaseService, authenticationService } from '@/_services';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
@@ -16,10 +16,15 @@ import { getPrivateRoute } from '@/_helpers/routes';
 import { useNavigate } from 'react-router-dom';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
-const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLayout }) => {
+import './styles.scss';
+import CodeHinter from '@/Editor/CodeEditor';
+import { useCurrentState } from '@/_stores/currentStateStore';
+
+const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLayout, optionsChanged }) => {
   const computeSelectStyles = (darkMode, width) => {
     return queryManagerSelectComponentStyle(darkMode, width);
   };
+  const currentState = useCurrentState();
   const navigate = useNavigate();
   const { current_organization_id: organizationId } = authenticationService.currentSessionValue;
   const mounted = useMounted();
@@ -27,6 +32,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
   const [columns, setColumns] = useState([]);
   const [tables, setTables] = useState([]);
   const [tableInfo, setTableInfo] = useState({});
+  const [activeTab, setActiveTab] = useState(options?.activeTab || 'GUI mode');
   const [selectedTableId, setSelectedTableId] = useState(options['table_id']);
   const [listRowsOptions, setListRowsOptions] = useState(() => options['list_rows'] || {});
   const [updateRowsOptions, setUpdateRowsOptions] = useState(
@@ -336,9 +342,16 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     ]
   );
 
+  const triggerTooljetDBStatus = (key) => {
+    if (key === 'addTJDBTable') {
+      navigate(getPrivateRoute('database'));
+    }
+  };
+
   const fetchTables = async () => {
     const { error, data } = await tooljetDatabaseService.findAll(organizationId);
 
+    triggerTooljetDBStatus();
     if (error) {
       toast.error(error?.message ?? 'Failed to fetch tables');
       return;
@@ -425,7 +438,6 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
   const handleTableNameSelect = (tableId) => {
     setSelectedTableId(tableId);
     fetchTableInformation(tableId, true, tables);
-    optionchanged('organization_id', organizationId);
     optionchanged('table_id', tableId);
 
     setJoinTableOptions(() => {
@@ -452,6 +464,25 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
         fields: [],
       };
     });
+  };
+
+  //Following ref is responsible to hold the value of prev operation while shifting between the active tabs
+  const [prevOperationBetweenModeChange, setPrevOperationBetweenModeChange] = useState(null);
+
+  const handleTabClick = (mode) => {
+    const optionsToUpdate = {
+      activeTab: mode,
+    };
+    if (mode === 'SQL mode') {
+      // prevOperationBetweenModeChange.current = options?.operation;
+      setPrevOperationBetweenModeChange(options?.operation || '');
+      optionsToUpdate['operation'] = 'sql_execution';
+      optionsToUpdate['organization_id'] = organizationId;
+    } else {
+      optionsToUpdate['operation'] = prevOperationBetweenModeChange ?? '';
+    }
+    optionsChanged(optionsToUpdate);
+    setActiveTab(mode);
   };
 
   const getComponent = () => {
@@ -482,49 +513,154 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
   return (
     <TooljetDatabaseContext.Provider value={value}>
       {/* table name dropdown */}
-      <div className={cx({ row: !isHorizontalLayout })}>
-        <div className={cx({ 'col-4': !isHorizontalLayout, 'd-flex': isHorizontalLayout })}>
-          <label className={cx('form-label', 'flex-shrink-0')}>Table name</label>
-          <div className={cx({ 'flex-grow-1': isHorizontalLayout }, 'border', 'rounded', 'overflow-hidden')}>
-            <DropDownSelect
-              customBorder={false}
-              showPlaceHolder
-              options={generateListForDropdown(tables)}
-              darkMode={darkMode}
-              onChange={(value) => {
-                value?.value && handleTableNameSelect(value?.value);
-              }}
-              onAdd={() => navigate(getPrivateRoute('database'))}
-              addBtnLabel={'Add new table'}
-              value={generateListForDropdown(tables).find((val) => val?.value === selectedTableId)}
-            />
-          </div>
-        </div>
-      </div>
 
-      {/* operation selection dropdown */}
-      <div className={cx('my-3 py-1', { row: !isHorizontalLayout })}>
+      <div className={cx({ 'col-4': !isHorizontalLayout, 'd-flex tooljetdb-worflow-operations': isHorizontalLayout })}>
+        <label className={cx('form-label', 'flex-shrink-0')}>Mode</label>
         <div
-          /* className="my-2 col-4"  */
-          className={cx({ 'col-4': !isHorizontalLayout, 'd-flex': isHorizontalLayout })}
+          className={cx('d-flex align-items-center justify-content-start gap-2', {
+            'row-tabs-dark': darkMode,
+            'row-tabs': !darkMode,
+          })}
         >
-          <label className={cx('form-label', 'flex-shrink-0')}>Operations</label>
-          <div className={cx({ 'flex-grow-1': isHorizontalLayout }, 'border', 'rounded', 'overflow-hidden')}>
-            <DropDownSelect
-              showPlaceHolder
-              options={tooljetDbOperationList}
-              darkMode={darkMode}
-              onChange={(value) => {
-                value?.value && setOperation(value?.value);
-              }}
-              value={tooljetDbOperationList.find((val) => val?.value === operation)}
-            />
+          <div
+            onClick={() => handleTabClick('GUI mode')}
+            style={{
+              backgroundColor:
+                activeTab === 'GUI mode' && !darkMode
+                  ? 'white'
+                  : activeTab === 'GUI mode' && darkMode
+                  ? '#242f3c'
+                  : 'transparent',
+              color:
+                activeTab === 'GUI mode' && !darkMode
+                  ? '#3E63DD'
+                  : activeTab === 'GUI mode' && darkMode
+                  ? 'white'
+                  : '#687076',
+            }}
+            className="row-tab-content"
+          >
+            GUI mode
+          </div>
+
+          <div
+            onClick={() => handleTabClick('SQL mode')}
+            style={{
+              backgroundColor:
+                activeTab === 'SQL mode' && !darkMode
+                  ? 'white'
+                  : activeTab === 'SQL mode' && darkMode
+                  ? '#242f3c'
+                  : 'transparent',
+              color:
+                activeTab === 'SQL mode' && !darkMode
+                  ? '#3E63DD'
+                  : activeTab === 'SQL mode' && darkMode
+                  ? 'white'
+                  : '#687076',
+            }}
+            className="row-tab-content"
+          >
+            SQL mode
           </div>
         </div>
       </div>
 
-      {/* component to render based on the operation */}
-      {ComponentToRender && <ComponentToRender options={options} optionchanged={optionchanged} darkMode={darkMode} />}
+      {activeTab === 'GUI mode' && (
+        <>
+          <div className={cx({ row: !isHorizontalLayout, 'my-3': isHorizontalLayout })}>
+            <div
+              className={cx({
+                'col-4': !isHorizontalLayout,
+                'd-flex tooljetdb-worflow-operations': isHorizontalLayout,
+              })}
+            >
+              <label className={cx('form-label', 'flex-shrink-0')}>Table name</label>
+              <div
+                className={cx(
+                  { 'flex-grow-1': isHorizontalLayout },
+                  'border',
+                  'rounded',
+                  'overflow-hidden',
+                  'minw-400-w-400'
+                )}
+              >
+                <DropDownSelect
+                  customBorder={false}
+                  showPlaceHolder
+                  options={generateListForDropdown(tables)}
+                  darkMode={darkMode}
+                  onChange={(value) => {
+                    value?.value && handleTableNameSelect(value?.value);
+                  }}
+                  onAdd={() => navigate(getPrivateRoute('database'))}
+                  addBtnLabel={'Add new table'}
+                  value={generateListForDropdown(tables).find((val) => val?.value === selectedTableId)}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* operation selection dropdown */}
+          <div className={cx('my-3 py-1', { row: !isHorizontalLayout })}>
+            <div
+              /* className="my-2 col-4"  */
+              className={cx({
+                'col-4': !isHorizontalLayout,
+                'd-flex tooljetdb-worflow-operations': isHorizontalLayout,
+              })}
+            >
+              <label className={cx('form-label', 'flex-shrink-0')}>Operations</label>
+              <div
+                className={cx(
+                  { 'flex-grow-1': isHorizontalLayout },
+                  'border',
+                  'rounded',
+                  'overflow-hidden',
+                  'minw-400-w-400'
+                )}
+              >
+                <DropDownSelect
+                  showPlaceHolder
+                  options={tooljetDbOperationList}
+                  darkMode={darkMode}
+                  onChange={(value) => {
+                    value?.value && setOperation(value?.value);
+                  }}
+                  value={tooljetDbOperationList.find((val) => val?.value === operation)}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* component to render based on the operation */}
+          {ComponentToRender && (
+            <ComponentToRender
+              currentState={currentState}
+              s
+              options={options}
+              optionchanged={optionchanged}
+              darkMode={darkMode}
+            />
+          )}
+        </>
+      )}
+      {activeTab === 'SQL mode' && (
+        <div className={cx('mt-3', { 'col-4': !isHorizontalLayout, 'd-flex': isHorizontalLayout })}>
+          <label className="form-label flex-shrink-0" style={{ minWidth: '100px' }}></label>
+          <CodeHinter
+            type="multiline"
+            initialValue={options?.sql_execution?.sqlQuery ?? 'SELECT * from users'}
+            lang="sql"
+            height={150}
+            onChange={(value) => {
+              optionchanged('sql_execution', { sqlQuery: value });
+            }}
+            componentName="TooljetDatabase"
+            delayOnChange={false}
+          />
+        </div>
+      )}
     </TooljetDatabaseContext.Provider>
   );
 };

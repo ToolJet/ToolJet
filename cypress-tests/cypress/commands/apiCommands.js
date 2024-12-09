@@ -189,6 +189,7 @@ Cypress.Commands.add("userInviteApi", (userName, userEmail) => {
           first_name: userName,
           email: userEmail,
           groups: [],
+          role: "end-user",
         },
       },
       { log: false }

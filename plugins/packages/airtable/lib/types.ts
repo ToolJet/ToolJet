@@ -11,4 +11,11 @@ export type QueryOptions = {
   record_id: string;
   body: string;
   offset: string;
+  fields: string;
+  filter_by_formula: string;
+  timezone: string;
+  user_locale: string;
+  cell_format: string;
+  view: string;
+  sort: [string, string][];
 };

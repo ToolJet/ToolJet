@@ -50,7 +50,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
         const { dataQueries } = tbl;
         const extractedIdData = [];
         dataQueries.forEach((item) => {
-          if (item.kind === 'tooljetdb') {
+          if (item.kind === 'tooljetdb' && item.options?.operation === 'join_tables') {
             const joinOptions = item.options?.join_table?.joins ?? [];
             (joinOptions || []).forEach((join) => {
               const { table, conditions } = join;
@@ -66,6 +66,8 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
               });
             });
           }
+
+          if (item.kind === 'tooljetdb' && item.options.table_id) extractedIdData.push(item.options.table_id);
         });
         const uniqueSet = new Set(extractedIdData);
         const selectedVersiontable = Array.from(uniqueSet).map((item) => ({ table_id: item }));

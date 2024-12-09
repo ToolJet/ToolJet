@@ -24,6 +24,7 @@ export default function OverflowTooltip({ children, className, whiteSpace = 'now
     >
       <div
         ref={textElementRef}
+        className={rest.childrenClassName}
         style={{
           whiteSpace,
           overflow: 'hidden',

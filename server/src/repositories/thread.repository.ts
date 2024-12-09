@@ -1,22 +1,32 @@
-import { Repository, EntityRepository } from 'typeorm';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { Thread } from '../entities/thread.entity';
 import { CreateThreadDto, UpdateThreadDto } from '../dto/thread.dto';
 
-@EntityRepository(Thread)
+@Injectable()
 export class ThreadRepository extends Repository<Thread> {
+  constructor(
+    @InjectRepository(Thread)
+    private threadRepository: Repository<Thread>
+  ) {
+    super(threadRepository.target, threadRepository.manager, threadRepository.queryRunner);
+  }
+
   public async createThread(createThreadDto: CreateThreadDto, userId: string, organizationId: string): Promise<Thread> {
     const { x, y, appId, appVersionsId, pageId } = createThreadDto;
 
-    const thread = new Thread();
-    thread.x = x;
-    thread.y = y;
-    thread.appId = appId;
-    thread.userId = userId;
-    thread.organizationId = organizationId;
-    thread.appVersionsId = appVersionsId;
-    thread.pageId = pageId;
+    const thread = this.threadRepository.create({
+      x,
+      y,
+      appId,
+      userId,
+      organizationId,
+      appVersionsId,
+      pageId,
+    });
 
-    return await thread.save();
+    return await this.threadRepository.save(thread);
   }
 
   public async editThread(updateThreadDto: UpdateThreadDto, editedThread: Thread): Promise<Thread> {
@@ -25,8 +35,7 @@ export class ThreadRepository extends Repository<Thread> {
     editedThread.x = x;
     editedThread.y = y;
     editedThread.isResolved = isResolved;
-    await editedThread.save();
 
-    return editedThread;
+    return await this.threadRepository.save(editedThread);
   }
 }

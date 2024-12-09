@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { organizationService } from '@/_services';
 import AlertDialog from '@/_ui/AlertDialog';
 import { useTranslation } from 'react-i18next';
@@ -7,6 +7,7 @@ import { validateName, handleHttpErrorMessages } from '@/_helpers/utils';
 import { appendWorkspaceId, getHostURL } from '@/_helpers/routes';
 import _ from 'lodash';
 import { FormWrapper } from '@/_components/FormWrapper';
+import { toast } from 'react-hot-toast';
 
 export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   const [isCreating, setIsCreating] = useState(false);
@@ -18,10 +19,10 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   const [isSlugDisabled, setSlugDisabled] = useState(true);
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { t } = useTranslation();
-
+  const isSlugSet = useRef(false); // Flag to track if slug has been initially set
+  const sluginput = useRef('');
   const createOrganization = () => {
     let emptyError = false;
-
     [name, slug].map((field, index) => {
       if (!field?.value?.trim()) {
         index === 0
@@ -42,6 +43,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
       setIsCreating(true);
       organizationService.createOrganization({ name: name.value, slug: slugValue }).then(
         () => {
+          toast.success('Workspace created successfully');
           setIsCreating(false);
           const newPath = appendWorkspaceId(slugValue, location.pathname, true);
           window.history.replaceState(null, null, newPath);
@@ -56,6 +58,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   };
 
   const handleInputChange = async (value, field) => {
+    const trimmedValue = value?.trim();
     if (field === 'slug') {
       setSlug({
         ...slug,
@@ -77,12 +80,11 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
       !(field === 'slug'),
       field === 'slug'
     );
-
     /* If the basic validation is passing. then check the uniqueness */
     if (error?.status === true) {
       try {
         await organizationService.checkWorkspaceUniqueness(
-          field === 'name' ? value : null,
+          field === 'name' ? trimmedValue : null,
           field === 'slug' ? value : null
         );
       } catch (errResponse) {
@@ -92,7 +94,6 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
         };
       }
     }
-
     const disabled = !error?.status;
     const updatedValue = {
       value,
@@ -126,19 +127,56 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
     setShowCreateOrg(false);
     setNameDisabled(true);
     setSlugDisabled(true);
+    isSlugSet.current = false;
   };
 
   const delayedSlugChange = _.debounce(async (value) => {
     setSlugProgress(true);
     await handleInputChange(value, 'slug');
   }, 300);
-
   const delayedNameChange = _.debounce(async (value) => {
     setWorkspaceNameProgress(true);
     await handleInputChange(value, 'name');
   }, 300);
+  useEffect(() => {
+    if (!isSlugSet.current && name.value && !slugProgress && !workspaceNameProgress) {
+      const defaultValue =
+        name?.value
+          .replace(/\s+/g, '')
+          .toLowerCase()
+          .replace(/[^a-z0-9-\s]/g, '') || '';
+      setSlug({ value: defaultValue, error: '' });
 
-  const isDisabled = isCreating || isNameDisabled || isSlugDisabled || slugProgress || workspaceNameProgress;
+      const checkWorkspaceUniqueness = async () => {
+        sluginput.current.value = defaultValue;
+        try {
+          await organizationService.checkWorkspaceUniqueness(null, defaultValue);
+        } catch (errResponse) {
+          let error = {
+            status: false,
+            errorMsg: errResponse?.error,
+          };
+          setSlug({ value: defaultValue, error: error?.errorMsg });
+          sluginput.current.value = defaultValue;
+        }
+      };
+      checkWorkspaceUniqueness();
+      setSlugDisabled(false);
+      setSlugProgress(false);
+    }
+    if (slugProgress && !isSlugSet.current) {
+      // this is to denote that the user has tried editing the slug -- so now slug and name are independent of each other
+      isSlugSet.current = true;
+    }
+  }, [name.value, slug.value, slugProgress, workspaceNameProgress, isSlugSet]);
+  const isDisabled =
+    isCreating ||
+    isNameDisabled ||
+    isSlugDisabled ||
+    slugProgress ||
+    workspaceNameProgress ||
+    slug?.error ||
+    name?.error;
 
   return (
     <AlertDialog
@@ -168,6 +206,8 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
                 <label className="label tj-input-error" data-cy="workspace-error-label">
                   {name?.error || ''}
                 </label>
+              ) : name.value && !workspaceNameProgress ? (
+                <label className="label label-success" data-cy="slug-sucess-label">{`Workspace name accepted!`}</label>
               ) : (
                 <label className="label label-info" data-cy="workspace-name-info-label">
                   Name must be unique and max 50 characters
@@ -183,6 +223,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
                 className={`form-control ${slug?.error ? 'is-invalid' : 'is-valid'}`}
                 placeholder={t('header.organization.workspaceSlug', 'Unique workspace slug')}
                 disabled={isCreating}
+                ref={sluginput}
                 maxLength={50}
                 onChange={async (e) => {
                   e.persist();
@@ -203,6 +244,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
                   </svg>
                 </div>
               )}
+
               {slug?.error ? (
                 <label className="label tj-input-error" data-cy="input-label-error">
                   {slug?.error || ''}

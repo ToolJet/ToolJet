@@ -1,7 +1,7 @@
 import React from 'react';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
-import CodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/AppBuilder/CodeEditor';
 import InfoIcon from '@assets/images/icons/info.svg';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 

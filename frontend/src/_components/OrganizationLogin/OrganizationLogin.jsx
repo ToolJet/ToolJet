@@ -8,11 +8,13 @@ import { ToolTip } from '@/_components/ToolTip';
 import DisablePasswordLoginModal from './DisablePasswordLoginModal';
 import { authenticationService, organizationService } from '@/_services';
 import SSOConfiguration from './SsoConfiguration';
-
+import Skeleton from 'react-loading-skeleton';
+import Spinner from 'react-bootstrap/Spinner';
 class OrganizationLogin extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      isLoading: true,
       isSaving: false,
       showDisablingPasswordConfirmation: false,
       options: {},
@@ -27,7 +29,9 @@ class OrganizationLogin extends React.Component {
   }
 
   async componentDidMount() {
+    //Add loader here hm
     await this.setLoginConfigs();
+    this.setState({ isLoading: false });
   }
 
   reset = () => {
@@ -250,142 +254,168 @@ class OrganizationLogin extends React.Component {
           <div className="container-xl">
             <div className="card">
               <div className="card-header">
-                <div className="card-title" data-cy="card-title">
-                  {t('header.organization.menus.manageSSO.workspaceLogin.title', 'Workspace login')}
-                </div>
+                {this.state.isLoading ? (
+                  <Skeleton count={1} height={20} width={90} className="mb-1" />
+                ) : (
+                  <div className="card-title" data-cy="card-title">
+                    {t('header.organization.menus.manageSSO.workspaceLogin.title', 'Workspace login')}
+                  </div>
+                )}
               </div>
               <div className="card-body" style={flexContainerStyle}>
-                <div style={{ width: '50%' }}>
-                  <form noValidate className="sso-form-wrap" style={{ width: '472px' }}>
-                    <div className="form-group tj-app-input">
-                      <label className="form-label bold-text" data-cy="allowed-domain-label">
-                        {t('header.organization.menus.manageSSO.generalSettings.domain', `Allowed domains`)}
-                      </label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder={t(`Enter allowed domains`)}
-                        name="domain"
-                        value={options.domain || ''}
-                        onChange={(e) => this.handleInputChange('domain', e)}
-                        data-cy="allowed-domains"
-                      />
-                    </div>
-                    <div className="tj-text-xxsm mb-3">
-                      <div data-cy="allowed-domain-helper-text">
-                        {t(
-                          'header.organization.menus.manageSSO.generalSettings.supportMultidomains',
-                          `Support multiple domains. Enter domain names separated by comma. example: tooljet.com,tooljet.io,yourorganization.com`
-                        )}
-                      </div>
-                    </div>
-                    <div className="form-group mb-3">
-                      <label className="form-label bold-text" data-cy="workspace-login-url-label">
-                        {t('header.organization.menus.manageSSO.generalSettings.loginUrl', `Login URL`)}
-                      </label>
-                      <div className="d-flex justify-content-between form-control align-items-center">
-                        <p id="login-url" data-cy="workspace-login-url">
-                          {`${window.public_config?.TOOLJET_HOST}${
-                            window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
-                          }login/${
-                            authenticationService?.currentSessionValue?.current_organization_slug ||
-                            authenticationService?.currentSessionValue?.current_organization_id
-                          }`}
-                        </p>
-                        <SolidIcon name="copy" width="16" onClick={() => this.copyFunction('login-url')} />
-                      </div>
-                      <div className="mt-1 tj-text-xxsm">
-                        <div data-cy="workspace-login-help-text">
-                          {t(
-                            'header.organization.menus.manageSSO.generalSettings.workspaceLogin',
-                            `Use this URL to login directly to this workspace`
-                          )}
+                {this.state.isLoading ? (
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      height: '100%',
+                      width: '100%',
+                    }}
+                  >
+                    <Spinner variant="primary" />
+                  </div>
+                ) : (
+                  <>
+                    <div style={{ width: '50%' }}>
+                      <form noValidate className="sso-form-wrap" style={{ width: '472px' }}>
+                        <div className="form-group tj-app-input">
+                          <label className="form-label bold-text" data-cy="allowed-domain-label">
+                            {t('header.organization.menus.manageSSO.generalSettings.domain', `Allowed domains`)}
+                          </label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            placeholder={t(`Enter allowed domains`)}
+                            name="domain"
+                            value={options.domain || ''}
+                            onChange={(e) => this.handleInputChange('domain', e)}
+                            data-cy="allowed-domains"
+                          />
                         </div>
-                      </div>
-                    </div>
-                    <div className="form-group mb-3">
-                      <label className="form-check form-switch" style={{ marginBottom: '0px' }}>
-                        <input
-                          id="enableSignUp"
-                          className="form-check-input"
-                          type="checkbox"
-                          onChange={() => this.handleCheckboxChange('enableSignUp')}
-                          checked={options?.enableSignUp === true}
-                          data-cy="enable-sign-up-toggle"
-                        />
-                        <label className="form-check-label bold-text" data-cy="enable-sign-up-label">
-                          {'Enable signup'}
-                        </label>
-                      </label>
-                      <div className="help-text danger-text-login">
-                        <div data-cy="enable-sign-up-helper-text">
-                          Users will be able to sign up without being invited
+                        <div className="tj-text-xxsm mb-3">
+                          <div data-cy="allowed-domain-helper-text">
+                            {t(
+                              'header.organization.menus.manageSSO.generalSettings.supportMultidomains',
+                              `Support multiple domains. Enter domain names separated by comma. example: tooljet.com,tooljet.io,yourorganization.com`
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                    <div className="form-group mb-3">
-                      <ToolTip
-                        message="Password login cannot be disabled unless SSO is configured"
-                        placement="left"
-                        show={!isAnySSOEnabled}
-                      >
-                        <label className="form-check form-switch" style={{ marginBottom: '0px' }}>
-                          <div>
+                        <div className="form-group mb-3">
+                          <label className="form-label bold-text" data-cy="workspace-login-url-label">
+                            {t('header.organization.menus.manageSSO.generalSettings.loginUrl', `Login URL`)}
+                          </label>
+                          <div className="d-flex justify-content-between form-control align-items-center">
+                            <p id="login-url" data-cy="workspace-login-url">
+                              {`${window.public_config?.TOOLJET_HOST}${
+                                window.public_config?.SUB_PATH ? window.public_config?.SUB_PATH : '/'
+                              }login/${
+                                authenticationService?.currentSessionValue?.current_organization_slug ||
+                                authenticationService?.currentSessionValue?.current_organization_id
+                              }`}
+                            </p>
+                            <SolidIcon name="copy" width="16" onClick={() => this.copyFunction('login-url')} />
+                          </div>
+                          <div className="mt-1 tj-text-xxsm">
+                            <div data-cy="workspace-login-help-text">
+                              {t(
+                                'header.organization.menus.manageSSO.generalSettings.workspaceLogin',
+                                `Use this URL to login directly to this workspace`
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="form-group mb-3">
+                          <label className="form-check form-switch" style={{ marginBottom: '0px' }}>
                             <input
-                              id="passwordLogin"
+                              id="enableSignUp"
                               className="form-check-input"
                               type="checkbox"
-                              onChange={() => this.handleCheckboxChange('passwordLoginEnabled')}
-                              data-cy="password-enable-toggle"
-                              checked={options?.passwordLoginEnabled === true}
-                              disabled={!isAnySSOEnabled}
+                              onChange={() => this.handleCheckboxChange('enableSignUp')}
+                              checked={options?.enableSignUp === true}
+                              data-cy="enable-sign-up-toggle"
                             />
-                            <label className="form-check-label bold-text" data-cy="label-password-login">
-                              Password login
+                            <label className="form-check-label bold-text" data-cy="enable-sign-up-label">
+                              {'Enable signup'}
                             </label>
+                          </label>
+                          <div className="help-text danger-text-login">
+                            <div data-cy="enable-sign-up-helper-text">
+                              Users will be able to sign up as end-users without being invited
+                            </div>
                           </div>
-                        </label>
-                      </ToolTip>
-                      <div className="help-text tj-text-xsm danger-text-login">
-                        <div data-cy="disable-password-helper-text">
-                          Disable password login only if your SSO is configured otherwise you will get locked out
                         </div>
-                      </div>
+                        <div className="form-group mb-3">
+                          <ToolTip
+                            message="Password login cannot be disabled unless SSO is configured"
+                            placement="left"
+                            show={!isAnySSOEnabled}
+                          >
+                            <label className="form-check form-switch" style={{ marginBottom: '0px' }}>
+                              <div>
+                                <input
+                                  id="passwordLogin"
+                                  className="form-check-input"
+                                  type="checkbox"
+                                  onChange={() => this.handleCheckboxChange('passwordLoginEnabled')}
+                                  data-cy="password-enable-toggle"
+                                  checked={options?.passwordLoginEnabled === true}
+                                  disabled={!isAnySSOEnabled}
+                                />
+                                <label className="form-check-label bold-text" data-cy="label-password-login">
+                                  Password login
+                                </label>
+                              </div>
+                            </label>
+                          </ToolTip>
+                          <div className="help-text tj-text-xsm danger-text-login">
+                            <div data-cy="disable-password-helper-text">
+                              Disable password login only if your SSO is configured otherwise you will get locked out
+                            </div>
+                          </div>
+                        </div>
+                      </form>
                     </div>
-                  </form>
-                </div>
-                <div style={{ width: '50%' }}>
-                  <SSOConfiguration
-                    isAnySSOEnabled={isAnySSOEnabled}
-                    ssoOptions={ssoOptions}
-                    defaultSSO={defaultSSO}
-                    instanceSSO={instanceSSO}
-                    onUpdateAnySSOEnabled={this.updateAnySSOEnabled}
-                  />
-                </div>
+                    <div style={{ width: '50%' }}>
+                      <SSOConfiguration
+                        isAnySSOEnabled={isAnySSOEnabled}
+                        ssoOptions={ssoOptions}
+                        defaultSSO={defaultSSO}
+                        instanceSSO={instanceSSO}
+                        onUpdateAnySSOEnabled={this.updateAnySSOEnabled}
+                      />
+                    </div>
+                  </>
+                )}
               </div>
               <div className="card-footer">
-                <ButtonSolid
-                  onClick={this.reset}
-                  data-cy="cancel-button"
-                  variant="tertiary"
-                  className="sso-footer-cancel-btn"
-                >
-                  {t('globals.cancel', 'Cancel')}
-                </ButtonSolid>
-                <ButtonSolid
-                  disabled={!this.state.hasChanges || this.state.isSaving}
-                  isLoading={this.state.isSaving}
-                  onClick={this.handleSaveButtonClick}
-                  data-cy="save-button"
-                  variant="primary"
-                  className="sso-footer-save-btn"
-                  leftIcon="floppydisk"
-                  fill="#fff"
-                  iconWidth="20"
-                >
-                  {t('globals.savechanges', 'Save')}
-                </ButtonSolid>
+                {this.state.isLoading ? (
+                  <></>
+                ) : (
+                  <>
+                    <ButtonSolid
+                      onClick={this.reset}
+                      data-cy="cancel-button"
+                      variant="tertiary"
+                      className="sso-footer-cancel-btn"
+                    >
+                      {t('globals.cancel', 'Cancel')}
+                    </ButtonSolid>
+                    <ButtonSolid
+                      disabled={!this.state.hasChanges || this.state.isSaving}
+                      isLoading={this.state.isSaving}
+                      onClick={this.handleSaveButtonClick}
+                      data-cy="save-button"
+                      variant="primary"
+                      className="sso-footer-save-btn"
+                      leftIcon="floppydisk"
+                      fill="#fff"
+                      iconWidth="20"
+                    >
+                      {t('globals.savechanges', 'Save')}
+                    </ButtonSolid>
+                  </>
+                )}
               </div>
               {this.state.showDisablingPasswordConfirmation && (
                 <DisablePasswordLoginModal

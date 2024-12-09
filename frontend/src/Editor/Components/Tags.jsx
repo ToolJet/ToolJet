@@ -29,6 +29,7 @@ export const Tags = function Tags({ width, height, properties, styles, dataCy })
   return (
     <div style={computedStyles} data-cy={dataCy}>
       {data &&
+        Array.isArray(data) &&
         data.map((item, index) => {
           return renderTag(item, index);
         })}

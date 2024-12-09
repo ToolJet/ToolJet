@@ -17,6 +17,7 @@ import { Thread } from '../entities/thread.entity';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { CommentsAbilityFactory } from 'src/modules/casl/abilities/comments-ability.factory';
 import { User } from 'src/decorators/user.decorator';
+import { COMMENT_RESOURCE_ACTION } from 'src/constants/global.constant';
 
 @Controller('comments')
 export class CommentController {
@@ -30,7 +31,7 @@ export class CommentController {
     });
     const ability = await this.commentsAbilityFactory.appsActions(user, { id: _response.appId });
 
-    if (!ability.can('createComment', Comment)) {
+    if (!ability.can(COMMENT_RESOURCE_ACTION.CREATE, Comment)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
@@ -46,7 +47,7 @@ export class CommentController {
     });
     const ability = await this.commentsAbilityFactory.appsActions(user, { id: _response.appId });
 
-    if (!ability.can('fetchComments', Comment)) {
+    if (!ability.can(COMMENT_RESOURCE_ACTION.READ, Comment)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
@@ -59,7 +60,7 @@ export class CommentController {
   public async getNotifications(@User() user, @Param('appId') appId: string, @Query() query): Promise<Comment[]> {
     const ability = await this.commentsAbilityFactory.appsActions(user, { id: appId });
 
-    if (!ability.can('fetchComments', Comment)) {
+    if (!ability.can(COMMENT_RESOURCE_ACTION.READ, Comment)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
     const comments = await this.commentService.getNotifications(
@@ -92,7 +93,7 @@ export class CommentController {
     });
     const ability = await this.commentsAbilityFactory.appsActions(user, { id: _response.thread.appId });
 
-    if (!ability.can('updateComment', Comment)) {
+    if (!ability.can(COMMENT_RESOURCE_ACTION.UPDATE, Comment)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
     const comment = await this.commentService.editComment(commentId, updateCommentDto);
@@ -108,7 +109,7 @@ export class CommentController {
     });
     const ability = await this.commentsAbilityFactory.appsActions(user, { id: _response.thread.appId });
 
-    if (!ability.can('deleteComment', Comment)) {
+    if (!ability.can(COMMENT_RESOURCE_ACTION.DELETE, Comment)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
     const deletedComment = await this.commentService.deleteComment(commentId);

@@ -1,0 +1,107 @@
+.form-input {
+    &__label {
+        display: block;
+        margin-bottom: 2px;
+        font-family: "IBM Plex Sans";
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 18px;
+        color: #333;
+    }
+
+    &__required {
+        color: #D72D39;
+    }
+
+    &__required-disabled {
+        color: #545B64;
+    }
+
+    &__field {
+        width: 100%;
+        height: 40px;
+        padding: 7px 12px;
+        font-family: "IBM Plex Sans";
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 18px;
+        color: var(--Text-default, #1B1F24);
+        background-clip: padding-box;
+        border-radius: var(--Border-radius, 10px);
+        border: 1px solid var(--Border-default, #CCD1D5);
+        background: var(--Background-surface-layer-01, #FFF);
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+
+        &::placeholder {
+            color: #6c757d;
+            opacity: 1;
+        }
+
+        &:focus {
+            color: #495057;
+            background-color: #fff;
+            border-color: #80bdff;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        &--disabled {
+            background-color: #e9ecef;
+            opacity: 1;
+            pointer-events: none;
+            width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            border-radius: var(--Border-radius, 8px);
+        }
+    }
+
+    &__error {
+        display: block;
+        font-size: 10px;
+        margin-top: 2px;
+        height: 14px;
+
+        &__error-enabled {
+            margin-bottom: 4px;
+            display: block;
+            font-size: 10px;
+            margin-top: 2px;
+            height: 14px;
+        }
+    }
+
+    &--disabled {
+        opacity: 0.65;
+    }
+}
+
+.dark-theme {
+    .form-input {
+        &__field {
+            border-radius: var(--Border-radius, 8px);
+            border: 1px solid var(--Border-default, #3C434B);
+            background: var(--Background-surface-layer-01, #1E2226);
+            color: var(--text-default, #FFF);
+        }
+
+        &__label {
+            color: var(--text-default);
+        }
+
+        &--disabled {
+            .form-input {
+                &__label {
+                    color: var(--Text-disabled, #858C94);
+                }
+
+                &__field {
+                    background: var(--Controls-switch-tag, #121518);
+                }
+            }
+        }
+    }
+}

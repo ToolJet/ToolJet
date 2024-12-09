@@ -23,4 +23,7 @@ export class AppVersionUpdateDto {
 
   @IsOptional()
   globalSettings: any;
+
+  @IsOptional()
+  pageSettings: any;
 }

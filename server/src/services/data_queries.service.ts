@@ -13,7 +13,7 @@ import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.en
 import { EncryptionService } from './encryption.service';
 import { App } from 'src/entities/app.entity';
 import { AppEnvironmentService } from './app_environments.service';
-import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { dbTransactionWrap } from 'src/helpers/database.helper';
 import allPlugins from '@tooljet/plugins/dist/server';
 import { DataSourceScopes } from 'src/helpers/data_source.constants';
 import { EventHandler } from 'src/entities/event_handler.entity';
@@ -185,7 +185,11 @@ export class DataQueriesService {
         dataSourceOptions.updatedAt,
         {
           user: { id: user?.id },
-          app: { id: app?.id, isPublic: app?.isPublic },
+          app: {
+            id: app?.id,
+            isPublic: app?.isPublic,
+            ...(dataSource.kind === 'tooljetdb' && { organization_id: app.organizationId }),
+          },
         }
       );
     } catch (api_error) {
@@ -428,7 +432,7 @@ export class DataQueriesService {
     // For adhoc queries such as REST API queries, source options will be null
     if (!options) return {};
     const variablesMatcher = /(%%.+?%%)/g;
-    const constantMatcher = /{{constants\..+?}}/g;
+    const constantMatcher = /\{\{(constants|secrets)\..*?\}\}/g;
 
     for (const key of Object.keys(options)) {
       const currentOption = options[key]?.['value'];
@@ -478,7 +482,7 @@ export class DataQueriesService {
           const resolved = await this.resolveVariable(value, organization_id);
           parsedOptions[key] = resolved;
           continue;
-        } else if (value.includes('{{constants')) {
+        } else if (value.includes('{{constants') || value.includes('{{secrets')) {
           const resolved = await this.resolveConstants(value, organization_id, environmentId);
           parsedOptions[key] = resolved;
           continue;
@@ -506,9 +510,7 @@ export class DataQueriesService {
       const variableName = splitArray[splitArray.length - 1];
 
       const variableResult = await this.orgEnvironmentVariablesRepository.findOne({
-        variableType: variableType,
-        organizationId: organization_id,
-        variableName: variableName,
+        where: { variableType, organizationId: organization_id, variableName: variableName },
       });
 
       if (isClientVariable && variableResult) {
@@ -528,137 +530,190 @@ export class DataQueriesService {
   }
 
   async resolveConstants(str: string, organization_id: string, environmentId: string) {
-    const tempStr: string = str.match(/\{\{(.*?)\}\}/g)[0].replace(/[{}]/g, '');
-    let result = tempStr;
-    if (new RegExp('^constants.').test(tempStr)) {
-      const splitArray = tempStr.split('.');
-      const constantName = splitArray[splitArray.length - 1];
+    let finalResult = '';
+    let lastIndex = 0;
 
-      const constant = await this.appEnvironmentService.getOrgEnvironmentConstant(
-        constantName,
-        organization_id,
-        environmentId
-      );
+    const regex = /\{\{((constants|secrets)\.(.*?))\}\}/g;
+    let match;
 
-      if (constant) {
-        result = await this.encryptionService.decryptColumnValue(
-          'org_environment_constant_values',
-          organization_id,
-          constant.value
-        );
+    while ((match = regex.exec(str)) !== null) {
+      const prefix = match[2];
+      const key = match[3];
+
+      finalResult += str.slice(lastIndex, match.index);
+
+      if (prefix === 'constants' || prefix === 'secrets') {
+        try {
+          const constant = await this.appEnvironmentService.getOrgEnvironmentConstant(
+            key,
+            organization_id,
+            environmentId
+          );
+
+          if (constant) {
+            const decryptedValue = await this.encryptionService.decryptColumnValue(
+              'org_environment_constant_values',
+              organization_id,
+              constant.value
+            );
+            finalResult += decryptedValue;
+          } else {
+            finalResult += match[0];
+          }
+        } catch (error) {
+          finalResult += match[0];
+        }
+      } else {
+        finalResult += match[0];
       }
+
+      lastIndex = match.index + match[0].length;
     }
 
-    return result;
+    finalResult += str.slice(lastIndex);
+    return finalResult;
   }
-
   async parseQueryOptions(
     object: any,
     options: object,
     organization_id: string,
     environmentId?: string
   ): Promise<object> {
-    if (typeof object === 'object' && object !== null) {
-      for (const key of Object.keys(object)) {
-        object[key] = await this.parseQueryOptions(object[key], options, organization_id);
+    const stack: any[] = [{ obj: object, key: null, parent: null }];
+    while (stack.length > 0) {
+      const { obj, key, parent } = stack.pop();
+      // Case 1: Object
+      if (typeof obj === 'object' && obj !== null && !Array.isArray(obj)) {
+        Object.keys(obj).forEach((k) => {
+          stack.push({ obj: obj[k], key: k, parent: obj });
+        });
+        continue;
       }
-      return object;
-    } else if (typeof object === 'string') {
-      object = object.replace(/\n/g, ' ');
-
-      //if object has {{}} and %%%% then resolve %% in a single string
-      if (object.includes('{{') && object.includes('}}') && object.includes('%%') && object.includes('%%')) {
-        let resolvedvar = options[object];
-
-        if (object.includes(`server.`)) {
+      // Case 2: Array
+      if (Array.isArray(obj)) {
+        obj.forEach((element, index) => {
+          stack.push({ obj: element, key: index, parent: obj });
+        });
+        continue;
+      }
+      // Case 3: String
+      if (typeof obj === 'string') {
+        let resolvedValue = obj.replace(/\n/g, ' ');
+        // a: Handle strings with both {{ }} and %%
+        if (
+          typeof resolvedValue === 'string' &&
+          resolvedValue.includes('{{') &&
+          resolvedValue.includes('}}') &&
+          resolvedValue?.includes('%%')
+        ) {
+          let resolvedVar = options[resolvedValue];
           // find all server variables in the string
-          const serverVariables = object.match(/server.(.*?)%%/g);
-
-          serverVariables?.map((variable) => {
-            return variable
-              .match(/server.(.*?)%%/g)[0]
-              .replace('%%', '')
-              .replace('server.', '');
-          });
-
-          const resolvedOrgVar = [];
-
-          for (const variable of serverVariables) {
-            const resolvedVariable = await this.resolveVariable(variable, organization_id);
-            resolvedOrgVar.push(resolvedVariable);
+          if (typeof resolvedValue === 'string' && resolvedValue.includes(`server.`)) {
+            let serverVariables: string[] = resolvedValue.match(/server.(.*?)%%/g) || [];
+            // Map each variable by replacing '%%' and 'server.'
+            serverVariables = serverVariables?.map((variable) => {
+              return variable.replace('%%', '').replace('server.', '');
+            });
+            const resolvedOrgVar: string[] = [];
+            for (const variable of serverVariables || []) {
+              const resolvedVariable = await this.resolveVariable(variable, organization_id);
+              resolvedOrgVar.push(resolvedVariable);
+            }
+            serverVariables?.forEach((i) => {
+              resolvedVar = resolvedVar.replace('HiddenEnvironmentVariable', resolvedOrgVar[i]);
+            });
           }
-
-          //replace the HiddenEnvironmentVariable with the resolved value
-          for (let i = 0; i < serverVariables.length; i++) {
-            resolvedvar = resolvedvar.replace('HiddenEnvironmentVariable', resolvedOrgVar[i]);
+          if (parent && key !== null) {
+            parent[key] = resolvedVar;
           }
         }
-
-        return resolvedvar;
-      }
-
-      // check if more than two types of variables are present in a single line
-      if (object.match(/\{\{(.*?)\}\}/g)?.length > 1 && object.includes('{{constants.')) {
-        // find the constant variable from the string, {{constants.}} keyword
-        const constantVariables = object.match(/\{\{(constants.*?)\}\}/g);
-
-        if (constantVariables.length > 0) {
-          for (const variable of constantVariables) {
-            const resolvedVariable = await this.resolveConstants(variable, organization_id, environmentId);
-
-            object = object.replace(variable, resolvedVariable);
+        // b: Handle {{constants.}} or {{secrets.}}
+        if (
+          (typeof resolvedValue === 'string' && resolvedValue.includes('{{constants.')) ||
+          resolvedValue.includes('{{secrets.')
+        ) {
+          const resolvingConstant = await this.resolveConstants(resolvedValue, organization_id, environmentId);
+          resolvedValue = resolvingConstant;
+          if (parent && key !== null) {
+            parent[key] = resolvedValue;
           }
         }
-      }
-      if (object.includes('{{constants.')) {
-        const resolvingConstant = await this.resolveConstants(object, organization_id, environmentId);
+        // c: Replace all occurrences of {{ }} variables
+        if (
+          typeof resolvedValue === 'string' &&
+          resolvedValue?.match(/\{\{(.*?)\}\}/g)?.length > 0 &&
+          !(resolvedValue.startsWith('{{') && resolvedValue.endsWith('}}'))
+        ) {
+          const variables = resolvedValue.match(/\{\{(.*?)\}\}/g);
 
-        options[object] = resolvingConstant;
-      }
-
-      if (object.startsWith('{{') && object.endsWith('}}') && (object.match(/{{/g) || []).length === 1) {
-        object = options[object];
-        return object;
-      } else if (object.match(/\{\{(.*?)\}\}/g)?.length > 0) {
-        const variables = object.match(/\{\{(.*?)\}\}/g);
-
-        if (variables?.length > 0) {
-          for (const variable of variables) {
-            object = object.replace(variable, options[variable]);
-          }
-        }
-        return object;
-      } else {
-        if (object.startsWith('%%') && object.endsWith('%%') && (object.match(/%%/g) || []).length === 2) {
-          if (object.includes(`server.`)) {
-            object = await this.resolveVariable(object, organization_id);
-          } else {
-            object = options[object];
-          }
-          return object;
-        } else {
-          const variables = object.match(/%%(.*?)%%/g);
-
-          if (variables?.length > 0) {
-            for (const variable of variables) {
-              if (variable.includes(`server.`)) {
-                const secret_value = await this.resolveVariable(variable, organization_id);
-                object = object.replace(variable, secret_value);
-              } else {
-                object = object.replace(variable, options[variable]);
+          for (const variable of variables || []) {
+            let replacement = options[variable];
+            // Check if the replacement is an object
+            if (typeof replacement === 'object' && replacement !== null) {
+              // Ensure parent is a non-empty array before attempting to access its first element
+              if (Array.isArray(parent) && parent.length > 0) {
+                // Assign replacement value based on the first item in the parent array
+                replacement = replacement[parent[0]] || replacement;
               }
             }
+            // Check type of replacement and assign accordingly
+            if (typeof replacement === 'string' || typeof replacement === 'number') {
+              // If replacement is a string, perform the replace
+              resolvedValue = resolvedValue.replace(variable, String(replacement));
+            } else {
+              // If replacement is an object or an array, assign the whole value to resolvedValue
+              resolvedValue = resolvedValue.replace(variable, JSON.stringify(replacement));
+            }
           }
-          return object;
+          if (parent && key !== null) {
+            parent[key] = resolvedValue;
+          }
+        }
+        // d: Simple variable replacement for single {{variable}}
+        if (
+          typeof resolvedValue === 'string' &&
+          resolvedValue.startsWith('{{') &&
+          resolvedValue.endsWith('}}') &&
+          (resolvedValue.match(/{{/g) || [])?.length === 1
+        ) {
+          resolvedValue = options[resolvedValue];
+          if (parent && key !== null) {
+            parent[key] = resolvedValue;
+          }
+        }
+        // e: Handle strings with %%
+        if (
+          typeof resolvedValue === 'string' &&
+          resolvedValue.startsWith('%%') &&
+          resolvedValue.endsWith('%%') &&
+          (resolvedValue.match(/%%/g) || [])?.length === 2
+        ) {
+          if (resolvedValue.includes(`server.`)) {
+            resolvedValue = await this.resolveVariable(resolvedValue, organization_id);
+          } else {
+            resolvedValue = options[resolvedValue];
+          }
+          if (parent && key !== null) {
+            parent[key] = resolvedValue;
+          }
+        }
+        // f: Replace all %% variables
+        //disallow strings with spaces in between '%%' eg. '%% hghgh hg %%'
+        const variables = typeof resolvedValue === 'string' && resolvedValue?.match(/%%(?:client|server)\.[^\s%%]+%%/g);
+        if (variables?.length > 0) {
+          for (const variable of variables) {
+            if (variable.includes(`server.`)) {
+              const secretValue = await this.resolveVariable(variable, organization_id);
+              resolvedValue = resolvedValue.replace(variable, secretValue);
+            } else {
+              resolvedValue = resolvedValue.replace(variable, options[variable]);
+            }
+          }
+          if (parent && key !== null) {
+            parent[key] = resolvedValue;
+          }
         }
       }
-    } else if (Array.isArray(object)) {
-      object.forEach((element) => {});
-
-      for (const [index, element] of object) {
-        object[index] = await this.parseQueryOptions(element, options, organization_id);
-      }
-      return object;
     }
     return object;
   }

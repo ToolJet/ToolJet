@@ -3,24 +3,28 @@ import './numberinput.scss';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import * as Icons from '@tabler/icons-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
-import { resolveWidgetFieldValue } from '@/_helpers/utils';
 
 const tinycolor = require('tinycolor2');
 import Label from '@/_ui/Label';
+import { useGridStore } from '@/_stores/gridStore';
 
 export const NumberInput = function NumberInput({
+  id,
   height,
   properties,
   validate,
   styles,
   setExposedVariable,
+  setExposedVariables,
   fireEvent,
-  component,
   darkMode,
   dataCy,
-  isResizing,
+  validation,
+  componentName,
 }) {
+  const isInitialRender = useRef(true);
   const { loadingState, disabledState, label, placeholder } = properties;
+  const isResizing = useGridStore((state) => state.resizingComponentId === id);
   const {
     padding,
     borderRadius,
@@ -38,15 +42,15 @@ export const NumberInput = function NumberInput({
   } = styles;
 
   const textColor = darkMode && ['#232e3c', '#000000ff'].includes(styles.textColor) ? '#CFD3D8' : styles.textColor;
-  const isMandatory = resolveWidgetFieldValue(component?.definition?.validation?.mandatory?.value) ?? false;
-  const minValue = resolveWidgetFieldValue(component?.definition?.validation?.minValue?.value) ?? null;
-  const maxValue = resolveWidgetFieldValue(component?.definition?.validation?.maxValue?.value) ?? null;
-
+  const isMandatory = validation?.mandatory ?? false;
+  const minValue = validation?.minValue ?? null;
+  const maxValue = validation?.maxValue ?? null;
   const [visibility, setVisibility] = useState(properties.visibility);
   const [loading, setLoading] = useState(loadingState);
   const [showValidationError, setShowValidationError] = useState(false);
   const [value, setValue] = React.useState(Number(parseFloat(properties.value).toFixed(properties.decimalPlaces)));
-  const { isValid, validationError } = validate(value);
+  const [validationStatus, setValidationStatus] = useState(validate(value));
+  const { isValid, validationError } = validationStatus;
   const [isFocused, setIsFocused] = useState(false);
 
   const inputRef = useRef(null);
@@ -56,91 +60,138 @@ export const NumberInput = function NumberInput({
   const _width = (width / 100) * 70; // Max width which label can go is 70% for better UX calculate width based on this value
 
   useEffect(() => {
+    if (isInitialRender.current) return;
     setExposedVariable('label', label);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [label]);
 
   useEffect(() => {
-    setValue(Number(parseFloat(value).toFixed(properties.decimalPlaces)));
+    setInputValue(Number(parseFloat(value).toFixed(properties.decimalPlaces)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.decimalPlaces]);
 
   useEffect(() => {
-    setValue(Number(parseFloat(properties.value).toFixed(properties.decimalPlaces)));
+    setInputValue(Number(parseFloat(properties.value).toFixed(properties.decimalPlaces)));
+    if (isNaN(Number(parseFloat(properties.value).toFixed(properties.decimalPlaces)))) {
+      setExposedVariable('value', null);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.value]);
 
   const handleBlur = (e) => {
-    setValue(Number(parseFloat(e.target.value).toFixed(properties.decimalPlaces)));
+    setInputValue(Number(parseFloat(e.target.value).toFixed(properties.decimalPlaces)));
     setShowValidationError(true);
     e.stopPropagation();
     fireEvent('onBlur');
     setIsFocused(false);
   };
-
   useEffect(() => {
-    if (!isNaN(value)) {
-      setExposedVariable('value', value);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value]);
-
-  useEffect(() => {
+    if (isInitialRender.current) return;
     setExposedVariable('isMandatory', isMandatory);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMandatory]);
 
   useEffect(() => {
+    if (isInitialRender.current) return;
     setExposedVariable('isLoading', loading);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading]);
 
   useEffect(() => {
-    setExposedVariable('setLoading', async function (loading) {
-      setLoading(loading);
-      setExposedVariable('isLoading', loading);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.loadingState]);
-
-  useEffect(() => {
+    if (isInitialRender.current) return;
     setExposedVariable('isVisible', visibility);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visibility]);
 
   useEffect(() => {
-    setExposedVariable('setVisibility', async function (state) {
-      setVisibility(state);
-      setExposedVariable('isVisible', state);
-    });
+    if (isInitialRender.current) return;
+    setExposedVariable('isDisabled', disable);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disable]);
+
+  useEffect(() => {
+    disable !== disabledState && setDisable(disabledState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disabledState]);
+  useEffect(() => {
+    visibility !== properties.visibility && setVisibility(properties.visibility);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility]);
 
   useEffect(() => {
-    setExposedVariable('setDisable', async function (disable) {
-      setDisable(disable);
-      setExposedVariable('isDisabled', disable);
-    });
+    loading !== loadingState && setLoading(loadingState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [disabledState]);
+  }, [loadingState]);
 
   useEffect(() => {
-    setExposedVariable('isDisabled', disable);
+    if (isInitialRender.current) return;
+    const validationStatus = validate(value);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
+  }, [validate]);
+
+  useEffect(() => {
+    const exposedVariables = {
+      setFocus: async function () {
+        inputRef.current.focus();
+      },
+      setBlur: async function () {
+        inputRef.current.blur();
+      },
+      setText: async function (text) {
+        if (text) {
+          const newValue = Number(parseFloat(text));
+          setInputValue(newValue);
+          fireEvent('onChange');
+        }
+      },
+      clear: async function () {
+        setInputValue('');
+        setExposedVariable('value', null);
+        fireEvent('onChange');
+      },
+      setLoading: async function (loading) {
+        setLoading(loading);
+        setExposedVariable('isLoading', loading);
+      },
+      setVisibility: async function (state) {
+        setVisibility(state);
+        setExposedVariable('isVisible', state);
+      },
+      setDisable: async function (disable) {
+        setDisable(disable);
+        setExposedVariable('isDisabled', disable);
+      },
+      label: label,
+      isMandatory: isMandatory,
+      isLoading: loading,
+      isVisible: visibility,
+      isDisabled: disable,
+      isValid: isValid,
+    };
+    if (!isNaN(value)) {
+      exposedVariables.value = value;
+    } else exposedVariables.value = null;
+
+    setExposedVariables(exposedVariables);
+
+    isInitialRender.current = false;
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [disable]);
+  }, []);
+
   useEffect(() => {
     if (labelRef?.current) {
       const absolutewidth = labelRef?.current?.getBoundingClientRect()?.width;
       setLabelWidth(absolutewidth);
     } else setLabelWidth(0);
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     isResizing,
     width,
     auto,
     defaultAlignment,
-    component?.definition?.styles?.iconVisibility?.value,
+    styles?.iconVisibility,
     labelRef?.current?.getBoundingClientRect()?.width,
     isMandatory,
     padding,
@@ -148,16 +199,11 @@ export const NumberInput = function NumberInput({
     alignment,
   ]);
 
-  useEffect(() => {
-    setExposedVariable('isValid', isValid);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isValid]);
-
   const computedStyles = {
     height: height == 36 ? (padding == 'default' ? '36px' : '40px') : padding == 'default' ? height : height + 4,
     borderRadius: `${borderRadius}px`,
     boxShadow: boxShadow,
-    padding: styles.iconVisibility
+    padding: styles?.iconVisibility
       ? height < 20
         ? '0px 10px 0px 29px'
         : '8px 10px 8px 29px'
@@ -195,72 +241,44 @@ export const NumberInput = function NumberInput({
   // eslint-disable-next-line import/namespace
 
   const handleChange = (e) => {
-    setValue(Number(parseFloat(e.target.value)));
     if (e.target.value == '') {
-      setValue(null);
-      setExposedVariable('value', null);
+      setInputValue(null);
       fireEvent('onChange');
+    } else {
+      setInputValue(Number(parseFloat(e.target.value)));
     }
     if (!isNaN(Number(parseFloat(e.target.value)))) {
-      setExposedVariable('value', Number(parseFloat(e.target.value)));
       fireEvent('onChange');
     }
   };
-  useEffect(() => {
-    disable !== disabledState && setDisable(disabledState);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [disabledState]);
-  useEffect(() => {
-    visibility !== properties.visibility && setVisibility(properties.visibility);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.visibility]);
-  useEffect(() => {
-    loading !== loadingState && setLoading(loadingState);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadingState]);
 
   const handleIncrement = (e) => {
     e.preventDefault(); // Prevent the default button behavior (form submission, page reload)
 
     const newValue = (value || 0) + 1;
-    setValue(newValue);
+    setInputValue(newValue);
     if (!isNaN(newValue)) {
-      setExposedVariable('value', newValue);
       fireEvent('onChange');
     }
   };
   const handleDecrement = (e) => {
     e.preventDefault();
     const newValue = (value || 0) - 1;
-    setValue(newValue);
+    setInputValue(newValue);
     if (!isNaN(newValue)) {
-      setExposedVariable('value', newValue);
       fireEvent('onChange');
     }
   };
-  useEffect(() => {
-    setExposedVariable('setFocus', async function () {
-      inputRef.current.focus();
-    });
-    setExposedVariable('setBlur', async function () {
-      inputRef.current.blur();
-    });
-    setExposedVariable('setText', async function (text) {
-      if (text) {
-        const newValue = Number(parseFloat(text));
-        setValue(newValue);
-        setExposedVariable('value', text);
-        fireEvent('onChange');
-      }
-    });
 
-    setExposedVariable('clear', async function () {
-      setValue('');
-      setExposedVariable('value', '');
-      fireEvent('onChange');
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const setInputValue = (value) => {
+    setValue(value);
+    if (!isNaN(value)) {
+      setExposedVariable('value', value);
+    }
+    const validationStatus = validate(value);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
+  };
 
   const loaderStyle = {
     right:
@@ -286,7 +304,7 @@ export const NumberInput = function NumberInput({
     return (
       <>
         <div
-          data-cy={`label-${String(component.name).toLowerCase()}`}
+          data-cy={`label-${String(componentName).toLowerCase()}`}
           className={`text-input tj-number-input-widget  d-flex  ${
             defaultAlignment === 'top' &&
             ((width != 0 && label && label?.length != 0) || (auto && width == 0 && label && label?.length != 0))
@@ -316,7 +334,7 @@ export const NumberInput = function NumberInput({
             _width={_width}
             labelWidth={labelWidth}
           />
-          {component?.definition?.styles?.iconVisibility?.value && !isResizing && (
+          {styles?.iconVisibility && !isResizing && (
             <IconElement
               data-cy={'text-input-icon'}
               style={{
@@ -358,10 +376,10 @@ export const NumberInput = function NumberInput({
             data-cy={dataCy}
             min={minValue}
             max={maxValue}
+            autoComplete="off"
             onKeyUp={(e) => {
               if (e.key === 'Enter') {
-                setValue(e.target.value);
-                setExposedVariable('value', e.target.value);
+                setInputValue(e.target.value);
                 fireEvent('onEnterPressed');
               }
             }}
@@ -440,7 +458,7 @@ export const NumberInput = function NumberInput({
         </div>
         {showValidationError && visibility && (
           <div
-            data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
+            data-cy={`${String(componentName).toLowerCase()}-invalid-feedback`}
             style={{
               color: errTextColor !== '#D72D39' ? errTextColor : 'var(--status-error-strong)',
               textAlign: direction == 'left' && 'end',

@@ -1,0 +1,56 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Sharepoint datasource",
+  "description": "A schema defining Sharepoint datasource",
+  "type": "api",
+  "source": {
+    "name": "Sharepoint",
+    "kind": "sharepoint",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "sp_client_id": {
+        "type": "string"
+      },
+      "sp_client_secret": {
+        "type": "string",
+        "encrypted": true
+      },
+      "sp_tenant_id": {
+        "type": "string"
+      },
+      "redirect_url": {
+        "type": "string"
+      },
+      "provider": {
+        "type": "string"
+      },
+      "oauth2": {
+        "type": "boolean"
+      },
+      "plugin_id": {
+        "type": "string"
+      }
+    },
+    "customTesting": true,
+    "hideSave": true
+  },
+  "defaults": {
+    "redirect_url":{
+      "value": ""
+    }
+  },
+  "properties": {
+    "sharepoint": {
+      "label": "",
+      "key": "sharepoint",
+      "type": "react-component-sharepoint",
+      "description": "A component for sharepoint"
+    }
+  },
+  "required": []
+}

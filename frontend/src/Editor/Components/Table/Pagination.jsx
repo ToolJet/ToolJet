@@ -23,6 +23,7 @@ export const Pagination = function Pagination({
 
   useEffect(() => {
     setPageCount(autoPageCount);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoPageCount]);
 
   useEffect(() => {
@@ -43,11 +44,11 @@ export const Pagination = function Pagination({
   }
 
   function goToNextPage() {
-    gotoPage(pageIndex + 1);
+    gotoPage(Number(pageIndex) + 1);
   }
 
   function goToPreviousPage() {
-    gotoPage(pageIndex - 1);
+    gotoPage(Number(pageIndex) - 1);
   }
 
   if (loadingState) {
@@ -63,7 +64,7 @@ export const Pagination = function Pagination({
   return (
     <div className="pagination-container d-flex h-100 align-items-center custom-gap-4" data-cy="pagination-section">
       <div className="d-flex">
-        {!serverSide && tableWidth > 460 && (
+        {tableWidth > 460 && (
           <ButtonSolid
             variant="ghostBlack"
             className="tj-text-xsm"
@@ -119,26 +120,24 @@ export const Pagination = function Pagination({
         className="d-flex align-items-center tj-text-xsm h-100 page-info custom-gap-4"
         data-cy={`page-index-details`}
       >
-        {serverSide && <span className="color-slate-11">{pageIndex}</span>}
-        {!serverSide && (
-          <>
-            <input
-              type="text"
-              className={`form-control h-100`}
-              value={pageIndex}
-              onChange={(event) => {
-                if (event.target.value <= pageCount) gotoPage(event.target.value);
-              }}
-            />
-            <span
-              className="font-weight-500 total-page-number"
-              style={{ width: 'max-content' }}
-              data-cy={`total-page-number-${autoPageOptions.length || 1}`}
-            >
-              of {pageCount || 1}
-            </span>
-          </>
-        )}
+        <>
+          <input
+            type="text"
+            className={`form-control h-100`}
+            value={pageIndex}
+            onChange={(event) => {
+              const value = Number(event.target.value);
+              if (value <= pageCount) gotoPage(value);
+            }}
+          />
+          <span
+            className="font-weight-500 total-page-number"
+            style={{ width: 'max-content' }}
+            data-cy={`total-page-number-${autoPageOptions.length || 1}`}
+          >
+            of {pageCount || 1}
+          </span>
+        </>
       </div>
       <div className="d-flex">
         <ButtonSolid
@@ -152,20 +151,20 @@ export const Pagination = function Pagination({
             borderRadius: '6px',
             display: 'flex',
             justifyContent: 'center',
-            cursor: (!autoCanNextPage && !serverSide) || !enableNextButton ? 'not-allowed' : 'pointer',
+            cursor: pageIndex === pageCount || !enableNextButton ? 'not-allowed' : 'pointer',
           }}
           leftIcon="cheveronright"
           fill={`var(--icons-default)`}
           iconWidth="14"
           size="md"
-          disabled={(!autoCanNextPage && !serverSide) || !enableNextButton}
+          disabled={pageIndex === pageCount || !enableNextButton}
           onClick={(event) => {
             event.stopPropagation();
             goToNextPage();
           }}
           data-cy={`pagination-button-to-next`}
         ></ButtonSolid>
-        {!serverSide && tableWidth > 460 && (
+        {tableWidth > 460 && (
           <ButtonSolid
             variant="ghostBlack"
             className="tj-text-xsm"
@@ -177,7 +176,7 @@ export const Pagination = function Pagination({
               borderRadius: '6px',
               display: 'flex',
               justifyContent: 'center',
-              cursor: !autoCanNextPage && !serverSide ? 'not-allowed' : 'pointer',
+              cursor: pageIndex === pageCount ? 'not-allowed' : 'pointer',
             }}
             leftIcon="cheveronrightdouble"
             fill={`var(--icons-default)`}
@@ -187,7 +186,7 @@ export const Pagination = function Pagination({
               event.stopPropagation();
               gotoPage(pageCount);
             }}
-            disabled={!autoCanNextPage && !serverSide}
+            disabled={pageIndex === pageCount}
             data-cy={`pagination-button-to-last`}
           ></ButtonSolid>
         )}

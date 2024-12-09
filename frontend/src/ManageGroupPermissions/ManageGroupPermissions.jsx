@@ -455,7 +455,7 @@ class ManageGroupPermissionsComponent extends React.Component {
               title={
                 showGroupNameUpdateForm
                   ? this.props.t('header.organization.menus.manageGroups.permissions.updateGroup', 'Update group')
-                  : this.props.t('header.organization.menus.manageGroups.permissions.addNewGroup', 'Add new group')
+                  : this.props.t('header.organization.menus.manageGroups.permissions.addNewGroup', 'Create new group')
               }
             >
               <form

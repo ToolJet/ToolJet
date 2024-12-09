@@ -1,27 +1,29 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import DatePickerComponent from 'react-datepicker';
 import moment from 'moment';
 import 'react-datepicker/dist/react-datepicker.css';
+import './datepicker.scss';
+import cx from 'classnames';
 
 export const Datepicker = function Datepicker({
   height,
   properties,
   styles,
-  exposedVariables,
   setExposedVariable,
+  setExposedVariables,
   validate,
   onComponentClick,
-  component,
   id,
   darkMode,
   fireEvent,
   dataCy,
 }) {
+  const isInitialRender = useRef(true);
   const { enableTime, enableDate, defaultValue, disabledDates } = properties;
   const format = typeof properties.format === 'string' ? properties.format : '';
   const { visibility, disabledState, borderRadius, boxShadow } = styles;
 
-  const [date, setDate] = useState(null);
+  const [date, setDate] = useState(defaultValue);
   const [excludedDates, setExcludedDates] = useState([]);
   const [showValidationError, setShowValidationError] = useState(false);
 
@@ -37,22 +39,22 @@ export const Datepicker = function Datepicker({
     }
   };
 
+  const [validationStatus, setValidationStatus] = useState(validate(computeDateString(date)));
+  const { isValid, validationError } = validationStatus;
+
   const onDateChange = (date) => {
     setShowValidationError(true);
-    setDate(date);
-    const dateString = computeDateString(date);
-    setExposedVariable('value', dateString);
+    setInputValue(date);
     fireEvent('onSelect');
   };
 
   useEffect(() => {
+    if (isInitialRender.current) return;
     const dateMomentInstance = defaultValue && moment(defaultValue, selectedDateFormat);
     if (dateMomentInstance && dateMomentInstance.isValid()) {
-      setDate(dateMomentInstance.toDate());
-      setExposedVariable('value', defaultValue);
+      setInputValue(dateMomentInstance.toDate());
     } else {
-      setDate(null);
-      setExposedVariable('value', undefined);
+      setInputValue(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultValue]);
@@ -70,13 +72,27 @@ export const Datepicker = function Datepicker({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabledDates, format]);
 
-  const validationData = validate(exposedVariables.value);
-  const { isValid, validationError } = validationData;
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    const validationStatus = validate(computeDateString(date));
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
+  }, [validate]);
 
   useEffect(() => {
-    setExposedVariable('isValid', isValid);
+    const dateMomentInstance = defaultValue && moment(defaultValue, selectedDateFormat);
+    setInputValue(dateMomentInstance && dateMomentInstance.isValid() ? dateMomentInstance.toDate() : null);
+    isInitialRender.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isValid]);
+  }, []);
+
+  const setInputValue = (value) => {
+    setDate(value);
+    setExposedVariable('value', value ? computeDateString(value) : undefined);
+    const validationStatus = validate(computeDateString(value));
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
+  };
 
   return (
     <div
@@ -94,13 +110,14 @@ export const Datepicker = function Datepicker({
         className={`input-field form-control ${
           !isValid && showValidationError ? 'is-invalid' : ''
         } validation-without-icon px-2 ${darkMode ? 'bg-dark color-white' : 'bg-light'}`}
+        popperClassName={cx('tj-datepicker-widget', { 'dark-theme': darkMode })}
         selected={date}
         value={date !== null ? computeDateString(date) : 'select date'}
         onChange={(date) => onDateChange(date)}
         showTimeInput={enableTime ? true : false}
         showTimeSelectOnly={enableDate ? false : true}
         onFocus={(event) => {
-          onComponentClick(id, component, event);
+          onComponentClick(id);
         }}
         showMonthDropdown
         showYearDropdown
@@ -108,6 +125,12 @@ export const Datepicker = function Datepicker({
         excludeDates={excludedDates}
         customInput={<input style={{ borderRadius: `${borderRadius}px`, boxShadow, height }} />}
         timeInputLabel={<div className={`${darkMode && 'theme-dark'}`}>Time</div>}
+        onCalendarOpen={() =>
+          document.querySelector(`.ele-${id}`) ? (document.querySelector(`.ele-${id}`).style.zIndex = 3) : null
+        }
+        onCalendarClose={() =>
+          document.querySelector(`.ele-${id}`) ? (document.querySelector(`.ele-${id}`).style.zIndex = '') : null
+        }
       />
 
       <div data-cy="date-picker-invalid-feedback" className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>

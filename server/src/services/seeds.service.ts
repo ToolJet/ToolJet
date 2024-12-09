@@ -3,15 +3,20 @@ import { EntityManager } from 'typeorm/entity-manager/EntityManager';
 import { User } from '../entities/user.entity';
 import { Organization } from '../entities/organization.entity';
 import { OrganizationUser } from '../entities/organization_user.entity';
-import { GroupPermission } from 'src/entities/group_permission.entity';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
-import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { USER_STATUS, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 import { defaultAppEnvironments } from 'src/helpers/utils.helper';
+import { UserRoleService } from './user-role.service';
+import { USER_ROLE } from '@modules/user_resource_permissions/constants/group-permissions.constant';
+import { TooljetDbService } from './tooljet_db.service';
 
 @Injectable()
 export class SeedsService {
-  constructor(private readonly entityManager: EntityManager) {}
+  constructor(
+    private readonly entityManager: EntityManager,
+    private userRoleService: UserRoleService,
+    private readonly tooljetDbService: TooljetDbService
+  ) {}
 
   async perform(): Promise<void> {
     await this.entityManager.transaction(async (manager) => {
@@ -85,10 +90,13 @@ export class SeedsService {
       await manager.save(testUserOrganization);
       // Save Test user organization mapping
 
-      await this.createDefaultUserGroups(manager, user);
+      await this.createDefaultUserGroups(manager, user, USER_ROLE.ADMIN);
+      await this.createDefaultUserGroups(manager, testUser, USER_ROLE.BUILDER);
 
       // Adding test user to group
-      this.addToGroup(manager, testUser);
+
+      // Creating new schema for user in Tooljet database
+      await this.tooljetDbService.createTooljetDbTenantSchemaAndRole(organization.id, manager);
 
       console.log(
         'Seeding complete. Use default credentials to login.\n' + 'email: dev@tooljet.io\n' + 'password: password'
@@ -96,49 +104,15 @@ export class SeedsService {
     });
   }
 
-  async createDefaultUserGroups(manager: EntityManager, user: User): Promise<void> {
-    const defaultGroups = ['all_users', 'admin'];
-    for (const group of defaultGroups) {
-      await this.createGroupAndAssociateUser(group, manager, user);
-    }
+  async getAllOrganizations(manager?: EntityManager): Promise<Organization[]> {
+    return await this.entityManager.transaction(async (manager: EntityManager) => {
+      return await manager.find(Organization);
+    });
   }
 
-  async addToGroup(manager: EntityManager, user: User): Promise<void> {
-    const defaultGroups = ['all_users'];
-    for (const group of defaultGroups) {
-      await this.createGroupAndAssociateUser(group, manager, user);
-    }
-  }
-
-  async createGroupAndAssociateUser(group: string, manager: EntityManager, user: User): Promise<void> {
-    let groupPermission = await manager.findOne(GroupPermission, {
-      where: { organizationId: user.organizationId, group: group },
-    });
-
-    if (!groupPermission) {
-      groupPermission = manager.create(GroupPermission, {
-        organizationId: user.organizationId,
-        group: group,
-        appCreate: group == 'admin',
-        appDelete: group == 'admin',
-        folderCreate: group == 'admin',
-        orgEnvironmentVariableCreate: group == 'admin',
-        orgEnvironmentVariableUpdate: group == 'admin',
-        orgEnvironmentVariableDelete: group == 'admin',
-        orgEnvironmentConstantCreate: group == 'admin',
-        orgEnvironmentConstantDelete: group == 'admin',
-        folderUpdate: group == 'admin',
-        folderDelete: group == 'admin',
-      });
-      await manager.save(groupPermission);
-    }
-
-    const userGroupPermission = manager.create(UserGroupPermission, {
-      groupPermissionId: groupPermission.id,
-      userId: user.id,
-    });
-
-    await manager.save(userGroupPermission);
+  async createDefaultUserGroups(manager: EntityManager, user: User, role: USER_ROLE): Promise<void> {
+    if (role === USER_ROLE.ADMIN) await this.userRoleService.createDefaultGroups(user.organizationId, manager);
+    await this.userRoleService.addUserRole({ role, userId: user.id }, user.organizationId, manager);
   }
 
   async createDefaultEnvironments(organizationId: string, manager: EntityManager) {

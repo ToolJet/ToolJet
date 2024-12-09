@@ -77,7 +77,9 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
                 </div>
               )}
               <DataSourceIcon source={sources?.[0]} height={16} />
-              <span className="ms-1 small">{dataSourcesKinds.find((dsk) => dsk.kind === kind)?.name || kind}</span>
+              <span className="ms-1 small" style={{ fontSize: '13px' }}>
+                {dataSourcesKinds.find((dsk) => dsk.kind === kind)?.name || kind}
+              </span>
             </div>
           ),
           options: sources.map((source) => ({
@@ -85,6 +87,7 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
               <div
                 key={source.id}
                 className="py-2 px-2 rounded option-nested-datasource-selector small text-truncate"
+                style={{ fontSize: '13px' }}
                 data-tooltip-id="tooltip-for-add-query-dd-option"
                 data-tooltip-content={decodeEntities(source.name)}
                 data-cy={`ds-${source.name.toLowerCase()}`}
@@ -116,7 +119,7 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup }) {
           label: (
             <div>
               <DataSourceIcon source={source} height={16} />{' '}
-              <span data-cy={`ds-${source.name.toLowerCase()}`} className="ms-1 small">
+              <span data-cy={`ds-${source.name.toLowerCase()}`} className="ms-1 small" style={{ fontSize: '13px' }}>
                 {source.name}
               </span>
             </div>

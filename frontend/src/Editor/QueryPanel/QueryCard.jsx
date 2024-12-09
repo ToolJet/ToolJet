@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Tooltip } from 'react-tooltip';
-import { checkExistingQueryName } from '@/_helpers/appUtils';
+import { checkExistingQueryName, updateQuerySuggestions } from '@/_helpers/appUtils';
 import { Confirm } from '../Viewer/Confirm';
 import { toast } from 'react-hot-toast';
 import { useDataQueriesActions, useDataQueriesStore } from '@/_stores/dataQueriesStore';
@@ -46,6 +46,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId, local
     if (newName && !isNewQueryNameAlreadyExists) {
       renameQuery(dataQuery?.id, newName, editorRef);
       setRenamingQuery(false);
+      updateQuerySuggestions(name, newName);
     } else {
       if (isNewQueryNameAlreadyExists) {
         toast.error('Query name already exists');

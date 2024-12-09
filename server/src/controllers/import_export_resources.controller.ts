@@ -7,8 +7,11 @@ import { ImportExportResourcesService } from '@services/import_export_resources.
 import { App } from 'src/entities/app.entity';
 import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.factory';
 import { CloneResourcesDto } from '@dto/clone-resources.dto';
-import { checkVersionCompatibility } from 'src/helpers/utils.helper';
+import { GlobalDataSourceAbilityFactory } from 'src/modules/casl/abilities/global-datasource-ability.factory';
+import { DataSource } from 'src/entities/data_source.entity';
+import { isVersionGreaterThan } from 'src/helpers/utils.helper';
 import { APP_ERROR_TYPE } from 'src/helpers/error_type.constant';
+import { APP_RESOURCE_ACTIONS, GLOBAL_DATA_SOURCE_RESOURCE_ACTIONS } from 'src/constants/global.constant';
 
 @Controller({
   path: 'resources',
@@ -17,15 +20,16 @@ import { APP_ERROR_TYPE } from 'src/helpers/error_type.constant';
 export class ImportExportResourcesController {
   constructor(
     private importExportResourcesService: ImportExportResourcesService,
+    private globalDataSourceAbilityFactory: GlobalDataSourceAbilityFactory,
     private appsAbilityFactory: AppsAbilityFactory
   ) {}
 
   @UseGuards(JwtAuthGuard)
   @Post('/export')
   async export(@User() user, @Body() exportResourcesDto: ExportResourcesDto) {
-    const ability = await this.appsAbilityFactory.appsActions(user);
+    const ability = await this.appsAbilityFactory.appsActions(user, exportResourcesDto?.app?.[0]?.id);
 
-    if (!ability.can('createApp', App)) {
+    if (!ability.can(APP_RESOURCE_ACTIONS.EXPORT, App)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
     const result = await this.importExportResourcesService.export(user, exportResourcesDto);
@@ -38,12 +42,20 @@ export class ImportExportResourcesController {
   @UseGuards(JwtAuthGuard)
   @Post('/import')
   async import(@User() user, @Body() importResourcesDto: ImportResourcesDto) {
-    const ability = await this.appsAbilityFactory.appsActions(user);
+    const appAbility = await this.appsAbilityFactory.appsActions(user);
+    const gdsAbility = await this.globalDataSourceAbilityFactory.globalDataSourceActions(user);
 
-    if (!ability.can('importApp', App)) {
+    if (!appAbility.can(APP_RESOURCE_ACTIONS.IMPORT, App)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
-    const isNotCompatibleVersion = !checkVersionCompatibility(importResourcesDto.tooljet_version);
+    const importHasGlobalDatasource = importResourcesDto.app[0]?.definition?.appV2?.dataSources.find(
+      (ds) => ds.scope === 'global'
+    );
+
+    if (importHasGlobalDatasource && !gdsAbility.can(GLOBAL_DATA_SOURCE_RESOURCE_ACTIONS.CREATE, DataSource)) {
+      throw new ForbiddenException('You do not have create datasource permissions to perform this action');
+    }
+    const isNotCompatibleVersion = isVersionGreaterThan(importResourcesDto.tooljet_version, globalThis.TOOLJET_VERSION);
     if (isNotCompatibleVersion) {
       throw new BadRequestException(APP_ERROR_TYPE.IMPORT_EXPORT_SERVICE.UNSUPPORTED_VERSION_ERROR);
     }
@@ -54,10 +66,15 @@ export class ImportExportResourcesController {
   @UseGuards(JwtAuthGuard)
   @Post('/clone')
   async clone(@User() user, @Body() cloneResourcesDto: CloneResourcesDto) {
-    const ability = await this.appsAbilityFactory.appsActions(user, cloneResourcesDto?.app?.[0]?.id);
+    const appAbility = await this.appsAbilityFactory.appsActions(user, cloneResourcesDto?.app?.[0]?.id);
+    const gdsAbility = await this.globalDataSourceAbilityFactory.globalDataSourceActions(user);
 
-    if (!ability.can('cloneApp', App)) {
-      throw new ForbiddenException('You do not have permissions to perform this action');
+    if (!appAbility.can(APP_RESOURCE_ACTIONS.CLONE, App)) {
+      throw new ForbiddenException('You do not have app create permissions to perform this action');
+    }
+
+    if (!gdsAbility.can(GLOBAL_DATA_SOURCE_RESOURCE_ACTIONS.CREATE, DataSource)) {
+      throw new ForbiddenException('You do not have create datasource permissions to perform this action');
     }
 
     const imports = await this.importExportResourcesService.clone(user, cloneResourcesDto);

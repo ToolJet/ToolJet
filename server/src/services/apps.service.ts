@@ -7,14 +7,12 @@ import { AppUser } from 'src/entities/app_user.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
-import { GroupPermission } from 'src/entities/group_permission.entity';
-import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { AppImportExportService } from './app_import_export.service';
 import { DataSourcesService } from './data_sources.service';
 import { Credential } from 'src/entities/credential.entity';
-import { catchDbException, cleanObject, dbTransactionWrap, defaultAppEnvironments } from 'src/helpers/utils.helper';
+import { catchDbException, cleanObject, defaultAppEnvironments, mergeDeep } from 'src/helpers/utils.helper';
 import { AppUpdateDto } from '@dto/app-update.dto';
-import { viewableAppsQuery } from 'src/helpers/queries';
+import { viewableAppsQueryUsingPermissions } from 'src/helpers/queries';
 import { VersionEditDto } from '@dto/version-edit.dto';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
@@ -26,13 +24,16 @@ import { Page } from 'src/entities/page.entity';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 import { Layout } from 'src/entities/layout.entity';
 import { Component } from 'src/entities/component.entity';
-import { EventHandler } from 'src/entities/event_handler.entity';
+import { EventHandler, Target } from 'src/entities/event_handler.entity';
 import { VersionReleaseDto } from '@dto/version-release.dto';
 
-import { findAllEntityReferences, isValidUUID, updateEntityReferences } from 'src/helpers/import_export.helpers';
-import { isEmpty } from 'lodash';
+import { updateEntityReferences } from 'src/helpers/import_export.helpers';
+import { isEmpty, set } from 'lodash';
 import { AppBase } from 'src/entities/app_base.entity';
 import { LayoutDimensionUnits } from 'src/helpers/components.helper';
+import { AbilityService } from './permissions-ability.service';
+import { TOOLJET_RESOURCE } from 'src/constants/global.constant';
+import { dbTransactionWrap } from 'src/helpers/database.helper';
 
 const uuid = require('uuid');
 
@@ -55,7 +56,8 @@ export class AppsService {
 
     private appImportExportService: AppImportExportService,
     private dataSourcesService: DataSourcesService,
-    private appEnvironmentService: AppEnvironmentService
+    private appEnvironmentService: AppEnvironmentService,
+    private abilityService: AbilityService
   ) {}
   async find(id: string): Promise<App> {
     return this.appsRepository.findOne({
@@ -171,47 +173,9 @@ export class AppsService {
             updatedAt: new Date(),
           })
         );
-
-        await this.createAppGroupPermissionsForAdmin(app, manager);
         return app;
       }, [{ dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' }]);
     });
-  }
-
-  async createAppGroupPermissionsForAdmin(app: App, manager: EntityManager): Promise<void> {
-    await dbTransactionWrap(async (manager: EntityManager) => {
-      const orgDefaultGroupPermissions = await manager.find(GroupPermission, {
-        where: {
-          organizationId: app.organizationId,
-          group: 'admin',
-        },
-      });
-
-      for (const groupPermission of orgDefaultGroupPermissions) {
-        const appGroupPermission = manager.create(AppGroupPermission, {
-          groupPermissionId: groupPermission.id,
-          appId: app.id,
-          ...this.fetchDefaultAppGroupPermissions(groupPermission.group),
-        });
-
-        await manager.save(appGroupPermission);
-      }
-    }, manager);
-  }
-
-  fetchDefaultAppGroupPermissions(group: string): {
-    read: boolean;
-    update: boolean;
-    delete: boolean;
-  } {
-    switch (group) {
-      case 'all_users':
-        return { read: true, update: false, delete: false };
-      case 'admin':
-        return { read: true, update: true, delete: true };
-      default:
-        throw `${group} is not a default group`;
-    }
   }
 
   async clone(existingApp: App, user: User, appName: string): Promise<App> {
@@ -222,7 +186,22 @@ export class AppsService {
   }
 
   async count(user: User, searchKey): Promise<number> {
-    return await viewableAppsQuery(user, searchKey).getCount();
+    //Migrate it to app module utility files
+    const userPermission = await this.abilityService.resourceActionsPermission(user, {
+      resources: [{ resource: TOOLJET_RESOURCE.APP }],
+      organizationId: user.organizationId,
+    });
+
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const apps = await viewableAppsQueryUsingPermissions(
+        user,
+        userPermission[TOOLJET_RESOURCE.APP],
+        manager,
+        searchKey
+      ).getCount();
+
+      return apps;
+    });
   }
 
   getAppVersionsCount = async (appId: string) => {
@@ -232,16 +211,27 @@ export class AppsService {
   };
 
   async all(user: User, page: number, searchKey: string): Promise<AppBase[]> {
-    const viewableAppsQb = viewableAppsQuery(user, searchKey);
+    //Migrate it to app utility files
+    const userPermission = await this.abilityService.resourceActionsPermission(user, {
+      resources: [{ resource: TOOLJET_RESOURCE.APP }],
+      organizationId: user.organizationId,
+    });
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const viewableAppsQb = viewableAppsQueryUsingPermissions(
+        user,
+        userPermission[TOOLJET_RESOURCE.APP],
+        manager,
+        searchKey
+      );
 
-    if (page) {
-      return await viewableAppsQb
-        .take(9)
-        .skip(9 * (page - 1))
-        .getMany();
-    }
-
-    return await viewableAppsQb.getMany();
+      if (page) {
+        return await viewableAppsQb
+          .take(9)
+          .skip(9 * (page - 1))
+          .getMany();
+      }
+      return await viewableAppsQb.getMany();
+    });
   }
 
   async findAll(organizationId: string, searchParam): Promise<App[]> {
@@ -345,25 +335,12 @@ export class AppsService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let versionFrom: AppVersion;
       const { organizationId } = user;
+
       if (versionFromId) {
         versionFrom = await manager.findOneOrFail(AppVersion, {
           where: { id: versionFromId },
           relations: ['dataSources', 'dataSources.dataQueries', 'dataSources.dataSourceOptions'],
         });
-
-        if (defaultAppEnvironments.length > 1) {
-          const environmentWhereUserCreatingVersion = await this.appEnvironmentService.get(
-            app.organizationId,
-            environmentId,
-            false,
-            manager
-          );
-
-          //check if the user is creating version from development environment only
-          if (environmentWhereUserCreatingVersion.priority !== 1) {
-            throw new BadRequestException('New versions can only be created in development environment');
-          }
-        }
       }
 
       const noOfVersions = await manager.count(AppVersion, { where: { appId: app?.id } });
@@ -397,6 +374,7 @@ export class AppsService {
       if (versionFrom) {
         (appVersion.showViewerNavigation = versionFrom.showViewerNavigation),
           (appVersion.globalSettings = versionFrom.globalSettings),
+          (appVersion.pageSettings = versionFrom.pageSettings),
           await manager.save(appVersion);
 
         const oldDataQueryToNewMapping = await this.createNewDataSourcesAndQueriesForVersion(
@@ -413,6 +391,15 @@ export class AppsService {
           componentsMapping: oldComponentToNewComponentMapping,
           dataQueryMapping: oldDataQueryToNewMapping,
         });
+
+        if (appVersion.globalSettings) {
+          const globalSettings = appVersion.globalSettings;
+          const updatedGlobalSettings = updateEntityReferences(globalSettings, {
+            ...oldDataQueryToNewMapping,
+            ...oldComponentToNewComponentMapping,
+          });
+          await manager.update(AppVersion, { id: appVersion.id }, { globalSettings: updatedGlobalSettings });
+        }
 
         await this.updateEventActionsForNewVersionWithNewMappingIds(
           manager,
@@ -448,13 +435,7 @@ export class AppsService {
         .getMany();
 
       const toUpdateComponents = components.filter((component) => {
-        const entityReferencesInComponentDefinitions = findAllEntityReferences(component, []).filter(
-          (entity) => entity && isValidUUID(entity)
-        );
-
-        if (entityReferencesInComponentDefinitions.length > 0) {
-          return updateEntityReferences(component, mappings);
-        }
+        return updateEntityReferences(component, mappings);
       });
 
       if (!isEmpty(toUpdateComponents)) {
@@ -470,13 +451,7 @@ export class AppsService {
         .getMany();
 
       const toUpdateDataQueries = dataQueries.filter((dataQuery) => {
-        const entityReferencesInQueryOptions = findAllEntityReferences(dataQuery, []).filter(
-          (entity) => entity && isValidUUID(entity)
-        );
-
-        if (entityReferencesInQueryOptions.length > 0) {
-          return updateEntityReferences(dataQuery, mappings);
-        }
+        return updateEntityReferences(dataQuery, mappings);
       });
 
       if (!isEmpty(toUpdateDataQueries)) {
@@ -517,6 +492,9 @@ export class AppsService {
         eventDefinition.modal = oldComponentToNewComponentMapping[eventDefinition.modal];
       }
 
+      if (eventDefinition?.actionId === 'set-table-page') {
+        eventDefinition.table = oldComponentToNewComponentMapping[eventDefinition.table];
+      }
       event.event = eventDefinition;
 
       await manager.save(event);
@@ -549,7 +527,7 @@ export class AppsService {
 
     const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
       if (componentParentId) {
-        const parentId = component?.parent?.split('-').slice(0, -1).join('-');
+        const parentId = component?.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1];
 
         const parentComponent = allComponents.find((comp) => comp.id === parentId);
 
@@ -565,7 +543,7 @@ export class AppsService {
       if (!componentParentId.includes('modal')) return false;
 
       if (componentParentId) {
-        const parentId = componentParentId.split('-').slice(0, -1).join('-');
+        const parentId = componentParentId.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1];
         const isParentKandban = allComponents.find((comp) => comp.id === parentId)?.type === 'Kanban';
 
         return isParentKandban;
@@ -617,8 +595,8 @@ export class AppsService {
         const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, page.components, parentId);
 
         if (isParentTabOrCalendar) {
-          const childTabId = component.parent.split('-')[component.parent.split('-').length - 1];
-          const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+          const childTabId = component?.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[2];
+          const _parentId = component?.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1];
           const mappedParentId = oldComponentToNewComponentMapping[_parentId];
 
           parentId = `${mappedParentId}-${childTabId}`;
@@ -670,9 +648,14 @@ export class AppsService {
           await manager.save(newEvent);
         });
       });
-
       newComponents.forEach((component) => {
         let parentId = component.parent ? component.parent : null;
+        // re establish mapping relationship
+        if (component?.properties?.buttonToSubmit) {
+          const newButtonToSubmitValue =
+            oldComponentToNewComponentMapping[component?.properties?.buttonToSubmit?.value];
+          if (newButtonToSubmitValue) set(component, 'properties.buttonToSubmit.value', newButtonToSubmitValue);
+        }
 
         if (!parentId) return;
 
@@ -680,12 +663,12 @@ export class AppsService {
 
         if (isParentTabOrCalendar) {
           const childTabId = component?.parent?.split('-')[component?.parent?.split('-').length - 1];
-          const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+          const _parentId = component?.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1];
           const mappedParentId = oldComponentToNewComponentMapping[_parentId];
 
           parentId = `${mappedParentId}-${childTabId}`;
         } else if (isChildOfKanbanModal(component.parent, page.components)) {
-          const _parentId = component?.parent?.split('-').slice(0, -1).join('-');
+          const _parentId = component?.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1];
           const mappedParentId = oldComponentToNewComponentMapping[_parentId];
 
           parentId = `${mappedParentId}-modal`;
@@ -757,7 +740,7 @@ export class AppsService {
       const dataSourceMapping = {};
       const newDataQueries = [];
       const allEvents = await manager.find(EventHandler, {
-        where: { appVersionId: versionFrom?.id, target: 'data_query' },
+        where: { appVersionId: versionFrom?.id, target: Target.dataQuery },
       });
 
       if (dataSources?.length > 0 || globalDataSources?.length > 0) {
@@ -1042,7 +1025,7 @@ export class AppsService {
   async updateAppVersion(version: AppVersion, body: AppVersionUpdateDto) {
     const editableParams = {};
 
-    const { globalSettings, homePageId } = await this.appVersionsRepository.findOne({
+    const { globalSettings, homePageId, pageSettings } = await this.appVersionsRepository.findOne({
       where: { id: version.id },
     });
 
@@ -1054,6 +1037,12 @@ export class AppsService {
       editableParams['globalSettings'] = {
         ...globalSettings,
         ...body.globalSettings,
+      };
+    }
+
+    if (body?.pageSettings) {
+      editableParams['pageSettings'] = {
+        ...mergeDeep(pageSettings, body.pageSettings),
       };
     }
 

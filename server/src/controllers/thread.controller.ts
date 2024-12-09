@@ -16,6 +16,7 @@ import { Thread } from '../entities/thread.entity';
 import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
 import { ThreadsAbilityFactory } from 'src/modules/casl/abilities/threads-ability.factory';
 import { User } from 'src/decorators/user.decorator';
+import { THREAD_RESOURCE_ACTION } from 'src/constants/global.constant';
 
 @Controller('threads')
 export class ThreadController {
@@ -26,7 +27,7 @@ export class ThreadController {
   public async createThread(@User() user, @Body() createThreadDto: CreateThreadDto): Promise<Thread> {
     const ability = await this.threadsAbilityFactory.appsActions(user, createThreadDto.appId);
 
-    if (!ability.can('createThread', Thread)) {
+    if (!ability.can(THREAD_RESOURCE_ACTION.CREATE, Thread)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
     const thread = await this.threadService.createThread(createThreadDto, user.id, user.organizationId);
@@ -38,7 +39,7 @@ export class ThreadController {
   public async getThreads(@User() user, @Param('appId') appId: string, @Query() query): Promise<Thread[]> {
     const ability = await this.threadsAbilityFactory.appsActions(user, appId);
 
-    if (!ability.can('fetchThreads', Thread)) {
+    if (!ability.can(THREAD_RESOURCE_ACTION.READ, Thread)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
     const threads = await this.threadService.getThreads(appId, user.organizationId, query.appVersionsId);
@@ -47,14 +48,14 @@ export class ThreadController {
 
   @UseGuards(JwtAuthGuard)
   @Get('/:threadId')
-  public async getThread(@Param('threadId') threadId: number, @User() user) {
+  public async getThread(@Param('threadId') threadId: string, @User() user) {
     const _response = await Thread.findOne({
       where: { id: threadId },
     });
 
     const ability = await this.threadsAbilityFactory.appsActions(user, _response.appId);
 
-    if (!ability.can('fetchThreads', Thread)) {
+    if (!ability.can(THREAD_RESOURCE_ACTION.READ, Thread)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
     const thread = await this.threadService.getThread(threadId);
@@ -74,7 +75,7 @@ export class ThreadController {
 
     const ability = await this.threadsAbilityFactory.appsActions(user, _response.appId);
 
-    if (!ability.can('updateThread', Thread)) {
+    if (!ability.can(THREAD_RESOURCE_ACTION.UPDATE, Thread)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
     const thread = await this.threadService.editThread(threadId, updateThreadDto);
@@ -90,7 +91,7 @@ export class ThreadController {
 
     const ability = await this.threadsAbilityFactory.appsActions(user, _response.appId);
 
-    if (!ability.can('deleteThread', Thread)) {
+    if (!ability.can(THREAD_RESOURCE_ACTION.DELETE, Thread)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
     const deletedThread = await this.threadService.deleteThread(threadId);

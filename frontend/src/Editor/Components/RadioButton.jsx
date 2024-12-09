@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 export const RadioButton = function RadioButton({
@@ -12,6 +12,7 @@ export const RadioButton = function RadioButton({
   darkMode,
   dataCy,
 }) {
+  const isInitialRender = useRef(true);
   const { label, value, values, display_values } = properties;
   const { visibility, disabledState, activeColor, boxShadow } = styles;
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
@@ -37,6 +38,12 @@ export const RadioButton = function RadioButton({
   }
 
   useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('value', value);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
     const exposedVariables = {
       value: value,
       selectOption: async function (option) {
@@ -44,8 +51,9 @@ export const RadioButton = function RadioButton({
       },
     };
     setExposedVariables(exposedVariables);
+    isInitialRender.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, setValue]);
+  }, []);
 
   return (
     <div

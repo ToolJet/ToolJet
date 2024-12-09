@@ -29,6 +29,8 @@ spec:
             value: "replace_pgrest_jwt_secret_here"
           - name: PGRST_LOG_LEVEL
             value: "info"
+          - name: PGRST_DB_PRE_CONFIG
+            value: postgrest.pre_config
 ---
 apiVersion: v1
 kind: Service

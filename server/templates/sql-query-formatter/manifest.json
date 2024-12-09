@@ -1,5 +1,5 @@
 {
-    "name": "Sql query formatter",
+    "name": "SQL query formatter",
     "description": "Format SQL queries for better readability and understanding, with customizable styling options to suit different coding preferences and standards.",
     "widgets": [
         "Table",

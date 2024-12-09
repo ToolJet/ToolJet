@@ -3,6 +3,8 @@ import { Modal } from 'react-bootstrap';
 import { Button } from '@/_ui/LeftSidebar';
 import { Alert } from '@/_ui/Alert';
 import { EditInput } from './EditInput';
+import { validateKebabCase } from '@/_helpers/utils';
+import _ from 'lodash';
 
 export const EditModal = ({ slug, page, show, handleClose, updatePageHandle, darkMode }) => {
   const [pageHandle, setPageHandle] = useState(page.handle);
@@ -17,9 +19,14 @@ export const EditModal = ({ slug, page, show, handleClose, updatePageHandle, dar
     if (pageHandle === page.handle) {
       return handleClose();
     }
-
+    const { isValid, error } = validateKebabCase(pageHandle);
+    if (!isValid) {
+      setError(error);
+      return;
+    }
+    const transformedPageHandle = _.kebabCase(pageHandle);
     setIsSaving(true);
-    updatePageHandle(page.id, pageHandle);
+    updatePageHandle(page.id, transformedPageHandle);
     setTimeout(() => {
       setIsSaving(false);
       return handleClose();

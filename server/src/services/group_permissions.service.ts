@@ -1,14 +1,15 @@
 import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, createQueryBuilder, In, Not, EntityManager, Brackets } from 'typeorm';
+import { Repository, In, Not, EntityManager, Brackets, DataSource } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { App } from 'src/entities/app.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { UsersService } from './users.service';
-import { dbTransactionWrap, getMaxCopyNumber } from 'src/helpers/utils.helper';
+import { getMaxCopyNumber } from 'src/helpers/utils.helper';
 import { DuplucateGroupDto } from '@dto/group-permission.dto';
+import { dbTransactionWrap } from 'src/helpers/database.helper';
 
 @Injectable()
 export class GroupPermissionsService {
@@ -28,7 +29,8 @@ export class GroupPermissionsService {
     @InjectRepository(App)
     private appRepository: Repository<App>,
 
-    private usersService: UsersService
+    private usersService: UsersService,
+    private readonly _dataSource: DataSource
   ) {}
 
   async create(user: User, group: string, manager?: EntityManager): Promise<void> {
@@ -281,7 +283,8 @@ export class GroupPermissionsService {
 
     if (!groupToDuplicate) throw new BadRequestException('Wrong group id');
 
-    const existNameList = await createQueryBuilder()
+    const existNameList = await this._dataSource
+      .createQueryBuilder()
       .select(['group_permissions.group', 'group_permissions.id'])
       .from(GroupPermission, 'group_permissions')
       .where('group_permissions.group ~* :pattern', { pattern: `^${groupToDuplicate.group}_copy_[0-9]+$` })
@@ -393,7 +396,8 @@ export class GroupPermissionsService {
   }
 
   async findApps(user: User, groupPermissionId: string): Promise<App[]> {
-    return createQueryBuilder(App, 'apps')
+    return this._dataSource
+      .createQueryBuilder(App, 'apps')
       .innerJoinAndSelect('apps.groupPermissions', 'group_permissions')
       .innerJoinAndSelect('apps.appGroupPermissions', 'app_group_permissions')
       .where('group_permissions.id = :groupPermissionId', {
@@ -429,7 +433,8 @@ export class GroupPermissionsService {
   }
 
   async findUsers(user: User, groupPermissionId: string): Promise<User[]> {
-    return createQueryBuilder(User, 'users')
+    return this._dataSource
+      .createQueryBuilder(User, 'users')
       .select(['users.id', 'users.firstName', 'users.lastName', 'users.email'])
       .innerJoin('users.groupPermissions', 'group_permissions')
       .innerJoin('users.userGroupPermissions', 'user_group_permissions')
@@ -455,7 +460,8 @@ export class GroupPermissionsService {
     const userInGroup = await groupPermission.users;
     const usersInGroupIds = userInGroup.map((u) => u.id);
 
-    const adminUsers = await createQueryBuilder(UserGroupPermission, 'user_group_permissions')
+    const adminUsers = await this._dataSource
+      .createQueryBuilder(UserGroupPermission, 'user_group_permissions')
       .innerJoin(
         GroupPermission,
         'group_permissions',
@@ -484,7 +490,8 @@ export class GroupPermissionsService {
       });
     };
 
-    const builtQuery = createQueryBuilder(User, 'user')
+    const builtQuery = this._dataSource
+      .createQueryBuilder(User, 'user')
       .select(['user.id', 'user.firstName', 'user.lastName', 'user.email'])
       .innerJoin(
         'user.organizationUsers',

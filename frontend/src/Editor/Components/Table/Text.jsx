@@ -36,6 +36,7 @@ const Text = ({
   });
   const { isValid, validationError } = validationData;
   const ref = useRef();
+  const editableCellValueRef = useRef(null);
   const nonEditableCellValueRef = useRef();
   const [showOverlay, setShowOverlay] = useState(false);
   const [hovered, setHovered] = useState(false);
@@ -54,6 +55,7 @@ const Text = ({
 
   const _renderTextArea = () => (
     <div
+      ref={editableCellValueRef}
       contentEditable={'true'}
       className={`${!isValid ? 'is-invalid' : ''} h-100 long-text-input text-container ${
         darkMode ? ' textarea-dark-theme' : ''
@@ -83,6 +85,7 @@ const Text = ({
       onKeyDown={(e) => {
         e.persist();
         if (e.key === 'Enter' && !e.shiftKey && isEditable) {
+          editableCellValueRef.current.blur();
           const div = e.target;
           let content = div.innerHTML;
           handleCellValueChange(cell.row.index, column.key || column.name, content, cell.row.original);
@@ -106,12 +109,12 @@ const Text = ({
       <span
         style={{
           maxHeight: isMaxRowHeightAuto
-            ? 'auto'
+            ? 'fit-content'
             : maxRowHeightValue
-            ? maxRowHeightValue - 16 // decreasing 16px for padding fix
+            ? `${maxRowHeightValue}px`
             : cellSize === 'condensed'
-            ? '23px'
-            : '29px',
+            ? '39px'
+            : '45px',
         }}
         ref={nonEditableCellValueRef}
       >

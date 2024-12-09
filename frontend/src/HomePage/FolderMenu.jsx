@@ -19,16 +19,16 @@ export const FolderMenu = function FolderMenu({
   const Field = ({ text, onClick, customClass }) => {
     return (
       <div
+        role="button"
+        onClick={() => {
+          closeMenu();
+          onClick();
+        }}
         className={cx('field mb-3', {
           [customClass]: customClass,
         })}
       >
         <span
-          role="button"
-          onClick={() => {
-            closeMenu();
-            onClick();
-          }}
           data-cy={`${String(dataCy + '-' + text)
             .toLowerCase()
             .replace(/\s+/g, '-')}-option`}
