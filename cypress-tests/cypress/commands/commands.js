@@ -366,7 +366,7 @@ Cypress.Commands.add("defaultWorkspaceLogin", () => {
     "library_apps"
   );
   cy.visit("/my-workspace");
-  // cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
+  cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
   cy.wait("@library_apps");
 });
 

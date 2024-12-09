@@ -341,7 +341,7 @@ describe("Workspace constants", () => {
         AddNewconstants(data.restapiHeaderKey, "customHeader");
         AddNewconstants(data.restapiHeaderValue, "key=value");
         cy.apiCreateGDS(
-            "http://localhost:3000/api/v2/data_sources",
+            `${Cypress.env("server_host")}/api/v2/data_sources`,
             data.ds,
             "restapi",
             [
@@ -380,7 +380,7 @@ describe("Workspace constants", () => {
             };
             cy.request({
                 method: "GET",
-                url: `http://localhost:3000/api/app-environments/versions?app_id=${Cypress.env(
+                url: `${Cypress.env("server_host")}/api/app-environments/versions?app_id=${Cypress.env(
                     "appId"
                 )}`,
                 headers: headers,

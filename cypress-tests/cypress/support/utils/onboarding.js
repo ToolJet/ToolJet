@@ -132,14 +132,14 @@ export const userSignUp = (fullName, email, workspaceName) => {
   let invitationLink;
   cy.intercept("GET", "/api/organizations/public-configs").as("publicConfig");
   cy.visit("/");
-  cy.wait("@publicConfig"); // Wait for the API response
-  cy.get(commonSelectors.createAnAccountLink).realClick(); // Proceed to click the link
+  cy.wait("@publicConfig");
+  cy.get(commonSelectors.createAnAccountLink).realClick();
   cy.get(onboardingSelectors.nameInput).should('not.be.disabled');
   cy.wait(3000)
   cy.get(onboardingSelectors.nameInput).clear();
   cy.get(onboardingSelectors.nameInput).type(fullName);
-  cy.clearAndType(onboardingSelectors.emailInput, email);
-  cy.clearAndType(onboardingSelectors.passwordInput, commonText.password);
+  cy.clearAndType(onboardingSelectors.loginEmailInput, email);
+  cy.clearAndType(onboardingSelectors.loginPasswordInput, commonText.password);
   cy.get(commonSelectors.signUpButton).click();
 
   cy.wait(500);

@@ -87,8 +87,8 @@ describe(
         "be.visible"
       );
 
-      cy.clearAndType(onboardingSelectors.emailInput, "dev@tooljet.io");
-      cy.clearAndType(onboardingSelectors.passwordInput, "password");
+      cy.clearAndType(onboardingSelectors.loginEmailInput, "dev@tooljet.io");
+      cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
       cy.get(onboardingSelectors.signInButton).click();
 
       cy.wait(500);
@@ -196,8 +196,8 @@ describe(
 
       // logout();
 
-      cy.clearAndType(onboardingSelectors.emailInput, data.email);
-      cy.clearAndType(onboardingSelectors.passwordInput, "password");
+      cy.clearAndType(onboardingSelectors.loginEmailInput, data.email);
+      cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
       cy.get(onboardingSelectors.signInButton).click();
       cy.pause();
       cy.wait(1000);
@@ -270,8 +270,8 @@ describe(
       cy.get(commonSelectors.createAnAccountLink).click();
 
       cy.clearAndType(commonSelectors.nameInputField, data.firstName);
-      cy.clearAndType(onboardingSelectors.emailInput, data.email);
-      cy.clearAndType(onboardingSelectors.passwordInput, commonText.password);
+      cy.clearAndType(onboardingSelectors.loginEmailInput, data.email);
+      cy.clearAndType(onboardingSelectors.loginPasswordInput, commonText.password);
       cy.get(commonSelectors.signUpButton).click();
 
       cy.apiLogin();
