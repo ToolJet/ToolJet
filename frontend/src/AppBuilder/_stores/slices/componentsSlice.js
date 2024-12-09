@@ -1831,7 +1831,7 @@ export const createComponentsSlice = (set, get) => ({
         'MultiselectV2',
         'RadioButtonV2',
         'DatetimePickerV2',
-        'DateRangePickerV2',
+        'DaterangePicker',
         'DatePickerV2',
         'TimePickerV2',
       ].includes(componentType)

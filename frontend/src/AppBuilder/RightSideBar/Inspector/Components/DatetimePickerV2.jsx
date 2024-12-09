@@ -146,7 +146,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
     ),
   });
 
-  if (componentName !== 'DateRangePickerV2') {
+  if (componentName !== 'DaterangePicker') {
     items.push({
       title: 'Formatting',
       isOpen: true,

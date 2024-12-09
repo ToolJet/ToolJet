@@ -28,6 +28,7 @@ export const BaseDateComponent = ({
   const {
     selectedTextColor,
     fieldBorderRadius,
+    borderRadius,
     boxShadow,
     labelColor,
     alignment,
@@ -57,7 +58,7 @@ export const BaseDateComponent = ({
       ? '1px solid var(--borders-disabled-on-white)'
       : 'var(--borders-default)',
     '--tblr-input-border-color-darker': tinycolor(fieldBorderColor).darken(24).toString(),
-    borderRadius: `${fieldBorderRadius}px`,
+    borderRadius: `${fieldBorderRadius || borderRadius}px`,
     color: !['#1B1F24', '#000', '#000000ff'].includes(selectedTextColor)
       ? selectedTextColor
       : disable || loading

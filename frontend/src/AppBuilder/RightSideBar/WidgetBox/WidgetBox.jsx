@@ -9,7 +9,7 @@ const NEW_WIDGETS = [
   'MultiselectV2',
   'RadioButtonV2',
   'DatetimePickerV2',
-  'DateRangePickerV2',
+  'DaterangePicker',
   'DatePickerV2',
   'TimePickerV2',
 ];

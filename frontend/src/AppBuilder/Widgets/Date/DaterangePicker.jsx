@@ -4,8 +4,8 @@ import { BaseDateComponent } from './BaseDateComponent';
 import moment from 'moment-timezone';
 import cx from 'classnames';
 import { isDateValid } from './utils';
-import { set } from 'lodash';
-export const DateRangePickerV2 = ({
+
+export const DaterangePicker = ({
   height,
   properties,
   validation = {},
