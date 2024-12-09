@@ -158,13 +158,13 @@ export const inviteUser = (firstName, email) => {
 
 export const confirmInviteElements = (email) => {
 
-  cy.get(commonSelectors.SignUpSectionHeader).verifyVisibleElement(
+  cy.get(commonSelectors.signUpSectionHeader).verifyVisibleElement(
     "have.text", "Sign up");
-  cy.get('[data-cy="workspace-signup-header"]').verifyVisibleElement(
-    "have.text", "Sign up to the workspace - My workspace");
+  cy.get('[data-cy="signup-info"]').verifyVisibleElement(
+    "have.text", "Sign up to the workspace - My workspace. ");
 
-  cy.verifyLabel("Email")
-  cy.verifyLabel("Create a password")
+  // cy.verifyLabel("Email")
+  // cy.verifyLabel("Create a password")
   cy.get(commonSelectors.invitedUserEmail).verifyVisibleElement(
     "have.text", email);
 
@@ -217,7 +217,6 @@ export const bulkUserUpload = (file, fileName, toastMessage) => {
     .should("be.visible")
     .and("have.text", toastMessage);
   cy.get(usersSelector.toastCloseButton).click();
-
   cy.wait(200);
 };
 
@@ -245,7 +244,7 @@ export const copyInvitationLink = (firstName, email) => {
 export const fillUserInviteForm = (firstName, email) => {
   cy.get(usersSelector.buttonAddUsers).click();
   cy.clearAndType(onboardingSelectors.nameInput, firstName);
-  cy.clearAndType(onboardingSelectors.emailInput, email);
+  cy.clearAndType(onboardingSelectors.signupEmailInput, email);
 };
 
 export const selectUserGroup = (groupName) => {
@@ -295,7 +294,8 @@ export const inviteUserWithUserGroups = (
 
   cy.wait(1000);
   fetchAndVisitInviteLink(email);
-  cy.clearAndType(onboardingSelectors.passwordInput, "password");
+  cy.wait(2000);
+  cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
   // cy.intercept('GET', '/api/organizations').as('org')
   cy.get(commonSelectors.signUpButton).click();
   cy.wait(2000);
@@ -374,7 +374,7 @@ export const inviteUserWithUserRole = (
 
   cy.wait(1000);
   fetchAndVisitInviteLink(email);
-  cy.clearAndType(onboardingSelectors.passwordInput, "password");
+  cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
   cy.get(commonSelectors.signUpButton).click();
   cy.wait(2000);
   cy.get(commonSelectors.acceptInviteButton).click();

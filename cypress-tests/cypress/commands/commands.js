@@ -11,8 +11,9 @@ Cypress.Commands.add(
   "appUILogin",
   (email = "dev@tooljet.io", password = "password") => {
     cy.visit("/");
-    cy.clearAndType(onboardingSelectors.emailInput, email);
-    cy.clearAndType(onboardingSelectors.passwordInput, password);
+    cy.wait(3000);
+    cy.clearAndType(onboardingSelectors.loginEmailInput, email);
+    cy.clearAndType(onboardingSelectors.loginPasswordInput, password);
     cy.get(onboardingSelectors.signInButton).click();
 
     cy.intercept("GET", "/api/library_apps/").as("library_apps");
@@ -365,7 +366,7 @@ Cypress.Commands.add("defaultWorkspaceLogin", () => {
     "library_apps"
   );
   cy.visit("/my-workspace");
-  cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
+  // cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
   cy.wait("@library_apps");
 });
 

@@ -16,6 +16,7 @@ describe("Profile Settings", () => {
     common.navigateToProfile();
   });
 
+  // neeed to reset and seed bd after 1 run (as password changes will get 401 error )
   it("Should verify the elements on profile settings page and name reset functionality", () => {
     profile.profilePageElements();
 
@@ -184,16 +185,15 @@ describe("Profile Settings", () => {
     );
 
     common.logout();
-
-    cy.clearAndType(onboardingSelectors.emailInput, commonText.email);
-    cy.clearAndType(onboardingSelectors.passwordInput, commonText.password);
+    cy.clearAndType(onboardingSelectors.loginEmailInput, commonText.email);
+    cy.clearAndType(onboardingSelectors.loginPasswordInput, commonText.password);
     cy.get(onboardingSelectors.signInButton).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       profileText.loginErrorToast
     );
 
-    cy.clearAndType(onboardingSelectors.passwordInput, profileText.newPassword);
+    cy.clearAndType(onboardingSelectors.loginPasswordInput, profileText.newPassword);
     cy.get(onboardingSelectors.signInButton).click();
     common.navigateToProfile();
 
