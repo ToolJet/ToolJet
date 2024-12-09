@@ -3,12 +3,9 @@ import _, { isEmpty } from 'lodash';
 import useStore from '@/AppBuilder/_stores/store';
 import { any } from 'superstruct';
 import { generateSchemaFromValidationDefinition, validate } from '@/AppBuilder/_utils/component-properties-validation';
-import {
-  hasCircularDependency,
-  resolveReferences as olderResolverMethod,
-  removeNestedDoubleCurlyBraces,
-} from '@/_helpers/utils';
+import { hasCircularDependency, resolveReferences as olderResolverMethod } from '@/_helpers/utils';
 import { validateMultilineCode } from '@/_helpers/utility';
+import { removeNestedDoubleCurlyBraces } from '../_stores/utils';
 
 const acorn = require('acorn');
 
