@@ -226,7 +226,7 @@ export const bulkUserUploadDuplicate = (file, fileName, toastMessage) => {
   });
   cy.get(usersSelector.uploadedFileData).should("contain", fileName);
   cy.get(usersSelector.buttonUploadUsers).click();
-  cy.get(commonSelectors.duplicateEmail)
+  cy.get(commonSelectors.modalMessage)
     .should("be.visible")
     .and("have.text", toastMessage);
   cy.get(usersSelector.modalClose).click();
