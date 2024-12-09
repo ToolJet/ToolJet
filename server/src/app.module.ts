@@ -45,6 +45,7 @@ import { UserResourcePermissionsModule } from '@modules/user_resource_permission
 import { PermissionsModule } from '@modules/permissions/permissions.module';
 import { GetConnection } from '@modules/database/getConnection';
 import { InstanceSettingsModule } from '@instance-settings/module';
+import { OpenTelemetryModule } from 'nestjs-otel';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { LicenseModule } from '@licensing/module';
@@ -91,6 +92,19 @@ const imports = [
   }),
   TypeOrmModule.forRoot(ormconfig),
   TypeOrmModule.forRoot(tooljetDbOrmconfig),
+  OpenTelemetryModule.forRoot({
+    metrics: {
+      hostMetrics: true,
+      apiMetrics: {
+        enable: true,
+        defaultAttributes: {
+          custom: 'metrics',
+        },
+        ignoreRoutes: ['/favicon.ico', '/api/health'], // You can ignore specific routes (See https://docs.nestjs.com/middleware#excluding-routes for options)
+        ignoreUndefinedRoutes: false, //Records metrics for all URLs, even undefined ones
+      },
+    },
+  }),
   RequestContextModule,
   InstanceSettingsModule,
   AppConfigModule,
