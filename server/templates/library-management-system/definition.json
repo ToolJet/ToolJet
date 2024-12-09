@@ -1341,7 +1341,7 @@
               "parent": "67ad89c8-d74e-4090-8f51-66723a881b65",
               "properties": {
                 "defaultValue": {
-                  "value": ""
+                  "value": "{{moment().format(\"YYYY\")}}"
                 },
                 "format": {
                   "value": "YYYY"
@@ -1387,7 +1387,7 @@
                 }
               },
               "createdAt": "2024-12-04T21:37:42.886Z",
-              "updatedAt": "2024-12-04T21:46:43.796Z",
+              "updatedAt": "2024-12-09T08:40:18.371Z",
               "layouts": [
                 {
                   "id": "0e60af6a-b789-4810-9743-56d7bf8d61bd",
@@ -1437,7 +1437,7 @@
                   "value": "{{queries.ea01f6c1-1b1d-442b-b4d4-5b3f0aa7004c.data.result\n  .filter((row) =>\n    components.614c6c1a-1be0-49df-a83c-9ce482f85b6a.data.dropdownlegacy4.value == \"issue\"\n      ? row.library_resources_availability == \"AVAILABLE\"\n      : row.library_resources_availability == \"ISSUED\"\n  )\n  .map((row) => row.library_resources_book_id)}}"
                 },
                 "value": {
-                  "value": ""
+                  "value": "{{components.35588621-50dd-4259-b060-a9b685aac019.selectedRow ? components.35588621-50dd-4259-b060-a9b685aac019.selectedRow.library_resources_book_id : \"\"}}"
                 },
                 "loadingState": {
                   "value": "{{false}}",
@@ -1481,7 +1481,7 @@
                 }
               },
               "createdAt": "2024-12-04T21:37:42.886Z",
-              "updatedAt": "2024-12-04T22:52:14.148Z",
+              "updatedAt": "2024-12-09T08:19:32.599Z",
               "layouts": [
                 {
                   "id": "5a853c7c-ddec-4d57-b51c-13f084a58d51",
@@ -1492,7 +1492,7 @@
                   "height": 40,
                   "componentId": "c24f5c9e-83ae-4961-848a-bdb2a8f6ed37",
                   "dimensionUnit": "count",
-                  "updatedAt": "2024-12-04T22:51:09.873Z"
+                  "updatedAt": "2024-12-09T08:18:33.552Z"
                 },
                 {
                   "id": "08ff57dd-f82b-4dc8-b49f-d8de9bc04a37",
@@ -2063,7 +2063,7 @@
                 },
                 "allowSelection": {
                   "fxActive": false,
-                  "value": "{{false}}"
+                  "value": "{{true}}"
                 },
                 "showBulkUpdateActions": {
                   "value": "{{true}}"
@@ -2134,7 +2134,7 @@
                   "value": "{{false}}"
                 },
                 "defaultSelectedRow": {
-                  "value": "{{{\"id\":1}}}"
+                  "value": "{{{library_resources_book_id: queries.012194f7-e4e8-45b5-a4c0-7e18d05d3827.data[0].library_resources_book_id}}}"
                 },
                 "showAddNewRowButton": {
                   "value": "{{true}}"
@@ -2194,7 +2194,7 @@
               },
               "validation": {},
               "createdAt": "2024-12-04T21:37:42.886Z",
-              "updatedAt": "2024-12-05T01:33:50.269Z",
+              "updatedAt": "2024-12-09T08:46:42.140Z",
               "layouts": [
                 {
                   "id": "c46c0b7a-e4e5-43c7-ab1b-615496ac95d2",
@@ -3547,7 +3547,7 @@
                   "value": ""
                 },
                 "value": {
-                  "value": "issue"
+                  "value": "{{components.35588621-50dd-4259-b060-a9b685aac019.selectedRow.library_resources_availability == \"ISSUED\" ? \"return\" : \"issue\"}}"
                 },
                 "values": {
                   "value": "{{[\"issue\", \"return\"]}}"
@@ -3596,7 +3596,7 @@
                 }
               },
               "createdAt": "2024-12-04T22:06:14.896Z",
-              "updatedAt": "2024-12-04T22:52:22.944Z",
+              "updatedAt": "2024-12-09T08:16:17.945Z",
               "layouts": [
                 {
                   "id": "e13f2beb-a9b1-4d22-9746-203cdb55b2c3",
@@ -5943,7 +5943,7 @@
               "dataSourceId": "b603629f-da57-4821-bb25-b9c1a2c8f98e",
               "appVersionId": "5de61511-43cc-4a0a-b3dd-c8f130bc092e",
               "createdAt": "2024-12-04T21:37:42.886Z",
-              "updatedAt": "2024-12-05T01:33:49.268Z"
+              "updatedAt": "2024-12-09T08:46:40.823Z"
             },
             {
               "id": "7623455a-313e-461d-8fd1-900a9871a76c",
@@ -6738,5 +6738,5 @@
       }
     }
   ],
-  "tooljet_version": "3.0.16-cloud-lts"
+  "tooljet_version": "3.0.17-cloud-lts"
 }
