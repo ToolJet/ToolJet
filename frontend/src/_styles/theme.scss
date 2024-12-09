@@ -13050,3 +13050,11 @@ tbody {
 div.ds-svg-container svg {
   padding: 2px;
 }
+
+fieldset:disabled {
+  .json-form-wrapper-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    filter: grayscale(100%);
+  }
+}

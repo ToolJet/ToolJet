@@ -248,7 +248,7 @@ export const Form = function Form(props) {
       ) : (
         <fieldset disabled={disabledState}>
           {!advanced && (
-            <>
+            <div className={'json-form-wrapper-disabled'}>
               <SubContainer
                 parentComponent={component}
                 containerCanvasWidth={width}
@@ -271,7 +271,7 @@ export const Form = function Form(props) {
                 parentRef={parentRef}
                 currentLayout={currentLayout}
               />
-            </>
+            </div>
           )}
           {advanced &&
             uiComponents?.map((item, index) => {
