@@ -1,12 +1,11 @@
-First Name,Last Name,Email,Groups
-,,test12@gmail.com,All Users
-,,test13@gmail.com,All Users
-,,test14@gmail.com,All Users
-,,test15@gmail.com,All Users
-,,test16@gmail.com,All Users
-,,test17@gmail.com,All Users
-,,test18@gmail.com,All Users
-,,test19@gmail.com,All Users
-,,test20@gmail.com,All Users
-,,test21@gmail.com,All Users
-,,test22@gmail.com,All Users
+First Name,Last Name,Email,User Role,Group
+,,withoutname1@gmail.com,Admin,Admin
+,,withoutname2@gmail.com,Builder,Builder
+,,withoutname3@gmail.com,Builder,Builder
+,,withoutname4@gmail.com,End User,End User
+,,withoutname5@gmail.com,End User,End User
+,,withoutname6@gmail.com,End User,End User
+,,withoutname7@gmail.com,End User,End User
+,,withoutname8@gmail.com,End User,End User
+,,withoutname9@gmail.com,End User,End User
+,,withoutname10@gmail.com,End User,End User
