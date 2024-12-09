@@ -212,7 +212,7 @@ jobs:
         uses: jsdaniell/create-json@1.1.2
         with:
           name: "cypress.env.json"
-          json: ${{ secrets.CYPRESS_SECRETS }}
+          json: ${{ secrets.CYPRESS_SECRETS_SUBPATH }}
           dir: "./cypress-tests"
 
       - name: Platform-subpath
