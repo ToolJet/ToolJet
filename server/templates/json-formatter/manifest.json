@@ -1,0 +1,16 @@
+{
+    "name": "JSON formatter",
+    "description": "Format and customize JSON data display for improved readability and easier manipulation, streamlining debugging processes.",
+    "widgets": [
+        "Table",
+        "Container"
+    ],
+    "sources": [
+        {
+            "name": "Run JavaScript",
+            "id": "runjs"
+        }
+    ],
+    "id": "json-formatter",
+    "category": "developer-utilities"
+}
