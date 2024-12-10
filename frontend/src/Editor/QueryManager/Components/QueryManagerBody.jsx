@@ -12,7 +12,12 @@ import { ChangeDataSource } from './ChangeDataSource';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
 import { EventManager } from '@/Editor/Inspector/EventManager';
 import { staticDataSources, customToggles, mockDataQueryAsComponent, RestAPIToggles } from '../constants';
-import { DataSourceTypes } from '../../DataSourceManager/SourceComponents';
+import {
+  DataSourceTypes,
+  DataBaseSources,
+  ApiSources,
+  CloudStorageSources,
+} from '../../DataSourceManager/SourceComponents';
 import { useDataSources, useGlobalDataSources, useSampleDataSource } from '@/_stores/dataSourcesStore';
 import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
 import { useSelectedQuery, useSelectedDataSource } from '@/_stores/queryPanelStore';
@@ -21,6 +26,7 @@ import { shallow } from 'zustand/shallow';
 import SuccessNotificationInputs from './SuccessNotificationInputs';
 import ParameterList from './ParameterList';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 
 export const QueryManagerBody = ({
   darkMode,
@@ -49,6 +55,10 @@ export const QueryManagerBody = ({
        - Ref PR #6763
     */
   const [selectedQueryId, setSelectedQueryId] = useState(selectedQuery?.id);
+  const [dataSourcesKinds, setDataSourcesKinds] = useState([]);
+  const [userDefinedSources, setUserDefinedSources] = useState(
+    [...dataSources, ...globalDataSources, !!sampleDataSource && sampleDataSource].filter(Boolean)
+  );
 
   const queryName = selectedQuery?.name ?? '';
   const sourcecomponentName = selectedDataSource?.kind?.charAt(0).toUpperCase() + selectedDataSource?.kind?.slice(1);
@@ -63,6 +73,24 @@ export const QueryManagerBody = ({
     }),
     shallow
   );
+
+  useEffect(() => {
+    const shouldAddSampleDataSource = !!sampleDataSource;
+    const allDataSources = [...dataSources, ...globalDataSources, shouldAddSampleDataSource && sampleDataSource].filter(
+      Boolean
+    );
+    setUserDefinedSources(allDataSources);
+    const dataSourceKindsList = [...DataBaseSources, ...ApiSources, ...CloudStorageSources];
+    allDataSources.forEach(({ plugin }) => {
+      //plugin names are fetched from list data source api call only
+      if (isEmpty(plugin)) {
+        return;
+      }
+      dataSourceKindsList.push({ name: plugin.name, kind: plugin.pluginId });
+    });
+    setDataSourcesKinds(dataSourceKindsList);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataSources]);
 
   useEffect(() => {
     setDataSourceMeta(
@@ -308,6 +336,14 @@ export const QueryManagerBody = ({
     if (isEmpty(selectableDataSources)) {
       return '';
     }
+    const isSampleDb = selectedDataSource?.type === DATA_SOURCE_TYPE.SAMPLE;
+    const docLink = isSampleDb
+      ? 'https://docs.tooljet.com/docs/data-sources/sample-data-sources'
+      : selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
+      ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
+      : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
+    const selectedDataSourceName =
+      dataSourcesKinds.find((dsk) => dsk.kind === selectedDataSource.kind)?.name || selectedDataSource.kind;
     return (
       <>
         <div className="" ref={paramListContainerRef}>
@@ -329,10 +365,11 @@ export const QueryManagerBody = ({
         >
           <div
             className={`d-flex query-manager-border-color hr-text-left py-2 form-label font-weight-500 change-data-source`}
+            style={{ minWidth: '140px' }}
           >
             Source
           </div>
-          <div className="d-flex align-items-end" style={{ width: '364px' }}>
+          <div className="d-flex flex-column align-items-start" style={{ width: '100%' }}>
             <ChangeDataSource
               dataSources={selectableDataSources}
               value={selectedDataSource}
@@ -340,6 +377,18 @@ export const QueryManagerBody = ({
                 changeDataQuery(newDataSource);
               }}
             />
+            <div>
+              {`To know more about querying ${selectedDataSourceName} data,`}
+              &nbsp;
+              <a
+                href={docLink}
+                target="_blank"
+                style={{ marginLeft: '0px !important', color: 'hsl(226, 70.0%, 55.5%)', textDecoration: 'underline' }}
+                rel="noreferrer"
+              >
+                {t('globals.readDocumentation', 'read documentation').toLowerCase()}
+              </a>
+            </div>
           </div>
         </div>
       </>
