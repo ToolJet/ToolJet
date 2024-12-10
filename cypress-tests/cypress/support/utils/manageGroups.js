@@ -631,14 +631,7 @@ export const addUserToGroup = (groupName, email) => {
 
 
 export const createGroupAddAppAndUserToGroup = (groupName, email) => {
-<<<<<<< Updated upstream
-  cy.intercept("GET", "/api/group_permissions").as(
-    `${groupName}`
-  );
-  createGroup(groupName);
-=======
   let groupId;
->>>>>>> Stashed changes
 
   cy.getCookie("tj_auth_token").then((cookie) => {
     const headers = {
@@ -660,13 +653,8 @@ export const createGroupAddAppAndUserToGroup = (groupName, email) => {
       cy.wrap(groupId).as('groupId');
 
       cy.request({
-<<<<<<< Updated upstream
-        method: "PUT",
-        url: `${Cypress.env("server_host")}/api/group_permissions/${groupId}`,
-=======
         method: 'POST',
         url: `${Cypress.env('server_host')}/api/v2/group_permissions/granular-permissions`,
->>>>>>> Stashed changes
         headers: headers,
         body: {
           name: 'Apps',
@@ -695,13 +683,8 @@ export const createGroupAddAppAndUserToGroup = (groupName, email) => {
         const userId = resp.rows[0].id;
 
         cy.request({
-<<<<<<< Updated upstream
-          method: "PUT",
-          url: `${Cypress.env("server_host")}/api/group_permissions/${groupId}`,
-=======
           method: 'POST',
           url: `${Cypress.env('server_host')}/api/v2/group_permissions/group-user`,
->>>>>>> Stashed changes
           headers: headers,
           body: {
             userIds: [userId],

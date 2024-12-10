@@ -17,7 +17,6 @@ import { cyParamName } from "Selectors/common";
 import { addNewUser, roleBasedOnboarding } from "Support/utils/onboarding";
 
 const data = {};
-// const groups = ["Admin", "Builder", "End-user"];
 data.groupName = fake.firstName.replaceAll("[^A-Za-z]", "");
 data.appName = `${fake.companyName}-App`;
 
