@@ -101,7 +101,11 @@ function Logs({ logProps, idx }) {
                 <small className="text-slate-10 text-right ">{moment(logProps?.timestamp).fromNow()}</small>
               </div>
               <div className={`d-flex justify-content-between align-items-center ${!open && 'text-truncate'}`}>
-                <span className={` cursor-pointer debugger-error-title ${!open && 'text-truncate'}`}>
+                <span
+                  className={` cursor-pointer debugger-error-title ${!open && 'text-truncate'} ${
+                    logProps?.errorTarget == 'Custom Log' && logProps?.logLevel == 'error' && 'text-tomato-9'
+                  }`}
+                >
                   <HighlightSecondWord text={title} />
                 </span>
               </div>
