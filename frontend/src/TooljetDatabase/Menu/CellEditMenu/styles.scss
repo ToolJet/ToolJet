@@ -3,6 +3,9 @@
     height: auto;
     margin-top: 2px;
     inset: 0px auto auto -9px !important;
+    &.jsonb-popover{
+        min-width: 350px;
+    }
 
     .tjdb-bool-cell-menu-badge-default {
         padding: 2px 12px;
@@ -66,5 +69,55 @@
 
     }
 
+
+}
+
+.portal-container:has(.tjdb-dashboard-codehinter){
+    .cm-editor{
+        border-radius: 0 !important;
+    }
+    .tjdb-dashboard-codehinter{
+        border: 1px solid var(--borders-disabled-on-white, #E4E7EB) ;
+        border-width: 0px 1px 1px 1px !important;
+        border-radius: 0px 0px 5px 5px;
+    }
+}
+.tjdb-dashboard-codehinter-wrapper-cell{
+    .cm-editor{
+        max-height: 32px;
+        border: 0;
+    }
+}
+
+.tjdb-dashboard-codehinter-wrapper-cell{
+    // display: none !important;
+    .footer-component{
+        display: none !important;
+    }
+    .tjdb-hinter-error{
+        .cm-theme{
+            border: 0 !important;
+        }
+    }
+}
+/* Apply a border to .tjdb-selected-cell if it contains both required nested elements */
+.tjdb-selected-cell:has(.tjdb-dashboard-codehinter-wrapper-cell .tjdb-hinter-error) {
+    border: 1px solid red !important; /* Add your desired border style */
+}
+
+.tjdb-dashboard-codehinter.custom-footer {
+    background-color: var(--base);
+    border: 1px solid var(--slate5);
+}
+.tjdb-table-cell-edit-popover,.tjdb-dashboard-codehinter.custom-footer{
+    .tjdb-cell-hinter-invalid-syntax-header{
+        background-color: var(--tomato3) !important;
+        color: var(--tomato9) !important;
+        font-size: 12px !important;
+        padding: 5px;
+    }
+    .main-body{
+        padding: 10px;
+    }
 
 }

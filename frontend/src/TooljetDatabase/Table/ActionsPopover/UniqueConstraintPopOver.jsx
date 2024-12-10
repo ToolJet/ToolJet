@@ -126,6 +126,8 @@ export const UniqueConstraintPopOver = ({
                   ? 'Boolean data type cannot be unique'
                   : columns[index]?.data_type === 'timestamp with time zone'
                   ? 'Unique constraint cannot be added to this column type'
+                  : columns[index]?.data_type === 'jsonb'
+                  ? 'JSON cannot cannot have unique constraint'
                   : null
               }
               placement="top"
@@ -133,7 +135,7 @@ export const UniqueConstraintPopOver = ({
               style={toolTipPlacementStyle}
               show={
                 columns[index]?.constraints_type?.is_primary_key === true ||
-                ['boolean', 'timestamp with time zone'].includes(columns[index]?.data_type)
+                ['boolean', 'jsonb', 'timestamp with time zone'].includes(columns[index]?.data_type)
               }
             >
               <div className="d-flex not-null-toggle">
@@ -163,7 +165,7 @@ export const UniqueConstraintPopOver = ({
                     }}
                     disabled={
                       columns[index]?.constraints_type?.is_primary_key === true ||
-                      ['boolean', 'timestamp with time zone'].includes(columns[index]?.data_type)
+                      ['boolean', 'jsonb', 'timestamp with time zone'].includes(columns[index]?.data_type)
                     }
                   />
                 </label>

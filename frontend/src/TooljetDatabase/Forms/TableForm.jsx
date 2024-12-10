@@ -35,6 +35,12 @@ const TableForm = ({
   const selectedTableColumnDetails = Object.values(selectedTableColumns);
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
+  //Following state and handleInputError is to disable footer if JSON value is invalid for JSON column type
+  const [disabledCreateButton, setDisabledCreateButton] = useState(false);
+  const handleInputError = (bool = false) => {
+    setDisabledCreateButton(bool);
+  };
+
   const [fetching, setFetching] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [createForeignKeyInEdit, setCreateForeignKeyInEdit] = useState(false);
@@ -165,6 +171,10 @@ const TableForm = ({
       toast.error('Column names cannot be empty');
       return;
     }
+    if (disabledCreateButton) {
+      toast.error('Invalid JSON syntax for JSONB type column');
+      return;
+    }
 
     const checkingValues = isEmpty(foreignKeyDetails) ? false : true;
 
@@ -189,6 +199,11 @@ const TableForm = ({
 
   const handleEdit = async () => {
     if (!validateTableName()) return;
+
+    if (disabledCreateButton) {
+      toast.error('Invalid JSON syntax for JSONB type column');
+      return;
+    }
 
     setFetching(true);
     const { error } = await tooljetDatabaseService.renameTable(
@@ -319,6 +334,7 @@ const TableForm = ({
           createForeignKeyInEdit={createForeignKeyInEdit}
           selectedTable={selectedTable}
           setForeignKeys={setForeignKeys}
+          handleInputError={handleInputError}
         />
       </div>
       <DrawerFooter

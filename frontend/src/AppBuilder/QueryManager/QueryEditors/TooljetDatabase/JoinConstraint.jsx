@@ -14,6 +14,8 @@ import { getPrivateRoute } from '@/_helpers/routes';
 import { useNavigate } from 'react-router-dom';
 import useConfirm from './Confirm';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import CodeHinter from '@/AppBuilder/CodeEditor';
+import { ToolTip } from '@/_components';
 
 const JoinConstraint = ({ darkMode, index, onRemove, onChange, data }) => {
   const { selectedTableId, tables, joinOptions, findTableDetails, tableForeignKeyInfo } =
@@ -406,7 +408,11 @@ const JoinOn = ({
   const rightFieldTableDetails = (rightFieldTable && findTableDetails(rightFieldTable)) || {};
 
   const leftFieldOptions = leftFieldTableDetails?.table_name
-    ? tableInfo[leftFieldTableDetails.table_name]?.map((col) => ({ label: col.Header, value: col.Header })) ?? []
+    ? tableInfo[leftFieldTableDetails.table_name]?.map((col) => ({
+        label: col.Header,
+        value: col.Header,
+        icon: col.dataType,
+      })) ?? []
     : [];
   const selectedLeftField = leftFieldTableDetails?.table_name
     ? tableInfo[leftFieldTableDetails.table_name]?.find((col) => col.Header === leftFieldColumn) ?? []
@@ -420,8 +426,16 @@ const JoinOn = ({
           }
           return true;
         })
-        .map((col) => ({ label: col.Header, value: col.Header })) || []
+        .map((col) => ({
+          label: col.Header,
+          value: col.Header,
+          icon: col.dataType,
+        })) || []
     : [];
+
+  const selectedRightField = rightFieldTableDetails?.table_name
+    ? tableInfo[rightFieldTableDetails.table_name]?.find((col) => col.Header === rightFieldColumn) ?? []
+    : {};
 
   const _operators = [{ label: '=', value: '=' }];
 
@@ -480,7 +494,7 @@ const JoinOn = ({
       </Col>
       <Col sm="4" className="p-0">
         <DropDownSelect
-          buttonClasses="border border-end-0"
+          buttonClasses="border"
           showPlaceHolder
           options={leftFieldOptions}
           darkMode={darkMode}
@@ -504,8 +518,45 @@ const JoinOn = ({
               });
           }}
         />
+        {selectedLeftField?.dataType === 'jsonb' && (
+          <div className="tjdb-codehinter-jsonpath">
+            <ToolTip
+              message={
+                condition?.leftField?.jsonpath
+                  ? condition.leftField.jsonpath
+                  : 'Access nested JSON fields by using -> for JSON object and ->> for text'
+              }
+              tooltipClassName="tjdb-table-tooltip"
+              placement="top"
+              trigger={['hover', 'focus']}
+              width="160px"
+            >
+              <span>
+                <CodeHinter
+                  type="basic"
+                  initialValue={condition?.leftField?.jsonpath || ''}
+                  lang="javascript"
+                  onChange={(value) => {
+                    onChange &&
+                      onChange({
+                        ...condition,
+                        leftField: {
+                          ...condition.leftField,
+                          jsonpath: value,
+                        },
+                      });
+                  }}
+                  enablePreview={false}
+                  height="30"
+                  placeholder="->>key"
+                  componentName={condition?.leftField?.columnName ? `{}${condition.leftField.columnName}` : ''}
+                />
+              </span>
+            </ToolTip>
+          </div>
+        )}
       </Col>
-      <Col sm="1" className="p-0">
+      <Col sm="1" className="p-0 ">
         {/* <DropDownSelect
           options={operators}
           darkMode={darkMode}
@@ -517,14 +568,19 @@ const JoinOn = ({
 
         {/* Above line is commented and value is hardcoded as below */}
 
-        <div style={{ height: '30px', borderRadius: 0 }} className="tj-small-btn px-2 text-center border border-end-0">
+        <div
+          style={{ height: '30px', borderRadius: 0 }}
+          className="tj-small-btn px-2 text-center border border-start-0 border-end-0"
+        >
           {operator}
         </div>
       </Col>
       <Col sm="5" className="p-0 d-flex">
         <div className="flex-grow-1">
           <DropDownSelect
-            buttonClasses={`border ${index === 0 && 'rounded-end'}`}
+            buttonClasses={`border ${
+              index === 0 && !selectedRightField?.dataType === 'jsonb' && 'rounded-end'
+            } overflow-hidden `}
             showPlaceHolder
             options={rightFieldOptions}
             emptyError={
@@ -548,6 +604,44 @@ const JoinOn = ({
                 });
             }}
           />
+          {selectedRightField?.dataType === 'jsonb' && (
+            <div className="tjdb-codehinter-jsonpath">
+              <ToolTip
+                message={
+                  condition?.rightField?.jsonpath
+                    ? condition.rightField.jsonpath
+                    : 'Access nested JSON fields by using -> for JSON object and ->> for text'
+                }
+                tooltipClassName="tjdb-table-tooltip"
+                placement="top"
+                trigger={['hover', 'focus']}
+                width="160px"
+              >
+                <span>
+                  <CodeHinter
+                    type="basic"
+                    inEditor={true}
+                    initialValue={condition?.rightField?.jsonpath || ''}
+                    lang="javascript"
+                    onChange={(value) => {
+                      onChange &&
+                        onChange({
+                          ...condition,
+                          rightField: {
+                            ...condition.rightField,
+                            jsonpath: value,
+                          },
+                        });
+                    }}
+                    enablePreview={false}
+                    height="30"
+                    placeholder="->>key"
+                    componentName={condition?.rightField?.columnName ? `{}${condition.rightField.columnName}` : ''}
+                  />
+                </span>
+              </ToolTip>
+            </div>
+          )}
         </div>
         {index > 0 && (
           <ButtonSolid
