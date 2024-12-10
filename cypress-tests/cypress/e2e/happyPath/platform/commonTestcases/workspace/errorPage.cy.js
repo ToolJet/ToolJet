@@ -68,11 +68,7 @@ describe("Redirection error pages", () => {
             "have.text",
             "Back to home page"
         );
-<<<<<<< HEAD
-        cy.url().should("eq", `${Cypress.config('baseUrl')}/error/restricted`);
-=======
-        cy.url().should("eq", "http://localhost:8082/error/invalid-link");
->>>>>>> main
+        cy.url().should("eq", `${Cypress.config('baseUrl')}/error/invalid-link`);
 
         cy.get(commonSelectors.backToHomeButton).click();
         cy.get(commonSelectors.pageSectionHeader).should("be.visible");
