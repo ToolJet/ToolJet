@@ -564,7 +564,7 @@ export const addUserToGroup = (groupName, email) => {
 };
 
 export const createGroupAddAppAndUserToGroup = (groupName, email) => {
-  cy.intercept("GET", "http://localhost:3000/api/group_permissions").as(
+  cy.intercept("GET", "/api/group_permissions").as(
     `${groupName}`
   );
   createGroup(groupName);
@@ -582,7 +582,7 @@ export const createGroupAddAppAndUserToGroup = (groupName, email) => {
 
       cy.request({
         method: "PUT",
-        url: `http://localhost:3000/api/group_permissions/${groupId}`,
+        url: `${Cypress.env("server_host")}/api/group_permissions/${groupId}`,
         headers: headers,
         body: { add_apps: [Cypress.env("appId")] },
       }).then((patchResponse) => {
@@ -597,7 +597,7 @@ export const createGroupAddAppAndUserToGroup = (groupName, email) => {
 
         cy.request({
           method: "PUT",
-          url: `http://localhost:3000/api/group_permissions/${groupId}`,
+          url: `${Cypress.env("server_host")}/api/group_permissions/${groupId}`,
           headers: headers,
           body: { add_users: [userId] },
         }).then((patchResponse) => {

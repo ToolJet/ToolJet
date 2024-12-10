@@ -16,9 +16,7 @@ Cypress.Commands.add(
     cy.clearAndType(onboardingSelectors.loginPasswordInput, password);
     cy.get(onboardingSelectors.signInButton).click();
 
-    cy.intercept("GET", "api/library_apps").as(
-      "library_apps"
-    );
+    cy.intercept("GET", "/api/library_apps/").as("library_apps");
     cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
     cy.wait("@library_apps");
 
@@ -368,7 +366,7 @@ Cypress.Commands.add("defaultWorkspaceLogin", () => {
     "library_apps"
   );
   cy.visit("/my-workspace");
-  // cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
+  cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
   cy.wait("@library_apps");
 });
 
@@ -467,3 +465,12 @@ Cypress.Commands.add("appPrivacy", (appName, isPublic) => {
     sql: `UPDATE apps SET is_public = ${isPublicValue} WHERE name = '${appName}';`,
   });
 });
+
+Cypress.Commands.overwrite('intercept', (originalFn, method, endpoint, mockData) => {
+  const isSubpath = Cypress.config('baseUrl')?.includes('/apps/tooljet');
+  const cleanEndpoint = endpoint.replace('/apps/tooljet', '');
+  const fullUrl = isSubpath ? `/apps/tooljet${cleanEndpoint}` : cleanEndpoint;
+
+  return originalFn(method, fullUrl, mockData);
+});
+

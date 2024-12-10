@@ -31,7 +31,6 @@ describe("dashboard", () => {
   data.cloneAppName = `cloned-${data.appName}`;
   data.updatedFolderName = `new-${data.folderName}`;
 
-
   beforeEach(() => {
     cy.intercept("GET", "/api/library_apps").as("appLibrary");
     cy.intercept("DELETE", "/api/folders/*").as("folderDeleted");
@@ -42,13 +41,18 @@ describe("dashboard", () => {
     cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=", {
       fixture: "intercept/emptyDashboard.json",
     }).as("emptyDashboard");
-    cy.intercept("GET", "/api/folders?searchKey=", { folders: [] }).as(
-      "folders"
-    );
-    cy.intercept("GET", "api/metadata", {
-      installed_version: "2.9.2",
-      version_ignored: false,
+
+    cy.intercept("GET", "/api/folders?searchKey=", {
+      body: { folders: [] },
+    }).as("folders");
+
+    cy.intercept("GET", "/api/metadata", {
+      body: {
+        installed_version: "2.9.2",
+        version_ignored: false,
+      },
     }).as("version");
+
     cy.defaultWorkspaceLogin();
     cy.wait("@emptyDashboard");
     cy.wait("@folders");
@@ -181,7 +185,7 @@ describe("dashboard", () => {
     cy.apiLogin();
     cy.apiCreateApp(data.appName);
     cy.openApp();
-    cy.addComponentToApp(data.appName, "text1", customLayout)
+    cy.addComponentToApp(data.appName, "text1", customLayout);
 
     cy.backToApps();
 
@@ -341,7 +345,6 @@ describe("dashboard", () => {
   });
 
   it("Should verify the app CRUD operation", () => {
-
     const customLayout = {
       desktop: { top: 100, left: 20 },
       mobile: { width: 8, height: 50 },
@@ -351,7 +354,7 @@ describe("dashboard", () => {
     data.appName = `${fake.companyName}-App`;
     cy.defaultWorkspaceLogin();
     cy.createApp(data.appName);
-    cy.addComponentToApp(data.appName, "text1", customLayout)
+    cy.addComponentToApp(data.appName, "text1", customLayout);
 
     cy.backToApps();
 
@@ -362,7 +365,7 @@ describe("dashboard", () => {
 
     navigateToAppEditor(data.appName);
     // cy.get(commonSelectors.canvas).should("contain", "text1");
-    cy.get('.text-widget-section > div').should('be.visible')
+    cy.get(".text-widget-section > div").should("be.visible");
     cy.backToApps();
     cy.wait("@appLibrary");
 
@@ -384,7 +387,7 @@ describe("dashboard", () => {
     cy.defaultWorkspaceLogin();
     cy.createApp(data.appName);
 
-    cy.addComponentToApp(data.appName, "text1", customLayout)
+    cy.addComponentToApp(data.appName, "text1", customLayout);
 
     cy.backToApps();
 

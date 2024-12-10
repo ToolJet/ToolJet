@@ -11,8 +11,8 @@ import {
 
 export const login = () => {
   cy.visit("/");
-  cy.clearAndType(onboardingSelectors.emailInput, "dev@tooljet.io");
-  cy.clearAndType(onboardingSelectors.passwordInput, "password");
+  cy.clearAndType(onboardingSelectors.loginEmailInput, "dev@tooljet.io");
+  cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
   cy.get(onboardingSelectors.signInButton).click();
 };
 
