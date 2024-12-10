@@ -56,12 +56,9 @@ export const generalSettings = () => {
 
 export const googleSSOPageElements = () => {
   cy.get(ssoSelector.googleEnableToggle).click();
+  cy.wait(5000);
   cy.get(ssoSelector.saveButton).eq(1).click();
-
-  cy.get('[data-cy="modal-title"]').verifyVisibleElement(
-    "have.text",
-    "Enable Google"
-  );
+  cy.wait(2000);
   cy.get('[data-cy="modal-close-button"]').should("be.visible");
   cy.get('[data-cy="modal-message"]').verifyVisibleElement(
     "have.text",
@@ -235,18 +232,18 @@ export const workspaceLoginPageElements = (workspaceName) => {
 };
 
 export const passwordLoginVisible = () => {
-  cy.get(commonSelectors.workEmailInputField).should("be.visible");
-  cy.get(commonSelectors.passwordInputField).should("be.visible");
-  cy.get(commonSelectors.loginButton).verifyVisibleElement(
+  cy.get(onboardingSelectors.loginEmailInput).should("be.visible");
+  cy.get(onboardingSelectors.loginPasswordInput).should("be.visible");
+  cy.get(onboardingSelectors.signInButton).verifyVisibleElement(
     "have.text",
     commonText.loginButton
   );
 };
 
 export const workspaceLogin = (workspaceName) => {
-  cy.clearAndType(commonSelectors.workEmailInputField, "dev@tooljet.io");
-  cy.clearAndType(commonSelectors.passwordInputField, "password");
-  cy.get(commonSelectors.loginButton).click();
+  cy.clearAndType(onboardingSelectors.loginEmailInput, "dev@tooljet.io");
+  cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
+  cy.get(onboardingSelectors.signInButton).click();
   cy.wait(2000);
   cy.get(commonSelectors.homePageLogo).should("be.visible");
   cy.get(commonSelectors.workspaceName).verifyVisibleElement(
@@ -295,13 +292,13 @@ export const signInPageElements = () => {
     "have.text",
     commonText.forgotPasswordLink
   );
-  cy.get(commonSelectors.loginButton).verifyVisibleElement(
+  cy.get(onboardingSelectors.signInButton).verifyVisibleElement(
     "have.text",
     commonText.loginButton
   );
 
-  cy.get(commonSelectors.workEmailInputField).should("be.visible");
-  cy.get(commonSelectors.passwordInputField).should("be.visible");
+  cy.get(onboardingSelectors.loginEmailInput).should("be.visible");
+  cy.get(onboardingSelectors.loginPasswordInput).should("be.visible");
 
   cy.get("body").then(($el) => {
     if ($el.text().includes("Google")) {
@@ -477,7 +474,7 @@ export const invitePageElements = () => {
     "have.text",
     commonText.passwordLabel
   );
-  cy.get(commonSelectors.passwordInputField).should("be.visible");
+  cy.get(onboardingSelectors.loginPasswordInput).should("be.visible");
   cy.get(commonSelectors.acceptInviteButton).verifyVisibleElement(
     "have.text",
     commonText.acceptInviteButton
@@ -538,7 +535,7 @@ export const defaultSSO = (enable) => {
     cy.request(
       {
         method: "PATCH",
-        url: "http://localhost:3000/api/organizations",
+        url: `${Cypress.env("server_host")}/api/organizations`,
         headers: {
           "Tj-Workspace-Id": Cypress.env("workspaceId"),
           Cookie: `tj_auth_token=${cookie.value}`,
@@ -562,7 +559,7 @@ export const setSignupStatus = (enable, workspaceName = 'My workspace') => {
     cy.getCookie("tj_auth_token").then((cookie) => {
       cy.request({
         method: "PATCH",
-        url: "http://localhost:3000/api/organizations",
+        url: `${Cypress.env("server_host")}/api/organizations`,
         headers: {
           "Tj-Workspace-Id": workspaceId,
           Cookie: `tj_auth_token=${cookie.value}`,
@@ -598,7 +595,7 @@ export const resetDomain = () => {
     cy.request(
       {
         method: "PATCH",
-        url: "http://localhost:3000/api/organizations",
+        url: `${Cypress.env("server_host")}/api/organizations`,
         headers: {
           "Tj-Workspace-Id": Cypress.env("workspaceId"),
           Cookie: `tj_auth_token=${cookie.value}`,

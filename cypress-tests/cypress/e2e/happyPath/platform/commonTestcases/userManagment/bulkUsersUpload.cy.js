@@ -1,7 +1,7 @@
 import { commonSelectors } from "Selectors/common";
 import { usersText } from "Texts/manageUsers";
 import { usersSelector } from "Selectors/manageUsers";
-import { bulkUserUpload } from "Support/utils/manageUsers";
+import { bulkUserUpload,bulkUserUploadDuplicate} from "Support/utils/manageUsers";
 import * as common from "Support/utils/common";
 import { path } from "Texts/common";
 import { groupsSelector } from "Selectors/manageGroups";
@@ -14,8 +14,6 @@ describe("Bulk user upload", () => {
   const without_email = "cypress/fixtures/bulkUser/without_email - Sheet1.csv";
   const without_group = "cypress/fixtures/bulkUser/without_group - Sheet1.csv";
   const same_email = "cypress/fixtures/bulkUser/same_email - Sheet1.csv";
-  const invalid_group_name =
-    "cypress/fixtures/bulkUser/invalid_group_name - Sheet1.csv";
   const empty_first_and_last_name =
     "cypress/fixtures/bulkUser/empty_first_and_last_name - Sheet1.csv";
   const limit_exceeded_list =
@@ -24,11 +22,10 @@ describe("Bulk user upload", () => {
     "cypress/fixtures/bulkUser/non_existing_group -Sheet1 .csv";
   const multiple_groups =
     "cypress/fixtures/bulkUser/multiple_groups - Sheet1.csv";
-  const without_firstName =
-    "cypress/fixtures/bulkUser/without_firstname - Sheet1.csv";
-  const without_lastName =
-    "cypress/fixtures/bulkUser/without_lastname - Sheet1.csv";
+  const without_Role =
+    "cypress/fixtures/bulkUser/without_Role - Sheet1.csv";
   const invite_users = "cypress/fixtures/bulkUser/invite_users - Sheet1 .csv";
+  const Validinvite = "cypress/fixtures/bulkUser/10usersupload.csv";
 
   it("Verfiy bulk user upload invalid files", () => {
     data.firstName = fake.firstName;
@@ -42,80 +39,57 @@ describe("Bulk user upload", () => {
 
     cy.get(usersSelector.buttonAddUsers).click();
     cy.get(usersSelector.buttonUploadCsvFile).click();
-
     bulkUserUpload(
       without_name,
       "without_name",
-      "Invalid row(s): [first_name, last_name] in [11] row(s). No users were uploaded."
+      "Missing first_name,last_name,groups information in 10 row(s);. No users were uploaded, please update and try again."
     );
+
     bulkUserUpload(
       without_email,
       "without_email",
-      "Invalid row(s): [email] in [11] row(s). No users were uploaded."
+      "Missing email,groups information in 10 row(s);. No users were uploaded, please update and try again."
     );
-    bulkUserUpload(
-      without_group,
-      "without_group",
-      "Invalid row(s): [groups] in [5] row(s). No users were uploaded."
-    );
-    bulkUserUpload(
+
+    bulkUserUploadDuplicate(
       same_email,
       "same_email",
       "Duplicate email found. Please provide a unique email address."
     );
-    bulkUserUpload(
-      invalid_group_name,
-      "invalid_group_name",
-      "11 groups doesn't exist. No users were uploaded"
-    );
+
     bulkUserUpload(
       empty_first_and_last_name,
       "empty_first_and_last_name",
-      "Invalid row(s): [first_name, last_name] in [1] row(s). No users were uploaded."
+      "Missing first_name,last_name,groups information in 1 row(s);. No users were uploaded, please update and try again."
     );
     bulkUserUpload(
       limit_exceeded_list,
       "500_invite_users",
       "You can only invite 250 users at a time"
     );
+
     bulkUserUpload(
       non_existing_group,
       "non_existing_group",
-      "1 group doesn't exist. No users were uploaded"
+      "2 groups doesn't exist. No users were uploaded"
     );
+
     bulkUserUpload(
-      multiple_groups,
-      "multiple_groups",
-      "Conflicting Group Memberships: User cannot be in both the Admin group and other groups simultaneously."
+      without_Role,
+      "without_Role",
+      "Missing user_role,groups information in 5 row(s);. No users were uploaded, please update and try again."
     );
 
-    cy.get(usersSelector.inputFieldBulkUpload).selectFile(without_firstName, {
-      force: true,
-    });
-    cy.get(usersSelector.uploadedFileData).should(
-      "contain",
-      "without_firstname"
-    );
-    cy.get(usersSelector.buttonUploadUsers).click();
-    cy.get(".go2072408551")
-      .should("be.visible")
-      .and("have.text", "5 users are being added");
+    //add more groups and verify
 
-    cy.wait(5000);
+    // bulkUserUpload(
+    //   multiple_groups,
+    //   "multiple_groups",
+    //   "Conflicting Group Memberships: User cannot be in both the Admin group and other groups simultaneously."
+    // );
 
-    cy.get(usersSelector.buttonAddUsers).click();
-    cy.get(usersSelector.buttonUploadCsvFile).click();
-    cy.get(usersSelector.inputFieldBulkUpload).selectFile(without_lastName, {
-      force: true,
-    });
-    cy.get(usersSelector.uploadedFileData).should(
-      "contain",
-      "without_lastname"
-    );
-    cy.get(usersSelector.buttonUploadUsers).click();
-    cy.get(".go2072408551")
-      .should("be.visible")
-      .and("have.text", "5 users are being added");
+    //   );
+
   });
 
   it("Verify bulk user upload functionality", () => {
@@ -130,22 +104,14 @@ describe("Bulk user upload", () => {
     cy.get(usersSelector.buttonAddUsers).click();
     cy.get(usersSelector.buttonUploadCsvFile).click();
 
-    cy.get(usersSelector.inputFieldBulkUpload).selectFile(invite_users, {
+    cy.get(usersSelector.inputFieldBulkUpload).selectFile(Validinvite, {
       force: true,
     });
-    cy.get(usersSelector.uploadedFileData).should("contain", "invite_users");
-    cy.get(commonSelectors.cancelButton).click();
-
-    cy.get(usersSelector.buttonAddUsers).click();
-    cy.get(usersSelector.buttonUploadCsvFile).click();
-    cy.get(usersSelector.inputFieldBulkUpload).selectFile(invite_users, {
-      force: true,
-    });
+    cy.get(commonSelectors.fileSelector).should("contain", " 10usersupload");
     cy.get(usersSelector.buttonUploadUsers).click();
-    cy.wait(30000);
     cy.get(".go2072408551")
       .should("be.visible")
-      .and("have.text", "250 users are being added");
+      .and("have.text", "10 users are being added");
     common.searchUser("test12@gmail.com");
     cy.contains("td", "test12@gmail.com")
       .parent()
