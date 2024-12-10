@@ -26,6 +26,7 @@ import { shallow } from 'zustand/shallow';
 import SuccessNotificationInputs from './SuccessNotificationInputs';
 import ParameterList from './ParameterList';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 
 export const QueryManagerBody = ({
   darkMode,
