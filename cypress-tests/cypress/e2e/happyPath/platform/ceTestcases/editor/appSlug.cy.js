@@ -41,7 +41,7 @@ describe("App slug", () => {
         );
         cy.get(commonWidgetSelector.appLinkField).verifyVisibleElement(
             "have.text",
-            `http://localhost:8082/my-workspace/apps/${Cypress.env("appId")}`
+            `${Cypress.config('baseUrl')}/my-workspace/apps/${Cypress.env("appId")}`
         );
 
         cy.wait(500);
@@ -84,11 +84,11 @@ describe("App slug", () => {
         );
         cy.get(commonWidgetSelector.appLinkField).verifyVisibleElement(
             "have.text",
-            `http://localhost:8082/my-workspace/apps/${data.slug}`
+            `${Cypress.config('baseUrl')}/my-workspace/apps/${data.slug}`
         );
         cy.url().should(
             "eq",
-            `http://localhost:8082/my-workspace/apps/${data.slug}/home`
+            `${Cypress.config('baseUrl')}/my-workspace/apps/${data.slug}`
         );
 
         releaseApp();
@@ -97,15 +97,15 @@ describe("App slug", () => {
         cy.wait(2000);
         cy.url().should(
             "eq",
-            `http://localhost:8082/applications/${data.slug}/home?version=v1`
+            `${Cypress.config('baseUrl')}/applications/${data.slug}/home?version=v1`
         );
         cy.visit("/my-workspace");
         cy.wait(500);
 
         cy.visitSlug({
-            actualUrl: `http://localhost:8082/applications/${data.slug}`,
+            actualUrl: `${Cypress.config('baseUrl')}/applications/${data.slug}`,
         });
-        cy.url().should("eq", `http://localhost:8082/applications/${data.slug}`);
+        cy.url().should("eq", `${Cypress.config('baseUrl')}/applications/${data.slug}`);
         cy.visit("/my-workspace");
         cy.wait(500);
 
@@ -176,20 +176,20 @@ describe("App slug", () => {
         cy.get(commonWidgetSelector.modalCloseButton).click();
         cy.url().should(
             "eq",
-            `http://localhost:8082/my-workspace/apps/${data.slug}/home`
+            `${Cypress.config('baseUrl')}/my-workspace/apps/${data.slug}/home`
         );
 
         cy.openInCurrentTab(commonWidgetSelector.previewButton);
         cy.wait(1000);
         cy.url().should(
             "eq",
-            `http://localhost:8082/applications/${data.slug}/home?version=v1`
+            `${Cypress.config('baseUrl')}/applications/${data.slug}/home?version=v1`
         );
         cy.visit("/my-workspace");
         cy.wait(500);
 
         cy.visitSlug({ actualUrl: `/applications/${data.slug}` });
-        cy.url().should("eq", `http://localhost:8082/applications/${data.slug}`);
+        cy.url().should("eq", `${Cypress.config('baseUrl')}/applications/${data.slug}`);
         cy.visit("/my-workspace");
         cy.wait(500);
 

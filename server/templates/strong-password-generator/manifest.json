@@ -1,0 +1,16 @@
+{
+  "name": "Strong password generator",
+  "description": "Generate secure passwords with adjustable strength and complexity for personal or team use.",
+  "widgets": [
+    "Table",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "strong-password-generator",
+  "category": "developer-utilities"
+}

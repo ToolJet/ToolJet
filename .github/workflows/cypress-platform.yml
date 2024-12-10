@@ -59,7 +59,7 @@ jobs:
           echo "TOOLJET_DB_HOST=localhost" >> .env
           echo "TOOLJET_DB_PASS=postgres" >> .env
           echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
-          echo "ENABLE_ONBOARDING_QUESTIONS_FOR_ALL_SIGN_UPS=true" >> .env
+          echo "ENABLE_ONBOARDING_QUESTIONS_FOR_ALL_SIGN_UPS=false" >> .env
           echo "PGRST_HOST=localhost:3001" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_ID=dummy" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_SECRET=dummy" >> .env
@@ -153,8 +153,26 @@ jobs:
       - name: use mybuilder buildx
         run: docker buildx use mybuilder
 
-      - name: Build docker image
-        run: docker buildx build --platform=linux/amd64 -f docker/production.Dockerfile  . -t tooljet/tj-osv:cypressplaform
+      - name: Docker Login
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}        
+
+      - name: Set SAFE_BRANCH_NAME
+        run: echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
+
+      - name: Build and Push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: docker/production.Dockerfile
+          push: true
+          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}
+          platforms: linux/amd64
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Set up environment variables
         run: |
@@ -174,7 +192,7 @@ jobs:
           echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
           echo "PGRST_HOST=postgrest" >> .env
           echo "PGRST_DB_URI=postgres://postgres:postgres@postgres/tooljet_db" >> .env
-          echo "ENABLE_ONBOARDING_QUESTIONS_FOR_ALL_SIGN_UPS=true" >> .env
+          echo "ENABLE_ONBOARDING_QUESTIONS_FOR_ALL_SIGN_UPS=false" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_ID=dummy" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_SECRET=dummy" >> .env
           echo "SSO_GIT_OAUTH2_HOST=dummy" >> .env
@@ -188,6 +206,16 @@ jobs:
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
 
+      - name: Update docker-compose file
+        run: |
+            # Update docker-compose.yaml with the new image
+            sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}|' docker-compose.yaml
+
+      - name: Install Docker Compose
+        run: |
+          curl -L "https://github.com/docker/compose/releases/download/v2.10.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          chmod +x /usr/local/bin/docker-compose
+
       - name: Run docker-compose file
         run: docker-compose up -d
 
@@ -200,7 +228,7 @@ jobs:
       - name: Wait for the server to be ready
         run: |
           timeout 1500 bash -c '
-          until curl --silent --fail http://localhost:80/apps/tooljet/; do
+          until curl --silent --fail http://localhost:3000/apps/tooljet/; do
             sleep 5
           done'
 
@@ -212,14 +240,14 @@ jobs:
         uses: jsdaniell/create-json@1.1.2
         with:
           name: "cypress.env.json"
-          json: ${{ secrets.CYPRESS_SECRETS }}
+          json: ${{ secrets.CYPRESS_SECRETS_SUBPATH }}
           dir: "./cypress-tests"
 
       - name: Platform-subpath
         uses: cypress-io/github-action@v5
         with:
           working-directory: ./cypress-tests
-          config: "baseUrl=http://localhost:80/apps/tooljet/"
+          config: "baseUrl=http://localhost:3000/apps/tooljet/"
           config-file: cypress-workspace.config.js
 
       - name: Capture Screenshots

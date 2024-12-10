@@ -15,6 +15,7 @@ import generateFile from '@/_lib/generate-file';
 import urlJoin from 'url-join';
 import { useCallback } from 'react';
 import { navigate } from '@/AppBuilder/_utils/misc';
+import moment from 'moment';
 
 // To unsubscribe from the changes when no longer needed
 // unsubscribe();
@@ -211,32 +212,46 @@ export const createEventsSlice = (set, get) => ({
         state.eventsSlice.module[moduleId].events = newEvents;
       });
     },
-    setTablePageIndex: (tableId, index = 1) => {
-      const { getExposedValueOfComponent } = get();
-      if (_.isEmpty(tableId)) {
-        console.log('No table is associated with this event.');
+    setTablePageIndex: (tableId, index, eventObj) => {
+      try {
+        const { getExposedValueOfComponent } = get();
+        if (typeof index !== 'number' && index !== undefined) {
+          throw new Error('Invalid page index.');
+        }
+        const exposedValue = getExposedValueOfComponent(tableId);
+        if (!exposedValue) {
+          throw new Error('No table is associated with this event.');
+        }
+        exposedValue.setPage(index);
         return Promise.resolve();
+      } catch (error) {
+        get().eventsSlice.logError('set_table_page_index', 'set-table-page-index', error, eventObj, {
+          eventId: eventObj.eventType,
+        });
       }
-      const exposedValue = getExposedValueOfComponent(tableId);
-      if (!exposedValue) {
-        console.log('No table is associated with this event.');
-        return Promise.resolve();
-      }
-      exposedValue.setPage(index);
-      return Promise.resolve();
     },
-    showModal: (modal, show) => {
-      const { getExposedValueOfComponent } = get();
-      const modalId = modal?.id ?? modal;
-      console.log('modalId', modalId);
-      if (_.isEmpty(modalId)) {
-        console.log('No modal is associated with this event.');
-        return Promise.resolve();
-      }
-      const exposedValue = getExposedValueOfComponent(modalId);
-      show ? exposedValue.open() : exposedValue.close();
+    showModal: (modal, show, eventObj) => {
+      try {
+        const { getExposedValueOfComponent } = get();
+        const modalId = modal?.id ?? modal;
+        if (_.isEmpty(modalId)) {
+          throw new Error('No modal is associated with this event.');
+        }
+        const exposedValue = getExposedValueOfComponent(modalId);
+        show ? exposedValue.open() : exposedValue.close();
 
-      return Promise.resolve();
+        return Promise.resolve();
+      } catch (error) {
+        get().eventsSlice.logError(
+          show ? 'show_modal' : 'close_modal',
+          show ? 'show-modal' : 'close_modal',
+          error,
+          eventObj,
+          {
+            eventId: eventObj.eventType,
+          }
+        );
+      }
     },
     handleEvent: (eventName, events, options, moduleId = 'canvas') => {
       const latestEvents = get().eventsSlice.getModuleEvents(moduleId);
@@ -361,6 +376,7 @@ export const createEventsSlice = (set, get) => ({
           'onSubmit',
           'onInvalid',
           'onNewRowsAdded',
+          'onTableDataDownload',
         ].includes(eventName)
       ) {
         executeActionsForEventId(eventName, events, mode, customVariables);
@@ -381,13 +397,84 @@ export const createEventsSlice = (set, get) => ({
         ?.sort((a, b) => a.index - b.index);
 
       for (const event of filteredEvents) {
-        await get().eventsSlice.executeAction(event.event, mode, customVariables);
+        await get().eventsSlice.executeAction(event, mode, customVariables);
       }
     },
-    executeAction: debounce(async (event, mode, customVariables = {}) => {
+    logError(errorType, errorKind, error, eventObj = '', options = {}, logLevel) {
+      const { event = eventObj } = eventObj;
+      const pages = get().modules.canvas.pages;
+      const currentPageId = get().currentPageId;
+      const currentPage = pages.find((page) => page.id === currentPageId);
+      const componentIdMapping = get().modules['canvas'].componentNameIdMapping;
+      const componentName = Object.keys(componentIdMapping).find(
+        (key) => componentIdMapping[key] === eventObj?.sourceId
+      );
+      const componentId = eventObj?.sourceId;
+
+      const getSource = () => {
+        if (eventObj.eventType) {
+          return eventObj.eventType === 'data_query' ? 'query' : eventObj.eventType;
+        }
+
+        const sourceMap = {
+          onDataQueryFailure: 'query',
+          onDataQuerySuccess: 'query',
+          onPageLoad: 'page',
+        };
+
+        return sourceMap[event.eventId] || 'component';
+      };
+
+      const getQueryName = () => {
+        const queries = get().dataQuery.queries.modules.canvas;
+        return queries.find((query) => query.id === eventObj?.sourceId || '')?.name || '';
+      };
+
+      const constructErrorHeader = () => {
+        const source = getSource();
+        const pageName = currentPage.name;
+
+        const headerMap = {
+          component: `[Page ${pageName}] [Component ${componentName}] [Event ${event?.eventId}] [Action ${event.actionId}]`,
+          page: `[Page ${pageName}] [Event ${event.eventId}] [Action ${event.actionId}]`,
+          query: `[Query ${getQueryName()}] [Event ${event.eventId}] [Action ${event.actionId}]`,
+        };
+
+        return headerMap[source] || '';
+      };
+
+      const constructErrorTarget = () => {
+        const source = getSource();
+
+        const errorTargetMap = {
+          page: 'Event Errors with page',
+          component: 'Component Event',
+          query: 'Event Errors with query',
+        };
+
+        return errorTargetMap[source];
+      };
+      useStore.getState().debugger.log({
+        logLevel: logLevel ? logLevel : 'error',
+        type: errorType ? errorType : 'event',
+        kind: errorKind,
+        key: constructErrorHeader(),
+        error: {
+          message: error.message,
+          description: JSON.stringify(error.message, null, 2),
+          ...(event.component && componentId && { componentId: componentId }),
+        },
+        errorTarget: constructErrorTarget(),
+        options: options,
+        strace: 'app_level',
+        timestamp: moment().toISOString(),
+      });
+    },
+    executeAction: debounce(async (eventObj, mode, customVariables = {}) => {
+      const { event = eventObj } = eventObj;
       const { getExposedValueOfComponent, getResolvedValue } = get();
 
-      if (event.runOnlyIf) {
+      if (event?.runOnlyIf) {
         const shouldRun = getResolvedValue(event.runOnlyIf, customVariables);
         if (!shouldRun) {
           return false;
@@ -418,23 +505,37 @@ export const createEventsSlice = (set, get) => ({
             return Promise.resolve();
           }
           case 'run-query': {
-            const { queryId, queryName } = event;
-            const params = event['parameters'];
-            const resolvedParams = {};
-            if (params) {
-              Object.keys(params).map((param) => (resolvedParams[param] = getResolvedValue(params[param], undefined)));
+            try {
+              const { queryId, queryName, component, eventId } = event;
+              const params = event['parameters'];
+              if (!queryId && !queryName) {
+                throw new Error('No query selected');
+              }
+              const resolvedParams = {};
+              if (params) {
+                Object.keys(params).map(
+                  (param) => (resolvedParams[param] = getResolvedValue(params[param], undefined))
+                );
+              }
+              // !Todo tackle confirm query part once done
+              return get().queryPanel.runQuery(
+                queryId,
+                queryName,
+                undefined,
+                undefined,
+                resolvedParams,
+                component,
+                eventId,
+                false,
+                false,
+                'canvas'
+              );
+            } catch (error) {
+              get().eventsSlice.logError('run_query', 'run-query', error, eventObj, {
+                eventId: event.eventId,
+              });
+              return Promise.reject(error);
             }
-            // !Todo tackle confirm query part once done
-            return get().queryPanel.runQuery(
-              queryId,
-              queryName,
-              undefined,
-              undefined,
-              resolvedParams,
-              false,
-              false,
-              'canvas'
-            );
           }
           case 'logout': {
             return logoutAction();
@@ -447,39 +548,47 @@ export const createEventsSlice = (set, get) => ({
             return Promise.resolve();
           }
           case 'go-to-app': {
-            const resolvedValue = getResolvedValue(event.slug, customVariables);
-            const slug = resolvedValue;
-            const queryParams = event.queryParams?.reduce(
-              (result, queryParam) => ({
-                ...result,
-                ...{
-                  [getResolvedValue(queryParam[0])]: getResolvedValue(queryParam[1], undefined, customVariables),
-                },
-              }),
-              {}
-            );
-            let url = `/applications/${slug}`;
-
-            if (queryParams) {
-              const queryPart = serializeNestedObjectToQueryParams(queryParams);
-
-              if (queryPart.length > 0) url = url + `?${queryPart}`;
-            }
-            if (mode === 'view') {
-              navigate(url);
-            } else {
-              if (confirm('The app will be opened in a new tab as the action is triggered from the editor.')) {
-                window.open(urlJoin(window.public_config?.TOOLJET_HOST, url));
+            try {
+              if (!event.slug) {
+                throw new Error('No application slug provided');
               }
+              const resolvedValue = getResolvedValue(event.slug, customVariables);
+              const slug = resolvedValue;
+              const queryParams = event.queryParams?.reduce(
+                (result, queryParam) => ({
+                  ...result,
+                  ...{
+                    [getResolvedValue(queryParam[0])]: getResolvedValue(queryParam[1], undefined, customVariables),
+                  },
+                }),
+                {}
+              );
+              let url = `/applications/${slug}`;
+
+              if (queryParams) {
+                const queryPart = serializeNestedObjectToQueryParams(queryParams);
+
+                if (queryPart.length > 0) url = url + `?${queryPart}`;
+              }
+              if (mode === 'view') {
+                navigate(url);
+              } else {
+                if (confirm('The app will be opened in a new tab as the action is triggered from the editor.')) {
+                  window.open(urlJoin(window.public_config?.TOOLJET_HOST, url));
+                }
+              }
+              return Promise.resolve();
+            } catch (error) {
+              get().eventsSlice.logError('go_to_app', 'go-to-app', error, eventObj, { eventId: event.eventId });
+              return Promise.reject();
             }
-            return Promise.resolve();
           }
 
           case 'show-modal':
-            return get().eventsSlice.showModal(event.modal, true);
+            return get().eventsSlice.showModal(event.modal, true, eventObj);
 
           case 'close-modal':
-            return get().eventsSlice.showModal(event.modal, false);
+            return get().eventsSlice.showModal(event.modal, false, eventObj);
           case 'copy-to-clipboard': {
             const contentToCopy = getResolvedValue(event.contentToCopy, customVariables);
             copyToClipboard(contentToCopy);
@@ -508,7 +617,7 @@ export const createEventsSlice = (set, get) => ({
           }
 
           case 'set-table-page': {
-            get().eventsSlice.setTablePageIndex(event.table, getResolvedValue(event.pageIndex));
+            get().eventsSlice.setTablePageIndex(event.table, getResolvedValue(event.pageIndex), eventObj);
             break;
           }
 
@@ -631,85 +740,110 @@ export const createEventsSlice = (set, get) => ({
             // return;
           }
           case 'control-component': {
-            // let component = Object.values(getCurrentState()?.components ?? {}).filter(
-            //   (component) => component.id === event.componentId
-            // )[0];
-            const component = getExposedValueOfComponent(event.componentId);
-            const action = component?.[event.componentSpecificActionHandle];
-            // let action = '';
-            // let actionArguments = '';
-            // check if component id not found then try to find if its available as child widget else continue
-            //  with normal flow finding action
-            // if (component == undefined) {
-            //   component = _ref.appDefinition.pages[getCurrentState()?.page?.id].components[event.componentId].component;
-            //   const parent = Object.values(getCurrentState()?.components ?? {}).find(
-            //     (item) => item.id === component.parent
-            //   );
-            //   const child = Object.values(parent?.children).find((item) => item.id === event.componentId);
-            //   if (child) {
-            //     action = child[event.componentSpecificActionHandle];
-            //   }
-            // } else {
-            //   //normal component outside a container ex : form
-            //   action = component?.[event.componentSpecificActionHandle];
-            // }
-            // actionArguments = _.map(event.componentSpecificActionParams, (param) => ({
-            //   ...param,
-            //   value: resolveReferences(param.value, undefined, customVariables),
-            // }));
-            // console.log('actionArguments', event.componentSpecificActionParams);
-            const actionArguments = event.componentSpecificActionParams.map((param) => {
-              const value = getResolvedValue(param.value, customVariables);
-              return {
-                ...param,
-                value: value,
-                // value: resolveCode(re.valueWithBrackets, getAllExposedValues()),
-              };
-            });
-            // const actionArguments = _.map(event.componentSpecificActionParams, (param) => ({
-            //   ...param,
-            //   value: resolveReferences(param.value, getAllExposedValues(), customVariables),
-            // }));
+            try {
+              // let component = Object.values(getCurrentState()?.components ?? {}).filter(
+              //   (component) => component.id === event.componentId
+              // )[0];
+              const { event } = eventObj;
+              if (!event.componentSpecificActionHandle) {
+                throw new Error('No component-specific action handle provided.');
+              }
+              const component = getExposedValueOfComponent(event.componentId);
+              if (!event.componentId || !Object.keys(component).length) {
+                throw new Error('No component ID provided for control-component action.');
+              }
+              const action = component?.[event.componentSpecificActionHandle];
+              // let action = '';
+              // let actionArguments = '';
+              // check if component id not found then try to find if its available as child widget else continue
+              //  with normal flow finding action
+              // if (component == undefined) {
+              //   component = _ref.appDefinition.pages[getCurrentState()?.page?.id].components[event.componentId].component;
+              //   const parent = Object.values(getCurrentState()?.components ?? {}).find(
+              //     (item) => item.id === component.parent
+              //   );
+              //   const child = Object.values(parent?.children).find((item) => item.id === event.componentId);
+              //   if (child) {
+              //     action = child[event.componentSpecificActionHandle];
+              //   }
+              // } else {
+              //   //normal component outside a container ex : form
+              //   action = component?.[event.componentSpecificActionHandle];
+              // }
+              // actionArguments = _.map(event.componentSpecificActionParams, (param) => ({
+              //   ...param,
+              //   value: resolveReferences(param.value, undefined, customVariables),
+              // }));
+              // console.log('actionArguments', event.componentSpecificActionParams);
+              const actionArguments = event.componentSpecificActionParams.map((param) => {
+                const value = getResolvedValue(param.value, customVariables);
+                return {
+                  ...param,
+                  value: value,
+                  // value: resolveCode(re.valueWithBrackets, getAllExposedValues()),
+                };
+              });
+              // const actionArguments = _.map(event.componentSpecificActionParams, (param) => ({
+              //   ...param,
+              //   value: resolveReferences(param.value, getAllExposedValues(), customVariables),
+              // }));
 
-            const actionPromise = action && action(...actionArguments.map((argument) => argument.value));
-            return actionPromise ?? Promise.resolve();
+              const actionPromise = action && action(...actionArguments.map((argument) => argument.value));
+              return actionPromise ?? Promise.resolve();
+            } catch (error) {
+              get().eventsSlice.logError('control_component', 'control-component', error, eventObj, {
+                eventId: event.eventId,
+              });
+
+              return Promise.reject(error);
+            }
           }
           case 'switch-page': {
-            const { switchPage } = get();
-            const page = get().modules.canvas.pages.find((page) => page.id === event.pageId);
-            const queryParams = event.queryParams || [];
-            if (!page.disabled) {
-              const resolvedQueryParams = [];
-              queryParams.forEach((param) => {
-                resolvedQueryParams.push([
-                  getResolvedValue(param[0], customVariables),
-                  getResolvedValue(param[1], customVariables),
-                ]);
-              });
-              const currentUrlParams = new URLSearchParams(window.location.search);
-              currentUrlParams.forEach((value, key) => {
-                if (key === 'version' || key === 'env') {
-                  // if version or env is in current url query param but not in resolved params then add it to resolvedQueryParams
-                  const exists = resolvedQueryParams.some(([resolvedKey]) => resolvedKey === key);
-                  if (!exists) {
-                    resolvedQueryParams.unshift([key, value]);
+            try {
+              const { pageId } = event;
+              if (!pageId) {
+                throw new Error('No page ID provided');
+              }
+              const { switchPage } = get();
+              const page = get().modules.canvas.pages.find((page) => page.id === event.pageId);
+              const queryParams = event.queryParams || [];
+              if (!page.disabled) {
+                const resolvedQueryParams = [];
+                queryParams.forEach((param) => {
+                  resolvedQueryParams.push([
+                    getResolvedValue(param[0], customVariables),
+                    getResolvedValue(param[1], customVariables),
+                  ]);
+                });
+                const currentUrlParams = new URLSearchParams(window.location.search);
+                currentUrlParams.forEach((value, key) => {
+                  if (key === 'version' || key === 'env') {
+                    // if version or env is in current url query param but not in resolved params then add it to resolvedQueryParams
+                    const exists = resolvedQueryParams.some(([resolvedKey]) => resolvedKey === key);
+                    if (!exists) {
+                      resolvedQueryParams.unshift([key, value]);
+                    }
                   }
-                }
-              });
-              switchPage(page.id, page.handle, resolvedQueryParams);
-            } else {
-              toast.error('Page is disabled');
-              //!TODO push to debugger
-              get().debugger.log({
-                logLevel: 'error',
-                type: 'navToDisablePage',
-                kind: 'page',
-                message: `Attempt to switch to disabled page ${page.name} blocked.`,
-                error: 'Page is disabled',
+                });
+                switchPage(page.id, page.handle, resolvedQueryParams);
+              } else {
+                toast.error('Page is disabled');
+                //!TODO push to debugger
+                get().debugger.log({
+                  logLevel: 'error',
+                  type: 'navToDisablePage',
+                  kind: 'page',
+                  message: `Attempt to switch to disabled page ${page.name} blocked.`,
+                  error: 'Page is disabled',
+                });
+              }
+
+              return Promise.resolve();
+            } catch (error) {
+              get().eventsSlice.logError('switch_page', 'switch-page', error, eventObj, {
+                eventId: event.eventId,
               });
             }
-
-            return Promise.resolve();
           }
         }
       }

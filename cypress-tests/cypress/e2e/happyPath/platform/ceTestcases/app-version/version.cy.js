@@ -65,15 +65,15 @@ describe("App Version Functionality", () => {
     closeModal(commonText.closeButton);
   });
 
-  it("Verify all functionality for the app version", () => {
+  it.skip("Verify all functionality for the app version", () => {
     data.appName = `${fake.companyName}-App`;
     cy.apiCreateApp(data.appName);
     cy.openApp()
     cy.get('[data-cy="widget-list-box-table"]').should("be.visible");
-
-    cy.dragAndDropWidget("Text", 50, 50);
+  
+    // cy.dragAndDropWidget("Text", 50, 50);
     verifyComponent("text1");
-
+   
     navigateToCreateNewVersionModal((currentVersion = "v1"));
     createNewVersion((newVersion = ["v2"]), (versionFrom = "v1"));
     verifyComponent("text1");

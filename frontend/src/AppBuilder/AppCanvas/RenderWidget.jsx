@@ -18,6 +18,7 @@ const shouldAddBoxShadowAndVisibility = [
   'ToggleSwitchV2',
   'DropdownV2',
   'MultiselectV2',
+  'RadioButtonV2',
 ];
 
 const RenderWidget = ({
@@ -175,6 +176,7 @@ const RenderWidget = ({
             onComponentClick={onComponentClick}
             darkMode={darkMode}
             componentName={componentName}
+            dataCy={`draggable-widget-${componentName}`}
           />
         </div>
       </OverlayTrigger>

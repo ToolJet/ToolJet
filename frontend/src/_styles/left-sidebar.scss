@@ -232,11 +232,24 @@
 }
 
 .debugger-content {
+  padding: 0px 16px;
   background-color: var(--base);
+  cursor: pointer;
 
   hr {
-    margin-top: 0px !important;
-    margin-bottom: 16px !important;
+    margin: 0px !important;
+    margin-top: 16px !important;
+  }
+
+  &:hover {
+    background-color: var(--slate3);
+  }
+
+  .error-target {
+    background-color: var(--interactive-overlays-fill-hover) !important;
+    padding: 4px 7px;
+    border-radius: 7px;
+    color: var(--slate10)
   }
 }
 

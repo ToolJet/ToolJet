@@ -62,10 +62,8 @@ export const usersSelector = {
   inputFieldBulkUpload: '[data-cy="input-field-bulk-upload"]',
   copyInvitationLink: '[data-cy="copy-invitation-link"]',
   uploadedFileData: '[data-cy="uploaded-file-data"]',
-  toastCloseButton:
-    '.drawer-container > [style="position: fixed; z-index: 9999; inset: 16px; pointer-events: none;"] > .go4109123758 > .go2072408551 > [data-cy="toast-close-button"]',
-
-
+  modalClose: '.tj-base-btn.tj-large-btn.tj-primary-btn.close-btn',
+  toastCloseButton:'.drawer-container > [style="position: fixed; z-index: 9999; inset: 16px; pointer-events: none;"] > .go4109123758 > .go2072408551 > [data-cy="toast-close-button"]',
   userName: (userName) => {
     return `[data-cy="${cyParamName(userName)}-user-name"]`;
   },
