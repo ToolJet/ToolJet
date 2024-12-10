@@ -152,7 +152,7 @@ export const manageUsersElements = () => {
 export const inviteUser = (firstName, email) => {
   cy.userInviteApi(firstName, email);
   fetchAndVisitInviteLink(email);
-  cy.clearAndType(onboardingSelectors.passwordInput, "password");
+  cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
   cy.get(commonSelectors.acceptInviteButton).click();
 };
 
@@ -217,6 +217,19 @@ export const bulkUserUpload = (file, fileName, toastMessage) => {
     .should("be.visible")
     .and("have.text", toastMessage);
   cy.get(usersSelector.toastCloseButton).click();
+  cy.wait(200);
+};
+
+export const bulkUserUploadDuplicate = (file, fileName, toastMessage) => {
+  cy.get(usersSelector.inputFieldBulkUpload).selectFile(file, {
+    force: true,
+  });
+  cy.get(usersSelector.uploadedFileData).should("contain", fileName);
+  cy.get(usersSelector.buttonUploadUsers).click();
+  cy.get(commonSelectors.modalMessage)
+    .should("be.visible")
+    .and("have.text", toastMessage);
+  cy.get(usersSelector.modalClose).click();
   cy.wait(200);
 };
 

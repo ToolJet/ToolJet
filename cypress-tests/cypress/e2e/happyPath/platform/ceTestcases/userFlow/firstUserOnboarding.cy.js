@@ -4,11 +4,11 @@ import * as signup from "Support/utils/selfHostSignUp";
 import { logout } from "Support/utils/common";
 import { onboardingSelectors } from "Selectors/onboarding";
 
-//selfhostsetup
 describe("Self host onboarding", () => {
   beforeEach(() => {
     cy.visit("/setup");
   });
+
   it("verify elements on self host onboarding page", () => {
     cy.get(commonSelectors.HostBanner).should("be.visible");
     cy.get(commonSelectors.pageLogo).should("be.visible");

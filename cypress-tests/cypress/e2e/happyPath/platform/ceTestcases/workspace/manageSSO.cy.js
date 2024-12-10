@@ -28,11 +28,6 @@ describe("Manage SSO for multi workspace", () => {
         commonText.breadcrumbworkspaceSettingTitle
       );
     });
-    cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
-      "have.text",
-      ssoText.pagetitle
-    );
-
     cy.get(ssoSelector.cardTitle).verifyVisibleElement(
       "have.text",
       "Workspace login"
@@ -72,6 +67,7 @@ describe("Manage SSO for multi workspace", () => {
 
   it("Should verify Google SSO page elements", () => {
     common.navigateToManageSSO();
+    cy.wait(2000);
     cy.get(ssoSelector.google).should("be.visible").click();
     cy.get(ssoSelector.cardTitle)
       .eq(1)

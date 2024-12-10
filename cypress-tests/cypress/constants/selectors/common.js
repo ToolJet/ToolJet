@@ -166,6 +166,7 @@ export const commonSelectors = {
   resetPasswordPageDescription: '[data-cy="reset-password-page-description"]',
   backToLoginButton: '[data-cy="back-to-login"]',
   breadcrumbTitle: '[data-cy="app-header-label"]>>',
+  // breadcrumbPageTitle: '[data-cy="app-header-label"]',
   breadcrumbPageTitle: '[data-cy="breadcrumb-page-title"]',
   labelFullNameInput: '[data-cy="name-label"]',
   inputFieldFullName: '[data-cy="name-input"]',
