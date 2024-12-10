@@ -1,0 +1,16 @@
+{
+  "name": "Task management system",
+  "description": "ToolJet DB-powered productivity tool for organizing tasks, setting priorities, and tracking progress. Boost personal and team efficiency.",
+  "widgets": [
+    "Table",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "task-management-system",
+  "category": "product-management"
+}
