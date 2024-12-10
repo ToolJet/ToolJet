@@ -22,7 +22,6 @@ To enable SAML authentication, you need to configure the following workspace set
     - **SAML Provider Name**: Enter the name of your SAML provider. This name will be displayed on the login page.
     - **Identity provider metadata**: Upload the data from the metadata file provided by your SAML provider. This file contains the SAML configuration details.
     - **Group Attribute**: Enter the name of the attribute that contains the group information of the user. This attribute is used to map the user to the appropriate group.
-    - **Redirect URL**: Copy the redirect URL provided and paste it in the SAML provider's configuration page.
 
     <br/>
 
@@ -34,9 +33,23 @@ To enable SAML authentication, you need to configure the following workspace set
      Additionally, you can often find this data by navigating to https://&ltyour-identity-provider&gt/federationmetadata/2007-06/federationmetadata.xml
     :::
 
-    <img className="screenshot-full" src="/img/sso/saml/config-new-v3.png" alt="SSO :SAMP" />
+ Once the configuration is complete, click **Save Changes** to view the **Redirect URL**.
 
-4. Once configured, click **Save Changes**.
+    <img className="screenshot-full" src="/img/sso/saml/SAML-Redirect-URL.png" alt="SSO :SAMP" />
+
+
+    :::tip SAML for multiple workspaces
+To set up SAML for multiple workspaces, configure the following environment variables.
+
+| variable               | value             |
+| ---------------------- | ----------------- |
+| SAML_SET_ENTITY_ID_REDIRECT_URL | `true` |
+
+NOTE: This feature is available starting from version `v2.50.9.46-lts` and later.
+
+       :::
+
+
 
 </div>
 

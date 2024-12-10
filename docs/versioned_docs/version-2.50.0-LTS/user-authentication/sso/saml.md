@@ -38,7 +38,25 @@ To enable SAML authentication, you need to configure the following workspace set
 4. Once configured, click **Save Changes**.
 
 </div>
+   :::tip SAML for multiple workspaces
 
+-  The multiple workspaces feature is available only in versions `v2.50.9.46-lts` and later.
+-  Configure the required environment variables as below:
+
+| variable               | value             |
+| ---------------------- | ----------------- |
+| SAML_SET_ENTITY_ID_REDIRECT_URL | `true` |
+       :::
+
+   :::tip SAML for Google and Azure
+Configure the required environment variable as follows:
+
+| variable               | value             |
+| ---------------------- | ----------------- |
+| SAML_SET_ENTITY_ID_SERVER_URL | `true` |
+
+Note: If you are using the multiple workspaces setting, you do not need to configure the `SAML_SET_ENTITY_ID_SERVER_URL` variable.
+       :::
 <div style={{paddingTop:'24px'}}>
 
 ## Logging in with SAML
