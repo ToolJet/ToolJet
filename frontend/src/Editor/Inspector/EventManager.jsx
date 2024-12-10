@@ -326,18 +326,16 @@ export const EventManager = ({
 
     newEvents[index] = updatedEvent;
 
-    handleLowPriorityWork(() => {
-      updateAppVersionEventHandlers(
-        [
-          {
-            event_id: updatedEvent.id,
-            diff: updatedEvent,
-          },
-        ],
-        'update',
-        param
-      );
-    });
+    updateAppVersionEventHandlers(
+      [
+        {
+          event_id: updatedEvent.id,
+          diff: updatedEvent,
+        },
+      ],
+      'update',
+      param
+    );
   }
 
   function removeHandler(index) {
