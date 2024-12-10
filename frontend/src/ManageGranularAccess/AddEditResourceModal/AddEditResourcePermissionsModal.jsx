@@ -34,6 +34,7 @@ function AddEditResourcePermissionsModal({
       handleClose={handleClose}
       handleConfirm={handleConfirm}
       className="permission-manager-modal"
+      data-cy="add-edit-permission-modal"
       title={title}
       confirmBtnProps={confirmBtnProps}
       darkMode={darkMode}
