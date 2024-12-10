@@ -411,7 +411,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
               </nav>
 
               <div className="manage-groups-body">
-                <div className="tab-content">
+                <div className="tab-content user-group-scrollable">
                   {/* Apps Tab */}
 
                   <div className={`tab-pane ${currentTab === 'apps' ? 'active show' : ''}`}>
