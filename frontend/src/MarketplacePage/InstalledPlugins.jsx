@@ -3,8 +3,9 @@ import cx from 'classnames';
 import { pluginsService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import Spinner from '@/_ui/Spinner';
-import { capitalizeFirstLetter } from './utils';
+import { capitalizeFirstLetter, useTagsByPluginId } from './utils';
 import { ConfirmDialog } from '@/_components';
+import Icon from '@/_ui/Icon/SolidIcons';
 
 export const InstalledPlugins = ({
   allPlugins = [],
@@ -14,7 +15,7 @@ export const InstalledPlugins = ({
   ENABLE_MARKETPLACE_DEV_MODE,
 }) => {
   return (
-    <div className="col-9 pb-3">
+    <div className="col-9 pb-3" style={{ marginLeft: 'auto' }}>
       {fetching && (
         <div className="m-auto text-center">
           <Spinner />
@@ -53,7 +54,8 @@ const InstalledPluginCard = ({ plugin, marketplacePlugin, fetchPlugins, isDevMod
   const [isDeletingPlugin, setDeletingPlugin] = React.useState(false);
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const { id, name } = plugin;
+  const { id, name, pluginId } = plugin;
+  const { tags } = useTagsByPluginId(pluginId);
 
   const executePluginDeletion = () => {
     setDeleteModalVisibility(true);
@@ -143,7 +145,19 @@ const InstalledPluginCard = ({ plugin, marketplacePlugin, fetchPlugins, isDevMod
                 </span>
               </div>
               <div className="col">
-                <div className="font-weight-medium text-capitalize">{plugin.name}</div>
+                <div className="d-flex align-items-center tw-gap-[6px]">
+                  <div className="font-weight-medium text-capitalize">{plugin.name}</div>
+                  {tags.map((tag) => {
+                    if (tag === 'AI') {
+                      return (
+                        <div key={tag} className="tag-container">
+                          <Icon name="AI-tag" />
+                          <span>{tag}</span>
+                        </div>
+                      );
+                    }
+                  })}
+                </div>
                 <div>{plugin.description}</div>
               </div>
               <div className="col-2">

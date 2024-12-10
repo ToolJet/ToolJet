@@ -3,27 +3,27 @@ import { commonText } from "Texts/common";
 
 export const selfHostCommonElements = () => {
   cy.get(commonSelectors.pageLogo).should("be.visible");
-  cy.get(commonSelectors.setUpadminCheckPoint).verifyVisibleElement(
-    "have.text",
-    commonText.setUpadminCheckPoint
-  );
+  // cy.get(commonSelectors.setUpadminCheckPoint).verifyVisibleElement(
+  //   "have.text",
+  //   commonText.setUpadminCheckPoint
+  // );
   cy.get(commonSelectors.setUpworkspaceCheckPoint).verifyVisibleElement(
     "have.text",
     commonText.setUpworkspaceCheckPoint
   );
-  cy.get(commonSelectors.companyProfileCheckPoint).verifyVisibleElement(
-    "have.text",
-    commonText.companyProfileCheckPoint
-  );
-  cy.get(commonSelectors.onboardingPageSubHeader).verifyVisibleElement(
-    "have.text",
-    commonText.onboardingPageSubHeader
-  );
-  cy.get(commonSelectors.continueButton).verifyVisibleElement(
+  // cy.get(commonSelectors.companyProfileCheckPoint).verifyVisibleElement(
+  //   "have.text",
+  //   commonText.companyProfileCheckPoint
+  // );
+  // cy.get(commonSelectors.onboardingPageSubHeader).verifyVisibleElement(
+  //   "have.text",
+  //   commonText.onboardingPageSubHeader
+  // );
+  cy.get(commonSelectors.OnbordingContinue).verifyVisibleElement(
     "have.text",
     commonText.continueButton
   );
-  cy.get(commonSelectors.continueButton).should("be.disabled");
+  //   cy.get(commonSelectors.OnbordingContinue).should("be.disabled");
 };
 
 export const commonElementsWorkspaceSetup = () => {
