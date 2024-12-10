@@ -406,12 +406,31 @@ describe("user invite flow cases", () => {
       commonSelectors.toastMessage,
       "User has been updated"
     );
-
     searchUser(data.email);
     cy.get('[data-name="role-header"] [data-cy="group-chip"]').should(
       "have.text",
       "Admin"
     );
+
+    cy.get(usersSelector.userActionButton).click();
+    cy.get(usersSelector.editUserDetailsButton).click();
+    cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type("Builder");
+    cy.wait(1000);
+    cy.get('[data-cy="group-check-input"]').eq(0).check();
+
+    cy.get(usersSelector.buttonInviteUsers).click();
+    cy.get('[data-cy="confim-button"]').click();
+
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      "User has been updated"
+    );
+    searchUser(data.email);
+    cy.get('[data-name="role-header"] [data-cy="group-chip"]').should(
+      "have.text",
+      "Builder"
+    );
+
   });
 
   it("Should verify exisiting user invite flow", () => {
@@ -515,7 +534,7 @@ describe("user invite flow cases", () => {
       "The user is already registered. Please check your inbox for the activation link"
     );
   });
-  
+
   it("should verify exisiting user workspace signup from instance using form", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
