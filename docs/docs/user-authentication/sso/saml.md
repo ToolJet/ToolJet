@@ -46,14 +46,7 @@ To set up SAML for multiple workspaces, configure the following environment vari
 | SAML_SET_ENTITY_ID_REDIRECT_URL | `true` |
 
 NOTE: This feature is available starting from version `v2.50.9.46-lts` and later.
-
        :::
-
-
-    
-
-
-
 </div>
 
 <div style={{paddingTop:'24px'}}>
