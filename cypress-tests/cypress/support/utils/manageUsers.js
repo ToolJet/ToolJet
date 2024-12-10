@@ -220,6 +220,19 @@ export const bulkUserUpload = (file, fileName, toastMessage) => {
   cy.wait(200);
 };
 
+export const bulkUserUploadDuplicate = (file, fileName, toastMessage) => {
+  cy.get(usersSelector.inputFieldBulkUpload).selectFile(file, {
+    force: true,
+  });
+  cy.get(usersSelector.uploadedFileData).should("contain", fileName);
+  cy.get(usersSelector.buttonUploadUsers).click();
+  cy.get(commonSelectors.modalMessage)
+    .should("be.visible")
+    .and("have.text", toastMessage);
+  cy.get(usersSelector.modalClose).click();
+  cy.wait(200);
+};
+
 
 export const copyInvitationLink = (firstName, email) => {
   cy.window().then((win) => {

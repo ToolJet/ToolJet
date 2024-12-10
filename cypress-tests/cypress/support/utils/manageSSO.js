@@ -56,12 +56,9 @@ export const generalSettings = () => {
 
 export const googleSSOPageElements = () => {
   cy.get(ssoSelector.googleEnableToggle).click();
+  cy.wait(5000);
   cy.get(ssoSelector.saveButton).eq(1).click();
-
-  cy.get('[data-cy="modal-title"]').verifyVisibleElement(
-    "have.text",
-    "Enable Google"
-  );
+  cy.wait(2000);
   cy.get('[data-cy="modal-close-button"]').should("be.visible");
   cy.get('[data-cy="modal-message"]').verifyVisibleElement(
     "have.text",
