@@ -68,7 +68,7 @@ export const SearchBox = forwardRef(
       <div className={`search-box-wrapper ${customClass}`}>
         <div className="input-icon">
           {!isFocused && (
-            <span className="input-icon-addon">
+            <span className="input-icon-addon tw-top-0.5">
               <SolidIcon name="search" width="14" />
             </span>
           )}
