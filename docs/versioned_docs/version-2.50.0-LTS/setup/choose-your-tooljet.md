@@ -5,6 +5,10 @@ title: Choose Your ToolJet
 
 ToolJet versions are categorized into three main types: **Long-Term Support (LTS)**,  **Pre-Release**, and **Past versions**. Understanding these categories helps users choose the most suitable version for their needs.
 
+:::info
+ToolJet 3.0 LTS is now live! We encourage all users to upgrade to take advantage of the latest features and improvements. You can find more details about these changes in the 3.0 LTS [release notes](/docs/project-overview/release-notes).
+:::
+
 ## Long-Term Support (LTS) Versions
 
 We highly recommend using LTS versions for most users. These versions are prioritized for bug fixes, updates, and overall stability, ensuring a reliable experience. LTS versions are ideal for production environments where stability and consistent performance are crucial.
@@ -31,10 +35,6 @@ Please find the latest LTS version here: <br/>
 | [EE-LTS-2.50.9.35](https://hub.docker.com/layers/tooljet/tooljet/EE-LTS-2.50.9.35/images/sha256-8a1b0014d470aff108ad75fd6982e01696740f2154a3bb49f08671b93d55485b?context=explore) | September 3, 2024 | `docker pull tooljet/tooljet:EE-LTS-2.50.9.35` |
 | [EE-LTS-2.50.9.34](https://hub.docker.com/layers/tooljet/tooljet/EE-LTS-2.50.9.34/images/sha256-95af52997ec5b42fd5435bfef2f8996d0acc8234ae0541e155705ea4c689b272?context=explore) | August 30, 2024 | `docker pull tooljet/tooljet:EE-LTS-2.50.9.34` |
 | [EE-LTS-2.50.9.33](https://hub.docker.com/layers/tooljet/tooljet/EE-LTS-2.50.9.33/images/sha256-e231b959a7e5e1455235d344ceffeaa34b482d925d9676e5169f58e966c59fbb?context=explore) | August 26, 2024 | `docker pull tooljet/tooljet:EE-LTS-2.50.9.33` |
-
-:::info
-Users are encouraged to upgrade to the latest LTS version to ensure they benefit from the latest improvements and maintain a secure and efficient environment. 
-:::
 
 ## Pre-Release Versions
 
