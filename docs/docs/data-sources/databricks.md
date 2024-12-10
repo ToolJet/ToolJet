@@ -136,3 +136,26 @@ WHERE customer_id = 1001;
 <img className="screenshot-full" src="/img/datasource-reference/databricks/deleteData.png" alt="Databricks: Delete Data Query" style={{marginBottom:'15px'}}/>
 
 </div>
+
+<div style={{paddingTop:'24px'}}>
+
+## Additional Information
+
+### Rate Limits
+
+Databricks API has rate limits to ensure fair usage and prevent abuse. It is important to design your queries and applications to handle rate limits gracefully. You can read more about rate limits in the [Databricks API documentation](https://docs.databricks.com/dev-tools/api/latest/index.html).
+
+### Error Handling
+
+When working with Databricks API, it is important to handle errors appropriately. Common errors include authentication errors, rate limit errors, and validation errors. Make sure to check the response status and handle errors accordingly in your application.
+
+### Best Practices
+
+- **Use Caching**: To reduce the number of API requests and improve performance, consider implementing caching mechanisms for frequently accessed data.
+- **Optimize Queries**: Use filters, sorting, and pagination to optimize your queries and retrieve only the necessary data.
+- **Handle Rate Limits**: Implement retry mechanisms and exponential backoff to handle rate limit errors gracefully.
+- **Secure API Keys**: Keep your Databricks API keys secure and avoid exposing them in client-side code. Use environment variables or secure storage mechanisms to store API keys.
+
+For more detailed information and best practices, refer to the [Databricks API documentation](https://docs.databricks.com/dev-tools/api/latest/index.html).
+
+</div>
