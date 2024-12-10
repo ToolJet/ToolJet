@@ -17,7 +17,7 @@ To uphold user privacy, the Geolocation API requests permission before locating 
    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/access-location/newapp.png" alt="How to: Access User's Location" />
   </div>
 
-2. In the app editor, navigate to the query panel at the bottom and create a **[RunJS query](/docs/data-sources/run-js/#runjs-query-examples)** by selecting **Run JavaScript Code** as the datasource:
+2. In the app editor, navigate to the query panel at the bottom and create a **[RunJS query](/docs/data-sources/run-js/#runjs-example-queries)** by selecting **Run JavaScript Code** as the datasource:
   <div style={{textAlign: 'center'}}>
    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/how-to/access-location/runjsq.png" alt="How to: Access User's Location" />
   </div>
