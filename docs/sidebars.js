@@ -370,6 +370,23 @@ const sidebars = {
     },
     {
       'type': 'category',
+      'label': 'User Management and Access Control',
+      'items': [
+        'user-management-and-access-control/overview',
+        {
+          'type': 'category',
+          'label': 'Onboarding and Offboarding Users',
+          'items': [
+            'user-management-and-access-control/onboarding-offboarding-users/invite-user',
+            'user-management-and-access-control/onboarding-offboarding-users/archive-user',
+            'user-management-and-access-control/onboarding-offboarding-users/bulk-invite-users',
+            'user-management-and-access-control/onboarding-offboarding-users/self-signup-users'
+          ]
+        }
+      ]
+    },
+    {
+      'type': 'category',
       'label': 'Org Management',
       'items': [
         'dashboard',
