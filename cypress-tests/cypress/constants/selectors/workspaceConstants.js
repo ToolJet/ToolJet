@@ -13,6 +13,7 @@ export const workspaceConstantsSelectors = {
     constantsTableNameHeader: '[data-cy="workspace-variable-table-name-header"]',
     constantsTableValueHeader:
         '[data-cy="workspace-variable-table-value-header"]',
+    nameInputFiled: '[data-cy="name-input-field"]',
 
     constantName: (constName) => {
         return `[data-cy="${cyParamName(constName)}-workspace-constant-name"]`;
