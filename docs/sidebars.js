@@ -370,85 +370,21 @@ const sidebars = {
     },
     {
       'type': 'category',
-      'label': 'Org Management',
+      'label': 'Setting Up the Organization',
       'items': [
-        'dashboard',
-        {
-          "type": "category",
-          "label": "Workspaces",
-          "items": [
-            "org-management/workspaces/workspace_overview",
-            "org-management/workspaces/workspace-variables",
-            "org-management/workspaces/workspace-variables-migration",
-            "org-management/workspaces/workspace_constants"
-          ]
-        },
+        'org-setup/overview',
+        'org-setup/tj-plan',
+        'org-setup/instances-and-workspaces',
         {
           'type': 'category',
-          'label': 'User Authentication',
+          'label': 'Organization Branding',
           'items': [
-            'user-authentication/user-lifecycle',
-            'user-authentication/workspace-login',
-            {
-              'type': 'category',
-              'label': 'SSO',
-              'items': [
-                'user-authentication/sso/github',
-                'user-authentication/sso/google',
-                {
-                  'type': 'category',
-                  'label': 'OpenId Connect',
-                  'link': {
-                    'type': 'generated-index',
-                    'title': 'OpenId Connect',
-                    'description': ' ',
-                    'keywords': [
-                      'okta',
-                      'openid',
-                      'azureAD',
-                    ],
-                  },
-                  'collapsed': true,
-                  'items': [
-                    'user-authentication/sso/openid/setup',
-                    'user-authentication/sso/openid/azuread',
-                    'user-authentication/sso/openid/okta',
-                    'user-authentication/sso/openid/google-openid',
-                  ],
-                },
-                'user-authentication/sso/oidc',
-                'user-authentication/sso/ldap',
-                'user-authentication/sso/saml',
-                'user-authentication/sso/auto-sso-login',
-              ],
-            },
-          ],
-        },
-        'org-management/permissions',
-        'tutorial/manage-users-groups',
-        'tutorial/tooljet-api',
-        'Enterprise/audit_logs',
-        'Enterprise/white-label',
-        'Enterprise/superadmin',
-        {
-          "type": "category",
-          "label": "Licensing",
-          "items": [
-            "org-management/licensing/tooljet-cloud",
-            "org-management/licensing/self-hosted"
+            'org-setup/org-branding/white-labeling',
+            'org-setup/org-branding/custom-domain'
           ]
         },
-        "org-management/smtp-configuration"
-      ],
-    },
-    {
-      'type': 'category',
-      'label': 'Release Management',
-      'items': [
-        'gitsync',
-        'release-management/multi-environment',
-        'tutorial/versioning-and-release',
-      ],
+        'org-setup/smtp-config'
+      ]
     },
     {
       'type': 'category',
