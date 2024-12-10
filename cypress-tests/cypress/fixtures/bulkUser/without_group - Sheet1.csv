@@ -1,6 +1,6 @@
-First Name,Last Name,Email,Groups
-Test,Example,test12@gmail.com,
-Test,Example,test13@gmail.com,
-Test,Example,test14@gmail.com,
-Test,Example,test15@gmail.com,
-Test,Example,test16@gmail.com,
+First Name,Last Name,Email,User Role,Group
+Test,Example,test12@gmail.com,Admin,
+Test,Example,test13@gmail.com,Builder,
+Test,Example,test14@gmail.com,End User,
+Test,Example,test15@gmail.com,End User,
+Test,Example,test16@gmail.com,End User,

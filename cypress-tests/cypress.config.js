@@ -82,7 +82,7 @@ module.exports = defineConfig({
     experimentalModfyObstructiveThirdPartyCode: true,
     experimentalRunAllSpecs: true,
     baseUrl: "http://localhost:8082",
-    specPattern: "cypress/e2e/happyPath/platform/commonTestcases/**/*.cy.js",
+    specPattern: "cypress/e2e/happyPath/platform/**/**/*.cy.js",
     downloadsFolder: "cypress/downloads",
     numTestsKeptInMemory: 0,
     redirectionLimit: 10,

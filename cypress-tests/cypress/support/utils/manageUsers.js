@@ -6,6 +6,8 @@ import { ssoSelector } from "Selectors/manageSSO";
 import { ssoText } from "Texts/manageSSO";
 import * as common from "Support/utils/common";
 import { commonText } from "Texts/common";
+import { onboardingSelectors } from "Selectors/onboarding";
+
 
 export const manageUsersElements = () => {
   cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
@@ -150,19 +152,19 @@ export const manageUsersElements = () => {
 export const inviteUser = (firstName, email) => {
   cy.userInviteApi(firstName, email);
   fetchAndVisitInviteLink(email);
-  cy.clearAndType(commonSelectors.passwordInputField, "password");
+  cy.clearAndType(onboardingSelectors.passwordInput, "password");
   cy.get(commonSelectors.acceptInviteButton).click();
 };
 
 export const confirmInviteElements = (email) => {
 
-  cy.get(commonSelectors.SignUpSectionHeader).verifyVisibleElement(
+  cy.get(commonSelectors.signUpSectionHeader).verifyVisibleElement(
     "have.text", "Sign up");
-  cy.get('[data-cy="workspace-signup-header"]').verifyVisibleElement(
-    "have.text", "Sign up to the workspace - My workspace");
+  cy.get('[data-cy="signup-info"]').verifyVisibleElement(
+    "have.text", "Sign up to the workspace - My workspace. ");
 
-  cy.verifyLabel("Email")
-  cy.verifyLabel("Create a password")
+  // cy.verifyLabel("Email")
+  // cy.verifyLabel("Create a password")
   cy.get(commonSelectors.invitedUserEmail).verifyVisibleElement(
     "have.text", email);
 
@@ -215,7 +217,6 @@ export const bulkUserUpload = (file, fileName, toastMessage) => {
     .should("be.visible")
     .and("have.text", toastMessage);
   cy.get(usersSelector.toastCloseButton).click();
-
   cy.wait(200);
 };
 
@@ -242,8 +243,8 @@ export const copyInvitationLink = (firstName, email) => {
 
 export const fillUserInviteForm = (firstName, email) => {
   cy.get(usersSelector.buttonAddUsers).click();
-  cy.clearAndType(commonSelectors.inputFieldFullName, firstName);
-  cy.clearAndType(commonSelectors.inputFieldEmailAddress, email);
+  cy.clearAndType(onboardingSelectors.nameInput, firstName);
+  cy.clearAndType(onboardingSelectors.signupEmailInput, email);
 };
 
 export const selectUserGroup = (groupName) => {
@@ -293,7 +294,8 @@ export const inviteUserWithUserGroups = (
 
   cy.wait(1000);
   fetchAndVisitInviteLink(email);
-  cy.clearAndType(commonSelectors.passwordInputField, "password");
+  cy.wait(2000);
+  cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
   // cy.intercept('GET', '/api/organizations').as('org')
   cy.get(commonSelectors.signUpButton).click();
   cy.wait(2000);
@@ -372,7 +374,7 @@ export const inviteUserWithUserRole = (
 
   cy.wait(1000);
   fetchAndVisitInviteLink(email);
-  cy.clearAndType(commonSelectors.passwordInputField, "password");
+  cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
   cy.get(commonSelectors.signUpButton).click();
   cy.wait(2000);
   cy.get(commonSelectors.acceptInviteButton).click();

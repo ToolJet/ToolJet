@@ -140,8 +140,26 @@ export default class AirtableQueryService implements QueryService {
         }
       }
     } catch (error) {
-      console.log(error);
-      throw new QueryError('Query could not be completed', error.message, {});
+      let errorMessage = 'Query could not be completed';
+      let errorDetails: any = {};
+
+      if (error.response) {
+        try {
+          const errorResponse =
+            typeof error.response.body === 'string' ? JSON.parse(error.response.body) : error.response.body;
+
+          errorMessage = errorResponse.message || errorResponse.error || errorMessage;
+          if (typeof errorResponse.error === 'string') {
+            errorDetails.type = errorResponse.error;
+          } else {
+            errorDetails = errorResponse.error;
+          }
+        } catch (parseError) {
+          console.error('Failed to parse Airtable error response:', parseError);
+        }
+      }
+
+      throw new QueryError(errorMessage, error.message, errorDetails);
     }
 
     return {

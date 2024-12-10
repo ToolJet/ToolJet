@@ -52,7 +52,7 @@ const ConstantTable = ({
                     {' '}
                     <small
                       className="text-green d-flex align-items-center justify-content-end"
-                      data-cy="encrypted-label"
+                      data-cy="table-encrypted-label"
                     >
                       <img
                         className="encrypted-icon me-1"

@@ -5,6 +5,7 @@ import { profileText } from "Texts/profile";
 import { commonSelectors } from "Selectors/common";
 import { fake } from "Fixtures/fake";
 import { commonText } from "Texts/common";
+import { onboardingSelectors } from "Selectors/onboarding";
 
 describe("Profile Settings", () => {
   const randomFirstName = fake.firstName;
@@ -15,6 +16,7 @@ describe("Profile Settings", () => {
     common.navigateToProfile();
   });
 
+  // neeed to reset and seed bd after 1 run (as password changes will get 401 error )
   it("Should verify the elements on profile settings page and name reset functionality", () => {
     profile.profilePageElements();
 
@@ -183,20 +185,16 @@ describe("Profile Settings", () => {
     );
 
     common.logout();
-
-    cy.clearAndType(commonSelectors.workEmailInputField, commonText.email);
-    cy.clearAndType(commonSelectors.passwordInputField, commonText.password);
-    cy.get(commonSelectors.loginButton).click();
+    cy.clearAndType(onboardingSelectors.loginEmailInput, commonText.email);
+    cy.clearAndType(onboardingSelectors.loginPasswordInput, commonText.password);
+    cy.get(onboardingSelectors.signInButton).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       profileText.loginErrorToast
     );
 
-    cy.clearAndType(
-      commonSelectors.passwordInputField,
-      profileText.newPassword
-    );
-    cy.get(commonSelectors.signInButton).click();
+    cy.clearAndType(onboardingSelectors.loginPasswordInput, profileText.newPassword);
+    cy.get(onboardingSelectors.signInButton).click();
     common.navigateToProfile();
 
     cy.clearAndType(
@@ -213,7 +211,7 @@ describe("Profile Settings", () => {
 
     common.logout();
 
-    cy.login(commonText.email, profileText.password);
+    cy.appUILogin(commonText.email, profileText.password);
     common.logout();
   });
 });
