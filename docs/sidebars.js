@@ -382,6 +382,15 @@ const sidebars = {
             'user-management-and-access-control/onboarding-offboarding-users/bulk-invite-users',
             'user-management-and-access-control/onboarding-offboarding-users/self-signup-users'
           ]
+        },
+        {
+          'type': 'category',
+          'label': 'Managing Users',
+          'items': [
+            'user-management-and-access-control/managing-users/user-management',
+            'user-management-and-access-control/managing-users/edit-details',
+            'user-management-and-access-control/managing-users/profile-management'
+          ]
         }
       ]
     },
