@@ -232,8 +232,8 @@ export const workspaceLoginPageElements = (workspaceName) => {
 };
 
 export const passwordLoginVisible = () => {
-  cy.get(onboardingSelectors.emailInput).should("be.visible");
-  cy.get(onboardingSelectors.passwordInput).should("be.visible");
+  cy.get(onboardingSelectors.loginEmailInput).should("be.visible");
+  cy.get(onboardingSelectors.loginPasswordInput).should("be.visible");
   cy.get(onboardingSelectors.signInButton).verifyVisibleElement(
     "have.text",
     commonText.loginButton
@@ -241,8 +241,8 @@ export const passwordLoginVisible = () => {
 };
 
 export const workspaceLogin = (workspaceName) => {
-  cy.clearAndType(onboardingSelectors.emailInput, "dev@tooljet.io");
-  cy.clearAndType(onboardingSelectors.passwordInput, "password");
+  cy.clearAndType(onboardingSelectors.loginEmailInput, "dev@tooljet.io");
+  cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
   cy.get(onboardingSelectors.signInButton).click();
   cy.wait(2000);
   cy.get(commonSelectors.homePageLogo).should("be.visible");
@@ -297,8 +297,8 @@ export const signInPageElements = () => {
     commonText.loginButton
   );
 
-  cy.get(onboardingSelectors.emailInput).should("be.visible");
-  cy.get(onboardingSelectors.passwordInput).should("be.visible");
+  cy.get(onboardingSelectors.loginEmailInput).should("be.visible");
+  cy.get(onboardingSelectors.loginPasswordInput).should("be.visible");
 
   cy.get("body").then(($el) => {
     if ($el.text().includes("Google")) {
@@ -474,7 +474,7 @@ export const invitePageElements = () => {
     "have.text",
     commonText.passwordLabel
   );
-  cy.get(onboardingSelectors.passwordInput).should("be.visible");
+  cy.get(onboardingSelectors.loginPasswordInput).should("be.visible");
   cy.get(commonSelectors.acceptInviteButton).verifyVisibleElement(
     "have.text",
     commonText.acceptInviteButton
@@ -535,7 +535,7 @@ export const defaultSSO = (enable) => {
     cy.request(
       {
         method: "PATCH",
-        url: "http://localhost:3000/api/organizations",
+        url: `${Cypress.env("server_host")}/api/organizations`,
         headers: {
           "Tj-Workspace-Id": Cypress.env("workspaceId"),
           Cookie: `tj_auth_token=${cookie.value}`,
@@ -559,7 +559,7 @@ export const setSignupStatus = (enable, workspaceName = 'My workspace') => {
     cy.getCookie("tj_auth_token").then((cookie) => {
       cy.request({
         method: "PATCH",
-        url: "http://localhost:3000/api/organizations",
+        url: `${Cypress.env("server_host")}/api/organizations`,
         headers: {
           "Tj-Workspace-Id": workspaceId,
           Cookie: `tj_auth_token=${cookie.value}`,
@@ -595,7 +595,7 @@ export const resetDomain = () => {
     cy.request(
       {
         method: "PATCH",
-        url: "http://localhost:3000/api/organizations",
+        url: `${Cypress.env("server_host")}/api/organizations`,
         headers: {
           "Tj-Workspace-Id": Cypress.env("workspaceId"),
           Cookie: `tj_auth_token=${cookie.value}`,

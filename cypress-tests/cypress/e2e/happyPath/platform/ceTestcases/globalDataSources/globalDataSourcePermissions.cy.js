@@ -215,7 +215,7 @@ describe("Global Datasource Manager", () => {
     cy.get('[data-cy="databases-datasource-button"]').should("be.visible");
 
     cy.apiCreateGDS(
-      "http://localhost:3000/api/v2/data_sources",
+      `${Cypress.env("server_host")}/api/v2/data_sources`,
       `cypress-${data.dsName2}-postgresql`,
       "postgresql",
       [
