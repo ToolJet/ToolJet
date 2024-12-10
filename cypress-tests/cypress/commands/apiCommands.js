@@ -186,7 +186,31 @@ Cypress.Commands.add("logoutApi", () => {
   });
 });
 
-Cypress.Commands.add("userInviteApi", (userName, userEmail) => {
+// Cypress.Commands.add("userInviteApi", (userName, userEmail) => {
+//   cy.getCookie("tj_auth_token").then((cookie) => {
+//     cy.request(
+//       {
+//         method: "POST",
+//         url: `${Cypress.env("server_host")}/api/organization_users`,
+//         headers: {
+//           "Tj-Workspace-Id": Cypress.env("workspaceId"),
+//           Cookie: `tj_auth_token=${cookie.value}`,
+//         },
+//         body: {
+//           first_name: userName,
+//           email: userEmail,
+//           groups: [],
+//           role: "end-user",
+//         },
+//       },
+//       { log: false }
+//     ).then((response) => {
+//       expect(response.status).to.equal(201);
+//     });
+//   });
+// });
+
+Cypress.Commands.add("userInviteApi", (userName, userEmail, userRole='end-user') => {
   cy.getCookie("tj_auth_token").then((cookie) => {
     cy.request(
       {
@@ -200,7 +224,7 @@ Cypress.Commands.add("userInviteApi", (userName, userEmail) => {
           first_name: userName,
           email: userEmail,
           groups: [],
-          role: "end-user",
+          role: userRole,
         },
       },
       { log: false }
