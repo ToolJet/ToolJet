@@ -5,7 +5,9 @@ title: SMTP Configuration
 
 <div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
 
-ToolJet uses SMTP (Simple Mail Transfer Protocol) to send emails for various purposes, including invitations and password reset requests. This guide will walk you through the process of configuring SMTP settings in ToolJet.
+ToolJet utilizes SMTP (Simple Mail Transfer Protocol) to send emails for various purposes, including invitations, password reset requests, and notifications. SMTP ensures that emails are delivered reliably from ToolJet to users. Properly configuring SMTP is crucial for ensuring that your ToolJet instance can communicate effectively with users through email.
+
+There are two ways to configure SMTP in ToolJet: one without using environment variables and another with environment variables. The first method involves directly entering SMTP settings into the ToolJet interface, which is suitable for simpler setups. The second method, which leverages environment variables, provides greater flexibility and security, especially for managing sensitive information in production environments. Both methods are designed to ensure that your ToolJet instance can send emails as needed, depending on your setup preferences and security requirements.
 
 ## Prerequisites
 
