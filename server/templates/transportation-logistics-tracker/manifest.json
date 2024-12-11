@@ -1,5 +1,5 @@
 {
-  "name": "Transporation logistics tracker",
+  "name": "Transportation logistics tracker",
   "description": "Optimize logistics operations with real-time tracking, route planning, and key analytics for effective transportation management.",
   "widgets": [
     "Table",
@@ -11,6 +11,6 @@
       "id": "tooljetdb"
     }
   ],
-  "id": "transporation-logistics-tracker",
+  "id": "transportation-logistics-tracker",
   "category": "operations"
 }
