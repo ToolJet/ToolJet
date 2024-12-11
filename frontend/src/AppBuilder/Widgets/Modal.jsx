@@ -7,6 +7,17 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 var tinycolor = require('tinycolor2');
 
+// STYLE CONSTANTS
+// 1. Modal header
+const MODAL_HEADER = {
+  HEIGHT: '80px',
+  CANVAS_HEIGHT: 10,
+};
+const MODAL_FOOTER = {
+  HEIGHT: '80px',
+  CANVAS_HEIGHT: 10,
+};
+
 export const Modal = function Modal({
   id,
   component,
@@ -24,15 +35,16 @@ export const Modal = function Modal({
     closeOnClickingOutside = false,
     hideOnEsc,
     hideCloseButton,
-    hideTitleBar,
     loadingState,
     useDefaultButton,
     triggerButtonLabel,
     modalHeight,
+    hideHeader,
+    hideFooter,
   } = properties;
   const {
     headerBackgroundColor,
-    headerTextColor,
+    footerBackgroundColor,
     bodyBackgroundColor,
     disabledState,
     visibility,
@@ -43,8 +55,6 @@ export const Modal = function Modal({
   const parentRef = useRef(null);
   const controlBoxRef = useRef(null);
   const isInitialRender = useRef(true);
-  const title = properties.title ?? '';
-  const titleAlignment = properties.titleAlignment ?? 'left';
   const size = properties.size ?? 'lg';
   const [modalWidth, setModalWidth] = useState();
   const mode = useStore((state) => state.currentMode, shallow);
@@ -201,7 +211,15 @@ export const Modal = function Modal({
     modalHeader: {
       backgroundColor:
         ['#fff', '#ffffffff'].includes(headerBackgroundColor) && darkMode ? '#1F2837' : headerBackgroundColor,
-      color: ['#000', '#000000', '#000000ff'].includes(headerTextColor) && darkMode ? '#fff' : headerTextColor,
+      height: MODAL_HEADER.HEIGHT,
+      padding: 0,
+    },
+    modalFooter: {
+      backgroundColor:
+        ['#000', '#000000', '#000000ff'].includes(footerBackgroundColor) && darkMode ? '#fff' : footerBackgroundColor,
+      height: MODAL_FOOTER.HEIGHT,
+      padding: 0,
+      borderTop: `1px solid var(--border-weak)`,
     },
     buttonStyles: {
       backgroundColor: triggerButtonBackgroundColor,
@@ -285,14 +303,15 @@ export const Modal = function Modal({
           customStyles,
           parentRef,
           id,
-          title,
-          titleAlignment,
-          hideTitleBar,
           hideCloseButton,
           hideModal,
           component,
           showConfigHandler: mode === 'edit',
           fullscreen: isFullScreen,
+          darkMode,
+          width: modalWidth,
+          hideHeader,
+          hideFooter,
         }}
       >
         {!loadingState ? (
@@ -317,17 +336,57 @@ export const Modal = function Modal({
   );
 };
 
+const ModalHeader = ({ id, customStyles, hideCloseButton, darkMode, width }) => {
+  return (
+    <BootstrapModal.Header
+      style={{ ...customStyles.modalHeader }}
+      data-cy={`modal-header`}
+      closeButton={!hideCloseButton}
+    >
+      <SubContainer
+        id={`${id}-header`}
+        canvasHeight={MODAL_HEADER.CANVAS_HEIGHT}
+        canvasWidth={width}
+        allowContainerSelect={false}
+        darkMode={darkMode}
+        styles={{
+          backgroundColor: 'transparent',
+        }}
+      />
+    </BootstrapModal.Header>
+  );
+};
+
+const ModalFooter = ({ id, customStyles, darkMode, width }) => {
+  return (
+    <BootstrapModal.Footer style={{ ...customStyles.modalFooter }} data-cy={`modal-footer`}>
+      <SubContainer
+        id={`${id}-footer`}
+        canvasHeight={MODAL_FOOTER.CANVAS_HEIGHT}
+        canvasWidth={width}
+        allowContainerSelect={false}
+        darkMode={darkMode}
+        styles={{
+          margin: 0,
+          backgroundColor: 'transparent',
+        }}
+      />
+    </BootstrapModal.Footer>
+  );
+};
+
 const Component = ({ children, ...restProps }) => {
   const {
     customStyles,
     parentRef,
     id,
-    title,
-    titleAlignment,
-    hideTitleBar,
     hideCloseButton,
     showConfigHandler,
     fullscreen,
+    darkMode,
+    width,
+    hideHeader,
+    hideFooter,
   } = restProps['modalProps'];
 
   const setSelectedComponentAsModal = useStore((state) => state.setSelectedComponentAsModal, shallow);
@@ -343,38 +402,30 @@ const Component = ({ children, ...restProps }) => {
   };
 
   return (
-    <BootstrapModal {...restProps} onClick={handleModalBodyClick} fullscreen={fullscreen}>
+    <BootstrapModal {...restProps} onClick={handleModalBodyClick} fullscreen={fullscreen} animation={true}>
       {showConfigHandler && (
         <ConfigHandle
           id={id}
-          customClassName={hideTitleBar ? 'modalWidget-config-handle' : ''}
+          customClassName={hideHeader ? 'modalWidget-config-handle' : ''}
           showHandle={showConfigHandler}
           setSelectedComponentAsModal={setSelectedComponentAsModal}
           componentType="Modal"
           isModalOpen={true}
         />
       )}
-      {!hideTitleBar && (
-        <BootstrapModal.Header
-          style={{ ...customStyles.modalHeader }}
-          data-cy={`modal-header`}
-          closeButton={!hideCloseButton}
-        >
-          <BootstrapModal.Title
-            style={{
-              textAlign: titleAlignment,
-              width: '100%',
-            }}
-            id="contained-modal-title-vcenter"
-            data-cy={`modal-title`}
-          >
-            {title}
-          </BootstrapModal.Title>
-        </BootstrapModal.Header>
+      {!hideHeader && (
+        <ModalHeader
+          id={id}
+          customStyles={customStyles}
+          hideCloseButton={hideCloseButton}
+          darkMode={darkMode}
+          width={width}
+        />
       )}
       <BootstrapModal.Body style={{ ...customStyles.modalBody }} ref={parentRef} id={id} data-cy={`modal-body`}>
         {children}
       </BootstrapModal.Body>
+      {!hideFooter && <ModalFooter id={id} darkMode={darkMode} customStyles={customStyles} width={width} />}
     </BootstrapModal>
   );
 };

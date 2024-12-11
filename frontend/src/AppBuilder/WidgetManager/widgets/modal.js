@@ -12,14 +12,6 @@ export const modalConfig = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: {
-    title: {
-      type: 'code',
-      displayName: 'Title',
-      validation: {
-        schema: { type: 'string' },
-        defaultValue: 'This title can be changed',
-      },
-    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -48,14 +40,13 @@ export const modalConfig = {
         defaultValue: 'Launch Modal',
       },
     },
-    hideTitleBar: { type: 'toggle', displayName: 'Hide title bar' },
-    hideCloseButton: { type: 'toggle', displayName: 'Hide close button' },
-    hideOnEsc: { type: 'toggle', displayName: 'Close on escape key' },
-    closeOnClickingOutside: { type: 'toggle', displayName: 'Close on clicking outside' },
-
+    // Data Accordion
+    hideHeader: { type: 'toggle', displayName: 'Header', accordian: 'Data' },
+    hideFooter: { type: 'toggle', displayName: 'Footer', accordian: 'Data' },
     size: {
       type: 'select',
-      displayName: 'Modal size',
+      displayName: 'Width',
+      accordian: 'Data',
       options: [
         { name: 'small', value: 'sm' },
         { name: 'medium', value: 'lg' },
@@ -69,17 +60,74 @@ export const modalConfig = {
     },
     modalHeight: {
       type: 'code',
-      displayName: 'Modal height',
+      displayName: 'Height',
+      accordian: 'Data',
       validation: {
         schema: { type: 'string' },
         defaultValue: '400px',
       },
     },
+
+    hideOnEsc: { type: 'toggle', displayName: 'Close on escape key', section: 'additionalActions' },
+    closeOnClickingOutside: { type: 'toggle', displayName: 'Close on clicking outside', section: 'additionalActions' },
+    hideCloseButton: { type: 'toggle', displayName: 'Hide close button', section: 'additionalActions' },
   },
   events: {
     onOpen: { displayName: 'On open' },
     onClose: { displayName: 'On close' },
   },
+  defaultChildren: [
+    {
+      componentName: 'Text',
+      slotName: 'header',
+      layout: {
+        top: 21,
+        left: 1,
+        height: 40,
+      },
+      displayName: 'ModalHeaderTitle',
+      properties: ['text'],
+      accessorKey: 'text',
+      styles: ['fontWeight', 'textSize', 'textColor'],
+      defaultValue: {
+        text: 'Modal title',
+        textSize: 20,
+        textColor: '#000',
+      },
+    },
+    {
+      componentName: 'Button',
+      slotName: 'footer',
+      layout: {
+        top: 24,
+        left: 32,
+        height: 36,
+      },
+      displayName: 'ModalFooterCancel',
+      properties: ['text'],
+      styles: ['type', 'borderColor', 'padding'],
+      defaultValue: {
+        text: 'Cancel',
+        type: 'outline',
+        borderColor: '#CCD1D5',
+      },
+    },
+    {
+      componentName: 'Button',
+      slotName: 'footer',
+      layout: {
+        top: 24,
+        left: 22,
+        height: 36,
+      },
+      displayName: 'ModalFooterConfirm',
+      properties: ['text'],
+      defaultValue: {
+        text: 'Submit',
+        padding: 'none',
+      },
+    },
+  ],
   styles: {
     headerBackgroundColor: {
       type: 'color',
@@ -89,12 +137,12 @@ export const modalConfig = {
         defaultValue: '#ffffffff',
       },
     },
-    headerTextColor: {
+    footerBackgroundColor: {
       type: 'color',
-      displayName: 'Header title color',
+      displayName: 'Footer background color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#000000',
+        defaultValue: '#ffffffff',
       },
     },
     bodyBackgroundColor: {
@@ -157,13 +205,12 @@ export const modalConfig = {
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
-      title: { value: 'This title can be changed' },
-      titleAlignment: { value: 'left' },
       loadingState: { value: `{{false}}` },
       useDefaultButton: { value: `{{true}}` },
       triggerButtonLabel: { value: `Launch Modal` },
       size: { value: 'lg' },
-      hideTitleBar: { value: '{{false}}' },
+      hideHeader: { value: '{{false}}' },
+      hideFooter: { value: '{{false}}' },
       hideCloseButton: { value: '{{false}}' },
       hideOnEsc: { value: '{{true}}' },
       closeOnClickingOutside: { value: '{{false}}' },
@@ -172,7 +219,7 @@ export const modalConfig = {
     events: [],
     styles: {
       headerBackgroundColor: { value: '#ffffffff' },
-      headerTextColor: { value: '#000000' },
+      footerBackgroundColor: { value: '#ffffffff' },
       bodyBackgroundColor: { value: '#ffffffff' },
       disabledState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
