@@ -174,6 +174,14 @@ import Search01 from './Search01.jsx';
 import ShiftButtonIcon from './ShiftButtonIcon.jsx';
 import Unpin01 from './Unpin01.jsx';
 import WarningUserNotFound from './WarningUserNotFound.jsx';
+import VarcharCol from './VarcharCol.jsx';
+import Jsonb from './Jsonb.jsx';
+import IntegerCol from './IntegerCol.jsx';
+import BigIntCol from './BigIntCol.jsx';
+import FloatCol from './FloatCol.jsx';
+import BooleanCol from './BooleanCol.jsx';
+import SerialCol from './SerialCol.jsx';
+import DatetimeCol from './DatetimeCol';
 import AITag from './AITag.jsx';
 import Reset from './Reset.jsx';
 
@@ -531,6 +539,22 @@ const Icon = (props) => {
       return <TriangleUpCenter {...props} />;
     case 'TriangleDownCenter':
       return <TriangleDownCenter {...props} />;
+    case 'jsonb':
+      return <Jsonb {...props} />;
+    case 'character varying':
+      return <VarcharCol {...props} />;
+    case 'integer':
+      return <IntegerCol {...props} />;
+    case 'bigint':
+      return <BigIntCol {...props} />;
+    case 'double precision':
+      return <FloatCol {...props} />;
+    case 'boolean':
+      return <BooleanCol {...props} />;
+    case 'serial':
+      return <SerialCol {...props} />;
+    case 'timestamp with time zone':
+      return <DatetimeCol {...props} />;
     case 'AI-tag':
       return <AITag {...props} />;
     default:

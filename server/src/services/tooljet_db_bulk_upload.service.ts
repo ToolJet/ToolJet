@@ -11,16 +11,21 @@ import { v4 as uuid } from 'uuid';
 import { findTenantSchema } from 'src/helpers/tooljet_db.helper';
 import { TJDB, TooljetDatabaseColumn, TooljetDatabaseDataTypes } from 'src/modules/tooljet_db/tooljet-db.types';
 
-const MAX_ROW_COUNT = 1000;
-
 @Injectable()
 export class TooljetDbBulkUploadService {
+  private MAX_ROW_COUNT;
+
   constructor(
     private readonly manager: EntityManager,
     @InjectEntityManager('tooljetDb')
     private readonly tooljetDbManager: EntityManager,
     private readonly tooljetDbService: TooljetDbService
-  ) { }
+  ) {
+    this.MAX_ROW_COUNT =
+      process.env?.TOOLJET_DB_BULK_UPLOAD_MAX_ROWS && !isNaN(Number(process.env.TOOLJET_DB_BULK_UPLOAD_MAX_ROWS))
+        ? Number(process.env.TOOLJET_DB_BULK_UPLOAD_MAX_ROWS)
+        : 1000;
+  }
 
   async perform(organizationId: string, tableName: string, fileBuffer: Buffer) {
     const internalTable = await this.manager.findOne(InternalTable, {
@@ -200,7 +205,8 @@ export class TooljetDbBulkUploadService {
     rowsProcessed: number,
     csvStream: csv.CsvParserStream<csv.ParserRow<any>, csv.ParserRow<any>>
   ) {
-    if (rowsProcessed >= MAX_ROW_COUNT) csvStream.emit('error', `Row count cannot be greater than ${MAX_ROW_COUNT}`);
+    if (rowsProcessed >= this.MAX_ROW_COUNT)
+      csvStream.emit('error', `Row count cannot be greater than ${this.MAX_ROW_COUNT}`);
 
     try {
       const columnsInCsv = Object.keys(row);
@@ -231,6 +237,8 @@ export class TooljetDbBulkUploadService {
       case TJDB.double_precision:
       case TJDB.bigint:
         return this.convertNumber(columnValue, supportedDataType);
+      case TJDB.jsonb:
+        return JSON.parse(columnValue);
       default:
         return columnValue;
     }
