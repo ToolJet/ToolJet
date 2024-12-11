@@ -523,7 +523,7 @@ describe("dashboard", () => {
     logout();
   });
 
-  it.only("should verify the elements on empty dashboard for end user", () => {
+  it("should verify the elements on empty dashboard for end user", () => {
     cy.defaultWorkspaceLogin();
     cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=", {
       fixture: "intercept/emptyDashboard.json",
