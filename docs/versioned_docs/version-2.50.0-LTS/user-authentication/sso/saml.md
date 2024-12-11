@@ -25,13 +25,13 @@ To enable SAML authentication, you need to configure the following workspace set
 
     <br/>
 
-    :::tip Downloading the metadata from your identity provider
+:::tip Downloading the metadata from your identity provider
      Generally, the metadata is available in the form of an XML file which can be downloaded from your identity provider's dashboard.
 
      Copy the metadata from the XML file and paste it into the ToolJet's SAML SSO configuration settings. Please ensure that the metadata is pasted in the correct format, as it contains essential configuration details from the identity provider necessary for authentication.
 
      Additionally, you can often find this data by navigating to https://&ltyour-identity-provider&gt/federationmetadata/2007-06/federationmetadata.xml
-    :::
+:::
 
     <img className="screenshot-full" src="/img/sso/saml/config-new-v3.png" alt="SSO :SAMP" />
 
