@@ -12,7 +12,7 @@ The **Button Group** component is used to group a series of buttons together in 
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Properties
 
@@ -26,13 +26,13 @@ The **Button Group** component is used to group a series of buttons together in 
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Events
 
 | <div style={{ width:"100px"}}> Events </div> | <div style={{ width:"100px"}}> Description </div> |
 |:----------- |:----------- |
-| On click | Triggers when the user clicks on the button in the Button Group. |
+| On click | Triggers whenever the user clicks on the button in the Button Group. |
 
 :::info
 Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
@@ -40,7 +40,7 @@ Check [Action Reference](/docs/category/actions-reference) docs to get the detai
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Component Specific Actions (CSA)
 
@@ -48,7 +48,7 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Exposed Variables
 
@@ -58,7 +58,7 @@ There are currently no CSA (Component-Specific Actions) implemented to regulate 
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## General
 #### Tooltip
@@ -73,7 +73,7 @@ A Tooltip is often used to display additional information when the user hovers t
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Devices
 
@@ -84,7 +84,9 @@ A Tooltip is often used to display additional information when the user hovers t
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+---
+
+<div style={{paddingTop:'24px'}}>
 
 ## Styles
 
