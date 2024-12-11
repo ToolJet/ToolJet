@@ -4,7 +4,16 @@ import QueryEditor from './QueryEditor';
 import SourceEditor from './SourceEditor';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
-export default ({ getter, options = [['', '']], optionchanged, isRenderedAsQueryEditor, workspaceConstants }) => {
+export default ({
+  getter,
+  options = [['', '']],
+  optionchanged,
+  isRenderedAsQueryEditor,
+  workspaceConstants,
+  isDisabled,
+  buttonText,
+  width,
+}) => {
   function addNewKeyValuePair(options) {
     const newPairs = [...options, ['', '']];
     optionchanged(getter, newPairs);
@@ -22,8 +31,9 @@ export default ({ getter, options = [['', '']], optionchanged, isRenderedAsQuery
       newOptions[index][keyIndex] = value;
       options.length - 1 === index ? addNewKeyValuePair(newOptions) : optionchanged(getter, newOptions);
     } else {
-      options[index][keyIndex] = value;
-      optionchanged(getter, options);
+      let newOptions = deepClone(options);
+      newOptions[index][keyIndex] = value;
+      optionchanged(getter, newOptions);
     }
   }
 
@@ -32,11 +42,13 @@ export default ({ getter, options = [['', '']], optionchanged, isRenderedAsQuery
     addNewKeyValuePair,
     removeKeyValuePair,
     keyValuePairValueChanged,
+    isDisabled,
+    buttonText,
   };
 
   return isRenderedAsQueryEditor ? (
     <QueryEditor {...commonProps} />
   ) : (
-    <SourceEditor {...commonProps} workspaceConstants={workspaceConstants} />
+    <SourceEditor {...commonProps} workspaceConstants={workspaceConstants} width={width} />
   );
 };
