@@ -131,7 +131,7 @@ Cypress.Commands.add(
     cy.window({ log: false }).then((win) => {
       win.localStorage.setItem("walkthroughCompleted", "true");
     });
-    cy.visit(`/${workspaceId}/apps/${appId}${slug}`);
+    cy.visit(`/${workspaceId}/apps/${appId}`);
     cy.wait('@getAppData').then((interception) => {
       // Assuming the response body is a JSON object
       const responseData = interception.response.body;
