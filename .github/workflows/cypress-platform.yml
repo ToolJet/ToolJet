@@ -75,7 +75,6 @@ jobs:
         run: |
           npm run --prefix server db:create
           npm run --prefix server db:reset
-          npm run --prefix server db:seed
 
       - name: sleep 5
         run: sleep 5
@@ -229,12 +228,7 @@ jobs:
         run: |
           timeout 1500 bash -c '
           until curl --silent --fail http://localhost:3000/apps/; do
-            sleep 5
-          done'
-
-      - name: Seeding
-        run: docker exec Tooljet-app npm run db:seed:prod
-
+    
       - name: Create Cypress environment file
         id: create-json
         uses: jsdaniell/create-json@1.1.2
