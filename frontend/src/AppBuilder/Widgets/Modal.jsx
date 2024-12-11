@@ -5,6 +5,8 @@ import { ConfigHandle } from '@/AppBuilder/AppCanvas/ConfigHandle/ConfigHandle';
 import { useGridStore } from '@/_stores/gridStore';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { useEventListener } from '@/_hooks/use-event-listener';
+
 var tinycolor = require('tinycolor2');
 
 export const Modal = function Modal({
@@ -66,20 +68,6 @@ export const Modal = function Modal({
   }, [showModal, id, mode]);
   /**** End - Logic to reset the zIndex of modal control box ****/
 
-  // Adjust height as viewport height changes
-  const useViewportHeightChange = (callback) => {
-    useEffect(() => {
-      window.addEventListener('resize', onShowSideEffects);
-
-      // Cleanup event listener on unmount
-      return () => {
-        window.removeEventListener('resize', onShowSideEffects);
-      };
-    }, [callback]);
-  };
-
-  useViewportHeightChange();
-
   function hideModal() {
     setExposedVariable('show', false);
     setShowModal(false);
@@ -119,9 +107,9 @@ export const Modal = function Modal({
       modalContainer.style.height = ``;
       modalContainer.style.top = ``;
     }
-
-    hideModal();
   };
+
+  useEventListener('resize', onShowSideEffects, window);
 
   const onShowModal = () => {
     openModal();
@@ -133,18 +121,19 @@ export const Modal = function Modal({
     hideModal();
   };
 
+  const exposedVariables = {
+    open: async function () {
+      onShowModal();
+    },
+    close: async function () {
+      onHideModal();
+    },
+  };
+
   useEffect(() => {
-    const exposedVariables = {
-      open: async function () {
-        onShowModal();
-      },
-      close: async function () {
-        onHideModal();
-      },
-    };
     setExposedVariables(exposedVariables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [exposedVariables]);
 
   useEffect(() => {
     if (isInitialRender.current) {
@@ -174,7 +163,7 @@ export const Modal = function Modal({
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [modalHeight]);
+  }, [modalHeight, size]);
 
   useEffect(() => {
     if (isInitialRender.current) {
@@ -343,7 +332,7 @@ const Component = ({ children, ...restProps }) => {
   };
 
   return (
-    <BootstrapModal {...restProps} onClick={handleModalBodyClick} fullscreen={fullscreen}>
+    <BootstrapModal {...restProps} onClick={handleModalBodyClick} fullscreen={fullscreen} animation={true}>
       {showConfigHandler && (
         <ConfigHandle
           id={id}

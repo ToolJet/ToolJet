@@ -122,15 +122,14 @@ export function renderElement(
   currentState,
   components = {},
   darkMode = false,
-  placeholder = '',
-  isDisabled = false
+  placeholder = ''
 ) {
   const componentConfig = component.component;
   const componentDefinition = componentConfig.definition;
   const paramTypeDefinition = componentDefinition[paramType] || {};
   const definition = paramTypeDefinition[param] || {};
   const meta = componentMeta[paramType][param];
-
+  const isDisabled = component.component.properties[param]?.isDisabled ?? false;
   if (
     componentConfig.component == 'DropDown' ||
     componentConfig.component == 'Form' ||
