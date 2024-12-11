@@ -116,6 +116,7 @@ function Logs({ logProps, idx }) {
                 })}
               >
                 {message}
+                {logProps?.error?.lineNumber ? `, Line ${logProps.error.lineNumber}` : ''}
               </span>
             </>
           )}
