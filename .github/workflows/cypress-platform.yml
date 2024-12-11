@@ -114,7 +114,7 @@ jobs:
           dir: "./cypress-tests"
 
       - name: Platform
-        uses: cypress-io/github-action@v5
+        uses: cypress-io/github-action@v6
         with:
           working-directory: ./cypress-tests
           config: "baseUrl=http://localhost:8082"
@@ -244,7 +244,7 @@ jobs:
           dir: "./cypress-tests"
 
       - name: Platform-subpath
-        uses: cypress-io/github-action@v5
+        uses: cypress-io/github-action@v6
         with:
           working-directory: ./cypress-tests
           config: "baseUrl=http://localhost:3000/apps"
