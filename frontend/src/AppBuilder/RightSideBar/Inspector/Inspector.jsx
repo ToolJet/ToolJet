@@ -68,6 +68,7 @@ const NEW_REVAMPED_COMPONENTS = [
   'MultiselectV2',
   'RadioButtonV2',
   'Button',
+  'Icon',
 ];
 
 export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selectedComponentId }) => {
@@ -568,6 +569,7 @@ const widgetsWithStyleConditions = {
 
 const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQueries, currentState, allComponents }) => {
   // Initialize an object to group properties by "accordian"
+  console.log(componentMeta, component);
   const groupedProperties = {};
   if (NEW_REVAMPED_COMPONENTS.includes(component.component.component)) {
     // Iterate over the properties in componentMeta.styles
@@ -588,6 +590,8 @@ const RenderStyleOptions = ({ componentMeta, component, paramUpdated, dataQuerie
   if (!componentMeta.styles) {
     return null;
   }
+
+  console.log(groupedProperties);
 
   return Object.keys(
     NEW_REVAMPED_COMPONENTS.includes(component.component.component) ? groupedProperties : componentMeta.styles

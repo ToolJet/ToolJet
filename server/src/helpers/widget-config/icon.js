@@ -28,11 +28,12 @@ export const iconConfig = {
   styles: {
     iconColor: {
       type: 'color',
-      displayName: 'Icon color',
+      displayName: 'Color',
       validation: {
         schema: { type: 'string' },
         defaultValue: '#000',
       },
+      accordian: 'Icon',
     },
     visibility: {
       type: 'toggle',
