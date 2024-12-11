@@ -74,6 +74,7 @@ module.exports = defineConfig({
     experimentalRunAllSpecs: true,
     experimentalModfyObstructiveThirdPartyCode: true,
     experimentalRunAllSpecs: true,
+    baseUrl: process.env.CYPRESS_BASE_URL || "http://localhost:8082",
     specPattern: [
       "cypress/e2e/happyPath/platform/ceTestcases/userFlow/firstUserOnboarding.cy.js",
       "cypress/e2e/happyPath/platform/ceTestcases/!(userFlow)/*.cy.js",

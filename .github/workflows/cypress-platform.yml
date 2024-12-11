@@ -117,8 +117,9 @@ jobs:
         uses: cypress-io/github-action@v5
         with:
           working-directory: ./cypress-tests
-          config: "baseUrl=http://localhost:8082"
           config-file: cypress-workspace.config.js
+        env:
+          CYPRESS_BASE_URL: "http://localhost:8082"
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v3
@@ -247,8 +248,9 @@ jobs:
         uses: cypress-io/github-action@v5
         with:
           working-directory: ./cypress-tests
-          config: "baseUrl=http://localhost:3000/apps/"
           config-file: cypress-workspace.config.js
+        env:
+          CYPRESS_BASE_URL: "http://localhost:3000/apps"
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v3
