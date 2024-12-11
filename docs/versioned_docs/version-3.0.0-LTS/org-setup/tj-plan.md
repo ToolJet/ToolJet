@@ -54,4 +54,10 @@ Similar to cloud, ToolJet Self-Hosted offers four different subscriptions that c
 3. **Business Subscription**: Designed for SMEs, the Business plan includes advanced features like custom branding, granular access control, and multi-environment support, ensuring seamless scaling.
 4. **Enterprise Plan**: Built for large organizations, the Enterprise plan offers advanced security, custom integrations, managed hosting, and expert support for complex deployments.
 
+On Self-Hosted ToolJet, you can switch to your desired version. Check out this guide for more information on [versions](/docs/setup/choose-your-tooljet/).
+
 </div>
+
+:::info
+Check out [ToolJet Pricing](https://www.tooljet.com/pricing) for more details on plans and offerings.
+:::
