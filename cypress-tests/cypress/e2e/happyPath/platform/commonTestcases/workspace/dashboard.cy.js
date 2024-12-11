@@ -23,6 +23,13 @@ import { commonSelectors } from "Selectors/common";
 import { dashboardSelector } from "Selectors/dashboard";
 import { commonText } from "Texts/common";
 import { dashboardText } from "Texts/dashboard";
+import {
+  navigateToManageUsers,
+  logout,
+  searchUser,
+  navigateToManageGroups,
+} from "Support/utils/common";
+import { roleBasedOnboarding } from "Support/utils/onboarding";
 
 describe("dashboard", () => {
   const data = {};
@@ -30,6 +37,10 @@ describe("dashboard", () => {
   data.folderName = `${fake.companyName.toLowerCase()}-folder`;
   data.cloneAppName = `cloned-${data.appName}`;
   data.updatedFolderName = `new-${data.folderName}`;
+  data.firstName = fake.firstName;
+  data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
+  data.workspaceName = fake.firstName;
+  data.workspaceSlug = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
   beforeEach(() => {
     cy.intercept("GET", "/api/library_apps").as("appLibrary");
@@ -509,5 +520,15 @@ describe("dashboard", () => {
       commonText.appDeletedToast
     );
     verifyAppDelete(data.appName);
+    logout();
+  });
+
+  it("should verify the elements on empty dashboard for end user", () => {
+    cy.defaultWorkspaceLogin();
+    cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=", {
+      fixture: "intercept/emptyDashboard.json",
+    }).as("emptyDashboard")
+    roleBasedOnboarding(data.firstName, data.email, "end-user");
+    cy.get(commonSelectors.dashboardAppCreateButton).should("be.disabled");
   });
 });
