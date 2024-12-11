@@ -2655,8 +2655,17 @@ hr {
     overflow-y: initial !important
   }
 
-  .modal-dialog-scrollable .modal-content {
+  .modal-dialog-scrollable:not(.modal-fullscreen) .modal-content {
     max-height: 88% !important;
+  }
+
+  .modal-dialog-scrollable.modal-fullscreen .modal-content {
+    max-height: 100% !important;
+  }
+
+  .modal-dialog-scrollable.modal-fullscreen .modal-content.modal-component {
+    // Modal header height
+    padding-bottom: 0;
   }
 
 }
