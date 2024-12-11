@@ -118,8 +118,8 @@ export default class RestapiQueryService implements QueryService {
   ): undefined | string | Record<string, unknown> {
     if (queryOptions.method === 'get') return undefined;
     if (queryOptions['body_toggle']) {
+      // FIXME: Remove json_body usage with data migration
       // For backward compatibility, check if JSON body was previously used
-      // FIXME: Remove the code inside this if condition and return undefined once data migration is complete
       queryOptions['raw_body'] ||= queryOptions['json_body'];
       return queryOptions['raw_body'];
     }
