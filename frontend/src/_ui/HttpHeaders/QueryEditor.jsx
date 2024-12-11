@@ -5,7 +5,7 @@ import CodeHinter from '@/AppBuilder/CodeEditor';
 import InfoIcon from '@assets/images/icons/info.svg';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 
-export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairValueChanged }) => {
+export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairValueChanged, buttonText }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   return (
     <div>
@@ -54,7 +54,7 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
       })}
       <ButtonSolid variant="ghostBlue" size="sm" onClick={() => addNewKeyValuePair(options)}>
         <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
-        &nbsp;&nbsp; Add header
+        &nbsp;&nbsp; {buttonText}
       </ButtonSolid>
     </div>
   );
