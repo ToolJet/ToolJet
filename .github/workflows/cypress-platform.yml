@@ -228,7 +228,9 @@ jobs:
         run: |
           timeout 1500 bash -c '
           until curl --silent --fail http://localhost:3000/apps/; do
-    
+            sleep 5
+          done'
+
       - name: Create Cypress environment file
         id: create-json
         uses: jsdaniell/create-json@1.1.2
