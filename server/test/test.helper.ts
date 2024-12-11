@@ -115,6 +115,17 @@ export async function clearDB() {
   const entities = getConnection().entityMetadatas;
   for (const entity of entities) {
     const repository = getConnection().getRepository(entity.name);
+
+    // FIXME: Remove entity files in this list as they are deprecated
+    if (
+      [
+        'app_group_permissions',
+        'data_source_group_permissions',
+        'group_permissions',
+        'user_group_permissions',
+      ].includes(entity.tableName)
+    )
+      continue;
     if (entity.tableName !== 'instance_settings') {
       await repository.query(`TRUNCATE ${entity.tableName} RESTART IDENTITY CASCADE;`);
     } else {
@@ -615,23 +626,23 @@ export async function installPlugin(nestApp: any, { name, description, id, versi
   return await pluginRepository.save(pluginsService.install(createPluginDto));
 }
 
-export async function createThread(_nestApp, { appId, x, y, userId, organizationId, appVersionsId }: any) {
-  const threadRepository = new ThreadRepository();
+// export async function createThread(_nestApp, { appId, x, y, userId, organizationId, appVersionsId }: any) {
+//   const threadRepository = new ThreadRepository();
 
-  return await threadRepository.createThread(
-    {
-      appId,
-      x,
-      y,
-      isResolved: false,
-      organizationId,
-      appVersionsId,
-      pageId: 'placeholder',
-    },
-    userId,
-    organizationId
-  );
-}
+//   return await threadRepository.createThread(
+//     {
+//       appId,
+//       x,
+//       y,
+//       isResolved: false,
+//       organizationId,
+//       appVersionsId,
+//       pageId: 'placeholder',
+//     },
+//     userId,
+//     organizationId
+//   );
+// }
 
 export async function setupOrganization(nestApp) {
   const adminUserData = await createUser(nestApp, {

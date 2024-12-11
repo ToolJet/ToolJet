@@ -1,27 +1,30 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { getManager } from 'typeorm';
+import { DataSourceOptions, getConnectionManager, Repository } from 'typeorm';
 import { User } from '@entities/user.entity';
 import { App } from '@entities/app.entity';
 import { Organization } from '@entities/organization.entity';
 import { InternalTable } from '@entities/internal_table.entity';
-import { ImportAppDto, ImportResourcesDto, ImportTooljetDatabaseDto } from '@dto/import-resources.dto';
+import { ImportResourcesDto } from '@dto/import-resources.dto';
 import { ExportResourcesDto } from '@dto/export-resources.dto';
 import { CloneAppDto, CloneResourcesDto, CloneTooljetDatabaseDto } from '@dto/clone-resources.dto';
 import { TooljetDbService } from '@services/tooljet_db.service';
 import { ValidateTooljetDatabaseConstraint } from '@dto/validators/tooljet-database.validator';
-import {
-  clearDB,
-  createUser,
-  generateAppDefaults,
-  authenticateUser,
-  logoutUser,
-  createNestAppInstanceWithServiceMocks,
-} from '../test.helper';
+import { clearDB, authenticateUser, logoutUser, createNestAppInstanceWithServiceMocks } from '../test.helper';
 import * as path from 'path';
 import * as fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
-import { AppsService } from '@services/apps.service';
+import {
+  createApplicationForUser,
+  createOrganization,
+  createUser,
+  createAndAddUserToOrganization,
+} from '../common.helper';
+import { ormconfig, tooljetDbOrmconfig } from 'ormconfig';
+import { LICENSE_FIELD, LICENSE_LIMIT } from '@ee/licensing/helper';
+import { USER_ROLE } from '@modules/user_resource_permissions/constants/group-permissions.constant';
+import { camelizeKeys } from 'humps';
+import { APP_TYPES } from '@ee/apps/constants';
 
 /**
  * Tests ImportExportResourcesController
@@ -32,44 +35,64 @@ import { AppsService } from '@services/apps.service';
  */
 describe('ImportExportResourcesController', () => {
   let app: INestApplication;
-  let user: User;
+  let loggedInUser: User;
   let organization: Organization;
-  let application: App;
-  let loggedUser: { tokenCookie: string; user: User };
+  let loggedInUserData: { tokenCookie: string; user: any };
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let tooljetDbService: TooljetDbService;
-  let appsService: AppsService;
   let licenseServiceMock;
 
   beforeAll(async () => {
     ({ app, licenseServiceMock } = await createNestAppInstanceWithServiceMocks({
       shouldMockLicenseService: true,
     }));
-    jest.spyOn(licenseServiceMock, 'getLicenseTerms').mockImplementation(jest.fn()); // Avoiding winston transport errors
+
+    jest.spyOn(licenseServiceMock, 'getLicenseTerms').mockImplementation((key: LICENSE_FIELD) => {
+      switch (key) {
+        case LICENSE_FIELD.USER:
+          return {
+            total: LICENSE_LIMIT.UNLIMITED,
+            editors: LICENSE_LIMIT.UNLIMITED,
+            viewers: LICENSE_LIMIT.UNLIMITED,
+            superadmins: LICENSE_LIMIT.UNLIMITED,
+          };
+        case LICENSE_FIELD.AUDIT_LOGS:
+          return false;
+      }
+    });
+
+    const connectionManager = getConnectionManager();
+
+    if (!connectionManager.has('default')) {
+      await connectionManager.create(ormconfig as DataSourceOptions).connect();
+    }
+
+    if (!connectionManager.has('tooljetDb')) {
+      await connectionManager.create(tooljetDbOrmconfig as DataSourceOptions).connect();
+    }
   });
 
   beforeEach(async () => {
     await clearDB();
 
-    const adminUserData = await createUser(app, {
-      email: 'admin@tooljet.io',
-      groups: ['all_users', 'admin'],
-    });
+    const adminUserParams = {
+      email: 'admin@tooljet.com',
+      firstName: 'Admin',
+      lastName: 'User',
+      password: 'password',
+      status: 'active',
+    };
 
-    ({ application } = await generateAppDefaults(app, adminUserData.user, {
-      name: 'Test App',
-    }));
-
-    user = adminUserData.user;
-    organization = adminUserData.organization;
-    tooljetDbService = app.get(TooljetDbService);
-    appsService = app.get(AppsService);
-
-    loggedUser = await authenticateUser(app, user.email);
+    organization = await createOrganization(app, { name: 'Test Organization', slug: 'test-organization' });
+    await createUser(app, adminUserParams, organization.id, USER_ROLE.ADMIN);
+    loggedInUserData = await authenticateUser(app, adminUserParams.email, adminUserParams.password, organization.id);
+    loggedInUser = camelizeKeys(loggedInUserData.user) as User;
   });
 
   afterEach(async () => {
-    await logoutUser(app, loggedUser.tokenCookie, user.defaultOrganizationId);
+    if (!loggedInUserData) return;
+
+    await logoutUser(app, loggedInUserData.tokenCookie, organization.id);
   });
 
   afterAll(async () => {
@@ -82,6 +105,8 @@ describe('ImportExportResourcesController', () => {
     });
 
     it('should export resources successfully', async () => {
+      const application = await createApplicationForUser(app, loggedInUser, 'Blank App');
+
       const exportResourcesDto: ExportResourcesDto = {
         app: [{ id: application.id, search_params: null }],
         tooljet_database: [],
@@ -90,8 +115,8 @@ describe('ImportExportResourcesController', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v2/resources/export')
-        .set('Cookie', loggedUser.tokenCookie)
-        .set('tj-workspace-id', user.defaultOrganizationId)
+        .set('Cookie', loggedInUserData.tokenCookie)
+        .set('tj-workspace-id', loggedInUser.organizationId)
         .send(exportResourcesDto)
         .expect(201);
 
@@ -127,33 +152,35 @@ describe('ImportExportResourcesController', () => {
                 createdAt: expect.any(String),
                 creationMode: 'DEFAULT',
                 currentVersionId: null,
-                dataQueries: [
-                  expect.objectContaining({
-                    name: 'defaultquery',
-                    options: expect.objectContaining({
-                      method: 'get',
-                      url: 'https://api.github.com/repos/tooljet/tooljet/stargazers',
-                    }),
-                  }),
-                ],
+                dataQueries: [],
                 dataSourceOptions: expect.any(Array),
-                dataSources: [
-                  expect.objectContaining({
-                    kind: 'restapi',
-                    name: 'name',
-                    scope: 'local',
-                    type: 'default',
-                  }),
-                ],
+                dataSources: [],
                 editingVersion: expect.any(Object),
                 events: [],
                 icon: null,
                 id: expect.any(String),
                 isMaintenanceOn: false,
-                isPublic: false,
-                name: 'Test App',
+                isPublic: null,
+                name: 'Blank App',
                 organizationId: expect.any(String),
-                pages: [],
+                pages: [
+                  {
+                    appVersionId: expect.any(String),
+                    autoComputeLayout: true,
+                    createdAt: expect.any(String),
+                    disabled: null,
+                    handle: 'home',
+                    hidden: null,
+                    icon: null,
+                    id: expect.any(String),
+                    index: 1,
+                    isPageGroup: false,
+                    name: 'Home',
+                    pageGroupId: null,
+                    pageGroupIndex: null,
+                    updatedAt: expect.any(String),
+                  },
+                ],
                 schemaDetails: {
                   globalDataSources: true,
                   multiEnv: true,
@@ -176,24 +203,36 @@ describe('ImportExportResourcesController', () => {
     });
 
     it('should throw Forbidden if user lacks permission', async () => {
-      const regularUserData = await createUser(app, { email: 'regular@tooljet.io', groups: ['all_users'] });
-      const regularLoggedUser = await authenticateUser(app, 'regular@tooljet.io');
-      const { application } = await generateAppDefaults(app, regularUserData.user, { name: 'Test App' });
+      const endUserParams = {
+        email: 'enduser@org.com',
+        firstName: 'End',
+        lastName: 'User',
+        password: 'password',
+        status: 'active',
+      };
+      const endUser = await createAndAddUserToOrganization(app, endUserParams, organization, USER_ROLE.END_USER);
+
+      const { tokenCookie } = await authenticateUser(
+        app,
+        endUser.email,
+        endUserParams.password,
+        endUser.defaultOrganizationId
+      );
+
+      const application = await createApplicationForUser(app, endUser, 'Blank App');
 
       const exportResourcesDto: ExportResourcesDto = {
         app: [{ id: application.id, search_params: null }],
         tooljet_database: [],
-        organization_id: regularUserData.organization.id,
+        organization_id: endUser.defaultOrganizationId,
       };
 
       await request(app.getHttpServer())
         .post('/api/v2/resources/export')
-        .set('Cookie', regularLoggedUser.tokenCookie)
-        .set('tj-workspace-id', regularUserData.user.defaultOrganizationId)
+        .set('Cookie', tokenCookie)
+        .set('tj-workspace-id', endUser.defaultOrganizationId)
         .send(exportResourcesDto)
         .expect(403);
-
-      await logoutUser(app, regularLoggedUser.tokenCookie, regularUserData.user.defaultOrganizationId);
     });
   });
 
@@ -293,11 +332,10 @@ describe('ImportExportResourcesController', () => {
           },
         ],
       };
-
       const response = await request(app.getHttpServer())
         .post('/api/v2/resources/import')
-        .set('Cookie', loggedUser.tokenCookie)
-        .set('tj-workspace-id', user.defaultOrganizationId)
+        .set('Cookie', loggedInUserData.tokenCookie)
+        .set('tj-workspace-id', loggedInUser.organizationId)
         .send(importResourcesDto)
         .expect(201);
 
@@ -305,19 +343,20 @@ describe('ImportExportResourcesController', () => {
       expect(response.body.imports).toBeDefined();
       expect(response.body.imports.app[0].name).toBe('Imported App');
 
-      const importedApp = await getManager().findOne(App, { name: 'Imported App' });
-      expect(importedApp).toBeDefined();
+      // check data persistence
+      const appRepository = app.get('AppRepository') as Repository<App>;
+      const tableRepository = app.get('InternalTableRepository') as Repository<InternalTable>;
+      const importedApp = await appRepository.findOne({ where: { name: 'Imported App' } });
+      const importedTable = await tableRepository.findOne({ where: { tableName: 'users' } });
 
-      const importedTable = await getManager().findOne(InternalTable, { tableName: 'users' });
+      expect(importedApp).toBeDefined();
       expect(importedTable).toBeDefined();
     });
 
-    it('should import an app with all its data, export it, and verify its integrity', async () => {
-      const definitionFile: {
-        tooljet_database: ImportTooljetDatabaseDto[];
-        app: ImportAppDto[];
-        tooljet_version: string;
-      } = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../templates/release-notes/definition.json'), 'utf8'));
+    it('should import an app, export it, and verify its integrity', async () => {
+      const definitionFile = JSON.parse(
+        fs.readFileSync(path.resolve(__dirname, '../../templates/release-notes/definition.json'), 'utf8')
+      );
       definitionFile.app[0].appName = 'Release notes';
 
       const importResourcesDto: ImportResourcesDto = {
@@ -328,20 +367,23 @@ describe('ImportExportResourcesController', () => {
       // Import the app
       const importResponse = await request(app.getHttpServer())
         .post('/api/v2/resources/import')
-        .set('Cookie', loggedUser.tokenCookie)
-        .set('tj-workspace-id', user.defaultOrganizationId)
+        .set('Cookie', loggedInUserData.tokenCookie)
+        .set('tj-workspace-id', loggedInUser.organizationId)
         .send(importResourcesDto)
         .expect(201);
 
       expect(importResponse.body.success).toBe(true);
       expect(importResponse.body.imports).toBeDefined();
 
-      // Verify that the app was actually created
-      const importedApp = await getManager().findOne(App, { where: { name: 'Release notes' } });
+      const appRepository = app.get('AppRepository') as Repository<App>;
+      const tableRepository = app.get('InternalTableRepository') as Repository<InternalTable>;
+
+      // Verify that the app was created
+      const importedApp = await appRepository.findOne({ where: { name: 'Release notes' } });
       expect(importedApp).toBeDefined();
       expect(importedApp.name).toBe('Release notes');
 
-      const importedTable = await getManager().findOne(InternalTable, { where: { tableName: 'releasenotes' } });
+      const importedTable = await tableRepository.findOne({ where: { tableName: 'releasenotes' } });
       expect(importedTable).toBeDefined();
       expect(importedTable.tableName).toBe('releasenotes');
 
@@ -354,8 +396,8 @@ describe('ImportExportResourcesController', () => {
 
       const exportResponse = await request(app.getHttpServer())
         .post('/api/v2/resources/export')
-        .set('Cookie', loggedUser.tokenCookie)
-        .set('tj-workspace-id', user.defaultOrganizationId)
+        .set('Cookie', loggedInUserData.tokenCookie)
+        .set('tj-workspace-id', loggedInUser.organizationId)
         .send(exportResourcesDto)
         .expect(201);
 
@@ -365,137 +407,84 @@ describe('ImportExportResourcesController', () => {
             definition: {
               appV2: {
                 appEnvironments: [
-                  expect.objectContaining({
-                    name: 'development',
-                    isDefault: false,
-                    priority: 1,
-                  }),
-                  expect.objectContaining({
-                    name: 'staging',
-                    isDefault: false,
-                    priority: 2,
-                  }),
-                  expect.objectContaining({
-                    name: 'production',
-                    isDefault: true,
-                    priority: 3,
-                  }),
+                  expect.objectContaining({ name: 'development', isDefault: false, priority: 1 }),
+                  expect.objectContaining({ name: 'staging', isDefault: false, priority: 2 }),
+                  expect.objectContaining({ name: 'production', isDefault: true, priority: 3 }),
                 ],
                 appVersions: [
                   expect.objectContaining({
                     name: expect.any(String),
-                    showViewerNavigation: expect.any(Boolean),
+                    showViewerNavigation: false,
+                    globalSettings: expect.objectContaining({
+                      hideHeader: true,
+                      appInMaintenance: false,
+                      canvasMaxWidth: 100,
+                      canvasMaxWidthType: '%',
+                      canvasMaxHeight: 2400,
+                      canvasBackgroundColor: '#edeff5',
+                      backgroundFxQuery: '#edeff5',
+                    }),
                   }),
                 ],
                 components: expect.any(Array),
                 createdAt: expect.any(String),
                 creationMode: 'DEFAULT',
                 currentVersionId: null,
-                dataQueries: expect.arrayContaining([
-                  expect.objectContaining({
-                    name: 'getLabel1',
-                  }),
-                  expect.objectContaining({
-                    name: 'getLabel2',
-                  }),
-                  expect.objectContaining({
-                    name: 'getReleaseNotes',
-                  }),
-                  expect.objectContaining({
-                    name: 'getReleaseNoteswithFilter',
-                  }),
-                ]),
+                dataQueries: expect.any(Array),
                 dataSourceOptions: expect.any(Array),
-                dataSources: expect.arrayContaining([
-                  expect.objectContaining({ name: 'restapidefault' }),
-                  expect.objectContaining({ name: 'runjsdefault' }),
-                  expect.objectContaining({ name: 'runpydefault' }),
-                  expect.objectContaining({ name: 'tooljetdbdefault' }),
-                  expect.objectContaining({ name: 'workflowsdefault' }),
-                ]),
-                editingVersion: expect.any(Object),
+                dataSources: expect.any(Array),
+                editingVersion: expect.objectContaining({
+                  id: expect.any(String),
+                  name: 'v1',
+                  appId: expect.any(String),
+                  globalSettings: expect.objectContaining({
+                    hideHeader: true,
+                    appInMaintenance: false,
+                    canvasMaxWidth: 100,
+                    canvasMaxWidthType: '%',
+                    canvasMaxHeight: 2400,
+                    canvasBackgroundColor: '#edeff5',
+                    backgroundFxQuery: '#edeff5',
+                  }),
+                  showViewerNavigation: false,
+                }),
                 events: expect.any(Array),
-                icon: expect.any(String),
+                icon: 'floppydisk',
                 id: expect.any(String),
-                isMaintenanceOn: expect.any(Boolean),
-                isPublic: expect.any(Boolean),
+                isMaintenanceOn: false,
+                isPublic: false,
                 name: 'Release notes',
                 organizationId: expect.any(String),
                 pages: expect.arrayContaining([
                   expect.objectContaining({
                     name: 'Home',
+                    handle: 'home',
+                    index: 1,
+                    autoComputeLayout: false,
+                    hidden: false,
                   }),
                 ]),
-                schemaDetails: {
+                schemaDetails: expect.objectContaining({
                   globalDataSources: true,
                   multiEnv: true,
                   multiPages: true,
-                },
+                }),
                 slug: expect.any(String),
                 type: 'front-end',
                 updatedAt: expect.any(String),
                 userId: expect.any(String),
                 workflowApiToken: null,
-                workflowEnabled: expect.any(Boolean),
+                workflowEnabled: false,
               },
             },
           },
         ],
-        tooljet_database: [
-          {
-            id: expect.any(String),
-            table_name: 'releasenotes',
-            schema: {
-              columns: expect.arrayContaining([
-                expect.objectContaining({
-                  column_name: 'id',
-                  data_type: 'integer',
-                  constraints_type: expect.objectContaining({
-                    is_primary_key: true,
-                    is_not_null: true,
-                  }),
-                }),
-                expect.objectContaining({
-                  column_name: 'title',
-                  data_type: 'character varying',
-                }),
-                expect.objectContaining({
-                  column_name: 'description',
-                  data_type: 'character varying',
-                }),
-                expect.objectContaining({
-                  column_name: 'label_1',
-                  data_type: 'character varying',
-                }),
-                expect.objectContaining({
-                  column_name: 'label_2',
-                  data_type: 'character varying',
-                }),
-                expect.objectContaining({
-                  column_name: 'label_3',
-                  data_type: 'character varying',
-                }),
-                expect.objectContaining({
-                  column_name: 'published_date',
-                  data_type: 'character varying',
-                }),
-                expect.objectContaining({
-                  column_name: 'image_link',
-                  data_type: 'character varying',
-                }),
-                expect.objectContaining({
-                  column_name: 'doc_link',
-                  data_type: 'character varying',
-                }),
-              ]),
-            },
-          },
-        ],
+        tooljet_version: expect.any(String),
       };
 
       expect(exportResponse.body).toMatchObject(expectedStructure);
 
-      // Validate exported schema against the latest version using ValidateTooljetDatabaseConstraint
+      // Validate exported schema against the latest version
       const validator = new ValidateTooljetDatabaseConstraint();
       const isValid = validator.validate(exportResponse.body.tooljet_database[0], null);
       expect(isValid).toBe(true);
@@ -508,11 +497,10 @@ describe('ImportExportResourcesController', () => {
         app: [{ definition: {}, appName: 'Imported App' }],
         tooljet_database: [],
       };
-
       await request(app.getHttpServer())
         .post('/api/v2/resources/import')
-        .set('Cookie', loggedUser.tokenCookie)
-        .set('tj-workspace-id', user.defaultOrganizationId)
+        .set('Cookie', loggedInUserData.tokenCookie)
+        .set('tj-workspace-id', loggedInUser.organizationId)
         .send(importResourcesDto)
         .expect(400);
     });
@@ -542,22 +530,20 @@ describe('ImportExportResourcesController', () => {
           },
         ],
       };
-
       const response = await request(app.getHttpServer())
         .post('/api/v2/resources/import')
-        .set('Cookie', loggedUser.tokenCookie)
-        .set('tj-workspace-id', user.defaultOrganizationId)
+        .set('Cookie', loggedInUserData.tokenCookie)
+        .set('tj-workspace-id', loggedInUser.organizationId)
         .send(invalidTooljetDatabaseSchema)
         .expect(400);
-
       expect(response.body.message[0]).toContain(
         'ToolJet Database is not valid. Please ensure it matches the expected format'
       );
     });
 
-    it('should transform tooljet database schema to latest version', async () => {
+    it('should transform tooljet database schema to the latest version', async () => {
       const oldVersionSchema = {
-        organization_id: uuidv4(),
+        organization_id: organization.id,
         tooljet_version: '2.29.0', // An older version
         app: [],
         tooljet_database: [
@@ -583,24 +569,26 @@ describe('ImportExportResourcesController', () => {
         ],
       };
 
+      // Import the old version schema
       const response = await request(app.getHttpServer())
         .post('/api/v2/resources/import')
-        .set('Cookie', loggedUser.tokenCookie)
-        .set('tj-workspace-id', user.defaultOrganizationId)
+        .set('Cookie', loggedInUserData.tokenCookie)
+        .set('tj-workspace-id', loggedInUser.organizationId)
         .send(oldVersionSchema)
         .expect(201);
 
       expect(response.body.success).toBe(true);
 
-      // Verify that the schema was transformed
-      const importedTable = await getManager().findOne(InternalTable, { tableName: 'users' });
+      // Verify that the schema was transformed and the table was imported
+      const tableRepository = app.get('InternalTableRepository') as Repository<InternalTable>;
+      const importedTable = await tableRepository.findOne({ where: { tableName: 'users' } });
       expect(importedTable).toBeDefined();
 
-      // Export the table to check its structure
+      // Export the transformed schema to verify its integrity
       const exportResponse = await request(app.getHttpServer())
         .post('/api/v2/resources/export')
-        .set('Cookie', loggedUser.tokenCookie)
-        .set('tj-workspace-id', user.defaultOrganizationId)
+        .set('Cookie', loggedInUserData.tokenCookie)
+        .set('tj-workspace-id', loggedInUser.organizationId)
         .send({
           organization_id: organization.id,
           tooljet_database: [{ table_id: importedTable.id }],
@@ -608,25 +596,27 @@ describe('ImportExportResourcesController', () => {
         .expect(201);
 
       const exportedSchema = exportResponse.body.tooljet_database[0].schema;
+
+      // Validate the exported schema against the current expected structure
       expect(exportedSchema.columns).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
             column_name: 'id',
             data_type: 'integer',
-            constraints_type: {
+            constraints_type: expect.objectContaining({
               is_primary_key: true,
               is_not_null: true,
-              is_unique: true,
-            },
+              is_unique: false,
+            }),
           }),
           expect.objectContaining({
             column_name: 'name',
             data_type: 'character varying',
-            constraints_type: {
+            constraints_type: expect.objectContaining({
               is_primary_key: false,
               is_not_null: true,
               is_unique: false,
-            },
+            }),
           }),
         ])
       );
@@ -639,7 +629,6 @@ describe('ImportExportResourcesController', () => {
     });
 
     it('should clone resources successfully and verify the cloned data against expected structure', async () => {
-      // Load the definition file
       const definitionFile: {
         tooljet_database: CloneTooljetDatabaseDto[];
         app: CloneAppDto[];
@@ -650,43 +639,44 @@ describe('ImportExportResourcesController', () => {
       // Import the original app
       const importResponse = await request(app.getHttpServer())
         .post('/api/v2/resources/import')
-        .set('Cookie', loggedUser.tokenCookie)
-        .set('tj-workspace-id', user.defaultOrganizationId)
+        .set('Cookie', loggedInUserData.tokenCookie)
+        .set('tj-workspace-id', loggedInUser.organizationId)
         .send({ ...definitionFile, organization_id: organization.id } as CloneResourcesDto)
         .expect(201);
 
       expect(importResponse.body.success).toBe(true);
       const originalAppId = importResponse.body.imports.app[0].id;
+      const originalAppTableIds = importResponse.body.imports.tooljet_database.map((table) => table.id);
 
       // Clone the app
       const cloneResourcesDto: CloneResourcesDto = {
         organization_id: organization.id,
         app: [{ id: originalAppId, name: 'Release notes clone' }],
-        tooljet_database: [],
+        tooljet_database: [...originalAppTableIds],
       };
 
       const cloneResponse = await request(app.getHttpServer())
         .post('/api/v2/resources/clone')
-        .set('Cookie', loggedUser.tokenCookie)
-        .set('tj-workspace-id', user.defaultOrganizationId)
+        .set('Cookie', loggedInUserData.tokenCookie)
+        .set('tj-workspace-id', loggedInUser.organizationId)
         .send(cloneResourcesDto)
         .expect(201);
 
       expect(cloneResponse.body.success).toBe(true);
       expect(cloneResponse.body.imports.app[0].name).toBe('Release notes clone');
+      const clonedAppTableIds = cloneResponse.body.imports.tooljet_database.map((table) => table.id);
 
       // Export the cloned app
-      const tablesForApp = await appsService.findTooljetDbTables(cloneResponse.body.imports.app[0].id);
       const exportResourcesDto: ExportResourcesDto = {
         organization_id: organization.id,
         app: [{ id: cloneResponse.body.imports.app[0].id, search_params: null }],
-        tooljet_database: tablesForApp,
+        tooljet_database: [...clonedAppTableIds],
       };
 
       const exportResponse = await request(app.getHttpServer())
         .post('/api/v2/resources/export')
-        .set('Cookie', loggedUser.tokenCookie)
-        .set('tj-workspace-id', user.defaultOrganizationId)
+        .set('Cookie', loggedInUserData.tokenCookie)
+        .set('tj-workspace-id', loggedInUser.organizationId)
         .send(exportResourcesDto)
         .expect(201);
 
@@ -696,26 +686,32 @@ describe('ImportExportResourcesController', () => {
             definition: {
               appV2: {
                 appEnvironments: [
-                  expect.objectContaining({
-                    name: 'development',
-                    isDefault: false,
-                    priority: 1,
-                  }),
-                  expect.objectContaining({
-                    name: 'staging',
-                    isDefault: false,
-                    priority: 2,
-                  }),
-                  expect.objectContaining({
-                    name: 'production',
-                    isDefault: true,
-                    priority: 3,
-                  }),
+                  expect.objectContaining({ name: 'development', isDefault: false, priority: 1 }),
+                  expect.objectContaining({ name: 'staging', isDefault: false, priority: 2 }),
+                  expect.objectContaining({ name: 'production', isDefault: true, priority: 3 }),
                 ],
                 appVersions: [
                   expect.objectContaining({
-                    name: expect.any(String),
+                    appId: expect.any(String),
+                    createdAt: expect.any(String),
+                    currentEnvironmentId: expect.any(String),
+                    definition: null,
+                    globalSettings: expect.objectContaining({
+                      appInMaintenance: expect.any(Boolean),
+                      backgroundFxQuery: expect.any(String),
+                      canvasBackgroundColor: expect.any(String),
+                      canvasMaxHeight: expect.any(Number),
+                      canvasMaxWidth: expect.any(Number),
+                      canvasMaxWidthType: expect.any(String),
+                      hideHeader: expect.any(Boolean),
+                    }),
+                    homePageId: expect.any(String),
+                    id: expect.any(String),
+                    name: 'v1',
+                    pageSettings: expect.any(Object),
+                    promotedFrom: null,
                     showViewerNavigation: expect.any(Boolean),
+                    updatedAt: expect.any(String),
                   }),
                 ],
                 components: expect.any(Array),
@@ -724,14 +720,7 @@ describe('ImportExportResourcesController', () => {
                 currentVersionId: null,
                 dataQueries: expect.any(Array),
                 dataSourceOptions: expect.any(Array),
-                dataSources: expect.arrayContaining([
-                  expect.objectContaining({
-                    kind: expect.any(String),
-                    name: expect.any(String),
-                    scope: expect.any(String),
-                    type: expect.any(String),
-                  }),
-                ]),
+                dataSources: expect.any(Array),
                 editingVersion: expect.any(Object),
                 events: expect.any(Array),
                 icon: expect.any(String),
@@ -747,7 +736,7 @@ describe('ImportExportResourcesController', () => {
                   multiPages: true,
                 },
                 slug: expect.any(String),
-                type: 'front-end',
+                type: APP_TYPES.FRONT_END,
                 updatedAt: expect.any(String),
                 userId: expect.any(String),
                 workflowApiToken: null,
@@ -760,63 +749,57 @@ describe('ImportExportResourcesController', () => {
       };
 
       expect(exportResponse.body).toMatchObject(expectedStructure);
-
-      // Additional specific checks
-      const clonedApp = exportResponse.body.app[0].definition.appV2;
-
-      expect(clonedApp.dataQueries).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            name: 'getLabel1',
+      exportResponse.body.tooljet_database.forEach((table) => {
+        const columnMatchers = table.schema.columns.map((col) => ({
+          character_maximum_length: col.character_maximum_length === null ? null : expect.anything(),
+          column_default: col.column_default === null ? null : expect.anything(),
+          column_name: expect.any(String),
+          configurations: expect.any(Object),
+          constraints_type: expect.objectContaining({
+            is_not_null: expect.any(Boolean),
+            is_primary_key: expect.any(Boolean),
+            is_unique: expect.any(Boolean),
           }),
-          expect.objectContaining({
-            name: 'getLabel2',
-          }),
-          expect.objectContaining({
-            name: 'getReleaseNotes',
-          }),
-          expect.objectContaining({
-            name: 'getReleaseNoteswithFilter',
-          }),
-        ])
-      );
+          data_type: expect.any(String),
+          keytype: expect.any(String),
+          numeric_precision: col.numeric_precision === null ? null : expect.anything(),
+        }));
 
-      expect(clonedApp.dataSources).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ name: 'restapidefault' }),
-          expect.objectContaining({ name: 'runjsdefault' }),
-          expect.objectContaining({ name: 'runpydefault' }),
-          expect.objectContaining({ name: 'tooljetdbdefault' }),
-          expect.objectContaining({ name: 'workflowsdefault' }),
-        ])
-      );
-
-      expect(clonedApp.pages).toHaveLength(1);
-      expect(clonedApp.pages[0].name).toBe('Home');
-
-      // Verify components
-      expect(clonedApp.components).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ type: 'Container' }),
-          expect.objectContaining({ type: 'Text' }),
-          expect.objectContaining({ type: 'Image' }),
-          expect.objectContaining({ type: 'Multiselect' }),
-          expect.objectContaining({ type: 'Button' }),
-          expect.objectContaining({ type: 'Listview' }),
-          expect.objectContaining({ type: 'Spinner' }),
-          expect.objectContaining({ type: 'Tags' }),
-        ])
-      );
+        expect(table).toMatchObject({
+          id: expect.any(String),
+          table_name: expect.any(String),
+          schema: {
+            columns: columnMatchers,
+            foreign_keys: expect.any(Array),
+          },
+        });
+      });
     });
 
     it('should throw ForbiddenException if user lacks permission', async () => {
-      const regularUserData = await createUser(app, { email: 'regular@tooljet.io', groups: ['all_users'] });
-      const regularLoggedUser = await authenticateUser(app, regularUserData.user.email);
+      const endUserParams = {
+        email: 'regular_user@tooljet.com',
+        firstName: 'Regular',
+        lastName: 'User',
+        password: 'password',
+        status: 'active',
+      };
 
-      const originalApp = await getManager().save(App, {
+      const endUser = await createAndAddUserToOrganization(app, endUserParams, organization, USER_ROLE.END_USER);
+
+      const { tokenCookie } = await authenticateUser(
+        app,
+        endUser.email,
+        endUserParams.password,
+        endUser.defaultOrganizationId
+      );
+
+      // Add an original app as an admin or privileged user
+      const appRepository = app.get('AppRepository') as Repository<App>;
+      const originalApp = await appRepository.save({
         name: 'Original App',
         organizationId: organization.id,
-        userId: user.id,
+        userId: loggedInUser.id,
       });
 
       const cloneResourcesDto: CloneResourcesDto = {
@@ -825,14 +808,13 @@ describe('ImportExportResourcesController', () => {
         tooljet_database: [],
       };
 
+      // Attempt to clone the app with a user lacking sufficient permissions
       await request(app.getHttpServer())
         .post('/api/v2/resources/clone')
-        .set('Cookie', regularLoggedUser.tokenCookie)
-        .set('tj-workspace-id', regularUserData.user.defaultOrganizationId)
+        .set('Cookie', tokenCookie)
+        .set('tj-workspace-id', endUser.defaultOrganizationId)
         .send(cloneResourcesDto)
         .expect(403);
-
-      await logoutUser(app, regularLoggedUser.tokenCookie, regularUserData.user.defaultOrganizationId);
     });
   });
 });

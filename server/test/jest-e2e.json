@@ -1,21 +1,15 @@
 {
-  "moduleFileExtensions": [
-    "js",
-    "json",
-    "ts",
-    "node"
-  ],
+  "moduleFileExtensions": ["js", "json", "ts", "node"],
   "rootDir": ".",
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
   "runner": "groups",
-  "transformIgnorePatterns": [
-    "node_modules/(?!(lib0|y-protocols)/)"
-  ],
+  "transformIgnorePatterns": ["node_modules/(?!(lib0|y-protocols)/)"],
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
   },
   "moduleNameMapper": {
+    "^ormconfig$": "<rootDir>/../ormconfig.ts",
     "^src/(.*)": "<rootDir>/../src/$1",
     "@plugins/(.*)": "<rootDir>/../plugins/$1",
     "@dto/(.*)": "<rootDir>/../src/dto/$1",
@@ -24,6 +18,9 @@
     "@controllers/(.*)": "<rootDir>/../src/controllers/$1",
     "@modules/(.*)": "<rootDir>/../src/modules/$1",
     "@ee/(.*)": "<rootDir>/../ee/$1",
-    "@apps/(.*)": "<rootDir>/../ee/apps/$1"
+    "@apps/(.*)": "<rootDir>/../ee/apps/$1",
+    "@helpers/(.*)": "<rootDir>/../src/helpers/$1",
+    "@licensing/(.*)": "<rootDir>/../ee/licensing/$1",
+    "@instance-settings/(.*)": "<rootDir>/../ee/instance-settings/$1"
   }
 }
