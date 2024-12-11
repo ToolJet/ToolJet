@@ -117,6 +117,7 @@ export const Tabs = function Tabs({
           position: 'absolute',
           top: parsedHideTabs ? '0px' : '41px',
           width: '100%',
+          overflowY: 'auto',
         }}
       >
         <SubContainer
