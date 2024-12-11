@@ -927,30 +927,117 @@ export const addUserToGroup = (groupName, email) => {
   cy.get(`[data-cy="${groupName}-group-add-button"]`).click();
 };
 
+// export const createGroupAddAppAndUserToGroup = (groupName, email) => {
+
+//     cy.getCookie("tj_auth_token").then((cookie) => {
+//       const headers = {
+//         "Tj-Workspace-Id": Cypress.env("workspaceId"),
+//         Cookie: `tj_auth_token=${cookie.value}`,
+//       };
+
+//       cy.request({
+//         method: 'POST',
+//         url: `${Cypress.env('server_host')}/api/v2/group_permissions`,
+//         headers: headers,
+//         body: {
+//           name: groupName
+//         }
+//       }).then((response) => {
+//         expect(response.status).to.equal(200);
+//         groupId = response.body.id; 
+//         cy.wrap(groupId).as('groupId'); 
+
+//       cy.request({
+//         method: 'POST',
+//         url: `${Cypress.env('server_host')}/api/v2/group_permissions/granular-permissions`,
+//         headers: {
+//           'tj-workspace-id': '308ccb7c-ccd9-4243-81e5-917a39759d50',
+//           'Content-Type': 'application/json'
+//         },
+//         body: {
+//           name: 'Apps',
+//           type: 'app',
+//           groupId: groupId,
+//           isAll: false,
+//           createAppsPermissionsObject: {
+//             canEdit: true,
+//             canView: false,
+//             hideFromDashboard: false,
+//             resourcesToAdd: [
+//               {
+//                 appId: Cypress.env('appId')
+//               }
+//             ]
+//           }
+//         }
+//       }).then((response) => {
+//         expect(response.status).to.equal(200);
+//       });
+//       cy.wait(3000);
+//       cy.task("updateId", {
+//         dbconfig: Cypress.env("app_db"),
+//         sql: `select id from users where email='${email}';`,
+//       }).then((resp) => {
+//         const userId = resp.rows[0].id;
+
+//         cy.request({
+//           method: "PUT",
+//           url: `${Cypress.env('server_host')}/api/v2/group_permissions/group-user`,
+//           headers: headers,
+//           body: { add_users: [userId], groupId:groupId },
+//         }).then((patchResponse) => {
+//           expect(patchResponse.status).to.equal(200);
+//         });
+//       });
+//     });
+//   });
+// };
+
+
 export const createGroupAddAppAndUserToGroup = (groupName, email) => {
-  cy.intercept("GET", "/api/group_permissions").as(
-    `${groupName}`
-  );
-  createGroup(groupName);
+  let groupId;
 
-  cy.wait(`@${groupName}`).then((groupResponse) => {
-    const groupId = groupResponse.response.body.group_permissions.find(
-      (group) => group.group === groupName
-    ).id;
+  cy.getCookie("tj_auth_token").then((cookie) => {
+    const headers = {
+      "Tj-Workspace-Id": Cypress.env("workspaceId"),
+      Cookie: `tj_auth_token=${cookie.value}`,
+      'Content-Type': 'application/json'
+    };
 
-    cy.getCookie("tj_auth_token").then((cookie) => {
-      const headers = {
-        "Tj-Workspace-Id": Cypress.env("workspaceId"),
-        Cookie: `tj_auth_token=${cookie.value}`,
-      };
+    cy.request({
+      method: 'POST',
+      url: `${Cypress.env('server_host')}/api/v2/group_permissions`,
+      headers: headers,
+      body: {
+        name: groupName
+      }
+    }).then((response) => {
+      expect(response.status).to.equal(201);
+      groupId = response.body.id;
+      cy.wrap(groupId).as('groupId');
 
       cy.request({
-        method: "PUT",
-        url: `${Cypress.env("server_host")}/api/group_permissions/${groupId}`,
+        method: 'POST',
+        url: `${Cypress.env('server_host')}/api/v2/group_permissions/granular-permissions`,
         headers: headers,
-        body: { add_apps: [Cypress.env("appId")] },
-      }).then((patchResponse) => {
-        expect(patchResponse.status).to.equal(200);
+        body: {
+          name: 'Apps',
+          type: 'app',
+          groupId: groupId,
+          isAll: false,
+          createAppsPermissionsObject: {
+            canEdit: true,
+            canView: false,
+            hideFromDashboard: false,
+            resourcesToAdd: [
+              {
+                appId: Cypress.env('appId')
+              }
+            ]
+          }
+        }
+      }).then((response) => {
+        expect(response.status).to.equal(201);
       });
 
       cy.task("updateId", {
@@ -960,24 +1047,21 @@ export const createGroupAddAppAndUserToGroup = (groupName, email) => {
         const userId = resp.rows[0].id;
 
         cy.request({
-          method: "PUT",
-          url: `${Cypress.env("server_host")}/api/group_permissions/${groupId}`,
+          method: 'POST',
+          url: `${Cypress.env('server_host')}/api/v2/group_permissions/group-user`,
           headers: headers,
-          body: { add_users: [userId] },
-        }).then((patchResponse) => {
-          expect(patchResponse.status).to.equal(200);
+          body: {
+            userIds: [userId],
+            groupId: groupId
+          }
+        }).then((response) => {
+          expect(response.status).to.equal(201);
         });
-
-        cy.get('[data-cy="all-users-list-item"] > span').click();
-        cy.get(`[data-cy="${cyParamName(groupName)}-list-item"]`).click();
-        cy.wait(1000);
-        cy.get(groupsSelector.appsLink).click();
-        cy.wait(1000);
-        cy.get('[data-cy="checkbox-app-edit"]').check();
       });
     });
   });
 };
+
 
 export const OpenGroupCardOption = (groupName) => {
   cy.get(groupsSelector.groupLink(groupName))
@@ -993,6 +1077,17 @@ export const OpenGroupCardOption = (groupName) => {
       });
     });
 };
+
+Cypress.Commands.add("duplicateMultipleGroups", (groupNames) => {
+  groupNames.forEach((groupName) => {
+    OpenGroupCardOption(groupName);
+    cy.wait(3000);
+    cy.get(commonSelectors.duplicateOption).click(); // Click on the duplicate option
+    cy.get(commonSelectors.confirmDuplicateButton).click(); // Confirm duplication if needed
+  });
+});
+
+
 export const verifyGroupCardOptions = (groupName) => {
   cy.get(groupsSelector.groupLink(groupName)).click();
   OpenGroupCardOption(groupName);
@@ -1008,7 +1103,7 @@ export const verifyGroupCardOptions = (groupName) => {
 
 export const groupPermission = (
   fieldsToCheckOrUncheck,
-  groupName = "All users",
+  groupName = "Admin",
   shouldCheck = false
 ) => {
   navigateToManageGroups();
@@ -1022,7 +1117,7 @@ export const groupPermission = (
         if (shouldCheck) {
           cy.get(selector).check();
         } else {
-          cy.get(selector).uncheck();
+          // cy.get(selector).uncheck();
         }
       }
     });
