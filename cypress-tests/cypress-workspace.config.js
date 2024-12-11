@@ -77,7 +77,7 @@ module.exports = defineConfig({
     baseUrl: "http://localhost:8082",
     specPattern: [
       "cypress/e2e/happyPath/platform/ceTestcases/userFlow/firstUserOnboarding.cy.js",
-      "cypress/e2e/happyPath/platform/ceTestcases/!(userFlow)/**/*.cy.js"
+      "cypress/e2e/happyPath/platform/ceTestcases/!(userFlow)/**/*.cy.js",
       "cypress/e2e/happyPath/platform/commonTestcases/**/*.cy.js",
     ],
     numTestsKeptInMemory: 1,
