@@ -256,7 +256,7 @@
                   "fxActive": true
                 },
                 "jsonDescription": {
-                  "value": "{{queries.getWeather1.data.heatmapData}}"
+                  "value": "{{JSON.stringify(queries.getWeather1.data.heatmapData)}}"
                 }
               },
               "general": {},
@@ -324,7 +324,7 @@
                   "fxActive": true
                 },
                 "jsonDescription": {
-                  "value": "{{queries.getWeather2.data.heatmapData}}"
+                  "value": "{{JSON.stringify(queries.getWeather2.data.heatmapData)}}"
                 }
               },
               "general": {},
@@ -391,7 +391,7 @@
                   "fxActive": true
                 },
                 "jsonDescription": {
-                  "value": "{{queries.getWeather2.data.contourData}}"
+                  "value": "{{JSON.stringify(queries.getWeather2.data.contourData)}}"
                 }
               },
               "general": {},
@@ -454,7 +454,7 @@
                   "value": "{{true}}"
                 },
                 "jsonDescription": {
-                  "value": "{{({\n  data: [\n    queries.getWeather1.data.lineChartData,\n    queries.getWeather2.data.lineChartData,\n  ],\n})}}"
+                  "value": "{{JSON.stringify({\n  data: [\n    queries.getWeather1.data.lineChartData,\n    queries.getWeather2.data.lineChartData,\n  ],\n})}}"
                 },
                 "barmode": {
                   "value": "relative"
@@ -806,7 +806,7 @@
                   "value": "{{queries.getWeather1.isLoading}}"
                 },
                 "jsonDescription": {
-                  "value": "{{queries.getWeather1.data.contourData}}"
+                  "value": "{{JSON.stringify(queries.getWeather1.data.contourData)}}"
                 }
               },
               "general": {},
@@ -1256,7 +1256,7 @@
               "name": "getWeather2",
               "options": {
                 "method": "get",
-                "url": "{{`https://api.open-meteo.com/v1/forecast?latitude=${components.map2.center.lat}&longitude=${components.map2.center.lng}&hourly=temperature_2m&forecast_days=7`}}",
+                "url": "{{`https://api.open-meteo.com/v1/forecast?latitude=${components.map2.center.lat || 48.8575475}&longitude=${components.map2.center.lng || 2.3513765}&hourly=temperature_2m&forecast_days=7`}}",
                 "url_params": [
                   [
                     "",
@@ -1304,7 +1304,7 @@
               "name": "getWeather1",
               "options": {
                 "method": "get",
-                "url": "{{`https://api.open-meteo.com/v1/forecast?latitude=${components.map1.center.lat}&longitude=${components.map1.center.lng}&hourly=temperature_2m&forecast_days=7`}}",
+                "url": "{{`https://api.open-meteo.com/v1/forecast?latitude=${components.map1.center.lat || 51.5072178}&longitude=${components.map1.center.lng || -0.1275862}&hourly=temperature_2m&forecast_days=7`}}",
                 "url_params": [
                   [
                     "",
