@@ -14,6 +14,7 @@ export const DatepickerInput = forwardRef(
     loading,
     disable,
     onInputChange,
+    datepickerMode,
     displayFormat,
     setDisplayTimestamp,
     setTextInputFocus,
@@ -44,9 +45,18 @@ export const DatepickerInput = forwardRef(
           onChange={(e) => {
             const inputVal = e.target.value;
             setDisplayTimestamp(inputVal);
-            const parsedDate = moment(inputVal, displayFormat);
-            if (parsedDate.isValid()) {
-              onInputChange(parsedDate.toDate());
+            if (datepickerMode === 'range') {
+              const [start, end] = inputVal.split('-');
+              const parsedStartDate = moment(start, displayFormat);
+              const parsedEndDate = moment(end, displayFormat);
+              if (parsedStartDate.isValid() && parsedEndDate.isValid()) {
+                onInputChange([parsedStartDate.toDate(), parsedEndDate.toDate()]);
+              }
+            } else {
+              const parsedDate = moment(inputVal, displayFormat);
+              if (parsedDate.isValid()) {
+                onInputChange(parsedDate.toDate());
+              }
             }
           }}
           disabled={disable || loading}

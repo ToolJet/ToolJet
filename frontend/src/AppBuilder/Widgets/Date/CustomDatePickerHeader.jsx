@@ -21,7 +21,6 @@ const CustomDatePickerHeader = (props) => {
     customHeaderCount,
     setDatePickerMode,
   } = props;
-  console.log('props', props);
   const months = [
     'January',
     'February',

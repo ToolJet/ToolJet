@@ -16806,3 +16806,10 @@ fieldset:disabled {
     font-weight: 500; 
     width:auto;
 }
+
+
+.datepicker-widget {
+  .react-datepicker-wrapper{
+    width:100% !important;
+  }
+}

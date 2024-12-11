@@ -35,7 +35,8 @@ export const DaterangePicker = ({
   const dateLogic = useDateInput(inputProps);
 
   const { defaultStartDate, defaultEndDate, format, label } = properties;
-  const { disable, loading, focus, visibility, isMandatory, setTextInputFocus, setIsCalendarOpen } = dateTimeLogic;
+  const { disable, loading, focus, visibility, isMandatory, textInputFocus, setTextInputFocus, setIsCalendarOpen } =
+    dateTimeLogic;
   const { minDate, maxDate, excludedDates } = dateLogic;
   const { customRule } = validation;
 
@@ -52,6 +53,20 @@ export const DaterangePicker = ({
       return date.isValid() ? date.toDate() : null;
     })()
   );
+
+  const getDisplayRange = (startDate, endDate) => {
+    const isValidStartDate = startDate && moment(startDate).isValid();
+    const isValidEndDate = endDate && moment(endDate).isValid();
+    if (!isValidStartDate && !isValidEndDate) {
+      return 'Select Date Range';
+    } else if (isValidStartDate && !isValidEndDate) {
+      return `${moment(startDate).format(format)} - `;
+    } else if (!isValidStartDate && isValidEndDate) {
+      return ` - ${moment(endDate).format(format)}`;
+    }
+    return `${moment(startDate).format(format)} - ${moment(endDate).format(format)}`;
+  };
+  const [displayRange, setDisplayRange] = useState(getDisplayRange(startDate, endDate));
 
   const [showValidationError, setShowValidationError] = useState(false);
   const [validationStatus, setValidationStatus] = useState({ isValid: true, validationError: '' });
@@ -141,6 +156,11 @@ export const DaterangePicker = ({
   }, [startDate, format]);
 
   useEffect(() => {
+    if (isInitialRender.current || textInputFocus) return;
+    setDisplayRange(getDisplayRange(startDate, endDate));
+  }, [startDate, endDate, format, textInputFocus]);
+
+  useEffect(() => {
     setExposedVariable('setStartDate', (start, customFormat) => {
       const date = moment(start, customFormat || format);
       const startDate = date.isValid() ? date.toDate() : null;
@@ -168,7 +188,17 @@ export const DaterangePicker = ({
       'theme-dark dark-theme': darkMode,
     }),
     onChange,
+    onSelect: (start) => {
+      if (!startDate && endDate) {
+        if (moment(start).isSameOrBefore(endDate)) {
+          onChange([start, endDate]);
+        } else {
+          onChange([start, null]);
+        }
+      }
+    },
     selected: startDate,
+    value: displayRange,
     startDate: startDate,
     endDate: endDate,
     selectsRange: true,
@@ -187,7 +217,9 @@ export const DaterangePicker = ({
 
   const customDateInputProps = {
     dateInputRef,
-    onInputChange: () => {},
+    onInputChange: onChange,
+    datepickerMode: 'range',
+    setDisplayTimestamp: setDisplayRange,
     displayFormat: format,
     setTextInputFocus,
     setShowValidationError,
