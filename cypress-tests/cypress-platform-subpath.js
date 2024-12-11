@@ -74,7 +74,7 @@ module.exports = defineConfig({
     experimentalRunAllSpecs: true,
     experimentalModfyObstructiveThirdPartyCode: true,
     experimentalRunAllSpecs: true,
-    baseUrl: "http://localhost:8082",
+    baseUrl: "http://localhost:3000/apps",
     specPattern: [
       "cypress/e2e/happyPath/platform/ceTestcases/editor/appSlug.cy.js",
       "cypress/e2e/happyPath/platform/ceTestcases/editor/privateAndPublicApp.cy.js",
