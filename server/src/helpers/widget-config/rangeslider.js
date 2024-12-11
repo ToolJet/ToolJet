@@ -32,7 +32,10 @@ export const rangeSliderConfig = {
       type: 'code',
       displayName: 'Value',
       validation: {
-        schema: { type: 'number' },
+        schema: {
+          type: 'union',
+          schemas: [{ type: 'array', element: { type: 'number' } }, { type: 'number' }],
+        },
         defaultValue: 50,
       },
     },
