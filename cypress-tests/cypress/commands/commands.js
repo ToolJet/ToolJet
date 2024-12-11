@@ -474,7 +474,7 @@ Cypress.Commands.add("appPrivacy", (appName, isPublic) => {
 Cypress.Commands.overwrite('intercept', (originalFn, method, endpoint, mockData) => {
   const isSubpath = Cypress.config('baseUrl')?.includes('/apps');
   const cleanEndpoint = endpoint.replace('/apps', '');
-  const fullUrl = isSubpath ? `/apps/tooljet${cleanEndpoint}` : cleanEndpoint;
+  const fullUrl = isSubpath ? `/apps${cleanEndpoint}` : cleanEndpoint;
 
   return originalFn(method, fullUrl, mockData);
 });
