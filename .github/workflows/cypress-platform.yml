@@ -118,6 +118,7 @@ jobs:
         with:
           working-directory: ./cypress-tests
           config-file: cypress-workspace.config.js
+          install: false
         env:
           CYPRESS_BASE_URL: "http://localhost:8082"
 
@@ -249,6 +250,7 @@ jobs:
         with:
           working-directory: ./cypress-tests
           config-file: cypress-workspace.config.js
+          install: false
         env:
           CYPRESS_BASE_URL: "http://localhost:3000/apps"
 
