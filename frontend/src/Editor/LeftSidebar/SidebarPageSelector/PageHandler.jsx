@@ -133,11 +133,10 @@ export const PageHandler = ({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className={`card cursor-pointer ${isSelected ? 'active' : 'non-active-page'}`}
-      onClick={() => page.id != currentPageId && switchPage(page.id)}
       style={{ display: 'flex', justifyContent: 'center' }}
     >
       <div>
-        <div className="row" role="button">
+        <div className="row" style={{ height: '32px' }} role="button">
           <div className="col-auto d-flex align-items-center">
             {!isHovered && isHomePage && <Home width={16} height={16} />}
             {/* When the page is hidden as well as disabled, disabled icon takes precedence */}
@@ -157,6 +156,7 @@ export const PageHandler = ({
             className="col text-truncate font-weight-400 page-name tj-text-xsm"
             data-cy={`pages-name-${String(page.name).toLowerCase()}`}
             style={isHomePage || isHidden || isHovered || isDisabled ? { paddingLeft: '0px' } : { paddingLeft: '16px' }}
+            onClick={() => page.id != currentPageId && switchPage(page.id)}
           >
             <span className={darkMode && 'dark-theme'}>{`${page.name}`}</span>
             {isIconApplied && (
@@ -172,7 +172,11 @@ export const PageHandler = ({
               </span>
             )}
           </div>
-          <div className="col-auto" data-cy="page-menu-option-icon">
+          <div
+            className="col-auto"
+            data-cy="page-menu-option-icon"
+            style={{ justifyContent: 'center', alignItems: 'center', display: 'flex' }}
+          >
             {(isHovered || isSelected) && !isVersionReleased && (
               <PagehandlerMenu
                 page={page}
