@@ -374,6 +374,14 @@ const sidebars = {
       'items': [
         'org-setup/overview',
         'org-setup/tj-plan',
+        {
+          'type': 'category',
+          'label': 'Licensing',
+          'items': [
+            'org-setup/licensing/cloud',
+            'org-setup/licensing/self-hosted'
+          ]
+        },
         'org-setup/instances-and-workspaces',
         {
           'type': 'category',
