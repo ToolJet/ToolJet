@@ -59,12 +59,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       }
       // requested workspace not authenticated
       if (!payload.organizationIds.some((oid) => oid === organizationId)) {
+        /* If the organizationId isn't available in the jwt-payload */
         return false;
       }
     }
 
     let user: User;
     if (payload?.sub && organizationId && !isInviteSession) {
+      /* Usual JWT case: user with valid organization id */
       user = await this.usersService.findByEmail(payload.sub, organizationId, WORKSPACE_USER_STATUS.ACTIVE);
       if (user) user.organizationId = organizationId;
     } else if (payload?.sub && isInviteSession) {
@@ -81,7 +83,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       if (isInviteSession) user.invitedOrganizationId = payload.invitedOrganizationId;
     }
 
-    return user ?? {};
+    return user;
   }
 }
 
