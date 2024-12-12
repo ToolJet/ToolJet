@@ -67,7 +67,7 @@ export default function AppCard({
     !isMenuOpen && setFocused(!!isHovered);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  const observer = new IntersectionObserver(callBackFunction, options)
+    const observer = new IntersectionObserver(callBackFunction, options)
     if (cardRef.current) observer.observe(cardRef.current)
 
     return () => {
@@ -168,8 +168,7 @@ export default function AppCard({
               <button
                 type="button"
                 className={cx(
-                  ` launch-button tj-text-xsm ${
-                    app?.current_version_id === null || app?.is_maintenance_on ? 'tj-disabled-btn ' : 'tj-tertiary-btn'
+                  ` launch-button tj-text-xsm ${app?.current_version_id === null || app?.is_maintenance_on ? 'tj-disabled-btn ' : 'tj-tertiary-btn'
                   }`
                 )}
                 onClick={() => {
