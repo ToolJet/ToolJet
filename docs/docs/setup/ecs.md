@@ -184,6 +184,49 @@ Update ToolJet deployment with the appropriate env variables [here](/docs/setup/
 
 </div>
 
+## Workflows
+
+ToolJet Workflows allows users to design and execute complex, data-centric automations using a visual, node-based interface. This feature enhances ToolJet's functionality beyond building secure internal tools, enabling developers to automate complex business processes.  
+
+### Enabling Workflow Scheduling
+
+Deploy the following containers under the same ToolJet app task definition family to enable workflow scheduling:
+
+**Worker Container:**
+Use the `tooljet/tooljet:ee-lts-latest`` image tag, and ensure it inherits environment variables from the ToolJet app container.
+
+To activate workflow scheduling, set these environment variables:
+
+```bash
+WORKFLOW_WORKER=true
+ENABLE_WORKFLOW_SCHEDULING=true
+TOOLJET_WORKFLOWS_TEMPORAL_NAMESPACE=default
+TEMPORAL_SERVER_ADDRESS=<Temporal_Server_Address>  
+```
+
+Under the containers tab inside the Docker configuration, please make sure the command `npm, run, worker:prod` is added.
+
+<div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/setup/ecs/ecs-tooljet-worker.png" alt="worker container" />
+</div>
+
+
+#### Temporal server container: 
+
+1. Use the image tag `temporalio/auto-setup:1.25.1`. Also ensure that in the App protocol, GRPC is selected.
+
+<div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/setup/ecs/ecs-temporal.png" alt="Temporal server container" />
+</div>
+
+
+2. Add the below env variables to the temporal container: 
+
+<div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/setup/ecs/ecs-temporal-env.png" alt="Temporal server container ENV's" />
+</div>
+
+
 ## Upgrading to the Latest LTS Version
 
 New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.

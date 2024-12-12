@@ -17,7 +17,7 @@ docker run \
   --platform linux/amd64 \
   -v tooljet_data:/var/lib/postgresql/13/main \
   -v temporal_sqlite:/etc/temporal \
-  tooljet/tooljet:ee-lts-latest
+  tooljet/try:ee-lts-latest
 ```
 
 #### Setup information
@@ -35,10 +35,11 @@ docker run \
   --name tooljet \
   --restart unless-stopped \
   -p 8080:8080 \
+  -e PORT=8080 \
   --platform linux/amd64 \
   -v tooljet_data:/var/lib/postgresql/13/main \
   -v temporal_sqlite:/etc/temporal \
-  tooljet/tooljet:ee-lts-latest
+  tooljet/try:ee-lts-latest
 ```
 
 - This command will start the ToolJet server on port 8080.
