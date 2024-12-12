@@ -43,9 +43,18 @@ export const Modal = ({ componentMeta, darkMode, ...restProps }) => {
     return accordionItems;
   };
 
-  const properties = Object.keys(componentMeta.properties);
+  let additionalActions = [];
+  let properties = [];
   const events = Object.keys(componentMeta.events);
   const validations = Object.keys(componentMeta.validation || {});
+
+  for (const [key] of Object.entries(componentMeta?.properties)) {
+    if (componentMeta?.properties[key]?.section === 'additionalActions') {
+      additionalActions.push(key);
+    } else {
+      properties.push(key);
+    }
+  }
 
   const filteredProperties = properties.filter(
     (property) => property !== 'useDefaultButton' && property !== 'triggerButtonLabel'
@@ -68,6 +77,25 @@ export const Modal = ({ componentMeta, darkMode, ...restProps }) => {
   );
 
   accordionItems.splice(1, 0, ...conditionalAccordionItems(component));
+
+  accordionItems.push({
+    title: `Additional Actions`,
+    isOpen: true,
+    children: additionalActions.map((property) => {
+      return renderElement(
+        component,
+        componentMeta,
+        paramUpdated,
+        dataQueries,
+        property,
+        'properties',
+        currentState,
+        allComponents,
+        darkMode,
+        componentMeta.properties?.[property]?.placeholder
+      );
+    }),
+  });
 
   return <Accordion items={accordionItems} />;
 };
