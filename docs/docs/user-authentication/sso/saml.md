@@ -39,7 +39,7 @@ To enable SAML authentication, you need to configure the following workspace set
 
 
     :::tip SAML for multiple workspaces
--  The multiple workspaces feature is available only in versions `v2.50.9.46-lts` and later.
+-  The multiple workspaces feature is available only in versions **v2.50.9.46-lts** and later.
 -  Configure the required environment variables as below:
 
 | variable               | value             |
