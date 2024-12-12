@@ -117,7 +117,7 @@ export default function GenerateEachCellValue({
     }
   }
   useEffect(() => {
-    if (mounted && _.isEmpty(rowChangeSet)) {
+    if (_.isEmpty(rowChangeSet)) {
       setHighlighterCells(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -210,7 +210,9 @@ export default function GenerateEachCellValue({
       className={`w-100 h-100 ${columnType === 'selector' && 'd-flex align-items-center justify-content-center'}`}
       ref={cellRef}
     >
-      {!isColumnTypeAction && columnTypeAllowToRenderMarkElement.includes(columnType) && showHighlightedCells ? (
+      {!isColumnTypeAction &&
+      columnTypeAllowToRenderMarkElement.includes(columnType) &&
+      (showHighlightedCells || !isEditable) ? (
         <OverlayTrigger
           placement="bottom"
           overlay={_showOverlay ? getOverlay() : <div></div>}
