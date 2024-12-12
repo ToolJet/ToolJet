@@ -42,9 +42,8 @@ export const Modal = ({ componentMeta, darkMode, ...restProps }) => {
       component.component.definition.properties.useDefaultButton?.value ?? false
     );
     const accordionItems = [];
-    const options = ['useDefaultButton'];
-
     let renderOptions = [];
+    const options = ['useDefaultButton'];
 
     options.map((option) => renderOptions.push(renderCustomElement(option)));
 
@@ -54,7 +53,6 @@ export const Modal = ({ componentMeta, darkMode, ...restProps }) => {
       if (condition) renderOptions.push(renderCustomElement(name));
     });
 
-    // debugger;
     accordionItems.push({
       title: 'Data',
       isOpen: true,
@@ -67,10 +65,11 @@ export const Modal = ({ componentMeta, darkMode, ...restProps }) => {
       children: additionalActions?.map((property) => renderCustomElement(property)),
     });
 
-    // accordionItems.push({
-    //   title: 'Options',
-    //   children: renderOptions,
-    // });
+    accordionItems.push({
+      title: 'Options',
+      children: renderOptions,
+    });
+
     return accordionItems;
   };
 
