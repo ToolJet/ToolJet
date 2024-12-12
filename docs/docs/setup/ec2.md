@@ -80,11 +80,40 @@ ToolJet AMI comes inbuilt with PostgREST. If you intend to use this feature, you
 
 You can learn more about this feature [here](/docs/tooljet-db/tooljet-database).
 
+## Workflows
+
+ToolJet Workflows allows users to design and execute complex, data-centric automations using a visual, node-based interface. This feature enhances ToolJet's functionality beyond building secure internal tools, enabling developers to automate complex business processes.  
+
+### Enabling Scheduling
+
+To activate workflows scheduling, set the following environment variables:
+
+```bash
+WORKFLOW_WORKER=true
+ENABLE_WORKFLOW_SCHEDULING=true
+TOOLJET_WORKFLOWS_TEMPORAL_NAMESPACE=default
+TEMPORAL_SERVER_ADDRESS=<Temporal_Server_Address>  
+```
+
+**Note**: Workflows scheduling requires a Temporal server to be deployed. Restarting the server using `./setup_app`.
+
+### Deploying Temporal with Docker Compose
+
+Below is a `docker-compose` template to set up Temporal. 
+
+```
+curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/ec2-temporal/docker-compose.yml
+```
+
+This setup can be deployed on a different EC2 instance. To enable seamless communication, ensure that both the application server and the Temporal server are in the same VPC.
+
+**Note**: Ensure that port 7233 is configured for gRPC in the security group.
+
 ## Upgrading to the Latest LTS Version
 
 New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
 
-If this is a new installation of the application, you may start directly with the latest version. This guide is not required for new installations.
+**Note**: If this is a new installation of the application, you may start directly with the latest version. This guide is not required for new installations.
 
 #### Prerequisites for Upgrading to the Latest LTS Version:
 
