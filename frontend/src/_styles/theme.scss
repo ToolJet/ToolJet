@@ -4527,7 +4527,21 @@ input[type="text"] {
  * Folder List
  */
 .folder-list {
-  overflow-y: auto;
+  overflow-y: scroll;
+  scrollbar-width: thin;
+  scrollbar-color: #888 transparent;  
+  &:hover {
+    &::-webkit-scrollbar {
+      display: block;
+      width: 5px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: #888;
+    }
+    &::-webkit-scrollbar-track {
+      background-color: transparent;
+    }
+  }
 
   .list-group-transparent .list-group-item.active {
     color: $primary;
