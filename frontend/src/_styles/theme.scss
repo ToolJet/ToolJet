@@ -8940,7 +8940,6 @@ tbody {
       height: 40px;
       display: flex;
       align-items: center;
-      margin-top: 6px;
     }
 
     tr>th {
@@ -9002,6 +9001,25 @@ tbody {
 .workspace-settings-table-wrap {
   max-width: 880px;
   margin: 0 auto;
+  .tj-user-table-wrapper{
+    padding-right: 4px;
+   }
+   &:hover{
+     .tj-user-table-wrapper{
+       padding-right: 0px;
+     }
+     ::-webkit-scrollbar{
+       display: block;
+       width: 4px;
+     }
+     ::-webkit-scrollbar-track{
+       background: var(--base);
+     }
+     ::-webkit-scrollbar-thumb{
+       background: var(--slate7);
+       border-radius: 6px;
+     }
+   }
 }
 
 .workspace-settings-filters {
