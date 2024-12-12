@@ -7,6 +7,17 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 var tinycolor = require('tinycolor2');
 
+// STYLE CONSTANTS
+// 1. Modal header
+const MODAL_HEADER = {
+  HEIGHT: '80px',
+  CANVAS_HEIGHT: 10,
+};
+const MODAL_FOOTER = {
+  HEIGHT: '80px',
+  CANVAS_HEIGHT: 10,
+};
+
 export const Modal = function Modal({
   id,
   component,
@@ -24,15 +35,16 @@ export const Modal = function Modal({
     closeOnClickingOutside = false,
     hideOnEsc,
     hideCloseButton,
-    hideTitleBar,
     loadingState,
     useDefaultButton,
     triggerButtonLabel,
     modalHeight,
+    hideHeader,
+    hideFooter,
   } = properties;
   const {
     headerBackgroundColor,
-    headerTextColor,
+    footerBackgroundColor,
     bodyBackgroundColor,
     disabledState,
     visibility,
@@ -43,11 +55,10 @@ export const Modal = function Modal({
   const parentRef = useRef(null);
   const controlBoxRef = useRef(null);
   const isInitialRender = useRef(true);
-  const title = properties.title ?? '';
-  const titleAlignment = properties.titleAlignment ?? 'left';
   const size = properties.size ?? 'lg';
   const [modalWidth, setModalWidth] = useState();
   const mode = useStore((state) => state.currentMode, shallow);
+  const isFullScreen = properties.size === 'fullscreen';
 
   /**** Start - Logic to reset the zIndex of modal control box ****/
   useEffect(() => {
@@ -65,20 +76,19 @@ export const Modal = function Modal({
   }, [showModal, id, mode]);
   /**** End - Logic to reset the zIndex of modal control box ****/
 
-  useEffect(() => {
-    const exposedVariables = {
-      open: async function () {
-        setExposedVariable('show', true);
-        setShowModal(true);
-      },
-      close: async function () {
-        setExposedVariable('show', false);
-        setShowModal(false);
-      },
-    };
-    setExposedVariables(exposedVariables);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Adjust height as viewport height changes
+  const useViewportHeightChange = (callback) => {
+    useEffect(() => {
+      window.addEventListener('resize', onShowSideEffects);
+
+      // Cleanup event listener on unmount
+      return () => {
+        window.removeEventListener('resize', onShowSideEffects);
+      };
+    }, [callback]);
+  };
+
+  useViewportHeightChange();
 
   function hideModal() {
     setExposedVariable('show', false);
@@ -90,53 +100,91 @@ export const Modal = function Modal({
     setShowModal(true);
   }
 
+  // Side effects for modal, which include dom manipulation to hide overflow when opening
+  // And cleaning up dom when modal is closed
+
+  const onShowSideEffects = () => {
+    const canvasElement = document.querySelector('.page-container.canvas-container');
+    const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
+    const modalCanvasEl = document.getElementById(`canvas-${id}`);
+    const modalContainer = realCanvasEl.querySelector('.modal');
+
+    if (canvasElement && realCanvasEl && modalContainer) {
+      const currentScroll = canvasElement.scrollTop;
+      canvasElement.style.overflow = 'hidden';
+
+      modalContainer.style.height = `${canvasElement.offsetHeight}px`;
+      modalContainer.style.top = `${currentScroll}px`;
+      modalCanvasEl.style.height = isFullScreen ? '100%' : modalHeight;
+    }
+  };
+
+  const onHideSideEffects = () => {
+    const canvasElement = document.querySelector('.page-container.canvas-container');
+    const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
+    const modalContainer = realCanvasEl.querySelector('.modal');
+
+    if (canvasElement && realCanvasEl && modalContainer) {
+      canvasElement.style.overflow = 'auto';
+      modalContainer.style.height = ``;
+      modalContainer.style.top = ``;
+    }
+
+    hideModal();
+  };
+
+  const onShowModal = () => {
+    openModal();
+    onShowSideEffects();
+  };
+
+  const onHideModal = () => {
+    onHideSideEffects();
+    hideModal();
+  };
+
   useEffect(() => {
-    const handleModalOpen = () => {
-      openModal();
-      const canvasElement = document.getElementsByClassName('canvas-container')[0];
-      const modalBackdropEl = document.getElementsByClassName('modal-backdrop')[0];
-      const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
-      const modalCanvasEl = document.getElementById(`canvas-${id}`);
-      if (canvasElement && modalBackdropEl && modalCanvasEl && realCanvasEl) {
-        realCanvasEl.style.height = '100vh';
-        realCanvasEl.style.position = 'absolute';
-        realCanvasEl.style.overflow = 'hidden';
-
-        modalBackdropEl.style.height = '100vh';
-        modalBackdropEl.style.minHeight = '100vh';
-        modalBackdropEl.style.minHeight = '100vh';
-        modalCanvasEl.style.height = modalHeight;
-      }
+    const exposedVariables = {
+      open: async function () {
+        onShowModal();
+      },
+      close: async function () {
+        onHideModal();
+      },
     };
+    setExposedVariables(exposedVariables);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-    const handleModalClose = () => {
-      const canvasElement = document.getElementsByClassName('canvas-container')[0];
-      const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
-      const canvasHeight = realCanvasEl?.getAttribute('canvas-height');
+  useEffect(() => {
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
+    }
 
-      if (canvasElement && realCanvasEl && canvasHeight) {
-        realCanvasEl.style.height = canvasHeight;
-        realCanvasEl.style.position = '';
+    fireEvent(!showModal ? 'onClose' : 'onOpen');
+    const inputRef = document?.getElementsByClassName('tj-text-input-widget')?.[0];
+    inputRef?.blur();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showModal]);
 
-        realCanvasEl.style.overflow = 'auto';
-      }
-    };
+  useEffect(() => {
     if (showModal) {
-      handleModalOpen();
+      onShowModal();
     } else {
       if (document.getElementsByClassName('modal-content')[0] == undefined) {
-        handleModalClose();
+        onHideModal();
       }
     }
 
     // Cleanup the effect
     return () => {
       if (document.getElementsByClassName('modal-content')[0] == undefined) {
-        handleModalClose();
+        onHideModal();
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showModal, modalHeight]);
+  }, [modalHeight]);
 
   useEffect(() => {
     if (isInitialRender.current) {
@@ -163,7 +211,15 @@ export const Modal = function Modal({
     modalHeader: {
       backgroundColor:
         ['#fff', '#ffffffff'].includes(headerBackgroundColor) && darkMode ? '#1F2837' : headerBackgroundColor,
-      color: ['#000', '#000000', '#000000ff'].includes(headerTextColor) && darkMode ? '#fff' : headerTextColor,
+      height: MODAL_HEADER.HEIGHT,
+      padding: 0,
+    },
+    modalFooter: {
+      backgroundColor:
+        ['#000', '#000000', '#000000ff'].includes(footerBackgroundColor) && darkMode ? '#fff' : footerBackgroundColor,
+      height: MODAL_FOOTER.HEIGHT,
+      padding: 0,
+      borderTop: `1px solid var(--border-weak)`,
     },
     buttonStyles: {
       backgroundColor: triggerButtonBackgroundColor,
@@ -181,7 +237,7 @@ export const Modal = function Modal({
         const modalRef = parentRef?.current?.parentElement?.parentElement?.parentElement;
 
         if (modalRef && modalRef === event.target) {
-          hideModal();
+          onHideSideEffects();
         }
       };
 
@@ -236,7 +292,9 @@ export const Modal = function Modal({
         keyboard={true}
         enforceFocus={false}
         animation={false}
-        onEscapeKeyDown={() => hideOnEsc && hideModal()}
+        onShow={() => onShowModal()}
+        onHide={() => onHideModal()}
+        onEscapeKeyDown={() => hideOnEsc && onHideModal()}
         id="modal-container"
         component-id={id}
         backdrop={'static'}
@@ -245,13 +303,15 @@ export const Modal = function Modal({
           customStyles,
           parentRef,
           id,
-          title,
-          titleAlignment,
-          hideTitleBar,
           hideCloseButton,
           hideModal,
           component,
           showConfigHandler: mode === 'edit',
+          fullscreen: isFullScreen,
+          darkMode,
+          width: modalWidth,
+          hideHeader,
+          hideFooter,
         }}
       >
         {!loadingState ? (
@@ -259,7 +319,7 @@ export const Modal = function Modal({
             <SubContainer
               id={`${id}`}
               canvasHeight={modalHeight}
-              styles={{ backgroundColor: customStyles.modalBody.backgroundColor }}
+              styles={{ backgroundColor: customStyles.modalBody.backgroundColor, height: modalHeight }}
               canvasWidth={modalWidth}
               darkMode={darkMode}
             />
@@ -276,17 +336,57 @@ export const Modal = function Modal({
   );
 };
 
+const ModalHeader = ({ id, customStyles, hideCloseButton, darkMode, width }) => {
+  return (
+    <BootstrapModal.Header
+      style={{ ...customStyles.modalHeader }}
+      data-cy={`modal-header`}
+      closeButton={!hideCloseButton}
+    >
+      <SubContainer
+        id={`${id}-header`}
+        canvasHeight={MODAL_HEADER.CANVAS_HEIGHT}
+        canvasWidth={width}
+        allowContainerSelect={false}
+        darkMode={darkMode}
+        styles={{
+          backgroundColor: 'transparent',
+        }}
+      />
+    </BootstrapModal.Header>
+  );
+};
+
+const ModalFooter = ({ id, customStyles, darkMode, width }) => {
+  return (
+    <BootstrapModal.Footer style={{ ...customStyles.modalFooter }} data-cy={`modal-footer`}>
+      <SubContainer
+        id={`${id}-footer`}
+        canvasHeight={MODAL_FOOTER.CANVAS_HEIGHT}
+        canvasWidth={width}
+        allowContainerSelect={false}
+        darkMode={darkMode}
+        styles={{
+          margin: 0,
+          backgroundColor: 'transparent',
+        }}
+      />
+    </BootstrapModal.Footer>
+  );
+};
+
 const Component = ({ children, ...restProps }) => {
   const {
     customStyles,
     parentRef,
     id,
-    title,
-    titleAlignment,
-    hideTitleBar,
     hideCloseButton,
-    hideModal,
     showConfigHandler,
+    fullscreen,
+    darkMode,
+    width,
+    hideHeader,
+    hideFooter,
   } = restProps['modalProps'];
 
   const setSelectedComponentAsModal = useStore((state) => state.setSelectedComponentAsModal, shallow);
@@ -302,63 +402,30 @@ const Component = ({ children, ...restProps }) => {
   };
 
   return (
-    <BootstrapModal {...restProps} onClick={handleModalBodyClick}>
+    <BootstrapModal {...restProps} onClick={handleModalBodyClick} fullscreen={fullscreen} animation={true}>
       {showConfigHandler && (
         <ConfigHandle
           id={id}
-          customClassName={hideTitleBar ? 'modalWidget-config-handle' : ''}
+          customClassName={hideHeader ? 'modalWidget-config-handle' : ''}
           showHandle={showConfigHandler}
           setSelectedComponentAsModal={setSelectedComponentAsModal}
           componentType="Modal"
           isModalOpen={true}
         />
       )}
-      {!hideTitleBar && (
-        <BootstrapModal.Header style={{ ...customStyles.modalHeader }} data-cy={`modal-header`}>
-          <BootstrapModal.Title
-            style={{
-              textAlign: titleAlignment,
-              width: '100%',
-            }}
-            id="contained-modal-title-vcenter"
-            data-cy={`modal-title`}
-          >
-            {title}
-          </BootstrapModal.Title>
-          {!hideCloseButton && (
-            <span
-              className="cursor-pointer"
-              data-cy={`modal-close-button`}
-              size="sm"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                hideModal();
-              }}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="icon icon-tabler icon-tabler-x"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                strokeWidth="2"
-                stroke="currentColor"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </span>
-          )}
-        </BootstrapModal.Header>
+      {!hideHeader && (
+        <ModalHeader
+          id={id}
+          customStyles={customStyles}
+          hideCloseButton={hideCloseButton}
+          darkMode={darkMode}
+          width={width}
+        />
       )}
       <BootstrapModal.Body style={{ ...customStyles.modalBody }} ref={parentRef} id={id} data-cy={`modal-body`}>
         {children}
       </BootstrapModal.Body>
+      {!hideFooter && <ModalFooter id={id} darkMode={darkMode} customStyles={customStyles} width={width} />}
     </BootstrapModal>
   );
 };
