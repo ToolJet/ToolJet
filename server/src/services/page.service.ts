@@ -225,6 +225,7 @@ export class PageService {
 
         if (parentId) {
           await manager.update(Component, component.id, { parent: parentId });
+          component.parent = parentId;
         }
       }
 
