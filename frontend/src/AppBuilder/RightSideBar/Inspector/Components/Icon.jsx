@@ -2,6 +2,8 @@ import React, { useRef, useState } from 'react';
 import Accordion from '@/_ui/Accordion';
 import { EventManager } from '../EventManager';
 import { renderElement } from '../Utils';
+// eslint-disable-next-line import/no-unresolved
+import i18next from 'i18next';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { SearchBox } from '@/_components/SearchBox';
@@ -25,6 +27,13 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
   const [searchText, setSearchText] = useState('');
   const [showPopOver, setPopOverVisibility] = useState(false);
   const iconList = useRef(Object.keys(Icons));
+
+  let additionalActions = [];
+  for (const [key] of Object.entries(componentMeta?.properties)) {
+    if (componentMeta?.properties[key]?.section === 'additionalActions') {
+      additionalActions.push(key);
+    }
+  }
 
   const searchIcon = (text) => {
     if (searchText === text) return;
@@ -130,13 +139,13 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
   let items = [];
 
   items.push({
-    title: 'Properties',
+    title: 'Label',
     children: renderIconPicker(),
   });
 
   items.push({
-    title: 'Events',
-    isOpen: false,
+    title: `${i18next.t('widget.common.events', 'Events')}`,
+    isOpen: true,
     children: (
       <EventManager
         sourceId={component?.id}
@@ -154,27 +163,28 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
   });
 
   items.push({
-    title: 'General',
-    isOpen: false,
-    children: (
-      <>
-        {renderElement(
-          component,
-          componentMeta,
-          layoutPropertyChanged,
-          dataQueries,
-          'tooltip',
-          'general',
-          currentState,
-          allComponents
-        )}
-      </>
-    ),
+    title: `${i18next.t('widget.common.additionalActions', 'Additional Actions')}`,
+    isOpen: true,
+    children: additionalActions?.map((property) => {
+      const paramType = property === 'Tooltip' ? 'general' : 'properties';
+      return renderElement(
+        component,
+        componentMeta,
+        paramUpdated,
+        dataQueries,
+        property,
+        paramType,
+        currentState,
+        allComponents,
+        darkMode,
+        componentMeta.properties?.[property]?.placeholder
+      );
+    }),
   });
 
   items.push({
-    title: 'Devices',
-    isOpen: false,
+    title: `${i18next.t('widget.common.devices', 'Devices')}`,
+    isOpen: true,
     children: (
       <>
         {renderElement(
