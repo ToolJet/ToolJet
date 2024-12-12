@@ -6,6 +6,8 @@ export const TypeMapping = {
   code: 'Code',
   toggle: 'Toggle',
   select: 'Select',
+  datepicker: 'Datepicker',
+  timepicker: 'TimePicker',
   alignButtons: 'AlignButtons',
   number: 'Number',
   boxShadow: 'BoxShadow',

@@ -113,7 +113,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
       'Checkbox',
       'RadioButton',
       'Datepicker',
-      'DateRangePicker',
+      'DaterangePicker',
       'FilePicker',
       'StarRating',
     ];

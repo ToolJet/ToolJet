@@ -1,6 +1,6 @@
 export const datepickerConfig = {
-  name: 'Datepicker',
-  displayName: 'Date Picker',
+  name: 'DatetimePickerLegacy',
+  displayName: 'Datetime Picker (Legacy)',
   description: 'Choose date and time',
   component: 'Datepicker',
   defaultSize: {

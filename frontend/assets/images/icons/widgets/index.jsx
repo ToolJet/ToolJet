@@ -85,7 +85,9 @@ const WidgetIcon = (props) => {
       return <Container {...props} />;
     case 'customcomponent':
       return <Customcomponent {...props} />;
-    case 'datepicker':
+    case 'datetimepickerlegacy':
+      return <Datepicker {...props} />;
+    case 'datetimepicker':
       return <Datepicker {...props} />;
     case 'daterangepicker':
       return <Daterangepicker {...props} />;
