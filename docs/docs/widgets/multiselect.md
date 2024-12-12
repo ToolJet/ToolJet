@@ -37,8 +37,6 @@ For comprehensive information on all available **Actions**, refer to the [Action
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Component Specific Actions (CSA)
-`await components.multiselect1.clearSelections()` <br/>
-`await components.multiselect1.deselectOption(2)`
 
 Following actions of Multiselect component can be controlled using the component specific actions(CSA):
 

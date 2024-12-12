@@ -3,89 +3,65 @@ id: container
 title: Container
 ---
 
-Containers are used to group components together. You can move the desired number of components inside a container to organize your app better.
+Containers are used to group components together. You can move a group of related components inside a container for better organization of your UI elements.
 
 :::caution Restricted components
-In order to avoid excessively complex situations, certain components, namely **Calendar** and **Kanban**, are restricted from being placed within the Container component using drag-and-drop functionality.
-
-If the builder attempts to add any of the aforementioned components inside the container, an error message will be displayed:
-
-`<Restricted component> cannot be used as a child component within the container.`
+Certain components, namely **Calendar** and **Kanban**, are restricted from being placed within the Container component.
 :::
 
-<div style={{paddingTop:'24px'}}>
+## Show header
 
-## Enabling Vertical Scroll on Container
-
-To enable the vertical scroll on the container, drag and place any component to the bottom grid of the container and the container will automatically enable the scrolling.
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
-
-## Loading State
-
-To activate the loader on the Container component, access its properties and dynamically adjust the **Loading State** property by clicking the **fx** button. You can set it to either `{{true}}` or `{{false}}`.
-
-For instance, if you wish to display the loader on the container when the query named `restapi1` is in progress, set the **Loading State** value to `{{queries.restapi1.isLoading}}`.
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
+The show header toggle can be used to display or hide a header for the component. If you keep the toggle on, the container will display a header on which you can place other components. The styling of the header can be controlled separately under the Styles tab. 
 
 ## Component Specific Actions (CSA)
 
-There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.
+Following actions of component can be controlled using the component specific actions(CSA):
 
-</div>
-
-<div style={{paddingTop:'24px'}}>
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
+| :------------ | :---------- | :------------ |
+| setVisibility()| Sets the visibility of the component.            | Employ a RunJS query (for e.g.,  <br/> `await components.container1.setVisibility(false)`) or trigger it using an event. |
+| setLoading()   | Sets the loading state of the component.         | Employ a RunJS query (for e.g.,  <br/> `await components.container1.setLoading(true)`) or trigger it using an event. |
+| setDisable()   | Disables the component.                           | Employ a RunJS query (for e.g., <br/> `await components.container1.setDisable(true)`) or trigger it using an event. |
 
 ## Exposed Variables
 
-There are currently no exposed variables for the component.
+| Variable | Description | How To Access |
+|:--------|:-----------|:------------|
 
-</div>
+| <div style={{ width:"100px"}}> isLoading </div> | Indicates if the component is loading. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isLoading}}`).|
+| <div style={{ width:"100px"}}> isVisible </div> | Indicates if the component is visible. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isVisible}}`).|
+| <div style={{ width:"100px"}}> isDisabled </div> | Indicates if the component is disabled. | Accessible dynamically with JS (for e.g., `{{components.textinput1.isDisabled}}`).|
 
-<div style={{paddingTop:'24px'}}>
+## Tooltip
 
-## General
-### Tooltip
+You can add a Tooltip to the component in string format. Once you pass a value in the tooltip input, hovering over the component will display the value on the right.
 
-A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the component.
+## Additional Actions
 
-Under the **General** accordion, you can set the value in the string format. Now hovering over the component will display the string as the tooltip.
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:------------------|:------------|:------------------------------|
+| Loading state      | Enables a loading spinner, often used with `isLoading` to indicate progress.  | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Visibility         | Controls component visibility.                                               | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Disable            | Enables or disables the component.                                            | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
-</div>
+## Devices
 
-<div style={{paddingTop:'24px'}}>
-
-## Layout
-
-| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> |
-|:----------- |:----------- | :-----------|
+|<div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Expected Value </div>|
+|:---------- |:----------- |:----------|
 | Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Show on mobile | Makes the component visible in mobile view.| You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-
-</div>
+| Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 ---
 
-<div style={{paddingTop:'24px'}}>
-
-## Styles
-
-| <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"100px"}}> Default Value </div> |
-|:----------- |:----------- |:---------|
-| Background color |  Change the background color of the Container by entering the `Hex color code` or choosing a color of your choice from the color picker. | |
-| Border radius | Modifies the border radius of the container. The field expects only numerical values from `1` to `100`.| Default is `0`. |
-| Border color |  Change the border color of the Container by entering the `Hex color code` or choosing a color of your choice from the color picker. | |
-| Visibility | Controls the visibility of the component. If `{{false}}` the component will not be visible after the app is deployed. It can only have boolean values i.e. either `{{true}}` or `{{false}}`. | By default, it's set to `{{true}}`. |
-| Disable |  This property only accepts boolean values. If set to `{{true}}`, the component will be locked and becomes non-functional. | By default, its value is set to `{{false}}`. |
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| Background        | Sets the background color of the container.                                                   | Select the color or click on **fx** and input code that programmatically returns a Hex color code.          |
+| Header    | Sets the background color of the header.                                                       | Select the color or click on **fx** and input code that programmatically returns a Hex color code.          |
+| Header height      | Sets the height of the header within the component.                                     | Enter a number or click on **fx** and input a number programmatically using code.          |
+| Border radius      | Sets the radius of the component.                                     | Enter a number or click on **fx** and input a number programmatically using code.          |
+| Border color          | Sets the color of the border.                                               | Select the color or click on **fx** and input code that programmatically returns a Hex color code. |
+| Box shadow      | Sets the box shadow properties of the component.                                              | Select the box shadow color and adjust the related properties or set it programmatically using **fx**.                                            |
 
 
-:::info
-Any property having **fx** button next to its field can be **programmatically configured**.
-:::
 
-</div>
+
