@@ -165,7 +165,7 @@
                         {
                           "type": "category",
                           "label": "Serverside Operations",
-                          "items" : [
+                          "items": [
                             "widgets/table/serverside-operations/overview",
                             "widgets/table/serverside-operations/search",
                             "widgets/table/serverside-operations/sort",
@@ -370,7 +370,8 @@
             "org-setup/licensing/self-hosted"
           ]
         },
-        "org-setup/instances-and-workspaces",
+        "org-setup/instances",
+        "org-setup/workspaces",
         {
           "type": "category",
           "label": "Organization Branding",

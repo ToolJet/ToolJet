@@ -90,7 +90,7 @@ const sidebars = {
             'app-builder/walkthrough/variables',
             'app-builder/importing-exporting-applications',
           ],
-        },   
+        },
         {
           'type': 'category',
           'label': 'References',
@@ -176,7 +176,7 @@ const sidebars = {
                         {
                           'type': 'category',
                           'label': 'Serverside Operations',
-                          'items' : [
+                          'items': [
                             'widgets/table/serverside-operations/overview',
                             'widgets/table/serverside-operations/search',
                             'widgets/table/serverside-operations/sort',
@@ -382,7 +382,8 @@ const sidebars = {
             'org-setup/licensing/self-hosted'
           ]
         },
-        'org-setup/instances-and-workspaces',
+        'org-setup/instances',
+        'org-setup/workspaces',
         {
           'type': 'category',
           'label': 'Organization Branding',
