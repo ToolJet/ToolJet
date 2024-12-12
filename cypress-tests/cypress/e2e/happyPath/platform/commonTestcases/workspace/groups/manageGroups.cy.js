@@ -4,7 +4,6 @@ import { groupsText } from "Texts/manageGroups";
 import { fake } from "Fixtures/fake";
 import * as common from "Support/utils/common";
 import * as groups from "Support/utils/manageGroups";
-import * as permissions from "Support/utils/userPermissions";
 
 const groupName = fake.firstName.replaceAll("[^A-Za-z]", "");
 const newGroupname = `New ${groupName}`;
@@ -24,8 +23,7 @@ describe("Manage Groups", () => {
     );
 
     groups.manageGroupsElements();
-    groups.groupPermissionTests();
-    cy.pause();
+    //Custom groups test cases
     cy.get(groupsSelector.createNewGroupButton).should("be.visible").click();
     cy.get(groupsSelector.addNewGroupModalTitle).verifyVisibleElement(
       "have.text",
@@ -72,7 +70,6 @@ describe("Manage Groups", () => {
     );
     cy.get('[data-cy="group-name-update-link"]').should("be.visible");
     groups.OpenGroupCardOption(groupName);
-
     cy.get(groupsSelector.deleteGroupOption).verifyVisibleElement(
       "have.text",
       groupsText.deleteGroupButton
@@ -115,9 +112,9 @@ describe("Manage Groups", () => {
       "have.text",
       groupsText.resourcesApps
     );
-    cy.get(groupsSelector.permissionstableHedaer).verifyVisibleElement(
+    cy.get(groupsSelector.permissionsTableHeader).verifyVisibleElement(
       "have.text",
-      groupsText.permissionstableHedaer
+      groupsText.permissionsTableHeader
     );
 
     cy.get(groupsSelector.resourcesApps).verifyVisibleElement(
@@ -395,7 +392,7 @@ describe("Manage Groups", () => {
       "have.text",
       "Select specific applications you want to add to the group"
     );
-    cy.get('[data-cy="resources-container"]>>>>').should("be.visible");
+    cy.get('[data-cy="resources-container"]').should("be.visible");
     cy.get('[data-cy="confim-button"]').verifyVisibleElement(
       "have.text",
       "Update"
