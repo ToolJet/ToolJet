@@ -18,6 +18,11 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
     ```
 
+    Use the command to load NVM:
+    ```bash
+    source ~/.nvm/nvm.sh
+    ```
+
     Close and reopen your terminal to start using nvm
     ```bash
     nvm install 18.18.2
@@ -44,21 +49,28 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
 
     Please follow the installation [PostgREST](https://postgrest.org/en/stable/install.html) guide
 
-    **Note:** Clone the GitHub repo locally using: 
-    
-    ```bash
-    git clone https://github.com/ToolJet/ToolJet.git
-    ```
+2. Setup the repository:
 
+    2.1 Fork the repository:
+
+    Go to the [ToolJet GitHub repository](https://github.com/ToolJet/Tooljet), click on the **Fork** button to create a copy of the repository under your own GitHub account.
+
+    2.2 Clone your forked repository:
+
+    After forking, clone the forked repository to your local machine using the URL of your forked repo.
+
+    ```bash
+    git clone https://github.com/<your-username>/ToolJet.git
+    ```
     
-2. Set up environment variables
+3. Set up environment variables
 
     Create a `.env` file by copying `.env.example`. More information on the variables that can be set is given in the [environment variables reference](/docs/setup/env-vars)
     ```bash
     cp .env.example .env
     ```
 
-3. Populate the keys in the env file
+4. Populate the keys in the env file
    :::info
    `SECRET_KEY_BASE` requires a 64 byte key. (If you have `openssl` installed, run `openssl rand -hex 64` to create a 64 byte secure   random key)
 
@@ -73,7 +85,7 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
    SECRET_KEY_BASE=4229d5774cfe7f60e75d6b3bf3a1dbb054a696b6d21b6d5de7b73291899797a222265e12c0a8e8d844f83ebacdf9a67ec42584edf1c2b23e1e7813f8a3339041
    ```
 
-4. Install and build dependencies
+5. Install and build dependencies
     ```bash
     npm install
     npm install --prefix server
@@ -81,7 +93,13 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
     npm run build:plugins
     ```
 
-5. Set up database
+   > **_NOTE:_**
+   > If the `npm run build:plugins` command fails due to some packages are missing, try running the following command to install the necessary packages:
+   `sudo apt install build-essential`
+   > then proceed to `npm run build:plugins` step again
+
+
+6. Set up database
     ```bash
     npm run --prefix server db:create
     npm run --prefix server db:reset
@@ -90,17 +108,17 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
     If at any point you need to reset the database, use this command `npm run --prefix server db:reset`
     :::
 
-6. Run plugins compilation in watch mode
+7. Run plugins compilation in watch mode
     ```bash
     cd ./plugins && npm start
     ```
 
-7. Run the server
+8. Run the server
     ```bash
     cd ./server && npm run start:dev
     ```
 
-8. Run the client
+9. Run the client
     ```bash
     cd ./frontend && npm start
     ```
@@ -108,7 +126,7 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
 
     The client will start running on the port 8082, you can access the client by visiting:  [http://localhost:8082](http://localhost:8082)
 
-9. Create login credentials
+10. Create login credentials
 
     Visiting https://localhost:8082 should redirect you to the login page, click on the signup link and enter your email. The emails sent by the server in development environment are captured and are opened in your default browser. Click the invitation link in the email preview to setup the account.
 

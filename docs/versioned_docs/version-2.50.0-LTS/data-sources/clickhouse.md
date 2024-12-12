@@ -3,8 +3,6 @@ id: clickhouse
 title: ClickHouse
 ---
 
-# ClickHouse
-
 ToolJet can connect to the ClickHouse to read and write data.
 
 :::info
@@ -13,7 +11,7 @@ ToolJet uses this [NodeJS](https://github.com/TimonKK/clickhouse) client for Cli
 
 ## Connection
 
-To establish a connection with the Clickhouse data source, you can either click on the `+Add new data source` button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+To establish a connection with the Clickhouse data source, you can either click on the **+ Add new data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
 
 ToolJet requires the following to connect to your ClickHouse Database:
 
@@ -31,19 +29,27 @@ ToolJet requires the following to connect to your ClickHouse Database:
 
 <img className="screenshot-full" src="/img/datasource-reference/clickhouse/connection-v2.png" alt="ClickHouse connection" />
 
+<div style={{paddingTop:'24px'}}>
+
 ## Querying ClickHouse
 
-After setting up the ClickHouse data source, you can click on the `+` button of the query manager and select the ClickHouse data source that you added in the previous step to create a new query.
+1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
+2. Select the **ClickHouse** datasource added in previous step.
+3. Select the operation you want to perform and enter the query.
+4. Click on the **Preview** button to preview the output or Click on the **Run** button to create and trigger the query.
 
 :::info
-For more details on clickhouse visit [Clickhouse docs](https://clickhouse.com/docs/en/quick-start).
+For more details on clickhouse visit [Clickhouse Docs](https://clickhouse.com/docs/en/quick-start).
 :::
 
+</div>
 
-## Supported Operations: 
+<div style={{paddingTop:'24px'}}>
 
-- [SQL Query](#sql-query)
-- [Insert array of objects](#supported-operations)
+## Supported Operations
+
+- **[SQL Query](#sql-query)**
+- **[Insert array of objects](#insert-array-of-objects)**
 
 ### SQL Query
 
@@ -51,161 +57,118 @@ Use this to operation to enter **[ClickHouse SQL Statements](https://clickhouse.
 
 #### Example SQL queries
 
-- **SELECT**:
+#### SELECT:
 
-	```sql
-	SELECT * from test array;
-	```
+```sql
+SELECT * from test array;
+```
 
-	<div style={{textAlign: 'center'}}>
+<img className="screenshot-full" src="/img/datasource-reference/clickhouse/select-v2.png" alt="ClickHouse SQL Statement operation" style={{marginBottom:'15px'}}/>
 
-	<img className="screenshot-full" src="/img/datasource-reference/clickhouse/select.png" alt="ClickHouse SQL Statement operation" />
+#### CREATE: 
 
-	</div>
+```sql
+CREATE TABLE test array3 (
+	date Date,
+	str String,
+	arr Array(String),
+	arr2 Array (Date)
+	arr3 Array(UInt32) ,
+	id1 UUID
+)ENGINE=MergeTree () ORDER BY(str)
+```
 
-- **CREATE**: 
+<img className="screenshot-full" src="/img/datasource-reference/clickhouse/create-v2.png" alt="ClickHouse SQL Statement operation" style={{marginBottom:'15px'}}/>
 
-	```sql
-	CREATE TABLE test array3 (
-		date Date,
-		str String,
-		arr Array(String),
-		arr2 Array (Date)
-		arr3 Array(UInt32) ,
-		id1 UUID
-	)ENGINE=MergeTree () ORDER BY(str)
-	```
+#### ALTER TABLE (add column)
 
-	<div style={{textAlign: 'center'}}>
+```sql
+ALTER TABLE test array1 ADD COLUMN Added2 UInt32;
+```
 
-	<img className="screenshot-full" src="/img/datasource-reference/clickhouse/create.png" alt="ClickHouse SQL Statement operation" />
+<img className="screenshot-full" src="/img/datasource-reference/clickhouse/alter-v2.png" alt="ClickHouse SQL Statement operation" style={{marginBottom:'15px'}} />
 
-	</div>
+#### SELECT WITH WHERE CLAUSE
+```sql
+SELECT * FROM test array1 WHERE str='Somethingl...'
+```
 
-- **ALTER TABLE**(add column)
+<img className="screenshot-full" src="/img/datasource-reference/clickhouse/selectwithwhere-v2.png" alt="ClickHouse SQL Statement operation" style={{marginBottom:'15px'}} />
 
-	```sql
-	ALTER TABLE test array1 ADD COLUMN Added2 UInt32;
-	```
+#### UPDATE
+```sql
+ALTER TABLE test_array1 UPDATE arr = (12] WHERE str='Somethingl...'
+```
 
-	<div style={{textAlign: 'center'}}>
+<img className="screenshot-full" src="/img/datasource-reference/clickhouse/update-v2.png" alt="ClickHouse SQL Statement operation" style={{marginBottom:'15px'}} />
 
-	<img className="screenshot-full" src="/img/datasource-reference/clickhouse/alter.png" alt="ClickHouse SQL Statement operation" />
+#### DELETE
+```sql
+ALTER TABLE test_array1 DELETE WHERE str= 'Somethingl...'
+```
 
-	</div>
+<img className="screenshot-full" src="/img/datasource-reference/clickhouse/delete-v2.png" alt="ClickHouse SQL Statement operation" style={{marginBottom:'15px'}} />
 
-- **SELECT WITH WHERE CLAUSE**
-	```sql
-	SELECT * FROM test array1 WHERE str='Somethingl...'
-	```
+#### NORMAL INSERT
 
-	<div style={{textAlign: 'center'}}>
+##### Step 1 - Creating Table
 
-	<img className="screenshot-full" src="/img/datasource-reference/clickhouse/selectwithwhere.png" alt="ClickHouse SQL Statement operation" />
-
-	</div>
-
-- **UPDATE**
-	```sql
-	ALTER TABLE test_array1 UPDATE arr = (12] WHERE str='Somethingl...'
-	```
-
-	<div style={{textAlign: 'center'}}>
-
-	<img className="screenshot-full" src="/img/datasource-reference/clickhouse/update.png" alt="ClickHouse SQL Statement operation" />
-
-	</div>
-
-- **DELETE**
-	```sql
-	ALTER TABLE test_array1 DELETE WHERE str= 'Somethingl...'
-	```
-
-	<div style={{textAlign: 'center'}}>
-
-	<img className="screenshot-full" src="/img/datasource-reference/clickhouse/delete.png" alt="ClickHouse SQL Statement operation" />
-
-	</div>
-
-- **NORMAL INSERT**
-
-	1) Step 1 - Creating Table
-
-	```sql
-	CREATE TABLE test array4 (
+```sql
+CREATE TABLE test array4 (
 	name String,
 	date Date
-   )ENGINE=MergeTree () ORDER BY (name)
-	```
+)ENGINE=MergeTree () ORDER BY (name)
+```
 
-	<div style={{textAlign: 'center'}}>
+<img className="screenshot-full" src="/img/datasource-reference/clickhouse/step1-v2.png" alt="ClickHouse SQL Statement operation" />
 
-	<img className="screenshot-full" src="/img/datasource-reference/clickhouse/step1.png" alt="ClickHouse SQL Statement operation" />
+#### Step 2 - Insert
 
-	</div>
+```sql
+INSERT INTO test_array4 (*) VALUES ('juvane', '1996-01-13')
+```
 
-	2) Step 2 - Insert
+<img className="screenshot-full" src="/img/datasource-reference/clickhouse/step2-v2.png" alt="ClickHouse SQL Statement operation" />
 
-	```sql
-	INSERT INTO test_array4 (*) VALUES ('juvane', '1996-01-13')
-	```
+:::info
+**Giving Primary Key**
+```sql
+CREATE TABLE db.table_name
+(
+	name1 type1, name2 type2, ...,
+	PRIMARY KEY(expr1[, expr2,...])]
+)
+ENGINE = engine;
 
-	<div style={{textAlign: 'center'}}>
-
-	<img className="screenshot-full" src="/img/datasource-reference/clickhouse/step1.png" alt="ClickHouse SQL Statement operation" />
-
-	</div>
-
-	:::info
-	**Giving Primary Key**
-	```
-	CREATE TABLE db.table_name
-	(
-		name1 type1, name2 type2, ...,
-		PRIMARY KEY(expr1[, expr2,...])]
-	)
-	ENGINE = engine;
-
-	OR 
+OR 
 	
-	CREATE TABLE db.table_name
-	(
-		name1 type1, name2 type2, ...
-	)
-	ENGINE = engine
-	PRIMARY KEY(expr1[, expr2,...]);
-	```
-	:::
+CREATE TABLE db.table_name
+(
+	name1 type1, name2 type2, ...
+)
+ENGINE = engine
+PRIMARY KEY(expr1[, expr2,...]);
+```
+:::
 
-### Insert array of objects
+### Insert Array of Objects
 
 Use this operation for inserting array of objects.
 
 #### Required Parameters:
 - **Body**
-- **Fields**
 - **Table name**
+- **Fields**
 
 **Example Body value:**
 ```javascript
 [
-			{
-				date: '2018-01-01',
-				str: 'Something1...',
-				arr: [],
-				arr2: ['1985-01-02', '1985-01-03'],
-				arr3: [1,2,3,4,5],
-				id1: '102a05cb-8aaf-4f11-a442-20c3558e4384'
-			},		
-			{
-				date: '2018-02-01',
-				str: 'Something2...',
-				arr: ['5670000000', 'Something3...'],
-				arr2: ['1985-02-02'],
-				arr3: [],
-				id1: 'c2103985-9a1e-4f4a-b288-b292b5209de1'
-			}
-		];
+  { "id": 1, "name": "Alice", "age": 25 },
+  { "id": 2, "name": "Bob", "age": 30 },
+  { "id": 3, "name": "Charlie", "age": 28 }
+]
 ```
 
-<img className="screenshot-full" src="/img/datasource-reference/clickhouse/insertarray.png" alt="ClickHouse Insert array of objects operation" />
+<img className="screenshot-full" src="/img/datasource-reference/clickhouse/insertarray-v2.png" alt="ClickHouse Insert array of objects operation" />
+
+</div>

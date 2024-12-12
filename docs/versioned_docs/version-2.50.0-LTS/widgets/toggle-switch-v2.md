@@ -5,10 +5,10 @@ title: Toggle Switch
 
 The **Toggle Switch** component can be used for binary choices, such as turning a feature on/off or enabling/disabling a setting.
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 :::info
-To get the configuration of legacy Toggle Switch component, please refer to **[this](/docs/2.43.0/widgets/toggle-switch)** document.
+To get the configuration of legacy Toggle Switch component, please refer to **[this](/docs/widgets/toggle-switch)** document.
 :::
 
 ## Properties
@@ -18,11 +18,11 @@ To get the configuration of legacy Toggle Switch component, please refer to **[t
 | Property       | Description    | Expected Value         |
 |:---------------|:---------------|:-----------------------|
 | Label          | The text to be used as the label for the toggle switch.          | String (e.g., `Enable notifications`).                 |
-| Default status | Sets the default status when the app is loaded.                | Toggle the on/off switch or click on `fx` and dynamically set the value. |
+| Default status | Sets the default status when the app is loaded.                | Toggle the on/off switch or click on **fx** and dynamically set the value. |
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Events
 
@@ -38,7 +38,7 @@ Check [Action Reference](/docs/category/actions-reference) docs to get the detai
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Component Specific Actions (CSA)
 
@@ -56,7 +56,7 @@ Following actions of Toggle switch component can be controlled using the compone
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Exposed Variables
 
@@ -72,13 +72,13 @@ Following actions of Toggle switch component can be controlled using the compone
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Validation
 
 | <div style={{ width:"100px"}}> Validation Option </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> Expected Value </div>|
 |:---------------|:-------------------------------------------------|:-----------------------------|
-| Make this field mandatory    | Displays a 'Field cannot be empty' message if no value is entered. | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Make this field mandatory    | Displays a 'Field cannot be empty' message if no value is entered. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Custom validation  | Specifies a validation error message for specific conditions. | Logical Expression (e.g., `{{components.toggleswitch1.value === false &&"Value needs to be checked"}}`).           |
 
 To add regex inside `Custom Validation`, you can use the below format: 
@@ -91,22 +91,17 @@ To add regex inside `Custom Validation`, you can use the below format:
 
 | <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:------------------|:------------|:------------------------------|
-| Loading state      | Enables a loading spinner, often used with `isLoading` to indicate progress. Toggle or set dynamically.   | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
-| Visibility         | Controls component visibility. Toggle or set dynamically.                                                 | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
-| Disable            | Enables or disables the component. Toggle or set dynamically.                                             | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Loading state      | Enables a loading spinner, often used with  the isLoading property to indicate progress. Toggle or set dynamically.   | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Visibility         | Controls component visibility. Toggle or set dynamically.                                                 | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Disable            | Enables or disables the component. Toggle or set dynamically.                                             | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Tooltip            | Provides additional information on hover. Set a string value for display.                                 | String (e.g., `Are you a registered user?` ).                       |
 
 ## Devices
 
-**Show on desktop**
-
-Makes the component visible in desktop view. You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.
-
-**Show on mobile**
-
-Makes the component visible in mobile view. You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.
-
----
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Expected Value </div>|
+|:------------------|:------------|:------------------------------|
+| Show on desktop      | Makes the component visible in desktop view.   | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on mobile         | Makes the component visible in mobile view.  | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 # Styles 
 
@@ -114,19 +109,17 @@ Makes the component visible in mobile view. You can set it with the toggle butto
 
 | <div style={{ width:"100px"}}> Label Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:---------------|:------------|:---------------|
-| Text color    | Sets the color of the component's label. | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
-| Alignment      | Sets the position of the label and input field. | Click on the toggle options or click on `fx` to input code that programmatically returns an alignment value - `left` or `right`. |
+| Text color    | Sets the color of the component's label. | Select the color or click on **fx** and input code that programmatically returns a Hex color code.          |
+| Alignment      | Sets the position of the label and input field. | Click on the toggle options or click on **fx** to input code that programmatically returns an alignment value - `left` or `right`. |
 
 ## Switch
 
 | <div style={{ width:"100px"}}> Label Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:---------------|:------------|:---------------|
-| Border color    | Sets the color of the toggle switch. | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
-| Checked color    | Sets the color of the toggle switch when it is checked. | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
-| Unchecked color    | Sets the color of the toggle switch when it is not checked. | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
-| Handle color    | Sets the color of the checked symbol inside the toggle switch. | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
-| Box shadow      | Sets the box shadow properties of the component.                                              | Select the box shadow color and adjust the related properties or set it programmatically using `fx`.                                            |
+| Border color    | Sets the color of the toggle switch. | Select the color or click on **fx** and input code that programmatically returns a Hex color code.          |
+| Checked color    | Sets the color of the toggle switch when it is checked. | Select the color or click on **fx** and input code that programmatically returns a Hex color code.          |
+| Unchecked color    | Sets the color of the toggle switch when it is not checked. | Select the color or click on **fx** and input code that programmatically returns a Hex color code.          |
+| Handle color    | Sets the color of the checked symbol inside the toggle switch. | Select the color or click on **fx** and input code that programmatically returns a Hex color code.          |
+| Box shadow      | Sets the box shadow properties of the component.                                              | Select the box shadow color and adjust the related properties or set it programmatically using **fx**.                                            |
 
 </div>
-
-

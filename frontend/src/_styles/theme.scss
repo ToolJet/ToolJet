@@ -5028,7 +5028,7 @@ div#driver-page-overlay {
   border-color: rgba(101, 109, 119, 0.16) !important;
 
   .driver-popover-title {
-    color: var(--slate12) !important;
+    color: white !important;
   }
 
   .driver-popover-tip {
@@ -5135,7 +5135,7 @@ div#driver-page-overlay {
   padding: 10px 5px 0 0;
   float: left;
   font-size: 14px;
-  color: $light-gray;
+  color: var(--slate-12);
 }
 
 .dynamic-form-row {
@@ -6767,11 +6767,15 @@ tbody {
       .react-datepicker__month-select,
       .react-datepicker__year-select {
         color: white;
+        
       }
 
       .react-datepicker__month-select,
       .react-datepicker__year-select {
         background-color: transparent;
+        option{
+          background-color: #232e3c;
+        }
       }
     }
 

@@ -1,6 +1,6 @@
 {
 	"$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
-	"title": "OpenAI datasource",
+	"title": "OpenAI Datasource",
 	"description": "A schema defining OpenAI datasource",
 	"type": "api",
 	"defaults": {},
@@ -11,114 +11,295 @@
 			"type": "dropdown-component-flip",
 			"description": "Single select dropdown for operation",
 			"list": [
-				{
-					"value": "completion",
-					"name": "Completion"
-				},
-				{
-					"value": "chat",
-					"name": "Chat"
-				}
+				{ "value": "chat", "name": "Chat" },
+				{ "value": "completion", "name": "Completion" },
+				{ "value": "image_generation", "name": "Generate AI Image(s)" }
 			]
 		},
-		"completion": {
-			"prompt": {
-				"label": "Prompt",
-				"key": "prompt",
-				"type": "codehinter",
-				"description": "Enter prompt",
-				"height": "150px"
+		"chat": {
+			"model": {
+				"label": "Model",
+				"key": "model",
+				"type": "dropdown-component-flip",
+				"description": "Select OpenAI Model",
+				"list": [
+					{ "value": "gpt-4o", "name": "GPT-4.0" },
+					{ "value": "gpt-4o-mini", "name": "GPT-4.0 mini" },
+					{ "value": "gpt-4-turbo", "name": "GPT-4 Turbo" },
+					{ "value": "gpt-3.5-turbo-0125", "name": "GPT-3.5 Turbo" }
+				]
 			},
-			"max_tokens": {
-				"label": "Max Tokens",
-				"key": "max_tokens",
-				"type": "codehinter",
-				"lineNumbers": false,
-				"description": "Enter from 1 to 2048",
-				"width": "320px",
-				"height": "36px",
-				"className": "codehinter-plugins"
+			"gpt-4o": {
+				"prompt": {
+					"label": "Message",
+					"key": "prompt",
+					"type": "codehinter",
+					"description": "Enter message",
+					"placeholder": "Draft an email or other piece of writing",
+					"height": "150px"
+				},
+				"max_tokens": {
+					"label": "Max Tokens",
+					"key": "max_tokens",
+					"type": "codehinter",
+					"description": "Enter from 1 to 2048",
+					"width": "320px",
+					"height": "36px"
+				},
+				"temperature": {
+					"label": "Temperature",
+					"key": "temperature",
+					"type": "codehinter",
+					"description": "Enter from 0 to 1",
+					"width": "320px",
+					"height": "36px"
+				},
+				"stop_sequence": {
+					"label": "Stop Sequence",
+					"key": "stop_sequence",
+					"type": "codehinter",
+					"description": "Enter stop sequence",
+					"width": "320px",
+					"height": "36px"
+				},
+				"suffix": {
+					"label": "Suffix",
+					"key": "suffix",
+					"type": "codehinter",
+					"description": "Enter suffix",
+					"width": "320px",
+					"height": "36px"
+				}
 			},
-			"temperature": {
-				"label": "Temperature",
-				"key": "temperature",
-				"type": "codehinter",
-				"lineNumbers": false,
-				"description": "Enter from 0 to 1",
-				"width": "320px",
-				"height": "36px",
-				"className": "codehinter-plugins"
+            "gpt-4o-mini": {
+				"prompt": {
+					"label": "Message",
+					"key": "prompt",
+					"type": "codehinter",
+					"description": "Enter message",
+					"placeholder": "Draft an email or other piece of writing",
+					"height": "150px"
+				},
+				"max_tokens": {
+					"label": "Max Tokens",
+					"key": "max_tokens",
+					"type": "codehinter",
+					"description": "Enter from 1 to 2048",
+					"width": "320px",
+					"height": "36px"
+				},
+				"temperature": {
+					"label": "Temperature",
+					"key": "temperature",
+					"type": "codehinter",
+					"description": "Enter from 0 to 1",
+					"width": "320px",
+					"height": "36px"
+				},
+				"stop_sequence": {
+					"label": "Stop Sequence",
+					"key": "stop_sequence",
+					"type": "codehinter",
+					"description": "Enter stop sequence",
+					"width": "320px",
+					"height": "36px"
+				},
+				"suffix": {
+					"label": "Suffix",
+					"key": "suffix",
+					"type": "codehinter",
+					"description": "Enter suffix",
+					"width": "320px",
+					"height": "36px"
+				}
 			},
-			"stop_sequence": {
-				"label": "Stop Sequence",
-				"key": "stop_sequence",
-				"type": "codehinter",
-				"lineNumbers": false,
-				"description": "Enter stop sequence",
-				"width": "320px",
-				"height": "36px",
-				"className": "codehinter-plugins"
+            "gpt-4-turbo": {
+				"prompt": {
+					"label": "Message",
+					"key": "prompt",
+					"type": "codehinter",
+					"description": "Enter message",
+					"placeholder": "Draft an email or other piece of writing",
+					"height": "150px"
+				},
+				"max_tokens": {
+					"label": "Max Tokens",
+					"key": "max_tokens",
+					"type": "codehinter",
+					"description": "Enter from 1 to 2048",
+					"width": "320px",
+					"height": "36px"
+				},
+				"temperature": {
+					"label": "Temperature",
+					"key": "temperature",
+					"type": "codehinter",
+					"description": "Enter from 0 to 1",
+					"width": "320px",
+					"height": "36px"
+				},
+				"stop_sequence": {
+					"label": "Stop Sequence",
+					"key": "stop_sequence",
+					"type": "codehinter",
+					"description": "Enter stop sequence",
+					"width": "320px",
+					"height": "36px"
+				},
+				"suffix": {
+					"label": "Suffix",
+					"key": "suffix",
+					"type": "codehinter",
+					"description": "Enter suffix",
+					"width": "320px",
+					"height": "36px"
+				}
 			},
-			"suffix": {
-				"label": "Suffix",
-				"key": "suffix",
-				"type": "codehinter",
-				"lineNumbers": false,
-				"description": "Enter suffix",
-				"width": "320px",
-				"height": "36px",
-				"className": "codehinter-plugins"
+            "gpt-3.5-turbo-0125": {
+				"prompt": {
+					"label": "Message",
+					"key": "prompt",
+					"type": "codehinter",
+					"description": "Enter message",
+					"placeholder": "Draft an email or other piece of writing",
+					"height": "150px"
+				},
+				"max_tokens": {
+					"label": "Max Tokens",
+					"key": "max_tokens",
+					"type": "codehinter",
+					"description": "Enter from 1 to 2048",
+					"width": "320px",
+					"height": "36px"
+				},
+				"temperature": {
+					"label": "Temperature",
+					"key": "temperature",
+					"type": "codehinter",
+					"description": "Enter from 0 to 1",
+					"width": "320px",
+					"height": "36px"
+				},
+				"stop_sequence": {
+					"label": "Stop Sequence",
+					"key": "stop_sequence",
+					"type": "codehinter",
+					"description": "Enter stop sequence",
+					"width": "320px",
+					"height": "36px"
+				},
+				"suffix": {
+					"label": "Suffix",
+					"key": "suffix",
+					"type": "codehinter",
+					"description": "Enter suffix",
+					"width": "320px",
+					"height": "36px"
+				}
 			}
 		},
-		"chat": {
-			"prompt": {
-				"label": "Message",
-				"key": "prompt",
-				"type": "codehinter",
-				"description": "Enter message",
-				"placeholder": "Draft an email or other piece of writing",
-				"height": "150px"
+		"completion": {
+			"model": {
+				"label": "Model",
+				"key": "model",
+				"type": "dropdown-component-flip",
+				"description": "Select OpenAI Model",
+				"list": [
+					{ "value": "gpt-3.5-turbo-instruct", "name": "GPT 3.5 Turbo" }
+				]
 			},
-			"max_tokens": {
-				"label": "Max Tokens",
-				"key": "max_tokens",
-				"type": "codehinter",
-				"lineNumbers": false,
-				"description": "Enter from 1 to 2048",
-				"width": "320px",
-				"height": "36px",
-				"className": "codehinter-plugins"
-			},
-			"temperature": {
-				"label": "Temperature",
-				"key": "temperature",
-				"type": "codehinter",
-				"lineNumbers": false,
-				"description": "Enter from 0 to 1",
-				"width": "320px",
-				"height": "36px",
-				"className": "codehinter-plugins"
-			},
-			"stop_sequence": {
-				"label": "Stop Sequence",
-				"key": "stop_sequence",
-				"type": "codehinter",
-				"lineNumbers": false,
-				"description": "Enter stop sequence",
-				"width": "320px",
-				"height": "36px",
-				"className": "codehinter-plugins"
-			},
-			"suffix": {
-				"label": "Suffix",
-				"key": "suffix",
-				"type": "codehinter",
-				"lineNumbers": false,
-				"description": "Enter suffix",
-				"width": "320px",
-				"height": "36px",
-				"className": "codehinter-plugins"
-			}
+              "gpt-3.5-turbo-instruct": {
+                "prompt": {
+                  "label": "Prompt",
+                  "key": "prompt",
+                  "type": "codehinter",
+                  "description": "Enter prompt",
+                  "height": "150px"
+                },
+                "max_tokens": {
+                  "label": "Max Tokens",
+                  "key": "max_tokens",
+                  "type": "codehinter",
+                  "description": "Enter from 1 to 2048",
+                  "width": "320px",
+                  "height": "36px"
+                },
+                "temperature": {
+                  "label": "Temperature",
+                  "key": "temperature",
+                  "type": "codehinter",
+                  "description": "Enter from 0 to 1",
+                  "width": "320px",
+                  "height": "36px"
+                },
+                "stop_sequence": {
+                  "label": "Stop Sequence",
+                  "key": "stop_sequence",
+                  "type": "codehinter",
+                  "description": "Enter stop sequence",
+                  "width": "320px",
+                  "height": "36px"
+                },
+                "suffix": {
+                  "label": "Suffix",
+                  "key": "suffix",
+                  "type": "codehinter",
+                  "description": "Enter suffix",
+                  "width": "320px",
+                  "height": "36px"
+                }
+              }
+		},
+		"image_generation": {
+  			"model": {
+    			"label": "Model",
+    			"key": "model",
+    			"type": "dropdown-component-flip",
+    			"description": "Select OpenAI Model",
+    			"list": [
+      				{ "value": "dall-e-3", "name": "DALL-E 3" },
+					{ "value": "dall-e-2", "name": "DALL-E 2" }
+    			],
+    			"disabled": true,
+    			"default": "dall-e-3"
+  			},
+  			"dall-e-3": {
+   				"prompt": {
+      				"label": "Prompt",
+      				"key": "prompt",
+      				"type": "codehinter",
+      				"description": "Enter prompt for image generation",
+      				"height": "150px"
+    			},
+    			"size": {
+					"label": "Size (in pixels)",
+					"key": "size",
+					"type": "codehinter",
+					"description": "Enter image size in pixels (e.g., 1024x1024)",
+                    "placeholder": "1024x1024, 1792x1024 or 1024x1792. By default 1024x1024 sized image is generated",
+					"width": "320px",
+					"height": "36px"
+    			}
+  			},
+			"dall-e-2": {
+   				"prompt": {
+      				"label": "Prompt",
+      				"key": "prompt",
+      				"type": "codehinter",
+      				"description": "Enter prompt for image generation",
+      				"height": "150px"
+    			},
+    			"size": {
+					"label": "Size (in pixels)",
+					"key": "size",
+					"type": "codehinter",
+					"description": "Enter image size in pixels (e.g., 1024x1024)",
+                    "placeholder": "256x256, 512x512 or 1024x1024. By default 1024x1024 sized image is generated",
+					"width": "320px",
+					"height": "36px"
+    			}
+  			}
 		}
+
 	}
 }

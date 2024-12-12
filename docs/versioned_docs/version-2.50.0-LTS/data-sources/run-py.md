@@ -1,19 +1,19 @@
 ---
 id: run-py
-title: Run Python code
+title: Run Python Code
 ---
 
-You can write custom Python code to interact with components and queries. To do that, you need to create a new query and select **Run Python code** from the available data sources.
+In ToolJet, custom **Run Python Code** can be used to interact with components and queries, making it possible to customize actions and data handling.
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/datasource-reference/custom-python/add-run-py.png" alt="Run Python code" />
-</div>
+<img className="screenshot-full" src="/img/datasource-reference/custom-python/add-run-py.png" alt="Run Python code" />
+
+<div style={{paddingTop:'24px'}}>
 
 ## Using Python Code to Trigger Component Specific Actions
 
-- Drag a **Text** component onto the canvas. We will set the text on the Text component using the Python query.
-- Create a query and select **Run Python code** from the available data sources
-- Paste the below code in the code editor and save the query:
+1. Drag a **Text** component onto the canvas. We will set the text on the Text component using the Python query.
+2. Create a query and select **Run Python code** from the available data sources
+3. Paste the below code in the code editor and save the query:
 
 ```python
 class Person:
@@ -29,31 +29,41 @@ p1 = Person(tj_globals.currentUser.firstName, 36)
 components.text1.setText(p1.myfunc())
 ```
 
-- The above code has a function `myfunc` which returns a string and we are using a **[Component Specific Action](/docs/tooljet-concepts/component-specific-actions)** to set the Text Component's value from the Python query. 
+4. The above code has a function `myfunc` which returns a string and we are using a **[Component Specific Action](/docs/tooljet-concepts/component-specific-actions)** to set the Text Component's value from the Python query. 
 
 :::tip
 - As of now, Run Python code only supports the [Python standard library](https://docs.python.org/3/library/).
 - Check **[RunPy Limitations](/docs/contributing-guide/troubleshooting/runpy-limitations)** to go through the limitations with using Python code
 :::
 
-## Trigger Queries
+</div>
+
+<div style={{paddingTop:'24px'}}>
+
+## Trigger Queries Using Run Python Code
+
 To trigger queries in Python, you can use the below functions:
 
 ```py
 actions.runQuery('getSalesData')
 #replace getSalesData with your query name
 ```
-
+Or
 ```py
 queries.getSalesData.run()
 #replace getSalesData with your query name
 ```
 
+</div>
+
+<div style={{paddingTop:'24px'}}>
+
 ## Get Query Data
 
 To immediately access the data returned by a query in **Run Python code**, you can use the below functions: 
 
-#### Trigger a query and retrieve its data:
+### Trigger a Query and Retrieve its Data
+
 ```py
 await queries.getSalesData.run()
 #replace getSalesData with your query name
@@ -64,7 +74,8 @@ value = queries.getSalesData.getData()
 value
 ```
 
-#### Trigger a query and retrieve its raw data:
+### Trigger a Query and Retrieve its Raw Data
+
 ```py
 await queries.getCustomerData.run()
 #replace getCustomerData with your query name
@@ -75,7 +86,8 @@ value = queries.getCustomerData.getRawData()
 value
 ```
 
-#### Trigger a query and retrieve its loading state:
+### Trigger a Query and Retrieve its Loading State
+
 ```py
 await queries.getTodos.run()
 #replace getTodos with your query name
@@ -86,17 +98,23 @@ value = queries.getTodos.getLoadingState()
 value
 ```
 
+</div>
+
+<div style={{paddingTop:'24px'}}>
+
 ## Get Variables
 
 To set and access variables or page variables in **Run Python code**, you can use the below functions:
 
-#### Set a variable:
+### Set a Variable
+
 ```py
 actions.setVariable('color','blue')
 #replace color with your desired variable name
 ```
 
-#### Immediately retrieve a variable after setting it:
+### Immediately Retrieve a Variable After Setting it
+
 ```py
 actions.setVariable('mode','dark')
 #replace mode with your desired variable name
@@ -105,13 +123,15 @@ actions.getVariable('mode')
 #replace mode with your desired variable name
 ```
 
-#### Set a page-specific variable:
+### Set a Page-Specific Variable
+
 ```py
-actions.setPageVariable('version',1)
+actions.setPageVariable('version', 1)
 #replace version with your desired variable name
 ```
 
-#### Immediately retrieve a page-specific variable after setting it:
+### Immediately Retrieve a Page-Specific Variable After Setting it
+
 ```py
 actions.setPageVariable('number',1)
 #replace number with your desired variable name
@@ -120,10 +140,15 @@ actions.getPageVariable('number')
 #replace number with your desired variable name
 ```
 
-## Using Transformations With Python
-**Run Python code** can be used to transform the data that is fetched in the queries. To test transformations using Python, create a new `REST API` query, leave the method as `GET` and enter the below url under the `URL` property.
+</div>
 
-```js
+<div style={{paddingTop:'24px'}}>
+
+## Using Transformations With Python
+
+**Run Python code** can be used to transform the data that is fetched in the queries. To test transformations using Python, create a new **REST API** query, leave the method as *GET* and enter the below url under the **URL** property.
+
+```yaml
 https://dummyjson.com/products
 ```
 
@@ -139,35 +164,42 @@ products_data = {
 }
 ```
 
-#### Filter the titles from the response
-To extract a list of product titles from the given data structure, we iterate through the `products` list and collect each product's `title` using the below code. Enable `Transformations` in the Query Editor and use the below code:
+### Filter the Titles From the Response
+
+To extract a list of product titles from the given data structure, we iterate through the *products* list and collect each product's *title* using the below code. Enable **Transformations** in the Query Editor and use the below code:
 
 ```python
 return [product["title"] for product in data["products"]]
 ```
 
-### Filtering Products by Category
+### Filter Products by Category
 
-To filter products by a specific category, such as "smartphones", and extract their titles. Enable `Transformations` in the Query Editor and use the below code:
+To filter products by a specific category, such as *smartphones*, and extract their titles. Enable **Transformations** in the Query Editor and use the below code:
 
 ```python
 return [product["title"] for product in data["products"] if product["category"] == "smartphones"]
 ```
 
-### Calculating Average Price of a Category
+### Calculate Average Price of a Category
 
-To calculate the average price of products within the "laptops" category. Enable `Transformations` in the Query Editor and use the below code:
+To calculate the average price of products within the *laptops* category. Enable **Transformations** in the Query Editor and use the below code:
 
 ```python
 return sum(product["price"] for product in data["products"] if product["category"] == "laptops") / len([product for product in data["products"] if product["category"] == "laptops"]) if len([product for product in data["products"] if product["category"] == "laptops"]) > 0 else 0
 ```
 
-:::info
-Issues with writing custom Python code? Ask in our [Slack community](https://www.tooljet.com/slack).
-:::
+</div>
+
+<div style={{paddingTop:'24px'}}>
 
 ## Refer Python Query Data in Components
 
 Just like other dynamic values, you can refer the data returned by **Run Python code** queries using double curly braces`{{}}`.
 
-For instance, if you have a **Run Python code** query named *updatedProductInfo*, you can pass `{{queries.updatedProductInfo.data}}` under the `Data` property of a Table component to populate it with the data returned by the *updatedProductInfo* query. 
+For instance, if you have a **Run Python code** query named *updatedProductInfo*, you can pass `{{queries.updatedProductInfo.data}}` under the **Data** property of a Table component to populate it with the data returned by the *updatedProductInfo* query. 
+
+:::info
+Issues with writing custom Python code? Ask in our [Slack community](https://www.tooljet.com/slack).
+:::
+
+</div>

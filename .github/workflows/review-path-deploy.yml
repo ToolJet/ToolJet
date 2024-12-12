@@ -63,7 +63,7 @@ jobs:
               },
               {
                 "key": "TOOLJET_DB",
-                "value": "${{ env.PR_NUMBER }}"
+                "value": "${{ env.PR_NUMBER }}-tjdb"
               },
               {
                 "key": "TOOLJET_DB_HOST",
@@ -72,7 +72,7 @@ jobs:
               {
                 "key": "TOOLJET_DB_USER",
                 "value": "${{ secrets.RENDER_PG_USER }}"
-              },              
+              },
               {
                 "key": "TOOLJET_DB_PASS",
                 "value": "${{ secrets.RENDER_PG_PASS }}"
@@ -82,8 +82,12 @@ jobs:
                 "value": "5432"
               },
               {
+                "key": "PGRST_DB_PRE_CONFIG",
+                "value": "postgrest.pre_config"
+              },
+              {
                 "key": "PGRST_DB_URI",
-                "value": "postgres://${{ secrets.RENDER_PG_USER }}:${{ secrets.RENDER_PG_PASS }}@${{ secrets.RENDER_PG_HOST }}/${{ env.PR_NUMBER }}"
+                "value": "postgres://${{ secrets.RENDER_PG_USER }}:${{ secrets.RENDER_PG_PASS }}@${{ secrets.RENDER_PG_HOST }}/${{ env.PR_NUMBER }}-tjdb"
               },
               {
                 "key": "PGRST_HOST",

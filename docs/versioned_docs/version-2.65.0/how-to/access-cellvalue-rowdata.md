@@ -62,7 +62,7 @@ Now, if the cell value is `electronics`, the text color will be red; otherwise, 
 
 ## Change Text Color Using Row Data
 
-- Under Cell Background Color for the `symbol` column, paste the below code: 
+- Under Cell Background Color for the `title` column, paste the below code: 
 
 ```
 {{rowData.price < 100? 'yellow': 'white'}}

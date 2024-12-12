@@ -58,7 +58,9 @@
         "setup/http-proxy",
         "setup/tooljet-subpath",
         "setup/v2-migration-guide",
-        "setup/upgrade-to-lts"
+        "setup/upgrade-to-lts",
+        "setup/upgrade-to-v3",
+        "setup/cloud-v3-migration"
       ]
     },
     {
@@ -206,8 +208,12 @@
       "label": "How To",
       "items": [
         "how-to/use-url-params-on-load",
+        "how-to/pass-query-params-in-custom-components",
         "how-to/use-custom-parameters",
+        "how-to/pass-values-in-rest-api",
+        "how-to/build-dynamic-forms",
         "how-to/setup-rsyslog",
+        "how-to/conditionally-display-components",
         "how-to/use-inspector",
         "how-to/use-form-component",
         "how-to/access-cellvalue-rowdata",
@@ -248,7 +254,7 @@
             "data-sources/amazonses",
             "data-sources/appwrite",
             "data-sources/athena",
-            "data-sources/azureblob",
+            "data-sources/azureblobstorage",
             "data-sources/baserow",
             "data-sources/bigquery",
             "data-sources/firestore",
@@ -259,7 +265,7 @@
             "data-sources/dynamodb",
             "data-sources/elasticsearch",
             "data-sources/gcs",
-            "data-sources/google.sheets",
+            "data-sources/googlesheets",
             "data-sources/graphql",
             "data-sources/grpc",
             "data-sources/influxdb",
@@ -352,7 +358,8 @@
                   ]
                 },
                 "user-authentication/sso/ldap",
-                "user-authentication/sso/saml"
+                "user-authentication/sso/saml",
+                "user-authentication/sso/auto-sso-login"
               ]
             }
           ]
@@ -403,7 +410,7 @@
           "type": "category",
           "label": "Marketplace Plugins",
           "items": [
-            "marketplace/plugins/marketplace-plugin-redshift",
+            "marketplace/plugins/marketplace-plugin-awsredshift",
             "marketplace/plugins/marketplace-plugin-textract",
             "marketplace/plugins/marketplace-plugin-aws-lambda",
             "marketplace/plugins/marketplace-plugin-engagespot",
@@ -413,7 +420,10 @@
             "marketplace/plugins/marketplace-plugin-plivo",
             "marketplace/plugins/marketplace-plugin-salesforce",
             "marketplace/plugins/marketplace-plugin-supabase",
-            "marketplace/plugins/marketplace-plugin-pocketbase"
+            "marketplace/plugins/marketplace-plugin-pocketbase",
+            "marketplace/plugins/marketplace-plugin-portkey",
+            "marketplace/plugins/marketplace-plugin-Presto",
+            "marketplace/plugins/marketplace-plugin-sharepoint"
           ]
         }
       ]
@@ -435,7 +445,8 @@
           "type": "link",
           "label": "Roadmap",
           "href": "https://github.com/orgs/ToolJet/projects/15"
-        }
+        },
+        "versions"
       ]
     },
     {
@@ -462,6 +473,15 @@
           "items": [
             "contributing-guide/marketplace/marketplace-setup",
             "contributing-guide/marketplace/creating-a-plugin"
+          ]
+        },
+        {
+          "type": "category",
+          "label": "Documentation",
+          "items": [
+            "contributing-guide/documentation-guidelines/introduction",
+            "contributing-guide/documentation-guidelines/pr-checklist",
+            "contributing-guide/documentation-guidelines/style-guide"
           ]
         },
         "tooljet-cli",

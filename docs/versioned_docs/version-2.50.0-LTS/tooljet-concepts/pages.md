@@ -5,6 +5,10 @@ title: Pages
 
 ToolJet allows you to create multi-page applications. By using the **Pages** panel on the left sidebar of the app-builder, you can create, manage and navigate through different pages of your application. The ability to create multiple pages allows for diverse functionalities within a single app.
 
+<div class="video-container">
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/pCpiWXp98tU?si=hzK-jvsynUwms4mU&rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</div>
+
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Managing Pages

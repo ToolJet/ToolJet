@@ -5,9 +5,11 @@ title: MySQL
 
 ToolJet can connect to MySQL databases to read and write data.
 
+<div style={{paddingTop:'24px'}}>
+
 ## Connection
 
-To establish a connection with the MySQL data source, you can either click on the `+Add New` button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+To establish a connection with the MySQL data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
 
 <div style={{textAlign: 'center'}}>
 
@@ -22,28 +24,22 @@ Please make sure the **Host/IP** of the database is accessible from your VPC if 
 
 **ToolJet requires the following to connect to your MySQL database:**
 
-| Parameter       | Description                                                               |
-| :-------------- | :------------------------------------------------------------------------ |
-| Username        | Username of the MySQL database                                            |
-| Password        | Password of the MySQL database                                            |
-| Database name   | Name of the MySQL database                                                |
-| Connection type | Connection type of the MySQL database: either **Hostname** or **Socket**. |
+- **Username**
+- **Password**
+- **Database Name**
+- **Connection Type**
 
 If you are using **Hostname** as the connection type, you will need to provide the following information:
 
-| Parameter | Description                                  |
-| :-------- | :------------------------------------------- |
-| Host/IP   | Hostname or IP address of the MySQL database |
-| Port      | Port number of the MySQL database            |
-| SSL       | Enable SSL connection to the MySQL database  |
+- **Host/IP**
+- **Port**
+- **SSL**
 
 If you are using **Socket** as the connection type, you will need to provide the following information:
 
-| Parameter   | Description             |
-| :---------- | :---------------------- |
-| Socket path | Path of the socket file |
+- **Socket Path**
 
-It is recommended to create a new MySQL database user so that you can control the access levels of ToolJet.
+**Note:** It is recommended to create a new MySQL database user so that you can control the access levels of ToolJet.
 
 <div style={{textAlign: 'center'}}>
 
@@ -51,18 +47,24 @@ It is recommended to create a new MySQL database user so that you can control th
 
 </div>
 
-Click on **Test connection** to verify the correctness of the provided credentials and the accessibility of the database to the ToolJet server. Finally, click the **Save** button to save the data source configuration.
+</div>
+
+<div style={{paddingTop:'24px'}}>
 
 ## Querying MySQL
 
+1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
+2. Select the database added in the previous step as the data source. 
+
 Once the MySQL data source is added, you can create queries to read and write data to the database. You can create queries from the **[Query Panel](/docs/app-builder/query-panel#query-manager)** located at the bottom panel of the app builder.
 
-1. **[SQL mode](/docs/data-sources/mysql#sql-mode)**
-2. **[GUI mode](/docs/data-sources/mysql#gui-mode)**
+### SQL Mode
 
-### SQL mode
+SQL mode can be used to query MySQL database using SQL queries. 
 
-SQL mode can be used to query MySQL database using SQL queries. Select SQL mode from the dropdown and then enter the SQL query in the editor.
+1. Select **SQL mode** from the dropdown.
+2. Enter the SQL query in the editor.
+3. Click on the **Run** button to run the query.
 
 **Example:**
 
@@ -72,13 +74,19 @@ SELECT * FROM users
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/mysql/sqlmode.png" alt="mysql"/>
+<img className="screenshot-full" src="/img/datasource-reference/mysql/sqlmode.png" alt="mysql" style={{marginBottom:'15px'}}/>
 
 </div>
 
-### GUI mode
+### GUI Mode
 
-GUI mode can be used to query MySQL database without writing queries. Select GUI mode from the dropdown and then choose the operation **Bulk update using primary key**. Enter the **Table** name and **Primary key column** name. Now, in the editor enter the records in the form of an array of objects. Each object should contain the primary key column and the columns to be updated.
+GUI mode can be used to query MySQL database without writing queries. 
+
+1. Select **GUI mode** from the dropdown.
+2. Choose the operation **Bulk update using primary key**.
+3. Enter the **Table** name and **Primary key column** name.
+4. In the editor enter the records in the form of an array of objects.
+5. Click on the **Run** button to run the query. 
 
 **Example:**
 
@@ -95,3 +103,5 @@ GUI mode can be used to query MySQL database without writing queries. Select GUI
 :::tip
 Query results can be transformed using transformations. Learn more about transformations [here](/docs/tutorial/transformations).
 :::
+
+</div>

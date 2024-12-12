@@ -5,6 +5,10 @@ title: Actions
 
 In ToolJet, actions are versatile functions that can be triggered by events within an app. Based on user interaction, actions can be configured to display alerts, run queries, switch pages, and perform other tasks. 
 
+<div class="video-container">
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/yFN42xOBVIk?si=QySrIr6Aa_x91b8j&rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</div>
+
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Types of Actions

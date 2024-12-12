@@ -67,7 +67,7 @@ const MarketplacePage = ({ darkMode, switchDarkMode }) => {
     <Layout switchDarkMode={switchDarkMode} darkMode={darkMode}>
       <div className="wrapper">
         <div className="marketplace-body">
-          <div className="p-3">
+          <div className="pt-3 px-3">
             <div className="row g-4">
               <div className="marketplace-page-sidebar  mt-3">
                 <div className="subheader mb-2">Plugins</div>

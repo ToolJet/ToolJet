@@ -3,13 +3,11 @@ id: cosmosdb
 title: CosmosDB
 ---
 
-# Cosmosdb
-
 ToolJet can connect to CosmosDB databases to read and write data.
 
 ## Connection
 
-To establish a connection with the CosmosDB data source, you can either click on the `+Add new data source` button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+To establish a connection with the CosmosDB data source, you can either click on the **+ Add new data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
 
 ToolJet requires the following to connect to your Cosmos DB.
 
@@ -28,14 +26,17 @@ You can find the endpoint and key in the **[Azure Portal](https://portal.azure.c
 
 </div>
 
+<div style={{paddingTop:'24px'}}>
+
+
 ## Supported Queries:
 
-- [Listing databases](#listing-databases)
-- [Listing containers](#listing-containers)
-- [Inserting item(s)](#inserting-items)
-- [Retrieving an item](#retrieving-an-item)
-- [Deleting an item](#deleting-an-item)
-- [Querying documents](#querying-documents)
+- **[Listing databases](#listing-databases)**
+- **[Listing containers](#listing-containers)**
+- **[Inserting item(s)](#inserting-items)**
+- **[Retrieving an item](#retrieving-an-item)**
+- **[Deleting an item](#deleting-an-item)**
+- **[Querying documents](#querying-documents)**
 
 ### Listing Databases
 
@@ -88,3 +89,5 @@ To query documents from a container of a database in a Cosmos DB using SQL-like 
 | database  | id of the database                                                                |
 | container | id of the container                                                               |
 | query     | query to be executed. Example: `SELECT * FROM c WHERE c.age > 20 AND c.age <= 30` |
+
+</div>

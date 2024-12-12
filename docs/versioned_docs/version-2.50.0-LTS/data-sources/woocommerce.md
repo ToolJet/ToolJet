@@ -2,63 +2,89 @@
 id: woocommerce
 title: WooCommerce
 ---
-# WooCommerce
 
 ToolJet can connect to WooCommerce databases to read and write data.
 
-- [Connection](#connection)
-- [Getting Started](#querying-woocommerce)
+<div style={{paddingTop:'24px'}}>
 
 ## Connection
 
-Auth
-You may use [HTTP Basic Auth] by providing the REST API Consumer Key as the username and the REST API Consumer Secret as the password.
+To establish a connection with the WooCommerce data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page from the ToolJet dashboard and choose WooCommerce as the data source.
+
+ToolJet requires the following to connect to WooCommerce
 - **Host**
 - **Consumer key**
 - **Consumer secret**
 
-![ToolJet - Data Source - Woocommerce](/img/datasource-reference/woocommerce/woocomerce-auth.png)
+<img className="screenshot-full" src="/img/datasource-reference/woocommerce/woocomerce-auth-v2.png" alt="ToolJet - Data Source - Woocommerce" />
 
 :::info
 NOTE: For generating keys visit admin dashboard of woocommerce , more info: https://woocommerce.github.io/woocommerce-rest-api-docs/?javascript#authentication
 :::
 
-## Querying Woocommerce
+</div>
 
-**Operations**
+<div style={{paddingTop:'24px'}}>
 
-**Customer**
+## Querying WooCommerce
 
-- list customer
-- update customer
-- delete customer
-- batch update customer
-- create customer
-- retrieve customer
+1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
+2. Select the **WooCommerce** datasource added in previous step.
+3. Select the desired resource from the dropdown and then select the desired operation and enter the required parameters.
+4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
-**PRODUCT**
+:::tip
+Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/tutorial/transformations)**
+:::
 
-- list product
-- update product
-- delete product
-- batch update product
-- create product
-- retrieve product
+</div>
 
-**ORDER**
+<div style={{paddingTop:'24px'}}>
 
-- list order
-- update order
-- delete order
-- batch update order
-- create order
-- retrieve order
+## Resource
 
-**Coupon**
+### Customer
 
-- list coupon
-- create coupon
+#### Supported Operations
+
+- **list customer**
+- **update customer**
+- **delete customer**
+- **batch update customer**
+- **create customer**
+- **retrieve customer**
+
+### Product
+
+#### Supported Operations
+
+- **list product**
+- **update product**
+- **delete product**
+- **batch update product**
+- **create product**
+- **retrieve product**
+
+### Order
+
+#### Supported Operations
+
+- **list order**
+- **update order**
+- **delete order**
+- **batch update order**
+- **create order**
+- **retrieve order**
+
+### Coupon
+
+#### Supported Operations
+
+- **list coupon**
+- **create coupon**
 
 :::info
 NOTE: For more info visit https://woocommerce.github.io/woocommerce-rest-api-docs/?javascript.
 :::
+
+</div>

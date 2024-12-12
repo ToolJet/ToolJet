@@ -3,79 +3,74 @@ id: slack
 title: Slack
 ---
 
-# Slack
-
 ToolJet can connect to your Slack workspace to send messages. 
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/datasource-reference/slack/connect.png" alt="Slack datasource: ToolJet"/>
-
-</div>
+<div style={{paddingTop:'24px'}}>
 
 ## Connection
-- To add the Slack datasource, click the **Datasource manager** icon on the left-sidebar of the app builder and click on the `Add datasource` button, then select Slack from the modal that pops up.
- 
-- In the next dialog, you'll be asked to choose the **permission scope**. Choose the permission scope and then click on **Connect to Slack** button.
 
-- A new tab will open up asking for authorization confirmation. Once done, you can close the tab.
+To establish a connection with the **Slack** datasource, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page through the ToolJet dashboard.
+
+<img className="screenshot-full" src="/img/datasource-reference/slack/connect-v2.png" alt="Slack datasource: ToolJet"/>
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/slack/authorize.png" alt="Slack datasource: ToolJet"/>
+<img className="screenshot-full" src="/img/datasource-reference/slack/authorize-v2.png" alt="Slack datasource: ToolJet"/>
 
 </div>
-
-- Click on the '**Save data source** button to save the data source.
-
 
 :::note
 The App (which credentials are provided) needs to be installed in the workspace to use the Slack data source, and it needs to be added to the channel where you want to post the message.
 :::
 
-## Supported operations
+</div>
 
-1. **List members**
-2. **Send message**
-3. **List messages from a channel**
+<div style={{paddingTop:'24px'}}>
 
-### List members
+## Querying Slack
+
+1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
+2. Select the **Slack** datasource added in previous step.
+3. Select the desired operation.
+4. Click on the **Preview** button to preview the output or Click on the **Run** button to create and trigger the query.
+
+<img className="screenshot-full" src="/img/datasource-reference/slack/operations.png" alt="Slack datasource: ToolJet"/>
+
+</div>
+
+<div style={{paddingTop:'24px'}}>
+
+## Supported Operations
+
+1. **[List Members](#list-members)**
+2. **[Send Message](#send-message)**
+3. **[List Messages From a Channel](#list-messages)**
+
+### List Members
 
 This operation will return the data of all the members in your slack workspace.
 
-<div style={{textAlign: 'center'}}>
+<img className="screenshot-full" src="/img/datasource-reference/slack/listmembers-v2.png" alt="Slack datasource: ToolJet" style={{marginBottom:'15px'}}/>
 
-<img className="screenshot-full" src="/img/datasource-reference/slack/listmembers.png" alt="Slack datasource: ToolJet"/>
-
-</div>
-
-### Send message
+### Send Message
 
 This operation will send/post the message to a specified channel or posting to direct messages (also known as DMs or IMs) in your slack workspace.
 
-| Property | Description |
-| :--- | :--- |
-| Channel | The channel ID or user ID to post the message to. |
-| Message | The message to post. |
+#### Required Parameters
+- **Channel**
+- **Message**
 
-<div style={{textAlign: 'center'}}>
+<img className="screenshot-full" src="/img/datasource-reference/slack/sendmessage-v2.png" alt="Slack datasource: ToolJet" style={{marginBottom:'15px'}}/>
 
-<img className="screenshot-full" src="/img/datasource-reference/slack/sendmessage.png" alt="Slack datasource: ToolJet"/>
-
-</div>
-
-### List messages
+### List Messages
 
 This operation will get the messages from a specified channel.
 
-| Property | Description                             |
-| :--- |:----------------------------------------|
-| Channel | The channel ID to get the messages from |
-| Limit | The maximum number of messages to return. |
-| Next Cursor | A cursor value returned by a previous call to list messages. |
+#### Required Parameters
+- **Channel**
+- **Limit**
+- **Next Cursor**
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/datasource-reference/slack/listmessages.png" alt="Slack datasource: ToolJet"/>
+<img className="screenshot-full" src="/img/datasource-reference/slack/listmessages-v2.png" alt="Slack datasource: ToolJet"/>
 
 </div>

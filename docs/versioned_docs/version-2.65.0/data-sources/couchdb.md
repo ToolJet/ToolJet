@@ -3,20 +3,18 @@ id: couchdb
 title: CouchDB
 ---
 
-# CouchDB
-
-ToolJet can connect to CouchDB databases to read and write data. CocuhDB uses basic auth for authentication , username and password for the database is required to create an CouchDB data source on ToolJet. For more info visit [CouchDB docs](https://docs.couchdb.org/en/stable/).
+ToolJet can connect to CouchDB databases to read and write data. CocuhDB uses basic auth for authentication, username and password for the database is required to create an CouchDB data source on ToolJet. For more info visit [CouchDB docs](https://docs.couchdb.org/en/stable/).
 
 
 ## Supported Queries: 
 
-- [Listing Records](#listing-records)
-- [Retrieving a Record](#retrieving-a-record)
-- [Creating a Record](#creating-a-record)
-- [Updating a Record](#updating-a-record)
-- [Deleting a Record](#deleting-a-record)
-- [Find](#find)
-- [Retrieving a View](#retrieving-a-view)
+- **[Listing Records](#listing-records)**
+- **[Retrieving a Record](#retrieving-a-record)**
+- **[Creating a Record](#creating-a-record)**
+- **[Updating a Record](#updating-a-record)**
+- **[Deleting a Record](#deleting-a-record)**
+- **[Find](#find)**
+- **[Retrieving a View](#retrieving-a-view)**
 
 :::info
 NOTE: Record ID is same as document ID("_id") .
@@ -117,17 +115,15 @@ The returned JSON is the JSON of the document, including the document ID and rev
   [{"name":"tooljet"}]
 ```
 
-Click on the `run` button to run the query.
+Click on the **run** button to run the query.
 
 Example response from CouchDb:
 ```json
-
-   {
+{
     "ok": true,
     "id": "23212104e60a71edb42ebc509f0049a2",
     "rev": "1-b0a625abc4e21ee554737920156e911f"
 }
-
 ```
 
 ### Updating a Record
@@ -150,7 +146,7 @@ You get the document as JSON in the response. For each update to the document, t
 ```
 
 
-Click on the `run` button to run the query.
+Click on the **run** button to run the query.
 
 :::info
 NOTE: Query must be saved before running.
@@ -176,7 +172,7 @@ Example response from CouchDb:
 
 
 
-Click on the `run` button to run the query.
+Click on the **run** button to run the query.
 
 
 Example response from CouchDb:
@@ -217,7 +213,7 @@ selector syntax: https://pouchdb.com/guides/mango-queries.html
 ```
 
 
-Click on the `run` button to run the query.
+Click on the **run** button to run the query.
 
 :::info
 NOTE:
@@ -252,7 +248,7 @@ Reference for view :https://docs.couchdb.org/en/3.2.0/ddocs/views/intro.html#wha
 - **Limit**
 - **Skip**
 
-Click on the `run` button to run the query.
+Click on the **run** button to run the query.
 
 :::info
 startkey (json) – Return records starting with the specified key.

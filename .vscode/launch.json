@@ -26,6 +26,30 @@
             "cwd": "${workspaceRoot}/server",
             "console": "integratedTerminal",
             "protocol": "inspector"
+        },
+        {
+            "name": "Docker Debug Client",
+            "request": "launch",
+            "type": "chrome",
+            "preLaunchTask": "docker-compose: debug:client",
+            "url": "http://127.0.0.1:8082",
+            "webRoot": "${workspaceFolder}/frontend",
+            "skipFiles": ["<node_internals>/**"]
+        },
+        {
+            "name": "Docker Debug Server",
+            "request": "launch",
+            "type": "docker",
+            "platform": "node",
+            "preLaunchTask": "docker-compose: debug:server",
+            "removeContainerAfterDebug": true,
+            "node": {
+                "port": 9229,
+                "localRoot": "${workspaceRoot}/server",
+                "remoteRoot": "/app/server",
+                "sourceMaps": true,
+                "skipFiles": ["<node_internals>/**"]
+            },
         }
     ]
 }

@@ -2,11 +2,11 @@ spec:
   name: tooljet
   services:
   - name: tooljet
-    image:
+    image: 
       registry_type: DOCKER_HUB
       registry: tooljet
       repository: tooljet
-      tag: latest
+      tag: ee-lts-latest
     run_command: "./server/scripts/digitalocean-postbuild.sh"
     instance_size_slug: "basic-s"
     health_check:

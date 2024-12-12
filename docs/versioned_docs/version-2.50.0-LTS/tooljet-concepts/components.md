@@ -5,11 +5,10 @@ title: Components
 
 Components in ToolJet serve as the building blocks for creating applications. They are pre-designed elements that you can drag and drop onto the canvas in the App-Builder. ToolJet comes with 45+ built-in components. 
 
-<div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/tooljet-concepts/what-are-components/drag-drop-components.gif" alt="Drag And Drop Components" />
+<div class="video-container">
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/J3-wpo4J76U?si=D2ovxqa42HUGZ4PC&rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 </div>
 
-These components range from basic UI elements like buttons, text fields, and tables, to more complex elements like kanban, charts, and maps. By using components, you can quickly assemble a functional and visually appealing application without having to write code from scratch.
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 

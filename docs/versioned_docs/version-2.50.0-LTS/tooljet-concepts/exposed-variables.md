@@ -5,8 +5,8 @@ title: Exposed Variables
 
 Exposed Variables help in accessing and manipulating data within components. These variables are automatically created and updated as users interact with the application. Whether it's capturing text from a text editor, checking the visibility of a component or retrieving selections from a dropdown menu, exposed variables are integral for dynamic data handling in ToolJet applications.
 
-<div style={{textAlign: 'center'}}>
-    <img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/tooljet-concepts/exposed-variables/exposed-variables-preview.png" alt="Preview Of Exposed Variables" />
+<div class="video-container">
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/w8kIHnfpvi4?si=qETkjzdR6HyjU6yw&rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 </div>
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>

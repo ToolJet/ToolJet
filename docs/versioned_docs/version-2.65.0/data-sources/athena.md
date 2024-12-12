@@ -3,21 +3,17 @@ id: athena
 title: Athena
 ---
 
-<div style={{paddingBottom:'24px'}}>
-
 ToolJet can connect to **Amazon Athena** which is an interactive query service that makes it easy to analyze data in Amazon S3 using standard SQL.
 
 - **[Connection](#connection)**
 - **[Querying-athena](#querying-amazon-athena)**
 - **[Basic Operation](#basic-queries)**
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Connection
 
-To establish a connection with the **Amazon Athena** data source, you can either click on the **+Add new Data source** button located on the query panel or navigate to the **[Data Sources](https://docs.tooljet.com/docs/data-sources/overview)** page from the ToolJet dashboard and choose **Amazon Athena** as the data source.
+To establish a connection with the **Amazon Athena** data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](https://docs.tooljet.com/docs/data-sources/overview)** page from the ToolJet dashboard and choose **Amazon Athena** as the data source.
 
 ToolJet requires the following to connect to your Athena.
 
@@ -35,18 +31,17 @@ You can also configure for **[additional optional parameters](https://github.com
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/athena/athena-connection-v2.png" alt="Athena connection" />
+<img style={{ border:'0'}} className="screenshot-full" src="/img/datasource-reference/athena/athena-connection-v2.png" alt="Athena connection" />
 
 </div>
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Querying Amazon Athena
 
-- Click on the **+Add** button of the query manager at the bottom panel of the editor and select the database added in the previous step as the data source. Query manager then can be used to write SQL queries.
-
+- Click on the **+ Add** button of the query manager at the bottom panel of the editor and select the database added in the previous step as the data source. Query manager then can be used to write SQL queries.
 - Click on the **Run** button to run the query. 
 
 :::tip
@@ -55,13 +50,11 @@ You can also configure for **[additional optional parameters](https://github.com
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/athena/querying-amazon-athena.png" alt="Athena connection" />
+<img style={{ border:'0'}} className="screenshot-full" src="/img/datasource-reference/athena/querying-amazon-athena.png" alt="Athena connection" />
 
 </div>
 
 </div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Basic Queries
 
@@ -84,7 +77,7 @@ INSERT INTO student
 VALUES ('Lansing',1)
 ```
 
-This query is attempting to insert a new record into the `student` table in a database. 
+This query is attempting to insert a new record into the *student* table in a database. 
 
 #### Select Operation
 
@@ -92,7 +85,7 @@ This query is attempting to insert a new record into the `student` table in a da
 SELECT * from student WHERE AGE=1
 ```
 
-This query retrieves all records from the student table where the age of the student is exactly 1 year.
+This query retrieves all records from the *student* table where the age of the student is exactly 1 year.
 
 #### List Tables
 
@@ -101,5 +94,3 @@ SHOW TABLES
 ```
 
 This query is used to display a list of all tables in the current database.
-
-</div>

@@ -3,33 +3,28 @@ id: bigquery
 title: BigQuery
 ---
 
-<div style={{paddingBottom:'24px'}}>
-
 ToolJet can connect to **BigQuery** databases to run BigQuery queries.
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Connection
 
-- To establish a connection with the BigQuery data source, you need to enable BigQuery API in your Google Cloud Console. You can follow the steps to enable BigQuery API from **[Google Cloud](https://cloud.google.com/bigquery/docs/bigquery-web-ui)**. 
+To establish a connection with the **BigQuery** data source, you can either click on the **+ Add new Data source** button located on the query panel or navigate to the **[Data Sources](/docs/data-sources/overview)** page from the ToolJet dashboard and choose BigQuery as the data source.
 
-- Next, you need to create a service account and generate a key for the same. You can follow the steps to create a service account from **[Google Cloud](https://cloud.google.com/iam/docs/creating-managing-service-accounts)**.
+ToolJet requires the following to connect to your BigQuery:
+- **Private key**
 
-- Once you have created the service account after following the steps mentioned in the Google Cloud guide, create a new **Key** and download it in a JSON file.
+How to get a Private key?
+1. You need to enable BigQuery API in your Google Cloud Console. You can follow the steps to enable BigQuery API from **[Google Cloud](https://cloud.google.com/bigquery/docs/bigquery-web-ui)**. 
+2. You need to create a service account and generate a key for the same. You can follow the steps to create a service account from **[Google Cloud](https://cloud.google.com/iam/docs/creating-managing-service-accounts)**.
+3. Once you have created the service account after following the steps mentioned in the Google Cloud guide, create a new **Key** and download it in a JSON file.
+4. Now, copy and paste the data from the downloaded JSON file into the **Private key** field in the BigQuery data source form.
 
-- Now, copy and paste the data from the downloaded JSON file into the **Private key** field in the BigQuery data source form.
-
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/bigquery/bq-create-v2.png" alt="BQ create" />
-
-</div>
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/bq-create-v2.png" alt="BQ create" />
 
 **The JSON file should look like this:**
 
- ```json
+```json
 {
   "type": "service_account",
   "project_id": "long-sonar-324407",
@@ -45,15 +40,16 @@ ToolJet can connect to **BigQuery** databases to run BigQuery queries.
 }
 ```
 
-Click on the **Test Connection** button to verify if the credentials are correct and that the API is accessible to ToolJet server. Click on **Save** button to save the data source.
-
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Querying BigQuery
 
-Click on the **+Add** button of the query manager at the bottom panel of the editor and select the database added in the previous step as the data source. Select the operation that you want to perform from the **Operation** dropdown and click on the **Run** button to run the query.
+1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
+2. Select the **BigQuery** datasource added in previous step.
+3. Select the desired operation from the dropdown and enter the required parameters.
+4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
 <div style={{textAlign: 'center'}}>
 
@@ -67,7 +63,7 @@ Query results can be transformed using transformations. Read our transformations
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Supported Operations
 
@@ -81,130 +77,76 @@ Query results can be transformed using transformations. Read our transformations
 -  **[Create Table](#create-table)**
 -  **[Delete Table](#create-table)**
 
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
 ### Query
 
-This operation returns the data based on the `Query`. 
+This operation returns the data based on the **Query**. 
 
 **Note**: Follow the reference given in **Google Cloud** about the operations: **[Query options](https://cloud.google.com/bigquery/docs/reference/rest/v2/Job)** and **[Query results options](https://cloud.google.com/nodejs/docs/reference/bigquery/latest/overview#_google_cloud_bigquery_QueryResultsOptions_type)**.
 
-#### Required parameters:
+#### Required Parameters
 
-- **Query**: Choose the query.
-- **Query options:** The JSON object specifies additional options for the query.
-- **Query results options:** The `{ wrapIntegers: true }` option instructs how integers in the results should be handled, particularly relevant for languages or interfaces that may have issues with large integers.
+- **Query**
+- **Query options**
+- **Query results options**
 
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/bigquery/query-v2.png" alt="BQ query"/>
-
-</div>
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/query-v2.png" alt="BQ query" style={{marginBottom:'15px'}}/>
 
 ### List Datasets
 
 This operation returns the list of datasets.
 
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/bigquery/list-datasets-v2.png" alt="BQ list datasets"/>
-
-</div>
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/list-datasets-v2.png" alt="BQ list datasets" style={{marginBottom:'15px'}}/>
 
 ### List Tables
 
 This operation returns the list of tables within a dataset.
 
-#### Required parameters: 
+#### Required Parameter
 
-- **Dataset id:** The ID for the dataset from which to list the tables.
+- **Dataset ID**
 
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/bigquery/listtables-v2.png"  alt="BQ list tables"/>
-
-</div>
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/listtables-v2.png"  alt="BQ list tables" style={{marginBottom:'15px'}}/>
 
 ### Create Table
 
 This operation is used to create a table.
 
-#### Required parameters: 
+#### Required Parameters 
 
-- **Table id**: The ID of the table that will be created.
-- **Dataset id**: The ID for the dataset containing the table specified above.
-- **Options**: Specify additional options for the table creation.
+- **Table ID**
+- **Dataset ID**
+- **Options**
 
-<div style={{textAlign: 'center'}}>
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/create-table.png"  alt="BQ create tables"/>
 
-<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/bigquery/create-table.png"  alt="BQ create tables"/>
-
-</div>
-
-:::info
-NOTE: visit -https://github.com/googleapis/nodejs-bigquery/blob/main/samples/createTable.js for more info on schema.
-:::
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+**NOTE:** Visit https://github.com/googleapis/nodejs-bigquery/blob/main/samples/createTable.js for more info on schema.
 
 ### Delete Table
 
 This operation is used to delete a table.
 
-#### Required parameters: 
+#### Required Parameters 
 
-- **Table id**: The ID of the table that will be deleted.
-- **Dataset id**: The ID for the dataset containing the table specified above.
+- **Table ID**
+- **Dataset ID**
 
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/bigquery/delete-table.png"  alt="BQ delete tables"/>
-
-</div>
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/delete-table.png"  alt="BQ delete tables" style={{marginBottom:'15px'}}/>
 
 ### Create View
 
 This operation is used to create a view.
 
-#### Required parameters: 
+#### Required Parameters 
 
-- **Table id**: The ID of the table from which the data will be selected to create the view.
-- **Dataset id**: This field requires the dataset ID where the view will be created.
-- **View name**: Specify the name for the new view.
-- **View columns**: List the columns you want to include in the view. This is typically done by specifying column names separated by commas.
-- **Condition**: This specifies the SQL conditions for the view creation.
-- **Query options**: The JSON object specifies additional options for the query.
-- **Query results options**: The `{ wrapIntegers: true }` option instructs how integers in the results should be handled, particularly relevant for languages or interfaces that may have issues with large integers.
+- **Table ID**
+- **Dataset ID**
+- **View name**
+- **View columns**
+- **Condition**
+- **Query options**
+- **Query results options**
 
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/bigquery/create-view-v2.png"  alt="BQ create view"/>
-
-</div>
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/create-view-v2.png"  alt="BQ create view" style={{marginBottom:'15px'}}/>
 
 ### Insert Record
 
@@ -212,68 +154,40 @@ This operation is used to insert a record.
 
 #### Required parameters: 
 
-- **Table id**: The ID for the table from which records need to be inserted.
-- **Dataset id**: The ID for the dataset containing the table specified above.
-- **Rows**: The text box here is used to input the data for the records to be inserted.
+- **Table ID**
+- **Dataset ID**
+- **Rows**
 
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/bigquery/bq-insert-v2.png" alt="BQ insert" />
-
-</div>
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/bq-insert-v2.png" alt="BQ insert" style={{marginBottom:'15px'}} />
 
 ### Delete Record 
 Use this operation to delete a record.
 
 #### Required parameters: 
 
-- **Table id**: The ID for the table from which records need to be deleted.
-- **Dataset id**: The ID for the dataset containing the table specified above.
-- **Condition**: The condition specifies which records should be deleted. Any record that meets this condition will be deleted from the table.
-- **Query options**: The JSON object specifies additional options for the query.
-- **Query results options**: The `{ wrapIntegers: true }` option instructs how integers in the results should be handled, particularly relevant for languages or interfaces that may have issues with large integers.
+- **Table ID**
+- **Dataset ID**
+- **Condition**
+- **Query options**
+- **Query results options**
 
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/bq-delete-v2.png"  alt="BQ delete" />
 
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/bigquery/bq-delete-v2.png"  alt="BQ delete" />
-
-</div>
-
-
-:::info
+:::warning
 NOTE: Be careful when deleting records in a table. If you omit the WHERE clause, all records in the table will be deleted!
 :::
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ### Update Record
 Use this operation to update a record.
 
 #### Required parameters: 
 
-- **Table id**: The ID for the table from which records need to be updated.
-- **Dataset id**: The ID for the dataset containing the table specified above.
-- **Columns**: This is where the user specifies the data to be updated. 
-- **Condition**: The condition specifies which records should be updated. Any record that meets this condition will be updated from the table.
-- **Query options**: The JSON object specifies additional options for the query.
-- **Query results options**: The `{ wrapIntegers: true }` option instructs how integers in the results should be handled, particularly relevant for languages or interfaces that may have issues with large integers.
+- **Table ID**
+- **Dataset ID**
+- **Columns**
+- **Condition**
+- **Query results options**
 
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/bigquery/bq-update-v2.png" alt="BQ update" />
-
-</div>
-
-
-:::info
-NOTE: Be careful when deleting records in a table. If you omit the WHERE clause, all records in the table will be updated!
-:::
+<img className="screenshot-full" src="/img/datasource-reference/bigquery/bq-update-v2.png" alt="BQ update" />
 
 </div>

@@ -1,0 +1,294 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Pinecone Datasource",
+  "description": "A schema defining Pinecone datasource",
+  "type": "database",
+  "defaults": {},
+  "properties": {
+    "index": {
+      "label": "Index",
+      "key": "index",
+      "type": "text",
+      "description": "Enter the index name (e.g., example-index)",
+      "placeholder": "example-index",
+      "height": "36px"
+    },
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Select an operation",
+      "list": [
+        { "value": "get_index_stats", "name": "Get Index Stats" },
+        { "value": "list_vector_ids", "name": "List Vector IDs" },
+        { "value": "fetch_vectors", "name": "Fetch Vectors" },
+        { "value": "upsert_vectors", "name": "Upsert Vectors" },
+        { "value": "update_vector", "name": "Update a Vector" },
+        { "value": "delete_vectors", "name": "Delete Vectors" },
+        { "value": "query_vector", "name": "Query Vectors" }
+      ]
+    },
+    "get_index_stats": {
+      "index": {
+        "label": "Index",
+        "key": "index",
+        "type": "codehinter",
+        "description": "Enter the index name (e.g., example-index)",
+        "placeholder": "example-index",
+        "height": "36px"
+      }
+    },
+    "list_vector_ids": {
+      "index": {
+        "label": "Index",
+        "key": "index",
+        "type": "codehinter",
+        "description": "Enter the index name (e.g., example-index)",
+        "placeholder": "example-index",
+        "height": "36px"
+      },
+      "prefix": {
+        "label": "Prefix",
+        "key": "prefix",
+        "type": "codehinter",
+        "description": "Enter a prefix to filter vector IDs",
+        "placeholder": "document1#",
+        "height": "36px"
+      },
+      "limit": {
+        "label": "Limit",
+        "key": "limit",
+        "type": "codehinter",
+        "description": "Enter the maximum number of vector IDs to return",
+        "placeholder": "100",
+        "height": "36px"
+      },
+      "paginationToken": {
+        "label": "Pagination Token",
+        "key": "paginationToken",
+        "type": "codehinter",
+        "description": "Enter next token for next set of vector IDs",
+        "placeholder": "Tm90aGluzYB0byBZzWUGaGVyZQo=",
+        "height": "36px"
+      },
+      "namespace": {
+        "label": "Namespace",
+        "key": "namespace",
+        "type": "codehinter",
+        "description": "Enter the namespace (optional)",
+        "placeholder": "example-namespace",
+        "height": "36px"
+      }
+    },
+    "fetch_vectors": {
+      "index": {
+        "label": "Index",
+        "key": "index",
+        "type": "codehinter",
+        "description": "Enter the index name (e.g., example-index)",
+        "placeholder": "example-index",
+        "height": "36px"
+      },
+      "ids": {
+        "label": "IDs",
+        "key": "ids",
+        "type": "codehinter",
+        "description": "Enter vector IDs as JSON array",
+        "placeholder": "[\"id-1\", \"id-2\"]",
+        "height": "36px"
+      },
+      "namespace": {
+        "label": "Namespace",
+        "key": "namespace",
+        "type": "codehinter",
+        "description": "Enter the namespace (optional)",
+        "placeholder": "example-namespace",
+        "height": "36px"
+      }
+    },
+    "upsert_vectors": {
+      "index": {
+        "label": "Index",
+        "key": "index",
+        "type": "codehinter",
+        "description": "Enter the index name (e.g., example-index)",
+        "placeholder": "example-index",
+        "height": "36px"
+      },
+      "vectors": {
+        "label": "Vectors",
+        "key": "vectors",
+        "type": "codehinter",
+        "description": "Enter vectors as JSON array",
+        "placeholder": "[{\"id\": \"vec1\", \"values\": [0.1, 0.2, 0.3]}]",
+        "height": "36px"
+      },
+      "namespace": {
+        "label": "Namespace",
+        "key": "namespace",
+        "type": "codehinter",
+        "description": "Enter the namespace (optional)",
+        "placeholder": "example-namespace",
+        "height": "36px"
+      }
+    },
+    "update_vector": {
+      "index": {
+        "label": "Index",
+        "key": "index",
+        "type": "codehinter",
+        "description": "Enter the index name (e.g., example-index)",
+        "placeholder": "example-index",
+        "height": "36px"
+      },
+      "id": {
+        "label": "ID",
+        "key": "id",
+        "type": "codehinter",
+        "description": "Enter vector ID to update",
+        "placeholder": "id-3",
+        "height": "36px"
+      },
+      "values": {
+        "label": "Values",
+        "key": "values",
+        "type": "codehinter",
+        "description": "Enter updated vector values as JSON array",
+        "placeholder": "[4.0, 2.0]",
+        "height": "36px"
+      },
+      "sparse_vector": {
+        "label": "Sparse Vector",
+        "key": "sparse_vector",
+        "type": "codehinter",
+        "description": "Enter sparse vector values",
+        "placeholder": "{\"indices\": [1, 5], \"values\": [0.5, 0.5]}",
+        "height": "36px"
+      },
+      "metadata": {
+        "label": "Metadata",
+        "key": "metadata",
+        "type": "codehinter",
+        "description": "Enter metadata",
+        "placeholder": "{\"genre\": \"comedy\"}",
+        "height": "36px"
+      },
+      "namespace": {
+        "label": "Namespace",
+        "key": "namespace",
+        "type": "codehinter",
+        "description": "Enter the namespace (optional)",
+        "placeholder": "example-namespace",
+        "height": "36px"
+      }
+    },
+    "delete_vectors": {
+      "index": {
+        "label": "Index",
+        "key": "index",
+        "type": "codehinter",
+        "description": "Enter the index name (e.g., example-index)",
+        "placeholder": "example-index",
+        "height": "36px"
+      },
+      "ids": {
+        "label": "ID",
+        "key": "id",
+        "type": "codehinter",
+        "description": "Enter vector IDs as JSON array",
+        "placeholder": "[\"id-1\", \"id-2\"]",
+        "height": "36px"
+      },
+      "delete_all": {
+          "label": "Delete All",
+          "key": "delete_all",
+          "type": "codehinter",
+          "description": "Set true to delete all vectors",
+          "placeholder": "true (false by default)",
+          "height":"36px"
+        },
+      "namespace": {
+        "label": "Namespace",
+        "key": "namespace",
+        "type": "codehinter",
+        "description": "Enter the namespace (optional)",
+        "placeholder": "example-namespace",
+        "height": "36px"
+      },
+      "filter": {
+        "label": "Filter",
+        "key": "filter",
+        "type": "codehinter",
+        "description": "Enter a filter query in JSON format",
+        "placeholder": "{\"genre\": {\"$in\": [\"documentary\", \"action\"]}}",
+        "height": "150px"
+      }
+    },
+    "query_vector": {
+      "index": {
+        "label": "Index",
+        "key": "index",
+        "type": "codehinter",
+        "description": "Enter the index name (e.g., example-index)",
+        "placeholder": "example-index",
+        "height": "36px"
+      },
+      "namespace": {
+        "label": "Namespace",
+        "key": "namespace",
+        "type": "codehinter",
+        "description": "Enter the namespace (optional)",
+        "placeholder": "example-namespace",
+        "height": "36px"
+      },
+      "top_k": {
+        "label": "Top K",
+        "key": "top_k",
+        "type": "codehinter",
+        "description": "Enter the number",
+        "placeholder": "3",
+        "height": "36px"
+      },
+      "filter": {
+        "label": "Filter",
+        "key": "filter",
+        "type": "codehinter",
+        "description": "Enter a filter query in JSON format",
+        "placeholder": "{\"genre\": {\"$in\": [\"documentary\", \"action\"]}}",
+        "height": "150px"
+      },
+      "include_values": {
+        "label": "Include values",
+        "key": "include_values",
+        "type": "codehinter",
+        "description": "Enter boolean values",
+        "placeholder": "true (false by default)",
+        "height": "36px"
+      },
+      "include_metadata": {
+        "label": "Include metadata",
+        "key": "include_metadata",
+        "type": "codehinter",
+        "description": "Enter boolean values",
+        "placeholder": "true (false by default)",
+        "height": "36px"
+      },
+      "vectors": {
+        "label": "Vector",
+        "key": "vectors",
+        "type": "codehinter",
+        "description": "Enter vector IDs as JSON array",
+        "placeholder": "[\"0.3\", \"0.3\", \"0.3\", \"0.3\", \"0.3\"]",
+        "height": "36px"
+      },
+      "sparse_vector": {
+        "label": "Sparse Vector",
+        "key": "sparse_vector",
+        "type": "codehinter",
+        "description": "Enter sparse vector values",
+        "placeholder": "{\"indices\": [1, 5], \"values\": [0.5, 0.5]}",
+        "height": "36px"
+      }
+    }
+  }
+}

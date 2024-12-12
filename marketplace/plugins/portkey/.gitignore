@@ -1,0 +1,8 @@
+node_modules
+lib/*.d.*
+lib/*.js
+lib/*.js.map
+dist/*
+.env
+npm-debug.log*
+coverage/

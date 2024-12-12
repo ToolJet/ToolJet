@@ -4,7 +4,7 @@ title: Use Form Component
 ---
 <div style={{paddingBottom:'24px'}}>
 
-In this guide, we'll create a simple app that uses a **[Form](/docs/widgets/form)** component to add records to a database. We'll use **[ToolJet Database](/docs/tooljet-database)** as our data source. 
+In this guide, we'll create a simple app that uses a **[Form](/docs/widgets/form)** component to add records to a database. We'll use **[ToolJet Database](/docs/tooljet-db/tooljet-database/)** as our data source. 
 
 </div>
 

@@ -18,10 +18,10 @@
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
     "@tooljet-marketplace/common": "^1.0.0",
-    "openai": "^3.2.1"
+    "openai": "^4.56.0"
   },
   "devDependencies": {
-    "typescript": "^4.7.4",
-    "@vercel/ncc": "^0.34.0"
+    "@vercel/ncc": "^0.34.0",
+    "typescript": "^4.7.4"
   }
 }

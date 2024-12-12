@@ -5,6 +5,10 @@ title: Events
 
 Events are used to run queries, show alerts and other functionalities based on triggers such as button clicks or query completion. Events can be chained together to run a series of logical operations. For example, the completion of one query could trigger another event that runs a second query, and so on. This way, a single user interaction, like clicking a button, could set off a chain of events.
 
+<div class="video-container">
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/sy3W1wyv9k0?si=t_FdABU4ttZieCAh&rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</div>
+
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
 ## Triggering Events
@@ -25,10 +29,4 @@ Setting up event handlers to manage such triggers and responses is a straightfor
 </div>
 
 For detailed information about the events related to components, please refer to their respective documentation.
-
-
-
-
-
-
 

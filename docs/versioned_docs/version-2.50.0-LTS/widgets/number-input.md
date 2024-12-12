@@ -2,9 +2,10 @@
 id: number-input
 title: Number Input
 ---
-# Number Input
 
 The **Number Input** component allows users to enter numeric values. It can be used as a standalone component or in form fields. In this document, we'll go through all the configuration options for the **Number Input** component. 
+
+<div style={{paddingTop:'24px'}}>
 
 ## Properties
 
@@ -15,18 +16,26 @@ The **Number Input** component allows users to enter numeric values. It can be u
 | Default value | The default value that the component will hold when the app is loaded. | String (e.g., `Default Text`). |
 | Decimal places  | Specifies the number of decimal places for numerical values. | Integer  (e.g., `2`).               |
 
+</div>
+
+<div style={{paddingTop:'24px'}}>
+
 ## Events
 
 | Event            | Description         |
 |:------------------|:---------------------|
-| **On change**    | Triggers whenever the user types something in the input field.                                   |
-| **On focus**     | Triggers whenever the user clicks inside the input field.                                        |
-| **On blur**      | Triggers whenever the user clicks outside the input field.                                       |
-| **On enter pressed** | Triggers whenever the user presses the enter button on the keyboard after entering some text in the input field. |
+| On change    | Triggers whenever the user types something in the input field.                                   |
+| On focus     | Triggers whenever the user clicks inside the input field.                                        |
+| On blur      | Triggers whenever the user clicks outside the input field.                                       |
+| On enter pressed | Triggers whenever the user presses the enter button on the keyboard after entering some text in the input field. |
 
 :::info
 Check [Action Reference](/docs/category/actions-reference) docs to get detailed information about all the **Actions**.
 :::
+
+</div>
+
+<div style={{paddingTop:'24px'}}>
 
 ## Component Specific Actions (CSA)
 
@@ -46,10 +55,14 @@ Following actions of component can be controlled using the component specific ac
 Check the **component specific actions** available for this component **[here](/docs/actions/control-component)**.
 :::
 
+</div>
+
+<div style={{paddingTop:'24px'}}>
+
 ## Exposed Variables
 
 | Variable | Description | How To Access |
-|:--------:|:-----------:|:------------:|
+|:-------- |:----------- |:------------ |
 | <div style={{ width:"100px"}}> value </div> | Holds the value entered by the user in the component. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.value}}`).|
 | <div style={{ width:"100px"}}> label </div> | Holds the value of the component's label. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.label}}`).|
 | <div style={{ width:"100px"}}> isValid </div> | Indicates if the input meets validation criteria. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.isValid}}`).|
@@ -58,11 +71,15 @@ Check the **component specific actions** available for this component **[here](/
 | <div style={{ width:"100px"}}> isVisible </div> | Indicates if the component is visible. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.isVisible}}`).|
 | <div style={{ width:"100px"}}> isDisabled </div> | Indicates if the component is disabled. | Accessible dynamically with JS (for e.g., `{{components.numberinput1.isDisabled}}`).|
 
+</div>
+
+<div style={{paddingTop:'24px'}}>
+
 ## Validation
 
 | <div style={{ width:"100px"}}> Validation Option </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> Expected Value </div>|
 |:---------------|:-------------------------------------------------|:-----------------------------|
-| Make this field mandatory    | Displays a 'Field cannot be empty' message if no value is entered. | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Make this field mandatory    | Displays a 'Field cannot be empty' message if no value is entered. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Regex              | Regular Expression to validate the input.             | Regular Expression Pattern (e.g., `^\d{10}$`). |
 | Min value         | Sets the minimum value allowed.                | Integer (e.g., `10` for a minimum value of 10). |
 | Max value         | Sets the maximum value allowed.                | Integer (e.g., `1000` for a maximum value of 1000).|
@@ -74,58 +91,70 @@ To add regex inside `Custom Validation`, you can use the below format:
 
 **Example**: `{{(/^\d{1,10}$/.test(components.numberinput1.value)) ? '' : 'Error message';}}`
 
+</div>
+
+<div style={{paddingTop:'24px'}}>
+
 ## Additional Actions
 
 | <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:------------------|:------------|:------------------------------|
-| Loading state      | Enables a loading spinner, often used with `isLoading` to indicate progress. Toggle or set dynamically.   | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
-| Visibility         | Controls component visibility. Toggle or set dynamically.                                                 | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
-| Disable            | Enables or disables the component. Toggle or set dynamically.                                             | Enable/disable the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression. |
+| Loading state      | Enables a loading spinner, often used with `isLoading` to indicate progress. Toggle or set dynamically.   | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Visibility         | Controls component visibility. Toggle or set dynamically.                                                 | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Disable            | Enables or disables the component. Toggle or set dynamically.                                             | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Tooltip            | Provides additional information on hover. Set a string value for display.                                 | String (e.g., `Enter your age here.` ).                       |
+
+</div>
+
+<div style={{paddingTop:'24px'}}>
 
 ## Devices
 
-**Show on desktop**
+|<div style={{ width:"100px"}}> Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Expected Value </div>|
+|:---------- |:----------- |:----------|
+| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
-Makes the component visible in desktop view. You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.
-
-**Show on mobile**
-
-Makes the component visible in mobile view. You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.
+</div>
 
 ---
 
 # Styles 
 
+<div style={{paddingTop:'24px'}}>
+
 ## Label
 
 | <div style={{ width:"100px"}}> Label Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:---------------|:------------|:---------------|
-| Text     | Sets the color of the component's label. | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
-| Alignment      | Sets the position of the label and input field. | Click on the toggle options or click on `fx` to input code that programmatically returns an alignment value - `side` or `top`. |
-| Width          | Sets the width of the input field. | Keep the `Auto width` option for standard width or deselect it to modify the width using the slider or through code entry in `fx` that returns a numeric value.  |
+| Text     | Sets the color of the component's label. | Select the color or click on **fx** and input code that programmatically returns a Hex color code.          |
+| Alignment      | Sets the position of the label and input field. | Click on the toggle options or click on **fx** to input code that programmatically returns an alignment value - `side` or `top`. |
+| Width          | Sets the width of the input field. | Keep the `Auto width` option for standard width or deselect it to modify the width using the slider or through code entry in **fx** that returns a numeric value.  |
+
+</div>
+
+<div style={{paddingTop:'24px'}}>
 
 ## Field
 
 | <div style={{ width:"100px"}}> Field Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:----------------|:------------|:--------------|
-| Background        | Sets the background color of the component.                                                   | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
-| Border    | Sets the border color of the component.                                                       | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
-| Text      | Sets the color of the number entered in the component.                                     | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
-| Error text| Sets the text color of validation message that displays.                                      | Select the color or click on `fx` and input code that programmatically returns a Hex color code.          |
-| Icon            | Allows you to select an icon for the component.                                               | Enable the icon visibility, select icon and icon color. Alternatively, you can programmatically set it using `fx`.                                     |
-| Border radius   | Modifies the border radius of the component.                                                  | Enter a number or click on `fx` and enter a code that programmatically returns a numeric value.           |
-| Box shadow      | Sets the box shadow properties of the component.                                              | Select the box shadow color and adjust the related properties or programmatically set it using `fx`.                                                                     |
+| Background        | Sets the background color of the component.                                                   | Select the color or click on **fx** and input code that programmatically returns a Hex color code.          |
+| Border    | Sets the border color of the component.                                                       | Select the color or click on **fx** and input code that programmatically returns a Hex color code.          |
+| Text      | Sets the color of the number entered in the component.                                     | Select the color or click on **fx** and input code that programmatically returns a Hex color code.          |
+| Error text| Sets the text color of validation message that displays.                                      | Select the color or click on **fx** and input code that programmatically returns a Hex color code.          |
+| Icon            | Allows you to select an icon for the component.                                               | Enable the icon visibility, select icon and icon color. Alternatively, you can programmatically set it using **fx**.                                     |
+| Border radius   | Modifies the border radius of the component.                                                  | Enter a number or click on **fx** and enter a code that programmatically returns a numeric value.           |
+| Box shadow      | Sets the box shadow properties of the component.                                              | Select the box shadow color and adjust the related properties or programmatically set it using **fx**.                                                                     |
 
+
+</div>
+
+<div style={{paddingTop:'24px'}}>
 
 ## Container
 
 **Padding** <br/>
 Allows you to maintain a standard padding by enabling the `Default` option.
 
-
-
-
-
-
-
+</div>

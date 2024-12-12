@@ -73,7 +73,7 @@ To remove a plugin, follow these steps:
 - On the `Installed` page, click on the `Remove` button of the related plugin that you wish to remove.
 
 ## Available Plugins
-- **[AWS Redshift](/docs/marketplace/plugins/marketplace-plugin-redshift)**
+- **[AWS Redshift](/docs/marketplace/plugins/marketplace-plugin-awsredshift)**
 - **[AWS Textract](/docs/marketplace/plugins/marketplace-plugin-textract)**
 - **[AWS Lambda](/docs/marketplace/plugins/marketplace-plugin-aws-lambda)**
 - **[Engagespot](/docs/marketplace/plugins/marketplace-plugin-engagespot)**
@@ -82,7 +82,10 @@ To remove a plugin, follow these steps:
 - **[OpenAI](/docs/marketplace/plugins/marketplace-plugin-openai)**
 - **[Plivo](/docs/marketplace/plugins/marketplace-plugin-plivo)**
 - **[Pocketbase](/docs/marketplace/plugins/marketplace-plugin-pocketbase)**
+- **[Portkey](/docs/marketplace/plugins/marketplace-plugin-portkey)**
+- **[PrestoDB](/docs/marketplace/plugins/marketplace-plugin-Presto)**
 - **[Salesforce](/docs/marketplace/plugins/marketplace-plugin-salesforce)**
+- **[Sharepoint](/docs/marketplace/plugins/marketplace-plugin-sharepoint)**
 - **[Supabase](/docs/marketplace/plugins/marketplace-plugin-supabase)**
 :::info For Plugin Developers
 Refer to the **[Plugin Development guide](/docs/contributing-guide/marketplace/marketplace-setup)** to learn how to create plugins for the ToolJet Marketplace.

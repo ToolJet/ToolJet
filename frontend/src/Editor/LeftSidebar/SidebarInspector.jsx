@@ -110,9 +110,8 @@ export const LeftSidebarInspector = ({
     if (!_.isEmpty(component) && component.name === key) {
       return {
         iconName: key,
-        iconPath: `assets/images/icons/widgets/${
-          component.component.toLowerCase() === 'radiobutton' ? 'radio-button' : component.component.toLowerCase()
-        }.svg`,
+        iconPath: `assets/images/icons/widgets/${component.component.toLowerCase() === 'radiobutton' ? 'radio-button' : component.component.toLowerCase()
+          }.svg`,
         className: 'component-icon',
       };
     }
@@ -235,7 +234,7 @@ export const LeftSidebarInspector = ({
   const copyToClipboard = (data) => {
     const stringified = JSON.stringify(data, null, 2).replace(/\\/g, '');
     navigator.clipboard.writeText(stringified);
-    return toast.success('Copied to the clipboard', { position: 'top-center' });
+    return toast.success('Value copied to clipboard', { position: 'top-center' });
   };
 
   const callbackActions = [

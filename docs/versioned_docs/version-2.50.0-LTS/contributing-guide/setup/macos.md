@@ -65,9 +65,16 @@ To set up and run ToolJet on macOS for development, begin by opening your termin
     brew services list
     ```
 
-    1.5 Clone the repository
+    1.5 Fork the repository:
+
+    Go to the [ToolJet GitHub repository](https://github.com/ToolJet/Tooljet), click on the **Fork** button to create a copy of the repository under your own GitHub account.
+
+    1.6 Clone your forked repository:
+
+    After forking, clone the forked repository to your local machine using the URL of your forked repo.
+
     ```bash
-    git clone https://github.com/tooljet/tooljet.git
+    git clone https://github.com/<your-username>/ToolJet.git
     ```
 
 3. Set up environment variables
