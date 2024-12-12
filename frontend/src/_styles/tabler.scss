@@ -7,6 +7,7 @@
 * Licensed under MIT (https://github.com/tabler/tabler/blob/master/LICENSE)
 */
 @charset "UTF-8";
+@import "./mixins.scss";
 
 @font-face {
     font-display: swap;
@@ -3815,6 +3816,10 @@ fieldset:disabled .btn {
 
 .tab-content>.tab-pane {
     display: none
+}
+
+.user-group-scrollable {
+    @include scrollable(60vh); /* Adjust the max-height if necessary */
 }
 
 .tab-content>.active {
