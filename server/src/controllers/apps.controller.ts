@@ -32,6 +32,7 @@ import { AppDecorator } from 'src/decorators/app.decorator';
 import { AppCloneDto } from '@dto/app-clone.dto';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { APP_RESOURCE_ACTIONS } from 'src/constants/global.constant';
+import { AppAccessGuard } from '@modules/auth/app-access-guard';
 
 @Controller('apps')
 export class AppsController {
@@ -66,17 +67,17 @@ export class AppsController {
     });
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AppAccessGuard)
   @Get('validate-private-app-access/:slug')
   async appAccess(
     @User() user,
     @Param('slug') appSlug: string,
     @Query('access_type') accessType: string,
     @Query('version_name') versionName: string,
-    @Query('version_id') versionId: string
+    @Query('version_id') versionId: string,
+    @AppDecorator() app: App
   ) {
-    const app: App = await this.appsService.findAppWithIdOrSlug(appSlug);
-
+    // const app: App = await this.appsService.findAppWithIdOrSlug(appSlug);
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
     if (!ability.can(APP_RESOURCE_ACTIONS.VIEW, app)) {
       throw new ForbiddenException(
