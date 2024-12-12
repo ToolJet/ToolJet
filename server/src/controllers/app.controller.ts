@@ -100,7 +100,7 @@ export class AppController {
         user.id,
         organization.id
       );
-      if (activeMemberOfOrganization) currentOrganization = organization;
+      if (!appData?.isPublic || activeMemberOfOrganization) currentOrganization = organization;
       const alreadyWorkspaceSessionAvailable = user.organizationIds?.includes(appData?.organizationId);
       const orgIdNeedsToBeUpdatedForApplicationSession =
         appData && appData.organizationId !== user.defaultOrganizationId && alreadyWorkspaceSessionAvailable;
