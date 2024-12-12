@@ -77,7 +77,6 @@ export class AppsController {
     @Query('version_id') versionId: string,
     @AppDecorator() app: App
   ) {
-    // const app: App = await this.appsService.findAppWithIdOrSlug(appSlug);
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
     if (!ability.can(APP_RESOURCE_ACTIONS.VIEW, app)) {
       throw new ForbiddenException(
