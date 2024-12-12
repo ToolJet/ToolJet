@@ -1,8 +1,9 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import cx from 'classnames';
 import { AppMenu } from './AppMenu';
 import moment from 'moment';
 import { ToolTip } from '@/_components/index';
+import OverflowTooltip from '@/_components/OverflowTooltip';
 import useHover from '@/_hooks/useHover';
 import configs from './Configs/AppIcon.json';
 import { Link, useNavigate } from 'react-router-dom';
@@ -29,9 +30,22 @@ export default function AppCard({
   const [hoverRef, isHovered] = useHover();
   const [focused, setFocused] = useState(false);
   const [isMenuOpen, setMenuOpen] = useState(false);
+  const [isOverflowing, setIsOverflowing] = useState(false);
+  const h3Ref = useRef(null);
   const { t } = useTranslation();
   const navigate = useNavigate();
 
+  const cardRef = useRef();
+  const [popoverVisible, setPopoverVisible] = useState(true)
+  const options = {
+    root: null,
+    rootMargin: '0px',
+    threshold: 1.0
+  }
+  const callBackFunction = (entries) => {
+    const [entry] = entries;
+    setPopoverVisible(isMenuOpen && entry.isIntersecting)
+  }
   const onMenuToggle = useCallback(
     (status) => {
       setMenuOpen(!!status);
@@ -54,12 +68,34 @@ export default function AppCard({
 
   useEffect(() => {
     !isMenuOpen && setFocused(!!isHovered);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isHovered]);
+    const observer = new IntersectionObserver(callBackFunction, options)
+    if (cardRef.current) observer.observe(cardRef.current)
+
+    return () => {
+      if (cardRef.current) {
+        observer.unobserve(cardRef.current)
+      }
+    }
+  }, [isHovered, cardRef, options]);
+
+  useEffect(() => {
+    const checkOverflow = () => {
+      if (h3Ref.current) {
+        setIsOverflowing(h3Ref.current.scrollWidth > h3Ref.current.clientWidth);
+      }
+    };
+
+    checkOverflow();
+    window.addEventListener('resize', checkOverflow);
+    return () => window.removeEventListener('resize', checkOverflow);
+  }, []);
 
   const updated_at = app?.editing_version?.updated_at || app?.updated_at;
   const updated = moment(updated_at).fromNow(true);
   const darkMode = localStorage.getItem('darkMode') === 'true';
+  const TooltipComponent = isOverflowing ? ToolTip : OverflowTooltip;
 
   let AppIcon;
   try {
@@ -69,7 +105,7 @@ export default function AppCard({
   }
 
   return (
-    <div className="card homepage-app-card">
+    <div className="card homepage-app-card" ref={cardRef}>
       <div key={app?.id} ref={hoverRef} data-cy={`${app?.name.toLowerCase().replace(/\s+/g, '-')}-card`}>
         <div className="row home-app-card-header">
           <div className="col-12 d-flex justify-content-between">
@@ -90,7 +126,9 @@ export default function AppCard({
                   canUpdateApp={canUpdateApp(app)}
                   deleteApp={() => deleteApp(app)}
                   exportApp={() => exportApp(app)}
-                  isMenuOpen={isMenuOpen}
+                  isMenuOpen={setMenuOpen}
+                  popoverVisible={popoverVisible}
+                  setMenuOpen={setMenuOpen}
                   darkMode={darkMode}
                   currentFolder={currentFolder}
                 />
@@ -99,14 +137,15 @@ export default function AppCard({
           </div>
         </div>
         <div>
-          <ToolTip trigger={['hover']} message={app.name}>
+          <TooltipComponent trigger={['hover']} message={app.name}>
             <h3
+              ref={h3Ref}
               className="app-card-name font-weight-500 tj-text-md"
               data-cy={`${app.name.toLowerCase().replace(/\s+/g, '-')}-title`}
             >
               {decodeEntities(app.name)}
             </h3>
-          </ToolTip>
+          </TooltipComponent>
         </div>
         <div className="app-creation-time-container" style={{ marginBottom: '12px' }}>
           {canUpdate && (
@@ -128,7 +167,7 @@ export default function AppCard({
                   reloadDocument
                 >
                   <button type="button" className="tj-primary-btn edit-button tj-text-xsm" data-cy="edit-button">
-                    <SolidIcon name="editrectangle" width="14" fill={darkMode ? '#11181C' : '#FDFDFE'} />
+                    <SolidIcon name="editrectangle" width="14" fill={darkMode ? '#FFFFFF' : '#FDFDFE'} />
                     &nbsp;{t('globals.edit', 'Edit')}
                   </button>
                 </Link>
@@ -146,8 +185,7 @@ export default function AppCard({
               <button
                 type="button"
                 className={cx(
-                  ` launch-button tj-text-xsm ${
-                    app?.current_version_id === null || app?.is_maintenance_on ? 'tj-disabled-btn ' : 'tj-tertiary-btn'
+                  ` launch-button tj-text-xsm ${app?.current_version_id === null || app?.is_maintenance_on ? 'tj-disabled-btn ' : 'tj-tertiary-btn'
                   }`
                 )}
                 onClick={() => {
@@ -168,8 +206,8 @@ export default function AppCard({
                     app?.current_version_id === null || app?.is_maintenance_on
                       ? '#4C5155'
                       : darkMode
-                      ? '#FDFDFE'
-                      : '#11181C'
+                        ? '#FDFDFE'
+                        : '#11181C'
                   }
                 />
 
