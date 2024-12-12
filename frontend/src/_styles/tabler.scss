@@ -3821,7 +3821,7 @@ fieldset:disabled .btn {
 .user-group-scrollable {
     @include scrollable(60vh); /* Adjust the max-height if necessary */
 }
-
+  
 .tab-content>.active {
     display: block
 }
