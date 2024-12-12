@@ -254,7 +254,7 @@
             "data-sources/amazonses",
             "data-sources/appwrite",
             "data-sources/athena",
-            "data-sources/azureblob",
+            "data-sources/azureblobstorage",
             "data-sources/baserow",
             "data-sources/bigquery",
             "data-sources/firestore",
@@ -265,7 +265,7 @@
             "data-sources/dynamodb",
             "data-sources/elasticsearch",
             "data-sources/gcs",
-            "data-sources/google.sheets",
+            "data-sources/googlesheets",
             "data-sources/graphql",
             "data-sources/grpc",
             "data-sources/influxdb",
@@ -410,7 +410,7 @@
           "type": "category",
           "label": "Marketplace Plugins",
           "items": [
-            "marketplace/plugins/marketplace-plugin-redshift",
+            "marketplace/plugins/marketplace-plugin-awsredshift",
             "marketplace/plugins/marketplace-plugin-textract",
             "marketplace/plugins/marketplace-plugin-aws-lambda",
             "marketplace/plugins/marketplace-plugin-engagespot",
@@ -422,7 +422,8 @@
             "marketplace/plugins/marketplace-plugin-supabase",
             "marketplace/plugins/marketplace-plugin-pocketbase",
             "marketplace/plugins/marketplace-plugin-portkey",
-            "marketplace/plugins/marketplace-plugin-prestodb"
+            "marketplace/plugins/marketplace-plugin-Presto",
+            "marketplace/plugins/marketplace-plugin-sharepoint"
           ]
         }
       ]

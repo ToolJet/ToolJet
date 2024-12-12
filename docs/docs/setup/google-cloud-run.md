@@ -9,10 +9,7 @@ title: Google Cloud Run
 You should setup a PostgreSQL database manually to be used by ToolJet.
 :::
 
-*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
-
 Follow the steps below to deploy ToolJet on Cloud run with `gcloud` CLI.
-
 
 ## Deploying ToolJet application
 1. Create a new Google Cloud Run Service:
@@ -72,79 +69,46 @@ Click on deploy once the above parameters are set.
 Once the Service is created and live, to make the  Cloud Service URL public. Please follow the steps [**here**](https://cloud.google.com/run/docs/securing/managing-access) to make the service public.
 :::
 
-### Deploying ToolJet Database 
+## Deploying ToolJet Database 
 
-If you intend to use this feature, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database.
-
-#### PostgREST server 
+To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration might break, checkout the following docs to know more about new major version, including breaking changes that require you to adjust your applications accordingly:
+- [Self Hosted](/docs/setup/upgrade-to-v3)
 
 1. Cloud Run requires prebuilt image to be present within cloud registry. You can pull specific PostgREST image from docker hub and then tag with your project to push it to cloud registry.
+    ```bash
+    docker pull postgrest/postgrest:v12.0.2
+    ```
 
-   ```bash
-   gcloud auth configure-docker
-   docker pull postgrest/postgrest:v10.1.1.20221215
-   docker tag postgrest/postgrest:v10.1.1.20221215 gcr.io/tooljet-test-338806/postgrest/postgrest:v10.1.1.20221215
-   docker push gcr.io/tooljet-test-338806/postgrest/postgrest:v10.1.1.20221215
-   ```
+    Please run the above command by launching googleCLI which will help to push the PostgREST image to Google container registry. 
+
+2. Ingress and Authentication can be set as shown below, to begin with. Feel free to change the security configurations as per you see fit.
+
+    <img className="screenshot-full" src="/img/cloud-run/ingress-auth.png" alt="ingress-auth" />
+
+
+3. Under containers tab, please make sure the port is set 3000 and CPU capacity is set to 1GiB.
+
+    <img className="screenshot-full" src="/img/cloud-run/port-and-capacity-postgrest.png" alt="port-and-capacity-postgrest" />
   
-  Please run the above command by launching googleCLI which will help to push the PostgREST image to Google container registry. 
+4. Under environmental variable please add corresponding ToolJet database env variables. You can also refer [env variable](/docs/setup/env-vars/#enable-tooljet-database-required).
 
-  <div style={{textAlign: 'center'}}>
-  <img className="screenshot-full" src="/img/cloud-run/CLI.png" alt="CLI" />
-  </div>
+5. Please go to connection tab. Under Cloud SQL instance please select the PostgreSQL database which you have set-up for ToolJet application or the separate PostgreSQL database created respective to ToolJet Database from the drop-down option.
 
+    <img className="screenshot-full" src="/img/cloud-run/Cloud-SQL-instance.png" alt="Cloud-SQL-instance" />
 
-2. Once the PostgREST image is pushed. Click on create service.
+    Click on deploy once the above parameters are set. 
 
-  Select and add the pushed PostgREST image as shown in below.
+    :::info
+    Once the Service is created and live, to make the  Cloud Service URL public. Please follow the steps [**here**](https://cloud.google.com/run/docs/securing/managing-access) to make the service public.
+    :::
 
-  <div style={{textAlign: 'center'}}>
-  <img className="screenshot-full" src="/img/cloud-run/create-service-cloud-run-postgrest.png" alt="create-service-cloud-run-postgrest" />
-  </div>  
+6. Additional Environmental variable to be added to ToolJet application or ToolJet Server connect to PostgREST server. You can also refer env variable [**here**](./env-vars/#enable-tooljet-database-required)
 
-
-3. Ingress and Authentication can be set as shown below, to begin with. Feel free to change the security configurations as per you see fit.
-
-  <div style={{textAlign: 'center'}}>
-  <img className="screenshot-full" src="/img/cloud-run/ingress-auth.png" alt="ingress-auth" />
-  </div>
-
-
-4. Under containers tab, please make sure the port is set 3000 and CPU capacity is set to 1GiB.
-
-  <div style={{textAlign: 'center'}}>
-  <img className="screenshot-full" src="/img/cloud-run/port-and-capacity-postgrest.png" alt="port-and-capacity-postgrest" />
-  </div>
-  
-5. Under environmental variable please add corresponding ToolJet database env variables. You can also refer [env variable](/docs/setup/env-vars/#enable-tooljet-database--optional-).
-
-6. Please go to connection tab. Under Cloud SQL instance please select the PostgreSQL database which you have set-up for ToolJet application or the separate PostgreSQL database created respective to ToolJet Database from the drop-down option.
-
-
-  <div style={{textAlign: 'center'}}>
-  <img className="screenshot-full" src="/img/cloud-run/Cloud-SQL-instance.png" alt="Cloud-SQL-instance" />
-  </div>
-  
-
-Click on deploy once the above parameters are set. 
-
-:::info
-Once the Service is created and live, to make the  Cloud Service URL public. Please follow the steps [**here**](https://cloud.google.com/run/docs/securing/managing-access) to make the service public.
-:::
-
-
-
-7. Additional Environmental variable to be added to ToolJet application or ToolJet Server connect to PostgREST server. You can also refer env variable [**here**](/docs/setup/env-vars/#enable-tooljet-database--optional-)
-
-
-  <div style={{textAlign: 'center'}}>
-  <img className="screenshot-full" src="/img/cloud-run/env-for-tooljet.png" alt="env-for-tooljet" />
-  </div>
-
+    <img className="screenshot-full" src="/img/cloud-run/env-for-tooljet.png" alt="env-for-tooljet" />
 
 ## Upgrading to the Latest LTS Version
 
-New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:EE-LTS-latest`.
+New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
 
 If this is a new installation of the application, you may start directly with the latest version. This guide is not required for new installations.
 
@@ -154,4 +118,4 @@ If this is a new installation of the application, you may start directly with th
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
-For specific issues or questions, refer to our **[Slack](https://tooljet.slack.com/join/shared_invite/zt-25438diev-mJ6LIZpJevG0LXCEcL0NhQ#)**.
+*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*

@@ -10,6 +10,7 @@
 /** @type {import('@docusaurus/plugin-content-docs').SidebarsConfig} */
 const sidebars = {
   docs: [
+    "doc-home-page",
     {
       'type': 'category',
       'label': 'Getting Started',
@@ -89,7 +90,7 @@ const sidebars = {
             'app-builder/walkthrough/variables',
             'app-builder/importing-exporting-applications',
           ],
-        },                    
+        },   
         {
           'type': 'category',
           'label': 'References',
@@ -127,7 +128,8 @@ const sidebars = {
                       'label': 'Chart',
                       'items': [
                         'widgets/chart/chart-properties',
-                        'widgets/chart/chart-examples'
+                        'widgets/chart/chart-examples',
+                        'widgets/chart/transforming-data-for-charts'
                       ]
                     },
                     'widgets/checkbox',
@@ -171,6 +173,18 @@ const sidebars = {
                         'widgets/table/table-properties',
                         'widgets/table/table-columns',
                         'widgets/table/table-csa-and-variables',
+                        {
+                          'type': 'category',
+                          'label': 'Serverside Operations',
+                          'items' : [
+                            'widgets/table/serverside-operations/overview',
+                            'widgets/table/serverside-operations/search',
+                            'widgets/table/serverside-operations/sort',
+                            'widgets/table/serverside-operations/filter',
+                            'widgets/table/serverside-operations/pagination'
+                          ]
+                        },
+                        'widgets/table/dynamic-column'
                       ]
                     },
                     'widgets/tabs',
@@ -222,6 +236,7 @@ const sidebars = {
             },
           ],
         },
+        'app-builder/anti-patterns',
         'tutorial/keyboard-shortcuts',
       ],
     },
@@ -276,7 +291,7 @@ const sidebars = {
             'data-sources/amazonses',
             'data-sources/appwrite',
             'data-sources/athena',
-            'data-sources/azureblob',
+            'data-sources/azureblobstorage',
             'data-sources/baserow',
             'data-sources/bigquery',
             'data-sources/firestore',
@@ -287,7 +302,7 @@ const sidebars = {
             'data-sources/dynamodb',
             'data-sources/elasticsearch',
             'data-sources/gcs',
-            'data-sources/google.sheets',
+            'data-sources/googlesheets',
             'data-sources/graphql',
             'data-sources/grpc',
             'data-sources/influxdb',
@@ -331,6 +346,7 @@ const sidebars = {
           ],
         },
         'tutorial/transformations',
+        'data-sources/local-data-sources-migration',
       ],
     },
     {
@@ -339,7 +355,16 @@ const sidebars = {
       'items': [
         'tooljet-db/tooljet-database',
         'tooljet-db/database-editor',
+        {
+          'type': 'category',
+          'label': 'Column Constraints',
+          'items': [
+            'tooljet-db/constraints/primary-key',
+            'tooljet-db/constraints/foreign-key'
+          ]
+        },
         'tooljet-db/data-types',
+        'tooljet-db/table-operations',
         'tooljet-db/querying-tooljet-db',
       ]
     },
@@ -434,6 +459,14 @@ const sidebars = {
         'workflows/workflow-triggers',
         'workflows/results',
         'workflows/permissions',
+        {
+          'type': 'category',
+          'label': 'How-to',
+          'items': [
+            'workflows/trigger-using-webhook',
+            'workflows/trigger-workflow-from-app'
+          ]
+        }
       ],
     },
     {
@@ -446,7 +479,7 @@ const sidebars = {
           'type': 'category',
           'label': 'Marketplace Plugins',
           'items': [
-            'marketplace/plugins/marketplace-plugin-redshift',
+            'marketplace/plugins/marketplace-plugin-awsredshift',
             'marketplace/plugins/marketplace-plugin-textract',
             'marketplace/plugins/marketplace-plugin-aws-lambda',
             'marketplace/plugins/marketplace-plugin-engagespot',
@@ -458,8 +491,10 @@ const sidebars = {
             'marketplace/plugins/marketplace-plugin-supabase',
             'marketplace/plugins/marketplace-plugin-pocketbase',
             'marketplace/plugins/marketplace-plugin-portkey',
-            'marketplace/plugins/marketplace-plugin-prestodb',
+            'marketplace/plugins/marketplace-plugin-Presto',
             'marketplace/plugins/marketplace-plugin-jira',
+            'marketplace/plugins/marketplace-plugin-sharepoint',
+            'marketplace/plugins/marketplace-plugin-pinecone'
           ],
         },
       ],
@@ -478,6 +513,7 @@ const sidebars = {
           'label': 'Roadmap',
           'href': 'https://github.com/orgs/ToolJet/projects/15',
         },
+        'versions'
       ],
     },
     {
