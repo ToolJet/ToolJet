@@ -101,6 +101,7 @@ describe('TooljetDbImportExportService', () => {
               column_default: expect.stringContaining('nextval'),
               character_maximum_length: null,
               numeric_precision: 32,
+              configurations: {},
               constraints_type: {
                 is_not_null: true,
                 is_primary_key: true,
@@ -114,6 +115,7 @@ describe('TooljetDbImportExportService', () => {
               column_default: null,
               character_maximum_length: null,
               numeric_precision: null,
+              configurations: {},
               constraints_type: {
                 is_not_null: true,
                 is_primary_key: false,
@@ -127,6 +129,7 @@ describe('TooljetDbImportExportService', () => {
               column_default: null,
               character_maximum_length: null,
               numeric_precision: null,
+              configurations: {},
               constraints_type: {
                 is_not_null: true,
                 is_primary_key: false,
@@ -273,7 +276,7 @@ describe('TooljetDbImportExportService', () => {
 
       expect(countAfterImport).toBe(countBeforeImport);
       expect(result.id).toBe(existingTable.id);
-      expect(result.name).toBe(existingTable.tableName);
+      expect(result.table_name).toBe(existingTable.tableName);
     });
 
     it('should throw BadRequestException when primary key is missing', async () => {
@@ -299,10 +302,10 @@ describe('TooljetDbImportExportService', () => {
       await expect(service.import(organizationId, importData)).rejects.toThrow(BadRequestException);
     });
 
-    it('should throw ConflictException when table with same name exists', async () => {
+    it('should append a timestamp to the table name if the same name already exists', async () => {
       const importData = {
         id: uuidv4(),
-        table_name: 'users', // Same name as existing table
+        table_name: 'users', // same name as an existing table
         schema: {
           columns: [
             {
@@ -319,11 +322,8 @@ describe('TooljetDbImportExportService', () => {
         },
       };
 
-      jest
-        .spyOn(tooljetDbService, 'perform')
-        .mockRejectedValueOnce(new ConflictException('Table with name "users" already exists'));
-
-      await expect(service.import(organizationId, importData)).rejects.toThrow(ConflictException);
+      const result = await service.import(organizationId, importData);
+      expect(result.table_name).toMatch(/^users_\d{13,}$/);
     });
   });
 
@@ -549,7 +549,7 @@ describe('TooljetDbImportExportService', () => {
       await expect(service.bulkImport(importData, '2.50.5.5.8', false)).rejects.toThrow();
 
       const validTable = await appManager.findOne(InternalTable, { where: { tableName: 'valid_table' } });
-      expect(validTable).toBeUndefined();
+      expect(validTable).toBeNull();
     });
   });
 });
