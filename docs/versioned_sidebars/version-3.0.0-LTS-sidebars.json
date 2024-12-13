@@ -364,7 +364,7 @@
         {
           "type": "category",
           "label": "Onboarding and Offboarding Users",
-          "items":[
+          "items": [
             "user-management-and-access-control/onboarding-offboarding-users/invite-user",
             "user-management-and-access-control/onboarding-offboarding-users/archive-user",
             "user-management-and-access-control/onboarding-offboarding-users/bulk-invite-users",
@@ -373,95 +373,68 @@
         },
         {
           "type": "category",
-          "label": "Managing Users",
+          "label": "Authentication",
           "items": [
-            "user-management-and-access-control/managing-users/user-management",
-            "user-management-and-access-control/managing-users/edit-details",
-            "user-management-and-access-control/managing-users/profile-management"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "category",
-      "label": "Org Management",
-      "items": [
-        "dashboard",
-        {
-          "type": "category",
-          "label": "Workspaces",
-          "items": [
-            "org-management/workspaces/workspace_overview",
-            "org-management/workspaces/workspace-variables",
-            "org-management/workspaces/workspace-variables-migration",
-            "org-management/workspaces/workspace_constants"
+            "user-management-and-access-control/authentication/workspace-login",
+            "user-management-and-access-control/authentication/pwd-login",
+            "user-management-and-access-control/authentication/auto-sso",
+            "user-management-and-access-control/authentication/direct-app"
           ]
         },
         {
           "type": "category",
-          "label": "User Authentication",
+          "label": "Role Based Access Control",
           "items": [
-            "user-authentication/user-lifecycle",
-            "user-authentication/workspace-login",
+            "user-management-and-access-control/rbac/admin",
+            "user-management-and-access-control/rbac/roles",
             {
               "type": "category",
-              "label": "SSO",
+              "label": "User Groups",
               "items": [
-                "user-authentication/sso/github",
-                "user-authentication/sso/google",
-                {
-                  "type": "category",
-                  "label": "OpenId Connect",
-                  "link": {
-                    "type": "generated-index",
-                    "title": "OpenId Connect",
-                    "description": " ",
-                    "keywords": [
-                      "okta",
-                      "openid",
-                      "azureAD"
-                    ]
-                  },
-                  "collapsed": true,
-                  "items": [
-                    "user-authentication/sso/openid/setup",
-                    "user-authentication/sso/openid/azuread",
-                    "user-authentication/sso/openid/okta",
-                    "user-authentication/sso/openid/google-openid"
-                  ]
-                },
-                "user-authentication/sso/oidc",
-                "user-authentication/sso/ldap",
-                "user-authentication/sso/saml",
-                "user-authentication/sso/auto-sso-login"
+                "user-management-and-access-control/rbac/user-groups/default",
+                "user-management-and-access-control/rbac/user-groups/custom"
               ]
-            }
+            },
+            "user-management-and-access-control/rbac/granular-access"
           ]
         },
-        "org-management/permissions",
-        "tutorial/manage-users-groups",
-        "tutorial/tooljet-api",
-        "Enterprise/audit_logs",
-        "Enterprise/white-label",
-        "Enterprise/superadmin",
         {
           "type": "category",
-          "label": "Licensing",
+          "label": "Single Sign-On (SSO)",
           "items": [
-            "org-management/licensing/tooljet-cloud",
-            "org-management/licensing/self-hosted"
+            "user-management-and-access-control/sso/github",
+            "user-management-and-access-control/sso/google",
+            "user-management-and-access-control/sso/oidc",
+            "user-management-and-access-control/sso/ldap",
+            "user-management-and-access-control/sso/saml"
           ]
         },
-        "org-management/smtp-configuration"
-      ]
-    },
-    {
-      "type": "category",
-      "label": "Release Management",
-      "items": [
-        "gitsync",
-        "release-management/multi-environment",
-        "tutorial/versioning-and-release"
+        {
+          "type": "category",
+          "label": "Group Sync",
+          "items": [
+            "user-management-and-access-control/group-sync/oidc",
+            "user-management-and-access-control/group-sync/ldap",
+            "user-management-and-access-control/group-sync/saml"
+          ]
+        },
+        "user-management-and-access-control/two-fa",
+        {
+          "type": "category",
+          "label": "Managing Users",
+          "items": [
+            {
+              "type": "category",
+              "label": "User Management",
+              "items": [
+                "user-management-and-access-control/managing-users/user-management/edit",
+                "user-management-and-access-control/managing-users/user-management/metadata",
+                "user-management-and-access-control/managing-users/user-management/reset-pwd"
+              ]
+            },
+            "user-management-and-access-control/managing-users/user-profile"
+          ]
+        }
       ]
     },
     {
