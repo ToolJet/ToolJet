@@ -1,31 +1,21 @@
 /** @jest-environment setup-polly-jest/jest-environment-node */
 
 import { INestApplication } from '@nestjs/common';
-import { getManager, getConnection, EntityManager } from 'typeorm';
+import { DataSource as TypeOrmDataSource, EntityManager } from 'typeorm';
 import { TooljetDbOperationsService } from '../../src/services/tooljet_db_operations.service';
 import { TooljetDbService } from '../../src/services/tooljet_db.service';
 import { setupPolly } from 'setup-polly-jest';
 import * as NodeHttpAdapter from '@pollyjs/adapter-node-http';
 import * as FSPersister from '@pollyjs/persister-fs';
 import * as path from 'path';
-import { clearDB, createUser } from '../test.helper';
+import { createNestAppInstanceWithServiceMocks } from '../test.helper';
 import { setupTestTables } from '../tooljet-db-test.helper';
 import { InternalTable } from '@entities/internal_table.entity';
-import { Test, TestingModule } from '@nestjs/testing';
-import { ConfigModule } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { ormconfig, tooljetDbOrmconfig } from '../../ormconfig';
-import { PostgrestProxyService } from '@services/postgrest_proxy.service';
-import { getEnvVars } from '../../scripts/database-config-utils';
-import { User } from '@entities/user.entity';
+import { getDataSourceToken } from '@nestjs/typeorm';
 import { Organization } from '@entities/organization.entity';
-import { OrganizationUser } from '@entities/organization_user.entity';
-import { AppVersion } from '@entities/app_version.entity';
-import { GroupPermission } from '@entities/group_permission.entity';
-import { UserGroupPermission } from '@entities/user_group_permission.entity';
-import { App } from '@entities/app.entity';
-import { LicenseService } from '@services/license.service';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { createOrganization, createUser, clearDB } from '../common.helper';
+import { USER_ROLE } from '@modules/user_resource_permissions/constants/group-permissions.constant';
+import { LICENSE_FIELD, LICENSE_LIMIT } from '@ee/licensing/helper';
 
 /**
  * Tests TooljetDbOperationsService
@@ -38,8 +28,10 @@ describe('TooljetDbOperationsService', () => {
   let tjDbManager: EntityManager;
   let service: TooljetDbOperationsService;
   let tooljetDbService: TooljetDbService;
+  let organization: Organization;
   let organizationId: string;
   let usersTableId: string;
+  let licenseServiceMock;
 
   const context = setupPolly({
     adapters: [NodeHttpAdapter],
@@ -48,7 +40,7 @@ describe('TooljetDbOperationsService', () => {
     matchRequestsBy: {
       method: true,
       headers: {
-        exclude: ['tj-workspace-id', 'authorization', 'tableinfo'], // Exclude headers as they contain dynamic information
+        exclude: ['tj-workspace-id', 'authorization', 'tableinfo'], // Exclude dynamic headers
       },
       body: true,
       url: {
@@ -57,7 +49,7 @@ describe('TooljetDbOperationsService', () => {
         password: true,
         hostname: true,
         port: true,
-        pathname: false, // Don't match by pathname as it contains the dynamic table ID
+        pathname: false, // Exclude pathname since it may contain dynamic IDs
         query: true,
       },
     },
@@ -69,64 +61,55 @@ describe('TooljetDbOperationsService', () => {
   });
 
   beforeAll(async () => {
-    const mockLicenseService = {
-      getLicenseTerms: jest.fn(),
-    };
+    ({ app, licenseServiceMock } = await createNestAppInstanceWithServiceMocks({
+      shouldMockLicenseService: true,
+    }));
+    jest.spyOn(licenseServiceMock, 'getLicenseTerms').mockImplementation((key: LICENSE_FIELD) => {
+      switch (key) {
+        case LICENSE_FIELD.USER:
+          return {
+            total: LICENSE_LIMIT.UNLIMITED,
+            editors: LICENSE_LIMIT.UNLIMITED,
+            viewers: LICENSE_LIMIT.UNLIMITED,
+            superadmins: LICENSE_LIMIT.UNLIMITED,
+          };
+        case LICENSE_FIELD.AUDIT_LOGS:
+          return false;
+      }
+    });
 
-    const mockEventEmitter = {
-      emit: jest.fn(),
-      on: jest.fn(),
-    };
+    const defaultDataSource = app.get<TypeOrmDataSource>(getDataSourceToken('default'));
+    const tooljetDbDataSource = app.get<TypeOrmDataSource>(getDataSourceToken('tooljetDb'));
+    appManager = defaultDataSource.manager;
+    tjDbManager = tooljetDbDataSource.manager;
 
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot({
-          isGlobal: true,
-          envFilePath: ['../.env.test'],
-          load: [() => getEnvVars()],
-        }),
-        TypeOrmModule.forRoot(ormconfig),
-        TypeOrmModule.forRoot(tooljetDbOrmconfig),
-        TypeOrmModule.forFeature([
-          User,
-          Organization,
-          OrganizationUser,
-          App,
-          AppVersion,
-          GroupPermission,
-          UserGroupPermission,
-          InternalTable,
-        ]),
-      ],
-      providers: [TooljetDbOperationsService, TooljetDbService, PostgrestProxyService, LicenseService, EventEmitter2],
-    })
-      .overrideProvider(LicenseService)
-      .useValue(mockLicenseService)
-      .overrideProvider(EventEmitter2)
-      .useValue(mockEventEmitter)
-      .compile();
-
-    app = moduleFixture.createNestApplication();
-    await app.init();
-
-    appManager = getManager();
-    tjDbManager = getConnection('tooljetDb').manager;
-
-    service = moduleFixture.get<TooljetDbOperationsService>(TooljetDbOperationsService);
-    tooljetDbService = moduleFixture.get<TooljetDbService>(TooljetDbService);
+    service = app.get<TooljetDbOperationsService>(TooljetDbOperationsService);
+    tooljetDbService = app.get<TooljetDbService>(TooljetDbService);
   });
 
   beforeEach(async () => {
-    await clearDB();
+    await clearDB(app);
 
-    const adminUserData = await createUser(app, {
+    // Create an organization and a user with admin role
+    organization = await createOrganization(app, { name: 'Test Org', slug: 'test-org' });
+    const adminUserParams = {
       email: 'admin@tooljet.io',
-      groups: ['all_users', 'admin'],
-    });
-    organizationId = adminUserData.organization.id;
+      firstName: 'Admin',
+      lastName: 'User',
+      password: 'password',
+      status: 'active',
+    };
+    // createUser adds the user to the org with the specified role
+    await createUser(app, adminUserParams, organization.id, USER_ROLE.ADMIN);
+    organizationId = organization.id;
 
+    // Setup test tables within this organization
     await setupTestTables(appManager, tjDbManager, tooljetDbService, organizationId);
-    const usersTable = await appManager.findOneOrFail(InternalTable, { organizationId, tableName: 'users' });
+
+    // Retrieve the users table ID for convenience
+    const usersTable = await appManager.findOneOrFail(InternalTable, {
+      where: { organizationId, tableName: 'users' },
+    });
     usersTableId = usersTable.id;
   });
 
@@ -135,8 +118,8 @@ describe('TooljetDbOperationsService', () => {
   });
 
   afterAll(async () => {
+    await clearDB(app);
     await app.close();
-    await clearDB();
   });
 
   describe('.createRow', () => {
@@ -151,7 +134,9 @@ describe('TooljetDbOperationsService', () => {
         organization_id: organizationId,
       };
 
-      const result = await service.createRow(queryOptions);
+      const result = await service.createRow(queryOptions, {
+        app: { organization_id: organizationId },
+      });
 
       expect(result).toBeDefined();
       expect(result.status).toBe('ok');
@@ -173,15 +158,18 @@ describe('TooljetDbOperationsService', () => {
   describe('.listRows', () => {
     it('should list rows correctly', async () => {
       // Create a test row
-      await service.createRow({
-        table_id: usersTableId,
-        create_row: {
-          name: { column: 'name', value: 'John Doe' },
-          email: { column: 'email', value: 'john@example.com' },
+      await service.createRow(
+        {
+          table_id: usersTableId,
+          create_row: {
+            name: { column: 'name', value: 'John Doe' },
+            email: { column: 'email', value: 'john@example.com' },
+          },
+          id: 'query-id',
+          organization_id: organizationId,
         },
-        id: 'query-id',
-        organization_id: organizationId,
-      });
+        { app: { organization_id: organizationId } }
+      );
 
       const queryOptions = {
         table_id: usersTableId,
@@ -193,7 +181,9 @@ describe('TooljetDbOperationsService', () => {
         organization_id: organizationId,
       };
 
-      const result = await service.listRows(queryOptions);
+      const result = await service.listRows(queryOptions, {
+        app: { organization_id: organizationId },
+      });
 
       expect(result).toBeDefined();
       expect(result.status).toBe('ok');
@@ -214,15 +204,18 @@ describe('TooljetDbOperationsService', () => {
   describe('.updateRows', () => {
     it('should update rows and verify the changes', async () => {
       // Create a test row
-      await service.createRow({
-        table_id: usersTableId,
-        create_row: {
-          name: { column: 'name', value: 'John Doe' },
-          email: { column: 'email', value: 'john@example.com' },
+      await service.createRow(
+        {
+          table_id: usersTableId,
+          create_row: {
+            name: { column: 'name', value: 'John Doe' },
+            email: { column: 'email', value: 'john@example.com' },
+          },
+          id: 'query-id',
+          organization_id: organizationId,
         },
-        id: 'query-id',
-        organization_id: organizationId,
-      });
+        { app: { organization_id: organizationId } }
+      );
 
       const queryOptions = {
         table_id: usersTableId,
@@ -238,18 +231,23 @@ describe('TooljetDbOperationsService', () => {
         organization_id: organizationId,
       };
 
-      const result = await service.updateRows(queryOptions);
+      const result = await service.updateRows(queryOptions, {
+        app: { organization_id: organizationId },
+      });
 
       expect(result).toBeDefined();
       expect(result.status).toBe('ok');
 
       // Verify the update
-      const listResult = await service.listRows({
-        table_id: usersTableId,
-        list_rows: { limit: 1 },
-        id: 'query-id',
-        organization_id: organizationId,
-      });
+      const listResult = await service.listRows(
+        {
+          table_id: usersTableId,
+          list_rows: { limit: 1 },
+          id: 'query-id',
+          organization_id: organizationId,
+        },
+        { app: { organization_id: organizationId } }
+      );
 
       const data = listResult.data as Array<Record<string, unknown>>;
 
@@ -266,15 +264,18 @@ describe('TooljetDbOperationsService', () => {
 
   describe('.deleteRows', () => {
     it('should delete rows and verify the deletion', async () => {
-      await service.createRow({
-        table_id: usersTableId,
-        create_row: {
-          name: { column: 'name', value: 'John Doe' },
-          email: { column: 'email', value: 'john@example.com' },
+      await service.createRow(
+        {
+          table_id: usersTableId,
+          create_row: {
+            name: { column: 'name', value: 'John Doe' },
+            email: { column: 'email', value: 'john@example.com' },
+          },
+          id: 'query-id',
+          organization_id: organizationId,
         },
-        id: 'query-id',
-        organization_id: organizationId,
-      });
+        { app: { organization_id: organizationId } }
+      );
 
       const queryOptions = {
         table_id: usersTableId,
@@ -287,43 +288,58 @@ describe('TooljetDbOperationsService', () => {
         organization_id: organizationId,
       };
 
-      const result = await service.deleteRows(queryOptions);
+      const result = await service.deleteRows(queryOptions, { app: { organization_id: organizationId } });
 
       expect(result).toBeDefined();
       expect(result.status).toBe('ok');
+
+      // Verify that the row was actually deleted
+      const listResult = await service.listRows(
+        {
+          table_id: usersTableId,
+          list_rows: { limit: 10 },
+          id: 'query-id',
+          organization_id: organizationId,
+        },
+        { app: { organization_id: organizationId } }
+      );
+      const data = listResult.data as Array<Record<string, unknown>>;
+      expect(data.length).toBe(0);
     });
   });
 
   describe('.joinTables', () => {
     it('should join tables and verify the result', async () => {
-      // Check if tables exist
-      const usersTable = await appManager.findOne(InternalTable, { organizationId, tableName: 'users' });
-      const ordersTable = await appManager.findOne(InternalTable, { organizationId, tableName: 'orders' });
+      const usersTable = await appManager.findOneOrFail(InternalTable, {
+        where: { organizationId, tableName: 'users' },
+      });
+      const ordersTable = await appManager.findOneOrFail(InternalTable, {
+        where: { organizationId, tableName: 'orders' },
+      });
 
-      expect(usersTable).toBeDefined();
-      expect(ordersTable).toBeDefined();
-
-      const insertUserResult = await tjDbManager
+      // Insert test data directly into tooljetDb using the tjDbManager
+      const userInsertResult = await tjDbManager
         .createQueryBuilder()
         .insert()
-        .into(usersTable.id)
+        .into(`"${organizationId}"."users"`)
         .values({
           name: 'John Doe',
           email: 'john@example.com',
         })
-        .returning('id')
+        .returning('*')
         .execute();
 
-      const userId = insertUserResult.raw[0].id;
+      const userId = userInsertResult.raw[0].id;
 
       await tjDbManager
         .createQueryBuilder()
         .insert()
-        .into(ordersTable.id)
+        .into(`"${organizationId}"."orders"`)
         .values({
           user_id: userId,
           total: 100.5,
         })
+        .returning('*')
         .execute();
 
       // Perform join
@@ -331,7 +347,7 @@ describe('TooljetDbOperationsService', () => {
         join_table: {
           joins: [
             {
-              id: Date.now(), // unique ID
+              id: Date.now(),
               conditions: {
                 operator: 'AND',
                 conditionsList: [
@@ -374,7 +390,9 @@ describe('TooljetDbOperationsService', () => {
         organization_id: organizationId,
       };
 
-      const joinResult = await service.joinTables(queryOptions);
+      const joinResult = await service.joinTables(queryOptions, {
+        app: { organization_id: organizationId },
+      });
 
       const expectedResponse = {
         status: 'ok',

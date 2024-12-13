@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { DataSourceOptions, getConnectionManager, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { User } from '@entities/user.entity';
 import { App } from '@entities/app.entity';
 import { Organization } from '@entities/organization.entity';
@@ -10,17 +10,17 @@ import { ExportResourcesDto } from '@dto/export-resources.dto';
 import { CloneAppDto, CloneResourcesDto, CloneTooljetDatabaseDto } from '@dto/clone-resources.dto';
 import { TooljetDbService } from '@services/tooljet_db.service';
 import { ValidateTooljetDatabaseConstraint } from '@dto/validators/tooljet-database.validator';
-import { clearDB, authenticateUser, logoutUser, createNestAppInstanceWithServiceMocks } from '../test.helper';
+import { authenticateUser, logoutUser, createNestAppInstanceWithServiceMocks } from '../test.helper';
 import * as path from 'path';
 import * as fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import {
+  clearDB,
   createApplicationForUser,
   createOrganization,
   createUser,
   createAndAddUserToOrganization,
 } from '../common.helper';
-import { ormconfig, tooljetDbOrmconfig } from 'ormconfig';
 import { LICENSE_FIELD, LICENSE_LIMIT } from '@ee/licensing/helper';
 import { USER_ROLE } from '@modules/user_resource_permissions/constants/group-permissions.constant';
 import { camelizeKeys } from 'humps';
@@ -60,20 +60,10 @@ describe('ImportExportResourcesController', () => {
           return false;
       }
     });
-
-    const connectionManager = getConnectionManager();
-
-    if (!connectionManager.has('default')) {
-      await connectionManager.create(ormconfig as DataSourceOptions).connect();
-    }
-
-    if (!connectionManager.has('tooljetDb')) {
-      await connectionManager.create(tooljetDbOrmconfig as DataSourceOptions).connect();
-    }
   });
 
   beforeEach(async () => {
-    await clearDB();
+    await clearDB(app);
 
     const adminUserParams = {
       email: 'admin@tooljet.com',
@@ -96,6 +86,7 @@ describe('ImportExportResourcesController', () => {
   });
 
   afterAll(async () => {
+    await clearDB(app);
     await app.close();
   });
 
