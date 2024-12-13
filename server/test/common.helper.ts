@@ -1,20 +1,21 @@
+import { DataSource as TypeOrmDataSource } from 'typeorm';
 import { InstanceSettings } from '@entities/instance_settings.entity';
 import { Organization } from '@entities/organization.entity';
 import { User } from '@entities/user.entity';
 import { USER_ROLE } from '@modules/user_resource_permissions/constants/group-permissions.constant';
 import { INestApplication } from '@nestjs/common';
-import { getRepositoryToken } from '@nestjs/typeorm';
+import { getDataSourceToken, getRepositoryToken } from '@nestjs/typeorm';
 import { AuthService } from '@services/auth.service';
 import { OrganizationsService } from '@services/organizations.service';
 import { UsersService } from '@services/users.service';
 import { INSTANCE_USER_SETTINGS } from '@instance-settings/constants';
 import { Repository } from 'typeorm';
-import { LibraryAppCreationService } from '@services/library_app_creation.service';
 import { App } from '@entities/app.entity';
 import { OrganizationUsersService } from '@services/organization_users.service';
 import { OrganizationUser } from '@entities/organization_user.entity';
 import { AppsService } from '@services/apps.service';
 import { APP_TYPES } from '@ee/apps/constants';
+import { InternalTable } from '@entities/internal_table.entity';
 
 export const createOrganization = async (
   nestApp: INestApplication,
@@ -93,14 +94,44 @@ export const setupOrganizationAndUser = async (
   return { user, organization };
 };
 
-export const createTemplateAppForUser = async (
-  nestApp: INestApplication,
-  user: User,
-  identifier: string,
-  appName: string
-): Promise<App> => {
-  const appRepository = nestApp.get<Repository<App>>(getRepositoryToken(App));
-  await nestApp.get(LibraryAppCreationService).perform(user, identifier, appName);
+export async function clearDB(nestApp: INestApplication) {
+  if (process.env.NODE_ENV !== 'test') return;
 
-  return await appRepository.findOneOrFail({ where: { name: appName, organizationId: user.organizationId } });
-};
+  const defaultDataSource = nestApp.get<TypeOrmDataSource>(getDataSourceToken('default'));
+  const tooljetDbDataSource = nestApp.get<TypeOrmDataSource>(getDataSourceToken('tooljetDb'));
+  if (!defaultDataSource.isInitialized) await defaultDataSource.initialize();
+  if (!tooljetDbDataSource.isInitialized) await tooljetDbDataSource.initialize();
+
+  await dropTooljetDbTables(defaultDataSource, tooljetDbDataSource);
+
+  const entities = defaultDataSource.entityMetadatas;
+  for (const entity of entities) {
+    const repository = defaultDataSource.getRepository(entity.name);
+
+    // FIXME: Remove entity files in this list as they are deprecated
+    if (
+      [
+        'app_group_permissions',
+        'data_source_group_permissions',
+        'group_permissions',
+        'user_group_permissions',
+      ].includes(entity.tableName)
+    )
+      continue;
+    if (entity.tableName !== 'instance_settings') {
+      await repository.query(`TRUNCATE ${entity.tableName} RESTART IDENTITY CASCADE;`);
+    } else {
+      await repository.query(`UPDATE ${entity.tableName} SET value='true' WHERE key='ALLOW_PERSONAL_WORKSPACE';`);
+    }
+  }
+}
+
+async function dropTooljetDbTables(defaultDataSource, tooljetDbDataSource) {
+  const internalTables = await defaultDataSource.manager.find(InternalTable, {
+    select: ['id'],
+  });
+
+  for (const table of internalTables) {
+    await tooljetDbDataSource.query(`DROP TABLE IF EXISTS "${table.id}" CASCADE`);
+  }
+}
