@@ -3,6 +3,7 @@ import cx from 'classnames';
 import { AppMenu } from './AppMenu';
 import moment from 'moment';
 import { ToolTip } from '@/_components/index';
+import OverflowTooltip from '@/_components/OverflowTooltip';
 import useHover from '@/_hooks/useHover';
 import configs from './Configs/AppIcon.json';
 import { Link, useNavigate } from 'react-router-dom';
@@ -29,6 +30,8 @@ export default function AppCard({
   const [hoverRef, isHovered] = useHover();
   const [focused, setFocused] = useState(false);
   const [isMenuOpen, setMenuOpen] = useState(false);
+  const [isOverflowing, setIsOverflowing] = useState(false);
+  const h3Ref = useRef(null);
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -77,9 +80,22 @@ export default function AppCard({
     }
   }, [isHovered, cardRef, options]);
 
+  useEffect(() => {
+    const checkOverflow = () => {
+      if (h3Ref.current) {
+        setIsOverflowing(h3Ref.current.scrollWidth > h3Ref.current.clientWidth);
+      }
+    };
+
+    checkOverflow();
+    window.addEventListener('resize', checkOverflow);
+    return () => window.removeEventListener('resize', checkOverflow);
+  }, []);
+
   const updated_at = app?.editing_version?.updated_at || app?.updated_at;
   const updated = moment(updated_at).fromNow(true);
   const darkMode = localStorage.getItem('darkMode') === 'true';
+  const TooltipComponent = isOverflowing ? ToolTip : OverflowTooltip;
 
   let AppIcon;
   try {
@@ -121,14 +137,15 @@ export default function AppCard({
           </div>
         </div>
         <div>
-          <ToolTip trigger={['hover']} message={app.name}>
+          <TooltipComponent trigger={['hover']} message={app.name}>
             <h3
+              ref={h3Ref}
               className="app-card-name font-weight-500 tj-text-md"
               data-cy={`${app.name.toLowerCase().replace(/\s+/g, '-')}-title`}
             >
               {decodeEntities(app.name)}
             </h3>
-          </ToolTip>
+          </TooltipComponent>
         </div>
         <div className="app-creation-time-container" style={{ marginBottom: '12px' }}>
           {canUpdate && (
