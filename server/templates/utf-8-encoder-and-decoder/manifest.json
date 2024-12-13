@@ -1,5 +1,5 @@
 {
-  "name": "Utf 8 encoder and decoder",
+  "name": "UTF-8 encoder and decoder",
   "description": "Encode and decode text to and from UTF-8 for enhanced text processing, facilitating multilingual support and accurate data transmission.",
   "widgets": [
     "Table",
