@@ -135,8 +135,9 @@ describe("Manage Groups", () => {
         common.navigateToManageUsers();
         fillUserInviteForm(data.firstName, data.email);
         cy.get(usersSelector.buttonInviteUsers).click();
-        cy.wait(3000);
+        cy.wait(2000);
         fetchAndVisitInviteLink(data.email);
+        cy.wait(2000);
         cy.get(onboardingSelectors.loginPasswordInput).should("be.visible");
         cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
         cy.get(commonSelectors.continueButton).click();
@@ -268,8 +269,9 @@ describe("Manage Groups", () => {
         common.navigateToManageUsers();
         fillUserInviteForm(data.firstName, data.email);
         cy.get(usersSelector.buttonInviteUsers).click();
-        cy.wait(3000);
+        cy.wait(2000);
         fetchAndVisitInviteLink(data.email);
+        cy.wait(2000);
         cy.get(onboardingSelectors.loginPasswordInput).should("be.visible");
         cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
         cy.get(commonSelectors.continueButton).click();
