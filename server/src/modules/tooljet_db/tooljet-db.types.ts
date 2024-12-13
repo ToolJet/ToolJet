@@ -10,6 +10,7 @@ export const TJDB = {
   double_precision: 'double precision' as const,
   boolean: 'boolean' as const,
   timestampz: 'timestamp with time zone' as const,
+  jsonb: 'jsonb' as const,
 };
 
 export type TooljetDatabaseDataTypes = (typeof TJDB)[keyof typeof TJDB];
@@ -100,8 +101,8 @@ const errorCodeMapping: Partial<ErrorCodeMapping> = {
     default: 'Insufficient privilege',
   },
   [PostgresErrorCode.UndefinedFunction]: {
-    proxy_postgrest: '{{fxName}} - aggregate function requires serial, integer, float or big int column type',
-    join_tables: '{{fxName}} - aggregate function requires serial, integer, float or big int column type',
+    // proxy_postgrest: '{{fxName}} - aggregate function requires serial, integer, float or big int column type',
+    // join_tables: '{{fxName}} - aggregate function requires serial, integer, float or big int column type',
   },
 };
 
@@ -238,7 +239,8 @@ export class TooljetDatabaseError extends QueryFailedError {
         const regex = /function (\w+)\(([\w\s]+)\) does not exist/;
         const matches = regex.exec(errorMessage);
         const table = this.context.internalTables[0].tableName;
-        return { table, fxName: matches[1] };
+        if (Array.isArray(matches) && matches.length) return { table, fxName: matches[1] };
+        return null;
       },
     };
     return parsers[this.code]?.() || null;

@@ -20,7 +20,7 @@ import { SearchBox } from '@/_components';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { BreadCrumbContext } from '@/App';
-import { canDeleteDataSource } from '@/_helpers';
+import { canDeleteDataSource, canCreateDataSource, canUpdateDataSource } from '@/_helpers';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 import HeaderSkeleton from '../../_ui/FolderSkeleton/HeaderSkeleton';
 import Skeleton from 'react-loading-skeleton';
@@ -56,8 +56,6 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
     setCurrentEnvironment,
     activeDatasourceList,
     setActiveDatasourceList,
-    canCreateDataSource,
-    canUpdateDataSource,
     isLoading,
     environmentLoading,
   } = useContext(GlobalDataSourcesContext);

@@ -75,7 +75,6 @@ jobs:
         run: |
           npm run --prefix server db:create
           npm run --prefix server db:reset
-          npm run --prefix server db:seed
 
       - name: sleep 5
         run: sleep 5
@@ -114,7 +113,7 @@ jobs:
           dir: "./cypress-tests"
 
       - name: Platform
-        uses: cypress-io/github-action@v5
+        uses: cypress-io/github-action@v6
         with:
           working-directory: ./cypress-tests
           config: "baseUrl=http://localhost:8082"
@@ -176,7 +175,7 @@ jobs:
 
       - name: Set up environment variables
         run: |
-          echo "TOOLJET_HOST=http://localhost:80" >> .env
+          echo "TOOLJET_HOST=http://localhost:3000" >> .env
           echo "LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2" >> .env
           echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env
           echo "PG_DB=tooljet_development" >> .env
@@ -197,7 +196,7 @@ jobs:
           echo "SSO_GIT_OAUTH2_CLIENT_SECRET=dummy" >> .env
           echo "SSO_GIT_OAUTH2_HOST=dummy" >> .env
           echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=dummy" >> .env
-          echo "SUB_PATH=/apps/tooljet/" >> .env
+          echo "SUB_PATH=/apps/" >> .env
           echo "NODE_ENV=production" >> .env
           echo "SERVE_CLIENT=true" >> .env
           echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
@@ -228,12 +227,9 @@ jobs:
       - name: Wait for the server to be ready
         run: |
           timeout 1500 bash -c '
-          until curl --silent --fail http://localhost:80/apps/tooljet/; do
+          until curl --silent --fail http://localhost:3000/apps/; do
             sleep 5
           done'
-
-      - name: Seeding
-        run: docker exec Tooljet-app npm run db:seed:prod
 
       - name: Create Cypress environment file
         id: create-json
@@ -244,11 +240,11 @@ jobs:
           dir: "./cypress-tests"
 
       - name: Platform-subpath
-        uses: cypress-io/github-action@v5
+        uses: cypress-io/github-action@v6
         with:
           working-directory: ./cypress-tests
-          config: "baseUrl=http://localhost:80/apps/tooljet/"
-          config-file: cypress-workspace.config.js
+          config: "baseUrl=http://localhost:3000/apps"
+          config-file: cypress-platform-subpath.js
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v3
