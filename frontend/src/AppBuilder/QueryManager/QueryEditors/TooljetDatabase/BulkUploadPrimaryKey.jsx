@@ -12,14 +12,13 @@ export const BulkUploadPrimaryKey = () => {
   } = useContext(TooljetDatabaseContext);
 
   useEffect(() => {
-    const primaryKeys = columns
-      .reduce((acc, column) => {
-        if (column?.isPrimaryKey) {
-          acc.push(column?.accessor);
-        }
-        return acc;
-      }, [])
-      .join();
+    const primaryKeys = columns.reduce((acc, column) => {
+      if (column?.isPrimaryKey) {
+        acc.push(column?.accessor);
+      }
+      return acc;
+    }, []);
+
     handlePrimaryKeyOptionChangedForBulkUpdate(primaryKeys);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [columns]);
@@ -34,7 +33,7 @@ export const BulkUploadPrimaryKey = () => {
         >
           <input
             type="text"
-            value={bulkUpdatePrimaryKey?.primary_key || ''}
+            value={bulkUpdatePrimaryKey?.primary_key?.join() || ''}
             style={{
               width: '100%',
               height: '100%',

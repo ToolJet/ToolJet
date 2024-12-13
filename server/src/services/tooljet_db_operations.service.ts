@@ -19,6 +19,7 @@ import { InternalTable } from 'src/entities/internal_table.entity';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { PostgrestError, TooljetDatabaseError } from '@modules/tooljet_db/tooljet-db.types';
 import { ConfigService } from '@nestjs/config';
+import { TooljetDbBulkUploadService } from './tooljet_db_bulk_upload.service';
 
 // This service encapsulates all TJDB data manipulation operations
 // which can act like any other datasource
@@ -30,7 +31,8 @@ export class TooljetDbOperationsService implements QueryService {
     private postgrestProxyService: PostgrestProxyService,
     @InjectEntityManager('tooljetDb')
     private readonly tooljetDbManager: EntityManager,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    private readonly tooljetDbBulkUploadService: TooljetDbBulkUploadService
   ) {}
 
   async run(
@@ -54,6 +56,8 @@ export class TooljetDbOperationsService implements QueryService {
         return this.joinTables(queryOptions, context);
       case 'sql_execution':
         return this.sqlExecution(queryOptions, context);
+      case 'bulk_update_with_primary_key':
+        return this.bulkUpdateWithPrimaryKey(queryOptions, context);
       default:
         return {
           status: 'failed',
@@ -72,6 +76,47 @@ export class TooljetDbOperationsService implements QueryService {
     const result: any = await this.postgrestProxyService.perform(url, method, headers, body);
 
     return { status: 'ok', data: result };
+  }
+
+  async bulkUpdateWithPrimaryKey(queryOptions, context): Promise<QueryResult> {
+    if (hasNullValueInFilters(queryOptions, 'bulk_update_with_primary_key')) {
+      return {
+        status: 'failed',
+        errorMessage: 'Null value comparison not allowed, To check null values Please use IS operator instead.',
+        data: {},
+      };
+    }
+
+    try {
+      const { table_id: tableId, bulk_update_with_primary_key: bulkUpdateWithPrimaryKey } = queryOptions;
+      const { primary_key: primaryKeyColumn, rows_update: rowsToUpdate } = bulkUpdateWithPrimaryKey;
+      const { organization_id: organizationId } = context.app;
+      const result = await this.tooljetDbBulkUploadService.bulkUpdateRowsOnly(
+        rowsToUpdate,
+        tableId,
+        primaryKeyColumn,
+        organizationId
+      );
+
+      if (result.status === 'failed') {
+        return {
+          status: result?.status,
+          errorMessage: result?.error,
+          data: {},
+        };
+      } else if (result.status === 'ok') {
+        return {
+          status: 'ok',
+          data: result.data,
+        };
+      }
+    } catch (error) {
+      return {
+        status: 'failed',
+        errorMessage: error,
+        data: {},
+      };
+    }
   }
 
   async listRows(queryOptions, context): Promise<QueryResult> {

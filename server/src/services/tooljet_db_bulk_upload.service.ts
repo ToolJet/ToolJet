@@ -258,4 +258,74 @@ export class TooljetDbBulkUploadService {
 
     throw `${str} is not a valid ${dataType}`;
   }
+
+  async bulkUpdateRowsOnly(
+    payload: Array<{ [key: string]: any }>,
+    tableId: string,
+    primaryKeyColumns: string | string[],
+    organizationId: string
+  ): Promise<{ status: string; updatedRows: number; error?: string; data?: Array<{ [key: string]: any }> }> {
+    if (!payload || payload.length === 0) {
+      throw new Error('Payload is empty. Nothing to update.');
+    }
+
+    const primaryKeys = Array.isArray(primaryKeyColumns) ? primaryKeyColumns : [primaryKeyColumns];
+    const tenantSchema = findTenantSchema(organizationId);
+
+    try {
+      const whereConditions = [];
+      const caseClauses: { [key: string]: string[] } = {};
+      const parameterList = [];
+      let parameterIndex = 0;
+
+      for (const row of payload) {
+        const primaryKeyConditions = primaryKeys.map((key) => {
+          const value = row[key];
+          if (value === undefined) {
+            throw new Error(`Primary key column "${key}" is missing in row: ${JSON.stringify(row)}`);
+          }
+          parameterList.push(value);
+          return `"${key}" = $${++parameterIndex}`;
+        });
+
+        whereConditions.push(`(${primaryKeyConditions.join(' AND ')})`);
+
+        for (const [column, value] of Object.entries(row)) {
+          if (primaryKeys.includes(column)) continue;
+          if (!caseClauses[column]) {
+            caseClauses[column] = [];
+          }
+          parameterList.push(value);
+          caseClauses[column].push(`WHEN ${primaryKeyConditions.join(' AND ')} THEN $${++parameterIndex}`);
+        }
+      }
+
+      const setClauses = Object.entries(caseClauses).map(
+        ([column, cases]) => `"${column}" = CASE ${cases.join(' ')} END`
+      );
+
+      const query = `
+        UPDATE "${tenantSchema}"."${tableId}"
+        SET ${setClauses.join(', ')}
+        WHERE ${whereConditions.join(' OR ')}
+        RETURNING *;
+      `;
+
+      const result = await this.tooljetDbManager.query(query, parameterList);
+      const updatedData = result[0];
+      const updatedDataCount = result[1];
+      return {
+        status: 'ok',
+        data: updatedData,
+        updatedRows: updatedDataCount,
+      };
+    } catch (error) {
+      console.error('Error during batch update:');
+      return {
+        status: 'failed',
+        updatedRows: 0,
+        error: error,
+      };
+    }
+  }
 }

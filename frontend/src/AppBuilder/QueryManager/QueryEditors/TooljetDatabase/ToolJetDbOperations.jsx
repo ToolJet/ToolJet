@@ -45,7 +45,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
   const [joinTableOptions, setJoinTableOptions] = useState(options['join_table'] || {});
   const [tableForeignKeyInfo, setTableForeignKeyInfo] = useState({});
 
-  const [bulkUpdatePrimaryKey, setBulkUpdatePrimaryKey] = useState(() => options['bulk_update_primary_key'] || {});
+  const [bulkUpdatePrimaryKey, setBulkUpdatePrimaryKey] = useState(() => options['bulk_update_with_primary_key'] || {});
 
   const joinOptions = options['join_table']?.['joins'] || [
     { conditions: { conditionsList: [{ leftField: { table: selectedTableId } }] } },
@@ -192,7 +192,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
   }, [deleteRowsOptions]);
 
   useEffect(() => {
-    mounted && optionchanged('bulk_update_primary_key', bulkUpdatePrimaryKey);
+    mounted && optionchanged('bulk_update_with_primary_key', bulkUpdatePrimaryKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bulkUpdatePrimaryKey]);
 
