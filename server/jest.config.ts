@@ -15,6 +15,7 @@ const config: Config.InitialOptions = {
     ],
   },
   moduleNameMapper: {
+    '^ormconfig$': '<rootDir>/ormconfig.ts',
     '^src/(.*)': '<rootDir>/src/$1',
     '@dto/(.*)': '<rootDir>/src/dto/$1',
     '@plugins/(.*)': '<rootDir>/plugins/$1',
@@ -24,6 +25,9 @@ const config: Config.InitialOptions = {
     '@modules/(.*)': '<rootDir>/src/modules/$1',
     '@ee/(.*)': '<rootDir>/ee/$1',
     '@apps/(.*)': '<rootDir>/ee/apps/$1',
+    '@helpers/(.*)': '<rootDir>/src/helpers/$1',
+    '@licensing/(.*)': '<rootDir>/ee/licensing/$1',
+    '@instance-settings/(.*)': '<rootDir>/ee/instance-settings/$1',
   },
   runner: 'groups',
   testTimeout: 30000,
