@@ -1,6 +1,6 @@
 ---
 id: creating-a-plugin
-title: Marketplace - Creating Plugins
+title: 'Marketplace: Creating plugins'
 ---
 
 ## What are plugins
