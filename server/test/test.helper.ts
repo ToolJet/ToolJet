@@ -18,7 +18,7 @@ import { PluginsService } from 'src/services/plugins.service';
 import { DataSourcesService } from 'src/services/data_sources.service';
 import { PluginsModule } from 'src/modules/plugins/plugins.module';
 import { DataSourcesModule } from 'src/modules/data_sources/data_sources.module';
-import { ThreadRepository } from 'src/repositories/thread.repository';
+// import { ThreadRepository } from 'src/repositories/thread.repository';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
