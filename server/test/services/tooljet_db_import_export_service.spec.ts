@@ -1,27 +1,18 @@
 import { BadRequestException, ConflictException, INestApplication, NotFoundException } from '@nestjs/common';
-import { getManager, getConnection, EntityManager } from 'typeorm';
+import { EntityManager, DataSource } from 'typeorm';
 import { TooljetDbImportExportService } from '@services/tooljet_db_import_export_service';
 import { TooljetDbService } from '@services/tooljet_db.service';
-import { clearDB, createUser } from '../test.helper';
 import { setupTestTables } from '../tooljet-db-test.helper';
 import { InternalTable } from '@entities/internal_table.entity';
-import { Test, TestingModule } from '@nestjs/testing';
-import { ConfigModule } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { ormconfig, tooljetDbOrmconfig } from '../../ormconfig';
-import { getEnvVars } from '../../scripts/database-config-utils';
-import { User } from '@entities/user.entity';
-import { Organization } from '@entities/organization.entity';
-import { OrganizationUser } from '@entities/organization_user.entity';
-import { AppVersion } from '@entities/app_version.entity';
-import { GroupPermission } from '@entities/group_permission.entity';
-import { UserGroupPermission } from '@entities/user_group_permission.entity';
-import { App } from '@entities/app.entity';
-import { LicenseService } from '@services/license.service';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { getDataSourceToken } from '@nestjs/typeorm';
 import { ValidateTooljetDatabaseConstraint } from '@dto/validators/tooljet-database.validator';
 import { v4 as uuidv4 } from 'uuid';
 import { ImportResourcesDto } from '@dto/import-resources.dto';
+import { createNestAppInstanceWithServiceMocks } from '../test.helper';
+import { createOrganization, createUser, clearDB } from '../common.helper';
+import { LICENSE_FIELD, LICENSE_LIMIT } from '@ee/licensing/helper';
+import { USER_ROLE } from '@modules/user_resource_permissions/constants/group-permissions.constant';
+import { Organization } from '@entities/organization.entity';
 
 describe('TooljetDbImportExportService', () => {
   let app: INestApplication;
@@ -29,83 +20,75 @@ describe('TooljetDbImportExportService', () => {
   let tjDbManager: EntityManager;
   let service: TooljetDbImportExportService;
   let tooljetDbService: TooljetDbService;
+  let organization: Organization;
   let organizationId: string;
   let usersTableId: string;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let ordersTableId: string;
+  let licenseServiceMock;
 
   beforeAll(async () => {
-    const mockLicenseService = {
-      getLicenseTerms: jest.fn(),
-    };
+    ({ app, licenseServiceMock } = await createNestAppInstanceWithServiceMocks({
+      shouldMockLicenseService: true,
+    }));
 
-    const mockEventEmitter = {
-      emit: jest.fn(),
-      on: jest.fn(),
-    };
+    jest.spyOn(licenseServiceMock, 'getLicenseTerms').mockImplementation((key: LICENSE_FIELD) => {
+      switch (key) {
+        case LICENSE_FIELD.USER:
+          return {
+            total: LICENSE_LIMIT.UNLIMITED,
+            editors: LICENSE_LIMIT.UNLIMITED,
+            viewers: LICENSE_LIMIT.UNLIMITED,
+            superadmins: LICENSE_LIMIT.UNLIMITED,
+          };
+        case LICENSE_FIELD.AUDIT_LOGS:
+          return false;
+      }
+    });
 
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot({
-          isGlobal: true,
-          envFilePath: ['../.env.test'],
-          load: [() => getEnvVars()],
-        }),
-        TypeOrmModule.forRoot(ormconfig),
-        TypeOrmModule.forRoot(tooljetDbOrmconfig),
-        TypeOrmModule.forFeature([
-          User,
-          Organization,
-          OrganizationUser,
-          App,
-          AppVersion,
-          GroupPermission,
-          UserGroupPermission,
-          InternalTable,
-        ]),
-      ],
-      providers: [TooljetDbImportExportService, TooljetDbService, LicenseService, EventEmitter2],
-    })
-      .overrideProvider(LicenseService)
-      .useValue(mockLicenseService)
-      .overrideProvider(EventEmitter2)
-      .useValue(mockEventEmitter)
-      .compile();
+    const defaultDataSource = app.get<DataSource>(getDataSourceToken('default'));
+    const tooljetDbDataSource = app.get<DataSource>(getDataSourceToken('tooljetDb'));
 
-    app = moduleFixture.createNestApplication();
-    await app.init();
+    appManager = defaultDataSource.manager;
+    tjDbManager = tooljetDbDataSource.manager;
 
-    appManager = getManager();
-    tjDbManager = getConnection('tooljetDb').manager;
-
-    service = moduleFixture.get<TooljetDbImportExportService>(TooljetDbImportExportService);
-    tooljetDbService = moduleFixture.get<TooljetDbService>(TooljetDbService);
+    service = app.get<TooljetDbImportExportService>(TooljetDbImportExportService);
+    tooljetDbService = app.get<TooljetDbService>(TooljetDbService);
   });
 
   beforeEach(async () => {
-    await clearDB();
+    await clearDB(app);
 
-    const adminUserData = await createUser(app, {
+    organization = await createOrganization(app, { name: 'Test Organization', slug: 'test-org' });
+    const adminUserParams = {
       email: 'admin@tooljet.io',
-      groups: ['all_users', 'admin'],
-    });
-    organizationId = adminUserData.organization.id;
+      firstName: 'Admin',
+      lastName: 'User',
+      password: 'password',
+      status: 'active',
+    };
+    await createUser(app, adminUserParams, organization.id, USER_ROLE.ADMIN);
+    organizationId = organization.id;
 
     await setupTestTables(appManager, tjDbManager, tooljetDbService, organizationId);
-    const usersTable = await appManager.findOneOrFail(InternalTable, { organizationId, tableName: 'users' });
+    const usersTable = await appManager.findOneOrFail(InternalTable, {
+      where: { organizationId, tableName: 'users' },
+    });
     usersTableId = usersTable.id;
-    const ordersTable = await appManager.findOneOrFail(InternalTable, { organizationId, tableName: 'orders' });
+    const ordersTable = await appManager.findOneOrFail(InternalTable, {
+      where: { organizationId, tableName: 'orders' },
+    });
     ordersTableId = ordersTable.id;
   });
 
   afterAll(async () => {
     await app.close();
-    await clearDB();
+    await clearDB(app);
   });
 
   describe('.export', () => {
     it('should export ToolJet DB table schema', async () => {
-      const exportResult = await service.export(organizationId, { table_id: usersTableId });
+      const exportResult = await service.export(organizationId, { table_id: usersTableId }, []);
 
       const expectedStructure = {
         id: expect.any(String),
@@ -156,17 +139,23 @@ describe('TooljetDbImportExportService', () => {
         },
       };
 
-      // Check if the exported result matches the expected structure
       expect(exportResult).toEqual(expect.objectContaining(expectedStructure));
 
-      // Validate against the latest schema version
       const validator = new ValidateTooljetDatabaseConstraint();
       const isValid = validator.validate(exportResult, null);
       expect(isValid).toBe(true);
     });
 
     it('should throw NotFoundException for non-existent table', async () => {
-      await expect(service.export(organizationId, { table_id: uuidv4() })).rejects.toThrow(NotFoundException);
+      await expect(
+        service.export(
+          organizationId,
+          {
+            table_id: uuidv4(),
+          },
+          []
+        )
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -211,13 +200,15 @@ describe('TooljetDbImportExportService', () => {
 
       const importResult = await service.import(organizationId, importData);
       const expectedStructure = {
-        id: expect.stringMatching(/^[0-9a-f-]{36}$/), // uuid
+        id: expect.stringMatching(/^[0-9a-f-]{36}$/),
         table_name: 'imported_users',
       };
 
       expect(importResult).toEqual(expect.objectContaining(expectedStructure));
 
-      const importedTable = await appManager.findOne(InternalTable, { id: importResult.id });
+      const importedTable = await appManager.findOne(InternalTable, {
+        where: { id: importResult.id },
+      });
       expect(importedTable).toBeDefined();
       expect(importedTable.tableName).toBe('imported_users');
     });
@@ -225,7 +216,7 @@ describe('TooljetDbImportExportService', () => {
     it('should create table with timestamp attached name when same name exists', async () => {
       const importData = {
         id: uuidv4(),
-        table_name: 'users', // Same name as existing table
+        table_name: 'users', // Same as existing table
         schema: {
           columns: [
             {
@@ -243,11 +234,11 @@ describe('TooljetDbImportExportService', () => {
       };
 
       const importResult = await service.import(organizationId, importData);
-      await expect(importResult.table_name).toContain('users_');
+      expect(importResult.table_name).toMatch(/^users_/);
     });
 
     it('should not import new table cloning when table with same id and columns subset exist', async () => {
-      const existingTable = await appManager.findOne(InternalTable, { organizationId, tableName: 'users' });
+      const existingTable = await appManager.findOne(InternalTable, { where: { organizationId, tableName: 'users' } });
       const importData = {
         id: existingTable.id,
         table_name: 'users',
@@ -328,10 +319,9 @@ describe('TooljetDbImportExportService', () => {
         },
       };
 
-      // Mock the createTable method to throw ConflictException
       jest
         .spyOn(tooljetDbService, 'perform')
-        .mockRejectedValueOnce(new ConflictException('Table with with name "users" already exists'));
+        .mockRejectedValueOnce(new ConflictException('Table with name "users" already exists'));
 
       await expect(service.import(organizationId, importData)).rejects.toThrow(ConflictException);
     });
@@ -417,13 +407,16 @@ describe('TooljetDbImportExportService', () => {
       expect(bulkImportResult.tooljet_database).toHaveLength(2);
       expect(bulkImportResult.tableNameMapping).toBeDefined();
 
-      const productsTable = await appManager.findOne(InternalTable, { tableName: 'products' });
-      const ordersTable = await appManager.findOne(InternalTable, { tableName: 'orders' });
+      const productsTable = await appManager.findOne(InternalTable, {
+        where: { tableName: 'products' },
+      });
+      const ordersTable = await appManager.findOne(InternalTable, {
+        where: { tableName: 'orders' },
+      });
 
       expect(productsTable).toBeDefined();
       expect(ordersTable).toBeDefined();
 
-      // Verify foreign key
       const foreignKeys = await tjDbManager.query(
         'SELECT * FROM information_schema.table_constraints WHERE table_name = $1 AND constraint_type = $2',
         [ordersTable.id, 'FOREIGN KEY']
@@ -439,7 +432,6 @@ describe('TooljetDbImportExportService', () => {
         organization_id: organizationId,
         tooljet_version: '2.50.5.5.8',
         tooljet_database: [
-          // First, create a table with a composite primary key
           {
             id: uuidv4(),
             table_name: 'composite_key_table',
@@ -476,7 +468,6 @@ describe('TooljetDbImportExportService', () => {
               foreign_keys: [],
             },
           },
-          // Then, create a table with a foreign key referencing part of the composite primary key
           {
             id: uuidv4(),
             table_name: 'referencing_table',
@@ -520,6 +511,7 @@ describe('TooljetDbImportExportService', () => {
         'Foreign key cannot be created as the referenced column is in the composite primary key.'
       );
     });
+
     it('should rollback changes on error during bulk import', async () => {
       const importData = {
         organization_id: organizationId,
@@ -556,8 +548,7 @@ describe('TooljetDbImportExportService', () => {
 
       await expect(service.bulkImport(importData, '2.50.5.5.8', false)).rejects.toThrow();
 
-      // Verify that the valid table was not created due to rollback
-      const validTable = await appManager.findOne(InternalTable, { tableName: 'valid_table' });
+      const validTable = await appManager.findOne(InternalTable, { where: { tableName: 'valid_table' } });
       expect(validTable).toBeUndefined();
     });
   });
