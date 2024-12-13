@@ -38,7 +38,7 @@ export const deleteComponentFromInspector = (node) => {
 };
 
 export const verifyfunctions = (node, type, index = 0) => {
-  cy.get(`[data-cy="inspector-node-${node.toLowerCase()}"] > .mx-1`)
+  cy.get(`[data-cy="inspector-node-${node.toLowerCase()}"] > .fs-10`)
     .eq(index)
     .realHover()
     .verifyVisibleElement("contain.text", `${type}`);
