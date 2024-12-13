@@ -35,7 +35,7 @@ export const RangeSlider = function RangeSlider({ height, properties, styles, se
     setRangeValue(twoHandlesArray);
     setExposedVariable('value', twoHandlesArray);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [...twoHandlesArray]);
+  }, [JSON.stringify(twoHandlesArray)]);
 
   useEffect(() => {
     setExposedVariable('value', enableTwoHandle ? twoHandlesArray : singleHandleValue);
