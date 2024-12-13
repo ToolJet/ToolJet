@@ -384,7 +384,7 @@ Error handling for MongoDB can be implemented using the following code:
 
 ```js
 catch (error) {
-      let errorMessage = 'Query could not be completed';
+      let errorMessage = 'An unknown error occurred';
       let errorDetails = {};
 
       if (error instanceof Error) {
