@@ -207,7 +207,15 @@ describe("Manage Groups", () => {
     );
 
     cy.get('[data-cy="granular-access-link"]').click();
-
+    cy.get(groupsSelector.granularEmptyPageIcon).should('be.visible');
+    cy.get(groupsSelector.emptyPagePermissionTitle).verifyVisibleElement(
+      "have.text",
+      groupsText.emptyPagePermissionTitle
+    );
+    cy.get(groupsSelector.emptyPagePermissionHelperText).verifyVisibleElement(
+      "have.text",
+      groupsText.emptyPagePermissionHelperText
+    );
     cy.get('[data-cy="add-apps-buton"]').click();
 
     cy.get('[data-cy="modal-title"]:eq(2)').verifyVisibleElement(

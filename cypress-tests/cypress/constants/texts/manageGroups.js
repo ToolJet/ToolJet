@@ -99,4 +99,9 @@ export const groupsText = {
   cantCreatePermissionModalMessage: "Cannot assign builder level permission to end users",
   deletePermissionToast: "Deleted permission successfully",
   createPermissionToast: "Permission created successfully!",
+  userEmptyPageTitle: "No users added yet",
+  userEmptyPageHelperText: "Add users to this group to configure permissions for them!",
+  emptyPagePermissionTitle: "No permissions added yet",
+  emptyPagePermissionHelperText: "Add assets to configure granular, asset-level permissions for this user group",
+
 };

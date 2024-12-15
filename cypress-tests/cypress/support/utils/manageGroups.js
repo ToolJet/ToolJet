@@ -43,7 +43,7 @@ export const manageGroupsElements = () => {
 
   // Permissions Page Navigation and Verifications
   cy.get(groupsSelector.permissionsLink).click();
-  cy.get(groupsSelector.adminAccessHelperText)
+  cy.get(groupsSelector.helperTextAdminAppAccess)
     .eq(0)
     .verifyVisibleElement(
       "have.text",
@@ -75,7 +75,7 @@ export const manageGroupsElements = () => {
   cy.get(groupsSelector.granularLink).click();
   verifyElement(groupsSelector.nameTableHeader, groupsText.nameTableHeader);
   verifyElement(groupsSelector.permissionsTableHeader, groupsText.granularAccessPermissionHeader);
-  verifyElement(groupsSelector.resourceHeader, groupsText.resourcesTableHeader);
+  verifyElement(`${groupsSelector.resourceHeader}:eq(1)`, groupsText.resourcesTableHeader);
   verifyElement(groupsSelector.appsText, "  Apps");
   cy.get(groupsSelector.appEditRadio)
     .should("be.visible")
@@ -109,6 +109,16 @@ export const manageGroupsElements = () => {
   cy.get(groupsSelector.usersLink).click();
   verifyElement(groupsSelector.nameTableHeader, groupsText.userNameTableHeader);
   verifyElement(groupsSelector.emailTableHeader, groupsText.emailTableHeader);
+  cy.get(groupsSelector.userEmptyPageIcon).should("be.visible");
+  cy.get(groupsSelector.userEmptyPageTitle).verifyVisibleElement(
+    "have.text",
+    groupsText.userEmptyPageTitle
+  );
+  cy.get(groupsSelector.userEmptyPageHelperText).verifyVisibleElement(
+    "have.text",
+    groupsText.userEmptyPageHelperText
+  );
+
 
   // Granular Access Verifications
   cy.get(groupsSelector.permissionsLink).click();
@@ -146,7 +156,7 @@ export const manageGroupsElements = () => {
 
   verifyElement(groupsSelector.nameTableHeader, groupsText.nameTableHeader);
   verifyElement(groupsSelector.permissionsTableHeader, groupsText.granularAccessPermissionHeader);
-  verifyElement(groupsSelector.resourceHeader, groupsText.resourcesTableHeader);
+  verifyElement(`${groupsSelector.resourceHeader}:eq(1)`, groupsText.resourcesTableHeader);
   verifyElement(groupsSelector.appsText, groupsText.appsLink);
   cy.get(groupsSelector.appEditRadio)
     .should("be.visible")
@@ -177,7 +187,7 @@ export const manageGroupsElements = () => {
   cy.get(groupsSelector.granularAccessPermission)
     .trigger('mouseenter')
     .click({ force: true });
-  verifyElement(groupsSelector.addEditPermissionModalTitle, groupsText.editPermissionModalTitle);
+  verifyElement(`${groupsSelector.addEditPermissionModalTitle}:eq(2)`, groupsText.editPermissionModalTitle);
   permissionModal();
 
   cy.get(groupsSelector.customradio).should("be.visible").should('be.disabled');
@@ -192,7 +202,7 @@ export const manageGroupsElements = () => {
   //Add modal
   verifyElement(groupsSelector.addAppButton, groupsText.addButton);
   cy.get(groupsSelector.addAppButton).should('be.visible').and('be.enabled').click();
-  verifyElement(groupsSelector.addEditPermissionModalTitle, groupsText.addPermissionModalTitle);
+  verifyElement(`${groupsSelector.addEditPermissionModalTitle}:eq(2)`, groupsText.addPermissionModalTitle);
   permissionModal();
   cy.get(groupsSelector.customradio).should("be.visible").should('be.disabled');
   verifyElement(groupsSelector.customLabel, groupsText.customLabel);
@@ -225,10 +235,19 @@ export const manageGroupsElements = () => {
   cy.get(groupsSelector.usersLink).click();
   verifyElement(groupsSelector.nameTableHeader, groupsText.userNameTableHeader);
   verifyElement(groupsSelector.emailTableHeader, groupsText.emailTableHeader);
+  cy.get(groupsSelector.userEmptyPageIcon).should("be.visible");
+  cy.get(groupsSelector.userEmptyPageTitle).verifyVisibleElement(
+    "have.text",
+    groupsText.userEmptyPageTitle
+  );
+  cy.get(groupsSelector.userEmptyPageHelperText).verifyVisibleElement(
+    "have.text",
+    groupsText.userEmptyPageHelperText
+  );
 
   // Granular Access Verifications
   cy.get(groupsSelector.permissionsLink).click();
-  cy.get(groupsSelector.adminAccessHelperText)
+  cy.get(groupsSelector.helperTextAdminAppAccess)
     .eq(0)
     .verifyVisibleElement(
       "have.text",
@@ -261,7 +280,7 @@ export const manageGroupsElements = () => {
   cy.get(groupsSelector.granularLink).click();
   verifyElement(groupsSelector.nameTableHeader, groupsText.nameTableHeader);
   verifyElement(groupsSelector.permissionsTableHeader, groupsText.granularAccessPermissionHeader);
-  verifyElement(groupsSelector.resourceHeader, groupsText.resourcesTableHeader);
+  verifyElement(`${groupsSelector.resourceHeader}:eq(1)`, groupsText.resourcesTableHeader);
   verifyElement(groupsSelector.appsText, groupsText.appsLink);
   cy.get(groupsSelector.appEditRadio)
     .should("be.visible")
@@ -293,7 +312,7 @@ export const manageGroupsElements = () => {
   cy.get(groupsSelector.granularAccessPermission)
     .trigger('mouseenter')
     .click({ force: true });
-  verifyElement(groupsSelector.addEditPermissionModalTitle, groupsText.editPermissionModalTitle);
+  verifyElement(`${groupsSelector.addEditPermissionModalTitle}:eq(2)`, groupsText.editPermissionModalTitle);
   permissionModal();
 
   cy.get(groupsSelector.customradio).should("be.visible").should('be.disabled');
@@ -307,7 +326,7 @@ export const manageGroupsElements = () => {
   //Add Modal
   verifyElement(groupsSelector.addAppButton, groupsText.addButton);
   cy.get(groupsSelector.addAppButton).should('be.visible').and('be.enabled').click();
-  verifyElement(groupsSelector.addEditPermissionModalTitle, groupsText.addPermissionModalTitle);
+  verifyElement(`${groupsSelector.addEditPermissionModalTitle}:eq(2)`, groupsText.addPermissionModalTitle);
   permissionModal();
   cy.get(groupsSelector.customradio).should("be.visible").should('be.disabled');
   verifyElement(groupsSelector.customLabel, groupsText.customLabel);

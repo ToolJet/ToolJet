@@ -13,10 +13,9 @@ export const groupsSelector = {
   createGroupButton: "[data-cy=create-group-button]",
   adminListItem: '[data-cy="admin-list-item"]',
   adminTitle: '[data-cy="admin-title"]',
-  adminAccessHelperText: '[data-cy="helper-text-admin-app-access"]',
   appCreateHelperText: '[data-cy="app-create-helper-text"]',
   appDeleteHelperText: '[data-cy="app-delete-helper-text"]',
-  resourceHeader: '[data-cy="resource-header"]:eq(1)',
+  resourceHeader: '[data-cy="resource-header"]',
   builderListItem: '[data-cy="builder-list-item"]',
   builderTitle: '[data-cy="builder-title"]',
   enduserListItem: '[data-cy="end-user-list-item]',
@@ -67,7 +66,7 @@ export const groupsSelector = {
   appHideLabel: '[data-cy="app-hide-from-dashboard-label"]',
   addAppButton: '[data-cy="add-apps-buton"]',
   addEditPermissionModal: '[data-cy = "add-edit-permission-modal"]',
-  addEditPermissionModalTitle: '[data-cy="modal-title"]:eq(2)',
+  addEditPermissionModalTitle: '[data-cy="modal-title"]',
   permissionNameLabel: '[data-cy="permission-name-label"]',
   permissionNameInput: '[data-cy="permission-name-input"]',
   permissionNameHelperText: '[data-cy="permission-name-help-text"]',
@@ -141,4 +140,12 @@ export const groupsSelector = {
   changeRoleModalHeader: '[data-cy="modal-title"]:eq(1)',
   changeRoleModalMessage: '[data-cy="modal-body"]',
   emptyPagePermissionTitle: '[data-cy="empty-page-title"]',
+  userEmptyPageIcon: '[data-cy="user-empty-page-icon"]',
+  userEmptyPageTitle: '[data-cy="user-empty-page"]',
+  userEmptyPageHelperText: '[data-cy="user-empty-page-info-text"]',
+  granularEmptyPageIcon: '[data-cy="empty-page-svg"]',
+  emptyPagePermissionHelperText: '[data-cy="empty-page-info-text"]',
+
+
+
 };
