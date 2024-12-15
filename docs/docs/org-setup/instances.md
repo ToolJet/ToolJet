@@ -18,7 +18,7 @@ Check out the [setup guide](https://docs.tooljet.com/docs/setup/) to explore the
 
 Opting for a single instance is often the best choice when your team is starting out or managing a straightforward set of requirements. For example, if you have a small team or if your application does not require strict separation of environments, a single instance can simplify management and reduce overhead.
 
-ToolJet allows you to create multiple environments—like development, staging, and production—within a single instance.This ensures your team can build, test, and deploy applications securely and efficiently, delivering updates safely to users. Checkout the [Multi-Environment](/docs/release-management/multi-environment/#using-environments) doc for more details.
+ToolJet allows you to create multiple environments like development, staging, and production within a single instance. This ensures your team can build, test, and deploy applications securely and efficiently, delivering updates safely to users. Checkout the [Multi-Environment](/docs/release-management/multi-environment/#using-environments) doc for more details.
 
 ## When to Use Multiple Instances? 
 
