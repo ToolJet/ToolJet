@@ -381,7 +381,11 @@ Additionally, the **data** field in the Plugin SDK corresponds to **errorDetails
 
 #### Example
 
-Error handling for MongoDB can be implemented using the following code:
+Consider the case of MongoDB. If an error occurs, such as the following::
+
+<img className="screenshot-full" src="/img/contributing-guide/create-plugin/mongodb-error.png" alt="MongoDB Error" />
+
+You can implement error handling using the following code:
 
 ```js
 catch (error) {
