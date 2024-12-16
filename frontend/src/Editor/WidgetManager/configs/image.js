@@ -3,8 +3,8 @@ export const imageConfig = {
   displayName: 'Image',
   description: 'Show image files',
   defaultSize: {
-    width: 3,
-    height: 100,
+    width: 10,
+    height: 240,
   },
   component: 'Image',
   others: {
@@ -105,6 +105,7 @@ export const imageConfig = {
         { name: 'Contain', value: 'contain' },
         { name: 'Fill', value: 'fill' },
         { name: 'Cover', value: 'cover' },
+        { name: 'Scale down', value: 'scale-down' },
       ],
       validation: {
         schema: { type: 'string' },
@@ -176,7 +177,7 @@ export const imageConfig = {
         key: 'padding',
         value: 'custom',
       },
-      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 6 },
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 0 },
       accordian: 'Container',
       showLabel: false,
     },
@@ -190,7 +191,7 @@ export const imageConfig = {
     properties: {
       imageFormat: { value: 'imageUrl' },
       source: { value: 'https://www.svgrepo.com/show/34217/image.svg' },
-      alternativeText: { value: '' },
+      alternativeText: { value: null },
       zoomButtons: { value: '{{false}}' },
       rotateButton: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
@@ -206,7 +207,7 @@ export const imageConfig = {
       borderRadius: { value: '{{6}}' },
       boxShadow: { value: '0px 0px 0px 0px #00000090' },
       padding: { value: 'default' },
-      customPadding: { value: '{{6}}' },
+      customPadding: { value: '{{0}}' },
     },
   },
 };
