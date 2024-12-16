@@ -2,6 +2,8 @@
 import React, { useRef, useEffect, useState } from 'react';
 import LazyLoad, { forceCheck } from 'react-lazyload';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
+import BrokenImage from '@/Editor/Icons/broken-image.svg';
+import './image.scss';
 
 export const Image = function Image({
   componentName,
@@ -21,6 +23,7 @@ export const Image = function Image({
   const [imageOffset, setImageOffset] = useState(0);
   const [rotation, setRotation] = useState(0);
   const [zoomReset, setZoomReset] = useState(false);
+  const [isError, setIsError] = useState(false);
 
   function Placeholder() {
     return <div className="skeleton-image" style={{ objectFit: 'contain', height }}></div>;
@@ -33,6 +36,7 @@ export const Image = function Image({
   }, [imageRef]);
 
   useEffect(() => {
+    setIsError(false);
     setRotation(0);
     setZoomReset(true);
   }, [source]);
@@ -69,6 +73,7 @@ export const Image = function Image({
       onClick={() => fireEvent('onClick')}
       alt={alternativeText}
       width={width}
+      onError={() => setIsError(true)}
     />
   );
 
@@ -81,9 +86,14 @@ export const Image = function Image({
     return (
       <>
         {loadingState === true ? (
-          <center>
+          <div style={{ height, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <div className="spinner-border " role="status" data-cy={dataCy}></div>
-          </center>
+          </div>
+        ) : isError ? (
+          <div className="broken-url-placeholder">
+            <BrokenImage />
+            <p>{alternativeText}</p>
+          </div>
         ) : zoomButtons ? (
           <TransformWrapper>
             {({ zoomIn, zoomOut, resetTransform }) => (
@@ -129,6 +139,7 @@ export const Image = function Image({
       data-disabled={disabledState}
       data-cy={`draggable-widget-${String(componentName).toLowerCase()}`}
       style={{
+        height,
         display: widgetVisibility ? 'flex' : 'none',
         justifyContent: 'center',
         boxShadow,
