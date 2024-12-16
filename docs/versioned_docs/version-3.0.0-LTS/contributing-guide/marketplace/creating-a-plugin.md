@@ -381,7 +381,7 @@ Additionally, the **data** field in the Plugin SDK corresponds to **errorDetails
 
 #### Example
 
-Consider the case of MongoDB. If an error occurs, such as the following::
+Consider the case of MongoDB. If an error occurs, such as the following:
 
 <img className="screenshot-full" src="/img/contributing-guide/create-plugin/mongodb-error.png" alt="MongoDB Error" />
 
