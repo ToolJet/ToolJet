@@ -98,65 +98,87 @@ export const imageConfig = {
     onClick: { displayName: 'On click' },
   },
   styles: {
-    borderType: {
-      type: 'select',
-      displayName: 'Border type',
-      options: [
-        { name: 'None', value: 'none' },
-        { name: 'Rounded', value: 'rounded' },
-        { name: 'Circle', value: 'rounded-circle' },
-        { name: 'Thumbnail', value: 'img-thumbnail' },
-      ],
-      validation: {
-        schema: { type: 'string' },
-        defaultValue: 'none',
-      },
-    },
-    backgroundColor: {
-      type: 'color',
-      displayName: 'Background color',
-      validation: {
-        schema: { type: 'string' },
-        defaultValue: '#ffffff',
-      },
-    },
-    padding: {
-      type: 'code',
-      displayName: 'Padding',
-      validation: {
-        schema: { type: 'number' },
-        defaultValue: 0,
-      },
-    },
-    visibility: {
-      type: 'toggle',
-      displayName: 'Visibility',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: true,
-      },
-    },
-    disabledState: {
-      type: 'toggle',
-      displayName: 'Disable',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: false,
-      },
-    },
     imageFit: {
       type: 'select',
       displayName: 'Image fit',
       options: [
-        { name: 'fill', value: 'fill' },
-        { name: 'contain', value: 'contain' },
-        { name: 'cover', value: 'cover' },
-        { name: 'scale-down', value: 'scale-down' },
+        { name: 'Contain', value: 'contain' },
+        { name: 'Fill', value: 'fill' },
+        { name: 'Cover', value: 'cover' },
       ],
       validation: {
         schema: { type: 'string' },
         defaultValue: 'contain',
       },
+      accordian: 'Image',
+    },
+    imageShape: {
+      type: 'select',
+      displayName: 'Shape',
+      options: [
+        { name: 'None', value: 'none' },
+        { name: 'Circle', value: 'circle' },
+      ],
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'none',
+      },
+      accordian: 'Image',
+    },
+    backgroundColor: {
+      type: 'color',
+      displayName: 'Background',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#ffffff',
+      },
+      accordian: 'Container',
+    },
+    borderColor: {
+      type: 'color',
+      displayName: 'Border',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#000000',
+      },
+      accordian: 'Container',
+    },
+    borderRadius: {
+      type: 'numberInput',
+      displayName: 'Border radius',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 6 },
+      accordian: 'Container',
+    },
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: '0px 0px 0px 0px #00000090',
+      },
+      accordian: 'Container',
+    },
+    padding: {
+      type: 'switch',
+      displayName: 'Padding',
+      options: [
+        { displayName: 'Default', value: 'default' },
+        { displayName: 'Custom', value: 'custom' },
+      ],
+      validation: { schema: { type: 'string' }, defaultValue: 'default' },
+      accordian: 'Container',
+      isFxNotRequired: true,
+    },
+    customPadding: {
+      type: 'numberInput',
+      displayName: 'Padding',
+      conditionallyRender: {
+        key: 'padding',
+        value: 'custom',
+      },
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 6 },
+      accordian: 'Container',
+      showLabel: false,
     },
   },
   exposedVariables: {},
@@ -177,12 +199,14 @@ export const imageConfig = {
     },
     events: [],
     styles: {
-      borderType: { value: 'none' },
-      padding: { value: '0' },
-      visibility: { value: '{{true}}' },
-      disabledState: { value: '{{false}}' },
       imageFit: { value: 'contain' },
-      backgroundColor: { value: '' },
+      imageShape: { value: 'none' },
+      backgroundColor: { value: '#FFFFFF' },
+      borderColor: { value: '' },
+      borderRadius: { value: '{{6}}' },
+      boxShadow: { value: '0px 0px 0px 0px #00000090' },
+      padding: { value: 'default' },
+      customPadding: { value: '{{6}}' },
     },
   },
 };

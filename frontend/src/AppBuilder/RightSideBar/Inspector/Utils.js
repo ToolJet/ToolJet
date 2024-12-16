@@ -49,7 +49,8 @@ export function renderCustomStyles(
     componentConfig.component == 'DropdownV2' ||
     componentConfig.component == 'MultiselectV2' ||
     componentConfig.component == 'RadioButtonV2' ||
-    componentConfig.component == 'Button'
+    componentConfig.component == 'Button' ||
+    componentConfig.component == 'Image'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
