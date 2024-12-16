@@ -215,13 +215,7 @@ jobs:
         uses: jsdaniell/create-json@1.1.2
         with:
           name: "cypress.env.json"
-          json: ${{ 
-            github.event.label.name == 'run-cypress-platform' && secrets.CYPRESS_SECRETS ||
-            github.event.label.name == 'run-cypress' && secrets.CYPRESS_SECRETS ||
-            github.event.label.name == 'run-cypress-platform-subpath' && secrets.CYPRESS_SECRETS_SUBPATH ||
-            github.event.label.name == 'run-cypress-platform-proxy' && secrets.CYPRESS_SECRETS_PROXY ||
-            github.event.label.name == 'run-cypress-platform-proxy-subpath' && secrets.CYPRESS_SECRETS_SUBPATH
-          }}
+          json: ${{ github.event.label.name == 'run-cypress-platform' && secrets.CYPRESS_SECRETS || github.event.label.name == 'run-cypress' && secrets.CYPRESS_SECRETS || github.event.label.name == 'run-cypress-platform-subpath' && secrets.CYPRESS_SECRETS_SUBPATH || github.event.label.name == 'run-cypress-platform-proxy' && secrets.CYPRESS_SECRETS_PROXY || github.event.label.name == 'run-cypress-platform-proxy-subpath' && secrets.CYPRESS_SECRETS_SUBPATH }}
           dir: "./cypress-tests"
 
       - name: Run Cypress Tests
