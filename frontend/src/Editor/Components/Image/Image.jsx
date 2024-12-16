@@ -2,7 +2,10 @@
 import React, { useRef, useEffect, useState } from 'react';
 import LazyLoad, { forceCheck } from 'react-lazyload';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
-import BrokenImage from '@/Editor/Icons/broken-image.svg';
+import BrokenImage from '@/Editor/Components/Image/icons/broken-image.svg';
+import ZoomInImage from '@/Editor/Components/Image/icons/zoomin-image.svg';
+import ZoomOutImage from '@/Editor/Components/Image/icons/zoomout-image.svg';
+import RotateImage from '@/Editor/Components/Image/icons/rotate-image.svg';
 import './image.scss';
 import Loader from '@/ToolJetUI/Loader/Loader';
 
@@ -94,28 +97,32 @@ export const Image = function Image({
           </div>
         ) : isError ? (
           <div className="broken-url-placeholder">
-            <BrokenImage />
-            <p>{alternativeText}</p>
+            {alternativeText && (
+              <>
+                <BrokenImage />
+                <p>{alternativeText}</p>
+              </>
+            )}
           </div>
         ) : zoomButtons ? (
-          <TransformWrapper>
+          <TransformWrapper centerOnInit={true}>
             {({ zoomIn, zoomOut, resetTransform }) => (
               <>
                 {zoomReset && resetZoom(resetTransform)}
                 <TransformComponent>{renderImage()}</TransformComponent>
                 {zoomButtons && (
-                  <div className="zoom-button-wrapper">
+                  <div className="img-control-wrapper">
+                    <button className="img-control-btn" onClick={() => zoomIn()}>
+                      <ZoomInImage />
+                    </button>
+                    <button className="img-control-btn" onClick={() => zoomOut()}>
+                      <ZoomOutImage />
+                    </button>
                     {rotateButton && (
-                      <button className="btn zoom-buttons" onClick={rotateImage}>
-                        <span>↻</span>
+                      <button className="img-control-btn" onClick={rotateImage}>
+                        <RotateImage />
                       </button>
                     )}
-                    <button className="btn zoom-buttons" onClick={() => zoomIn()}>
-                      +
-                    </button>
-                    <button className="btn zoom-buttons" onClick={() => zoomOut()}>
-                      -
-                    </button>
                   </div>
                 )}
               </>
@@ -124,9 +131,9 @@ export const Image = function Image({
         ) : (
           <>
             {rotateButton && (
-              <div className="zoom-button-wrapper" style={{ zIndex: 1 }}>
-                <button className="btn zoom-buttons" onClick={rotateImage}>
-                  <span>↻</span>
+              <div className="img-control-wrapper" style={{ zIndex: 1 }}>
+                <button className="img-control-btn" onClick={rotateImage}>
+                  <RotateImage />
                 </button>
               </div>
             )}
@@ -143,6 +150,7 @@ export const Image = function Image({
       data-cy={`draggable-widget-${String(componentName).toLowerCase()}`}
       style={{
         height,
+        width: '100%',
         display: widgetVisibility ? 'flex' : 'none',
         justifyContent: 'center',
         boxShadow,
@@ -154,6 +162,7 @@ export const Image = function Image({
         <LazyLoad
           offset={imageOffset > 0 ? imageOffset : 0}
           height={height}
+          style={{ width: '100%' }}
           placeholder={<Placeholder />}
           debounce={500}
           scrollContainer={'.canvas-container'}

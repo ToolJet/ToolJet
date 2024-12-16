@@ -6101,33 +6101,6 @@ div#driver-page-overlay {
   color: var(--slate10, #7E868C);
 }
 
-
-.zoom-buttons {
-  width: 20px !important;
-  height: 25px !important;
-  margin-left: 2px;
-
-  span {
-    transform: rotate(60deg);
-  }
-}
-
-.zoom-button-wrapper {
-  position: fixed;
-  right: 0px;
-  bottom: 5px;
-}
-
-.zoom-buttons {
-  opacity: 0;
-  visibility: hidden;
-}
-
-.image-widget-wrapper:hover button {
-  opacity: 1 !important;
-  visibility: visible;
-}
-
 .pdf-page-controls {
   background: white;
   border-radius: 4px;
