@@ -6,7 +6,6 @@ const pg = require("pg");
 const path = require("path");
 const pdf = require("pdf-parse");
 
-// Define base URLs and config files for different environments/labels
 const environments = {
     'run-cypress-platform': {
         baseUrl: "http://localhost:8082",
@@ -26,7 +25,6 @@ const environments = {
     }
 };
 
-// Get environment from GitHub Actions label or default to 'run-cypress-platform'
 const githubLabel = process.env.GITHUB_LABEL || 'run-cypress-platform';
 const environment = environments[githubLabel];
 
@@ -41,12 +39,12 @@ module.exports = defineConfig({
     chromeWebSecurity: false,
     trashAssetsBeforeRuns: true,
     e2e: {
-        setupNodeEvents (on, config) {
+        setupNodeEvents(on, config) {
             // Set baseUrl based on environment
             config.baseUrl = environment.baseUrl;
 
             on("task", {
-                readPdf (pathToPdf) {
+                readPdf(pathToPdf) {
                     return new Promise((resolve) => {
                         const pdfPath = path.resolve(pathToPdf);
                         let dataBuffer = fs.readFileSync(pdfPath);
@@ -58,7 +56,7 @@ module.exports = defineConfig({
             });
 
             on("task", {
-                readXlsx (filePath) {
+                readXlsx(filePath) {
                     return new Promise((resolve, reject) => {
                         try {
                             let dataBuffer = fs.readFileSync(filePath);
@@ -72,7 +70,7 @@ module.exports = defineConfig({
             });
 
             on("task", {
-                deleteFolder (folderName) {
+                deleteFolder(folderName) {
                     return new Promise((resolve, reject) => {
                         rmdir(folderName, { maxRetries: 10, recursive: true }, (err) => {
                             if (err) {
@@ -86,7 +84,7 @@ module.exports = defineConfig({
             });
 
             on("task", {
-                updateId ({ dbconfig, sql }) {
+                updateId({ dbconfig, sql }) {
                     const client = new pg.Pool(dbconfig);
                     return client.query(sql);
                 },
