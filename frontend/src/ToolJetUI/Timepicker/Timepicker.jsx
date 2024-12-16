@@ -4,7 +4,16 @@ import DatePickerComponent from 'react-datepicker';
 import './timepicker.scss';
 import cx from 'classnames';
 
-const Timepicker = ({ timeFormat, onChange, selected, maxTime, minTime, darkMode, ...props }) => {
+const Timepicker = ({
+  timeFormat,
+  onChange,
+  selected,
+  maxTime,
+  minTime,
+  darkMode,
+  isInspectorField = false,
+  ...props
+}) => {
   return (
     <div className="tj-timepicker">
       <DatePickerComponent
@@ -20,7 +29,11 @@ const Timepicker = ({ timeFormat, onChange, selected, maxTime, minTime, darkMode
         timeFormat={timeFormat}
         minTime={minTime}
         timeInputLabel=""
-        popperClassName={cx('tj-timepicker-popper tj-table-datepicker', { 'theme-dark dark-theme': darkMode })}
+        popperClassName={cx('tj-timepicker-popper', {
+          'theme-dark dark-theme': darkMode,
+          'tj-table-datepicker': !isInspectorField,
+          'tj-inspector-timepicker': isInspectorField,
+        })}
       />
     </div>
   );

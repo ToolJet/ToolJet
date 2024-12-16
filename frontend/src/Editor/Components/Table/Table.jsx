@@ -1703,7 +1703,8 @@ export function Table({
       {(enablePagination ||
         Object.keys(tableDetails.changeSet || {}).length > 0 ||
         showAddNewRowButton ||
-        showDownloadButton) && (
+        showDownloadButton ||
+        !hideColumnSelectorButton) && (
         <div
           className={`card-footer d-flex align-items-center jet-table-footer justify-content-center ${
             darkMode && 'dark-theme'

@@ -2,8 +2,17 @@ import React from 'react';
 import WidgetIcon from '@/../assets/images/icons/widgets';
 import { useTranslation } from 'react-i18next';
 
-const LEGACY_WIDGETS = ['ToggleSwitch', 'DropDown', 'Multiselect', 'RadioButton'];
-const NEW_WIDGETS = ['ToggleSwitchV2', 'DropdownV2', 'MultiselectV2', 'RadioButtonV2'];
+const LEGACY_WIDGETS = ['ToggleSwitch', 'DropDown', 'Multiselect', 'RadioButton', 'Datepicker'];
+const NEW_WIDGETS = [
+  'ToggleSwitchV2',
+  'DropdownV2',
+  'MultiselectV2',
+  'RadioButtonV2',
+  'DatetimePickerV2',
+  'DaterangePicker',
+  'DatePickerV2',
+  'TimePickerV2',
+];
 
 export const WidgetBox = ({ component, darkMode }) => {
   const { t } = useTranslation();

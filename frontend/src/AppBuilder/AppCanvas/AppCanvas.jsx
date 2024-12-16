@@ -110,6 +110,7 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
                   isViewerSidebarPinned={isViewerSidebarPinned}
                   pageSidebarStyle={pageSidebarStyle}
                 />
+                <div id="component-portal" />
               </div>
             )}
 
