@@ -15,8 +15,8 @@ const TimepickerInput = ({ currentTimestamp, isTwentyFourHourMode, darkMode, onT
   const selectedMinute = momentObj?.minute() || 0;
   const selectedAmPm = selectedHour >= 12 ? 'PM' : 'AM';
 
-  const [minHour, minMinute] = minTime ? minTime.split(':') : [0, 0];
-  const [maxHour, maxMinute] = maxTime ? maxTime.split(':') : [23, 59];
+  const [minHour, minMinute] = minTime && typeof minTime === 'string' ? minTime.split(':') : [0, 0];
+  const [maxHour, maxMinute] = maxTime && typeof maxTime === 'string' ? maxTime.split(':') : [23, 59];
 
   const addHours = (time) => {
     if (!isTwentyFourHourMode && selectedAmPm === 'PM') {
