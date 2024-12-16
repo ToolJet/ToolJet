@@ -3,7 +3,7 @@ import Icon from '@/_ui/Icon/solidIcons/index';
 import { OverlayTrigger } from 'react-bootstrap';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useAppInfo } from '@/_stores/appDataStore';
-import { AppVersionsManager } from '@/Editor/AppVersionsManager/AppVersionsManager';
+import { AppVersionsManager } from '@/AppBuilder/Header/AppVersionsManager';
 import { noop } from 'lodash';
 import HeaderActions from '@/Editor/Header/HeaderActions';
 import Navbar from 'react-bootstrap/Navbar';

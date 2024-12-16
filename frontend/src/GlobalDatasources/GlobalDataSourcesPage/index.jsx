@@ -6,13 +6,13 @@ import { useTranslation } from 'react-i18next';
 import { isEmpty } from 'lodash';
 import { Sidebar } from '../Sidebar';
 import { GlobalDataSourcesContext } from '..';
-import { DataSourceManager } from '@/Editor/DataSourceManager';
+import { DataSourceManager } from '@/AppBuilder/DataSourceManager';
 import {
   DataBaseSources,
   ApiSources,
   CloudStorageSources,
   CommonlyUsedDataSources,
-} from '@/Editor/DataSourceManager/SourceComponents';
+} from '@/AppBuilder/DataSourceManager/SourceComponents';
 import { pluginsService, globalDatasourceService, authenticationService, marketplaceService } from '@/_services';
 import { Card } from '@/_ui/Card';
 import { SegregatedList } from '../SegregatedList';
@@ -20,7 +20,7 @@ import { SearchBox } from '@/_components';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { BreadCrumbContext } from '@/App';
-import { canDeleteDataSource } from '@/_helpers';
+import { canDeleteDataSource, canUpdateDataSource, canCreateDataSource } from '@/_helpers';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 import HeaderSkeleton from '../../_ui/FolderSkeleton/HeaderSkeleton';
 import Skeleton from 'react-loading-skeleton';
@@ -56,8 +56,6 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
     setCurrentEnvironment,
     activeDatasourceList,
     setActiveDatasourceList,
-    canCreateDataSource,
-    canUpdateDataSource,
     isLoading,
     environmentLoading,
   } = useContext(GlobalDataSourcesContext);

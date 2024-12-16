@@ -2,8 +2,8 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { HeaderSection } from '@/_ui/LeftSidebar';
-import { DataSourceManager } from '../DataSourceManager';
-import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
+import { DataSourceManager } from '@/AppBuilder/DataSourceManager';
+import { DataSourceTypes } from '@/AppBuilder/DataSourceManager/SourceComponents';
 import { getSvgIcon } from '@/_helpers/appUtils';
 import { datasourceService, globalDatasourceService, authenticationService } from '@/_services';
 import { ConfirmDialog } from '@/_components';

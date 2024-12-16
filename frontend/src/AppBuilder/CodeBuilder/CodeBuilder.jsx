@@ -1,6 +1,6 @@
 // import React, { useState } from 'react';
 // import CodeMirror from '@uiw/react-codemirror';
-// import { componentTypes } from '../WidgetManager/components';
+// import { componentTypes } from '../WidgetManager';
 // import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 // import { debounce } from 'lodash';
 // import Fuse from 'fuse.js';

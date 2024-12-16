@@ -17,7 +17,7 @@ import {
   DataBaseSources,
   ApiSources,
   CloudStorageSources,
-} from '../../DataSourceManager/SourceComponents';
+} from '@/AppBuilder/DataSourceManager/SourceComponents';
 import { useDataSources, useGlobalDataSources, useSampleDataSource } from '@/_stores/dataSourcesStore';
 import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
 import { useSelectedQuery, useSelectedDataSource } from '@/_stores/queryPanelStore';

@@ -6,7 +6,7 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import NoListItem from '../NoListItem';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
-import CodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/AppBuilder/CodeEditor';
 import { ProgramaticallyHandleProperties } from '../ProgramaticallyHandleProperties';
 import { resolveReferences } from '@/_helpers/utils';
 import { unset } from 'lodash';

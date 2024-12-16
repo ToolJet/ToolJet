@@ -6,7 +6,7 @@ import _ from 'lodash';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
 import { Button } from '@/_ui/LeftSidebar';
 import Information from '@/_ui/Icon/solidIcons/Information';
-import CodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/AppBuilder/CodeEditor';
 const noop = () => {};
 
 const defaultValue = {

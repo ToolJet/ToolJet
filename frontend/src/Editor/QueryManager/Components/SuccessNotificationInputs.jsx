@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import CodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/AppBuilder/CodeEditor';
 
 export default function SuccessNotificationInputs({ currentState, options, darkMode, optionchanged }) {
   const { t } = useTranslation();

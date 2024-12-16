@@ -1,6 +1,6 @@
 import { resolveReferences } from '@/_helpers/utils';
 import React from 'react';
-import CodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/AppBuilder/CodeEditor';
 
 export const ProgramaticallyHandleProperties = ({
   darkMode,

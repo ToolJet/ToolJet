@@ -3,7 +3,7 @@ import { renderElement } from '../Utils';
 import { EventManager } from '@/Editor/Inspector/EventManager';
 import Accordion from '@/_ui/Accordion';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
-import CodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/AppBuilder/CodeEditor';
 
 class Chart extends React.Component {
   constructor(props) {

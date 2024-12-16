@@ -7,7 +7,7 @@ import Select from '@/_ui/Select';
 import { changeOption } from '../utils';
 import { BaseUrl } from './BaseUrl';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
-import CodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/AppBuilder/CodeEditor';
 
 class Restapi extends React.Component {
   constructor(props) {

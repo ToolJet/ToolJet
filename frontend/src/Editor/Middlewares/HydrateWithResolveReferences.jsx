@@ -8,7 +8,7 @@ import {
 import { validateProperties } from '../component-properties-validation';
 import { getComponentName, debuggerActions } from '@/_helpers/appUtils';
 import { memoizeFunction } from '../../_helpers/editorHelpers';
-import { componentTypes } from '../WidgetManager/components';
+import { componentTypes } from '@/AppBuilder/WidgetManager';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
 
 const shouldAddBoxShadowAndVisibility = ['TextInput', 'PasswordInput', 'NumberInput', 'Text'];

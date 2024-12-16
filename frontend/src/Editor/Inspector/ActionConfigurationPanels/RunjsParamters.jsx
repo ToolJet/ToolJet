@@ -1,7 +1,7 @@
 import React from 'react';
 import { isEmpty } from 'lodash';
 import { useDataQueries } from '@/_stores/dataQueriesStore';
-import CodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/AppBuilder/CodeEditor';
 
 function RunjsParameters({ event, darkMode, index, handlerChanged }) {
   const dataQueries = useDataQueries();
