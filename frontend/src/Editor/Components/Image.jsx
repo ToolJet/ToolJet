@@ -4,6 +4,7 @@ import LazyLoad, { forceCheck } from 'react-lazyload';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import BrokenImage from '@/Editor/Icons/broken-image.svg';
 import './image.scss';
+import Loader from '@/ToolJetUI/Loader/Loader';
 
 export const Image = function Image({
   componentName,
@@ -86,8 +87,10 @@ export const Image = function Image({
     return (
       <>
         {loadingState === true ? (
-          <div style={{ height, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <div className="spinner-border " role="status" data-cy={dataCy}></div>
+          <div style={{ height, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <center>
+              <Loader width="16" absolute={false} />
+            </center>
           </div>
         ) : isError ? (
           <div className="broken-url-placeholder">
