@@ -12,25 +12,30 @@ export const imageConfig = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: {
+    imageFormat: {
+      type: 'switch',
+      displayName: 'Image Format',
+      options: [
+        { displayName: 'Image URL', value: 'imageUrl' },
+        { displayName: 'JS Object', value: 'jsObject' },
+      ],
+      isFxNotRequired: true,
+      defaultValue: { value: 'imageUrl' },
+      fullWidth: true,
+      showLabel: false,
+    },
     source: {
       type: 'code',
-      displayName: 'URL',
+      displayName: 'Source URL',
       validation: {
         schema: { type: 'string' },
         defaultValue: 'https://www.svgrepo.com/image.svg',
       },
-    },
-    loadingState: {
-      type: 'toggle',
-      displayName: 'Loading state',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: false,
-      },
+      showLabel: false,
     },
     alternativeText: {
       type: 'code',
-      displayName: 'Alternative text',
+      displayName: 'Alternative',
       validation: {
         schema: { type: 'string' },
         defaultValue: 'this is an image',
@@ -43,6 +48,7 @@ export const imageConfig = {
         schema: { type: 'boolean' },
         defaultValue: false,
       },
+      section: 'additionalActions',
     },
     rotateButton: {
       type: 'toggle',
@@ -51,6 +57,41 @@ export const imageConfig = {
         schema: { type: 'boolean' },
         defaultValue: false,
       },
+      section: 'additionalActions',
+    },
+    loadingState: {
+      type: 'toggle',
+      displayName: 'Show loading state',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+      section: 'additionalActions',
+    },
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disable',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' }, defaultValue: 'Tooltip text' },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
     },
   },
   events: {
@@ -125,12 +166,15 @@ export const imageConfig = {
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
+      imageFormat: { value: 'imageUrl' },
       source: { value: 'https://www.svgrepo.com/show/34217/image.svg' },
-      visible: { value: '{{true}}' },
-      loadingState: { value: '{{false}}' },
       alternativeText: { value: '' },
       zoomButtons: { value: '{{false}}' },
       rotateButton: { value: '{{false}}' },
+      loadingState: { value: '{{false}}' },
+      disabledState: { value: '{{false}}' },
+      visibility: { value: '{{true}}' },
+      visible: { value: '{{true}}' },
     },
     events: [],
     styles: {
