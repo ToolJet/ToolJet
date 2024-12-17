@@ -21,12 +21,38 @@ ToolJet requires the following to connect to your PostgreSQL database.
 - **Port**
 - **Username**
 - **Password**
+- **Connection Options**
 - **Azure**  (Select this option if you are using Azure SQL databases)
 
 **Note:** It is recommended to create a new database user so that you can control the access levels of ToolJet. 
 
-<img className="screenshot-full" src="/img/datasource-reference/mssql/connect.png" alt="ToolJet - Redis connection"/>
+<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/mssql/connect-v2.png" alt="ToolJet - Redis connection"/>
 
+### Connection Options
+
+You can add optional configurations in **key-value pairs** for the MS SQL data source connection. 
+
+#### Example:
+| Key                     | Value  |
+|:--------------------------|:--------|
+| trustServerCertificate| true |
+
+These options allow you to fine-tune the connection, such as enabling encryption when using a self-signed certificate.
+
+### Enabling Encryption with a Self-Signed Certificate
+
+To enhance security during data transfer, encryption can be enabled even with a self-signed certificate.
+
+#### Server-Side Configuration
+1. **Create and Install a Self-Signed Certificate:**
+   - Generate a self-signed certificate and install it on the SQL Server instance.
+2. **Force Encryption:**
+   - Configure the SQL Server instance to force encrypted connections.
+   - For Azure SQL databases, turn on the **Encryption** toggle in the Azure portal.
+
+#### Client-Side Configuration
+1. Set the connection option `trustServerCertificate` to `true`.
+   - This bypasses certificate chain validation and is necessary when using a self-signed certificate.
 
 </div>
 
@@ -54,7 +80,7 @@ SELECT * FROM users
 
 <img className="screenshot-full" src="/img/datasource-reference/mssql/sql mode.png" alt="ToolJet mssql sql mode" style={{marginBottom:'15px'}}/>
 
-#### **Parameterized queries**:
+#### Parameterized queries:
 
 ToolJet offers support for parameterized SQL queries, which enhance security by preventing SQL injection and allow for dynamic query construction. To implement parameterized queries:
 
@@ -64,16 +90,20 @@ ToolJet offers support for parameterized SQL queries, which enhance security by 
 4. The values can be static values or dynamic values using the `{{ }}` notation.
 
 <div style={{textAlign: 'center'}}>
-<img className="screenshot-full" src="/img/datasource-reference/mssql/parameterized-query.png" alt="Postgresql parameterized SQL queries"/>
+<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/mssql/parameterized-query.png" alt="Postgresql parameterized SQL queries"/>
 </div>
 
-**Example:**
+##### Example:
 ```yaml
 Query: SELECT * FROM users WHERE username = :username
 SQL Parameters:
   Key: username
   Value: oliver // or {{ components.username.value }}
 ```
+
+#### Query Timeout
+
+You can set the timeout duration for SQL queries by adding the `PLUGINS_SQL_DB_STATEMENT_TIMEOUT` variable to the environment configuration file. By default, it is set to 120,000 ms.
 
 ### GUI Mode
 

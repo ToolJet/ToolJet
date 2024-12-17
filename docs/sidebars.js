@@ -460,7 +460,14 @@ const sidebars = {
         'workflows/workflow-triggers',
         'workflows/results',
         'workflows/permissions',
-        'workflows/trigger-workflow-from-app'
+        {
+          'type': 'category',
+          'label': 'How-to',
+          'items': [
+            'workflows/trigger-using-webhook',
+            'workflows/trigger-workflow-from-app'
+          ]
+        }
       ],
     },
     {
