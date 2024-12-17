@@ -21,13 +21,18 @@ export const Image = function Image({
   parentId = null,
   dataCy,
 }) {
-  const { imageFormat, source, alternativeText, zoomButtons, rotateButton, loadingState, disabledState } = properties;
+  const { imageFormat, source, jsSchema, alternativeText, zoomButtons, rotateButton, loadingState, disabledState } =
+    properties;
   const { imageFit, imageShape, backgroundColor, padding, customPadding, boxShadow, borderRadius, borderColor } =
     styles;
 
   const isInitialRender = useRef(true);
 
-  const [sourceURL, setSourceURL] = useState(source);
+  const computeUrl = () => {
+    return imageFormat === 'imageUrl' ? source : `data:${jsSchema?.type};base64,${jsSchema?.base64Data}`;
+  };
+
+  const [sourceURL, setSourceURL] = useState(computeUrl());
   const [visibility, setVisibility] = useState(properties.visibility);
   const [isLoading, setIsLoading] = useState(loadingState);
   const [isDisabled, setIsDisabled] = useState(disabledState);
@@ -48,10 +53,11 @@ export const Image = function Image({
   }, [properties.visibility, loadingState, disabledState]);
 
   useEffect(() => {
-    if (isInitialRender.current) return;
-    setSourceURL(source);
-    setExposedVariable('imageURL', source);
-  }, [source]);
+    isInitialRender.current = false;
+    const url = computeUrl();
+    setSourceURL(url);
+    setExposedVariable('imageURL', url);
+  }, [imageFormat, source, jsSchema]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
@@ -95,7 +101,7 @@ export const Image = function Image({
 
   useEffect(() => {
     const exposedVariables = {
-      imageURL: source,
+      imageURL: computeUrl(),
       alternativeText: alternativeText,
       isLoading: loadingState,
       isVisible: properties.visibility,
