@@ -51,7 +51,7 @@
   },
   {
     "name": "AWS Lambda",
-    "description": "Plugin for aws-lambda",
+    "description": "Plugin for AWS Lambda",
     "version": "1.0.0",
     "id": "aws-lambda",
     "author": "Tooljet",
