@@ -108,6 +108,12 @@ Once the CSV file is ready, click on the file picker to select the file or drag 
 - There is a limit of 1000 rows per CSV file that can be uploaded to the ToolJet database.
 - The CSV file should not exceed 2MB in size.
 
+:::info
+You can overcome the above limitations in the self-hosted version by adding the following environment variables:
+- `TOOLJET_DB_BULK_UPLOAD_MAX_ROWS`: Specifies the maximum number of rows that can be uploaded. The default is 1,000 rows.
+- `TOOLJET_DB_BULK_UPLOAD_MAX_CSV_FILE_SIZE_MB`: Specifies the maximum CSV file size for bulk uploads. The default maximum size is 5 MB.
+:::
+
 <img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/v2-beta/database/ux2/bulk-upload-data-v2.png" alt="ToolJet database" />
 
 ### Delete Records
@@ -117,6 +123,8 @@ To delete one or many records/rows, click the checkbox to the right of the recor
 <img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/v2-beta/database/ux2/delete-rows-v2.png" alt="ToolJet database" />
 
 ## Filter
+
+### Add Filter
 
 You can add as many filters as you want into the table by clicking on the **Filter** button present on the top of the database editor.
 
@@ -141,7 +149,13 @@ You can add as many filters as you want into the table by clicking on the **Filt
 | **in** | This operation is used to check if the value of the column is in the list of values entered in the input field. ex: `(1,2,3)` |
 | **is** | This operation is used to check if the value of the column is equal to the value entered in the input field. This operation is used for boolean data types. |
 
-<img className="screenshot-full" src="/img/v2-beta/database/ux2/filter-data-v2.png" alt="ToolJet database" />
+<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/v2-beta/database/ux2/filter-data-v2.png" alt="ToolJet database" />
+
+### Clear Filter
+
+You can either delete filters individually or clear all the filters together.
+
+<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/v2-beta/database/ux2/clear-all.png" alt="ToolJet database" />
 
 </div>
 

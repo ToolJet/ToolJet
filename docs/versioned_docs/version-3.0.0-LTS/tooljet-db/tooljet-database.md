@@ -54,6 +54,8 @@ Please make sure that DB_URI is given in the format `postgres://[USERNAME]:[PASS
 | TOOLJET_DB_PORT    | database port                                |
 | PGRST_JWT_SECRET   | JWT token client provided for authentication |
 | PGRST_HOST         | postgrest database host                      |
+| TOOLJET_DB_BULK_UPLOAD_MAX_ROWS | Maximum rows allowed to bulk upload. Default value is 1000 |
+| TOOLJET_DB_BULK_UPLOAD_MAX_CSV_FILE_SIZE_MB  | Maximum file size of CSV for bulk upload. Default value is 5 MB  |
 
 
 If you intend to make changes in the above configuration. Please refer [PostgREST configuration docs](https://postgrest.org/en/stable/configuration.html#environment-variables).
