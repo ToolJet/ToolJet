@@ -65,7 +65,7 @@ describe("App Version Functionality", () => {
     closeModal(commonText.closeButton);
   });
 
-  it.skip("Verify all functionality for the app version", () => {
+  it("Verify all functionality for the app version", () => {
     data.appName = `${fake.companyName}-App`;
     cy.apiCreateApp(data.appName);
     cy.openApp()

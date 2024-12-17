@@ -55,7 +55,7 @@ describe("App Export Functionality", () => {
       });
   });
 
-  it("Verify 'Export app' functionality of an application", () => {
+  it("Verify 'Export app' functionality of an application inside editor", () => {
     data.appName1 = `${fake.companyName}-App`;
     cy.apiCreateApp(data.appName1);
 
@@ -139,5 +139,13 @@ describe("App Export Functionality", () => {
       data.appName1
     );
     cy.exec("cd ./cypress/downloads/ && rm -rf *");
+  });
+  it.only("Verify 'Export app' functionality of an application", () => {
+    data.appName1 = `${fake.companyName}-App`;
+    cy.apiCreateApp(data.appName1);
+    cy.openApp();
+    cy.pause();
+    cy.get('[data-cy="left-sidebar-settings-button"]').click();
+
   });
 });

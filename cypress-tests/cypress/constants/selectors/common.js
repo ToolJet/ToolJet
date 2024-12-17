@@ -277,7 +277,7 @@ export const commonWidgetSelector = {
   },
 
   draggableWidget: (widgetName) => {
-    return `[data-cy=draggable-widget-${cyParamName(widgetName)}]`;
+    return `[data-cy=widget-list-box-${cyParamName(widgetName)}]`;
   },
   textInputInputField: (widgetName) => {
     return `[data-cy=input-${cyParamName(widgetName)}]`;

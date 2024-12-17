@@ -125,13 +125,15 @@ Cypress.Commands.add(
   (slug = '',
     workspaceId = Cypress.env("workspaceId"),
     appId = Cypress.env("appId"),
-    componentSelector = "[data-cy='empty-editor-text']"
+    componentSelector = "[data-cy='widget-list-box-form']"
   ) => {
     cy.intercept('GET', '/api/v2/apps/*').as('getAppData');
     cy.window({ log: false }).then((win) => {
       win.localStorage.setItem("walkthroughCompleted", "true");
     });
     cy.visit(`/${workspaceId}/apps/${appId}`);
+
+    cy.wait(2000);
     cy.wait('@getAppData').then((interception) => {
       // Assuming the response body is a JSON object
       const responseData = interception.response.body;
@@ -234,6 +236,50 @@ Cypress.Commands.add("addQueryApi", (queryName, query, dataQueryId) => {
     });
   });
 });
+
+Cypress.Commands.add("addQueryApi1", (queryName, query) => {
+  cy.getCookie("tj_auth_token", { log: false }).then((cookie) => {
+    const authToken = `tj_auth_token=${cookie.value}`;
+    const workspaceId = Cypress.env("workspaceId");
+    const appId = Cypress.env("appId");
+
+    cy.request({
+      method: "GET",
+      url: `${Cypress.env("server_host")}/api/apps/${appId}`,
+      headers: {
+        "Tj-Workspace-Id": workspaceId,
+        Cookie: `${authToken}; app_id=${appId}`,
+      },
+    }).then((appResponse) => {
+      const editingVersionId = appResponse.body.editing_version.id;
+
+  
+      cy.request({
+        method: "POST",
+        url: `${Cypress.env("server_host")}/api/data_queries`,
+        headers: {
+          "Tj-Workspace-Id": workspaceId,
+          Cookie: authToken,
+        },
+        body: {
+          app_id: appId,
+          app_version_id: editingVersionId,
+          kind: "runjs",
+          name: queryName,
+          options: {
+            code: query,
+            parameters: [],
+          },
+        },
+      }).then((response) => {
+        expect(response.status).to.equal(201);
+        console.log("Query created:", response.body);
+      });
+    });
+  });
+});
+
+
 
 Cypress.Commands.add(
   "apiAddQueryToApp",
