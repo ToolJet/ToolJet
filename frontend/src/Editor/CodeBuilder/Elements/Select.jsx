@@ -95,7 +95,8 @@ const selectCustomStyles = (width) => {
 
 export const Select = ({ value, onChange, meta, width = '144px' }) => {
   useEffect(() => {
-    document.getElementById('crash-hack')?.focus();
+    document.getElementById('crash-hack-select')?.focus();
+    document.getElementById('crash-hack-select-container')?.focus();
   });
   return (
     <div
@@ -105,6 +106,20 @@ export const Select = ({ value, onChange, meta, width = '144px' }) => {
       }`}
     >
       <div className="field" onClick={(e) => e.stopPropagation()}>
+        <input
+          style={{
+            height: 0,
+            width: 0,
+            outline: 'none',
+            border: 'none',
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            backgroundColor: 'transparent',
+          }}
+          id="crash-hack-select-container"
+          type="text"
+        />
         <SelectComponent
           options={meta.options}
           value={value}
