@@ -3,8 +3,6 @@ id: creating-a-plugin
 title: 'Marketplace: Creating plugins'
 ---
 
-# Marketplace: Creating plugins 
-
 ## What are plugins
 
 ToolJet’s development has centered on extensibility, allowing developers to utilize plugins that expand their capabilities. Currently, these plugins are limited to connectors, including data source connectors like PostgreSQL, MySQL, Twilio, Stripe, and more. Using JavaScript/TypeScript, developers can develop plugins to enhance ToolJet's functionality and publish these plugins on the ToolJet Marketplace.
@@ -376,6 +374,42 @@ The GitHub class has three methods:
 
 - **getConnection**: This method is a helper function that returns an authenticated octokit client, which is utilized to send requests to the GitHub API. It takes in sourceOptions as input, representing the source metadata, and returns an authenticated octokit client.
 
+## Step 6: Add Error Handling
+
+In case of an error, it is necessary to return the error message received from the Plugin SDK. To achieve this, include the `errorDetails` in the **run** method within the **index.ts** file. The specific parameters of the error may vary depending on the plugin. <br/><br/>
+Additionally, the **data** field in the Plugin SDK corresponds to **errorDetails** in the code, and the dynamically generated **errorMessage** maps to the **description** field in the error preview.
+
+#### Example
+
+Consider the case of MongoDB. If an error occurs, such as the following:
+
+<img className="screenshot-full" src="/img/contributing-guide/create-plugin/mongodb-error.png" alt="MongoDB Error" />
+
+You can implement error handling using the following code:
+
+```js
+catch (error) {
+      let errorMessage = 'An unknown error occurred';
+      let errorDetails = {};
+
+      if (error instanceof Error) {
+        errorMessage = error.message || errorMessage;
+        errorDetails = {
+          name: error.name,
+          code: (error as any).code || null,
+          codeName: (error as any).codeName || null,
+          keyPattern: (error as any).keyPattern || null,
+          keyValue: (error as any).keyValue || null,
+        };
+      }
+
+      throw new QueryError('Query could not be completed', errorMessage, errorDetails);
+}
+```
+
+This code ensures that error messages and details are properly returned to the Plugin SDK, enabling meaningful error previews for the user.
+
+<img className="screenshot-full" src="/img/contributing-guide/create-plugin/query-error.png" alt="Query Error" />
 
 ## Delete a plugin
 To delete a plugin, enter the following command:
