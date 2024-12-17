@@ -166,7 +166,7 @@ export const Image = function Image({
         height,
         transform: `rotate(${rotation}deg)`,
         border: '1px solid',
-        borderRadius: imageShape === 'circle' ? '50%' : borderRadius,
+        borderRadius: imageShape === 'circle' ? '50%' : `${borderRadius}px`,
         borderColor: borderColor ? borderColor : 'transparent',
       }}
       height={height}
