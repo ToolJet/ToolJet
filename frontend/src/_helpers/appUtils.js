@@ -2404,3 +2404,8 @@ export const deepCamelCase = (obj) => {
   }
   return obj;
 };
+
+export const isMobileDevice = () => {
+  const userAgent = window.navigator.userAgent;
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+};
