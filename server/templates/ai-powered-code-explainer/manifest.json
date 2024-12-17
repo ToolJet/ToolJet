@@ -1,0 +1,20 @@
+{
+  "name": "AI powered code explainer",
+  "description": "Simplify code understanding with Gemini AI and Rest API, providing instant explanations and real-time insights.",
+  "widgets": [
+    "Table",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "RestAPI",
+      "id": "restapi"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "ai-powered-code-explainer",
+  "category": "developer-utilities"
+}
