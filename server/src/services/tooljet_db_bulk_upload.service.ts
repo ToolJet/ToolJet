@@ -229,6 +229,10 @@ export class TooljetDbBulkUploadService {
 
   convertToDataType(columnValue: string, supportedDataType: TooljetDatabaseDataTypes) {
     if (!columnValue) return null;
+    console.log({
+      columnValue,
+      supportedDataType,
+    });
 
     switch (supportedDataType) {
       case TJDB.boolean:
@@ -259,7 +263,7 @@ export class TooljetDbBulkUploadService {
     throw `${str} is not a valid ${dataType}`;
   }
 
-  async bulkUpdateRowsOnly(
+  async bulkUpdateRowsWithPrimaryKey(
     payload: Array<{ [key: string]: any }>,
     tableId: string,
     primaryKeyColumns: string | string[],
@@ -269,62 +273,70 @@ export class TooljetDbBulkUploadService {
       throw new Error('Payload is empty. Nothing to update.');
     }
 
+    const internalTable = await this.manager.findOne(InternalTable, {
+      where: { organizationId, id: tableId },
+    });
+
+    if (!internalTable) {
+      throw new NotFoundException(`Table not found`);
+    }
+
     const primaryKeys = Array.isArray(primaryKeyColumns) ? primaryKeyColumns : [primaryKeyColumns];
     const tenantSchema = findTenantSchema(organizationId);
+    let updatedRowsCount = 0;
+    const updatedRowsData = [];
 
     try {
-      const whereConditions = [];
-      const caseClauses: { [key: string]: string[] } = {};
-      const parameterList = [];
-      let parameterIndex = 0;
-
       for (const row of payload) {
+        // Validate primary keys
         const primaryKeyConditions = primaryKeys.map((key) => {
-          const value = row[key];
-          if (value === undefined) {
-            throw new Error(`Primary key column "${key}" is missing in row: ${JSON.stringify(row)}`);
+          if (row[key] === undefined) {
+            throw new Error(`Primary key "${key}" is missing in row: ${JSON.stringify(row)}`);
           }
-          parameterList.push(value);
-          return `"${key}" = $${++parameterIndex}`;
+          return { key, value: row[key] };
         });
 
-        whereConditions.push(`(${primaryKeyConditions.join(' AND ')})`);
+        // Build query dynamically for each row
+        const columnsToUpdate = Object.entries(row).filter(([key]) => !primaryKeys.includes(key));
 
-        for (const [column, value] of Object.entries(row)) {
-          if (primaryKeys.includes(column)) continue;
-          if (!caseClauses[column]) {
-            caseClauses[column] = [];
-          }
-          parameterList.push(value);
-          caseClauses[column].push(`WHEN ${primaryKeyConditions.join(' AND ')} THEN $${++parameterIndex}`);
+        if (columnsToUpdate.length === 0) continue; // No updateable fields
+
+        const setClause = columnsToUpdate.map(([column, _], index) => `"${column}" = $${index + 1}`).join(', ');
+
+        const whereClause = primaryKeyConditions
+          .map(({ key }, index) => `"${key}" = $${columnsToUpdate.length + index + 1}`)
+          .join(' AND ');
+
+        const query = `
+          UPDATE "${tenantSchema}"."${tableId}"
+          SET ${setClause}
+          WHERE ${whereClause}
+          RETURNING *;
+        `;
+
+        const parameters = [
+          ...columnsToUpdate.map(([, value]) => value),
+          ...primaryKeyConditions.map(({ value }) => value),
+        ];
+
+        const result = await this.tooljetDbManager.query(query, parameters);
+
+        if (result[0]?.length) {
+          updatedRowsCount += result[0].length;
+          updatedRowsData.push(...result[0]);
         }
       }
 
-      const setClauses = Object.entries(caseClauses).map(
-        ([column, cases]) => `"${column}" = CASE ${cases.join(' ')} END`
-      );
-
-      const query = `
-        UPDATE "${tenantSchema}"."${tableId}"
-        SET ${setClauses.join(', ')}
-        WHERE ${whereConditions.join(' OR ')}
-        RETURNING *;
-      `;
-
-      const result = await this.tooljetDbManager.query(query, parameterList);
-      const updatedData = result[0];
-      const updatedDataCount = result[1];
       return {
         status: 'ok',
-        data: updatedData,
-        updatedRows: updatedDataCount,
+        updatedRows: updatedRowsCount,
+        data: updatedRowsData,
       };
     } catch (error) {
-      console.error('Error during batch update:');
       return {
         status: 'failed',
         updatedRows: 0,
-        error: error,
+        error: error.message,
       };
     }
   }

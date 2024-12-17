@@ -91,7 +91,8 @@ export class TooljetDbOperationsService implements QueryService {
       const { table_id: tableId, bulk_update_with_primary_key: bulkUpdateWithPrimaryKey } = queryOptions;
       const { primary_key: primaryKeyColumn, rows_update: rowsToUpdate } = bulkUpdateWithPrimaryKey;
       const { organization_id: organizationId } = context.app;
-      const result = await this.tooljetDbBulkUploadService.bulkUpdateRowsOnly(
+
+      const result = await this.tooljetDbBulkUploadService.bulkUpdateRowsWithPrimaryKey(
         rowsToUpdate,
         tableId,
         primaryKeyColumn,
