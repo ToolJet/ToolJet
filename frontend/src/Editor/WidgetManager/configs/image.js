@@ -46,6 +46,7 @@ export const imageConfig = {
       },
       validation: {
         schema: { type: 'object' },
+        defaultValue: "{ name: string, type: 'image/*', sizeBytes: number, base64Data: string }",
       },
       showLabel: false,
     },
@@ -199,6 +200,32 @@ export const imageConfig = {
     },
   },
   exposedVariables: {},
+  actions: [
+    {
+      handle: 'setImageURL',
+      displayName: 'Set image URL',
+      params: [{ handle: 'url', displayName: 'URL', defaultValue: 'New URL' }],
+    },
+    {
+      handle: 'clearImage',
+      displayName: 'Clear image',
+    },
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'setVisibility', displayName: 'Value', defaultValue: `{{true}}`, type: 'toggle' }],
+    },
+    {
+      handle: 'setLoading',
+      displayName: 'Set loading',
+      params: [{ handle: 'setLoading', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
+    },
+    {
+      handle: 'setDisable',
+      displayName: 'Set disable',
+      params: [{ handle: 'setDisable', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
+    },
+  ],
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },
