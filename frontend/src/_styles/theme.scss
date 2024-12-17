@@ -20,6 +20,7 @@
 @import "./componentdesign.scss";
 @import './pages-sidebar.scss';
 @import "./componentdesign.scss";
+
 /* ibm-plex-sans-100 - latin */
 @font-face {
   font-display: swap;
@@ -189,12 +190,14 @@
     border-radius: 10px;
     border: 3px solid transparent;
   }
+
   &::-webkit-scrollbar-thumb:hover {
     background-color: #E4E7EB;
   }
 }
 
 @layer base {
+
   input[type='number']::-webkit-outer-spin-button,
   input[type='number']::-webkit-inner-spin-button,
   input[type='number'] {
@@ -212,6 +215,7 @@ body {
   font-family: 'IBM Plex Sans';
   // color: var(--text-default) !important;
 }
+
 body:has(.wrapper.audit-log) {
   overflow: hidden;
 }
@@ -614,6 +618,7 @@ button {
     background-color: var(--base);
     background-clip: border-box;
     height: 100vh;
+
     >div {
       background-color: var(--base);
     }
@@ -3875,12 +3880,12 @@ input[type="text"] {
   }
 }
 
-.form-ele{
-  .DateRangePicker_picker{
+.form-ele {
+  .DateRangePicker_picker {
     top: 40px !important;
   }
 
-  .daterange-picker-widget{
+  .daterange-picker-widget {
     .DateInput_fang {
       visibility: hidden !important;
     }
@@ -7035,13 +7040,14 @@ tbody {
       .react-datepicker__month-select,
       .react-datepicker__year-select {
         color: white;
-        
+
       }
 
       .react-datepicker__month-select,
       .react-datepicker__year-select {
         background-color: transparent;
-        option{
+
+        option {
           background-color: #232e3c;
         }
       }
@@ -7811,11 +7817,13 @@ tbody {
 .audit-log-nav-item {
   bottom: 40px;
 }
-.workspace-content-wrapper{
+
+.workspace-content-wrapper {
   overflow-x: auto;
   overflow-y: auto;
   padding-left: 20px;
 }
+
 .workspace-content-wrapper,
 .database-page-content-wrap {
   background-color: var(--page-default);
@@ -11717,6 +11725,7 @@ tbody {
       .disable {
         color: var(--slate9);
       }
+
       .disable {
         color: var(--slate9);
 
@@ -11851,7 +11860,7 @@ tbody {
   .current-org-indicator {
     display: none;
   }
-  
+
   &:hover .current-org-indicator {
     display: block;
   }
@@ -11864,7 +11873,7 @@ tbody {
   }
 }
 
-.org-dropdown-shadow{
+.org-dropdown-shadow {
   box-shadow: var(--elevation-400-box-shadow)
 }
 
@@ -11886,11 +11895,11 @@ tbody {
 .org-custom-select-header-wrap {
   border-bottom: 1px solid var(--slate5);
 
-  .select-header-font{
-font-size: 14px;
-font-weight: 500;
-line-height: 20px;
-color: var(--text-default);
+  .select-header-font {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    color: var(--text-default);
 
   }
 }
@@ -12831,7 +12840,7 @@ color: var(--text-default);
     padding-top: 0px;
     padding-bottom: 0px;
 
-    .p-3-constants{
+    .p-3-constants {
       padding: 1rem !important;
       padding-left: 0px !important;
     }

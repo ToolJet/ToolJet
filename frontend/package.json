@@ -32,6 +32,7 @@
     "@sentry/tracing": "^7.100.1",
     "@sentry/webpack-plugin": "^2.14.0",
     "@tabler/icons-react": "^2.4.0",
+    "@tanstack/react-table": "^8.20.5",
     "@tanstack/react-virtual": "^3.10.8",
     "@textea/json-viewer": "^3.3.2",
     "@tooljet/plugins": "../plugins",

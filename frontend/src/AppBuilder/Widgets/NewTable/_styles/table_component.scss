@@ -1,0 +1,50 @@
+@import "@/_styles/typography.scss";
+@import "@/_styles/designtheme.scss";
+
+.jet-table.table-component {
+    padding: 8px;
+    width: 100%;
+    overflow: hidden;
+    padding: 8px;
+
+    &.jet-table {
+        background-color: var(--surfaces-surface-01);
+        box-shadow: var(--elevation-200-box-shadow);
+        border: 1px solid var(--borders-weak-disabled);
+
+        .table-card-header {
+            padding: 12px;
+            height: 56px;
+
+
+            .table-global-search {
+                border: 1px solid var(--borders-default) !important;
+
+                input {
+                    color: var(--text-primary) !important;
+                }
+
+                &:hover {
+                    border-radius: 6px;
+                    border: 1px solid var(--slate8, #C1C8CD) !important;
+                    background: var(surfaces/surface-01) !important;
+                }
+
+                &:focus-visible {
+                    border-radius: 6px;
+                    border: 2px solid var(--primary-accent-strong) !important;
+                    // background: var(--base-base, #FFF) !important;
+                    /* Focus rings/Gray/light */
+                    // box-shadow: 0px 0px 0px 4px var(--slate6) !important;
+                }
+
+                &:focus-within {
+                    border-radius: 6px;
+                    border: 2px solid var(--primary-accent-strong) !important;
+                    /* Selected ring/Indigo/light */
+                    // box-shadow: 0px 0px 0px 1px var(--indigo6) !important;
+                }
+            }
+        }
+    }
+}
