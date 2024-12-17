@@ -376,7 +376,7 @@ The GitHub class has three methods:
 
 ## Step 6: Add Error Handling
 
-In case of an error, it is necessary to return the error message received from the Plugin SDK. To achieve this, include the `errorDetails` in the **run** method within the **index.ts** file. The specific parameters of the error may vary depending on the plugin. <br/>
+In case of an error, it is necessary to return the error message received from the Plugin SDK. To achieve this, include the `errorDetails` in the **run** method within the **index.ts** file. The specific parameters of the error may vary depending on the plugin. <br/><br/>
 Additionally, the **data** field in the Plugin SDK corresponds to **errorDetails** in the code, and the dynamically generated **errorMessage** maps to the **description** field in the error preview.
 
 #### Example
