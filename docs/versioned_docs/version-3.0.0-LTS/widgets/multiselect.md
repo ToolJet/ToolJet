@@ -4,110 +4,159 @@ title: Multiselect
 ---
 # Multiselect
 
-The **Multiselect** widget can be used to collect multiple user inputs from a list of options.
+The Multiselect component enables users to select multiple options from a predefined list, making it ideal for gathering multiple inputs.
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+## Data
 
-## Properties
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"250px"}}> Description </div> | <div style={{width: "200px"}}> Expected Value </div>|
+|:---------------|:-------------------------------------------------|:-----------------------------|
+| Label         | Text to display as the label for the component.           | String (e.g., `Select an option`).         |
+| Placeholder         | Text to display when none of the options are selected.           | String (e.g., `Select the loan type`).         |
 
-| <div style={{ width:"100px"}}> Property   </div>   | <div style={{ width:"100px"}}> Description </div> | 
-|:----------- |:----------- |
-| Label | The text is to be used as the label for the Multiselect widget. |
-| Default value | The value of the default option. This should always be an array. |
-| Option values | Values for different items/options in the list of the multiselect. |
-| Option labels | Labels for different items/options in the list of the multiselect. |
 
-</div>
+## Options
+Allows you to add options to the multiselect component field. You can click on `Add new option` and add options manually or enable `Dynamic options` and enter the options using code. 
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+### Example Code for Dynamic Columns
+
+1. Passing an array of objects and specifying each value:
+
+```js
+{{
+    [{label: 'option1', value: 1, disable: false, visible: true, default: true},
+    {label: 'option2', value: 2, disable: false, visible: true},
+    {label: 'option3', value: 3, disable: false, visible: true}]
+}}
+```
+
+2. Passing an array of objects with a default value from a **Table** component's selected row:
+
+```js
+{{
+    queries.getEmployees.data.map(option => ({
+    label: option.firstname,
+    value: option.firstname,
+    disable: false,
+    visible: true,
+    default: option.firstname === components.table1.selectedRow.firstname 
+    }))
+}} 
+```
+
+### Options loading state
+Allows you to add a loading state to the dynamically generated options. You can enable or disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.
+
+## Component specific actions (CSA)
+
+Following actions of the component can be controlled using the component specific actions(CSA):
+
+| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"160px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
+| :------------ | :---------- | :------------ |
+| clear()        | Clears the selected option.      | Employ a RunJS query (for e.g.,  <br/> `await components.multiselect1.clear()`) or trigger it using an event. |
+| setVisibility()| Sets the visibility of the component.            | Employ a RunJS query (for e.g.,  <br/> `await components.multiselect1.setVisibility(false)`) or trigger it using an event. |
+| setLoading()   | Sets the loading state of the component.         | Employ a RunJS query (for e.g.,  <br/> `await components.multiselect1.setLoading(true)`) or trigger it using an event. |
+| setDisable()   | Disables the component.                           | Employ a RunJS query (for e.g., <br/> `await components.multiselect1.setDisable(true)`) or trigger it using an event. |
+| selectOptions()        | Selects an option.      | Employ a RunJS query (for e.g.,  <br/> `await components.multiselect1.selectOptions(['2','3'])`) or trigger it using an event. |
+| deselectOptions()        | Deselects all options.      | Employ a RunJS query (for e.g.,  <br/> `await components.multiselect1.deselectOptions()`) or trigger it using an event. |
+
+**Note:** The data type passed to CSAs like `selectOptions()` depends on how you configure the component. When adding options manually using the **Add new option** button, values must be strings (for example, `components.multiselect1.selectOptions(['2', '3'])`). When using dynamic options, supply values with the correct data types as they appear in your code logic. 
+
+For example, if the code is:
+```javascript
+{{
+    [
+        { label: 'option1', value: 1, disable: false, visible: true, default: true },
+        { label: 'option2', value: 2, disable: false, visible: true },
+        { label: 'option3', value: 3, disable: false, visible: true }
+    ]
+}}
+```
+
+You should pass numeric values in the `selectOptions` component-specific action since the value type is **Number**:
+
+```javascript
+components.multiselect1.selectOptions([2, 3])
+```
+
+## Exposed Variables
+
+| <div style={{ width:"100px"}}> Variable </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
+|:----------|:----------|:------------|
+| label               | Holds the label name of the multiselect component.                                                                 | Accessible dynamically with JS (for e.g., `{{components.multiselect1.label}}`).                                          |
+| value               | Holds the value selected by the user in the component.                                                 | Accessible dynamically with JS (for e.g., `{{components.multiselect1.value}}`).                                          |
+| options        | Holds all the option values of the multiselect component in array form.                                 | Accessible dynamically with JS (for e.g., `{{components.multiselect1.options}}` or <br/>`{{components.multiselect1.options[0].label}}` for a specific option). |
+| isValid             | Indicates if the input meets validation criteria.                                                     | Accessible dynamically with JS (for e.g., `{{components.multiselect1.isValid}}`).                                        |
+| isMandatory         | Indicates if the field is required.                                                                   | Accessible dynamically with JS (for e.g., `{{components.multiselect1.isMandatory}}`).                                    |
+| isLoading           | Indicates if the component is loading.                                                                | Accessible dynamically with JS (for e.g., `{{components.multiselect1.isLoading}}`).                                      |
+| isVisible           | Indicates if the component is visible.                                                                | Accessible dynamically with JS (for e.g., `{{components.multiselect1.isVisible}}`).                                      |
+| isDisabled          | Indicates if the component is disabled.                                                               | Accessible dynamically with JS (for e.g., `{{components.multiselect1.isDisabled}}`).                                     |
 
 ## Events
 
 | <div style={{ width:"135px"}}> Event </div> | <div style={{ width:"100px"}}> Description </div> |
 |:----------------- | :--------------------------------------------- |
 | On select | The **On select** event is triggered when a particular option is chosen. |
-| On search text changed | This event is triggered when a user modifies the search text on the Multiselect component. This event also updates the value of the `searchText` **[exposed variable](#exposed-variables)**. |
 
 :::info
 For comprehensive information on all available **Actions**, refer to the [Action Reference](/docs/category/actions-reference) documentation.
 :::
 
-</div>
+## Validation
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+| <div style={{ width:"100px"}}> Validation Option </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> Expected Value </div>|
+|:---------------|:-------------------------------------------------|:-----------------------------|
+| Make this field mandatory    | Displays a 'Field cannot be empty' message if no option is selected. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Custom validation  | Specifies a validation error message for specific conditions. | Logical Expression (e.g., `{{!components.multiselect1.value && "Please select an option"}}`).           |
 
-## Component Specific Actions (CSA)
-`await components.multiselect1.clearSelections()` <br/>
-`await components.multiselect1.deselectOption(2)`
+## Additional Actions
 
-Following actions of Multiselect component can be controlled using the component specific actions(CSA):
+| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:------------------|:------------|:------------------------------|
+| Loading state      | Enables a loading spinner, often used with `isLoading` to indicate progress. Toggle or set dynamically.   | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Visibility         | Controls component visibility. Toggle or set dynamically.                                                 | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Disable            | Enables or disables the component. Toggle or set dynamically.                                             | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Tooltip            | Provides additional information on hover. Set a string value for display.                                 | String (e.g., `Select an option.` ).                       |
 
-| <div style={{ width:"100px"}}> Actions </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
-|:----------- |:----------- |:-------- |
-| selectOption | Select an option on the Multiselect component via a component-specific action within any event handler.| Employ a RunJS query to execute component-specific actions such as `await components.multiselect1.selectOption(3)` |
-| deselectOption | Deselect a selected option on the Multiselect component via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.multiselect1.deselectOption(3)` | 
-| clearOptions | Clear all the selected options from the Multiselect component via a component-specific action within any event handler. |Employ a RunJS query to execute component-specific actions such as `await components.multiselect1.clearSelections(2,3)` |
+## Devices
 
-</div>
+**Show on desktop**
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+Makes the component visible in desktop view. You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.
 
-## Exposed Variables
+**Show on mobile**
 
-| <div style={{ width:"100px"}}> Variables  </div>  | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
-|:----------- |:----------- |:----------|
-| values | This variable holds the values of the Multiselect component in an array of objects where the objects are the options in the multiselect.| Access the value dynamically using JS: `{{components.multiselect1.values[1]}}` |
-| searchText | This variable stores the user-entered search text in the Multiselect component. | The value of this variable is updated with each character entered in the search field |
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-## General
-### Tooltip
-
-A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
-
-Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-## Layout
-
-| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
-|:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
-| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
-| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-## Styles
-
-| <div style={{ width:"100px"}}> Style   </div>   | <div style={{ width:"100px"}}> Description </div> | 
-|:----------- |:----------- |
-| Border radius | Add a border radius to the multiselect using this property. It accepts any numerical value from `0` to `100`. |
-| Visibility | Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not be visible after the app is deployed. By default, it's set to `{{true}}`. |
-| Disable | This is `off` by default, toggle `on` the switch to lock the widget and make it non-functional. You can also programmatically set the value by clicking on the `Fx` button next to it. If set to `{{true}}`, the widget will be locked and becomes non-functional. By default, its value is set to `{{false}}`. |
-
-</div>
-
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-## Actions
-
-| <div style={{ width:"100px"}}> Action   </div>   | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"100px"}}> Properties </div> |
-|:----------- |:----------- |:------------------ |
-| `selectOption` | Select options. | pass options as parameter. ex: `components.multiselect1.selectOption(1)` |
-| `deselectOption` | Deselect options.| pass options as parameter. ex: `components.multiselect1.deselectOption(1)` |
-| `clearSelections` | Clear all selection. |  ex: `components.multiselect1.clearSelections()` |
+Makes the component visible in mobile view. You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.
 
 
-:::info
-Any property having `Fx` button next to its field can be **programmatically configured**.
-:::
+---
 
-</div>
+## Label
+
+| <div style={{ width:"100px"}}> Label Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:---------------|:------------|:---------------|
+| Color     | Sets the color of the component's label. | Select the color or click on **fx** and input code that programmatically returns a Hex color code.          |
+| Alignment      | Sets the position of the label and input field. | Click on the toggle options or click on **fx** to input code that programmatically returns an alignment value - `side` or `top`. |
+| Width          | Sets the width of the input field. | Keep the `Auto width` option for standard width or deselect it to modify the width using the slider or through code entry in **fx** that returns a numeric value. |
+
+## Field
+
+| <div style={{ width:"100px"}}> Field Property </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
+|:----------------|:------------|:--------------|
+| Background        | Sets the background color of the component.                                                   | Select the color or click on **fx** and input code that programmatically returns a Hex color code.          |
+| Border     | Sets the border color of the component.                                                       | Select the color or click on **fx** and input code that programmatically returns a Hex color code.          |
+| Accent       | Sets the color of the border when the dropdown is opened.                                     | Select the color or click on **fx** and input code that programmatically returns a Hex color code.          |
+| Text       | Sets the text color of the text entered in the component.                                     | Select the color or click on **fx** and input code that programmatically returns a Hex color code.          |
+| Error text | Sets the text color of validation message that displays.                                      | Select the color or click on **fx** and input code that programmatically returns a Hex color code.          |
+| Icon            | Allows you to select an icon for the component.                                               | Enable the icon visibility, select icon and icon color         |
+| Border radius   | Modifies the border radius of the component.                                                  | Enter a number or click on **fx** and enter a code that programmatically returns a numeric value.           |
+| Box shadow      | Sets the box shadow properties of the component.                                              | Select the box shadow color and adjust the related properties.                                            |
+
+## Container
+
+**Padding** <br/>
+Allows you to maintain a standard padding by enabling the `Default` option.
+
+
+
+
+
