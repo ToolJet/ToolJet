@@ -1,0 +1,16 @@
+{
+  "name": "Unix time format converter",
+  "description": "Convert between Unix timestamps and human-readable dates with various time unit options, simplifying time-based calculations.",
+  "widgets": [
+    "Table",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "unix-time-format-converter",
+  "category": "developer-utilities"
+}
