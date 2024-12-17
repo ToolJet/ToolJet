@@ -471,11 +471,12 @@ Cypress.Commands.add("appPrivacy", (appName, isPublic) => {
   });
 });
 
-Cypress.Commands.overwrite('intercept', (originalFn, method, endpoint, mockData) => {
-  const isSubpath = Cypress.config('baseUrl')?.includes('/apps/tooljet');
-  const cleanEndpoint = endpoint.replace('/apps/tooljet', '');
-  const fullUrl = isSubpath ? `/apps/tooljet${cleanEndpoint}` : cleanEndpoint;
+Cypress.Commands.overwrite('intercept', (originalFn, method, endpoint, ...rest) => {
+  const isSubpath = Cypress.config('baseUrl')?.includes('/apps');
+  const cleanEndpoint = endpoint.startsWith('/apps') ? endpoint.replace('/apps', '') : endpoint;
+  const fullUrl = isSubpath ? `/apps${cleanEndpoint}` : cleanEndpoint;
 
-  return originalFn(method, fullUrl, mockData);
+  return originalFn(method, fullUrl, ...rest);
 });
+
 

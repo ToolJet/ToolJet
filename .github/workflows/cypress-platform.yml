@@ -75,7 +75,6 @@ jobs:
         run: |
           npm run --prefix server db:create
           npm run --prefix server db:reset
-          npm run --prefix server db:seed
 
       - name: sleep 5
         run: sleep 5
@@ -114,7 +113,7 @@ jobs:
           dir: "./cypress-tests"
 
       - name: Platform
-        uses: cypress-io/github-action@v5
+        uses: cypress-io/github-action@v6
         with:
           working-directory: ./cypress-tests
           config: "baseUrl=http://localhost:8082"
@@ -232,9 +231,6 @@ jobs:
             sleep 5
           done'
 
-      - name: Seeding
-        run: docker exec Tooljet-app npm run db:seed:prod
-
       - name: Create Cypress environment file
         id: create-json
         uses: jsdaniell/create-json@1.1.2
@@ -244,11 +240,11 @@ jobs:
           dir: "./cypress-tests"
 
       - name: Platform-subpath
-        uses: cypress-io/github-action@v5
+        uses: cypress-io/github-action@v6
         with:
           working-directory: ./cypress-tests
-          config: "baseUrl=http://localhost:3000/apps/"
-          config-file: cypress-workspace.config.js
+          config: "baseUrl=http://localhost:3000/apps"
+          config-file: cypress-platform-subpath.js
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v3
