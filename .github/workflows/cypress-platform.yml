@@ -200,42 +200,45 @@ jobs:
           github.event.label.name == 'run-cypress-platform-proxy' ||
           github.event.label.name == 'run-cypress-platform-proxy-subpath'
         run: |
+          OPEN_BRACE='{'
+          CLOSE_BRACE='}'
+          NGINX_CONF="tooljet"
           sudo apt update
           sudo apt install -y nginx
           
           if [[ "${{ github.event.label.name }}" == "run-cypress-platform-proxy" ]]; then
-            sudo bash -c 'cat > /etc/nginx/sites-available/tooljet << "EOF"
-            server {
+            sudo bash -c 'cat > /etc/nginx/sites-available/$NGINX_CONF << "EOF"
+            server ${OPEN_BRACE}
                 listen 80;
                 server_name localhost;
                 
-                location / {
+                location / ${OPEN_BRACE}
                     proxy_pass http://localhost:3000;
                     proxy_set_header Host \$host;
                     proxy_set_header X-Real-IP \$remote_addr;
                     proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
                     proxy_set_header X-Forwarded-Proto \$scheme;
-                }
-            }
+                ${CLOSE_BRACE}
+            ${CLOSE_BRACE}
             EOF'
           else
-            sudo bash -c 'cat > /etc/nginx/sites-available/tooljet << "EOF"
-            server {
+            sudo bash -c 'cat > /etc/nginx/sites-available/$NGINX_CONF << "EOF"
+            server ${OPEN_BRACE}
                 listen 80;
                 server_name localhost;
                 
-                location /apps/ {
+                location /apps/ ${OPEN_BRACE}
                     proxy_pass http://localhost:3000/apps/;
                     proxy_set_header Host \$host;
                     proxy_set_header X-Real-IP \$remote_addr;
                     proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
                     proxy_set_header X-Forwarded-Proto \$scheme;
-                }
-            }
+                ${CLOSE_BRACE}
+            ${CLOSE_BRACE}
             EOF'
           fi
-
-          sudo ln -sf /etc/nginx/sites-available/tooljet /etc/nginx/sites-enabled/
+          
+          sudo ln -sf /etc/nginx/sites-available/$NGINX_CONF /etc/nginx/sites-enabled/
           sudo nginx -t
           sudo systemctl reload nginx
 
