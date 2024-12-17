@@ -1859,3 +1859,22 @@ $border-radius: 4px;
     color: #6A727C;
   }
 }
+
+.empty-paramlist-btn {
+  background: none;
+  border: none;
+  margin-left: auto;
+  margin-right: auto;
+
+  p {
+    display: flex; 
+    align-items: center;
+
+    span {
+      margin-left: 6px;
+      font-weight: 500;
+      font-size: 12px;
+      line-height: 18px;
+    }
+  }
+}

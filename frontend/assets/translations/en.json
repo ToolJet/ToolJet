@@ -211,7 +211,8 @@
                 "addNewEvent": "Add new event",
                 "addEventHandler": "+ Add event handler",
                 "emptyMessage": "This {{componentName}} doesn't have any event handlers",
-                "page": "Page"
+                "page": "Page",
+                "addKeyValueParam": "Add {{parameter}}"
             }
         }
     },

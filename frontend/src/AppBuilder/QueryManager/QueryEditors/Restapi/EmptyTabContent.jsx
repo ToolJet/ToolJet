@@ -23,22 +23,19 @@ const EmptyTabContent = ({ addNewKeyValuePair, paramType }) => {
       </div>
       <button
         onClick={() => addNewKeyValuePair(paramType)}
-        className="add-params-btn"
+        className="add-params-btn empty-paramlist-btn"
         id="runjs-param-add-btn"
         data-cy={`runjs-add-param-button`}
-        style={{
-          background: 'none',
-          border: 'none',
-          marginLeft: 'auto',
-          marginRight: 'auto',
-        }}
       >
-        <p className="m-0 text-default" style={{ display: 'flex', alignItems: 'center' }}>
+        <p className="m-0 text-default">
           <Plus fill={'var(--icons-default)'} width={15} />
-          <span style={{ marginLeft: '6px', fontWeight: '500', fontSize: '12px', lineHeight: '18px' }}>
+          <span>
             {t(
               'editor.inspector.eventManager.addKeyValueParam',
-              `Add ${paramType === 'body' ? paramLabel() : paramLabel()?.slice(0, -1)}`
+              `Add ${paramType === 'body' ? paramLabel() : paramLabel()?.slice(0, -1)}`,
+              {
+                parameter: paramType === 'body' ? paramLabel() : paramLabel()?.slice(0, -1),
+              }
             )}
           </span>
         </p>
