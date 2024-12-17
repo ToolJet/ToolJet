@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import cx from 'classnames';
 import { AppMenu } from './AppMenu';
