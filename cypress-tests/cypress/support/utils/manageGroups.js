@@ -4,6 +4,10 @@ import { commonSelectors } from "Selectors/common";
 import { navigateToManageGroups } from "Support/utils/common";
 import { cyParamName } from "Selectors/common";
 import { fake } from "Fixtures/fake";
+import { onboardingSelectors } from "Selectors/onboarding";
+import { fetchAndVisitInviteLink } from "Support/utils/onboarding";
+import { usersSelector } from "Selectors/manageUsers";
+import { fillUserInviteForm } from "Support/utils/manageUsers";
 const data = {};
 export const manageGroupsElements = () => {
   data.firstName = fake.firstName;
@@ -170,7 +174,7 @@ export const manageGroupsElements = () => {
   verifyElement(groupsSelector.appViewLabel, groupsText.appViewLabel);
   verifyElement(groupsSelector.appViewHelperText, groupsText.appViewHelperText);
   cy.get(groupsSelector.appHideCheckbox).should("be.visible").and('be.disabled');
-  verifyElement(groupsSelector.appHideLabel, groupsText.appHideLabel);
+  verifyElement(groupsSelector.appHideLabel, groupsText.appHideLabelPermissionModal);
   verifyElement(groupsSelector.appHideHelperText, groupsText.appHideHelperText);
 
   cy.get(groupsSelector.granularAccessPermission)
@@ -295,7 +299,7 @@ export const manageGroupsElements = () => {
   verifyElement(groupsSelector.appViewLabel, groupsText.appViewLabel);
   verifyElement(groupsSelector.appViewHelperText, groupsText.appViewHelperText);
   cy.get(groupsSelector.appHideCheckbox).should("be.visible").and('be.enabled');
-  verifyElement(groupsSelector.appHideLabel, groupsText.appHideLabel);
+  verifyElement(groupsSelector.appHideLabel, groupsText.appHideLabelPermissionModal);
   verifyElement(groupsSelector.appHideHelperText, groupsText.appHideHelperText);
 
   cy.get(groupsSelector.granularAccessPermission)
@@ -354,7 +358,6 @@ const toggleCheckbox = (selector, toastSelector, toastMessage) => {
 // Permission Modal Verification
 export const permissionModal = () => {
   verifyElement(groupsSelector.permissionNameLabel, groupsText.permissionNameLabel);
-  //verifyElement(groupsSelector.permissionNameInput, 'Apps');
   verifyElement(groupsSelector.permissionNameHelperText, groupsText.permissionNameHelperText);
 
   verifyElement(groupsSelector.permissionLabel, groupsText.permissionLabel);
@@ -366,7 +369,7 @@ export const permissionModal = () => {
 
   cy.get(groupsSelector.hidePermissionInput).should('be.visible');
   verifyElement(groupsSelector.resourceLabel, groupsText.resourcesheader);
-  cy.get('[data-cy="resources-container"]').should("be.visible");
+  cy.get(groupsSelector.resourceContainer).should("be.visible");
   cy.get(groupsSelector.allAppsRadio).should("be.visible").and("be.checked");
   verifyElement(groupsSelector.allAppsLabel, groupsText.allAppsLabel);
   verifyElement(groupsSelector.allAppsHelperText, groupsText.allAppsHelperText);
@@ -533,4 +536,118 @@ export const duplicateGroup = () => {
   OpenGroupCardOption(groupName);
   cy.get(groupsSelector.duplicateOption).click();
 
+};
+
+export const updateRoleUI = (user, role, email, message) => {
+
+  cy.get(groupsSelector.groupLink(user)).click();
+  cy.get(groupsSelector.usersLink).click();
+  cy.get(`[data-cy="${email}-user-row"] > :nth-child(3)`).click();
+  cy.get('[data-cy="modal-title"] > .tj-text-md').should(
+    "have.text",
+    "Edit user role"
+  );
+  cy.get('[data-cy="user-email"]').should("have.text", email);
+  cy.get(groupsSelector.userRoleLabel).should("have.text", groupsText.userRole);
+  cy.get(groupsSelector.warningText).should(
+    "have.text",
+    groupsText.warningText
+  );
+  cy.get(groupsSelector.cancelButton)
+    .should("have.text", groupsText.cancelButton)
+    .and("be.enabled");
+  cy.get(groupsSelector.confimButton).should("be.disabled");
+  cy.get(
+    ".css-nwhe5y-container > .react-select__control > .react-select__value-container"
+  )
+    .click()
+    .type(`${role}{enter}`);
+  cy.get(groupsSelector.confimButton)
+    .should("be.enabled")
+    .and("have.text", groupsText.continueButtonText)
+    .click();
+  cy.get('[data-cy="modal-body"]').should("have.text", message);
+  cy.get(groupsSelector.cancelButton).click();
+  cy.get(`[data-cy="${email}-user-row"] > :nth-child(3)`).click();
+  cy.get(
+    ".css-nwhe5y-container > .react-select__control > .react-select__value-container"
+  )
+    .click()
+    .type(`${role}{enter}`);
+  cy.get(groupsSelector.confimButton)
+    .should("be.enabled")
+    .and("have.text", groupsText.continueButtonText)
+    .click();
+  cy.get(groupsSelector.confimButton).click();
+  if (user != "Admin") {
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      groupsText.roleUpdateToastMessage
+    );
+  }
+  cy.get(groupsSelector.groupLink(role)).click();
+  cy.get(`[data-cy="${email}-user-row"]`).should("exist");
+};
+
+export const updateRole = (user, role, email, message = null) => {
+  cy.get(groupsSelector.groupLink(user)).click();
+  cy.get(groupsSelector.usersLink).click();
+  cy.get(`[data-cy="${email}-user-row"] > :nth-child(3)`).click();
+  cy.get(
+    ".css-nwhe5y-container > .react-select__control > .react-select__value-container"
+  )
+    .click()
+    .type(`${role}{enter}`);
+  cy.get(groupsSelector.confimButton).click();
+  if (message) {
+    cy.get('[data-cy="modal-body"]').should("have.text", message);
+  }
+  cy.get(groupsSelector.confimButton).click();
+  if (user != "Admin") {
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      groupsText.roleUpdateToastMessage
+    );
+  }
+  cy.get(groupsSelector.groupLink(role)).click();
+  cy.get(`[data-cy="${email}-user-row"]`).should("exist");
+
+};
+
+
+export const createGroupsAndAddUserInGroup = (groupName, email) => {
+  cy.get(groupsSelector.createNewGroupButton).click();
+  cy.clearAndType(groupsSelector.groupNameInput, groupName);
+  cy.get(groupsSelector.createGroupButton).click();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    groupsText.groupCreatedToast
+  );
+  cy.get(groupsSelector.groupLink(groupName)).click();
+  cy.clearAndType(groupsSelector.multiSelectSearchInput, email);
+  cy.wait(2000);
+  cy.get('.select-search__row .item-renderer [type="checkbox"]').eq(0).check();
+  cy.get(groupsSelector.addUserButton).should('be.enabled').click();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    groupsText.userAddedToast
+  )
+};
+export const inviteUserBasedOnRole = (firstName, email, role = "end-user") => {
+
+  fillUserInviteForm(firstName, email);
+
+  cy.get(".css-1dyz3mf").type(`${role}{enter}`);
+  cy.get(usersSelector.buttonInviteUsers).click();
+  cy.wait(2000);
+
+  fetchAndVisitInviteLink(email);
+  cy.wait(2000);
+
+  cy.get(onboardingSelectors.loginPasswordInput).should("be.visible");
+  cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
+  cy.get(commonSelectors.continueButton).click();
+  cy.wait(2000);
+  cy.get(commonSelectors.acceptInviteButton).click();
+  cy.wait(2000);
 };

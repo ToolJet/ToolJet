@@ -5,10 +5,7 @@ import * as common from "Support/utils/common";
 import * as workspaceConstants from "Support/utils/workspaceConstants";
 import { commonText } from "Texts/common";
 import { commonSelectors } from "Selectors/common";
-import { onboardingSelectors } from "Selectors/onboarding";
-import { fetchAndVisitInviteLink, roleBasedOnboarding } from "Support/utils/onboarding";
-import { usersSelector } from "Selectors/manageUsers";
-import { fillUserInviteForm } from "Support/utils/manageUsers";
+import * as groups from "Support/utils/manageGroups";
 const data = {};
 
 describe("Manage Groups", () => {
@@ -24,12 +21,16 @@ describe("Manage Groups", () => {
         data.workspaceSlug = fake.firstName
             .toLowerCase()
             .replaceAll("[^A-Za-z]", "");
+
         cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
         cy.visit(`${data.workspaceSlug}`);
         cy.wait(1000);
+
         common.navigateToManageUsers();
-        inviteUserBasedOnRole(data.firstName, data.email, "end-user");
+
+        groups.inviteUserBasedOnRole(data.firstName, data.email, "end-user");
         cy.wait(2000);
+
         cy.get(commonSelectors.dashboardAppCreateButton).should("be.disabled");
     });
 
@@ -44,61 +45,69 @@ describe("Manage Groups", () => {
         data.folderName = fake.companyName;
         data.builderGroup = fake.firstName.replaceAll("[^A-Za-z]", "");
         data.enduserGroup = fake.firstName.replaceAll("[^A-Za-z]", "");
+
         //invite builder and check privileges
         cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
         cy.visit(`${data.workspaceSlug}`);
         cy.wait(1000);
+
         common.navigateToManageUsers();
-        inviteUserBasedOnRole(data.firstName, data.email, "Builder");
+
+        groups.inviteUserBasedOnRole(data.firstName, data.email, "Builder");
+
         cy.get(commonSelectors.dashboardAppCreateButton).should("be.enabled");
         cy.createApp(data.appName);
         cy.verifyToastMessage(
             commonSelectors.toastMessage,
             commonText.appCreatedToast
         );
+
         cy.backToApps();
+
         cy.deleteApp(data.appName);
         cy.verifyToastMessage(
             commonSelectors.toastMessage,
             commonText.appDeletedToast
         );
+
         common.createFolder(data.folderName);
         common.deleteFolder(data.folderName);
+
         cy.get(commonSelectors.workspaceConstantsIcon).click();
         workspaceConstants.AddNewconstants(data.firstName, data.appName);
+
         cy.get(commonSelectors.settingsIcon).click();
         cy.get(commonSelectors.workspaceSettings).should("not.exist");
+
         cy.get(commonSelectors.homePageLogo).click();
         cy.createApp(data.appName);
+
         cy.backToApps();
-        //add user in builder level custom groups, user owned an app and update the user role to end-user
+
         cy.wait(1000);
         common.logout();
+
+        //add user in builder level custom groups, user owned an app and update the user role to end-user
         cy.apiLogin();
         cy.visit(`${data.workspaceSlug}`);
+
         common.navigateToManageGroups();
-        createGroupsAndAddUserInGroup(data.builderGroup, data.email);
+
+        groups.createGroupsAndAddUserInGroup(data.builderGroup, data.email);
+
         cy.get(groupsSelector.permissionsLink).click();
         cy.get(groupsSelector.appsCreateCheck).should('be.visible').check();
         cy.verifyToastMessage(commonSelectors.toastMessage, groupsText.permissionUpdatedToast);
+
         //end user group to verify user is not getting removed from it after role update
-        createGroupsAndAddUserInGroup(data.enduserGroup, data.email);
-        cy.get(groupsSelector.groupLink("Builder")).click();
-        cy.get(groupsSelector.usersLink).click();
-        cy.get(`[data-cy="${data.email}-user-row"] > :nth-child(3)`).click();
-        cy.get(
-            ".css-nwhe5y-container > .react-select__control > .react-select__value-container"
-        )
-            .click()
-            .type("End-user{enter}");
-        cy.get(groupsSelector.confimButton).click();
-        cy.get(groupsSelector.confimButton).click();
-        cy.get(groupsSelector.groupLink("End-user")).click();
-        cy.get(groupsSelector.usersLink).click();
-        cy.get(`[data-cy="${data.email}-user-row"]`).should("exist");
+        groups.createGroupsAndAddUserInGroup(data.enduserGroup, data.email);
+
+        groups.updateRole("Builder", "End-user", data.email);
+
         cy.get(groupsSelector.groupLink(data.builderGroup)).click();
         cy.get(groupsSelector.usersLink).click();
         cy.get(`[data-cy="${data.email}-user-row"]`).should("not.exist");
+
         cy.get(groupsSelector.groupLink(data.enduserGroup)).click();
         cy.get(groupsSelector.usersLink).click();
         cy.get(`[data-cy="${data.email}-user-row"]`).should("exist");
@@ -113,10 +122,14 @@ describe("Manage Groups", () => {
             .replaceAll("[^A-Za-z]", "");
         data.appName = fake.companyName;
         data.folderName = fake.companyName;
+
         cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
         cy.visit(`${data.workspaceSlug}`);
+
         common.navigateToManageUsers();
-        inviteUserBasedOnRole(data.firstName, data.email, "admin");
+
+        groups.inviteUserBasedOnRole(data.firstName, data.email, "admin");
+
         cy.get(commonSelectors.dashboardAppCreateButton).should("be.enabled");
         cy.createApp(data.appName);
         cy.verifyToastMessage(
@@ -124,15 +137,19 @@ describe("Manage Groups", () => {
             commonText.appCreatedToast
         );
         cy.backToApps();
+
         cy.deleteApp(data.appName);
         cy.verifyToastMessage(
             commonSelectors.toastMessage,
             commonText.appDeletedToast
         );
+
         common.createFolder(data.folderName);
         common.deleteFolder(data.folderName);
+
         cy.get(commonSelectors.workspaceConstantsIcon).click();
         workspaceConstants.AddNewconstants(data.firstName, data.appName);
+
         cy.get(commonSelectors.settingsIcon).click();
         cy.get(commonSelectors.workspaceSettings).should("exist");
     });
@@ -142,9 +159,12 @@ describe("Manage Groups", () => {
         data.workspaceSlug = fake.firstName
             .toLowerCase()
             .replaceAll("[^A-Za-z]", "");
+
         cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
         cy.visit(`${data.workspaceSlug}`);
+
         common.navigateToManageGroups();
+
         cy.get(groupsSelector.groupLink('Admin')).click();
         cy.get(`[data-cy="dev@tooljet.io-user-row"] > :nth-child(3)`).click();
         cy.get(
@@ -170,28 +190,45 @@ describe("Manage Groups", () => {
         data.workspaceSlug = fake.firstName
             .toLowerCase()
             .replaceAll("[^A-Za-z]", "");
+
         cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
         cy.visit(`${data.workspaceSlug}`);
+
         //onboard new user
         common.navigateToManageUsers();
-        inviteUserBasedOnRole(data.firstName, data.email, "end-user");
+
+        groups.inviteUserBasedOnRole(data.firstName, data.email, "end-user");
         common.logout();
+
         cy.apiLogin();
         cy.visit(`${data.workspaceSlug}`);
+
         common.navigateToManageGroups();
-        createGroupsAndAddUserInGroup(data.groupName, data.email);
+
+        groups.createGroupsAndAddUserInGroup(data.groupName, data.email);
+
         cy.get(groupsSelector.permissionsLink).click();
         cy.get(groupsSelector.appsCreateCheck).should('be.visible').check();
-        changeInRolePopup(data.email);
+
+        //change role popup UI
+        cy.get(commonSelectors.defaultModalTitle).contains(groupsText.changeUserRoleHeader);
+        cy.get(groupsSelector.changeRoleModalMessage).contains(groupsText.changeUserRoleMessage);
+        cy.get('.item-list').contains(data.email);
+        cy.get(groupsSelector.confimButton).should('have.text', groupsText.continueButtonText);
+        cy.get(commonSelectors.cancelButton).should('have.text', commonText.cancelButton).click();
+
         cy.get(groupsSelector.appsDeleteCheck).should('be.visible').check();
         cy.get('.modal-content').should('be.visible');
         cy.get(commonSelectors.cancelButton).click();
+
         cy.get(groupsSelector.foldersCreateCheck).should('be.visible').check();
         cy.get('.modal-content').should('be.visible');
         cy.get(commonSelectors.cancelButton).click();
+
         cy.get(groupsSelector.workspaceVarCheckbox).should('be.visible').check();
         cy.get('.modal-content').should('be.visible');
         cy.get(commonSelectors.cancelButton).click();
+
         //granular permission
         cy.get(groupsSelector.granularLink).click();
         cy.get(groupsSelector.addAppButton).click();
@@ -212,11 +249,13 @@ describe("Manage Groups", () => {
         cy.get(groupsSelector.groupLink("Builder")).click();
         cy.get(groupsSelector.usersLink).click();
         cy.get(`[data-cy="${data.email}-user-row"]`).should('be.visible');
+
         cy.get(groupsSelector.permissionsLink).click();
         cy.get(groupsSelector.appsCreateCheck).uncheck();
         cy.get(groupsSelector.appsDeleteCheck).uncheck();
         cy.get(groupsSelector.foldersCreateCheck).uncheck();
         cy.get(groupsSelector.workspaceVarCheckbox).uncheck();
+
         //delete permission
         cy.get(groupsSelector.granularLink).click();
         cy.wait(1000);
@@ -232,8 +271,9 @@ describe("Manage Groups", () => {
         cy.get(commonSelectors.homePageLogo).click();
         cy.apiCreateApp(data.appName1);
         cy.apiCreateApp(data.appName2);
-        cy.reload();
+
         common.navigateToManageGroups();
+
         cy.get(groupsSelector.groupLink(data.groupName)).click();
         cy.get(groupsSelector.granularLink).click();
         cy.get(groupsSelector.addAppButton).click();
@@ -254,40 +294,46 @@ describe("Manage Groups", () => {
         cy.get('.css-1gfides').click({ force: true });
         cy.get('.css-1gfides').type(`${data.appName2}{enter}`);
         cy.get(groupsSelector.confimButton).click({ force: true });
-
         cy.verifyToastMessage(
             commonSelectors.toastMessage,
             groupsText.createPermissionToast
         );
         cy.wait(1000);
         common.logout();
+
         cy.appUILogin(data.email);
         cy.get('.appcard-buttons-wrap [data-cy="edit-button"]').should('have.lengthOf', 1);
         cy.get('.appcard-buttons-wrap [data-cy="launch-button"]').should('have.lengthOf', 2);
     });
 
-    it("Invite end-user and update role UI", () => {
+    it("Invite end-user, update roles and verify all roles UI", () => {
         data.firstName = fake.firstName;
         data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
         data.workspaceName = fake.firstName;
         data.workspaceSlug = fake.firstName
             .toLowerCase()
             .replaceAll("[^A-Za-z]", "");
+
         cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
         cy.visit(`${data.workspaceSlug}`);
         cy.wait(1000);
+
         common.navigateToManageUsers();
-        inviteUserBasedOnRole(data.firstName, data.email)
+
+        groups.inviteUserBasedOnRole(data.firstName, data.email)
         common.logout();
+
         cy.apiLogin();
         cy.visit(`${data.workspaceSlug}`);
-        // cy.userInviteApi(data.firstName, data.email);
-        updateRole("End-user", "Builder", groupsText.endUserToBuilderMessage, data.email);
-        updateRole("Builder", "Admin", groupsText.builderToAdminMessage, data.email);
-        updateRole("Admin", "Builder", groupsText.adminToBuilderMessage, data.email);
-        updateRole("Builder", "End-user", groupsText.builderToEnduserMessage, data.email);
-        updateRole("End-user", "Admin", groupsText.endUserToAdminMessage, data.email);
-        updateRole("Admin", "End-user", groupsText.adminToEnduserMessage, data.email);
+
+        common.navigateToManageGroups();
+
+        groups.updateRoleUI("End-user", "Builder", data.email, groupsText.endUserToBuilderMessage);
+        groups.updateRole("Builder", "Admin", data.email, groupsText.builderToAdminMessage);
+        groups.updateRole("Admin", "Builder", data.email, groupsText.adminToBuilderMessage);
+        groups.updateRole("Builder", "End-user", data.email, groupsText.builderToEnduserMessage);
+        groups.updateRole("End-user", "Admin", data.email, groupsText.endUserToAdminMessage);
+        groups.updateRole("Admin", "End-user", data.email, groupsText.adminToEnduserMessage);
     });
     it("Update role and verify privileges functionality", () => {
         data.firstName = fake.firstName;
@@ -296,206 +342,85 @@ describe("Manage Groups", () => {
         data.workspaceSlug = fake.firstName
             .toLowerCase()
             .replaceAll("[^A-Za-z]", "");
+
         //invite admin check privileges
         cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
         cy.visit(`${data.workspaceSlug}`);
+
         //Admin to Builder
         common.navigateToManageUsers();
-        inviteUserBasedOnRole(data.firstName, data.email, "admin");
+
+        groups.inviteUserBasedOnRole(data.firstName, data.email, "admin");
         cy.wait(2000);
+
         cy.get(commonSelectors.settingsIcon).click();
         cy.get(commonSelectors.workspaceSettings).should("exist");
         cy.wait(1000);
         common.logout();
+
         cy.apiLogin();
         cy.visit(`${data.workspaceSlug}`);
+
         common.navigateToManageGroups();
-        cy.get(groupsSelector.groupLink("Admin")).click();
-        cy.get(groupsSelector.usersLink).click();
-        cy.get(`[data-cy="${data.email}-user-row"] > :nth-child(3)`).click();
-        cy.get(
-            ".css-nwhe5y-container > .react-select__control > .react-select__value-container"
-        )
-            .click()
-            .type("Builder{enter}");
-        cy.get(groupsSelector.confimButton).click();
-        cy.get(groupsSelector.confimButton).click();
-        cy.get(groupsSelector.groupLink("Builder")).click();
-        cy.get(groupsSelector.usersLink).click();
-        cy.get(`[data-cy="${data.email}-user-row"]`).should("exist");
+
+        groups.updateRole("Admin", "Builder", data.email);
         cy.wait(1000);
         common.logout();
+
         cy.appUILogin(data.email);
         cy.get(commonSelectors.dashboardAppCreateButton).should("be.enabled");
         cy.get(commonSelectors.settingsIcon).click();
         cy.get(commonSelectors.workspaceSettings).should("not.exist");
         cy.wait(1000);
         common.logout();
-        cy.log("admin to build");
+
         //Builder to Admin
         cy.apiLogin();
         cy.visit(`${data.workspaceSlug}`);
+
         common.navigateToManageGroups();
-        cy.get(groupsSelector.groupLink("Builder")).click();
-        cy.get(groupsSelector.usersLink).click();
-        cy.get(`[data-cy="${data.email}-user-row"] > :nth-child(3)`).click();
-        cy.get(
-            ".css-nwhe5y-container > .react-select__control > .react-select__value-container"
-        )
-            .click()
-            .type("Admin{enter}");
-        cy.get(groupsSelector.confimButton).click();
-        cy.get(groupsSelector.confimButton).click();
-        cy.get(groupsSelector.groupLink("Admin")).click();
-        cy.get(groupsSelector.usersLink).click();
-        cy.get(`[data-cy="${data.email}-user-row"]`).should("exist");
+
+        groups.updateRole("Builder", "Admin", data.email);
+
         cy.wait(1000);
         common.logout();
+
         cy.appUILogin(data.email);
         cy.get(commonSelectors.dashboardAppCreateButton).should("be.enabled");
         cy.get(commonSelectors.settingsIcon).click();
         cy.get(commonSelectors.workspaceSettings).should("exist");
         cy.wait(1000);
         common.logout();
-        cy.log("build to admin");
+
         //Admin to end-user
         cy.apiLogin();
         cy.visit(`${data.workspaceSlug}`);
+
         common.navigateToManageGroups();
-        cy.get(groupsSelector.groupLink("Admin")).click();
-        cy.get(groupsSelector.usersLink).click();
-        cy.get(`[data-cy="${data.email}-user-row"] > :nth-child(3)`).click();
-        cy.get(
-            ".css-nwhe5y-container > .react-select__control > .react-select__value-container"
-        )
-            .click()
-            .type("End-user{enter}");
-        cy.get(groupsSelector.confimButton).click();
-        cy.get(groupsSelector.confimButton).click();
-        cy.get(groupsSelector.groupLink("End-user")).click();
-        cy.get(groupsSelector.usersLink).click();
-        cy.get(`[data-cy="${data.email}-user-row"]`).should("exist");
+
+        groups.updateRole("Admin", "End-user", data.email);
         cy.wait(1000);
         common.logout();
+
         cy.appUILogin(data.email);
         cy.get(commonSelectors.dashboardAppCreateButton).should("be.disabled");
         cy.wait(1000);
         common.logout();
-        cy.log("admin to end");
+
         //End-user to Admin
         cy.apiLogin();
         cy.visit(`${data.workspaceSlug}`);
+
         common.navigateToManageGroups();
-        cy.get(groupsSelector.groupLink("End-user")).click();
-        cy.get(groupsSelector.usersLink).click();
-        cy.get(`[data-cy="${data.email}-user-row"] > :nth-child(3)`).click();
-        cy.get(
-            ".css-nwhe5y-container > .react-select__control > .react-select__value-container"
-        )
-            .click()
-            .type("Admin{enter}");
-        cy.get(groupsSelector.confimButton).click();
-        cy.get(groupsSelector.confimButton).click();
-        cy.get(groupsSelector.groupLink("Admin")).click();
-        cy.get(groupsSelector.usersLink).click();
-        cy.get(`[data-cy="${data.email}-user-row"]`).should("exist");
+
+        groups.updateRole("End-user", "Admin", data.email);
         cy.wait(1000);
         common.logout();
+
         cy.appUILogin(data.email);
         cy.get(commonSelectors.dashboardAppCreateButton).should("be.enabled");
         cy.get(commonSelectors.settingsIcon).click();
         cy.get(commonSelectors.workspaceSettings).should("exist");
-        cy.log("end to admin");
+
     });
 });
-const changeInRolePopup = (email) => {
-    cy.get('.modal-content').should('be.visible');
-    cy.get(commonSelectors.defaultModalTitle).contains(groupsText.changeUserRoleHeader);
-    cy.get(groupsSelector.changeRoleModalMessage).contains(groupsText.changeUserRoleMessage);
-    cy.get('.item-list').contains(email);
-    cy.get(groupsSelector.confimButton).should('have.text', groupsText.continueButtonText);
-    cy.get(commonSelectors.cancelButton).should('have.text', commonText.cancelButton).click();
-};
-export const updateRole = (user, role, message, email) => {
-    common.navigateToManageGroups();
-    cy.get(groupsSelector.groupLink(user)).click();
-    cy.get(groupsSelector.usersLink).click();
-    cy.get(`[data-cy="${email}-user-row"] > :nth-child(3)`).click();
-    cy.get('[data-cy="modal-title"] > .tj-text-md').should(
-        "have.text",
-        "Edit user role"
-    );
-    cy.get('[data-cy="user-email"]').should("have.text", email);
-    cy.get(groupsSelector.userRoleLabel).should("have.text", groupsText.userRole);
-    cy.get(groupsSelector.warningText).should(
-        "have.text",
-        groupsText.warningText
-    );
-    cy.get(groupsSelector.cancelButton)
-        .should("have.text", groupsText.cancelButton)
-        .and("be.enabled");
-    cy.get(groupsSelector.confimButton).should("be.disabled");
-    cy.get(
-        ".css-nwhe5y-container > .react-select__control > .react-select__value-container"
-    )
-        .click()
-        .type(`${role}{enter}`);
-    cy.get(groupsSelector.confimButton)
-        .should("be.enabled")
-        .and("have.text", groupsText.continueButtonText)
-        .click();
-    cy.get('[data-cy="modal-body"]').should("have.text", message);
-    cy.get(groupsSelector.cancelButton).click();
-    cy.get(`[data-cy="${email}-user-row"] > :nth-child(3)`).click();
-    cy.get(
-        ".css-nwhe5y-container > .react-select__control > .react-select__value-container"
-    )
-        .click()
-        .type(`${role}{enter}`);
-    cy.get(groupsSelector.confimButton)
-        .should("be.enabled")
-        .and("have.text", groupsText.continueButtonText)
-        .click();
-    cy.get(groupsSelector.confimButton).click();
-    if (user != "Admin") {
-        cy.verifyToastMessage(
-            commonSelectors.toastMessage,
-            groupsText.roleUpdateToastMessage
-        );
-    }
-    cy.get(groupsSelector.groupLink(role)).click();
-    cy.get(`[data-cy="${email}-user-row"]`).should("exist");
-};
-export const createGroupsAndAddUserInGroup = (groupName, email) => {
-    cy.get(groupsSelector.createNewGroupButton).click();
-    cy.clearAndType(groupsSelector.groupNameInput, groupName);
-    cy.get(groupsSelector.createGroupButton).click();
-    cy.verifyToastMessage(
-        commonSelectors.toastMessage,
-        groupsText.groupCreatedToast
-    );
-    cy.get(groupsSelector.groupLink(groupName)).click();
-    cy.clearAndType(groupsSelector.multiSelectSearchInput, email);
-    cy.wait(2000);
-    cy.get('.select-search__row .item-renderer [type="checkbox"]').eq(0).check();
-    cy.get(groupsSelector.addUserButton).should('be.enabled').click();
-    cy.verifyToastMessage(
-        commonSelectors.toastMessage,
-        groupsText.userAddedToast
-    )
-};
-export const inviteUserBasedOnRole = (firstName, email, role = "end-user") => {
-    fillUserInviteForm(firstName, email);
-    cy.get(".css-1dyz3mf").type(`${role}{enter}`);
-    cy.get(usersSelector.buttonInviteUsers).click();
-    cy.wait(2000);
-    fetchAndVisitInviteLink(email);
-    cy.wait(2000);
-    cy.get(onboardingSelectors.loginPasswordInput).should("be.visible");
-    cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
-    cy.get(commonSelectors.continueButton).click();
-    cy.wait(2000);
-    cy.get(commonSelectors.acceptInviteButton).click();
-    cy.wait(2000);
-};
-

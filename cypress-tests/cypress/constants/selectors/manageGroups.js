@@ -64,6 +64,8 @@ export const groupsSelector = {
   appHideCheckbox: '[data-cy="app-hide-from-dashboard-radio"]',
   appHideHelperText: '[data-cy="app-hide-from-dashboard-helper-text"]',
   appHideLabel: '[data-cy="app-hide-from-dashboard-label"]',
+  appHidePermissionModalLabel: '[data-cy="hide-from-dashboard-permission-label"]',
+  appHidePermissionModalHelperText: '[data-cy="hide-from-dashboard-permission-info-text"]',
   addAppButton: '[data-cy="add-apps-buton"]',
   addEditPermissionModal: '[data-cy = "add-edit-permission-modal"]',
   addEditPermissionModalTitle: '[data-cy="modal-title"]',
@@ -77,6 +79,7 @@ export const groupsSelector = {
   viewPermissionHelperText: '[data-cy="view-permission-info-text"]',
   hidePermissionInput: '[data-cy="hide-from-dashboard-permission-input"]',
   editPermissionRadio: '[data-cy="edit-permission-radio"]',
+  viewPermissionRadio: '[data-cy="view-permission-radio"]',
   deletePermissionIcon: '[data-cy="delete-button"]',
   deleteMessage: '[data-cy="modal-message"]',
   yesButton: '[data-cy="yes-button"]',
@@ -102,6 +105,7 @@ export const groupsSelector = {
   editGranularPermissionIcon: '[data-cy="edit-permission-button"]',
   granularAccessPermission: '[data-cy="granular-access-permission"]',
   groupChip: '[data-cy="group-chip"]',
+  resourceContainer: '[data-cy="resources-container"]',
   groupLink: (groupname) => {
     return `[data-cy="${cyParamName(groupname)}-list-item"]`;
   },
@@ -145,6 +149,7 @@ export const groupsSelector = {
   userEmptyPageHelperText: '[data-cy="user-empty-page-info-text"]',
   granularEmptyPageIcon: '[data-cy="empty-page-svg"]',
   emptyPagePermissionHelperText: '[data-cy="empty-page-info-text"]',
+  groupNameUpdateLink: '[data-cy="group-name-update-link"]',
 
 
 
