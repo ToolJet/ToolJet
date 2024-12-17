@@ -1,4 +1,4 @@
-name: Cypress Platform Tests
+name: Cypress Platform
 
 on:
   pull_request_target:
@@ -10,7 +10,7 @@ env:
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
 jobs:
-  setup-workflow:
+  Cypress-Platform-Tests:
     runs-on: ubuntu-22.04
     if: |
       github.event.action == 'labeled' && 
@@ -19,23 +19,6 @@ jobs:
        github.event.label.name == 'run-cypress-platform-subpath' ||
        github.event.label.name == 'run-cypress-platform-proxy' ||
        github.event.label.name == 'run-cypress-platform-proxy-subpath')
-    outputs:
-      test_type: ${{ steps.set-type.outputs.test_type }}
-    steps:
-      - id: set-type
-        run: |
-          if [[ "${{ github.event.label.name }}" == "run-cypress-platform" || "${{ github.event.label.name }}" == "run-cypress" ]]; then
-            echo "test_type=local" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.event.label.name }}" == "run-cypress-platform-subpath" ]]; then
-            echo "test_type=subpath" >> $GITHUB_OUTPUT
-          else
-            echo "test_type=proxy" >> $GITHUB_OUTPUT
-          fi
-
-  local-dev-test:
-    needs: setup-workflow
-    if: needs.setup-workflow.outputs.test_type == 'local'
-    runs-on: ubuntu-22.04
 
     steps:
       - name: Setup Node.js
@@ -45,13 +28,43 @@ jobs:
 
       - name: Set up Docker
         uses: docker-practice/actions-setup-docker@master
+        if: |
+          github.event.label.name == 'run-cypress-platform' || 
+          github.event.label.name == 'run-cypress'
 
       - name: Checkout
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
+      - name: Set up Docker configuration
+        if: |
+          github.event.label.name == 'run-cypress-platform-subpath' || 
+          github.event.label.name == 'run-cypress-platform-proxy' || 
+          github.event.label.name == 'run-cypress-platform-proxy-subpath'
+        run: |
+          mkdir -p ~/.docker/cli-plugins
+          curl -SL https://github.com/docker/buildx/releases/download/v0.11.0/buildx-v0.11.0.linux-amd64 -o ~/.docker/cli-plugins/docker-buildx
+          chmod a+x ~/.docker/cli-plugins/docker-buildx
+          docker buildx create --name mybuilder --platform linux/arm64,linux/amd64,linux/amd64/v2,linux/riscv64,linux/ppc64le,linux/s390x,linux/386,linux/mips64le,linux/mips64,linux/arm/v7,linux/arm/v6
+          docker buildx use mybuilder
+          echo "DOCKER_CLI_EXPERIMENTAL=enabled" >> $GITHUB_ENV
+          echo "SAFE_BRANCH_NAME=$(echo ${{ env.BRANCH_NAME }} | tr '/' '-')" >> $GITHUB_ENV
+
+      - name: Docker Login
+        if: |
+          github.event.label.name == 'run-cypress-platform-subpath' || 
+          github.event.label.name == 'run-cypress-platform-proxy' || 
+          github.event.label.name == 'run-cypress-platform-proxy-subpath'
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
       - name: Install and build dependencies
+        if: |
+          github.event.label.name == 'run-cypress-platform' || 
+          github.event.label.name == 'run-cypress'
         run: |
           npm cache clean --force
           npm install
@@ -60,142 +73,132 @@ jobs:
           npm run build:plugins
 
       - name: Local development setup
+        if: |
+          github.event.label.name == 'run-cypress-platform' || 
+          github.event.label.name == 'run-cypress'
         run: |
           sudo docker network create tooljet
-          sudo docker run -d --name postgres -p 5432:5432 \
-            -e POSTGRES_PASSWORD=postgres \
-            -e POSTGRES_USER=postgres \
-            -e POSTGRES_PORT=5432 \
-            -d postgres:13
+          sudo docker run -d --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_PORT=5432 -d postgres:13
 
-      - name: Configure environment
-        run: |
-          cat > .env << EOF
-          TOOLJET_HOST=http://localhost:8082
-          PG_HOST=localhost
-          TOOLJET_DB_HOST=localhost
-          PGRST_HOST=localhost:3001
-          PG_DB=tooljet_development
-          PG_USER=postgres
-          PG_PASS=postgres
-          PG_PORT=5432
-          LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2
-          SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426
-          ENABLE_TOOLJET_DB=true
-          TOOLJET_DB=tooljet_db
-          TOOLJET_DB_USER=postgres
-          TOOLJET_DB_PASS=postgres
-          PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj
-          ENABLE_MARKETPLACE_FEATURE=true
-          ENABLE_MARKETPLACE_DEV_MODE=true
-          SSO_GIT_OAUTH2_CLIENT_ID=dummy
-          SSO_GIT_OAUTH2_CLIENT_SECRET=dummy
-          SSO_GIT_OAUTH2_HOST=dummy
-          SSO_GOOGLE_OAUTH2_CLIENT_ID=dummy
-          ENABLE_PRIVATE_APP_EMBED=true
-          TOOLJET_DB_STATEMENT_TIMEOUT=60000
-          TOOLJET_DB_RECONFIG=true
-          EOF
-
-      - name: Setup database and services
-        run: |
-          npm run --prefix server db:create
-          npm run --prefix server db:reset
-
-          sudo docker run -d --name postgrest --network tooljet -p 3001:3000 \
-            -e PGRST_DB_URI="postgres://postgres:postgres@postgres:5432/tooljet" \
-            -e PGRST_DB_ANON_ROLE="postgres" \
-            -e PGRST_JWT_SECRET="r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" \
-            -e PGRST_DB_PRE_CONFIG=postgrest.pre_config \
-            postgrest/postgrest:v12.2.0
-
-          cd plugins && npm start &
-          cd ../server && npm run start:dev &
-          cd ../frontend && npm start &
-
-      - name: Wait for server
-        run: timeout 300 bash -c 'until curl --silent --fail http://localhost:8082; do sleep 5; done'
-
-      - name: Setup Cypress
-        uses: cypress-io/github-action@v6
-        with:
-          working-directory: ./cypress-tests
-          config: baseUrl=http://localhost:8082
-          config-file: cypress-platform.config.js
-
-  docker-deployment:
-    needs: setup-workflow
-    if: needs.setup-workflow.outputs.test_type == 'subpath' || needs.setup-workflow.outputs.test_type == 'proxy'
-    runs-on: ubuntu-22.04
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-
-      - name: Docker Login
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Build and push Docker image
+      - name: Build and Push Docker image
+        if: |
+          github.event.label.name == 'run-cypress-platform-subpath' || 
+          github.event.label.name == 'run-cypress-platform-proxy' || 
+          github.event.label.name == 'run-cypress-platform-proxy-subpath'
         uses: docker/build-push-action@v4
         with:
           context: .
           file: docker/production.Dockerfile
           push: true
-          tags: tooljet/tj-osv:${{ env.BRANCH_NAME }}
+          tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}
           platforms: linux/amd64
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Configure environment
+      - name: Set up environment variables
         run: |
-          cat > .env << EOF
-          TOOLJET_HOST=http://localhost:3000
-          PG_HOST=postgres
-          TOOLJET_DB_HOST=postgres
-          PGRST_HOST=postgrest
-          NODE_ENV=production
-          SERVE_CLIENT=true
-          PG_DB=tooljet_development
-          PG_USER=postgres
-          PG_PASS=postgres
-          PG_PORT=5432
-          LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2
-          SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426
-          ENABLE_TOOLJET_DB=true
-          TOOLJET_DB=tooljet_db
-          TOOLJET_DB_USER=postgres
-          TOOLJET_DB_PASS=postgres
-          PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj
-          ENABLE_MARKETPLACE_FEATURE=true
-          ENABLE_MARKETPLACE_DEV_MODE=true
-          SSO_GIT_OAUTH2_CLIENT_ID=dummy
-          SSO_GIT_OAUTH2_CLIENT_SECRET=dummy
-          SSO_GIT_OAUTH2_HOST=dummy
-          SSO_GOOGLE_OAUTH2_CLIENT_ID=dummy
-          ENABLE_PRIVATE_APP_EMBED=true
-          TOOLJET_DB_STATEMENT_TIMEOUT=60000
-          TOOLJET_DB_RECONFIG=true
-          EOF
+          if [[ "${{ github.event.label.name }}" == "run-cypress-platform" || "${{ github.event.label.name }}" == "run-cypress" ]]; then
+            echo "TOOLJET_HOST=http://localhost:8082" >> .env
+            echo "PG_HOST=localhost" >> .env
+            echo "TOOLJET_DB_HOST=localhost" >> .env
+            echo "PGRST_HOST=localhost:3001" >> .env
+          else
+            echo "TOOLJET_HOST=http://localhost:3000" >> .env
+            echo "PG_HOST=postgres" >> .env
+            echo "TOOLJET_DB_HOST=postgres" >> .env
+            echo "PGRST_HOST=postgrest" >> .env
+            echo "NODE_ENV=production" >> .env
+            echo "SERVE_CLIENT=true" >> .env
+          fi
 
-          if [[ "${{ needs.setup-workflow.outputs.test_type }}" == "subpath" || "${{ github.event.label.name }}" == *"subpath"* ]]; then
+          if [[ "${{ github.event.label.name }}" == *"subpath"* ]]; then
             echo "SUB_PATH=/apps/" >> .env
           fi
 
-      - name: Deploy with Docker Compose
+          echo "LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2" >> .env
+          echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env
+          echo "PG_DB=tooljet_development" >> .env
+          echo "PG_USER=postgres" >> .env
+          echo "PG_PASS=postgres" >> .env
+          echo "PG_PORT=5432" >> .env
+          echo "ENABLE_TOOLJET_DB=true" >> .env
+          echo "TOOLJET_DB=tooljet_db" >> .env
+          echo "TOOLJET_DB_USER=postgres" >> .env
+          echo "TOOLJET_DB_PASS=postgres" >> .env
+          echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
+          echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
+          echo "ENABLE_MARKETPLACE_DEV_MODE=true" >> .env
+          echo "ENABLE_ONBOARDING_QUESTIONS_FOR_ALL_SIGN_UPS=false" >> .env
+          echo "SSO_GIT_OAUTH2_CLIENT_ID=dummy" >> .env
+          echo "SSO_GIT_OAUTH2_CLIENT_SECRET=dummy" >> .env
+          echo "SSO_GIT_OAUTH2_HOST=dummy" >> .env
+          echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=dummy" >> .env
+          echo "ENABLE_PRIVATE_APP_EMBED=true" >> .env
+          echo "TOOLJET_DB_STATEMENT_TIMEOUT=60000" >> .env
+          echo "TOOLJET_DB_RECONFIG=true" >> .env
+
+      - name: Set up database
+        if: |
+          github.event.label.name == 'run-cypress-platform' || 
+          github.event.label.name == 'run-cypress'
+        run: |
+          npm run --prefix server db:create
+          npm run --prefix server db:reset
+
+      - name: Sleep for database setup
+        if: |
+          github.event.label.name == 'run-cypress-platform' || 
+          github.event.label.name == 'run-cypress'
+        run: sleep 5
+
+      - name: Run PostgREST Docker Container
+        if: |
+          github.event.label.name == 'run-cypress-platform' || 
+          github.event.label.name == 'run-cypress'
+        run: |
+          sudo docker run -d --name postgrest --network tooljet -p 3001:3000 \
+          -e PGRST_DB_URI="postgres://postgres:postgres@postgres:5432/tooljet" \
+          -e PGRST_DB_ANON_ROLE="postgres" \
+          -e PGRST_JWT_SECRET="r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" \
+          -e PGRST_DB_PRE_CONFIG=postgrest.pre_config \
+          postgrest/postgrest:v12.2.0
+
+      - name: Run plugins compilation in watch mode
+        if: |
+          github.event.label.name == 'run-cypress-platform' || 
+          github.event.label.name == 'run-cypress'
+        run: cd plugins && npm start &
+
+      - name: Run the server
+        if: |
+          github.event.label.name == 'run-cypress-platform' || 
+          github.event.label.name == 'run-cypress'
+        run: cd server && npm run start:dev &
+
+      - name: Run the client
+        if: |
+          github.event.label.name == 'run-cypress-platform' || 
+          github.event.label.name == 'run-cypress'
+        run: cd frontend && npm start &
+
+      - name: Setup Docker deployment
+        if: |
+          github.event.label.name == 'run-cypress-platform-subpath' || 
+          github.event.label.name == 'run-cypress-platform-proxy' || 
+          github.event.label.name == 'run-cypress-platform-proxy-subpath'
         run: |
           curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml
           mkdir postgres_data
-          sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.BRANCH_NAME }}|' docker-compose.yaml
+          sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}|' docker-compose.yaml
+          curl -L "https://github.com/docker/compose/releases/download/v2.10.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          chmod +x /usr/local/bin/docker-compose
           docker-compose up -d
 
-      - name: Setup Nginx for proxy
-        if: needs.setup-workflow.outputs.test_type == 'proxy'
+      - name: Setup Nginx
+        if: |
+          github.event.label.name == 'run-cypress-platform-proxy' ||
+          github.event.label.name == 'run-cypress-platform-proxy-subpath'
         run: |
           sudo apt update
           sudo apt install -y nginx
@@ -232,31 +235,40 @@ jobs:
 
       - name: Wait for server
         run: |
-          if [[ "${{ needs.setup-workflow.outputs.test_type }}" == "proxy" ]]; then
-            if [[ "${{ github.event.label.name }}" == *"subpath"* ]]; then
-              timeout 300 bash -c 'until curl --silent --fail http://localhost:80/apps/; do sleep 5; done'
-            else
-              timeout 300 bash -c 'until curl --silent --fail http://localhost:80/; do sleep 5; done'
-            fi
-          else
+          if [[ "${{ github.event.label.name }}" == "run-cypress-platform" || "${{ github.event.label.name }}" == "run-cypress" ]]; then
+            timeout 300 bash -c 'until curl --silent --fail http://localhost:8082; do sleep 5; done'
+          elif [[ "${{ github.event.label.name }}" == *"proxy"* && "${{ github.event.label.name }}" == *"subpath"* ]]; then
+            timeout 300 bash -c 'until curl --silent --fail http://localhost:80/apps/; do sleep 5; done'
+          elif [[ "${{ github.event.label.name }}" == *"proxy"* ]]; then
+            timeout 300 bash -c 'until curl --silent --fail http://localhost:80/; do sleep 5; done'
+          elif [[ "${{ github.event.label.name }}" == *"subpath"* ]]; then
             timeout 300 bash -c 'until curl --silent --fail http://localhost:3000/apps/; do sleep 5; done'
           fi
 
-      - name: Setup Cypress
+      - name: Create Cypress environment file
+        id: create-json
+        uses: jsdaniell/create-json@1.1.2
+        with:
+          name: "cypress.env.json"
+          json: ${{ github.event.label.name == 'run-cypress-platform' && secrets.CYPRESS_SECRETS || github.event.label.name == 'run-cypress' && secrets.CYPRESS_SECRETS || github.event.label.name == 'run-cypress-platform-subpath' && secrets.CYPRESS_SECRETS_SUBPATH || github.event.label.name == 'run-cypress-platform-proxy' && secrets.CYPRESS_SECRETS_PROXY || github.event.label.name == 'run-cypress-platform-proxy-subpath' && secrets.CYPRESS_SECRETS_SUBPATH }}
+          dir: "./cypress-tests"
+
+      - name: Run Cypress Tests
         uses: cypress-io/github-action@v6
         with:
           working-directory: ./cypress-tests
-          config: baseUrl=${{ needs.setup-workflow.outputs.test_type == 'proxy' && github.event.label.name == 'run-cypress-platform-proxy-subpath' && 'http://localhost:80/apps' || needs.setup-workflow.outputs.test_type == 'proxy' && 'http://localhost:80' || 'http://localhost:3000/apps' }}
+          config: "baseUrl=${{ 
+            github.event.label.name == 'run-cypress-platform' && 'http://localhost:8082' ||
+            github.event.label.name == 'run-cypress' && 'http://localhost:8082' ||
+            github.event.label.name == 'run-cypress-platform-subpath' && 'http://localhost:3000/apps' ||
+            github.event.label.name == 'run-cypress-platform-proxy' && 'http://localhost:80' ||
+            github.event.label.name == 'run-cypress-platform-proxy-subpath' && 'http://localhost:80/apps'
+          }}"
           config-file: cypress-platform.config.js
 
-  post-test:
-    needs: [setup-workflow, local-dev-test, docker-deployment]
-    if: always()
-    runs-on: ubuntu-22.04
-
-    steps:
       - name: Capture Screenshots
         uses: actions/upload-artifact@v3
+        if: always()
         with:
           name: screenshots
           path: cypress-tests/cypress/screenshots
