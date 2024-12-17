@@ -164,19 +164,6 @@ jobs:
           -e PGRST_DB_PRE_CONFIG=postgrest.pre_config \
           postgrest/postgrest:v12.2.0
 
-      - name: Setup Docker deployment
-        if: |
-          github.event.label.name == 'run-cypress-platform-subpath' || 
-          github.event.label.name == 'run-cypress-platform-proxy' || 
-          github.event.label.name == 'run-cypress-platform-proxy-subpath'
-        run: |
-          curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml
-          mkdir postgres_data
-          sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}|' docker-compose.yaml
-          curl -L "https://github.com/docker/compose/releases/download/v2.10.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-          chmod +x /usr/local/bin/docker-compose
-          docker-compose up -d
-
       - name: Run plugins compilation in watch mode
         if: |
           github.event.label.name == 'run-cypress-platform' || 
@@ -194,6 +181,19 @@ jobs:
           github.event.label.name == 'run-cypress-platform' || 
           github.event.label.name == 'run-cypress'
         run: cd frontend && npm start &
+
+      - name: Setup Docker deployment
+        if: |
+          github.event.label.name == 'run-cypress-platform-subpath' || 
+          github.event.label.name == 'run-cypress-platform-proxy' || 
+          github.event.label.name == 'run-cypress-platform-proxy-subpath'
+        run: |
+          curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml
+          mkdir postgres_data
+          sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}|' docker-compose.yaml
+          curl -L "https://github.com/docker/compose/releases/download/v2.10.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          chmod +x /usr/local/bin/docker-compose
+          docker-compose up -d
 
       - name: Setup Nginx
         if: |
@@ -234,7 +234,7 @@ jobs:
             }
             EOF'
           fi
-          
+
           sudo ln -sf /etc/nginx/sites-available/tooljet /etc/nginx/sites-enabled/
           sudo nginx -t
           sudo systemctl reload nginx
