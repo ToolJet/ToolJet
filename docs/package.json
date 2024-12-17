@@ -1,3 +1,4 @@
+
 {
   "name": "docs",
   "version": "0.0.0",
@@ -14,11 +15,11 @@
     "write-heading-ids": "docusaurus write-heading-ids"
   },
   "dependencies": {
-    "@docusaurus/core": "^3.6.1",
-    "@docusaurus/plugin-client-redirects": "^3.6.1",
-    "@docusaurus/plugin-google-gtag": "^3.6.1",
-    "@docusaurus/plugin-sitemap": "^3.6.1",
-    "@docusaurus/preset-classic": "^3.6.1",
+    "@docusaurus/core": "^3.6.3",
+    "@docusaurus/plugin-client-redirects": "^3.6.3",
+    "@docusaurus/plugin-google-gtag": "^3.6.3",
+    "@docusaurus/plugin-sitemap": "^3.6.3",
+    "@docusaurus/preset-classic": "^3.6.3",
     "@mdx-js/react": "^3.0.1",
     "autoprefixer": "^10.4.20",
     "clsx": "^2.0.0",
@@ -31,8 +32,8 @@
     "tailwindcss": "^3.4.12"
   },
   "devDependencies": {
-    "@docusaurus/module-type-aliases": "^3.6.1",
-    "@docusaurus/types": "^3.6.1"
+    "@docusaurus/module-type-aliases": "^3.6.3",
+    "@docusaurus/types": "^3.6.3"
   },
   "overrides": {
     "got": "^12.1.0",
