@@ -49,7 +49,8 @@ export function renderCustomStyles(
     componentConfig.component == 'DropdownV2' ||
     componentConfig.component == 'MultiselectV2' ||
     componentConfig.component == 'RadioButtonV2' ||
-    componentConfig.component == 'Button'
+    componentConfig.component == 'Button' ||
+    componentConfig.component == 'Image'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
@@ -133,7 +134,8 @@ export function renderElement(
   if (
     componentConfig.component == 'DropDown' ||
     componentConfig.component == 'Form' ||
-    componentConfig.component == 'Listview'
+    componentConfig.component == 'Listview' ||
+    componentConfig.component == 'Image'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
