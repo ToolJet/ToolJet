@@ -11,6 +11,7 @@ import { getMaxCopyNumber } from 'src/helpers/utils.helper';
 import * as fs from 'fs';
 import * as path from 'path';
 import { TooljetDbBulkUploadService } from '@services/tooljet_db_bulk_upload.service';
+import { PluginsService } from './plugins.service';
 
 @Injectable()
 export class LibraryAppCreationService {
@@ -19,7 +20,8 @@ export class LibraryAppCreationService {
     private readonly appImportExportService: AppImportExportService,
     private readonly appsService: AppsService,
     private readonly logger: Logger,
-    private readonly tooljetDbBulkUploadService: TooljetDbBulkUploadService
+    private readonly tooljetDbBulkUploadService: TooljetDbBulkUploadService,
+    private readonly pluginsService: PluginsService
   ) {}
 
   async perform(currentUser: User, identifier: string, appName: string) {
@@ -49,6 +51,15 @@ export class LibraryAppCreationService {
     importDto.app = templateDefinition.app || templateDefinition.appV2;
     importDto.tooljet_database = templateDefinition.tooljet_database;
     importDto.tooljet_version = templateDefinition.tooljet_version;
+
+    const dataSourcesUsedInApps = [];
+    importDto.app.forEach((appDefinition) => {
+      appDefinition.definition.appV2.dataSources.forEach((dataSource) => {
+        dataSourcesUsedInApps.push(dataSource);
+      });
+    });
+    const pluginsToBeInstalled = await this.pluginsService.checkIfPluginsToBeInstalled(dataSourcesUsedInApps);
+    await this.pluginsService.autoInstallPluginsForTemplates(pluginsToBeInstalled, false);
 
     if (isVersionGreaterThanOrEqual(templateDefinition.tooljet_version, '2.16.0')) {
       importDto.app[0].appName = appName;
