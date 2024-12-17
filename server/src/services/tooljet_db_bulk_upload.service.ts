@@ -229,10 +229,6 @@ export class TooljetDbBulkUploadService {
 
   convertToDataType(columnValue: string, supportedDataType: TooljetDatabaseDataTypes) {
     if (!columnValue) return null;
-    console.log({
-      columnValue,
-      supportedDataType,
-    });
 
     switch (supportedDataType) {
       case TJDB.boolean:
