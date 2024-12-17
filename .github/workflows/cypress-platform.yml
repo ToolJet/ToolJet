@@ -201,13 +201,13 @@ jobs:
       - name: Wait for server
         run: |
           if [[ "${{ github.event.label.name }}" == "run-cypress-platform" || "${{ github.event.label.name }}" == "run-cypress" ]]; then
-            timeout 1500 bash -c 'until curl --silent --fail http://localhost:8082; do sleep 5; done'
+            timeout 300 bash -c 'until curl --silent --fail http://localhost:8082; do sleep 5; done'
           elif [[ "${{ github.event.label.name }}" == *"proxy"* && "${{ github.event.label.name }}" == *"subpath"* ]]; then
-            timeout 1500 bash -c 'until curl --silent --fail http://localhost:80/apps/; do sleep 5; done'
+            timeout 300 bash -c 'until curl --silent --fail http://localhost:80/apps/; do sleep 5; done'
           elif [[ "${{ github.event.label.name }}" == *"proxy"* ]]; then
-            timeout 1500 bash -c 'until curl --silent --fail http://localhost:80/; do sleep 5; done'
+            timeout 300 bash -c 'until curl --silent --fail http://localhost:80/; do sleep 5; done'
           elif [[ "${{ github.event.label.name }}" == *"subpath"* ]]; then
-            timeout 1500 bash -c 'until curl --silent --fail http://localhost:3000/apps/; do sleep 5; done'
+            timeout 300 bash -c 'until curl --silent --fail http://localhost:3000/apps/; do sleep 5; done'
           fi
 
       - name: Create Cypress environment file
