@@ -43,6 +43,10 @@ export const Image = function Image({
   const [rotation, setRotation] = useState(0);
   const [zoomReset, setZoomReset] = useState(false);
   const [isError, setIsError] = useState(false);
+  const [isZoomEnabled, setIsZoomEnabled] = useState(false);
+  const [zoomMode, setZoomMode] = useState('in');
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     if (visibility !== properties.visibility) setVisibility(properties.visibility);
@@ -214,16 +218,61 @@ export const Image = function Image({
     );
   };
 
+  const handlePointerDown = (e) => {
+    console.log({ x: e.clientX, y: e.clientY });
+    setDragStart({ x: e.clientX, y: e.clientY });
+    setIsDragging(false);
+  };
+
+  const handlePointerMove = (e) => {
+    // If the mouse has moved more than a threshold, it's considered a drag
+    if (Math.abs(e.clientX - dragStart.x) > 5 || Math.abs(e.clientY - dragStart.y) > 5) {
+      setIsDragging(true);
+    }
+  };
+
+  const handleZoomMode = ({ state }) => {
+    console.log(state);
+    if (state.scale === 8) setZoomMode('out');
+    if (state.scale === 1) setZoomMode('in');
+  };
+
+  const handleClick = (e, zoomOut, rest) => {
+    if (!isDragging) {
+      if (!isZoomEnabled) return;
+      if (zoomMode === 'out') {
+        zoomOut();
+      }
+      if (zoomMode === 'in') {
+        const targetElement = document.querySelector('.react-transform-component');
+        const dblClickEvent = new MouseEvent('dblclick', e);
+        targetElement.dispatchEvent(dblClickEvent);
+      }
+    }
+    if (isDragging) setIsDragging(false);
+    handleZoomMode(rest);
+  };
+
   const renderImageContainer = () => {
     return (
       <>
         {(isLoading || isError) && FallbackState()}
         {!isLoading && !isError && zoomButtons && (
-          <TransformWrapper centerOnInit={true}>
-            {({ zoomIn, zoomOut, resetTransform }) => (
+          <TransformWrapper centerOnInit={true} doubleClick={{ disabled: zoomMode === 'in' ? false : true }}>
+            {({ zoomIn, zoomOut, resetTransform, ...rest }) => (
               <>
                 {zoomReset && resetZoom(resetTransform)}
-                <TransformComponent>{renderImage()}</TransformComponent>
+                <div
+                  className="transform-component-wrapper"
+                  style={{ cursor: isZoomEnabled ? (zoomMode === 'in' ? 'zoom-in' : 'zoom-out') : 'default' }}
+                  onPointerDown={handlePointerDown}
+                  onPointerMove={handlePointerMove}
+                  onMouseEnter={() => setIsZoomEnabled(true)}
+                  onMouseLeave={() => setIsZoomEnabled(false)}
+                  onClick={(e) => handleClick(e, zoomOut, rest)}
+                >
+                  <TransformComponent>{renderImage()}</TransformComponent>
+                </div>
                 {zoomButtons && ImageControls(zoomIn, zoomOut)}
               </>
             )}
