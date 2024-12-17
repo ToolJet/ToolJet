@@ -100,6 +100,10 @@ export const Select = ({ value, onChange, meta, width = '144px' }) => {
   });
   return (
     <div
+      onMouseEnter={() => {
+        document.getElementById('crash-hack-select')?.focus();
+        document.getElementById('crash-hack-select-container')?.focus();
+      }}
       className="row fx-container"
       data-cy={`dropdown-${
         meta?.displayName ? String(meta?.displayName).toLowerCase().replace(/\s+/g, '-') : 'common'
