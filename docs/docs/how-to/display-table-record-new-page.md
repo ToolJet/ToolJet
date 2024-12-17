@@ -29,8 +29,8 @@ Now click on your **Table** component and in the properties section under Events
 Enter the following parameters:
 - Event: **Row Clicked**
 - Action: **Set variable**
-- Key: **student_id** *(Enter your desired variable name)*
-- Value: `{{components.table1.selectedRow.id}}`
+- Key: **emp_name** *(Enter your desired variable name)*
+- Value: `{{components.table1.selectedRow.name}}`
 
 This event will save the student id value in the specified variable, which can be accessed on another page. Similarly, you can save all the required values in different separate variables to access on another page.
 
@@ -40,7 +40,7 @@ Again click on **+ New event handler** and enter the following parameters:
 
 - Event: **Row Clicked**
 - Action: **Switch page**
-- Page: **Student Report Card** *(Select your desired page from the dropdown)*
+- Page: **Employee Details** *(Select your desired page from the dropdown)*
 
 This event will switch the page whenever a record is clicked.
 
