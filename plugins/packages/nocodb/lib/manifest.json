@@ -1,0 +1,64 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Nocodb datasource",
+  "description": "A schema defining Nocodb datasource",
+  "type": "api",
+  "source": {
+    "name": "Nocodb",
+    "kind": "nocodb",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "api_token": {
+        "encrypted": true
+      } 
+    },
+    "customTesting": true
+  },
+  "defaults": {
+    "api_token": {
+      "value": ""
+   }
+  },
+  "properties": {
+    "host": {
+      "label": "Host",
+      "key": "nocodb_host",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for choosing certificates",
+      "list": [
+        {
+          "value": "nocodb_cloud",
+          "label": "Nocodb Cloud"
+        },
+        {
+          "value": "self_hosted",
+          "label": "Self Hosted"
+        }
+      ],
+      "commonFields": {
+        "api_token": {
+          "label": "API token",
+          "key": "api_token",
+          "type": "password",
+          "description": "API token for nocodb"
+        }
+      }
+    },
+    "self_hosted": {
+      "base_url": {
+        "label": "Base URL",
+        "key": "base_url",
+        "type": "text",
+        "description": "Base URL for self hosted nocodb"
+      }
+    }
+  },
+  "required": [
+    "api_token"
+  ]
+}
