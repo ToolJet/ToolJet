@@ -209,7 +209,7 @@ jobs:
           else
             sudo cp cypress-tests/subpath.nginx /etc/nginx/sites-available/nginx-config
           fi
-          sudo ln -sf "/etc/nginx/sites-available/${NGINX_PATH}" "/etc/nginx/sites-enabled/tooljet"
+          sudo ln -sf /etc/nginx/sites-available/nginx-config /etc/nginx/sites-enabled/nginx-config
           sudo nginx -t
           sudo systemctl start nginx
           sudo systemctl reload nginx
