@@ -80,4 +80,9 @@ export class PluginsController {
   async reload(@Param('id') id: string) {
     return this.pluginsService.reload(id);
   }
+
+  @Post('/findDepedentPlugins')
+  async findDependentPluginsToBeInstalledFromDataSources(@Body() dataSources) {
+    return this.pluginsService.checkIfPluginsToBeInstalled(dataSources);
+  }
 }
