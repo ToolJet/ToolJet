@@ -8,7 +8,7 @@ ToolJet uses SMTP (Simple Mail Transfer Protocol) to send emails for various pur
 ## Prerequisites
 
 Before you begin, ensure you have:
-- Admin access to ToolJet
+- Super Admin access to ToolJet
 - SMTP server details from your email service provider
 
 :::info
