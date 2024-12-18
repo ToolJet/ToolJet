@@ -16,7 +16,7 @@ export const contantsNameValidation = (value, error) => {
 
 export const AddNewconstants = (name, value, type = "global") => {
     cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
-    cy.clearAndType(commonSelectors.nameInputField, name);
+    cy.clearAndType(workspaceConstantsSelectors.nameInputFiled, name);
     cy.get(commonSelectors.valueInputField).click();
     cy.clearAndType(commonSelectors.valueInputField, value);
     cy.get(workspaceConstantsSelectors.constantsType(type)).check();
