@@ -1,5 +1,5 @@
 {
-  "name": "AI powered reimbursement tracker with ocr",
+  "name": "AI powered reimbursement tracker with OCR",
   "description": "Streamline expense management with Gemini AI and REST API. Automate receipt scanning, data extraction, and approval workflows.",
   "widgets": [
     "Table",
