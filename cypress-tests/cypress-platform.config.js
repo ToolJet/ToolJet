@@ -16,11 +16,11 @@ const environments = {
         configFile: "cypress-platform.config.js"
     },
     'run-cypress-platform-proxy': {
-        baseUrl: "http://localhost:80",
+        baseUrl: "http://localhost:4001",
         configFile: "cypress-platform.config.js"
     },
     'run-cypress-platform-proxy-subpath': {
-        baseUrl: "http://localhost:80/apps",
+        baseUrl: "http://localhost:4001/apps",
         configFile: "cypress-platform.config.js"
     }
 };
@@ -39,12 +39,12 @@ module.exports = defineConfig({
     chromeWebSecurity: false,
     trashAssetsBeforeRuns: true,
     e2e: {
-        setupNodeEvents(on, config) {
+        setupNodeEvents (on, config) {
             // Set baseUrl based on environment
             config.baseUrl = environment.baseUrl;
 
             on("task", {
-                readPdf(pathToPdf) {
+                readPdf (pathToPdf) {
                     return new Promise((resolve) => {
                         const pdfPath = path.resolve(pathToPdf);
                         let dataBuffer = fs.readFileSync(pdfPath);
@@ -56,7 +56,7 @@ module.exports = defineConfig({
             });
 
             on("task", {
-                readXlsx(filePath) {
+                readXlsx (filePath) {
                     return new Promise((resolve, reject) => {
                         try {
                             let dataBuffer = fs.readFileSync(filePath);
@@ -70,7 +70,7 @@ module.exports = defineConfig({
             });
 
             on("task", {
-                deleteFolder(folderName) {
+                deleteFolder (folderName) {
                     return new Promise((resolve, reject) => {
                         rmdir(folderName, { maxRetries: 10, recursive: true }, (err) => {
                             if (err) {
@@ -84,7 +84,7 @@ module.exports = defineConfig({
             });
 
             on("task", {
-                updateId({ dbconfig, sql }) {
+                updateId ({ dbconfig, sql }) {
                     const client = new pg.Pool(dbconfig);
                     return client.query(sql);
                 },
