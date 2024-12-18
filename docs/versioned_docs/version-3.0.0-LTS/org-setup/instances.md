@@ -22,7 +22,7 @@ ToolJet allows you to create multiple environments like development, staging, an
 
 ## When to Use Multiple Instances? 
 
-If a single ToolJet instance with [multiple environments](/docs/release-management/multi-environment/#using-environments) does not meet your needs, deploying multiple instances can provide greater flexibility and control. Each instance operates independently and can serve to specific security, compliance, or performance requirements.
+Deploying multiple ToolJet instances offers enhanced flexibility and control, allowing you to address specific security, compliance, or performance requirements. Each instance operates independently and can serve to specific security, compliance, or performance requirements.
 
 Multiple instances are often used to align with different stages of application development or organizational needs. For example, developers might use separate instances for development and staging, while production is isolated for end-users.
 
