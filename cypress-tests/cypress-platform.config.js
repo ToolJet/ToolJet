@@ -17,11 +17,11 @@ const environments = {
         configFile: "cypress-platform.config.js"
     },
     'run-cypress-platform-proxy': {
-        baseUrl: "http://localhost:80",
+        baseUrl: "http://localhost:4001",
         configFile: "cypress-platform.config.js"
     },
     'run-cypress-platform-proxy-subpath': {
-        baseUrl: "http://localhost:80/apps",
+        baseUrl: "http://localhost:4001/apps",
         configFile: "cypress-platform.config.js"
     }
 };
