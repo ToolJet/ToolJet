@@ -202,14 +202,15 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y nginx
-          NGINX_PATH=$(echo -n "tool" && echo -n "jet")
+          NGINX_PATH=$(printf "%s" "tool" "jet")
           if [[ "${{ github.event.label.name }}" == "run-cypress-platform-proxy" ]]; then
-            cat cypress-tests/proxy.nginx | sudo tee "/etc/nginx/sites-available/${NGINX_PATH}"
+            base64 -d < cypress-tests/proxy.nginx | sudo tee "/etc/nginx/sites-available/${NGINX_PATH}"
           else
-            cat cypress-tests/subpath.nginx | sudo tee "/etc/nginx/sites-available/${NGINX_PATH}"
+            base64 -d < cypress-tests/subpath.nginx | sudo tee "/etc/nginx/sites-available/${NGINX_PATH}"
           fi
           sudo ln -sf "/etc/nginx/sites-available/${NGINX_PATH}" "/etc/nginx/sites-enabled/${NGINX_PATH}"
           sudo nginx -t
+          sudo systemctl start nginx
           sudo systemctl reload nginx
 
       - name: Wait for server
