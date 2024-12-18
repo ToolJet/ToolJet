@@ -31,7 +31,7 @@ Follow the steps below to deploy ToolJet on a Kubernetes cluster.
 3. Create a Kubernetes deployment
 
    ```bash
-   kubectl apply -f https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/deployment.yaml
+   kubectl apply -f https://tooljet-deployments.s3.us-west-1.amazonaws.com/pre-release/kubernetes/deployment.yaml
    ```
 
 :::info
@@ -48,7 +48,7 @@ If there are self signed HTTPS endpoints that ToolJet needs to connect to, pleas
     kubectl get pods
    ```
 
-5. Create a Kubernetes services to publish the Kubernetes deployment that you've created. This step varies with cloud providers. We have a [template](https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/service.yaml) for exposing the ToolJet server as a service using an AWS loadbalancer.
+5. Create a Kubernetes services to publish the Kubernetes deployment that you've created. This step varies with cloud providers. We have a [template](https://tooljet-deployments.s3.us-west-1.amazonaws.com/pre-release/kubernetes/service.yaml) for exposing the ToolJet server as a service using an AWS loadbalancer.
 
    **Examples:**
 
@@ -66,7 +66,7 @@ ToolJet Workflows allows users to design and execute complex, data-centric autom
 Create workflow deployment: 
 
 ```bash
-kubectl apply -f https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/workflow-deployment.yaml
+kubectl apply -f https://tooljet-deployments.s3.us-west-1.amazonaws.com/pre-release/kubernetes/workflow-deployment.yaml
 ```
 **Note:** Ensure that the worker deployment uses the same image as the ToolJet application deployment to maintain compatibility. Additionally, the variables below need to be a part of tooljet-deployment. 
 

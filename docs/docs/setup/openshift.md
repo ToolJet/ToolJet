@@ -36,13 +36,13 @@ When entering one or more files and use --- to separate each definition
 Copy paste deployment.yaml to the online editor 
 
 ```
-curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/openshift/deployment.yaml
+curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/pre-release/openshift/deployment.yaml
 ```
 
 Copy paste the service.yaml to the online editor
 
 ```
-curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/openshift/service.yaml
+curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/pre-release/openshift/service.yaml
 ```
 
 <div style={{textAlign: 'center'}}>
@@ -66,16 +66,6 @@ If there are self signed HTTPS endpoints that Tooljet needs to connect to, pleas
  
 </div>
 
-## ToolJet Database
-
-You can know more about tooljet database [here](/docs/tooljet-db/tooljet-database)
-
-To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. Please [follow the instructions here](/docs/setup/env-vars/#enable-tooljet-database-required).
-
-```
-https://tooljet-deployments.s3.us-west-1.amazonaws.com/openshift/postgrest.yaml
-```
-
 ## Workflows
 
 ToolJet Workflows allows users to design and execute complex, data-centric automations using a visual, node-based interface. This feature enhances ToolJet's functionality beyond building secure internal tools, enabling developers to automate complex business processes.  
@@ -83,7 +73,7 @@ ToolJet Workflows allows users to design and execute complex, data-centric autom
 Create workflow deployment: 
 
 ```bash
-kubectl apply -f https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/workflow-deployment.yaml
+kubectl apply -f https://tooljet-deployments.s3.us-west-1.amazonaws.com/pre-release/kubernetes/workflow-deployment.yaml
 ```
 **Note:** Ensure that the worker deployment uses the same image as the ToolJet application deployment to maintain compatibility. Additionally, the variables below need to be a part of tooljet-deployment. 
 

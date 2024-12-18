@@ -116,7 +116,7 @@ Please deploy the below containers to enable workflows scheduling.
 
 #### Worker container:
 
-You can use the same `tooljet/tooljet:ee-lts-latest` image tag and ensure it has env variables from the tooljet-app container. 
+You can use the same `tooljet/tooljet:ee-latest` image tag and ensure it has env variables from the tooljet-app container. 
 
 To activate workflow scheduling, set the following environment variables:
 

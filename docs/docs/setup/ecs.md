@@ -63,7 +63,7 @@ Follow the steps below to deploy ToolJet on a ECS cluster.
         <img className="screenshot-full" src="/img/setup/ecs/ecs-4.png" alt="ECS Setup" />
     4. Add container details that is shown: <br/>
        Specify your container name ex: `ToolJet` <br/>
-       Set the image you intend to deploy. ex: `tooljet/tooljet:ee-lts-latest` <br/>
+       Set the image you intend to deploy. ex: `tooljet/tooljet:ee-latest` <br/>
        Update port mappings at container port `3000` for tcp protocol. 
         <img className="screenshot-full" src="/img/setup/ecs/ecs-5.png" alt="ECS Setup" />
 
@@ -193,7 +193,7 @@ ToolJet Workflows allows users to design and execute complex, data-centric autom
 Deploy the following containers under the same ToolJet app task definition family to enable workflow scheduling:
 
 **Worker Container:**
-Use the `tooljet/tooljet:ee-lts-latest`` image tag, and ensure it inherits environment variables from the ToolJet app container.
+Use the `tooljet/tooljet:ee-latest`` image tag, and ensure it inherits environment variables from the ToolJet app container.
 
 To activate workflow scheduling, set these environment variables:
 
