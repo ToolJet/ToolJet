@@ -354,7 +354,80 @@ describe(
       cy.get('[data-cy="modal-description"]').should('have.text', "You don’t have access to this app. Kindly contact admin to know more.");
 
     });
-    it("Should verify private app acees for existing workspace user", () => {
+    it.only("Should verify private app acees for existing workspace user", () => {
+      data.firstName = fake.firstName;
+      data.email = fake.email.toLowerCase();
+      data.password = fake.password.toLowerCase();
+      data.appName = `${fake.companyName} App`;
+      data.slug = data.appName.toLowerCase().replace(/\s+/g, "-");
+      data.workspaceName = data.firstName;
+      data.workspaceSlug = data.firstName.toLowerCase()
+      .replaceAll("[^A-Za-z]", "");
+      let invitationToken = "";
+      let organizationToken = "";
+      let workspaceId = "";
+      let userId = "";
+      let url = "";
+      cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
+      cy.visit(`${data.workspaceSlug}`);
+      cy.wait(2000);
+     
+      setSignupStatus(true);
+      cy.pause();
+      cy.apiCreateApp(data.appName);
+      cy.openApp();
+      cy.addComponentToApp(data.appName, "text1");
+
+      releaseApp();
+
+      cy.wait(1000);
+      cy.get(commonWidgetSelector.shareAppButton).click();
+      cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${data.slug}`);
+      cy.wait(2000);
+      cy.get(commonWidgetSelector.modalCloseButton).click();
+      cy.backToApps();
+      cy.pause();
+      cy.logoutApi();
+      cy.visitSlug({ actualUrl: `/applications/${data.slug}` });
+      cy.get(commonSelectors.createAnAccountLink).click();
+      cy.wait(4000);
+      cy.clearAndType(commonSelectors.inputFieldFullName, "test@tooljet.com");
+      cy.clearAndType(commonSelectors.inputFieldEmailAddress, "test@tooljet.com");
+      cy.clearAndType(onboardingSelectors.loginPasswordInput, "test@tooljet.com");
+      cy.get(commonSelectors.signUpButton).click();
+      verifyConfirmEmailPage(data.email);
+
+      cy.apiLogin();
+      cy.task("updateId", {
+        dbconfig: Cypress.env("app_db"),
+        sql: `select invitation_token from users where email='${data.email}';`,
+      }).then((resp) => {
+        invitationToken = resp.rows[0].invitation_token;
+        cy.task("updateId", {
+          dbconfig: Cypress.env("app_db"),
+          sql: "select id from organizations where name='My workspace';",
+        }).then((resp) => {
+          workspaceId = resp.rows[0].id;
+          cy.task("updateId", {
+            dbconfig: Cypress.env("app_db"),
+            sql: `select id from users where email='${data.email}';`,
+          }).then((resp) => {
+            userId = resp.rows[0].id;
+            cy.task("updateId", {
+              dbconfig: Cypress.env("app_db"),
+              sql: `select invitation_token from organization_users where user_id='${userId}';`,
+            }).then((resp) => {
+              organizationToken = resp.rows[1].invitation_token;
+              url = `http://localhost:8082/invitations/${invitationToken}/workspaces/${organizationToken}?oid=${workspaceId}&redirectTo=%2Fapplications%2F${data.slug}`;
+              cy.logoutApi();
+              cy.wait(1000);
+              cy.visit(url);
+              cy.get(".text-widget-section > div").should("be.visible");
+            });
+          });
+        });
+      });
     });
-});
+    });
+
       
