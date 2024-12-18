@@ -208,6 +208,7 @@ export const inviteUser = (firstName, email) => {
   cy.get(commonSelectors.acceptInviteButton).click();
 };
 
+
 export const addNewUser = (firstName, email) => {
   navigateToManageUsers();
   inviteUser(firstName, email);

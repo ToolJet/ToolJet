@@ -27,6 +27,7 @@ export const commonText = {
   folderCreatedToast: "Folder created.",
   createFolder: "Create folder",
   AddedToFolderToast: "Added to folder.",
+  appCreatedToast: "App created successfully!",
   appRemovedFromFolderMessage:
     "The app will be removed from this folder, do you want to continue?",
   appRemovedFromFolderTaost: "Removed from folder.",
