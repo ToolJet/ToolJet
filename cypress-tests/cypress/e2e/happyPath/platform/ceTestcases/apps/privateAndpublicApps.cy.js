@@ -371,7 +371,7 @@ describe(
       cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
       cy.visit(`${data.workspaceSlug}`);
       cy.wait(2000);
-     
+      
       setSignupStatus(true);
       cy.pause();
       cy.apiCreateApp(data.appName);
