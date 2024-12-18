@@ -202,7 +202,8 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y nginx
-          NGINX_PATH=$(printf "%s" "tool" "jet")
+          sudo systemctl stop apache2 || true
+          sudo apt remove apache2 -y || true
           if [[ "${{ github.event.label.name }}" == "run-cypress-platform-proxy" ]]; then
             sudo cp cypress-tests/proxy.nginx | sudo tee "/etc/nginx/sites-available/tooljet"
           else
@@ -212,15 +213,16 @@ jobs:
           sudo nginx -t
           sudo systemctl start nginx
           sudo systemctl reload nginx
+          sudo netstat -tulpn | grep 4001
 
       - name: Wait for server
         run: |
           if [[ "${{ github.event.label.name }}" == "run-cypress-platform" || "${{ github.event.label.name }}" == "run-cypress" ]]; then
             timeout 300 bash -c 'until curl --silent --fail http://localhost:8082; do sleep 5; done'
           elif [[ "${{ github.event.label.name }}" == *"proxy"* && "${{ github.event.label.name }}" == *"subpath"* ]]; then
-            timeout 300 bash -c 'until curl --silent --fail http://localhost:80/apps/; do sleep 5; done'
+            timeout 300 bash -c 'until curl --silent --fail http://localhost:4001/apps/; do sleep 5; done'
           elif [[ "${{ github.event.label.name }}" == *"proxy"* ]]; then
-            timeout 300 bash -c 'until curl --silent --fail http://localhost:80/; do sleep 5; done'
+            timeout 300 bash -c 'until curl --silent --fail http://localhost:4001/; do sleep 5; done'
           elif [[ "${{ github.event.label.name }}" == *"subpath"* ]]; then
             timeout 300 bash -c 'until curl --silent --fail http://localhost:3000/apps/; do sleep 5; done'
           fi
@@ -241,8 +243,8 @@ jobs:
             github.event.label.name == 'run-cypress-platform' && 'http://localhost:8082' ||
             github.event.label.name == 'run-cypress' && 'http://localhost:8082' ||
             github.event.label.name == 'run-cypress-platform-subpath' && 'http://localhost:3000/apps' ||
-            github.event.label.name == 'run-cypress-platform-proxy' && 'http://localhost:80' ||
-            github.event.label.name == 'run-cypress-platform-proxy-subpath' && 'http://localhost:80/apps'
+            github.event.label.name == 'run-cypress-platform-proxy' && 'http://localhost:4001' ||
+            github.event.label.name == 'run-cypress-platform-proxy-subpath' && 'http://localhost:4001/apps'
           }}"
           config-file: cypress-platform.config.js
 
