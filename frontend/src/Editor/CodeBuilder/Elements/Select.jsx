@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import SelectComponent from '@/_ui/Select';
 import { components } from 'react-select';
 import Check from '@/_ui/Icon/solidIcons/Check';
@@ -28,6 +28,28 @@ export const Option = (props) => {
         </div>
       </DeprecatedColumnTooltip>
     </components.Option>
+  );
+};
+
+const CustomMenuList = (props) => {
+  return (
+    <div>
+      <input
+        style={{
+          height: 0,
+          width: 0,
+          outline: 'none',
+          border: 'none',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          backgroundColor: 'transparent',
+        }}
+        id="crash-hack-select"
+        type="text"
+      />
+      <components.MenuList {...props} />
+    </div>
   );
 };
 
@@ -72,14 +94,36 @@ const selectCustomStyles = (width) => {
 };
 
 export const Select = ({ value, onChange, meta, width = '144px' }) => {
+  useEffect(() => {
+    document.getElementById('crash-hack-select')?.focus();
+    document.getElementById('crash-hack-select-container')?.focus();
+  });
   return (
     <div
+      onMouseEnter={() => {
+        document.getElementById('crash-hack-select')?.focus();
+        document.getElementById('crash-hack-select-container')?.focus();
+      }}
       className="row fx-container"
       data-cy={`dropdown-${
         meta?.displayName ? String(meta?.displayName).toLowerCase().replace(/\s+/g, '-') : 'common'
       }`}
     >
       <div className="field" onClick={(e) => e.stopPropagation()}>
+        <input
+          style={{
+            height: 0,
+            width: 0,
+            outline: 'none',
+            border: 'none',
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            backgroundColor: 'transparent',
+          }}
+          id="crash-hack-select-container"
+          type="text"
+        />
         <SelectComponent
           options={meta.options}
           value={value}
@@ -93,6 +137,7 @@ export const Select = ({ value, onChange, meta, width = '144px' }) => {
           components={{
             IndicatorSeparator: () => null,
             Option,
+            MenuList: CustomMenuList, // Add custom MenuList
           }}
         />
       </div>
