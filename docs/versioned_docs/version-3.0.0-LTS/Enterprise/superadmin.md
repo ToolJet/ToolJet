@@ -257,9 +257,13 @@ Check out the [White labelling](/docs/enterprise/white-label/) page for more det
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-## Instance Login
+## Instance Login and Logout
 
-Instance login configuration at the Settings level allows super admins to set up and manage the default login method for all workspaces within the instance. This ensures a standardized login experience unless individual workspace admins choose to configure a different method for their specific workspace.
+Instance login and logout configuration at the Settings level allows super admins to set up and manage the default login and logout behavior for all workspaces within the instance. This ensures a standardized login experience unless individual workspace admins choose to configure a different method for their specific workspace.
+
+<div style={{textAlign: 'center'}}>
+ <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/instance-login-logout.png" alt="Superadmin: settings" />
+</div>
 
 </div>
 
@@ -303,8 +307,17 @@ Super admins can enable or disable password login for the entire instance. This 
 
 Turning off this option restricts workspace admins from configuring the login method for their workspace. This configuration hides the Workspace Login option from the workspace settings tab.
 
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Custom Logout URL
+
+Super admins can now set a Custom Logout URL. This URL redirects users to a specific page when they log out of the ToolJet instance. If the provided URL is invalid, users are redirected to the default logout page instead.
+
+
 <div style={{textAlign: 'center'}}>
- <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/instancelogin.png" alt="Superadmin: settings" />
+ <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/superadmin/instance-logout.png" alt="Superadmin: settings" />
 </div>
 
 </div>
