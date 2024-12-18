@@ -3,8 +3,6 @@ id: smtp-configuration
 title: SMTP Configuration
 ---
 
-<div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
-
 ToolJet uses SMTP (Simple Mail Transfer Protocol) to send emails for various purposes, including invitations and password reset requests. This guide will walk you through the process of configuring SMTP settings in ToolJet.
 
 ## Prerequisites
