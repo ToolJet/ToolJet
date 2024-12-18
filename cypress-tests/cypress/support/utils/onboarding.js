@@ -208,10 +208,24 @@ export const inviteUser = (firstName, email) => {
   cy.get(commonSelectors.acceptInviteButton).click();
 };
 
+
 export const addNewUser = (firstName, email) => {
   navigateToManageUsers();
   inviteUser(firstName, email);
   // updateWorkspaceName(email);
+};
+
+export const roleBasedOnboarding = (firstName, email, userRole) => {
+  navigateToManageUsers();
+  cy.userInviteApi(firstName, email,userRole);
+  fetchAndVisitInviteLink(email);
+  cy.wait(1000);
+  cy.get(onboardingSelectors.loginPasswordInput).should("be.visible");
+  cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
+  // cy.intercept("GET", "/api/organizations").as("org");
+  cy.get(commonSelectors.continueButton).click();
+  cy.wait(2000);
+  cy.get(commonSelectors.acceptInviteButton).click();
 };
 
 export const updateWorkspaceName = (email, workspaceName = email) => {

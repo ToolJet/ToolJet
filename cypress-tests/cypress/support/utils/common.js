@@ -31,7 +31,6 @@ export const navigateToManageGroups = () => {
   cy.get(commonSelectors.settingsIcon).click();
   cy.get(commonSelectors.workspaceSettings).click();
   cy.get(commonSelectors.manageGroupsOption).click();
-  // navigateToAllUserGroup();
 };
 
 export const navigateToAllUserGroup = () => {
