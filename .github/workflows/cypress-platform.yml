@@ -205,9 +205,9 @@ jobs:
           sudo systemctl stop apache2 || true
           sudo apt remove apache2 -y || true
           if [[ "${{ github.event.label.name }}" == "run-cypress-platform-proxy" ]]; then
-            sudo cp cypress-tests/proxy.nginx | sudo tee "/etc/nginx/sites-available/tooljet"
+            sudo cp cypress-tests/proxy.nginx /etc/nginx/sites-available/nginx-config
           else
-            sudo cp cypress-tests/subpath.nginx | sudo tee "/etc/nginx/sites-available/tooljet"
+            sudo cp cypress-tests/subpath.nginx /etc/nginx/sites-available/nginx-config
           fi
           sudo ln -sf "/etc/nginx/sites-available/${NGINX_PATH}" "/etc/nginx/sites-enabled/tooljet"
           sudo nginx -t
