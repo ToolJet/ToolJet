@@ -119,7 +119,7 @@ export const UpdateRows = React.memo(({ darkMode }) => {
         <label className="form-label flex-shrink-0" data-cy="label-column-filter">
           Columns
         </label>
-        <div className={`field-container flex-grow-1  d-flex custom-gap-6 flex-column`}>
+        <div className={`field-container flex-grow-1`}>
           {isEmpty(updateRowsOptions?.columns) && <NoCondition text="There are no columns" />}
           {!isEmpty(updateRowsOptions?.columns) &&
             Object.entries(updateRowsOptions?.columns).map(([key, value]) => {

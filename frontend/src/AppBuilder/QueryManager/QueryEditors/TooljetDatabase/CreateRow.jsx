@@ -51,7 +51,7 @@ export const CreateRow = React.memo(({ optionchanged, options, darkMode }) => {
           Columns
         </label>
 
-        <div className={`field-container flex-grow-1  d-flex custom-gap-6 flex-column`}>
+        <div className={`field-container flex-grow-1`}>
           {isEmpty(columnOptions) && <NoCondition text="There are no columns" />}
           {!isEmpty(columnOptions) &&
             Object.entries(columnOptions).map(([key, value]) => (
