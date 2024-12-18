@@ -43,24 +43,22 @@ The ReactJS code for a custom component can be added in the **Code** field. Tool
 
 ```js
 import React from 'https://cdn.skypack.dev/react';
-import ReactDOM from 'https://cdn.skypack.dev/react-dom';
-import { Button, Container } from 'https://cdn.skypack.dev/@material-ui/core';
-  
-const MyCustomComponent = ({data, updateData, runQuery}) => (
-  <Container>
-      <h1>{data.title}</h1>
-      <Button
-        color="primary"
-        variant="outlined"
-        onClick={() => {updateData({title: 'Hello World!!'})}}
-      >
-        {data.buttonText}
-      </Button>
-  </Container>
-);
-
-const ConnectedComponent = Tooljet.connectComponent(MyCustomComponent);
-ReactDOM.render(<ConnectedComponent />, document.body);
+  import ReactDOM from 'https://cdn.skypack.dev/react-dom';
+  import { Button, Container } from 'https://cdn.skypack.dev/@material-ui/core';
+  const MyCustomComponent = ({data, updateData, runQuery}) => (
+    <Container>
+        <h1>{data.title}</h1>
+        <Button
+          color="primary"
+          variant="outlined"
+          onClick={() => {updateData({title: 'Dinner Menu'})}}
+        >
+          {data.buttonText}
+        </Button>
+      </Container>
+  );
+  const ConnectedComponent = Tooljet.connectComponent(MyCustomComponent);
+  ReactDOM.render(<ConnectedComponent />, document.body);
 ```
 
 <img className="screenshot-full" src="/img/how-to/use-custom-component/code.png" alt="Custom Component Data" />
@@ -95,7 +93,7 @@ const MyCustomComponent = ({ data, updateData, runQuery }) => (
         runQuery(data.queryName);
       }}
     >
-      Check Score
+      Search
     </Button>
   </Container>
 );
