@@ -1,9 +1,9 @@
 server {
-    listen 80;
+    listen 4001;
     server_name localhost;
     
-    location /apps/ {
-        proxy_pass http://localhost:3000/apps/;
+    location {
+        proxy_pass http://localhost:3000/;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
