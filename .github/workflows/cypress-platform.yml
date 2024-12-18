@@ -204,11 +204,11 @@ jobs:
           sudo apt install -y nginx
           NGINX_PATH=$(printf "%s" "tool" "jet")
           if [[ "${{ github.event.label.name }}" == "run-cypress-platform-proxy" ]]; then
-            base64 -d < cypress-tests/proxy.nginx | sudo tee "/etc/nginx/sites-available/${NGINX_PATH}"
+            sudo cp cypress-tests/proxy.nginx | sudo tee "/etc/nginx/sites-available/tooljet"
           else
-            base64 -d < cypress-tests/subpath.nginx | sudo tee "/etc/nginx/sites-available/${NGINX_PATH}"
+            sudo cp cypress-tests/subpath.nginx | sudo tee "/etc/nginx/sites-available/tooljet"
           fi
-          sudo ln -sf "/etc/nginx/sites-available/${NGINX_PATH}" "/etc/nginx/sites-enabled/${NGINX_PATH}"
+          sudo ln -sf "/etc/nginx/sites-available/${NGINX_PATH}" "/etc/nginx/sites-enabled/tooljet"
           sudo nginx -t
           sudo systemctl start nginx
           sudo systemctl reload nginx
