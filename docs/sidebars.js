@@ -373,7 +373,7 @@ const sidebars = {
       'label': 'Setting Up the Organization',
       'items': [
         'org-setup/overview',
-        'org-setup/tj-plan',
+        'org-setup/tj-deployment',
         {
           'type': 'category',
           'label': 'Licensing',

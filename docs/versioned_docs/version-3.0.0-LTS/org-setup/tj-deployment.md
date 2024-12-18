@@ -1,6 +1,6 @@
 ---
-id: tj-plan
-title: Choose Your ToolJet Plan
+id: tj-deployment
+title: Choose Your ToolJet Deployment
 ---
 
 ToolJet offers two deployment options - **Cloud** and **Self-Hosted** - along with various subscriptions tailored to different requirements. This guide will help you understand these deployment options and select the subscription that best suits your needs.
