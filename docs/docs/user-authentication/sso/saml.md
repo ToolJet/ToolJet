@@ -38,16 +38,13 @@ To enable SAML authentication, you need to configure the following workspace set
     <img className="screenshot-full" src="/img/sso/saml/SAML-Redirect-URL.png" alt="SSO :SAMP" />
 
 
-    :::tip SAML for multiple workspaces
--  The multiple workspaces feature is available only in versions **v2.50.9.46-lts** and later.
+    :::tip SAML for multiple workspaces or Azure and Google setups
+-  The multiple workspaces feature is available only in versions **v2.50.9.52-lts** and later.
 -  Configure the required environment variables as below:
 
 | variable               | value             |
 | ---------------------- | ----------------- |
 | SAML_SET_ENTITY_ID_REDIRECT_URL | `true` |
-
-NOTE: This configuration is also necessary for **Azure** and **Google** SAML setups. Ensure that the Service Entity ID is added as the Redirect URL in these cases.
-
        :::
 </div>
 
