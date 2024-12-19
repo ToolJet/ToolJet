@@ -33,8 +33,10 @@ ToolJet Cloud is a managed service hosted by the ToolJet team. It eliminates the
 
 </div>
 
-<br/>
+<div style={{paddingTop:'24px'}}>
 
-:::info
-Explore the various ToolJet **subscription plans** on the [ToolJet Pricing](https://www.tooljet.com/pricing) page for details on plans and features.
-:::
+## ToolJet Subscription Plan
+
+ToolJet offers various subscription plans for both deployment models, refer to the **[ToolJet Pricing](https://www.tooljet.com/pricing)** page for detailed pricing and feature offerings.
+
+</div>
