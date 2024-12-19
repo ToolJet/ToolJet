@@ -9,42 +9,6 @@ env:
   PR_NUMBER: ${{ github.event.number }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
-# Common steps that will be reused across jobs
-.common-setup: &common-setup
-  - name: Setup Node.js
-    uses: actions/setup-node@v2
-    with:
-      node-version: 18.18.2
-
-  - name: Checkout
-    uses: actions/checkout@v3
-    with:
-      ref: ${{ github.event.pull_request.head.ref }}
-
-  - name: Set up environment variables
-    run: |
-      echo "LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2" >> .env
-      echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env
-      echo "PG_DB=tooljet_development" >> .env
-      echo "PG_USER=postgres" >> .env
-      echo "PG_PASS=postgres" >> .env
-      echo "PG_PORT=5432" >> .env
-      echo "ENABLE_TOOLJET_DB=true" >> .env
-      echo "TOOLJET_DB=tooljet_db" >> .env
-      echo "TOOLJET_DB_USER=postgres" >> .env
-      echo "TOOLJET_DB_PASS=postgres" >> .env
-      echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
-      echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
-      echo "ENABLE_MARKETPLACE_DEV_MODE=true" >> .env
-      echo "ENABLE_ONBOARDING_QUESTIONS_FOR_ALL_SIGN_UPS=false" >> .env
-      echo "SSO_GIT_OAUTH2_CLIENT_ID=dummy" >> .env
-      echo "SSO_GIT_OAUTH2_CLIENT_SECRET=dummy" >> .env
-      echo "SSO_GIT_OAUTH2_HOST=dummy" >> .env
-      echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=dummy" >> .env
-      echo "ENABLE_PRIVATE_APP_EMBED=true" >> .env
-      echo "TOOLJET_DB_STATEMENT_TIMEOUT=60000" >> .env
-      echo "TOOLJET_DB_RECONFIG=true" >> .env
-
 jobs:
   local-development:
     runs-on: ubuntu-22.04
@@ -54,7 +18,15 @@ jobs:
        github.event.label.name == 'run-cypress')
 
     steps:
-      - uses: *common-setup
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18.18.2
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Set up Docker
         uses: docker-practice/actions-setup-docker@master
@@ -72,12 +44,28 @@ jobs:
           sudo docker network create tooljet
           sudo docker run -d --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_PORT=5432 -d postgres:13
 
-      - name: Set up local environment variables
+      - name: Set up environment variables
         run: |
           echo "TOOLJET_HOST=http://localhost:8082" >> .env
+          echo "LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2" >> .env
+          echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env
+          echo "PG_DB=tooljet_development" >> .env
+          echo "PG_USER=postgres" >> .env
           echo "PG_HOST=localhost" >> .env
+          echo "PG_PASS=postgres" >> .env
+          echo "PG_PORT=5432" >> .env
+          echo "ENABLE_TOOLJET_DB=true" >> .env
+          echo "TOOLJET_DB=tooljet_db" >> .env
+          echo "TOOLJET_DB_USER=postgres" >> .env
           echo "TOOLJET_DB_HOST=localhost" >> .env
+          echo "TOOLJET_DB_PASS=postgres" >> .env
+          echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
           echo "PGRST_HOST=localhost:3001" >> .env
+          echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
+          echo "ENABLE_MARKETPLACE_DEV_MODE=true" >> .env
+          echo "ENABLE_PRIVATE_APP_EMBED=true" >> .env
+          echo "TOOLJET_DB_STATEMENT_TIMEOUT=60000" >> .env
+          echo "TOOLJET_DB_RECONFIG=true" >> .env
 
       - name: Set up database
         run: |
@@ -133,10 +121,19 @@ jobs:
     runs-on: ubuntu-22.04
     if: |
       github.event.action == 'labeled' && 
-      github.event.label.name == 'run-cypress-platform-subpath'
+      (github.event.label.name == 'run-cypress-platform-subpath' || 
+       github.event.label.name == 'run-proxy-platform')
 
     steps:
-      - uses: *common-setup
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18.18.2
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Set up Docker configuration
         run: |
@@ -163,19 +160,31 @@ jobs:
           tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}
           platforms: linux/amd64
 
-      - name: Set up subpath environment
+      - name: Set up environment variables
         run: |
           echo "TOOLJET_HOST=http://localhost:3000" >> .env
+          echo "LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2" >> .env
+          echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env
+          echo "PG_DB=tooljet_development" >> .env
+          echo "PG_USER=postgres" >> .env
           echo "PG_HOST=postgres" >> .env
+          echo "PG_PASS=postgres" >> .env
+          echo "PG_PORT=5432" >> .env
+          echo "ENABLE_TOOLJET_DB=true" >> .env
+          echo "TOOLJET_DB=tooljet_db" >> .env
+          echo "TOOLJET_DB_USER=postgres" >> .env
           echo "TOOLJET_DB_HOST=postgres" >> .env
+          echo "TOOLJET_DB_PASS=postgres" >> .env
+          echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
           echo "PGRST_HOST=postgrest" >> .env
           echo "NODE_ENV=production" >> .env
           echo "SERVE_CLIENT=true" >> .env
           echo "SUB_PATH=/apps/" >> .env
-          echo "TOOLJET_DB=tooljet_db" >> .env
-          echo "TOOLJET_DB_USER=postgres" >> .env
-          echo "TOOLJET_DB_PASS=postgres" >> .env
-          echo "TOOLJET_DB_PORT=5432" >> .env
+          echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
+          echo "ENABLE_MARKETPLACE_DEV_MODE=true" >> .env
+          echo "ENABLE_PRIVATE_APP_EMBED=true" >> .env
+          echo "TOOLJET_DB_STATEMENT_TIMEOUT=60000" >> .env
+          echo "TOOLJET_DB_RECONFIG=true" >> .env
 
       - name: Deploy with Docker Compose
         run: |
@@ -216,10 +225,19 @@ jobs:
     runs-on: ubuntu-22.04
     if: |
       github.event.action == 'labeled' && 
-      github.event.label.name == 'run-cypress-platform-proxy'
+      (github.event.label.name == 'run-cypress-platform-proxy' || 
+       github.event.label.name == 'run-proxy-platform')
 
     steps:
-      - uses: *common-setup
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18.18.2
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Set up Docker configuration
         run: |
@@ -246,18 +264,30 @@ jobs:
           tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}
           platforms: linux/amd64
 
-      - name: Set up proxy environment
+      - name: Set up environment variables
         run: |
           echo "TOOLJET_HOST=http://localhost:3000" >> .env
+          echo "LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2" >> .env
+          echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env
+          echo "PG_DB=tooljet_development" >> .env
+          echo "PG_USER=postgres" >> .env
           echo "PG_HOST=postgres" >> .env
+          echo "PG_PASS=postgres" >> .env
+          echo "PG_PORT=5432" >> .env
+          echo "ENABLE_TOOLJET_DB=true" >> .env
+          echo "TOOLJET_DB=tooljet_db" >> .env
+          echo "TOOLJET_DB_USER=postgres" >> .env
           echo "TOOLJET_DB_HOST=postgres" >> .env
+          echo "TOOLJET_DB_PASS=postgres" >> .env
+          echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
           echo "PGRST_HOST=postgrest" >> .env
           echo "NODE_ENV=production" >> .env
           echo "SERVE_CLIENT=true" >> .env
-          echo "TOOLJET_DB=tooljet_db" >> .env
-          echo "TOOLJET_DB_USER=postgres" >> .env
-          echo "TOOLJET_DB_PASS=postgres" >> .env
-          echo "TOOLJET_DB_PORT=5432" >> .env
+          echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
+          echo "ENABLE_MARKETPLACE_DEV_MODE=true" >> .env
+          echo "ENABLE_PRIVATE_APP_EMBED=true" >> .env
+          echo "TOOLJET_DB_STATEMENT_TIMEOUT=60000" >> .env
+          echo "TOOLJET_DB_RECONFIG=true" >> .env
 
       - name: Deploy with Docker Compose
         run: |
@@ -311,10 +341,19 @@ jobs:
     runs-on: ubuntu-22.04
     if: |
       github.event.action == 'labeled' && 
-      github.event.label.name == 'run-cypress-platform-proxy-subpath'
+      (github.event.label.name == 'run-cypress-platform-proxy-subpath' || 
+       github.event.label.name == 'run-proxy-platform')
 
     steps:
-      - uses: *common-setup
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18.18.2
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Set up Docker configuration
         run: |
@@ -341,19 +380,31 @@ jobs:
           tags: tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}
           platforms: linux/amd64
 
-      - name: Set up proxy subpath environment
+      - name: Set up environment variables
         run: |
           echo "TOOLJET_HOST=http://localhost:3000" >> .env
+          echo "LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2" >> .env
+          echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env
+          echo "PG_DB=tooljet_development" >> .env
+          echo "PG_USER=postgres" >> .env
           echo "PG_HOST=postgres" >> .env
+          echo "PG_PASS=postgres" >> .env
+          echo "PG_PORT=5432" >> .env
+          echo "ENABLE_TOOLJET_DB=true" >> .env
+          echo "TOOLJET_DB=tooljet_db" >> .env
+          echo "TOOLJET_DB_USER=postgres" >> .env
           echo "TOOLJET_DB_HOST=postgres" >> .env
+          echo "TOOLJET_DB_PASS=postgres" >> .env
+          echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
           echo "PGRST_HOST=postgrest" >> .env
           echo "NODE_ENV=production" >> .env
           echo "SERVE_CLIENT=true" >> .env
           echo "SUB_PATH=/apps/" >> .env
-          echo "TOOLJET_DB=tooljet_db" >> .env
-          echo "TOOLJET_DB_USER=postgres" >> .env
-          echo "TOOLJET_DB_PASS=postgres" >> .env
-          echo "TOOLJET_DB_PORT=5432" >> .env
+          echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
+          echo "ENABLE_MARKETPLACE_DEV_MODE=true" >> .env
+          echo "ENABLE_PRIVATE_APP_EMBED=true" >> .env
+          echo "TOOLJET_DB_STATEMENT_TIMEOUT=60000" >> .env
+          echo "TOOLJET_DB_RECONFIG=true" >> .env
 
       - name: Deploy with Docker Compose
         run: |
