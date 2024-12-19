@@ -117,7 +117,7 @@ jobs:
           name: screenshots
           path: cypress-tests/cypress/screenshots
 
-  subpath-deployment:
+  Cypress-Platform-Subpath:
     runs-on: ubuntu-22.04
     if: |
       github.event.action == 'labeled' && 
@@ -221,7 +221,7 @@ jobs:
           name: screenshots
           path: cypress-tests/cypress/screenshots
 
-  proxy-deployment:
+  Cypress-Platform-Proxy:
     runs-on: ubuntu-22.04
     if: |
       github.event.action == 'labeled' && 
@@ -337,7 +337,7 @@ jobs:
           name: screenshots
           path: cypress-tests/cypress/screenshots
 
-  proxy-subpath-deployment:
+  Cypress-Platform-Proxy-Subpath:
     runs-on: ubuntu-22.04
     if: |
       github.event.action == 'labeled' && 

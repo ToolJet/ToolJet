@@ -1,6 +1,6 @@
 export const selectEvent = (
   event,
-  action,
+  action = "Show Alert",
   index = 0,
   addEventhandlerSelector = '[data-cy="add-event-handler"]',
   eventIndex = 0
@@ -76,4 +76,12 @@ export const changeEventType = (event, eventIndex = 0) => {
     .type(`{selectAll}{backspace}${event}{enter}`);
   cy.get('[data-cy="event-label"]').click({ force: true })
   cy.wait("@events");
+};
+
+
+export const addMultiEventsWithAlert = (events) => {
+  events.forEach((eventObj, index) => {
+    selectEvent(eventObj.event, 'Show Alert', 0, '[data-cy="add-event-handler"]', index);
+    addSupportCSAData("alert-message", eventObj.message);
+  });
 };
