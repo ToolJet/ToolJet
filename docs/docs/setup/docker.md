@@ -100,7 +100,7 @@ curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/backup-re
 
   2. Download our production docker-compose file into the server.
   ```bash
-  curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/pre-release/docker/docker-compose.yml
+  curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/pre-release/docker/docker-compose.yaml
   ```
 
   3. Create `.env` file in the current directory (where the docker-compose.yaml file is downloaded as in step 1):
