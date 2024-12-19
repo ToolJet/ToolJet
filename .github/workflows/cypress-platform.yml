@@ -10,7 +10,7 @@ env:
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
 jobs:
-  Cypress-Platform:
+  local-development:
     runs-on: ubuntu-22.04
     if: |
       github.event.action == 'labeled' && 
