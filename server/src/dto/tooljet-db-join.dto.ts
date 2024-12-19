@@ -21,6 +21,10 @@ class Field {
   @IsString()
   @IsNotEmpty({ message: '::Table names for join not selected' })
   table: string;
+
+  @IsString()
+  @IsOptional()
+  jsonpath: string;
 }
 
 class Conditions {
@@ -50,6 +54,10 @@ class ConditionField {
   @IsString()
   @IsOptional() // present only when type is column
   columnName: string;
+
+  @IsString()
+  @IsOptional()
+  jsonpath: string;
 }
 
 class ConditionsList {
@@ -113,6 +121,10 @@ class Order {
 
   @IsIn(['ASC', 'DESC'], { message: '::Sort direction not selected' })
   direction: string;
+
+  @IsString()
+  @IsOptional()
+  jsonpath: string;
 }
 
 export class TooljetDbJoinDto {

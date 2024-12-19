@@ -168,6 +168,19 @@
         width: 80%;
       }
     }
+    &:has(.tjdb-dashboard-codehinter-wrapper-cell){
+      padding: 0 !important;
+    }
+    
+      .tjdb-dashboard-codehinter-wrapper-cell{
+        .cm-editor{
+          border: 0 !important;
+        }
+        .codehinter-input.focused .cm-editor{
+          border: 0 !important;
+        }
+      
+    }
   }
 
   .tjdb-selected-cell {

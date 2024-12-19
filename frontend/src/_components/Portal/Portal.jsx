@@ -35,7 +35,7 @@ const Portal = ({ children, ...restProps }) => {
   };
 
   return (
-    <Portal.Container {...restProps}>
+    <Portal.Container {...restProps} componentName={name?.replace(/(\S)\s+(\S)/g, '$1$2')}>
       <div className={className}>
         <Portal.Modal
           handleClose={handleClose}
