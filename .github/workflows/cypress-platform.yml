@@ -15,12 +15,12 @@ env:
     uses: actions/setup-node@v2
     with:
       node-version: 18.18.2
-      
+
   - name: Checkout
     uses: actions/checkout@v3
     with:
       ref: ${{ github.event.pull_request.head.ref }}
-      
+
   - name: Set up environment variables
     run: |
       echo "LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2" >> .env
@@ -52,9 +52,9 @@ jobs:
       github.event.action == 'labeled' && 
       (github.event.label.name == 'run-cypress-platform' || 
        github.event.label.name == 'run-cypress')
-    
+
     steps:
-      *common-setup
+      - uses: *common-setup
 
       - name: Set up Docker
         uses: docker-practice/actions-setup-docker@master
@@ -99,7 +99,7 @@ jobs:
           cd plugins && npm start &
           cd server && npm run start:dev &
           cd frontend && npm start &
-      
+
       - name: Wait for the server to be ready
         run: |
           timeout 300 bash -c '
@@ -134,9 +134,9 @@ jobs:
     if: |
       github.event.action == 'labeled' && 
       github.event.label.name == 'run-cypress-platform-subpath'
-    
+
     steps:
-      *common-setup
+      - uses: *common-setup
 
       - name: Set up Docker configuration
         run: |
@@ -217,9 +217,9 @@ jobs:
     if: |
       github.event.action == 'labeled' && 
       github.event.label.name == 'run-cypress-platform-proxy'
-    
+
     steps:
-      *common-setup
+      - uses: *common-setup
 
       - name: Set up Docker configuration
         run: |
@@ -312,9 +312,9 @@ jobs:
     if: |
       github.event.action == 'labeled' && 
       github.event.label.name == 'run-cypress-platform-proxy-subpath'
-    
+
     steps:
-      *common-setup
+      - uses: *common-setup
 
       - name: Set up Docker configuration
         run: |
