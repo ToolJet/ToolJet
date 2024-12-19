@@ -392,7 +392,7 @@ const sidebars = {
             'org-setup/org-branding/custom-domain'
           ]
         },
-        'org-setup/smtp-config'
+        'org-setup/email-server'
       ]
     },
     {

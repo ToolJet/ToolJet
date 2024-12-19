@@ -1,6 +1,6 @@
 ---
-id: smtp-config
-title: SMTP Configuration
+id: email-server
+title: Email Server Setup
 ---
 
 <div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
@@ -13,21 +13,15 @@ There are two ways to configure SMTP in ToolJet:
 
 Both methods are designed to ensure that your ToolJet instance can send emails as needed, depending on your setup preferences and security requirements.
 
-<div style={{paddingTop:'24px'}}>
-
 ## Prerequisites
 
 Before you begin, ensure you have:
 - Admin access to ToolJet
 - SMTP server details from your email service provider
 
-</div>
-
 :::info
 If you have upgraded from a version prior to v2.62.0, the SMTP variables in your .env file will automatically be mapped to the UI.
 :::
-
-<div style={{paddingTop:'24px'}}>
 
 ## Configuration Without Environment Variables
 
@@ -47,10 +41,6 @@ If you have upgraded from a version prior to v2.62.0, the SMTP variables in your
 <img className="screenshot-full" src="/img/enterprise/smtp/configuration-v2.png" alt="SMTP     Configuration Without Environment Variables" />
 
 5. Click **Save changes** to apply the new SMTP configuration.
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
 
 ## Configuration With Environment Variables
 
@@ -74,10 +64,6 @@ SMTP_DISABLED=false
 - When the toggle is enabled, the SMTP settings fields in the UI will be populated with values from the environment variables and will be read-only.
 - Disabling the toggle allows you to manually enter or edit SMTP settings directly in the UI.
 
-</div>
-
-<div style={{paddingTop:'24px'}}>
-
 ## Commonly Used Email Providers
 
 Here are some general settings for the most commonly used email providers:
@@ -94,5 +80,3 @@ Here are some general settings for the most commonly used email providers:
 :::info
 For SendGrid and Mailgun, the sender's email can be different from the username, subject to the provider's verification requirements. The username for SendGrid is **apikey**, and the password is your API key. For Mailgun, you usually use a specific SMTP username and password provided by Mailgun, not your regular email credentials.
 :::
-
-</div>
