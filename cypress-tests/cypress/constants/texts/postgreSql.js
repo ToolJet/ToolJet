@@ -20,11 +20,11 @@ export const postgreSqlText = {
   labelHost: "Host",
   labelPort: "Port",
   labelSSL: "SSL",
-  labelDbName: "Database Name",
+  labelDbName: "Database name",
   labelUserName: "Username",
   labelPassword: "Password",
   label: "Encrypted",
-  sslCertificate: "SSL Certificate",
+  sslCertificate: "SSL certificate",
   whiteListIpText:
     "Please white-list our IP address if the data source is not publicly accessible",
   textCopy: "Copy",
