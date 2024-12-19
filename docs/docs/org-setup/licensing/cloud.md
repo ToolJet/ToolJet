@@ -3,7 +3,7 @@ id: cloud
 title: ToolJet Cloud
 ---
 
-This guide explains how to upgrade your subscription, add users and check invoice history on ToolJet Cloud. For assistance in selecting a suitable plan, refer to [Choose ToolJet Plan Guide](/docs/org-setup/tj-plan).
+This guide provides instructions on upgrading your subscription for ToolJet Cloud. For assistance in selecting an appropriate plan, visit the **[ToolJet Pricing](https://www.tooljet.com/pricing)** page or **[contact the ToolJet team](mailto:hello@tooljet.com)**.
 
 <div style={{paddingTop:'24px'}}>
 
@@ -45,58 +45,6 @@ If you want to upgrade from the basic or trial subscription and you decide to pr
 
 - If you've selected the enterprise plan, expect a response from our team within 24-48 hours for onboarding.
 - The remaining days of your enterprise edition period can be conveniently viewed on the dashboard.
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
-
-## Adding Users
-
-### Business Plan
-
-Your business plan subscription cost is based on the total number of builder and viewer seats allocated to your account. You may choose between annual or monthly billing cycles.
-
-**Seat Pricing**
-
-| <div style={{ width:"100px"}}> Seat Type </div> | <div style={{ width:"135px"}}> Annual Billing </div> | <div style={{width: "200px"}}> Monthly Billing </div>|
-| :------------ | :---------- | :------------ |
-| Builder     | $24 per month    | $30 per month |
-| End User        | $8 per month      | $10 per month |
-
-**Pro-rated charges for added seats**
-
-You only pay for the portion of the service you actually utilize, rather than being charged a full amount for a seat you might only use for a few days. If you add extra builder or viewer seats mid-cycle, charges are calculated proportionally. The cost is adjusted for the remaining days within your current billing period (monthly or annual).
-
-Example: If you add a builder seat halfway through your monthly billing cycle, you will be charged $15 for the remaining portion of that month. Starting with your next billing cycle, you will be charged the full monthly rate ($30) for the added builder seat.
-
-### Enterprise Plan
-
-- You can directly reach out to us via **[Slack](https://tooljet.com/slack)** or **[email](mailto:hello@tooljet.com)** and we will be happy to provide you the support.
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
-
-## Invoice History
-
-### Business Plan
-
-You can find your past invoices in the subscriptions overview card. Here's how to get there:
-
-- Click on the gear icon (⚙️) on the bottom left of the dashboard and select **Settings**.
-- From the settings page, click on the **Subscriptions** tab.
-- On the **Subscriptions** page, you'll see a subscription overview card summarizing your current plan.
-- Click on the **View Invoices** button to access your invoice history.
-
-<div style={{textAlign: 'center'}}>
-
-<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/licensing/invoice-history.gif" alt="Invoice History" />
-
-</div>
-
-### Enterprise Plan
-
-- You can directly reach out to us via **[Slack](https://tooljet.com/slack)** or **[email](mailto:hello@tooljet.com)** and we will be happy to provide you the support.
 
 </div>
 

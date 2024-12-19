@@ -3,7 +3,7 @@ id: self-hosted
 title: Self-Hosted
 ---
 
-This guide explains how to upgrade your subscription Self-Hosted ToolJet. For assistance in selecting a suitable plan, refer to [Choose ToolJet Plan Guide](/docs/org-setup/tj-plan).
+This guide provides instructions on upgrading your subscription for Self-Hosted ToolJet. For assistance in selecting an appropriate plan, visit the **[ToolJet Pricing](https://www.tooljet.com/pricing)** page or **[contact the ToolJet team](mailto:hello@tooljet.com)**.
 
 <div style={{paddingTop:'24px'}}>
 
@@ -39,7 +39,7 @@ The business license key will be valid for 3 months only. You can renew it to co
 ### Enterprise Plan
 
 - If you've selected the Enterprise Plan, expect a response from our team within 24-48 hours for onboarding.
-- To update the enterprise license key, follow the steps outlined previously.
+- To update the enterprise license key, follow these steps to [update the license key](#updating-license-key).
 - The remaining days of your enterprise edition period can be conveniently viewed on the dashboard.
 
 </div>
@@ -69,11 +69,9 @@ As a super admin, you can conveniently view the remaining days of your enterpris
 ## Frequently Asked Questions (FAQs)
 
 ### 1) How can I upgrade or renew my license?
-If your business or enterprise edition license key is nearing expiration, please click the **Upgrade** button or contact us via email at hello@tooljet.com to obtain an extended license key. If you intend to increase the number of users, please reach out to us via **[Slack](https://tooljet.com/slack)** or review our pricing page at https://www.tooljet.com/pricing before making a request.
+If your business or enterprise edition license key is nearing expiration, please click the **Upgrade** button or contact us via email at hello@tooljet.com to obtain an extended license key. If you intend to increase the number of users, please reach out to us via **[Slack](https://tooljet.com/slack)** or review our [pricing page](https://www.tooljet.com/pricing) before making a request.
 
-<img className="screenshot-full" src="/img/licensing/licensingpage4-v2.png" alt="Licensing" />
-
-Ref: Screenshot addressing upgrade/renew CTAs. Note that there are a couple of other pages which will display banners or CTAs, from where you can upgrade/renew.
+<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/licensing/licensingpage4-v2.png" alt="Licensing" />
 
 ### 2) What is the duration of my license's validity?
 If you have an active license, you can find its validity period in the Settings. Generally, the duration of your license varies based on the type:
