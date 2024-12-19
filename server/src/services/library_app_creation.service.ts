@@ -24,8 +24,16 @@ export class LibraryAppCreationService {
     private readonly pluginsService: PluginsService
   ) {}
 
-  async perform(currentUser: User, identifier: string, appName: string) {
+  async perform(
+    currentUser: User,
+    identifier: string,
+    appName: string,
+    dependentPluginsForTemplate: Array<string>,
+    shouldAutoImportPlugin: boolean
+  ) {
     const templateDefinition = this.findTemplateDefinition(identifier);
+    if (dependentPluginsForTemplate.length)
+      await this.pluginsService.autoInstallPluginsForTemplates(dependentPluginsForTemplate, shouldAutoImportPlugin);
     return this.importTemplate(currentUser, templateDefinition, appName, identifier);
   }
 
@@ -51,15 +59,6 @@ export class LibraryAppCreationService {
     importDto.app = templateDefinition.app || templateDefinition.appV2;
     importDto.tooljet_database = templateDefinition.tooljet_database;
     importDto.tooljet_version = templateDefinition.tooljet_version;
-
-    const dataSourcesUsedInApps = [];
-    importDto.app.forEach((appDefinition) => {
-      appDefinition.definition.appV2.dataSources.forEach((dataSource) => {
-        dataSourcesUsedInApps.push(dataSource);
-      });
-    });
-    const pluginsToBeInstalled = await this.pluginsService.checkIfPluginsToBeInstalled(dataSourcesUsedInApps);
-    await this.pluginsService.autoInstallPluginsForTemplates(pluginsToBeInstalled, false);
 
     if (isVersionGreaterThanOrEqual(templateDefinition.tooljet_version, '2.16.0')) {
       importDto.app[0].appName = appName;
@@ -122,5 +121,20 @@ export class LibraryAppCreationService {
       console.error('Error processing CSV file:', error);
       throw new BadRequestException('Failed to process CSV file');
     }
+  }
+
+  async findDepedentPluginsFromTemplateDefinition(identifier: string) {
+    const templateDefinition = this.findTemplateDefinition(identifier);
+    const importDto = new ImportResourcesDto();
+    importDto.app = templateDefinition.app || templateDefinition.appV2;
+
+    const dataSourcesUsedInApps = [];
+    importDto.app.forEach((appDefinition) => {
+      appDefinition.definition?.appV2.dataSources.forEach((dataSource) => {
+        dataSourcesUsedInApps.push(dataSource);
+      });
+    });
+    const pluginsToBeInstalled = await this.pluginsService.checkIfPluginsToBeInstalled(dataSourcesUsedInApps);
+    return pluginsToBeInstalled;
   }
 }
