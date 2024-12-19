@@ -22,21 +22,32 @@ To enable SAML authentication, you need to configure the following workspace set
     - **SAML Provider Name**: Enter the name of your SAML provider. This name will be displayed on the login page.
     - **Identity provider metadata**: Upload the data from the metadata file provided by your SAML provider. This file contains the SAML configuration details.
     - **Group Attribute**: Enter the name of the attribute that contains the group information of the user. This attribute is used to map the user to the appropriate group.
-    - **Redirect URL**: Copy the redirect URL provided and paste it in the SAML provider's configuration page.
 
     <br/>
 
-    :::tip Downloading the metadata from your identity provider
+:::tip Downloading the metadata from your identity provider
      Generally, the metadata is available in the form of an XML file which can be downloaded from your identity provider's dashboard.
 
      Copy the metadata from the XML file and paste it into the ToolJet's SAML SSO configuration settings. Please ensure that the metadata is pasted in the correct format, as it contains essential configuration details from the identity provider necessary for authentication.
 
      Additionally, you can often find this data by navigating to https://&ltyour-identity-provider&gt/federationmetadata/2007-06/federationmetadata.xml
-    :::
+:::
 
-    <img className="screenshot-full" src="/img/sso/saml/config-new-v3.png" alt="SSO :SAMP" />
+ Once the configuration is complete, click **Save Changes** to view the **Redirect URL**.
 
-4. Once configured, click **Save Changes**.
+    <img className="screenshot-full" src="/img/sso/saml/SAML-Redirect-URL.png" alt="SSO :SAMP" />
+
+
+    :::tip SAML for multiple workspaces or Azure and Google setups
+-  The multiple workspaces feature is available only in versions **v2.50.9.52-lts** and later.
+-  Configure the required environment variables as below:
+
+| variable               | value             |
+| ---------------------- | ----------------- |
+| SAML_SET_ENTITY_ID_REDIRECT_URL | `true` |
+       :::
+
+
 
 </div>
 
