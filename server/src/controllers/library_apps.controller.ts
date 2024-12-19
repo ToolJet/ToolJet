@@ -16,13 +16,25 @@ export class LibraryAppsController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  async create(@User() user, @Body('identifier') identifier, @Body('appName') appName) {
+  async create(
+    @User() user,
+    @Body('identifier') identifier,
+    @Body('appName') appName,
+    @Body('dependentPluginsForTemplate') dependentPluginsForTemplate,
+    @Body('shouldAutoImportPlugin') shouldAutoImportPlugin
+  ) {
     const ability = await this.appsAbilityFactory.appsActions(user);
 
     if (!ability.can(APP_RESOURCE_ACTIONS.CREATE, App)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
-    const newApp = await this.libraryAppCreationService.perform(user, identifier, appName);
+    const newApp = await this.libraryAppCreationService.perform(
+      user,
+      identifier,
+      appName,
+      dependentPluginsForTemplate,
+      shouldAutoImportPlugin
+    );
 
     return newApp;
   }
@@ -37,5 +49,14 @@ export class LibraryAppsController {
   @UseGuards(JwtAuthGuard)
   async index() {
     return { template_app_manifests: TemplateAppManifests };
+  }
+
+  @Post('find_depedent_plugins')
+  @UseGuards(JwtAuthGuard)
+  async findDepedentPluginsFromTemplateDefinition(@Body('identifier') identifier) {
+    const plugins_to_be_installed = await this.libraryAppCreationService.findDepedentPluginsFromTemplateDefinition(
+      identifier
+    );
+    return { plugins_to_be_installed };
   }
 }
