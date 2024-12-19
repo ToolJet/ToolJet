@@ -50,8 +50,8 @@
     "timestamp": "Wed, 17 Jan 2024 20:05:16 GMT"
   },
   {
-    "name": "aws-lambda",
-    "description": "Plugin for aws-lambda",
+    "name": "AWS Lambda",
+    "description": "Plugin for AWS Lambda",
     "version": "1.0.0",
     "id": "aws-lambda",
     "author": "Tooljet",
