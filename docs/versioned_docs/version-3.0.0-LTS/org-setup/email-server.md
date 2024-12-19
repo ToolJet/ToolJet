@@ -1,6 +1,6 @@
 ---
 id: email-server
-title: Email Server Setup
+title: Setup Email Communication
 ---
 
 <div className='badge badge--primary heading-badge'>Available on: Paid plans</div>

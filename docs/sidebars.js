@@ -378,8 +378,8 @@ const sidebars = {
           'type': 'category',
           'label': 'Licensing',
           'items': [
-            'org-setup/licensing/cloud',
-            'org-setup/licensing/self-hosted'
+            'org-setup/licensing/self-hosted',
+            'org-setup/licensing/cloud'
           ]
         },
         'org-setup/instances',

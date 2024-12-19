@@ -1,6 +1,6 @@
 ---
 id: email-server
-title: Email Server Setup
+title: Setup Email Communication
 ---
 
 This feature is only available on the self-hosted ToolJet, where you can set up your own email server using SMTP. This feature allows you to choose your own email server, which helps to seamlessly send emails for various purposes, including invitations, password reset requests, and notifications. SMTP ensures that emails are delivered reliably from ToolJet to the users.
