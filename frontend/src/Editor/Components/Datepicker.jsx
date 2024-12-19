@@ -110,7 +110,7 @@ export const Datepicker = function Datepicker({
         className={`input-field form-control ${
           !isValid && showValidationError ? 'is-invalid' : ''
         } validation-without-icon px-2 ${darkMode ? 'bg-dark color-white' : 'bg-light'}`}
-        popperClassName={cx('tj-datepicker-widget', { 'dark-theme': darkMode })}
+        popperClassName={cx('tj-datepicker-popover tj-datepicker-widget', { 'dark-theme': darkMode })}
         selected={date}
         value={date !== null ? computeDateString(date) : 'select date'}
         onChange={(date) => onDateChange(date)}
