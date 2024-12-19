@@ -100,14 +100,14 @@ export const modalConfig = {
       slotName: 'footer',
       layout: {
         top: 24,
-        left: 32,
+        left: 22,
         height: 36,
       },
       displayName: 'ModalFooterCancel',
       properties: ['text'],
       styles: ['type', 'borderColor', 'padding'],
       defaultValue: {
-        text: 'Cancel',
+        text: 'Button1',
         type: 'outline',
         borderColor: '#CCD1D5',
       },
@@ -117,13 +117,13 @@ export const modalConfig = {
       slotName: 'footer',
       layout: {
         top: 24,
-        left: 22,
+        left: 32,
         height: 36,
       },
       displayName: 'ModalFooterConfirm',
       properties: ['text'],
       defaultValue: {
-        text: 'Submit',
+        text: 'Button2',
         padding: 'none',
       },
     },

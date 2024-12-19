@@ -54,6 +54,7 @@ export class UpdateModalHeaderTitle91734422351569 implements MigrationInterface 
 
         if (properties.titleAlignment) delete properties.titleAlignment;
         delete properties.title;
+        properties.hideFooter = { value: '{{true}}' };
         // Add the new title component to the layout
         const newLayout = this.createTitleComponentLayout(newTitleComponent);
         await entityManager.save(Layout, newLayout);
