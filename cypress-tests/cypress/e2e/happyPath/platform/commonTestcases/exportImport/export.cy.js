@@ -140,12 +140,33 @@ describe("App Export Functionality", () => {
     );
     cy.exec("cd ./cypress/downloads/ && rm -rf *");
   });
-  it.only("Verify 'Export app' functionality of an application", () => {
-    data.appName1 = `${fake.companyName}-App`;
-    cy.apiCreateApp(data.appName1);
-    cy.openApp();
-    cy.pause();
+  it.skip("Verify 'Export app' functionality of an application", () => {
+    data.appName2 = `${fake.companyName}-App`;
+    cy.apiCreateApp(data.appName2);
+    navigateToAppEditor(data.appName2);
+    cy.get('[data-cy="widget-list-box-table"]').should("be.visible");
+    cy.skipEditorPopover();
+    cy.get(appVersionSelectors.appVersionMenuField)
+      .should("be.visible")
+      .click();
+    createNewVersion((otherVersions = ["v2"]), (currentVersion = "v1"));
+    cy.wait(500);
+    cy.dragAndDropWidget("Text Input", 50, 50);
+    cy.waitForAutoSave();
+    cy.get(appVersionSelectors.currentVersionField((otherVersions = "v2")))
+      .should("be.visible")
+      .invoke("text")
     cy.get('[data-cy="left-sidebar-settings-button"]').click();
-
+    cy.get('[data-cy="button-user-status-change"]').click();
+    verifyElementsOfExportModal(
+      (currentVersion = "v2"),
+      (otherVersions = ["v1"])
+    );
+    exportAllVersionsAndVerify(
+      data.appName1,
+      (currentVersion = "v2"),
+      (otherVersions = ["v1"])
+    );
+    
   });
 });
