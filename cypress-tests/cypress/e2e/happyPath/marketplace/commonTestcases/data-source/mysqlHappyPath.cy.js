@@ -214,7 +214,7 @@ describe("Data sources MySql", () => {
     fillConnectionForm({
       Host: Cypress.env("mysql_host"),
       Port: Cypress.env("mysql_port"),
-      "Database Name": "test_db",
+      "Database name": "test_db",
       Username: Cypress.env("mysql_user"),
       Password: Cypress.env("mysql_password"),
     });
@@ -392,7 +392,7 @@ describe("Data sources MySql", () => {
     fillConnectionForm({
       Host: Cypress.env("mysql_host"),
       Port: Cypress.env("mysql_port"),
-      "Database Name": "test_db",
+      "Database name": "test_db",
       Username: Cypress.env("mysql_user"),
       Password: Cypress.env("mysql_password"),
     });
@@ -467,7 +467,7 @@ describe("Data sources MySql", () => {
     fillConnectionForm({
       Host: Cypress.env("mysql_host"),
       Port: "3318",
-      "Database Name": "test_db",
+      "Database name": "test_db",
       Username: Cypress.env("mysql_user"),
       Password: Cypress.env("mysql_password"),
     });
