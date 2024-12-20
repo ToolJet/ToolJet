@@ -225,7 +225,7 @@
         &.show-line-numbers{
             .cm-editor {
                 min-height: 220px ;
-                max-height: 2500px ;
+                max-height: 8500px ;
                 .cm-scroller {
                     flex-grow: 1 !important;
                 }
@@ -285,7 +285,7 @@
 .code-editor-query-panel{
     .codehinter-multi-line-input {
         .cm-editor {
-            max-height: 2500px !important;
+            max-height: 8500px !important;
             height: 100%;
         }
     }
