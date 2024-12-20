@@ -14,8 +14,7 @@ import CustomOption from './CustomOption';
 import Label from '@/_ui/Label';
 import cx from 'classnames';
 import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor } from './utils';
-import useStore from '@/AppBuilder/_stores/store';
-import { shallow } from 'zustand/shallow';
+import { isMobileDevice } from '@/_helpers/appUtils';
 
 const { DropdownIndicator, ClearIndicator } = components;
 const INDICATOR_CONTAINER_WIDTH = 60;
@@ -25,8 +24,9 @@ export const CustomDropdownIndicator = (props) => {
   const {
     selectProps: { menuIsOpen },
   } = props;
+
   return (
-    <DropdownIndicator {...props}>
+    <DropdownIndicator {...props} className={cx({ 'pointer-events-none': isMobileDevice() })}>
       {menuIsOpen ? (
         <TriangleUpArrow width={'18'} className="cursor-pointer" fill={'var(--borders-strong)'} />
       ) : (
@@ -100,7 +100,6 @@ export const DropdownV2 = ({
   const [isDropdownLoading, setIsDropdownLoading] = useState(dropdownLoadingState);
   const [isDropdownDisabled, setIsDropdownDisabled] = useState(disabledState);
   const [searchInputValue, setSearchInputValue] = useState('');
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [userInteracted, setUserInteracted] = useState(false);
 
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
@@ -156,19 +155,6 @@ export const DropdownV2 = ({
     }
   };
 
-  const handleOutsideClick = (e) => {
-    let menu = ref.current.querySelector('.select__menu');
-    if (!ref.current.contains(e.target) || !menu || !menu.contains(e.target)) {
-      setSearchInputValue('');
-    }
-    if (dropdownRef.current && !dropdownRef.current?.contains(e.target) && !menu && !menu?.contains(e.target)) {
-      if (isDropdownOpen) {
-        fireEvent('onBlur');
-      }
-      setIsDropdownOpen(false);
-    }
-  };
-
   const setInputValue = (value) => {
     setCurrentValue(value);
     const _selectedOption = selectOptions.find((option) => option.value === value);
@@ -194,13 +180,6 @@ export const DropdownV2 = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [advanced, value]);
-
-  useEffect(() => {
-    document.addEventListener('mousedown', handleOutsideClick);
-    return () => {
-      document.removeEventListener('mousedown', handleOutsideClick);
-    };
-  }, [isDropdownOpen]);
 
   useEffect(() => {
     if (visibility !== properties.visibility) setVisibility(properties.visibility);
@@ -460,16 +439,7 @@ export const DropdownV2 = ({
           _width={_width}
           top={'1px'}
         />
-        <div
-          className="w-100 px-0 h-100"
-          onClick={() => {
-            if (!isDropdownDisabled) {
-              fireEvent('onFocus');
-              setIsDropdownOpen((prev) => !prev);
-            }
-          }}
-          ref={ref}
-        >
+        <div className="w-100 px-0 h-100 dropdownV2-widget" ref={ref}>
           <Select
             isDisabled={isDropdownDisabled}
             value={selectOptions.filter((option) => option.value === currentValue)[0] ?? null}
@@ -481,13 +451,11 @@ export const DropdownV2 = ({
                 setInputValue(selectedOption.value);
                 fireEvent('onSelect');
               }
-              setIsDropdownOpen(false);
               setUserInteracted(true);
             }}
             options={selectOptions}
             styles={customStyles}
             isLoading={isDropdownLoading}
-            menuIsOpen={isDropdownOpen}
             onInputChange={onSearchTextChange}
             inputValue={searchInputValue}
             placeholder={placeholder}
@@ -508,6 +476,8 @@ export const DropdownV2 = ({
             darkMode={darkMode}
             optionsLoadingState={optionsLoadingState && advanced}
             menuPlacement="auto"
+            onMenuOpen={() => fireEvent('onFocus')}
+            onMenuClose={() => fireEvent('onBlur')}
           />
         </div>
       </div>
