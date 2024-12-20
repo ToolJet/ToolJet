@@ -9,6 +9,7 @@ export const Icon = ({
   styles,
   fireEvent,
   height,
+  width,
   setExposedVariable,
   setExposedVariables,
   darkMode,
@@ -87,17 +88,21 @@ export const Icon = ({
       data-cy={dataCy}
       data-disabled={isDisabled}
       style={{ textAlign: iconAlign }}
+      onMouseEnter={(event) => {
+        event.stopPropagation();
+        fireEvent('onHover');
+      }}
     >
       <IconElement
         color={color}
-        style={{ width: 'auto', height, color: iconColor }}
+        style={{
+          width: height < width ? 'auto' : width,
+          height: height < width ? height : 'auto',
+          color: iconColor,
+        }}
         onClick={(event) => {
           event.stopPropagation();
           fireEvent('onClick');
-        }}
-        onMouseOver={(event) => {
-          event.stopPropagation();
-          fireEvent('onHover');
         }}
         stroke={1.5}
       />
