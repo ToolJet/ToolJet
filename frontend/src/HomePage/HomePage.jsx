@@ -81,6 +81,7 @@ class HomePageComponent extends React.Component {
       showAutoImportPluginModal: false,
       shouldAutoImportPlugin: false,
       dependentPluginsForTemplate: [],
+      dependentPluginsDetail: {},
     };
   }
 
@@ -303,6 +304,7 @@ class HomePageComponent extends React.Component {
       this.props.navigate(`/${getWorkspaceId()}/apps/${data.app[0].id}`);
     } catch (e) {
       this.setState({ deploying: false });
+      toast.error(e.error);
       if (e.statusCode === 409) {
         return false;
       } else {
@@ -573,12 +575,14 @@ class HomePageComponent extends React.Component {
   };
 
   openCreateAppFromTemplateModal = async (template) => {
-    const { plugins_to_be_installed } = await libraryAppService.findDependentPluginsInTemplate(template.id);
+    const { plugins_to_be_installed, plugins_detail_by_id = {} } =
+      await libraryAppService.findDependentPluginsInTemplate(template.id);
     if (plugins_to_be_installed.length) {
       this.setState({
         showAutoImportPluginModal: true,
         selectedTemplate: template,
         dependentPluginsForTemplate: plugins_to_be_installed,
+        dependentPluginsDetail: { ...plugins_detail_by_id },
       });
     } else {
       this.setState({
@@ -589,7 +593,12 @@ class HomePageComponent extends React.Component {
   };
 
   closeCreateAppFromTemplateModal = () => {
-    this.setState({ showCreateAppFromTemplateModal: false, selectedTemplate: null });
+    this.setState({
+      showCreateAppFromTemplateModal: false,
+      selectedTemplate: null,
+      dependentPluginsForTemplate: [],
+      dependentPluginsDetail: {},
+    });
   };
 
   openCreateAppModal = () => {
@@ -609,8 +618,19 @@ class HomePageComponent extends React.Component {
   };
 
   handleCancelAutoImportPlugin = () => {
-    toast.error(`Plugins ( ${this.state.dependentPluginsForTemplate.join(', ')} ) is not installed yet!`);
-    this.setState({ showAutoImportPluginModal: false, shouldAutoImportPlugin: false, selectedTemplate: null });
+    const { dependentPluginsForTemplate, dependentPluginsDetail } = this.state;
+    toast.error(
+      `Plugins ( ${dependentPluginsForTemplate
+        .map((dependentPlugin) => dependentPluginsDetail[dependentPlugin].name || dependentPlugin)
+        .join(', ')} ) is not installed yet!`
+    );
+    this.setState({
+      showAutoImportPluginModal: false,
+      shouldAutoImportPlugin: false,
+      selectedTemplate: null,
+      dependentPluginsForTemplate: [],
+      dependentPluginsDetail: {},
+    });
   };
 
   render() {
@@ -642,6 +662,7 @@ class HomePageComponent extends React.Component {
       showCreateAppFromTemplateModal,
       showAutoImportPluginModal,
       dependentPluginsForTemplate,
+      dependentPluginsDetail,
     } = this.state;
     return (
       <Layout switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode}>
@@ -709,12 +730,12 @@ class HomePageComponent extends React.Component {
               handleClose={this.handleCancelAutoImportPlugin}
               darkMode={this.props.darkMode}
               title="Dependent plugins"
-              body={`Plugins ${dependentPluginsForTemplate.join(
-                ', '
-              )} needs to be installed before proceeding to app import`}
+              body={`The following plugins need to be installed before proceeding to app import: ${dependentPluginsForTemplate
+                .map((dependentPlugin) => dependentPluginsDetail[dependentPlugin].name || dependentPlugin)
+                .join(', ')}`}
               confirmBtnProps={{
-                tooltipMessage: 'Install plugin',
-                title: 'Auto install plugin & Continue',
+                tooltipMessage: 'Install plugins',
+                title: 'Install plugins',
               }}
               handleConfirm={this.handleContinueAutoImportPlugin}
               isLoading={false}

@@ -54,9 +54,8 @@ export class LibraryAppsController {
   @Post('find_depedent_plugins')
   @UseGuards(JwtAuthGuard)
   async findDepedentPluginsFromTemplateDefinition(@Body('identifier') identifier) {
-    const plugins_to_be_installed = await this.libraryAppCreationService.findDepedentPluginsFromTemplateDefinition(
-      identifier
-    );
-    return { plugins_to_be_installed };
+    const { pluginsToBeInstalled, pluginsListIdToDetailsMap } =
+      await this.libraryAppCreationService.findDepedentPluginsFromTemplateDefinition(identifier);
+    return { plugins_to_be_installed: pluginsToBeInstalled, plugins_detail_by_id: pluginsListIdToDetailsMap };
   }
 }

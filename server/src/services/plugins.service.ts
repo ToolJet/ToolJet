@@ -217,7 +217,7 @@ export class PluginsService {
     }
 
     const [indexFile, operationsFile, iconFile, manifestFile] = await Promise.all([
-      readFile(`../marketplace/plugins/${id}/dist/index.js`),
+      readFile(`../marketplace/plugin/${id}/dist/index.js`),
       readFile(`../marketplace/plugins/${id}/lib/operations.json`),
       readFile(`../marketplace/plugins/${id}/lib/icon.svg`),
       readFile(`../marketplace/plugins/${id}/lib/manifest.json`),
@@ -342,16 +342,18 @@ export class PluginsService {
     return { pluginsToBeInstalled };
   }
 
-  async checkIfPluginsToBeInstalled(dataSources): Promise<Array<string>> {
+  async checkIfPluginsToBeInstalled(
+    dataSources
+  ): Promise<{ pluginsToBeInstalled: Array<string>; pluginsListIdToDetailsMap: any }> {
     const { pluginsListIdToDetailsMap } = this.listMarketplacePlugins();
     const marketplacePluginsUsed = this.filterMarketplacePluginsFromDatasources(dataSources, pluginsListIdToDetailsMap);
     const { pluginsToBeInstalled } = await this.arePluginsInstalled(marketplacePluginsUsed);
-    return pluginsToBeInstalled;
+    return { pluginsToBeInstalled, pluginsListIdToDetailsMap };
   }
 
   async autoInstallPluginsForTemplates(pluginsToBeInstalled: Array<string>, shouldAutoInstall: boolean) {
+    const { pluginsListIdToDetailsMap } = this.listMarketplacePlugins();
     if (shouldAutoInstall && pluginsToBeInstalled.length) {
-      const { pluginsListIdToDetailsMap } = this.listMarketplacePlugins();
       const installedPluginsName = [];
       for (const pluginId of pluginsToBeInstalled) {
         const pluginDetails = pluginsListIdToDetailsMap[pluginId];
@@ -362,7 +364,11 @@ export class PluginsService {
     }
 
     if (!shouldAutoInstall && pluginsToBeInstalled.length) {
-      throw new NotFoundException(`Plugins ( ${pluginsToBeInstalled.join(', ')} ) is not installed yet!`);
+      throw new NotFoundException(
+        `Plugins ( ${pluginsToBeInstalled
+          .map((pluginToBeInstalled) => pluginsListIdToDetailsMap[pluginToBeInstalled].name || pluginToBeInstalled)
+          .join(', ')} ) is not installed yet!`
+      );
     }
   }
 }
