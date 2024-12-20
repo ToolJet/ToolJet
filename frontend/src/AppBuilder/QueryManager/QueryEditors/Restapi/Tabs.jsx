@@ -52,9 +52,9 @@ function ControlledTabs({
               variant="ghostBlack"
               size="sm"
               leftIcon="plus"
-              fill={darkMode ? 'var(--icons-default)' : bodyToggle ? '#E4E7EB' : '#6A727C'}
+              fill={darkMode ? 'var(--icons-default)' : bodyToggle && key === 'body' ? '#E4E7EB' : '#6A727C'}
               iconWidth="18"
-              disabled={bodyToggle}
+              disabled={bodyToggle && key === 'body'}
               className="tw-px-[6px]"
             />
           </div>
