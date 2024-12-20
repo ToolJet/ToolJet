@@ -94,10 +94,6 @@ const selectCustomStyles = (width) => {
 };
 
 export const Select = ({ value, onChange, meta, width = '144px' }) => {
-  useEffect(() => {
-    document.getElementById('crash-hack-select')?.focus();
-    document.getElementById('crash-hack-select-container')?.focus();
-  });
   return (
     <div
       onMouseEnter={() => {
