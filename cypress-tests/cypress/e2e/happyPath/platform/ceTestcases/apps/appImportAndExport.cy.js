@@ -363,8 +363,6 @@ describe("App Import Functionality", () => {
         commonSelectors.toastMessage,
         workspaceConstantsText.constantCreatedToast("Global")
     );
-    // cy.get(commonSelectors.appHeaderLable).should("be.visible");
-    // cy.openapp(data.appName1);
     cy.get('[data-cy="icon-dashboard"]').click();
     navigateToAppEditor(data.appName1);
     cy.dragAndDropWidget("Text Input", 50, 50);

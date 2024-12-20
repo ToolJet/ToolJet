@@ -2,8 +2,6 @@ import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { fake } from "Fixtures/fake";
 import { logout, releaseApp,} from "Support/utils/common";
 import { commonText } from "Texts/common";
-
-///version
 import { appVersionSelectors } from "Selectors/exportImport";
 import { editVersionSelectors } from "Selectors/version";
 import {

@@ -28,7 +28,6 @@ import {
 import { addAppToGroup } from "Support/utils/manageGroups";
 import { ssoSelector } from "Selectors/manageSSO";
 import {
-  //   fetchAndVisitInviteLink,
   verifyConfirmEmailPage,
   visitWorkspaceInvitation,
 } from "Support/utils/onboarding";
@@ -577,29 +576,29 @@ describe(
 
       // Visiting preview URL with the different workspace user
 
-      // cy.defaultWorkspaceLogin();
+      cy.defaultWorkspaceLogin();
 
-      // cy.openApp(data.appName);
-      // cy.openInCurrentTab('[data-cy="preview-link-button"]');
-      // cy.url().then((currentUrl) => {
-      //   cy.log(`Current URL: ${currentUrl}`);
-      //   cy.get('[data-cy="viewer-page-logo"]').click();
-      //   logout();
+      cy.openApp(data.appName);
+      cy.openInCurrentTab('[data-cy="preview-link-button"]');
+      cy.url().then((currentUrl) => {
+        cy.log(`Current URL: ${currentUrl}`);
+        cy.get('[data-cy="viewer-page-logo"]').click();
+        logout();
 
-      //   cy.visit(currentUrl);
-      // });
-      // cy.wait(3000);
-      // cy.clearAndType(onboardingSelectors.loginEmailInput, data.email);
-      // cy.clearAndType(
-      //   onboardingSelectors.loginPasswordInput,
-      //   usersText.password
-      // );
+        cy.visit(currentUrl);
+      });
+      cy.wait(3000);
+      cy.clearAndType(onboardingSelectors.loginEmailInput, data.email);
+      cy.clearAndType(
+        onboardingSelectors.loginPasswordInput,
+        usersText.password
+      );
 
-      // cy.get(onboardingSelectors.signInButton).click();
-      // cy.get(commonSelectors.toastMessage).verifyVisibleElement(
-      //   "have.text",
-      //   "Invalid credentials"
-      // );
+      cy.get(onboardingSelectors.signInButton).click();
+      cy.get(commonSelectors.toastMessage).verifyVisibleElement(
+        "have.text",
+        "Invalid credentials"
+      );
     });
   }
 );
