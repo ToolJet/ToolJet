@@ -16,7 +16,7 @@ You should set up a PostgreSQL database manually to be used by ToolJet. We recom
 _The file below is just a template and might not suit production environments. You should download the file and configure parameters such as the replica count and environment variables according to your needs._
 
 ```
-kubectl apply -f https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/deployment.yaml
+kubectl apply -f https://tooljet-deployments.s3.us-west-1.amazonaws.com/pre-release/kubernetes/deployment.yaml
 ```
 
 Make sure to edit the environment variables in the `deployment.yaml`. We advise using secrets to set up sensitive information. You can check out the available options [here](/docs/setup/env-vars).
@@ -39,7 +39,7 @@ Make sure to edit the environment variables in the `deployment.yaml`. We advise 
         Read **[environment variables reference](/docs/setup/env-vars)**
 :::
 
-3. Create a Kubernetes service to publish the Kubernetes deployment that you have created. We have a [template](https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/service.yaml) for exposing the ToolJet server as a service using an AWS Load Balancer.
+3. Create a Kubernetes service to publish the Kubernetes deployment that you have created. We have a [template](https://tooljet-deployments.s3.us-west-1.amazonaws.com/pre-release/kubernetes/service.yaml) for exposing the ToolJet server as a service using an AWS Load Balancer.
 
 **Example:**
 - [Application load balancing on Amazon EKS](https://docs.aws.amazon.com/eks/latest/userguide/alb-ingress.html)
@@ -55,6 +55,21 @@ To use ToolJet Database, you'd have to set up and deploy a PostgREST server, whi
 ```
 
 Update ToolJet deployment with the appropriate env variables [here](https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/deployment.yaml) and apply the changes.
+
+## Workflows
+
+ToolJet Workflows allows users to design and execute complex, data-centric automations using a visual, node-based interface. This feature enhances ToolJet's functionality beyond building secure internal tools, enabling developers to automate complex business processes.  
+
+Create workflow deployment: 
+
+```bash
+kubectl apply -f https://tooljet-deployments.s3.us-west-1.amazonaws.com/pre-release/kubernetes/workflow-deployment.yaml
+```
+**Note:** Ensure that the worker deployment uses the same image as the ToolJet application deployment to maintain compatibility. Additionally, the variables below need to be a part of tooljet-deployment. 
+
+`ENABLE_WORKFLOW_SCHEDULING=true`
+`TOOLJET_WORKFLOWS_TEMPORAL_NAMESPACE=default`
+`TEMPORAL_SERVER_ADDRESS=<Temporal_Server_Address>`
 
 ## Upgrading to the Latest LTS Version
 
