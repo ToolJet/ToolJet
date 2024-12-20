@@ -9,7 +9,6 @@ import {
 } from "Selectors/version";
 import {
   deleteVersionText,
-  editVersionText,
   releasedVersionText,
 } from "Texts/version";
 import { verifyComponent } from "Support/utils/basicComponents";

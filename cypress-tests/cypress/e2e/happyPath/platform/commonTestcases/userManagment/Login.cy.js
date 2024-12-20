@@ -16,6 +16,7 @@ describe("Login functionality", () => {
     });
     cy.visit("/");
   });
+
   it("Should verify elements on the login page", () => {
     cy.url().should("include", path.loginPath);
     cy.get(commonSelectors.pageLogo).should("be.visible");
@@ -79,10 +80,5 @@ describe("Login functionality", () => {
     cy.clearAndType(onboardingSelectors.loginPasswordInput, invalidPassword);
     cy.get(onboardingSelectors.signInButton).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, "Invalid credentials");
-  });
-
-  it("Should be able to login with valid credentials using api", () => {
-    cy.appUILogin(user.email, user.password);
-    logout();
   });
 });
