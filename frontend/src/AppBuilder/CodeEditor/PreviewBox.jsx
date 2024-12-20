@@ -5,7 +5,6 @@ import { copyToClipboard } from '@/_helpers/appUtils';
 import { Alert } from '@/_ui/Alert/Alert';
 import _, { isEmpty } from 'lodash';
 import { handleCircularStructureToJSON, hasCircularDependency, verifyConstant } from '@/_helpers/utils';
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import Card from 'react-bootstrap/Card';
 // eslint-disable-next-line import/no-unresolved
@@ -13,6 +12,7 @@ import { JsonViewer } from '@textea/json-viewer';
 import { reservedKeywordReplacer } from '@/_lib/reserved-keyword-replacer';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { Overlay } from 'react-bootstrap';
 
 const sanitizeLargeDataset = (data, callback) => {
   const SIZE_LIMIT_KB = 5 * 1024; // 5 KB in bytes
@@ -287,6 +287,8 @@ const PreviewContainer = ({
   enablePreview,
   setCursorInsidePreview,
   isPortalOpen,
+  previewRef,
+  showPreview,
   ...restProps
 }) => {
   const { validationSchema, isWorkspaceVariable, errorStateActive, previewPlacement } = restProps;
@@ -298,16 +300,12 @@ const PreviewContainer = ({
   const errorMsg = typeofError === 'Array' ? errorMessage[0] : errorMessage;
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
-
   const popover = (
     <Popover
       bsPrefix="codehinter-preview-popover"
       id="popover-basic"
       className={`${darkMode && 'dark-theme'}`}
       style={{
-        width: '250px',
-        maxWidth: '350px',
-        marginRight: 2,
         zIndex: 1400,
       }}
       onMouseEnter={() => setCursorInsidePreview(true)}
@@ -318,6 +316,8 @@ const PreviewContainer = ({
           border: !isEmpty(validationSchema) && '1px solid var(--slate6)',
           padding: isEmpty(validationSchema) && '0px',
           boxShadow: ' 0px 4px 8px 0px #3032331A, 0px 0px 1px 0px #3032330D',
+          width: '250px',
+          maxWidth: '350px',
         }}
       >
         <div>
@@ -418,14 +418,47 @@ const PreviewContainer = ({
   );
 
   return (
-    <OverlayTrigger
-      trigger="click"
-      show={enablePreview && isFocused && !isPortalOpen}
-      placement={previewPlacement}
-      overlay={popover}
-    >
+    <>
+      {!isPortalOpen && (
+        <Overlay
+          placement="left"
+          {...(previewRef?.current ? { target: previewRef.current } : {})}
+          show={showPreview}
+          rootClose
+          popperConfig={{
+            modifiers: [
+              {
+                name: 'flip',
+                options: {
+                  fallbackPlacements: ['top', 'bottom', 'left', 'right'],
+                  flipVariations: true,
+                  allowedAutoPlacements: ['top', 'bottom'],
+                  boundary: 'viewport',
+                },
+              },
+              {
+                name: 'preventOverflow',
+                options: {
+                  boundary: 'viewport',
+                  altAxis: true,
+                  tether: false,
+                },
+              },
+              {
+                name: 'offset',
+                options: {
+                  offset: [33, 15],
+                },
+              },
+            ],
+          }}
+        >
+          {(props) => React.cloneElement(popover, props)}
+        </Overlay>
+      )}
+
       {children}
-    </OverlayTrigger>
+    </>
   );
 };
 

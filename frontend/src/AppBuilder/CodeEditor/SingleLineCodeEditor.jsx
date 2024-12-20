@@ -1,5 +1,5 @@
 /* eslint-disable import/no-unresolved */
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { PreviewBox } from './PreviewBox';
 import { ToolTip } from '@/Editor/Inspector/Elements/Components/ToolTip';
 import { useTranslation } from 'react-i18next';
@@ -26,6 +26,7 @@ import { shallow } from 'zustand/shallow';
 const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...restProps }) => {
   const { initialValue, onChange, enablePreview = true, portalProps } = restProps;
   const { validation = {} } = fieldMeta;
+  const [showPreview, setShowPreview] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [currentValue, setCurrentValue] = useState('');
   const [errorStateActive, setErrorStateActive] = useState(false);
@@ -91,6 +92,8 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
   const isWorkspaceVariable =
     typeof currentValue === 'string' && (currentValue.includes('%%client') || currentValue.includes('%%server'));
 
+  const previewRef = useRef(null);
+
   return (
     <div
       ref={wrapperRef}
@@ -98,6 +101,8 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
       style={{ width: '100%', height: restProps?.lang === 'jsx' && '320px' }}
     >
       <PreviewBox.Container
+        previewRef={previewRef}
+        showPreview={showPreview}
         customVariables={customVariables}
         enablePreview={enablePreview}
         currentValue={currentValue}
@@ -116,6 +121,7 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
         <div className="code-editor-basic-wrapper d-flex">
           <div className="codehinter-container w-100">
             <SingleLineCodeEditor.Editor
+              previewRef={previewRef}
               currentValue={currentValue}
               setCurrentValue={setCurrentValue}
               isFocused={isFocused}
@@ -126,6 +132,8 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
               cyLabel={restProps.cyLabel}
               portalProps={portalProps}
               componentName={componentName}
+              setShowPreview={setShowPreview}
+              showPreview={showPreview}
               {...restProps}
             />
           </div>
@@ -155,6 +163,8 @@ const EditorInput = ({
   delayOnChange = true, // Added this prop to immediately update the onBlurUpdate callback
   paramLabel = '',
   disabled = false,
+  previewRef,
+  setShowPreview,
 }) => {
   const getSuggestions = useStore((state) => state.getSuggestions, shallow);
   function autoCompleteExtensionConfig(context) {
@@ -246,6 +256,7 @@ const EditorInput = ({
   }, []);
 
   const handleOnBlur = () => {
+    setShowPreview(false);
     if (!delayOnChange) {
       setFirstTimeFocus(false);
       return onBlurUpdate(currentValue);
@@ -260,8 +271,17 @@ const EditorInput = ({
   const theme = darkMode ? okaidia : githubLight;
 
   const { handleTogglePopupExapand, isOpen, setIsOpen, forceUpdate } = portalProps;
+  // when full screen editor is closed, show the preview box
+  useEffect(() => {
+    if (isFocused && !isOpen) {
+      setShowPreview(true);
+    }
+  }, [isOpen, isFocused]);
 
   const [firstTimeFocus, setFirstTimeFocus] = useState(false);
+  const currentEditorHeightRef = useRef(null);
+  const isInsideQueryPane = !!currentEditorHeightRef?.current?.closest('.query-details');
+  const showLineNumbers = lang == 'jsx' || type === 'extendedSingleLine' || false;
 
   const customClassNames = cx('codehinter-input', {
     'border-danger': error,
@@ -269,9 +289,9 @@ const EditorInput = ({
     'focus-box-shadow-active': firstTimeFocus,
     'widget-code-editor': componentId,
     'disabled-pointerevents': disabled,
+    'code-editor-query-panel': isInsideQueryPane,
+    'show-line-numbers': showLineNumbers,
   });
-
-  const currentEditorHeightRef = useRef(null);
 
   const handleFocus = () => {
     setFirstTimeFocus(true);
@@ -280,7 +300,33 @@ const EditorInput = ({
     }, 50);
   };
 
-  const showLineNumbers = lang == 'jsx' || type === 'extendedSingleLine' || false;
+  // in query panel we are allowing code editor to have dynamic height, this observer is to show/hide preview box based on the visibility of the editor
+  useEffect(() => {
+    if (!isInsideQueryPane) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && isFocused) {
+          setShowPreview(true);
+        } else {
+          setShowPreview(false);
+        }
+      },
+      {
+        root: document.querySelector('.query-details'),
+        threshold: 0.01,
+      }
+    );
+    if (currentEditorHeightRef.current) {
+      observer.observe(currentEditorHeightRef.current);
+    }
+
+    return () => {
+      if (currentEditorHeightRef.current) {
+        observer.unobserve(currentEditorHeightRef.current);
+      }
+    };
+  }, [isInsideQueryPane, isFocused]);
+
   cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : cyLabel;
 
   return (
@@ -289,12 +335,23 @@ const EditorInput = ({
       className={`cm-codehinter ${darkMode && 'cm-codehinter-dark-themed'} ${disabled ? 'disabled-cursor' : ''}`}
       data-cy={`${cyLabel}-input-field`}
     >
+      {/* sticky element to position the preview box correctly on top without flowing out of container */}
+      <div
+        style={{
+          position: 'sticky',
+          top: 0,
+          left: 0,
+          zIndex: 1000,
+        }}
+        ref={previewRef}
+      ></div>
       {usePortalEditor && (
         <CodeHinter.PopupIcon
           callback={handleTogglePopupExapand}
           icon="portal-open"
           tip="Pop out code editor into a new window"
           position={currentEditorHeightRef?.current?.getBoundingClientRect()}
+          isQueryManager={isInsideQueryPane}
         />
       )}
       <CodeHinter.Portal
@@ -315,7 +372,7 @@ const EditorInput = ({
           <CodeMirror
             value={currentValue}
             placeholder={placeholder}
-            height={showLineNumbers ? '400px' : '100%'}
+            height={isInsideQueryPane ? '100%' : showLineNumbers ? '400px' : '100%'}
             width="100%"
             extensions={[
               javascript({ jsx: lang === 'jsx' }),

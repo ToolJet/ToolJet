@@ -80,12 +80,18 @@ const Portal = ({ children, ...restProps }) => {
   return <React.Fragment>{renderPortal}</React.Fragment>;
 };
 
-const PopupIcon = ({ callback, icon, tip, position, isMultiEditor = false }) => {
+const PopupIcon = ({ callback, icon, tip, position, isMultiEditor = false, isQueryManager = false }) => {
   const size = 16;
   const topRef = isNumber(position?.height) ? Math.floor(position?.height) - 30 : 32;
   let top = isMultiEditor ? 270 : topRef > 32 ? topRef : 0;
+  // for query manager we allow the height of query manager to be dynamic, so we need to render the popup icon at the bottom of code editor
+  const renderAtBottom = isQueryManager && (isMultiEditor || topRef > 32);
+
   return (
-    <div className="d-flex justify-content-end w-100 position-absolute codehinter-popup-icon" style={{ top: top }}>
+    <div
+      className="d-flex justify-content-end w-100 position-absolute codehinter-popup-icon"
+      style={renderAtBottom ? { bottom: '30px' } : { top: top }}
+    >
       <OverlayTrigger
         trigger={['hover', 'focus']}
         placement="top"
