@@ -26,21 +26,12 @@ The trial license key will be valid for 14 days. To fully enjoy ToolJet, we reco
 
 ## Purchasing a Paid License
 
-When you've identified the ideal paid license to meet your needs, the next step is to complete the purchase process, ensuring seamless access to premium features.
-
-### Business Plan
-
-If you decide to proceed with the Business Plan and have made the purchase, please wait for our team to get back to you within 24-48 hours to get you onboarded. Once you receive the business license key, follow the steps to [update the license key](#updating-license-key).
+When you've identified the ideal paid license to meet your requirements, the next step is to complete the purchase process, ensuring seamless access to premium features. Once you have compeleted the purchase process, please wait for ToolJet team to get back to you within 24-48 hours to get you onboarded. Once you receive the license key, follow these steps to [update the license key](#updating-license-key).
 
 :::warning Important
-The business license key will be valid for 3 months only. You can renew it to continue using ToolJet to its fullest potential.
+1. **Business Plan**: The business license key will be valid for 3 months only. You can renew it to continue using ToolJet to its fullest potential.
+2. **Enterprise Plan**: The remaining days of your enterprise edition period can be conveniently viewed on the dashboard.
 :::
-
-### Enterprise Plan
-
-- If you've selected the Enterprise Plan, expect a response from our team within 24-48 hours for onboarding.
-- To update the enterprise license key, follow these steps to [update the license key](#updating-license-key).
-- The remaining days of your enterprise edition period can be conveniently viewed on the dashboard.
 
 </div>
 
