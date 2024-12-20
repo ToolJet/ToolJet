@@ -134,7 +134,9 @@ export class LibraryAppCreationService {
         dataSourcesUsedInApps.push(dataSource);
       });
     });
-    const pluginsToBeInstalled = await this.pluginsService.checkIfPluginsToBeInstalled(dataSourcesUsedInApps);
-    return pluginsToBeInstalled;
+    const { pluginsToBeInstalled, pluginsListIdToDetailsMap } = await this.pluginsService.checkIfPluginsToBeInstalled(
+      dataSourcesUsedInApps
+    );
+    return { pluginsToBeInstalled, pluginsListIdToDetailsMap };
   }
 }
