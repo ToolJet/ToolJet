@@ -125,9 +125,7 @@ The setup above is just a template. Feel free to update the task definition and 
 To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. You can learn more about this feature [here](/docs/tooljet-db/tooljet-database).
 
 Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration might break, checkout the following docs to know more about new major version, including breaking changes that require you to adjust your applications accordingly:
-- [Self Hosted](./upgrade-to-v3.md)
-- [Cloud](./cloud-v3-migration.md)
-
+- [ToolJet 3.0 Migration Guide for Self-Hosted Versions](./upgrade-to-v3.md)
 Follow the steps below to deploy PostgREST on a ECS cluster. 
 
 1. Create a new take definition
