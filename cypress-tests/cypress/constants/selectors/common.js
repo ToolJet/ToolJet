@@ -14,6 +14,8 @@ export const commonSelectors = {
   canvas: "[data-cy=real-canvas]",
   appCardOptionsButton: "[data-cy=app-card-menu-icon]",
   autoSave: "[data-cy=autosave-indicator]",
+  nameInputFieldd: "[data-cy=name-input-field]",
+  valueInputFieldd: '[data-cy=value-input-field]',
   skipButton: ".driver-close-btn",
   skipInstallationModal: "[data-cy=skip-button]",
   homePageLogo: "[data-cy=home-page-logo]",
@@ -279,7 +281,7 @@ export const commonWidgetSelector = {
   },
 
   draggableWidget: (widgetName) => {
-    return `[data-cy=draggable-widget-${cyParamName(widgetName)}]`;
+    return `[data-cy=widget-list-box-${cyParamName(widgetName)}]`;
   },
   textInputInputField: (widgetName) => {
     return `[data-cy=input-${cyParamName(widgetName)}]`;

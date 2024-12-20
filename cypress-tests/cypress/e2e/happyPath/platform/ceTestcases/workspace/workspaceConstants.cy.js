@@ -32,7 +32,7 @@ describe("Workspace constants", () => {
         // cy.intercept("GET", "/api/library_apps", "homePage");
         cy.skipWalkthrough();
     });
-    it("Verify workspace constants UI and CRUD operations", () => {
+    it.only("Verify workspace constants UI and CRUD operations", () => {
         data.constName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
         data.newConstvalue = `New ${data.constName}`;
         data.constantsName = fake.firstName
