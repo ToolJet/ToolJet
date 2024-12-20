@@ -20,19 +20,21 @@ export const iconConfig = {
         defaultValue: 'IconHome2',
       },
     },
-  },
-  events: {
-    onClick: { displayName: 'On click' },
-    onHover: { displayName: 'On hover' },
-  },
-  styles: {
-    iconColor: {
-      type: 'color',
-      displayName: 'Icon color',
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' }, defaultValue: 'Tooltip text' },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+    },
+    loadingState: {
+      type: 'toggle',
+      displayName: 'Show loading state',
       validation: {
-        schema: { type: 'string' },
-        defaultValue: '#000',
+        schema: { type: 'boolean' },
+        defaultValue: false,
       },
+      section: 'additionalActions',
     },
     visibility: {
       type: 'toggle',
@@ -41,6 +43,40 @@ export const iconConfig = {
         schema: { type: 'boolean' },
         defaultValue: true,
       },
+      section: 'additionalActions',
+    },
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disable',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
+  },
+  events: {
+    onClick: { displayName: 'On click' },
+    onHover: { displayName: 'On hover' },
+  },
+  styles: {
+    iconColor: {
+      type: 'color',
+      displayName: 'Color',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#000',
+      },
+      accordian: 'Icon',
+    },
+    iconAlign: {
+      type: 'alignButtons',
+      displayName: 'Alignment',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'center',
+      },
+      accordian: 'Icon',
     },
   },
   exposedVariables: {},
@@ -54,6 +90,16 @@ export const iconConfig = {
       handle: 'setVisibility',
       params: [{ handle: 'value', displayName: 'Value', defaultValue: '{{true}}', type: 'toggle' }],
     },
+    {
+      handle: 'setLoading',
+      displayName: 'Set loading',
+      params: [{ handle: 'setLoading', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
+    },
+    {
+      handle: 'setDisable',
+      displayName: 'Set disable',
+      params: [{ handle: 'setDisable', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
+    },
   ],
   definition: {
     others: {
@@ -62,11 +108,14 @@ export const iconConfig = {
     },
     properties: {
       icon: { value: 'IconHome2' },
+      loadingState: { value: `{{false}}` },
+      disabledState: { value: '{{false}}' },
+      visibility: { value: '{{true}}' },
     },
     events: [],
     styles: {
       iconColor: { value: '#000' },
-      visibility: { value: '{{true}}' },
+      iconAlign: { value: 'center' },
     },
   },
 };
