@@ -217,7 +217,7 @@ export class PluginsService {
     }
 
     const [indexFile, operationsFile, iconFile, manifestFile] = await Promise.all([
-      readFile(`../marketplace/plugin/${id}/dist/index.js`),
+      readFile(`../marketplace/plugins/${id}/dist/index.js`),
       readFile(`../marketplace/plugins/${id}/lib/operations.json`),
       readFile(`../marketplace/plugins/${id}/lib/icon.svg`),
       readFile(`../marketplace/plugins/${id}/lib/manifest.json`),
