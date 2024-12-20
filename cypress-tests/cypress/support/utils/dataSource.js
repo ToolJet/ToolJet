@@ -97,7 +97,8 @@ export const addQueryN = (queryName, query, dbName) => {
 
 export const addQuery = (queryName, query, dbName) => {
   cy.get('[data-cy="show-ds-popover-button"]').click();
-  cy.get(".css-1rrkggf-Input").type(`${dbName}`);
+  cy.wait(2000);
+  cy.get(".css-4e90k9").type(`${dbName}`);
   cy.intercept("POST", "/api/data_queries").as(
     "createQuery"
   );
@@ -133,6 +134,7 @@ export const addQueryAndOpenEditor = (queryName, query, dbName, appName) => {
 };
 
 export const verifyValueOnInspector = (queryName, value) => {
+  cy.get('[data-cy="left-sidebar-inspect-button"]').click();
   cy.get('[data-cy="inspector-node-queries"]')
     .parent()
     .within(() => {
