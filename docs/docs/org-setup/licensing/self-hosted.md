@@ -3,7 +3,7 @@ id: self-hosted
 title: Self-Hosted
 ---
 
-This guide provides instructions on upgrading your subscription for Self-Hosted ToolJet. For assistance in selecting an appropriate plan, visit the **[ToolJet Pricing](https://www.tooljet.com/pricing)** page or **[contact the ToolJet team](mailto:hello@tooljet.com)**.
+This guide provides instructions on upgrading your subscription for Self-Hosted ToolJet. For assistance in selecting an appropriate plan visit the **[ToolJet Pricing](https://www.tooljet.com/pricing)** page or **[contact the ToolJet team](mailto:hello@tooljet.com)**.
 
 <div style={{paddingTop:'24px'}}>
 
@@ -13,7 +13,7 @@ If you are an existing user and wish to update your trial license key, follow th
 
 1. Set up the instance and log in as a **[Super Admin](/docs/Enterprise/superadmin)**.
 2. Navigate to the Settings page.
-3. In the license key tab, make the necessary updates to the provided license key.
+3. In the license key tab, update the license key. Contact **[ToolJet Team](mailto:hello@tooljet.com)** to get a trial license key.
 4. Within the license tab of the Settings page, you can access the limit tab, which displays the current status of available super admins, builders, and end users.
 
 :::caution Note 
