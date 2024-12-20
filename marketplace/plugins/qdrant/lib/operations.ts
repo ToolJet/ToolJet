@@ -16,7 +16,7 @@ export async function getCollectionInfo(qdrant: QdrantClient, options: QueryOpti
   }
 }
 
-export async function listCollections(qdrant: QdrantClient, options: QueryOptions): Promise<any> {
+export async function listCollections(qdrant: QdrantClient): Promise<any> {
   try {
     const collections = (await qdrant.getCollections()).collections;
     return collections.map((c) => c.name);
@@ -95,11 +95,11 @@ export async function queryPoints(qdrant: QdrantClient, options: QueryOptions): 
       filter: JSON.parse(filter),
       limit: JSON.parse(limit),
       with_payload: withPayload.toLowerCase() === 'true',
-      with_vector: withVectors.toLowerCase() == 'true',
+      with_vector: withVectors.toLowerCase() === 'true',
     });
 
     return response.points;
   } catch (error) {
-    throw new Error(error.message);
+    throw new Error(error?.message);
   }
 }

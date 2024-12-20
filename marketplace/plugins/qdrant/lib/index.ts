@@ -4,7 +4,7 @@ import { QdrantClient } from '@qdrant/js-client-rest';
 import { deletePoints, getCollectionInfo, getPoints, listCollections, queryPoints, upsertPoints } from './operations';
 
 export default class Qdrant implements QueryService {
-  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
+  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {
     const operation = queryOptions.operation;
     const qdrant = await this.getConnection(sourceOptions);
     let result = {};
