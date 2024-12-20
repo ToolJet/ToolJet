@@ -59,6 +59,21 @@ If there are self signed HTTPS endpoints that ToolJet needs to connect to, pleas
 If you want to serve ToolJet client from services such as Firebase or Netlify, please read the client Setup documentation **[here](/docs/setup/client)**.
 :::
 
+## ToolJet Database
+
+To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. You can learn more about this feature [here](/docs/tooljet-db/tooljet-database).
+
+Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration might break, checkout the following docs to know more about new major version, including breaking changes that require you to adjust your applications accordingly:
+- [Self Hosted](./upgrade-to-v3.md)
+
+1. Setup PostgREST server
+
+   ```bash
+   kubectl apply -f https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/GKE/postgrest.yaml
+   ```
+
+2. Update ToolJet deployment with the appropriate env variables [here](https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/GKE/deployment.yaml) and apply the changes.
+
 ## Upgrading to the Latest LTS Version
 
 New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.

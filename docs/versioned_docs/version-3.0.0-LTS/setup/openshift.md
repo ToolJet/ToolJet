@@ -68,13 +68,18 @@ If there are self signed HTTPS endpoints that Tooljet needs to connect to, pleas
 
 ## ToolJet Database
 
-You can know more about tooljet database [here](/docs/tooljet-db/tooljet-database)
+To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. You can learn more about this feature [here](/docs/tooljet-db/tooljet-database).
 
-To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. Please [follow the instructions here](/docs/setup/env-vars/#enable-tooljet-database-required).
+Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration might break, checkout the following docs to know more about new major version, including breaking changes that require you to adjust your applications accordingly:
+- [Self Hosted](./upgrade-to-v3.md)
 
-```
-https://tooljet-deployments.s3.us-west-1.amazonaws.com/openshift/postgrest.yaml
-```
+1. Setup PostgREST server
+
+   ```bash
+   kubectl apply -f https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/GKE/postgrest.yaml
+   ```
+
+2. Update ToolJet deployment with the appropriate env variables [here](https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/GKE/deployment.yaml) and apply the changes.
 
 ## Upgrading to the Latest LTS Version
 

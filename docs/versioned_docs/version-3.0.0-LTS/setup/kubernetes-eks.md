@@ -46,15 +46,18 @@ Make sure to edit the environment variables in the `deployment.yaml`. We advise 
 
 ## ToolJet Database
 
-To use ToolJet Database, you'd have to set up and deploy a PostgREST server, which helps in querying the ToolJet Database. Please [follow the instructions here](/docs/setup/env-vars/#enable-tooljet-database-required).
+To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. You can learn more about this feature [here](/docs/tooljet-db/tooljet-database).
 
-1. Set up PostgREST server
+Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration might break, checkout the following docs to know more about new major version, including breaking changes that require you to adjust your applications accordingly:
+- [Self Hosted](./upgrade-to-v3.md)
 
- ```
- kubectl apply -f https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/kubernetes/postgrest.yaml
-```
+1. Setup PostgREST server
 
-Update ToolJet deployment with the appropriate env variables [here](https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/deployment.yaml) and apply the changes.
+   ```bash
+   kubectl apply -f https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/GKE/postgrest.yaml
+   ```
+
+2. Update ToolJet deployment with the appropriate env variables [here](https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/GKE/deployment.yaml) and apply the changes.
 
 ## Upgrading to the Latest LTS Version
 

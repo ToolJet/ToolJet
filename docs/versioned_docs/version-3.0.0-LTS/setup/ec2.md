@@ -21,7 +21,7 @@ Follow the steps below to deploy ToolJet on AWS EC2 instances.
 1. Setup a PostgreSQL database and make sure that the database is accessible from the EC2 instance.
 2. Login to your AWS management console and go to the EC2 management page.
 3. Under the **Images** section, click on the **AMIs** button.
-4. Find the [ToolJet version](https://github.com/ToolJet/ToolJet/releases) you want to deploy. Now, from the AMI search page, select the search type as "Public Images" and input the version you'd want `AMI Name : tooljet_vX.X.X.ubuntu_bionic` in the search bar.
+4. Find the [ToolJet version](/docs/setup/choose-your-tooljet) you want to deploy. Now, from the AMI search page, select the search type as "Public Images" and input the version you'd want `AMI Name : tooljet_vX.X.X.ubuntu_bionic` in the search bar.
 5. Select ToolJet's AMI and bootup an EC2 instance. <br/>
   Creating a new security group is recommended. For example, if the installation should receive traffic from the internet, the inbound rules of the security group should look like this:
 
