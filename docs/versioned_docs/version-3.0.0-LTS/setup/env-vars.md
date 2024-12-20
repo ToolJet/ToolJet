@@ -99,7 +99,7 @@ Use this environment variable to enable/disable the developement mode that allow
 | PGRST_DB_PRE_CONFIG          | postgrest.pre_config                         |
 
 :::tip
-When this feature is enabled, the database name provided for `TOOLJET_DB` will be utilized to create a new database during server boot process in all of our production deploy setups.
+The database name provided for `TOOLJET_DB` will be utilized to create a new database during server boot process in all of our production deploy setups.
 Incase you want to trigger it manually, use the command `npm run db:create` on ToolJet server.
 :::
 
