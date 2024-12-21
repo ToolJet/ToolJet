@@ -89,9 +89,9 @@ export const Modal = function Modal({
 
     if (canvasElement && realCanvasEl && modalContainer) {
       const currentScroll = canvasElement.scrollTop;
-      canvasElement.style.overflow = 'hidden';
+      canvasElement.style.overflowY = 'auto';
 
-      modalContainer.style.height = `${canvasElement.offsetHeight}px`;
+      modalContainer.style.height = `${canvasElement.scrollHeight}px`;
       modalContainer.style.top = `${currentScroll}px`;
       modalCanvasEl.style.height = isFullScreen ? '100%' : modalHeight;
     }
@@ -278,7 +278,7 @@ export const Modal = function Modal({
           titleAlignment,
           hideTitleBar,
           hideCloseButton,
-          hideModal,
+          onHideModal,
           component,
           showConfigHandler: mode === 'edit',
           fullscreen: isFullScreen,
@@ -314,6 +314,7 @@ const Component = ({ children, ...restProps }) => {
     title,
     titleAlignment,
     hideTitleBar,
+    onHideModal,
     hideCloseButton,
     showConfigHandler,
     fullscreen,
@@ -344,11 +345,7 @@ const Component = ({ children, ...restProps }) => {
         />
       )}
       {!hideTitleBar && (
-        <BootstrapModal.Header
-          style={{ ...customStyles.modalHeader }}
-          data-cy={`modal-header`}
-          closeButton={!hideCloseButton}
-        >
+        <BootstrapModal.Header style={{ ...customStyles.modalHeader }} data-cy={`modal-header`}>
           <BootstrapModal.Title
             style={{
               textAlign: titleAlignment,
@@ -359,6 +356,35 @@ const Component = ({ children, ...restProps }) => {
           >
             {title}
           </BootstrapModal.Title>
+          {!hideCloseButton && (
+            <span
+              className="cursor-pointer"
+              data-cy={`modal-close-button`}
+              size="sm"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onHideModal();
+              }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="icon icon-tabler icon-tabler-x"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                strokeWidth="2"
+                stroke="currentColor"
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </span>
+          )}
         </BootstrapModal.Header>
       )}
       <BootstrapModal.Body style={{ ...customStyles.modalBody }} ref={parentRef} id={id} data-cy={`modal-body`}>
