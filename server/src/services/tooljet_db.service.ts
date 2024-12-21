@@ -42,6 +42,16 @@ export class TooljetDbService {
     private readonly tooljetDbManager: EntityManager
   ) {}
 
+  async duplicateTable(organizationId: string, tableName: string, duplicateData: boolean) {
+    await this.tooljetDbManager.query(`CREATE TABLE ${tableName}_copy AS TABLE ${tableName} WITH NO DATA`);
+
+    if (duplicateData) {
+      await this.tooljetDbManager.query(`INSERT INTO ${tableName}_copy SELECT * FROM ${tableName}`);
+    }
+
+    return { message: 'Table duplicated successfully' };
+  }
+
   async perform(
     organizationId: string,
     action: string,

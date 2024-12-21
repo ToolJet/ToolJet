@@ -41,6 +41,7 @@ import { TooljetDbJoinDto } from '@dto/tooljet-db-join.dto';
 import { TooljetDbJoinExceptionFilter } from 'src/filters/tooljetdb-join-exceptions-filter';
 import { Logger } from 'nestjs-pino';
 import { TooljetDbExceptionFilter } from 'src/filters/tooljetdb-exception-filter';
+import { DuplicateTableDto } from '@dto/tooljet-db.dto';
 
 const MAX_CSV_FILE_SIZE = 1024 * 1024 * 2; // 2MB
 
@@ -62,6 +63,23 @@ export class TooljetDbController {
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.ProxyPostgrest, 'all'))
   async proxy(@Req() req, @Res() res, @Next() next) {
     return this.postgrestProxyService.proxy(req, res, next);
+  }
+
+  @Post('/organizations/:organizationId/table/:tableName/duplicate')
+  @UseGuards(JwtAuthGuard, ActiveWorkspaceGuard, TooljetDbGuard)
+  @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.DuplicateTable, 'all'))
+  async duplicateTable(
+    @Param('organizationId') organizationId: string,
+    @Param('tableName') tableName: string,
+    @Body() duplicateTableDto: DuplicateTableDto
+  ) {
+    const { duplicateData } = duplicateTableDto;
+    try {
+      const result = await this.tooljetDbService.duplicateTable(organizationId, tableName, duplicateData);
+      return decamelizeKeys({ result });
+    } catch (error) {
+      throw new BadRequestException('Error duplicating table');
+    }
   }
 
   @Get('/organizations/:organizationId/tables')

@@ -19,6 +19,7 @@ export enum Action {
   AddForeignKey = 'addForeignKey',
   UpdateForeignKey = 'updateForeignKey',
   DeleteForeignKey = 'deleteForeignKey',
+  DuplicateTable = 'duplicateTable',
 }
 
 type Subjects = 'all';

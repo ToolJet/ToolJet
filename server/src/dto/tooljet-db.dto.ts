@@ -317,3 +317,8 @@ export class AddColumnDto {
   @Type(() => PostgrestForeignKeyDto)
   foreign_keys: Array<PostgrestForeignKeyDto>;
 }
+
+export class DuplicateTableDto {
+  @IsBoolean()
+  duplicateData: boolean;
+}
