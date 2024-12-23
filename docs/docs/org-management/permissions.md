@@ -52,7 +52,7 @@ For each resource type, different levels of permissions can be set:
 
 ### Granular Access Permissions
 
-For more fine-grained control, administrators can set permissions for individual resources in the **Granular Access** tab of each user group.
+For more fine-grained control, administrators can set permissions for individual apps and data sources in the **Granular Access** tab of each user group.
 
 <div style={{textAlign: 'center', paddingBottom:'24px'}}>
 <img className="screenshot-full" src="/img/tutorial/manage-users-groups/granular-access.png" alt="Granular Access" />
@@ -84,8 +84,9 @@ For more fine-grained control, administrators can set permissions for individual
 
 ## Inheritance and Overrides
 
-- Users inherit permissions from their assigned role and any groups they belong to.
-- Custom group permissions can override default role permissions.
+- Users inherit permissions from their assigned role and any custom groups they belong to.
+- Adding users to custom groups with higher permissions than their current role will automatically upgrade their user role to match the higher access level.  
+- If a user’s role is downgraded to one with lower permissions, they will automatically be removed from any custom groups that provided higher access than their new role allows.  
 - When a user belongs to multiple groups, they receive the highest level of permission granted by any of their groups.
 
 ---

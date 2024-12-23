@@ -63,7 +63,7 @@ Follow the steps below to deploy ToolJet on a ECS cluster.
         <img className="screenshot-full" src="/img/setup/ecs/ecs-4.png" alt="ECS Setup" />
     4. Add container details that is shown: <br/>
        Specify your container name ex: `ToolJet` <br/>
-       Set the image you intend to deploy. ex: `tooljet/tooljet:ee-lts-latest` <br/>
+       Set the image you intend to deploy. ex: `tooljet/tooljet:ee-latest` <br/>
        Update port mappings at container port `3000` for tcp protocol. 
         <img className="screenshot-full" src="/img/setup/ecs/ecs-5.png" alt="ECS Setup" />
 
@@ -125,7 +125,8 @@ The setup above is just a template. Feel free to update the task definition and 
 To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. You can learn more about this feature [here](/docs/tooljet-db/tooljet-database).
 
 Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration might break, checkout the following docs to know more about new major version, including breaking changes that require you to adjust your applications accordingly:
-- [Self Hosted](./upgrade-to-v3.md)
+- [ToolJet 3.0 Migration Guide for Self-Hosted Versions](./upgrade-to-v3.md)
+](./upgrade-to-v3.md)
 - [Cloud](./cloud-v3-migration.md)
 
 Follow the steps below to deploy PostgREST on a ECS cluster. 
@@ -183,6 +184,49 @@ Follow the steps below to deploy PostgREST on a ECS cluster.
 Update ToolJet deployment with the appropriate env variables [here](/docs/setup/env-vars/#enable-tooljet-database-required) and apply the changes.
 
 </div>
+
+## Workflows
+
+ToolJet Workflows allows users to design and execute complex, data-centric automations using a visual, node-based interface. This feature enhances ToolJet's functionality beyond building secure internal tools, enabling developers to automate complex business processes.  
+
+### Enabling Workflow Scheduling
+
+Deploy the following containers under the same ToolJet app task definition family to enable workflow scheduling:
+
+**Worker Container:**
+Use the `tooljet/tooljet:ee-latest`` image tag, and ensure it inherits environment variables from the ToolJet app container.
+
+To activate workflow scheduling, set these environment variables:
+
+```bash
+WORKFLOW_WORKER=true
+ENABLE_WORKFLOW_SCHEDULING=true
+TOOLJET_WORKFLOWS_TEMPORAL_NAMESPACE=default
+TEMPORAL_SERVER_ADDRESS=<Temporal_Server_Address>  
+```
+
+Under the containers tab inside the Docker configuration, please make sure the command `npm, run, worker:prod` is added.
+
+<div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/setup/ecs/ecs-tooljet-worker.png" alt="worker container" />
+</div>
+
+
+#### Temporal server container: 
+
+1. Use the image tag `temporalio/auto-setup:1.25.1`. Also ensure that in the App protocol, GRPC is selected.
+
+<div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/setup/ecs/ecs-temporal.png" alt="Temporal server container" />
+</div>
+
+
+2. Add the below env variables to the temporal container: 
+
+<div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/setup/ecs/ecs-temporal-env.png" alt="Temporal server container ENV's" />
+</div>
+
 
 ## Upgrading to the Latest LTS Version
 

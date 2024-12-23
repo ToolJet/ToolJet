@@ -109,6 +109,14 @@ actions.setPageVariable("data", data);
 
 ---
 
+## 11. Direct Mutation of Data
+
+- **Anti-Pattern**: Directly mutating data structures through JavaScript code, such as using `queries.getEmployees.data = []`.
+- **Solution**: Always use ToolJet's built in **[actions](/docs/how-to/run-actions-from-runjs/)** to manipulate data.
+- **Reason**: Direct mutation of data can lead to unexpected bugs and make debugging more complex. 
+
+---
+
 ## Conclusion
 
 Avoiding these anti-patterns when using ToolJet ensures that your applications are efficient, responsive, and maintainable. By following these best practices, you can enhance user experience and simplify app management. Always consider the impact of your development choices on both performance and scalability.

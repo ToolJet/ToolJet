@@ -33,16 +33,16 @@ Confused about which setup to select? Feel free to ask the community via Slack: 
 
   1. Download our production docker-compose file into the server.
   ```bash
-  curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/docker-compose-db.yaml
+  curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/pre-release/docker/docker-compose-db.yaml
   mv docker-compose-db.yaml docker-compose.yaml
   mkdir postgres_data
   ```
 
   2. Create `.env` file in the current directory (where the docker-compose.yaml file is downloaded as in step 1):
 
-   ```bash
-  curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/.env.internal.example
-  curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/internal.sh && chmod +x internal.sh
+  ```bash
+  curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/pre-release/docker/.env.internal.example
+  curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/pre-release/docker/internal.sh && chmod +x internal.sh
   mv .env.internal.example .env && ./internal.sh
   ```
 
@@ -100,7 +100,7 @@ curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/backup-re
 
   2. Download our production docker-compose file into the server.
   ```bash
-  curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/docker-compose.yaml
+  curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/pre-release/docker/docker-compose.yaml
   ```
 
   3. Create `.env` file in the current directory (where the docker-compose.yaml file is downloaded as in step 1):
@@ -114,8 +114,8 @@ curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/backup-re
   </div> 
 
   ```bash
-  curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/.env.external.example
-  curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/external.sh && chmod +x external.sh
+  curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/pre-release/docker/external.sh
+  curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/pre-release/docker/.env.external.example && chmod +x external.sh
   mv .env.external.example .env && ./external.sh
   ```
 

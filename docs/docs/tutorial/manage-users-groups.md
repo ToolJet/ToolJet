@@ -125,15 +125,15 @@ Remember that while metadata values are masked in the user interface, they are a
 
 ## Managing Groups
 
-### Default Groups
+### Default Roles
 
-By default, every workspace has three default groups corresponding to user roles:
+By default, every workspace has three default roles:
 
 1. **Admin**: Full access to manage the workspace, including users, groups, and all resources.
 2. **Builder**: Can create and edit apps, data sources, and other resources.
 3. **End-user**: Can only view and use apps they have been given access to.
 
-These groups have predefined permissions. The **Admin** and **End-user** groups cannot be modified, while the **Builder** group can be edited to change permissions. A user can be added to only one default group at a time.
+These roles have predefined permissions. The **Admin** and **End-user** roles cannot be modified, while the **Builder** role can be edited to change permissions. A user can be assigned to only one default role at a time. 
 
 <div style={{textAlign: 'center'}}>
 <img className="screenshot-full" src="/img/tutorial/manage-users-groups/default-user-groups.png" alt="Archive/Unarchive User" />
@@ -204,7 +204,7 @@ To duplicate a group:
 </div>
 
 :::tip
-Regularly review group permissions and user roles to ensure proper access control.
+Regularly review group permissions and user roles to ensure they align with your workspace's security and operational requirements. 
 :::
 
 ---

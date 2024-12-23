@@ -183,7 +183,8 @@ const sidebars = {
                             'widgets/table/serverside-operations/filter',
                             'widgets/table/serverside-operations/pagination'
                           ]
-                        }
+                        },
+                        'widgets/table/dynamic-column'
                       ]
                     },
                     'widgets/tabs',
@@ -459,7 +460,14 @@ const sidebars = {
         'workflows/workflow-triggers',
         'workflows/results',
         'workflows/permissions',
-        'workflows/trigger-workflow-from-app'
+        {
+          'type': 'category',
+          'label': 'How-to',
+          'items': [
+            'workflows/trigger-using-webhook',
+            'workflows/trigger-workflow-from-app'
+          ]
+        }
       ],
     },
     {
