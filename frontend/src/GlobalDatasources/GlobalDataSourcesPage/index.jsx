@@ -23,6 +23,9 @@ import { BreadCrumbContext } from '@/App';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 import HeaderSkeleton from '../../_ui/FolderSkeleton/HeaderSkeleton';
 import Skeleton from 'react-loading-skeleton';
+import { useAppDataStore } from '@/_stores/appDataStore';
+import { shallow } from 'zustand/shallow';
+import { checkIfToolJetCloud } from '@/_helpers/utils';
 export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasource }) => {
   const containerRef = useRef(null);
   const [plugins, setPlugins] = useState([]);
@@ -59,6 +62,12 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
   } = useContext(GlobalDataSourcesContext);
 
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
+  const { tooljetVersion } = useAppDataStore(
+    (state) => ({
+      tooljetVersion: state?.metadata?.installed_version,
+    }),
+    shallow
+  );
 
   useEffect(() => {
     pluginsService
@@ -360,7 +369,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
               />
             );
           })}
-          {type === 'Plugins' && (
+          {type === 'Plugins' && !checkIfToolJetCloud(tooljetVersion) && (
             <div style={{ height: '122px', width: '164px' }} className={`col-md-2  mb-4 `}>
               <div
                 className="card add-plugin-card"
