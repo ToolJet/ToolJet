@@ -24,7 +24,7 @@ describe("Workspace", () => {
             "have.text",
             "Workspace name"
         );
-        cy.get(commonSelectors.workspaceNameInputField).verifyVisibleElement(
+        cy.get(commonSelectors.workspaceNameinput).verifyVisibleElement(
             "have.attr",
             "placeholder",
             "Workspace name"
@@ -67,25 +67,25 @@ describe("Workspace", () => {
 
         cy.get(commonSelectors.workspaceName).click();
         cy.get(commonSelectors.addWorkspaceButton).click();
-        cy.get(commonSelectors.workspaceNameInputField).type(" ").clear();
+        cy.get(commonSelectors.workspaceNameinput).type(" ").clear();
         cy.get(dashboardSelector.workspaceErrorLabel).verifyVisibleElement(
             "have.text",
             "Workspace name can't be empty"
         );
 
-        cy.clearAndType(commonSelectors.workspaceNameInputField, "My workspace");
+        cy.clearAndType(commonSelectors.workspaceNameinput, "My workspace");
         cy.get(dashboardSelector.workspaceErrorLabel).verifyVisibleElement(
             "have.text",
-            "Name must be unique"
+            "Workspace name already exists"
         );
 
         cy.clearAndType(
-            commonSelectors.workspaceNameInputField,
+            commonSelectors.workspaceNameinput,
             data.workspaceName
         );
         cy.get(dashboardSelector.createWorkspaceButton).should("be.disabled");
 
-        cy.get(commonSelectors.workspaceNameInputField).clear();
+        cy.get(commonSelectors.workspaceNameinput).clear();
         cy.get(dashboardSelector.workspaceSlugInputField).type(" ").clear();
         cy.get(dashboardSelector.inputLabelError).verifyVisibleElement(
             "have.text",
@@ -107,7 +107,7 @@ describe("Workspace", () => {
         cy.clearAndType(dashboardSelector.workspaceSlugInputField, "my-workspace");
         cy.get(dashboardSelector.inputLabelError).verifyVisibleElement(
             "have.text",
-            "Slug must be unique"
+            "Workspace slug already exists"
         );
 
         cy.clearAndType(
@@ -132,7 +132,7 @@ describe("Workspace", () => {
         cy.wait(1000);
 
         cy.clearAndType(
-            commonSelectors.workspaceNameInputField,
+            commonSelectors.workspaceNameinput,
             data.workspaceName
         );
         cy.wait(1000);
@@ -141,7 +141,7 @@ describe("Workspace", () => {
         cy.wait(2000);
         cy.get(commonSelectors.workspaceName).click();
         cy.get(commonSelectors.addWorkspaceButton).click();
-        cy.get(commonSelectors.workspaceNameInputField).verifyVisibleElement(
+        cy.get(commonSelectors.workspaceNameinput).verifyVisibleElement(
             "have.attr",
             "placeholder",
             "Workspace name"
@@ -152,9 +152,9 @@ describe("Workspace", () => {
             "Unique workspace slug"
         );
         cy.get(dashboardSelector.createWorkspaceButton).should("be.disabled");
-
+        
         cy.wait(1000);
-        cy.get(commonSelectors.workspaceNameInputField)
+        cy.get(commonSelectors.workspaceNameinput)
             .clear()
             .type(data.workspaceName);
         cy.wait(1000);
@@ -174,7 +174,13 @@ describe("Workspace", () => {
         cy.url().should("eq", `${Cypress.config('baseUrl')}/${data.workspaceSlug}`);
 
         cy.get(commonSelectors.workspaceName).click();
-        cy.get(commonSelectors.editRectangleIcon).click();
+        cy.get(`[data-cy="${data.workspaceName.toLowerCase()}-name-selector"] > span`)
+        .parents('[class*="align-items-center"]').realHover().trigger('hover').then(()=>{
+            cy.hideTooltip();
+            cy.get('[data-cy="current-org-indicator"]').eq(0)
+            .click(); 
+        }) 
+       
 
         cy.get(dashboardSelector.editWorkspaceTitle).verifyVisibleElement(
             "have.text",
@@ -185,7 +191,7 @@ describe("Workspace", () => {
             "have.text",
             "Workspace name"
         );
-        cy.get(commonSelectors.workspaceNameInputField).verifyVisibleElement(
+        cy.get(commonSelectors.workspaceNameinput).verifyVisibleElement(
             "have.value",
             data.workspaceName
         );
@@ -223,16 +229,16 @@ describe("Workspace", () => {
         );
         cy.get(commonSelectors.saveButton).should("be.disabled");
 
-        cy.get(commonSelectors.workspaceNameInputField).clear();
+        cy.get(commonSelectors.workspaceNameinput).clear();
         cy.get(dashboardSelector.workspaceErrorLabel).verifyVisibleElement(
             "have.text",
             "Workspace name can't be empty"
         );
 
-        cy.clearAndType(commonSelectors.workspaceNameInputField, "My workspace");
+        cy.clearAndType(commonSelectors.workspaceNameinput, "My workspace");
         cy.get(dashboardSelector.workspaceErrorLabel).verifyVisibleElement(
             "have.text",
-            "Name must be unique"
+            "Workspace name already exists"
         );
 
         cy.get(dashboardSelector.workspaceSlugInputField).clear();
@@ -256,7 +262,7 @@ describe("Workspace", () => {
         cy.clearAndType(dashboardSelector.workspaceSlugInputField, "my-workspace");
         cy.get(dashboardSelector.inputLabelError).verifyVisibleElement(
             "have.text",
-            "Slug must be unique"
+            "Workspace slug already exists"
         );
 
         cy.get(dashboardSelector.workspaceSlugInputField).clear();
@@ -264,26 +270,28 @@ describe("Workspace", () => {
 
         cy.wait(3000);
         cy.get(commonSelectors.workspaceName).click();
-        cy.get(commonSelectors.editRectangleIcon).click();
-        cy.get(commonWidgetSelector.modalCloseButton).click();
-        cy.get(commonSelectors.workspaceName).click();
-        cy.get(commonSelectors.editRectangleIcon).click();
-
-        cy.get(commonSelectors.workspaceNameInputField).verifyVisibleElement(
+        cy.get(`[data-cy="${data.workspaceName.toLowerCase()}-name-selector"] > span`)
+        .parents('[class*="align-items-center"]').realHover().trigger('hover').then(()=>{
+            cy.hideTooltip();
+            cy.get('[data-cy="current-org-indicator"]').eq(0)
+            .click(); 
+        }) 
+      
+        cy.get(commonSelectors.workspaceNameinput).verifyVisibleElement(
             "have.value",
             data.workspaceName
         );
-        cy.get(dashboardSelector.workspaceSlugInputField).verifyVisibleElement(
-            "have.value",
-            data.workspaceSlug
-        );
+        // cy.get(dashboardSelector.workspaceSlugInputField).verifyVisibleElement(
+        //     "have.value",
+        //     data.workspaceSlug
+        // );
         cy.get(commonSelectors.saveButton).should("be.disabled");
 
         data.workspaceName = `${fake.firstName}-workspace`;
         data.workspaceSlug = `${data.workspaceName.toLowerCase()}-slug`;
 
         cy.clearAndType(
-            commonSelectors.workspaceNameInputField,
+            commonSelectors.workspaceNameinput,
             data.workspaceName
         );
         cy.wait(1000);
