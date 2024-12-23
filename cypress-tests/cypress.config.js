@@ -85,7 +85,7 @@ module.exports = defineConfig({
     specPattern: "cypress/e2e/happyPath/**/*.cy.js",
     downloadsFolder: "cypress/downloads",
     numTestsKeptInMemory: 0,
-    redirectionLimit: 10,
+    redirectionLimit: 7,
     experimentalRunAllSpecs: true,
     trashAssetsBeforeRuns: true,
     experimentalMemoryManagement: true,

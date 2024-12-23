@@ -8,6 +8,7 @@ import {
     releaseApp,
 } from "Support/utils/common";
 import { commonText } from "Texts/common";
+import { onboardingSelectors } from "../../../../../constants/selectors/onboarding";
 
 describe("Redirection error pages", () => {
     const data = {};
@@ -109,10 +110,12 @@ describe("Redirection error pages", () => {
         cy.get(commonSelectors.pageSectionHeader).should("be.visible");
 
         cy.logoutApi();
-        cy.apiLogin("test@tooljet.com", "password");
-        cy.wait(500);
+        cy.wait(2000);
 
         cy.visit(`${Cypress.config('baseUrl')}/applications/${data.slug}`);
+        cy.get(commonSelectors.inputFieldEmailAddress).type("dev@tooljet.io");
+        cy.get(onboardingSelectors.loginPasswordInput).type("password");
+        cy.get(onboardingSelectors.signInButton).click();
         cy.get(commonSelectors.modalHeader).verifyVisibleElement(
             "have.text",
             "App URL Unavailable"
@@ -130,10 +133,12 @@ describe("Redirection error pages", () => {
         cy.get(commonSelectors.backToHomeButton).click();
         cy.get(commonSelectors.pageSectionHeader).should("be.visible");
         logout();
-        cy.apiLogin("test@tooljet.com", "password");
-        cy.wait(500);
+        cy.wait(2000);
 
         cy.visit(`${Cypress.config('baseUrl')}/applications/${data.slug}`);
+        cy.get(commonSelectors.inputFieldEmailAddress).type("dev@tooljet.io");
+        cy.get(onboardingSelectors.loginPasswordInput).type("password");
+        cy.get(onboardingSelectors.signInButton).click()
         cy.get(commonSelectors.modalHeader).verifyVisibleElement(
             "have.text",
             "App URL Unavailable"
