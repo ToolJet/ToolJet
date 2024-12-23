@@ -36,7 +36,7 @@ describe(
 
       cy.apiCreateApp(data.appName);
       cy.openApp();
-      cy.addComponentToApp(data.appName, "text1");
+      cy.apiAddComponentToApp(data.appName, "text1");
 
       //Need to automate with the new flow
 
@@ -122,7 +122,7 @@ describe(
       data.slug = data.appName.toLowerCase().replace(/\s+/g, "-");
       cy.apiCreateApp(data.appName);
       cy.openApp();
-      cy.addComponentToApp(data.appName, "text1");
+      cy.apiAddComponentToApp(data.appName, "text1");
       releaseApp();
 
       cy.wait(1000);
@@ -174,7 +174,7 @@ describe(
 
       cy.apiCreateApp(data.appName);
       cy.openApp();
-      cy.addComponentToApp(data.appName, "text1");
+      cy.apiAddComponentToApp(data.appName, "text1");
 
       releaseApp();
 
@@ -246,7 +246,7 @@ describe(
       setSignupStatus(true);
       cy.apiCreateApp(data.appName);
       cy.openApp();
-      cy.addComponentToApp(data.appName, "text1");
+      cy.apiAddComponentToApp(data.appName, "text1");
 
       releaseApp();
 

@@ -7,12 +7,24 @@ import * as groups from "Support/utils/manageGroups";
 
 const groupName = fake.firstName.replaceAll("[^A-Za-z]", "");
 const newGroupname = `New ${groupName}`;
+const data = {};
 
 describe("Manage Groups", () => {
   beforeEach(() => {
     cy.defaultWorkspaceLogin();
   });
+
   it("Should verify the elements and functionalities on manage groups page", () => {
+    data.firstName = fake.firstName;
+    data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
+    data.workspaceName = fake.firstName;
+    data.workspaceSlug = fake.firstName
+      .toLowerCase()
+      .replaceAll("[^A-Za-z]", "");
+
+    cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
+    cy.visit(`${data.workspaceSlug}`);
+
     common.navigateToManageGroups();
     cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
       expect($el.contents().first().text().trim()).to.eq("Workspace settings");
@@ -210,7 +222,7 @@ describe("Manage Groups", () => {
     );
 
     cy.get(groupsSelector.granularLink).click();
-    cy.get(groupsSelector.granularEmptyPageIcon).should('be.visible');
+    cy.get(groupsSelector.granularEmptyPageIcon).should("be.visible");
     cy.get(groupsSelector.emptyPagePermissionTitle).verifyVisibleElement(
       "have.text",
       groupsText.emptyPagePermissionTitle
@@ -221,16 +233,14 @@ describe("Manage Groups", () => {
     );
     cy.get(groupsSelector.addAppButton).click();
 
-    cy.get(`${groupsSelector.addEditPermissionModalTitle}:eq(2)`).verifyVisibleElement(
-      "have.text",
-      groupsText.addPermissionModalTitle
-    );
+    cy.get(
+      `${groupsSelector.addEditPermissionModalTitle}:eq(2)`
+    ).verifyVisibleElement("have.text", groupsText.addPermissionModalTitle);
     //cy.get(commonSelectors.modalCloseButton).click();
     //cy.get(groupsSelector.addAppButton).click();
-    cy.get(`${groupsSelector.addEditPermissionModalTitle}:eq(2)`).verifyVisibleElement(
-      "have.text",
-      groupsText.addPermissionModalTitle
-    );
+    cy.get(
+      `${groupsSelector.addEditPermissionModalTitle}:eq(2)`
+    ).verifyVisibleElement("have.text", groupsText.addPermissionModalTitle);
     //modal
     cy.get(groupsSelector.permissionNameLabel).verifyVisibleElement(
       "have.text",
@@ -270,13 +280,13 @@ describe("Manage Groups", () => {
       groupsText.appViewHelperText
     );
 
-    cy.get(groupsSelector.hidePermissionInput).should(
-      "be.visible"
+    cy.get(groupsSelector.hidePermissionInput).should("be.visible");
+    cy.get(groupsSelector.appHidePermissionModalLabel).verifyVisibleElement(
+      "have.text",
+      groupsText.appHideLabel
     );
     cy.get(
-      groupsSelector.appHidePermissionModalLabel
-    ).verifyVisibleElement("have.text", groupsText.appHideLabel);
-    cy.get(groupsSelector.appHidePermissionModalHelperText
+      groupsSelector.appHidePermissionModalHelperText
     ).verifyVisibleElement("have.text", groupsText.appHideHelperText);
 
     cy.get(groupsSelector.resourceLabel).verifyVisibleElement(
@@ -307,29 +317,27 @@ describe("Manage Groups", () => {
       "have.text",
       groupsText.addButtonText
     );
-    cy.get(groupsSelector.confimButton).should('be.disabled')
+    cy.get(groupsSelector.confimButton).should("be.disabled");
     cy.get(groupsSelector.cancelButton)
       .verifyVisibleElement("have.text", groupsText.cancelButton)
       .click();
 
     cy.get(groupsSelector.addAppButton).click();
 
-    cy.clearAndType(groupsSelector.permissionNameInput, groupName)
-    cy.get(groupsSelector.confimButton).click()
+    cy.clearAndType(groupsSelector.permissionNameInput, groupName);
+    cy.get(groupsSelector.confimButton).click();
     cy.get(`[data-cy="${groupName.toLowerCase()}-text"]`).click();
 
     //edit modal
-    cy.get(`${groupsSelector.addEditPermissionModalTitle}:eq(2)`).verifyVisibleElement(
-      "have.text",
-      groupsText.editPermissionModalTitle
-    );
-    cy.get(groupsSelector.deletePermissionIcon).should('be.visible');
+    cy.get(
+      `${groupsSelector.addEditPermissionModalTitle}:eq(2)`
+    ).verifyVisibleElement("have.text", groupsText.editPermissionModalTitle);
+    cy.get(groupsSelector.deletePermissionIcon).should("be.visible");
     //cy.get(commonSelectors.modalCloseButton).should("be.visible").click();
     //cy.get(`[data-cy="${groupName.toLowerCase()}-text"]`).click();
-    cy.get(`${groupsSelector.addEditPermissionModalTitle}:eq(2)`).verifyVisibleElement(
-      "have.text",
-      groupsText.editPermissionModalTitle
-    );
+    cy.get(
+      `${groupsSelector.addEditPermissionModalTitle}:eq(2)`
+    ).verifyVisibleElement("have.text", groupsText.editPermissionModalTitle);
 
     cy.get(groupsSelector.permissionNameLabel).verifyVisibleElement(
       "have.text",
@@ -369,15 +377,15 @@ describe("Manage Groups", () => {
       groupsText.appViewHelperText
     );
 
-    cy.get(groupsSelector.hidePermissionInput).should(
-      "be.visible"
+    cy.get(groupsSelector.hidePermissionInput).should("be.visible");
+    cy.get(groupsSelector.appHideLabel).verifyVisibleElement(
+      "have.text",
+      groupsText.appHideLabelPermissionModal
     );
-    cy.get(
-      groupsSelector.appHideLabel
-    ).verifyVisibleElement("have.text", groupsText.appHideLabelPermissionModal);
-    cy.get(
-      groupsSelector.appHideHelperText
-    ).verifyVisibleElement("have.text", groupsText.appHideHelperText);
+    cy.get(groupsSelector.appHideHelperText).verifyVisibleElement(
+      "have.text",
+      groupsText.appHideHelperText
+    );
 
     cy.get(groupsSelector.resourceLabel).verifyVisibleElement(
       "have.text",
@@ -407,15 +415,15 @@ describe("Manage Groups", () => {
       "have.text",
       groupsText.updateButtonText
     );
-    cy.get(groupsSelector.confimButton).should('be.enabled')
+    cy.get(groupsSelector.confimButton).should("be.enabled");
     cy.get(commonSelectors.cancelButton)
       .verifyVisibleElement("have.text", groupsText.cancelButton)
       .click();
 
     cy.get(`[data-cy="${groupName.toLowerCase()}-text"]`).click();
-    cy.clearAndType(groupsSelector.permissionNameInput, groupName)
+    cy.clearAndType(groupsSelector.permissionNameInput, groupName);
     cy.get(groupsSelector.editPermissionRadio).check();
-    cy.get(groupsSelector.confimButton).click()
+    cy.get(groupsSelector.confimButton).click();
 
     cy.get(groupsSelector.groupNameUpdateLink).click();
     cy.get(groupsSelector.updateGroupNameModalTitle).verifyVisibleElement(

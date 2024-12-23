@@ -10,7 +10,6 @@ import { ssoSelector } from "Selectors/manageSSO";
 import { ssoText } from "Texts/manageSSO";
 import { onboardingSelectors } from "Selectors/onboarding";
 
-
 export const verifyConfirmEmailPage = (email) => {
   cy.get(commonSelectors.pageLogo).should("be.visible");
   cy.get('[data-cy="check-your-mail-header"]').verifyVisibleElement(
@@ -39,7 +38,6 @@ export const verifyConfirmEmailPage = (email) => {
     "Back to sign up"
   );
 };
-
 
 export const verifyOnboardingQuestions = (fullName, workspaceName) => {
   cy.wait(5000);
@@ -134,8 +132,8 @@ export const userSignUp = (fullName, email, workspaceName) => {
   cy.visit("/");
   cy.wait("@publicConfig");
   cy.get(commonSelectors.createAnAccountLink).realClick();
-  cy.get(onboardingSelectors.nameInput).should('not.be.disabled');
-  cy.wait(3000)
+  cy.get(onboardingSelectors.nameInput).should("not.be.disabled");
+  cy.wait(3000);
   cy.get(onboardingSelectors.nameInput).clear();
   cy.get(onboardingSelectors.nameInput).type(fullName);
   cy.clearAndType(onboardingSelectors.loginEmailInput, email);
@@ -150,7 +148,10 @@ export const userSignUp = (fullName, email, workspaceName) => {
     invitationLink = `/invitations/${resp.rows[0].invitation_token}`;
     cy.visit(invitationLink);
     cy.wait(4000);
-    cy.clearAndType('[data-cy="onboarding-workspace-name-input"]', workspaceName)
+    cy.clearAndType(
+      '[data-cy="onboarding-workspace-name-input"]',
+      workspaceName
+    );
     cy.get('[data-cy="onboarding-submit-button"]').click();
   });
 };
@@ -208,7 +209,6 @@ export const inviteUser = (firstName, email) => {
   cy.get(commonSelectors.acceptInviteButton).click();
 };
 
-
 export const addNewUser = (firstName, email) => {
   navigateToManageUsers();
   inviteUser(firstName, email);
@@ -217,7 +217,7 @@ export const addNewUser = (firstName, email) => {
 
 export const roleBasedOnboarding = (firstName, email, userRole) => {
   navigateToManageUsers();
-  cy.userInviteApi(firstName, email,userRole);
+  cy.userInviteApi(firstName, email, userRole);
   fetchAndVisitInviteLink(email);
   cy.wait(1000);
   cy.get(onboardingSelectors.loginPasswordInput).should("be.visible");
@@ -318,8 +318,11 @@ export const SignUpPageElements = () => {
   //   );
   // });
 
-  cy.get(onboardingSelectors.signupNameLabel).verifyVisibleElement("have.text", "Name *");
-  cy.get(onboardingSelectors.nameInput).should('be.visible');
+  cy.get(onboardingSelectors.signupNameLabel).verifyVisibleElement(
+    "have.text",
+    "Name *"
+  );
+  cy.get(onboardingSelectors.nameInput).should("be.visible");
   cy.get(onboardingSelectors.emailLabel).verifyVisibleElement(
     "have.text",
     "Email *"
@@ -327,7 +330,6 @@ export const SignUpPageElements = () => {
   // cy.get(commonSelectors.loginPasswordLabel).verifyVisibleElement("have.text", "Password *");
 
   cy.get(onboardingSelectors.loginPasswordInput).should("be.visible");
-
 
   cy.get(commonSelectors.signInRedirectLink).verifyVisibleElement(
     "have.text",
@@ -366,7 +368,7 @@ export const SignUpPageElements = () => {
 };
 
 export const signUpLink = (email) => {
-  let invitationLink
+  let invitationLink;
   cy.task("updateId", {
     dbconfig: Cypress.env("app_db"),
     sql: `select invitation_token from users where email='${email}';`,
@@ -375,4 +377,4 @@ export const signUpLink = (email) => {
     cy.visit(invitationLink);
     cy.wait(3000);
   });
-}
+};
