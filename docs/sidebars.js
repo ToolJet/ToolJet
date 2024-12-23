@@ -463,8 +463,9 @@ const sidebars = {
           'type': 'category',
           'label': 'How-to',
           'items': [
-            'workflows/trigger-using-webhook',
-            'workflows/trigger-workflow-from-app'
+            'workflows/how-to/trigger-using-webhook',
+            'workflows/how-to/trigger-workflow-from-app',
+            'workflows/how-to/trigger-workflow-using-scheduler'
           ]
         }
       ],
