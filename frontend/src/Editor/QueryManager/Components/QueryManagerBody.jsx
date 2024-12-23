@@ -214,9 +214,12 @@ export const QueryManagerBody = ({
   const renderQueryElement = () => {
     return (
       <div
-        className={cx({
-          'disabled ': isVersionReleased,
-        })}
+        className={cx(
+          {
+            'disabled ': isVersionReleased,
+          },
+          'query-wrapper'
+        )}
       >
         <div ref={paramListContainerRef} style={{ marginBottom: '16px' }}>
           {selectedQuery &&
