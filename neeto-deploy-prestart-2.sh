@@ -11,11 +11,14 @@ if [ -n "$DATABASE_URL" ]; then
     database=$(echo "$DATABASE_URL" | sed -n 's#.*:\([0-9]*\)/\([^?]*\)?.*#\2#p')
 
     # Export variables for ToolJet
-    export TOOLJET_USER="$username"
-    export TOOLJET_PASS="$password"
-    export TOOLJET_HOST="$host"
+    export TOOLJET_DB_USER="$username"
+    export TOOLJET_DB_PASS="$password"
+    export TOOLJET_DB_HOST="$host"
     export TOOLJET_PORT="$port"
-    export TOOLJET_DB="$database"
+    export PG_DB="$database"
+    export PG_USER="$username"
+    export PG_PASS="$password"
+    export PG_HOST="$host"
 
     echo "TOOLJET_USER: $TOOLJET_USER"
     echo "TOOLJET_PASS: [HIDDEN]"
