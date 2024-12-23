@@ -225,6 +225,25 @@ export const formConfig = {
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+    },
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disable',
+      section: 'additionalActions',
       validation: {
         schema: { type: 'boolean' },
         defaultValue: false,
@@ -274,26 +293,13 @@ export const formConfig = {
         defaultValue: '#fff',
       },
     },
-    visibility: {
-      type: 'toggle',
-      displayName: 'Visibility',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: true,
-      },
-    },
-    disabledState: {
-      type: 'toggle',
-      displayName: 'Disable',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: false,
-      },
-    },
   },
   exposedVariables: {
     data: {},
     isValid: true,
+    isVisible: true,
+    isDisabled: false,
+    isLoading: false,
   },
   actions: [
     {
@@ -304,6 +310,21 @@ export const formConfig = {
       handle: 'resetForm',
       displayName: 'Reset Form',
     },
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setDisable',
+      displayName: 'Set disable',
+      params: [{ handle: 'setDisable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setLoading',
+      displayName: 'Set loading',
+      params: [{ handle: 'setLoading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
   ],
   definition: {
     others: {
@@ -311,7 +332,9 @@ export const formConfig = {
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
-      loadingState: { value: '{{false}}' },
+      loadingState: { value: `{{false}}` },
+      visibility: { value: '{{true}}' },
+      disabledState: { value: '{{false}}' },
       advanced: { value: '{{false}}' },
       JSONSchema: {
         value:
@@ -324,8 +347,6 @@ export const formConfig = {
       backgroundColor: { value: '#fff' },
       borderRadius: { value: '0' },
       borderColor: { value: '#fff' },
-      visibility: { value: '{{true}}' },
-      disabledState: { value: '{{false}}' },
     },
   },
 };

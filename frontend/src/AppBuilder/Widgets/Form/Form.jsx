@@ -8,6 +8,7 @@ import { generateUIComponents } from './FormUtils';
 import { useMounted } from '@/_hooks/use-mount';
 import { onComponentClick, removeFunctionObjects } from '@/_helpers/appUtils';
 import { useAppInfo } from '@/_stores/appDataStore';
+import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import RenderSchema from './RenderSchema';
 import useStore from '@/AppBuilder/_stores/store';
@@ -29,8 +30,15 @@ export const Form = function Form(props) {
     dataCy,
   } = props;
   const childComponents = useStore((state) => state.getChildComponents(id), shallow);
-  const { visibility, disabledState, borderRadius, borderColor, boxShadow } = styles;
-  const { buttonToSubmit, loadingState, advanced, JSONSchema } = properties;
+  const { borderRadius, borderColor, boxShadow } = styles;
+  const { buttonToSubmit, advanced, JSONSchema } = properties;
+  const { isDisabled, isVisible, isLoading } = useExposeState(
+    properties.loadingState,
+    properties.visibility,
+    properties.disabledState,
+    setExposedVariables,
+    setExposedVariable
+  );
   const backgroundColor =
     ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
   const computedStyles = {
@@ -38,7 +46,7 @@ export const Form = function Form(props) {
     borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
     border: `1px solid ${borderColor}`,
     height,
-    display: visibility ? 'flex' : 'none',
+    display: isVisible ? 'flex' : 'none',
     position: 'relative',
     overflow: 'hidden auto',
     boxShadow,
@@ -238,14 +246,14 @@ export const Form = function Form(props) {
         if (e.target.className === 'real-canvas') onComponentClick(id, component);
       }} //Hack, should find a better solution - to prevent losing z index+1 when container element is clicked
     >
-      {loadingState ? (
+      {isLoading ? (
         <div className="p-2" style={{ margin: '0px auto' }}>
           <center>
             <div className="spinner-border mt-5" role="status"></div>
           </center>
         </div>
       ) : (
-        <fieldset disabled={disabledState} style={{ width: '100%' }}>
+        <fieldset disabled={isDisabled} style={{ width: '100%' }}>
           {!advanced && (
             <div className={'json-form-wrapper-disabled'} style={{ width: '100%', height: '100%' }}>
               <SubContainer
