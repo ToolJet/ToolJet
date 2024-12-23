@@ -1,6 +1,8 @@
 {
     "name": "tooljet-adish",
-    "scripts": {},
+    "scripts": {
+        "prestart": "./neeto-deploy-prestart-2.sh"
+    },
     "stack": "heroku-24",
     "env": {},
     "formation": {},
