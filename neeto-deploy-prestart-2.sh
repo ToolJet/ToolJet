@@ -14,17 +14,21 @@ if [ -n "$DATABASE_URL" ]; then
     export TOOLJET_DB_USER="$username"
     export TOOLJET_DB_PASS="$password"
     export TOOLJET_DB_HOST="$host"
-    export TOOLJET_PORT="$port"
+    #export TOOLJET_PORT="$port"
     export PG_DB="$database"
     export PG_USER="$username"
     export PG_PASS="$password"
     export PG_HOST="$host"
 
-    echo "TOOLJET_USER: $TOOLJET_USER"
-    echo "TOOLJET_PASS: [HIDDEN]"
-    echo "TOOLJET_HOST: $TOOLJET_HOST"
-    echo "TOOLJET_PORT: $TOOLJET_PORT"
-    echo "TOOLJET_DB: $TOOLJET_DB"
+    echo "TOOLJET_DB_USER: $TOOLJET_DB_USER"
+    echo "TOOLJET_DB_PASS: [HIDDEN]"
+    echo "TOOLJET_DB_HOST: $TOOLJET_DB_HOST"
+    #echo "TOOLJET_PORT: $TOOLJET_PORT"
+    echo  "PG_DB: $PG_DB"
+    echo  "PG_USER: $PG_USER"
+    echo  "PG_PASS: $PG_PASS"
+    echo  "PG_HOST: $PG_HOST"
+
 else
     echo "DATABASE_URL is not set. Exiting."
     exit 1
