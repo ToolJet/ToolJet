@@ -61,6 +61,25 @@ export const Form = ({
     pages
   );
 
+  accordionItems.push({
+    title: `Additional Actions`,
+    isOpen: true,
+    children: additionalActions.map((property) => {
+      return renderElement(
+        component,
+        componentMeta,
+        paramUpdated,
+        dataQueries,
+        property,
+        'properties',
+        currentState,
+        allComponents,
+        darkMode,
+        componentMeta.properties?.[property]?.placeholder
+      );
+    }),
+  });
+
   return <Accordion items={accordionItems} />;
 };
 
