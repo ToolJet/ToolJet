@@ -91,7 +91,7 @@ export default class RestapiQueryService implements QueryService {
     const headers = sanitizeHeaders(sourceOptions, queryOptions, hasDataSource);
     const method = queryOptions['method'];
     const searchParams = this.buildSearchParams(sourceOptions, queryOptions, hasDataSource, url);
-    const _requestOptions = {
+    const _requestOptions: OptionsOfTextResponseBody = {
       method,
       ...this.fetchHttpsCertsForCustomCA(sourceOptions),
       headers,
@@ -204,7 +204,11 @@ export default class RestapiQueryService implements QueryService {
   }
 
   private addBodyToRequest(requestOptions: OptionsOfTextResponseBody, body: any) {
-    switch (requestOptions.headers['content-type']) {
+    const headers = requestOptions.headers as Record<string, string>;
+    const contentTypeKey = Object.keys(headers).find((key) => key.toLowerCase() === 'content-type');
+    const contentType = contentTypeKey ? headers[contentTypeKey].toLowerCase() : undefined;
+
+    switch (contentType) {
       case 'application/json':
         requestOptions.json = this.maybeParseJson(body);
         break;
