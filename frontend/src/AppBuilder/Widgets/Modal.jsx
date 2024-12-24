@@ -51,6 +51,9 @@ export const Modal = function Modal({
   const [modalWidth, setModalWidth] = useState();
   const mode = useStore((state) => state.currentMode, shallow);
   const isFullScreen = properties.size === 'fullscreen';
+  const versionFriendlyHeight = backwardCompatibilityCheck ? modalHeight : height;
+  const [modalContainerHeight, setModalContainerHeight] = useState(0);
+  const computedHeight = isFullScreen ? '100%' : versionFriendlyHeight;
 
   /**** Start - Logic to reset the zIndex of modal control box ****/
   useEffect(() => {
@@ -89,11 +92,11 @@ export const Modal = function Modal({
 
     if (canvasElement && realCanvasEl && modalContainer) {
       const currentScroll = canvasElement.scrollTop;
-      canvasElement.style.overflowY = 'auto';
+      canvasElement.style.overflowY = 'hidden';
 
-      modalContainer.style.height = `${canvasElement.scrollHeight}px`;
+      modalContainer.style.height = `${canvasElement.offsetHeight}px`;
       modalContainer.style.top = `${currentScroll}px`;
-      modalCanvasEl.style.height = isFullScreen ? '100%' : modalHeight;
+      modalCanvasEl.style.height = computedHeight;
     }
   };
 
@@ -134,6 +137,36 @@ export const Modal = function Modal({
     setExposedVariables(exposedVariables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exposedVariables]);
+
+  // When query panel opens or closes, the modal container height should change to
+  // accomodate the new height of the canvas
+
+  useEffect(() => {
+    // Select the DOM element
+    const canvasElement = document.querySelector('.page-container.canvas-container');
+
+    if (!canvasElement) return; // Ensure the element exists
+
+    // Create a ResizeObserver
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        // Update the height state when the element's height changes
+        setModalContainerHeight(entry.contentRect.height);
+
+        const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
+        const modalContainer = realCanvasEl.querySelector('.modal');
+        modalContainer.style.height = `${entry.contentRect.height}px`;
+      }
+    });
+
+    // Observe the canvas element
+    resizeObserver.observe(canvasElement);
+
+    return () => {
+      // Cleanup observer on component unmount
+      resizeObserver.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     if (isInitialRender.current) {
@@ -181,7 +214,6 @@ export const Modal = function Modal({
 
   const customStyles = {
     modalBody: {
-      height: backwardCompatibilityCheck ? modalHeight : height,
       backgroundColor:
         ['#fff', '#ffffffff'].includes(bodyBackgroundColor) && darkMode ? '#1F2837' : bodyBackgroundColor,
       overflowX: 'hidden',
@@ -288,7 +320,7 @@ export const Modal = function Modal({
           <>
             <SubContainer
               id={`${id}`}
-              canvasHeight={modalHeight}
+              canvasHeight={isFullScreen ? modalContainerHeight : modalHeight}
               styles={{ backgroundColor: customStyles.modalBody.backgroundColor, height: modalHeight }}
               canvasWidth={modalWidth}
               darkMode={darkMode}
