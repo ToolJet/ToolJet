@@ -5277,7 +5277,8 @@ fieldset:disabled .btn {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    outline: 0
+    outline: 0;
+    padding-left: 0 !important;
 }
 
 .modal-dialog {
@@ -5311,7 +5312,7 @@ fieldset:disabled .btn {
 }
 
 .modal-dialog-scrollable .modal-content {
-    max-height: 100%;
+    max-height: 88%;
     overflow: hidden
 }
 
@@ -5447,6 +5448,10 @@ fieldset:disabled .btn {
     margin: 0
 }
 
+.real-canvas .modal-dialog.modal-fullscreen {
+    width: 100%;
+}
+
 .modal-fullscreen .modal-content {
     height: 100%;
     border: 0;
@@ -5463,6 +5468,12 @@ fieldset:disabled .btn {
 
 .modal-fullscreen .modal-footer {
     border-radius: 0
+}
+
+.modal-dialog-scrollable.modal-fullscreen .modal-content.modal-component {
+    // Modal header height
+    padding-bottom: 56px;
+    max-height: 100%;
 }
 
 @media (max-width:575.98px) {

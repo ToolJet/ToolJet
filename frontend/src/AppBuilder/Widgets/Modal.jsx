@@ -5,6 +5,8 @@ import { ConfigHandle } from '@/AppBuilder/AppCanvas/ConfigHandle/ConfigHandle';
 import { useGridStore } from '@/_stores/gridStore';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { useEventListener } from '@/_hooks/use-event-listener';
+
 var tinycolor = require('tinycolor2');
 
 export const Modal = function Modal({
@@ -48,6 +50,10 @@ export const Modal = function Modal({
   const size = properties.size ?? 'lg';
   const [modalWidth, setModalWidth] = useState();
   const mode = useStore((state) => state.currentMode, shallow);
+  const isFullScreen = properties.size === 'fullscreen';
+  const versionFriendlyHeight = backwardCompatibilityCheck ? modalHeight : height;
+  const [modalContainerHeight, setModalContainerHeight] = useState(0);
+  const computedHeight = isFullScreen ? '100%' : versionFriendlyHeight;
 
   /**** Start - Logic to reset the zIndex of modal control box ****/
   useEffect(() => {
@@ -65,21 +71,6 @@ export const Modal = function Modal({
   }, [showModal, id, mode]);
   /**** End - Logic to reset the zIndex of modal control box ****/
 
-  useEffect(() => {
-    const exposedVariables = {
-      open: async function () {
-        setExposedVariable('show', true);
-        setShowModal(true);
-      },
-      close: async function () {
-        setExposedVariable('show', false);
-        setShowModal(false);
-      },
-    };
-    setExposedVariables(exposedVariables);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   function hideModal() {
     setExposedVariable('show', false);
     setShowModal(false);
@@ -90,53 +81,122 @@ export const Modal = function Modal({
     setShowModal(true);
   }
 
+  // Side effects for modal, which include dom manipulation to hide overflow when opening
+  // And cleaning up dom when modal is closed
+
+  const onShowSideEffects = () => {
+    const canvasElement = document.querySelector('.page-container.canvas-container');
+    const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
+    const modalCanvasEl = document.getElementById(`canvas-${id}`);
+    const modalContainer = realCanvasEl.querySelector('.modal');
+
+    if (canvasElement && realCanvasEl && modalContainer) {
+      const currentScroll = canvasElement.scrollTop;
+      canvasElement.style.overflowY = 'hidden';
+
+      modalContainer.style.height = `${canvasElement.offsetHeight}px`;
+      modalContainer.style.top = `${currentScroll}px`;
+      modalCanvasEl.style.height = computedHeight;
+    }
+  };
+
+  const onHideSideEffects = () => {
+    const canvasElement = document.querySelector('.page-container.canvas-container');
+    const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
+    const modalContainer = realCanvasEl.querySelector('.modal');
+
+    if (canvasElement && realCanvasEl && modalContainer) {
+      canvasElement.style.overflow = 'auto';
+      modalContainer.style.height = ``;
+      modalContainer.style.top = ``;
+    }
+  };
+
+  useEventListener('resize', onShowSideEffects, window);
+
+  const onShowModal = () => {
+    openModal();
+    onShowSideEffects();
+  };
+
+  const onHideModal = () => {
+    onHideSideEffects();
+    hideModal();
+  };
+
+  const exposedVariables = {
+    open: async function () {
+      onShowModal();
+    },
+    close: async function () {
+      onHideModal();
+    },
+  };
+
   useEffect(() => {
-    const handleModalOpen = () => {
-      openModal();
-      const canvasElement = document.getElementsByClassName('canvas-container')[0];
-      const modalBackdropEl = document.getElementsByClassName('modal-backdrop')[0];
-      const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
-      const modalCanvasEl = document.getElementById(`canvas-${id}`);
-      if (canvasElement && modalBackdropEl && modalCanvasEl && realCanvasEl) {
-        realCanvasEl.style.height = '100vh';
-        realCanvasEl.style.position = 'absolute';
-        realCanvasEl.style.overflow = 'hidden';
+    setExposedVariables(exposedVariables);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [exposedVariables]);
 
-        modalBackdropEl.style.height = '100vh';
-        modalBackdropEl.style.minHeight = '100vh';
-        modalBackdropEl.style.minHeight = '100vh';
-        modalCanvasEl.style.height = modalHeight;
+  // When query panel opens or closes, the modal container height should change to
+  // accomodate the new height of the canvas
+
+  useEffect(() => {
+    // Select the DOM element
+    const canvasElement = document.querySelector('.page-container.canvas-container');
+
+    if (!canvasElement) return; // Ensure the element exists
+
+    // Create a ResizeObserver
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        // Update the height state when the element's height changes
+        setModalContainerHeight(entry.contentRect.height);
+
+        const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
+        const modalContainer = realCanvasEl.querySelector('.modal');
+        modalContainer.style.height = `${entry.contentRect.height}px`;
       }
+    });
+
+    // Observe the canvas element
+    resizeObserver.observe(canvasElement);
+
+    return () => {
+      // Cleanup observer on component unmount
+      resizeObserver.disconnect();
     };
+  }, []);
 
-    const handleModalClose = () => {
-      const canvasElement = document.getElementsByClassName('canvas-container')[0];
-      const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
-      const canvasHeight = realCanvasEl?.getAttribute('canvas-height');
+  useEffect(() => {
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
+    }
 
-      if (canvasElement && realCanvasEl && canvasHeight) {
-        realCanvasEl.style.height = canvasHeight;
-        realCanvasEl.style.position = '';
+    fireEvent(!showModal ? 'onClose' : 'onOpen');
+    const inputRef = document?.getElementsByClassName('tj-text-input-widget')?.[0];
+    inputRef?.blur();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showModal]);
 
-        realCanvasEl.style.overflow = 'auto';
-      }
-    };
+  useEffect(() => {
     if (showModal) {
-      handleModalOpen();
+      onShowModal();
     } else {
       if (document.getElementsByClassName('modal-content')[0] == undefined) {
-        handleModalClose();
+        onHideModal();
       }
     }
 
     // Cleanup the effect
     return () => {
       if (document.getElementsByClassName('modal-content')[0] == undefined) {
-        handleModalClose();
+        onHideModal();
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showModal, modalHeight]);
+  }, [modalHeight, size]);
 
   useEffect(() => {
     if (isInitialRender.current) {
@@ -154,7 +214,6 @@ export const Modal = function Modal({
 
   const customStyles = {
     modalBody: {
-      height: backwardCompatibilityCheck ? modalHeight : height,
       backgroundColor:
         ['#fff', '#ffffffff'].includes(bodyBackgroundColor) && darkMode ? '#1F2837' : bodyBackgroundColor,
       overflowX: 'hidden',
@@ -181,7 +240,7 @@ export const Modal = function Modal({
         const modalRef = parentRef?.current?.parentElement?.parentElement?.parentElement;
 
         if (modalRef && modalRef === event.target) {
-          hideModal();
+          onHideSideEffects();
         }
       };
 
@@ -236,7 +295,9 @@ export const Modal = function Modal({
         keyboard={true}
         enforceFocus={false}
         animation={false}
-        onEscapeKeyDown={() => hideOnEsc && hideModal()}
+        onShow={() => onShowModal()}
+        onHide={() => onHideModal()}
+        onEscapeKeyDown={() => hideOnEsc && onHideModal()}
         id="modal-container"
         component-id={id}
         backdrop={'static'}
@@ -249,17 +310,18 @@ export const Modal = function Modal({
           titleAlignment,
           hideTitleBar,
           hideCloseButton,
-          hideModal,
+          onHideModal,
           component,
           showConfigHandler: mode === 'edit',
+          fullscreen: isFullScreen,
         }}
       >
         {!loadingState ? (
           <>
             <SubContainer
               id={`${id}`}
-              canvasHeight={modalHeight}
-              styles={{ backgroundColor: customStyles.modalBody.backgroundColor }}
+              canvasHeight={isFullScreen ? modalContainerHeight : modalHeight}
+              styles={{ backgroundColor: customStyles.modalBody.backgroundColor, height: modalHeight }}
               canvasWidth={modalWidth}
               darkMode={darkMode}
             />
@@ -284,9 +346,10 @@ const Component = ({ children, ...restProps }) => {
     title,
     titleAlignment,
     hideTitleBar,
+    onHideModal,
     hideCloseButton,
-    hideModal,
     showConfigHandler,
+    fullscreen,
   } = restProps['modalProps'];
 
   const setSelectedComponentAsModal = useStore((state) => state.setSelectedComponentAsModal, shallow);
@@ -302,7 +365,7 @@ const Component = ({ children, ...restProps }) => {
   };
 
   return (
-    <BootstrapModal {...restProps} onClick={handleModalBodyClick}>
+    <BootstrapModal {...restProps} onClick={handleModalBodyClick} fullscreen={fullscreen} animation={true}>
       {showConfigHandler && (
         <ConfigHandle
           id={id}
@@ -333,7 +396,7 @@ const Component = ({ children, ...restProps }) => {
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                hideModal();
+                onHideModal();
               }}
             >
               <svg
