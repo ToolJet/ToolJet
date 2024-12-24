@@ -35,7 +35,7 @@ Follow the steps below to setup and run the test specifications using Cypress. W
   npm run cy:run
   ```
 
-- For running specific spec in headless mode, run for specific spec
+- To run a specific spec in headless mode, run the following command:
 
   ```bash
   npm run cy:run --  --spec "cypress/e2e/dashboard/multi-workspace/manageSSO.cy.js
