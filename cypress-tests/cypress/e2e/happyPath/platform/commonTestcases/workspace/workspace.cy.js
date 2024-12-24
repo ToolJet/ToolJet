@@ -7,6 +7,7 @@ const data = {};
 data.firstName = fake.firstName;
 data.workspaceName = `${fake.firstName}-workspace`;
 data.workspaceSlug = `${data.workspaceName.toLowerCase()}-slug`;
+
 describe("Workspace", () => {
     before(() => {
         cy.defaultWorkspaceLogin();
@@ -19,52 +20,62 @@ describe("Workspace", () => {
             "have.text",
             "Create workspace"
         );
+
         cy.get(commonWidgetSelector.modalCloseButton).should("be.visible");
         cy.get(dashboardSelector.workspaceNameLabel).verifyVisibleElement(
             "have.text",
             "Workspace name"
         );
+
         cy.get(commonSelectors.workspaceNameinput).verifyVisibleElement(
             "have.attr",
             "placeholder",
             "Workspace name"
         );
+
         cy.get(dashboardSelector.workspaceNameInfoLabel).verifyVisibleElement(
             "have.text",
             "Name must be unique and max 50 characters"
         );
+
         cy.get(dashboardSelector.slugNameInputLabel).verifyVisibleElement(
             "have.text",
             "Unique workspace slug"
         );
+
         cy.get(dashboardSelector.workspaceSlugInputField).verifyVisibleElement(
             "have.attr",
             "placeholder",
             "Unique workspace slug"
         );
+
         cy.get(dashboardSelector.slugInfoLabel).verifyVisibleElement(
             "have.text",
             "URL-friendly 'slug' consists of lowercase letters, numbers, and hyphens"
         );
+
         cy.get(dashboardSelector.workspaceLinkLabel).verifyVisibleElement(
             "have.text",
             "Workspace link"
         );
+
         cy.get(dashboardSelector.slugField).verifyVisibleElement(
             "have.text",
             `${Cypress.config('baseUrl')}/<workspace-slug>`
         );
+
         cy.get(commonSelectors.cancelButton).verifyVisibleElement(
             "have.text",
             "Cancel"
         );
+
         cy.get(dashboardSelector.createWorkspaceButton).verifyVisibleElement(
             "have.text",
             "Create workspace"
         );
+
         cy.get(dashboardSelector.createWorkspaceButton).should("be.disabled");
         cy.get(commonWidgetSelector.modalCloseButton).click();
-
         cy.get(commonSelectors.workspaceName).click();
         cy.get(commonSelectors.addWorkspaceButton).click();
         cy.get(commonSelectors.workspaceNameinput).type(" ").clear();
@@ -83,8 +94,8 @@ describe("Workspace", () => {
             commonSelectors.workspaceNameinput,
             data.workspaceName
         );
-        cy.get(dashboardSelector.createWorkspaceButton).should("be.disabled");
 
+        cy.get(dashboardSelector.createWorkspaceButton).should("be.disabled");
         cy.get(commonSelectors.workspaceNameinput).clear();
         cy.get(dashboardSelector.workspaceSlugInputField).type(" ").clear();
         cy.get(dashboardSelector.inputLabelError).verifyVisibleElement(
@@ -114,10 +125,12 @@ describe("Workspace", () => {
             dashboardSelector.workspaceSlugInputField,
             data.workspaceSlug
         );
+
         cy.get(dashboardSelector.slugSuccessLabel).verifyVisibleElement(
             "have.text",
             "Slug accepted!"
         );
+
         cy.get(dashboardSelector.slugField).verifyVisibleElement(
             "have.text",
             `${Cypress.config('baseUrl')}/${data.workspaceSlug}`
@@ -126,8 +139,8 @@ describe("Workspace", () => {
             "have.text",
             "Link updated successfully!"
         );
+        
         cy.get(dashboardSelector.createWorkspaceButton).should("be.disabled");
-
         cy.clearAndType(dashboardSelector.workspaceSlugInputField, "my-workspace");
         cy.wait(1000);
 
@@ -135,6 +148,7 @@ describe("Workspace", () => {
             commonSelectors.workspaceNameinput,
             data.workspaceName
         );
+
         cy.wait(1000);
         cy.get(commonSelectors.cancelButton).click();
 
@@ -146,13 +160,14 @@ describe("Workspace", () => {
             "placeholder",
             "Workspace name"
         );
+
         cy.get(dashboardSelector.workspaceSlugInputField).verifyVisibleElement(
             "have.attr",
             "placeholder",
             "Unique workspace slug"
         );
+
         cy.get(dashboardSelector.createWorkspaceButton).should("be.disabled");
-        
         cy.wait(1000);
         cy.get(commonSelectors.workspaceNameinput)
             .clear()
@@ -165,14 +180,13 @@ describe("Workspace", () => {
         cy.get(dashboardSelector.createWorkspaceButton)
             .should("be.enabled")
             .click();
-
         cy.wait(1000);
         cy.get(commonSelectors.workspaceName).verifyVisibleElement(
             "have.text",
             data.workspaceName
         );
-        cy.url().should("eq", `${Cypress.config('baseUrl')}/${data.workspaceSlug}`);
 
+        cy.url().should("eq", `${Cypress.config('baseUrl')}/${data.workspaceSlug}`);
         cy.get(commonSelectors.workspaceName).click();
         cy.get(`[data-cy="${data.workspaceName.toLowerCase()}-name-selector"] > span`)
         .parents('[class*="align-items-center"]').realHover().trigger('hover').then(()=>{
@@ -181,54 +195,63 @@ describe("Workspace", () => {
             .click(); 
         }) 
        
-
         cy.get(dashboardSelector.editWorkspaceTitle).verifyVisibleElement(
             "have.text",
             "Edit workspace"
         );
+
         cy.get(commonWidgetSelector.modalCloseButton).should("be.visible");
         cy.get(dashboardSelector.workspaceNameLabel).verifyVisibleElement(
             "have.text",
             "Workspace name"
         );
+
         cy.get(commonSelectors.workspaceNameinput).verifyVisibleElement(
             "have.value",
             data.workspaceName
         );
+
         cy.get(dashboardSelector.workspaceNameInfoLabel).verifyVisibleElement(
             "have.text",
             "Name must be unique and max 50 characters"
         );
+
         cy.get(dashboardSelector.slugNameInputLabel).verifyVisibleElement(
             "have.text",
             "Unique workspace slug"
         );
+
         cy.get(dashboardSelector.workspaceSlugInputField).verifyVisibleElement(
             "have.value",
             data.workspaceSlug
         );
+
         cy.get(dashboardSelector.slugInfoLabel).verifyVisibleElement(
             "have.text",
             "URL-friendly 'slug' consists of lowercase letters, numbers, and hyphens"
         );
+
         cy.get(dashboardSelector.workspaceLinkLabel).verifyVisibleElement(
             "have.text",
             "Workspace link"
         );
+
         cy.get(dashboardSelector.slugField).verifyVisibleElement(
             "have.text",
             `${Cypress.config('baseUrl')}/${data.workspaceSlug}`
         );
+
         cy.get(commonSelectors.cancelButton).verifyVisibleElement(
             "have.text",
             "Cancel"
         );
+
         cy.get(commonSelectors.saveButton).verifyVisibleElement(
             "have.text",
             "Save"
         );
-        cy.get(commonSelectors.saveButton).should("be.disabled");
 
+        cy.get(commonSelectors.saveButton).should("be.disabled");
         cy.get(commonSelectors.workspaceNameinput).clear();
         cy.get(dashboardSelector.workspaceErrorLabel).verifyVisibleElement(
             "have.text",
@@ -267,7 +290,6 @@ describe("Workspace", () => {
 
         cy.get(dashboardSelector.workspaceSlugInputField).clear();
         cy.get(commonSelectors.cancelButton).click();
-
         cy.wait(3000);
         cy.get(commonSelectors.workspaceName).click();
         cy.get(`[data-cy="${data.workspaceName.toLowerCase()}-name-selector"] > span`)
@@ -281,32 +303,30 @@ describe("Workspace", () => {
             "have.value",
             data.workspaceName
         );
-        // cy.get(dashboardSelector.workspaceSlugInputField).verifyVisibleElement(
-        //     "have.value",
-        //     data.workspaceSlug
-        // );
+      
         cy.get(commonSelectors.saveButton).should("be.disabled");
-
         data.workspaceName = `${fake.firstName}-workspace`;
         data.workspaceSlug = `${data.workspaceName.toLowerCase()}-slug`;
-
         cy.clearAndType(
             commonSelectors.workspaceNameinput,
             data.workspaceName
         );
+
         cy.wait(1000);
         cy.clearAndType(
             dashboardSelector.workspaceSlugInputField,
             data.workspaceSlug
         );
+
         cy.wait(1500);
         cy.get(commonSelectors.saveButton).should("be.enabled").click();
-
         cy.wait(1000);
         cy.get(commonSelectors.workspaceName).verifyVisibleElement(
             "have.text",
             data.workspaceName
         );
+
         cy.url().should("eq", `${Cypress.config('baseUrl')}/${data.workspaceSlug}`);
     });
+
 });
