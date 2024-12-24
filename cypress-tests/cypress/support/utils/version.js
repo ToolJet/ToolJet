@@ -145,7 +145,7 @@ export const verifyVersionAfterPreview = (currentVersion) => {
     .click();
   cy.url().should("include", "/home");
   cy.wait(2000);
-  cy.get('[data-cy="draggable-widget-table1"]').should('be.visible')
+  cy.get('[data-cy^="draggable-widget-table"]').should('be.visible')
   cy.url().should("include", `version=${currentVersion}`);
   cy.get('[data-cy="viewer-page-logo"]').click();
   cy.wait(8000);

@@ -1,4 +1,5 @@
 import { commonSelectors } from "Selectors/common";
+import { AddNewconstants } from "Support/utils/workspaceConstants";
 
 import {
   appVersionSelectors,
@@ -86,7 +87,7 @@ describe("App Import Functionality", () => {
       commonSelectors.toastMessage,
       importText.couldNotImportAppToastMessage
     );
-   
+
     cy.get(importSelectors.dropDownMenu).should("be.visible").click();
     cy.get(importSelectors.importOptionLabel).verifyVisibleElement(
       "have.text",
@@ -126,7 +127,7 @@ describe("App Import Functionality", () => {
     cy.backToApps();
 
     cy.get(commonSelectors.appHeaderLable).should("be.visible");
-  
+
     selectAppCardOption(
       data.appName,
       commonSelectors.appCardOptions(commonText.exportAppOption)
@@ -192,6 +193,7 @@ describe("App Import Functionality", () => {
     cy.get(appVersionSelectors.appVersionMenuField)
       .should("be.visible")
       .click();
+
     createNewVersion((otherVersions = ["v2"]), (currentVersion = "v1"));
     cy.get(appVersionSelectors.currentVersionField((otherVersions = "v2")))
       .should("be.visible")
@@ -203,11 +205,12 @@ describe("App Import Functionality", () => {
             cy.log(versionText);
             cy.backToApps();
             cy.get(commonSelectors.appHeaderLable).should("be.visible");
-          
+
             selectAppCardOption(
               data.appReName,
               commonSelectors.appCardOptions(commonText.exportAppOption)
             );
+
             exportAllVersionsAndVerify(
               data.appReName,
               (currentVersion = "v2"),
@@ -224,6 +227,7 @@ describe("App Import Functionality", () => {
                 "have.text",
                 importText.importOption
               );
+
               cy.get(importSelectors.importOptionInput).selectFile(
                 exportedFilePath,
                 {
@@ -240,6 +244,7 @@ describe("App Import Functionality", () => {
                 "have.text",
                 versionText
               );
+
               cy.get(
                 `[data-cy="draggable-widget-${buttonText.defaultWidgetName}"]`
               ).should("be.visible");
@@ -250,6 +255,7 @@ describe("App Import Functionality", () => {
                   "contain.value",
                   exportedAppData.app[0].definition.appV2.name.toLowerCase()
                 );
+
                 cy.get(
                   appVersionSelectors.currentVersionField(
                     (currentVersion = "v2")
@@ -287,11 +293,12 @@ describe("App Import Functionality", () => {
         cy.get(commonSelectors.editorPageLogo).should("be.visible");
         cy.backToApps();
         cy.get(commonSelectors.appHeaderLable).should("be.visible");
-       
+
         selectAppCardOption(
           data.appName1,
           commonSelectors.appCardOptions(commonText.exportAppOption)
         );
+
         verifyElementsOfExportModal((currentVersion = "v1"));
       });
   });
@@ -390,7 +397,7 @@ describe("App Import Functionality", () => {
     cy.exec("cd ./cypress/downloads/ && rm -rf *");
   });
 
-  it("Verify 'Export and import' functionality of an application with DS,Constants and tjdb", () => {
+  it("Verify 'Export and import' functionality of an application with DS,Constants and tjdb for same and different workspace", () => {
     data.appName1 = `${fake.companyName}-App`;
     data.constName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
     data.newConstvalue = `New ${data.constName}`;
@@ -406,12 +413,7 @@ describe("App Import Functionality", () => {
     //add constants
 
     cy.get(commonSelectors.workspaceConstantsIcon).click();
-    cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
-    cy.clearAndType(commonSelectors.nameInputFieldd, data.constName);
-    cy.get(commonSelectors.valueInputFieldd).click();
-    cy.clearAndType(commonSelectors.valueInputFieldd, data.constName);
-    cy.get(workspaceConstantsSelectors.constantsType("global")).check();
-    cy.get(workspaceConstantsSelectors.addConstantButton).click();
+    AddNewconstants(data.constName, data.constName);
 
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
@@ -518,6 +520,51 @@ describe("App Import Functionality", () => {
       );
       cy.get('[data-cy="list-query-table_preview"]').should("be.visible");
       cy.get('[data-cy="list-query-tooljetdb1"]').should("be.visible");
+
+      // Import same to app to different workspace and verify
+
+      data.workspaceName = `${fake.companyName}-App`;
+      data.workspaceSlug = fake.firstName
+        .toLowerCase()
+        .replaceAll("[^A-Za-z]", "");
+
+      cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
+      cy.visitTheWorkspace(data.workspaceName);
+
+      cy.exec("ls ./cypress/downloads/").then((result) => {
+        const downloadedAppExportFileName = result.stdout.split("\n")[0].trim();
+        const exportedFilePath = `cypress/downloads/${downloadedAppExportFileName}`;
+
+        cy.log("Exported File Path:", exportedFilePath);
+
+        cy.readFile(exportedFilePath).should("exist");
+
+        cy.get(importSelectors.dropDownMenu).should("be.visible").click();
+        cy.get(importSelectors.importOptionLabel).verifyVisibleElement(
+          "have.text",
+          importText.importOption
+        );
+        cy.get(importSelectors.importOptionInput)
+          .eq(1)
+          .selectFile(exportedFilePath, {
+            force: true,
+          });
+
+        cy.get(importSelectors.importAppTitle).should("be.visible");
+        cy.get(importSelectors.importAppButton).click();
+        cy.get(".go3958317564")
+          .should("be.visible")
+          .and("have.text", importText.appImportedToastMessage);
+
+        cy.wait(3000);
+
+        cy.skipWalkthrough();
+        cy.forceClickOnCanvas();
+        cy.wait(2000);
+
+        cy.get('[data-cy="list-query-table_preview"]').should("be.visible");
+        cy.get('[data-cy="list-query-tooljetdb1"]').should("be.visible");
+      });
     });
   });
 
@@ -534,7 +581,7 @@ describe("App Import Functionality", () => {
     cy.get(appVersionSelectors.appVersionMenuField)
       .should("be.visible")
       .click();
-      
+
     createNewVersion((otherVersions = ["v2"]), (currentVersion = "v1"));
     cy.wait(500);
     cy.dragAndDropWidget("Text Input", 50, 50);
@@ -557,5 +604,4 @@ describe("App Import Functionality", () => {
       (otherVersions = ["v1"])
     );
   });
-
 });
