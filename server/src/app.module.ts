@@ -48,6 +48,7 @@ import { InstanceSettingsModule } from '@instance-settings/module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { LicenseModule } from '@licensing/module';
+import { OpenTelemetryModule } from 'nestjs-otel';
 
 const imports = [
   EventEmitterModule.forRoot({
@@ -91,6 +92,19 @@ const imports = [
   }),
   TypeOrmModule.forRoot(ormconfig),
   TypeOrmModule.forRoot(tooljetDbOrmconfig),
+  OpenTelemetryModule.forRoot({
+    metrics: {
+      hostMetrics: true,
+      apiMetrics: {
+        enable: true,
+        defaultAttributes: {
+          custom: 'metrics',
+        },
+        ignoreRoutes: ['/favicon.ico', '/api/health'], // You can ignore specific routes (See https://docs.nestjs.com/middleware#excluding-routes for options)
+        ignoreUndefinedRoutes: false, //Records metrics for all URLs, even undefined ones
+      },
+    },
+  }),
   RequestContextModule,
   InstanceSettingsModule,
   AppConfigModule,
