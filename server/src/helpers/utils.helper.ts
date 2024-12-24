@@ -68,12 +68,60 @@ export function sanitizeInput(value: string) {
   });
 }
 
+export function isJSONString(value: string): boolean {
+  try {
+    JSON.parse(value);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 export function formatTimestamp(value: any, params: any) {
   const { data_type } = params;
   if (data_type === 'timestamp with time zone' && value) {
     return `'${value}'`;
   }
   return value;
+}
+
+/**
+ * Since for JSONB column the default value must be in stringify format, if the input has single quotes we would need to escape the single quotes.
+ * @param input - Default value of JSONB column.
+ * @returns - Sanitized input by escaping single quotes in the input.
+ */
+function escapeSingleQuotesInDefaultValueForJSONB(input) {
+  if (typeof input === 'string') {
+    return input.replace(/'/g, "''");
+  } else if (input.length && Array.isArray(input)) {
+    return input.map(escapeSingleQuotesInDefaultValueForJSONB);
+  } else if (!Array.isArray(input) && typeof input === 'object') {
+    return Object.fromEntries(
+      Object.entries(input).map(([key, value]) => [key, escapeSingleQuotesInDefaultValueForJSONB(value)])
+    );
+  }
+  return input;
+}
+
+/**
+ * Formats default value passed to JSONB column into a stringify format.
+ * @param value Default value for a JSONB column.
+ * @returns Stringify default value.
+ */
+export function formatJSONB(value: any, params: any) {
+  const { data_type } = params;
+  if (data_type === 'jsonb' && value) {
+    const jsonString = JSON.stringify(escapeSingleQuotesInDefaultValueForJSONB(value));
+    return `'${jsonString}'`;
+  }
+  return value;
+}
+
+export function formatJoinsJSONBPath(jsonpath: string): string {
+  const addedQuotesToColumnName = jsonpath.replace(/(->>|->|'[^']*'|\w+)/g, (match) => {
+    return /->/.test(match) || /^'.*'$/.test(match) ? match : `'${match}'`;
+  });
+  return addedQuotesToColumnName;
 }
 
 export function lowercaseString(value: string) {

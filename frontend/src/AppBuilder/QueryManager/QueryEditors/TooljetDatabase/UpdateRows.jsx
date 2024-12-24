@@ -2,12 +2,13 @@ import React, { useContext } from 'react';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import { operators } from '@/TooljetDatabase/constants';
 import { v4 as uuidv4 } from 'uuid';
-import { isEmpty } from 'lodash';
+import _, { isEmpty } from 'lodash';
 import { isOperatorOptions } from './util';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import RenderFilterSectionUI from './RenderFilterSectionUI';
 import RenderColumnUI from './RenderColumnUI';
 import { NoCondition } from './NoConditionUI';
+import cx from 'classnames';
 
 export const UpdateRows = React.memo(({ darkMode }) => {
   const { columns, updateRowsOptions, handleUpdateRowsOptionsChange } = useContext(TooljetDatabaseContext);
@@ -142,7 +143,7 @@ export const UpdateRows = React.memo(({ darkMode }) => {
               variant="ghostBlue"
               size="sm"
               onClick={addNewColumnOptionsPair}
-              className={`cursor-pointer fit-content ${isEmpty(updateRowsOptions?.columns) ? '' : 'mt-2'}`}
+              className="d-flex justify-content-start width-fit-content cursor-pointer"
             >
               <svg width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
@@ -169,16 +170,21 @@ const RenderFilterFields = ({
   updateRowsOptions,
   darkMode,
   removeFilterConditionPair,
+  jsonpath = '',
 }) => {
-  let displayColumns = columns.map(({ accessor }) => ({
+  let displayColumns = columns.map(({ accessor, dataType }) => ({
     value: accessor,
     label: accessor,
+    icon: dataType,
   }));
 
   operator = operators.find((val) => val.value === operator);
 
   const handleColumnChange = (selectedOption) => {
-    updateFilterOptionsChanged({ ...updateRowsOptions?.where_filters[id], ...{ column: selectedOption.value } });
+    updateFilterOptionsChanged({
+      ...updateRowsOptions?.where_filters[id],
+      ...{ column: selectedOption.value },
+    });
   };
 
   const handleOperatorChange = (selectedOption) => {
@@ -188,6 +194,15 @@ const RenderFilterFields = ({
   const handleValueChange = (newValue) => {
     updateFilterOptionsChanged({ ...updateRowsOptions?.where_filters[id], ...{ value: newValue } });
   };
+
+  const handleJsonPathChange = (value) => {
+    updateFilterOptionsChanged({
+      ...updateRowsOptions?.where_filters[id],
+      jsonpath: value,
+    });
+  };
+
+  const isSelectedColumnJsonbType = columns.find((col) => col.accessor === column)?.dataType === 'jsonb';
 
   return (
     <RenderFilterSectionUI
@@ -203,6 +218,9 @@ const RenderFilterFields = ({
       handleValueChange={handleValueChange}
       removeFilterConditionPair={removeFilterConditionPair}
       id={id}
+      handleJsonPathChange={handleJsonPathChange}
+      isSelectedColumnJsonbType={isSelectedColumnJsonbType}
+      jsonpath={jsonpath}
     />
   );
 };
@@ -217,12 +235,18 @@ const RenderColumnOptions = ({
   darkMode,
   removeColumnOptionsPair,
 }) => {
-  const filteredColumns = columns.filter(({ column_default }) => !column_default?.startsWith('nextval('));
+  const filteredColumns = columns.filter(({ column_default }) =>
+    _.isObject(column_default) ? true : !column_default?.startsWith('nextval(')
+  );
+
   const existingColumnOptions = Object.values(updateRowsOptions?.columns).map(({ column }) => column);
-  let displayColumns = filteredColumns.map(({ accessor }) => ({
+  let displayColumns = filteredColumns.map(({ accessor, dataType }) => ({
     value: accessor,
     label: accessor,
+    icon: dataType,
   }));
+
+  const currentColumnType = columns?.find((columnDetails) => columnDetails.accessor === column)?.dataType;
 
   if (existingColumnOptions.length > 0) {
     displayColumns = displayColumns.filter(
@@ -238,7 +262,6 @@ const RenderColumnOptions = ({
     };
 
     const newColumnOptions = { ...columnOptions, [id]: updatedOption };
-
     handleColumnOptionChange(newColumnOptions);
   };
 
@@ -264,6 +287,7 @@ const RenderColumnOptions = ({
       handleValueChange={handleValueChange}
       removeColumnOptionsPair={removeColumnOptionsPair}
       id={id}
+      currentColumnType={currentColumnType}
     />
   );
 };

@@ -554,14 +554,16 @@ function buildPostgrestQuery(filters) {
 
   Object.keys(filters).map((key) => {
     if (!isEmpty(filters[key])) {
-      const { column, operator, value, order } = filters[key];
+      const { column, operator, value, order, jsonpath = '' } = filters[key];
 
       if (!isEmpty(column) && !isEmpty(order)) {
-        postgrestQueryBuilder.order(column, order);
+        const columnName = jsonpath ? `${column}${jsonpath}` : column;
+        postgrestQueryBuilder.order(columnName, order);
       }
 
       if (!isEmpty(column) && !isEmpty(operator)) {
-        postgrestQueryBuilder[operator](column, value);
+        const columnName = jsonpath ? `${column}${jsonpath}` : column;
+        postgrestQueryBuilder[operator](columnName, value);
       }
     }
   });

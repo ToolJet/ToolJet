@@ -82,7 +82,8 @@ function SourceKeyRelation({
             isDisabled:
               item?.data_type === 'serial' ||
               item?.data_type === 'boolean' ||
-              item?.data_type === 'timestamp with time zone'
+              item?.data_type === 'timestamp with time zone' ||
+              item?.data_type === 'jsonb'
                 ? true
                 : false,
           };

@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import { v4 as uuidv4 } from 'uuid';
-import { isEmpty } from 'lodash';
+import _, { isEmpty } from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import RenderColumnUI from './RenderColumnUI';
 import { NoCondition } from './NoConditionUI';
+import cx from 'classnames';
 
 export const CreateRow = React.memo(({ optionchanged, options, darkMode }) => {
   const mounted = useMounted();
@@ -72,7 +73,7 @@ export const CreateRow = React.memo(({ optionchanged, options, darkMode }) => {
               variant="ghostBlue"
               size="sm"
               onClick={addNewColumnOptionsPair}
-              className={isEmpty(columnOptions) ? '' : 'mt-2'}
+              className="d-flex justify-content-start width-fit-content"
             >
               <svg width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
@@ -99,11 +100,14 @@ const RenderColumnOptions = ({
   darkMode,
   removeColumnOptionsPair,
 }) => {
-  const filteredColumns = columns.filter(({ column_default }) => !column_default?.startsWith('nextval('));
+  const filteredColumns = columns.filter(({ column_default }) =>
+    _.isObject(column_default) ? true : !column_default?.startsWith('nextval(')
+  );
   const existingColumnOption = Object.values ? Object.values(columnOptions) : [];
-  let displayColumns = filteredColumns.map(({ accessor }) => ({
+  let displayColumns = filteredColumns.map(({ accessor, dataType }) => ({
     value: accessor,
     label: accessor,
+    icon: dataType,
   }));
 
   if (existingColumnOption.length > 0) {
@@ -119,7 +123,6 @@ const RenderColumnOptions = ({
     };
 
     const newColumnOptions = { ...columnOptions, [id]: updatedOption };
-
     handleColumnOptionChange(newColumnOptions);
   };
 
@@ -133,6 +136,7 @@ const RenderColumnOptions = ({
 
     handleColumnOptionChange(newColumnOptions);
   };
+  const currentColumnType = columns?.find((columnDetails) => columnDetails.accessor === column)?.dataType;
 
   return (
     <RenderColumnUI
@@ -144,6 +148,7 @@ const RenderColumnOptions = ({
       handleValueChange={handleValueChange}
       removeColumnOptionsPair={removeColumnOptionsPair}
       id={id}
+      currentColumnType={currentColumnType}
     />
   );
 };

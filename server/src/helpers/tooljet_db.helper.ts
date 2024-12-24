@@ -218,3 +218,19 @@ export function modifyTjdbErrorObject(error) {
   if (error.detail) error['details'] = error.detail;
   return error;
 }
+
+/**
+ * Validates the JSONB column value. We only allow valid JSON values to be added in the JSONB column.
+ * @param jsonbColumnList - jsonb column list
+ * @param inputValues - Values to be created or updated ( Object )
+ * @returns - Column names with invalid JSON data.
+ */
+export function validateTjdbJSONBColumnInputs(jsonbColumnList: Array<string>, inputValues) {
+  const inValidValueColumnsList = [];
+  Object.entries(inputValues).forEach(([key, value]) => {
+    if (jsonbColumnList.includes(key)) {
+      if (typeof value !== 'object') inValidValueColumnsList.push(key);
+    }
+  });
+  return inValidValueColumnsList;
+}

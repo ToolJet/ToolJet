@@ -20,7 +20,7 @@ export class TooljetDbBulkUploadService {
     @InjectEntityManager('tooljetDb')
     private readonly tooljetDbManager: EntityManager,
     private readonly tooljetDbService: TooljetDbService
-  ) { }
+  ) {}
 
   async perform(organizationId: string, tableName: string, fileBuffer: Buffer) {
     const internalTable = await this.manager.findOne(InternalTable, {
@@ -231,6 +231,8 @@ export class TooljetDbBulkUploadService {
       case TJDB.double_precision:
       case TJDB.bigint:
         return this.convertNumber(columnValue, supportedDataType);
+      case TJDB.jsonb:
+        return JSON.parse(columnValue);
       default:
         return columnValue;
     }

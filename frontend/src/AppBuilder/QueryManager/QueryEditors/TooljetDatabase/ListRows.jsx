@@ -211,6 +211,7 @@ const RenderSortFields = ({
   columns,
   updateSortOptionsChanged,
   darkMode,
+  jsonpath = '',
 }) => {
   const orders = [
     { value: 'asc', label: 'Ascending' },
@@ -220,9 +221,10 @@ const RenderSortFields = ({
   order = orders.find((val) => val.value === order);
 
   const existingColumnOptions = Object.values(listRowsOptions?.order_filters).map((item) => item.column);
-  let displayColumns = columns.map(({ accessor }) => ({
+  let displayColumns = columns.map(({ accessor, dataType }) => ({
     value: accessor,
     label: accessor,
+    icon: dataType,
   }));
 
   if (existingColumnOptions.length > 0) {
@@ -232,12 +234,24 @@ const RenderSortFields = ({
   }
 
   const handleColumnChange = (selectedOption) => {
-    updateSortOptionsChanged({ ...listRowsOptions?.order_filters[id], ...{ column: selectedOption.value } });
+    updateSortOptionsChanged({
+      ...listRowsOptions?.order_filters[id],
+      ...{ column: selectedOption.value },
+    });
   };
 
   const handleDirectionChange = (selectedOption) => {
     updateSortOptionsChanged({ ...listRowsOptions?.order_filters[id], ...{ order: selectedOption.value } });
   };
+
+  const handleJsonPathChange = (value) => {
+    updateSortOptionsChanged({
+      ...listRowsOptions?.order_filters[id],
+      jsonpath: value,
+    });
+  };
+
+  const isSelectedColumnJsonbType = columns.find((col) => col.accessor === column)?.dataType === 'jsonb';
 
   return (
     <RenderSortUI
@@ -250,6 +264,9 @@ const RenderSortFields = ({
       handleDirectionChange={handleDirectionChange}
       removeSortConditionPair={removeSortConditionPair}
       id={id}
+      isSelectedColumnJsonbType={isSelectedColumnJsonbType}
+      handleJsonPathChange={handleJsonPathChange}
+      jsonpath={jsonpath}
     />
   );
 };
@@ -264,16 +281,20 @@ const RenderFilterFields = ({
   updateFilterOptionsChanged,
   removeFilterConditionPair,
   darkMode,
+  jsonpath = '',
 }) => {
-  let displayColumns = columns.map(({ accessor }) => ({
+  let displayColumns = columns.map(({ accessor, dataType }) => ({
     value: accessor,
     label: accessor,
+    icon: dataType,
   }));
-  console.log('manish ---> inside list', { operator, operators });
   operator = operators.find((val) => val.value === operator);
 
   const handleColumnChange = (selectedOption) => {
-    updateFilterOptionsChanged({ ...listRowsOptions?.where_filters[id], ...{ column: selectedOption.value } });
+    updateFilterOptionsChanged({
+      ...listRowsOptions?.where_filters[id],
+      ...{ column: selectedOption.value },
+    });
   };
 
   const handleOperatorChange = (selectedOption) => {
@@ -283,6 +304,15 @@ const RenderFilterFields = ({
   const handleValueChange = (newValue) => {
     updateFilterOptionsChanged({ ...listRowsOptions?.where_filters[id], ...{ value: newValue } });
   };
+
+  const handleJsonPathChange = (value) => {
+    updateFilterOptionsChanged({
+      ...listRowsOptions?.where_filters[id],
+      jsonpath: value,
+    });
+  };
+
+  const isSelectedColumnJsonbType = columns.find((col) => col.accessor === column)?.dataType === 'jsonb';
 
   return (
     <RenderFilterSectionUI
@@ -298,6 +328,9 @@ const RenderFilterFields = ({
       handleValueChange={handleValueChange}
       removeFilterConditionPair={removeFilterConditionPair}
       id={id}
+      isSelectedColumnJsonbType={isSelectedColumnJsonbType}
+      handleJsonPathChange={handleJsonPathChange}
+      jsonpath={jsonpath}
     />
   );
 };

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { isEmpty } from 'lodash';
 import { EntityManager, In, QueryFailedError } from 'typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
@@ -11,13 +11,16 @@ import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
 import { PostgrestError, TooljetDatabaseError, TooljetDbActions } from 'src/modules/tooljet_db/tooljet-db.types';
 import { QueryError } from 'src/modules/data_sources/query.errors';
 import got from 'got';
+import { TooljetDbService } from './tooljet_db.service';
+import { validateTjdbJSONBColumnInputs } from 'src/helpers/tooljet_db.helper';
 
 @Injectable()
 export class PostgrestProxyService {
   constructor(
     private readonly manager: EntityManager,
     private readonly configService: ConfigService,
-    private eventEmitter: EventEmitter2
+    private eventEmitter: EventEmitter2,
+    private tooljetDbService: TooljetDbService
   ) {}
 
   // NOTE: This method forwards request directly to PostgREST Using express middleware
@@ -67,9 +70,21 @@ export class PostgrestProxyService {
       req.headers['tableInfo'] = tableInfo;
     }
 
+    if (['PATCH', 'POST'].includes(req.method)) {
+      await this.validateJSONBInputs(organizationId, internalTable.tableName, req.body);
+    }
+
     return this.httpProxy(req, res, next);
   }
 
+  /**
+   * Handles the TJDB request from Query Builder
+   * @param url
+   * @param method
+   * @param headers
+   * @param body
+   * @returns
+   */
   async perform(
     url: string,
     method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
@@ -102,6 +117,10 @@ export class PostgrestProxyService {
         headers['tableinfo'] = tableInfo;
       }
 
+      if (['PATCH', 'POST'].includes(method)) {
+        await this.validateJSONBInputs(headers['tj-workspace-id'], internalTable.tableName, body);
+      }
+
       const reqHeaders = {
         ...headers,
         Authorization: authToken,
@@ -120,7 +139,7 @@ export class PostgrestProxyService {
 
       return response.body;
     } catch (error) {
-      if (!isEmpty(error.response) && (error.response.statusCode < 200 || error.response.statusCode >= 300)) {
+      if (!isEmpty(error.response.rawBody) && (error.response.statusCode < 200 || error.response.statusCode >= 300)) {
         const postgrestResponse = JSON.parse(error.response.rawBody.toString().toString('utf8'));
         const errorMessage = postgrestResponse.message;
         const errorContext: {
@@ -139,7 +158,7 @@ export class PostgrestProxyService {
         throw new QueryError(tooljetDbError.toString(), { code: tooljetDbError.code }, {});
       }
 
-      throw new QueryError('Query could not be completed', error.message, {});
+      throw new QueryError('Query could not be completed', error.message, { message: error.message });
     }
   }
 
@@ -236,6 +255,26 @@ export class PostgrestProxyService {
     if (isEmpty(tableNamesNotInOrg)) return internalTables;
 
     throw new NotFoundException('Internal table not found: ' + tableNamesNotInOrg);
+  }
+
+  private async validateJSONBInputs(organizationId, tableName, body) {
+    const tableDetails = await this.tooljetDbService.perform(organizationId, 'view_table', {
+      table_name: tableName,
+    });
+
+    const jsonbColumns = tableDetails.columns
+      .filter((column) => column.data_type === 'jsonb')
+      .map((column) => column.column_name);
+
+    if (jsonbColumns.length) {
+      const inValidJsonbColumns = validateTjdbJSONBColumnInputs(jsonbColumns, body);
+      if (inValidJsonbColumns.length) {
+        throw new HttpException(
+          `Expected JSON values in the following columns : ${inValidJsonbColumns.join(', ')}`,
+          400
+        );
+      }
+    }
   }
 }
 

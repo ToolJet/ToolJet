@@ -8,6 +8,7 @@ import Serial from './Icons/Serial.svg';
 import ArrowRight from './Icons/ArrowRight.svg';
 import RightFlex from './Icons/Right-flex.svg';
 import Datetime from './Icons/Datetime.svg';
+import Jsonb from './Icons/Jsonb.svg';
 
 export const dataTypes = [
   {
@@ -15,6 +16,12 @@ export const dataTypes = [
     label: 'varchar',
     icon: <CharacterVar width="16" height="16" />,
     value: 'character varying',
+  },
+  {
+    name: 'JSON data type',
+    label: 'jsonb',
+    icon: <Jsonb width="16" height="16" />,
+    value: 'jsonb',
   },
   { name: 'Integers up to 4 bytes', label: 'int', icon: <Integer width="16" height="16" />, value: 'integer' },
   { name: 'Integers up to 8 bytes', label: 'bigint', icon: <BigInt width="16" height="16" />, value: 'bigint' },
@@ -32,6 +39,7 @@ export const dataTypes = [
     icon: <Datetime width="16" height="16" />,
     value: 'timestamp with time zone',
   },
+  // { name: 'Binary JSON data', label: 'jsonb', icon: <Jsonb width="16" height="16" />, value: 'jsonb' },
 ];
 
 export const serialDataType = [
@@ -312,7 +320,7 @@ export default function tjdbDropdownStyles(
       ...base,
       width: dropdownContainerWidth,
       background: darkMode ? 'rgb(31,40,55)' : 'white',
-      zIndex: 10,
+      zIndex: 10001,
     }),
     singleValue: (provided) => ({
       ...provided,
@@ -348,6 +356,8 @@ export const renderDatatypeIcon = (type) => {
       return <Serial width="18" height="14" className="tjdb-column-header-name" />;
     case 'timestamp with time zone':
       return <Datetime width="18" height="18" className="tjdb-column-header-name" />;
+    case 'jsonb':
+      return <Jsonb width="18" height="18" className="tjdb-column-header-name" />;
     default:
       return type;
   }

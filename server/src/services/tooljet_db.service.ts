@@ -14,7 +14,7 @@ import { InjectEntityManager } from '@nestjs/typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { LicenseService } from '@licensing/service';
 import { LICENSE_FIELD, LICENSE_LIMIT, LICENSE_LIMITS_LABEL } from '@licensing/helper';
-import { generatePayloadForLimits } from 'src/helpers/utils.helper';
+import { generatePayloadForLimits, formatJoinsJSONBPath, formatJSONB } from 'src/helpers/utils.helper';
 import { isString, isEmpty, camelCase } from 'lodash';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
@@ -79,7 +79,7 @@ export class TooljetDbService {
     private eventEmitter: EventEmitter2,
     private licenseService: LicenseService,
     private readonly configService: ConfigService
-  ) { }
+  ) {}
 
   async perform(
     organizationId: string,
@@ -253,9 +253,16 @@ export class TooljetDbService {
         c.ORDINAL_POSITION;
     `);
 
+    const transformedColumnDefaultValues = columns.map((column) => {
+      return {
+        ...column,
+        column_default: column.data_type === 'jsonb' ? JSON.parse(column.column_default) : column.column_default,
+      };
+    });
+
     return {
       foreign_keys,
-      columns,
+      columns: transformedColumnDefaultValues,
       configurations: internalTable.configurations,
     };
   }
@@ -511,11 +518,11 @@ export class TooljetDbService {
               type: new_column.data_type,
               ...(new_column?.column_default &&
                 new_column.data_type !== 'serial' && {
-                default:
-                  new_column.data_type === 'character varying'
-                    ? this.addQuotesIfString(new_column.column_default)
-                    : new_column.column_default,
-              }),
+                  default:
+                    new_column.data_type === 'character varying'
+                      ? this.addQuotesIfString(new_column.column_default)
+                      : new_column.column_default,
+                }),
               isNullable: !new_column?.constraints_type.is_not_null,
               isUnique: new_column?.constraints_type.is_unique && !is_primary_key_column ? true : false,
               isPrimary: new_column?.constraints_type.is_primary_key || false,
@@ -529,11 +536,11 @@ export class TooljetDbService {
               type: new_column.data_type,
               ...(new_column?.column_default &&
                 new_column.data_type !== 'serial' && {
-                default:
-                  new_column.data_type === 'character varying'
-                    ? this.addQuotesIfString(new_column.column_default)
-                    : new_column.column_default,
-              }),
+                  default:
+                    new_column.data_type === 'character varying'
+                      ? this.addQuotesIfString(new_column.column_default)
+                      : new_column.column_default,
+                }),
               isNullable: !new_column?.constraints_type.is_not_null,
               isUnique: new_column?.constraints_type.is_unique && !is_primary_key_column ? true : false,
               isPrimary: new_column?.constraints_type.is_primary_key || false,
@@ -543,11 +550,11 @@ export class TooljetDbService {
               type: new_column.data_type,
               ...(new_column?.column_default &&
                 new_column.data_type !== 'serial' && {
-                default:
-                  new_column.data_type === 'character varying'
-                    ? this.addQuotesIfString(new_column.column_default)
-                    : new_column.column_default,
-              }),
+                  default:
+                    new_column.data_type === 'character varying'
+                      ? this.addQuotesIfString(new_column.column_default)
+                      : new_column.column_default,
+                }),
               isNullable: !new_column?.constraints_type.is_not_null,
               isUnique: new_column?.constraints_type.is_unique && !is_primary_key_column ? true : false,
               isPrimary: new_column?.constraints_type.is_primary_key || false,
@@ -564,11 +571,11 @@ export class TooljetDbService {
               type: old_column.data_type,
               ...(old_column?.column_default &&
                 old_column.data_type !== 'serial' && {
-                default:
-                  old_column.data_type === 'character varying'
-                    ? this.addQuotesIfString(old_column.column_default)
-                    : old_column.column_default,
-              }),
+                  default:
+                    old_column.data_type === 'character varying'
+                      ? this.addQuotesIfString(old_column.column_default)
+                      : old_column.column_default,
+                }),
               isNullable: !old_column?.constraints_type.is_not_null,
               isUnique: old_column?.constraints_type.is_unique,
               isPrimary: old_column?.constraints_type.is_primary_key || false,
@@ -578,11 +585,11 @@ export class TooljetDbService {
               type: new_column.data_type,
               ...(new_column?.column_default &&
                 new_column.data_type !== 'serial' && {
-                default:
-                  new_column.data_type === 'character varying'
-                    ? this.addQuotesIfString(new_column.column_default)
-                    : new_column.column_default,
-              }),
+                  default:
+                    new_column.data_type === 'character varying'
+                      ? this.addQuotesIfString(new_column.column_default)
+                      : new_column.column_default,
+                }),
               isNullable: !new_column?.constraints_type.is_not_null,
               isUnique: new_column?.constraints_type.is_unique && !is_primary_key_column ? true : false,
               isPrimary: new_column?.constraints_type.is_primary_key || false,
@@ -934,7 +941,10 @@ export class TooljetDbService {
     // Building `SELECT` statement with aliased column names
     if (!isEmpty(queryJson.fields) && isEmpty(queryJson.aggregates)) {
       queryJson.fields.forEach((field) => {
-        const fieldName = `"${internalTableIdToNameMap[field.table]}"."${field.name}"`;
+        const fieldName = field.jsonpath
+          ? `"${internalTableIdToNameMap[field.table]}"."${field.name}"${formatJoinsJSONBPath(field.jsonpath)}`
+          : `"${internalTableIdToNameMap[field.table]}"."${field.name}"`;
+
         const fieldAlias = `${internalTableIdToNameMap[field.table]}_${field.name}`;
         queryBuilder.addSelect(fieldName, fieldAlias);
       });
@@ -998,7 +1008,9 @@ export class TooljetDbService {
     // order by
     if (queryJson.order_by) {
       queryJson.order_by.forEach((order) => {
-        const orderByColumn = `"${internalTableIdToNameMap[order.table]}"."${order.columnName}"`;
+        const orderByColumn = order.jsonpath
+          ? `"${internalTableIdToNameMap[order.table]}"."${order.columnName}"${formatJoinsJSONBPath(order.jsonpath)}`
+          : `"${internalTableIdToNameMap[order.table]}"."${order.columnName}"`;
         queryBuilder.addOrderBy(orderByColumn, order.direction as 'ASC' | 'DESC');
       });
     }
@@ -1009,6 +1021,7 @@ export class TooljetDbService {
     return queryBuilder;
   }
 
+  // Param: internalTableIdToNameMap - is the aliases of tablename
   private constructFilterConditions(conditions, internalTableIdToNameMap) {
     let conditionString = '';
     const conditionParams = {};
@@ -1033,15 +1046,27 @@ export class TooljetDbService {
     conditions.conditionsList.forEach((condition, index) => {
       const paramName = `${condition.leftField.columnName}_${index}`;
 
-      const leftField =
-        condition.leftField.type == 'Column'
-          ? `"${internalTableIdToNameMap[condition.leftField.table]}"."${condition.leftField.columnName}"`
-          : `${condition.leftField.columnName}`;
+      let leftField;
+      if (condition.leftField.type == 'Column') {
+        leftField = condition.leftField.jsonpath
+          ? `"${internalTableIdToNameMap[condition.leftField.table]}"."${
+              condition.leftField.columnName
+            }"${formatJoinsJSONBPath(condition.leftField.jsonpath)}`
+          : `"${internalTableIdToNameMap[condition.leftField.table]}"."${condition.leftField.columnName}"`;
+      } else {
+        leftField = `${condition.leftField.columnName}`;
+      }
 
-      const rightField =
-        condition.rightField.type == 'Column'
-          ? `"${internalTableIdToNameMap[condition.rightField.table]}"."${condition.rightField.columnName}"`
-          : maybeParameterizeValue(condition.operator, paramName, condition.rightField.value);
+      let rightField;
+      if (condition.rightField.type == 'Column') {
+        rightField = condition.rightField.jsonpath
+          ? `"${internalTableIdToNameMap[condition.rightField.table]}"."${
+              condition.rightField.columnName
+            }"${formatJoinsJSONBPath(condition.rightField.jsonpath)}`
+          : `"${internalTableIdToNameMap[condition.rightField.table]}"."${condition.rightField.columnName}"`;
+      } else {
+        rightField = maybeParameterizeValue(condition.operator, paramName, condition.rightField.value);
+      }
 
       conditionString += `${leftField} ${condition.operator} ${rightField}`;
 
@@ -1158,6 +1183,7 @@ export class TooljetDbService {
         const isSerial = () => data_type === TJDB.integer && /^nextval\(/.test(column_default);
         const isCharacterVarying = () => data_type === TJDB.character_varying;
         const isTimestampWithTimeZone = () => data_type === TJDB.timestampz;
+        const isJSONB = () => data_type === TJDB.jsonb;
 
         if (isSerial()) return { data_type: TJDB.serial, column_default: undefined };
         if (isCharacterVarying())
@@ -1170,6 +1196,14 @@ export class TooljetDbService {
             data_type,
             column_default: this.addQuotesIfMissing(column_default),
           };
+        if (isJSONB()) {
+          if (typeof column_default === 'object') {
+            return {
+              data_type,
+              column_default: formatJSONB(column_default, { data_type }),
+            };
+          }
+        }
 
         return { data_type, column_default };
       };
