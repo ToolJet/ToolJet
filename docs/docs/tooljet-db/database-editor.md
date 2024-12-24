@@ -19,23 +19,20 @@ To create a new table in the ToolJet Database:
  - Click on the **Create New Table** button on the top left corner of the Database editor.
  - A drawer will open from the right. Enter the details of your new table.
 
-#### To create a new table, you'll need to:
+**To create a new table, you'll need to**:
 - Enter a **Table name**.
-- By default, an **id** column with **serial** data type is automatically created as the **primary key** of the table. You can change the primary key to any other column.
-
-<img className="screenshot-full" src="/img/v2-beta/database/ux2/create-table-v2.png" alt="ToolJet database" />
-
+- By default, an **id** column with **serial** data type is automatically created as the **primary key** of the table. You can change the primary key to any other column. <br/><br/>
+    <img className="screenshot-full" src="/img/v2-beta/database/ux2/create-table-v2.png" alt="ToolJet database" /> <br/>
 - Add Columns:
-
-| **Option** | **Description** |
-| --- | --- |
-| **Column name** | Enter a unique name for the column. |
-| **Data type** | Select the appropriate data type for the column from the dropdown menu. For more information on available data types, see the [Supported Data Types](/docs/tooljet-db/data-types#supported-data-types) section. |
-| **Default value (optional)** | Specify any default value to be assigned to the column. If left blank, the column will allow null values. |
-| **Primary Key** | Check this box to designate the column as the [Primary Key](#primary-key). Multiple columns can be selected, creating a composite primary key. |
-| **NULL/NOT NULL toggle** | Use this toggle to determine whether the column should allow null values or require a value. By default, null values are permitted. |
-| **Unique toggle** | Click the kebab menu and toggle the **Unique** option to add a unique constraint to the column, ensuring all values are distinct. By default, duplicate values are allowed. |
-| **Foreign Key** | Click the **+ Add Relation** button to establish a foreign key relationship, linking this column to a primary key or unique constraint column(s) in another table. |
+    | **Option** | **Description** |
+    | --- | --- |
+    | **Column name** | Enter a unique name for the column. |
+    | **Data type** | Select the appropriate data type for the column from the dropdown menu. For more information on available data types, see the [Supported Data Types](/docs/tooljet-db/data-types#supported-data-types) section. |
+    | **Default value (optional)** | Specify any default value to be assigned to the column. If left blank, the column will allow null values. |
+    | **Primary Key** | Check this box to designate the column as the [Primary Key](#primary-key). Multiple columns can be selected, creating a composite primary key. |
+    | **NULL/NOT NULL toggle** | Use this toggle to determine whether the column should allow null values or require a value. By default, null values are permitted. |
+    | **Unique toggle** | Click the kebab menu and toggle the **Unique** option to add a unique constraint to the column, ensuring all values are distinct. By default, duplicate values are allowed. |
+    | **Foreign Key** | Click the **+ Add Relation** button to establish a foreign key relationship, linking this column to a primary key or unique constraint column(s) in another table. |
 
 </div>
 
@@ -48,8 +45,8 @@ ToolJet Database supports several column constraints to maintain data integrity 
 **Primary Key**: The primary key constraint ensures that the values in the designated column(s) are unique and not null across all rows in the table. It serves as a unique identifier for each record in the table.
 
 **Foreign Key**: The foreign key constraint establishes a link between the data in two tables, ensuring referential integrity. It requires that the values in the foreign key column(s) of the source table match the values in the primary key or unique constraint column(s) of the target table.
- - Source Table: The current table on which constraint is to be added.
- - Target Table: The table that contains the column to be referenced.
+    - Source Table: The current table on which constraint is to be added.
+    - Target Table: The table that contains the column to be referenced.
 
 **Unique**: The unique constraint ensures that the values in the designated column(s) are unique across all rows in the table, allowing for null values.
 
