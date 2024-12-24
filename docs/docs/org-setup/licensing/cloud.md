@@ -43,7 +43,7 @@ If you want to upgrade from the basic or trial subscription and you decide to pr
 
 ### Enterprise Plan
 
-If you've selected the enterprise plan, please schedule a call with ToolJet team and expect a response from team team within 24-48 hours for onboarding.
+If you've selected the enterprise plan, please schedule a call with **[ToolJet team](mailto:hello@tooljet.com)** and expect a response from team team within 24-48 hours for onboarding.
 
 </div>
 
