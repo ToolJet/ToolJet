@@ -30,11 +30,10 @@ describe("App Import Functionality", () => {
     const appFile = "cypress/fixtures/templates/test-app.json";
     let exportedFilePath;
 
-
-
   beforeEach(() => {
     cy.apiLogin();
   });
+
   before(() => {
     cy.fixture("templates/test-app.json").then((app) => {
       cy.exec("cd ./cypress/downloads/ && rm -rf *", {
@@ -43,6 +42,7 @@ describe("App Import Functionality", () => {
       appData = app;
     });
   });
+
   it("Verify the Import functionality of an Application", () => {
     cy.visit("/");
     cy.get("body").then(($title) => {
@@ -229,6 +229,7 @@ describe("App Import Functionality", () => {
           });
       });
   });
+
   it("Verify the elements of export dialog box", () => {
     data.appName1 = `${fake.companyName}-App`;
     cy.apiCreateApp(data.appName1);
@@ -256,6 +257,7 @@ describe("App Import Functionality", () => {
         verifyElementsOfExportModal((currentVersion = "v1"));
       });
   });
+
   it("Verify 'Export app' functionality of an application ", () => {
     data.appName1 = `${fake.companyName}-App`;
     cy.apiCreateApp(data.appName1);
@@ -341,7 +343,8 @@ describe("App Import Functionality", () => {
     );
     cy.exec("cd ./cypress/downloads/ && rm -rf *");
   });
-  it.only("Verify 'Export and import' functionality of an application with DS,Constants and tjdb ", () => {
+
+  it("Verify 'Export and import' functionality of an application with DS,Constants and tjdb ", () => {
     data.appName1 = `${fake.companyName}-App`;
     cy.apiCreateApp(data.appName1);
     data.constName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
@@ -378,6 +381,7 @@ describe("App Import Functionality", () => {
     cy.get('[data-cy="show-ds-popover-button"]').click();
     
    });
+
   it.skip("Verify 'Export app' functionality of an application inside editor", () => {
     data.appName2 = `${fake.companyName}-App`;
     cy.apiCreateApp(data.appName2);

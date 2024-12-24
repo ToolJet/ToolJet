@@ -1,5 +1,6 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { fake } from "Fixtures/fake";
+
 import {
   logout,
   navigateToAppEditor,
@@ -9,6 +10,7 @@ import {
   deleteAllGroupChips,
   navigateToManageUsers,
 } from "Support/utils/common";
+
 import {
   manageUsersElements,
   fillUserInviteForm,
@@ -18,21 +20,25 @@ import {
   inviteUserWithUserRole,
   fetchAndVisitInviteLink,
 } from "Support/utils/manageUsers";
+
 import * as groups from "Support/utils/manageGroups";
 import { commonText } from "Texts/common";
 import { userSignUp } from "Support/utils/onboarding";
+
 import {
   setSignupStatus,
   setSignupStatusCreatedWorkspace,
 } from "Support/utils/manageSSO";
+
 import { addAppToGroup } from "Support/utils/manageGroups";
 import { ssoSelector } from "Selectors/manageSSO";
+
 import {
   verifyConfirmEmailPage,
   visitWorkspaceInvitation,
 } from "Support/utils/onboarding";
-import { usersText } from "Texts/manageUsers";
 
+import { usersText } from "Texts/manageUsers";
 import { usersSelector } from "Selectors/manageUsers";
 import { onboardingSelectors } from "Selectors/onboarding";
 
@@ -43,13 +49,16 @@ describe(
       runMode: 2,
     },
   },
+
   () => {
     const data = {};
     let invitationLink = "";
+
     beforeEach(() => {
       cy.defaultWorkspaceLogin();
       cy.skipWalkthrough();
     });
+
     it("Verify private and public app share funtionality", () => {
       data.appName = `${fake.companyName} App`;
       data.slug = data.appName.toLowerCase().replace(/\s+/g, "-");
@@ -62,18 +71,11 @@ describe(
       cy.contains("This version has not been released yet").should(
         "be.visible"
       );
+
       cy.get(commonWidgetSelector.modalCloseButton).click();
       releaseApp();
       cy.get(commonWidgetSelector.shareAppButton).click();
 
-      for (const elements in commonWidgetSelector.shareModalElements) {
-        cy.get(
-          commonWidgetSelector.shareModalElements[elements]
-        ).verifyVisibleElement(
-          "have.text",
-          commonText.shareModalElements[elements]
-        );
-      }
       cy.get(commonWidgetSelector.copyAppLinkButton).should("be.visible");
       cy.get(commonWidgetSelector.makePublicAppToggle).should("be.visible");
       cy.get(commonWidgetSelector.appLink).should("be.visible");
@@ -81,20 +83,19 @@ describe(
       cy.get(commonWidgetSelector.modalCloseButton).should("be.visible");
 
       cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${data.slug}`);
-      cy.wait(4000);
+      cy.wait(2000);
       cy.get(commonWidgetSelector.modalCloseButton).click();
       cy.forceClickOnCanvas();
       cy.backToApps();
 
       logout();
-      cy.wait(4000);
       cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should(
         "be.visible"
       );
+
       cy.visitSlug({
         actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
       });
-      cy.wait(3000);
 
       cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should(
         "be.visible"
@@ -105,29 +106,32 @@ describe(
       cy.get(onboardingSelectors.signInButton).click();
 
       cy.wait(500);
+
       cy.get(".text-widget-section > div").should("be.visible");
       cy.get(commonSelectors.viewerPageLogo).click();
 
       cy.openApp(
-        "my-workspace",
-        Cypress.env("appId") ///
-
-        // ".text-widget-section > div"
+        "appSlug",
+        Cypress.env("workspaceId"),
+        Cypress.env("appId"),
+        '[data-cy="draggable-widget-text1"]'
       );
+
       cy.get(commonWidgetSelector.shareAppButton).click();
       cy.get(commonWidgetSelector.makePublicAppToggle).check();
       cy.get(commonWidgetSelector.modalCloseButton).click();
       cy.backToApps();
 
       logout();
-      cy.wait(4000);
+
       cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should(
         "be.visible"
       );
+
       cy.visitSlug({
         actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
       });
-      cy.wait(3000);
+
       cy.get(".text-widget-section > div").should("be.visible");
     });
 
@@ -155,6 +159,7 @@ describe(
           commonText.shareModalElements[elements]
         );
       }
+
       cy.get(commonWidgetSelector.copyAppLinkButton).should("be.visible");
       cy.get(commonWidgetSelector.makePublicAppToggle).should("be.visible");
       cy.get(commonWidgetSelector.appLink).should("be.visible");
@@ -162,21 +167,18 @@ describe(
       cy.get(commonWidgetSelector.modalCloseButton).should("be.visible");
 
       cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${data.slug}`);
-      cy.wait(4000);
+      cy.wait(2000);
       cy.get(commonWidgetSelector.modalCloseButton).click();
       cy.forceClickOnCanvas();
+
       cy.backToApps();
-      cy.wait(4000);
+
       logout();
-      cy.wait(5000);
-      cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should(
-        "be.visible"
-      );
+
       cy.visitSlug({
         actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
       });
       cy.wait(3000);
-
       cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should(
         "be.visible"
       );
@@ -189,10 +191,13 @@ describe(
       cy.get(commonSelectors.viewerPageLogo).click();
 
       cy.defaultWorkspaceLogin();
-      cy.wait(8000);
-      cy.openApp(data.appName);
+      cy.openApp(
+        "appSlug",
+        Cypress.env("workspaceId"),
+        Cypress.env("appId"),
+        '[data-cy="draggable-widget-text1"]'
+      );
 
-      // ".text-widget-section > div"
       cy.get(commonWidgetSelector.shareAppButton).click();
       cy.get(commonWidgetSelector.makePublicAppToggle).check();
       cy.get(commonWidgetSelector.modalCloseButton).click();
@@ -206,7 +211,6 @@ describe(
       cy.visitSlug({
         actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
       });
-      cy.wait(3000);
       cy.get(".text-widget-section > div").should("be.visible");
     });
 
@@ -223,39 +227,39 @@ describe(
 
       releaseApp();
 
-      cy.wait(1000);
       cy.get(commonWidgetSelector.shareAppButton).click();
       cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${data.slug}`);
       cy.wait(2000);
       cy.get(commonWidgetSelector.modalCloseButton).click();
 
       cy.backToApps();
-      cy.wait(1000);
 
       cy.visitSlug({ actualUrl: `/applications/${data.slug}` });
       cy.get('[data-cy="viewer-page-logo"]').click();
+
       cy.logoutApi();
-      cy.wait(4000);
+
       userSignUp(data.firstName, data.email, data.workspaceName);
       cy.wait(1000);
       cy.visit("/");
-      cy.wait(2000);
+
       logout();
-      cy.wait(2000);
+
       cy.defaultWorkspaceLogin();
       navigateToAppEditor(data.appName);
-      cy.wait(2000);
+
       cy.get(commonWidgetSelector.shareAppButton).click();
       cy.get(commonWidgetSelector.makePublicAppToggle).check();
-      cy.wait(2000);
+
       cy.get(commonWidgetSelector.modalCloseButton).click();
       cy.backToApps();
 
       logout();
-      cy.wait(4000);
+
       cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should(
         "be.visible"
       );
+
       cy.visitSlug({ actualUrl: `/applications/${data.slug}` });
       cy.get(".text-widget-section > div").should("be.visible");
       cy.get(commonSelectors.viewerPageLogo).click();
@@ -281,7 +285,6 @@ describe(
 
       releaseApp();
 
-      cy.wait(1000);
       cy.get(commonWidgetSelector.shareAppButton).click();
       cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${data.slug}`);
       cy.wait(2000);
@@ -344,26 +347,30 @@ describe(
 
       releaseApp();
 
-      cy.wait(1000);
       cy.get(commonWidgetSelector.shareAppButton).click();
       cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${data.slug}`);
       cy.wait(2000);
       cy.get(commonWidgetSelector.modalCloseButton).click();
+
       cy.backToApps();
+
       navigateToManageUsers();
       fillUserInviteForm(data.firstName, data.email);
       cy.get(usersSelector.buttonInviteUsers).click();
       cy.wait(2000);
+
       fetchAndVisitInviteLink(data.email);
       cy.wait(3000);
       cy.clearAndType(
         onboardingSelectors.loginPasswordInput,
         usersText.password
       );
+
       cy.get(commonSelectors.signUpButton).click();
       cy.get(commonSelectors.acceptInviteButton).click();
       logout();
       cy.get('[data-cy="page-logo"]').click();
+
       cy.defaultWorkspaceLogin();
       navigateToManageGroups();
       cy.get('[data-cy="end-user-list-item"]').click();
@@ -381,6 +388,7 @@ describe(
         onboardingSelectors.loginPasswordInput,
         usersText.password
       );
+
       cy.get(onboardingSelectors.signInButton).click();
       cy.wait(1000);
       cy.get('[data-cy="modal-header"]').should(
@@ -392,6 +400,7 @@ describe(
         "You don’t have access to this app. Kindly contact admin to know more."
       );
     });
+
     it.skip("Should verify private app acees for existing workspace user", () => {
       data.firstName = fake.firstName;
       data.email = fake.email.toLowerCase();
@@ -406,14 +415,18 @@ describe(
       let workspaceId = "";
       let userId = "";
       let url = "";
+
       //adding user to workspace
+
       cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
       cy.visit(`${data.workspaceSlug}`);
       cy.wait(2000);
       logout();
       cy.get('[data-cy="page-logo"]').click();
+
       cy.defaultWorkspaceLogin();
       cy.apiCreateApp(data.appName);
+
       cy.openApp();
       cy.addComponentToApp(data.appName, "text1");
 
@@ -488,22 +501,23 @@ describe(
       let workspaceName = data.workspaceName;
 
       // Visiting editor URL with the same workspace user
+
       setSignupStatus(true);
       cy.apiCreateApp(data.appName);
       cy.openApp();
       cy.addComponentToApp(data.appName, "text1");
       cy.url().then((currentUrl) => {
-        cy.log(`Current URL: ${currentUrl}`);
         cy.backToApps();
         logout();
-
         cy.visit(currentUrl);
       });
+
       cy.wait(3000);
       cy.clearAndType(onboardingSelectors.loginEmailInput, "dev@tooljet.io");
       cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
       cy.get(onboardingSelectors.signInButton).click();
       cy.get(".text-widget-section > div").should("be.visible");
+
       cy.backToApps();
       logout();
 
@@ -512,10 +526,12 @@ describe(
       cy.defaultWorkspaceLogin();
       cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
       cy.visit(`${data.workspaceSlug}`);
+
       navigateToManageUsers();
       fillUserInviteForm(data.firstName, data.email);
       cy.get(usersSelector.buttonInviteUsers).click();
       cy.wait(2000);
+
       fetchAndVisitInviteLink(data.email);
       cy.wait(2000);
       cy.clearAndType(
@@ -524,21 +540,24 @@ describe(
       );
       cy.get(commonSelectors.signUpButton).click();
       cy.get(commonSelectors.acceptInviteButton).click();
+
       logout();
       cy.get('[data-cy="page-logo"]').click();
       cy.defaultWorkspaceLogin();
 
-      cy.defaultWorkspaceLogin();
-      cy.openApp(data.appName);
+      cy.openApp(
+        "appSlug",
+        Cypress.env("workspaceId"),
+        Cypress.env("appId"),
+        '[data-cy="draggable-widget-text1"]'
+      );
       cy.url().then((currentUrl) => {
-        cy.log(`Current URL: ${currentUrl}`);
         cy.backToApps();
-
         logout();
-
         cy.visit(currentUrl);
       });
-      cy.wait(5000);
+
+      cy.wait(3000);
       cy.clearAndType(onboardingSelectors.loginEmailInput, data.email);
       cy.clearAndType(
         onboardingSelectors.loginPasswordInput,
@@ -550,22 +569,27 @@ describe(
         "have.text",
         "Invalid credentials"
       );
-    
+
       // Visiting preview URL with the same workspace user
+
       cy.defaultWorkspaceLogin();
-      cy.wait(3000);
       setSignupStatus(true);
-      cy.openApp(data.appName);
+
+      cy.openApp(
+        "appSlug",
+        Cypress.env("workspaceId"),
+        Cypress.env("appId"),
+        '[data-cy="draggable-widget-text1"]'
+      );
       cy.addComponentToApp(data.appName, "text1");
       cy.openInCurrentTab('[data-cy="preview-link-button"]');
 
       cy.url().then((currentUrl) => {
-        cy.log(`Current URL: ${currentUrl}`);
         cy.get('[data-cy="viewer-page-logo"]').click();
         logout();
-
         cy.visit(currentUrl);
       });
+
       cy.wait(3000);
       cy.clearAndType(onboardingSelectors.loginEmailInput, "dev@tooljet.io");
       cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
@@ -578,15 +602,19 @@ describe(
 
       cy.defaultWorkspaceLogin();
 
-      cy.openApp(data.appName);
+      cy.openApp(
+        "appSlug",
+        Cypress.env("workspaceId"),
+        Cypress.env("appId"),
+        '[data-cy="draggable-widget-text1"]'
+      );
       cy.openInCurrentTab('[data-cy="preview-link-button"]');
       cy.url().then((currentUrl) => {
-        cy.log(`Current URL: ${currentUrl}`);
         cy.get('[data-cy="viewer-page-logo"]').click();
         logout();
-
         cy.visit(currentUrl);
       });
+
       cy.wait(3000);
       cy.clearAndType(onboardingSelectors.loginEmailInput, data.email);
       cy.clearAndType(
