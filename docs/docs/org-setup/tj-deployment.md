@@ -9,9 +9,9 @@ ToolJet offers two deployment options — **Self-Hosted** and **Cloud** — to m
 
 ## Self-Hosted ToolJet
 
-With the self-hosted option, ToolJet can be deployed on your own infrastructure (on-premises or cloud). This provides more control over data, customization, and integrations, making it a preferred choice for organizations with stringent compliance or privacy requirements.
+With the self-hosted option, ToolJet can be deployed on your own infrastructure (on-premises or cloud). This provides more control over data, customization, and integrations, making it a ideal choice for organizations seeking full control over their application development environment to meet compliance, security, and operational requirements.
 
-#### Why to use Self-Hosted ToolJet?
+#### Why Choose Self-Hosted ToolJet?
 
 1. **Complete Data Control**: Deploying ToolJet on your infrastructure ensures your data stays within your control, meeting stringent compliance and privacy requirements.
 2. **Customizability**: Self-hosted deployments allow for deeper customization to align with your organization's workflows, integrations, and unique needs.
@@ -23,9 +23,9 @@ With the self-hosted option, ToolJet can be deployed on your own infrastructure 
 
 ## ToolJet Cloud
 
-ToolJet Cloud is a managed service hosted by the ToolJet team. It eliminates the need for infrastructure management, providing a quick setup and seamless updates. This option is ideal for teams looking for convenience and minimal operational overhead.
+ToolJet Cloud is a managed service hosted by the ToolJet team. It eliminates the need for infrastructure management, providing a quick setup and seamless updates. This option is ideal for teams looking for rapid deployment, seamless scalability, and reduced operational complexity.
 
-#### Why to use ToolJet Cloud?
+#### Why Choose ToolJet Cloud?
 
 1. **Hassle-Free Setup**: With ToolJet Cloud, there’s no need to manage servers or infrastructure. Everything is set up and maintained by the ToolJet team, allowing you to focus solely on building applications.
 2. **Seamless Updates and Maintenance**: ToolJet Cloud ensures you always have access to the latest features and updates without manual intervention. Maintenance, backups, and uptime are handled for you.
@@ -37,6 +37,6 @@ ToolJet Cloud is a managed service hosted by the ToolJet team. It eliminates the
 
 ## ToolJet Subscription Plan
 
-ToolJet offers various subscription plans for both deployment models, refer to the **[ToolJet Pricing](https://www.tooljet.com/pricing)** page for detailed pricing and feature offerings.
+ToolJet provides a range of subscription plans tailored to both deployment models. Refer to the **[ToolJet Pricing](https://www.tooljet.com/pricing)** page for detailed information on features and costs.
 
 </div>

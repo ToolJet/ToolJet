@@ -5,9 +5,9 @@ title: Setup Email Communication
 
 This feature is only available on the self-hosted ToolJet, where you can set up your own email server using SMTP. This feature allows you to choose your own email server, which helps to seamlessly send emails for various purposes, including invitations, password reset requests, and notifications. SMTP ensures that emails are delivered reliably from ToolJet to the users.
 
-There are two ways to configure SMTP in ToolJet:
-1. **[Using GUI](#configuration-using-gui)**: This method involves directly entering SMTP settings into the ToolJet interface, which is suitable for simpler setups.
-2. **[With environment variables](#configuration-with-environment-variables)**: This method leverages environment variables, provides greater flexibility and security, especially for managing sensitive information in production environments. 
+There are two ways to setup your email server in ToolJet:
+1. **[Using the GUI](#configuration-using-gui)**: This method involves directly entering SMTP settings into the ToolJet interface, which is suitable for simpler setups.
+2. **[With environment variables](#configuration-with-environment-variables)**: This method utilizes environment variables for configuring the email server. It offers enhanced flexibility and security, making it particularly suitable for managing sensitive credentials in production environments.
 
 Both methods are designed to ensure that your ToolJet instance can send emails as needed, depending on your setup preferences and security requirements.
 

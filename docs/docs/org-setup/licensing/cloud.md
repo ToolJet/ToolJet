@@ -17,7 +17,7 @@ If you are an existing user and wish to update to trial subscriptions, follow th
 <img className="screenshot-full" src="/img/licensing/dashboard-free-trial.png" alt="TJ Dashboard: Start free trial" />
 
 :::caution Note
-Your trial subscription is active for 14 days. To upgrade to our Business subscription, simply click the Upgrade or Renew button or connect with our team on Slack for the Enterprise subscription. Premium features like OpenID SSO login and Audit logs will be restricted after the trial ends. However, you can still upgrade to any of our premium plans and continue to enjoy the full benefits of ToolJet.
+Your trial subscription is active for 14 days. To upgrade to our Business subscription, simply click the Upgrade or Renew button or connect with our team on Slack for the Enterprise subscription. Premium features, such as OpenID SSO login and Audit logs, will no longer be accessible after the trial period ends. However, you can still upgrade to any of our premium plans and continue to enjoy the full benefits of ToolJet.
 :::
 
 </div>
