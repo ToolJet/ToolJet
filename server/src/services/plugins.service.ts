@@ -307,8 +307,16 @@ export class PluginsService {
     }
   }
 
+  private getPluginsJsonDirectory() {
+    const isProduction = process.env.NODE_ENV == 'production';
+    const buildExists = __dirname.includes('dist');
+    const baseDir = isProduction && buildExists ? path.join(__dirname) : __dirname.replace('/dist/', '/');
+    return path.join(baseDir, '../assets/marketplace/plugins.json');
+  }
+
   private listMarketplacePlugins() {
-    const jsonpath = path.join('src', 'assets/marketplace/plugins.json');
+    const jsonpath = this.getPluginsJsonDirectory();
+
     if (fs.existsSync(jsonpath)) {
       const pluginsList = JSON.parse(fs.readFileSync(jsonpath, 'utf-8'));
       const pluginsListIdToDetailsMap = Object.fromEntries(pluginsList.map((plugin) => [plugin.id, plugin]));

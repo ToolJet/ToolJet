@@ -31,9 +31,6 @@ function createSampleApp() {
 }
 
 function findDependentPluginsInTemplate(identifier) {
-  const body = {
-    identifier,
-  };
-  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/library_apps/find_depedent_plugins`, requestOptions).then(handleResponse);
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/library_apps/${identifier}/plugins`, requestOptions).then(handleResponse);
 }

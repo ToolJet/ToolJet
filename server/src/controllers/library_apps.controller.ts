@@ -1,4 +1,4 @@
-import { Controller, Post, UseGuards, Get, ForbiddenException, Body } from '@nestjs/common';
+import { Controller, Post, UseGuards, Get, ForbiddenException, Body, Param } from '@nestjs/common';
 import { LibraryAppCreationService } from '@services/library_app_creation.service';
 import { User } from 'src/decorators/user.decorator';
 import { App } from 'src/entities/app.entity';
@@ -51,9 +51,9 @@ export class LibraryAppsController {
     return { template_app_manifests: TemplateAppManifests };
   }
 
-  @Post('find_depedent_plugins')
+  @Get(':identifier/plugins')
   @UseGuards(JwtAuthGuard)
-  async findDepedentPluginsFromTemplateDefinition(@Body('identifier') identifier) {
+  async findDepedentPluginsFromTemplateDefinition(@Param('identifier') identifier) {
     const { pluginsToBeInstalled, pluginsListIdToDetailsMap } =
       await this.libraryAppCreationService.findDepedentPluginsFromTemplateDefinition(identifier);
     return { plugins_to_be_installed: pluginsToBeInstalled, plugins_detail_by_id: pluginsListIdToDetailsMap };
