@@ -12,7 +12,7 @@ import { ConfigService } from '@nestjs/config';
 import * as jszip from 'jszip';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { UpdateFileDto } from '@dto/update-file.dto';
-
+import * as path from 'path';
 const jszipInstance = new jszip();
 const fs = require('fs');
 
@@ -304,6 +304,79 @@ export class PluginsService {
     } finally {
       await queryRunner.commitTransaction();
       await queryRunner.release();
+    }
+  }
+
+  private getPluginsJsonDirectory() {
+    const isProduction = process.env.NODE_ENV == 'production';
+    const buildExists = __dirname.includes('dist');
+    const baseDir = isProduction && buildExists ? path.join(__dirname) : __dirname.replace('/dist/', '/');
+    return path.join(baseDir, '../assets/marketplace/plugins.json');
+  }
+
+  private listMarketplacePlugins() {
+    const jsonpath = this.getPluginsJsonDirectory();
+
+    if (fs.existsSync(jsonpath)) {
+      const pluginsList = JSON.parse(fs.readFileSync(jsonpath, 'utf-8'));
+      const pluginsListIdToDetailsMap = Object.fromEntries(pluginsList.map((plugin) => [plugin.id, plugin]));
+      return { pluginsList, pluginsListIdToDetailsMap };
+    } else {
+      throw new NotFoundException('Plugins list not found');
+    }
+  }
+
+  private filterMarketplacePluginsFromDatasources(dataSources, pluginsListIdToDetailsMap): Array<string> {
+    const marketplacePluginsUsed: Set<string> = new Set();
+    dataSources.forEach((dataSource) => {
+      // Next iteration: Plugin versioning should be considered.
+      if (pluginsListIdToDetailsMap[dataSource.kind]) marketplacePluginsUsed.add(dataSource.kind);
+    });
+    return Array.from(marketplacePluginsUsed);
+  }
+
+  private async arePluginsInstalled(pluginsId: Array<string>): Promise<{ pluginsToBeInstalled: Array<string> }> {
+    const pluginsToBeInstalled = [];
+    if (!pluginsId.length) return { pluginsToBeInstalled };
+
+    const pluginsInstalled = await this.findAll();
+    const installedPluginsIdToDetailsMap = Object.fromEntries(
+      pluginsInstalled.map((plugin) => [plugin.pluginId, plugin])
+    );
+
+    pluginsId.forEach((pluginId) => {
+      if (!installedPluginsIdToDetailsMap[pluginId]) pluginsToBeInstalled.push(pluginId);
+    });
+    return { pluginsToBeInstalled };
+  }
+
+  async checkIfPluginsToBeInstalled(
+    dataSources
+  ): Promise<{ pluginsToBeInstalled: Array<string>; pluginsListIdToDetailsMap: any }> {
+    const { pluginsListIdToDetailsMap } = this.listMarketplacePlugins();
+    const marketplacePluginsUsed = this.filterMarketplacePluginsFromDatasources(dataSources, pluginsListIdToDetailsMap);
+    const { pluginsToBeInstalled } = await this.arePluginsInstalled(marketplacePluginsUsed);
+    return { pluginsToBeInstalled, pluginsListIdToDetailsMap };
+  }
+
+  async autoInstallPluginsForTemplates(pluginsToBeInstalled: Array<string>, shouldAutoInstall: boolean) {
+    const { pluginsListIdToDetailsMap } = this.listMarketplacePlugins();
+    if (shouldAutoInstall && pluginsToBeInstalled.length) {
+      const installedPluginsName = [];
+      for (const pluginId of pluginsToBeInstalled) {
+        const pluginDetails = pluginsListIdToDetailsMap[pluginId];
+        const installedPlugin = await this.install(pluginDetails);
+        installedPluginsName.push(installedPlugin.name);
+      }
+      return installedPluginsName;
+    }
+
+    if (!shouldAutoInstall && pluginsToBeInstalled.length) {
+      throw new NotFoundException(
+        `Plugins ( ${pluginsToBeInstalled
+          .map((pluginToBeInstalled) => pluginsListIdToDetailsMap[pluginToBeInstalled].name || pluginToBeInstalled)
+          .join(', ')} ) is not installed yet!`
+      );
     }
   }
 }
