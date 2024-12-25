@@ -1,0 +1,160 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Azurerepos datasource",
+  "description": "A schema defining Azurerepos datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "get_azure_repo",
+          "name": "Get Azure repository"
+        },
+        {
+          "value": "get_repo_commits",
+          "name": "Get repository commits"
+        },
+        {
+          "value": "get_repo_branchs",
+          "name": "Get repository branchs"
+        },
+        {
+          "value": "get_repo_pushes",
+          "name": "Get repository pushes"
+        },
+        {
+          "value": "get_project_pull_requests",
+          "name": "Get project pull requests"
+        }
+      ]
+    },
+    "get_azure_repo": {
+      "project": {
+        "label": "Project",
+        "key": "project_name",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter Project name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "test"
+      }
+    },
+    "get_project_pull_requests": {
+      "project": {
+        "label": "Project pull requests",
+        "key": "project_name",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter Project name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "project name"
+      },
+      "status": {
+        "label": "Status",
+        "key": "status",
+        "className": "codehinter-plugins col-4",
+        "type": "dropdown",
+        "description": "Single select dropdown for choosing state",
+        "list": [
+          {
+            "value": "all",
+            "name": "All"
+          },
+          {
+            "value": "active",
+            "name": "Active"
+          },
+          {
+            "value": "completed",
+            "name": "Completed"
+          },
+          {
+            "value": "abandoned",
+            "name": "Abandoned"
+          }
+        ]
+      }
+    },
+    "get_repo_commits": {
+      "project": {
+        "label": "Project name",
+        "key": "project_name",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter Project name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "project name"
+      },
+      "repository": {
+        "label": "Repository commits",
+        "key": "repository_name",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter Repository name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "repository name"
+      }
+    },
+    "get_repo_branchs": {
+      "project": {
+        "label": "Project name",
+        "key": "project_name",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter Project name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "project name"
+      },
+      "repository": {
+        "label": "Repository commits",
+        "key": "repository_name",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter Repository name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "repository name"
+      }
+    },
+    "get_repo_pushes": {
+      "project": {
+        "label": "Project name",
+        "key": "project_name",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter Project name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "project name"
+      },
+      "repository": {
+        "label": "Repository commits",
+        "key": "repository_name",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter Repository name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "repository name"
+      }
+    }
+  }
+}

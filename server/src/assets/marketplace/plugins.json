@@ -103,5 +103,13 @@
     "id": "pinecone",
     "author": "Tooljet",
     "timestamp": "Mon, 28 Oct 2024 08:08:28 GMT"
+  },
+  {
+    "name": "azurerepos",
+    "description": "api plugin from azurerepos",
+    "version": "1.0.0",
+    "id": "azurerepos",
+    "author": "Tooljet",
+    "timestamp": "Mon, 23 Dec 2024 11:57:30 GMT"
   }
 ]
