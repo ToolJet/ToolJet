@@ -20,8 +20,8 @@
           "name": "Get repository commits"
         },
         {
-          "value": "get_repo_branchs",
-          "name": "Get repository branchs"
+          "value": "get_repo_branches",
+          "name": "Get repository branches"
         },
         {
           "value": "get_repo_pushes",
@@ -108,7 +108,7 @@
         "placeholder": "repository name"
       }
     },
-    "get_repo_branchs": {
+    "get_repo_branches": {
       "project": {
         "label": "Project name",
         "key": "project_name",

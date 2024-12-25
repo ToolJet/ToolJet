@@ -1,12 +1,14 @@
-import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-marketplace/common';
+import { QueryError, QueryResult, QueryService } from '@tooljet-marketplace/common';
 import { SourceOptions, QueryOptions, Operation } from './types';
 import * as azdev from "azure-devops-node-api";
-import { getAzureRepositories, getProjectPullRequests, getRepositoryBranchs, getRepositoryCommits, getRepositoryPushes } from './query_operations';
+import { getAzureRepositories, getProjectPullRequests, getRepositoryBranches, getRepositoryCommits, getRepositoryPushes } from './query_operations';
+import { IGitApi } from "azure-devops-node-api/GitApi";
 
 export default class Azurerepos implements QueryService {
-  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
+  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {
+
     const connection = await this.getConnection(sourceOptions)
-    const gitApi = await connection.getGitApi();
+    const gitApi: IGitApi = await connection.getGitApi();
     const operation: Operation = queryOptions.operation;
 
     let result = {};
@@ -22,8 +24,8 @@ export default class Azurerepos implements QueryService {
         case Operation.GetRepoCommits:
           result = await getRepositoryCommits(gitApi, queryOptions);
           break;
-        case Operation.GetRepositoryBranchs:
-          result = await getRepositoryBranchs(gitApi, queryOptions);
+        case Operation.GetRepositoryBranches:
+          result = await getRepositoryBranches(gitApi, queryOptions);
           break;
         case Operation.getRepositoryPushes:
           result = await getRepositoryPushes(gitApi, queryOptions);
@@ -47,9 +49,9 @@ export default class Azurerepos implements QueryService {
 
     const url = `https://dev.azure.com/${organization}`;
 
-    let authHandler = azdev.getPersonalAccessTokenHandler(token);
+    const authHandler = azdev.getPersonalAccessTokenHandler(token);
 
-    let connection = new azdev.WebApi(url, authHandler);
+    const connection = new azdev.WebApi(url, authHandler);
 
     return connection
 

@@ -13,6 +13,6 @@ export enum Operation {
   GetAzureRepo = 'get_azure_repo',
   GetRepoCommits = 'get_repo_commits',
   GetProjectPullRequests = 'get_project_pull_requests',
-  GetRepositoryBranchs = 'get_repo_branchs',
+  GetRepositoryBranches = 'get_repo_branches',
   getRepositoryPushes = 'get_repo_pushes'
 }
