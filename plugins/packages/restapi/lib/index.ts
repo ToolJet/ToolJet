@@ -206,7 +206,7 @@ export default class RestapiQueryService implements QueryService {
   private addBodyToRequest(requestOptions: OptionsOfTextResponseBody, body: any) {
     const headers = requestOptions.headers as Record<string, string>;
     const contentTypeKey = Object.keys(headers).find((key) => key.toLowerCase() === 'content-type');
-    const contentType = contentTypeKey ? headers[contentTypeKey].toLowerCase() : undefined;
+    const contentType = contentTypeKey ? headers[contentTypeKey].toLowerCase() : 'application/json';
 
     switch (contentType) {
       case 'application/json':
@@ -238,8 +238,7 @@ export default class RestapiQueryService implements QueryService {
         break;
 
       default:
-        // If the Content-Type header is not set, it will be set to application/json
-        requestOptions.json = this.maybeParseJson(body);
+        requestOptions.body = body;
         break;
     }
   }
