@@ -205,41 +205,50 @@ export default class RestapiQueryService implements QueryService {
 
   private addBodyToRequest(requestOptions: OptionsOfTextResponseBody, body: any) {
     const headers = requestOptions.headers as Record<string, string>;
-    const contentTypeKey = Object.keys(headers).find((key) => key.toLowerCase() === 'content-type');
-    const contentType = contentTypeKey ? headers[contentTypeKey].toLowerCase() : 'application/json';
+    const contentType = this.getContentType(headers);
 
     switch (contentType) {
       case 'application/json':
         requestOptions.json = this.maybeParseJson(body);
         break;
-
       case 'application/x-www-form-urlencoded':
-        requestOptions.form = body;
+        this.setFormUrlencodedBody(requestOptions, body);
         break;
-
       case 'multipart/form-data':
-        if (body && Object.values(body).some(isFileObject)) {
-          const form = new FormData();
-          Object.entries(body).forEach(([key, value]: [string, Record<string, string>]) => {
-            if (isFileObject(value)) {
-              const fileBuffer = Buffer.from(value.base64Data || '', 'base64');
-              form.append(key, fileBuffer, {
-                filename: value?.name || '',
-                contentType: value?.type || '',
-                knownLength: fileBuffer.length,
-              });
-            } else if (value != null) {
-              form.append(key, value);
-            }
-          });
-          requestOptions.body = form;
-          requestOptions.headers = { ...requestOptions.headers, ...form.getHeaders() };
-        }
+        this.setMultipartFormDataBody(requestOptions, body);
         break;
-
       default:
         requestOptions.body = body;
         break;
+    }
+  }
+
+  private getContentType(headers: Record<string, string>): string {
+    const contentTypeKey = Object.keys(headers).find((key) => key.toLowerCase() === 'content-type');
+    return contentTypeKey ? headers[contentTypeKey].toLowerCase() : 'application/json';
+  }
+
+  private setFormUrlencodedBody(requestOptions: OptionsOfTextResponseBody, body: any) {
+    typeof body === 'object' ? (requestOptions.form = body) : (requestOptions.body = body);
+  }
+
+  private setMultipartFormDataBody(requestOptions: OptionsOfTextResponseBody, body: any) {
+    if (body && Object.values(body).some(isFileObject)) {
+      const form = new FormData();
+      Object.entries(body).forEach(([key, value]: [string, Record<string, string>]) => {
+        if (isFileObject(value)) {
+          const fileBuffer = Buffer.from(value.base64Data || '', 'base64');
+          form.append(key, fileBuffer, {
+            filename: value?.name || '',
+            contentType: value?.type || '',
+            knownLength: fileBuffer.length,
+          });
+        } else if (value != null) {
+          form.append(key, value);
+        }
+      });
+      requestOptions.body = form;
+      requestOptions.headers = { ...requestOptions.headers, ...form.getHeaders() };
     }
   }
 
