@@ -24,8 +24,8 @@ function ControlledTabs({
 
   return (
     <Tab.Container activeKey={key} onSelect={(k) => setKey(k)} defaultActiveKey="headers">
-      <Row>
-        <div className="keys d-flex justify-content-between">
+      <Row className="tw-ml-0">
+        <div className="keys d-flex justify-content-between query-pane-tabs-header">
           <ListGroup className="query-pane-rest-api-keys-list-group mx-1 mb-2" variant="flush">
             {tabs.map((tab) => (
               <ListGroup.Item key={tab} eventKey={tab.toLowerCase()}>
@@ -60,7 +60,7 @@ function ControlledTabs({
           </div>
         </div>
 
-        <div className={`col`}>
+        <div className="col tw-pl-0">
           <Tab.Content bsPrefix="rest-api-tab-content" className="query-manager-border-color rounded">
             <Tab.Pane eventKey="headers" t bsPrefix="rest-api-tabpanes" transition={false}>
               <Headers
