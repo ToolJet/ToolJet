@@ -184,7 +184,7 @@ export const Image = function Image({
 
   const FallbackState = () => {
     return (
-      <div className="broken-url-placeholder">
+      <div className="broken-url-placeholder" onClick={() => fireEvent('onClick')}>
         {isLoading && (
           <center>
             <Loader width="16" absolute={false} />
