@@ -1,5 +1,6 @@
 import React from 'react';
 import DynamicForm from '@/_components/DynamicForm';
+import DynamicFormV2 from '@/_components/DynamicFormV2';
 import RunjsSchema from './Runjs.schema.json';
 import TooljetDbSchema from '../../QueryManager/QueryEditors/TooljetDatabase/manifest.json';
 import RunpySchema from './Runpy.schema.json';
@@ -72,7 +73,15 @@ export const DataSourceTypes = [
 ];
 
 export const SourceComponents = Object.keys(allManifests).reduce((accumulator, currentValue) => {
-  accumulator[currentValue] = (props) => <DynamicForm schema={allManifests[currentValue]} isGDS={true} {...props} />;
+  accumulator[currentValue] = (props) => {
+    const schema = allManifests[currentValue];
+
+    if (schema.version) {
+      return <DynamicFormV2 schema={schema} isGDS={true} {...props} />;
+    }
+
+    return <DynamicForm schema={schema} isGDS={true} {...props} />;
+  };
   return accumulator;
 }, {});
 
