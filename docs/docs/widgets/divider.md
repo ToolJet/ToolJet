@@ -50,10 +50,12 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 ## Styles
 
-| <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div>                                               |
-| ------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| Divider Color                               | It is used to set the color of the divider. Use hex code to set the background color.           |
-| Visibility                                  | This property is used to set the visibility of the divider. The property accepts Boolean value. |
+| <div style="width:100px;">Property</div>    | <div style="width:100px;">Description</div>                                                                                           | <div style="width:100px;">Configuration Options</div>                                                                                              |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Divider Color                               | Sets the background color of the divider. The value must be provided as a HEX color code (e.g., #FFFFFF).                           | You can directly input the HEX code or click on *fx* to programmatically configure the background color.                      |
+| Visibility                                  | Sets the visibility of the divider. If the value is false, the divider will be hidden; otherwise, it will be visible.             | Use the toggle button to statically set visibility or click on *fx* to configure it dynamically with conditions.             |
+| Box Shadow                                  | Adds a shadow effect to the divider for styling purposes.                                                                           | Enter static values (e.g., 2px 2px 5px #000000) or click on *fx* for dynamic configuration using expressions.             |
+
 
 :::info
 Any property having **fx** button next to its field can be **programmatically configured**.
