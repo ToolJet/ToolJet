@@ -3,7 +3,7 @@ id: email-server
 title: Setup Email Communication
 ---
 
-This feature is only available on the self-hosted ToolJet, where you can set up your own email server using SMTP. This feature allows you to choose your own email server, which helps to seamlessly send emails for various purposes, including invitations, password reset requests, and notifications. SMTP ensures that emails are delivered reliably from ToolJet to the users.
+This feature is only available on the self-hosted ToolJet, where you can configure your own SMTP email server. This feature allows you to choose your own email server, which helps to seamlessly send emails for various purposes, including invitations, password reset requests, and notifications. 
 
 There are two ways to setup your email server in ToolJet:
 1. **[Using the GUI](#configuration-using-gui)**: This method involves directly entering SMTP settings into the ToolJet interface, which is suitable for simpler setups.
@@ -38,13 +38,13 @@ If you have upgraded from a version prior to v2.62.0, the SMTP variables in your
 |---------------|--------------------------|-----------------------------------|
 | Host          | SMTP server hostname     | smtp.gmail.com                    |
 | Port          | SMTP server port number  | 587                               |
-| User          | SMTP account username    | example@gmail.com/b2313d02f4f4jb  |
+| User          | SMTP account username    | hello@johndoe.tech                |
 | Password      | SMTP account password    | a13d0sd344                        |
-| Sender's email| Email address of the sender | example@gmail.com              |
-
-<img className="screenshot-full" src="/img/enterprise/smtp/configuration-v2.png" alt="SMTP     Configuration Without Environment Variables" />
+| Sender's email| Email address of the sender | hello@johndoe.tech             |
 
 5. Click **Save changes** to apply the new SMTP configuration.
+
+<img className="screenshot-full" src="/img/enterprise/smtp/configuration-v2.png" alt="SMTP     Configuration Without Environment Variables" />
 
 </div>
 
