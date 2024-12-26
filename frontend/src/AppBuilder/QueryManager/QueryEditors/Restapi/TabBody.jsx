@@ -11,6 +11,7 @@ export default ({
   onJsonBodyChange,
   componentName,
   bodyToggle,
+  onInputChange,
 }) => {
   return (
     <>
@@ -19,6 +20,7 @@ export default ({
         theme={theme}
         removeKeyValuePair={removeKeyValuePair}
         onChange={onChange}
+        onInputChange={onInputChange}
         onJsonBodyChange={onJsonBodyChange}
         componentName={componentName}
         tabType={'body'}

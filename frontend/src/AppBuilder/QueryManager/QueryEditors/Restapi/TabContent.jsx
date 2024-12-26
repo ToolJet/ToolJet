@@ -15,6 +15,7 @@ export default ({
   tabType,
   bodyToggle,
   addNewKeyValuePair,
+  onInputChange,
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
@@ -35,6 +36,7 @@ export default ({
                       initialValue={option[0]}
                       placeholder="Key"
                       onChange={onChange(paramType, 0, index)}
+                      onInputChange={onInputChange(paramType, index)}
                       componentName={`${componentName}/${tabType}::key::${index}`}
                     />
                   </div>
@@ -44,6 +46,7 @@ export default ({
                       initialValue={option[1]}
                       placeholder="Value"
                       onChange={onChange(paramType, 1, index)}
+                      onInputChange={onInputChange(paramType, index)}
                       componentName={`${componentName}/${tabType}::value::${index}`}
                     />
                   </div>

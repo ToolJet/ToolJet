@@ -18,6 +18,7 @@ function ControlledTabs({
   componentName,
   setBodyToggle,
   bodyToggle,
+  onInputChange,
 }) {
   const [key, setKey] = React.useState('headers');
   const tabs = ['Headers', 'Params', 'Body', 'Cookies'];
@@ -71,6 +72,7 @@ function ControlledTabs({
                 theme={theme}
                 darkMode={darkMode}
                 componentName={componentName}
+                onInputChange={onInputChange}
               />
             </Tab.Pane>
             <Tab.Pane eventKey="params" bsPrefix="rest-api-tabpanes" transition={false}>
@@ -82,6 +84,7 @@ function ControlledTabs({
                 theme={theme}
                 darkMode={darkMode}
                 componentName={componentName}
+                onInputChange={onInputChange}
               />
             </Tab.Pane>
             <Tab.Pane
@@ -100,6 +103,7 @@ function ControlledTabs({
                 bodyToggle={bodyToggle}
                 darkMode={darkMode}
                 componentName={componentName}
+                onInputChange={onInputChange}
               />
             </Tab.Pane>
             <Tab.Pane eventKey="cookies" bsPrefix="rest-api-tabpanes" transition={false}>
@@ -111,6 +115,7 @@ function ControlledTabs({
                 theme={theme}
                 darkMode={darkMode}
                 componentName={componentName}
+                onInputChange={onInputChange}
               />
             </Tab.Pane>
           </Tab.Content>

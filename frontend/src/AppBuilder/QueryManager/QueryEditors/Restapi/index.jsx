@@ -112,8 +112,10 @@ class Restapi extends React.Component {
 
   handleChange = (key, keyIndex, idx) => (value) => {
     this.keyValuePairValueChanged(value, keyIndex, key, idx);
-    const lastPair = this.state.options[key][idx];
-    if (this.state.options[key].length - 1 === idx && (lastPair[0] || lastPair[1])) {
+  };
+
+  handleInputChange = (key, idx) => (value) => {
+    if (this.state.options[key].length - 1 === idx && value) {
       this.addNewKeyValuePair(key);
     }
   };
@@ -228,6 +230,7 @@ class Restapi extends React.Component {
                   componentName={queryName}
                   bodyToggle={this.state.options.body_toggle}
                   setBodyToggle={this.onBodyToggleChanged}
+                  onInputChange={this.handleInputChange}
                 />
               </div>
             </div>
