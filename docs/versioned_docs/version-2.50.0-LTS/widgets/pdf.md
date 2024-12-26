@@ -78,7 +78,7 @@ To display instructional text when a user hovers over the PDF component, add som
 
 ## Styles
 
-| <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div>                                                                                                                                                                                                               | <div style={{ width:"100px"}}> Default Value </div> |
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div>                                                                                                                                                                                                               | <div style={{ width:"100px"}}> Configuration Options </div> |
 | :------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------- |
 | Visibility                                  | Toggle the `Visibility` condition on or off to control the visibility of the component. You can also programmatically change its value by clicking on the **fx** button next to it. If `{{false}}` the component will not be visible after the app is deployed. | By default, it's set to `{{true}}`.                  |
 
