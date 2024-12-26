@@ -370,29 +370,29 @@ const sidebars = {
     },
     {
       'type': 'category',
-      'label': 'Setting Up the Organization',
+      'label': 'ToolJet Setup',
       'items': [
-        'org-setup/overview',
-        'org-setup/tj-deployment',
+        'tj-setup/overview',
+        'tj-setup/tj-deployment',
         {
           'type': 'category',
           'label': 'Licensing',
           'items': [
-            'org-setup/licensing/self-hosted',
-            'org-setup/licensing/cloud'
+            'tj-setup/licensing/self-hosted',
+            'tj-setup/licensing/cloud'
           ]
         },
-        'org-setup/instances',
-        'org-setup/workspaces',
+        'tj-setup/instances',
+        'tj-setup/workspaces',
         {
           'type': 'category',
           'label': 'Organization Branding',
           'items': [
-            'org-setup/org-branding/white-labeling',
-            'org-setup/org-branding/custom-domain'
+            'tj-setup/org-branding/white-labeling',
+            'tj-setup/org-branding/custom-domain'
           ]
         },
-        'org-setup/email-server'
+        'tj-setup/email-server'
       ]
     },
     {
