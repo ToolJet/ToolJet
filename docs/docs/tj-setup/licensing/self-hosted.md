@@ -3,21 +3,21 @@ id: self-hosted
 title: Self-Hosted
 ---
 
-This guide explains you about the different types of license present and provides instructions on upgrading your license for Self-Hosted ToolJet. Self Hosted ToolJet works on a license model and you can reach out to the **[ToolJet Team](mailto:hello@tooljet.com)** to generate the key.For assistance in selecting an appropriate plan visit the **[ToolJet Pricing](https://www.tooljet.com/pricing)** page or **[contact the ToolJet team](mailto:hello@tooljet.com)**.
+This guide explains you about the different types of license present and provides instructions on upgrading your license for Self-Hosted ToolJet. Self Hosted ToolJet works on a license model and you can reach out to the **[ToolJet Team](mailto:hello@tooljet.com)** to generate the key. For assistance in selecting an appropriate plan visit the **[ToolJet Pricing](https://www.tooljet.com/pricing)** page or **[contact the ToolJet team](mailto:hello@tooljet.com)**.
 
 <div style={{paddingTop:'24px'}}>
 
 ## Types of License
 
-ToolJet provides three types of licenses - **Basic**, **Trial** and **Paid**. Which can be further categorized in different subscription plan. Visit **[ToolJet Pricing](https://www.tooljet.com/pricing)** page for more details on different subscription plans.
+ToolJet provides three types of license - **Basic**, **Trial** and **Paid**. Which can be further categorized in different subscription plan. Visit **[ToolJet Pricing](https://www.tooljet.com/pricing)** page for more details on different subscription plans.
 
 ### Basic License
 
-This is a free license where a user can access basic offerings such as creating apps, community support, pre-difined user groups, etc. This is ideal for individuals or small teams who just need the essentials. No license key is required for this option.
+This is a free license where a user can access basic offerings such as creating apps, community support, pre-defined user groups, etc. This is ideal for individuals or small teams who just need the essentials. No license key is required for this option.
 
 ### Trial License
 
-ToolJet offers a trial license which is valid for 14 days, where user can access all premimum features and evaluate ToolJet according to your needs. You can contact  **[ToolJet Team](mailto:hello@tooljet.com)** to generate a trial license key.
+ToolJet offers a trial license which is valid for 14 days, where user can access all premium features and evaluate ToolJet according to their needs. You can contact  **[ToolJet Team](mailto:hello@tooljet.com)** to generate a trial license key.
 
 ### Paid License
 
@@ -46,7 +46,7 @@ Once you have received the license key from the ToolJet Team, after that you can
 
 ## What Happens if my License Expires?
 
-If your paid or trial license key expires, your instance will revert to operating as a basic plan. Upon expiration, access to premium features like OpenID SSO login and Audit logs will be restricted, ensuring no data loss occurs. However, don't worry! You can still upgrade to any of our premium plans and enjoy the premium features again.
+If your paid or trial license key expires, your instance will revert to operating as a basic plan. Upon expiration, access to premium features like OpenID SSO login and Audit logs will be restricted, ensuring no data loss occurs. However, don't worry! You can still renew to any of the paid plans and enjoy the premium features again.
 
 </div>
 

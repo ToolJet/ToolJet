@@ -3,7 +3,7 @@ id: overview
 title: Overview
 ---
 
-In ToolJet, an **organization** is a centralized entity that helps structure and manage collaborative app development. It serves as a space for teams to work together on building, testing, and deploying applications. Organization also empower admins and super admins to manage users and resources centrally. An organization can be divided into different workspaces based on specific requirements. This section outlines key setup areas for your organization, including branding, subscription plans, deployment options, and workspace management, ensuring an optimized experience for your team.
+ToolJet provides a variety of configuration options to help organizations tailor the platform to their specific needs. This section outlines key setup areas for your organization, including branding, subscription plans, deployment options, and workspace management, ensuring an optimized experience for your team.
 
 ## Deployment Options and Subscription Plans
 
