@@ -113,7 +113,7 @@ We want to create a foreign key relationship between the `customer_id` column in
    - In the **Target** section, select the `Customers` table and the `customer_id` column.
    - Choose the desired action, for example, **RESTRICT** to prevent deleting a customer that has associated orders.
 
-2. **Save Changes**: Click the **Save Changes** button to create the foreign key relationship.
+3. **Save Changes**: Click the **Save Changes** button to create the foreign key relationship.
 
 Now, whenever you try to insert or update a record in the `Orders` table, the `customer_id` value must correspond to an existing `customer_id` value in the `Customers` table. This is also prevent you from deleting a customer that has associated orders. This ensures that orders are always associated with a valid customer, maintaining data integrity and consistency.
 
