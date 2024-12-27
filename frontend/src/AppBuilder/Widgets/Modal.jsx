@@ -310,7 +310,7 @@ const Component = ({ children, ...restProps }) => {
   };
 
   return (
-    <BootstrapModal {...restProps} onClick={handleModalBodyClick}>
+    <BootstrapModal {...restProps} animation={true} onClick={handleModalBodyClick}>
       {showConfigHandler && (
         <ConfigHandle
           id={id}
