@@ -52,10 +52,9 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 | <div style="width:100px;">Property</div>    | <div style="width:100px;">Description</div>                                                                                           | <div style="width:100px;">Configuration Options</div>                                                                                              |
 | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| Divider Color                               | Sets the background color of the component.                            | Select the color or click on fx and input code that programmatically returns a HEX color code.                     |
-| Visibility                                  | Controls component visibility. Toggle or set dynamically.             | Enable/disable the toggle button or dynamically configure the value by clicking on fx and entering a logical expression.      |
-| Box Shadow                                  | Sets the box shadow properties of the component                                                                      | Select the box shadow color and adjust related properties or set it programmatically using fx.            |
-
+| Divider Color                               | Sets the background color of the component.                        | Select the color or click on fx and input code that programmatically returns a HEX color code.                    |
+| Visibility                                  | Controls component visibility.Toggle or set dynamically            | Enable/disable the toggle button or dynamically configure the value by clicking on fx and entering a logical expression.
+| Box Shadow                                  | Sets the box shadow properties of the component.                   | Select the box shadow color and adjust related properties or set it programmatically using fx.           |
 
 
 </div>
