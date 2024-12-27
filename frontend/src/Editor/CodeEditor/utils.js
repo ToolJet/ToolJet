@@ -129,9 +129,11 @@ const resolveWorkspaceVariables = (query) => {
 function resolveCode(code, customObjects = {}, withError = false, reservedKeyword, isJsCode) {
   let result = '';
   let error;
-
   // dont resolve if code starts with "queries." and ends with "run()"
   if (code.startsWith('queries.') && code.endsWith('run()')) {
+    error = `Cannot resolve function call ${code}`;
+    // dont resolve if code is Table's CSA selectRow() function since its breaking the app
+  } else if (code.startsWith('components.') && code.endsWith('selectRow()')) {
     error = `Cannot resolve function call ${code}`;
   } else {
     try {
@@ -171,7 +173,6 @@ function resolveCode(code, customObjects = {}, withError = false, reservedKeywor
       error = err.toString();
     }
   }
-
   if (withError) return [result, error];
   return result;
 }
@@ -183,7 +184,6 @@ function getDynamicVariables(text) {
 }
 const resolveMultiDynamicReferences = (code, lookupTable, queryHasJSCode) => {
   let resolvedValue = code;
-
   const isComponentValue = code.includes('components.') || false;
 
   const allDynamicVariables = getDynamicVariables(code) || [];
@@ -295,7 +295,6 @@ export const resolveReferences = (query, validationSchema, customResolvers = {})
     if (!jsExpMatch && toResolveReference && lookupTable.hints.has(toResolveReference)) {
       const idToLookUp = lookupTable.hints.get(toResolveReference);
       resolvedValue = lookupTable.resolvedRefs.get(idToLookUp);
-
       if (jsExpression) {
         let jscode = value;
         if (!Array.isArray(resolvedValue) && typeof resolvedValue !== 'object' && resolvedValue !== null) {
