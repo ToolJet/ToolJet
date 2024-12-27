@@ -52,13 +52,10 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 | <div style="width:100px;">Property</div>    | <div style="width:100px;">Description</div>                                                                                           | <div style="width:100px;">Configuration Options</div>                                                                                              |
 | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| Divider Color                               | Sets the background color of the divider. The value must be provided as a HEX color code (e.g., #FFFFFF).                           | You can directly input the HEX code or click on *fx* to programmatically configure the background color.                      |
-| Visibility                                  | Sets the visibility of the divider. If the value is false, the divider will be hidden; otherwise, it will be visible.             | Use the toggle button to statically set visibility or click on *fx* to configure it dynamically with conditions.             |
-| Box Shadow                                  | Adds a shadow effect to the divider for styling purposes.                                                                           | Enter static values (e.g., 2px 2px 5px #000000) or click on *fx* for dynamic configuration using expressions.             |
+| Divider Color                               | Sets the background color of the component.                            | Select the color or click on fx and input code that programmatically returns a HEX color code.                     |
+| Visibility                                  | Controls component visibility. Toggle or set dynamically.             | Enable/disable the toggle button or dynamically configure the value by clicking on fx and entering a logical expression.      |
+| Box Shadow                                  | Sets the box shadow properties of the component                                                                      | Select the box shadow color and adjust related properties or set it programmatically using fx.            |
 
 
-:::info
-Any property having **fx** button next to its field can be **programmatically configured**.
-:::
 
 </div>
