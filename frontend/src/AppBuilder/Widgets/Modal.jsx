@@ -53,7 +53,7 @@ export const Modal = function Modal({
   const isFullScreen = properties.size === 'fullscreen';
   const versionFriendlyHeight = backwardCompatibilityCheck ? modalHeight : height;
   const [modalContainerHeight, setModalContainerHeight] = useState(0);
-  const computedHeight = isFullScreen ? '100%' : versionFriendlyHeight;
+  const computedCanvasHeight = isFullScreen ? 'calc(100vh - 56px)' : versionFriendlyHeight;
 
   /**** Start - Logic to reset the zIndex of modal control box ****/
   useEffect(() => {
@@ -96,7 +96,7 @@ export const Modal = function Modal({
 
       modalContainer.style.height = `${canvasElement.offsetHeight}px`;
       modalContainer.style.top = `${currentScroll}px`;
-      modalCanvasEl.style.height = computedHeight;
+      modalCanvasEl.style.height = computedCanvasHeight;
     }
   };
 
