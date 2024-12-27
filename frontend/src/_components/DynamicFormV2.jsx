@@ -15,41 +15,47 @@ const DynamicFormV2 = ({
   schema,
   options,
   optionchanged,
+  optionsChanged,
   selectedDataSource,
   isEditMode,
   layout = 'vertical',
   onBlur,
+  setDefaultOptions,
+  setValidationFailed,
 }) => {
   const [computedProps, setComputedProps] = React.useState({});
   const isHorizontalLayout = layout === 'horizontal';
 
 
-  React.useEffect(() => {
+  const ajv = React.useMemo(() => {
+    try {
+      const instance = new Ajv({
+        allErrors: true,
+        strict: false,
+        coerceTypes: true,
+      });
+      addFormats(instance);
+      return instance;
+    } catch (error) {
+      return new Ajv();
+    }
+  }, []);
+
+  React.useLayoutEffect(() => {
     if (!isEditMode || isEmpty(options)) {
-      initializeFormFromRequired();
+      const defaults = {};
+      Object.entries(schema.properties).forEach(([key, property]) => {
+        if ('default' in property) {
+          defaults[key] = property.default;
+        }
+      });
+  
+      if (!isEmpty(defaults)) {
+        optionsChanged(defaults ?? {});
+        typeof setDefaultOptions === 'function' && setDefaultOptions(defaults);
+      }
     }
   }, [schema, isEditMode]);
-
-  const initializeFormFromRequired = () => {
-    if (!schema.required) return;
-
-    const initialValues = {};
-
-    schema.required.forEach(fieldName => {
-      const fieldSchema = schema.properties[fieldName];
-      if (!fieldSchema) return;
-
-      if ('default' in fieldSchema) {
-        initialValues[fieldName] = fieldSchema.default;
-      }
-
-      processFieldConditions(fieldName, fieldSchema, initialValues);
-    });
-
-    Object.entries(initialValues).forEach(([key, value]) => {
-      optionchanged(key, value);
-    });
-  };
 
   const getElement = (property) => {
     const { ui_widget } = property;
@@ -73,15 +79,7 @@ const DynamicFormV2 = ({
   };
 
   const getElementProps = (property, key) => {
-    const {
-      title,
-      description,
-      ui_widget,
-      encrypted,
-      enum: enumValues,
-      enumNames,
-      width
-    } = property;
+    const { title, description, ui_widget, encrypted, enum: enumValues, enumNames, width } = property;
 
     const isRequired = getRequiredFields().includes(key);
     const currentValue = options?.[key]?.value !== undefined ? options[key].value : options?.[key];
@@ -97,20 +95,17 @@ const DynamicFormV2 = ({
           ui_label: title,
           placeholder: useEncrypted ? '**************' : description,
           className: cx('form-control', {
-            'dynamic-form-encrypted-field': useEncrypted
+            'dynamic-form-encrypted-field': useEncrypted,
           }),
           style: { marginBottom: '0px !important' },
           helpText: property.helpText,
           value: currentValue || '',
           onChange: (e) => optionchanged(key, e.target.value, true),
-          validate: () => checkValidation(schema.validation, isRequired, key, currentValue),
-          ...(ui_widget === 'textarea' && { rows: 4 }),
           isGDS: true,
           workspaceVariables: [],
           workspaceConstants: [],
           encrypted: useEncrypted,
           onBlur,
-          isRequired,
         };
       }
       case 'password-v3':
@@ -122,19 +117,19 @@ const DynamicFormV2 = ({
           ui_label: title,
           placeholder: useEncrypted ? '**************' : description,
           className: cx('form-control', {
-            'dynamic-form-encrypted-field': useEncrypted
+            'dynamic-form-encrypted-field': useEncrypted,
           }),
           style: { marginBottom: '0px !important' },
           helpText: property.helpText,
           value: currentValue || '',
           onChange: (e) => optionchanged(key, e.target.value, true),
-          validate: () => checkValidation(schema.validation, isRequired, key, currentValue),
+          validate: (e) => checkValidation(key, isRequired, e.target.value),
           isGDS: true,
           workspaceVariables: [],
           workspaceConstants: [],
           encrypted: useEncrypted,
           onBlur,
-          isRequired,
+          isRequired: isRequired,
         };
       }
       case 'dropdown-component-flip': {
@@ -194,6 +189,73 @@ const DynamicFormV2 = ({
     });
   };
 
+  const checkValidation = (key, isRequired, fieldValue) => {
+
+    const fieldSchema = schema?.properties?.[key];
+    if (!fieldSchema) {
+      setValidationFailed(false);
+      return { valid: true, message: `${key} is valid` };
+    }
+    if (fieldValue === null || fieldValue === undefined || fieldValue === '') {
+      if (isRequired) {
+        setValidationFailed(true);
+        return { valid: false, message: `${key} is required` };
+      }
+      setValidationFailed(false);
+      return { valid: true, message: `${key} is empty, validation skipped` };
+    }
+
+    let valueToValidate = fieldValue;
+    if (fieldSchema.type === 'number' || fieldSchema.type === 'integer') {
+      valueToValidate = Number(fieldValue);
+      if (isNaN(valueToValidate)) {
+        setValidationFailed(true);
+        return { valid: false, message: 'Please enter a valid number' };
+      }
+    }
+    if (fieldSchema.type === 'string' && !isNaN(fieldValue)) {
+      setValidationFailed(true);
+      return { valid: false, message: 'Should not be a number' };
+    }
+
+    const validationSchema = {
+      type: 'object',
+      properties: {
+        [key]: fieldSchema,
+      },
+      ...(isRequired && { required: [key] }),
+    };
+
+    const validate = ajv.compile(validationSchema);
+    const isValid = validate({ [key]: valueToValidate });
+
+    if (!isValid) {
+      setValidationFailed(true);
+      const errors = validate.errors;
+
+      if (errors?.[0]) {
+        const errorMessages = {
+          type: `Invalid type. Expected ${fieldSchema.type}`,
+          format: 'Invalid format',
+          pattern: 'Invalid pattern',
+          minimum: `Must be greater than or equal to ${fieldSchema.minimum}`,
+          maximum: `Must be less than or equal to ${fieldSchema.maximum}`,
+          minLength: `Must be at least ${fieldSchema.minLength} characters`,
+          maxLength: `Must not exceed ${fieldSchema.maxLength} characters`,
+          enum: 'Value must be one of the allowed options'
+        };
+
+        return {
+          valid: false,
+          message: errorMessages[errors[0].keyword] || errors[0].message || 'Invalid value'
+        };
+      }
+    }
+
+    setValidationFailed(false);
+    return { valid: true, message: `${key} is valid` };
+  };
+
   const getRequiredFields = () => {
     const requiredFields = [...(schema.required || [])];
 
@@ -229,7 +291,10 @@ const DynamicFormV2 = ({
       }
     });
 
-    return [...new Set(requiredFields)];
+    return [...new Set(requiredFields)].filter(
+      field => !schema.properties[field]?.optional || 
+      (options[field]?.value && options[field].value !== schema.properties[field].default)
+    );
   };
 
   const getVisibleFields = () => {
@@ -281,22 +346,22 @@ const DynamicFormV2 = ({
       const isSpecificComponent = ['tooljetdb-operations'].includes(fieldSchema.ui_widget);
 
       return (
-        <div className={`${isHorizontalLayout ? '' : 'row'}`}>
+        <div className={`${isHorizontalLayout ? '' : 'row'} my-2`}>
           <div
             key={fieldName}
-            className={
-              cx({
+            className={(
+              {
                 'flex-grow-1': isHorizontalLayout && !isSpecificComponent,
                 'w-100': isHorizontalLayout && fieldSchema.ui_widget !== 'codehinter',
               },
-                'dynamic-form-element'
-              )}
+              'dynamic-form-element'
+            )}
             style={{ width: '100%' }}
           >
-            {(fieldSchema.ui_widget !== 'text-v3' && fieldSchema.ui_widget !== 'password-v3') &&
+            {fieldSchema.ui_widget !== 'text-v3' && fieldSchema.ui_widget !== 'password-v3' && (
               <label className="form-label">{fieldSchema.title}</label>
-            }
-            <Element {...elementProps} isHorizontalLayout={isHorizontalLayout} />
+            )}
+              <Element {...elementProps} isHorizontalLayout={isHorizontalLayout} />
           </div>
         </div>
       );
