@@ -5,7 +5,8 @@ import { workspaceConstantsText } from "Texts/workspaceConstants";
 import * as common from "Support/utils/common";
 
 export const contantsNameValidation = (value, error) => {
-    cy.clearAndType(commonSelectors.nameInputField, value);
+    cy.get(commonSelectors.workspaceConstantNameInput).click();
+    cy.clearAndType(commonSelectors.workspaceConstantNameInput, value);
     cy.get(commonSelectors.nameErrorText).verifyVisibleElement(
         "have.text",
         error
@@ -15,9 +16,9 @@ export const contantsNameValidation = (value, error) => {
 
 export const AddNewconstants = (name, value, type = "global") => {
     cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
-    cy.clearAndType(workspaceConstantsSelectors.nameInputFiled, name);
-    cy.get(commonSelectors.valueInputField).click();
-    cy.clearAndType(commonSelectors.valueInputField, value);
+    cy.clearAndType(commonSelectors.workspaceConstantNameInput, name);
+    cy.get(commonSelectors.workspaceConstantValueInput).click();
+    cy.clearAndType(commonSelectors.workspaceConstantValueInput, value);
     cy.get(workspaceConstantsSelectors.constantsType(type)).check();
     cy.get(workspaceConstantsSelectors.addConstantButton).click();
 };
@@ -27,10 +28,10 @@ export const existingNameValidation = (
     constValue,
     type = "Global"
 ) => {
-    cy.clearAndType(commonSelectors.nameInputField, constName);
+    cy.clearAndType(commonSelectors.workspaceConstantNameInput, constName);
     cy.get(workspaceConstantsSelectors.constantsType(type)).check();
-    cy.get(commonSelectors.valueInputField).click();
-    cy.clearAndType(commonSelectors.valueInputField, constValue);
+    cy.get(commonSelectors.workspaceConstantValueInput).click();
+    cy.clearAndType(commonSelectors.workspaceConstantValueInput, constValue);
     cy.get(workspaceConstantsSelectors.addConstantButton).click();
     cy.get(commonSelectors.toastMessage)
         .as("toast")
