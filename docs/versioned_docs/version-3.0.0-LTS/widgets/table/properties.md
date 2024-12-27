@@ -240,10 +240,10 @@ Disable condition allows you to control whether the Table is enabled or disabled
 
 ## Devices
 
-| Option  | Description | Expected value |
+| Property  | Description | Expected value |
 |:----------- |:----------- |:----------- |
-| **Show on desktop** | Shows or hides the component on desktop devices. | Use the toggle switch or configure it dynamically using `fx`.|
-| **Show on mobile** | Shows or hides the component on mobile devices. | Use the toggle switch or configure it dynamically using `fx`.|
+| **Show on desktop** |  Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.|
+| **Show on mobile** | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.|
 
 ## Styles
 ### Data
