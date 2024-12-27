@@ -115,8 +115,10 @@ export const Container = ({
   // const [isResizing, setIsResizing] = useState(false);
   const [commentsPreviewList, setCommentsPreviewList] = useState([]);
   const [newThread, addNewThread] = useState({});
-  const [isContainerFocused, setContainerFocus] = useState(false);
+  // const [isContainerFocused, setContainerFocus] = useState(false);
   const [canvasHeight, setCanvasHeight] = useState(null);
+
+  const isContainerFocusedRef = useRef(false);
 
   useEffect(() => {
     if (currentLayout === 'mobile' && appDefinition.pages[currentPageId]?.autoComputeLayout) {
@@ -151,7 +153,7 @@ export const Container = ({
   useHotkeys(
     'meta+v, control+v',
     async () => {
-      if (isContainerFocused && !isVersionReleased) {
+      if (isContainerFocusedRef.current && !isVersionReleased) {
         // Check if the clipboard API is available
         if (navigator.clipboard && typeof navigator.clipboard.readText === 'function') {
           try {
@@ -173,7 +175,7 @@ export const Container = ({
       }
       useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
     },
-    [isContainerFocused, appDefinition, focusedParentIdRef.current],
+    [appDefinition, focusedParentIdRef.current],
     { scopes: 'editor' }
   );
 
@@ -220,16 +222,16 @@ export const Container = ({
           const parentId = elem.split('canvas-')[1];
           focusedParentIdRef.current = parentId;
         }
-        if (!isContainerFocused) {
-          setContainerFocus(true);
+        if (!isContainerFocusedRef.current) {
+          isContainerFocusedRef.current = true;
         }
-      } else if (isContainerFocused) {
-        setContainerFocus(false);
+      } else if (isContainerFocusedRef.current) {
+        isContainerFocusedRef.current = false;
       }
     };
     document.addEventListener('click', handleClick);
     return () => document.removeEventListener('click', handleClick);
-  }, [isContainerFocused, canvasRef]);
+  }, [isContainerFocusedRef.current, canvasRef]);
 
   //listening to no of component change to handle addition/deletion of widgets
   const noOfBoxs = Object.values(boxes || []).length;
@@ -1013,10 +1015,9 @@ const WidgetWrapper = ({
     component: { parent },
     layouts,
   } = widget;
-  const { isSelected, isHovered } = useEditorStore((state) => {
+  const { isSelected } = useEditorStore((state) => {
     const isSelected = !!(state.selectedComponents || []).find((selected) => selected?.id === id);
-    const isHovered = state?.hoveredComponent == id;
-    return { isSelected, isHovered };
+    return { isSelected };
   }, shallow);
 
   const isDragging = useGridStore((state) => state?.draggingComponentId === id);
@@ -1068,7 +1069,7 @@ const WidgetWrapper = ({
             ? `ghost-target`
             : `target widget-target target1 ele-${id} moveable-box ${isResizing ? 'resizing-target' : ''} ${
                 isWidgetActive ? 'active-target' : ''
-              } ${isHovered ? 'hovered-target' : ''} ${isDragging ? 'opacity-0' : ''}`
+              } ${isDragging ? 'opacity-0' : ''}`
         }
         data-id={`${parent}`}
         id={id}

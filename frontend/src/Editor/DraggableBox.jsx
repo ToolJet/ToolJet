@@ -14,6 +14,8 @@ import { useNoOfGrid, useGridStore } from '@/_stores/gridStore';
 import WidgetBox from './WidgetBox';
 import * as Sentry from '@sentry/react';
 import { findHighestLevelofSelection } from './DragContainer';
+import { useCurrentStateStore, getCurrentState } from '@/_stores/currentStateStore';
+import { useResolveStore } from '@/_stores/resolverStore';
 
 function computeWidth(currentLayoutOptions) {
   return `${currentLayoutOptions?.width}%`;
@@ -60,18 +62,9 @@ const DraggableBox = React.memo(
     const isResizing = useGridStore((state) => state.resizingComponentId === id);
     const [canDrag, setCanDrag] = useState(true);
     const noOfGrid = useNoOfGrid();
-    const {
-      currentLayout,
-      setHoveredComponent,
-      selectionInProgress,
-      isSelectedComponent,
-      isMultipleComponentsSelected,
-      autoComputeLayout,
-    } = useEditorStore(
+    const { currentLayout, isSelectedComponent, isMultipleComponentsSelected, autoComputeLayout } = useEditorStore(
       (state) => ({
         currentLayout: state?.currentLayout,
-        setHoveredComponent: state?.actions?.setHoveredComponent,
-        selectionInProgress: state?.selectionInProgress,
         isSelectedComponent:
           mode === 'edit' ? state?.selectedComponents?.some((component) => component?.id === id) : false,
         isMultipleComponentsSelected: findHighestLevelofSelection(state?.selectedComponents)?.length > 1 ? true : false,
@@ -135,13 +128,15 @@ const DraggableBox = React.memo(
       component.component === 'Modal' &&
       resolveWidgetFieldValue(component.definition.properties.useDefaultButton?.value) === false;
 
-    const onComponentHover = useCallback(
-      (id) => {
-        if (selectionInProgress) return;
-        setHoveredComponent(id);
-      },
-      [id]
-    );
+    const isEditorReady = useCurrentStateStore.getState().isEditorReady;
+    const isResolverStoreReady = useResolveStore.getState().storeReady;
+
+    const isCanvasReady = isEditorReady && isResolverStoreReady;
+    /**
+     * !This component does not consume the value returned from the below hook.
+     * Only purpose of the hook is to force one rerender the component
+     * */
+    useEditorStore((state) => state.componentsNeedsUpdateOnNextRender.find((compId) => compId === id));
 
     return (
       <div
@@ -161,27 +156,6 @@ const DraggableBox = React.memo(
               [className]: !!className,
               'draggable-box-in-editor': mode === 'edit',
             })}
-            onMouseEnter={(e) => {
-              if (useGridStore.getState().draggingComponentId) return;
-              const closestDraggableBox = e.target.closest('.draggable-box');
-              if (closestDraggableBox) {
-                const classNames = closestDraggableBox.className.split(' ');
-                let compId = null;
-
-                classNames.forEach((className) => {
-                  if (className.startsWith('widget-')) {
-                    compId = className.replace('widget-', '');
-                  }
-                });
-
-                onComponentHover?.(compId);
-                e.stopPropagation();
-              }
-            }}
-            onMouseLeave={() => {
-              if (useGridStore.getState().draggingComponentId) return;
-              setHoveredComponent('');
-            }}
             style={getStyles(isDragging, isSelectedComponent)}
           >
             <div ref={preview} role="DraggableBox" style={isResizing ? { opacity: 0.5 } : { opacity: 1 }}>

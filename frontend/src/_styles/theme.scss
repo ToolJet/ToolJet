@@ -2621,6 +2621,10 @@ hr {
   z-index: 3 !important;
 }
 
+.draggable-box-in-editor:not(:has(.nested-target:hover)):hover > div > .config-handle:first-child {
+    visibility: visible !important;
+}
+
 .config-handle:hover,
 .widget-in-canvas:hover .config-handle {
   visibility: visible;
