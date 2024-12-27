@@ -18,15 +18,6 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
         </div>
       )}
 
-      {options?.length > 0 && (
-        <div>
-          <div style={{ display: 'flex' }}>
-            <div style={{ width: '300px', color: '#687076', fontSize: '12px', paddingLeft: '5px' }}>KEY</div>
-            <div style={{ width: '316px', color: '#687076', fontSize: '12px', paddingLeft: '5px' }}>VALUE</div>
-          </div>
-        </div>
-      )}
-
       {options.map((option, index) => (
         <div className="d-flex align-items-top row-container query-manager-border-color" key={index}>
           <Input
@@ -39,7 +30,7 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
             autoComplete="off"
             style={{
               flex: 1,
-              width: '300px',
+              width: '316px',
               borderTopRightRadius: '0',
               borderBottomRightRadius: '0',
               borderRight: 'none',
