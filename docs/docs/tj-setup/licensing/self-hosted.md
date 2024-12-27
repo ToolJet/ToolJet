@@ -3,13 +3,13 @@ id: self-hosted
 title: Self-Hosted
 ---
 
-This guide explains you about the different types of license present and provides instructions on upgrading your license for Self-Hosted ToolJet. Self Hosted ToolJet works on a license model and you can reach out to the **[ToolJet Team](mailto:hello@tooljet.com)** to generate the key. For assistance in selecting an appropriate plan visit the **[ToolJet Pricing](https://www.tooljet.com/pricing)** page or **[contact the ToolJet team](mailto:hello@tooljet.com)**.
+This guide explains you about the different types of licenses present and provides instructions on upgrading your license for Self-Hosted ToolJet. Self Hosted ToolJet works on a license model and you can reach out to the **[ToolJet Team](mailto:hello@tooljet.com)** to generate the key. For assistance in selecting an appropriate plan visit the **[ToolJet Pricing](https://www.tooljet.com/pricing)** page or contact the **[ToolJet team](mailto:hello@tooljet.com)**.
 
 <div style={{paddingTop:'24px'}}>
 
-## Types of License
+## Types of Licenses
 
-ToolJet provides three types of license - **Basic**, **Trial** and **Paid**. Which can be further categorized in different subscription plan. Visit **[ToolJet Pricing](https://www.tooljet.com/pricing)** page for more details on different subscription plans.
+ToolJet provides three types of licenses - **Basic**, **Trial** and **Paid**. Which can be further categorized in different subscription plan. Visit **[ToolJet Pricing](https://www.tooljet.com/pricing)** page for more details on different subscription plans.
 
 ### Basic License
 

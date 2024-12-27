@@ -7,7 +7,7 @@ This guide explains you about the different types of subscriptions present and p
 
 <div style={{paddingTop:'24px'}}>
 
-## Types of Subscription
+## Types of Subscriptions
 
 ToolJet provides three types of subscriptions - **Basic**, **Trial** and **Paid**. Which can be further categorized in different plans based on the services and features. Visit **[ToolJet Pricing](https://www.tooljet.com/pricing)** page for more details on different plans.
 

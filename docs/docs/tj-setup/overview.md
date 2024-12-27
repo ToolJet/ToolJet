@@ -3,7 +3,7 @@ id: overview
 title: Overview
 ---
 
-ToolJet provides a variety of configuration options to help organizations tailor the platform to their specific needs. This section outlines key setup areas for your organization, including branding, subscription plans, deployment options, and workspace management, ensuring an optimized experience for your team.
+ToolJet provides a variety of configuration options to help your organizations tailor the platform to your specific needs. This section outlines key setup areas for your organization, including branding, subscription plans, deployment options, and workspace management, ensuring an optimized experience for your team.
 
 ## Deployment Options and Subscription Plans
 

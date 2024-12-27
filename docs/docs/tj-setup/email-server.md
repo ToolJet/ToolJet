@@ -90,7 +90,10 @@ Here are some general settings for the most commonly used email providers:
 | Mailgun            | smtp.mailgun.org     | 587 or 465 (SSL) | SMTP username | Password  | Email          |
 
 :::info
-For SendGrid and Mailgun, the sender's email can be different from the username, subject to the provider's verification requirements. The username for SendGrid is **apikey**, and the password is your API key. For Mailgun, you usually use a specific SMTP username and password provided by Mailgun, not your regular email credentials.
+For **SendGrid** and **Mailgun**, the sender's email can be different from the username, subject to the provider's verification requirements. The username for SendGrid is **apikey**, and the password is your API key. For Mailgun, you can check the SMTP credentials tab under Domain settings.
+
+<img className="screenshot-full" src="/img/enterprise/smtp/mailgun-cred.png" alt="SMTP Configuration Without Environment Variables" />
+
 :::
 
 </div>
