@@ -13,6 +13,7 @@ import {
   SourceComponent,
   SourceComponents,
   CloudStorageSources,
+  FetchManifest,
 } from './SourceComponents';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import config from 'config';
@@ -30,6 +31,8 @@ import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import './dataSourceManager.theme.scss';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { canUpdateDataSource } from '@/_helpers';
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
 class DataSourceManagerComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -50,6 +53,7 @@ class DataSourceManagerComponent extends React.Component {
     }
 
     this.state = {
+      ajv: null,
       showModal: true,
       appId: props.appId,
       selectedDataSource,
@@ -74,10 +78,30 @@ class DataSourceManagerComponent extends React.Component {
       unsavedChangesModal: false,
       datasourceName,
       creatingApp: false,
+      validationFailed: false,
     };
   }
 
   componentDidMount() {
+    try {
+      const ajv = new Ajv({
+        allErrors: true,
+        strict: false,
+        coerceTypes: true,
+        useDefaults: true,
+      });
+      addFormats(ajv);
+      this.setState({ ajv });
+    } catch (error) {
+      this.setState({
+        ajv: new Ajv({
+          allErrors: true,
+          strict: false,
+          coerceTypes: true,
+          useDefaults: true,
+        }),
+      });
+    }
     this.setState({
       appId: this.props.appId,
     });
@@ -104,6 +128,7 @@ class DataSourceManagerComponent extends React.Component {
         dataSourceSchema: this.props.selectedDataSource?.plugin?.manifestFile?.data,
         selectedDataSourceIcon: this.props.selectedDataSource?.plugin?.iconFile?.data,
         connectionTestError: null,
+        validationError: null,
         datasourceName: this.props.selectedDataSource?.name,
       });
     }
@@ -154,6 +179,7 @@ class DataSourceManagerComponent extends React.Component {
       selectedDataSource: null,
       options: {},
       connectionTestError: null,
+      validationError: null,
       queryString: null,
       filteredDatasources: [],
       activeDatasourceList: '#alldatasources',
@@ -169,6 +195,7 @@ class DataSourceManagerComponent extends React.Component {
   optionchanged = (option, value) => {
     const stateToUpdate = {
       connectionTestError: null,
+      validationError: null,
       options: {
         ...this.state.options,
         [option]: { value: value },
@@ -195,6 +222,85 @@ class DataSourceManagerComponent extends React.Component {
   createDataSource = () => {
     const { appId, options, selectedDataSource, selectedDataSourcePluginId, dataSourceMeta, dataSourceSchema } =
       this.state;
+
+    const manifestFile = FetchManifest(selectedDataSource.kind);
+    const formValues = Object.keys(options).reduce((acc, key) => {
+      acc[key] = options[key].value;
+      return acc;
+    }, {});
+
+    const getRequiredFields = () => {
+      const requiredFields = [...(manifestFile.required || [])];
+  
+      manifestFile.allOf?.forEach(condition => {
+        const ifProps = condition.if?.properties || {};
+        const matches = Object.entries(ifProps).every(([key, constraint]) => {
+          const value = options?.[key]?.value !== undefined
+            ? options[key].value
+            : options?.[key] !== undefined
+              ? options[key]
+              : manifestFile.properties[key]?.default;
+  
+          return value === constraint.const;
+        });
+  
+        if (matches) {
+          requiredFields.push(...(condition.then?.required || []));
+  
+          condition.then?.allOf?.forEach(nestedCondition => {
+            const nestedMatches = Object.entries(nestedCondition.if?.properties || {}).every(
+              ([key, constraint]) => {
+                const value = options?.[key]?.value !== undefined
+                  ? options[key].value
+                  : options?.[key];
+                return value === constraint.const;
+              }
+            );
+  
+            if (nestedMatches) {
+              requiredFields.push(...(nestedCondition.then?.required || []));
+            }
+          });
+        }
+      });
+  
+      return [...new Set(requiredFields)].filter(
+        field => !manifestFile.properties[field]?.optional || 
+        (options[field]?.value && options[field].value !== manifestFile.properties[field].default)
+      );
+    };
+  
+    const requiredFields = getRequiredFields();
+  
+    const validationSchema = {
+      type: 'object',
+      properties: manifestFile.properties,
+      required: [...new Set(requiredFields)],
+      additionalProperties: true,
+    };
+  
+    const validateOptions = this.state.ajv.compile(validationSchema);
+    const isValid = validateOptions(formValues);
+  
+    if (!isValid) {
+      const errorMessages = validateOptions.errors.map((error) => {
+        if (error.instancePath) {
+          const instancePath = error.instancePath.replace(/^\//, '');
+          return `${instancePath}: ${error.message}`;
+        }
+        return error.message;
+      });
+      this.setState({ validationError: errorMessages });
+      toast.error(
+        this.props.t(
+          'editor.queryManager.dataSourceManager.toast.error.validationFailed',
+          'Validation failed. Please check your inputs.'
+        ),
+        { position: 'top-center' }
+      );
+      return;
+    }
+
     const OAuthDs = ['slack', 'zendesk', 'googlesheets', 'salesforce'];
     const name = selectedDataSource.name;
     const kind = selectedDataSource.kind;
@@ -216,6 +322,7 @@ class DataSourceManagerComponent extends React.Component {
       const value = localStorage.getItem('OAuthCode');
       parsedOptions.push({ key: 'code', value, encrypted: false });
     }
+
     if (name.trim() !== '') {
       let service = scope === 'global' ? globalDatasourceService : datasourceService;
       if (selectedDataSource.id) {
@@ -336,6 +443,7 @@ class DataSourceManagerComponent extends React.Component {
         selectedDataSource={this.state.selectedDataSource}
         isEditMode={!isEmpty(this.state.selectedDataSource)}
         currentAppEnvironmentId={this.props.currentEnvironment?.id}
+        setValidationFailed={(status) => this.setState({ validationFailed: status })}
       />
     );
   };
@@ -775,6 +883,8 @@ class DataSourceManagerComponent extends React.Component {
       dataSourceConfirmModalProps,
       addingDataSource,
       datasourceName,
+      validationError,
+      validationFailed,
     } = this.state;
     const isPlugin = dataSourceSchema ? true : false;
     const createSelectedDataSource = (dataSource) => {
@@ -960,6 +1070,18 @@ class DataSourceManagerComponent extends React.Component {
                   </div>
                 )}
 
+                {validationError && validationError.length > 0 && (
+                  <div className="row w-100">
+                    <div className="alert alert-danger" role="alert">
+                      {validationError.map((error, index) => (
+                        <div key={index} className="text-muted" data-cy="connection-alert-text">
+                          {error}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="col">
                   <SolidIcon name="logs" fill="#3E63DD" width="20" style={{ marginRight: '8px' }} />
                   <a
@@ -990,7 +1112,7 @@ class DataSourceManagerComponent extends React.Component {
                     <ButtonSolid
                       className={`m-2 ${isSaving ? 'btn-loading' : ''}`}
                       isLoading={isSaving}
-                      disabled={isSaving || this.props.isVersionReleased || isSaveDisabled}
+                      disabled={isSaving || this.props.isVersionReleased || isSaveDisabled || validationFailed}
                       variant="primary"
                       onClick={this.createDataSource}
                       leftIcon="floppydisk"
@@ -1025,7 +1147,7 @@ class DataSourceManagerComponent extends React.Component {
                     leftIcon="floppydisk"
                     fill={'#FDFDFE'}
                     className="m-2"
-                    disabled={isSaving || this.props.isVersionReleased || isSaveDisabled}
+                    disabled={isSaving || this.props.isVersionReleased || isSaveDisabled || validationFailed}
                     variant="primary"
                     onClick={this.createDataSource}
                   >

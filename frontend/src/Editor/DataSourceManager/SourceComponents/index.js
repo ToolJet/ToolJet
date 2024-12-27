@@ -86,3 +86,8 @@ export const SourceComponents = Object.keys(allManifests).reduce((accumulator, c
 }, {});
 
 export const SourceComponent = (props) => <DynamicForm schema={props.dataSourceSchema} isGDS={true} {...props} />;
+
+export const FetchManifest = (dataSourceName) => {
+  const manifestKey = Object.keys(allManifests).filter((id) => dataSourceName === id.toLowerCase());
+  if (manifestKey) return allManifests[manifestKey];
+};
