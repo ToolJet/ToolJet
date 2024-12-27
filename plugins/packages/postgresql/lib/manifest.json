@@ -103,7 +103,8 @@
       "type": "string",
       "title": "Connection options",
       "ui_widget": "react-component-headers",
-      "width": "316px"
+      "width": "316px",
+      "optional": true
     },
     "ssl_enabled": {
       "type": "boolean",
@@ -126,7 +127,9 @@
         "CA certificate",
         "Self-signed certificate",
         "None"
-      ]
+      ],
+      "default":"none",
+      "optional": true
     },
     "connection_string": {
       "type": "string",
@@ -180,8 +183,8 @@
           "database",
           "username",
           "password",
-          "ssl_enabled",
           "connection_options",
+          "ssl_enabled",
           "ssl_certificate"
         ],
         "allOf": [
