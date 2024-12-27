@@ -1,6 +1,6 @@
 ---
-id: email-server
-title: Setup Email Communication
+id: configuration
+title: Configuration
 ---
 
 This feature is only available on the self-hosted ToolJet, where you can configure your own SMTP email server. This feature allows you to choose your own email server, which helps to seamlessly send emails for various purposes, including invitations, password reset requests, and notifications. 
@@ -71,29 +71,5 @@ SMTP_DISABLED=false
 - For new installations, if SMTP is configured in the .env file, the **Apply configuration from environment variables** toggle will be turned on by default.
 - When the toggle is enabled, the SMTP settings fields in the UI will be populated with values from the environment variables and will be read-only.
 - Disabling the toggle allows you to manually enter or edit SMTP settings directly in the UI.
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
-
-## Commonly Used Email Providers
-
-Here are some general settings for the most commonly used email providers:
-
-| Provider           | Host                 | Port             | Username      | Password  | Sender's email |
-|--------------------|----------------------|------------------|---------------|-----------|----------------|
-| Gmail              | smtp.gmail.com       | 587 or 465 (SSL) | Email         | Password  | Email          |
-| Yahoo Mail         | smtp.mail.yahoo.com  | 465 (SSL)        | Email         | Password  | Email          |
-| Outlook.com/Hotmail| smtp.office365.com   | 587 or 465 (SSL) | Email         | Password  | Email          |
-| Zoho Mail          | smtp.zoho.com        | 587 or 465 (SSL) | Email         | Password  | Email          |
-| SendGrid           | smtp.sendgrid.net    | 587 or 465 (SSL) | apikey        | API key   | Email          |
-| Mailgun            | smtp.mailgun.org     | 587 or 465 (SSL) | SMTP username | Password  | Email          |
-
-:::info
-For **SendGrid** and **Mailgun**, the sender's email can be different from the username, subject to the provider's verification requirements. The username for SendGrid is **apikey**, and the password is your API key. For Mailgun, you can check the SMTP credentials tab under Domain settings.
-
-<img className="screenshot-full" src="/img/enterprise/smtp/mailgun-cred.png" alt="SMTP Configuration Without Environment Variables" />
-
-:::
 
 </div>

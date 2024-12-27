@@ -392,7 +392,14 @@ const sidebars = {
             'tj-setup/org-branding/custom-domain'
           ]
         },
-        'tj-setup/email-server'
+        {
+          'type': 'category',
+          'label': 'Setup SMTP Server',
+          'items': [
+            'tj-setup/smtp-setup/configuration',
+            'tj-setup/smtp-setup/email-providers'
+          ]
+        }
       ]
     },
     {
