@@ -1,0 +1,20 @@
+{
+  "name": "Learning management portal",
+  "description": "This template offers a complete solution for managing library resources efficiently, with streamlined cataloging and search.",
+  "widgets": [
+    "Table",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "learning-management-portal",
+  "category": "operations"
+}

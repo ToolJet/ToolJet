@@ -1,0 +1,15 @@
+{
+  "name": "Underwriting portal - user form",
+  "description": "Apply for financial services seamlessly with our user-friendly underwriting form.",
+  "widgets": [
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    }
+  ],
+  "id": "underwriting-portal-user-form",
+  "category": "financial-services"
+}

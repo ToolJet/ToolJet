@@ -1,0 +1,20 @@
+{
+  "name": "Inventory management system (Airtable)",
+  "description": "Organize product catalog in Airtable base with fields for details, inventory, and pricing to manage merchandise.",
+  "widgets": [
+    "Table",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "Airtable",
+      "id": "airtable"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "inventory-management-system-airtable",
+  "category": "operations"
+}
