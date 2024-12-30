@@ -17,19 +17,21 @@ Here are some general settings for the most commonly used email providers:
 
 ## SendGrid
 
-For SendGrid you have to use **`apikey`** as your username and the actual API Key as the password.
+To configure SendGrid, use **`apikey`** as the username and the generated API key as the password.
 
 <img className="screenshot-full" src="/img/enterprise/smtp/sendgrid-config.png" alt="SMTP Configuration Without Environment Variables" />
 
-You can generate the SendGrid API Key by logging in in the SendGrid and going to API Key Section.
+#### Steps to Generate API Key
+1. Log in to your [SendGrid](https://sendgrid.com/en-us) account.
+2. Navigate to the [API Keys](https://app.sendgrid.com/settings/api_keys) page under Settings.
+3. Generate a new API key for SMTP usage.
 
 <img className="screenshot-full" src="/img/enterprise/smtp/sendgrid-api.png" alt="SMTP Configuration Without Environment Variables" />
 
+## Mailgun
 
-
-:::info
-For **SendGrid** and **Mailgun**, the sender's email can be different from the username, subject to the provider's verification requirements. The username for SendGrid is **apikey**, and the password is your API key. For Mailgun, you can check the SMTP credentials tab under Domain settings.
+Mailgun provides specific credentials for SMTP configuration.
+1. Retrieve the **SMTP username** from the SMTP Credentials tab in the Domain Settings page.
+2. Use the password associated with your Mailgun account to authenticate the SMTP connection.
 
 <img className="screenshot-full" src="/img/enterprise/smtp/mailgun-cred.png" alt="SMTP Configuration Without Environment Variables" />
-
-:::

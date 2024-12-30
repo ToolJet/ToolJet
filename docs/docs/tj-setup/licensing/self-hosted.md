@@ -13,7 +13,7 @@ ToolJet provides three types of licenses - **Basic**, **Trial** and **Paid**. Wh
 
 ### Basic License
 
-This is a free license where a user can access basic offerings such as creating apps, community support, pre-defined user groups, etc. This is ideal for individuals or small teams who just need the essentials. No license key is required for this option.
+This is a free license where a user can access basic offerings such as creating apps, pre-defined user groups, community support, etc. This is ideal for individuals or small teams who just need the essentials. No license key is required for this option.
 
 ### Trial License
 
@@ -44,7 +44,9 @@ Once you have received the license key from the ToolJet Team, after that you can
 
 <div style={{paddingTop:'24px'}}>
 
-## What Happens if my License Expires?
+## FAQs
+
+#### Q. What Happens if my License Expires?
 
 If your paid or trial license key expires, your instance will revert to operating as a basic plan. Upon expiration, access to premium features like OpenID SSO login and Audit logs will be restricted, ensuring no data loss occurs. However, don't worry! You can still renew to any of the paid plans and enjoy the premium features again.
 
