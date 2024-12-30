@@ -78,9 +78,9 @@ To display instructional text when a user hovers over the PDF component, add som
 
 ## Styles
 
-| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div>                                                                                                                                                                                                               | <div style={{ width:"100px"}}> Configuration Options </div> |
-| :------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------- |
-| Visibility                                  | Controls component visibility. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.                  |
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"100px"}}> Configuration Options </div> |
+| :------------------------------------------ | :--------------------------------------------------- | :-------------------------------------------------- |
+| Visibility     | Controls component visibility. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.  |
 
 :::info
 Checkout **[this](/docs/how-to/loading-image-pdf-from-db)** guide to learn how to display images/PDFs using base64 string.
