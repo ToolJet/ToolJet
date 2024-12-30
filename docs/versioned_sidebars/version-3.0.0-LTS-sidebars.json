@@ -358,7 +358,7 @@
     },
     {
       "type": "category",
-      "label": "ToolJet Setup",
+      "label": "Setup ToolJet",
       "items": [
         "tj-setup/overview",
         "tj-setup/tj-deployment",
@@ -366,8 +366,8 @@
           "type": "category",
           "label": "Licensing",
           "items": [
-            "tj-setup/licensing/cloud",
-            "tj-setup/licensing/self-hosted"
+            "tj-setup/licensing/self-hosted",
+            "tj-setup/licensing/cloud"
           ]
         },
         "tj-setup/instances",
@@ -380,7 +380,14 @@
             "tj-setup/org-branding/custom-domain"
           ]
         },
-        "tj-setup/email-server"
+        {
+          "type": "category",
+          "label": "Setup SMTP Server",
+          "items": [
+            "tj-setup/smtp-setup/configuration",
+            "tj-setup/smtp-setup/email-providers"
+          ]
+        }
       ]
     },
     {

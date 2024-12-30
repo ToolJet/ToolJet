@@ -370,7 +370,7 @@ const sidebars = {
     },
     {
       'type': 'category',
-      'label': 'ToolJet Setup',
+      'label': 'Setup ToolJet',
       'items': [
         'tj-setup/overview',
         'tj-setup/tj-deployment',

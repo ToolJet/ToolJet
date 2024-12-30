@@ -3,128 +3,61 @@ id: cloud
 title: ToolJet Cloud
 ---
 
-This guide explains how to upgrade your subscription, add users and check invoice history on ToolJet Cloud. For assistance in selecting a suitable plan, refer to [Choose ToolJet Plan Guide](/docs/org-setup/tj-plan).
+This guide explains you about the different types of subscriptions present and provides instructions on upgrading your subscription for ToolJet Cloud. For assistance in selecting an appropriate plan, visit the **[ToolJet Pricing](https://www.tooljet.com/pricing)** page or **[contact the ToolJet team](mailto:hello@tooljet.com)**.
 
 <div style={{paddingTop:'24px'}}>
 
-## Updating To Trial Subscription (For Existing Users)
+## Types of Subscriptions
 
-If you are an existing user and wish to update to trial subscriptions, follow these steps:
+ToolJet provides three types of subscriptions - **Basic**, **Trial** and **Paid**. Which can be further categorized in different plans based on the services and features. Visit **[ToolJet Pricing](https://www.tooljet.com/pricing)** page for more details on different plans.
 
-1. Navigate to the desired Workspace.
-2. If you are not currently on a paid plan and have not yet used your free trial, you will see a **Start Trial** banner within the ToolJet dashboard. Click on the **Start free trial** button inside this banner to initiate your 14-day trial.
+### Basic Subscription
 
-<img className="screenshot-full" src="/img/licensing/dashboard-free-trial.png" alt="TJ Dashboard: Start free trial" />
+This is a free subscription where a user can access basic offerings such as creating apps, limited access to ToolJet Database, community support, etc. This is ideal for individuals or small teams who just need the essentials.
 
-:::caution Note
-Your trial subscription is active for 14 days. To upgrade to our Business subscription, simply click the Upgrade or Renew button or connect with our team on Slack for the Enterprise subscription. Premium features like OpenID SSO login and Audit logs will be restricted after the trial ends. However, you can still upgrade to any of our premium plans and continue to enjoy the full benefits of ToolJet.
-:::
+### Trial Subscription
+
+ToolJet offers a trial subscription which is valid for 14 days, where user can access all premimum features and evaluate ToolJet according to their needs. Once the trial period is over premium features, such as OpenID SSO login and Audit logs, will no longer be accessible. You can upgrade to a paid subscription by simply clicking on the upgrade button.
+
+### Paid Subscription
+
+ToolJet offers various plans for paid subscription visit **[ToolJet Pricing](https://www.tooljet.com/pricing)** page for more details on different plans. Once you have decided a suitable plan for your needs then you can upgrade to a paid subscription by simply clicking on the upgrade button.
 
 </div>
 
 <div style={{paddingTop:'24px'}}>
 
-## Upgrading to a Paid Subscription
+## Upgrading Your Subscription
 
-When you've identified the ideal paid subscription to meet your needs, the next step is to complete the purchase process, ensuring seamless access to premium features.
+### Start Trial Subscription
 
-### Business Plan
+If you are not currently on a paid plan and have not yet used your free trial, you will see a **Start Trial** banner within the ToolJet dashboard. Click on the **Start free trial** button inside this banner to initiate your free trial.
 
-If you want to upgrade from the basic or trial subscription and you decide to proceed with the Business Plan, follow these steps:
+<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/licensing/dashboard-free-trial.png" alt="TJ Dashboard: Start free trial" />
 
-- Click the gear icon (⚙️) at the bottom of the left sidebar and select **Settings** from the dropdown.
-- In the Settings page, choose the **Subscription** tab.
-- The subscription tab displays a subscription overview card summarizing your current plan. Locate the **Upgrade** button in the lower left corner and click on it.
-- A modal window will appear. Enter the desired number of builder and end user seats, then click the **Upgrade** button within the modal.
-- You'll be directed to a payment gateway. Provide your payment details and finalize the purchase.
-- Upon successful payment, you'll return to the ToolJet subscription tab. A success message will display, and your subscription overview card will update shortly to reflect your new plan.
+### Upgrading to Paid Subscription
+
+When you've identified the ideal paid plan to meet your needs, the next step is to complete the purchase process, ensuring seamless access to premium features. Follow these steps to upgrade your subscription:
+
+1. Click the gear icon (⚙️) at the bottom of the left sidebar and select **Settings** from the dropdown.
+2. In the Settings page, choose the **Subscription** tab.
+3. The subscription tab displays a subscription overview card summarizing your current plan. Locate the **Upgrade** button in the lower left corner and click on it.
+4. A modal window will appear. Enter the desired number of builder and end user seats, then click the **Upgrade** button within the modal.
+5. You'll be directed to a payment gateway. Complete the payment process.
+6. Upon successful payment, you'll return to the ToolJet subscription tab. A success message will display, and your subscription overview card will update shortly to reflect your new plan.
 
 <img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/licensing/upgrade-business-plan.gif" alt="Dashboard"/>
 
-### Enterprise Plan
-
-- If you've selected the enterprise plan, expect a response from our team within 24-48 hours for onboarding.
-- The remaining days of your enterprise edition period can be conveniently viewed on the dashboard.
+If you've decide to move forward with the customized enterprise plan, please schedule a call with **[ToolJet team](mailto:hello@tooljet.com)** and expect a response from team team within 24-48 hours for onboarding.
 
 </div>
 
 <div style={{paddingTop:'24px'}}>
 
-## Adding Users
+## FAQs
 
-### Business Plan
+#### Q. What Happens if my Subscription Expires?
 
-Your business plan subscription cost is based on the total number of builder and viewer seats allocated to your account. You may choose between annual or monthly billing cycles.
-
-**Seat Pricing**
-
-| <div style={{ width:"100px"}}> Seat Type </div> | <div style={{ width:"135px"}}> Annual Billing </div> | <div style={{width: "200px"}}> Monthly Billing </div>|
-| :------------ | :---------- | :------------ |
-| Builder     | $24 per month    | $30 per month |
-| End User        | $8 per month      | $10 per month |
-
-**Pro-rated charges for added seats**
-
-You only pay for the portion of the service you actually utilize, rather than being charged a full amount for a seat you might only use for a few days. If you add extra builder or viewer seats mid-cycle, charges are calculated proportionally. The cost is adjusted for the remaining days within your current billing period (monthly or annual).
-
-Example: If you add a builder seat halfway through your monthly billing cycle, you will be charged $15 for the remaining portion of that month. Starting with your next billing cycle, you will be charged the full monthly rate ($30) for the added builder seat.
-
-### Enterprise Plan
-
-- You can directly reach out to us via **[Slack](https://tooljet.com/slack)** or **[email](mailto:hello@tooljet.com)** and we will be happy to provide you the support.
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
-
-## Invoice History
-
-### Business Plan
-
-You can find your past invoices in the subscriptions overview card. Here's how to get there:
-
-- Click on the gear icon (⚙️) on the bottom left of the dashboard and select **Settings**.
-- From the settings page, click on the **Subscriptions** tab.
-- On the **Subscriptions** page, you'll see a subscription overview card summarizing your current plan.
-- Click on the **View Invoices** button to access your invoice history.
-
-<div style={{textAlign: 'center'}}>
-
-<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/licensing/invoice-history.gif" alt="Invoice History" />
-
-</div>
-
-### Enterprise Plan
-
-- You can directly reach out to us via **[Slack](https://tooljet.com/slack)** or **[email](mailto:hello@tooljet.com)** and we will be happy to provide you the support.
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
-
-
-## Frequently Asked Questions (FAQs)
-
-### 1) How can I upgrade or renew my subscription?
-
-If your enterprise edition subscription is nearing expiration, please click the **Upgrade** button or contact us via email at hello@tooljet.com to extend your subscription.
-
-<div style={{textAlign: 'center'}}>
-
-<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/licensing/upgrade-subscription.png" alt="Upgrade Subscription" />
-
-</div>
-
-### 2) What is the duration of my subscription?
-
-If you have an active subscription, you can find its validity period in the Settings. Generally, the duration of your subscription varies based on the type:
-
-- Trial subscriptions are valid for 14 days.
-- Business subscriptions are charged monthly with no validity or expiration date.
-- Enterprise subscriptions can be customized to suit your needs.
-
-### 3) What happens if my subscription expires?
-
-If your business or enterprise subscription expires, your instance will revert to operating as a free plan. While you can still create unlimited apps, workspaces, and add users, premium features such as OpenID and Audit logs will no longer be accessible. For further information, please refer to the relevant **[plans](https://www.tooljet.com/pricing)**.
+If your paid or trial subscription expires, your instance will revert to operating as a basic plan. Upon expiration, access to premium features like OpenID SSO login and Audit logs will be restricted, ensuring no data loss occurs. However, don't worry! You can still renew to any of the paid plans and enjoy the premium features again.
 
 </div>
