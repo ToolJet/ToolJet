@@ -242,8 +242,8 @@ Disable condition allows you to control whether the Table is enabled or disabled
 
 | Property  | Description | Expected value |
 |:----------- |:----------- |:----------- |
-| **Show on desktop** | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.|
-| **Show on mobile** | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on `fx` and entering a logical expression.|
+| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.|
+| Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.|
 
 ## Styles
 ### Data
