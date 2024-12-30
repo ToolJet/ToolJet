@@ -184,7 +184,7 @@
         "appV2": {
           "type": "front-end",
           "id": "c43aa960-7c0b-498c-b288-56ba48b7e671",
-          "name": "Underwriting portal - user form",
+          "name": "Underwriting portal",
           "slug": "c43aa960-7c0b-498c-b288-56ba48b7e671",
           "isPublic": false,
           "isMaintenanceOn": false,
@@ -196,7 +196,7 @@
           "workflowEnabled": false,
           "createdAt": "2024-04-26T00:07:10.017Z",
           "creationMode": "DEFAULT",
-          "updatedAt": "2024-12-27T23:39:14.547Z",
+          "updatedAt": "2024-12-30T16:47:14.728Z",
           "editingVersion": {
             "id": "4e6236d7-ca5e-4b94-bf22-e1ada5c474f6",
             "name": "v1",
@@ -1491,7 +1491,7 @@
               "parent": "f0f9652a-50ab-41ac-8870-4da574657714",
               "properties": {
                 "text": {
-                  "value": "<div style=\"font-weight: 600;\">Underwriting portal - user form</div>"
+                  "value": "<div style=\"font-weight: 600;\">Underwriting portal</div>"
                 },
                 "textFormat": {
                   "value": "html"
@@ -1582,7 +1582,7 @@
               },
               "validation": {},
               "createdAt": "2024-04-26T00:07:10.046Z",
-              "updatedAt": "2024-12-27T23:39:21.450Z",
+              "updatedAt": "2024-12-30T16:47:09.235Z",
               "layouts": [
                 {
                   "id": "eede55b0-d563-49f7-9a49-94824da6d8bd",

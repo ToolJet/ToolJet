@@ -1,5 +1,5 @@
 {
-  "name": "Learning management portal",
+  "name": "Library management portal",
   "description": "This template offers a complete solution for managing library resources efficiently, with streamlined cataloging and search.",
   "widgets": [
     "Table",
@@ -15,6 +15,6 @@
       "id": "runjs"
     }
   ],
-  "id": "learning-management-portal",
+  "id": "library-management-portal",
   "category": "operations"
 }
