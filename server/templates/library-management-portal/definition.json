@@ -207,7 +207,7 @@
         "appV2": {
           "type": "front-end",
           "id": "5552ec90-099d-4eab-a1ae-5d317ec6b3e4",
-          "name": "Learning management portal",
+          "name": "Library management portal",
           "slug": "5552ec90-099d-4eab-a1ae-5d317ec6b3e4",
           "isPublic": false,
           "isMaintenanceOn": false,
@@ -219,7 +219,7 @@
           "workflowEnabled": false,
           "createdAt": "2024-12-04T21:37:42.862Z",
           "creationMode": "DEFAULT",
-          "updatedAt": "2024-12-26T22:39:04.010Z",
+          "updatedAt": "2024-12-30T16:46:07.008Z",
           "editingVersion": {
             "id": "5de61511-43cc-4a0a-b3dd-c8f130bc092e",
             "name": "v1",
@@ -1919,7 +1919,7 @@
               },
               "validation": {},
               "createdAt": "2024-12-04T21:37:42.886Z",
-              "updatedAt": "2024-12-26T22:38:53.532Z",
+              "updatedAt": "2024-12-30T16:47:44.892Z",
               "layouts": [
                 {
                   "id": "c46c0b7a-e4e5-43c7-ab1b-615496ac95d2",
@@ -1956,7 +1956,7 @@
                   "value": "html"
                 },
                 "text": {
-                  "value": "Learning management portal"
+                  "value": "Library management portal"
                 },
                 "loadingState": {
                   "value": "{{false}}"
@@ -2043,7 +2043,7 @@
               },
               "validation": {},
               "createdAt": "2024-12-04T21:37:42.886Z",
-              "updatedAt": "2024-12-26T22:39:09.602Z",
+              "updatedAt": "2024-12-30T16:45:57.437Z",
               "layouts": [
                 {
                   "id": "fa410c0a-fc55-40a8-bb9c-fa517a55ea6a",
@@ -6114,7 +6114,7 @@
               "dataSourceId": "b603629f-da57-4821-bb25-b9c1a2c8f98e",
               "appVersionId": "5de61511-43cc-4a0a-b3dd-c8f130bc092e",
               "createdAt": "2024-12-04T21:37:42.886Z",
-              "updatedAt": "2024-12-26T22:38:52.619Z"
+              "updatedAt": "2024-12-30T16:47:43.598Z"
             },
             {
               "id": "7623455a-313e-461d-8fd1-900a9871a76c",
