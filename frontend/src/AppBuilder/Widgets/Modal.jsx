@@ -116,6 +116,7 @@ export const Modal = function Modal({
       modalContainer.style.height = `${canvasElement.offsetHeight}px`;
       modalContainer.style.top = `${currentScroll}px`;
       modalCanvasEl.style.height = isFullScreen ? '100%' : modalHeight;
+      fireEvent('onOpen');
     }
   };
 
@@ -128,9 +129,8 @@ export const Modal = function Modal({
       canvasElement.style.overflow = 'auto';
       modalContainer.style.height = ``;
       modalContainer.style.top = ``;
+      fireEvent('onClose');
     }
-
-    hideModal();
   };
 
   const onShowModal = () => {
@@ -162,7 +162,6 @@ export const Modal = function Modal({
       return;
     }
 
-    fireEvent(!showModal ? 'onClose' : 'onOpen');
     const inputRef = document?.getElementsByClassName('tj-text-input-widget')?.[0];
     inputRef?.blur();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -185,18 +184,6 @@ export const Modal = function Modal({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modalHeight]);
-
-  useEffect(() => {
-    if (isInitialRender.current) {
-      isInitialRender.current = false;
-      return;
-    }
-
-    fireEvent(!showModal ? 'onClose' : 'onOpen');
-    const inputRef = document?.getElementsByClassName('tj-text-input-widget')?.[0];
-    inputRef?.blur();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showModal]);
 
   const backwardCompatibilityCheck = height == '34' || modalHeight != undefined ? true : false;
 

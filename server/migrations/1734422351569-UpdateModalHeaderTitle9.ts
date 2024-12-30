@@ -47,9 +47,11 @@ export class UpdateModalHeaderTitle91734422351569 implements MigrationInterface 
       }
 
       // Create a new title component if the title property exists
-      if (properties.title) {
+      //
+      if (properties.title || properties.title === undefined) {
+        const title = properties.title ? properties.title.value : 'Modal header title';
         const alignment = properties.titleAlignment ? properties.titleAlignment.value : 'left';
-        const newTitleComponent = this.createTitleComponent(page, properties.title.value, component, alignment);
+        const newTitleComponent = this.createTitleComponent(page, title, component, alignment);
         await entityManager.save(Component, newTitleComponent);
 
         if (properties.titleAlignment) delete properties.titleAlignment;
