@@ -404,6 +404,23 @@ const sidebars = {
     },
     {
       'type': 'category',
+      'label': 'User Management and Access Control',
+      'items': [
+        'user-management/overview',
+        {
+          'type': 'category',
+          'label': 'Onboarding and Offboarding Users',
+          'items': [
+            'user-management/onboard-users/invite-user',
+            'user-management/onboard-users/bulk-invite-users',
+            'user-management/onboard-users/archive-user',
+            'user-management/onboard-users/self-signup-user'
+          ]
+        }
+      ]
+    },
+    {
+      'type': 'category',
       'label': 'Workflows',
       'items': [
         'workflows/overview',
