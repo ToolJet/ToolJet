@@ -1,4 +1,4 @@
 ---
 id: invite-user
-title: Inviting Users
+title: Inviting User
 ---
