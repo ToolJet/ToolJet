@@ -1,4 +1,5 @@
 import { componentTypes } from '@/Editor/WidgetManager/components';
+
 export function generateUIComponents(JSONSchema, advanced) {
   if (advanced) {
     if (typeof JSONSchema?.properties !== 'object' || JSONSchema?.properties == null) {
@@ -463,6 +464,7 @@ export function generateUIComponents(JSONSchema, advanced) {
     });
   }
 }
+
 const typeResolver = (type) => {
   switch (type) {
     case 'textinput':
@@ -503,4 +505,8 @@ const typeResolver = (type) => {
 const validBooleanChecker = (input) => {
   if (/^(true|false)$/i.test(input) == true) return JSON.parse(input);
   return true;
+};
+
+const isComponentDisabled = (component) => {
+  return component?.styles?.disabledState?.value === true;
 };
