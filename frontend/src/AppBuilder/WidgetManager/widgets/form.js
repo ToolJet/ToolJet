@@ -313,7 +313,7 @@ export const formConfig = {
     {
       handle: 'setVisibility',
       displayName: 'Set visibility',
-      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      params: [{ handle: 'setVisibility', displayName: 'Value', defaultValue: '{{true}}', type: 'toggle' }],
     },
     {
       handle: 'setDisable',
