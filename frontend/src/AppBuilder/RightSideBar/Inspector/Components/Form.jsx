@@ -61,25 +61,6 @@ export const Form = ({
     pages
   );
 
-  accordionItems.push({
-    title: `Additional Actions`,
-    isOpen: true,
-    children: additionalActions.map((property) => {
-      return renderElement(
-        component,
-        componentMeta,
-        paramUpdated,
-        dataQueries,
-        property,
-        'properties',
-        currentState,
-        allComponents,
-        darkMode,
-        componentMeta.properties?.[property]?.placeholder
-      );
-    }),
-  });
-
   return <Accordion items={accordionItems} />;
 };
 
@@ -117,6 +98,27 @@ export const baseComponentProperties = (
           darkMode
         )
       ),
+    });
+  }
+
+  if (additionalActions.length > 0) {
+    items.push({
+      title: `${i18next.t('widget.common.additionalActions', 'Additional Actions')}`,
+      isOpen: true,
+      children: additionalActions.map((property) => {
+        return renderElement(
+          component,
+          componentMeta,
+          paramUpdated,
+          dataQueries,
+          property,
+          'properties',
+          currentState,
+          allComponents,
+          darkMode,
+          componentMeta.properties?.[property]?.placeholder
+        );
+      }),
     });
   }
 
