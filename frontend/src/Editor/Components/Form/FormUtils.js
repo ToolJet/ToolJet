@@ -508,5 +508,6 @@ const validBooleanChecker = (input) => {
 };
 
 const isComponentDisabled = (component) => {
+  if (!component) return false;
   return component?.styles?.disabledState?.value === true;
 };
