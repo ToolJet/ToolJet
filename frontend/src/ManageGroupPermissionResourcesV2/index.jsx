@@ -59,6 +59,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       autoRoleChangeModalList: [],
       autoRoleChangeMessageType: '',
       updateParam: {},
+      isSearchLoading: false,
     };
   }
 
@@ -123,12 +124,13 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
   };
 
   fetchUsersInGroup = (groupPermissionId, searchString = '') => {
-    groupPermissionV2Service.getUsersInGroup(groupPermissionId, searchString).then((data) => {
-      this.setState({
-        usersInGroup: data,
-        isLoadingUsers: false,
+    return groupPermissionV2Service.getUsersInGroup(groupPermissionId, searchString)
+      .then((data) => {
+        this.setState({
+          usersInGroup: data,
+          isLoadingUsers: false,
+        });
       });
-    });
   };
 
   clearErrorState = () => {
@@ -345,14 +347,25 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
   };
 
   handleUserSearchInGroup = (e) => {
-    this.fetchUsersInGroup(this.props.groupPermissionId, e?.target?.value);
+    this.setState({ isSearchLoading: true });
+    this.fetchUsersInGroup(this.props.groupPermissionId, e?.target?.value)
+      .finally(() => {
+        this.setState({ isSearchLoading: false });
+      });
   };
 
   toggleUserTabSearchBox = () => {
-    this.fetchUsersInGroup(this.props.groupPermissionId);
-    this.setState((prevState) => ({
-      showUserSearchBox: !prevState.showUserSearchBox,
-    }));
+    this.setState({ 
+      showUserSearchBox: !this.state.showUserSearchBox 
+    });
+
+    if (this.state.showUserSearchBox) {
+      this.setState({ isSearchLoading: true });
+      this.fetchUsersInGroup(this.props.groupPermissionId)
+        .finally(() => {
+          this.setState({ isSearchLoading: false });
+        });
+    }
   };
 
   toggleAutoRoleChangeModal = () => {
@@ -435,6 +448,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       autoRoleChangeModalMessage,
       autoRoleChangeModalList,
       autoRoleChangeMessageType,
+      isSearchLoading,
     } = this.state;
     const isBasicPlan = false;
     const isPaidPlan = false;
@@ -714,7 +728,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                       )}
 
                       <section className="group-users-list-container">
-                        {isLoadingGroup || isLoadingUsers ? (
+                        {(isLoadingGroup || isLoadingUsers || this.state.isSearchLoading) ? (
                           <tr>
                             <td className="col-auto">
                               <div className="row">
