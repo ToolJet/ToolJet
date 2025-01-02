@@ -48,7 +48,7 @@ SAML for multiple workspaces or Azure and Google setups
 | variable               | value             |
 | ---------------------- | ----------------- |
 | SAML_SET_ENTITY_ID_REDIRECT_URL | `true` |
-| TOOLJET_SERVER_URL | URL (must be similar to tooljet host) |
+| TOOLJET_SERVER_URL | `<URL must be the same as the ToolJet host>`|
 :::
 
 </div>

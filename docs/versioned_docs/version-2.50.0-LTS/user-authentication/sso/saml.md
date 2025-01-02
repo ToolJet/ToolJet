@@ -46,7 +46,7 @@ To enable SAML authentication, you need to configure the following workspace set
 | variable               | value             |
 | ---------------------- | ----------------- |
 | SAML_SET_ENTITY_ID_REDIRECT_URL | `true` |
-| TOOLJET_SERVER_URL | URL (must be similar to tooljet host) |
+| TOOLJET_SERVER_URL | `<URL must be the same as the ToolJet host>` |
        :::
 
    :::tip SAML for Google and Azure
@@ -55,7 +55,7 @@ Configure the required environment variable as follows:
 | variable               | value             |
 | ---------------------- | ----------------- |
 | SAML_SET_ENTITY_ID_SERVER_URL | `true` |
-| TOOLJET_SERVER_URL | URL (must be similar to tooljet host) |
+| TOOLJET_SERVER_URL | `<URL must be the same as the ToolJet host>` |
 
 Note: If you are using the multiple workspaces setting, you do not need to configure the `SAML_SET_ENTITY_ID_SERVER_URL` variable.
        :::
