@@ -71,8 +71,12 @@ ToolJet supports the following authentication types for REST API data sources:
   - **CA Certificate**: Requires a CA certificate to verify the server certificate.
   - **Client Certificate**: Requires a client certificate, client key, and CA certificate to authenticate with the server.
 
-<img className="screenshot-full" src="/img/datasource-reference/rest-api/ssl.png" alt="REST API - SSL Certificate" />
+<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/rest-api/ssl.png" alt="REST API - SSL Certificate" />
 
 </div>
+
+:::info
+To interact with SOAP APIs, refer to the [SOAP API Documentation](/docs/data-sources/soap-api).
+:::
 
 </div>

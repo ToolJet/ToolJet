@@ -330,6 +330,7 @@ const sidebars = {
 
               ],
             },
+            'data-sources/soap-api',
             'data-sources/rethinkdb',
             'data-sources/run-js',
             'data-sources/run-py',
