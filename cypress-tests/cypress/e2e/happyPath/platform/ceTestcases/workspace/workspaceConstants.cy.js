@@ -6,7 +6,7 @@ import { commonText, commonWidgetText } from "Texts/common";
 import * as common from "Support/utils/common";
 import {
     contantsNameValidation,
-    AddNewconstants,
+    addNewconstants,
     existingNameValidation,
 } from "Support/utils/workspaceConstants";
 import { buttonText } from "Texts/button";
@@ -284,9 +284,9 @@ describe("Workspace constants", () => {
             .replaceAll("[^A-Za-z]", "");
 
         cy.get(commonSelectors.workspaceConstantsIcon).click();
-        AddNewconstants(data.restapilink, Cypress.env("constants_host"));
-        AddNewconstants(data.restapiHeaderKey, "customHeader");
-        AddNewconstants(data.restapiHeaderValue, "key=value");
+        addNewconstants(data.restapilink, Cypress.env("constants_host"));
+        addNewconstants(data.restapiHeaderKey, "customHeader");
+        addNewconstants(data.restapiHeaderValue, "key=value");
 
         cy.apiCreateApp(data.appName);
 
@@ -337,9 +337,9 @@ describe("Workspace constants", () => {
             .replaceAll("[^A-Za-z]", "");
 
         cy.get(commonSelectors.workspaceConstantsIcon).click();
-        AddNewconstants(data.restapilink, Cypress.env("constants_host"));
-        AddNewconstants(data.restapiHeaderKey, "customHeader");
-        AddNewconstants(data.restapiHeaderValue, "key=value");
+        addNewconstants(data.restapilink, Cypress.env("constants_host"));
+        addNewconstants(data.restapiHeaderKey, "customHeader");
+        addNewconstants(data.restapiHeaderValue, "key=value");
         cy.apiCreateGDS(
             `${Cypress.env("server_host")}/api/v2/data_sources`,
             data.ds,
