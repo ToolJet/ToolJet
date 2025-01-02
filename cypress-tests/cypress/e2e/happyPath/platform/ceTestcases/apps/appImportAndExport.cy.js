@@ -55,6 +55,7 @@ describe("App Import Functionality", () => {
     cy.apiLogin();
   });
 
+
   before(() => {
     cy.fixture("templates/test-app.json").then((app) => {
       cy.exec("cd ./cypress/downloads/ && rm -rf *", {
@@ -63,6 +64,7 @@ describe("App Import Functionality", () => {
       appData = app;
     });
   });
+
 
   it("Verify the Import functionality of an Application", () => {
     cy.visit("/");
@@ -271,6 +273,7 @@ describe("App Import Functionality", () => {
       });
   });
 
+
   it("Verify the elements of export dialog box", () => {
     data.appName1 = `${fake.companyName}-App`;
     cy.apiCreateApp(data.appName1);
@@ -302,6 +305,7 @@ describe("App Import Functionality", () => {
         verifyElementsOfExportModal((currentVersion = "v1"));
       });
   });
+
 
   it("Verify 'Export app' functionality of an application ", () => {
     data.appName1 = `${fake.companyName}-App`;
@@ -397,7 +401,7 @@ describe("App Import Functionality", () => {
     cy.exec("cd ./cypress/downloads/ && rm -rf *");
   });
 
-  it.only("Verify 'Export and import' functionality of an application with DS,Constants and tjdb for same and different workspace", () => {
+  it("Verify 'Export and import' functionality of an application with DS,Constants and tjdb for same and different workspace", () => {
     data.appName1 = `${fake.companyName}-App`;
     data.constName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
     data.newConstvalue = `New ${data.constName}`;

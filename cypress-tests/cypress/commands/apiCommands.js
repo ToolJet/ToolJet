@@ -126,13 +126,13 @@ Cypress.Commands.add(
     slug = "",
     workspaceId = Cypress.env("workspaceId"),
     appId = Cypress.env("appId"),
-    componentSelector = "[data-cy='widget-list-box-form']"
+    componentSelector = "[data-cy='empty-editor-text']"
   ) => {
     cy.intercept("GET", "/api/v2/apps/*").as("getAppData");
     cy.window({ log: false }).then((win) => {
       win.localStorage.setItem("walkthroughCompleted", "true");
     });
-    cy.visit(`/${workspaceId}/apps/${appId}`);
+    cy.visit(`/${workspaceId}/apps/${appId}/${slug}`);
 
     cy.wait(2000);
     cy.wait('@getAppData').then((interception) => {
@@ -291,14 +291,20 @@ Cypress.Commands.add(
   }
 );
 
-Cypress.Commands.add(
-  "apiAddComponentToApp",
-  (appName, componentName, layoutConfig = {}) => {
-    cy.task("updateId", {
-      dbconfig: Cypress.env("app_db"),
-      sql: `select id from apps where name='${appName}';`,
-    }).then((resp) => {
-      const appId = resp.rows[0]?.id; // Safely access the id field
+Cypress.Commands.add("createAppFromTemplate", (appName) => {
+  cy.get('[data-cy="import-dropdown-menu"]').click();
+  cy.get('[data-cy="choose-from-template-button"]').click();
+  cy.get(`[data-cy="${appName}-list-item"]`).click(); 
+  cy.get('[data-cy="create-application-from-template-button"]').click();
+  cy.get('[data-cy="app-name-label"]').should("have.text", "App Name");
+});
+
+Cypress.Commands.add("addComponentToApp", (appName, componentName, layoutConfig = {}) => {
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `select id from apps where name='${appName}';`,
+  }).then((resp) => {
+    const appId = resp.rows[0]?.id; // Safely access the id field
 
       if (!appId) {
         throw new Error(`App ID not found for appName: ${appName}`);
