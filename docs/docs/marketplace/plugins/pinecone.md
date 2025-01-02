@@ -24,7 +24,7 @@ For connecting to Pinecone, the following credential is required:
 - **[List Vector IDs](#list-vector-ids)**
 - **[Fetch Vectors](#fetch-vectors)**
 - **[Upsert Vectors](#upsert-vectors)**
-- **[Update Vector](#update-vector)**
+- **[Update Vector](#update-a-vector)**
 - **[Delete Vectors](#delete-vectors)**
 - **[Query Vectors](#query-vectors)**
 
