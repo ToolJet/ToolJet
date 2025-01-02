@@ -152,7 +152,37 @@ Here's an example using the custom schema of **Text Input**, **Number Input** an
 }}}
 ```
 
+### Example with 'disabled' property
 
+Here's an example using the custom schema of **Text Input** with the 'disabled' property set to true:
+
+```json
+{{{
+  "title": "User Information",
+  "properties": {
+    "id": {
+      "type": "textinput",
+      "value": "12345",
+      "label": "ID",
+      "styles": {
+        "disabled": true
+      }
+    },
+    "name": {
+      "type": "textinput",
+      "value": "John Doe",
+      "label": "Name"
+    }
+  },
+  "submitButton": {
+    "value": "Submit",
+    "styles": {
+      "backgroundColor": "#3A433B",
+      "borderColor": "#595959"
+    }
+  }
+}}}
+```
 
 :::info
 Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
