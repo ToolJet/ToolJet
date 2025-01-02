@@ -3,27 +3,38 @@ id: instances
 title: Instances 
 ---
 
-Instances in ToolJet refer to standalone installations or deployments of the ToolJet platform. Each instance operates independently and can have its own configurations, data, and user base. They serve as the foundational environment for running and managing applications built on ToolJet.
+Instances in ToolJet refer to self-hosted deployments of the ToolJet platform. Each instance operates independently and can have its own configurations, data, and user base. You can create multiple [workspaces](/docs/tj-setup/workspaces) inside of an instance. Workspaces are collaborative environments that enable teams to build, customize, and deploy applications, as well as manage data, workflows, and permissions.
+
+When it comes to roles, ToolJet offers a [Super Admin](https://docs.tooljet.com/docs/enterprise/superadmin/#how-super-admin-is-different-from-admin) role, who can manage the instances and has full access to all the Workspaces, Users, and Groups of an instance. Within each workspace, users can be assigned one of the predefined roles (Admin, Builder, or End User) or we can add the user to a create custom group with custom permissions . For more details on managing users and roles within workspaces, refer to the [Workspace Users and Groups](https://docs.tooljet.com/docs/tutorial/manage-users-groups/#managing-groups) documentation.
+
+
+<div style={{textAlign: 'center'}}>
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/tooljet-setup/instance/overview.png" alt="Marketplace Plugin: Amazon Redshift" />
+</div>
+
+
 
 ## Why Use Instances?
+
 Instances help with:
 
-- **Data Isolation**: Keeping data separate for teams, departments, or clients.
-- **Customization**: Adapting to specific business needs.
-- **Compliance**: Hosting data to meet regulations.
+-   **Data Isolation**: Keeping data separate for teams, departments, or clients.
+-   **Compliance**: Hosting data to meet your org regulations.
+-   **Data Privacy**: Ensures that your data remains private. ToolJet does not have access to your data.
 
-Check out the [setup guide](https://docs.tooljet.com/docs/setup/) to explore the different options available for deploying ToolJet on your machine.
+Check out the [setup guide](https://docs.tooljet.com/docs/setup/) to explore the different options available for deploying ToolJet on your infrastructure.
 
-## When to Use a Single Instance?
+## Choosing your Instance Setup
 
-Opting for a single instance is often the best choice when your team is starting out or managing a straightforward set of requirements. For example, if you have a small team or if your application does not require strict separation of environments, a single instance can simplify management and reduce overhead.
+-   **Single Instance:** Ideal for teams looking for quick setup with data compliance, privacy and minimal overhead.
+-   **Multiple Instances:** Suitable If your organization wants to:
+    -   Manage applications across different departments with isolated setups.
+    -   Host data in multiple regions to meet the compliance requirements.
+    -   Set-up separate environments (e.g., development, staging, production) for stricter SDLC workflows.
 
-ToolJet allows you to create multiple environments like development, staging, and production within a single instance. This ensures your team can build, test, and deploy applications securely and efficiently, delivering updates safely to users. Checkout the [Multi-Environment](/docs/release-management/multi-environment/#using-environments) doc for more details.
+The diagram below illustrates the multi-instance setup.
 
-## When to Use Multiple Instances? 
-
-Deploying multiple ToolJet instances offers enhanced flexibility and control, allowing you to address specific security, compliance, or performance requirements. Each instance operates independently and can serve to specific security, compliance, or performance requirements.
-
-Multiple instances are often used to align with different stages of application development or organizational needs. For example, developers might use separate instances for development and staging, while production is isolated for end-users.
-
-ToolJet does not limit the number of instances you can deploy. Each instance can operate with its own database, ensuring data and configurations remain segregated.
+<div style={{textAlign: 'center'}}>
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/tooljet-setup/instance/multi-instance.png" alt="Marketplace Plugin: Amazon Redshift" />
+</div>
+If you’d like to discuss your use case or need assistance, reach out via [support](mailto:hello@tooljet.com).

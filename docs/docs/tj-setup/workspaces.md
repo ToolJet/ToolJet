@@ -2,50 +2,93 @@
 id: workspaces
 title: Workspaces
 ---
+# Workspaces
 
-Workspaces in ToolJet act as collaborative areas within an instance. The user who creates the workspace will automatically be assigned as its administrator.
+Workspaces are collaborative environments that enable teams to build, customize, and deploy applications, as well as manage data, workflows, and permissions. It helps you organize your organization's apps based on hierarchy or departments, making them easier to manage. For example, if your organization has departments like Sales, Marketing, and HR, you can create separate workspaces for each to isolate apps or limit access to particular set of users or developers.
+
+Workspace contains applications, data sources, users (admins, developers, or builders, end users), access and permission settings, and more. You can also set different login configurations for each workspace. You can have multiple workspaces within an instance.
+
+## Workspace Creation
+
+To create a new workspace,
+
+1.  Open the workspace dropdown at the bottom left on dashboard
+2.  Select **Add a new workspace**.
+3.  Fill in the workspace name and slug in the modal.
+4.  Click **Create Workspace**.
+
+## Editing Workspaces
+
+To edit a workspace,
+
+1.  Hover over the **current workspace** in the dropdown menu.
+2.  Click the **edit icon** to modify the workspace name or slug.
+3.  Save the changes, and the updates will reflect immediately across the platform.
+
+## Switching Workspaces
+
+To switch between the workspaces,
+
+1.  Open the workspace dropdown at the bottom left.
+2.  Select the desired workspace from the list to switch instantly.
+
+## Archiving Workspaces
+
+-   This feature is available only for self-hosted users, and only [Super admins](https://docs.tooljet.com/docs/enterprise/superadmin/#archive-workspaces) can archive workspaces. A Super Admin is the user who has full access to all the Workspaces, Users, and Groups of an instance
+-   You need to have atleast one active workspace in an instance to archive the workspace
+
+-   **Impact**
+    -   The apps within the archived workspace will no longer be accessible through the URL.
+    -   Users without access to any active workspace will be logged out.
+
+-   To archive a workspace:
+
+1.  Go to **Settings** > **All Workspaces**.
+2.  A table listing all workspaces will appear.
+3.  Click the Archive button to open a confirmation modal. Once you confirm, the selected workspace will be archived.
 
 <div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/multiworkspace/multiwork2-v2.gif" alt="multi workspace" />
-
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/tooljet-setup/workspace/archive.png" alt="Marketplace Plugin: Amazon Redshift" />
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
-## Hierarchy
+For more details on archiving workspaces, refer to the [Super Admin](https://docs.tooljet.com/docs/enterprise/superadmin/#archive-workspaces) documentation.
 
-<div style={{textAlign: 'center'}}>
+## Unarchive Workspace
 
-<img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/multiworkspace/Tooljet-workspace.png" alt="tooljet workspace" />
+**Role Required** : SuperAdmin
 
-</div>
+-   To unarchive a workspace:
 
-</div>
+1.  Go to **Settings** > **All Workspaces**.
+2.  A table displaying all workspaces will appear. Click on the Archived tab to view archived workspaces.
+3.  Click the Unarchive button to unarchive the selected workspace.
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+## Workspace Admin
 
-## Permissions
+-   A Workspace has a three predefined roles, Admins, Builders and Endusers with predefined permissions. Checkout the [users and groups](https://docs.tooljet.com/docs/tutorial/manage-users-groups/#managing-groups) docs for more details.
+-   The user who creates a workspace is automatically assigned as its **Admin**.
+-   An **Admin** can:
+    -   Manage users, groups, data and apps within each workspace.
+    -   Create custom groups for users with custom permissions.
+    -   Configure authentication methods for their workspaces.
 
-:::tip
-Please check the detailed doc on **[Permissions](/docs/org-management/permissions)**.
-:::
 
-- Administrators can manage [users and groups](/docs/tutorial/manage-users-groups) of each workspace.
-- Applications and settings cannot be shared between workspaces.
-- Users authorized to login to ToolJet will not have access to all workspaces. Users must be invited to or sign up for a workspace before they can log in.
-- When the Multi-Workspace feature is enabled, users must log in with a username and password.
-- Administrators can configure authentication methods for their workspaces.
-- If password login is enabled, switching to the workspace will happen without any other authorization since the user is already authorized with password login.
-- If a user is logged into ToolJet and switches to a workspace that only uses Single Sign-On (SSO), the user will be sent to a login page to select an SSO option.
-- Users can directly login to a workspace using workspace login URL. Administrators can view the URL in the Workspace Settings under **SSO -> General Settings -> Login URL**.
+## FAQ
 
-</div>
+<details>
+    <summary>
+         **Q. Can applications and workspace settings be shared between workspaces?**
+    </summary>
+**No**, applications and workspace settings cannot be shared directly between workspaces. Each workspace operates independently, maintaining its own applications and configurations. However, you can **export an application** from one workspace and **import it** into another. For more details, refer to the [Import and Export Applications](https://docs.tooljet.com/docs/app-builder/importing-exporting-applications/) documentation.
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+</details>
 
-### Disabling Workspace Creation (Super Admin)
-- Only **[Super Admins](/docs/Enterprise/superadmin#restrict-creation-of-personal-workspace-of-users)** can disable the option for creating personal workspaces for a user.
-- If the option to make personal workspaces is turned off for a user, the user won't be able to create new workspaces.
+<details>
+    <summary>
+     **Q. Do users have access to all workspaces by default?**
+    </summary>
+**No**, users need to be **invited** to a specific workspace to access the apps and data within that workspace. Refer to [invite users](https://docs.tooljet.com/docs/tutorial/manage-users-groups/#inviting-users) documentation for more details
 
-</div>
+</details>
+
