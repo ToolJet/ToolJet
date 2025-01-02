@@ -154,6 +154,14 @@ export const inviteUser = (firstName, email) => {
   cy.get(commonSelectors.acceptInviteButton).click();
 };
 
+export const inviteUserToWorkspace = (firstName, email) => {
+  cy.userInviteApi(firstName, email);
+  fetchAndVisitInviteLink(email);
+  cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
+  cy.get(commonSelectors.continueButton).click();
+  cy.get(commonSelectors.acceptInviteButton).click();
+};
+
 export const confirmInviteElements = (email) => {
 
   cy.get(commonSelectors.signUpSectionHeader).verifyVisibleElement(
