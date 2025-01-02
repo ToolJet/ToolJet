@@ -2,7 +2,6 @@ import { commonSelectors } from "Selectors/common";
 import { fake } from "Fixtures/fake";
 import { workspaceConstantsSelectors } from "Selectors/workspaceConstants";
 import { workspaceConstantsText } from "Texts/workspaceConstants";
-import { commonText } from "Texts/common";
 import * as common from "Support/utils/common";
 
 export const contantsNameValidation = (value, error) => {

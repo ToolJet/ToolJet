@@ -52,16 +52,14 @@ describe("Global Datasource Manager", () => {
 
     cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
       "have.text",
-      ' Commonly used'
+      " Commonly used"
     );
-    cy.get(dataSourceSelector.commonDsLabelAndCount).verifyVisibleElement(
-      "have.text",
-      "Commonly used (5)"
-    ).click();
-    cy.get(dataSourceSelector.databaseLabelAndCount).verifyVisibleElement(
-      "have.text",
-      dataSourceText.allDatabase
-    ).click();
+    cy.get(dataSourceSelector.commonDsLabelAndCount)
+      .verifyVisibleElement("have.text", "Commonly used (5)")
+      .click();
+    cy.get(dataSourceSelector.databaseLabelAndCount)
+      .verifyVisibleElement("have.text", dataSourceText.allDatabase)
+      .click();
     cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
       "have.text",
       " Databases"
@@ -181,7 +179,7 @@ describe("Global Datasource Manager", () => {
       {
         Host: Cypress.env("pg_host"),
         Port: "5432",
-        "Database Name": Cypress.env("pg_user"),
+        "Database name": Cypress.env("pg_user"),
         Username: Cypress.env("pg_user"),
         Password: Cypress.env("pg_password"),
       },

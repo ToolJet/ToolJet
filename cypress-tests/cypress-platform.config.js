@@ -6,7 +6,6 @@ const pg = require("pg");
 const path = require("path");
 const pdf = require("pdf-parse");
 
-// Define base URLs and config files for different environments/labels
 const environments = {
     'run-cypress-platform': {
         baseUrl: "http://localhost:8082",
@@ -26,7 +25,6 @@ const environments = {
     }
 };
 
-// Get environment from GitHub Actions label or default to 'run-cypress-platform'
 const githubLabel = process.env.GITHUB_LABEL || 'run-cypress-platform';
 const environment = environments[githubLabel];
 
@@ -42,7 +40,6 @@ module.exports = defineConfig({
     trashAssetsBeforeRuns: true,
     e2e: {
         setupNodeEvents (on, config) {
-            // Set baseUrl based on environment
             config.baseUrl = environment.baseUrl;
 
             on("task", {
@@ -97,8 +94,8 @@ module.exports = defineConfig({
         downloadsFolder: "cypress/downloads",
         experimentalRunAllSpecs: true,
         experimentalModfyObstructiveThirdPartyCode: true,
-        baseUrl: environment.baseUrl, // Default baseUrl from environment
-        configFile: environment.configFile, // Config file based on environment
+        baseUrl: environment.baseUrl,
+        configFile: environment.configFile,
         specPattern: [
             "cypress/e2e/happyPath/platform/ceTestcases/userFlow/firstUserOnboarding.cy.js",
             "cypress/e2e/happyPath/platform/ceTestcases/!(userFlow)/**/*.cy.js",

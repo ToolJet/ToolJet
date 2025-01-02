@@ -1,4 +1,3 @@
-import { path } from "Texts/common";
 import { commonSelectors } from "Selectors/common";
 import { usersText } from "Texts/manageUsers";
 import { usersSelector } from "Selectors/manageUsers";
@@ -7,7 +6,6 @@ import { ssoText } from "Texts/manageSSO";
 import * as common from "Support/utils/common";
 import { commonText } from "Texts/common";
 import { onboardingSelectors } from "Selectors/onboarding";
-
 
 export const manageUsersElements = () => {
   cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
@@ -232,7 +230,6 @@ export const bulkUserUploadDuplicate = (file, fileName, toastMessage) => {
   cy.get(usersSelector.modalClose).click();
   cy.wait(200);
 };
-
 
 export const copyInvitationLink = (firstName, email) => {
   cy.window().then((win) => {
