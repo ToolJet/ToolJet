@@ -479,4 +479,7 @@ Cypress.Commands.overwrite('intercept', (originalFn, method, endpoint, ...rest) 
   return originalFn(method, fullUrl, ...rest);
 });
 
-
+Cypress.Commands.add("verifyElement", (selector, text, eqValue) => {
+  const element = eqValue !== undefined ? cy.get(selector).eq(eqValue) : cy.get(selector);
+  element.should('be.visible').and('have.text', text);
+});

@@ -3,7 +3,6 @@ import { groupsSelector } from "Selectors/manageGroups";
 import { fake } from "Fixtures/fake";
 import {
   navigateToManageGroups,
-  verifyTooltipDisabled,
   viewAppCardOptions,
 } from "Support/utils/common";
 import {
@@ -14,7 +13,7 @@ import {
   groupPermission,
 } from "Support/utils/manageGroups";
 import { cyParamName } from "Selectors/common";
-import { addNewUser, roleBasedOnboarding } from "Support/utils/onboarding";
+import { roleBasedOnboarding } from "Support/utils/onboarding";
 
 const data = {};
 data.groupName = fake.firstName.replaceAll("[^A-Za-z]", "");
@@ -34,6 +33,7 @@ describe("Groups duplication", () => {
     );
     cy.apiCreateApp(data.appName);
   });
+
   it("Should verify the group duplication feature", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");

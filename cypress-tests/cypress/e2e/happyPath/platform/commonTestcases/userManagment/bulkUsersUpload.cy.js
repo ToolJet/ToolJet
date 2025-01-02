@@ -1,12 +1,13 @@
 import { commonSelectors } from "Selectors/common";
 import { usersText } from "Texts/manageUsers";
 import { usersSelector } from "Selectors/manageUsers";
-import { bulkUserUpload,bulkUserUploadDuplicate} from "Support/utils/manageUsers";
+import {
+  bulkUserUpload,
+  bulkUserUploadDuplicate,
+} from "Support/utils/manageUsers";
 import * as common from "Support/utils/common";
-import { path } from "Texts/common";
 import { groupsSelector } from "Selectors/manageGroups";
 import { fake } from "Fixtures/fake";
-import { userSignUp } from "Support/utils/onboarding";
 
 describe("Bulk user upload", () => {
   const data = {};
@@ -22,8 +23,7 @@ describe("Bulk user upload", () => {
     "cypress/fixtures/bulkUser/non_existing_group -Sheet1 .csv";
   const multiple_groups =
     "cypress/fixtures/bulkUser/multiple_groups - Sheet1.csv";
-  const without_Role =
-    "cypress/fixtures/bulkUser/without_Role - Sheet1.csv";
+  const without_Role = "cypress/fixtures/bulkUser/without_Role - Sheet1.csv";
   const invite_users = "cypress/fixtures/bulkUser/invite_users - Sheet1 .csv";
   const Validinvite = "cypress/fixtures/bulkUser/10usersupload.csv";
 
@@ -62,6 +62,7 @@ describe("Bulk user upload", () => {
       "empty_first_and_last_name",
       "Missing first_name,last_name,groups information in 1 row(s);. No users were uploaded, please update and try again."
     );
+
     bulkUserUpload(
       limit_exceeded_list,
       "500_invite_users",
@@ -89,7 +90,6 @@ describe("Bulk user upload", () => {
     // );
 
     //   );
-
   });
 
   it("Verify bulk user upload functionality", () => {
