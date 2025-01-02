@@ -11,17 +11,12 @@ import {
   inviteUserWithUserRole,
   fetchAndVisitInviteLink,
 } from "Support/utils/manageUsers";
-import {
-  addNewUser,
-  visitWorkspaceInvitation,
-  newInvite,
-} from "Support/utils/onboarding";
+import { addNewUser, visitWorkspaceInvitation } from "Support/utils/onboarding";
 import { commonText } from "Texts/common";
-import { setSignupStatus, enableSignUp } from "Support/utils/manageSSO";
+import { setSignupStatus } from "Support/utils/manageSSO";
 import { ssoSelector } from "Selectors/manageSSO";
 import {
   SignUpPageElements,
-  verifyConfirmEmailPage,
   signUpLink,
   verifyOnboardingQuestions,
 } from "Support/utils/onboarding";
@@ -197,6 +192,7 @@ describe("user invite flow cases", () => {
     cy.get(usersSelector.acceptInvite).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, usersText.inviteToast);
     logout();
+
     cy.defaultWorkspaceLogin();
     navigateToManageUsers();
     searchUser(data.email);
@@ -266,7 +262,8 @@ describe("user invite flow cases", () => {
       data.groupName2
     );
     logout();
-    cy.wait(3000);
+    cy.wait(1000);
+
     cy.defaultWorkspaceLogin();
     navigateToManageGroups();
     cy.get(groupsSelector.groupLink(data.groupName1)).click();
@@ -430,7 +427,6 @@ describe("user invite flow cases", () => {
       "have.text",
       "Builder"
     );
-
   });
 
   it("Should verify exisiting user invite flow", () => {

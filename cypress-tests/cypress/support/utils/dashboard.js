@@ -9,13 +9,6 @@ import {
   cancelModal,
 } from "Support/utils/common";
 
-export const login = () => {
-  cy.visit("/");
-  cy.clearAndType(onboardingSelectors.loginEmailInput, "dev@tooljet.io");
-  cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
-  cy.get(onboardingSelectors.signInButton).click();
-};
-
 export const modifyAndVerifyAppCardIcon = (appName) => {
   var random = function (obj) {
     var keys = Object.keys(obj);
