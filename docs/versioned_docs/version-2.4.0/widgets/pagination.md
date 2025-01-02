@@ -27,7 +27,7 @@ It is used to set and display the default page index when the app initially load
 
 ## Event 
 
-### On Page Change
+### On page change
 
 This event is triggered whenever the user switches to another page index. You can explore various actions associated with this event as per app logic.
 
