@@ -8,6 +8,7 @@ import { toast } from 'react-hot-toast';
 import { FileDropzone } from './FileDropzone';
 import { USER_DRAWER_MODES } from '@/_helpers/utils';
 import { UserGroupsSelect } from './UserGroupsSelect';
+import Skeleton from 'react-loading-skeleton';
 
 function InviteUsersForm({
   onClose,
@@ -29,6 +30,7 @@ function InviteUsersForm({
   const [activeTab, setActiveTab] = useState(1);
   const [selectedGroups, setSelectedGroups] = useState([]);
   const [existingGroups, setExistingGroups] = useState([]);
+  const [isFetching, setFetching] = useState(true);
 
   const hiddenFileInput = useRef(null);
 
@@ -49,6 +51,7 @@ function InviteUsersForm({
         }));
       setExistingGroups(groups.filter((group) => addedToGroups.includes(group.value)).map((g) => g.value));
       onChangeHandler(preSelectedGroups);
+      setFetching(false);
     }
   }, [currentEditingUser, groups]);
 
@@ -166,57 +169,65 @@ function InviteUsersForm({
                   <label className="form-label" data-cy="label-full-name-input-field">
                     Name
                   </label>
-                  <div className="form-group mb-3 ">
-                    <ToolTip
-                      delay={{ show: '0', hide: '0' }}
-                      placement="bottom"
-                      message="Only user can edit their name"
-                      show={isEditing}
-                    >
-                      <div className="tj-app-input">
-                        <input
-                          type="text"
-                          className={cx('form-control', { disabled: isEditing })}
-                          placeholder={t('header.organization.menus.manageUsers.enterFullName', 'Enter full name')}
-                          name="fullName"
-                          onChange={changeNewUserOption.bind(this, 'fullName')}
-                          value={fields['fullName']}
-                          data-cy="input-field-full-name"
-                          disabled={isEditing}
-                        />
-                        <span className="text-danger" data-cy="error-message-fullname">
-                          {errors['fullName']}
-                        </span>
-                      </div>
-                    </ToolTip>
-                  </div>
+                  {isFetching && isEditing ? (
+                    <Skeleton height={30} />
+                  ) : (
+                    <div className="form-group mb-3 ">
+                      <ToolTip
+                        delay={{ show: '0', hide: '0' }}
+                        placement="bottom"
+                        message="Only user can edit their name"
+                        show={isEditing}
+                      >
+                        <div className="tj-app-input">
+                          <input
+                            type="text"
+                            className={cx('form-control', { disabled: isEditing })}
+                            placeholder={t('header.organization.menus.manageUsers.enterFullName', 'Enter full name')}
+                            name="fullName"
+                            onChange={changeNewUserOption.bind(this, 'fullName')}
+                            value={fields['fullName']}
+                            data-cy="input-field-full-name"
+                            disabled={isEditing}
+                          />
+                          <span className="text-danger" data-cy="error-message-fullname">
+                            {errors['fullName']}
+                          </span>
+                        </div>
+                      </ToolTip>
+                    </div>
+                  )}
                   <div className="form-group mb-3 ">
                     <label className="form-label" data-cy="label-email-input-field">
                       {t('header.organization.menus.manageUsers.emailAddress', 'Email Address')}
                     </label>
-                    <ToolTip
-                      delay={{ show: '0', hide: '0' }}
-                      placement="bottom"
-                      message="Cannot edit user email address"
-                      show={isEditing}
-                    >
-                      <div className="tj-app-input">
-                        <input
-                          type="text"
-                          className={cx('form-control', { disabled: isEditing })}
-                          aria-describedby="emailHelp"
-                          placeholder={t('header.organization.menus.manageUsers.enterEmail', 'Enter Email')}
-                          name="email"
-                          onChange={changeNewUserOption.bind(this, 'email')}
-                          value={fields['email']}
-                          data-cy="input-field-email"
-                          disabled={isEditing}
-                        />
-                        <span className="text-danger" data-cy="error-message-email">
-                          {errors['email']}
-                        </span>
-                      </div>
-                    </ToolTip>
+                    {isFetching && isEditing ? (
+                      <Skeleton height={30} />
+                    ) : (
+                      <ToolTip
+                        delay={{ show: '0', hide: '0' }}
+                        placement="bottom"
+                        message="Cannot edit user email address"
+                        show={isEditing}
+                      >
+                        <div className="tj-app-input">
+                          <input
+                            type="text"
+                            className={cx('form-control', { disabled: isEditing })}
+                            aria-describedby="emailHelp"
+                            placeholder={t('header.organization.menus.manageUsers.enterEmail', 'Enter Email')}
+                            name="email"
+                            onChange={changeNewUserOption.bind(this, 'email')}
+                            value={fields['email']}
+                            data-cy="input-field-email"
+                            disabled={isEditing}
+                          />
+                          <span className="text-danger" data-cy="error-message-email">
+                            {errors['email']}
+                          </span>
+                        </div>
+                      </ToolTip>
+                    )}
                   </div>
                   <div className="form-group mb-3 manage-groups-invite-form" data-cy="user-group-select">
                     <label className="form-label" data-cy="label-group-input-field">
@@ -224,7 +235,11 @@ function InviteUsersForm({
                         ? 'User groups'
                         : t('header.organization.menus.manageUsers.selectGroup', 'Select Group')}
                     </label>
-                    <UserGroupsSelect value={selectedGroups} onChange={onChangeHandler} options={groups} />
+                    {isFetching && isEditing ? (
+                      <Skeleton height={30} />
+                    ) : (
+                      <UserGroupsSelect value={selectedGroups} onChange={onChangeHandler} options={groups} />
+                    )}
                   </div>
                 </form>
               </div>
