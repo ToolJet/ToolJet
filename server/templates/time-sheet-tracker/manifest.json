@@ -1,0 +1,19 @@
+{
+  "name": "Time sheet tracker",
+  "description": "Accurately track employee hours and boost productivity with a user-friendly time tracking system.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "time-sheet-tracker",
+  "category": "human-resources"
+}
