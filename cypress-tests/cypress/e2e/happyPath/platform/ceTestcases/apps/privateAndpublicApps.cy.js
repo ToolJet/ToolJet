@@ -203,6 +203,7 @@ describe(
 
       cy.get(commonWidgetSelector.shareAppButton).click();
       cy.get(commonWidgetSelector.makePublicAppToggle).check();
+      cy.wait(500);
       cy.get(commonWidgetSelector.modalCloseButton).click();
       cy.backToApps();
 
