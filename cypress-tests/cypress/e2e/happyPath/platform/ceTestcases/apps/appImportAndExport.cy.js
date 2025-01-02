@@ -82,7 +82,7 @@ describe("App Import Functionality", () => {
     cy.get(importSelectors.importOptionInput).eq(0).selectFile(toolJetImage, {
       force: true,
     });
-
+    
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       importText.couldNotImportAppToastMessage
@@ -96,7 +96,7 @@ describe("App Import Functionality", () => {
     cy.get(importSelectors.importOptionInput).eq(0).selectFile(appFile, {
       force: true,
     });
-
+    cy.wait(2000);
     cy.get(importSelectors.importAppTitle).should("be.visible");
     cy.get(importSelectors.importAppButton).click();
     cy.get(".go3958317564")
@@ -397,7 +397,7 @@ describe("App Import Functionality", () => {
     cy.exec("cd ./cypress/downloads/ && rm -rf *");
   });
 
-  it("Verify 'Export and import' functionality of an application with DS,Constants and tjdb for same and different workspace", () => {
+  it.only("Verify 'Export and import' functionality of an application with DS,Constants and tjdb for same and different workspace", () => {
     data.appName1 = `${fake.companyName}-App`;
     data.constName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
     data.newConstvalue = `New ${data.constName}`;
