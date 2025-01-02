@@ -150,7 +150,7 @@ Enabling the `Make editable` property for a column allows the app users to edit 
 
 ### Show search
 
- The Show search property controls the search box on the Table. Client-side search is enabled by default and server-side search can be enabled from the events section of the inspector. Whenever the search text is changed, the `searchText` exposed variable of the Table component is updated. 
+The Show search property controls the search box on the Table. Client-side search is enabled by default and server-side search can be enabled from the events section of the inspector. Whenever the search text is changed, the `searchText` exposed variable of the Table component is updated. 
  
 
 #### Server-side search
@@ -240,10 +240,10 @@ Disable condition allows you to control whether the Table is enabled or disabled
 
 ## Devices
 
-| Option  | Description | Expected value |
+| Property  | Description | Expected value |
 |:----------- |:----------- |:----------- |
-| **Show on desktop** | Shows or hides the component on desktop devices. | Use the toggle switch or configure it dynamically using **fx**.|
-| **Show on mobile** | Shows or hides the component on mobile devices. | Use the toggle switch or configure it dynamically using **fx**.|
+| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.|
+| Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.|
 
 ## Styles
 ### Data
