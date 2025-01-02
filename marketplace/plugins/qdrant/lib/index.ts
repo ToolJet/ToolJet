@@ -4,7 +4,7 @@ import { QdrantClient } from '@qdrant/js-client-rest';
 import { deletePoints, getCollectionInfo, getPoints, listCollections, queryPoints, upsertPoints } from './operations';
 
 export default class Qdrant implements QueryService {
-  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions): Promise<QueryResult> {
+  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     const operation = queryOptions.operation;
     const qdrant = await this.getConnection(sourceOptions);
     let result = {};
@@ -30,10 +30,24 @@ export default class Qdrant implements QueryService {
           result = await queryPoints(qdrant, queryOptions);
           break;
         default:
-          throw new QueryError('Query could not be completed', 'Invalid operation', {});
+          throw new QueryError('Unsupported Operation', operation + " is not supported.", {});
       }
     } catch (error) {
-      throw new QueryError('Query could not be completed', error?.message, {});
+      let errorMessage = 'An unknown error occurred';
+      let errorDetails = {};
+
+      if (error instanceof Error) {
+        errorMessage = error.message || errorMessage;
+        errorDetails = {
+          name: error.name,
+          code: (error as any).code || null,
+          codeName: (error as any).codeName || null,
+          keyPattern: (error as any).keyPattern || null,
+          keyValue: (error as any).keyValue || null,
+        };
+      }
+
+      throw new QueryError('Query could not be completed', errorMessage, errorDetails);
     }
 
     return {

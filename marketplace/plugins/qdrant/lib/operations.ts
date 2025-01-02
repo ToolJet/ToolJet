@@ -8,22 +8,12 @@ export async function getCollectionInfo(qdrant: QdrantClient, options: QueryOpti
     throw new Error('Collection name is required');
   }
 
-  try {
-    return await qdrant.getCollection(collectionName);
-  } catch (error) {
-    console.error('Error fetching collection info:', error);
-    throw new Error(error?.message || 'An unexpected error occurred');
-  }
+  return await qdrant.getCollection(collectionName);
 }
 
-export async function listCollections(qdrant: QdrantClient): Promise<any> {
-  try {
-    const collections = (await qdrant.getCollections()).collections;
-    return collections.map((c) => c.name);
-  } catch (error) {
-    console.error('Error listing collections:', error);
-    throw new Error(error?.message || 'An unexpected error occurred');
-  }
+export async function listCollections(qdrant: QdrantClient, options: QueryOptions): Promise<any> {
+  const collections = (await qdrant.getCollections()).collections;
+  return collections.map((c) => c.name);
 }
 
 export async function getPoints(qdrant: QdrantClient, options: QueryOptions): Promise<any> {
@@ -33,17 +23,13 @@ export async function getPoints(qdrant: QdrantClient, options: QueryOptions): Pr
     throw new Error('Collection name is required');
   }
 
-  try {
-    const points = await qdrant.retrieve(collectionName, {
-      ids: JSON.parse(ids),
-      with_payload: true,
-      with_vector: true,
-    });
+  const points = await qdrant.retrieve(collectionName, {
+    ids: JSON.parse(ids),
+    with_payload: true,
+    with_vector: true,
+  });
 
-    return points;
-  } catch (error) {
-    throw new Error(error?.message || 'An unexpected error occurred');
-  }
+  return points;
 }
 
 export async function upsertPoints(qdrant: QdrantClient, options: QueryOptions): Promise<any> {
@@ -53,14 +39,11 @@ export async function upsertPoints(qdrant: QdrantClient, options: QueryOptions):
     throw new Error('Collection name is required');
   }
 
-  try {
-    const response = await qdrant.upsert(collectionName, {
-      points: JSON.parse(points),
-    });
-    return response.status;
-  } catch (error) {
-    throw new Error(error?.message || 'An unexpected error occurred');
-  }
+  const response = await qdrant.upsert(collectionName, {
+    points: JSON.parse(points),
+    wait: true
+  });
+  return response.status;
 }
 
 export async function deletePoints(qdrant: QdrantClient, options: QueryOptions): Promise<any> {
@@ -70,36 +53,31 @@ export async function deletePoints(qdrant: QdrantClient, options: QueryOptions):
     throw new Error('Collection name is required');
   }
 
-  try {
-    const response = await qdrant.delete(collectionName, {
-      filter: filter ? JSON.parse(filter) : undefined,
-      points: ids ? JSON.parse(ids) : undefined,
-    });
+  const response = await qdrant.delete(collectionName, {
+    filter: filter ? JSON.parse(filter) : undefined,
+    points: ids ? JSON.parse(ids) : undefined,
+    wait: true
+  });
 
-    return response.status;
-  } catch (error) {
-    throw new Error(error?.message || 'An unexpected error occurred');
-  }
+  return response.status;
 }
 
 export async function queryPoints(qdrant: QdrantClient, options: QueryOptions): Promise<any> {
   const { collectionName, query, filter, limit, withPayload, withVectors } = options;
 
+  console.log("OPTIONS ARE " + JSON.stringify(options));
+
   if (!collectionName) {
     throw new Error('Collection name is required');
   }
 
-  try {
-    const response = await qdrant.query(collectionName, {
-      query: JSON.parse(query),
-      filter: JSON.parse(filter),
-      limit: JSON.parse(limit),
-      with_payload: withPayload.toLowerCase() === 'true',
-      with_vector: withVectors.toLowerCase() === 'true',
-    });
+  const response = await qdrant.query(collectionName, {
+    query: query ? JSON.parse(query) : null,
+    filter: filter ? JSON.parse(filter) : {},
+    limit: limit ? JSON.parse(limit) : 10,
+    with_payload: withPayload.toLowerCase() === 'true',
+    with_vector: withVectors.toLowerCase() == 'true',
+  });
 
-    return response.points;
-  } catch (error) {
-    throw new Error(error?.message);
-  }
+  return response.points;
 }
