@@ -29,6 +29,7 @@ const DynamicFormV2 = ({
   const encryptedProperties = React.useMemo(() => dsm.getEncryptedProperties(), [dsm]);
   const [conditionallyRequiredProperties, setConditionallyRequiredProperties] = React.useState([]);
   const [validationErrors, setValidationErrors] = React.useState([]);
+  console.log('ValidationError: ', validationErrors);
 
   const [computedProps, setComputedProps] = React.useState({});
   const isHorizontalLayout = layout === 'horizontal';
@@ -158,7 +159,7 @@ const DynamicFormV2 = ({
   };
 
   const getElementProps = (uiProperties) => {
-    const { title, description, widget, required, width, key, help_text: helpText, list } = uiProperties;
+    const { label, description, widget, required, width, key, help_text: helpText, list } = uiProperties;
 
     const isRequired = required || conditionallyRequiredProperties.includes(key);
     const isEncrypted = widget === 'password-v3' || encryptedProperties.includes(key);
@@ -175,7 +176,7 @@ const DynamicFormV2 = ({
         return {
           key,
           widget,
-          label: title,
+          label,
           placeholder: isEncrypted ? '**************' : description,
           className: cx('form-control', {
             'dynamic-form-encrypted-field': isEncrypted,
@@ -196,7 +197,7 @@ const DynamicFormV2 = ({
         return {
           key,
           widget,
-          ui_label: title,
+          label,
           placeholder: isEncrypted ? '**************' : description,
           className: cx('form-control', {
             'dynamic-form-encrypted-field': isEncrypted,
@@ -321,7 +322,7 @@ const DynamicFormV2 = ({
                   })}
                   style={{ minWidth: '100px' }}
                 >
-                  {label && renderLabel(label, uiProperties[key].tooltip)}
+                  {label && widget !== 'text-v3' && widget !== 'password-v3' && renderLabel(label, uiProperties[key].tooltip)}
 
                   {(widget === 'password' || encrypted) && selectedDataSource?.id && (
                     <div className="mx-1 col">
