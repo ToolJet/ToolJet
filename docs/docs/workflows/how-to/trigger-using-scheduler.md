@@ -65,12 +65,13 @@ You can use Cron Syntax to configure a schedule. ToolJet offers an graphical use
     - **Environment**: Select the environement on which you want to run the workflow. 
 
 <img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/workflows/trigger-schedule/cron-schedule.png" alt="Navigate to Workflow Section" />
-In the above image the workflow is schduled to trigger at the 15th minute of every hour, you can check that below the environment field as well.
+
+In the above image the workflow is schduled to trigger at the 15th minute of every hour, you can check that below the environment field as well. You can refer to **[this](https://crontab.guru/)** website to generate a cron schedule.
 
 6. Click on **+ Create schedule** to create and save the schedule.
 
-<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/workflows/trigger-schedule/create-schedule.png" alt="Navigate to Workflow Section" />
+<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/workflows/trigger-schedule/saved-cron-schedule.png" alt="Navigate to Workflow Section" />
 
 7. By default the schedule is inactive, toggle the switch to activate the schedule.
 
-<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/workflows/trigger-schedule/activate-schedule.png" alt="Navigate to Workflow Section" />
+<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/workflows/trigger-schedule/activate-cron-schedule.png" alt="Navigate to Workflow Section" />
