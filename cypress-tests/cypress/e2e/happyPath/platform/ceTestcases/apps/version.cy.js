@@ -1,7 +1,6 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { fake } from "Fixtures/fake";
 import { logout, releaseApp } from "Support/utils/common";
-import { logout, releaseApp } from "Support/utils/common";
 import { commonText } from "Texts/common";
 
 import {
@@ -66,7 +65,6 @@ describe("App Editor", () => {
   });
 
   it("Verify the elements of the version module", () => {
-  it("Verify the elements of the version module", () => {
     data.appName = `${fake.companyName}-App`;
     cy.apiCreateApp(data.appName);
 
@@ -115,7 +113,6 @@ describe("App Editor", () => {
     cy.get("div.react-select__indicator").click();
     cy.contains("v1").click();
   });
-
 
   it("Verify components and queries in the apps on different versions", () => {
     data.appName = `${fake.companyName}-App`;
