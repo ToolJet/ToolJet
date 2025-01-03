@@ -1,15 +1,16 @@
 import React from 'react';
 import cx from 'classnames';
-import { get, isEmpty } from 'lodash';
-import Input from '@/_ui/Input';
-import InputV3 from '@/_ui/Input-V3';
+import DataSourceSchemaManager from '@/_helpers/dataSourceSchemaManager';
 import Textarea from '@/_ui/Textarea';
 import Select from '@/_ui/Select';
 import Headers from '@/_ui/HttpHeaders';
 import Toggle from '@/_ui/Toggle';
+import { filter, find, isEmpty } from 'lodash';
 import { ButtonSolid } from './AppButton';
-import Ajv from 'ajv';
-import addFormats from 'ajv-formats';
+import { useGlobalDataSourcesStatus } from '@/_stores/dataSourcesStore';
+import { canDeleteDataSource, canUpdateDataSource } from '@/_helpers';
+import { OverlayTrigger, Tooltip } from 'react-bootstrap';
+import InputV3 from '@/_ui/Input-V3';
 
 const DynamicFormV2 = ({
   schema,
@@ -21,47 +22,124 @@ const DynamicFormV2 = ({
   layout = 'vertical',
   onBlur,
   setDefaultOptions,
-  setValidationFailed,
 }) => {
+  // rename uiProperties everywhere
+  const uiProperties = schema['tj:ui:properties'] || {};
+  const dsm = React.useMemo(() => new DataSourceSchemaManager(schema), [schema]);
+  const encryptedProperties = React.useMemo(() => dsm.getEncryptedProperties(), [dsm]);
+  const [conditionallyRequiredProperties, setConditionallyRequiredProperties] = React.useState([]);
+  const [validationErrors, setValidationErrors] = React.useState([]);
+
   const [computedProps, setComputedProps] = React.useState({});
   const isHorizontalLayout = layout === 'horizontal';
+  const prevDataSourceIdRef = React.useRef(selectedDataSource?.id);
 
+  const globalDataSourcesStatus = useGlobalDataSourcesStatus();
+  const { isEditing: isDataSourceEditing } = globalDataSourcesStatus;
 
-  const ajv = React.useMemo(() => {
-    try {
-      const instance = new Ajv({
-        allErrors: true,
-        strict: false,
-        coerceTypes: true,
-      });
-      addFormats(instance);
-      return instance;
-    } catch (error) {
-      return new Ajv();
-    }
-  }, []);
+  React.useEffect(() => {
+    const { valid, errors } = dsm.validateData(options);
+    if (valid) return;
+
+    setValidationErrors(errors);
+    const requiredFields = errors
+      .filter((error) => error.keyword === 'required')
+      .map((error) => error.params.missingProperty);
+
+    setConditionallyRequiredProperties(requiredFields);
+  }, [options]);
 
   React.useLayoutEffect(() => {
     if (!isEditMode || isEmpty(options)) {
-      const defaults = {};
-      Object.entries(schema.properties).forEach(([key, property]) => {
-        if ('default' in property) {
-          defaults[key] = property.default;
-        }
-      });
-  
-      if (!isEmpty(defaults)) {
-        optionsChanged(defaults ?? {});
-        typeof setDefaultOptions === 'function' && setDefaultOptions(defaults);
+      typeof setDefaultOptions === 'function' && setDefaultOptions(schema?.defaults);
+      optionsChanged(schema?.defaults ?? {});
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  React.useEffect(() => {
+    const prevDataSourceId = prevDataSourceIdRef.current;
+    prevDataSourceIdRef.current = selectedDataSource?.id;
+    const uiProperties = schema['tj:ui:properties'];
+    if (!isEmpty(uiProperties)) {
+      let fields = {};
+      let encryptedFieldsProps = {};
+      const flipComponentDropdown = find(uiProperties, ['widget', 'dropdown-component-flip']);
+
+      if (flipComponentDropdown) {
+        const selector = options?.[flipComponentDropdown?.key]?.value;
+        const commonFieldsFromSslCertificate = uiProperties[selector]?.ssl_certificate?.commonFields;
+        fields = {
+          ...commonFieldsFromSslCertificate,
+          ...flipComponentDropdown?.commonFields,
+          ...uiProperties[selector],
+        };
+      } else {
+        fields = { ...uiProperties };
+      }
+
+      const processFields = (fieldsObject) => {
+        Object.keys(fieldsObject).forEach((key) => {
+          const field = fieldsObject[key];
+          const { widget, encrypted, key: propertyKey } = field;
+
+          if (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()) {
+            encryptedFieldsProps[propertyKey] = {
+              disabled: !!selectedDataSource?.id,
+            };
+          } else if (!isDataSourceEditing) {
+            if (widget === 'password' || encrypted) {
+              encryptedFieldsProps[propertyKey] = {
+                disabled: true,
+              };
+            }
+          } else {
+            if ((widget === 'password' || encrypted) && !(propertyKey in computedProps)) {
+              encryptedFieldsProps[propertyKey] = {
+                disabled: !!selectedDataSource?.id,
+              };
+            }
+          }
+
+          // To check for nested dropdown-component-flip
+          if (widget === 'dropdown-component-flip') {
+            const selectedOption = options?.[field.key]?.value;
+
+            if (field.commonFields) {
+              processFields(field.commonFields);
+            }
+
+            if (selectedOption && fieldsObject[selectedOption]) {
+              processFields(fieldsObject[selectedOption]);
+            }
+          }
+        });
+      };
+
+      processFields(fields);
+
+      if (uiProperties.renderForm) {
+        Object.keys(uiProperties.renderForm).forEach((sectionKey) => {
+          const section = uiProperties.renderForm[sectionKey];
+          const { inputs } = section;
+          if (inputs) {
+            processFields(inputs);
+          }
+        });
+      }
+
+      if (prevDataSourceId !== selectedDataSource?.id) {
+        setComputedProps({ ...encryptedFieldsProps });
+      } else {
+        setComputedProps({ ...computedProps, ...encryptedFieldsProps });
       }
     }
-  }, [schema, isEditMode]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDataSource?.id, options, isDataSourceEditing]);
 
-  const getElement = (property) => {
-    const { ui_widget } = property;
-    switch (ui_widget) {
-      case 'text':
-        return Input;
+  const getElement = (type) => {
+    switch (type) {
       case 'password-v3':
       case 'text-v3':
         return InputV3;
@@ -69,81 +147,71 @@ const DynamicFormV2 = ({
         return Textarea;
       case 'toggle':
         return Toggle;
-      case 'dropdown-component-flip':
-        return Select;
       case 'react-component-headers':
         return Headers;
+      // TODO: Move dropdown component flip logic to be handled here
+      // case 'dropdown-component-flip':
+      //   return Select;
       default:
-        return Input;
+        return <div>Type is invalid</div>;
     }
   };
 
-  const getElementProps = (property, key) => {
-    const { title, description, ui_widget, encrypted, enum: enumValues, enumNames, width } = property;
+  const getElementProps = (uiProperties) => {
+    const { title, description, widget, required, width, key, help_text: helpText, list } = uiProperties;
 
-    const isRequired = getRequiredFields().includes(key);
-    const currentValue = options?.[key]?.value !== undefined ? options[key].value : options?.[key];
+    const isRequired = required || conditionallyRequiredProperties.includes(key);
+    const isEncrypted = widget === 'password-v3' || encryptedProperties.includes(key);
+    const currentValue = options?.[key]?.value;
+    const checkValidation = (property, fieldValue) => {
+      const { valid, errors } = dsm.validateDataForProperty(property, fieldValue);
+      return { valid, message: errors };
+    };
 
-    switch (ui_widget) {
+    switch (widget) {
       case 'password':
       case 'text':
       case 'textarea': {
-        const useEncrypted = encrypted || ui_widget === 'password';
         return {
           key,
-          ui_widget,
-          ui_label: title,
-          placeholder: useEncrypted ? '**************' : description,
+          widget,
+          label: title,
+          placeholder: isEncrypted ? '**************' : description,
           className: cx('form-control', {
-            'dynamic-form-encrypted-field': useEncrypted,
+            'dynamic-form-encrypted-field': isEncrypted,
           }),
           style: { marginBottom: '0px !important' },
-          helpText: property.helpText,
+          helpText: helpText,
           value: currentValue || '',
           onChange: (e) => optionchanged(key, e.target.value, true),
           isGDS: true,
           workspaceVariables: [],
           workspaceConstants: [],
-          encrypted: useEncrypted,
+          encrypted: isEncrypted,
           onBlur,
         };
       }
       case 'password-v3':
       case 'text-v3': {
-        const useEncrypted = encrypted || ui_widget === 'password-v3';
         return {
           key,
-          ui_widget,
+          widget,
           ui_label: title,
-          placeholder: useEncrypted ? '**************' : description,
+          placeholder: isEncrypted ? '**************' : description,
           className: cx('form-control', {
-            'dynamic-form-encrypted-field': useEncrypted,
+            'dynamic-form-encrypted-field': isEncrypted,
           }),
           style: { marginBottom: '0px !important' },
-          helpText: property.helpText,
+          helpText: helpText,
           value: currentValue || '',
           onChange: (e) => optionchanged(key, e.target.value, true),
-          validate: (e) => checkValidation(key, isRequired, e.target.value),
+          validate: (e) => checkValidation(key, e.target.value),
           isGDS: true,
           workspaceVariables: [],
           workspaceConstants: [],
-          encrypted: useEncrypted,
+          encrypted: isEncrypted,
           onBlur,
           isRequired: isRequired,
-        };
-      }
-      case 'dropdown-component-flip': {
-        const dropdownOptions = enumValues?.map((value, index) => ({
-          value,
-          name: enumNames?.[index] ?? value,
-        }));
-
-        return {
-          options: dropdownOptions,
-          value: currentValue,
-          onChange: (value) => optionchanged(key, value),
-          width: width || '100%',
-          defaultValue: property.default,
         };
       }
       case 'toggle':
@@ -152,227 +220,237 @@ const DynamicFormV2 = ({
           checked: currentValue,
           onChange: (e) => optionchanged(key, e.target.checked),
         };
-
+      case 'dropdown':
+      case 'dropdown-component-flip':
+        return {
+          options: list,
+          value: options?.[key]?.value || options?.[key],
+          onChange: (value) => optionchanged(key, value),
+          width: width || '100%',
+          encrypted: options?.[key]?.encrypted,
+        };
       default:
         return {};
     }
   };
 
-  const processFieldConditions = (fieldName, fieldSchema, values) => {
-    const fieldValue = options?.[fieldName]?.value !== undefined
-      ? options[fieldName].value
-      : options?.[fieldName] !== undefined
-        ? options[fieldName]
-        : values?.[fieldName] !== undefined
-          ? values[fieldName]
-          : fieldSchema.default;
+  const getLayout = (uiProperties) => {
+    if (isEmpty(uiProperties)) return null;
+    const flipComponentDropdown = isFlipComponentDropdown(uiProperties);
 
-    if (fieldValue === undefined) return;
+    if (flipComponentDropdown) {
+      return flipComponentDropdown;
+    }
 
-    schema.allOf?.forEach(condition => {
-      if (condition.if?.properties?.[fieldName]?.const === fieldValue) {
-        condition.then?.required?.forEach(requiredField => {
-          const requiredFieldSchema = schema.properties[requiredField];
-          if (requiredFieldSchema?.default !== undefined) {
-            values[requiredField] = requiredFieldSchema.default;
-          }
-        });
-
-        condition.then?.allOf?.forEach(nestedCondition => {
-          Object.keys(nestedCondition.if?.properties || {}).forEach(nestedField => {
-            if (values[nestedField] !== undefined) {
-              processFieldConditions(nestedField, schema.properties[nestedField], values);
-            }
-          });
-        });
+    const handleEncryptedFieldsToggle = (event, field) => {
+      if (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()) {
+        return;
       }
-    });
-  };
-
-  const checkValidation = (key, isRequired, fieldValue) => {
-
-    const fieldSchema = schema?.properties?.[key];
-    if (!fieldSchema) {
-      setValidationFailed(false);
-      return { valid: true, message: `${key} is valid` };
-    }
-    if (fieldValue === null || fieldValue === undefined || fieldValue === '') {
-      if (isRequired) {
-        setValidationFailed(true);
-        return { valid: false, message: `${key} is required` };
+      const isEditing = computedProps[field]['disabled'];
+      if (isEditing) {
+        optionchanged(field, '');
+      } else {
+        //Send old field value if editing mode disabled for encrypted fields
+        const newOptions = { ...options };
+        const oldFieldValue = selectedDataSource?.['options']?.[field];
+        if (oldFieldValue) {
+          optionsChanged({ ...newOptions, [field]: oldFieldValue });
+        } else {
+          delete newOptions[field];
+          optionsChanged({ ...newOptions });
+        }
       }
-      setValidationFailed(false);
-      return { valid: true, message: `${key} is empty, validation skipped` };
-    }
-
-    let valueToValidate = fieldValue;
-    if (fieldSchema.type === 'number' || fieldSchema.type === 'integer') {
-      valueToValidate = Number(fieldValue);
-      if (isNaN(valueToValidate)) {
-        setValidationFailed(true);
-        return { valid: false, message: 'Please enter a valid number' };
-      }
-    }
-    if (fieldSchema.type === 'string' && !isNaN(fieldValue)) {
-      setValidationFailed(true);
-      return { valid: false, message: 'Should not be a number' };
-    }
-
-    const validationSchema = {
-      type: 'object',
-      properties: {
-        [key]: fieldSchema,
-      },
-      ...(isRequired && { required: [key] }),
+      setComputedProps({
+        ...computedProps,
+        [field]: {
+          ...computedProps[field],
+          disabled: !isEditing,
+        },
+      });
     };
 
-    const validate = ajv.compile(validationSchema);
-    const isValid = validate({ [key]: valueToValidate });
+    const renderLabel = (label, tooltip) => {
+      const labelElement = (
+        <label
+          className="form-label"
+          data-cy={`label-${String(label).toLowerCase().replace(/\s+/g, '-')}`}
+          style={{ textDecoration: tooltip ? 'underline 2px dashed' : 'none', textDecorationColor: 'var(--slate8)' }}
+        >
+          {label}
+        </label>
+      );
 
-    if (!isValid) {
-      setValidationFailed(true);
-      const errors = validate.errors;
-
-      if (errors?.[0]) {
-        const errorMessages = {
-          type: `Invalid type. Expected ${fieldSchema.type}`,
-          format: 'Invalid format',
-          pattern: 'Invalid pattern',
-          minimum: `Must be greater than or equal to ${fieldSchema.minimum}`,
-          maximum: `Must be less than or equal to ${fieldSchema.maximum}`,
-          minLength: `Must be at least ${fieldSchema.minLength} characters`,
-          maxLength: `Must not exceed ${fieldSchema.maxLength} characters`,
-          enum: 'Value must be one of the allowed options'
-        };
-
-        return {
-          valid: false,
-          message: errorMessages[errors[0].keyword] || errors[0].message || 'Invalid value'
-        };
+      if (tooltip) {
+        return (
+          <OverlayTrigger
+            placement="top"
+            trigger="click"
+            rootClose
+            overlay={<Tooltip id={`tooltip-${label}`}>{tooltip}</Tooltip>}
+          >
+            {labelElement}
+          </OverlayTrigger>
+        );
       }
-    }
 
-    setValidationFailed(false);
-    return { valid: true, message: `${key} is valid` };
-  };
+      return labelElement;
+    };
 
-  const getRequiredFields = () => {
-    const requiredFields = [...(schema.required || [])];
+    return (
+      <div className={`${isHorizontalLayout ? '' : 'row'}`}>
+        {Object.keys(uiProperties).map((key) => {
+          const { label, widget, encrypted, className, key: propertyKey } = uiProperties[key];
+          const Element = getElement(widget);
+          const isSpecificComponent = ['tooljetdb-operations', 'react-component-api-endpoint'].includes(widget);
 
-    schema.allOf?.forEach(condition => {
-      const ifProps = condition.if?.properties || {};
-      const matches = Object.entries(ifProps).every(([key, constraint]) => {
-        const value = options?.[key]?.value !== undefined
-          ? options[key].value
-          : options?.[key] !== undefined
-            ? options[key]
-            : schema.properties[key]?.default;
+          return (
+            <div
+              className={cx('my-2', {
+                'col-md-12': !className && !isHorizontalLayout,
+                [className]: !!className,
+                'd-flex': isHorizontalLayout,
+                'dynamic-form-row': isHorizontalLayout,
+              })}
+              key={key}
+            >
+              {!isSpecificComponent && (
+                <div
+                  className={cx('d-flex', {
+                    'form-label': isHorizontalLayout,
+                    'align-items-center': !isHorizontalLayout,
+                  })}
+                  style={{ minWidth: '100px' }}
+                >
+                  {label && renderLabel(label, uiProperties[key].tooltip)}
 
-        return value === constraint.const;
-      });
-
-      if (matches) {
-        requiredFields.push(...(condition.then?.required || []));
-
-        condition.then?.allOf?.forEach(nestedCondition => {
-          const nestedMatches = Object.entries(nestedCondition.if?.properties || {}).every(
-            ([key, constraint]) => {
-              const value = options?.[key]?.value !== undefined
-                ? options[key].value
-                : options?.[key];
-              return value === constraint.const;
-            }
+                  {(widget === 'password' || encrypted) && selectedDataSource?.id && (
+                    <div className="mx-1 col">
+                      <ButtonSolid
+                        className="datasource-edit-btn mb-2"
+                        type="a"
+                        variant="tertiary"
+                        target="_blank"
+                        rel="noreferrer"
+                        disabled={!canUpdateDataSource() && !canDeleteDataSource()}
+                        onClick={(event) => handleEncryptedFieldsToggle(event, propertyKey)}
+                      >
+                        {computedProps?.[propertyKey]?.['disabled'] ? 'Edit' : 'Cancel'}
+                      </ButtonSolid>
+                    </div>
+                  )}
+                  {(widget === 'password' || encrypted) && (
+                    <div className="col-auto mb-2">
+                      <small className="text-green">
+                        <img
+                          className="mx-2 encrypted-icon"
+                          src="assets/images/icons/padlock.svg"
+                          width="12"
+                          height="12"
+                        />
+                        Encrypted
+                      </small>
+                    </div>
+                  )}
+                </div>
+              )}
+              <div
+                className={cx(
+                  {
+                    'flex-grow-1': isHorizontalLayout && !isSpecificComponent,
+                    'w-100': isHorizontalLayout && widget !== 'codehinter',
+                  },
+                  'dynamic-form-element'
+                )}
+                style={{ width: '100%' }}
+              >
+                <Element
+                  {...getElementProps(uiProperties[key])}
+                  {...computedProps[propertyKey]}
+                  data-cy={`${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}-text-field`}
+                  //to be removed after whole ui is same
+                  isHorizontalLayout={isHorizontalLayout}
+                />
+              </div>
+            </div>
           );
-
-          if (nestedMatches) {
-            requiredFields.push(...(nestedCondition.then?.required || []));
-          }
-        });
-      }
-    });
-
-    return [...new Set(requiredFields)].filter(
-      field => !schema.properties[field]?.optional || 
-      (options[field]?.value && options[field].value !== schema.properties[field].default)
+        })}
+      </div>
     );
   };
 
-  const getVisibleFields = () => {
-    const fields = new Set(schema.required || []);
+  const FlipComponentDropdown = (uiProperties) => {
+    const flipComponentDropdowns = filter(uiProperties, ['widget', 'dropdown-component-flip']);
 
-    schema.allOf?.forEach(condition => {
-      const ifProps = condition.if?.properties || {};
-      const matches = Object.entries(ifProps).every(([key, constraint]) => {
-        const value = options?.[key]?.value !== undefined
-          ? options[key].value
-          : options?.[key];
-        return value === constraint.const;
-      });
-
-      if (matches) {
-        condition.then?.required?.forEach(field => fields.add(field));
-
-        condition.then?.allOf?.forEach(nestedCondition => {
-          const nestedIfProps = nestedCondition.if?.properties || {};
-          const nestedMatches = Object.entries(nestedIfProps).every(
-            ([key, constraint]) => {
-              const value = options?.[key]?.value !== undefined
-                ? options[key].value
-                : options?.[key];
-              return value === constraint.const;
-            }
-          );
-
-          if (nestedMatches) {
-            nestedCondition.then?.required?.forEach(field => fields.add(field));
-          }
-        });
-      }
-    });
-
-    return Array.from(fields);
-  };
-
-  const renderFields = () => {
-    const visibleFields = getVisibleFields();
-    const requiredFields = getRequiredFields();
-
-    return visibleFields.map(fieldName => {
-      const fieldSchema = schema.properties[fieldName];
-      if (!fieldSchema) return null;
-
-      const Element = getElement(fieldSchema);
-      const elementProps = getElementProps(fieldSchema, fieldName);
-      const isSpecificComponent = ['tooljetdb-operations'].includes(fieldSchema.ui_widget);
+    const dropdownComponents = flipComponentDropdowns.map((flipComponentDropdown) => {
+      const selector = options?.[flipComponentDropdown?.key]?.value || options?.[flipComponentDropdown?.key];
 
       return (
-        <div className={`${isHorizontalLayout ? '' : 'row'} my-2`}>
-          <div
-            key={fieldName}
-            className={(
-              {
-                'flex-grow-1': isHorizontalLayout && !isSpecificComponent,
-                'w-100': isHorizontalLayout && fieldSchema.ui_widget !== 'codehinter',
-              },
-              'dynamic-form-element'
-            )}
-            style={{ width: '100%' }}
-          >
-            {fieldSchema.ui_widget !== 'text-v3' && fieldSchema.ui_widget !== 'password-v3' && (
-              <label className="form-label">{fieldSchema.title}</label>
-            )}
-              <Element {...elementProps} isHorizontalLayout={isHorizontalLayout} />
+        <div key={flipComponentDropdown.key}>
+          <div className={isHorizontalLayout ? '' : 'row'}>
+            {flipComponentDropdown.commonFields && getLayout(flipComponentDropdown.commonFields)}
+
+            <div
+              className={cx('my-2', {
+                'col-md-12': !flipComponentDropdown.className && !isHorizontalLayout,
+                'd-flex': isHorizontalLayout,
+                'dynamic-form-row': isHorizontalLayout,
+                [flipComponentDropdown.className]: !!flipComponentDropdown.className,
+              })}
+            >
+              {(flipComponentDropdown.label || isHorizontalLayout) && (
+                <label
+                  className={cx('form-label')}
+                  data-cy={`${String(flipComponentDropdown.label)
+                    .toLocaleLowerCase()
+                    .replace(/\s+/g, '-')}-dropdown-label`}
+                >
+                  {flipComponentDropdown.label}
+                </label>
+              )}
+
+              <div data-cy={'query-select-dropdown'} className={cx({ 'flex-grow-1': isHorizontalLayout })}>
+                <Select {...getElementProps(flipComponentDropdown)} styles={{}} useCustomStyles={false} />
+              </div>
+              {flipComponentDropdown.helpText && (
+                <span className="flip-dropdown-help-text">{flipComponentDropdown.helpText}</span>
+              )}
+            </div>
           </div>
+
+          {getLayout(uiProperties[selector])}
         </div>
       );
     });
+
+    const normalComponents = Object.keys(uiProperties).map((key) => {
+      const component = uiProperties[key];
+
+      if (component.type && component.type !== 'dropdown-component-flip') {
+        return <div key={key}>{getLayout({ [key]: component })}</div>;
+      }
+      return null;
+    });
+
+    return (
+      <>
+        {normalComponents}
+        {dropdownComponents}
+      </>
+    );
   };
 
-  return (
-    <form className={cx('dynamic-form', { 'horizontal-layout': isHorizontalLayout })}>
-      {renderFields()}
-    </form>
-  );
+  const isFlipComponentDropdown = (uiProperties) => {
+    const checkFlipComponents = filter(uiProperties, ['widget', 'dropdown-component-flip']);
+    if (checkFlipComponents.length > 0) {
+      return FlipComponentDropdown(uiProperties);
+    } else {
+      return null;
+    }
+  };
+
+  const flipComponentDropdown = isFlipComponentDropdown(uiProperties);
+  if (flipComponentDropdown) return flipComponentDropdown;
+  return getLayout(uiProperties);
 };
 
 export default DynamicFormV2;

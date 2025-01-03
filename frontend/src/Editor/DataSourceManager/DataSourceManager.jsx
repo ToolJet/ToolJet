@@ -13,7 +13,6 @@ import {
   SourceComponent,
   SourceComponents,
   CloudStorageSources,
-  FetchManifest,
 } from './SourceComponents';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import config from 'config';
@@ -222,84 +221,6 @@ class DataSourceManagerComponent extends React.Component {
   createDataSource = () => {
     const { appId, options, selectedDataSource, selectedDataSourcePluginId, dataSourceMeta, dataSourceSchema } =
       this.state;
-
-    const manifestFile = FetchManifest(selectedDataSource.kind);
-    const formValues = Object.keys(options).reduce((acc, key) => {
-      acc[key] = options[key].value;
-      return acc;
-    }, {});
-
-    const getRequiredFields = () => {
-      const requiredFields = [...(manifestFile.required || [])];
-  
-      manifestFile.allOf?.forEach(condition => {
-        const ifProps = condition.if?.properties || {};
-        const matches = Object.entries(ifProps).every(([key, constraint]) => {
-          const value = options?.[key]?.value !== undefined
-            ? options[key].value
-            : options?.[key] !== undefined
-              ? options[key]
-              : manifestFile.properties[key]?.default;
-  
-          return value === constraint.const;
-        });
-  
-        if (matches) {
-          requiredFields.push(...(condition.then?.required || []));
-  
-          condition.then?.allOf?.forEach(nestedCondition => {
-            const nestedMatches = Object.entries(nestedCondition.if?.properties || {}).every(
-              ([key, constraint]) => {
-                const value = options?.[key]?.value !== undefined
-                  ? options[key].value
-                  : options?.[key];
-                return value === constraint.const;
-              }
-            );
-  
-            if (nestedMatches) {
-              requiredFields.push(...(nestedCondition.then?.required || []));
-            }
-          });
-        }
-      });
-  
-      return [...new Set(requiredFields)].filter(
-        field => !manifestFile.properties[field]?.optional || 
-        (options[field]?.value && options[field].value !== manifestFile.properties[field].default)
-      );
-    };
-  
-    const requiredFields = getRequiredFields();
-  
-    const validationSchema = {
-      type: 'object',
-      properties: manifestFile.properties,
-      required: [...new Set(requiredFields)],
-      additionalProperties: true,
-    };
-  
-    const validateOptions = this.state.ajv.compile(validationSchema);
-    const isValid = validateOptions(formValues);
-  
-    if (!isValid) {
-      const errorMessages = validateOptions.errors.map((error) => {
-        if (error.instancePath) {
-          const instancePath = error.instancePath.replace(/^\//, '');
-          return `${instancePath}: ${error.message}`;
-        }
-        return error.message;
-      });
-      this.setState({ validationError: errorMessages });
-      toast.error(
-        this.props.t(
-          'editor.queryManager.dataSourceManager.toast.error.validationFailed',
-          'Validation failed. Please check your inputs.'
-        ),
-        { position: 'top-center' }
-      );
-      return;
-    }
 
     const OAuthDs = ['slack', 'zendesk', 'googlesheets', 'salesforce'];
     const name = selectedDataSource.name;

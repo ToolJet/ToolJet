@@ -6,12 +6,12 @@ import { toast } from 'react-hot-toast';
 import InputComponent from '@/components/ui/Input/Index';
 
 const InputV3 = ({ helpText, validate, ...props }) => {
-  const { workspaceVariables, workspaceConstants, value, ui_widget, disabled, encrypted } = props;
+  const { workspaceVariables, workspaceConstants, value, widget, disabled, encrypted } = props;
   const [isFocused, setIsFocused] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
 
   const handleCopyToClipboard = async () => {
-    if (ui_widget === 'copyToClipboard') {
+    if (widget === 'copyToClipboard') {
       try {
         await navigator.clipboard.writeText(value);
         toast.success('Copied to clipboard');
@@ -29,36 +29,36 @@ const InputV3 = ({ helpText, validate, ...props }) => {
     <div className="tj-app-input">
       <div
         className={cx('', {
-          'tj-app-input-wrapper': ui_widget === 'password' || ui_widget === 'copyToClipboard' || encrypted,
+          'tj-app-input-wrapper': widget === 'password' || widget === 'copyToClipboard' || encrypted,
         })}
         style={{ alignItems: 'flex-start' }}
       >
-        {ui_widget === 'text-v3' && (
+        {widget === 'text-v3' && (
           <InputComponent
             {...props}
             value={value}
             styles="tw-bg-transparent"
-            label={props.ui_label}
+            label={props.label}
             placeholder={props.placeholder}
             required={props.isRequired}
             validation={(e) => validate(e)}
           />
         )}
-        {(ui_widget === 'password-v3' || encrypted) && (
+        {(widget === 'password-v3' || encrypted) && (
           <div style={{ flex: '1' }}>
             <InputComponent
               {...props}
               type="password"
               value={value}
               styles="tw-bg-transparent"
-              label={props.ui_label}
+              label={props.label}
               placeholder={props.placeholder}
               required={props.isRequired}
               validation={(e) => validate(e)}
             />
           </div>
         )}
-        {ui_widget === 'copyToClipboard' &&
+        {widget === 'copyToClipboard' &&
           value &&
           (!isCopied ? (
             <div style={{ cursor: 'pointer' }} onClick={handleCopyToClipboard}>
