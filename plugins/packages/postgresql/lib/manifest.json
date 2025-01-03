@@ -42,8 +42,7 @@
     "password": {
       "type": "string",
       "title": "Password",
-      "description": "Enter password",
-      "default": ""
+      "description": "Enter password"
     },
     "connection_options": {
       "type": "string",
@@ -110,7 +109,6 @@
           "port",
           "username",
           "password",
-          "connection_options",
           "ssl_certificate"
         ],
         "allOf": [
@@ -231,7 +229,8 @@
             "key": "password",
             "label": "Password",
             "description": "Enter password",
-            "widget": "password-v3"
+            "widget": "password-v3",
+            "required": true
           },
           "connection_options": {
             "$ref": "#/properties/connection_options",
