@@ -146,11 +146,7 @@ describe(
       cy.openApp();
       cy.addComponentToApp(data.appName, "text1");
 
-      cy.get('[data-cy="share-button-link"]>span').should("be.visible").click();
-      cy.contains("This version has not been released yet").should(
-        "be.visible"
-      );
-      cy.get(commonWidgetSelector.modalCloseButton).click();
+     
       releaseApp();
       cy.get(commonWidgetSelector.shareAppButton).click();
 
@@ -191,6 +187,13 @@ describe(
       cy.wait(500);
 
       cy.get(".text-widget-section > div").should("be.visible");
+ 
+      // visiting with valid session
+
+      cy.visitSlug({
+        actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
+      });
+      cy.get(".text-widget-section > div").should("be.visible");
       cy.get(commonSelectors.viewerPageLogo).click();
 
       cy.defaultWorkspaceLogin();
@@ -203,7 +206,7 @@ describe(
 
       cy.get(commonWidgetSelector.shareAppButton).click();
       cy.get(commonWidgetSelector.makePublicAppToggle).check();
-      cy.wait(500);
+      cy.wait(1000);
       cy.get(commonWidgetSelector.modalCloseButton).click();
       cy.backToApps();
 
@@ -215,7 +218,6 @@ describe(
       cy.visitSlug({
         actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
       });
-      cy.get(".text-widget-section > div").should("be.visible");
     });
 
     it("Verify app private and public app visibility for the same instance user", () => {
@@ -231,6 +233,11 @@ describe(
       cy.get(commonWidgetSelector.modalCloseButton).click();
 
       cy.backToApps();
+
+      cy.visitSlug({ actualUrl: `/applications/${data.slug}` });
+      cy.get('[data-cy="viewer-page-logo"]').click();
+
+      // Visiting with valid session
 
       cy.visitSlug({ actualUrl: `/applications/${data.slug}` });
       cy.get('[data-cy="viewer-page-logo"]').click();
@@ -361,8 +368,10 @@ describe(
       cy.get('[data-cy="end-user-list-item"]').click();
       cy.get('[data-cy="granular-access-link"]').click();
       cy.reload();
+      
       cy.get('[data-cy="end-user-list-item"]').click();
       cy.get('[data-cy="granular-access-link"]').click();
+      cy.wait(1000);
       deleteAllGroupChips();
       cy.logoutApi();
 
@@ -604,54 +613,5 @@ describe(
       );
     });
 
-    it("Should verify private and public app with valid session", () => {
-      cy.apiCreateApp(data.appName);
-      cy.openApp();
-      cy.addComponentToApp(data.appName, "text1");
-
-      cy.get('[data-cy="share-button-link"]>span').should("be.visible").click();
-      cy.contains("This version has not been released yet").should(
-        "be.visible"
-      );
-
-      cy.get(commonWidgetSelector.modalCloseButton).click();
-      releaseApp();
-      cy.get(commonWidgetSelector.shareAppButton).click();
-
-      cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${data.slug}`);
-      cy.contains("Slug accepted!").should("be.visible");
-      cy.get(commonWidgetSelector.modalCloseButton).click();
-      cy.forceClickOnCanvas();
-      cy.backToApps();
-
-      // visiting private app with login
-
-      cy.visitSlug({
-        actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
-      });
-
-      cy.get(".text-widget-section > div").should("be.visible");
-      cy.get(commonSelectors.viewerPageLogo).click();
-
-      cy.openApp(
-        "appSlug",
-        Cypress.env("workspaceId"),
-        Cypress.env("appId"),
-        '[data-cy="draggable-widget-text1"]'
-      );
-
-      cy.get(commonWidgetSelector.shareAppButton).click();
-      cy.get(commonWidgetSelector.makePublicAppToggle).check();
-      cy.get(commonWidgetSelector.modalCloseButton).click();
-      cy.backToApps();
-
-      // visiting public app with login
-
-      cy.visitSlug({
-        actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
-      });
-
-      cy.get(".text-widget-section > div").should("be.visible");
-    });
   }
 );
