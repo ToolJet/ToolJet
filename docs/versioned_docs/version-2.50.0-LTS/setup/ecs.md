@@ -77,7 +77,7 @@ Follow the steps below to deploy ToolJet on a ECS cluster.
         - **PG_USER**
         - **PG_PASS**
         - **SECRET_KEY_BASE** 
-        - **LOCKBOX_KEY**
+        - **LOCKBOX_MASTER_KEY**
         </ul>
         <br/>
         Read **[environment variables reference](/docs/setup/env-vars)**
@@ -90,7 +90,7 @@ Follow the steps below to deploy ToolJet on a ECS cluster.
         REDIS_USER=default
         REDIS_PASSWORD=
         ```
-    5. Make sure `Use log collection checked` and `Docker configuration` with the command `npm run start:dev`
+    5. Make sure `Use log collection checked` and `Docker configuration` with the command `npm run start:prod`
         <img className="screenshot-full" src="/img/setup/ecs/ecs-8.png" alt="ECS Setup" />
 
 4. Create a service to run your task definition within your cluster.

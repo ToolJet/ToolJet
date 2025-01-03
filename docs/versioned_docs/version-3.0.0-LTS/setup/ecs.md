@@ -137,6 +137,10 @@ Follow the steps below to deploy PostgREST on a ECS cluster.
   </div>
   
   Add the container details and image tag as shown below:
+  
+  For the Postgrest container image use `postgrest/postgrest:v12.2.0`.
+
+  **Note:** v12.2.0 is recommended for Postgrest.
 
   <div style={{textAlign: 'center'}}>
 
