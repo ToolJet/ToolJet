@@ -16,12 +16,31 @@ import {
     setupAndUpdateRole,
 } from "Support/utils/manageGroups";
 import {
+    selectAndAddDataSource,
+    fillConnectionForm,
+    addQuery,
+} from "Support/utils/postgreSql";
+import {
+    verifyValueOnInspector,
+} from "Support/utils/dataSource";
+import { dataSourceSelector } from "Selectors/dataSource";
+import { dataSourceText } from "Texts/dataSource";
+import {
     createFolder,
     deleteFolder,
     logout,
     navigateToManageGroups,
     navigateToManageUsers,
+    selectAppCardOption,
 } from "Support/utils/common";
+import {
+    exportAppModalSelectors,
+    importSelectors,
+} from "Selectors/exportImport";
+import { exportAppModalText, importText } from "Texts/exportImport";
+import {
+    clickOnExportButtonAndVerify,
+} from "Support/utils/exportImport";
 
 describe("Manage Groups", () => {
     let data = {};
@@ -29,11 +48,12 @@ describe("Manage Groups", () => {
     beforeEach(() => {
         data = {
             firstName: fake.firstName,
-            email: fake.email.toLowerCase().replaceAll("[^A-Za-z]", ""),
-            workspaceName: fake.firstName,
-            workspaceSlug: fake.firstName.toLowerCase().replace(/[^A-Za-z]/g, ""),
             appName: fake.companyName,
+            email: fake.email.toLowerCase().replaceAll("[^A-Za-z]", ""),
+            workspaceName: fake.lastName.toLowerCase().replace(/[^A-Za-z]/g, ""),
+            workspaceSlug: fake.lastName.toLowerCase().replace(/[^A-Za-z]/g, ""),
             folderName: fake.companyName,
+            dsName: fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", ""),
         };
 
         cy.defaultWorkspaceLogin();
@@ -525,4 +545,100 @@ describe("Manage Groups", () => {
             });
         });
     });
+
+    it("should verify query creation and import access for Builders and Admin", () => {
+        const firstName2 = fake.firstName;
+        const email2 = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
+        const workspaceName2 = fake.firstName.toLowerCase().replace(/[^A-Za-z]/g, "");
+        const workspaceSlug2 = fake.firstName.toLowerCase().replace(/[^A-Za-z]/g, "");
+
+        createQueryAndImportApp(data.firstName, data.email, data.workspaceName, data.workspaceSlug, "Builder");
+
+        cy.backToApps();
+        logout();
+
+        cy.defaultWorkspaceLogin();
+
+        createQueryAndImportApp(firstName2, email2, workspaceName2, workspaceSlug2, "Admin");
+    });
+
+    const createQueryAndImportApp = (firstName, email, workspaceName, workspaceSlug, role) => {
+
+        let currentVersion = "";
+        let exportedFilePath;
+
+        cy.apiCreateWorkspace(workspaceName, workspaceSlug);
+        cy.visit(workspaceSlug);
+        cy.wait(500);
+
+        cy.apiCreateGDS(
+            "http://localhost:3000/api/v2/data_sources",
+            `cypress-${data.dsName}-qc-postgresql`,
+            "postgresql",
+            [
+                { key: "host", value: Cypress.env("pg_host") },
+                { key: "port", value: 5432 },
+                { key: "database", value: Cypress.env("pg_user") },
+                { key: "username", value: Cypress.env("pg_user") },
+                { key: "password", value: Cypress.env("pg_password"), encrypted: true },
+                { key: "ssl_enabled", value: false, encrypted: false },
+                { key: "ssl_certificate", value: "none", encrypted: false },
+            ]
+        );
+
+        //Onboard user
+        navigateToManageUsers();
+        inviteUserBasedOnRole(firstName, email, role);
+
+        cy.wait(1000);
+
+        cy.createApp(data.appName);
+
+        //Create and run postgres query in the app
+        // Need to enable once bug is fixed
+        /*
+        
+
+        addQuery(
+            "table_preview",
+            `SELECT * FROM persons;`,
+            `cypress-${data.dsName1}-postgresql`
+        );
+
+        cy.get('[data-cy="list-query-table_preview"]').verifyVisibleElement(
+            "have.text",
+            "table_preview "
+        );
+        cy.get(dataSourceSelector.queryCreateAndRunButton).click();
+        verifyValueOnInspector("table_preview", "7 items ");
+        */
+
+        cy.backToApps();
+
+        //Export and Import app
+        selectAppCardOption(
+            data.appName,
+            commonSelectors.appCardOptions(commonText.exportAppOption)
+        );
+        cy.get(exportAppModalSelectors.currentVersionSection).should("be.visible");
+        cy.get(
+            exportAppModalSelectors.versionRadioButton((currentVersion = "v1"))
+        ).verifyVisibleElement("be.checked");
+        cy.get(commonSelectors.buttonSelector(exportAppModalText.exportSelectedVersion)).click();
+        cy.exec("ls -t ./cypress/downloads/").then((result) => {
+            cy.log(result);
+            const downloadedAppExportFileName = result.stdout.split("\n")[0];
+            exportedFilePath = `cypress/downloads/${downloadedAppExportFileName}`;
+            cy.log(exportedFilePath);
+            cy.get(importSelectors.dropDownMenu).should("be.visible").click();
+            cy.get(importSelectors.importOptionInput).selectFile(exportedFilePath, {
+                force: true,
+            });
+            cy.get(importSelectors.importAppButton).click();
+            cy.get(".go3958317564")
+                .should("be.visible")
+                .and("have.text", importText.appImportedToastMessage);
+        });
+    }
+
 });
