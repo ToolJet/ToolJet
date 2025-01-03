@@ -146,19 +146,5 @@ describe("Redirection error pages", () => {
             "have.text",
             "Back to home page"
         );
-<<<<<<< HEAD
-        cy.url().should(
-            "eq",
-<<<<<<< HEAD
-            `${Cypress.config('baseUrl')}/error/url-unavailable?appSlug=${data.slug}`
-=======
-            `http://localhost:8082/error/restricted`
->>>>>>> main
-        );
-=======
-        cy.url().should('contain', '/error/')
->>>>>>> main
-        cy.get(commonSelectors.backToHomeButton).click();
-        cy.get(commonSelectors.pageSectionHeader).should("be.visible");
     });
 });

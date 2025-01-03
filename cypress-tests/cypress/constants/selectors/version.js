@@ -5,5 +5,6 @@ export const editVersionSelectors = {
 };
 export const confirmVersionModalSelectors = {
   modalMessage: '[data-cy="modal-message"]',
+  modal: '[data-cy="confirm-dialogue-box-text"]',
   yesButton: '[data-cy="yes-button"]',
 };

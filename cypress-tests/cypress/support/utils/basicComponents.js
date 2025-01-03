@@ -21,7 +21,7 @@ export const deleteComponentAndVerify = (widgetName) => {
   cy.get(commonWidgetSelector.draggableWidget(widgetName))
     .realHover()
     .then(() => {
-      cy.get(`[data-cy="${widgetName}-delete-button"]`)
+      cy.get(`[data-cy="${widgetName}1-delete-button"]`)
         .realHover({ position: "topRight" })
         .last()
         .realClick();
@@ -30,7 +30,7 @@ export const deleteComponentAndVerify = (widgetName) => {
     `[class=go3958317564]`,
     "Component deleted! (ctrl + Z to undo)"
   );
-  cy.notVisible(commonWidgetSelector.draggableWidget(widgetName));
+   cy.notVisible(commonWidgetSelector.draggableWidget(widgetName));
 };
 
 export const verifyComponentWithOutLabel = (
