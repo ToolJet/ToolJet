@@ -19,7 +19,11 @@ Role Required: **Workspace Admin** <br/>
 
 Workspace admin can enable self sign-up at workspace level and whenever a user joins a workspace using the self sign-up the end user role will be assigned to the user.
 
+## Enable Self Sign-Up on ToolJet Cloud
+
 Role Required: **Workspace Admin** <br/>
+
+Workspace admin can enable self sign-up 
 Follow these steps to enable self sign-up:
 1. Go to **Workspace settings > Workspace login**
 2. Enter allowed domains that can access the workspace, you can enter multiple domain names separated by comma.

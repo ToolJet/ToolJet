@@ -416,7 +416,34 @@ const sidebars = {
             'user-management/onboard-users/archive-user',
             'user-management/onboard-users/self-signup-user'
           ]
-        }
+        },
+        {
+          'type': 'category',
+          'label': 'Authentication',
+          'items': [
+            'user-management/authentication/workspace-login',
+            'user-management/authentication/password-login',
+            'user-management/authentication/automatic-sso',
+            'user-management/authentication/direct-app-access',
+          ]
+        },
+        {
+          'type': 'category',
+          'label': 'Role Based Access Control',
+          'items': [
+            'user-management/role-based-access/super-admins',
+            'user-management/role-based-access/user-roles',
+            {
+              'type': 'category',
+              'label': 'User Groups',
+              'items': [
+                'user-management/role-based-access/user-groups/default-groups',
+                'user-management/role-based-access/user-groups/custom-groups'
+              ]
+            },
+            'user-management/role-based-access/granular-access-control'
+          ]
+        },
       ]
     },
     {
