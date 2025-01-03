@@ -27,13 +27,24 @@ export default class DataSourceSchemaManager {
     return { valid: true, errors: [] };
   }
 
-  validateDataForProperty(property, value) {
-    const { errors } = this.validateData({ [property]: { value } });
-    const errorsMessages = errors
-      .filter((error) => error.instancePath === `/${property}`)
-      .map((error) => error.message)
-      .join(', ');
+  validateDataForProperty(property, fieldValue) {
 
+    const { errors } = this.validateData({ [property]: { value: fieldValue} });
+    console.log('error: ', errors);
+    
+    const propertyErrors = errors?.filter(error => 
+      // Check for required field errors
+      (error.keyword === 'required' && error.params.missingProperty === property) ||
+      // Check for datatype errors
+      (error.keyword === 'type' && error.dataPath === `.${property}`) ||
+      // Check for other validation errors on this property
+      error.instancePath === `/${property}`
+    );
+  
+    const errorsMessages = propertyErrors
+      ?.map(error => error.message)
+      ?.join(', ');
+  
     return { valid: errorsMessages.length === 0, errors: errorsMessages };
   }
 
@@ -97,7 +108,10 @@ export default class DataSourceSchemaManager {
 
   _convertDataSourceOptionsToData(options) {
     return Object.entries(options).reduce((result, [key, { value }]) => {
-      result[key] = value;
+      // Skip empty string values
+      if (value !== '' && value !== null && value !== undefined) {
+        result[key] = value;
+      }
       return result;
     }, {});
   }
