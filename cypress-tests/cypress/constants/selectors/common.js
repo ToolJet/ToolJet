@@ -363,7 +363,7 @@ export const commonWidgetSelector = {
   inspectorNodeComponents: "[data-cy='inspector-node-components']> .node-key",
   nodeComponentValue: "[data-cy='inspector-node-value']> .mx-2",
   nodeComponentValues: "[data-cy='inspector-node-values']> .node-key",
-
+  slugAccept: '[data-cy="app-slug-accepted-label"]',
   widgetDocumentationLink: "[data-cy='widget-documentation-link']",
 
   boxShadowDefaultParam: ["x", "y", "blur", "spread"],

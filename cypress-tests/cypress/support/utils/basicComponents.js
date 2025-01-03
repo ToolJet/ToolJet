@@ -26,11 +26,11 @@ export const deleteComponentAndVerify = (widgetName) => {
         .last()
         .realClick();
     });
-  // cy.verifyToastMessage(
-  //   `[class=go3958317564]`,
-  //   "Component deleted! (ctrl + Z to undo)"
-  // );
-  //  cy.notVisible(commonWidgetSelector.draggableWidget(widgetName));
+  cy.verifyToastMessage(
+    `[class=go3958317564]`,
+    "Component deleted! (ctrl + Z to undo)"
+  );
+   cy.notVisible(commonWidgetSelector.draggableWidget(widgetName));
 };
 
 export const verifyComponentWithOutLabel = (
