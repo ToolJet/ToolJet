@@ -34,7 +34,7 @@ function ControlledTabs({
           </ListGroup>
           {key === 'body' && (
             <div className="text-nowrap d-flex align-items-center">
-              Raw JSON&nbsp;&nbsp;
+              Raw &nbsp;&nbsp;
               <CustomToggleSwitch
                 toggleSwitchFunction={setBodyToggle}
                 action="bodyToggle"
