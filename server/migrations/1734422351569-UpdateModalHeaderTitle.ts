@@ -6,7 +6,7 @@ import { LayoutDimensionUnits } from 'src/helpers/components.helper';
 import { processDataInBatches } from 'src/helpers/utils.helper';
 import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
 
-export class UpdateModalHeaderTitle91734422351569 implements MigrationInterface {
+export class UpdateModalHeaderTitle1734422351569 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const componentTypes = ['Modal'];
     const batchSize = 100;
@@ -41,7 +41,7 @@ export class UpdateModalHeaderTitle91734422351569 implements MigrationInterface 
 
       // Update hideTitleBar property if it exists
       if (properties.hideTitleBar) {
-        properties.hideHeader = properties.hideTitleBar;
+        properties.showHeader = { value: '{{false}}' };
 
         delete properties.hideTitleBar;
       }
@@ -56,7 +56,7 @@ export class UpdateModalHeaderTitle91734422351569 implements MigrationInterface 
 
         if (properties.titleAlignment) delete properties.titleAlignment;
         delete properties.title;
-        properties.hideFooter = { value: '{{true}}' };
+        properties.showFooter = { value: '{{false}}' };
         // Add the new title component to the layout
         const newLayout = this.createTitleComponentLayout(newTitleComponent);
         await entityManager.save(Layout, newLayout);
@@ -82,8 +82,7 @@ export class UpdateModalHeaderTitle91734422351569 implements MigrationInterface 
     };
 
     transformedComponent.styles = {
-      textSize: { value: '{{16}}' },
-      fontWeight: { value: 'bold' },
+      textSize: { value: '{{20}}' },
       textAlign: { value: alignment },
     };
 
@@ -95,8 +94,8 @@ export class UpdateModalHeaderTitle91734422351569 implements MigrationInterface 
     const layout = new Layout();
     layout.type = 'desktop';
     layout.top = 0;
-    layout.left = 0;
-    layout.width = 40;
+    layout.left = 1;
+    layout.width = 39;
     layout.height = 80; // Default height for the title text
     layout.component = component;
     layout.dimensionUnit = LayoutDimensionUnits.COUNT;

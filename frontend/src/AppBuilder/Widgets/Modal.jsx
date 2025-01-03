@@ -10,12 +10,25 @@ var tinycolor = require('tinycolor2');
 // STYLE CONSTANTS
 // 1. Modal header
 const MODAL_HEADER = {
-  HEIGHT: '80px',
+  HEIGHT: 80,
+  HEIGHT_PX: `80px`,
   CANVAS_HEIGHT: 10,
 };
 const MODAL_FOOTER = {
-  HEIGHT: '80px',
+  HEIGHT: 80,
+  HEIGHT_PX: `80px`,
   CANVAS_HEIGHT: 10,
+};
+
+const getModalBodyHeight = (height, showHeader, showFooter) => {
+  let modalHeight = height.includes('px') ? parseInt(height, 10) : height;
+  if (showHeader) {
+    modalHeight = modalHeight - MODAL_HEADER.HEIGHT;
+  }
+  if (showFooter) {
+    modalHeight = modalHeight - MODAL_FOOTER.HEIGHT;
+  }
+  return `${Math.max(modalHeight, 40)}px`;
 };
 
 export const Modal = function Modal({
@@ -39,9 +52,10 @@ export const Modal = function Modal({
     useDefaultButton,
     triggerButtonLabel,
     modalHeight,
-    hideHeader,
-    hideFooter,
+    showHeader,
+    showFooter,
   } = properties;
+
   const {
     headerBackgroundColor,
     footerBackgroundColor,
@@ -59,6 +73,7 @@ export const Modal = function Modal({
   const [modalWidth, setModalWidth] = useState();
   const mode = useStore((state) => state.currentMode, shallow);
   const isFullScreen = properties.size === 'fullscreen';
+  const computedHeight = getModalBodyHeight(modalHeight, showHeader, showFooter);
 
   /**** Start - Logic to reset the zIndex of modal control box ****/
   useEffect(() => {
@@ -115,7 +130,7 @@ export const Modal = function Modal({
 
       modalContainer.style.height = `${canvasElement.offsetHeight}px`;
       modalContainer.style.top = `${currentScroll}px`;
-      modalCanvasEl.style.height = isFullScreen ? '100%' : modalHeight;
+      modalCanvasEl.style.height = isFullScreen ? '100%' : computedHeight;
       fireEvent('onOpen');
     }
   };
@@ -189,7 +204,7 @@ export const Modal = function Modal({
 
   const customStyles = {
     modalBody: {
-      height: backwardCompatibilityCheck ? modalHeight : height,
+      height: backwardCompatibilityCheck ? computedHeight : height,
       backgroundColor:
         ['#fff', '#ffffffff'].includes(bodyBackgroundColor) && darkMode ? '#1F2837' : bodyBackgroundColor,
       overflowX: 'hidden',
@@ -198,13 +213,13 @@ export const Modal = function Modal({
     modalHeader: {
       backgroundColor:
         ['#fff', '#ffffffff'].includes(headerBackgroundColor) && darkMode ? '#1F2837' : headerBackgroundColor,
-      height: MODAL_HEADER.HEIGHT,
+      height: MODAL_HEADER.HEIGHT_PX,
       padding: 0,
     },
     modalFooter: {
       backgroundColor:
         ['#000', '#000000', '#000000ff'].includes(footerBackgroundColor) && darkMode ? '#fff' : footerBackgroundColor,
-      height: MODAL_FOOTER.HEIGHT,
+      height: MODAL_FOOTER.HEIGHT_PX,
       padding: 0,
       borderTop: `1px solid var(--border-weak)`,
     },
@@ -224,7 +239,7 @@ export const Modal = function Modal({
         const modalRef = parentRef?.current?.parentElement?.parentElement?.parentElement;
 
         if (modalRef && modalRef === event.target) {
-          onHideSideEffects();
+          onHideModal();
         }
       };
 
@@ -297,16 +312,16 @@ export const Modal = function Modal({
           fullscreen: isFullScreen,
           darkMode,
           width: modalWidth,
-          hideHeader,
-          hideFooter,
+          showHeader,
+          showFooter,
         }}
       >
         {!loadingState ? (
           <>
             <SubContainer
               id={`${id}`}
-              canvasHeight={modalHeight}
-              styles={{ backgroundColor: customStyles.modalBody.backgroundColor, height: modalHeight }}
+              canvasHeight={computedHeight}
+              styles={{ backgroundColor: customStyles.modalBody.backgroundColor, height: computedHeight }}
               canvasWidth={modalWidth}
               darkMode={darkMode}
             />
@@ -372,8 +387,8 @@ const Component = ({ children, ...restProps }) => {
     fullscreen,
     darkMode,
     width,
-    hideHeader,
-    hideFooter,
+    showHeader,
+    showFooter,
   } = restProps['modalProps'];
 
   const setSelectedComponentAsModal = useStore((state) => state.setSelectedComponentAsModal, shallow);
@@ -393,14 +408,14 @@ const Component = ({ children, ...restProps }) => {
       {showConfigHandler && (
         <ConfigHandle
           id={id}
-          customClassName={hideHeader ? 'modalWidget-config-handle' : ''}
+          customClassName={showHeader ? '' : 'modalWidget-config-handle'}
           showHandle={showConfigHandler}
           setSelectedComponentAsModal={setSelectedComponentAsModal}
           componentType="Modal"
           isModalOpen={true}
         />
       )}
-      {!hideHeader && (
+      {showHeader && (
         <ModalHeader
           id={id}
           customStyles={customStyles}
@@ -412,7 +427,7 @@ const Component = ({ children, ...restProps }) => {
       <BootstrapModal.Body style={{ ...customStyles.modalBody }} ref={parentRef} id={id} data-cy={`modal-body`}>
         {children}
       </BootstrapModal.Body>
-      {!hideFooter && <ModalFooter id={id} darkMode={darkMode} customStyles={customStyles} width={width} />}
+      {showFooter && <ModalFooter id={id} darkMode={darkMode} customStyles={customStyles} width={width} />}
     </BootstrapModal>
   );
 };

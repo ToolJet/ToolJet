@@ -41,8 +41,8 @@ export const modalConfig = {
       },
     },
     // Data Accordion
-    hideHeader: { type: 'toggle', displayName: 'Header', accordian: 'Data' },
-    hideFooter: { type: 'toggle', displayName: 'Footer', accordian: 'Data' },
+    showHeader: { type: 'toggle', displayName: 'Header', accordian: 'Data' },
+    showFooter: { type: 'toggle', displayName: 'Footer', accordian: 'Data' },
     size: {
       type: 'select',
       displayName: 'Width',
@@ -209,8 +209,8 @@ export const modalConfig = {
       useDefaultButton: { value: `{{true}}` },
       triggerButtonLabel: { value: `Launch Modal` },
       size: { value: 'lg' },
-      hideHeader: { value: '{{false}}' },
-      hideFooter: { value: '{{false}}' },
+      showHeader: { value: '{{true}}' },
+      showFooter: { value: '{{true}}' },
       hideCloseButton: { value: '{{false}}' },
       hideOnEsc: { value: '{{true}}' },
       closeOnClickingOutside: { value: '{{false}}' },
