@@ -134,7 +134,6 @@ Cypress.Commands.add(
     });
     cy.visit(`/${workspaceId}/apps/${appId}/${slug}`);
 
-    cy.wait(2000);
     cy.wait('@getAppData').then((interception) => {
       // Assuming the response body is a JSON object
       const responseData = interception.response.body;
