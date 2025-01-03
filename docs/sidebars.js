@@ -90,7 +90,7 @@ const sidebars = {
             'app-builder/walkthrough/variables',
             'app-builder/importing-exporting-applications',
           ],
-        },   
+        },
         {
           'type': 'category',
           'label': 'References',
@@ -176,7 +176,7 @@ const sidebars = {
                         {
                           'type': 'category',
                           'label': 'Serverside Operations',
-                          'items' : [
+                          'items': [
                             'widgets/table/serverside-operations/overview',
                             'widgets/table/serverside-operations/search',
                             'widgets/table/serverside-operations/sort',
@@ -370,85 +370,81 @@ const sidebars = {
     },
     {
       'type': 'category',
-      'label': 'Org Management',
+      'label': 'Setup ToolJet',
       'items': [
-        'dashboard',
+        'tj-setup/overview',
+        'tj-setup/tj-deployment',
         {
-          "type": "category",
-          "label": "Workspaces",
-          "items": [
-            "org-management/workspaces/workspace_overview",
-            "org-management/workspaces/workspace-variables",
-            "org-management/workspaces/workspace-variables-migration",
-            "org-management/workspaces/workspace_constants"
+          'type': 'category',
+          'label': 'Licensing',
+          'items': [
+            'tj-setup/licensing/self-hosted',
+            'tj-setup/licensing/cloud'
+          ]
+        },
+        'tj-setup/instances',
+        'tj-setup/workspaces',
+        {
+          'type': 'category',
+          'label': 'Organization Branding',
+          'items': [
+            'tj-setup/org-branding/white-labeling',
+            'tj-setup/org-branding/custom-domain'
           ]
         },
         {
           'type': 'category',
-          'label': 'User Authentication',
+          'label': 'Setup SMTP Server',
           'items': [
-            'user-authentication/user-lifecycle',
-            'user-authentication/workspace-login',
-            {
-              'type': 'category',
-              'label': 'SSO',
-              'items': [
-                'user-authentication/sso/github',
-                'user-authentication/sso/google',
-                {
-                  'type': 'category',
-                  'label': 'OpenId Connect',
-                  'link': {
-                    'type': 'generated-index',
-                    'title': 'OpenId Connect',
-                    'description': ' ',
-                    'keywords': [
-                      'okta',
-                      'openid',
-                      'azureAD',
-                    ],
-                  },
-                  'collapsed': true,
-                  'items': [
-                    'user-authentication/sso/openid/setup',
-                    'user-authentication/sso/openid/azuread',
-                    'user-authentication/sso/openid/okta',
-                    'user-authentication/sso/openid/google-openid',
-                  ],
-                },
-                'user-authentication/sso/oidc',
-                'user-authentication/sso/ldap',
-                'user-authentication/sso/saml',
-                'user-authentication/sso/auto-sso-login',
-              ],
-            },
-          ],
-        },
-        'org-management/permissions',
-        'tutorial/manage-users-groups',
-        'tutorial/tooljet-api',
-        'Enterprise/audit_logs',
-        'Enterprise/white-label',
-        'Enterprise/superadmin',
-        {
-          "type": "category",
-          "label": "Licensing",
-          "items": [
-            "org-management/licensing/tooljet-cloud",
-            "org-management/licensing/self-hosted"
+            'tj-setup/smtp-setup/configuration',
+            'tj-setup/smtp-setup/email-providers'
           ]
-        },
-        "org-management/smtp-configuration"
-      ],
+        }
+      ]
     },
     {
       'type': 'category',
-      'label': 'Release Management',
+      'label': 'User Management and Access Control',
       'items': [
-        'gitsync',
-        'release-management/multi-environment',
-        'tutorial/versioning-and-release',
-      ],
+        'user-management/overview',
+        {
+          'type': 'category',
+          'label': 'Onboarding and Offboarding Users',
+          'items': [
+            'user-management/onboard-users/invite-user',
+            'user-management/onboard-users/bulk-invite-users',
+            'user-management/onboard-users/archive-user',
+            'user-management/onboard-users/self-signup-user'
+          ]
+        },
+        {
+          'type': 'category',
+          'label': 'Authentication',
+          'items': [
+            'user-management/authentication/workspace-login',
+            'user-management/authentication/password-login',
+            'user-management/authentication/automatic-sso',
+            'user-management/authentication/direct-app-access',
+          ]
+        },
+        {
+          'type': 'category',
+          'label': 'Role Based Access Control',
+          'items': [
+            'user-management/role-based-access/super-admins',
+            'user-management/role-based-access/user-roles',
+            {
+              'type': 'category',
+              'label': 'User Groups',
+              'items': [
+                'user-management/role-based-access/user-groups/default-groups',
+                'user-management/role-based-access/user-groups/custom-groups'
+              ]
+            },
+            'user-management/role-based-access/granular-access-control'
+          ]
+        },
+      ]
     },
     {
       'type': 'category',
