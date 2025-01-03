@@ -95,8 +95,10 @@ export const addQueryN = (queryName, query, dbName) => {
 
 export const addQuery = (queryName, query, dbName) => {
   cy.get('[data-cy="show-ds-popover-button"]').click();
-  cy.get(".css-1rrkggf-Input").type(`${dbName}`);
-  cy.intercept("POST", "/api/data_queries").as("createQuery");
+  cy.get(".css-4e90k9").type(`${dbName}`);
+  cy.intercept("POST", "/api/data_queries").as(
+    "createQuery"
+  );
   cy.contains(`[id*="react-select-"]`, dbName).click();
 
   cy.get('[data-cy="query-rename-input"]').clear().type(queryName);
@@ -111,7 +113,7 @@ export const addQuery = (queryName, query, dbName) => {
 
 export const addQueryAndOpenEditor = (queryName, query, dbName, appName) => {
   cy.get('[data-cy="show-ds-popover-button"]').click();
-  cy.get(".css-1rrkggf-Input").type(`${dbName}`);
+  cy.get(".css-4e90k9").type(`${dbName}`);
   cy.intercept("POST", "/api/data_queries").as("createQuery");
   cy.contains(`[id*="react-select-"]`, dbName).click();
 
@@ -127,6 +129,7 @@ export const addQueryAndOpenEditor = (queryName, query, dbName, appName) => {
 };
 
 export const verifyValueOnInspector = (queryName, value) => {
+  cy.get('[data-cy="left-sidebar-inspect-button"]').click();
   cy.get('[data-cy="inspector-node-queries"]')
     .parent()
     .within(() => {
