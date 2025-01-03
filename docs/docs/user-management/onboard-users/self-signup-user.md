@@ -3,10 +3,23 @@ id: self-signup-user
 title: Self Sign-Up User
 ---
 
+In ToolJet, the self sign-up feature lets admins enable direct user registration via a sign-up URL, eliminating the need for invitations. For Self-Hosted version the enable sign-up can be done at both instance level and workspace level. 
+
+## Enable Self Sign-Up on Self-Hosted ToolJet
+
+### Instance Level
+
+Role Required: **Super Admin** <br/>
+
+Super admin can enable self sign-up at instance level and whenever a user joins an instance using the self sign-up, a new personal workspace is created for that user and the workspace admin role will be assigned to the user.
+
+### Workspace Level
+
 Role Required: **Workspace Admin** <br/>
 
-In ToolJet the admins can enable self sign-up feature, where do don't need to invite the user and the users can sign-up using the sign-up URL.
+Workspace admin can enable self sign-up at workspace level and whenever a user joins a workspace using the self sign-up the end user role will be assigned to the user.
 
+Role Required: **Workspace Admin** <br/>
 Follow these steps to enable self sign-up:
 1. Go to **Workspace settings > Workspace login**
 2. Enter allowed domains that can access the workspace, you can enter multiple domain names separated by comma.
