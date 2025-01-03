@@ -685,7 +685,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             let left = e.lastEvent?.translate[0];
             let top = e.lastEvent?.translate[1];
             if (
-              ['Listview', 'Kanban', 'Container'].includes(
+              ['Listview', 'Kanban', 'Container', 'Modal'].includes(
                 boxList.find((box) => box.id === draggedOverElemId)?.component?.component
               )
             ) {
