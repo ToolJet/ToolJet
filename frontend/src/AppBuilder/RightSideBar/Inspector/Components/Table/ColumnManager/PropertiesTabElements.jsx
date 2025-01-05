@@ -52,6 +52,7 @@ export const PropertiesTabElements = ({
             { label: 'Boolean', value: 'boolean' },
             { label: 'Image', value: 'image' },
             { label: 'Link', value: 'link' },
+            { label: 'JSON', value: 'json' },
             // Following column types are deprecated
             { label: 'Default', value: 'default' },
             { label: 'Dropdown', value: 'dropdown' },
