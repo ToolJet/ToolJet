@@ -11,6 +11,7 @@ import Colorpicker from './colorpicker.jsx';
 import Container from './container.jsx';
 import Customcomponent from './customcomponent.jsx';
 import Datepicker from './datepicker.jsx';
+import DateTimePickerV2 from './datetimepickerV2.jsx';
 import Daterangepicker from './daterangepicker.jsx';
 import Divider from './divider.jsx';
 import DividerHorizondal from './dividerhorizontal.jsx';
@@ -60,6 +61,8 @@ import ToggleSwitchV2 from './toggleswitchV2.jsx';
 import Treeselect from './treeselect.jsx';
 import Upstatistics from './upstatistics.jsx';
 import Verticaldivider from './verticaldivider.jsx';
+import TimePicker from './timepicker.jsx';
+import DatepickerV2 from './datepickerv2.jsx';
 
 const WidgetIcon = (props) => {
   switch (props.name) {
@@ -87,8 +90,19 @@ const WidgetIcon = (props) => {
       return <Customcomponent {...props} />;
     case 'datetimepickerlegacy':
       return <Datepicker {...props} />;
-    case 'datetimepicker':
+    case 'datepicker':
       return <Datepicker {...props} />;
+    case 'datepickerv2':
+      return <DatepickerV2 {...props} />;
+    case 'timepicker':
+      return <TimePicker {...props} />;
+    case 'datetimepicker':
+      if (props?.version === 'v2') {
+        return <DateTimePickerV2 {...props} />;
+      }
+      return <Datepicker {...props} />;
+    case 'datetimepickerv2':
+      return <DateTimePickerV2 {...props} />;
     case 'daterangepicker':
       return <Daterangepicker {...props} />;
     case 'divider':

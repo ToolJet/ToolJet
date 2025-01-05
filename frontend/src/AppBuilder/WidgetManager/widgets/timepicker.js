@@ -1,11 +1,11 @@
-export const timePickerV2Config = {
+export const timePickerConfig = {
   name: 'TimePicker',
   displayName: 'Time Picker',
   description: 'Choose date and time',
-  component: 'TimePickerV2',
+  component: 'TimePicker',
   defaultSize: {
-    width: 6,
-    height: 43,
+    width: 10,
+    height: 40,
   },
   validation: {
     minTime: {
@@ -221,7 +221,7 @@ export const timePickerV2Config = {
     fieldBorderColor: {
       type: 'color',
       displayName: 'Border',
-      validation: { schema: { type: 'string' }, defaultValue: '#DFE3E6' },
+      validation: { schema: { type: 'string' }, defaultValue: '#CCD1D5' },
       accordian: 'field',
     },
     accentColor: {
@@ -255,7 +255,7 @@ export const timePickerV2Config = {
       showLabel: false,
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#FFFFFF',
+        defaultValue: '#6A727C',
       },
       accordian: 'field',
     },
@@ -274,7 +274,7 @@ export const timePickerV2Config = {
     fieldBorderRadius: {
       type: 'input',
       displayName: 'Border radius',
-      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: '14' },
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 6 },
       accordian: 'field',
     },
     boxShadow: {
@@ -335,16 +335,17 @@ export const timePickerV2Config = {
       labelWidth: { value: '20' },
       auto: { value: '{{true}}' },
       fieldBackgroundColor: { value: '#fff' },
-      fieldBorderColor: { value: '#DFE3E6' },
+      fieldBorderColor: { value: '#CCD1D5' },
       accentColor: { value: '#4368E3' },
       selectedTextColor: { value: '#1B1F24' },
       errTextColor: { value: '#E54D2E' },
       icon: { value: 'IconClock' },
       iconVisibility: { value: true },
       iconDirection: { value: 'left' },
-      fieldBorderRadius: { value: '{{4}}' },
+      fieldBorderRadius: { value: '{{6}}' },
       boxShadow: { value: '0px 0px 0px 0px #121212' },
       padding: { value: 'default' },
+      iconColor: { value: '#6A727C' },
     },
   },
 };

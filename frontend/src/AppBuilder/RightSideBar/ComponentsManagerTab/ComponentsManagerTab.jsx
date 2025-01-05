@@ -127,7 +127,7 @@ export const ComponentsManagerTab = ({ darkMode }) => {
         'RadioButtonV2',
         'DatetimePickerV2',
         'DatePickerV2',
-        'TimePickerV2',
+        'TimePicker',
         'DaterangePicker',
         'FilePicker',
         'StarRating',

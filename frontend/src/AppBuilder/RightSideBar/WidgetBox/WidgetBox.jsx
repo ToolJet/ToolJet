@@ -11,7 +11,7 @@ const NEW_WIDGETS = [
   'DatetimePickerV2',
   'DaterangePicker',
   'DatePickerV2',
-  'TimePickerV2',
+  'TimePicker',
 ];
 
 export const WidgetBox = ({ component, darkMode }) => {
@@ -36,7 +36,11 @@ export const WidgetBox = ({ component, darkMode }) => {
                 backgroundRepeat: 'no-repeat',
               }}
             >
-              <WidgetIcon name={component.name.toLowerCase()} fill={darkMode ? '#3A3F42' : '#D7DBDF'} />
+              <WidgetIcon
+                name={component.name.toLowerCase()}
+                version={component?.version}
+                fill={darkMode ? '#3A3F42' : '#D7DBDF'}
+              />
             </div>
           </center>
         </div>

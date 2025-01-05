@@ -1833,7 +1833,7 @@ export const createComponentsSlice = (set, get) => ({
         'DatetimePickerV2',
         'DaterangePicker',
         'DatePickerV2',
-        'TimePickerV2',
+        'TimePicker',
       ].includes(componentType)
     ) {
       return layoutData?.height;

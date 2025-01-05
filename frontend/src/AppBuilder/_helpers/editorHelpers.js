@@ -14,7 +14,7 @@ import { Checkbox } from '@/Editor/Components/Checkbox';
 import { Datepicker } from '@/Editor/Components/Datepicker';
 import { DatetimePickerV2 } from '@/AppBuilder/Widgets/Date/DatetimePickerV2';
 import { DatePickerV2 } from '@/AppBuilder/Widgets/Date/DatePickerV2';
-import { TimePickerV2 } from '@/AppBuilder/Widgets/Date/TimePickerV2';
+import { TimePicker } from '@/AppBuilder/Widgets/Date/TimePicker';
 import { DaterangePicker } from '@/AppBuilder/Widgets/Date/DaterangePicker';
 import { Multiselect } from '@/Editor/Components/Multiselect';
 import { MultiselectV2 } from '@/Editor/Components/MultiselectV2/MultiselectV2';
@@ -102,7 +102,7 @@ export const AllComponents = {
   DatetimePickerV2,
   DaterangePicker,
   DatePickerV2,
-  TimePickerV2,
+  TimePicker,
   Multiselect,
   MultiselectV2,
   Modal,

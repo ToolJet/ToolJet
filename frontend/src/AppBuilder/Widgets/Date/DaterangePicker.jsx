@@ -60,11 +60,11 @@ export const DaterangePicker = ({
     if (!isValidStartDate && !isValidEndDate) {
       return 'Select Date Range';
     } else if (isValidStartDate && !isValidEndDate) {
-      return `${moment(startDate).format(format)} - `;
+      return `${moment(startDate).format(format)} → `;
     } else if (!isValidStartDate && isValidEndDate) {
-      return ` - ${moment(endDate).format(format)}`;
+      return ` → ${moment(endDate).format(format)}`;
     }
-    return `${moment(startDate).format(format)} - ${moment(endDate).format(format)}`;
+    return `${moment(startDate).format(format)} → ${moment(endDate).format(format)}`;
   };
   const [displayRange, setDisplayRange] = useState(getDisplayRange(startDate, endDate));
 

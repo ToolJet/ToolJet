@@ -4,8 +4,8 @@ export const daterangepickerConfig = {
   description: 'Choose date ranges',
   component: 'DaterangePicker',
   defaultSize: {
-    width: 6,
-    height: 43,
+    width: 10,
+    height: 40,
   },
   validation: {
     minDate: {
@@ -255,7 +255,7 @@ export const daterangepickerConfig = {
     fieldBorderColor: {
       type: 'color',
       displayName: 'Border',
-      validation: { schema: { type: 'string' }, defaultValue: '#DFE3E6' },
+      validation: { schema: { type: 'string' }, defaultValue: '#CCD1D5' },
       accordian: 'field',
     },
     accentColor: {
@@ -289,7 +289,7 @@ export const daterangepickerConfig = {
       showLabel: false,
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#FFFFFF',
+        defaultValue: '#6A727C',
       },
       accordian: 'field',
     },
@@ -308,7 +308,7 @@ export const daterangepickerConfig = {
     borderRadius: {
       type: 'input',
       displayName: 'Border radius',
-      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: '14' },
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 6 },
       accordian: 'field',
     },
     boxShadow: {
@@ -368,16 +368,17 @@ export const daterangepickerConfig = {
       labelWidth: { value: '20' },
       auto: { value: '{{true}}' },
       fieldBackgroundColor: { value: '#fff' },
-      fieldBorderColor: { value: '#DFE3E6' },
+      fieldBorderColor: { value: '#CCD1D5' },
       accentColor: { value: '#4368E3' },
       selectedTextColor: { value: '#1B1F24' },
       errTextColor: { value: '#E54D2E' },
       icon: { value: 'IconCalendarMonth' },
       iconVisibility: { value: true },
       iconDirection: { value: 'left' },
-      borderRadius: { value: '{{4}}' },
+      borderRadius: { value: '{{6}}' },
       boxShadow: { value: '0px 0px 0px 0px #121212' },
       padding: { value: 'default' },
+      iconColor: { value: '#6A727C' },
     },
   },
 };

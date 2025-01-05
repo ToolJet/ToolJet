@@ -152,7 +152,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
       isOpen: true,
       children: (
         <>
-          {!['TimePickerV2'].includes(componentName) && (
+          {!['TimePicker'].includes(componentName) && (
             <div
               data-cy={`input-date-display-format`}
               className="field mb-2 w-100 input-date-display-format"
