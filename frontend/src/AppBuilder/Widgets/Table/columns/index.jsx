@@ -186,6 +186,7 @@ export default function generateColumnsData({
 
         switch (columnType) {
           case 'string':
+          case 'json':
           case undefined:
           case 'default': {
             const cellTextColor = getResolvedValue(column.textColor, { cellValue, rowData }) ?? '';
