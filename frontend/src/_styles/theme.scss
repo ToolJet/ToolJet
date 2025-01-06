@@ -16254,9 +16254,15 @@ fieldset:disabled {
 
 
 .date-validation-wrapper {
+
+  .field {
+    height:24px;
+  }
+
   .code-flex-wrapper {
     flex-wrap:wrap;
   }
+  margin-bottom: 3px;
 }
 
 .tj-inspector-datepicker {
@@ -16586,9 +16592,6 @@ fieldset:disabled {
   font-family: monospace;
   font-size: 12px;
   height:32px;
-  margin-top:2px;
-  margin-bottom: 2px;
-
  
   .react-datepicker-wrapper {
     width: 100%;
@@ -16635,7 +16638,7 @@ fieldset:disabled {
 }
 
 .input-date-display-format, .input-date-time-format {
-
+  height: 60px;
   .hide-fx {
     opacity: 0;
     transition: opacity 0.3s ease;

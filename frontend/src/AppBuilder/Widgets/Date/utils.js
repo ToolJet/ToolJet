@@ -2,7 +2,8 @@ import moment from 'moment-timezone';
 
 export const getUnixTime = (date, displayFormat) => {
   if (!date && date !== 0) return null;
-  if (!isNaN(Number(date))) return Number(date);
+  const numberDate = Number(date);
+  if (!isNaN(numberDate) && numberDate > 99999) return Number(date);
   const momentObj = moment(date, displayFormat);
   const val = momentObj.utc().valueOf();
   return val === 'Invalid date' ? null : val;

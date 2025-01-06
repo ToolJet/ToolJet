@@ -194,7 +194,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
                     fuzzySearch
                     placeholder="Select.."
                     useCustomStyles={true}
-                    styles={styles(darkMode, '100%')}
+                    styles={styles(darkMode, '100%', 32, { fontSize: '12px' })}
                   />
                 )}
               </div>
@@ -234,7 +234,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
                     fuzzySearch
                     placeholder="Select.."
                     useCustomStyles={true}
-                    styles={styles(darkMode, '100%')}
+                    styles={styles(darkMode, '100%', 32, { fontSize: '12px' })}
                   />
                 )}
               </div>
@@ -268,7 +268,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
                       fuzzySearch
                       placeholder="Select.."
                       useCustomStyles={true}
-                      styles={styles(darkMode, '100%')}
+                      styles={styles(darkMode, '100%', 32, { fontSize: '12px' })}
                     />
                   </div>
                   <div data-cy={`input-display-time-zone`} className="field mb-2" onClick={(e) => e.stopPropagation()}>
@@ -286,7 +286,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
                       fuzzySearch
                       placeholder="Select.."
                       useCustomStyles={true}
-                      styles={styles(darkMode, '100%')}
+                      styles={styles(darkMode, '100%', 32, { fontSize: '12px' })}
                     />
                   </div>
                 </div>
@@ -317,7 +317,7 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
     children: (
       <>
         {validations.map((property, index) => (
-          <div key={index} className={'date-validation-wrapper'}>
+          <div key={index} className={'date-validation-wrapper'} style={{ height: '62px' }}>
             {renderElement(
               component,
               componentMeta,
