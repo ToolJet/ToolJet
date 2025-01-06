@@ -16,13 +16,11 @@ import { editVersionSelectors } from "Selectors/version";
 import { editVersionText } from "Texts/version";
 import { createNewVersion } from "Support/utils/exportImport";
 
-
 import {
   navigateToCreateNewVersionModal,
   verifyElementsOfCreateNewVersionModal,
   navigateToEditVersionModal,
 } from "Support/utils/version";
-
 
 import {
   verifyModal,
@@ -30,9 +28,9 @@ import {
   navigateToAppEditor,
 } from "Support/utils/common";
 
-
 import {
   verifyComponent,
+  verifyComponentinrightpannel,
   deleteComponentAndVerify,
 } from "Support/utils/basicComponents";
 
@@ -51,11 +49,9 @@ describe("App Editor", () => {
   let newVersion = [];
   let versionFrom = "";
 
-
   beforeEach(() => {
     cy.defaultWorkspaceLogin();
   });
-
 
   before(() => {
     cy.apiLogin();
@@ -68,7 +64,6 @@ describe("App Editor", () => {
     data.appName = `${fake.companyName}-App`;
     cy.apiCreateApp(data.appName);
 
-
     cy.openApp();
 
     cy.get(appVersionSelectors.appVersionLabel).should("be.visible");
@@ -76,7 +71,6 @@ describe("App Editor", () => {
       "have.value",
       data.appName
     );
-
 
     cy.waitForAutoSave();
     navigateToCreateNewVersionModal((currentVersion = "v1"));
@@ -89,14 +83,12 @@ describe("App Editor", () => {
       editVersionSelectors.versionNameInputField
     );
 
-
     closeModal(commonText.closeButton);
 
-    verifyComponent("table");
+    verifyComponentinrightpannel("table");
     cy.dragAndDropWidget("table");
     cy.wait(2000);
     cy.get('[data-cy="inspector-close-icon"]').click({ force: true });
-
 
     navigateToCreateNewVersionModal((currentVersion = "v1"));
     createNewVersion((newVersion = ["v2"]), (versionFrom = "v1"));
@@ -105,7 +97,6 @@ describe("App Editor", () => {
     cy.get(commonWidgetSelector.previewButton)
       .invoke("removeAttr", "target")
       .click();
-
 
     cy.url().should("include", "/home");
     cy.wait(2000);
@@ -118,16 +109,14 @@ describe("App Editor", () => {
     data.appName = `${fake.companyName}-App`;
     cy.apiCreateApp(data.appName);
 
-
     cy.openApp();
     cy.get('[data-cy="widget-list-box-table"]').should("be.visible");
 
-    verifyComponent("text");
+    verifyComponentinrightpannel("text");
     navigateToCreateNewVersionModal((currentVersion = "v1"));
 
-
     createNewVersion((newVersion = ["v2"]), (versionFrom = "v1"));
-    verifyComponent("table");
+    verifyComponentinrightpannel("table");
 
     cy.dragAndDropWidget("table");
     cy.wait(2000);
@@ -136,24 +125,23 @@ describe("App Editor", () => {
     cy.get('[data-cy="show-ds-popover-button"]').click();
     cy.get('[data-cy="ds-run javascript code"]').click();
 
-
     navigateToCreateNewVersionModal((currentVersion = "v2"));
     createNewVersion((newVersion = ["v3"]), (versionFrom = "v2"));
 
     cy.apiAddQueryToApp(
-      "runjs1", 
-      { code: 'alert("Text")', parameters: [] }, 
+      "runjs1",
+      { code: 'alert("Text")', parameters: [] },
       null,
-      "runjs" 
+      "runjs"
     );
     cy.reload();
     cy.get('[data-cy="query-preview-button"]').click();
-   
+
     cy.get(commonSelectors.toastMessage).verifyVisibleElement(
       "have.text",
       "Query (runjs1) completed."
     );
-   cy.reload();
+    cy.reload();
     navigateToCreateNewVersionModal((currentVersion = "v3"));
     createNewVersion((newVersion = ["v4"]), (versionFrom = "v3"));
     cy.wait(2000);
@@ -186,19 +174,18 @@ describe("App Editor", () => {
     );
 
     cy.get('[data-cy="modal-close-button"]').click();
-    verifyComponent("text");
+    verifyComponentinrightpannel("text");
     navigateToCreateNewVersionModal((currentVersion = "v1"));
 
     createNewVersion((newVersion = ["v2"]), (versionFrom = "v1"));
-    verifyComponent("table");
+    verifyComponentinrightpannel("table");
 
     cy.dragAndDropWidget("table");
     cy.wait(1000);
     cy.get('[data-cy="inspector-close-icon"]').click({ force: true });
     cy.wait(2000);
 
-    deleteComponentAndVerify("table");
-
+    deleteComponentAndVerify("table1");
     cy.dragAndDropWidget("table");
     cy.wait(1000);
     cy.get('[data-cy="inspector-close-icon"]').click({ force: true });
@@ -206,12 +193,12 @@ describe("App Editor", () => {
     navigateToCreateNewVersionModal((currentVersion = "v2"));
 
     createNewVersion((newVersion = ["v3"]), (versionFrom = "v2"));
-    verifyComponent("table");
+    verifyComponentinrightpannel("table");
 
     navigateToCreateNewVersionModal((currentVersion = "v3"));
     createNewVersion((newVersion = ["v4"]), (versionFrom = "v1"));
 
-    verifyComponent("table");
+    verifyComponentinrightpannel("table");
 
     editVersionAndVerify(
       (currentVersion = "v4"),
@@ -236,5 +223,4 @@ describe("App Editor", () => {
 
     verifyVersionAfterPreview((currentVersion = "v6"));
   });
-
 });
