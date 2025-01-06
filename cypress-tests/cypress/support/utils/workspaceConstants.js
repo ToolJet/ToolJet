@@ -14,7 +14,7 @@ export const contantsNameValidation = (value, error) => {
     cy.get(workspaceConstantsSelectors.addConstantButton).should("be.disabled");
 };
 
-export const AddNewconstants = (name, value, type = "global") => {
+export const addNewconstants = (name, value, type = "global") => {
     cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
     cy.clearAndType(commonSelectors.workspaceConstantNameInput, name);
     cy.get(commonSelectors.workspaceConstantValueInput).click();

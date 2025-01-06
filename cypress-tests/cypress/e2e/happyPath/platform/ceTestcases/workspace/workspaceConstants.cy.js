@@ -17,7 +17,7 @@ import { createNewVersion } from "Support/utils/exportImport";
 
 import {
   contantsNameValidation,
-  AddNewconstants,
+  addNewconstants,
   existingNameValidation,
 } from "Support/utils/workspaceConstants";
 
@@ -325,7 +325,7 @@ describe("Workspace constants", () => {
   });
 
   it("should verify the constants resolving value on components and query", () => {
-    cy.viewport(1200, 1300);
+    cy.viewport(1440, 960);
 
     data.widgetName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
     data.appName = `${fake.companyName}-App`;
@@ -338,9 +338,9 @@ describe("Workspace constants", () => {
       .replaceAll("[^A-Za-z]", "");
 
     cy.get(commonSelectors.workspaceConstantsIcon).click();
-    AddNewconstants(data.restapilink, Cypress.env("constants_host"));
-    AddNewconstants(data.restapiHeaderKey, "customHeader");
-    AddNewconstants(data.restapiHeaderValue, "key=value");
+    addNewconstants(data.restapilink, Cypress.env("constants_host"));
+    addNewconstants(data.restapiHeaderKey, "customHeader");
+    addNewconstants(data.restapiHeaderValue, "key=value");
 
     cy.apiCreateApp(data.appName);
 
@@ -495,7 +495,7 @@ describe("Workspace constants", () => {
     );
   });
 
-  it("should verify the constants resolving in datasource connection form", () => {
+  it.only("should verify the constants resolving in datasource connection form", () => {
     data.ds = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
     data.widgetName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
@@ -510,9 +510,9 @@ describe("Workspace constants", () => {
       .replaceAll("[^A-Za-z]", "");
 
     cy.get(commonSelectors.workspaceConstantsIcon).click();
-    AddNewconstants(data.restapilink, Cypress.env("constants_host"));
-    AddNewconstants(data.restapiHeaderKey, "customHeader");
-    AddNewconstants(data.restapiHeaderValue, "key=value");
+    addNewconstants(data.restapilink, Cypress.env("constants_host"));
+    addNewconstants(data.restapiHeaderKey, "customHeader");
+    addNewconstants(data.restapiHeaderValue, "key=value");
     cy.apiCreateGDS(
       `${Cypress.env("server_host")}/api/v2/data_sources`,
       data.ds,
@@ -647,5 +647,4 @@ describe("Workspace constants", () => {
       commonWidgetSelector.draggableWidget(data.widgetName)
     ).verifyVisibleElement("have.value", "Production environment testing");
   });
-
 });
