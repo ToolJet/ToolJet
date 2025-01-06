@@ -291,14 +291,6 @@ Cypress.Commands.add(
   }
 );
 
-Cypress.Commands.add("createAppFromTemplate", (appName) => {
-  cy.get('[data-cy="import-dropdown-menu"]').click();
-  cy.get('[data-cy="choose-from-template-button"]').click();
-  cy.get(`[data-cy="${appName}-list-item"]`).click(); 
-  cy.get('[data-cy="create-application-from-template-button"]').click();
-  cy.get('[data-cy="app-name-label"]').should("have.text", "App Name");
-});
-
 Cypress.Commands.add("addComponentToApp", (appName, componentName, layoutConfig = {}) => {
   cy.task("updateId", {
     dbconfig: Cypress.env("app_db"),
