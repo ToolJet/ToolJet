@@ -1,7 +1,7 @@
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { cyParamName } from "Selectors/common";
-import { commonSelectors } from "Selectors/common";
+import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { commonText } from "Texts/common";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { dataSourceText } from "Texts/dataSource";
@@ -95,7 +95,7 @@ export const addQueryN = (queryName, query, dbName) => {
 
 export const addQuery = (queryName, query, dbName) => {
   cy.get('[data-cy="show-ds-popover-button"]').click();
-  cy.get(".css-1rrkggf-Input").type(`${dbName}`);
+  cy.get(".css-4e90k9").type(`${dbName}`);
   cy.intercept("POST", "/api/data_queries").as("createQuery");
   cy.contains(`[id*="react-select-"]`, dbName).click();
 
@@ -111,7 +111,7 @@ export const addQuery = (queryName, query, dbName) => {
 
 export const addQueryAndOpenEditor = (queryName, query, dbName, appName) => {
   cy.get('[data-cy="show-ds-popover-button"]').click();
-  cy.get(".css-1rrkggf-Input").type(`${dbName}`);
+  cy.get(".css-4e90k9").type(`${dbName}`);
   cy.intercept("POST", "/api/data_queries").as("createQuery");
   cy.contains(`[id*="react-select-"]`, dbName).click();
 
