@@ -13,6 +13,7 @@ import {
   SourceComponent,
   SourceComponents,
   CloudStorageSources,
+  FetchManifest,
 } from './SourceComponents';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import config from 'config';
@@ -30,8 +31,7 @@ import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import './dataSourceManager.theme.scss';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { canUpdateDataSource } from '@/_helpers';
-import Ajv from 'ajv';
-import addFormats from 'ajv-formats';
+import DataSourceSchemaManager from '@/_helpers/dataSourceSchemaManager';
 class DataSourceManagerComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -52,7 +52,6 @@ class DataSourceManagerComponent extends React.Component {
     }
 
     this.state = {
-      ajv: null,
       showModal: true,
       appId: props.appId,
       selectedDataSource,
@@ -77,30 +76,12 @@ class DataSourceManagerComponent extends React.Component {
       unsavedChangesModal: false,
       datasourceName,
       creatingApp: false,
-      validationFailed: false,
+      validationError: [],
+      // validationFailed: false,
     };
   }
 
   componentDidMount() {
-    try {
-      const ajv = new Ajv({
-        allErrors: true,
-        strict: false,
-        coerceTypes: true,
-        useDefaults: true,
-      });
-      addFormats(ajv);
-      this.setState({ ajv });
-    } catch (error) {
-      this.setState({
-        ajv: new Ajv({
-          allErrors: true,
-          strict: false,
-          coerceTypes: true,
-          useDefaults: true,
-        }),
-      });
-    }
     this.setState({
       appId: this.props.appId,
     });
@@ -127,7 +108,6 @@ class DataSourceManagerComponent extends React.Component {
         dataSourceSchema: this.props.selectedDataSource?.plugin?.manifestFile?.data,
         selectedDataSourceIcon: this.props.selectedDataSource?.plugin?.iconFile?.data,
         connectionTestError: null,
-        validationError: null,
         datasourceName: this.props.selectedDataSource?.name,
       });
     }
@@ -219,8 +199,35 @@ class DataSourceManagerComponent extends React.Component {
   };
 
   createDataSource = () => {
-    const { appId, options, selectedDataSource, selectedDataSourcePluginId, dataSourceMeta, dataSourceSchema } =
-      this.state;
+    const {
+      appId,
+      options,
+      selectedDataSource,
+      selectedDataSourcePluginId,
+      dataSourceMeta,
+      dataSourceSchema,
+      validationError,
+    } = this.state;
+
+    const manifestFile = FetchManifest(selectedDataSource.kind);
+    if (manifestFile['tj:version']) {
+      const schemaManager = new DataSourceSchemaManager(manifestFile);
+      const { errors } = schemaManager.validateData(options);
+      if (errors) {
+        const validationMessages = errors.filter((error) => error.keyword !== 'if').map((error) => error.message);
+        this.setState({ validationError: validationMessages });
+        toast.error(
+          this.props.t(
+            'editor.queryManager.dataSourceManager.toast.error.validationFailed',
+            'Validation failed. Please check your inputs.'
+          ),
+          { position: 'top-center' }
+        );
+        if (validationMessages.length > 0) {
+          return false;
+        }
+      }
+    }
 
     const OAuthDs = ['slack', 'zendesk', 'googlesheets', 'salesforce'];
     const name = selectedDataSource.name;
@@ -805,7 +812,6 @@ class DataSourceManagerComponent extends React.Component {
       addingDataSource,
       datasourceName,
       validationError,
-      validationFailed,
     } = this.state;
     const isPlugin = dataSourceSchema ? true : false;
     const createSelectedDataSource = (dataSource) => {
@@ -1033,7 +1039,7 @@ class DataSourceManagerComponent extends React.Component {
                     <ButtonSolid
                       className={`m-2 ${isSaving ? 'btn-loading' : ''}`}
                       isLoading={isSaving}
-                      disabled={isSaving || this.props.isVersionReleased || isSaveDisabled || validationFailed}
+                      disabled={isSaving || this.props.isVersionReleased || isSaveDisabled}
                       variant="primary"
                       onClick={this.createDataSource}
                       leftIcon="floppydisk"
@@ -1068,7 +1074,7 @@ class DataSourceManagerComponent extends React.Component {
                     leftIcon="floppydisk"
                     fill={'#FDFDFE'}
                     className="m-2"
-                    disabled={isSaving || this.props.isVersionReleased || isSaveDisabled || validationFailed}
+                    disabled={isSaving || this.props.isVersionReleased || isSaveDisabled}
                     variant="primary"
                     onClick={this.createDataSource}
                   >
