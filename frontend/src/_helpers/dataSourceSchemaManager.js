@@ -30,7 +30,6 @@ export default class DataSourceSchemaManager {
   validateDataForProperty(property, fieldValue) {
 
     const { errors } = this.validateData({ [property]: { value: fieldValue} });
-    console.log('error: ', errors);
     
     const propertyErrors = errors?.filter(error => 
       // Check for required field errors

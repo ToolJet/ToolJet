@@ -29,7 +29,6 @@ const DynamicFormV2 = ({
   const encryptedProperties = React.useMemo(() => dsm.getEncryptedProperties(), [dsm]);
   const [conditionallyRequiredProperties, setConditionallyRequiredProperties] = React.useState([]);
   const [validationErrors, setValidationErrors] = React.useState([]);
-  console.log('ValidationError: ', validationErrors);
 
   const [computedProps, setComputedProps] = React.useState({});
   const isHorizontalLayout = layout === 'horizontal';
