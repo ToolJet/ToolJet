@@ -44,10 +44,6 @@
       "title": "Password",
       "description": "Enter password"
     },
-    "connection_options": {
-      "type": "string",
-      "title": "Connection options"
-    },
     "ssl_enabled": {
       "type": "boolean",
       "title": "SSL",
