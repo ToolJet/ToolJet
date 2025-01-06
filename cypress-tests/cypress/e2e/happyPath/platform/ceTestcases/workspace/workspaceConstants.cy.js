@@ -495,7 +495,7 @@ describe("Workspace constants", () => {
     );
   });
 
-  it.only("should verify the constants resolving in datasource connection form", () => {
+  it("should verify the constants resolving in datasource connection form", () => {
     data.ds = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
     data.widgetName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
