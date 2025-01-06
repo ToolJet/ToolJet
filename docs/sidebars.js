@@ -431,7 +431,14 @@ const sidebars = {
           'type': 'category',
           'label': 'Role Based Access Control',
           'items': [
-            'user-management/role-based-access/super-admins',
+            {
+              'type': 'category',
+              'label': 'Super Admins',
+              'items': [
+                'user-management/role-based-access/super-admin/overview',
+                'user-management/role-based-access/super-admin/settings'
+              ]
+            },
             'user-management/role-based-access/user-roles',
             {
               'type': 'category',
