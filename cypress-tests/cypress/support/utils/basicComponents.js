@@ -21,7 +21,7 @@ export const deleteComponentAndVerify = (widgetName) => {
   cy.get(commonWidgetSelector.draggableWidget(widgetName))
     .realHover()
     .then(() => {
-      cy.get(`[data-cy="${widgetName}1-delete-button"]`)
+      cy.get(`[data-cy="${widgetName}-delete-button"]`)
         .realHover({ position: "topRight" })
         .last()
         .realClick();

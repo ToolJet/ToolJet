@@ -10,6 +10,11 @@ import {
 import { addQuery, verifyValueOnInspector } from "Support/utils/dataSource";
 
 import {
+  verifyComponent,
+  deleteComponentAndVerify,
+} from "Support/utils/basicComponents";
+
+import {
   selectAndAddDataSource,
   fillConnectionForm,
 } from "Support/utils/postgreSql";
@@ -55,7 +60,6 @@ describe("App Import Functionality", () => {
     cy.apiLogin();
   });
 
-
   before(() => {
     cy.fixture("templates/test-app.json").then((app) => {
       cy.exec("cd ./cypress/downloads/ && rm -rf *", {
@@ -64,7 +68,6 @@ describe("App Import Functionality", () => {
       appData = app;
     });
   });
-
 
   it("Verify the Import functionality of an Application", () => {
     cy.visit("/");
@@ -84,7 +87,7 @@ describe("App Import Functionality", () => {
     cy.get(importSelectors.importOptionInput).eq(0).selectFile(toolJetImage, {
       force: true,
     });
-    
+
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       importText.couldNotImportAppToastMessage
@@ -273,7 +276,6 @@ describe("App Import Functionality", () => {
       });
   });
 
-
   it("Verify the elements of export dialog box", () => {
     data.appName1 = `${fake.companyName}-App`;
     cy.apiCreateApp(data.appName1);
@@ -305,7 +307,6 @@ describe("App Import Functionality", () => {
         verifyElementsOfExportModal((currentVersion = "v1"));
       });
   });
-
 
   it("Verify 'Export app' functionality of an application ", () => {
     data.appName1 = `${fake.companyName}-App`;
@@ -402,7 +403,7 @@ describe("App Import Functionality", () => {
   });
 
   it("Verify 'Export and import' functionality of an application with DS,Constants and tjdb for same and different workspace", () => {
-    data.appName1 = `${fake.companyName}-App`;
+    data.appName2 = `${fake.companyName}-App`;
     data.constName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
     data.newConstvalue = `New ${data.constName}`;
     data.constantsName = fake.firstName
@@ -410,7 +411,7 @@ describe("App Import Functionality", () => {
       .replaceAll("[^A-Za-z]", "");
     data.constantsValue = "dJ_8Q~BcaMPd";
 
-    cy.apiCreateApp(data.appName1);
+    cy.apiCreateApp(data.appName2);
 
     cy.visit("/");
 
@@ -425,7 +426,7 @@ describe("App Import Functionality", () => {
     );
     cy.get('[data-cy="icon-dashboard"]').click();
 
-    navigateToAppEditor(data.appName1);
+    cy.openApp(data.appName2);
     cy.dragAndDropWidget("Text Input", 50, 50);
     cy.waitForAutoSave();
     cy.skipEditorPopover();
@@ -457,9 +458,13 @@ describe("App Import Functionality", () => {
       },
       ".form-switch"
     );
-    cy.wait("@datasource");
-    cy.openApp(data.appName1);
 
+    cy.wait("@datasource");
+    cy.visit("/");
+    navigateToAppEditor(data.appName2);
+
+    deleteComponentAndVerify("textinput1");
+    cy.wait(500);
     pinInspector();
 
     addQuery(
@@ -468,11 +473,25 @@ describe("App Import Functionality", () => {
       `cypress-${data.dsName1}-postgresql`
     );
 
+    cy.wait(500);
+    cy.dragAndDropWidget("Text Input", 50, 50);
+    cy.waitForAutoSave();
+    cy.skipEditorPopover();
+    cy.get('[data-cy="default-value-input-field"]').clearAndTypeOnCodeMirror(
+      `{{constants.${data.constName}}`
+    );
+    cy.forceClickOnCanvas();
+    cy.waitForAutoSave();
+
     cy.get('[data-cy="query-preview-button"]').click();
 
     //add tjdb
 
     cy.wait(2000);
+    
+
+
+
     cy.get('[data-cy="show-ds-popover-button"]').click();
     cy.wait(1000);
     cy.get('[data-cy="ds-tooljet database"]').click();
@@ -483,17 +502,16 @@ describe("App Import Functionality", () => {
 
     cy.backToApps();
     selectAppCardOption(
-      data.appName1,
+      data.appName2,
       commonSelectors.appCardOptions(commonText.exportAppOption)
     );
 
     clickOnExportButtonAndVerify(
       exportAppModalText.exportSelectedVersion,
-      data.appName1
+      data.appName2
     );
 
-    // Import same app and verify components
-
+    // Import same app and verify components\
     cy.exec("ls ./cypress/downloads/").then((result) => {
       cy.log(result);
       const downloadedAppExportFileName = result.stdout.split("\n")[0];
