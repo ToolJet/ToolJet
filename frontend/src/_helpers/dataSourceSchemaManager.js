@@ -28,22 +28,20 @@ export default class DataSourceSchemaManager {
   }
 
   validateDataForProperty(property, fieldValue) {
+    const { errors } = this.validateData({ [property]: { value: fieldValue } });
 
-    const { errors } = this.validateData({ [property]: { value: fieldValue} });
-    
-    const propertyErrors = errors?.filter(error => 
-      // Check for required field errors
-      (error.keyword === 'required' && error.params.missingProperty === property) ||
-      // Check for datatype errors
-      (error.keyword === 'type' && error.dataPath === `.${property}`) ||
-      // Check for other validation errors on this property
-      error.instancePath === `/${property}`
+    const propertyErrors = errors?.filter(
+      (error) =>
+        // Check for required field errors
+        (error.keyword === 'required' && error.params.missingProperty === property) ||
+        // Check for datatype errors
+        (error.keyword === 'type' && error.dataPath === `.${property}`) ||
+        // Check for other validation errors on this property
+        error.instancePath === `/${property}`
     );
-  
-    const errorsMessages = propertyErrors
-      ?.map(error => error.message)
-      ?.join(', ');
-  
+
+    const errorsMessages = propertyErrors?.map((error) => error.message)?.join(', ');
+
     return { valid: errorsMessages.length === 0, errors: errorsMessages };
   }
 
@@ -110,6 +108,11 @@ export default class DataSourceSchemaManager {
       // Skip empty string values
       if (value !== '' && value !== null && value !== undefined) {
         result[key] = value;
+      }
+
+      // Add a dummy value to pass validation for encrypted keys
+      if (this.getEncryptedProperties().includes(key)) {
+        result[key] = 'REDACTED';
       }
       return result;
     }, {});
