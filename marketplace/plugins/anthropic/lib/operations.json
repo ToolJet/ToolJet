@@ -1,9 +1,223 @@
-
 {
   "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
   "title": "Anthropic datasource",
   "description": "A schema defining Anthropic datasource",
   "type": "api",
   "defaults": {},
-  "properties": {}
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Select an operation",
+      "list": [
+        { "value": "chat", "name": "Chat" }
+      ]
+    },
+    "chat": {
+      "model": {
+        "label": "Model",
+        "key": "model",
+        "type": "dropdown-component-flip",
+        "description": "Select Claude Model",
+        "list": [
+          { "value": "claude-3-5-sonnet-20241022", "name": "claude-3-5-sonnet-20241022"},
+          { "value": "claude-3-5-haiku-20241022", "name": "claude-3-5-haiku-20241022" },
+          { "value": "claude-3-opus-20240229", "name": "claude-3-opus-20240229" },
+          { "value": "claude-3-sonnet-20240229", "name": "claude-3-sonnet-20240229" },
+          { "value": "claude-3-haiku-20240307", "name": "claude-3-haiku-20240307" }
+        ]
+      },
+      "claude-3-5-sonnet-20241022": {
+        "system_prompt": {
+          "label": "System Prompt",
+          "key": "system_prompt",
+          "type": "codehinter",
+          "description": "Defines role, context and/or role of the model to evaluate messages and send response",
+          "placeholder": "You are a Financial advisor working in a Fortune 500 company",
+          "height": "150px",
+          "mandatory": false
+        },
+        "message": {
+          "label": "Message",
+          "key": "message",
+          "type": "codehinter",
+          "description": "Enter messages",
+          "placeholder": "[{ \"role\": \"user\", \"content\": \"Hello Claude!\" },{ \"role\": \"assistant\", \"content\": \"Hello! How can I assist you today?\" }]",
+          "height": "150px",
+          "mandatory": true
+        },
+        "temperature": {
+          "label": "Temperature",
+          "key": "temperature",
+          "type": "codehinter",
+          "description": "Defines randomness of response. Takes value between 0 and 1. Default is 1.",
+          "placeholder": "0.5",
+          "height": "150px",
+          "mandatory": false
+        },
+        "max_size": {
+          "label": "Max Size",
+          "key": "max_size",
+          "type": "codehinter",
+          "description": "Maximum tokens used in response",
+          "placeholder": "256",
+          "height": "150px",
+          "mandatory": true
+        }
+      },
+      "claude-3-5-haiku-20241022": {
+        "system_prompt": {
+          "label": "System Prompt",
+          "key": "system_prompt",
+          "type": "codehinter",
+          "description": "Defines role, context and/or role of the model to evaluate messages and send response",
+          "placeholder": "You are a Financial advisor working in a Fortune 500 company",
+          "height": "150px",
+          "mandatory": false
+        },
+        "message": {
+          "label": "Message",
+          "key": "message",
+          "type": "codehinter",
+          "description": "Enter messages",
+          "placeholder": "[{ \"role\": \"user\", \"content\": \"Hello Claude!\" },{ \"role\": \"assistant\", \"content\": \"Hello! How can I assist you today?\" }]",
+          "height": "150px",
+          "mandatory": true
+        },
+        "temperature": {
+          "label": "Temperature",
+          "key": "temperature",
+          "type": "codehinter",
+          "description": "Defines randomness of response. Takes value between 0 and 1. Default is 1.",
+          "placeholder": "0.5",
+          "height": "150px",
+          "mandatory": false
+        },
+        "max_size": {
+          "label": "Max Size",
+          "key": "max_size",
+          "type": "codehinter",
+          "description": "Maximum tokens used in response",
+          "placeholder": "256",
+          "height": "150px",
+          "mandatory": true
+        }
+      },
+      "claude-3-opus-20240229": {
+        "system_prompt": {
+          "label": "System Prompt",
+          "key": "system_prompt",
+          "type": "codehinter",
+          "description": "Defines role, context and/or role of the model to evaluate messages and send response",
+          "placeholder": "You are a Financial advisor working in a Fortune 500 company",
+          "height": "150px",
+          "mandatory": false
+        },
+        "message": {
+          "label": "Message",
+          "key": "message",
+          "type": "codehinter",
+          "description": "Enter messages",
+          "placeholder": "[{ \"role\": \"user\", \"content\": \"Hello Claude!\" },{ \"role\": \"assistant\", \"content\": \"Hello! How can I assist you today?\" }]",
+          "height": "150px",
+          "mandatory": true
+        },
+        "temperature": {
+          "label": "Temperature",
+          "key": "temperature",
+          "type": "codehinter",
+          "description": "Defines randomness of response. Takes value between 0 and 1. Default is 1.",
+          "placeholder": "0.5",
+          "height": "150px",
+          "mandatory": false
+        },
+        "max_size": {
+          "label": "Max Size",
+          "key": "max_size",
+          "type": "codehinter",
+          "description": "Maximum tokens used in response",
+          "placeholder": "256",
+          "height": "150px",
+          "mandatory": true
+        }
+      },
+      "claude-3-sonnet-20240229": {
+        "system_prompt": {
+          "label": "System Prompt",
+          "key": "system_prompt",
+          "type": "codehinter",
+          "description": "Defines role, context and/or role of the model to evaluate messages and send response",
+          "placeholder": "You are a Financial advisor working in a Fortune 500 company",
+          "height": "150px",
+          "mandatory": false
+        },
+        "message": {
+          "label": "Message",
+          "key": "message",
+          "type": "codehinter",
+          "description": "Enter messages",
+          "placeholder": "[{ \"role\": \"user\", \"content\": \"Hello Claude!\" },{ \"role\": \"assistant\", \"content\": \"Hello! How can I assist you today?\" }]",
+          "height": "150px",
+          "mandatory": true
+        },
+        "temperature": {
+          "label": "Temperature",
+          "key": "temperature",
+          "type": "codehinter",
+          "description": "Defines randomness of response. Takes value between 0 and 1. Default is 1.",
+          "placeholder": "0.5",
+          "height": "150px",
+          "mandatory": false
+        },
+        "max_size": {
+          "label": "Max Size",
+          "key": "max_size",
+          "type": "codehinter",
+          "description": "Maximum tokens used in response",
+          "placeholder": "256",
+          "height": "150px",
+          "mandatory": true
+        }
+      },
+      "claude-3-haiku-20240307": {
+        "system_prompt": {
+          "label": "System Prompt",
+          "key": "system_prompt",
+          "type": "codehinter",
+          "description": "Defines role, context and/or role of the model to evaluate messages and send response",
+          "placeholder": "You are a Financial advisor working in a Fortune 500 company",
+          "height": "150px",
+          "mandatory": false
+        },
+        "message": {
+          "label": "Message",
+          "key": "message",
+          "type": "codehinter",
+          "description": "Enter messages",
+          "placeholder": "[{ \"role\": \"user\", \"content\": \"Hello Claude!\" },{ \"role\": \"assistant\", \"content\": \"Hello! How can I assist you today?\" }]",
+          "height": "150px",
+          "mandatory": true
+        },
+        "temperature": {
+          "label": "Temperature",
+          "key": "temperature",
+          "type": "codehinter",
+          "description": "Defines randomness of response. Takes value between 0 and 1. Default is 1.",
+          "placeholder": "0.5",
+          "height": "150px",
+          "mandatory": false
+        },
+        "max_size": {
+          "label": "Max Size",
+          "key": "max_size",
+          "type": "codehinter",
+          "description": "Maximum tokens used in response",
+          "placeholder": "256",
+          "height": "150px",
+          "mandatory": true
+        }
+      }
+    }
+  }
 }
