@@ -89,7 +89,9 @@ describe("Workspace", () => {
             "have.text",
             "Workspace name already exists"
         );
-
+        
+        // Verify that the slug input derived from the workspace name is correct.
+        
         cy.clearAndType(
             commonSelectors.workspaceNameinput,
             data.workspaceName
@@ -337,11 +339,5 @@ describe("Workspace", () => {
 
 })
 
-
-
-
-
-//  workspaceNameinput: '[data-cy="workspace-name-input-field"]',
-// workspaceSlugInputField: '[data-cy="workspace-slug-input-field"]',
 
 
