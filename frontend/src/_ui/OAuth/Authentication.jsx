@@ -36,7 +36,10 @@ const Authentication = ({
         <div className="row mt-3">
           <label className="form-label text-muted">Grant Type</label>
           <Select
-            options={[{ name: 'Authorization Code', value: 'authorization_code' }]}
+            options={[
+              { name: 'Authorization code', value: 'authorization_code' },
+              { name: 'Client credentials', value: 'client_credentials' },
+            ]}
             value={grant_type}
             onChange={(value) => optionchanged('grant_type', value)}
             width={'100%'}
