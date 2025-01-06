@@ -5,12 +5,14 @@ import Textarea from '@/_ui/Textarea';
 import Select from '@/_ui/Select';
 import Headers from '@/_ui/HttpHeaders';
 import Toggle from '@/_ui/Toggle';
+import InputV3 from '@/_ui/Input-V3';
 import { filter, find, isEmpty } from 'lodash';
 import { ButtonSolid } from './AppButton';
 import { useGlobalDataSourcesStatus } from '@/_stores/dataSourcesStore';
 import { canDeleteDataSource, canUpdateDataSource } from '@/_helpers';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
-import InputV3 from '@/_ui/Input-V3';
+import { orgEnvironmentVariableService, orgEnvironmentConstantService } from '../_services';
+import { Constants } from '@/_helpers/utils';
 
 const DynamicFormV2 = ({
   schema,
@@ -22,6 +24,8 @@ const DynamicFormV2 = ({
   layout = 'vertical',
   onBlur,
   setDefaultOptions,
+  currentAppEnvironmentId,
+  isGDS,
 }) => {
   // rename uiProperties everywhere
   const uiProperties = schema['tj:ui:properties'] || {};
@@ -29,13 +33,55 @@ const DynamicFormV2 = ({
   const encryptedProperties = React.useMemo(() => dsm.getEncryptedProperties(), [dsm]);
   const [conditionallyRequiredProperties, setConditionallyRequiredProperties] = React.useState([]);
   const [validationErrors, setValidationErrors] = React.useState([]);
-
+  const [workspaceVariables, setWorkspaceVariables] = React.useState([]);
+  const [currentOrgEnvironmentConstants, setCurrentOrgEnvironmentConstants] = React.useState([]);
   const [computedProps, setComputedProps] = React.useState({});
+
   const isHorizontalLayout = layout === 'horizontal';
   const prevDataSourceIdRef = React.useRef(selectedDataSource?.id);
 
   const globalDataSourcesStatus = useGlobalDataSourcesStatus();
   const { isEditing: isDataSourceEditing } = globalDataSourcesStatus;
+
+  React.useEffect(() => {
+    if (isGDS) {
+      orgEnvironmentConstantService.getConstantsFromEnvironment(currentAppEnvironmentId).then((data) => {
+        const constants = {
+          globals: {},
+          secrets: {},
+        };
+        data.constants.forEach((constant) => {
+          if (constant.type === Constants.Secret) {
+            constants.secrets[constant.name] = constant.value;
+          } else {
+            constants.globals[constant.name] = constant.value;
+          }
+        });
+
+        setCurrentOrgEnvironmentConstants(constants);
+      });
+
+      orgEnvironmentVariableService.getVariables().then((data) => {
+        const client_variables = {};
+        const server_variables = {};
+        data.variables.map((variable) => {
+          if (variable.variable_type === 'server') {
+            server_variables[variable.variable_name] = 'HiddenEnvironmentVariable';
+          } else {
+            client_variables[variable.variable_name] = variable.value;
+          }
+        });
+
+        setWorkspaceVariables({ client: client_variables, server: server_variables });
+      });
+    }
+
+    return () => {
+      setWorkspaceVariables([]);
+      setCurrentOrgEnvironmentConstants([]);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentAppEnvironmentId]);
 
   React.useEffect(() => {
     const { valid, errors } = dsm.validateData(options);
@@ -158,7 +204,7 @@ const DynamicFormV2 = ({
   };
 
   const getElementProps = (uiProperties) => {
-    const { label, description, widget, required, width, key, help_text: helpText, list } = uiProperties;
+    const { label, description, widget, required, width, key, help_text: helpText, list, buttonText } = uiProperties;
 
     const isRequired = required || conditionallyRequiredProperties.includes(key);
     const isEncrypted = widget === 'password-v3' || encryptedProperties.includes(key);
@@ -212,6 +258,27 @@ const DynamicFormV2 = ({
           encrypted: isEncrypted,
           onBlur,
           isRequired: isRequired,
+        };
+      }
+      case 'react-component-headers': {
+        let isRenderedAsQueryEditor;
+        if (isGDS) {
+          isRenderedAsQueryEditor = false;
+        } else {
+          isRenderedAsQueryEditor = !isGDS;
+        }
+        return {
+          getter: key,
+          options: isRenderedAsQueryEditor
+            ? options?.[key] ?? schema?.defaults?.[key]
+            : options?.[key]?.value ?? schema?.defaults?.[key]?.value,
+          optionchanged,
+          isRenderedAsQueryEditor,
+          workspaceConstants: currentOrgEnvironmentConstants,
+          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          encrypted: isEncrypted,
+          buttonText,
+          width: width,
         };
       }
       case 'toggle':
@@ -321,7 +388,10 @@ const DynamicFormV2 = ({
                   })}
                   style={{ minWidth: '100px' }}
                 >
-                  {label && widget !== 'text-v3' && widget !== 'password-v3' && renderLabel(label, uiProperties[key].tooltip)}
+                  {label &&
+                    widget !== 'text-v3' &&
+                    widget !== 'password-v3' &&
+                    renderLabel(label, uiProperties[key].tooltip)}
 
                   {(widget === 'password' || encrypted) && selectedDataSource?.id && (
                     <div className="mx-1 col">
