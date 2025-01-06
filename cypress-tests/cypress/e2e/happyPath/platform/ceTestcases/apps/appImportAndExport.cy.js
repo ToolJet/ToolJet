@@ -402,7 +402,7 @@ describe("App Import Functionality", () => {
     cy.exec("cd ./cypress/downloads/ && rm -rf *");
   });
 
-  it("Verify 'Export and import' functionality of an application with DS,Constants and tjdb for same and different workspace", () => {
+  it("Verify 'Export and import' functionality of an application with DS,Constants for same and different workspace", () => {
     data.appName2 = `${fake.companyName}-App`;
     data.constName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
     data.newConstvalue = `New ${data.constName}`;
@@ -485,19 +485,6 @@ describe("App Import Functionality", () => {
 
     cy.get('[data-cy="query-preview-button"]').click();
 
-    //add tjdb
-
-    cy.wait(2000);
-    
-
-
-
-    cy.get('[data-cy="show-ds-popover-button"]').click();
-    cy.wait(1000);
-    cy.get('[data-cy="ds-tooljet database"]').click();
-    cy.get('[data-cy="query-preview-button"]').click();
-    cy.wait(2000);
-
     //Export the app
 
     cy.backToApps();
@@ -541,7 +528,6 @@ describe("App Import Functionality", () => {
         `${data.constName}`
       );
       cy.get('[data-cy="list-query-table_preview"]').should("be.visible");
-      cy.get('[data-cy="list-query-tooljetdb1"]').should("be.visible");
 
       // Import same to app to different workspace and verify
 
@@ -585,7 +571,109 @@ describe("App Import Functionality", () => {
         cy.wait(2000);
 
         cy.get('[data-cy="list-query-table_preview"]').should("be.visible");
-        cy.get('[data-cy="list-query-tooljetdb1"]').should("be.visible");
+      });
+    });
+  });
+
+  it("Verify 'Export and import' functionality of an application with tj_DB for same and different workspace", () => {
+    data.appName3 = `${fake.companyName}-App`;
+    cy.visit("/");
+    cy.createAppFromTemplate("applicant-tracking-system");
+    cy.wait(500);
+    cy.clearAndType('[data-cy="app-name-input"]', data.appName3);
+    cy.get('[data-cy="+-create-app"]').click();
+    cy.wait(500);
+    cy.skipWalkthrough();
+
+    //Export the app
+
+    cy.backToApps();
+    selectAppCardOption(
+      data.appName3,
+      commonSelectors.appCardOptions(commonText.exportAppOption)
+    );
+
+    clickOnExportButtonAndVerify(
+      exportAppModalText.exportSelectedVersion,
+      data.appName3
+    );
+
+    // Import same app and verify components
+
+    cy.exec("ls ./cypress/downloads/").then((result) => {
+      cy.log(result);
+      const downloadedAppExportFileName = result.stdout.split("\n")[0];
+      exportedFilePath = `cypress/downloads/${downloadedAppExportFileName}`;
+      cy.log(exportedFilePath);
+      cy.get(importSelectors.dropDownMenu).should("be.visible").click();
+      cy.get(importSelectors.importOptionLabel).verifyVisibleElement(
+        "have.text",
+        importText.importOption
+      );
+
+      cy.get(importSelectors.importOptionInput).selectFile(exportedFilePath, {
+        force: true,
+      });
+
+      cy.get(importSelectors.importAppTitle).should("be.visible");
+      cy.get(importSelectors.importAppButton).click();
+      cy.get(".go3958317564")
+        .should("be.visible")
+        .and("have.text", importText.appImportedToastMessage);
+      cy.wait(3000);
+      const selectors = [
+        '[data-cy="list-query-getactivejobs"]',
+        '[data-cy="list-query-addnewjob"]',
+        '[data-cy="list-query-addnewapplicant"]',
+        '[data-cy="list-query-updatejob"]',
+      ];
+
+      selectors.forEach((selector) => {
+        cy.get(selector).should("be.visible");
+      });
+
+      // Import same to app to different workspace and verify
+
+      data.workspaceName = `${fake.companyName}-App`;
+      data.workspaceSlug = fake.firstName
+        .toLowerCase()
+        .replaceAll("[^A-Za-z]", "");
+
+      cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
+      cy.visitTheWorkspace(data.workspaceName);
+
+      cy.exec("ls ./cypress/downloads/").then((result) => {
+        const downloadedAppExportFileName = result.stdout.split("\n")[0].trim();
+        const exportedFilePath = `cypress/downloads/${downloadedAppExportFileName}`;
+
+        cy.log("Exported File Path:", exportedFilePath);
+
+        cy.readFile(exportedFilePath).should("exist");
+
+        cy.get(importSelectors.dropDownMenu).should("be.visible").click();
+        cy.get(importSelectors.importOptionLabel).verifyVisibleElement(
+          "have.text",
+          importText.importOption
+        );
+        cy.get(importSelectors.importOptionInput)
+          .eq(1)
+          .selectFile(exportedFilePath, {
+            force: true,
+          });
+
+        cy.get(importSelectors.importAppTitle).should("be.visible");
+        cy.get(importSelectors.importAppButton).click();
+        cy.get(".go3958317564")
+          .should("be.visible")
+          .and("have.text", importText.appImportedToastMessage);
+
+        cy.wait(3000);
+
+        cy.skipWalkthrough();
+        cy.wait(2000);
+        selectors.forEach((selector) => {
+          cy.get(selector).should("be.visible");
+        });
       });
     });
   });
