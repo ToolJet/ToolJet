@@ -240,7 +240,6 @@ Cypress.Commands.add("addQueryApi", (queryName, query, dataQueryId) => {
   });
 });
 
-
 Cypress.Commands.add(
   "apiAddQueryToApp",
   (queryName, options, dsName, dsKind) => {

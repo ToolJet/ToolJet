@@ -83,10 +83,12 @@ describe("Workspace", () => {
             commonSelectors.workspaceNameInputField,
             data.workspaceName
         );
-        cy.get(dashboardSelector.createWorkspaceButton).should("be.disabled");
+        cy.wait(500);
+        cy.get(dashboardSelector.workspaceSlugInputField).should("have.value", data.workspaceName.toLowerCase());
 
-        cy.get(commonSelectors.workspaceNameInputField).clear();
+        cy.get(commonSelectors.workspaceNameinput).clear();
         cy.get(dashboardSelector.workspaceSlugInputField).type(" ").clear();
+        cy.get(dashboardSelector.createWorkspaceButton).should("be.disabled");
         cy.get(dashboardSelector.inputLabelError).verifyVisibleElement(
             "have.text",
             "Workspace slug can't be empty"
@@ -174,8 +176,15 @@ describe("Workspace", () => {
         cy.url().should("eq", `${Cypress.config('baseUrl')}/${data.workspaceSlug}`);
 
         cy.get(commonSelectors.workspaceName).click();
-        cy.get(commonSelectors.editRectangleIcon).click();
-
+        cy.get(`[data-cy="${data.workspaceName.toLowerCase()}-name-selector"] > span`)
+        .parents('[class*="align-items-center"]').realHover().trigger('hover').then(()=>{
+            cy.wait(500);
+            cy.hideTooltip();
+            cy.wait(500);
+            cy.get('[data-cy="current-org-indicator"]').eq(0)
+            .click(); 
+        }) 
+       
         cy.get(dashboardSelector.editWorkspaceTitle).verifyVisibleElement(
             "have.text",
             "Edit workspace"
@@ -263,13 +272,18 @@ describe("Workspace", () => {
         cy.get(commonSelectors.cancelButton).click();
 
         cy.wait(3000);
+       
         cy.get(commonSelectors.workspaceName).click();
-        cy.get(commonSelectors.editRectangleIcon).click();
-        cy.get(commonWidgetSelector.modalCloseButton).click();
-        cy.get(commonSelectors.workspaceName).click();
-        cy.get(commonSelectors.editRectangleIcon).click();
+        cy.get(`[data-cy="${data.workspaceName.toLowerCase()}-name-selector"] > span`)
+        .parents('[class*="align-items-center"]').realHover().trigger('hover').then(()=>{
+            cy.wait(500);
+            cy.hideTooltip();
+            cy.wait(500);
+            cy.get('[data-cy="current-org-indicator"]').eq(0)
+            .click(); 
+        }) 
 
-        cy.get(commonSelectors.workspaceNameInputField).verifyVisibleElement(
+        cy.get(commonSelectors.workspaceNameinput).verifyVisibleElement(
             "have.value",
             data.workspaceName
         );

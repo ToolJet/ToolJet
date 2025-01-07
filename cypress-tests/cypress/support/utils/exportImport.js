@@ -41,6 +41,11 @@ export const verifyElementsOfExportModal = (
     commonSelectors.buttonSelector(exportAppModalText.exportSelectedVersion)
   ).verifyVisibleElement("have.text", exportAppModalText.exportSelectedVersion);
   cy.get(exportAppModalSelectors.modalCloseButton).should("be.visible");
+  cy.get('input[type="checkbox"]')
+  .parent() 
+  .contains("Export ToolJet table schema") 
+  .should("be.visible"); 
+
 };
 
 export const createNewVersion = (newVersion = [], version) => {
