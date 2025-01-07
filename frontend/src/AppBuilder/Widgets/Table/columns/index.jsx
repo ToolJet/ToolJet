@@ -14,6 +14,7 @@ import { CustomSelect } from '../CustomSelect';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import Text from '../Text';
 import StringColumn from '../String';
+import Json from '../Json';
 
 export default function generateColumnsData({
   columnProperties,
@@ -186,7 +187,6 @@ export default function generateColumnsData({
 
         switch (columnType) {
           case 'string':
-          case 'json':
           case undefined:
           case 'default': {
             const cellTextColor = getResolvedValue(column.textColor, { cellValue, rowData }) ?? '';
@@ -713,6 +713,25 @@ export default function generateColumnsData({
                   toggleOffBg={column?.toggleOffBg}
                 />
               </div>
+            );
+          }
+          case 'json': {
+            return (
+              <Json
+                isEditable={isEditable}
+                darkMode={darkMode}
+                handleCellValueChange={handleCellValueChange}
+                cellTextColor={cellTextColor}
+                horizontalAlignment={horizontalAlignment}
+                cellValue={cellValue}
+                column={column}
+                currentState={currentState}
+                containerWidth={width}
+                cell={cell}
+                isMaxRowHeightAuto={isMaxRowHeightAuto}
+                cellSize={cellSize}
+                maxRowHeightValue={maxRowHeightValue}
+              />
             );
           }
         }

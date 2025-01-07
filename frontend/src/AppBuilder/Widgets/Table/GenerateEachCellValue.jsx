@@ -29,7 +29,7 @@ export default function GenerateEachCellValue({
 
   const [showHighlightedCells, setHighlighterCells] = React.useState(globalFilter ? true : false);
   // const [isNullCellClicked, setIsNullCellClicked] = React.useState(false);
-  const columnTypeAllowToRenderMarkElement = ['text', 'string', 'default', 'number', 'json', undefined];
+  const columnTypeAllowToRenderMarkElement = ['text', 'string', 'default', 'number', undefined];
   const ref = useRef();
   const [showOverlay, setShowOverlay] = useState(false);
   const [hovered, setHovered] = useState(false);
