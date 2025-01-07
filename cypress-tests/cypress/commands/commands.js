@@ -417,6 +417,9 @@ Cypress.Commands.add("releaseApp", () => {
 Cypress.Commands.add("backToApps", () => {
   cy.get(commonSelectors.editorPageLogo).click();
   cy.get(commonSelectors.backToAppOption).click();
+  cy.intercept("GET", "/api/library_apps/").as("library_apps");
+  cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
+  cy.wait("@library_apps");
 });
 
 Cypress.Commands.add("removeAssignedApps", () => {

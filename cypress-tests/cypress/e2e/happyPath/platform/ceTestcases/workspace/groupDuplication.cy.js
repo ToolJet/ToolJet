@@ -49,7 +49,7 @@ describe("Groups duplication", () => {
       "have.class",
       "disable"
     );
-    cy.duplicateMultipleGroups(["Admin", "Builder", "End-user"]);
+    duplicateMultipleGroups(["Admin", "Builder", "End-user"]);
     createGroupAddAppAndUserToGroup(data.groupName, data.email);
     groupPermission(
       [

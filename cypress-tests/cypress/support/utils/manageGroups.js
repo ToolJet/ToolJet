@@ -8,6 +8,7 @@ import { onboardingSelectors } from "Selectors/onboarding";
 import { fetchAndVisitInviteLink } from "Support/utils/onboarding";
 import { usersSelector } from "Selectors/manageUsers";
 import { fillUserInviteForm } from "Support/utils/manageUsers";
+import { navigateToManageUsers, logout } from "Support/utils/common";
 
 export const manageGroupsElements = () => {
   cy.get('[data-cy="page-title"]').should(($el) => {
@@ -716,14 +717,14 @@ export const OpenGroupCardOption = (groupName) => {
     });
 };
 
-Cypress.Commands.add("duplicateMultipleGroups", (groupNames) => {
+export const duplicateMultipleGroups = (groupNames) => {
   groupNames.forEach((groupName) => {
     OpenGroupCardOption(groupName);
     cy.wait(3000);
     cy.get(commonSelectors.duplicateOption).click(); // Click on the duplicate option
     cy.get(commonSelectors.confirmDuplicateButton).click(); // Confirm duplication if needed
   });
-});
+}
 
 export const verifyGroupCardOptions = (groupName) => {
   cy.get(groupsSelector.groupLink(groupName)).click();
@@ -858,12 +859,13 @@ export const createGroupsAndAddUserInGroup = (groupName, email) => {
     groupsText.userAddedToast
   );
 };
+
 export const inviteUserBasedOnRole = (firstName, email, role = "end-user") => {
   fillUserInviteForm(firstName, email);
 
   cy.get(".css-1dyz3mf").type(`${role}{enter}`);
   cy.get(usersSelector.buttonInviteUsers).click();
-  cy.wait(2000);
+  cy.wait(500);
 
   fetchAndVisitInviteLink(email);
   cy.wait(2000);
@@ -871,7 +873,47 @@ export const inviteUserBasedOnRole = (firstName, email, role = "end-user") => {
   cy.get(onboardingSelectors.loginPasswordInput).should("be.visible");
   cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
   cy.get(commonSelectors.continueButton).click();
-  cy.wait(2000);
+  cy.wait(500);
   cy.get(commonSelectors.acceptInviteButton).click();
+  cy.wait(500);
+};
+
+export const verifyBasicPermissions = (canCreate = true) => {
+  cy.get(commonSelectors.dashboardAppCreateButton).should(
+    canCreate ? "be.enabled" : "be.disabled"
+  );
+};
+
+export const setupWorkspaceAndInviteUser = (workspaceName, workspaceSlug, firstName, email, role = "end-user") => {
+  cy.apiCreateWorkspace(workspaceName, workspaceSlug);
+  cy.visit(workspaceSlug);
+  cy.wait(1000);
+  navigateToManageUsers();
+  inviteUserBasedOnRole(firstName, email, role);
   cy.wait(2000);
+};
+
+export const verifySettingsAccess = (shouldExist = true) => {
+  cy.get(commonSelectors.settingsIcon).click();
+  cy.get(commonSelectors.workspaceSettings).should(
+    shouldExist ? "exist" : "not.exist"
+  );
+};
+
+export const verifyUserPrivileges = (expectedButtonState, shouldHaveWorkspaceSettings) => {
+  cy.get(commonSelectors.dashboardAppCreateButton).should(expectedButtonState);
+  cy.get(commonSelectors.settingsIcon).click();
+
+  if (shouldHaveWorkspaceSettings) {
+    cy.get(commonSelectors.workspaceSettings).should("exist");
+  } else {
+    cy.get(commonSelectors.workspaceSettings).should("not.exist");
+  }
+};
+
+export const setupAndUpdateRole = (currentRole, endRole, email) => {
+  navigateToManageGroups();
+  updateRole(currentRole, endRole, email);
+  cy.wait(1000);
+  logout();
 };

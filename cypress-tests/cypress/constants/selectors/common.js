@@ -135,6 +135,7 @@ export const commonSelectors = {
   userAccountNameAvatar: '[data-cy="user-account-name-avatar"]',
   workspaceNameInputLabel: '[data-cy="onboarding-workspace-name-label"]',
   workspaceNameInputField: '[data-cy="onboarding-workspace-name-input"]',
+  workspaceNameinput: '[data-cy="workspace-name-input-field"]',
   backArrow: '[data-cy="back-arrow"]',
   backArrowText: '[data-cy="back-arrow-text"]',
   onboardingPorgressBubble: '[data-cy="onboarding-progress-bubbles"]',
