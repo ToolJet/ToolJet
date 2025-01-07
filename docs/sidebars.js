@@ -411,6 +411,7 @@ const sidebars = {
           'type': 'category',
           'label': 'Onboarding and Offboarding Users',
           'items': [
+            'user-management/onboard-users/overview',
             'user-management/onboard-users/invite-user',
             'user-management/onboard-users/bulk-invite-users',
             'user-management/onboard-users/archive-user',
