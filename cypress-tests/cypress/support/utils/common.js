@@ -241,3 +241,24 @@ export const verifyTooltipDisabled = (selector, message) => {
       cy.get(".tooltip-inner").last().should("have.text", message);
     });
 };
+
+export const deleteAllGroupChips = () => {
+  cy.get('body').then(($body) => {
+    if ($body.find('[data-cy="group-chip"]').length > 0) {
+      cy.get('[data-cy="group-chip"]').then(($groupChip) => {
+        if ($groupChip.is(':visible')) {
+          cy.get('[data-cy="group-chip"]').first().click();
+          cy.get('[data-cy="delete-button"]').click();
+          cy.get('[data-cy="yes-button"]').click();
+
+          cy.wait(2000); 
+          deleteAllGroupChips(); // Recursive call to delete next chip
+        } else {
+          cy.log("Group chip is present but not visible, skipping deletion");
+        }
+      });
+    } else {
+      cy.log("No group chips left to delete");
+    }
+  });
+}
