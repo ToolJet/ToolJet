@@ -36,7 +36,7 @@ Once a user is invited to the workspace, they will receive an email containing a
 
 ## User Status
 
-Admins can track the status of invited users as follows:
+Admins can track the status of users as follows:
 
 | <center> Status </center> | <center> Self-Hosted </center> | <center> Cloud </center> |
 |:-------:|:------------|:------|
