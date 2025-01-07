@@ -11,7 +11,7 @@ import {
   inviteUserWithUserRole,
   fetchAndVisitInviteLink,
 } from "Support/utils/manageUsers";
-import { addNewUser, visitWorkspaceInvitation } from "Support/utils/onboarding";
+import { addNewUser, visitWorkspaceInvitation,addNewUsertoworkspace } from "Support/utils/onboarding";
 import { commonText } from "Texts/common";
 import { setSignupStatus } from "Support/utils/manageSSO";
 import { ssoSelector } from "Selectors/manageSSO";
@@ -147,7 +147,10 @@ describe("user invite flow cases", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
 
+  
+
     addNewUser(data.firstName, data.email);
+   
     cy.logoutApi();
 
     cy.defaultWorkspaceLogin();
