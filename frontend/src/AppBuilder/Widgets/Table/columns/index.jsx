@@ -716,9 +716,11 @@ export default function generateColumnsData({
             );
           }
           case 'json': {
+            const jsonIndentation = getResolvedValue(column?.jsonIndentation) ?? true;
             return (
               <Json
                 isEditable={isEditable}
+                jsonIndentation={jsonIndentation}
                 darkMode={darkMode}
                 handleCellValueChange={handleCellValueChange}
                 cellTextColor={cellTextColor}

@@ -5,6 +5,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 
 const Json = ({
   isEditable,
+  jsonIndentation,
   darkMode,
   handleCellValueChange,
   cellTextColor,
@@ -17,7 +18,6 @@ const Json = ({
   cellSize,
   maxRowHeightValue,
 }) => {
-  const jsonIndentation = false;
   const ref = React.useRef(null);
 
   const [hovered, setHovered] = useState(false);

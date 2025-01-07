@@ -267,6 +267,24 @@ export const PropertiesTabElements = ({
           )}
         </div>
       )}
+      {column.columnType === 'json' && (
+        <div className="border mx-3 column-popover-card-ui" style={{ borderRadius: '6px', marginTop: '-8px' }}>
+          <div style={{ background: 'var(--surfaces-surface-02)', padding: '8px 12px' }}>
+            <ProgramaticallyHandleProperties
+              label="Indent"
+              currentState={currentState}
+              index={index}
+              darkMode={darkMode}
+              callbackFunction={onColumnItemChange}
+              property="jsonIndentation"
+              props={column}
+              component={component}
+              paramMeta={{ type: 'toggle', displayName: 'Indent' }}
+              paramType="properties"
+            />
+          </div>
+        </div>
+      )}
       <div className="border mx-3 column-popover-card-ui" style={{ borderRadius: '6px', marginTop: '-8px' }}>
         <div style={{ background: 'var(--surfaces-surface-02)', padding: '8px 12px' }}>
           <ProgramaticallyHandleProperties
