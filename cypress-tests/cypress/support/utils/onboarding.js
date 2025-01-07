@@ -148,6 +148,9 @@ export const userSignUp = (fullName, email, workspaceName) => {
     invitationLink = `/invitations/${resp.rows[0].invitation_token}`;
     cy.visit(invitationLink);
     cy.wait(4000);
+
+    // Nedd to add env check from config , will fix in EE
+    
     if (Cypress.env("environment") !== "Community") {
       // cy.clearAndType('[data-cy="onboarding-workspace-name-input"]', workspaceName);
       // cy.get('[data-cy="onboarding-submit-button"]').click();
