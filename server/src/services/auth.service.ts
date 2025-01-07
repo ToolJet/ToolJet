@@ -94,7 +94,10 @@ export class AuthService {
   }
 
   private async validateUser(email: string, password: string, organizationId?: string): Promise<User> {
-    const user = await this.usersService.findByEmail(email, organizationId, [ WORKSPACE_USER_STATUS.ACTIVE, WORKSPACE_USER_STATUS.ARCHIVED]);
+    const user = await this.usersService.findByEmail(email, organizationId, [
+      WORKSPACE_USER_STATUS.ACTIVE,
+      WORKSPACE_USER_STATUS.ARCHIVED,
+    ]);
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -1109,9 +1112,10 @@ export class AuthService {
 
     // logged in user and new user are different -> creating session
     if (loggedInUser?.id !== user.id) {
+      const clientIp = (request as any)?.clientIp;
       const session: UserSessions = await this.sessionService.createSession(
         user.id,
-        `IP: ${request?.clientIp || (request && requestIp.getClientIp(request)) || 'unknown'} UA: ${
+        `IP: ${clientIp || (request && requestIp.getClientIp(request)) || 'unknown'} UA: ${
           request?.headers['user-agent'] || 'unknown'
         }`,
         manager
@@ -1244,11 +1248,12 @@ export class AuthService {
     manager?: EntityManager
   ): Promise<any> {
     const request = RequestContext?.currentContext?.req;
+    const clientIp = (request as any)?.clientIp;
     const { id, email, firstName, lastName } = user;
 
     const session: UserSessions = await this.sessionService.createSession(
       user.id,
-      `IP: ${request?.clientIp || requestIp.getClientIp(request) || 'unknown'} UA: ${
+      `IP: ${clientIp || requestIp.getClientIp(request) || 'unknown'} UA: ${
         request?.headers['user-agent'] || 'unknown'
       }`,
       manager
