@@ -82,7 +82,7 @@ export const dataCards = [
         icon: Layers,
         title: "Overview",
         color: "text-blue-500",
-        content: "Gain a broad understanding of ToolJet's features and capabilities and how it simplifies app development with powerful tools and an intuitive interface.",
+        content: "Gain a broad understanding on connecting various data sources to ToolJet.",
         href: "/docs/2.50.0-LTS/data-sources/overview"
     },
     {
@@ -94,9 +94,9 @@ export const dataCards = [
     },
     {
         icon: Folder,
-        title: "Datasource Library",
+        title: "Data Source Library",
         color: "text-blue-500",
-        content: "Browse ToolJet's datasource library to connect with databases, APIs, and external services seamlessly.",
+        content: "Browse ToolJet's data source library to connect with databases, APIs, and external services seamlessly.",
         href: "/docs/2.50.0-LTS/tooljet-concepts/what-are-datasources/"
     },
     {
@@ -190,9 +190,9 @@ export const textLabels = {
         description: "Learn about the different methods you can use to deploy ToolJet"
     },
     deployOn: {
-        title: "Deploy on"
+        title: "Deployment"
     },
-    exploreMore: "Explore more details",
+    exploreMore: "Explore more",
     bringData: {
         title: "Bring your data to ToolJet",
         description: "Learn how to connect your data sources to ToolJet"
