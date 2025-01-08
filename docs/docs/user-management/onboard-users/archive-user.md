@@ -3,11 +3,11 @@ id: archive-user
 title: Archiving and Unarchiving Users
 ---
 
-Workspace admins can archive users in a workspace which will remove the access to the workspace for the user but will preserve all the apps and changes done by the user and the user can be re-invited to the workspace by unarchiving the user if needed.
+Admins can archive users in a workspace which will remove the access to the workspace for the user but will preserve all the apps and changes done by the user and the user can be re-invited to the workspace by unarchiving the user if needed.
 
 ## Steps to Archive User
 
-Role Required: **Workspace Admin** <br/>
+Role Required: **Admin** <br/>
 
 1. Click on the settings icon (⚙️) on the bottom left of your dashboard.
 
@@ -22,7 +22,12 @@ Role Required: **Workspace Admin** <br/>
 
 5. The status of the user will be updated to archived.
 
-<img className="screenshot-full" src="/img/user-management/onboard-user/archive-user/archived-user.png" alt="Workspace Level Permissions" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/user-management/onboard-user/archive-user/archived-user.png" alt="Workspace Level Permissions" />
+
+:::info
+1. Archived users will not be counted for billing/licensing.
+2. There must be at least one active admin; all the admins in a workspace cannot be archived.
+:::
 
 ## Steps to Unarchive User
 
@@ -41,4 +46,4 @@ Role Required: **Workspace Admin** <br/>
 
 4. The status of the user will be updated to invited/requested and the user will recive a new invitation mail to join the workspace.
 
-<img className="screenshot-full" src="/img/user-management/onboard-user/archive-user/unarchived-user.png" alt="Workspace Level Permissions" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/user-management/onboard-user/archive-user/unarchived-user.png" alt="Workspace Level Permissions" />
