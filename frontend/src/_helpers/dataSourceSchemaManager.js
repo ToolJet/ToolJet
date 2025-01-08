@@ -9,6 +9,7 @@ const ajvOptions = {
   // against the official 2020-12 standard in ways that conflict with custom keywords.
   validateSchema: false,
   coerceTypes: true,
+  errorDataPath: 'property',
 };
 
 export default class DataSourceSchemaManager {
@@ -25,24 +26,6 @@ export default class DataSourceSchemaManager {
       return { valid: false, errors: this.validate.errors };
     }
     return { valid: true, errors: [] };
-  }
-
-  validateDataForProperty(property, fieldValue) {
-    const { errors } = this.validateData({ [property]: { value: fieldValue } });
-
-    const propertyErrors = errors?.filter(
-      (error) =>
-        // Check for required field errors
-        (error.keyword === 'required' && error.params.missingProperty === property) ||
-        // Check for datatype errors
-        (error.keyword === 'type' && error.dataPath === `.${property}`) ||
-        // Check for other validation errors on this property
-        error.instancePath === `/${property}`
-    );
-
-    const errorsMessages = propertyErrors?.map((error) => error.message)?.join(', ');
-
-    return { valid: errorsMessages.length === 0, errors: errorsMessages };
   }
 
   getDefaults(options = {}) {
