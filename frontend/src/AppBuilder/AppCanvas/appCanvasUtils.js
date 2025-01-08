@@ -335,10 +335,7 @@ function calculateComponentPosition(component, existingComponents, layout, targe
   // Initialize position either from click or component layout
   let newLeft = component.layouts[layout].left;
   let newTop = component.layouts[layout].top;
-  // console.log(
-  //   { lastCanvasClickPosition, component, existingComponents, layout, targetParentId },
-  //   'lastCanvasClickPosition'
-  // );
+
   if (lastCanvasClickPosition && (!component.component?.parent || component.component?.parent === targetParentId)) {
     console.log(lastCanvasClickPosition, 'renderrrrrr');
     newLeft = Math.round(lastCanvasClickPosition.x / gridWidth);
@@ -393,170 +390,79 @@ function calculateComponentPosition(component, existingComponents, layout, targe
   return { newTop, newLeft };
 }
 
-// function calculateGroupPosition(components, existingComponents, layout, targetParentId) {
-//   const parentId = targetParentId || 'canvas';
-//   const gridWidth = useGridStore.getState().subContainerWidths[parentId];
-//   const lastCanvasClickPosition = useStore.getState().lastCanvasClickPosition;
-//   // Find the group bounds
-//   const groupBounds = components.reduce(
-//     (bounds, component) => {
-//       const compLayout = component.layouts[layout];
-//       return {
-//         left: lastCanvasClickPosition
-//           ? Math.round(lastCanvasClickPosition.x / gridWidth)
-//           : Math.min(bounds.top, compLayout.top),
-//         top: lastCanvasClickPosition
-//           ? Math.round(lastCanvasClickPosition.y / 10) * 10
-//           : Math.min(bounds.left, compLayout.left),
-//         right: Math.max(bounds.right, compLayout.left + compLayout.width),
-//         bottom: Math.max(bounds.bottom, compLayout.top + compLayout.height),
-//       };
-//     },
-//     { top: Infinity, left: Infinity, right: -Infinity, bottom: -Infinity }
-//   );
-
-//   console.log(groupBounds, 'groupBounds');
-
-//   // Calculate group dimensions
-//   const groupWidth = groupBounds.right - groupBounds.left;
-//   const groupHeight = groupBounds.bottom - groupBounds.top;
-
-//   // Calculate relative positions within group
-//   const relativePositions = components.map((component) => ({
-//     id: component.id,
-//     relativeTop: component.layouts[layout].top - groupBounds.top,
-//     relativeLeft: component.layouts[layout].left - groupBounds.left,
-//   }));
-
-//   // const gridWidth = useGridStore.getState().subContainerWidths[parentId];
-//   // const lastCanvasClickPosition = useStore.getState().lastCanvasClickPosition;
-
-//   // Initialize new group position
-//   let newLeft = groupBounds.left;
-//   let newTop = groupBounds.top;
-
-//   // Use click position for the entire group if available
-//   // if (lastCanvasClickPosition) {
-//   //   console.log(lastCanvasClickPosition, 'lastCanvasClickPosition');
-//   //   const clickX = Math.round(lastCanvasClickPosition.x / gridWidth);
-//   //   const clickY = Math.round(lastCanvasClickPosition.y / 10) * 10;
-
-//   //   // Adjust the entire group position based on click
-//   //   const offsetX = clickX - groupBounds.left;
-//   //   const offsetY = clickY - groupBounds.top;
-
-//   //   newLeft = offsetX;
-//   //   newTop = offsetY;
-//   // }
-
-//   // Ensure group stays within bounds
-//   if (newLeft + groupWidth > NO_OF_GRIDS) {
-//     newLeft = NO_OF_GRIDS - groupWidth;
-//   }
-//   newLeft = Math.max(0, newLeft);
-//   newTop = Math.max(0, newTop);
-
-//   // Find first non-overlapping position
-//   let foundSpace = false;
-//   const MAX_ITERATIONS = 1000;
-//   let safetyCounter = 0;
-
-//   while (!foundSpace && safetyCounter < MAX_ITERATIONS) {
-//     foundSpace = true;
-//     safetyCounter++;
-
-//     // Check for overlaps with existing components
-//     const hasOverlap = existingComponents.some((existing) => {
-//       // Skip components that are part of the group being moved
-//       if (components.some((comp) => comp.id === existing.id)) {
-//         return false;
-//       }
-
-//       const existingLayout = existing.layouts[layout];
-//       return (
-//         newTop < existingLayout.top + existingLayout.height &&
-//         newTop + groupHeight > existingLayout.top &&
-//         newLeft < existingLayout.left + existingLayout.width &&
-//         newLeft + groupWidth > existingLayout.left
-//       );
-//     });
-
-//     if (hasOverlap) {
-//       foundSpace = false;
-//       newTop += 10;
-//     }
-//   }
-
-//   // Safety fallback
-//   if (safetyCounter >= MAX_ITERATIONS) {
-//     console.warn('Group position calculation safety limit reached');
-//     newTop = 0;
-//     newLeft = 0;
-//   }
-
-//   // Return new positions for all components while maintaining relative positions
-//   return relativePositions.map((pos) => ({
-//     id: pos.id,
-//     top: newTop + pos.relativeTop,
-//     left: newLeft + pos.relativeLeft,
-//   }));
-// }
-
 function calculateGroupPosition(components, existingComponents, layout, targetParentId) {
-  const parentId = targetParentId || 'canvas';
-  const gridWidth = useGridStore.getState().subContainerWidths[parentId];
-  const lastCanvasClickPosition = useStore.getState().lastCanvasClickPosition;
-  // Find the top-left most component in the group to use as reference point
-  const groupBounds = components.reduce(
+  // Filter top-level components
+  const parentComponents = components.filter((c) => !c.component?.parent);
+  if (parentComponents.length === 0) {
+    return components.map((component) => ({
+      id: component.id,
+      top: component.layouts[layout].top,
+      left: component.layouts[layout].left,
+    }));
+  }
+
+  // Calculate group dimensions
+  const bounds = parentComponents.reduce(
     (bounds, component) => {
       const compLayout = component.layouts[layout];
       return {
-        left: lastCanvasClickPosition
-          ? Math.round(lastCanvasClickPosition.x / gridWidth)
-          : Math.min(bounds.top, compLayout.top),
-        top: lastCanvasClickPosition
-          ? Math.round(lastCanvasClickPosition.y / 10) * 10
-          : Math.min(bounds.left, compLayout.left),
+        minTop: Math.min(bounds.minTop, compLayout.top),
+        minLeft: Math.min(bounds.minLeft, compLayout.left),
+        maxRight: Math.max(bounds.maxRight, compLayout.left + compLayout.width),
+        maxBottom: Math.max(bounds.maxBottom, compLayout.top + compLayout.height),
       };
     },
-    { top: Infinity, left: Infinity }
+    { minTop: Infinity, minLeft: Infinity, maxRight: -Infinity, maxBottom: -Infinity }
   );
+  const groupDimensions = {
+    width: bounds.maxRight - bounds.minLeft,
+    height: bounds.maxBottom - bounds.minTop,
+  };
 
-  console.log(groupBounds, 'groupBounds');
-
-  // Calculate relative positions within group to maintain spacing
-  const relativePositions = components.map((component) => ({
-    id: component.id,
-    relativeTop: component.layouts[layout].top - groupBounds.top,
-    relativeLeft: component.layouts[layout].left - groupBounds.left,
-  }));
-
-  // Create a reference component representing the group's bounds
-  const referenceComponent = {
+  // Create a virtual component representing the entire group
+  const virtualGroupComponent = {
     layouts: {
       [layout]: {
-        top: groupBounds.top,
-        left: groupBounds.left,
-        width: Math.max(...components.map((c) => c.layouts[layout].left + c.layouts[layout].width)) - groupBounds.left,
-        height: Math.max(...components.map((c) => c.layouts[layout].top + c.layouts[layout].height)) - groupBounds.top,
+        top: bounds.minTop,
+        left: bounds.minLeft,
+        width: groupDimensions.width,
+        height: groupDimensions.height,
       },
     },
   };
-  console.log(referenceComponent, 'referenceComponent');
-  // Find position for the entire group
+
+  // Use calculateComponentPosition to find a suitable position for the group
   const { newTop, newLeft } = calculateComponentPosition(
-    referenceComponent,
+    virtualGroupComponent,
     existingComponents,
     layout,
     targetParentId
   );
-  console.log(newTop, newLeft, 'newTop, newLeft');
-  // Return new positions for all components while maintaining relative positions
-  return relativePositions.map((pos) => ({
-    id: pos.id,
-    top: newTop + pos.relativeTop,
-    left: newLeft + pos.relativeLeft,
-  }));
+
+  // Calculate position deltas
+  const deltaTop = newTop - bounds.minTop;
+  const deltaLeft = newLeft - bounds.minLeft;
+
+  // Return updated positions
+  return components.map((component) => {
+    const compLayout = component.layouts[layout];
+
+    // Only update position for top-level components
+    if (!component.component?.parent) {
+      return {
+        id: component.id,
+        top: compLayout.top + deltaTop,
+        left: compLayout.left + deltaLeft,
+      };
+    }
+
+    // Keep child components in their relative positions
+    return {
+      id: component.id,
+      top: compLayout.top,
+      left: compLayout.left,
+    };
+  });
 }
 
 export const debouncedPasteComponents = debounce(pasteComponents, 300);
