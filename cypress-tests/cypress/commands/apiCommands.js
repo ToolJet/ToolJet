@@ -132,8 +132,9 @@ Cypress.Commands.add(
     cy.window({ log: false }).then((win) => {
       win.localStorage.setItem("walkthroughCompleted", "true");
     });
-    cy.visit(`/${workspaceId}/apps/${appId}${slug}`);
-    cy.wait("@getAppData").then((interception) => {
+    cy.visit(`/${workspaceId}/apps/${appId}/${slug}`);
+
+    cy.wait('@getAppData').then((interception) => {
       // Assuming the response body is a JSON object
       const responseData = interception.response.body;
 
@@ -289,14 +290,12 @@ Cypress.Commands.add(
   }
 );
 
-Cypress.Commands.add(
-  "apiAddComponentToApp",
-  (appName, componentName, layoutConfig = {}) => {
-    cy.task("updateId", {
-      dbconfig: Cypress.env("app_db"),
-      sql: `select id from apps where name='${appName}';`,
-    }).then((resp) => {
-      const appId = resp.rows[0]?.id; // Safely access the id field
+Cypress.Commands.add("addComponentToApp", (appName, componentName, layoutConfig = {}) => {
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `select id from apps where name='${appName}';`,
+  }).then((resp) => {
+    const appId = resp.rows[0]?.id; // Safely access the id field
 
       if (!appId) {
         throw new Error(`App ID not found for appName: ${appName}`);

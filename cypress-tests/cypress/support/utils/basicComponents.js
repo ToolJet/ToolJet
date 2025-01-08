@@ -13,6 +13,12 @@ export const verifyComponent = (widgetName) => {
   }).should("be.visible");
 };
 
+export const verifyComponentinrightpannel = (widgetName) => {
+  cy.get(commonWidgetSelector.widgetBox(widgetName), {
+    timeout: 10000,
+  }).should("be.visible");
+};
+
 export const deleteComponentAndVerify = (widgetName) => {
   cy.get(commonWidgetSelector.draggableWidget(widgetName))
     .realHover()
@@ -30,7 +36,7 @@ export const deleteComponentAndVerify = (widgetName) => {
     `[class=go3958317564]`,
     "Component deleted! (ctrl + Z to undo)"
   );
-  cy.notVisible(commonWidgetSelector.draggableWidget(widgetName));
+   cy.notVisible(commonWidgetSelector.draggableWidget(widgetName));
 };
 
 export const verifyComponentWithOutLabel = (

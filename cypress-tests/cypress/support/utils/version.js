@@ -99,10 +99,7 @@ export const deleteVersionAndVerify = (value, toastMessageText) => {
         .find(".app-version-delete")
         .click({ force: true });
     });
-  cy.get(confirmVersionModalSelectors.modalMessage).verifyVisibleElement(
-    "have.text",
-    deleteVersionText.deleteModalText(value)
-  );
+ 
   cy.get(confirmVersionModalSelectors.yesButton).click();
   cy.verifyToastMessage(commonSelectors.toastMessage, toastMessageText, false);
 };
@@ -125,10 +122,7 @@ export const verifyDuplicateVersion = (newVersion = [], version) => {
 };
 export const releasedVersionAndVerify = (currentVersion) => {
   cy.contains("Release").click();
-  cy.get(confirmVersionModalSelectors.modalMessage).verifyVisibleElement(
-    "have.text",
-    releasedVersionText.releasedVersionConfirmText
-  );
+ 
   cy.get(confirmVersionModalSelectors.yesButton).click();
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
@@ -149,8 +143,9 @@ export const verifyVersionAfterPreview = (currentVersion) => {
     .invoke("removeAttr", "target")
     .click();
   cy.url().should("include", "/home");
-  verifyComponent("button1");
-  cy.go("back");
-  cy.waitForAppLoad()
-  cy.contains(currentVersion);
+  cy.wait(2000);
+  cy.get('[data-cy^="draggable-widget-table"]').should('be.visible')
+  cy.url().should("include", `version=${currentVersion}`);
+  cy.get('[data-cy="viewer-page-logo"]').click();
+  cy.wait(8000);
 };

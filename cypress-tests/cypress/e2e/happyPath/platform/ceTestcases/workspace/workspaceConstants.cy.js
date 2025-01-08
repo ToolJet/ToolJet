@@ -261,10 +261,13 @@ describe("Workspace constants", () => {
       "have.text",
       "Cancel"
     );
-    cy.get(workspaceConstantsSelectors.addConstantButton).verifyVisibleElement(
-      "have.text",
-      "Update"
-    );
+    cy.get(commonSelectors.cancelButton).click();
+    cy.wait(200);
+    cy.get(
+      workspaceConstantsSelectors.constantValue(data.constName)
+    ).verifyVisibleElement("have.text", data.constName);
+
+    cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
     cy.get(workspaceConstantsSelectors.addConstantButton).should("be.disabled");
 
     cy.get(commonSelectors.workspaceConstantValueInput).click();
@@ -272,7 +275,7 @@ describe("Workspace constants", () => {
       commonSelectors.workspaceConstantValueInput,
       data.newConstvalue
     );
-    cy.get(workspaceConstantsSelectors.addConstantButton).should("be.enabled");
+    cy.get(workspaceConstantsSelectors.addConstantButton).should("be.disabled");
     cy.get(commonSelectors.cancelButton).click();
     cy.get(
       workspaceConstantsSelectors.constantValue(data.constName)
@@ -321,6 +324,12 @@ describe("Workspace constants", () => {
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       "Constant deleted successfully"
+    );
+
+    // Deleting constants and verifying empty page
+    cy.get(workspaceConstantsSelectors.emptyStateHeader).verifyVisibleElement(
+      "have.text",
+      workspaceConstantsText.emptyStateHeader
     );
   });
 
@@ -382,6 +391,7 @@ describe("Workspace constants", () => {
   it("should verify the acess of global and secrets constants in app editor and inspector", () => {
     data.constName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
     data.constName1 = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
+    data.constName2 = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
     data.newConstvalue = `New ${data.constName}`;
     data.constantsName = fake.firstName
       .toLowerCase()
@@ -404,6 +414,19 @@ describe("Workspace constants", () => {
     cy.get(workspaceConstantsSelectors.constantsType("Global")).check();
     cy.get(workspaceConstantsSelectors.addConstantButton).click();
 
+    cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
+    cy.clearAndType(
+      commonSelectors.workspaceConstantNameInput,
+      data.constName2
+    );
+    cy.get(commonSelectors.workspaceConstantValueInput).click();
+    cy.clearAndType(
+      commonSelectors.workspaceConstantValueInput,
+      data.constName2
+    );
+    cy.get(workspaceConstantsSelectors.constantsType("Global")).check();
+    cy.get(workspaceConstantsSelectors.addConstantButton).click();
+
     // Create Secret constants
 
     cy.get(commonSelectors.workspaceConstantsIcon).click();
@@ -420,9 +443,32 @@ describe("Workspace constants", () => {
     cy.get(workspaceConstantsSelectors.constantsType("Secrets")).check();
     cy.get(workspaceConstantsSelectors.addConstantButton).click();
 
-    // verify global constant in components
+    // // Verify constants in inspector
 
     cy.openApp();
+    cy.get('[data-cy="left-sidebar-inspect-button"]').click();
+    cy.wait(1000);
+    cy.get('[data-cy="inspector-node-constants"] > .node-key').click();
+    cy.get(`[data-cy="inspector-node-${data.constName}"]`).should("be.visible");
+
+    // Verify constants in deleted constants in inspector
+    cy.backToApps();
+    cy.get(commonSelectors.workspaceConstantsIcon).click();
+    cy.get(
+      workspaceConstantsSelectors.constDeleteButton(data.constName2)
+    ).click();
+    cy.get(commonSelectors.yesButton).click();
+    cy.get(workspaceConstantsSelectors.constantValue(data.constName2)).should(
+      "not.exist"
+    );
+    cy.openApp();
+    cy.get('[data-cy="left-sidebar-inspect-button"]').click();
+    cy.wait(1000);
+    cy.get('[data-cy="inspector-node-constants"] > .node-key').click();
+    cy.get(`[data-cy="inspector-node-${data.constName2}"]`).should("not.exist");
+
+    // verify global constant in components
+
     cy.dragAndDropWidget("Text Input", 550, 150);
     cy.waitForAutoSave();
     cy.get('[data-cy="default-value-input-field"]').clearAndTypeOnCodeMirror(
@@ -436,7 +482,7 @@ describe("Workspace constants", () => {
       data.constName
     );
 
-    // verify secret constant in components
+    // // verify secret constant in components
 
     cy.dragAndDropWidget("Text Input", 550, 250);
     cy.waitForAutoSave();
@@ -447,15 +493,8 @@ describe("Workspace constants", () => {
       "secrets cannot be used in apps"
     );
 
-    // Verify constants in constants in inspector
-
+    // // Verify  constants in queries
     cy.get('[data-cy="left-sidebar-inspect-button"]').click();
-    cy.wait(1000);
-    cy.get('[data-cy="inspector-node-constants"] > .node-key').click();
-    cy.get(`[data-cy="inspector-node-${data.constName}"]`).should("be.visible");
-
-    // Verify constants in constants in queries
-
     cy.get('[data-cy="inspector-node-components"] > .node-key').click();
 
     cy.get(
@@ -466,6 +505,20 @@ describe("Workspace constants", () => {
       .invoke("text")
       .should("include", data.constName);
 
+    // Verifying constant in preview
+
+    cy.get('[data-cy="show-ds-popover-button"]').click();
+    cy.get('[data-cy="ds-run javascript code"]').click();
+    cy.reload();
+    cy.get('[data-cy="runjs-input-field"]').clearAndTypeOnCodeMirror(
+      `return constants.${data.constName}`
+    );
+    cy.get('[data-cy="query-preview-button"]').click();
+    cy.wait(500);
+    cy.get('[data-cy="preview-json-data-container"]').should(
+      "contain.text",
+      data.constName
+    );
     cy.backToApps();
 
     // Verify success and error message on ds connection
