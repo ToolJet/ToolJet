@@ -11,7 +11,7 @@ Users can be added to ToolJet either through an invitation or by signing up.
 
 ### Inviting User
 
-Admins can onboard users by sending invitations, either:
+Admins can onboard users by sending invitations:
 - **Individually**: Send a personalized invitation to a single user by entering their email address. For detailed steps, refer **[Inviting User](/docs/user-management/onboard-users/invite-user)** guide.
 - **In Bulk**: Upload a CSV file containing user details to invite multiple users at once. For detailed steps, refer **[Bulk Inviting User](/docs/user-management/onboard-users/bulk-invite-users)** guide.
 
