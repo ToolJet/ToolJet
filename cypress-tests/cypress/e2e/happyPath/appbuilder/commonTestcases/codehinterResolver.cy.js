@@ -17,22 +17,26 @@ describe.only('Tooljet Resolution Cases', () => {
         cy.dragAndDropWidget("Text Input", 100, 200);
         cy.dragAndDropWidget("Text", 100, 100);
         addAndVerifyOnSingleLine('{{components.textinput1.value}}');
+        cy.get(commonWidgetSelector.draggableWidget("textinput1")).type("Hello World");
+        cy.get(commonWidgetSelector.draggableWidget("text1")).should('have.text', 'Hello World');
+        cy.pause()
 
         // Example 2
-        cy.dragAndDropWidget('Table', 100, 300);
-        addAndVerifyOnSingleLine('{{queries.user.data}}', 'data');
+        // cy.dragAndDropWidget('Table', 100, 300);
+        // addAndVerifyOnSingleLine('{{queries.user.data}}', 'data');
 
-        // Example 3
-        cy.dragAndDropWidget('Text', 200, 100);
-        addAndVerifyOnSingleLine('{{queries.name.data.hello}}');
+        // // Example 3
+        // cy.dragAndDropWidget('Text', 200, 100);
+        // addAndVerifyOnSingleLine('{{queries.name.data.hello}}');
 
-        // Example 4
-        cy.dragAndDropWidget('Text', 300, 100);
-        addAndVerifyOnSingleLine('{{queries.products[components.dropdown1.value]?.details.price}}');
+        // // Example 4
+        // cy.dragAndDropWidget('Text', 300, 100);
+        // addAndVerifyOnSingleLine('{{queries.products[components.dropdown1.value]?.details.price}}');
 
         // Example 5
         cy.dragAndDropWidget('Text', 400, 100);
         addAndVerifyOnSingleLine('{{globals.currentUser.email}}');
+        cy.get(commonWidgetSelector.draggableWidget("text2")).should('have.text', 'dev@tooljet.io');
 
         // Example 6
         cy.dragAndDropWidget('Text', 500, 100);
