@@ -25,7 +25,7 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth }
   useHotkeys('meta+shift+z, control+shift+z', handleRedo, { enabled: mode === 'edit' });
 
   const paste = async () => {
-    if (isContainerFocused && navigator.clipboard && typeof navigator.clipboard.readText === 'function') {
+    if (navigator.clipboard && typeof navigator.clipboard.readText === 'function') {
       try {
         const cliptext = await navigator.clipboard.readText();
         pasteComponents(focusedParentIdRef.current, JSON.parse(cliptext));
