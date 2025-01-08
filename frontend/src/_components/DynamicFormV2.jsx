@@ -26,13 +26,15 @@ const DynamicFormV2 = ({
   setDefaultOptions,
   currentAppEnvironmentId,
   isGDS,
+  validationMessages,
+  setValidationMessages,
+  clearValidationMessages,
 }) => {
   // rename uiProperties everywhere
   const uiProperties = schema['tj:ui:properties'] || {};
   const dsm = React.useMemo(() => new DataSourceSchemaManager(schema), [schema]);
   const encryptedProperties = React.useMemo(() => dsm.getEncryptedProperties(), [dsm]);
   const [conditionallyRequiredProperties, setConditionallyRequiredProperties] = React.useState([]);
-  const [validationErrors, setValidationErrors] = React.useState([]);
   const [workspaceVariables, setWorkspaceVariables] = React.useState([]);
   const [currentOrgEnvironmentConstants, setCurrentOrgEnvironmentConstants] = React.useState([]);
   const [computedProps, setComputedProps] = React.useState({});
@@ -85,14 +87,16 @@ const DynamicFormV2 = ({
 
   React.useEffect(() => {
     const { valid, errors } = dsm.validateData(options);
-    if (valid) return;
 
-    setValidationErrors(errors);
-    const requiredFields = errors
-      .filter((error) => error.keyword === 'required')
-      .map((error) => error.params.missingProperty);
-
-    setConditionallyRequiredProperties(requiredFields);
+    if (valid) {
+      clearValidationMessages();
+    } else {
+      setValidationMessages(errors);
+      const requiredFields = errors
+        .filter((error) => error.keyword === 'required')
+        .map((error) => error.params.missingProperty);
+      setConditionallyRequiredProperties(requiredFields);
+    }
   }, [options]);
 
   React.useLayoutEffect(() => {
@@ -209,9 +213,10 @@ const DynamicFormV2 = ({
     const isRequired = required || conditionallyRequiredProperties.includes(key);
     const isEncrypted = widget === 'password-v3' || encryptedProperties.includes(key);
     const currentValue = options?.[key]?.value;
-    const checkValidation = (property, fieldValue) => {
-      const { valid, errors } = dsm.validateDataForProperty(property, fieldValue);
-      return { valid, message: errors };
+    const checkValidation = (property) => {
+      return validationMessages.hasOwnProperty(property)
+        ? { valid: false, message: validationMessages[property] }
+        : { valid: true, message: '' };
     };
 
     switch (widget) {
@@ -251,7 +256,7 @@ const DynamicFormV2 = ({
           helpText: helpText,
           value: currentValue || '',
           onChange: (e) => optionchanged(key, e.target.value, true),
-          validate: (e) => checkValidation(key, e.target.value),
+          validate: () => checkValidation(key),
           isGDS: true,
           workspaceVariables: [],
           workspaceConstants: [],
