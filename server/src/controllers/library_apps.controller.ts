@@ -1,4 +1,4 @@
-import { Controller, Post, UseGuards, Get, ForbiddenException, Body } from '@nestjs/common';
+import { Controller, Post, UseGuards, Get, ForbiddenException, Body, Param } from '@nestjs/common';
 import { LibraryAppCreationService } from '@services/library_app_creation.service';
 import { User } from 'src/decorators/user.decorator';
 import { App } from 'src/entities/app.entity';
@@ -16,13 +16,25 @@ export class LibraryAppsController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  async create(@User() user, @Body('identifier') identifier, @Body('appName') appName) {
+  async create(
+    @User() user,
+    @Body('identifier') identifier,
+    @Body('appName') appName,
+    @Body('dependentPluginsForTemplate') dependentPluginsForTemplate,
+    @Body('shouldAutoImportPlugin') shouldAutoImportPlugin
+  ) {
     const ability = await this.appsAbilityFactory.appsActions(user);
 
     if (!ability.can(APP_RESOURCE_ACTIONS.CREATE, App)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
-    const newApp = await this.libraryAppCreationService.perform(user, identifier, appName);
+    const newApp = await this.libraryAppCreationService.perform(
+      user,
+      identifier,
+      appName,
+      dependentPluginsForTemplate,
+      shouldAutoImportPlugin
+    );
 
     return newApp;
   }
@@ -37,5 +49,13 @@ export class LibraryAppsController {
   @UseGuards(JwtAuthGuard)
   async index() {
     return { template_app_manifests: TemplateAppManifests };
+  }
+
+  @Get(':identifier/plugins')
+  @UseGuards(JwtAuthGuard)
+  async findDepedentPluginsFromTemplateDefinition(@Param('identifier') identifier) {
+    const { pluginsToBeInstalled, pluginsListIdToDetailsMap } =
+      await this.libraryAppCreationService.findDepedentPluginsFromTemplateDefinition(identifier);
+    return { plugins_to_be_installed: pluginsToBeInstalled, plugins_detail_by_id: pluginsListIdToDetailsMap };
   }
 }
