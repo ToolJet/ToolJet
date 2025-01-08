@@ -11,8 +11,6 @@ import {
   App,
   OAuthUnauthorizedClientError,
   getRefreshedToken,
-  checkIfContentTypeIsURLenc,
-  checkIfContentTypeIsMultipartFormData,
   isEmpty,
   validateAndSetRequestOptionsBasedOnAuthType,
   sanitizeHeaders,
@@ -46,24 +44,94 @@ interface RestAPIResult extends QueryResult {
 }
 
 export default class RestapiQueryService implements QueryService {
-  /* Body params of the source will be overridden by body params of the query */
-  body(sourceOptions: any, queryOptions: any, hasDataSource: boolean): object {
-    const bodyToggle = queryOptions['body_toggle'];
-    if (bodyToggle) {
-      const jsonBody = queryOptions['json_body'];
-      if (!jsonBody) return undefined;
-      if (typeof jsonBody === 'string') return JSON5.parse(jsonBody);
-      else return jsonBody;
-    } else {
-      const _body = (queryOptions.body || []).filter((o) => {
-        return o.some((e) => !isEmpty(e));
-      });
+  async run(
+    sourceOptions: any,
+    queryOptions: any,
+    dataSourceId: string,
+    dataSourceUpdatedAt: string,
+    context?: { user?: User; app?: App }
+  ): Promise<RestAPIResult> {
+    const hasDataSource = dataSourceId !== undefined;
+    const url = this.constructUrl(sourceOptions, queryOptions, hasDataSource);
+    const _requestOptions = await this.constructValidatedRequestOptions(
+      context,
+      sourceOptions,
+      queryOptions,
+      hasDataSource,
+      url
+    );
 
-      if (!hasDataSource) return Object.fromEntries(_body);
+    if (_requestOptions.status === 'needs_oauth') return _requestOptions;
+    const requestOptions = _requestOptions.data as OptionsOfTextResponseBody;
 
-      const bodyParams = _body.concat(sourceOptions.body || []);
-      return Object.fromEntries(bodyParams);
+    try {
+      const response = await got(url, requestOptions);
+      const { result, requestObject, responseObject } = this.handleResponse(response);
+
+      return {
+        status: 'ok',
+        data: result,
+        metadata: {
+          request: requestObject,
+          response: responseObject,
+        },
+      };
+    } catch (error) {
+      throw this.handleError(error, sourceOptions);
     }
+  }
+
+  private async constructValidatedRequestOptions(
+    context: { user?: User; app?: App },
+    sourceOptions: any,
+    queryOptions: any,
+    hasDataSource: boolean,
+    url: string
+  ) {
+    const headers = sanitizeHeaders(sourceOptions, queryOptions, hasDataSource);
+    const method = queryOptions['method'];
+    const searchParams = this.buildSearchParams(sourceOptions, queryOptions, hasDataSource, url);
+    const _requestOptions: OptionsOfTextResponseBody = {
+      method,
+      ...this.fetchHttpsCertsForCustomCA(sourceOptions),
+      headers,
+      searchParams,
+      ...(queryOptions['retry_network_errors'] === true ? {} : { retry: 0 }),
+    };
+    this.addCookiesToRequest(sourceOptions, queryOptions, hasDataSource, _requestOptions);
+
+    const body = this.constructRequestBody(sourceOptions, queryOptions, hasDataSource);
+    this.addBodyToRequest(_requestOptions, body);
+
+    const authValidatedRequestOptions = await validateAndSetRequestOptionsBasedOnAuthType(
+      sourceOptions,
+      context,
+      _requestOptions
+    );
+    return authValidatedRequestOptions;
+  }
+
+  constructRequestBody(
+    sourceOptions: any,
+    queryOptions: any,
+    hasDataSource: boolean
+  ): undefined | string | Record<string, unknown> {
+    if (queryOptions.method === 'get') return undefined;
+    if (queryOptions['body_toggle']) {
+      // FIXME: Remove json_body usage with data migration
+      // For backward compatibility, check if JSON body was previously used
+      queryOptions['raw_body'] ||= queryOptions['json_body'];
+      return queryOptions['raw_body'];
+    }
+
+    const _body = (queryOptions.body || []).filter((o) => {
+      return o.some((e) => !isEmpty(e));
+    });
+    // Body params of the source will be overridden by body params of the query
+    if (!hasDataSource) return Object.fromEntries(_body);
+
+    const bodyParams = _body.concat(sourceOptions.body || []);
+    return Object.fromEntries(bodyParams);
   }
 
   isJson(str: string) {
@@ -75,29 +143,27 @@ export default class RestapiQueryService implements QueryService {
     return true;
   }
 
-  async run(
+  private maybeParseJson(body: string): any {
+    try {
+      return JSON5.parse(body);
+    } catch {
+      return body;
+    }
+  }
+
+  private constructUrl(sourceOptions: any, queryOptions: any, hasDataSource: boolean): string {
+    return hasDataSource ? `${sourceOptions.url || ''}${queryOptions.url || ''}` : queryOptions.url;
+  }
+
+  private buildSearchParams(
     sourceOptions: any,
     queryOptions: any,
-    dataSourceId: string,
-    dataSourceUpdatedAt: string,
-    context?: { user?: User; app?: App }
-  ): Promise<RestAPIResult> {
-    /* REST API queries can be adhoc or associated with a REST API datasource */
-    const hasDataSource = dataSourceId !== undefined;
-    const headers = sanitizeHeaders(sourceOptions, queryOptions, hasDataSource);
-    const headerEntries = Object.entries(headers);
-    const isUrlEncoded = checkIfContentTypeIsURLenc(headerEntries);
-    const isMultipartFormData = checkIfContentTypeIsMultipartFormData(headerEntries);
-
-    /* Prefixing the base url of datasource if datasource exists */
-    const url = hasDataSource ? `${sourceOptions.url || ''}${queryOptions.url || ''}` : queryOptions.url;
-
-    const method = queryOptions['method'];
-    const retryOnNetworkError = queryOptions['retry_network_errors'] === true;
-    const json = method !== 'get' ? this.body(sourceOptions, queryOptions, hasDataSource) : undefined;
-    const paramsFromUrl = urrl.parse(url, true).query;
+    hasDataSource: boolean,
+    url: string
+  ): URLSearchParams {
     const searchParams = new URLSearchParams();
 
+    // Add URL parameters from source options
     for (const param of sourceOptions.url_parameters || []) {
       const [key, value] = param;
       if (key && value) {
@@ -105,7 +171,9 @@ export default class RestapiQueryService implements QueryService {
       }
     }
 
-    // Append parameters individually to preserve duplicates
+    const paramsFromUrl = urrl.parse(url, true).query;
+
+    // Append parameters to preserve duplicates
     for (const [key, value] of Object.entries(paramsFromUrl)) {
       if (Array.isArray(value)) {
         value.forEach((val) => searchParams.append(key, val));
@@ -113,120 +181,123 @@ export default class RestapiQueryService implements QueryService {
         searchParams.append(key, String(value));
       }
     }
+
+    // Sanitize and append search parameters
     for (const [key, value] of sanitizeSearchParams(sourceOptions, queryOptions, hasDataSource)) {
       searchParams.append(key, String(value));
     }
 
-    const _requestOptions: OptionsOfTextResponseBody = {
-      method,
-      ...this.fetchHttpsCertsForCustomCA(sourceOptions),
-      headers,
-      searchParams,
-      ...(retryOnNetworkError ? {} : { retry: 0 }),
-    };
+    return searchParams;
+  }
 
+  private addCookiesToRequest(
+    sourceOptions: any,
+    queryOptions: any,
+    hasDataSource: boolean,
+    requestOptions: OptionsOfTextResponseBody
+  ) {
     const sanitizedCookies = sanitizeCookies(sourceOptions, queryOptions, hasDataSource);
     const cookieString = cookiesToString(sanitizedCookies);
     if (cookieString) {
-      _requestOptions.headers['Cookie'] = cookieString;
+      requestOptions.headers['Cookie'] = cookieString;
     }
+  }
 
-    const hasFiles = (json) => {
-      if (isEmpty(json)) return false;
+  private addBodyToRequest(requestOptions: OptionsOfTextResponseBody, body: any) {
+    const headers = requestOptions.headers as Record<string, string>;
+    const contentType = this.getContentType(headers);
 
-      return Object.values(json || {}).some((item) => {
-        return isFileObject(item);
-      });
-    };
+    switch (contentType) {
+      case 'application/json':
+        requestOptions.json = this.maybeParseJson(body);
+        break;
+      case 'application/x-www-form-urlencoded':
+        this.setFormUrlencodedBody(requestOptions, body);
+        break;
+      case 'multipart/form-data':
+        this.setMultipartFormDataBody(requestOptions, body);
+        break;
+      default:
+        requestOptions.body = body;
+        break;
+    }
+  }
 
-    if (isUrlEncoded) {
-      _requestOptions.form = json;
-    } else if (isMultipartFormData && hasFiles(json)) {
+  private getContentType(headers: Record<string, string>): string {
+    const contentTypeKey = Object.keys(headers).find((key) => key.toLowerCase() === 'content-type');
+    return contentTypeKey ? headers[contentTypeKey].toLowerCase() : 'application/json';
+  }
+
+  private setFormUrlencodedBody(requestOptions: OptionsOfTextResponseBody, body: any) {
+    typeof body === 'object' ? (requestOptions.form = body) : (requestOptions.body = body);
+  }
+
+  private setMultipartFormDataBody(requestOptions: OptionsOfTextResponseBody, body: any) {
+    if (body && Object.values(body).some(isFileObject)) {
       const form = new FormData();
-      for (const key in json) {
-        const value = json[key];
+      Object.entries(body).forEach(([key, value]: [string, Record<string, string>]) => {
         if (isFileObject(value)) {
-          const fileBuffer = Buffer.from(value?.base64Data || '', 'base64');
+          const fileBuffer = Buffer.from(value.base64Data || '', 'base64');
           form.append(key, fileBuffer, {
             filename: value?.name || '',
             contentType: value?.type || '',
             knownLength: fileBuffer.length,
           });
-        } else if (value !== undefined && value !== null) {
+        } else if (value != null) {
           form.append(key, value);
         }
-      }
-      _requestOptions.body = form;
-      _requestOptions.headers = { ..._requestOptions.headers, ...form.getHeaders() };
-    } else {
-      _requestOptions.json = json;
+      });
+      requestOptions.body = form;
+      requestOptions.headers = { ...requestOptions.headers, ...form.getHeaders() };
     }
+  }
 
-    const authValidatedRequestOptions = await validateAndSetRequestOptionsBasedOnAuthType(
-      sourceOptions,
-      context,
-      _requestOptions
+  private handleResponse(response: any) {
+    const result = this.getResponse(response);
+    const requestUrl = response?.request?.options?.url?.origin + response?.request?.options?.url?.pathname;
+    const requestObject = {
+      requestUrl,
+      url: response.requestUrl,
+      method: response.request.options.method,
+      headers: redactHeaders(response.request.options.headers),
+      params: urrl.parse(response.request.requestUrl, true).query,
+    };
+
+    const responseObject = {
+      statusCode: response.statusCode,
+      headers: redactHeaders(response.headers),
+    };
+
+    return { result, requestObject, responseObject };
+  }
+
+  private handleError(error: any, sourceOptions: any): Error {
+    console.error(
+      `Error while calling REST API endpoint. Status code: ${error?.response?.statusCode}, Message: ${error?.response?.body}`
     );
-    const { status, data } = authValidatedRequestOptions;
-    if (status === 'needs_oauth') return authValidatedRequestOptions;
-
-    const requestOptions = data as OptionsOfTextResponseBody;
 
     let result = {};
-    let requestObject = {};
-    let responseObject = {};
-
-    try {
-      const response = await got(url, requestOptions);
-      result = this.getResponse(response);
-
-      requestObject = {
-        url: response.requestUrl,
-        method: response.request.options.method,
-        headers: redactHeaders(response.request.options.headers),
-        params: urrl.parse(response.request.requestUrl, true).query,
+    if (error instanceof HTTPError) {
+      const requestUrl = error?.request?.options?.url?.origin + error?.request?.options?.url?.pathname;
+      const requestHeaders = cleanSensitiveData(error?.request?.options?.headers, ['authorization']);
+      result = {
+        requestObject: {
+          requestUrl,
+          requestHeaders,
+          requestParams: urrl.parse(error.request.requestUrl, true).query,
+        },
+        responseObject: {
+          statusCode: error.response.statusCode,
+          responseBody: error.response.body,
+        },
+        responseHeaders: error.response.headers,
       };
-
-      responseObject = {
-        statusCode: response.statusCode,
-        headers: redactHeaders(response.headers),
-      };
-    } catch (error) {
-      console.error(
-        `Error while calling REST API end point. status code: ${error?.response?.statusCode} message: ${error?.response?.body}`
-      );
-
-      if (error instanceof HTTPError) {
-        const requestUrl = error?.request?.options?.url?.origin + error?.request?.options?.url?.pathname;
-        const requestHeaders = cleanSensitiveData(error?.request?.options?.headers, ['authorization']);
-        result = {
-          requestObject: {
-            requestUrl,
-            requestHeaders,
-            requestParams: urrl.parse(error.request.requestUrl, true).query,
-          },
-          responseObject: {
-            statusCode: error.response.statusCode,
-            responseBody: error.response.body,
-          },
-          responseHeaders: error.response.headers,
-        };
-      }
-
-      if (sourceOptions['auth_type'] === 'oauth2' && error?.response?.statusCode == 401) {
-        throw new OAuthUnauthorizedClientError('Unauthorized status from API server', error.message, result);
-      }
-      throw new QueryError('Query could not be completed', error.message, result);
     }
 
-    return {
-      status: 'ok',
-      data: result,
-      metadata: {
-        request: requestObject,
-        response: responseObject,
-      },
-    };
+    if (sourceOptions['auth_type'] === 'oauth2' && error?.response?.statusCode === 401) {
+      throw new OAuthUnauthorizedClientError('Unauthorized status from API server', error.message, result);
+    }
+    throw new QueryError('Query could not be completed', error.message, result);
   }
 
   fetchHttpsCertsForCustomCA(sourceOptions: any) {
