@@ -46,7 +46,9 @@ const CustomMenuList = (props) => {
           backgroundColor: 'transparent',
         }}
         id="crash-hack-select"
+        name="crash-hack-select-1"
         type="text"
+        autoComplete="off"
       />
       <components.MenuList {...props} />
     </div>
@@ -118,7 +120,9 @@ export const Select = ({ value, onChange, meta, width = '144px' }) => {
             backgroundColor: 'transparent',
           }}
           id="crash-hack-select-container"
+          name="crash-hack-select-container-1"
           type="text"
+          autoComplete="off"
         />
         <SelectComponent
           options={meta.options}
