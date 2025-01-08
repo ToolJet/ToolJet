@@ -4,9 +4,40 @@ export const formConfig = {
   description: 'Wrapper for multiple components',
   defaultSize: {
     width: 13,
-    height: 330,
+    height: 480,
   },
   defaultChildren: [
+    {
+      componentName: 'Text',
+      slotName: 'header',
+      layout: {
+        top: 10,
+        left: 1,
+        height: 40,
+      },
+      properties: ['text'],
+      accessorKey: 'text',
+      styles: ['fontWeight', 'textSize', 'textColor'],
+      defaultValue: {
+        text: 'Form title',
+        textSize: 20,
+        textColor: '#000',
+      },
+    },
+    {
+      componentName: 'Button',
+      slotName: 'footer',
+      layout: {
+        top: 12,
+        left: 32,
+        height: 36,
+      },
+      properties: ['text'],
+      defaultValue: {
+        text: 'Button2',
+        padding: 'none',
+      },
+    },
     {
       componentName: 'Text',
       layout: {
@@ -242,6 +273,8 @@ export const formConfig = {
         value: true,
       },
     },
+    showHeader: { type: 'toggle', displayName: 'Header', accordian: 'Data' },
+    showFooter: { type: 'toggle', displayName: 'Footer', accordian: 'Data' },
   },
   events: {
     onSubmit: { displayName: 'On submit' },
@@ -317,7 +350,8 @@ export const formConfig = {
         value:
           "{{ {title: 'User registration form', properties: {firstname: {type: 'textinput',value: 'Maria',label:'First name', validation:{maxLength:6}, styles: {backgroundColor: '#f6f5ff',textColor: 'black'},},lastname:{type: 'textinput',value: 'Doe', label:'Last name', styles: {backgroundColor: '#f6f5ff',textColor: 'black'},},age:{type:'number', label:'Age'},}, submitButton: {value: 'Submit', styles: {backgroundColor: '#3a433b',borderColor:'#595959'}}} }}",
       },
-      buttonToSubmit: { value: '{{"none"}}' },
+      showHeader: { value: '{{true}}' },
+      showFooter: { value: '{{true}}' },
     },
     events: [],
     styles: {
