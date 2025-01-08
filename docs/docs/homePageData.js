@@ -41,14 +41,14 @@ export const setupCards = [
         icon: Cog,
         title: "System Requirements",
         color: "text-blue-500",
-        content: "Ensure your system meets the requirements for running ToolJet. Check hardware and software specifications to get the best performance from the platform.",
+        content: "Ensure your system meets the requirements for running ToolJet. Check hardware and software specifications to get the best performance.",
         href: "/docs/beta/setup/system-requirements"
     },
     {
         icon: Target,
         title: "Choose Your ToolJet",
         color: "text-blue-500",
-        content: "Discover the ideal ToolJet version for your development needs. Choose between our Long-Term Support (LTS) versions for stability and reliability, or explore Pre-Release versions to access the latest features. Select the option that best aligns with your project requirements ",
+        content: "Discover the ideal ToolJet version for your development needs. Choose between our LTS versions or explore Pre-Release versions.",
         href: "/docs/beta/setup/choose-your-tooljet/"
     },
     {
@@ -82,7 +82,7 @@ export const dataCards = [
         icon: Layers,
         title: "Overview",
         color: "text-blue-500",
-        content: "Gain a broad understanding of ToolJet's features and capabilities. Learn how it simplifies app development with powerful tools and an intuitive interface.",
+        content: "Gain a broad understanding of ToolJet's features and capabilities and how it simplifies app development with powerful tools and an intuitive interface.",
         href: "/docs/beta/data-sources/overview"
     },
     {
@@ -163,14 +163,14 @@ export const resourceCards = [
         icon: Flag,
         title: "Tracking",
         color: "text-blue-5000",
-        content: "ToolJet ensures user privacy by acting as a proxy, never storing data from sources. It offers anonymous usage tracking with options to disable features for enhanced control.",
+        content: "ToolJet ensures privacy by acting as a proxy, never storing data, and offers anonymous tracking with feature controls.",
         href: "/docs/beta/tracking"
     },
     {
         icon: ShieldCheck,
         title: "Security",
         color: "text-blue-500",
-        content: "ToolJet guarantees your data security with SOC 2 compliance, robust encryption, and secure credential handling. We never store your data, ensuring peace of mind with every connection",
+        content: "ToolJet ensures data security with SOC 2 compliance, encryption, and secure credential handling, never storing your data.",
         href: "/docs/beta/security"
     }
 ];
