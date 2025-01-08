@@ -114,7 +114,6 @@ export const Container = React.memo(
     }, [isViewerSidebarPinned, currentLayout, id, currentMode, pageSidebarStyle]);
 
     const handleCanvasClick = (e) => {
-      e.stopPropagation();
       setLastCanvasIdClick(id);
     };
 
