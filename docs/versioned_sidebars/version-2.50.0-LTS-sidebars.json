@@ -1,5 +1,6 @@
 {
   "docs": [
+    "doc-home-page",
     {
       "type": "category",
       "label": "Getting Started",
