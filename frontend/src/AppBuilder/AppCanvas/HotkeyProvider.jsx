@@ -13,7 +13,6 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth }
   const setWidgetDeleteConfirmation = useStore((state) => state.setWidgetDeleteConfirmation);
 
   const moveComponentPosition = useStore((state) => state.moveComponentPosition, shallow);
-  const [isContainerFocused, setContainerFocus] = useState(true);
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
   const enableReleasedVersionPopupState = useStore((state) => state.enableReleasedVersionPopupState, shallow);
   const clearSelectedComponents = useStore((state) => state.clearSelectedComponents, shallow);
@@ -22,7 +21,7 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth }
   useHotkeys('meta+shift+z, control+shift+z', handleRedo, { enabled: mode === 'edit' });
 
   const paste = async () => {
-    if (isContainerFocused && navigator.clipboard && typeof navigator.clipboard.readText === 'function') {
+    if (navigator.clipboard && typeof navigator.clipboard.readText === 'function') {
       try {
         const cliptext = await navigator.clipboard.readText();
         pasteComponents(focusedParentIdRef.current, JSON.parse(cliptext));
@@ -58,7 +57,6 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth }
       // Check if the click is within the canvas or modal
       const isCanvasOrModalClick =
         canvasRef.current?.contains(e.target) && modalContainer?.contains(e.target) !== false;
-
       if (isCanvasOrModalClick) {
         // If clicked anywhere in Modal, following condition plays
         if (modalContainer?.contains(e.target) === true) {
@@ -72,12 +70,6 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth }
           // Set the focusedParentId based on the canvas id
           focusedParentIdRef.current = canvasId === 'real-canvas' ? undefined : canvasId?.split('canvas-')[1];
         }
-
-        // Focus the container if it's not already focused
-        if (!isContainerFocused) setContainerFocus(true);
-      } else if (isContainerFocused) {
-        // Unfocus the container if the click is outside and it's currently focused
-        setContainerFocus(false);
       }
     };
 
@@ -86,7 +78,7 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth }
 
     // Cleanup function to remove the event listener
     return () => document.removeEventListener('click', handleClick);
-  }, [isContainerFocused, canvasRef]);
+  }, [canvasRef]);
 
   const handleHotKeysCallback = (key) => {
     if (shouldFreeze) {

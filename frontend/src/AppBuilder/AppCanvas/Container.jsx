@@ -115,11 +115,13 @@ export const Container = React.memo(
 
     const handleCanvasClick = useCallback(
       (e) => {
-        e.stopPropagation();
-        const rect = e.currentTarget.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        setLastCanvasClickPosition({ x, y });
+        const realCanvas = e.target.closest('.real-canvas');
+        if (realCanvas) {
+          const rect = realCanvas.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          setLastCanvasClickPosition({ x, y });
+        }
       },
       [setLastCanvasClickPosition]
     );

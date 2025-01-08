@@ -335,8 +335,12 @@ function calculateComponentPosition(component, existingComponents, layout, targe
   // Initialize position either from click or component layout
   let newLeft = component.layouts[layout].left;
   let newTop = component.layouts[layout].top;
-
+  // console.log(
+  //   { lastCanvasClickPosition, component, existingComponents, layout, targetParentId },
+  //   'lastCanvasClickPosition'
+  // );
   if (lastCanvasClickPosition && (!component.component?.parent || component.component?.parent === targetParentId)) {
+    console.log(lastCanvasClickPosition, 'renderrrrrr');
     newLeft = Math.round(lastCanvasClickPosition.x / gridWidth);
     newTop = Math.round(lastCanvasClickPosition.y / 10) * 10;
   }
@@ -389,18 +393,136 @@ function calculateComponentPosition(component, existingComponents, layout, targe
   return { newTop, newLeft };
 }
 
+// function calculateGroupPosition(components, existingComponents, layout, targetParentId) {
+//   const parentId = targetParentId || 'canvas';
+//   const gridWidth = useGridStore.getState().subContainerWidths[parentId];
+//   const lastCanvasClickPosition = useStore.getState().lastCanvasClickPosition;
+//   // Find the group bounds
+//   const groupBounds = components.reduce(
+//     (bounds, component) => {
+//       const compLayout = component.layouts[layout];
+//       return {
+//         left: lastCanvasClickPosition
+//           ? Math.round(lastCanvasClickPosition.x / gridWidth)
+//           : Math.min(bounds.top, compLayout.top),
+//         top: lastCanvasClickPosition
+//           ? Math.round(lastCanvasClickPosition.y / 10) * 10
+//           : Math.min(bounds.left, compLayout.left),
+//         right: Math.max(bounds.right, compLayout.left + compLayout.width),
+//         bottom: Math.max(bounds.bottom, compLayout.top + compLayout.height),
+//       };
+//     },
+//     { top: Infinity, left: Infinity, right: -Infinity, bottom: -Infinity }
+//   );
+
+//   console.log(groupBounds, 'groupBounds');
+
+//   // Calculate group dimensions
+//   const groupWidth = groupBounds.right - groupBounds.left;
+//   const groupHeight = groupBounds.bottom - groupBounds.top;
+
+//   // Calculate relative positions within group
+//   const relativePositions = components.map((component) => ({
+//     id: component.id,
+//     relativeTop: component.layouts[layout].top - groupBounds.top,
+//     relativeLeft: component.layouts[layout].left - groupBounds.left,
+//   }));
+
+//   // const gridWidth = useGridStore.getState().subContainerWidths[parentId];
+//   // const lastCanvasClickPosition = useStore.getState().lastCanvasClickPosition;
+
+//   // Initialize new group position
+//   let newLeft = groupBounds.left;
+//   let newTop = groupBounds.top;
+
+//   // Use click position for the entire group if available
+//   // if (lastCanvasClickPosition) {
+//   //   console.log(lastCanvasClickPosition, 'lastCanvasClickPosition');
+//   //   const clickX = Math.round(lastCanvasClickPosition.x / gridWidth);
+//   //   const clickY = Math.round(lastCanvasClickPosition.y / 10) * 10;
+
+//   //   // Adjust the entire group position based on click
+//   //   const offsetX = clickX - groupBounds.left;
+//   //   const offsetY = clickY - groupBounds.top;
+
+//   //   newLeft = offsetX;
+//   //   newTop = offsetY;
+//   // }
+
+//   // Ensure group stays within bounds
+//   if (newLeft + groupWidth > NO_OF_GRIDS) {
+//     newLeft = NO_OF_GRIDS - groupWidth;
+//   }
+//   newLeft = Math.max(0, newLeft);
+//   newTop = Math.max(0, newTop);
+
+//   // Find first non-overlapping position
+//   let foundSpace = false;
+//   const MAX_ITERATIONS = 1000;
+//   let safetyCounter = 0;
+
+//   while (!foundSpace && safetyCounter < MAX_ITERATIONS) {
+//     foundSpace = true;
+//     safetyCounter++;
+
+//     // Check for overlaps with existing components
+//     const hasOverlap = existingComponents.some((existing) => {
+//       // Skip components that are part of the group being moved
+//       if (components.some((comp) => comp.id === existing.id)) {
+//         return false;
+//       }
+
+//       const existingLayout = existing.layouts[layout];
+//       return (
+//         newTop < existingLayout.top + existingLayout.height &&
+//         newTop + groupHeight > existingLayout.top &&
+//         newLeft < existingLayout.left + existingLayout.width &&
+//         newLeft + groupWidth > existingLayout.left
+//       );
+//     });
+
+//     if (hasOverlap) {
+//       foundSpace = false;
+//       newTop += 10;
+//     }
+//   }
+
+//   // Safety fallback
+//   if (safetyCounter >= MAX_ITERATIONS) {
+//     console.warn('Group position calculation safety limit reached');
+//     newTop = 0;
+//     newLeft = 0;
+//   }
+
+//   // Return new positions for all components while maintaining relative positions
+//   return relativePositions.map((pos) => ({
+//     id: pos.id,
+//     top: newTop + pos.relativeTop,
+//     left: newLeft + pos.relativeLeft,
+//   }));
+// }
+
 function calculateGroupPosition(components, existingComponents, layout, targetParentId) {
+  const parentId = targetParentId || 'canvas';
+  const gridWidth = useGridStore.getState().subContainerWidths[parentId];
+  const lastCanvasClickPosition = useStore.getState().lastCanvasClickPosition;
   // Find the top-left most component in the group to use as reference point
   const groupBounds = components.reduce(
     (bounds, component) => {
       const compLayout = component.layouts[layout];
       return {
-        top: Math.min(bounds.top, compLayout.top),
-        left: Math.min(bounds.left, compLayout.left),
+        left: lastCanvasClickPosition
+          ? Math.round(lastCanvasClickPosition.x / gridWidth)
+          : Math.min(bounds.top, compLayout.top),
+        top: lastCanvasClickPosition
+          ? Math.round(lastCanvasClickPosition.y / 10) * 10
+          : Math.min(bounds.left, compLayout.left),
       };
     },
     { top: Infinity, left: Infinity }
   );
+
+  console.log(groupBounds, 'groupBounds');
 
   // Calculate relative positions within group to maintain spacing
   const relativePositions = components.map((component) => ({
@@ -420,7 +542,7 @@ function calculateGroupPosition(components, existingComponents, layout, targetPa
       },
     },
   };
-
+  console.log(referenceComponent, 'referenceComponent');
   // Find position for the entire group
   const { newTop, newLeft } = calculateComponentPosition(
     referenceComponent,
@@ -428,7 +550,7 @@ function calculateGroupPosition(components, existingComponents, layout, targetPa
     layout,
     targetParentId
   );
-
+  console.log(newTop, newLeft, 'newTop, newLeft');
   // Return new positions for all components while maintaining relative positions
   return relativePositions.map((pos) => ({
     id: pos.id,
@@ -446,7 +568,7 @@ export function pasteComponents(targetParentId, copiedComponentObj) {
   const components = useStore.getState().getCurrentPageComponents();
   const currentPageId = useStore.getState().getCurrentPageId();
   const { isCut = false, pageId, isCloning = false, newComponents: pastedComponents = [] } = copiedComponentObj;
-  const isGroup = findHighestLevelofSelection().length > 1;
+  const isGroup = findHighestLevelofSelection(pastedComponents).length > 1;
 
   // Prevent pasting if the parent subcontainer was deleted during a cut operation
   if (
@@ -496,7 +618,6 @@ export function pasteComponents(targetParentId, copiedComponentObj) {
       componentData.parent = `${componentMap[parentId]}-${childTabId}`;
     } else if (isChild) {
       const isParentInMap = componentMap[isChild] !== null;
-
       componentData.parent = isParentInMap ? componentMap[isChild] : isChild;
     }
 
@@ -541,7 +662,6 @@ export function pasteComponents(targetParentId, copiedComponentObj) {
       // Add already processed components to existingComponents
       const processedComponents = finalComponentWithUpdatedLayout || [];
       existingComponents = [...existingComponents, ...processedComponents];
-
       if (isGroup) {
         // Handle group positioning
         const groupPositions = calculateGroupPosition(
