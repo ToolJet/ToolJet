@@ -225,7 +225,7 @@ describe("App Editor", () => {
     verifyVersionAfterPreview((currentVersion = "v6"));
   });
 
-  it.only("Verify all functionality for the app release", () => {
+  it("Verify all functionality for the app release", () => {
     data.appName = `${fake.companyName}-App`;
     cy.apiCreateApp(data.appName);
 
