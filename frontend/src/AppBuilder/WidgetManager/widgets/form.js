@@ -273,8 +273,8 @@ export const formConfig = {
         value: true,
       },
     },
-    showHeader: { type: 'toggle', displayName: 'Header', accordian: 'Data' },
-    showFooter: { type: 'toggle', displayName: 'Footer', accordian: 'Data' },
+    showHeader: { type: 'toggle', displayName: 'Header' },
+    showFooter: { type: 'toggle', displayName: 'Footer' },
   },
   events: {
     onSubmit: { displayName: 'On submit' },
