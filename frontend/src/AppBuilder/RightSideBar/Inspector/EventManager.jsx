@@ -309,6 +309,10 @@ export const EventManager = ({
       delete updatedEvent.event.debounce;
     }
 
+    if (param === 'componentId') {
+      updatedEvent.event['componentSpecificActionHandle'] = undefined;
+    }
+
     if (param === 'componentSpecificActionHandle') {
       const getDefault = getComponentActionDefaultParams(updatedEvent.event?.componentId, value);
       updatedEvent.event['componentSpecificActionParams'] = getDefault;
