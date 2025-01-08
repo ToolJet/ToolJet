@@ -77,7 +77,7 @@ class DataSourceManagerComponent extends React.Component {
       datasourceName,
       creatingApp: false,
       validationError: [],
-      // validationFailed: false,
+      validationMessages: {},
     };
   }
 
@@ -158,7 +158,6 @@ class DataSourceManagerComponent extends React.Component {
       selectedDataSource: null,
       options: {},
       connectionTestError: null,
-      validationError: null,
       queryString: null,
       filteredDatasources: [],
       activeDatasourceList: '#alldatasources',
@@ -174,7 +173,6 @@ class DataSourceManagerComponent extends React.Component {
   optionchanged = (option, value) => {
     const stateToUpdate = {
       connectionTestError: null,
-      validationError: null,
       options: {
         ...this.state.options,
         [option]: { value: value },
@@ -206,7 +204,7 @@ class DataSourceManagerComponent extends React.Component {
       selectedDataSourcePluginId,
       dataSourceMeta,
       dataSourceSchema,
-      validationError,
+      validationMessages,
     } = this.state;
 
     const manifestFile = FetchManifest(selectedDataSource.kind);
@@ -354,6 +352,22 @@ class DataSourceManagerComponent extends React.Component {
     this.setState({ suggestingDatasources: true, activeDatasourceList: '#' });
   };
 
+  setValidationMessages = (errors) => {
+    const errorMap = errors.reduce((acc, error) => {
+      // Get property name from either required error or dataPath
+      const property =
+        error.keyword === 'required'
+          ? error.params.missingProperty
+          : error.dataPath?.replace(/^[./]/, '') || error.instancePath?.replace(/^[./]/, '');
+
+      if (property) {
+        acc[property] = error.message;
+      }
+      return acc;
+    }, {});
+    this.setState({ validationMessages: errorMap });
+  };
+
   renderSourceComponent = (kind, isPlugin = false) => {
     const { options, isSaving } = this.state;
 
@@ -371,7 +385,9 @@ class DataSourceManagerComponent extends React.Component {
         selectedDataSource={this.state.selectedDataSource}
         isEditMode={!isEmpty(this.state.selectedDataSource)}
         currentAppEnvironmentId={this.props.currentEnvironment?.id}
-        setValidationFailed={(status) => this.setState({ validationFailed: status })}
+        validationMessages={this.state.validationMessages}
+        setValidationMessages={this.setValidationMessages}
+        clearValidationMessages={() => this.setState({ validationMessages: {} })}
       />
     );
   };
