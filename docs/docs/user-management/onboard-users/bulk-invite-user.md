@@ -12,7 +12,7 @@ Role Required: **Admin**
 1. Click on the settings icon (⚙️) on the bottom left of your dashboard.
 
 2. Go to **Workspace settings > Users**. <br/> 
-    (Example URL - `https://app.tooljetcorp.com/nexus/workspace-settings/users`)
+    (Example URL - `https://app.corp.com/nexus/workspace-settings/users`)
 
 3. Click on **Add users** button.
 

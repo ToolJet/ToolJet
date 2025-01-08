@@ -12,7 +12,7 @@ Role Required: **Admin** <br/>
 1. Click on the settings icon (⚙️) on the bottom left of your dashboard.
 
 2. Go to **Workspace settings > Users**. <br/> 
-    (Example URL - `https://app.tooljetcorp.com/nexus/workspace-settings/users`)
+    (Example URL - `https://app.corp.com/nexus/workspace-settings/users`)
 
 3. Spot the user that need to be archived and click on the kebab menu located at the end of their row. 
 
@@ -31,14 +31,14 @@ Role Required: **Admin** <br/>
 
 ## Steps to Unarchive User
 
-Role Required: **Workspace Admin** <br/>
+Role Required: **Admin** <br/>
 
 1. Click on the settings icon (⚙️) on the bottom left of your dashboard.
 
 2. Go to **Workspace settings > Users**. <br/> 
-    (Example URL - `https://app.tooljetcorp.com/nexus/workspace-settings/users`)
+    (Example URL - `https://app.corp.com/nexus/workspace-settings/users`)
 
-3. Spot the user that need to be archived and click on the kebab menu located at the end of their row. 
+3. Spot the user that need to be unarchived and click on the kebab menu located at the end of their row. 
 
 <img className="screenshot-full" src="/img/user-management/onboard-user/archive-user/unarchive-user-menu.png" alt="Workspace Level Permissions" />
 
