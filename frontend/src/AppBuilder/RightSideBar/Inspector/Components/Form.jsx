@@ -26,9 +26,13 @@ export const Form = ({
 
   const { id } = component;
   const newOptions = [{ name: 'None', value: 'none' }];
-  Object.entries(allComponents).forEach(([componentId, component]) => {
-    if (component.component.parent === id && component?.component?.component === 'Button') {
-      newOptions.push({ name: component.component.name, value: componentId });
+  Object.entries(allComponents).forEach(([componentId, _component]) => {
+    const validParent =
+      _component.component.parent === id ||
+      _component.component.parent === `${id}-footer` ||
+      _component.component.parent === `${id}-header`;
+    if (validParent && _component?.component?.component === 'Button') {
+      newOptions.push({ name: _component.component.name, value: componentId });
     }
   });
 
