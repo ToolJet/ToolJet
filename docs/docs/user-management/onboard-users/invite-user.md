@@ -21,7 +21,7 @@ Role Required: **Admin** <br/>
 4. Fill out the following details:
     | Field | Required/Optional | Example |
     |:-----|:---------|:-------|
-    | Name | Required | Johe Doe |
+    | Name | Required | John Doe |
     | Email address | Required | john@corp.com |
     | Select groups | Required | USER ROLE: **Admin** |
     | | Optional | CUSTOM GROUPS: **Manager** |
