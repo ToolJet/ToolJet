@@ -5,6 +5,7 @@ import { ConfigHandle } from '@/AppBuilder/AppCanvas/ConfigHandle/ConfigHandle';
 import { useGridStore } from '@/_stores/gridStore';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { useExposeState } from '@/AppBuilder/_hooks/useModalCSA';
 var tinycolor = require('tinycolor2');
 
 export const Modal = function Modal({
@@ -25,7 +26,6 @@ export const Modal = function Modal({
     hideOnEsc,
     hideCloseButton,
     hideTitleBar,
-    loadingState,
     useDefaultButton,
     triggerButtonLabel,
     modalHeight,
@@ -34,8 +34,6 @@ export const Modal = function Modal({
     headerBackgroundColor,
     headerTextColor,
     bodyBackgroundColor,
-    disabledState,
-    visibility,
     triggerButtonBackgroundColor,
     triggerButtonTextColor,
     boxShadow,
@@ -135,6 +133,15 @@ export const Modal = function Modal({
     setShowModal(true);
   }
 
+  const { isDisabledTrigger, isDisabledModal, isVisible, isLoading } = useExposeState(
+    properties.loadingState,
+    properties.triggerVisibility,
+    properties.disabledModal,
+    properties.disabledTrigger,
+    setExposedVariables,
+    setExposedVariable
+  );
+
   useEffect(() => {
     if (showModal) {
       onShowSideEffects();
@@ -174,6 +181,7 @@ export const Modal = function Modal({
         ['#fff', '#ffffffff'].includes(bodyBackgroundColor) && darkMode ? '#1F2837' : bodyBackgroundColor,
       overflowX: 'hidden',
       overflowY: 'auto',
+      position: 'relative',
     },
     modalHeader: {
       backgroundColor:
@@ -184,7 +192,7 @@ export const Modal = function Modal({
       backgroundColor: triggerButtonBackgroundColor,
       color: triggerButtonTextColor,
       width: '100%',
-      display: visibility ? '' : 'none',
+      display: isVisible ? '' : 'none',
       '--tblr-btn-color-darker': tinycolor(triggerButtonBackgroundColor).darken(8).toString(),
       boxShadow,
     },
@@ -217,13 +225,13 @@ export const Modal = function Modal({
   return (
     <div
       className="container d-flex align-items-center"
-      data-disabled={disabledState}
+      data-disabled={isDisabledTrigger}
       data-cy={dataCy}
       style={{ height }}
     >
-      {useDefaultButton && (
+      {useDefaultButton && isVisible && (
         <button
-          disabled={disabledState}
+          disabled={isDisabledTrigger}
           className="jet-button btn btn-primary p-1 overflow-hidden"
           style={customStyles.buttonStyles}
           onClick={(event) => {
@@ -268,10 +276,12 @@ export const Modal = function Modal({
           hideCloseButton,
           hideModal,
           component,
+          modalHeight,
+          isDisabled: isDisabledModal,
           showConfigHandler: mode === 'edit',
         }}
       >
-        {!loadingState ? (
+        {!isLoading ? (
           <>
             <SubContainer
               id={`${id}`}
@@ -294,8 +304,19 @@ export const Modal = function Modal({
 };
 
 const Component = ({ children, ...restProps }) => {
-  const { customStyles, parentRef, id, title, titleAlignment, hideTitleBar, hideCloseButton, showConfigHandler } =
-    restProps['modalProps'];
+  const {
+    customStyles,
+    parentRef,
+    id,
+    title,
+    titleAlignment,
+    hideTitleBar,
+    hideCloseButton,
+    hideModal,
+    showConfigHandler,
+    isDisabled,
+    modalHeight,
+  } = restProps['modalProps'];
 
   const setSelectedComponentAsModal = useStore((state) => state.setSelectedComponentAsModal, shallow);
 
@@ -340,6 +361,20 @@ const Component = ({ children, ...restProps }) => {
         </BootstrapModal.Header>
       )}
       <BootstrapModal.Body style={{ ...customStyles.modalBody }} ref={parentRef} id={id} data-cy={`modal-body`}>
+        {isDisabled && (
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: modalHeight || '100%',
+              backgroundColor: 'rgba(255, 255, 255, 0.8)',
+              zIndex: 1,
+            }}
+          />
+        )}
         {children}
       </BootstrapModal.Body>
     </BootstrapModal>
