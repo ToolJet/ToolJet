@@ -461,12 +461,6 @@ describe("dashboard", () => {
 
     cy.get(commonSelectors.folderNameInput).should("be.visible");
 
-    // verifyModal(
-    //   commonText.updateFolderTitle,
-    //   commonText.updateFolderButton,
-    //   commonSelectors.folderNameInput
-    // );
-
     cy.clearAndType(commonSelectors.folderNameInput, data.updatedFolderName);
     closeModal(commonText.closeButton);
     cy.get(dashboardSelector.folderName(data.updatedFolderName)).should(
