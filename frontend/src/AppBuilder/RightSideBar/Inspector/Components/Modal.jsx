@@ -3,6 +3,7 @@ import Accordion from '@/_ui/Accordion';
 import { renderElement } from '../Utils';
 import { baseComponentProperties } from './DefaultComponent';
 import { resolveReferences } from '@/_helpers/utils';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 export const Modal = ({ componentMeta, darkMode, ...restProps }) => {
   const {
@@ -59,11 +60,18 @@ export const Modal = ({ componentMeta, darkMode, ...restProps }) => {
   const filteredProperties = properties.filter(
     (property) => property !== 'useDefaultButton' && property !== 'triggerButtonLabel'
   );
+  let updatedComponent = deepClone(component);
+  if (component.component.definition.properties.size.value === 'fullscreen') {
+    updatedComponent.component.properties.modalHeight = {
+      ...updatedComponent.component.properties.modalHeight,
+      isDisabled: true,
+    };
+  }
 
   const accordionItems = baseComponentProperties(
     filteredProperties,
     events,
-    component,
+    updatedComponent,
     componentMeta,
     layoutPropertyChanged,
     paramUpdated,
@@ -76,7 +84,7 @@ export const Modal = ({ componentMeta, darkMode, ...restProps }) => {
     darkMode
   );
 
-  accordionItems.splice(1, 0, ...conditionalAccordionItems(component));
+  accordionItems.splice(1, 0, ...conditionalAccordionItems(updatedComponent));
 
   accordionItems.push({
     title: `Additional Actions`,
