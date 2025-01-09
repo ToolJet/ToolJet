@@ -195,6 +195,7 @@ const EditorInput = ({
       from: word.from,
       options: completions,
       validFor: /^\{\{.*\}\}$/,
+      filter: false,
     };
   }
 
