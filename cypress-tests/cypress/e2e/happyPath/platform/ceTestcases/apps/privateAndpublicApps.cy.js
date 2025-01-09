@@ -251,7 +251,7 @@ describe(
       cy.get('[data-cy="viewer-page-logo"]').click();
 
       cy.logoutApi();
-
+      cy.wait(2000);
       userSignUp(data.firstName, data.email, data.workspaceName);
       cy.wait(1000);
       cy.visit("/");

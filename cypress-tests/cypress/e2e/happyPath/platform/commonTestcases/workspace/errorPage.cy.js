@@ -38,15 +38,17 @@ describe("Redirection error pages", () => {
         cy.logoutApi();
         cy.wait(3000);
 
-        cy.apiLogin("test@tooljet.com", "password");
+        cy.apiLogin("dev@tooljet.io", "password");
         cy.visit(`/applications/${data.lastName}`);
         cy.get(commonSelectors.backToHomeButton).click();
 
     });
 
     it("Verify error message in case of restricted access", () => {
-        data.slug = data.appName.toLowerCase().replace(/\s+/g, "-");
         data.appName = `${fake.companyName} App`;
+        data.slug = data.appName.toLowerCase().replace(/\s+/g, "-");
+       
+      
         cy.apiCreateApp(data.appName);
         cy.openApp();
         cy.wait(1000);
@@ -54,7 +56,7 @@ describe("Redirection error pages", () => {
         cy.get(commonWidgetSelector.shareAppButton).click();
         cy.wait(1000);
         cy.logoutApi();
-        cy.apiLogin("test@tooljet.com", "password");
+        cy.apiLogin("dev@tooljet.io", "password");
         cy.visit(`/applications/${data.slug}`);
         cy.get(commonSelectors.modalHeader).verifyVisibleElement(
             "have.text",
@@ -109,7 +111,7 @@ describe("Redirection error pages", () => {
         cy.get(commonSelectors.pageSectionHeader).should("be.visible");
 
         cy.logoutApi();
-        cy.apiLogin("test@tooljet.com", "password");
+        cy.apiLogin("dev@tooljet.io", "password");
         cy.wait(500);
 
         cy.visit(`${Cypress.config('baseUrl')}/applications/${data.slug}`);
@@ -130,7 +132,7 @@ describe("Redirection error pages", () => {
         cy.get(commonSelectors.backToHomeButton).click();
         cy.get(commonSelectors.pageSectionHeader).should("be.visible");
         logout();
-        cy.apiLogin("test@tooljet.com", "password");
+        cy.apiLogin("dev@tooljet.io", "password");
         cy.wait(500);
 
         cy.visit(`${Cypress.config('baseUrl')}/applications/${data.slug}`);

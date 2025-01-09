@@ -16,7 +16,7 @@ describe("Profile Settings", () => {
     common.navigateToProfile();
   });
 
-  // neeed to reset and seed bd after 1 run (as password changes will get 401 error )
+  // neeed to reset and seed db after 1 run (as password changes will get 401 error )
   it("Should verify the elements on profile settings page and name reset functionality", () => {
     profile.profilePageElements();
 

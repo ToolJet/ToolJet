@@ -187,7 +187,7 @@ export const fetchAndVisitInviteLink = (email) => {
           dbconfig: Cypress.env("app_db"),
           sql: `select invitation_token from organization_users where user_id='${userId}';`,
         }).then((resp) => {
-          organizationToken = resp.rows[0].invitation_token;
+          organizationToken = resp.rows[1].invitation_token;
           url = `/invitations/${invitationToken}/workspaces/${organizationToken}?oid=${workspaceId}`;
           cy.logoutApi();
           cy.wait(1000);

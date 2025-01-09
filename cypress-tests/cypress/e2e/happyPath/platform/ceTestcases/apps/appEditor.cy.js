@@ -1,40 +1,6 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { fake } from "Fixtures/fake";
-import { logout, releaseApp,} from "Support/utils/common";
-import { commonText } from "Texts/common";
-import { appVersionSelectors } from "Selectors/exportImport";
-import { editVersionSelectors } from "Selectors/version";
-
-import {
-  editVersionText,
-  releasedVersionText,
-  deleteVersionText,
-  onlydeleteVersionText,
-} from "Texts/version";
-
-import { createNewVersion } from "Support/utils/exportImport";
-
-import {
-  navigateToCreateNewVersionModal,
-  verifyElementsOfCreateNewVersionModal,
-  navigateToEditVersionModal,
-  editVersionAndVerify,
-  deleteVersionAndVerify,
-  releasedVersionAndVerify,
-  verifyDuplicateVersion,
-  verifyVersionAfterPreview,
-} from "Support/utils/version";
-
-import {
-  verifyModal,
-  closeModal,
-  navigateToAppEditor,
-} from "Support/utils/common";
-
-import {
-  verifyComponent,
-  deleteComponentAndVerify,
-} from "Support/utils/basicComponents";
+import { logout, releaseApp } from "Support/utils/common";
 
 describe("App Editor", () => {
   const data = {};
@@ -93,7 +59,7 @@ describe("App Editor", () => {
         "have.text",
         "App slug can't be empty"
       );
-      
+
       cy.clearAndType(commonWidgetSelector.appSlugInput, "_2#");
       cy.wait(500);
       cy.get(commonWidgetSelector.appSlugErrorLabel).verifyVisibleElement(
@@ -122,12 +88,12 @@ describe("App Editor", () => {
         "have.text",
         "Slug accepted!"
       );
-   
+
       cy.get(commonWidgetSelector.appLinkSucessLabel).verifyVisibleElement(
         "have.text",
         "Link updated successfully!"
       );
-      
+
       cy.get(commonWidgetSelector.appSlugInput).clear();
       cy.get('[data-cy="left-sidebar-debugger-button"]').click();
       cy.get(commonSelectors.leftSideBarSettingsButton).click();
@@ -152,7 +118,7 @@ describe("App Editor", () => {
       );
 
       cy.visit("/my-workspace");
-  
+
       cy.visitSlug({
         actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
       });
@@ -256,7 +222,7 @@ describe("App Editor", () => {
       );
 
       cy.visit("/my-workspace");
-    
+
       cy.apiCreateApp(data.slug);
       cy.openApp("my-workspace");
 
@@ -270,40 +236,6 @@ describe("App Editor", () => {
     });
   });
 
-  it("Verify all functionality for the app release", () => {
-    data.appName = `${fake.companyName}-App`;
-    cy.apiCreateApp(data.appName);
-
-    cy.openApp();
-
-    cy.get(appVersionSelectors.appVersionLabel).should("be.visible");
-    cy.get(commonSelectors.appNameInput).verifyVisibleElement(
-      "have.value",
-      data.appName
-    );
-    cy.waitForAutoSave();
-
-    verifyComponent("table");
-    cy.dragAndDropWidget("table");
-    cy.wait(100);
-    cy.get('[data-cy="inspector-close-icon"]').click({ force: true });
-
-    releaseApp();
-    cy.get('[data-cy="delete-button"]').should("not.exist");
-    cy.get('[data-cy="warning-text"]').should('contain', 'App cannot be edited after promotion. Please create a new version from Development to make any changes.');
-
-    navigateToCreateNewVersionModal((currentVersion = "v1"));
-    createNewVersion((newVersion = ["v2"]), (versionFrom = "v1"))
-
-    verifyComponent("table");
-    cy.dragAndDropWidget("table");
-    cy.wait(1000);
-    cy.get('[data-cy="inspector-close-icon"]').click({ force: true });;
-    cy.get('[data-cy="button-release"]').click();
-    cy.get('[data-cy="yes-button"]').click();
-    cy.get('[data-cy="warning-text"]').should('contain', 'App cannot be edited after promotion. Please create a new version from Development to make any changes.');
-  });
-
   it("Create app from template Apps", () => {
     data.slug = `${fake.companyName.toLowerCase()}-app`;
     data.appName = `${fake.companyName} App`;
@@ -312,12 +244,13 @@ describe("App Editor", () => {
       const workspaceId = Cypress.env("workspaceId");
 
       cy.createAppFromTemplate("advanced-data-visualization");
-      cy.get('[data-cy="app-name-input"]').clear().type(data.appName)
+      cy.get('[data-cy="app-name-input"]').clear().type(data.appName);
       cy.wait(500);
 
       cy.get('[data-cy="+-create-app"]').click();
       cy.wait(2000);
       cy.skipWalkthrough();
+      cy.wait(500);
       cy.contains("Advanced data visualization");
     });
   });

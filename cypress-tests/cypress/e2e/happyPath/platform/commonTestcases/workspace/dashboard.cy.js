@@ -196,7 +196,7 @@ describe("dashboard", () => {
     cy.apiLogin();
     cy.apiCreateApp(data.appName);
     cy.openApp();
-    cy.apiAddComponentToApp(data.appName, "text1", customLayout);
+    cy.addComponentToApp(data.appName, "text1", customLayout);
 
     cy.backToApps();
 
@@ -304,7 +304,7 @@ describe("dashboard", () => {
       .and("have.text", dashboardText.appClonedToast);
     cy.wait(3000);
     cy.renameApp(data.cloneAppName);
-    cy.apiAddComponentToApp(data.cloneAppName, "button", 25, 25);
+    cy.addComponentToApp(data.cloneAppName, "button", 25, 25);
     cy.backToApps();
     cy.wait("@appLibrary");
     cy.wait(1000);
@@ -365,7 +365,7 @@ describe("dashboard", () => {
     data.appName = `${fake.companyName}-App`;
     cy.defaultWorkspaceLogin();
     cy.createApp(data.appName);
-    cy.apiAddComponentToApp(data.appName, "text1", customLayout);
+    cy.addComponentToApp(data.appName, "text1", customLayout);
 
     cy.backToApps();
 
@@ -398,7 +398,7 @@ describe("dashboard", () => {
     cy.defaultWorkspaceLogin();
     cy.createApp(data.appName);
 
-    cy.apiAddComponentToApp(data.appName, "text1", customLayout);
+    cy.addComponentToApp(data.appName, "text1", customLayout);
 
     cy.backToApps();
 
@@ -460,12 +460,6 @@ describe("dashboard", () => {
       .and("have.text", "Edit folder");
 
     cy.get(commonSelectors.folderNameInput).should("be.visible");
-
-    // verifyModal(
-    //   commonText.updateFolderTitle,
-    //   commonText.updateFolderButton,
-    //   commonSelectors.folderNameInput
-    // );
 
     cy.clearAndType(commonSelectors.folderNameInput, data.updatedFolderName);
     closeModal(commonText.closeButton);
