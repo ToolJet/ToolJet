@@ -5,5 +5,5 @@ export const LEGACY_ITEMS = [
   'RadioButton',
   'Datepicker',
   'Modal',
-  'Textarea',
+  'TextArea',
 ];

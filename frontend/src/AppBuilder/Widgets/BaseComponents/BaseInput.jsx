@@ -1,12 +1,12 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import Label from '@/_ui/Label';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import * as Icons from '@tabler/icons-react';
 const tinycolor = require('tinycolor2');
 
-const RenderInput = (props) => {
-  return props.inputType !== 'textarea' ? <input {...props} /> : <textarea {...props} />;
-};
+const RenderInput = forwardRef((props, ref) => {
+  return props.inputType !== 'textarea' ? <input {...props} ref={ref} /> : <textarea {...props} ref={ref} />;
+});
 
 export const BaseInput = ({
   height,
@@ -141,7 +141,7 @@ export const BaseInput = ({
           defaultAlignment === 'top' &&
           ((width != 0 && label?.length != 0) || (auto && width == 0 && label && label?.length != 0))
             ? 'flex-column'
-            : 'align-items-center'
+            : inputType != 'textarea' && 'align-items-center'
         } ${direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''}
         ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
         ${visibility || 'invisible'}`}
@@ -163,6 +163,7 @@ export const BaseInput = ({
           isMandatory={isMandatory}
           _width={_width}
           labelWidth={labelWidth}
+          top={inputType === 'textarea' && defaultAlignment === 'side' && '9px'}
         />
 
         {showLeftIcon && (
