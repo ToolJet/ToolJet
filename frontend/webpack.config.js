@@ -90,7 +90,7 @@ module.exports = {
       '@white-label': path.resolve(__dirname, 'ce/white-label'),
     },
   },
-  devtool: environment === 'development' ? 'eval-cheap-source-map' : 'hidden-source-map',
+  devtool: environment === 'development' ? 'source-map' : 'hidden-source-map',
   module: {
     rules: [
       {
