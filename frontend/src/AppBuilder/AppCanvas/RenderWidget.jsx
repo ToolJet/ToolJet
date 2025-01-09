@@ -10,7 +10,7 @@ import ErrorBoundary from '@/_ui/ErrorBoundary';
 const shouldAddBoxShadowAndVisibility = [
   'Table',
   'TextInput',
-  'TextareaV2',
+  'TextArea',
   'PasswordInput',
   'NumberInput',
   'Text',

@@ -2,8 +2,8 @@ import React from 'react';
 import WidgetIcon from '@/../assets/images/icons/widgets';
 import { useTranslation } from 'react-i18next';
 
-const LEGACY_WIDGETS = ['ToggleSwitch', 'DropDown', 'Multiselect', 'TextArea'];
-const NEW_WIDGETS = ['ToggleSwitchV2', 'DropdownV2', 'MultiselectV2', 'TextareaV2'];
+const LEGACY_WIDGETS = ['ToggleSwitch', 'DropDown', 'Multiselect'];
+const NEW_WIDGETS = ['ToggleSwitchV2', 'DropdownV2', 'MultiselectV2', 'TextArea'];
 
 export const WidgetBox = ({ component, darkMode }) => {
   const { t } = useTranslation();

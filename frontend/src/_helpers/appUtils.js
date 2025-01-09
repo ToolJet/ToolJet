@@ -2337,7 +2337,7 @@ export const setMultipleComponentsSelected = (components) => {
 export const calculateMoveableBoxHeight = (componentType, layoutData, stylesDefinition, label) => {
   // Early return for non input components
   if (
-    !['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2', 'MultiselectV2', 'TextareaV2'].includes(componentType)
+    !['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2', 'MultiselectV2', 'TextArea'].includes(componentType)
   ) {
     return layoutData?.height;
   }

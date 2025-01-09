@@ -12,7 +12,6 @@ import { radiobuttonConfig } from './radiobutton';
 import { toggleswitchConfig } from './toggleswitch';
 import { toggleSwitchV2Config } from './toggleswitchv2';
 import { textareaConfig } from './textarea';
-import { textareaV2Config } from './textareaV2';
 import { daterangepickerConfig } from './daterangepicker';
 import { textConfig } from './text';
 import { imageConfig } from './image';
@@ -70,7 +69,6 @@ const widgets = {
   toggleswitchConfig, //!Depreciated
   toggleSwitchV2Config,
   textareaConfig, //! Deprecated
-  textareaV2Config,
   daterangepickerConfig,
   textConfig,
   imageConfig,

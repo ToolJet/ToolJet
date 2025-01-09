@@ -1823,9 +1823,7 @@ export const createComponentsSlice = (set, get) => ({
     const getAllExposedValues = get().getAllExposedValues;
     // Early return for non input components
     if (
-      !['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2', 'MultiselectV2', 'TextareaV2'].includes(
-        componentType
-      )
+      !['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2', 'MultiselectV2', 'TextArea'].includes(componentType)
     ) {
       return layoutData?.height;
     }
