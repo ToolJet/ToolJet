@@ -36,7 +36,8 @@ If you don't enter allowed domain then anyone with the login URL can sign-up to 
 
 7. Click on the **Save changes** button at the bottom of the page.
 
-Now, the users can signup on the deployed URL. (Example URL: `https://app.corp.com/signup`)
+Now, the users can signup on the ToolJet deployment URL. <br/>
+(Example URL: `https://app.corp.com/signup`)
 
 <img className="screenshot-full" src="/img/user-management/onboard-user/self-signup/instance-signup.png" alt="Workspace Level Permissions" />
 

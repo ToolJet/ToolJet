@@ -3,7 +3,7 @@ id: invite-user
 title: Inviting User
 ---
 
-Admins can invite users to a workspace using their email addresses and assign them specific **[roles](#)** and **[groups](#)** to manage permissions. The invited users receive an email with instructions to join the workspace, ensuring a seamless onboarding process.
+Admin users can invite users to a workspace using their email addresses and assign them specific **[roles](#)** and **[groups](#)** to manage permissions. The invited users receive an email with instructions to join the workspace, ensuring a seamless onboarding process.
 
 ## Steps to Invite a User
 
@@ -39,16 +39,15 @@ Once a user is invited to the workspace, they will receive an email containing a
 
 <img className="screenshot-full" src="/img/user-management/onboard-user/invite-user/email.png" alt="Workspace Level Permissions" />
 
-:::info
-On Self-Hosted ToolJet, admin can copy unique invitation URL and share with the user.
+## Invitation URL 
+
+On Self-Hosted ToolJet, admin users can copy unique invitation URL and share with the user.
 
 <img className="screenshot-full" src="/img/user-management/onboard-user/invite-user/copy-link.png" alt="Workspace Level Permissions" />
 
-:::
-
 ## User Status
 
-Admins can track the status of users as follows:
+Admin users can track the status of users as follows:
 
 ### Self-Hosted ToolJet
 

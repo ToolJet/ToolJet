@@ -3,7 +3,7 @@ id: bulk-invite-users
 title: Bulk Inviting Users
 ---
 
-Admins can bulk invite users to a workspace using a CSV file containing user email address, **[roles](#)**, **[groups](#)** and other details. The invited users receive an email with instructions to join the workspace, ensuring a seamless onboarding process.
+Admin users can bulk invite users to a workspace using a CSV file containing user email address, **[roles](#)**, **[groups](#)** and other details. The invited users receive an email with instructions to join the workspace, ensuring a seamless onboarding process.
 
 ## Steps to Bulk Invite Users
 
@@ -43,16 +43,15 @@ Once a user is invited to the workspace, they will receive an email containing a
 
 <img className="screenshot-full" src="/img/user-management/onboard-user/invite-user/email.png" alt="Workspace Level Permissions" />
 
-:::info
-On Self-Hosted ToolJet, admin can copy unique invitation URL and share with the user.
+## Invitation URL 
+
+On Self-Hosted ToolJet, admin users can copy unique invitation URL and share with the user.
 
 <img className="screenshot-full" src="/img/user-management/onboard-user/invite-user/copy-link.png" alt="Workspace Level Permissions" />
 
-:::
-
 ## User Status
 
-Admins can track the status of users as follows:
+Admin users can track the status of users as follows:
 
 ### Self-Hosted ToolJet
 
