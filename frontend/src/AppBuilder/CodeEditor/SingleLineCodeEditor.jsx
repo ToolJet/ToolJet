@@ -155,6 +155,7 @@ const EditorInput = ({
   delayOnChange = true, // Added this prop to immediately update the onBlurUpdate callback
   paramLabel = '',
   disabled = false,
+  onInputChange,
 }) => {
   const getSuggestions = useStore((state) => state.getSuggestions, shallow);
   function autoCompleteExtensionConfig(context) {
@@ -326,6 +327,7 @@ const EditorInput = ({
             onChange={(val) => {
               setFirstTimeFocus(false);
               handleOnChange(val);
+              onInputChange && onInputChange(val);
             }}
             basicSetup={{
               lineNumbers: showLineNumbers,
