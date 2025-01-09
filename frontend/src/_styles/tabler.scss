@@ -5370,7 +5370,8 @@ fieldset:disabled .btn {
 
 .modal-header .btn-close {
     padding: .75rem .75rem;
-    margin: -.75rem -.75rem -.75rem auto
+    margin: 0;
+    margin-right: 1rem;
 }
 
 .modal-title {
@@ -16524,17 +16525,6 @@ textarea[cols] {
     content: "...";
     -webkit-animation: animated-dots 1.2s steps(4, jump-none) infinite;
     animation: animated-dots 1.2s steps(4, jump-none) infinite
-}
-
-.modal-content .btn-close {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 3.5rem;
-    height: 3.5rem;
-    margin: 0;
-    padding: 0;
-    z-index: 10
 }
 
 .modal-body::-webkit-scrollbar {

@@ -10,6 +10,30 @@ import { useEventListener } from '@/_hooks/use-event-listener';
 
 var tinycolor = require('tinycolor2');
 
+// STYLE CONSTANTS
+// 1. Modal header
+const MODAL_HEADER = {
+  HEIGHT: 80,
+  HEIGHT_PX: `80px`,
+  CANVAS_HEIGHT: 10,
+};
+const MODAL_FOOTER = {
+  HEIGHT: 80,
+  HEIGHT_PX: `80px`,
+  CANVAS_HEIGHT: 10,
+};
+
+const getModalBodyHeight = (height, showHeader, showFooter) => {
+  let modalHeight = height.includes('px') ? parseInt(height, 10) : height;
+  if (showHeader) {
+    modalHeight = modalHeight - MODAL_HEADER.HEIGHT;
+  }
+  if (showFooter) {
+    modalHeight = modalHeight - MODAL_FOOTER.HEIGHT;
+  }
+  return `${Math.max(modalHeight, 40)}px`;
+};
+
 export const Modal = function Modal({
   id,
   component,
@@ -27,14 +51,17 @@ export const Modal = function Modal({
     closeOnClickingOutside = false,
     hideOnEsc,
     hideCloseButton,
-    hideTitleBar,
+    loadingState,
     useDefaultButton,
     triggerButtonLabel,
     modalHeight,
+    showHeader,
+    showFooter,
   } = properties;
+
   const {
     headerBackgroundColor,
-    headerTextColor,
+    footerBackgroundColor,
     bodyBackgroundColor,
     triggerButtonBackgroundColor,
     triggerButtonTextColor,
@@ -43,15 +70,16 @@ export const Modal = function Modal({
   const parentRef = useRef(null);
   const controlBoxRef = useRef(null);
   const isInitialRender = useRef(true);
-  const title = properties.title ?? '';
-  const titleAlignment = properties.titleAlignment ?? 'left';
   const size = properties.size ?? 'lg';
   const [modalWidth, setModalWidth] = useState();
   const mode = useStore((state) => state.currentMode, shallow);
   const isFullScreen = properties.size === 'fullscreen';
+
   const versionFriendlyHeight = backwardCompatibilityCheck ? modalHeight : height;
   const [modalContainerHeight, setModalContainerHeight] = useState(0);
   const computedCanvasHeight = isFullScreen ? 'calc(100vh - 56px)' : versionFriendlyHeight;
+
+  const computedHeight = getModalBodyHeight(modalHeight, showHeader, showFooter);
 
   /**** Start - Logic to reset the zIndex of modal control box ****/
   useEffect(() => {
@@ -85,7 +113,7 @@ export const Modal = function Modal({
   const onShowSideEffects = () => {
     const canvasElement = document.querySelector('.page-container.canvas-container');
     const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
-    const modalCanvasEl = document.getElementById(`canvas-${id}`);
+    // const modalCanvasEl = document.getElementById(`canvas-${id}`);
     const modalContainer = realCanvasEl.querySelector('.modal');
 
     if (canvasElement && realCanvasEl && modalContainer) {
@@ -94,7 +122,8 @@ export const Modal = function Modal({
 
       modalContainer.style.height = `${canvasElement.offsetHeight}px`;
       modalContainer.style.top = `${currentScroll}px`;
-      modalCanvasEl.style.height = computedCanvasHeight;
+      // modalCanvasEl.style.height = isFullScreen ? '100%' : computedHeight;
+      fireEvent('onOpen');
     }
   };
 
@@ -107,6 +136,7 @@ export const Modal = function Modal({
       canvasElement.style.overflow = 'auto';
       modalContainer.style.height = ``;
       modalContainer.style.top = ``;
+      fireEvent('onClose');
     }
   };
 
@@ -121,20 +151,6 @@ export const Modal = function Modal({
     onHideSideEffects();
     hideModal();
   };
-
-  const exposedVariables = {
-    open: async function () {
-      onShowModal();
-    },
-    close: async function () {
-      onHideModal();
-    },
-  };
-
-  useEffect(() => {
-    setExposedVariables(exposedVariables);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [exposedVariables]);
 
   // When query panel opens or closes, the modal container height should change to
   // accomodate the new height of the canvas
@@ -172,20 +188,21 @@ export const Modal = function Modal({
       return;
     }
 
-    fireEvent(!showModal ? 'onClose' : 'onOpen');
     const inputRef = document?.getElementsByClassName('tj-text-input-widget')?.[0];
     inputRef?.blur();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showModal]);
 
-  const { isDisabledTrigger, isDisabledModal, isVisible, isLoading } = useExposeState(
-    properties.loadingState,
-    properties.triggerVisibility,
-    properties.disabledModal,
-    properties.disabledTrigger,
+  const { isDisabledTrigger, isDisabledModal, isVisible, isLoading } = useExposeState({
+    loadingState: properties.loadingState,
+    visibleState: properties.triggerVisibility,
+    disabledModalState: properties.disabledModal,
+    disabledTriggerState: properties.disabledTrigger,
     setExposedVariables,
-    setExposedVariable
-  );
+    setExposedVariable,
+    onHideModal,
+    onShowModal,
+  });
 
   useEffect(() => {
     if (showModal) {
@@ -205,22 +222,11 @@ export const Modal = function Modal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modalHeight, size]);
 
-  useEffect(() => {
-    if (isInitialRender.current) {
-      isInitialRender.current = false;
-      return;
-    }
-
-    fireEvent(!showModal ? 'onClose' : 'onOpen');
-    const inputRef = document?.getElementsByClassName('tj-text-input-widget')?.[0];
-    inputRef?.blur();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showModal]);
-
   const backwardCompatibilityCheck = height == '34' || modalHeight != undefined ? true : false;
 
   const customStyles = {
     modalBody: {
+      height: backwardCompatibilityCheck ? computedHeight : height,
       backgroundColor:
         ['#fff', '#ffffffff'].includes(bodyBackgroundColor) && darkMode ? '#1F2837' : bodyBackgroundColor,
       overflowX: 'hidden',
@@ -230,7 +236,15 @@ export const Modal = function Modal({
     modalHeader: {
       backgroundColor:
         ['#fff', '#ffffffff'].includes(headerBackgroundColor) && darkMode ? '#1F2837' : headerBackgroundColor,
-      color: ['#000', '#000000', '#000000ff'].includes(headerTextColor) && darkMode ? '#fff' : headerTextColor,
+      height: MODAL_HEADER.HEIGHT_PX,
+      padding: 0,
+    },
+    modalFooter: {
+      backgroundColor:
+        ['#000', '#000000', '#000000ff'].includes(footerBackgroundColor) && darkMode ? '#fff' : footerBackgroundColor,
+      height: MODAL_FOOTER.HEIGHT_PX,
+      padding: 0,
+      borderTop: `1px solid var(--border-weak)`,
     },
     buttonStyles: {
       backgroundColor: triggerButtonBackgroundColor,
@@ -248,7 +262,7 @@ export const Modal = function Modal({
         const modalRef = parentRef?.current?.parentElement?.parentElement?.parentElement;
 
         if (modalRef && modalRef === event.target) {
-          onHideSideEffects();
+          onHideModal();
         }
       };
 
@@ -314,9 +328,6 @@ export const Modal = function Modal({
           customStyles,
           parentRef,
           id,
-          title,
-          titleAlignment,
-          hideTitleBar,
           hideCloseButton,
           onHideModal,
           component,
@@ -324,6 +335,10 @@ export const Modal = function Modal({
           isDisabled: isDisabledModal,
           showConfigHandler: mode === 'edit',
           fullscreen: isFullScreen,
+          darkMode,
+          width: modalWidth,
+          showHeader,
+          showFooter,
         }}
       >
         {!isLoading ? (
@@ -331,15 +346,15 @@ export const Modal = function Modal({
             <SubContainer
               id={`${id}`}
               canvasHeight={isFullScreen ? modalContainerHeight : modalHeight}
-              styles={{ backgroundColor: customStyles.modalBody.backgroundColor, height: modalHeight }}
+              styles={{ backgroundColor: customStyles.modalBody.backgroundColor, height: computedHeight }}
               canvasWidth={modalWidth}
               darkMode={darkMode}
             />
           </>
         ) : (
-          <div className="p-2">
+          <div className="p-2 tw-flex tw-items-center tw-justify-center tw-h-full ">
             <center>
-              <div className="spinner-border mt-5" role="status"></div>
+              <div className="spinner-border" role="status"></div>
             </center>
           </div>
         )}
@@ -348,20 +363,86 @@ export const Modal = function Modal({
   );
 };
 
+const ModalHeader = ({ id, customStyles, hideCloseButton, darkMode, width, onHideModal }) => {
+  return (
+    <BootstrapModal.Header style={{ ...customStyles.modalHeader }} data-cy={`modal-header`}>
+      <SubContainer
+        id={`${id}-header`}
+        canvasHeight={MODAL_HEADER.CANVAS_HEIGHT}
+        canvasWidth={width}
+        allowContainerSelect={false}
+        darkMode={darkMode}
+        styles={{
+          backgroundColor: 'transparent',
+        }}
+      />
+
+      {!hideCloseButton && (
+        <span
+          className="cursor-pointer"
+          data-cy={`modal-close-button`}
+          size="sm"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onHideModal();
+          }}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="icon icon-tabler icon-tabler-x"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            strokeWidth="2"
+            stroke="currentColor"
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </span>
+      )}
+    </BootstrapModal.Header>
+  );
+};
+
+const ModalFooter = ({ id, customStyles, darkMode, width }) => {
+  return (
+    <BootstrapModal.Footer style={{ ...customStyles.modalFooter }} data-cy={`modal-footer`}>
+      <SubContainer
+        id={`${id}-footer`}
+        canvasHeight={MODAL_FOOTER.CANVAS_HEIGHT}
+        canvasWidth={width}
+        allowContainerSelect={false}
+        darkMode={darkMode}
+        styles={{
+          margin: 0,
+          backgroundColor: 'transparent',
+        }}
+      />
+    </BootstrapModal.Footer>
+  );
+};
+
 const Component = ({ children, ...restProps }) => {
   const {
     customStyles,
     parentRef,
     id,
-    title,
-    titleAlignment,
-    hideTitleBar,
     showConfigHandler,
     isDisabled,
     modalHeight,
     onHideModal,
     hideCloseButton,
     fullscreen,
+    darkMode,
+    width,
+    showHeader,
+    showFooter,
   } = restProps['modalProps'];
 
   const setSelectedComponentAsModal = useStore((state) => state.setSelectedComponentAsModal, shallow);
@@ -381,55 +462,22 @@ const Component = ({ children, ...restProps }) => {
       {showConfigHandler && (
         <ConfigHandle
           id={id}
-          customClassName={hideTitleBar ? 'modalWidget-config-handle' : ''}
+          customClassName={showHeader ? '' : 'modalWidget-config-handle tw-h-0'}
           showHandle={showConfigHandler}
           setSelectedComponentAsModal={setSelectedComponentAsModal}
           componentType="Modal"
           isModalOpen={true}
         />
       )}
-      {!hideTitleBar && (
-        <BootstrapModal.Header style={{ ...customStyles.modalHeader }} data-cy={`modal-header`}>
-          <BootstrapModal.Title
-            style={{
-              textAlign: titleAlignment,
-              width: '100%',
-            }}
-            id="contained-modal-title-vcenter"
-            data-cy={`modal-title`}
-          >
-            {title}
-          </BootstrapModal.Title>
-          {!hideCloseButton && (
-            <span
-              className="cursor-pointer"
-              data-cy={`modal-close-button`}
-              size="sm"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onHideModal();
-              }}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="icon icon-tabler icon-tabler-x"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                strokeWidth="2"
-                stroke="currentColor"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </span>
-          )}
-        </BootstrapModal.Header>
+      {showHeader && (
+        <ModalHeader
+          id={id}
+          customStyles={customStyles}
+          hideCloseButton={hideCloseButton}
+          darkMode={darkMode}
+          width={width}
+          onHideModal={onHideModal}
+        />
       )}
       <BootstrapModal.Body style={{ ...customStyles.modalBody }} ref={parentRef} id={id} data-cy={`modal-body`}>
         {isDisabled && (
@@ -448,6 +496,7 @@ const Component = ({ children, ...restProps }) => {
         )}
         {children}
       </BootstrapModal.Body>
+      {showFooter && <ModalFooter id={id} darkMode={darkMode} customStyles={customStyles} width={width} />}
     </BootstrapModal>
   );
 };
