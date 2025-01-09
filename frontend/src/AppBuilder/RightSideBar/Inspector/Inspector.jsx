@@ -69,6 +69,7 @@ const NEW_REVAMPED_COMPONENTS = [
   'RadioButtonV2',
   'Button',
   'Icon',
+  'Image',
 ];
 
 export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selectedComponentId }) => {

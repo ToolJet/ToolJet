@@ -174,6 +174,7 @@ import Search01 from './Search01.jsx';
 import ShiftButtonIcon from './ShiftButtonIcon.jsx';
 import Unpin01 from './Unpin01.jsx';
 import WarningUserNotFound from './WarningUserNotFound.jsx';
+import AITag from './AITag.jsx';
 import Reset from './Reset.jsx';
 
 const Icon = (props) => {
@@ -530,6 +531,8 @@ const Icon = (props) => {
       return <TriangleUpCenter {...props} />;
     case 'TriangleDownCenter':
       return <TriangleDownCenter {...props} />;
+    case 'AI-tag':
+      return <AITag {...props} />;
     default:
       return <Apps {...props} />;
   }

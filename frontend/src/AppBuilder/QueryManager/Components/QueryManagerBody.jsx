@@ -279,6 +279,12 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
     if (isEmpty(selectableDataSources)) {
       return '';
     }
+    const isSampleDb = selectedDataSource?.type === DATA_SOURCE_TYPE.SAMPLE;
+    const docLink = isSampleDb
+      ? 'https://docs.tooljet.com/docs/data-sources/sample-data-sources'
+      : selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
+      ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
+      : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
     return (
       <>
         <div className="" ref={paramListContainerRef}>
@@ -299,7 +305,7 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
           >
             Source
           </div>
-          <div className="d-flex align-items-end" style={{ width: '364px' }}>
+          <div className="d-flex flex-column align-items-start" style={{ width: '500px' }}>
             <ChangeDataSource
               dataSources={selectableDataSources}
               value={selectedDataSource}
@@ -307,6 +313,18 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
                 changeDataQuery(newDataSource);
               }}
             />
+            <div>
+              {`To know more about querying ${selectedDataSource?.kind} data,`}
+              &nbsp;
+              <a
+                href={docLink}
+                target="_blank"
+                style={{ marginLeft: '0px !important', color: 'hsl(226, 70.0%, 55.5%)', textDecoration: 'underline' }}
+                rel="noreferrer"
+              >
+                {t('globals.readDocumentation', 'read documentation').toLowerCase()}
+              </a>
+            </div>
           </div>
         </div>
       </>

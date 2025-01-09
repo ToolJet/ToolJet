@@ -1,12 +1,11 @@
-First Name,Last Name,Email,Groups
-Test,Example,,All Users
-Test,Example,,All Users
-Test,Example,,All Users
-Test,Example,,All Users
-Test,Example,,All Users
-Test,Example,,All Users
-Test,Example,,All Users
-Test,Example,,All Users
-Test,Example,,All Users
-Test,Example,,All Users
-Test,Example,,All Users
+First Name,Last Name,Email,User Role,Group
+test,test,,Admin,Admin
+test,test,,Builder,Builder
+test,test,,Builder,Builder
+test,test,,End User,End User
+test,test,,End User,End User
+test,test,,End User,End User
+test,test,,End User,End User
+test,test,,End User,End User
+test,test,,End User,End User
+test,test,,End User,End User

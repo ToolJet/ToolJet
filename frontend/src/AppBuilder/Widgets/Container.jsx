@@ -65,7 +65,7 @@ export const Container = ({
 
   return (
     <div
-      className={`jet-container tw-flex tw-flex-col ${properties.loadingState && 'jet-container-loading'} ${
+      className={`jet-container tw-flex tw-flex-col ${isLoading ? 'jet-container-loading' : ''} ${
         properties.showHeader && 'jet-container--with-header'
       }`}
       id={id}

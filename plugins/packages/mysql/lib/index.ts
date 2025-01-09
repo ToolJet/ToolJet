@@ -45,11 +45,20 @@ export default class MysqlQueryService implements QueryService {
           throw new Error("Invalid query mode. Must be either 'sql' or 'gui'.");
       }
     } catch (err) {
-      throw new QueryError(
-        'Query could not be completed',
-        err instanceof Error ? err.message : 'An unknown error occurred',
-        {}
-      );
+      const errorMessage = err.message || 'An unknown error occurred';
+      const errorDetails: any = {};
+
+      if (err instanceof Error) {
+        const mysqlError = err as any;
+        const { code, errno, sqlMessage, sqlState } = mysqlError;
+
+        errorDetails.code = code || null;
+        errorDetails.errno = errno || null;
+        errorDetails.sqlMessage = sqlMessage || null;
+        errorDetails.sqlState = sqlState || null;
+      }
+
+      throw new QueryError('Query could not be completed', errorMessage, errorDetails);
     }
   }
 
