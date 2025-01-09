@@ -4,7 +4,6 @@ import { Text } from '@/Editor/Components/Text';
 import { Table } from '@/Editor/Components/Table/Table';
 import { TextInput } from '@/Editor/Components/TextInput';
 import { NumberInput } from '@/Editor/Components/NumberInput';
-import { TextArea } from '@/Editor/Components/TextArea';
 import { Container } from '@/Editor/Components/Container';
 import { Tabs } from '@/Editor/Components/Tabs';
 import { RichTextEditor } from '@/Editor/Components/RichTextEditor';
@@ -81,7 +80,6 @@ export const AllComponents = {
   TextInput,
   NumberInput,
   Table,
-  TextArea,
   Container,
   Tabs,
   RichTextEditor,
