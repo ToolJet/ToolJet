@@ -1,6 +1,6 @@
 ---
-id: overview
-title: Overview
+id: super-admin
+title: Super Admin
 ---
 
 On a self-hosted ToolJet a Super Admin is the user who has full access to all the Workspaces, Users, and Groups of an instance. An instance can have more than one Super Admin. A Super Admin has full control over other users' workspaces and can create users, groups, and other super admins. The user who creates the instance gets the Super Admin role by default.

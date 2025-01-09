@@ -414,8 +414,8 @@ const sidebars = {
             'user-management/onboard-users/overview',
             'user-management/onboard-users/invite-user',
             'user-management/onboard-users/bulk-invite-users',
+            'user-management/onboard-users/self-signup-user',
             'user-management/onboard-users/archive-user',
-            'user-management/onboard-users/self-signup-user'
           ]
         },
         {
@@ -432,14 +432,7 @@ const sidebars = {
           'type': 'category',
           'label': 'Role Based Access Control',
           'items': [
-            {
-              'type': 'category',
-              'label': 'Super Admins',
-              'items': [
-                'user-management/role-based-access/super-admin/overview',
-                'user-management/role-based-access/super-admin/settings'
-              ]
-            },
+            'user-management/role-based-access/super-admin',
             'user-management/role-based-access/user-roles',
             {
               'type': 'category',
