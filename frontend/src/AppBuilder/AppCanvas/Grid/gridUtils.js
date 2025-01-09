@@ -308,8 +308,8 @@ export function getMouseDistanceFromParentDiv(event, id, parentWidgetType) {
   return { top, left };
 }
 
-export function findHighestLevelofSelection() {
-  const selectedComponents = useStore.getState().getSelectedComponentsDefinition();
+export function findHighestLevelofSelection(selected) {
+  const selectedComponents = selected ?? useStore.getState().getSelectedComponentsDefinition();
   let result = [];
   if (selectedComponents.some((widget) => !widget?.component?.parent)) {
     result = selectedComponents.filter((widget) => !widget?.component?.parent);
