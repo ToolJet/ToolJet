@@ -5,6 +5,7 @@ export const cyParamName = (paramName = "") => {
 export const commonSelectors = {
   toastMessage: ".go3958317564",
   oldToastMessage: ".go318386747",
+  appSlugAccept: '[data-cy="app-slug-accepted-label"]',
   newToastMessage: '.drawer-container > [style="position: fixed; z-index: 9999; inset: 16px; pointer-events: none;"] > .go4109123758 > .go2072408551 > .go3958317564',
   toastCloseButton: '[data-cy="toast-close-button"]',
   editButton: "[data-cy=edit-button]",
@@ -14,6 +15,8 @@ export const commonSelectors = {
   canvas: "[data-cy=real-canvas]",
   appCardOptionsButton: "[data-cy=app-card-menu-icon]",
   autoSave: "[data-cy=autosave-indicator]",
+  nameInputFieldd: "[data-cy=name-input-field]",
+  valueInputFieldd: '[data-cy=value-input-field]',
   skipButton: ".driver-close-btn",
   skipInstallationModal: "[data-cy=skip-button]",
   homePageLogo: "[data-cy=home-page-logo]",
@@ -361,7 +364,7 @@ export const commonWidgetSelector = {
   inspectorNodeComponents: "[data-cy='inspector-node-components']> .node-key",
   nodeComponentValue: "[data-cy='inspector-node-value']> .mx-2",
   nodeComponentValues: "[data-cy='inspector-node-values']> .node-key",
-
+  slugAccept: '[data-cy="app-slug-accepted-label"]',
   widgetDocumentationLink: "[data-cy='widget-documentation-link']",
 
   boxShadowDefaultParam: ["x", "y", "blur", "spread"],

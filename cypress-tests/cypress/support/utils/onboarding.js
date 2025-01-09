@@ -148,11 +148,13 @@ export const userSignUp = (fullName, email, workspaceName) => {
     invitationLink = `/invitations/${resp.rows[0].invitation_token}`;
     cy.visit(invitationLink);
     cy.wait(4000);
-    cy.clearAndType(
-      '[data-cy="onboarding-workspace-name-input"]',
-      workspaceName
-    );
-    cy.get('[data-cy="onboarding-submit-button"]').click();
+
+    // Nedd to add env check from config , will fix in EE
+    
+    if (Cypress.env("environment") !== "Community") {
+      // cy.clearAndType('[data-cy="onboarding-workspace-name-input"]', workspaceName);
+      // cy.get('[data-cy="onboarding-submit-button"]').click();
+    }
   });
 };
 
@@ -180,13 +182,12 @@ export const fetchAndVisitInviteLink = (email) => {
         sql: `select id from users where email='${email}';`,
       }).then((resp) => {
         userId = resp.rows[0].id;
-
+        
         cy.task("updateId", {
           dbconfig: Cypress.env("app_db"),
           sql: `select invitation_token from organization_users where user_id='${userId}';`,
         }).then((resp) => {
-          organizationToken = resp.rows[1].invitation_token;
-
+          organizationToken = resp.rows[0].invitation_token;
           url = `/invitations/${invitationToken}/workspaces/${organizationToken}?oid=${workspaceId}`;
           cy.logoutApi();
           cy.wait(1000);
@@ -196,6 +197,7 @@ export const fetchAndVisitInviteLink = (email) => {
     });
   });
 };
+
 
 export const inviteUser = (firstName, email) => {
   cy.userInviteApi(firstName, email);
