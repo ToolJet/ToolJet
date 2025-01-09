@@ -19,8 +19,8 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
     async function fetchAppVersions() {
       setLoading(true);
       try {
-        const fetchVersions = await appsService.getVersions(app.id);
-        const fetchTables = await appsService.getTables(app.id); // this is used to get all tables
+        const fetchVersions = await appsService.getVersions(app.appId || app.id);
+        const fetchTables = await appsService.getTables(app.appId || app.id); // this is used to get all tables
         const { versions } = fetchVersions;
         const { tables } = fetchTables;
         setVersions(versions);
@@ -46,7 +46,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
       setVersionSelectLoading(true);
       try {
         if (!versionId) return;
-        const tbl = await appsService.getAppByVersion(app.id, versionId); // this is used to get particular App by version
+        const tbl = await appsService.getAppByVersion(app.appId || app.id, versionId); // this is used to get particular App by version
         const { dataQueries } = tbl;
         const extractedIdData = [];
         dataQueries.forEach((item) => {
@@ -88,7 +88,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
     const appOpts = {
       app: [
         {
-          id: app.id,
+          id: app.appId || app.id,
           ...(versionId && { search_params: { version_id: versionId } }),
         },
       ],
@@ -103,7 +103,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
     appsService
       .exportResource(requestBody)
       .then((data) => {
-        const appName = app.name.replace(/\s+/g, '-').toLowerCase();
+        const appName = (app.appName || app.name).replace(/\s+/g, '-').toLowerCase();
         const fileName = `${appName}-export-${new Date().getTime()}`;
         // simulate link click download
         const json = JSON.stringify(data, null, 2);
