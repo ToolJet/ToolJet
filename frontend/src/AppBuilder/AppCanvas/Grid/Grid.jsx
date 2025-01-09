@@ -22,7 +22,7 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import './Grid.css';
-import { NO_OF_GRIDS } from '../appCanvasConstants';
+import { NO_OF_GRIDS, SUBCONTAINER_WIDGETS } from '../appCanvasConstants';
 
 const CANVAS_BOUNDS = { left: 0, top: 0, right: 0, position: 'css' };
 const RESIZABLE_CONFIG = {
@@ -354,6 +354,29 @@ export default function Grid({ gridWidth, currentLayout }) {
     [boxList, currentLayout, gridWidth]
   );
 
+  // Add event listeners for config handle visibility when hovering over widget boundary
+  React.useEffect(() => {
+    const moveableBox = document.querySelector(`.moveable-control-box`);
+    const showConfigHandle = (e) => {
+      const targetId = e.target.offsetParent.getAttribute('target-id');
+      const configHandle = document.querySelector(`.config-handle[widget-id="${targetId}"]`);
+      configHandle.classList.add('config-handle-visible');
+    };
+    const hideConfigHandle = (e) => {
+      const targetId = e.target.offsetParent.getAttribute('target-id');
+      const configHandle = document.querySelector(`.config-handle[widget-id="${targetId}"]`);
+      configHandle.classList.remove('config-handle-visible');
+    };
+    if (moveableBox) {
+      moveableBox.addEventListener('mouseover', showConfigHandle);
+      moveableBox.addEventListener('mouseout', hideConfigHandle);
+    }
+    return () => {
+      moveableBox.removeEventListener('mouseover', showConfigHandle);
+      moveableBox.removeEventListener('mouseout', hideConfigHandle);
+    };
+  }, []);
+
   if (mode !== 'edit') return null;
 
   return (
@@ -592,7 +615,10 @@ export default function Grid({ gridWidth, currentLayout }) {
         onDragStart={(e) => {
           e?.moveable?.controlBox?.removeAttribute('data-off-screen');
           const box = boxList.find((box) => box.id === e.target.id);
-
+          // Prevent drag if shift is pressed for SUBCONTAINER_WIDGETS
+          if (SUBCONTAINER_WIDGETS.includes(box?.component?.component) && e.inputEvent.shiftKey) {
+            return false;
+          }
           //  This flag indicates whether the drag event originated on a child element within a component
           //  (e.g., inside a Table's columns, Calendar's dates, or Kanban's cards).
           //  When true, it prevents the parent component from being dragged, allowing the inner elements

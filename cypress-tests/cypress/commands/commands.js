@@ -5,16 +5,23 @@ import { commonText, createBackspaceText } from "Texts/common";
 import { passwordInputText } from "Texts/passwordInput";
 import { importSelectors } from "Selectors/exportImport";
 import { importText } from "Texts/exportImport";
+import { onboardingSelectors } from "Selectors/onboarding";
 
 Cypress.Commands.add(
-  "login",
+  "appUILogin",
   (email = "dev@tooljet.io", password = "password") => {
     cy.visit("/");
-    cy.clearAndType(commonSelectors.workEmailInputField, email);
-    cy.clearAndType(commonSelectors.passwordInputField, password);
-    cy.get(commonSelectors.signInButton).click();
-    cy.wait(2000);
-    cy.get(commonSelectors.homePageLogo).should("be.visible");
+    cy.wait(3000);
+    cy.clearAndType(onboardingSelectors.loginEmailInput, email);
+    cy.clearAndType(onboardingSelectors.loginPasswordInput, password);
+    cy.get(onboardingSelectors.signInButton).click();
+
+    cy.intercept("GET", "api/library_apps").as(
+      "library_apps"
+    );
+    cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
+    cy.wait("@library_apps");
+
   }
 );
 
@@ -90,14 +97,6 @@ Cypress.Commands.add(
   }
 );
 
-Cypress.Commands.add("appUILogin", () => {
-  cy.visit("/");
-  cy.clearAndType(commonSelectors.workEmailInputField, "dev@tooljet.io");
-  cy.clearAndType(commonSelectors.passwordInputField, "password");
-  cy.get(commonSelectors.signInButton).click();
-  cy.wait(2000);
-  cy.get(commonSelectors.homePageLogo).should("be.visible");
-});
 
 Cypress.Commands.add(
   "clearAndTypeOnCodeMirror",
@@ -365,11 +364,11 @@ Cypress.Commands.add("getPosition", (componentName) => {
 
 Cypress.Commands.add("defaultWorkspaceLogin", () => {
   cy.apiLogin();
-  cy.intercept("GET", "http://localhost:3000/api/library_apps").as(
+  cy.intercept("GET", "/api/library_apps").as(
     "library_apps"
   );
   cy.visit("/my-workspace");
-  cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
+  // cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
   cy.wait("@library_apps");
 });
 

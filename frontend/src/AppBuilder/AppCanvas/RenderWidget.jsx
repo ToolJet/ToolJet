@@ -19,6 +19,8 @@ const shouldAddBoxShadowAndVisibility = [
   'DropdownV2',
   'MultiselectV2',
   'RadioButtonV2',
+  'Icon',
+  'Image',
 ];
 
 const RenderWidget = ({

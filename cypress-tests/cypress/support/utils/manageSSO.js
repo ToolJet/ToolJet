@@ -235,18 +235,18 @@ export const workspaceLoginPageElements = (workspaceName) => {
 };
 
 export const passwordLoginVisible = () => {
-  cy.get(commonSelectors.workEmailInputField).should("be.visible");
-  cy.get(commonSelectors.passwordInputField).should("be.visible");
-  cy.get(commonSelectors.loginButton).verifyVisibleElement(
+  cy.get(onboardingSelectors.emailInput).should("be.visible");
+  cy.get(onboardingSelectors.passwordInput).should("be.visible");
+  cy.get(onboardingSelectors.signInButton).verifyVisibleElement(
     "have.text",
     commonText.loginButton
   );
 };
 
 export const workspaceLogin = (workspaceName) => {
-  cy.clearAndType(commonSelectors.workEmailInputField, "dev@tooljet.io");
-  cy.clearAndType(commonSelectors.passwordInputField, "password");
-  cy.get(commonSelectors.loginButton).click();
+  cy.clearAndType(onboardingSelectors.emailInput, "dev@tooljet.io");
+  cy.clearAndType(onboardingSelectors.passwordInput, "password");
+  cy.get(onboardingSelectors.signInButton).click();
   cy.wait(2000);
   cy.get(commonSelectors.homePageLogo).should("be.visible");
   cy.get(commonSelectors.workspaceName).verifyVisibleElement(
@@ -295,13 +295,13 @@ export const signInPageElements = () => {
     "have.text",
     commonText.forgotPasswordLink
   );
-  cy.get(commonSelectors.loginButton).verifyVisibleElement(
+  cy.get(onboardingSelectors.signInButton).verifyVisibleElement(
     "have.text",
     commonText.loginButton
   );
 
-  cy.get(commonSelectors.workEmailInputField).should("be.visible");
-  cy.get(commonSelectors.passwordInputField).should("be.visible");
+  cy.get(onboardingSelectors.emailInput).should("be.visible");
+  cy.get(onboardingSelectors.passwordInput).should("be.visible");
 
   cy.get("body").then(($el) => {
     if ($el.text().includes("Google")) {
@@ -477,7 +477,7 @@ export const invitePageElements = () => {
     "have.text",
     commonText.passwordLabel
   );
-  cy.get(commonSelectors.passwordInputField).should("be.visible");
+  cy.get(onboardingSelectors.passwordInput).should("be.visible");
   cy.get(commonSelectors.acceptInviteButton).verifyVisibleElement(
     "have.text",
     commonText.acceptInviteButton

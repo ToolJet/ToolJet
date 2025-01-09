@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-export default function styles(darkMode, width = 224, height = 32, styles = {}) {
+export default function styles(darkMode, width = 224, height = 32, styles = {}, borderRadius) {
   return {
     container: (provided) => ({
       ...provided,
@@ -26,6 +26,7 @@ export default function styles(darkMode, width = 224, height = 32, styles = {}) 
       height: height,
       minHeight: height,
       cursor: styles.cursor ?? 'pointer',
+      ...(borderRadius ? { borderRadius } : {}),
     }),
     valueContainer: (provided, state) => ({
       ...provided,

@@ -820,6 +820,16 @@ $border-radius: 4px;
     overflow: hidden;
 
     .input-group {
+      .code-hinter-borderless {
+        .code-hinter-wrapper {
+          border-right-width: 0 !important;
+        }
+      }
+
+      .code-hinter-clear-btn {
+        padding: 5px 10px 5px 6px;
+      }
+
       .field {
         .form-control {
           height: 32px;
@@ -829,6 +839,12 @@ $border-radius: 4px;
           color: #000000;
           font-size: 12px;
           line-height: 20px;
+        }
+
+        .form-control-underline {
+          text-decoration: underline;
+          text-decoration-style: dashed;
+          text-underline-offset: 2.5px;
         }
 
         .code-hinter-col {

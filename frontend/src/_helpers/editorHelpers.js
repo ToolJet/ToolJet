@@ -1,5 +1,5 @@
 import { Button } from '@/Editor/Components/Button';
-import { Image } from '@/Editor/Components/Image';
+import { Image } from '@/Editor/Components/Image/Image';
 import { Text } from '@/Editor/Components/Text';
 import { Table } from '@/Editor/Components/Table/Table';
 import { TextInput } from '@/Editor/Components/TextInput';

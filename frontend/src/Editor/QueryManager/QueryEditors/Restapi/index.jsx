@@ -14,7 +14,15 @@ class Restapi extends React.Component {
     super(props);
     const options = defaults(
       { ...props.options },
-      { headers: [['', '']], url_params: [], body: [], json_body: null, body_toggle: false, cookies: [['', '']] }
+      {
+        headers: [['', '']],
+        url_params: [],
+        body: [],
+        json_body: null, // FIXME: Remove this once data migration to raw_body is complete
+        raw_body: null,
+        body_toggle: false,
+        cookies: [['', '']],
+      }
     );
     this.state = {
       options,
@@ -105,9 +113,16 @@ class Restapi extends React.Component {
     });
   };
 
-  handleJsonBodyChanged = (jsonBody) => {
+  handleRawBodyChanged = (rawBody) => {
     const { options } = this.state;
-    options['json_body'] = jsonBody;
+
+    // If this is the first time raw_body is set, nullify json_body for data migration
+    // FIXME: Remove this if condition once data migration to raw_body is complete
+    if (!options['raw_body'] && options['json_body']) {
+      options['json_body'] = null;
+    }
+
+    options['raw_body'] = rawBody;
 
     this.setState({ options }, () => {
       this.props.optionsChanged(options);
@@ -163,12 +178,12 @@ class Restapi extends React.Component {
 
     const currentValue = { label: options.method?.toUpperCase(), value: options.method };
     return (
-      <div className={`d-flex flex-column`}>
-        {this.props.selectedDataSource?.scope == 'global' && <div className="form-label flex-shrink-0"></div>}{' '}
-        <div className="flex-grow-1 overflow-hidden">
+      <div className={`${this.props?.queryName !== 'workflowNode' && 'd-flex'}`}>
+        {this.props?.queryName !== 'workflowNode' && <div className="form-label flex-shrink-0">Request</div>}
+        <div className="flex-grow-1">
           <div className="rest-api-methods-select-element-container">
             <div className={`me-2`} style={{ width: '90px', height: '32px' }}>
-              <label className="font-weight-medium color-slate12">Method</label>
+              <label className="font-weight-bold color-slate12">Method</label>
               <Select
                 options={[
                   { label: 'GET', value: 'get' },
@@ -191,12 +206,15 @@ class Restapi extends React.Component {
             </div>
 
             <div className={`field w-100 rest-methods-url`}>
-              <div className="font-weight-medium color-slate12">URL</div>
+              <div className="font-weight-bold color-slate12">URL</div>
               <div className="d-flex">
                 {dataSourceURL && (
                   <BaseUrl theme={this.props.darkMode ? 'monokai' : 'default'} dataSourceURL={dataSourceURL} />
                 )}
-                <div className={`flex-grow-1  ${dataSourceURL ? 'url-input-group' : ''}`}>
+                <div
+                  className={`flex-grow-1 rest-api-url-codehinter  ${dataSourceURL ? 'url-input-group' : ''}`}
+                  style={{ width: '530px' }}
+                >
                   <CodeHinter
                     type="basic"
                     initialValue={options.url}
@@ -211,20 +229,20 @@ class Restapi extends React.Component {
               </div>
             </div>
           </div>
-        </div>
-        <div className={`query-pane-restapi-tabs`}>
-          <Tabs
-            theme={this.props.darkMode ? 'monokai' : 'default'}
-            options={this.state.options}
-            onChange={this.handleChange}
-            onJsonBodyChange={this.handleJsonBodyChanged}
-            removeKeyValuePair={this.removeKeyValuePair}
-            addNewKeyValuePair={this.addNewKeyValuePair}
-            darkMode={this.props.darkMode}
-            componentName={queryName}
-            bodyToggle={this.state.options.body_toggle}
-            setBodyToggle={this.onBodyToggleChanged}
-          />
+          <div className={`query-pane-restapi-tabs`}>
+            <Tabs
+              theme={this.props.darkMode ? 'monokai' : 'default'}
+              options={this.state.options}
+              onChange={this.handleChange}
+              onRawBodyChange={this.handleRawBodyChanged}
+              removeKeyValuePair={this.removeKeyValuePair}
+              addNewKeyValuePair={this.addNewKeyValuePair}
+              darkMode={this.props.darkMode}
+              componentName={queryName}
+              bodyToggle={this.state.options.body_toggle}
+              setBodyToggle={this.onBodyToggleChanged}
+            />
+          </div>
         </div>
       </div>
     );

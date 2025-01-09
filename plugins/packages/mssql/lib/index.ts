@@ -59,11 +59,21 @@ export default class MssqlQueryService implements QueryService {
           throw new Error("Invalid query mode. Must be either 'sql' or 'gui'.");
       }
     } catch (err) {
-      throw new QueryError(
-        'Query could not be completed',
-        err instanceof Error ? err.message : 'An unknown error occurred',
-        {}
-      );
+      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+      const errorDetails: any = {};
+
+      if (err && err instanceof Error) {
+        const msSqlError = err as any;
+        const { code, severity, state, number, lineNumber, serverName, class: errorClass } = msSqlError;
+        errorDetails.code = code || null;
+        errorDetails.severity = severity || null;
+        errorDetails.state = state || null;
+        errorDetails.number = number || null;
+        errorDetails.lineNumber = lineNumber || null;
+        errorDetails.serverName = serverName || null;
+        errorDetails.class = errorClass || null;
+      }
+      throw new QueryError('Query could not be completed', errorMessage, errorDetails);
     }
   }
 

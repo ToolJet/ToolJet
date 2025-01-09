@@ -7,8 +7,9 @@ export default ({
   options = [],
   theme,
   onChange,
-  jsonBody,
-  onJsonBodyChange,
+  jsonBody, // FIXME: Remove this once data migration to raw_body is complete
+  rawBody,
+  onRawBodyChange,
   componentName,
   removeKeyValuePair,
   paramType,
@@ -70,11 +71,10 @@ export default ({
         <div>
           <CodeHinter
             type="extendedSingleLine"
-            initialValue={jsonBody ?? ''}
-            lang="javascript"
+            initialValue={(rawBody || jsonBody) ?? ''} // If raw_body is not set, set initial value to legacy json_body if present
             height={'300px'}
             className="query-hinter"
-            onChange={(value) => onJsonBodyChange(value)}
+            onChange={(value) => onRawBodyChange(value)}
             componentName={`${componentName}/${tabType}`}
           />
         </div>

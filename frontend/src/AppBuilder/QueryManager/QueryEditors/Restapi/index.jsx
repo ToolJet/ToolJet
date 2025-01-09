@@ -15,7 +15,15 @@ class Restapi extends React.Component {
     super(props);
     const options = defaults(
       { ...props.options },
-      { headers: [], url_params: [], body: [], json_body: null, body_toggle: false, cookies: [] }
+      {
+        headers: [],
+        url_params: [],
+        body: [],
+        json_body: null, // FIXME: Remove this once data migration to raw_body is complete
+        raw_body: null,
+        body_toggle: false,
+        cookies: [],
+      }
     );
 
     this.state = {
@@ -101,9 +109,16 @@ class Restapi extends React.Component {
     });
   };
 
-  handleJsonBodyChanged = (jsonBody) => {
+  handleRawBodyChanged = (rawBody) => {
     const { options } = deepClone(this.state);
-    options['json_body'] = jsonBody;
+
+    // If this is the first time raw_body is set, nullify json_body for data migration
+    // FIXME: Remove this if condition once data migration to raw_body is complete
+    if (!options['raw_body'] && options['json_body']) {
+      options['json_body'] = null;
+    }
+
+    options['raw_body'] = rawBody;
 
     this.setState({ options }, () => {
       this.props.optionsChanged(options);
@@ -223,7 +238,7 @@ class Restapi extends React.Component {
                   theme={this.props.darkMode ? 'monokai' : 'default'}
                   options={this.state.options}
                   onChange={this.handleChange}
-                  onJsonBodyChange={this.handleJsonBodyChanged}
+                  onRawBodyChange={this.handleRawBodyChanged}
                   removeKeyValuePair={this.removeKeyValuePair}
                   addNewKeyValuePair={this.addNewKeyValuePair}
                   darkMode={this.props.darkMode}
