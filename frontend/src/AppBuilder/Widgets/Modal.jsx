@@ -23,13 +23,27 @@ const MODAL_FOOTER = {
   CANVAS_HEIGHT: 10,
 };
 
-const getModalBodyHeight = (height, showHeader, showFooter) => {
+const getCanvasHeight = (height) => {
+  const parsedHeight = height.includes('px') ? parseInt(height, 10) : height;
+
+  return Math.ceil(parsedHeight);
+};
+const getModalBodyHeight = (
+  height,
+  showHeader,
+  showFooter,
+  headerHeightPx = MODAL_HEADER.HEIGHT,
+  footerHeightPx = MODAL_FOOTER.HEIGHT
+) => {
   let modalHeight = height.includes('px') ? parseInt(height, 10) : height;
+  let headerHeight = showHeader ? parseInt(headerHeightPx, 10) : 0;
+  let footerHeight = showFooter ? parseInt(footerHeightPx, 10) : 0;
+
   if (showHeader) {
-    modalHeight = modalHeight - MODAL_HEADER.HEIGHT;
+    modalHeight = modalHeight - headerHeight;
   }
   if (showFooter) {
-    modalHeight = modalHeight - MODAL_FOOTER.HEIGHT;
+    modalHeight = modalHeight - footerHeight;
   }
   return `${Math.max(modalHeight, 40)}px`;
 };
@@ -51,7 +65,6 @@ export const Modal = function Modal({
     closeOnClickingOutside = false,
     hideOnEsc,
     hideCloseButton,
-    loadingState,
     useDefaultButton,
     triggerButtonLabel,
     modalHeight,
@@ -66,6 +79,8 @@ export const Modal = function Modal({
     triggerButtonBackgroundColor,
     triggerButtonTextColor,
     boxShadow,
+    headerHeight,
+    footerHeight,
   } = styles;
   const parentRef = useRef(null);
   const controlBoxRef = useRef(null);
@@ -79,7 +94,7 @@ export const Modal = function Modal({
   const [modalContainerHeight, setModalContainerHeight] = useState(0);
   const computedCanvasHeight = isFullScreen ? 'calc(100vh - 56px)' : versionFriendlyHeight;
 
-  const computedHeight = getModalBodyHeight(modalHeight, showHeader, showFooter);
+  const computedHeight = getModalBodyHeight(modalHeight, showHeader, showFooter, headerHeight, footerHeight);
 
   /**** Start - Logic to reset the zIndex of modal control box ****/
   useEffect(() => {
@@ -166,10 +181,7 @@ export const Modal = function Modal({
       for (let entry of entries) {
         // Update the height state when the element's height changes
         setModalContainerHeight(entry.contentRect.height);
-
-        const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
-        const modalContainer = realCanvasEl.querySelector('.modal');
-        modalContainer.style.height = `${entry.contentRect.height}px`;
+        onShowSideEffects();
       }
     });
 
@@ -236,13 +248,13 @@ export const Modal = function Modal({
     modalHeader: {
       backgroundColor:
         ['#fff', '#ffffffff'].includes(headerBackgroundColor) && darkMode ? '#1F2837' : headerBackgroundColor,
-      height: MODAL_HEADER.HEIGHT_PX,
+      height: headerHeight,
       padding: 0,
     },
     modalFooter: {
       backgroundColor:
         ['#000', '#000000', '#000000ff'].includes(footerBackgroundColor) && darkMode ? '#fff' : footerBackgroundColor,
-      height: MODAL_FOOTER.HEIGHT_PX,
+      height: footerHeight,
       padding: 0,
       borderTop: `1px solid var(--border-weak)`,
     },
@@ -339,6 +351,8 @@ export const Modal = function Modal({
           width: modalWidth,
           showHeader,
           showFooter,
+          headerHeight,
+          footerHeight,
         }}
       >
         {!isLoading ? (
@@ -363,12 +377,13 @@ export const Modal = function Modal({
   );
 };
 
-const ModalHeader = ({ id, customStyles, hideCloseButton, darkMode, width, onHideModal }) => {
+const ModalHeader = ({ id, customStyles, hideCloseButton, darkMode, width, onHideModal, headerHeight }) => {
+  const canvasHeaderHeight = getCanvasHeight(headerHeight);
   return (
     <BootstrapModal.Header style={{ ...customStyles.modalHeader }} data-cy={`modal-header`}>
       <SubContainer
         id={`${id}-header`}
-        canvasHeight={MODAL_HEADER.CANVAS_HEIGHT}
+        canvasHeight={canvasHeaderHeight}
         canvasWidth={width}
         allowContainerSelect={false}
         darkMode={darkMode}
@@ -410,12 +425,13 @@ const ModalHeader = ({ id, customStyles, hideCloseButton, darkMode, width, onHid
   );
 };
 
-const ModalFooter = ({ id, customStyles, darkMode, width }) => {
+const ModalFooter = ({ id, customStyles, darkMode, width, footerHeight }) => {
+  const canvasFooterHeight = getCanvasHeight(footerHeight);
   return (
     <BootstrapModal.Footer style={{ ...customStyles.modalFooter }} data-cy={`modal-footer`}>
       <SubContainer
         id={`${id}-footer`}
-        canvasHeight={MODAL_FOOTER.CANVAS_HEIGHT}
+        canvasHeight={canvasFooterHeight}
         canvasWidth={width}
         allowContainerSelect={false}
         darkMode={darkMode}
@@ -443,6 +459,8 @@ const Component = ({ children, ...restProps }) => {
     width,
     showHeader,
     showFooter,
+    headerHeight,
+    footerHeight,
   } = restProps['modalProps'];
 
   const setSelectedComponentAsModal = useStore((state) => state.setSelectedComponentAsModal, shallow);
@@ -477,6 +495,7 @@ const Component = ({ children, ...restProps }) => {
           darkMode={darkMode}
           width={width}
           onHideModal={onHideModal}
+          headerHeight={headerHeight}
         />
       )}
       <BootstrapModal.Body style={{ ...customStyles.modalBody }} ref={parentRef} id={id} data-cy={`modal-body`}>
@@ -496,7 +515,15 @@ const Component = ({ children, ...restProps }) => {
         )}
         {children}
       </BootstrapModal.Body>
-      {showFooter && <ModalFooter id={id} darkMode={darkMode} customStyles={customStyles} width={width} />}
+      {showFooter && (
+        <ModalFooter
+          id={id}
+          darkMode={darkMode}
+          customStyles={customStyles}
+          width={width}
+          footerHeight={footerHeight}
+        />
+      )}
     </BootstrapModal>
   );
 };

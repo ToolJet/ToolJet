@@ -15,38 +15,38 @@ export const modalConfig = {
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
-      section: 'additionalActions',
       validation: {
         schema: { type: 'boolean' },
         defaultValue: false,
       },
+      section: 'additionalActions',
     },
     triggerVisibility: {
       type: 'toggle',
       displayName: 'Modal trigger visibility',
-      section: 'additionalActions',
       validation: {
         schema: { type: 'boolean' },
         defaultValue: true,
       },
+      section: 'additionalActions',
     },
     disabledTrigger: {
       type: 'toggle',
       displayName: 'Disable modal trigger',
-      section: 'additionalActions',
       validation: {
         schema: { type: 'boolean' },
         defaultValue: false,
       },
+      section: 'additionalActions',
     },
     disabledModal: {
       type: 'toggle',
       displayName: 'Disable modal window',
-      section: 'additionalActions',
       validation: {
         schema: { type: 'boolean' },
         defaultValue: false,
       },
+      section: 'additionalActions',
     },
     useDefaultButton: {
       type: 'toggle',
@@ -197,6 +197,22 @@ export const modalConfig = {
         defaultValue: false,
       },
     },
+    headerHeight: {
+      type: 'code',
+      displayName: 'Header height',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '80px',
+      },
+    },
+    footerHeight: {
+      type: 'code',
+      displayName: 'Footer height',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '80px',
+      },
+    },
   },
   exposedVariables: {
     show: false,
@@ -242,9 +258,9 @@ export const modalConfig = {
     },
     properties: {
       loadingState: { value: `{{false}}` },
-      disabledModal: { value: '{{false}}' },
-      disabledTrigger: { value: '{{false}}' },
       triggerVisibility: { value: '{{true}}' },
+      disabledTrigger: { value: '{{false}}' },
+      disabledModal: { value: '{{false}}' },
       useDefaultButton: { value: `{{true}}` },
       triggerButtonLabel: { value: `Launch Modal` },
       size: { value: 'lg' },
@@ -262,6 +278,8 @@ export const modalConfig = {
       bodyBackgroundColor: { value: '#ffffffff' },
       triggerButtonBackgroundColor: { value: '#4D72FA' },
       triggerButtonTextColor: { value: '#ffffffff' },
+      headerHeight: { value: '80px' },
+      footerHeight: { value: '80px' },
     },
   },
 };

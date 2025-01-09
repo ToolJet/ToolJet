@@ -197,6 +197,22 @@ export const modalConfig = {
         defaultValue: false,
       },
     },
+    headerHeight: {
+      type: 'code',
+      displayName: 'Header height',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '80px',
+      },
+    },
+    footerHeight: {
+      type: 'code',
+      displayName: 'Footer height',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '80px',
+      },
+    },
   },
   exposedVariables: {
     show: false,
@@ -262,6 +278,8 @@ export const modalConfig = {
       bodyBackgroundColor: { value: '#ffffffff' },
       triggerButtonBackgroundColor: { value: '#4D72FA' },
       triggerButtonTextColor: { value: '#ffffffff' },
+      headerHeight: { value: '80px' },
+      footerHeight: { value: '80px' },
     },
   },
 };
