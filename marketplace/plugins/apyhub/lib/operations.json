@@ -1,0 +1,109 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Apyhub datasource",
+  "description": "A schema defining Apyhub datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "validate_email",
+          "name": "Validate Email"
+        },
+        {
+          "value": "summarize_text",
+          "name": "AI Text Summary"
+        },
+        {
+          "value": "translate_text",
+          "name": "Translate Text"
+        },
+        {
+          "value": "parse_resume",
+          "name": "Parse Resume"
+        }
+      ]
+    },
+    "validate_email": {
+      "email": {
+        "label": "Email",
+        "key": "email",
+        "type": "codehinter",
+        "placeholder": "Enter Email"
+      }
+    },
+    "summarize_text": {
+      "inputType": {
+        "label": "Input Type",
+        "key": "model",
+        "type": "dropdown-component-flip",
+        "description": "Select Input Type",
+        "list": [
+          {
+            "value": "text",
+            "name": "Text"
+          },
+          {
+            "value": "url",
+            "name": "URL"
+          }
+        ]
+      },
+      "text": {
+        "text": {
+          "label": "Text",
+          "key": "text",
+          "type": "codehinter",
+          "placeholder": "Enter Text"
+        }
+      },
+      "url": {
+        "url": {
+          "label": "URL",
+          "key": "url",
+          "type": "codehinter",
+          "placeholder": "Enter URL"
+        }
+      }
+    },
+    "translate_text": {
+      "content": {
+        "label": "Content",
+        "key": "content",
+        "type": "codehinter",
+        "placeholder": "Enter Content"
+      },
+      "language": {
+        "label": "Language",
+        "key": "language",
+        "type": "codehinter",
+        "placeholder": "Enter Language"
+      },
+      "voicetone": {
+        "label": "Voice Tone",
+        "key": "voicetone",
+        "type": "codehinter",
+        "placeholder": "Enter Voice Tone"
+      }
+    },
+    "parse_resume": {
+      "resume": {
+        "label": "Resume/CV",
+        "key": "resume",
+        "type": "codehinter",
+        "placeholder": "Provide Resume/CV in PDF format"
+      },
+      "language": {
+        "label": "Language",
+        "key": "language",
+        "type": "codehinter",
+        "placeholder": "Enter Language"
+      }
+    }
+  }
+}
