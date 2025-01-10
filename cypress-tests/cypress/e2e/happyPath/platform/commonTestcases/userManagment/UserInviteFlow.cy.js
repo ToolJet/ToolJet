@@ -217,7 +217,7 @@ describe("user invite flow cases", () => {
     navigateToManageUsers();
 
     fillUserInviteForm(data.firstName, data.email);
-    cy.wait(1500);
+    cy.wait(3000);
     cy.get('[data-cy="user-group-select"]>>>>>').dblclick();
     cy.get("body").then(($body) => {
       if (!$body.find('[data-cy="user-group-select"]>>>>>').length > 0) {

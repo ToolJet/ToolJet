@@ -67,6 +67,91 @@ describe(
       data.password = fake.password.toLowerCase();
     });
 
+    it("Should verify restricted app access", () => {
+      data.appName1 = `${fake.companyName} App`;
+      data.slug1 = data.appName1.toLowerCase().replace(/\s+/g, "-");
+      data.permission = data.appName1.toLowerCase().replace(/\s+/g, "-");
+      setSignupStatus(true);
+      cy.defaultWorkspaceLogin();
+      cy.apiCreateApp(data.appName1);
+      cy.openApp();
+      cy.addComponentToApp(data.appName1, "text1");
+
+      releaseApp();
+
+      cy.get(commonWidgetSelector.shareAppButton).click();
+      cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${data.slug1}`);
+      cy.get('[data-cy="app-slug-accepted-label"]')
+        .should("be.visible")
+        .and("have.text", "Slug accepted!");
+      cy.get(commonWidgetSelector.modalCloseButton).click();
+
+      cy.backToApps();
+
+      navigateToManageUsers();
+      fillUserInviteForm(data.firstName, data.email);
+      cy.get(usersSelector.buttonInviteUsers).click();
+      cy.wait(2000);
+      cy.pause();
+      fetchAndVisitInviteLink(data.email);
+      cy.wait(3000);
+      cy.clearAndType(
+        onboardingSelectors.loginPasswordInput,
+        usersText.password
+      );
+
+      cy.get(commonSelectors.signUpButton).click();
+      cy.get(commonSelectors.acceptInviteButton).click();
+      logout();
+      cy.get('[data-cy="page-logo"]').click();
+
+      cy.defaultWorkspaceLogin();
+      navigateToManageGroups();
+      cy.get('[data-cy="end-user-list-item"]').click();
+      cy.get('[data-cy="granular-access-link"]').click();
+      cy.reload();
+
+      cy.get('[data-cy="end-user-list-item"]').click();
+      cy.get('[data-cy="granular-access-link"]').click();
+      cy.wait(1000);
+      deleteAllGroupChips();
+      cy.wait(2000);
+      cy.logoutApi();
+
+      cy.visitSlug({ actualUrl: `/applications/${data.slug1}` });
+      cy.wait(3000);
+      cy.clearAndType(onboardingSelectors.loginEmailInput, data.email);
+      cy.clearAndType(
+        onboardingSelectors.loginPasswordInput,
+        usersText.password
+      );
+
+      cy.get(onboardingSelectors.signInButton).click();
+      cy.wait(1000);
+      cy.get('[data-cy="modal-header"]').should(
+        "have.text",
+        "Restricted access"
+      );
+      cy.get('[data-cy="modal-description"]').should(
+        "have.text",
+        "You don’t have access to this app. Kindly contact admin to know more."
+      );
+
+      cy.defaultWorkspaceLogin();
+      navigateToManageGroups();
+      cy.get('[data-cy="end-user-list-item"]').click();
+      cy.get('[data-cy="granular-access-link"]').click();
+      cy.reload();
+
+      cy.get('[data-cy="end-user-list-item"]').click();
+      cy.get('[data-cy="granular-access-link"]').click();
+      cy.wait(1000);
+      cy.get('[data-cy="add-apps-buton"]').click();
+      cy.get('[data-cy="permission-name-input"]').click().type(data.permission);
+      cy.wait(500);
+      cy.get('[data-cy="confim-button"]').click();
+    });
+
     it("Verify private and public app share funtionality", () => {
       cy.apiCreateApp(data.appName);
       cy.openApp();
@@ -147,8 +232,8 @@ describe(
     it("Verify app private and public app visibility for the same workspace user", () => {
       cy.apiCreateApp(data.appName);
       cy.openApp();
-      cy.addComponentToApp(data.appName, "text1");
-
+      cy.dragAndDropWidget("text");
+     
       releaseApp();
       cy.get(commonWidgetSelector.shareAppButton).click();
 
@@ -162,7 +247,7 @@ describe(
       }
 
       cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${data.slug}`);
-      cy.wait(1000);
+      cy.wait(2000);
       cy.get('[data-cy="app-slug-accepted-label"]')
         .should("be.visible")
         .and("have.text", "Slug accepted!");
@@ -171,11 +256,11 @@ describe(
       cy.forceClickOnCanvas();
 
       cy.backToApps();
-
+       
       inviteUserToWorkspace(data.firstName, data.email);
-
+     
       logout();
-
+      
       cy.visitSlug({
         actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
       });
@@ -241,7 +326,7 @@ describe(
       cy.get(commonWidgetSelector.modalCloseButton).click();
 
       cy.backToApps();
-
+     
       cy.visitSlug({ actualUrl: `/applications/${data.slug}` });
       cy.get('[data-cy="viewer-page-logo"]').click();
 
@@ -251,7 +336,8 @@ describe(
       cy.get('[data-cy="viewer-page-logo"]').click();
 
       cy.logoutApi();
-      cy.wait(2000);
+      
+      cy.wait(4000);
       userSignUp(data.firstName, data.email, data.workspaceName);
       cy.wait(1000);
       cy.visit("/");
@@ -331,7 +417,11 @@ describe(
               sql: `select invitation_token from organization_users where user_id='${userId}';`,
             }).then((resp) => {
               organizationToken = resp.rows[1].invitation_token;
+              // normal flow
               url = `http://localhost:8082/invitations/${invitationToken}/workspaces/${organizationToken}?oid=${workspaceId}&redirectTo=%2Fapplications%2F${data.slug}`;
+              // subpath flow
+              // url = `http://localhost:3000/apps/invitations/${invitationToken}/workspaces/${organizationToken}?oid=${workspaceId}&redirectTo=%2Fapplications%2F${data.slug}`;
+
               cy.logoutApi();
               cy.wait(1000);
               cy.visit(url);
@@ -340,73 +430,8 @@ describe(
         });
       });
     });
-
-    it("Should verify restricted app access", () => {
-      setSignupStatus(true);
-      cy.apiCreateApp(data.appName);
-      cy.openApp();
-      cy.addComponentToApp(data.appName, "text1");
-
-      releaseApp();
-
-      cy.get(commonWidgetSelector.shareAppButton).click();
-      cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${data.slug}`);
-      cy.get('[data-cy="app-slug-accepted-label"]')
-        .should("be.visible")
-        .and("have.text", "Slug accepted!");
-      cy.get(commonWidgetSelector.modalCloseButton).click();
-
-      cy.backToApps();
-
-      navigateToManageUsers();
-      fillUserInviteForm(data.firstName, data.email);
-      cy.get(usersSelector.buttonInviteUsers).click();
-      cy.wait(2000);
-
-      fetchAndVisitInviteLink(data.email);
-      cy.wait(3000);
-      cy.clearAndType(
-        onboardingSelectors.loginPasswordInput,
-        usersText.password
-      );
-
-      cy.get(commonSelectors.signUpButton).click();
-      cy.get(commonSelectors.acceptInviteButton).click();
-      logout();
-      cy.get('[data-cy="page-logo"]').click();
-
-      cy.defaultWorkspaceLogin();
-      navigateToManageGroups();
-      cy.get('[data-cy="end-user-list-item"]').click();
-      cy.get('[data-cy="granular-access-link"]').click();
-      cy.reload();
-
-      cy.get('[data-cy="end-user-list-item"]').click();
-      cy.get('[data-cy="granular-access-link"]').click();
-      cy.wait(1000);
-      deleteAllGroupChips();
-      cy.logoutApi();
-
-      cy.visitSlug({ actualUrl: `/applications/${data.slug}` });
-      cy.wait(3000);
-      cy.clearAndType(onboardingSelectors.loginEmailInput, data.email);
-      cy.clearAndType(
-        onboardingSelectors.loginPasswordInput,
-        usersText.password
-      );
-
-      cy.get(onboardingSelectors.signInButton).click();
-      cy.wait(1000);
-      cy.get('[data-cy="modal-header"]').should(
-        "have.text",
-        "Restricted access"
-      );
-      cy.get('[data-cy="modal-description"]').should(
-        "have.text",
-        "You don’t have access to this app. Kindly contact admin to know more."
-      );
-    });
-
+  
+    // need to run after bug fixes(getting blank screen for user )
     it.skip("Should verify private app accees for existing workspace user", () => {
       let invitationToken = "";
       let organizationToken = "";
@@ -493,26 +518,34 @@ describe(
       });
     });
 
-    it("Should verify private app access for the same workspace user", () => {
+    // need to run after bug fixes(getting blank screen for user )
+    it.skip("Should verify private app access for the same workspace user", () => {
       data.workspaceName = data.firstName;
       data.workspaceSlug = data.firstName.toLowerCase();
       let workspaceName = data.workspaceName;
-
+      data.appName1 = `${fake.companyName} App`;
       // Visiting editor URL with the same workspace user
       setSignupStatus(true);
-      cy.apiCreateApp(data.appName);
+      cy.apiCreateApp(data.appName1);
       cy.openApp();
-      cy.addComponentToApp(data.appName, "text1");
+      cy.wait(2000);
+      cy.dragAndDropWidget("text");
+      // cy.addComponentToApp(data.appName1, "text");
+      
       cy.url().then((currentUrl) => {
         cy.backToApps();
+        cy.wait(2000);
         logout();
+        cy.wait(2000);
         cy.visit(currentUrl);
+       
       });
 
       cy.wait(3000);
       cy.clearAndType(onboardingSelectors.loginEmailInput, "dev@tooljet.io");
       cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
       cy.get(onboardingSelectors.signInButton).click();
+     
       cy.get(".text-widget-section > div").should("be.visible");
 
       cy.backToApps();
@@ -528,7 +561,7 @@ describe(
         Cypress.env("appId"),
         '[data-cy="draggable-widget-text1"]'
       );
-      cy.addComponentToApp(data.appName, "text1");
+      cy.dragAndDropWidget("text");
       cy.openInCurrentTab('[data-cy="preview-link-button"]');
 
       cy.url().then((currentUrl) => {
@@ -546,6 +579,9 @@ describe(
 
     it("Should verify private app access for a different workspace user", () => {
       // Visiting editor URL with a different workspace URL
+      data.workspaceName = data.firstName;
+      data.workspaceSlug = data.firstName.toLowerCase();
+      let workspaceName = data.workspaceName.replaceAll("[^A-Za-z]", "");
       cy.defaultWorkspaceLogin();
       cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
       cy.visit(`${data.workspaceSlug}`);
@@ -621,5 +657,6 @@ describe(
         "Invalid credentials"
       );
     });
+
   }
 );

@@ -131,6 +131,7 @@ export const userSignUp = (fullName, email, workspaceName) => {
   cy.intercept("GET", "/api/organizations/public-configs").as("publicConfig");
   cy.visit("/");
   cy.wait("@publicConfig");
+  cy.wait(2000);
   cy.get(commonSelectors.createAnAccountLink).realClick();
   cy.get(onboardingSelectors.nameInput).should("not.be.disabled");
   cy.wait(3000);

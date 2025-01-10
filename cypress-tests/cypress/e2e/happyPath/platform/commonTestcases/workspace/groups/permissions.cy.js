@@ -57,7 +57,7 @@ describe("Manage Groups", () => {
         };
 
         cy.defaultWorkspaceLogin();
-        cy.intercept("DELETE", "/api/folders/*").as("folderDeleted");
+        cy.intercept("DELETE", "*/**/api/folders/*").as("folderDeleted");
         cy.skipWalkthrough();
     });
 
@@ -367,6 +367,7 @@ describe("Manage Groups", () => {
         cy.apiLogin();
         cy.visit(data.workspaceSlug);
         navigateToManageGroups();
+
         cy.get(groupsSelector.groupLink(groupName)).click();
 
         cy.get(groupsSelector.permissionsLink).click();

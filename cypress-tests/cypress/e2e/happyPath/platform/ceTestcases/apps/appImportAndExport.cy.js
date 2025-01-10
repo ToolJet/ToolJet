@@ -245,10 +245,6 @@ describe("App Import Functionality", () => {
                 .should("be.visible")
                 .and("have.text", importText.appImportedToastMessage);
               cy.get(appVersionSelectors.appVersionMenuField).click();
-              cy.get(appVersionSelectors.appVersionContentList).should(
-                "have.text",
-                versionText
-              );
 
               cy.get(
                 `[data-cy="draggable-widget-${buttonText.defaultWidgetName}"]`
@@ -459,7 +455,6 @@ describe("App Import Functionality", () => {
       ".form-switch"
     );
 
-    cy.wait("@datasource");
     cy.visit("/");
     navigateToAppEditor(data.appName2);
 

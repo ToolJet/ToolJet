@@ -110,9 +110,11 @@ const verifyEmptyStates = () => {
   cy.get(groupsSelector.userEmptyPageHelperText).verifyVisibleElement("have.text", groupsText.userEmptyPageHelperText);
 
   // Granular permissions empty state
+  cy.get('[data-cy="granular-access-link"]').click();
   cy.get(groupsSelector.granularEmptyPageIcon).should("be.visible");
   cy.get(groupsSelector.emptyPagePermissionTitle).verifyVisibleElement("have.text", groupsText.emptyPagePermissionTitle);
   cy.get(groupsSelector.emptyPagePermissionHelperText).verifyVisibleElement("have.text", groupsText.emptyPagePermissionHelperText);
+  cy.get('[data-cy="users-link"]').click();
 };
 
 const verifyGroupLinks = () => {
@@ -200,11 +202,9 @@ describe("Manage Groups", () => {
     verifyGroupCreation();
     testDuplicateGroup();
     createNewGroup();
-
     // Verify permissions section
     cy.get(groupsSelector.permissionsLink).click();
     verifyPermissionSection();
-
     // Test granular access section
     const verifyGranularAccess = () => {
       cy.get(groupsSelector.granularLink).click();
@@ -223,7 +223,6 @@ describe("Manage Groups", () => {
       cy.get(groupsSelector.editPermissionRadio).check();
       cy.get(groupsSelector.confimButton).click();
     };
-
     verifyGranularAccess();
 
     // Test group rename and delete

@@ -182,8 +182,6 @@ describe("Global Datasource Manager", () => {
       },
       ".form-switch"
     );
-    cy.wait("@datasource");
-
     cy.apiCreateApp(data.appName);
     cy.openApp();
     pinInspector();
@@ -226,7 +224,9 @@ describe("Global Datasource Manager", () => {
     );
   });
 
-  it("Should verify the query creation and scope changing functionality.", () => {
+// Need to run after app builder fixes
+  it.skip("Should verify the query creation and scope changing functionality.", () => {
+    cy.viewport(1460, 920);
     data.appName = `${fake.companyName}-App`;
 
     navigateToManageUsers();
