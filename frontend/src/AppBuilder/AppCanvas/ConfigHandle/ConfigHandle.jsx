@@ -1,5 +1,4 @@
 import React from 'react';
-import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import './configHandle.scss';
 import useStore from '@/AppBuilder/_stores/store';
@@ -24,14 +23,31 @@ export const ConfigHandle = ({
     shallow
   );
   const deleteComponents = useStore((state) => state.deleteComponents, shallow);
+  const setFocusedParentId = useStore((state) => state.setFocusedParentId, shallow);
+  const currentTab = useStore(
+    (state) => componentType === 'Tabs' && state.getExposedValueOfComponent(id)?.currentTab,
+    shallow
+  );
+
   let height = visibility === false ? 10 : widgetHeight;
   return (
     <div
       className={`config-handle ${customClassName}`}
       style={{
         top: position === 'top' ? '-20px' : widgetTop + height - (widgetTop < 10 ? 15 : 10),
-        visibility: showHandle && !isMultipleComponentsSelected ? 'visible' : 'hidden',
+        visibility:
+          showHandle && (!isMultipleComponentsSelected || (componentType === 'Modal' && isModalOpen))
+            ? 'visible'
+            : 'hidden',
         left: '-1px',
+      }}
+      onClick={(e) => {
+        e.stopPropagation();
+        if (componentType === 'Tabs') {
+          setFocusedParentId(`${id}-${currentTab}`);
+        } else {
+          setFocusedParentId(id);
+        }
       }}
     >
       <span

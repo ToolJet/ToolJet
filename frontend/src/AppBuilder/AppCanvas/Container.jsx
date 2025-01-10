@@ -48,8 +48,7 @@ export const Container = React.memo(
     const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
     const currentMode = useStore((state) => state.currentMode, shallow);
     const currentLayout = useStore((state) => state.currentLayout, shallow);
-    const setLastCanvasIdClick = useStore((state) => state.setLastCanvasIdClick, shallow);
-
+    const setFocusedParentId = useStore((state) => state.setFocusedParentId, shallow);
     const isContainerReadOnly = useMemo(() => {
       return (index !== 0 && (componentType === 'Listview' || componentType === 'Kanban')) || currentMode === 'view';
     }, [componentType, index, currentMode]);
@@ -114,9 +113,9 @@ export const Container = React.memo(
     }, [isViewerSidebarPinned, currentLayout, id, currentMode, pageSidebarStyle]);
 
     const handleCanvasClick = (e) => {
-      setLastCanvasIdClick(id);
+      const canvasId = e.target.closest('.real-canvas')?.getAttribute('id')?.split('canvas-')[1];
+      setFocusedParentId(canvasId);
     };
-
     return (
       <div
         // {...(config.COMMENT_FEATURE_ENABLE && showComments && { onClick: handleAddThread })}
