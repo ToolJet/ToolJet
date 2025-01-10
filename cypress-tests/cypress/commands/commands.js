@@ -80,6 +80,7 @@ Cypress.Commands.add(
     canvas = commonSelectors.canvas
   ) => {
     const dataTransfer = new DataTransfer();
+    cy.forceClickOnCanvas();
 
     cy.clearAndType(commonSelectors.searchField, widgetName);
     cy.get(commonWidgetSelector.widgetBox(widgetName2)).trigger(
