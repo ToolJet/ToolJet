@@ -434,14 +434,7 @@ const sidebars = {
           'items': [
             'user-management/role-based-access/super-admin',
             'user-management/role-based-access/user-roles',
-            {
-              'type': 'category',
-              'label': 'User Groups',
-              'items': [
-                'user-management/role-based-access/user-groups/default-groups',
-                'user-management/role-based-access/user-groups/custom-groups'
-              ]
-            },
+            'user-management/role-based-access/custom-groups',
             'user-management/role-based-access/granular-access-control'
           ]
         },
