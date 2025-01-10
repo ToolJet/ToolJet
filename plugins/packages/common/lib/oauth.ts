@@ -8,16 +8,6 @@ import { User } from './user.type';
 import { CookieJar } from 'tough-cookie';
 import { isEmpty } from 'lodash';
 
-export function checkIfContentTypeIsURLenc(headers: [string, string][] = []): boolean {
-  const contentType = headers.find(([key, _]) => key.toLowerCase() === 'content-type')?.[1];
-  return contentType?.toLowerCase() === 'application/x-www-form-urlencoded';
-}
-
-export function checkIfContentTypeIsMultipartFormData(headers: [string, string][] = []): boolean {
-  const contentType = headers.find(([key, _]) => key.toLowerCase() === 'content-type')?.[1];
-  return contentType?.toLowerCase().startsWith('multipart/form-data') ?? false;
-}
-
 export function sanitizeParams(customArray: any) {
   const params = Object.fromEntries(customArray ?? []);
   Object.keys(params).forEach((key) => (params[key] === '' ? delete params[key] : {}));
@@ -237,6 +227,12 @@ export const getRefreshedToken = async (sourceOptions: any, error: any, userId: 
   if (!refreshToken) {
     throw new QueryError('Refresh token not found', error.response, {});
   }
+
+  const checkIfContentTypeIsURLenc = (headers: [string, string][] = []): boolean => {
+    const contentType = headers.find(([key, _]) => key.toLowerCase() === 'content-type')?.[1];
+    return contentType?.toLowerCase() === 'application/x-www-form-urlencoded';
+  };
+
   const accessTokenUrl = sourceOptions['access_token_url'];
   const clientId = sourceOptions['client_id'];
   const clientSecret = sourceOptions['client_secret'];

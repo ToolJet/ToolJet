@@ -1,3 +1,9 @@
+import * as fs from 'fs';
+// Setup release version for opentelmetry bootstrap
+globalThis.TOOLJET_VERSION = fs.readFileSync('./.version', 'utf8').trim();
+process.env['RELEASE_VERSION'] = globalThis.TOOLJET_VERSION;
+
+import { startOpenTelemetry, otelMiddleware } from './tracing';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { WsAdapter } from '@nestjs/platform-ws';
@@ -14,11 +20,6 @@ import { join } from 'path';
 import * as helmet from 'helmet';
 import * as express from 'express';
 import { getSubpath } from '@helpers/utils.helper';
-
-const fs = require('fs');
-
-globalThis.TOOLJET_VERSION = fs.readFileSync('./.version', 'utf8').trim();
-process.env['RELEASE_VERSION'] = globalThis.TOOLJET_VERSION;
 
 function replaceSubpathPlaceHoldersInStaticAssets() {
   const filesToReplaceAssetPath = ['index.html', 'runtime.js', 'main.js'];
@@ -125,6 +126,12 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter(app.get(Logger)));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.useWebSocketAdapter(new WsAdapter(app));
+
+  if (process.env.ENABLE_OTEL === 'true') {
+    await startOpenTelemetry();
+    app.use(otelMiddleware);
+  }
+
   const hasSubPath = process.env.SUB_PATH !== undefined;
   const UrlPrefix = hasSubPath ? process.env.SUB_PATH : '';
 

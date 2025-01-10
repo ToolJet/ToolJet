@@ -13,6 +13,7 @@ import { filterOperatorOptions, nullOperatorOptions } from './util';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { AggregateFilter } from './AggregateUI';
 import { NoCondition } from './NoConditionUI';
+import { ToolTip } from '@/_components';
 
 export const JoinTable = React.memo(({ darkMode }) => {
   return (
@@ -319,6 +320,23 @@ const RenderFilterSection = ({ darkMode }) => {
               }),
               operator: valueToUpdate.operator,
             };
+          case 'Jsonpath': {
+            return valueToUpdate.isLeftSideCondition
+              ? {
+                  ...conditionDetail,
+                  leftField: {
+                    ...conditionDetail.leftField,
+                    jsonpath: valueToUpdate.jsonpath,
+                  },
+                }
+              : {
+                  ...conditionDetail,
+                  rightField: {
+                    ...conditionDetail.rightField,
+                    jsonpath: valueToUpdate.jsonpath,
+                  },
+                };
+          }
           default:
             return conditionDetail;
         }
@@ -362,6 +380,8 @@ const RenderFilterSection = ({ darkMode }) => {
             label: columns.Header,
             value: columns.Header + '-' + tableId,
             table: tableId,
+            icon: columns?.dataType,
+            // columnDataType: columns?.dataType,
           })) || [],
       };
       tableList.push(tableDetailsForDropDown);
@@ -376,6 +396,10 @@ const RenderFilterSection = ({ darkMode }) => {
   const filterComponents = conditionsList.map((conditionDetail, index) => {
     const { operator = '', leftField = {}, rightField = {} } = conditionDetail;
     const LeftSideTableDetails = leftField?.table ? findTableDetails(leftField?.table) : '';
+    const isSelectedColumnJsonb =
+      leftField?.table &&
+      tableInfo[LeftSideTableDetails?.table_name]?.find((col) => col.accessor === leftField?.columnName)?.dataType ===
+        'jsonb';
     return (
       <Row className="mb-2 mx-0" key={index}>
         <Col sm="2" className="p-0">
@@ -406,7 +430,7 @@ const RenderFilterSection = ({ darkMode }) => {
                 borderRadius: 0,
                 height: '30px',
               }}
-              className="tj-small-btn px-2 rounded-start border border-end-0"
+              className="tj-small-btn px-2 rounded-start border"
             >
               {conditions?.operator}
             </div>
@@ -414,7 +438,7 @@ const RenderFilterSection = ({ darkMode }) => {
         </Col>
         <Col sm="3" className="p-0">
           <DropDownSelect
-            buttonClasses="border border-end-0"
+            buttonClasses="border"
             showPlaceHolder
             onChange={(newValue) =>
               updateFilterConditionEntry('Column', index, {
@@ -433,10 +457,43 @@ const RenderFilterSection = ({ darkMode }) => {
             options={tableList}
             darkMode={darkMode}
           />
+          {isSelectedColumnJsonb && (
+            <div className="tjdb-codehinter-jsonpath">
+              <ToolTip
+                message={
+                  leftField?.jsonpath
+                    ? leftField.jsonpath
+                    : 'Access nested JSON fields by using -> for JSON object and ->> for text'
+                }
+                tooltipClassName="tjdb-table-tooltip"
+                placement="top"
+                trigger={['hover', 'focus']}
+                width="160px"
+              >
+                <span>
+                  <CodeHinter
+                    type="basic"
+                    initialValue={leftField?.jsonpath || ''}
+                    lang="javascript"
+                    onChange={(value) => {
+                      updateFilterConditionEntry('Jsonpath', index, {
+                        jsonpath: value,
+                        isLeftSideCondition: true,
+                      });
+                    }}
+                    enablePreview={false}
+                    height="30"
+                    placeholder="->>'key'"
+                    componentName={leftField?.columnName ? `{}${leftField.columnName}` : ''}
+                  />
+                </span>
+              </ToolTip>
+            </div>
+          )}
         </Col>
         <Col sm="2" className="p-0">
           <DropDownSelect
-            buttonClasses="border border-end-0"
+            buttonClasses="border border-start-0 border-end-0"
             showPlaceHolder
             onChange={(change) => updateFilterConditionEntry('Operator', index, { operator: change?.value })}
             value={filterOperatorOptions.find((op) => op.value === operator)}
