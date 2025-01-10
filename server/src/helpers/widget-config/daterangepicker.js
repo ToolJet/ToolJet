@@ -10,12 +10,12 @@ export const daterangepickerConfig = {
   validation: {
     minDate: {
       type: 'datepicker',
-      placeholder: 'MM/DD/YYYY',
+      placeholder: 'DD/MM/YYYY',
       displayName: 'Min Date',
     },
     maxDate: {
       type: 'datepicker',
-      placeholder: 'MM/DD/YYYY',
+      placeholder: 'DD/MM/YYYY',
       displayName: 'Max Date',
     },
     disabledDates: {

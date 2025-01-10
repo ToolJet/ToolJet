@@ -91,7 +91,7 @@ export const DatePickerV2 = ({
   useEffect(() => {
     if (isInitialRender.current) return;
     setExposedVariable('dateFormat', dateFormat);
-  }, [dateFormat]);
+  }, [dateFormat, dateFormat]);
 
   useEffect(() => {
     if (isInitialRender.current) return;

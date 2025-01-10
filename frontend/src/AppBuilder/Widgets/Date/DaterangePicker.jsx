@@ -83,12 +83,30 @@ export const DaterangePicker = ({
       endDateInUnix: moment(end).valueOf(),
       selectedDateRange: `${moment(start).format(format)} - ${moment(end).format(format)}`,
     });
+    fireEvent('onSelect');
   };
 
   useEffect(() => {
     if (isInitialRender.current) return;
     setExposedVariable('dateFormat', format);
   }, [format]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    let startDate = moment(defaultStartDate, format);
+    startDate = startDate.isValid() ? startDate.toDate() : null;
+
+    let endDate = moment(defaultEndDate, format);
+    endDate = endDate.isValid() ? endDate.toDate() : null;
+
+    if (startDate && endDate) {
+      if (moment(startDate).isSameOrBefore(endDate)) {
+        onChange([startDate, endDate]);
+      } else {
+        onChange([startDate, null]);
+      }
+    }
+  }, [defaultStartDate, defaultEndDate, format]);
 
   useEffect(() => {
     const exposedVariables = {

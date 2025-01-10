@@ -133,7 +133,7 @@ export const TimePicker = ({
   useEffect(() => {
     if (isInitialRender.current) return;
     setInputValue(defaultValue);
-  }, [defaultValue]);
+  }, [defaultValue, timeFormat]);
 
   useEffect(() => {
     if (isInitialRender.current || textInputFocus) return;

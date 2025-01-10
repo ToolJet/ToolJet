@@ -151,7 +151,7 @@ export const DatetimePickerV2 = ({
   useEffect(() => {
     if (isInitialRender.current) return;
     setInputValue(defaultValue);
-  }, [defaultValue]);
+  }, [defaultValue, displayFormat]);
 
   useEffect(() => {
     if (isInitialRender.current || textInputFocus) return;
