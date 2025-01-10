@@ -183,7 +183,9 @@ export const BaseDateComponent = ({
             />
           }
           customTimeInput={<TimepickerInput darkMode={darkMode} {...customTimeInputProps} />}
-          renderCustomHeader={(headerProps) => <CustomDatePickerHeader {...headerProps} {...customHeaderProps} />}
+          renderCustomHeader={(headerProps) => (
+            <CustomDatePickerHeader {...headerProps} {...customHeaderProps} darkMode={darkMode} />
+          )}
         />
       </div>
     </div>

@@ -1,5 +1,8 @@
 import React from 'react';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import Select from '@/_ui/Select';
+import { components } from 'react-select';
+import CheckMark from '@/_ui/Icon/bulkIcons/CheckMark';
 import moment from 'moment';
 import { range } from 'lodash';
 
@@ -20,6 +23,7 @@ const CustomDatePickerHeader = (props) => {
     monthDate,
     customHeaderCount,
     setDatePickerMode,
+    darkMode,
   } = props;
   const months = [
     'January',
@@ -37,6 +41,87 @@ const CustomDatePickerHeader = (props) => {
   ];
 
   const years = range(1900, 2101);
+
+  const customSelectStyles = {
+    control: (provided) => ({
+      ...provided,
+      border: 'none !important',
+      boxShadow: 'none',
+      cursor: 'default',
+      backgroundColor: 'transparent !important',
+      minHeight: 'auto',
+    }),
+    valueContainer: (provided) => ({
+      ...provided,
+      padding: '0px',
+    }),
+    singleValue: (provided) => ({
+      ...provided,
+      color: 'inherit',
+      fontSize: 'inherit',
+    }),
+    dropdownIndicator: () => ({
+      display: 'none',
+    }),
+    indicatorSeparator: () => ({
+      display: 'none',
+    }),
+    placeholder: (provided) => ({
+      ...provided,
+      color: 'inherit',
+      fontSize: 'inherit',
+    }),
+    input: (provided) => ({
+      ...provided,
+      margin: 0,
+      padding: 0,
+    }),
+    menu: (provided) => ({
+      ...provided,
+      width: '150px',
+      borderRadius: '8px',
+    }),
+    menuList: (provided) => ({
+      ...provided,
+      width: '150px',
+      textAlign: 'left',
+      overflowY: 'auto', // Enable scrolling if needed
+      scrollbarWidth: 'none', // Hide scrollbar for Firefox
+      borderRadius: '8px',
+    }),
+    option: (provided, state) => ({
+      ...provided,
+      backgroundColor: state.isFocused
+        ? '#f0f0f0' // Hover color
+        : state.isSelected
+        ? '#e6e6e6' // Selected background color
+        : 'white',
+      color: state.isSelected ? '#333' : 'black', // Adjust text color for selected state
+      paddingLeft: '20px',
+      position: 'relative',
+    }),
+  };
+
+  const CustomOption = (props) => {
+    const { data, isSelected } = props;
+
+    return (
+      <components.Option {...props}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center', // Ensures vertical alignment
+            gap: '10px', // Space between icon and text
+          }}
+        >
+          {isSelected && (
+            <CheckMark fill="transparent" fillIcon={'var(--primary-brand)'} className="datepicker-select-check" />
+          )}
+          <span style={{ marginLeft: '10px', color: darkMode ? '#fff' : '#000' }}>{data.label}</span>
+        </div>
+      </components.Option>
+    );
+  };
 
   return (
     <>
@@ -77,30 +162,28 @@ const CustomDatePickerHeader = (props) => {
             </div>
           )}
           {datepickerMode === 'range' && (
-            <>
-              <select
+            <div className="daterangepicker-header">
+              <Select
+                options={months.map((option) => ({ name: option, value: option }))}
                 value={months[moment(monthDate).month()]}
-                onChange={({ target: { value } }) => changeMonth(months.indexOf(value))}
-                className="tj-daterangepicker-widget-month-selector"
-              >
-                {months.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-              <select
+                onChange={(value) => changeMonth(months.indexOf(value))}
+                width={'100%'}
+                useMenuPortal={false}
+                styles={customSelectStyles}
+                useCustomStyles={true}
+                components={{ Option: CustomOption }}
+              />
+              <Select
+                options={years.map((option) => ({ name: option, value: option }))}
                 value={moment(monthDate).year()}
-                onChange={({ target: { value } }) => changeYear(value)}
-                className="tj-daterangepicker-widget-year-selector"
-              >
-                {years.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </>
+                onChange={(value) => changeYear(value)}
+                width={'100%'}
+                useMenuPortal={false}
+                styles={customSelectStyles}
+                useCustomStyles={true}
+                components={{ Option: CustomOption }}
+              />
+            </div>
           )}
         </div>
         {!(datepickerMode === 'range' && customHeaderCount === 0) && (

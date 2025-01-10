@@ -16816,3 +16816,12 @@ fieldset:disabled {
     width:100% !important;
   }
 }
+
+.daterangepicker-header {
+  display: flex;
+}
+
+.datepicker-select-check {
+  position: absolute;
+  left: 10px;
+}
