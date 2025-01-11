@@ -177,7 +177,7 @@ Cypress.Commands.add("modifyCanvasSize", (x, y) => {
 Cypress.Commands.add("createAppFromTemplate", (appName) => {
   cy.get('[data-cy="import-dropdown-menu"]').click();
   cy.get('[data-cy="choose-from-template-button"]').click();
-  cy.get(`[data-cy="${appName}-list-item"]`).click(); 
+  cy.get(`[data-cy="${appName}-list-item"]`).click();
   cy.get('[data-cy="create-application-from-template-button"]').click();
   cy.get('[data-cy="app-name-label"]').should("have.text", "App Name");
 });
@@ -374,28 +374,40 @@ Cypress.Commands.add("getPosition", (componentName) => {
 });
 
 Cypress.Commands.add("defaultWorkspaceLogin", () => {
-  cy.apiLogin();
-  cy.intercept("GET", "/api/library_apps").as(
-    "library_apps"
-  );
-  cy.visit("/my-workspace");
-  cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
-  cy.wait("@library_apps");
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `
+      SELECT id FROM organizations WHERE name = 'My workspace';
+    `
+  }).then((resp) => {
+    const workspaceId = resp.rows[0].id;
+    cy.apiLogin("dev@tooljet.io", "password", workspaceId, "/my-workspace");
+
+    cy.visit('/')
+    cy.intercept("GET", "/api/library_apps").as("library_apps");
+    cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
+    cy.wait("@library_apps");
+  });
 });
 
-Cypress.Commands.add(
-  "visitSlug",
-  ({ actualUrl, currentUrl = "http://localhost:8082/error/unknown" }) => {
-    cy.visit(actualUrl);
-    cy.wait(3000);
-
-    cy.url().then((url) => {
-      if (url === currentUrl) {
-        cy.visit(actualUrl);
-      }
-    });
+Cypress.Commands.add("visitSlug", ({ actualUrl, currentUrl = `${Cypress.config("baseUrl")}/error/unknown` }) => {
+  // Ensure actualUrl is provided
+  if (!actualUrl) {
+    throw new Error("actualUrl is required for visitSlug command.");
   }
-);
+
+  cy.visit(actualUrl);
+
+  // Dynamically wait for the correct URL or handle navigation errors
+  cy.url().then((url) => {
+    if (url === currentUrl) {
+      cy.log(`Navigation resulted in unexpected URL: ${url}. Retrying...`);
+      cy.visit(actualUrl);
+    }
+  });
+});
+
+
 
 Cypress.Commands.add("releaseApp", () => {
   if (Cypress.env("environment") !== "Community") {
@@ -447,19 +459,6 @@ Cypress.Commands.add("verifyLabel", (labelName) => {
   );
 });
 
-Cypress.Commands.add(
-  "visitSlug",
-  ({ actualUrl, currentUrl = "http://localhost:8082/error/unknown" }) => {
-    cy.visit(actualUrl);
-    cy.wait(3000);
-
-    cy.url().then((url) => {
-      if (url === currentUrl) {
-        cy.visit(actualUrl);
-      }
-    });
-  }
-);
 
 Cypress.Commands.add(
   "verifyCssProperty",
@@ -493,4 +492,11 @@ Cypress.Commands.overwrite('intercept', (originalFn, method, endpoint, ...rest) 
 Cypress.Commands.add("verifyElement", (selector, text, eqValue) => {
   const element = eqValue !== undefined ? cy.get(selector).eq(eqValue) : cy.get(selector);
   element.should('be.visible').and('have.text', text);
+});
+
+
+Cypress.Commands.add("loginWithCredentials", (email, password) => {
+  cy.clearAndType(onboardingSelectors.loginEmailInput, email);
+  cy.clearAndType(onboardingSelectors.loginPasswordInput, password);
+  cy.get(onboardingSelectors.signInButton).click();
 });
