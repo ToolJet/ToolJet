@@ -317,7 +317,13 @@ const DatetimePickerV2 = ({ componentMeta, componentName, darkMode, ...restProps
     children: (
       <>
         {validations.map((property, index) => (
-          <div key={index} className={'date-validation-wrapper'} style={{ height: '62px' }}>
+          <div
+            key={index}
+            className={'date-validation-wrapper'}
+            style={{
+              height: index + 1 < validations.length ? '62px' : '22px',
+            }}
+          >
             {renderElement(
               component,
               componentMeta,
