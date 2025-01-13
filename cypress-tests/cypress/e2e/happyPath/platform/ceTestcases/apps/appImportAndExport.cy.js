@@ -1,5 +1,5 @@
 import { commonSelectors } from "Selectors/common";
-import { AddNewconstants } from "Support/utils/workspaceConstants";
+import { addNewconstants } from "Support/utils/workspaceConstants";
 
 import {
   appVersionSelectors,
@@ -418,7 +418,7 @@ describe("App Import Functionality", () => {
     //add constants
 
     cy.get(commonSelectors.workspaceConstantsIcon).click();
-    AddNewconstants(data.constName, data.constName);
+    addNewconstants(data.constName, data.constName);
 
     cy.verifyToastMessage(
       commonSelectors.toastMessage,

@@ -3,7 +3,8 @@ export const selectEvent = (
   action = "Show Alert",
   index = 0,
   addEventhandlerSelector = '[data-cy="add-event-handler"]',
-  eventIndex = 0
+  eventIndex = 0,
+  needWait = true
 ) => {
   cy.intercept("PUT", "events").as("events");
   cy.get(addEventhandlerSelector).eq(index).click();
@@ -19,7 +20,9 @@ export const selectEvent = (
     .find("input")
     .type(`{selectAll}{backspace}${action}{enter}`);
   cy.get('[data-cy="event-label"]').click({ force: true })
-  cy.wait("@events");
+  if (needWait) {
+    cy.wait("@events");
+  }
 };
 
 export const selectCSA = (
@@ -79,9 +82,9 @@ export const changeEventType = (event, eventIndex = 0) => {
 };
 
 
-export const addMultiEventsWithAlert = (events) => {
+export const addMultiEventsWithAlert = (events, isWait = true) => {
   events.forEach((eventObj, index) => {
-    selectEvent(eventObj.event, 'Show Alert', 0, '[data-cy="add-event-handler"]', index);
+    selectEvent(eventObj.event, 'Show Alert', 0, '[data-cy="add-event-handler"]', index, isWait);
     addSupportCSAData("alert-message", eventObj.message);
   });
 };

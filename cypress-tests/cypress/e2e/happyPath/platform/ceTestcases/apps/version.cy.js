@@ -1,6 +1,5 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { fake } from "Fixtures/fake";
-import { logout, releaseApp } from "Support/utils/common";
 import { commonText } from "Texts/common";
 
 import {
@@ -33,6 +32,8 @@ import {
   verifyComponentinrightpannel,
   deleteComponentAndVerify,
 } from "Support/utils/basicComponents";
+
+import { logout, releaseApp } from "Support/utils/common";
 
 import {
   releasedVersionText,
@@ -222,5 +223,45 @@ describe("App Editor", () => {
     createNewVersion((newVersion = ["v6"]), (versionFrom = "v3"));
 
     verifyVersionAfterPreview((currentVersion = "v6"));
+  });
+
+  it("Verify all functionality for the app release", () => {
+    data.appName = `${fake.companyName}-App`;
+    cy.apiCreateApp(data.appName);
+
+    cy.openApp();
+
+    cy.get(appVersionSelectors.appVersionLabel).should("be.visible");
+    cy.get(commonSelectors.appNameInput).verifyVisibleElement(
+      "have.value",
+      data.appName
+    );
+    cy.waitForAutoSave();
+
+    verifyComponentinrightpannel("table");
+    cy.dragAndDropWidget("table");
+    cy.wait(100);
+    cy.get('[data-cy="inspector-close-icon"]').click({ force: true });
+
+    releaseApp();
+    cy.get('[data-cy="delete-button"]').should("not.exist");
+    cy.get('[data-cy="warning-text"]').should(
+      "contain",
+      "App cannot be edited after promotion. Please create a new version from Development to make any changes."
+    );
+
+    navigateToCreateNewVersionModal((currentVersion = "v1"));
+    createNewVersion((newVersion = ["v2"]), (versionFrom = "v1"));
+
+    verifyComponentinrightpannel("table");
+    cy.dragAndDropWidget("table");
+    cy.wait(1000);
+    cy.get('[data-cy="inspector-close-icon"]').click({ force: true });
+    cy.get('[data-cy="button-release"]').click();
+    cy.get('[data-cy="yes-button"]').click();
+    cy.get('[data-cy="warning-text"]').should(
+      "contain",
+      "App cannot be edited after promotion. Please create a new version from Development to make any changes."
+    );
   });
 });
