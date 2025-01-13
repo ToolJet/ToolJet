@@ -27,7 +27,6 @@ import FolderFilter from './FolderFilter';
 import { APP_ERROR_TYPE } from '@/_helpers/error_constants';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 import HeaderSkeleton from '@/_ui/FolderSkeleton/HeaderSkeleton';
-import ModalBase from '@/_ui/Modal';
 
 const { iconList, defaultIcon } = configs;
 
@@ -78,7 +77,6 @@ class HomePageComponent extends React.Component {
       fileName: '',
       selectedTemplate: null,
       deploying: false,
-      showAutoImportPluginModal: false,
       shouldAutoImportPlugin: false,
       dependentPluginsForTemplate: [],
       dependentPluginsDetail: {},
@@ -579,7 +577,8 @@ class HomePageComponent extends React.Component {
       await libraryAppService.findDependentPluginsInTemplate(template.id);
     if (plugins_to_be_installed.length) {
       this.setState({
-        showAutoImportPluginModal: true,
+        showCreateAppFromTemplateModal: true,
+        shouldAutoImportPlugin: true,
         selectedTemplate: template,
         dependentPluginsForTemplate: plugins_to_be_installed,
         dependentPluginsDetail: { ...plugins_detail_by_id },
@@ -598,6 +597,7 @@ class HomePageComponent extends React.Component {
       selectedTemplate: null,
       dependentPluginsForTemplate: [],
       dependentPluginsDetail: {},
+      shouldAutoImportPlugin: false,
     });
   };
 
@@ -607,30 +607,6 @@ class HomePageComponent extends React.Component {
 
   closeCreateAppModal = () => {
     this.setState({ showCreateAppModal: false, showCreateModuleModal: false });
-  };
-
-  handleContinueAutoImportPlugin = () => {
-    this.setState({
-      showCreateAppFromTemplateModal: true,
-      showAutoImportPluginModal: false,
-      shouldAutoImportPlugin: true,
-    });
-  };
-
-  handleCancelAutoImportPlugin = () => {
-    const { dependentPluginsForTemplate, dependentPluginsDetail } = this.state;
-    toast.error(
-      `Plugins ( ${dependentPluginsForTemplate
-        .map((dependentPlugin) => dependentPluginsDetail[dependentPlugin].name || dependentPlugin)
-        .join(', ')} ) is not installed yet!`
-    );
-    this.setState({
-      showAutoImportPluginModal: false,
-      shouldAutoImportPlugin: false,
-      selectedTemplate: null,
-      dependentPluginsForTemplate: [],
-      dependentPluginsDetail: {},
-    });
   };
 
   render() {
@@ -660,10 +636,10 @@ class HomePageComponent extends React.Component {
       fileName,
       showRenameAppModal,
       showCreateAppFromTemplateModal,
-      showAutoImportPluginModal,
       dependentPluginsForTemplate,
       dependentPluginsDetail,
     } = this.state;
+
     return (
       <Layout switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode}>
         <div className="wrapper home-page">
@@ -710,6 +686,8 @@ class HomePageComponent extends React.Component {
               title={'Create new app from template'}
               actionButton={'+ Create app'}
               actionLoadingButton={'Creating'}
+              dependentPluginsDetail={dependentPluginsDetail}
+              dependentPluginsForTemplate={dependentPluginsForTemplate}
             />
           )}
           {showRenameAppModal && (
@@ -722,23 +700,6 @@ class HomePageComponent extends React.Component {
               title={'Rename app'}
               actionButton={'Rename app'}
               actionLoadingButton={'Renaming'}
-            />
-          )}
-          {showAutoImportPluginModal && (
-            <ModalBase
-              show={showAutoImportPluginModal}
-              handleClose={this.handleCancelAutoImportPlugin}
-              darkMode={this.props.darkMode}
-              title="Dependent plugins"
-              body={`The following plugins need to be installed before proceeding to app import: ${dependentPluginsForTemplate
-                .map((dependentPlugin) => dependentPluginsDetail[dependentPlugin].name || dependentPlugin)
-                .join(', ')}`}
-              confirmBtnProps={{
-                tooltipMessage: 'Install plugins',
-                title: 'Install plugins',
-              }}
-              handleConfirm={this.handleContinueAutoImportPlugin}
-              isLoading={false}
             />
           )}
           <ConfirmDialog
