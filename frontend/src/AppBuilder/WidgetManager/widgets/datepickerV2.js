@@ -1,8 +1,8 @@
-export const daterangepickerConfig = {
-  name: 'DateRangePicker',
-  displayName: 'Range Picker',
-  description: 'Choose date ranges',
-  component: 'DaterangePicker',
+export const datePickerV2Config = {
+  name: 'DatePicker',
+  displayName: 'Date Picker',
+  description: 'Choose date',
+  component: 'DatePickerV2',
   defaultSize: {
     width: 10,
     height: 40,
@@ -49,34 +49,12 @@ export const daterangepickerConfig = {
       },
       accordian: 'Data',
     },
-    defaultStartDate: {
+    defaultValue: {
       type: 'code',
-      displayName: 'Default start date',
+      displayName: 'Default value',
       validation: {
-        schema: {
-          type: 'string',
-        },
-        defautlValue: '01/04/2022',
-      },
-    },
-    defaultEndDate: {
-      type: 'code',
-      displayName: 'Default end date',
-      validation: {
-        schema: {
-          type: 'string',
-        },
-        defautlValue: '10/04/2022',
-      },
-    },
-    format: {
-      type: 'code',
-      displayName: 'Format',
-      validation: {
-        schema: {
-          type: 'string',
-        },
-        defautlValue: 'DD/MM/YYYY',
+        schema: { type: 'string' },
+        defaultValue: '01/01/2022',
       },
     },
     loadingState: {
@@ -89,6 +67,7 @@ export const daterangepickerConfig = {
       type: 'toggle',
       displayName: 'Visibility',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
+
       section: 'additionalActions',
     },
     disabledState: {
@@ -115,41 +94,29 @@ export const daterangepickerConfig = {
   },
   actions: [
     {
-      handle: 'setStartDate',
-      displayName: 'Set Start Date',
+      handle: 'setValue',
+      displayName: 'Set value',
       params: [
         { handle: 'value', displayName: 'Value' },
         { handle: 'format', displayName: 'Format' },
       ],
     },
     {
-      handle: 'clearStartDate',
-      displayName: 'Clear Start Date',
+      handle: 'clearValue',
+      displayName: 'Clear value',
     },
     {
-      handle: 'setEndDate',
-      displayName: 'Set End Date',
+      handle: 'setDate',
+      displayName: 'Set date',
       params: [
-        { handle: 'value', displayName: 'Value' },
+        { handle: 'date', displayName: 'Value' },
         { handle: 'format', displayName: 'Format' },
       ],
     },
     {
-      handle: 'clearEndDate',
-      displayName: 'Clear End Date',
-    },
-    {
-      handle: 'setDateRange',
-      displayName: 'Set Date Range',
-      params: [
-        { handle: 'startDate', displayName: 'Start Date' },
-        { handle: 'endDate', displayName: 'End Date' },
-        { handle: 'format', displayName: 'Format' },
-      ],
-    },
-    {
-      handle: 'clearDateRange',
-      displayName: 'Clear Date Range',
+      handle: 'setValueInTimestamp',
+      displayName: 'Set value in timestamp',
+      params: [{ handle: 'value', displayName: 'Value' }],
     },
     {
       handle: 'setDisabledDates',
@@ -305,7 +272,7 @@ export const daterangepickerConfig = {
       ],
       accordian: 'field',
     },
-    borderRadius: {
+    fieldBorderRadius: {
       type: 'input',
       displayName: 'Border radius',
       validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 6 },
@@ -334,24 +301,14 @@ export const daterangepickerConfig = {
       accordian: 'container',
     },
   },
+
   exposedVariables: {
-    endDate: '',
-    startDate: '',
+    value: '',
   },
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },
       showOnMobile: { value: '{{false}}' },
-    },
-    properties: {
-      label: { value: 'Label' },
-      defaultStartDate: { value: '01/04/2022' },
-      defaultEndDate: { value: '10/04/2022' },
-      format: { value: 'DD/MM/YYYY' },
-      loadingState: { value: '{{false}}' },
-      visibility: { value: '{{true}}' },
-      disabledState: { value: '{{false}}' },
-      tooltip: { value: '' },
     },
     validation: {
       minDate: { value: '' },
@@ -359,6 +316,15 @@ export const daterangepickerConfig = {
       disabledDates: { value: '{{[]}}' },
       customRule: { value: '' },
       mandatory: { value: '{{false}}' },
+    },
+    properties: {
+      label: { value: 'Label' },
+      defaultValue: { value: '01/01/2022' },
+      dateFormat: { value: 'DD/MM/YYYY' },
+      loadingState: { value: '{{false}}' },
+      visibility: { value: '{{true}}' },
+      disabledState: { value: '{{false}}' },
+      tooltip: { value: '' },
     },
     events: [],
     styles: {
@@ -372,10 +338,10 @@ export const daterangepickerConfig = {
       accentColor: { value: '#4368E3' },
       selectedTextColor: { value: '#1B1F24' },
       errTextColor: { value: '#E54D2E' },
-      icon: { value: 'IconCalendarMonth' },
+      icon: { value: 'IconCalendarEvent' },
       iconVisibility: { value: true },
       iconDirection: { value: 'left' },
-      borderRadius: { value: '{{6}}' },
+      fieldBorderRadius: { value: '{{6}}' },
       boxShadow: { value: '0px 0px 0px 0px #121212' },
       padding: { value: 'default' },
       iconColor: { value: '#6A727C' },

@@ -1,30 +1,22 @@
-export const daterangepickerConfig = {
-  name: 'DateRangePicker',
-  displayName: 'Range Picker',
-  description: 'Choose date ranges',
-  component: 'DaterangePicker',
+export const timePickerConfig = {
+  name: 'TimePicker',
+  displayName: 'Time Picker',
+  description: 'Choose date and time',
+  component: 'TimePicker',
   defaultSize: {
     width: 10,
     height: 40,
   },
   validation: {
-    minDate: {
-      type: 'datepicker',
-      placeholder: 'DD/MM/YYYY',
-      displayName: 'Min Date',
+    minTime: {
+      type: 'timepicker',
+      placeholder: 'HH:mm',
+      displayName: 'Min Time',
     },
-    maxDate: {
-      type: 'datepicker',
-      placeholder: 'DD/MM/YYYY',
-      displayName: 'Max Date',
-    },
-    disabledDates: {
-      type: 'code',
-      displayName: 'Disabled dates',
-      validation: {
-        schema: { type: 'array', element: { type: 'string' } },
-        defaultValue: "['01/01/2022']",
-      },
+    maxTime: {
+      type: 'timepicker',
+      placeholder: 'HH:mm',
+      displayName: 'Max Time',
     },
     customRule: {
       type: 'code',
@@ -49,35 +41,19 @@ export const daterangepickerConfig = {
       },
       accordian: 'Data',
     },
-    defaultStartDate: {
+    defaultValue: {
       type: 'code',
-      displayName: 'Default start date',
+      displayName: 'Default value',
       validation: {
-        schema: {
-          type: 'string',
-        },
-        defautlValue: '01/04/2022',
+        schema: { type: 'string' },
+        defaultValue: '00:00',
       },
     },
-    defaultEndDate: {
-      type: 'code',
-      displayName: 'Default end date',
-      validation: {
-        schema: {
-          type: 'string',
-        },
-        defautlValue: '10/04/2022',
-      },
-    },
-    format: {
-      type: 'code',
-      displayName: 'Format',
-      validation: {
-        schema: {
-          type: 'string',
-        },
-        defautlValue: 'DD/MM/YYYY',
-      },
+    isTimezoneEnabled: {
+      type: 'toggle',
+      displayName: 'Manage time zones',
+      validation: { schema: { type: 'boolean' }, defaultValue: false },
+      section: 'formatting',
     },
     loadingState: {
       type: 'toggle',
@@ -89,6 +65,7 @@ export const daterangepickerConfig = {
       type: 'toggle',
       displayName: 'Visibility',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
+
       section: 'additionalActions',
     },
     disabledState: {
@@ -115,59 +92,48 @@ export const daterangepickerConfig = {
   },
   actions: [
     {
-      handle: 'setStartDate',
-      displayName: 'Set Start Date',
+      handle: 'setValue',
+      displayName: 'Set value',
       params: [
         { handle: 'value', displayName: 'Value' },
         { handle: 'format', displayName: 'Format' },
       ],
     },
     {
-      handle: 'clearStartDate',
-      displayName: 'Clear Start Date',
+      handle: 'clearValue',
+      displayName: 'Clear value',
     },
     {
-      handle: 'setEndDate',
-      displayName: 'Set End Date',
+      handle: 'setTime',
+      displayName: 'Set time',
       params: [
         { handle: 'value', displayName: 'Value' },
         { handle: 'format', displayName: 'Format' },
       ],
     },
     {
-      handle: 'clearEndDate',
-      displayName: 'Clear End Date',
-    },
-    {
-      handle: 'setDateRange',
-      displayName: 'Set Date Range',
-      params: [
-        { handle: 'startDate', displayName: 'Start Date' },
-        { handle: 'endDate', displayName: 'End Date' },
-        { handle: 'format', displayName: 'Format' },
-      ],
-    },
-    {
-      handle: 'clearDateRange',
-      displayName: 'Clear Date Range',
-    },
-    {
-      handle: 'setDisabledDates',
-      displayName: 'Set disabled dates',
+      handle: 'setValueInTimestamp',
+      displayName: 'Set value in timestamp',
       params: [{ handle: 'value', displayName: 'Value' }],
     },
     {
-      handle: 'clearDisabledDates',
-      displayName: 'Clear disabled dates',
-    },
-    {
-      handle: 'setMinDate',
-      displayName: 'Set min date',
+      handle: 'setMinTime',
+      displayName: 'Set min time',
       params: [{ handle: 'value', displayName: 'Value' }],
     },
     {
-      handle: 'setMaxDate',
-      displayName: 'Set max date',
+      handle: 'setMaxTime',
+      displayName: 'Set max time',
+      params: [{ handle: 'value', displayName: 'Value' }],
+    },
+    {
+      handle: 'setDisplayTimezone',
+      displayName: 'Set display timezone',
+      params: [{ handle: 'value', displayName: 'Value' }],
+    },
+    {
+      handle: 'setStoreTimezone',
+      displayName: 'Set store timezone',
       params: [{ handle: 'value', displayName: 'Value' }],
     },
     {
@@ -305,7 +271,7 @@ export const daterangepickerConfig = {
       ],
       accordian: 'field',
     },
-    borderRadius: {
+    fieldBorderRadius: {
       type: 'input',
       displayName: 'Border radius',
       validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 6 },
@@ -334,31 +300,32 @@ export const daterangepickerConfig = {
       accordian: 'container',
     },
   },
+
   exposedVariables: {
-    endDate: '',
-    startDate: '',
+    value: '',
   },
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },
       showOnMobile: { value: '{{false}}' },
     },
+    validation: {
+      minTime: { value: '' },
+      maxTime: { value: '' },
+      customRule: { value: '' },
+      mandatory: { value: '{{false}}' },
+    },
     properties: {
       label: { value: 'Label' },
-      defaultStartDate: { value: '01/04/2022' },
-      defaultEndDate: { value: '10/04/2022' },
-      format: { value: 'DD/MM/YYYY' },
+      defaultValue: { value: '00:00' },
+      timeFormat: { value: 'HH:mm' },
+      isTimezoneEnabled: { value: '{{false}}' },
+      displayTimezone: { value: 'UTC' },
+      storeTimezone: { value: 'UTC' },
       loadingState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       tooltip: { value: '' },
-    },
-    validation: {
-      minDate: { value: '' },
-      maxDate: { value: '' },
-      disabledDates: { value: '{{[]}}' },
-      customRule: { value: '' },
-      mandatory: { value: '{{false}}' },
     },
     events: [],
     styles: {
@@ -372,10 +339,10 @@ export const daterangepickerConfig = {
       accentColor: { value: '#4368E3' },
       selectedTextColor: { value: '#1B1F24' },
       errTextColor: { value: '#E54D2E' },
-      icon: { value: 'IconCalendarMonth' },
+      icon: { value: 'IconClock' },
       iconVisibility: { value: true },
       iconDirection: { value: 'left' },
-      borderRadius: { value: '{{6}}' },
+      fieldBorderRadius: { value: '{{6}}' },
       boxShadow: { value: '0px 0px 0px 0px #121212' },
       padding: { value: 'default' },
       iconColor: { value: '#6A727C' },
