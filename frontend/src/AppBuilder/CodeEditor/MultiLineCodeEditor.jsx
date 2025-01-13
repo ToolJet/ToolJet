@@ -178,6 +178,7 @@ const MultiLineCodeEditor = (props) => {
     return {
       from: context.pos,
       options: [...suggestions],
+      filter: false,
     };
   }
 
