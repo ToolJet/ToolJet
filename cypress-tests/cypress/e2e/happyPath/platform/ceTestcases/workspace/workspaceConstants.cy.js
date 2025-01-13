@@ -5,6 +5,7 @@ import { workspaceConstantsText } from "Texts/workspaceConstants";
 import { commonText, commonWidgetText } from "Texts/common";
 
 import { releaseApp, navigateToAppEditor } from "Support/utils/common";
+import { manageWorkspaceConstant } from "Support/utils/workspaceConstants";
 
 import * as common from "Support/utils/common";
 
@@ -44,298 +45,46 @@ describe("Workspace constants", () => {
   const envVar = Cypress.env("environment");
   let currentVersion = "";
   let otherVersions = [];
+  data.constName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
+  data.newConstvalue = `New ${data.constName}`;
+  data.constantsName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
+  data.constantsValue = "dJ_8Q~BcaMPd";
+  data.appName = `${fake.companyName}-App`;
+  data.slug = data.appName.toLowerCase().replace(/\s+/g, "-");
+
   beforeEach(() => {
     cy.defaultWorkspaceLogin();
     cy.skipWalkthrough();
   });
 
-  it("Verify workspace constants UI and CRUD operations", () => {
+  it("Verify workspace constants UI and CRUD operations only", () => {
+    data.firstName = fake.firstName;
+    data.workspaceName = data.firstName;
+    data.workspaceSlug = data.firstName.toLowerCase();
+    let workspaceName = data.workspaceName.replaceAll("[^A-Za-z]", "");
     data.constName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
     data.newConstvalue = `New ${data.constName}`;
-    data.constantsName = fake.firstName
-      .toLowerCase()
-      .replaceAll("[^A-Za-z]", "");
-    data.constantsValue = "dJ_8Q~BcaMPd";
-    data.appName = `${fake.companyName}-App`;
-    data.slug = data.appName.toLowerCase().replace(/\s+/g, "-");
 
-    cy.get(commonSelectors.workspaceConstantsIcon).click();
+    cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
+    cy.visit(`${data.workspaceSlug}`);
+    cy.wait(2000);
 
-    cy.get(commonSelectors.pageSectionHeader).verifyVisibleElement(
-      "have.text",
-      "Workspace constants"
-    );
-
-    cy.get(
-      workspaceConstantsSelectors.workspaceConstantsHelperText
-    ).verifyVisibleElement(
-      "have.text",
-      workspaceConstantsText.workspaceConstantsHelperText
-    );
-
-    cy.get(commonSelectors.documentationLink).verifyVisibleElement(
-      "have.text",
-      "Read documentation"
-    );
-
-    cy.get("body").then(($body) => {
-      if ($body.find(workspaceConstantsSelectors.emptyStateImage).length > 0) {
-        cy.get(workspaceConstantsSelectors.emptyStateImage).should(
-          "be.visible"
-        );
-        cy.get(
-          workspaceConstantsSelectors.emptyStateHeader
-        ).verifyVisibleElement(
-          "have.text",
-          workspaceConstantsText.emptyStateHeader
-        );
-        cy.get(workspaceConstantsSelectors.emptyStateText).verifyVisibleElement(
-          "have.text",
-          workspaceConstantsText.emptyStateText
-        );
-        cy.get(
-          workspaceConstantsSelectors.addNewConstantButton
-        ).verifyVisibleElement(
-          "have.text",
-          workspaceConstantsText.addNewConstantButton
-        );
-      }
+    manageWorkspaceConstant({
+      constantType: "Global",
+      constName: "ExampleConstant",
+      newConstvalue: "UpdatedValue",
     });
-    cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
-    cy.get(workspaceConstantsSelectors.contantFormTitle).verifyVisibleElement(
-      "have.text",
-      workspaceConstantsText.addConstatntText
-    );
-    cy.get(commonSelectors.nameLabel).verifyVisibleElement("have.text", "Name");
-    cy.get(commonSelectors.workspaceConstantNameInput)
-      .invoke("attr", "placeholder")
-      .should("eq", "Enter constant name");
-    cy.get(commonSelectors.workspaceConstantNameInput).should("be.visible");
-    cy.get(commonSelectors.valueLabel).should(($el) => {
-      expect($el.contents().first().text().trim()).to.eq("Value");
+
+    manageWorkspaceConstant({
+      constantType: "Secrets",
+      constName: "ExampleConstant",
+      newConstvalue: "UpdatedValue",
     });
-    cy.get('[data-cy="form-encrypted-label"]').verifyVisibleElement(
-      "have.text",
-      "Encrypted"
-    );
-    cy.get(commonSelectors.workspaceConstantValueInput)
-      .invoke("attr", "placeholder")
-      .should("eq", "Enter value");
-    cy.get(commonSelectors.workspaceConstantValueInput).should("be.visible");
-    cy.get(commonSelectors.cancelButton).verifyVisibleElement(
-      "have.text",
-      "Cancel"
-    );
-    cy.get(workspaceConstantsSelectors.addConstantButton).verifyVisibleElement(
-      "have.text",
-      "Add constant"
-    );
-    cy.get(workspaceConstantsSelectors.addConstantButton).should("be.disabled");
-
-    contantsNameValidation(" ", commonText.constantsNameError);
-    contantsNameValidation("9", commonText.constantsNameError);
-    contantsNameValidation("%", commonText.constantsNameError);
-    contantsNameValidation(
-      "Xk4jY2mLn8pQsZ9Rt6vBc7wJaHqOdEfGuVxY3NkMLzPoWX5wee",
-      "Maximum length has been reached"
-    );
-    contantsNameValidation(
-      "Xk4jY2mLn8pQsZ9Rt6vBc7wJaHqOdEfGuVxY3NkMLzPoWX5weetr",
-      "Constant name has exceeded 50 characters"
-    );
-
-    cy.get(commonSelectors.workspaceConstantValueInput).click();
-    cy.clearAndType(commonSelectors.workspaceConstantValueInput, " ");
-    cy.get(commonSelectors.valueErrorText).verifyVisibleElement(
-      "have.text",
-      commonText.constantsValueError
-    );
-    cy.get(workspaceConstantsSelectors.addConstantButton).should("be.disabled");
-    cy.get(commonSelectors.cancelButton).click();
-    cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
-
-    cy.clearAndType(commonSelectors.workspaceConstantNameInput, data.constName);
-    cy.get(commonSelectors.workspaceConstantValueInput).click();
-    cy.clearAndType(
-      commonSelectors.workspaceConstantValueInput,
-      data.constName
-    );
-    cy.get(workspaceConstantsSelectors.constantsType("global")).check();
-    cy.get(workspaceConstantsSelectors.addConstantButton).should("be.enabled");
-    cy.get(commonSelectors.cancelButton).click();
-    cy.get(workspaceConstantsSelectors.constantName(data.constName)).should(
-      "not.exist"
-    );
-
-    cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
-    cy.clearAndType(commonSelectors.workspaceConstantNameInput, data.constName);
-    cy.get(commonSelectors.workspaceConstantValueInput).click();
-    cy.clearAndType(
-      commonSelectors.workspaceConstantValueInput,
-      data.constName
-    );
-    cy.get(workspaceConstantsSelectors.constantsType("Secrets")).check();
-    cy.get(workspaceConstantsSelectors.addConstantButton).click();
-    cy.reload();
-    cy.get(".tabs > :nth-child(2)").click({ force: true });
-    cy.contains("button", "Secrets").click({ force: true });
-    cy.get(".tabs > :nth-child(1)").click({ force: true });
-    cy.contains("button", "Secrets").click({ force: true });
-    cy.get(`[data-cy="${data.constName}-edit-button"]`).click();
-    cy.get('[data-cy="name-input-field"]').should(
-      "have.attr",
-      "data-tooltip-content",
-      "Cannot edit constant name"
-    );
-    cy.get('[data-cy="cancel-button"]').click();
-
-    cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
-    cy.clearAndType(commonSelectors.workspaceConstantNameInput, data.constName);
-    cy.get(commonSelectors.workspaceConstantValueInput).click();
-    cy.clearAndType(
-      commonSelectors.workspaceConstantValueInput,
-      data.constName
-    );
-    cy.get(workspaceConstantsSelectors.constantsType("global")).check();
-    cy.get(workspaceConstantsSelectors.addConstantButton).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      workspaceConstantsText.constantCreatedToast("Global")
-    );
-
-    cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
-    existingNameValidation(data.constName, "test");
-    cy.get(commonSelectors.cancelButton).click();
-
-    cy.get(workspaceConstantsSelectors.envName).should(($el) => {
-      expect($el.contents().first().text().trim()).to.eq("Production");
-    });
-    cy.get(
-      workspaceConstantsSelectors.addNewConstantButton
-    ).verifyVisibleElement("have.text", "+ Create new constant");
-    cy.get(
-      workspaceConstantsSelectors.constantsTableNameHeader
-    ).verifyVisibleElement("have.text", "Name");
-    cy.get(
-      workspaceConstantsSelectors.constantsTableValueHeader
-    ).verifyVisibleElement("have.text", "Value");
-    cy.get(
-      workspaceConstantsSelectors.constantName(data.constName)
-    ).verifyVisibleElement("have.text", data.constName);
-
-    cy.get(workspaceConstantsSelectors.constHideButton(data.constName)).click();
-    cy.get(
-      workspaceConstantsSelectors.constantValue(data.constName)
-    ).verifyVisibleElement("have.text", data.constName);
-    cy.get(
-      workspaceConstantsSelectors.constEditButton(data.constName)
-    ).verifyVisibleElement("have.text", "Edit");
-    cy.get(
-      workspaceConstantsSelectors.constDeleteButton(data.constName)
-    ).verifyVisibleElement("have.text", "Delete");
-    cy.get(commonSelectors.pagination).should("be.visible");
-
-    cy.get(workspaceConstantsSelectors.constEditButton(data.constName)).click();
-
-    cy.get(workspaceConstantsSelectors.contantFormTitle).verifyVisibleElement(
-      "have.text",
-      "Update constant in production "
-    );
-    cy.get(commonSelectors.nameLabel).verifyVisibleElement("have.text", "Name");
-    cy.get(commonSelectors.workspaceConstantNameInput).should(
-      "have.value",
-      data.constName
-    );
-    cy.get(commonSelectors.workspaceConstantNameInput)
-      .should("be.visible")
-      .and("be.disabled");
-    cy.get(commonSelectors.valueLabel).should(($el) => {
-      expect($el.contents().first().text().trim()).to.eq("Value");
-    });
-    cy.get(commonSelectors.workspaceConstantValueInput)
-      .click()
-      .should("be.visible")
-      .and("have.value", data.constName);
-
-    cy.get(commonSelectors.cancelButton).verifyVisibleElement(
-      "have.text",
-      "Cancel"
-    );
-    cy.get(commonSelectors.cancelButton).click();
-    cy.wait(200);
-    cy.get(
-      workspaceConstantsSelectors.constantValue(data.constName)
-    ).verifyVisibleElement("have.text", data.constName);
-
-    cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
-    cy.get(workspaceConstantsSelectors.addConstantButton).should("be.disabled");
-
-    cy.get(commonSelectors.workspaceConstantValueInput).click();
-    cy.clearAndType(
-      commonSelectors.workspaceConstantValueInput,
-      data.newConstvalue
-    );
-    cy.get(workspaceConstantsSelectors.addConstantButton).should("be.disabled");
-    cy.get(commonSelectors.cancelButton).click();
-    cy.get(
-      workspaceConstantsSelectors.constantValue(data.constName)
-    ).verifyVisibleElement("have.text", data.constName);
-
-    cy.get(workspaceConstantsSelectors.constEditButton(data.constName)).click();
-    cy.get(commonSelectors.workspaceConstantValueInput).click();
-    cy.clearAndType(
-      commonSelectors.workspaceConstantValueInput,
-      data.newConstvalue
-    );
-    cy.get(workspaceConstantsSelectors.addConstantButton).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      "Constant updated successfully"
-    );
-
-    cy.get(workspaceConstantsSelectors.constantValue(data.constName))
-      .should("be.visible")
-      .and("have.text", data.newConstvalue);
-    cy.get(
-      workspaceConstantsSelectors.constDeleteButton(data.constName)
-    ).click();
-    cy.get(commonSelectors.modalMessage).verifyVisibleElement(
-      "have.text",
-      `Are you sure you want to delete ${data.constName} from production?`
-    );
-    cy.get(commonSelectors.cancelButton).verifyVisibleElement(
-      "have.text",
-      "Cancel"
-    );
-    cy.get(commonSelectors.yesButton).verifyVisibleElement("have.text", "Yes");
-    cy.get(commonSelectors.cancelButton).click();
-    cy.get(
-      workspaceConstantsSelectors.constantValue(data.constName)
-    ).verifyVisibleElement("have.text", data.newConstvalue);
-
-    cy.get(
-      workspaceConstantsSelectors.constDeleteButton(data.constName)
-    ).click();
-    cy.get(commonSelectors.yesButton).click();
-    cy.get(workspaceConstantsSelectors.constantValue(data.constName)).should(
-      "not.exist"
-    );
-
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      "Constant deleted successfully"
-    );
-
-    // Deleting constants and verifying empty page
-    cy.get(workspaceConstantsSelectors.emptyStateHeader).verifyVisibleElement(
-      "have.text",
-      workspaceConstantsText.emptyStateHeader
-    );
   });
 
   it("should verify the constants resolving value on components and query", () => {
     cy.viewport(1440, 960);
-
+    cy.defaultWorkspaceLogin();
     data.widgetName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
     data.appName = `${fake.companyName}-App`;
     data.restapilink = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
@@ -399,6 +148,7 @@ describe("Workspace constants", () => {
     data.constantsValue = "dJ_8Q~BcaMPd";
     data.appName = `${fake.companyName}-App`;
     data.slug = data.appName.toLowerCase().replace(/\s+/g, "-");
+    cy.defaultWorkspaceLogin();
     cy.apiCreateApp(data.appName);
 
     // Create Global constants
@@ -561,7 +311,7 @@ describe("Workspace constants", () => {
     data.restapiHeaderValue = fake.firstName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");
-
+    cy.defaultWorkspaceLogin();
     cy.get(commonSelectors.workspaceConstantsIcon).click();
     addNewconstants(data.restapilink, Cypress.env("constants_host"));
     addNewconstants(data.restapiHeaderKey, "customHeader");
