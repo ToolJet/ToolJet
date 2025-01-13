@@ -5,8 +5,8 @@ import { Text } from '@/Editor/Components/Text';
 import { Table } from '@/AppBuilder/Widgets/Table/Table';
 
 import { TextInput } from '@/AppBuilder/Widgets/TextInput';
+import { TextArea } from '@/AppBuilder/Widgets/TextArea';
 import { NumberInput } from '@/AppBuilder/Widgets/NumberInput';
-import { TextArea } from '@/Editor/Components/TextArea';
 import { RichTextEditor } from '@/Editor/Components/RichTextEditor';
 import { DropDown } from '@/Editor/Components/DropDown';
 import { DropdownV2 } from '@/Editor/Components/DropdownV2/DropdownV2';

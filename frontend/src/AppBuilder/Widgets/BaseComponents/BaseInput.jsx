@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import Label from '@/_ui/Label';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import * as Icons from '@tabler/icons-react';
 const tinycolor = require('tinycolor2');
+
+const RenderInput = forwardRef((props, ref) => {
+  return props.inputType !== 'textarea' ? <input {...props} ref={ref} /> : <textarea {...props} ref={ref} />;
+});
 
 export const BaseInput = ({
   height,
@@ -89,24 +93,40 @@ export const BaseInput = ({
     textOverflow: 'ellipsis',
   };
 
-  const loaderStyle = {
-    right:
-      direction === 'right' &&
-      defaultAlignment === 'side' &&
-      ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0))
-        ? `${labelWidth + 11}px`
-        : '11px',
-    top:
-      defaultAlignment === 'top'
-        ? ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)) &&
-          'calc(50% + 10px)'
-        : '',
-    transform:
-      defaultAlignment === 'top' &&
-      ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)) &&
-      ' translateY(-50%)',
-    zIndex: 3,
-  };
+  let loaderStyle;
+  // for textarea loader position is fixed on top right of input box.
+  if (inputType !== 'textarea') {
+    loaderStyle = {
+      right:
+        direction === 'right' &&
+        defaultAlignment === 'side' &&
+        ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0))
+          ? `${labelWidth + 11}px`
+          : '11px',
+      top:
+        defaultAlignment === 'top'
+          ? ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)) &&
+            'calc(50% + 10px)'
+          : '',
+      transform:
+        defaultAlignment === 'top' &&
+        ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)) &&
+        ' translateY(-50%)',
+      zIndex: 3,
+    };
+  } else {
+    loaderStyle = {
+      right:
+        direction === 'right' &&
+        defaultAlignment === 'side' &&
+        ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0))
+          ? `${labelWidth + 11}px`
+          : '11px',
+      top: defaultAlignment === 'top' ? '30px' : '10px',
+      transform: 'none',
+      zIndex: 3,
+    };
+  }
 
   // eslint-disable-next-line import/namespace
   const IconElement = Icons[icon] ?? Icons['IconHome2'];
@@ -121,7 +141,7 @@ export const BaseInput = ({
           defaultAlignment === 'top' &&
           ((width != 0 && label?.length != 0) || (auto && width == 0 && label && label?.length != 0))
             ? 'flex-column'
-            : 'align-items-center'
+            : inputType != 'textarea' && 'align-items-center'
         } ${direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''}
         ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
         ${visibility || 'invisible'}`}
@@ -143,6 +163,7 @@ export const BaseInput = ({
           isMandatory={isMandatory}
           _width={_width}
           labelWidth={labelWidth}
+          top={inputType === 'textarea' && defaultAlignment === 'side' && '9px'}
         />
 
         {showLeftIcon && (
@@ -161,7 +182,11 @@ export const BaseInput = ({
                   : '11px',
               position: 'absolute',
               top:
-                defaultAlignment === 'side'
+                inputType === 'textarea'
+                  ? defaultAlignment === 'top'
+                    ? '38px'
+                    : '18px'
+                  : defaultAlignment === 'side'
                   ? '50%'
                   : (label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)
                   ? 'calc(50% + 10px)'
@@ -173,8 +198,8 @@ export const BaseInput = ({
             stroke={1.5}
           />
         )}
-
-        <input
+        <RenderInput
+          inputType={inputType}
           data-cy={dataCy}
           ref={inputRef}
           type={inputType}

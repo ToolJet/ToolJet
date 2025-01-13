@@ -59,6 +59,7 @@ const INSPECTOR_HEADER_OPTIONS = [
 const NEW_REVAMPED_COMPONENTS = [
   'Text',
   'TextInput',
+  'TextArea',
   'PasswordInput',
   'NumberInput',
   'Table',

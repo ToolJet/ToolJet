@@ -68,7 +68,7 @@ const widgets = {
   radiobuttonConfig,
   toggleswitchConfig, //!Depreciated
   toggleSwitchV2Config,
-  textareaConfig,
+  textareaConfig, //! Deprecated
   daterangepickerConfig,
   textConfig,
   imageConfig,

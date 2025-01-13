@@ -13,6 +13,7 @@ import { shallow } from 'zustand/shallow';
 const SHOW_ADDITIONAL_ACTIONS = [
   'Text',
   'TextInput',
+  'TextArea',
   'NumberInput',
   'PasswordInput',
   'ToggleSwitchV2',
@@ -28,6 +29,7 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   NumberInput: 'Data',
   ToggleSwitchV2: 'Data',
   Checkbox: 'Data',
+  TextArea: 'Data',
   Button: 'Data',
 };
 
@@ -113,6 +115,7 @@ export const baseComponentProperties = (
       'Modal',
       'TextInput',
       'PasswordInput',
+      'TextArea',
       'NumberInput',
       'Text',
       'Table',
