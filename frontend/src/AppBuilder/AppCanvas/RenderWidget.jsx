@@ -23,6 +23,8 @@ const shouldAddBoxShadowAndVisibility = [
   'DaterangePicker',
   'DatePickerV2',
   'TimePicker',
+  'Icon',
+  'Image',
 ];
 
 const RenderWidget = ({

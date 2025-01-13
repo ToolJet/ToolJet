@@ -38,6 +38,7 @@ const initialState = {
   selectedComponents: [],
   currentPageHandle: null,
   showWidgetDeleteConfirmation: false,
+  focusedParentId: null,
 };
 
 export const createComponentsSlice = (set, get) => ({
@@ -1391,6 +1392,11 @@ export const createComponentsSlice = (set, get) => ({
       false,
       { type: 'setSelectedComponentAsModal', payload: { componentId } }
     );
+  },
+  setFocusedParentId: (parentId) => {
+    set((state) => {
+      state.focusedParentId = parentId;
+    });
   },
   saveComponentChanges: (diff, type, operation) => {
     set(
