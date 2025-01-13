@@ -6,7 +6,7 @@ import _, { noop } from 'lodash';
 import { validateName } from '@/_helpers/utils';
 import { FormWrapper } from './FormWrapper';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { config } from 'config';
+import config from 'config';
 
 export function AppModal({
   closeModal,
@@ -262,8 +262,7 @@ const PluginsList = ({ dependentPluginsForTemplate, dependentPluginsDetail }) =>
         >
           {dependentPluginsForTemplate.map((plugin, index) => {
             const pluginsName = dependentPluginsDetail[plugin].name || plugin;
-            const iconSrc = `https://raw.githubusercontent.com/${pluginsName}/main/lib/icon.svg` || '';
-
+            const iconSrc = `${config.TOOLJET_MARKETPLACE_URL}/marketplace-assets/${plugin}/lib/icon.svg`;
             return (
               <div
                 key={`${pluginsName}-${index}`}
