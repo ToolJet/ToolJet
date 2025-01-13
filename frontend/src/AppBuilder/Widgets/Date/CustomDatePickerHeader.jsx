@@ -80,6 +80,7 @@ const CustomDatePickerHeader = (props) => {
       ...provided,
       width: '150px',
       borderRadius: '8px',
+      top: 'auto',
     }),
     menuList: (provided) => ({
       ...provided,
@@ -168,20 +169,24 @@ const CustomDatePickerHeader = (props) => {
                 value={months[moment(monthDate).month()]}
                 onChange={(value) => changeMonth(months.indexOf(value))}
                 width={'100%'}
-                useMenuPortal={false}
                 styles={customSelectStyles}
                 useCustomStyles={true}
+                useMenuPortal={false}
                 components={{ Option: CustomOption }}
+                menuPlacement="bottom"
+                menuPosition="absolute"
               />
               <Select
                 options={years.map((option) => ({ name: option, value: option }))}
                 value={moment(monthDate).year()}
                 onChange={(value) => changeYear(value)}
                 width={'100%'}
-                useMenuPortal={false}
                 styles={customSelectStyles}
                 useCustomStyles={true}
+                useMenuPortal={false}
                 components={{ Option: CustomOption }}
+                menuPlacement="bottom"
+                menuPosition="absolute"
               />
             </div>
           )}
