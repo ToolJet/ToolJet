@@ -438,6 +438,18 @@ const sidebars = {
             'user-management/role-based-access/granular-access-control'
           ]
         },
+        {
+          'type': 'category',
+          'label': 'Single Sign-On (SSO)',
+          'items': [
+            'user-management/sso/overview',
+            'user-management/sso/github',
+            'user-management/sso/google',
+            'user-management/sso/oidc',
+            'user-management/sso/ldap',
+            'user-management/sso/saml'
+          ]
+        },
       ]
     },
     {
