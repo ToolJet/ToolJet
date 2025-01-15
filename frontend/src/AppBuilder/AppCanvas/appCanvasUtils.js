@@ -479,3 +479,14 @@ export const getParentComponentIdByType = ({ child, parentComponent, parentId, s
   }
   return parentId;
 };
+
+export const getParentWidgetFromId = (parentType, parentId) => {
+  const isAddingToSlot = parentId?.includes('-header') || parentId?.includes('-footer');
+
+  if (parentType === 'Modal' && isAddingToSlot) {
+    return 'ModalSlot';
+  } else if (parentType === 'Kanban') {
+    return 'Kanban_card';
+  }
+  return parentType;
+};

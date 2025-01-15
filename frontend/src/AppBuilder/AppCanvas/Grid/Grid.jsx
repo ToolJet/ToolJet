@@ -6,6 +6,7 @@ import { shallow } from 'zustand/shallow';
 import _, { isArray } from 'lodash';
 import { flushSync } from 'react-dom';
 import { restrictedWidgetsObj } from '@/AppBuilder/WidgetManager/configs/restrictedWidgetsConfig';
+import { getParentWidgetFromId } from '@/AppBuilder/AppCanvas/appCanvasUtils';
 import { useGridStore, useIsGroupHandleHoverd, useOpenModalWidgetId } from '@/_stores/gridStore';
 import toast from 'react-hot-toast';
 import {
@@ -13,13 +14,10 @@ import {
   getMouseDistanceFromParentDiv,
   findChildrenAndGrandchildren,
   findHighestLevelofSelection,
-  getOffset,
   hasParentWithClass,
   getPositionForGroupDrag,
   adjustWidth,
 } from './gridUtils';
-import { useAppVersionStore } from '@/_stores/appVersionStore';
-import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import './Grid.css';
 import { NO_OF_GRIDS } from '../appCanvasConstants';
@@ -599,7 +597,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           //  to handle their own interactions like column resizing or card dragging
           let isDragOnInnerElement = false;
 
-          /* If the drag or click is on a calender popup draggable interactions are not executed so that popups and other components inside calender popup works. 
+          /* If the drag or click is on a calender popup draggable interactions are not executed so that popups and other components inside calender popup works.
             Also user dont need to drag an calender from using popup */
           if (hasParentWithClass(e.inputEvent.target, 'react-datepicker-popper')) {
             return false;
@@ -698,7 +696,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             const currentWidget = boxList.find(({ id }) => id === e.target.id)?.component?.component;
             const parentId = draggedOverElemId?.length > 36 ? draggedOverElemId.slice(0, 36) : draggedOverElemId;
             draggedOverElemIdType = getComponentTypeFromId(parentId);
-            const parentWidget = draggedOverElemIdType === 'Kanban' ? 'Kanban_card' : draggedOverElemIdType;
+            const parentWidget = getParentWidgetFromId(draggedOverElemIdType, parentId);
             const restrictedWidgets = restrictedWidgetsObj?.[parentWidget] || [];
             const isParentChangeAllowed = !restrictedWidgets.includes(currentWidget);
             if (draggedOverElemId !== currentParentId) {
@@ -709,7 +707,9 @@ export default function Grid({ gridWidth, currentLayout }) {
                 // @TODO - When dropping back to container from canvas, the boxList doesn't have canvas header,
                 // boxList will return null. But we need to tell getMouseDistanceFromParentDiv parentWidgetType is container
                 // As container id is like 'canvas-2375e23765e-123234'
-                if (parentId && !parentWidgetType && draggedOverElemId.includes('-header')) {
+                const isOnHeaderOrFooter =
+                  draggedOverElemId.includes('-header') || draggedOverElemId.includes('-footer');
+                if (parentId && !parentWidgetType && isOnHeaderOrFooter) {
                   parentWidgetType = 'Container';
                 }
 

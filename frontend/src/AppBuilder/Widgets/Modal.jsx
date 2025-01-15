@@ -92,9 +92,11 @@ export const Modal = function Modal({
 
   const versionFriendlyHeight = backwardCompatibilityCheck ? modalHeight : height;
   const [modalContainerHeight, setModalContainerHeight] = useState(0);
-  const computedCanvasHeight = isFullScreen ? 'calc(100vh - 56px)' : versionFriendlyHeight;
 
   const computedHeight = getModalBodyHeight(modalHeight, showHeader, showFooter, headerHeight, footerHeight);
+  const computedCanvasHeight = isFullScreen
+    ? `calc(100vh - 48px - 40px - ${showHeader ? headerHeight : '0px'} - ${showFooter ? footerHeight : '0px'})`
+    : computedHeight;
 
   /**** Start - Logic to reset the zIndex of modal control box ****/
   useEffect(() => {
@@ -128,8 +130,8 @@ export const Modal = function Modal({
   const onShowSideEffects = () => {
     const canvasElement = document.querySelector('.page-container.canvas-container');
     const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
-    // const modalCanvasEl = document.getElementById(`canvas-${id}`);
-    const modalContainer = realCanvasEl.querySelector('.modal');
+    const allModalContainers = realCanvasEl.querySelectorAll('.modal');
+    const modalContainer = allModalContainers[allModalContainers.length - 1];
 
     if (canvasElement && realCanvasEl && modalContainer) {
       const currentScroll = canvasElement.scrollTop;
@@ -137,7 +139,6 @@ export const Modal = function Modal({
 
       modalContainer.style.height = `${canvasElement.offsetHeight}px`;
       modalContainer.style.top = `${currentScroll}px`;
-      // modalCanvasEl.style.height = isFullScreen ? '100%' : computedHeight;
       fireEvent('onOpen');
     }
   };
@@ -145,7 +146,8 @@ export const Modal = function Modal({
   const onHideSideEffects = () => {
     const canvasElement = document.querySelector('.page-container.canvas-container');
     const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
-    const modalContainer = realCanvasEl.querySelector('.modal');
+    const allModalContainers = realCanvasEl.querySelectorAll('.modal');
+    const modalContainer = allModalContainers[allModalContainers.length - 1];
 
     if (canvasElement && realCanvasEl && modalContainer) {
       canvasElement.style.overflow = 'auto';
@@ -245,18 +247,24 @@ export const Modal = function Modal({
       overflowY: 'auto',
       position: 'relative',
     },
+    modalCloseButton: {
+      padding: '16px',
+      flexShrink: 0,
+    },
     modalHeader: {
       backgroundColor:
         ['#fff', '#ffffffff'].includes(headerBackgroundColor) && darkMode ? '#1F2837' : headerBackgroundColor,
       height: headerHeight,
       padding: 0,
+      overflowY: 'auto',
     },
     modalFooter: {
       backgroundColor:
-        ['#000', '#000000', '#000000ff'].includes(footerBackgroundColor) && darkMode ? '#fff' : footerBackgroundColor,
+        ['#fff', '#ffffffff'].includes(footerBackgroundColor) && darkMode ? '#1F2837' : footerBackgroundColor,
       height: footerHeight,
       padding: 0,
       borderTop: `1px solid var(--border-weak)`,
+      overflowY: 'auto',
     },
     buttonStyles: {
       backgroundColor: triggerButtonBackgroundColor,
@@ -359,8 +367,8 @@ export const Modal = function Modal({
           <>
             <SubContainer
               id={`${id}`}
-              canvasHeight={isFullScreen ? modalContainerHeight : modalHeight}
-              styles={{ backgroundColor: customStyles.modalBody.backgroundColor, height: computedHeight }}
+              canvasHeight={computedCanvasHeight}
+              styles={{ backgroundColor: customStyles.modalBody.backgroundColor, height: computedCanvasHeight }}
               canvasWidth={modalWidth}
               darkMode={darkMode}
             />
@@ -395,6 +403,7 @@ const ModalHeader = ({ id, customStyles, hideCloseButton, darkMode, width, onHid
       {!hideCloseButton && (
         <span
           className="cursor-pointer"
+          style={customStyles.modalCloseButton}
           data-cy={`modal-close-button`}
           size="sm"
           onClick={(e) => {
