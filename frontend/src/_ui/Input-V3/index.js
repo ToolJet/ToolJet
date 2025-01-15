@@ -5,7 +5,7 @@ import SolidIcon from '../Icon/SolidIcons';
 import { toast } from 'react-hot-toast';
 import InputComponent from '@/components/ui/Input/Index';
 
-const InputV3 = ({ helpText, validate, ...props }) => {
+const InputV3 = ({ helpText, ...props }) => {
   const { workspaceVariables, workspaceConstants, value, widget, disabled, encrypted } = props;
   const [isFocused, setIsFocused] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
@@ -41,7 +41,6 @@ const InputV3 = ({ helpText, validate, ...props }) => {
             label={props.label}
             placeholder={props.placeholder}
             required={props.isRequired}
-            validation={(e) => validate(e)}
           />
         )}
         {(widget === 'password-v3' || encrypted) && (
@@ -54,7 +53,6 @@ const InputV3 = ({ helpText, validate, ...props }) => {
               label={props.label}
               placeholder={props.placeholder}
               required={props.isRequired}
-              validation={(e) => validate(e)}
             />
           </div>
         )}

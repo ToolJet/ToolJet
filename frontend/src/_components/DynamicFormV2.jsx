@@ -213,11 +213,6 @@ const DynamicFormV2 = ({
     const isRequired = required || conditionallyRequiredProperties.includes(key);
     const isEncrypted = widget === 'password-v3' || encryptedProperties.includes(key);
     const currentValue = options?.[key]?.value;
-    const checkValidation = (property) => {
-      return validationMessages.hasOwnProperty(property)
-        ? { valid: false, message: validationMessages[property] }
-        : { valid: true, message: '' };
-    };
 
     switch (widget) {
       case 'password':
@@ -256,13 +251,17 @@ const DynamicFormV2 = ({
           helpText: helpText,
           value: currentValue || '',
           onChange: (e) => optionchanged(key, e.target.value, true),
-          validate: () => checkValidation(key),
           isGDS: true,
           workspaceVariables: [],
           workspaceConstants: [],
           encrypted: isEncrypted,
           onBlur,
           isRequired: isRequired,
+          isValidatedMessages: validationMessages[key]
+            ? { valid: false, message: validationMessages[key] }
+            : isRequired && !isEncrypted
+            ? { valid: true, message: '' }
+            : { valid: null, message: '' }, // handle optional && encrypted fields
         };
       }
       case 'react-component-headers': {

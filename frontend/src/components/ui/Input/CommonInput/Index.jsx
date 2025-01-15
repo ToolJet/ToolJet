@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import NumberInput from './NumberInput';
 import TextInput from './TextInput';
 import { HelperMessage, InputLabel, ValidationMessage } from '../InputUtils/InputUtils';
@@ -9,14 +9,22 @@ const CommonInput = ({ label, helperText, disabled, required, onChange: change, 
   const [message, setMessage] = useState('');
 
   const handleChange = (e) => {
-    let validateObj;
     if (restProps.validation) {
-      validateObj = restProps.validation(e);
+      const validateObj = restProps.validation(e);
       setIsValid(validateObj.valid);
       setMessage(validateObj.message);
+      change(e, validateObj);
+    } else {
+      change(e);
     }
-    change(e, validateObj);
   };
+
+  useEffect(() => {
+    if (restProps.isValidatedMessages) {
+      setIsValid(restProps.isValidatedMessages.valid);
+      setMessage(restProps.isValidatedMessages.message);
+    }
+  }, [restProps.isValidatedMessages]);
 
   return (
     <div>
