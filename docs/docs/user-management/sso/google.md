@@ -2,6 +2,7 @@
 id: google
 title: Google
 ---
+
 You can configure Google SSO in ToolJet at both instance and workspace level for seamless authentication and enanched security.
 
 ## Configure Google SSO
