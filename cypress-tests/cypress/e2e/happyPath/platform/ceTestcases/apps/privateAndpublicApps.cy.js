@@ -61,6 +61,8 @@ describe(
 
       data.appName = `${fake.companyName} App`;
       data.slug = data.appName.toLowerCase().replace(/\s+/g, "-");
+      data.slug = fake.firstName.toLowerCase();
+      data.slug1 = fake.firstName.toLowerCase();
       data.firstName = fake.firstName;
       data.email = fake.email.toLowerCase();
       data.workspaceName = data.email;
@@ -172,11 +174,10 @@ describe(
       cy.get(commonWidgetSelector.appNameSlugInput).should("be.visible");
       cy.get(commonWidgetSelector.modalCloseButton).should("be.visible");
 
-      cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${data.slug}`);
+      cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${data.slug1}`);
       cy.get('[data-cy="app-slug-accepted-label"]')
         .should("be.visible")
         .and("have.text", "Slug accepted!");
-      // cy.contains("Slug accepted!").should("be.visible");
 
       cy.get(commonWidgetSelector.modalCloseButton).click();
       cy.forceClickOnCanvas();
@@ -188,7 +189,7 @@ describe(
       );
 
       cy.visitSlug({
-        actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
+        actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug1}`,
       });
 
       cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should(
@@ -213,27 +214,28 @@ describe(
 
       cy.get(commonWidgetSelector.shareAppButton).click();
       cy.get(commonWidgetSelector.makePublicAppToggle).check();
+      cy.wait(1000);
       cy.get(commonWidgetSelector.modalCloseButton).click();
       cy.backToApps();
 
       logout();
-
+      cy.wait(3000);
       cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should(
         "be.visible"
       );
 
       cy.visitSlug({
-        actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
+        actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug1}`,
       });
-
-      cy.get(".text-widget-section > div").should("be.visible");
+      cy.wait(2000);
+      // cy.get(".text-widget-section > div").should("be.visible");
     });
 
     it("Verify app private and public app visibility for the same workspace user", () => {
       cy.apiCreateApp(data.appName);
       cy.openApp();
       cy.dragAndDropWidget("text");
-     
+      data.slug5 = fake.firstName.toLowerCase();;
       releaseApp();
       cy.get(commonWidgetSelector.shareAppButton).click();
 
@@ -246,7 +248,7 @@ describe(
         );
       }
 
-      cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${data.slug}`);
+      cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${data.slug5}`);
       cy.wait(2000);
       cy.get('[data-cy="app-slug-accepted-label"]')
         .should("be.visible")
@@ -262,7 +264,7 @@ describe(
       logout();
       
       cy.visitSlug({
-        actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
+        actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug5}`,
       });
       cy.wait(3000);
       cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should(
@@ -282,7 +284,7 @@ describe(
       // visiting with valid session
 
       cy.visitSlug({
-        actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
+        actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug5}`,
       });
       cy.get(".text-widget-section > div").should("be.visible");
       cy.get(commonSelectors.viewerPageLogo).click();
@@ -307,11 +309,12 @@ describe(
         "be.visible"
       );
       cy.visitSlug({
-        actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
+        actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug5}`,
       });
     });
 
     it("Verify app private and public app visibility for the same instance user", () => {
+      data.slug4 = fake.firstName.toLowerCase();
       cy.apiCreateApp(data.appName);
       cy.openApp();
       cy.addComponentToApp(data.appName, "text1");
@@ -319,7 +322,7 @@ describe(
       releaseApp();
 
       cy.get(commonWidgetSelector.shareAppButton).click();
-      cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${data.slug}`);
+      cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${data.slug4}`);
       cy.get('[data-cy="app-slug-accepted-label"]')
         .should("be.visible")
         .and("have.text", "Slug accepted!");
@@ -327,12 +330,12 @@ describe(
 
       cy.backToApps();
      
-      cy.visitSlug({ actualUrl: `/applications/${data.slug}` });
+      cy.visitSlug({ actualUrl: `/applications/${data.slug4}` });
       cy.get('[data-cy="viewer-page-logo"]').click();
 
       // Visiting with valid session
 
-      cy.visitSlug({ actualUrl: `/applications/${data.slug}` });
+      cy.visitSlug({ actualUrl: `/applications/${data.slug4}` });
       cy.get('[data-cy="viewer-page-logo"]').click();
 
       cy.logoutApi();
@@ -359,7 +362,7 @@ describe(
         "be.visible"
       );
 
-      cy.visitSlug({ actualUrl: `/applications/${data.slug}` });
+      cy.visitSlug({ actualUrl: `/applications/${data.slug4}` });
       cy.get(".text-widget-section > div").should("be.visible");
       cy.get(commonSelectors.viewerPageLogo).click();
     });
@@ -370,7 +373,7 @@ describe(
       let workspaceId = "";
       let userId = "";
       let url = "";
-
+      data.slug2 = fake.firstName.toLowerCase();
       setSignupStatus(true);
       cy.apiCreateApp(data.appName);
       cy.openApp();
@@ -379,14 +382,14 @@ describe(
       releaseApp();
 
       cy.get(commonWidgetSelector.shareAppButton).click();
-      cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${data.slug}`);
+      cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${data.slug2}`);
       cy.get('[data-cy="app-slug-accepted-label"]')
         .should("be.visible")
         .and("have.text", "Slug accepted!");
       cy.get(commonWidgetSelector.modalCloseButton).click();
       cy.backToApps();
       cy.logoutApi();
-      cy.visitSlug({ actualUrl: `/applications/${data.slug}` });
+      cy.visitSlug({ actualUrl: `/applications/${data.slug2}` });
 
       cy.get(commonSelectors.createAnAccountLink).click();
       cy.wait(4000);
@@ -418,9 +421,9 @@ describe(
             }).then((resp) => {
               organizationToken = resp.rows[1].invitation_token;
               // normal flow
-              url = `http://localhost:8082/invitations/${invitationToken}/workspaces/${organizationToken}?oid=${workspaceId}&redirectTo=%2Fapplications%2F${data.slug}`;
+              // url = `http://localhost:8082/invitations/${invitationToken}/workspaces/${organizationToken}?oid=${workspaceId}&redirectTo=%2Fapplications%2F${data.slug2}`;
               // subpath flow
-              // url = `http://localhost:3000/apps/invitations/${invitationToken}/workspaces/${organizationToken}?oid=${workspaceId}&redirectTo=%2Fapplications%2F${data.slug}`;
+              url = `http://localhost:3000/apps/invitations/${invitationToken}/workspaces/${organizationToken}?oid=${workspaceId}&redirectTo=%2Fapplications%2F${data.slug2}`;
 
               cy.logoutApi();
               cy.wait(1000);

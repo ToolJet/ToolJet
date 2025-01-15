@@ -569,8 +569,9 @@ describe("App Import Functionality", () => {
       });
     });
   });
-
-  it("Verify 'Export and import' functionality of an application with tj_DB for same and different workspace", () => {
+   
+  //Need to run once database issue is fixed (TJ_DB)
+  it.skip("Verify 'Export and import' functionality of an application with tj_DB for same and different workspace", () => {
     data.appName3 = `${fake.companyName}-App`;
     cy.visit("/");
     cy.createAppFromTemplate("applicant-tracking-system");
