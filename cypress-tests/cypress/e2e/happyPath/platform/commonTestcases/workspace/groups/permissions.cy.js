@@ -162,7 +162,7 @@ describe("Manage Groups", () => {
             .should("not.exist");
     });
 
-    it.only("should verify admin privileges", () => {
+    it("should verify admin privileges", () => {
         setupWorkspaceAndInviteUser(
             data.workspaceName,
             data.workspaceSlug,

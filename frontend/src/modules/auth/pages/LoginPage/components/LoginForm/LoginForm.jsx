@@ -122,7 +122,11 @@ const LoginForm = ({
                 <p className="signup-info" data-cy="signup-info">
                   {organizationId && (
                     <>
-                      Sign in to the workspace - <span className="workspace-name">{configs?.name}</span>.
+                      Sign in to the workspace -{' '}
+                      <span className="workspace-name" data-cy="workspace-name">
+                        {configs?.name}
+                      </span>
+                      .
                     </>
                   )}{' '}
                   {isSignUpCTAEnabled && (

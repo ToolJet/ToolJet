@@ -126,37 +126,34 @@ export const verifyInvalidInvitationLink = () => {
   // );
 };
 
-export const userSignUp = (fullName, email, workspaceName) => {
+export const userSignUp = (fullName, email, workspaceName = "test") => {
   let invitationLink;
   cy.intercept("GET", "/api/organizations/public-configs").as("publicConfig");
   cy.visit("/");
   cy.wait("@publicConfig");
-  cy.wait(4000);
-  cy.get(commonSelectors.createAnAccountLink, { timeout: 10000 }).click({ force: true });
+  cy.wait(1500)
+  cy.get(commonSelectors.createAnAccountLink).realClick();
+  cy.wait(2000);
   cy.get(onboardingSelectors.nameInput).should("not.be.disabled");
-  cy.wait(3000);
   cy.get(onboardingSelectors.nameInput).clear();
   cy.get(onboardingSelectors.nameInput).type(fullName);
   cy.clearAndType(onboardingSelectors.loginEmailInput, email);
   cy.clearAndType(onboardingSelectors.loginPasswordInput, commonText.password);
   cy.get(commonSelectors.signUpButton).click();
 
-  cy.wait(500);
+  cy.wait(2500);
   cy.task("updateId", {
     dbconfig: Cypress.env("app_db"),
     sql: `select invitation_token from users where email='${email}';`,
   }).then((resp) => {
     invitationLink = `/invitations/${resp.rows[0].invitation_token}`;
     cy.visit(invitationLink);
-    cy.wait(4000);
-
-    // Nedd to add env check from config , will fix in EE
-    
-    if (Cypress.env("environment") !== "Community") {
-      // cy.clearAndType('[data-cy="onboarding-workspace-name-input"]', workspaceName);
-      // cy.get('[data-cy="onboarding-submit-button"]').click();
-    }
+    cy.wait(2500);
   });
+  if (Cypress.env("environment") !== "Community") {
+    cy.clearAndType('[data-cy="onboarding-workspace-name-input"]', workspaceName);
+    cy.get('[data-cy="onboarding-submit-button"]').click();
+  }
 };
 
 export const fetchAndVisitInviteLink = (email) => {
@@ -183,7 +180,7 @@ export const fetchAndVisitInviteLink = (email) => {
         sql: `select id from users where email='${email}';`,
       }).then((resp) => {
         userId = resp.rows[0].id;
-        
+
         cy.task("updateId", {
           dbconfig: Cypress.env("app_db"),
           sql: `select invitation_token from organization_users where user_id='${userId}';`,
@@ -215,7 +212,6 @@ export const inviteUser = (firstName, email) => {
 export const addNewUser = (firstName, email) => {
   navigateToManageUsers();
   inviteUser(firstName, email);
-  // updateWorkspaceName(email);
 };
 
 export const roleBasedOnboarding = (firstName, email, userRole) => {

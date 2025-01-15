@@ -134,7 +134,7 @@ Cypress.Commands.add(
     });
     cy.visit(`/${workspaceId}/apps/${appId}/${slug}`);
 
-    cy.wait('@getAppData').then((interception) => {
+    cy.wait("@getAppData").then((interception) => {
       // Assuming the response body is a JSON object
       const responseData = interception.response.body;
 
@@ -168,6 +168,8 @@ Cypress.Commands.add("apiCreateWorkspace", (workspaceName, workspaceSlug) => {
       expect(response.status).to.equal(201);
     });
   });
+  cy.logoutApi();
+  cy.apiLogin();
 });
 
 Cypress.Commands.add("logoutApi", () => {
@@ -290,16 +292,10 @@ Cypress.Commands.add(
   }
 );
 
-Cypress.Commands.add("addComponentToApp", (appName, componentName, layoutConfig = {}) => {
-  cy.task("updateId", {
-    dbconfig: Cypress.env("app_db"),
-    sql: `select id from apps where name='${appName}';`,
-  }).then((resp) => {
-    const appId = resp.rows[0]?.id; // Safely access the id field
-
-      if (!appId) {
-        throw new Error(`App ID not found for appName: ${appName}`);
-      }
+Cypress.Commands.add(
+  "addComponentToApp",
+  (appName, componentName, layoutConfig = {}) => {
+    cy.getAppId(appName).then((appId) => {
 
       // Default layout values
       const defaultLayout = {
@@ -405,3 +401,197 @@ Cypress.Commands.add(
     });
   }
 );
+
+Cypress.Commands.add("makeAppPublic", (appId = Cypress.env("appId")) => {
+  cy.getCookie("tj_auth_token", { log: false }).then((cookie) => {
+    const authToken = `tj_auth_token=${cookie.value}`;
+    cy.request({
+      method: "PUT",
+      url: `${Cypress.env("server_host")}/api/apps/${appId}`,
+      headers: {
+        "Tj-Workspace-Id": Cypress.env("workspaceId"),
+        Cookie: authToken,
+      },
+      body: {
+        app: { is_public: true },
+      },
+      log: false,
+    }).then((response) => {
+      expect(response.status).to.equal(200);
+    });
+  });
+});
+
+Cypress.Commands.add("deleteGranularPermission", (groupName) => {
+  cy.getCookie("tj_auth_token", { log: false }).then((cookie) => {
+    const authToken = `tj_auth_token=${cookie.value}`;
+    const headers = {
+      "Tj-Workspace-Id": Cypress.env("workspaceId"),
+      Cookie: authToken,
+    };
+
+    // Fetch group permissions
+    cy.request({
+      method: "GET",
+      url: `${Cypress.env("server_host")}/api/v2/group_permissions`,
+      headers,
+      log: false,
+    }).then((response) => {
+      expect(response.status).to.equal(200);
+      const group = response.body.groupPermissions.find(
+        (g) => g.name === groupName
+      );
+      if (!group) throw new Error(`Group with name ${groupName} not found`);
+
+      const groupId = group.id;
+
+      // Fetch granular permissions for the specific group
+      cy.request({
+        method: "GET",
+        url: `${Cypress.env("server_host")}/api/v2/group_permissions/${groupId}/granular-permissions`,
+        headers,
+        log: false,
+      }).then((granularResponse) => {
+        expect(granularResponse.status).to.equal(200);
+        const granularPermissionId = granularResponse.body[0].id;
+
+        // Delete the granular permission
+        cy.request({
+          method: "DELETE",
+          url: `${Cypress.env("server_host")}/api/v2/group_permissions/granular-permissions/${granularPermissionId}`,
+          headers,
+          log: false,
+        }).then((deleteResponse) => {
+          expect(deleteResponse.status).to.equal(200);
+        });
+      });
+    });
+  });
+});
+
+Cypress.Commands.add(
+  "createGranularPermission",
+  (
+    groupName,
+    name,
+    canEdit = false,
+    canView = true,
+    hideFromDashboard = false,
+    resourcesToAdd = []
+  ) => {
+    cy.getCookie("tj_auth_token", { log: false }).then((cookie) => {
+      const authToken = `tj_auth_token=${cookie.value}`;
+      const headers = {
+        "Tj-Workspace-Id": Cypress.env("workspaceId"),
+        Cookie: authToken,
+      };
+
+      // Fetch group permissions
+      cy.request({
+        method: "GET",
+        url: `${Cypress.env("server_host")}/api/v2/group_permissions`,
+        headers,
+        log: false,
+      }).then((response) => {
+        expect(response.status).to.equal(200);
+        const group = response.body.groupPermissions.find(
+          (g) => g.name === groupName
+        );
+        if (!group) throw new Error(`Group with name ${groupName} not found`);
+
+        const groupId = group.id;
+
+        // Create granular permission
+        cy.request({
+          method: "POST",
+          url: `${Cypress.env("server_host")}/api/v2/group_permissions/granular-permissions`,
+          headers,
+          body: {
+            name,
+            type: "app",
+            groupId,
+            isAll: true,
+            createAppsPermissionsObject: {
+              canEdit,
+              canView,
+              hideFromDashboard,
+              resourcesToAdd,
+            },
+          },
+          log: false,
+        }).then((res) => {
+          expect(res.status).to.equal(201);
+        });
+      });
+    });
+  }
+);
+
+Cypress.Commands.add("apiReleaseApp", (appName) => {
+  cy.getAppId(appName).then((appId) => {
+    cy.getCookie("tj_auth_token", { log: false }).then((cookie) => {
+      const authToken = `tj_auth_token=${cookie.value}`;
+      const headers = {
+        "Tj-Workspace-Id": Cypress.env("workspaceId"),
+        Cookie: authToken,
+      };
+
+      cy.request({
+        method: "GET",
+        url: `${Cypress.env("server_host")}/api/v2/apps/${appId}`,
+        headers,
+      })
+        .then((response) => {
+          expect(response.status).to.eq(200);
+          const editingVersionId = response.body.editing_version.id;
+          cy.request({
+            method: "PUT",
+            url: `${Cypress.env("server_host")}/api/v2/apps/${appId}/release`,
+            headers,
+            body: {
+              versionToBeReleased: editingVersionId,
+            },
+          });
+        })
+        .then((res) => {
+          expect(res.status).to.eq(200);
+        });
+    });
+  });
+});
+
+Cypress.Commands.add("addAppSlug", (appName, slug) => {
+  cy.getAppId(appName).then((appId) => {
+    cy.getCookie("tj_auth_token", { log: false }).then((cookie) => {
+      const authToken = `tj_auth_token=${cookie.value}`;
+      const headers = {
+        "Tj-Workspace-Id": Cypress.env("workspaceId"),
+        Cookie: authToken,
+      };
+
+      cy.request({
+        method: "PUT",
+        url: `${Cypress.env("server_host")}/api/apps/${appId}`,
+        headers,
+        body: {
+          app: {
+            slug: slug,
+          },
+        },
+      }).then((response) => {
+        expect(response.status).to.eq(200);
+        cy.log('App slug updated successfully');
+      });
+    });
+  });
+});
+
+Cypress.Commands.add("getAppId", (appName) => {
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `select id from apps where name='${appName}';`,
+  }).then((resp) => {
+    const appId = resp.rows[0]?.id;
+    return appId;
+  });
+});
