@@ -3,7 +3,6 @@ import Accordion from '@/_ui/Accordion';
 import { renderElement } from '../Utils';
 import { baseComponentProperties } from './DefaultComponent';
 import { resolveReferences } from '@/_helpers/utils';
-import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 export const Modal = ({ componentMeta, darkMode, ...restProps }) => {
   const {
@@ -19,16 +18,13 @@ export const Modal = ({ componentMeta, darkMode, ...restProps }) => {
 
   let properties = [];
   let additionalActions = [];
-  let dataProperties = [];
-  let optionsProperties = [];
+
   const events = Object.keys(componentMeta.events);
   const validations = Object.keys(componentMeta.validation || {});
 
   for (const [key] of Object.entries(componentMeta?.properties)) {
     if (componentMeta?.properties[key]?.section === 'additionalActions') {
       additionalActions.push(key);
-    } else if (componentMeta?.properties[key]?.accordian === 'Data') {
-      dataProperties.push(key);
     } else {
       properties.push(key);
     }
@@ -54,12 +50,6 @@ export const Modal = ({ componentMeta, darkMode, ...restProps }) => {
     });
 
     accordionItems.push({
-      title: 'Data',
-      isOpen: true,
-      children: dataProperties?.map((property) => renderCustomElement(property)),
-    });
-
-    accordionItems.push({
       title: 'Additional actions',
       isOpen: true,
       children: additionalActions?.map((property) => renderCustomElement(property)),
@@ -74,21 +64,13 @@ export const Modal = ({ componentMeta, darkMode, ...restProps }) => {
   };
 
   const filteredProperties = properties.filter(
-    (property) =>
-      property !== 'useDefaultButton' && property !== 'triggerButtonLabel' && !dataProperties.includes(property)
+    (property) => property !== 'useDefaultButton' && property !== 'triggerButtonLabel'
   );
-  let updatedComponent = deepClone(component);
-  if (component.component.definition.properties.size.value === 'fullscreen') {
-    updatedComponent.component.properties.modalHeight = {
-      ...updatedComponent.component.properties.modalHeight,
-      isDisabled: true,
-    };
-  }
 
   const accordionItems = baseComponentProperties(
     filteredProperties,
     events,
-    updatedComponent,
+    component,
     componentMeta,
     layoutPropertyChanged,
     paramUpdated,
@@ -101,7 +83,7 @@ export const Modal = ({ componentMeta, darkMode, ...restProps }) => {
     darkMode
   );
 
-  accordionItems.splice(1, 0, ...conditionalAccordionItems(updatedComponent));
+  accordionItems.splice(1, 0, ...conditionalAccordionItems(component));
 
   return <Accordion items={accordionItems} />;
 };
