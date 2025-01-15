@@ -126,7 +126,7 @@ Cypress.Commands.add(
     slug = "",
     workspaceId = Cypress.env("workspaceId"),
     appId = Cypress.env("appId"),
-    componentSelector = "[data-cy='empty-editor-text']"
+    componentSelector = "[data-cy='widget-search-box-search-bar']"
   ) => {
     cy.intercept("GET", "/api/v2/apps/*").as("getAppData");
     cy.window({ log: false }).then((win) => {
@@ -294,16 +294,14 @@ Cypress.Commands.add(
 
 Cypress.Commands.add(
   "addComponentToApp",
-  (appName, componentName, layoutConfig = {}) => {
+  (appName, componentName, layoutConfig = {}, componentType = 'Text', componentValue = 'default') => {
     cy.getAppId(appName).then((appId) => {
 
-      // Default layout values
       const defaultLayout = {
         desktop: { top: 90, left: 9, width: 6, height: 40 },
         mobile: { top: 90, left: 9, width: 6, height: 40 },
       };
 
-      // Merge default layout with the provided configuration
       const layouts = {
         desktop: { ...defaultLayout.desktop, ...layoutConfig.desktop },
         mobile: { ...defaultLayout.mobile, ...layoutConfig.mobile },
@@ -322,11 +320,19 @@ Cypress.Commands.add(
         }).then((response) => {
           expect(response.status).to.eq(200);
 
-          const { id: editingVersionId, home_page_id: homePageId } =
-            response.body.editing_version;
-          const componentId = crypto.randomUUID
-            ? crypto.randomUUID()
-            : require("uuid").v4();
+          const { id: editingVersionId, home_page_id: homePageId } = response.body.editing_version;
+          const componentId = crypto.randomUUID ? crypto.randomUUID() : require("uuid").v4();
+
+          let finalProperties = {};
+          if (componentType === "Text") {
+            finalProperties = {
+              text: { value: `${componentValue}` },
+            };
+          } else if (componentType === "TextInput") {
+            finalProperties = {
+              value: { value: `${componentValue}` },
+            };
+          }
 
           const requestBody = {
             is_user_switched_version: false,
@@ -335,7 +341,8 @@ Cypress.Commands.add(
               [componentId]: {
                 name: componentName,
                 layouts: layouts,
-                type: "Text",
+                type: componentType,
+                properties: finalProperties,
               },
             },
           };
