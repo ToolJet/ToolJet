@@ -67,7 +67,8 @@ export const getAutocompletion = (input, fieldType, hints, totalReferences = 1, 
     originalQueryInput,
     searchInput
   );
-  return orderSuggestions(suggestions, fieldType);
+
+  return suggestions;
 };
 
 function orderSuggestions(suggestions, validationType) {
@@ -90,10 +91,18 @@ export const generateHints = (hints, totalReferences = 1, input, searchText) => 
     const hasDepth = currentWord.includes('.');
     const lastDepth = getLastSubstring(currentWord);
 
-    const displayLabel = getLastDepth(displayedHint);
+    let displayLabel = getLastDepth(displayedHint);
+
+    if (type != 'js_method') {
+      const currentWordDepth = currentWord.split('.').length;
+      displayLabel = hint
+        .split('.')
+        .slice(currentWordDepth - 1)
+        .join('.');
+    }
 
     return {
-      displayLabel: lastDepth === '' ? displayedHint : displayLabel,
+      displayLabel,
       label: displayedHint,
       info: displayedHint,
       type: type === 'js_method' ? 'js_methods' : type?.toLowerCase(),
@@ -157,13 +166,23 @@ function filterHintsByDepth(input, hints) {
   if (input === '') return hints;
 
   const inputParts = input.split('.');
+  const inputDepth = inputParts.length + 1;
 
-  const filteredHints = hints.filter((hint) => {
+  const hintsWithDepth = hints.map((hint) => {
     const hintParts = hint.hint.split('.');
-    return hintParts.length <= inputParts.length + 1;
+    return {
+      ...hint,
+      depth: hintParts.length,
+    };
   });
 
-  return filteredHints;
+  const filteredHints = hintsWithDepth.filter((hint) => {
+    return hint.depth <= inputDepth;
+  });
+
+  const sortedHints = filteredHints.sort((hint1, hint2) => hint1.depth - hint2.depth);
+
+  return sortedHints;
 }
 
 export function findNearestSubstring(inputStr, currentCurosorPos) {
