@@ -207,23 +207,18 @@ class DataSourceManagerComponent extends React.Component {
       validationMessages,
     } = this.state;
 
-    const manifestFile = FetchManifest(selectedDataSource.kind);
-    if (manifestFile['tj:version']) {
-      const schemaManager = new DataSourceSchemaManager(manifestFile);
-      const { errors } = schemaManager.validateData(options);
-      if (errors) {
-        const validationMessages = errors.filter((error) => error.keyword !== 'if').map((error) => error.message);
-        this.setState({ validationError: validationMessages });
-        toast.error(
-          this.props.t(
-            'editor.queryManager.dataSourceManager.toast.error.validationFailed',
-            'Validation failed. Please check your inputs.'
-          ),
-          { position: 'top-center' }
-        );
-        if (validationMessages.length > 0) {
-          return false;
-        }
+    if (!isEmpty(validationMessages)) {
+      const validationMessageArray = Object.values(validationMessages);
+      this.setState({ validationError: validationMessageArray });
+      toast.error(
+        this.props.t(
+          'editor.queryManager.dataSourceManager.toast.error.validationFailed',
+          'Validation failed. Please check your inputs.'
+        ),
+        { position: 'top-center' }
+      );
+      if (validationMessageArray.length > 0) {
+        return false;
       }
     }
 
@@ -361,7 +356,7 @@ class DataSourceManagerComponent extends React.Component {
           : error.dataPath?.replace(/^[./]/, '') || error.instancePath?.replace(/^[./]/, '');
 
       if (property) {
-        acc[property] = error.message;
+        acc[property] = `${property}: ${error.message}`;
       }
       return acc;
     }, {});
