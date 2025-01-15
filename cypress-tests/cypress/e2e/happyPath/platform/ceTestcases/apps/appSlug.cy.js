@@ -17,7 +17,7 @@ describe("App Slug", () => {
     cy.apiLogin();
     cy.apiCreateApp(data.appName);
     cy.wait(1000);
-    cy.logoutApi();
+    cy.apiLogout();
   });
 
   it("Verify app slug cases in global settings", () => {

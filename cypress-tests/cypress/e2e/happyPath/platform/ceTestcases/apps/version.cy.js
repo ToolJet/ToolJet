@@ -122,7 +122,7 @@ describe("App Editor", () => {
 
   it("should verify version management with components and queries", () => {
     // Initial setup with component and datasource
-    cy.addComponentToApp(
+    cy.apiAddComponentToApp(
       data.appName,
       "text1",
       {},
@@ -152,7 +152,7 @@ describe("App Editor", () => {
     deleteQuery(data.query1);
     cy.get('[data-cy="modal-confirm-button"]').click();
     createRestAPIQuery(data.query2, data.datasourceName, "", "", "/2", true);
-    cy.addComponentToApp(
+    cy.apiAddComponentToApp(
       data.appName,
       "textinput",
       {},

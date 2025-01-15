@@ -149,7 +149,7 @@ export const manageUsersElements = () => {
 
 
 export const inviteUserToWorkspace = (firstName, email) => {
-  cy.userInviteApi(firstName, email);
+  cy.apiUserInvite(firstName, email);
   fetchAndVisitInviteLink(email);
   cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
   cy.get(commonSelectors.continueButton).click();
@@ -346,7 +346,7 @@ export const fetchAndVisitInviteLink = (email) => {
           organizationToken = resp.rows[1].invitation_token;
 
           url = `/invitations/${invitationToken}/workspaces/${organizationToken}?oid=${workspaceId}`;
-          cy.logoutApi();
+          cy.apiLogout();
           cy.wait(1000);
           cy.visit(url);
         });

@@ -35,7 +35,7 @@ describe("Redirection error pages", () => {
         );
         cy.get(commonSelectors.backToHomeButton).click();
         cy.get(commonSelectors.pageSectionHeader).should("be.visible");
-        cy.logoutApi();
+        cy.apiLogout();
         cy.wait(3000);
 
         cy.apiLogin("dev@tooljet.io", "password");
@@ -47,15 +47,15 @@ describe("Redirection error pages", () => {
     it("Verify error message in case of restricted access", () => {
         data.appName = `${fake.companyName} App`;
         data.slug = data.appName.toLowerCase().replace(/\s+/g, "-");
-       
-      
+
+
         cy.apiCreateApp(data.appName);
         cy.openApp();
         cy.wait(1000);
         releaseApp();
         cy.get(commonWidgetSelector.shareAppButton).click();
         cy.wait(1000);
-        cy.logoutApi();
+        cy.apiLogout();
         cy.apiLogin("dev@tooljet.io", "password");
         cy.visit(`/applications/${data.slug}`);
         cy.get(commonSelectors.modalHeader).verifyVisibleElement(
@@ -110,7 +110,7 @@ describe("Redirection error pages", () => {
         cy.get(commonSelectors.backToHomeButton).click();
         cy.get(commonSelectors.pageSectionHeader).should("be.visible");
 
-        cy.logoutApi();
+        cy.apiLogout();
         cy.apiLogin("dev@tooljet.io", "password");
         cy.wait(500);
 

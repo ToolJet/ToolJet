@@ -88,7 +88,7 @@ export const addQueryN = (queryName, query, dbName) => {
   cy.wait("@createQuery").then((interception) => {
     const dataQueryId = interception.response.body.id;
     cy.visit("/my-workspace");
-    cy.addQueryApi(queryName, query, dataQueryId);
+    cy.apiAddQuery(queryName, query, dataQueryId);
     cy.openApp();
   });
 };
@@ -106,7 +106,7 @@ export const addQuery = (queryName, query, dbName) => {
   cy.wait("@createQuery").then((interception) => {
     const dataQueryId = interception.response.body.id;
     cy.visit("/my-workspace");
-    cy.addQueryApi(queryName, query, dataQueryId);
+    cy.apiAddQuery(queryName, query, dataQueryId);
     cy.openApp();
   });
 };
@@ -123,7 +123,7 @@ export const addQueryAndOpenEditor = (queryName, query, dbName, appName) => {
   cy.wait("@createQuery").then((interception) => {
     const dataQueryId = interception.response.body.id;
     cy.visit("/my-workspace");
-    cy.addQueryApi(queryName, query, dataQueryId);
+    cy.apiAddQuery(queryName, query, dataQueryId);
     navigateToAppEditor(appName);
     cy.wait(2000);
   });

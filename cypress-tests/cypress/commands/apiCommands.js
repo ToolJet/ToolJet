@@ -168,11 +168,9 @@ Cypress.Commands.add("apiCreateWorkspace", (workspaceName, workspaceSlug) => {
       expect(response.status).to.equal(201);
     });
   });
-  cy.logoutApi();
-  cy.apiLogin();
 });
 
-Cypress.Commands.add("logoutApi", () => {
+Cypress.Commands.add("apiLogout", () => {
   cy.getCookie("tj_auth_token").then((cookie) => {
     cy.request(
       {
@@ -191,7 +189,7 @@ Cypress.Commands.add("logoutApi", () => {
 });
 
 Cypress.Commands.add(
-  "userInviteApi",
+  "apiUserInvite",
   (userName, userEmail, userRole = "end-user") => {
     cy.getCookie("tj_auth_token").then((cookie) => {
       cy.request(
@@ -217,7 +215,7 @@ Cypress.Commands.add(
   }
 );
 
-Cypress.Commands.add("addQueryApi", (queryName, query, dataQueryId) => {
+Cypress.Commands.add("apiAddQuery", (queryName, query, dataQueryId) => {
   cy.getCookie("tj_auth_token").then((cookie) => {
     const headers = {
       "Tj-Workspace-Id": Cypress.env("workspaceId"),
@@ -293,7 +291,7 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add(
-  "addComponentToApp",
+  "apiAddComponentToApp",
   (appName, componentName, layoutConfig = {}, componentType = 'Text', componentValue = 'default') => {
     cy.getAppId(appName).then((appId) => {
 
@@ -409,7 +407,7 @@ Cypress.Commands.add(
   }
 );
 
-Cypress.Commands.add("makeAppPublic", (appId = Cypress.env("appId")) => {
+Cypress.Commands.add("apiMakeAppPublic", (appId = Cypress.env("appId")) => {
   cy.getCookie("tj_auth_token", { log: false }).then((cookie) => {
     const authToken = `tj_auth_token=${cookie.value}`;
     cy.request({
@@ -429,7 +427,7 @@ Cypress.Commands.add("makeAppPublic", (appId = Cypress.env("appId")) => {
   });
 });
 
-Cypress.Commands.add("deleteGranularPermission", (groupName) => {
+Cypress.Commands.add("apiDeleteGranularPermission", (groupName) => {
   cy.getCookie("tj_auth_token", { log: false }).then((cookie) => {
     const authToken = `tj_auth_token=${cookie.value}`;
     const headers = {
@@ -477,7 +475,7 @@ Cypress.Commands.add("deleteGranularPermission", (groupName) => {
 });
 
 Cypress.Commands.add(
-  "createGranularPermission",
+  "apiCreateGranularPermission",
   (
     groupName,
     name,
@@ -567,7 +565,7 @@ Cypress.Commands.add("apiReleaseApp", (appName) => {
   });
 });
 
-Cypress.Commands.add("addAppSlug", (appName, slug) => {
+Cypress.Commands.add("apiAddAppSlug", (appName, slug) => {
   cy.getAppId(appName).then((appId) => {
     cy.getCookie("tj_auth_token", { log: false }).then((cookie) => {
       const authToken = `tj_auth_token=${cookie.value}`;
@@ -593,12 +591,4 @@ Cypress.Commands.add("addAppSlug", (appName, slug) => {
   });
 });
 
-Cypress.Commands.add("getAppId", (appName) => {
-  cy.task("updateId", {
-    dbconfig: Cypress.env("app_db"),
-    sql: `select id from apps where name='${appName}';`,
-  }).then((resp) => {
-    const appId = resp.rows[0]?.id;
-    return appId;
-  });
-});
+
