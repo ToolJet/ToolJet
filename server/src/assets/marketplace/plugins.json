@@ -130,5 +130,14 @@
     "author": "Tooljet",
     "timestamp": "Mon, 28 Oct 2024 08:08:28 GMT",
     "tags": ["AI"]
+  },
+  {
+    "name": "huggingface",
+    "description": "api plugin from huggingface",
+    "version": "1.0.0",
+    "id": "huggingface",
+    "author": "Tooljet",
+    "timestamp": "Wed, 15 Jan 2025 07:55:16 GMT",
+    "tags": ["AI"]
   }
 ]

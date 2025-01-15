@@ -1,0 +1,9 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Hugging Face datasource",
+  "description": "A schema defining Hugging Face datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {}
+}
