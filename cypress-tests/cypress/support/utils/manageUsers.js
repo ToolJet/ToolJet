@@ -147,12 +147,6 @@ export const manageUsersElements = () => {
   );
 };
 
-export const inviteUser = (firstName, email) => {
-  cy.userInviteApi(firstName, email);
-  fetchAndVisitInviteLink(email);
-  cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
-  cy.get(commonSelectors.acceptInviteButton).click();
-};
 
 export const inviteUserToWorkspace = (firstName, email) => {
   cy.userInviteApi(firstName, email);
