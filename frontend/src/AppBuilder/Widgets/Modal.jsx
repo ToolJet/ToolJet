@@ -14,13 +14,9 @@ var tinycolor = require('tinycolor2');
 // 1. Modal header
 const MODAL_HEADER = {
   HEIGHT: 80,
-  HEIGHT_PX: `80px`,
-  CANVAS_HEIGHT: 10,
 };
 const MODAL_FOOTER = {
   HEIGHT: 80,
-  HEIGHT_PX: `80px`,
-  CANVAS_HEIGHT: 10,
 };
 
 const getCanvasHeight = (height) => {
@@ -397,6 +393,7 @@ const ModalHeader = ({ id, customStyles, hideCloseButton, darkMode, width, onHid
         darkMode={darkMode}
         styles={{
           backgroundColor: 'transparent',
+          overflowX: 'hidden',
         }}
       />
 
