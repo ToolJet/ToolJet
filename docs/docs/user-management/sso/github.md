@@ -5,7 +5,6 @@ title: GitHub
 
 GitHub SSO in ToolJet allows seamless authentication by enabling users to log in with their GitHub credentials. This integration simplifies access management for teams, enhances security, and ensures a streamlined workflow for developers and collaborators.
 
-
 ## Configure GitHub SSO
 
 To enable GitHub Single Sign-on (SSO) for your ToolJet, follow these steps:
