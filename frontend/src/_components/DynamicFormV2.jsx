@@ -38,6 +38,8 @@ const DynamicFormV2 = ({
   const [workspaceVariables, setWorkspaceVariables] = React.useState([]);
   const [currentOrgEnvironmentConstants, setCurrentOrgEnvironmentConstants] = React.useState([]);
   const [computedProps, setComputedProps] = React.useState({});
+  const [hasUserInteracted, setHasUserInteracted] = React.useState(false);
+  const [interactedFields, setInteractedFields] = React.useState(new Set());
 
   const isHorizontalLayout = layout === 'horizontal';
   const prevDataSourceIdRef = React.useRef(selectedDataSource?.id);
@@ -86,6 +88,7 @@ const DynamicFormV2 = ({
   }, [currentAppEnvironmentId]);
 
   React.useEffect(() => {
+    if (!hasUserInteracted) return;
     const { valid, errors } = dsm.validateData(options);
 
     if (valid) {
@@ -214,6 +217,14 @@ const DynamicFormV2 = ({
     const isEncrypted = widget === 'password-v3' || encryptedProperties.includes(key);
     const currentValue = options?.[key]?.value;
 
+    const handleOptionChange = (key, value, flag) => {
+      if (!hasUserInteracted) {
+        setHasUserInteracted(true);
+      }
+      setInteractedFields((prev) => new Set(prev).add(key));
+      optionchanged(key, value, flag);
+    };
+
     switch (widget) {
       case 'password':
       case 'text':
@@ -250,18 +261,21 @@ const DynamicFormV2 = ({
           style: { marginBottom: '0px !important' },
           helpText: helpText,
           value: currentValue || '',
-          onChange: (e) => optionchanged(key, e.target.value, true),
+          onChange: (e) => handleOptionChange(key, e.target.value, true),
           isGDS: true,
           workspaceVariables: [],
           workspaceConstants: [],
           encrypted: isEncrypted,
           onBlur,
           isRequired: isRequired,
-          isValidatedMessages: validationMessages[key]
-            ? { valid: false, message: validationMessages[key] }
-            : isRequired && !isEncrypted
-            ? { valid: true, message: '' }
-            : { valid: null, message: '' }, // handle optional && encrypted fields
+          isValidatedMessages:
+            !hasUserInteracted || !interactedFields.has(key)
+              ? { valid: null, message: '' } // skip validation for initial render and untouched elements
+              : validationMessages[key]
+              ? { valid: false, message: validationMessages[key] }
+              : isRequired && !isEncrypted
+              ? { valid: true, message: '' }
+              : { valid: null, message: '' }, // handle optional && encrypted fields
         };
       }
       case 'react-component-headers': {
