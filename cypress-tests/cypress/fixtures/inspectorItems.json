@@ -1,0 +1,32 @@
+{
+  "globalsNodes": [
+    { "key": "theme", "type": "Object", "value": "1 entry " },
+    { "key": "urlparams", "type": "Object", "value": "1 entry " },
+    { "key": "currentUser", "type": "Object", "value": "8 entries " }
+  ],
+  "componentsNodes": [
+    { "key": "button1", "type": "Object", "value": "13 entries " },
+    { "key": "button2", "type": "Object", "value": "13 entries " },
+    { "key": "button3", "type": "Object", "value": "13 entries " }
+  ],
+  "pageNodes": [
+    { "key": "handle", "type": "String", "value": "\"home\"" },
+    { "key": "name", "type": "String", "value": "\"Home\"" }
+  ],
+  "testPageNodes": [
+    { "key": "handle", "type": "String", "value": "\"test-page\"" },
+    { "key": "name", "type": "String", "value": "\"test_page\"" }
+  ],
+  "currentUserNodes": [
+    { "key": "email", "type": "String", "value": "\"dev@tooljet.io\"" },
+    { "key": "firstName", "type": "String", "value": "\"The\"" },
+    { "key": "lastName", "type": "String", "value": "\"Developer\"" },
+    { "key": "role", "type": "String", "value": "\"admin\"" }
+  ],
+  "themeNodes": [{ "key": "name", "type": "String", "value": "\"light\"" }],
+  "modeNodes": [{ "key": "value", "type": "String", "value": "\"edit\"" }],
+  "urlparamsNode": [{ "key": "key", "type": "String", "value": "\"value\"" }],
+  "variablesNodes": [
+    { "key": "globalVar", "type": "String", "value": "\"globalVar\"" }
+  ]
+}

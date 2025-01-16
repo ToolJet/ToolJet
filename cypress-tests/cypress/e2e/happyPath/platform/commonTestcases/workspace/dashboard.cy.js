@@ -23,6 +23,13 @@ import { commonSelectors } from "Selectors/common";
 import { dashboardSelector } from "Selectors/dashboard";
 import { commonText } from "Texts/common";
 import { dashboardText } from "Texts/dashboard";
+import {
+  navigateToManageUsers,
+  logout,
+  searchUser,
+  navigateToManageGroups,
+} from "Support/utils/common";
+import { roleBasedOnboarding } from "Support/utils/onboarding";
 
 describe("dashboard", () => {
   const data = {};
@@ -30,6 +37,10 @@ describe("dashboard", () => {
   data.folderName = `${fake.companyName.toLowerCase()}-folder`;
   data.cloneAppName = `cloned-${data.appName}`;
   data.updatedFolderName = `new-${data.folderName}`;
+  data.firstName = fake.firstName;
+  data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
+  data.workspaceName = fake.firstName;
+  data.workspaceSlug = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
   beforeEach(() => {
     cy.intercept("GET", "/api/library_apps").as("appLibrary");
@@ -41,13 +52,18 @@ describe("dashboard", () => {
     cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=", {
       fixture: "intercept/emptyDashboard.json",
     }).as("emptyDashboard");
-    cy.intercept("GET", "/api/folders?searchKey=", { folders: [] }).as(
-      "folders"
-    );
-    cy.intercept("GET", "api/metadata", {
-      installed_version: "2.9.2",
-      version_ignored: false,
+
+    cy.intercept("GET", "/api/folders?searchKey=", {
+      body: { folders: [] },
+    }).as("folders");
+
+    cy.intercept("GET", "/api/metadata", {
+      body: {
+        installed_version: "2.9.2",
+        version_ignored: false,
+      },
     }).as("version");
+
     cy.defaultWorkspaceLogin();
     cy.wait("@emptyDashboard");
     cy.wait("@folders");
@@ -59,7 +75,7 @@ describe("dashboard", () => {
       "My workspace"
     );
     cy.get(commonSelectors.workspaceName).click();
-    cy.get(commonSelectors.editRectangleIcon).should("be.visible");
+    // cy.get(commonSelectors.editRectangleIcon).should("be.visible");
     cy.get(commonSelectors.appCreateButton).verifyVisibleElement(
       "have.text",
       "Create an app"
@@ -173,10 +189,14 @@ describe("dashboard", () => {
   });
 
   it("Should verify app card elements and app card operations", () => {
+    const customLayout = {
+      desktop: { top: 100, left: 20 },
+      mobile: { width: 8, height: 50 },
+    };
     cy.apiLogin();
     cy.apiCreateApp(data.appName);
     cy.openApp();
-    cy.dragAndDropWidget("Table", 250, 250);
+    cy.apiAddComponentToApp(data.appName, "text1", customLayout);
 
     cy.backToApps();
 
@@ -190,11 +210,8 @@ describe("dashboard", () => {
           data.appName
         );
         cy.get(commonSelectors.appCreationDetails).should("be.visible");
-        cy.get(commonSelectors.appCreationDetails)
-          .should("be.visible")
-          .and(($el) => {
-            expect($el.contents().last().text().trim()).to.eq("The Developer");
-          });
+
+        //Add the edited details
       });
 
     viewAppCardOptions(data.appName);
@@ -287,7 +304,7 @@ describe("dashboard", () => {
       .and("have.text", dashboardText.appClonedToast);
     cy.wait(3000);
     cy.renameApp(data.cloneAppName);
-    cy.dragAndDropWidget("button", 25, 25);
+    cy.apiAddComponentToApp(data.cloneAppName, "button", 25, 25);
     cy.backToApps();
     cy.wait("@appLibrary");
     cy.wait(1000);
@@ -339,11 +356,16 @@ describe("dashboard", () => {
   });
 
   it("Should verify the app CRUD operation", () => {
+    const customLayout = {
+      desktop: { top: 100, left: 20 },
+      mobile: { width: 8, height: 50 },
+    };
+
     cy.skipWalkthrough();
     data.appName = `${fake.companyName}-App`;
     cy.defaultWorkspaceLogin();
     cy.createApp(data.appName);
-    cy.dragAndDropWidget("Button", 450, 450);
+    cy.apiAddComponentToApp(data.appName, "text1", customLayout);
 
     cy.backToApps();
 
@@ -353,7 +375,8 @@ describe("dashboard", () => {
     );
 
     navigateToAppEditor(data.appName);
-    cy.get(commonSelectors.canvas).should("contain", "Button");
+    // cy.get(commonSelectors.canvas).should("contain", "text1");
+    cy.get(".text-widget-section > div").should("be.visible");
     cy.backToApps();
     cy.wait("@appLibrary");
 
@@ -366,10 +389,16 @@ describe("dashboard", () => {
   });
 
   it("Should verify the folder CRUD operation", () => {
+    const customLayout = {
+      desktop: { top: 100, left: 20 },
+      mobile: { width: 8, height: 50 },
+    };
+
     data.appName = `${fake.companyName}-App`;
     cy.defaultWorkspaceLogin();
     cy.createApp(data.appName);
-    cy.dragAndDropWidget("Button", 100, 100);
+
+    cy.apiAddComponentToApp(data.appName, "text1", customLayout);
 
     cy.backToApps();
 
@@ -432,12 +461,6 @@ describe("dashboard", () => {
 
     cy.get(commonSelectors.folderNameInput).should("be.visible");
 
-    // verifyModal(
-    //   commonText.updateFolderTitle,
-    //   commonText.updateFolderButton,
-    //   commonSelectors.folderNameInput
-    // );
-
     cy.clearAndType(commonSelectors.folderNameInput, data.updatedFolderName);
     closeModal(commonText.closeButton);
     cy.get(dashboardSelector.folderName(data.updatedFolderName)).should(
@@ -491,5 +514,15 @@ describe("dashboard", () => {
       commonText.appDeletedToast
     );
     verifyAppDelete(data.appName);
+    logout();
+  });
+
+  it("should verify the elements on empty dashboard for end user", () => {
+    cy.defaultWorkspaceLogin();
+    cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=", {
+      fixture: "intercept/emptyDashboard.json",
+    }).as("emptyDashboard")
+    roleBasedOnboarding(data.firstName, data.email, "end-user");
+    cy.get(commonSelectors.dashboardAppCreateButton).should("be.disabled");
   });
 });

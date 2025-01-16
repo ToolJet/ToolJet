@@ -172,7 +172,7 @@ export const PageMenuItem = withRouter(
                 ...computedStyles?.pill,
               }}
             >
-              <div className="left">
+              <div className="left" data-cy={`pages-name-${page.name}`}>
                 {icon()}
                 <OverflowTooltip childrenClassName="page-name" style={{ ...computedStyles?.text }}>
                   {page.name}

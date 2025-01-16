@@ -78,10 +78,6 @@
   visibility: visible !important;
 }
 
-.main-editor-canvas .widget-target:hover .widget-target:hover > .config-handle {
-  visibility: visible !important;
-}
-
 .main-editor-canvas .widget-target:hover .widget-target:hover > .widget-target > .config-handle {
   visibility: hidden !important;
 }

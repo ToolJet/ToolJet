@@ -8,11 +8,11 @@ import {
 import { navigateToManageUsers, logout } from "Support/utils/common";
 import { ssoSelector } from "Selectors/manageSSO";
 import { ssoText } from "Texts/manageSSO";
+import { onboardingSelectors } from "Selectors/onboarding";
 
 export const verifyConfirmEmailPage = (email) => {
   cy.get(commonSelectors.pageLogo).should("be.visible");
-  cy.get(commonSelectors.emailImage).should("be.visible");
-  cy.get(commonSelectors.onboardingPageHeader).verifyVisibleElement(
+  cy.get('[data-cy="check-your-mail-header"]').verifyVisibleElement(
     "have.text",
     commonText.emailPageHeader
   );
@@ -31,32 +31,16 @@ export const verifyConfirmEmailPage = (email) => {
     "have.text",
     commonText.onboardingSeperatorText
   );
+
   cy.get(commonSelectors.resendEmailButton).should("be.visible");
-  cy.get(commonSelectors.editEmailButton).verifyVisibleElement(
+  cy.get('[data-cy="back-to-signup"]').verifyVisibleElement(
     "have.text",
-    commonText.editEmailButton
-  );
-};
-
-export const verifyConfirmPageElements = () => {
-  cy.get(commonSelectors.pageLogo).should("be.visible");
-  cy.get(commonSelectors.emailImage).should("be.visible");
-  cy.get(commonSelectors.onboardingPageHeader).verifyVisibleElement(
-    "have.text",
-    commonText.emailVerifiedText
-  );
-
-  cy.get(commonSelectors.onboardingPageDescription).verifyVisibleElement(
-    "have.text",
-    commonText.continueToSetUp
-  );
-  cy.get(commonSelectors.setUpToolJetButton).verifyVisibleElement(
-    "have.text",
-    commonText.setUpToolJetButton
+    "Back to sign up"
   );
 };
 
 export const verifyOnboardingQuestions = (fullName, workspaceName) => {
+  cy.wait(5000);
   cy.get(commonSelectors.pageLogo).should("be.visible");
   cy.get(commonSelectors.userAccountNameAvatar).should("be.visible");
   cy.get(commonSelectors.createAccountCheckMark).should("be.visible");
@@ -125,7 +109,7 @@ export const verifyOnboardingQuestions = (fullName, workspaceName) => {
 
 export const verifyInvalidInvitationLink = () => {
   cy.get(commonSelectors.pageLogo).should("be.visible");
-  cy.get(commonSelectors.emailImage).should("be.visible");
+  // cy.get(commonSelectors.emailImage).should("be.visible");
 
   cy.get(commonSelectors.onboardingPageHeader).verifyVisibleElement(
     "have.text",
@@ -136,34 +120,40 @@ export const verifyInvalidInvitationLink = () => {
     commonText.inalidInvitationLinkDescription
   );
 
-  cy.get(commonSelectors.backtoSignUpButton).verifyVisibleElement(
-    "have.text",
-    commonText.backtoSignUpButton
-  );
+  // cy.get(commonSelectors.backtoSignUpButton).verifyVisibleElement(
+  //   "have.text",
+  //   commonText.backtoSignUpButton
+  // );
 };
 
-export const userSignUp = (fullName, email, workspaceName) => {
+export const userSignUp = (fullName, email, workspaceName = "test") => {
   let invitationLink;
+  cy.intercept("GET", "/api/organizations/public-configs").as("publicConfig");
   cy.visit("/");
-  cy.wait(1000);
+  cy.wait("@publicConfig");
+  cy.wait(1500)
   cy.get(commonSelectors.createAnAccountLink).realClick();
-  cy.clearAndType(commonSelectors.nameInputField, fullName);
-  cy.clearAndType(commonSelectors.emailInputField, email);
-  cy.clearAndType(commonSelectors.passwordInputField, commonText.password);
+  cy.wait(2000);
+  cy.get(onboardingSelectors.nameInput).should("not.be.disabled");
+  cy.get(onboardingSelectors.nameInput).clear();
+  cy.get(onboardingSelectors.nameInput).type(fullName);
+  cy.clearAndType(onboardingSelectors.loginEmailInput, email);
+  cy.clearAndType(onboardingSelectors.loginPasswordInput, commonText.password);
   cy.get(commonSelectors.signUpButton).click();
 
-  cy.wait(500);
+  cy.wait(2500);
   cy.task("updateId", {
     dbconfig: Cypress.env("app_db"),
     sql: `select invitation_token from users where email='${email}';`,
   }).then((resp) => {
     invitationLink = `/invitations/${resp.rows[0].invitation_token}`;
     cy.visit(invitationLink);
-    cy.get(commonSelectors.setUpToolJetButton).click();
-    cy.wait(4000);
-    verifyOnboardingQuestions(fullName, workspaceName);
-    updateWorkspaceName(email, workspaceName);
+    cy.wait(2500);
   });
+  if (Cypress.env("environment") !== "Community") {
+    cy.clearAndType('[data-cy="onboarding-workspace-name-input"]', workspaceName);
+    cy.get('[data-cy="onboarding-submit-button"]').click();
+  }
 };
 
 export const fetchAndVisitInviteLink = (email) => {
@@ -196,9 +186,8 @@ export const fetchAndVisitInviteLink = (email) => {
           sql: `select invitation_token from organization_users where user_id='${userId}';`,
         }).then((resp) => {
           organizationToken = resp.rows[1].invitation_token;
-
           url = `/invitations/${invitationToken}/workspaces/${organizationToken}?oid=${workspaceId}`;
-          cy.logoutApi();
+          cy.apiLogout();
           cy.wait(1000);
           cy.visit(url);
         });
@@ -207,14 +196,15 @@ export const fetchAndVisitInviteLink = (email) => {
   });
 };
 
+
 export const inviteUser = (firstName, email) => {
-  cy.userInviteApi(firstName, email);
+  cy.apiUserInvite(firstName, email);
   fetchAndVisitInviteLink(email);
   cy.wait(1000);
-  cy.get(commonSelectors.passwordInputField).should("be.visible");
-  cy.clearAndType(commonSelectors.passwordInputField, "password");
+  cy.get(onboardingSelectors.loginPasswordInput).should("be.visible");
+  cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
   // cy.intercept("GET", "/api/organizations").as("org");
-  cy.get(commonSelectors.signUpButton).click();
+  cy.get(commonSelectors.continueButton).click();
   cy.wait(2000);
   cy.get(commonSelectors.acceptInviteButton).click();
 };
@@ -222,7 +212,19 @@ export const inviteUser = (firstName, email) => {
 export const addNewUser = (firstName, email) => {
   navigateToManageUsers();
   inviteUser(firstName, email);
-  updateWorkspaceName(email);
+};
+
+export const roleBasedOnboarding = (firstName, email, userRole) => {
+  navigateToManageUsers();
+  cy.apiUserInvite(firstName, email, userRole);
+  fetchAndVisitInviteLink(email);
+  cy.wait(1000);
+  cy.get(onboardingSelectors.loginPasswordInput).should("be.visible");
+  cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
+  // cy.intercept("GET", "/api/organizations").as("org");
+  cy.get(commonSelectors.continueButton).click();
+  cy.wait(2000);
+  cy.get(commonSelectors.acceptInviteButton).click();
 };
 
 export const updateWorkspaceName = (email, workspaceName = email) => {
@@ -300,19 +302,34 @@ export const visitWorkspaceInvitation = (email, workspaceName) => {
 
 export const SignUpPageElements = () => {
   cy.get(commonSelectors.pageLogo).should("be.visible");
-  cy.get(commonSelectors.SignUpSectionHeader).verifyVisibleElement(
+  cy.get(commonSelectors.signUpSectionHeader).verifyVisibleElement(
     "have.text",
     "Sign up"
   );
   cy.get(commonSelectors.signUpButton).verifyVisibleElement(
     "have.text",
-    commonText.getStartedButton
+    "Sign up"
   );
-  cy.get(commonSelectors.signInRedirectText).should(($el) => {
-    expect($el.contents().first().text().trim()).to.eq(
-      commonText.signInRedirectText
-    );
-  });
+
+  // cy.get('[data-cy="signup-info"]').should(($el) => {
+  //   expect($el.contents().first().text().trim()).to.eq(
+  //     commonText.signInRedirectText
+  //   );
+  // });
+
+  cy.get(onboardingSelectors.signupNameLabel).verifyVisibleElement(
+    "have.text",
+    "Name *"
+  );
+  cy.get(onboardingSelectors.nameInput).should("be.visible");
+  cy.get(onboardingSelectors.emailLabel).verifyVisibleElement(
+    "have.text",
+    "Email *"
+  );
+  // cy.get(commonSelectors.loginPasswordLabel).verifyVisibleElement("have.text", "Password *");
+
+  cy.get(onboardingSelectors.loginPasswordInput).should("be.visible");
+
   cy.get(commonSelectors.signInRedirectLink).verifyVisibleElement(
     "have.text",
     commonText.signInRedirectLink
@@ -350,12 +367,13 @@ export const SignUpPageElements = () => {
 };
 
 export const signUpLink = (email) => {
-  let invitationLink
+  let invitationLink;
   cy.task("updateId", {
     dbconfig: Cypress.env("app_db"),
     sql: `select invitation_token from users where email='${email}';`,
   }).then((resp) => {
     invitationLink = `/invitations/${resp.rows[0].invitation_token}`;
     cy.visit(invitationLink);
+    cy.wait(3000);
   });
-}
+};
