@@ -21,8 +21,8 @@ import { Map as MapComponent } from '@/Editor/Components/Map/Map';
 import { QrScanner } from '@/Editor/Components/QrScanner/QrScanner';
 import { ToggleSwitch } from '@/Editor/Components/Toggle';
 import { ToggleSwitchV2 } from '@/Editor/Components/ToggleV2';
-
 import { RadioButton } from '@/Editor/Components/RadioButton';
+import { RadioButtonV2 } from '@/Editor/Components/RadioButtonV2/RadioButtonV2';
 import { StarRating } from '@/Editor/Components/StarRating';
 import { Divider } from '@/Editor/Components/Divider';
 import { FilePicker } from '@/Editor/Components/FilePicker';
@@ -106,6 +106,7 @@ export const AllComponents = {
   QrScanner,
   ToggleSwitch,
   RadioButton,
+  RadioButtonV2,
   StarRating,
   Divider,
   FilePicker,

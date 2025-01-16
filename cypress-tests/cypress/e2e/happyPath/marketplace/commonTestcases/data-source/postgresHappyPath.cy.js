@@ -187,7 +187,7 @@ describe("Data sources", () => {
       {
         Host: Cypress.env("pg_host"),
         Port: "5432",
-        "Database Name": "postgres",
+        "Database name": "postgres",
         Username: Cypress.env("pg_user"),
         Password: Cypress.env("pg_password"),
       },
@@ -389,7 +389,7 @@ describe("Data sources", () => {
     fillConnectionForm({
       Host: Cypress.env("pg_host"),
       Port: "5432",
-      "Database Name": "postgres",
+      "Database name": "postgres",
       Username: Cypress.env("pg_user"),
       Password: Cypress.env("pg_password"),
     });
@@ -472,7 +472,7 @@ describe("Data sources", () => {
     fillConnectionForm({
       Host: Cypress.env("pg_host"),
       Port: "5432",
-      "Database Name": "postgres",
+      "Database name": "postgres",
       Username: Cypress.env("pg_user"),
       Password: Cypress.env("pg_password"),
     });
