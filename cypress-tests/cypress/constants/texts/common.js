@@ -52,6 +52,7 @@ export const commonText = {
     `Are you sure you want to delete the folder ${folderName}? Apps within the folder will not be deleted.`;
   },
   closeButton: "modal close",
+  cloneAppErrorToast: "You do not have create datasource permissions to perform this action",
   workEmailLabel: "Email",
   emailInputError: "Email is invalid",
   passwordLabel: "Password *",
