@@ -56,8 +56,8 @@ const TJDBCodeEditor = (props) => {
 
   const handleOnChange = (value) => {
     if (value === '') {
-      setErrorState(false);
-      setError(null);
+      setErrorState(true);
+      setError('JSON cannot be empty');
       setCurrentValue(value);
       return;
     }
@@ -90,14 +90,28 @@ const TJDBCodeEditor = (props) => {
 
   useLayoutEffect(() => {
     if (mounted && reset && defaultValue) {
-      handleLowPriorityWork(() => setCurrentValue(JSON.stringify(defaultValue)));
+      handleLowPriorityWork(() => {
+        setCurrentValue(JSON.stringify(defaultValue));
+        if (errorState) {
+          setErrorState(false);
+          setError('');
+          errorCallback(false);
+        }
+      });
     }
   }, [reset, defaultValue]);
 
   useLayoutEffect(() => {
     if (!mounted) return;
     if (shouldUpdateToNullVal) {
-      handleLowPriorityWork(() => setCurrentValue('null'));
+      handleLowPriorityWork(() => {
+        setCurrentValue('null');
+        if (errorState) {
+          setErrorState(false);
+          setError('');
+          errorCallback(false);
+        }
+      });
     } else {
       !reset && handleLowPriorityWork(() => setCurrentValue(initialValue));
     }
@@ -111,6 +125,13 @@ const TJDBCodeEditor = (props) => {
   useEffect(() => {
     errorCallback(errorState);
   }, [errorState]);
+
+  useEffect(() => {
+    if (className && className === 'has-empty-error') {
+      setErrorState(true);
+      setError('Cannot be empty');
+    }
+  }, [className]);
 
   const setupConfig = {
     lineNumbers: false,
@@ -132,7 +153,7 @@ const TJDBCodeEditor = (props) => {
         height: isOpen ? '350p' : 'auto',
       }}
     >
-      <div className={`cm-codehinter ${className} ${darkMode && 'cm-codehinter-dark-themed'}`}>
+      <div className={`cm-codehinter  ${darkMode && 'cm-codehinter-dark-themed'}`}>
         <CodeHinter.PopupIcon
           callback={handleTogglePopupExapand}
           icon="portal-open"
@@ -183,7 +204,7 @@ const TJDBCodeEditor = (props) => {
                 {' '}
                 <SolidIcon name="warning" width="16px" fill={'var(--tomato9)'} />
               </span>
-              <span>Invalid JSON syntax</span>
+              <span>{error}</span>
             </div>
             <div className={` ${isOpen ? 'd-block footer-component' : 'd-none'}`}>{footerComponent()}</div>
           </ErrorBoundary>
