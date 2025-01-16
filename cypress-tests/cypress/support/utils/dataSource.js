@@ -88,7 +88,7 @@ export const addQueryN = (queryName, query, dbName) => {
   cy.wait("@createQuery").then((interception) => {
     const dataQueryId = interception.response.body.id;
     cy.visit("/my-workspace");
-    cy.addQueryApi(queryName, query, dataQueryId);
+    cy.apiAddQuery(queryName, query, dataQueryId);
     cy.openApp();
   });
 };
@@ -106,7 +106,7 @@ export const addQuery = (queryName, query, dbName) => {
   cy.wait("@createQuery").then((interception) => {
     const dataQueryId = interception.response.body.id;
     cy.visit("/my-workspace");
-    cy.addQueryApi(queryName, query, dataQueryId);
+    cy.apiAddQuery(queryName, query, dataQueryId);
     cy.openApp();
   });
 };
@@ -123,7 +123,7 @@ export const addQueryAndOpenEditor = (queryName, query, dbName, appName) => {
   cy.wait("@createQuery").then((interception) => {
     const dataQueryId = interception.response.body.id;
     cy.visit("/my-workspace");
-    cy.addQueryApi(queryName, query, dataQueryId);
+    cy.apiAddQuery(queryName, query, dataQueryId);
     navigateToAppEditor(appName);
     cy.wait(2000);
   });
@@ -207,44 +207,53 @@ export const createDataQuery = (appName, url, key, value) => {
   });
 };
 
-export const createrestAPIQuery = (data) => {
-  const { app_id, app_version_id, name, key, value } = data;
-
-  const data_source_id = Cypress.env(`${name}-id`);
-
-  const requestBody = {
-    app_id: app_id,
-    app_version_id: app_version_id,
-    name: name,
-    kind: "restapi",
-    options: {
-      method: "get",
-      url: "",
-      url_params: [["", ""]],
-      headers: [[`{{constants.${key}}}`, `{{constants.${value}}}`]],
-      body: [["", ""]],
-      json_body: null,
-      body_toggle: false,
-      transformationLanguage: "javascript",
-      enableTransformation: false,
-    },
-    data_source_id: data_source_id,
-    plugin_id: null,
-  };
-
+export const createRestAPIQuery = (queryName, dsName, key = '', value = '', url = "", run = true) => {
   cy.getCookie("tj_auth_token").then((cookie) => {
     const headers = {
       "Tj-Workspace-Id": Cypress.env("workspaceId"),
       Cookie: `tj_auth_token=${cookie.value}`,
     };
+
+    cy.log(Cypress.env("appId"));
     cy.request({
-      method: "POST",
-      url: `${Cypress.env("server_host")}/api/data_queries`,
+      method: "GET",
+      url: `${Cypress.env("server_host")}/api/v2/apps/${Cypress.env("appId")}`,
       headers: headers,
-      body: requestBody,
     }).then((response) => {
-      expect(response.status).to.equal(201);
-      cy.log("Data query created successfully:", response.body);
+      const editingVersionId = response.body.editing_version.id;
+
+      const data_source_id = Cypress.env(`${dsName}-id`);
+
+      const requestBody = {
+        app_id: Cypress.env("appId"),
+        app_version_id: editingVersionId,
+        name: queryName,
+        kind: "restapi",
+        options: {
+          method: "get",
+          url: url,
+          url_params: [["", ""]],
+          headers: [[`${key}`, `${value}`]],
+          body: [["", ""]],
+          json_body: null,
+          body_toggle: false,
+          runOnPageLoad: run,
+          transformationLanguage: "javascript",
+          enableTransformation: false,
+        },
+        data_source_id: data_source_id,
+        plugin_id: null,
+      };
+
+      cy.request({
+        method: "POST",
+        url: `${Cypress.env("server_host")}/api/data_queries`,
+        headers: headers,
+        body: requestBody,
+      }).then((response) => {
+        expect(response.status).to.equal(201);
+        cy.log("Data query created successfully:", response.body);
+      });
     });
   });
 };

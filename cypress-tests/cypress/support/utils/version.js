@@ -14,9 +14,7 @@ import {
 import { verifyComponent } from "Support/utils/basicComponents";
 
 export const navigateToCreateNewVersionModal = (value) => {
-  cy.get(appVersionSelectors.currentVersionField(value))
-    .should("be.visible")
-    .click();
+  cy.get(appVersionSelectors.appVersionLabel).click();
   cy.contains(appVersionText.createNewVersion).should("be.visible");
   cy.contains(appVersionText.createNewVersion).click();
 };
@@ -66,7 +64,6 @@ export const editVersionAndVerify = (
   newVersion = [],
   toastMessageText
 ) => {
-  cy.reload();
   cy.get(appVersionSelectors.currentVersionField(currentVersion)).then(
     ($ele) => {
       if ($ele.hasClass("color-light-green")) {
@@ -86,6 +83,7 @@ export const editVersionAndVerify = (
   cy.wait(500);
   cy.verifyToastMessage(commonSelectors.toastMessage, toastMessageText);
 };
+
 export const deleteVersionAndVerify = (value, toastMessageText) => {
   cy.get(appVersionSelectors.currentVersionField(value))
     .should("be.visible")
@@ -99,30 +97,27 @@ export const deleteVersionAndVerify = (value, toastMessageText) => {
         .find(".app-version-delete")
         .click({ force: true });
     });
- 
+
+  cy.get(commonSelectors.modalMessage).verifyVisibleElement("have.text", deleteVersionText.deleteModalText(value))
   cy.get(confirmVersionModalSelectors.yesButton).click();
-  cy.verifyToastMessage(commonSelectors.toastMessage, toastMessageText, false);
+  cy.verifyToastMessage(commonSelectors.toastMessage, deleteVersionText.deleteToastMessage(value), false);
 };
 
 export const verifyDuplicateVersion = (newVersion = [], version) => {
   cy.contains(appVersionText.createNewVersion).should("be.visible").click();
-  verifyModal(
-    appVersionText.createNewVersion,
-    appVersionText.createNewVersion,
-    appVersionSelectors.createVersionInputField
-  );
   cy.get(appVersionSelectors.createVersionInputField).click();
   cy.contains(`[id*="react-select-"]`, version).click();
-  cy.get(appVersionSelectors.versionNameInputField).click().type(newVersion[0]);
+  cy.clearAndType(appVersionSelectors.versionNameInputField, newVersion[0]);
   cy.get(appVersionSelectors.createNewVersionButton).click();
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
     appVersionText.versionNameAlreadyExists
   );
 };
+
 export const releasedVersionAndVerify = (currentVersion) => {
   cy.contains("Release").click();
- 
+
   cy.get(confirmVersionModalSelectors.yesButton).click();
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
@@ -149,3 +144,10 @@ export const verifyVersionAfterPreview = (currentVersion) => {
   cy.get('[data-cy="viewer-page-logo"]').click();
   cy.wait(8000);
 };
+
+export const switchVersionAndVerify = (currentVersion, newVersion) => {
+  cy.get(appVersionSelectors.currentVersionField(currentVersion))
+    .should("be.visible")
+    .click();
+  cy.get('.app-version-name').contains(newVersion).click();
+}

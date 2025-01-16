@@ -69,9 +69,9 @@ export const setUpSlug = (slug) => {
 
 export const setupAppWithSlug = (appName, slug) => {
     cy.apiCreateApp(appName);
-    cy.addComponentToApp(appName, "text1");
+    cy.apiAddComponentToApp(appName, "text1");
     cy.apiReleaseApp(appName)
-    cy.addAppSlug(appName, slug)
+    cy.apiAddAppSlug(appName, slug)
 };
 
 export const verifyRestrictedAccess = () => {

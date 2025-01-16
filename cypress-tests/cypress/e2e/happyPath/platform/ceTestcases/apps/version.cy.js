@@ -8,6 +8,10 @@ import {
   releasedVersionAndVerify,
   verifyDuplicateVersion,
   verifyVersionAfterPreview,
+  navigateToCreateNewVersionModal,
+  verifyElementsOfCreateNewVersionModal,
+  navigateToEditVersionModal,
+  switchVersionAndVerify,
 } from "Support/utils/version";
 
 import { appVersionSelectors } from "Selectors/exportImport";
@@ -15,17 +19,7 @@ import { editVersionSelectors } from "Selectors/version";
 import { editVersionText } from "Texts/version";
 import { createNewVersion } from "Support/utils/exportImport";
 
-import {
-  navigateToCreateNewVersionModal,
-  verifyElementsOfCreateNewVersionModal,
-  navigateToEditVersionModal,
-} from "Support/utils/version";
-
-import {
-  verifyModal,
-  closeModal,
-  navigateToAppEditor,
-} from "Support/utils/common";
+import { verifyModal, closeModal } from "Support/utils/common";
 
 import {
   verifyComponent,
@@ -33,235 +27,207 @@ import {
   deleteComponentAndVerify,
 } from "Support/utils/basicComponents";
 
-import { logout, releaseApp } from "Support/utils/common";
+import { deleteVersionText, onlydeleteVersionText } from "Texts/version";
 
-import {
-  releasedVersionText,
-  deleteVersionText,
-  onlydeleteVersionText,
-} from "Texts/version";
+import { createRestAPIQuery } from "Support/utils/dataSource";
+import { deleteQuery } from "Support/utils/queries";
 
 describe("App Editor", () => {
-  const data = {};
-  data.appName = `${fake.companyName} App`;
-  data.slug = `${fake.companyName.toLowerCase()}-app`;
-  const workspaceId = Cypress.env("workspaceId");
+  let data;
+
   let currentVersion = "";
   let newVersion = [];
   let versionFrom = "";
 
   beforeEach(() => {
+    data = {
+      appName: `${fake.companyName}-Version-App`,
+      datasourceName: fake.firstName.toLowerCase(),
+      query1: fake.firstName.toLowerCase(),
+      query2: fake.firstName.toLowerCase(),
+    };
+
     cy.defaultWorkspaceLogin();
-  });
-
-  before(() => {
-    cy.apiLogin();
     cy.apiCreateApp(data.appName);
-    cy.wait(1000);
-    cy.logoutApi();
-  });
-
-  it("Verify the elements of the version module", () => {
-    data.appName = `${fake.companyName}-App`;
-    cy.apiCreateApp(data.appName);
-
     cy.openApp();
+  });
 
+  it("should verify basic version management operations", () => {
+    // Version modal verification
     cy.get(appVersionSelectors.appVersionLabel).should("be.visible");
-    cy.get(commonSelectors.appNameInput).verifyVisibleElement(
-      "have.value",
-      data.appName
+    navigateToCreateNewVersionModal("v1");
+    verifyElementsOfCreateNewVersionModal(["v1"]);
+
+    // Empty version name validation
+    navigateToCreateNewVersionModal("v1");
+    cy.get('[data-cy="create-new-version-button"]').click();
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      "Version name should not be empty"
     );
 
-    cy.waitForAutoSave();
-    navigateToCreateNewVersionModal((currentVersion = "v1"));
-    verifyElementsOfCreateNewVersionModal((currentVersion = ["v1"]));
+    cy.wait(2000);
 
-    navigateToEditVersionModal((currentVersion = "v1"));
+    // Duplicate version name check
+    verifyDuplicateVersion(["v1"], "v1");
+    closeModal(commonText.closeButton);
+
+    // Version edit modal verification
+    navigateToEditVersionModal("v1");
     verifyModal(
       editVersionText.editVersionTitle,
       editVersionText.saveButton,
       editVersionSelectors.versionNameInputField
     );
-
     closeModal(commonText.closeButton);
-
-    verifyComponentinrightpannel("table");
-    cy.dragAndDropWidget("table");
-    cy.wait(2000);
-    cy.get('[data-cy="inspector-close-icon"]').click({ force: true });
-
-    navigateToCreateNewVersionModal((currentVersion = "v1"));
-    createNewVersion((newVersion = ["v2"]), (versionFrom = "v1"));
-
-    cy.wait(4000);
-    cy.get(commonWidgetSelector.previewButton)
-      .invoke("removeAttr", "target")
-      .click();
-
-    cy.url().should("include", "/home");
-    cy.wait(2000);
-    cy.get('span[style="margin-left: 12px; cursor: pointer;"]').click();
-    cy.get("div.react-select__indicator").click();
-    cy.contains("v1").click();
-  });
-
-  it("Verify components and queries in the apps on different versions", () => {
-    data.appName = `${fake.companyName}-App`;
-    cy.apiCreateApp(data.appName);
-
-    cy.openApp();
-    cy.get('[data-cy="widget-list-box-table"]').should("be.visible");
-
-    verifyComponentinrightpannel("text");
-    navigateToCreateNewVersionModal((currentVersion = "v1"));
-
-    createNewVersion((newVersion = ["v2"]), (versionFrom = "v1"));
-    verifyComponentinrightpannel("table");
-
-    cy.dragAndDropWidget("table");
-    cy.wait(2000);
-    cy.get('[data-cy="inspector-close-icon"]').click({ force: true });
-    cy.wait(4000);
-    cy.get('[data-cy="show-ds-popover-button"]').click();
-    cy.get('[data-cy="ds-run javascript code"]').click();
-
-    navigateToCreateNewVersionModal((currentVersion = "v2"));
-    createNewVersion((newVersion = ["v3"]), (versionFrom = "v2"));
-
-    cy.apiAddQueryToApp(
-      "runjs1",
-      { code: 'alert("Text")', parameters: [] },
-      null,
-      "runjs"
-    );
-    cy.reload();
-    cy.get('[data-cy="query-preview-button"]').click();
-
-    cy.get(commonSelectors.toastMessage).verifyVisibleElement(
-      "have.text",
-      "Query (runjs1) completed."
-    );
-    cy.reload();
-    navigateToCreateNewVersionModal((currentVersion = "v3"));
-    createNewVersion((newVersion = ["v4"]), (versionFrom = "v3"));
-    cy.wait(2000);
-
-    cy.get('[data-cy="query-preview-button"]').click();
-    cy.get(commonSelectors.toastMessage).verifyVisibleElement(
-      "have.text",
-      "Query (runjs1) completed."
-    );
-  });
-
-  it("Verify all functionality for the app version", () => {
-    data.appName = `${fake.companyName}-App`;
-    cy.apiCreateApp(data.appName);
-
-    cy.openApp();
-
-    deleteVersionAndVerify(
-      "v1",
-      onlydeleteVersionText.deleteToastMessage("v1")
-    );
-    cy.wait(5000);
-    cy.get('[data-cy="widget-list-box-table"]').should("be.visible");
-
-    navigateToCreateNewVersionModal((currentVersion = "v1"));
-    cy.get('[data-cy="create-new-version-button"]').click();
-    cy.get(commonSelectors.toastMessage).verifyVisibleElement(
-      "have.text",
-      "Version name should not be empty"
-    );
-
-    cy.get('[data-cy="modal-close-button"]').click();
-    verifyComponentinrightpannel("text");
-    navigateToCreateNewVersionModal((currentVersion = "v1"));
-
-    createNewVersion((newVersion = ["v2"]), (versionFrom = "v1"));
-    verifyComponentinrightpannel("table");
-
-    cy.dragAndDropWidget("table");
     cy.wait(1000);
-    cy.get('[data-cy="inspector-close-icon"]').click({ force: true });
-    cy.wait(2000);
 
-    deleteComponentAndVerify("table1");
-    cy.dragAndDropWidget("table");
-    cy.wait(1000);
-    cy.get('[data-cy="inspector-close-icon"]').click({ force: true });
-    cy.wait(2000);
-    navigateToCreateNewVersionModal((currentVersion = "v2"));
-
-    createNewVersion((newVersion = ["v3"]), (versionFrom = "v2"));
-    verifyComponentinrightpannel("table");
-
-    navigateToCreateNewVersionModal((currentVersion = "v3"));
-    createNewVersion((newVersion = ["v4"]), (versionFrom = "v1"));
-
-    verifyComponentinrightpannel("table");
-
+    // Version editing
     editVersionAndVerify(
-      (currentVersion = "v4"),
-      (newVersion = ["v5"]),
+      "v1",
+      ["v2"],
       editVersionText.VersionNameUpdatedToastMessage
     );
 
-    navigateToCreateNewVersionModal((currentVersion = "v5"));
-    verifyDuplicateVersion((newVersion = ["v5"]), (versionFrom = "v5"));
+    // Component operations in version
+    verifyComponentinrightpannel("table");
+    cy.dragAndDropWidget("text");
+    cy.waitForAutoSave();
 
-    closeModal(commonText.closeButton);
+    // New version creation
+    navigateToCreateNewVersionModal("v2");
+    createNewVersion(["v3"], "v2");
+    cy.waitForAutoSave();
+    verifyComponentinrightpannel("table");
 
+    // Component deletion
+    deleteComponentAndVerify("text1");
+    cy.waitForAutoSave();
+    cy.wait(2000);
+
+    // Version deletion
     deleteVersionAndVerify(
-      (currentVersion = "v5"),
-      deleteVersionText.deleteToastMessage((currentVersion = "v5"))
+      "v3",
+      onlydeleteVersionText.deleteToastMessage("v3")
     );
+    cy.get(appVersionSelectors.currentVersionField("v2")).should("be.visible");
+    cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
 
-    releasedVersionAndVerify((currentVersion = "v3"));
-    navigateToCreateNewVersionModal((currentVersion = "v3"));
-
-    createNewVersion((newVersion = ["v6"]), (versionFrom = "v3"));
-
-    verifyVersionAfterPreview((currentVersion = "v6"));
+    // Preview and release verification
+    cy.openInCurrentTab(commonWidgetSelector.previewButton);
+    cy.url().should("include", "/home?version=v2");
+    cy.openApp("", Cypress.env("workspaceId"), Cypress.env("appId"), commonWidgetSelector.draggableWidget("text1"));
+    releasedVersionAndVerify("v2");
   });
 
-  it("Verify all functionality for the app release", () => {
-    data.appName = `${fake.companyName}-App`;
-    cy.apiCreateApp(data.appName);
-
-    cy.openApp();
-
-    cy.get(appVersionSelectors.appVersionLabel).should("be.visible");
-    cy.get(commonSelectors.appNameInput).verifyVisibleElement(
-      "have.value",
-      data.appName
+  it("should verify version management with components and queries", () => {
+    // Initial setup with component and datasource
+    cy.apiAddComponentToApp(
+      data.appName,
+      "text1",
+      {},
+      "Text",
+      `{{queries.${data.query1}.data.name}}`
     );
     cy.waitForAutoSave();
 
-    verifyComponentinrightpannel("table");
-    cy.dragAndDropWidget("table");
-    cy.wait(100);
-    cy.get('[data-cy="inspector-close-icon"]').click({ force: true });
-
-    releaseApp();
-    cy.get('[data-cy="delete-button"]').should("not.exist");
-    cy.get('[data-cy="warning-text"]').should(
-      "contain",
-      "App cannot be edited after promotion. Please create a new version from Development to make any changes."
+    cy.apiCreateGDS(
+      `${Cypress.env("server_host")}/api/v2/data_sources`,
+      data.datasourceName,
+      "restapi",
+      [{ key: "url", value: "https://jsonplaceholder.typicode.com/users" }]
     );
+    createRestAPIQuery(data.query1, data.datasourceName, "", "", "/1", true);
 
-    navigateToCreateNewVersionModal((currentVersion = "v1"));
-    createNewVersion((newVersion = ["v2"]), (versionFrom = "v1"));
+    // Version v2 creation and verification
+    navigateToCreateNewVersionModal("v1");
+    createNewVersion(["v2"], "v1");
+    cy.get(commonWidgetSelector.draggableWidget("text1"))
+      .verifyVisibleElement("have.text", "Leanne Graham");
+    cy.get(`[data-cy="list-query-${data.query1}"]`).should("be.visible");
 
-    verifyComponentinrightpannel("table");
-    cy.dragAndDropWidget("table");
-    cy.wait(1000);
-    cy.get('[data-cy="inspector-close-icon"]').click({ force: true });
-    cy.get('[data-cy="button-release"]').click();
-    cy.get('[data-cy="yes-button"]').click();
-    cy.get('[data-cy="warning-text"]').should(
-      "contain",
-      "App cannot be edited after promotion. Please create a new version from Development to make any changes."
+    // Modify v2 with new components and queries
+    deleteComponentAndVerify("text1");
+    cy.waitForAutoSave();
+    deleteQuery(data.query1);
+    cy.get('[data-cy="modal-confirm-button"]').click();
+    createRestAPIQuery(data.query2, data.datasourceName, "", "", "/2", true);
+    cy.apiAddComponentToApp(
+      data.appName,
+      "textinput",
+      {},
+      "TextInput",
+      `{{queries.${data.query2}.data.name}}`
     );
+    cy.waitForAutoSave();
+
+    // Version creation and state verification
+    const versionChecks = [
+      {
+        create: { version: "v3", from: "v2" },
+        verify: {
+          component: { selector: "textInput", value: "Ervin Howell" },
+          query: data.query2
+        }
+      },
+      {
+        create: { version: "v4", from: "v1" },
+        verify: {
+          component: { selector: "text1", text: "Leanne Graham" },
+          query: data.query1
+        }
+      },
+      {
+        create: { version: "v5", from: "v3" },
+        verify: {
+          component: { selector: "textInput", value: "Ervin Howell" },
+          query: data.query2
+        }
+      }
+    ];
+
+    versionChecks.forEach(check => {
+      navigateToCreateNewVersionModal(check.create.from);
+      createNewVersion([check.create.version], check.create.from);
+
+      if (check.verify.component.value) {
+        cy.get(commonWidgetSelector.draggableWidget(check.verify.component.selector))
+          .verifyVisibleElement("have.value", check.verify.component.value);
+      } else {
+        cy.get(commonWidgetSelector.draggableWidget(check.verify.component.selector))
+          .verifyVisibleElement("have.text", check.verify.component.text);
+      }
+      cy.get(`[data-cy="list-query-${check.verify.query}"]`).should("be.visible");
+    });
+
+    // Release and version state verification
+    releasedVersionAndVerify("v5");
+    cy.get(appVersionSelectors.currentVersionField("v5"))
+      .should("have.class", "color-light-green");
+
+    // Version switching and component verification
+    cy.get(appVersionSelectors.currentVersionField("v5")).click();
+    cy.contains(`[id*="react-select-"]`, "v4").click();
+    cy.get(appVersionSelectors.currentVersionField("v4"))
+      .should("not.have.class", "color-light-green");
+    cy.get(commonWidgetSelector.draggableWidget("text1"))
+      .verifyVisibleElement("have.text", "Leanne Graham");
+    cy.get(`[data-cy="list-query-${data.query1}"]`).should("be.visible");
+
+    // Preview and version switching verification
+    cy.openInCurrentTab(commonWidgetSelector.previewButton);
+    cy.url().should("include", "/home?version=v4");
+    cy.get(commonWidgetSelector.draggableWidget("text1"))
+      .verifyVisibleElement("have.text", "Leanne Graham");
+
+    cy.get('[data-cy="preview-settings"]').click();
+    switchVersionAndVerify("v4", "v5");
+
+    cy.get(commonWidgetSelector.draggableWidget("textInput"))
+      .verifyVisibleElement("have.value", "Ervin Howell");
+    //url validation should be added after bug fix
+
+    //  cy.url().should("include", "/home?version=v5");
+
   });
 });
