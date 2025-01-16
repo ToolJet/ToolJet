@@ -23,7 +23,7 @@ const RenderColumnUI = ({
     <div className="" key={id}>
       <Container fluid className="p-0">
         <Row className="mx-0">
-          <Col sm="6" className="p-0">
+          <Col sm="4" className="p-0">
             <DropDownSelect
               useMenuPortal={true}
               showPlaceHolder
@@ -35,7 +35,7 @@ const RenderColumnUI = ({
               buttonClasses="border border-end-0 rounded-start overflow-hidden"
             />
           </Col>
-          <Col sm="6" className="p-0 d-flex tjdb-codhinter-wrapper">
+          <Col sm="8" className="p-0 d-flex tjdb-codhinter-wrapper">
             <CodeHinter
               type="basic"
               initialValue={value ? (typeof value === 'string' ? value : JSON.stringify(value)) : value}
