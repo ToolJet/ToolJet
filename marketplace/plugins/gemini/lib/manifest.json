@@ -1,0 +1,33 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Gemini datasource",
+  "description": "A schema defining Gemini datasource",
+  "type": "api",
+  "source": {
+    "name": "Gemini",
+    "kind": "gemini",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "apiKey": {
+        "type": "string",
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {},
+  "properties": {
+    "apiKey": {
+      "label": "API Key",
+      "key": "apiKey",
+      "type": "password",
+      "description": "Enter your Gemini API Key"    
+    }
+  },
+  "required": [
+    "apiKey"
+  ]
+}
