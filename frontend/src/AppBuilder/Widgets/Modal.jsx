@@ -9,6 +9,14 @@ import { useExposeState } from '@/AppBuilder/_hooks/useModalCSA';
 import { useEventListener } from '@/_hooks/use-event-listener';
 var tinycolor = require('tinycolor2');
 
+const getModalBodyHeight = (height, headerHeightPx = '56px') => {
+  let modalHeight = height.includes('px') ? parseInt(height, 10) : height;
+  let headerHeight = parseInt(headerHeightPx, 10);
+
+  modalHeight = modalHeight - headerHeight;
+  return `${Math.max(modalHeight, 40)}px`;
+};
+
 export const Modal = function Modal({
   id,
   component,
@@ -47,6 +55,10 @@ export const Modal = function Modal({
   const size = properties.size ?? 'lg';
   const [modalWidth, setModalWidth] = useState();
   const mode = useStore((state) => state.currentMode, shallow);
+  const isFullScreen = properties.size === 'fullscreen';
+
+  const computedModalBodyHeight = getModalBodyHeight(modalHeight);
+  const computedCanvasHeight = isFullScreen ? `calc(100vh - 48px - 40px - 56px)` : computedModalBodyHeight;
 
   /**** Start - Logic to reset the zIndex of modal control box ****/
   useEffect(() => {
@@ -156,8 +168,11 @@ export const Modal = function Modal({
     if (!canvasElement) return; // Ensure the element exists
 
     // Create a ResizeObserver
-    const resizeObserver = new ResizeObserver(() => {
-      onShowSideEffects();
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        // Update the height state when the element's height changes
+        onShowSideEffects();
+      }
     });
 
     // Observe the canvas element
@@ -203,7 +218,7 @@ export const Modal = function Modal({
 
   const customStyles = {
     modalBody: {
-      height: backwardCompatibilityCheck ? modalHeight : height,
+      height: backwardCompatibilityCheck ? computedCanvasHeight : height,
       backgroundColor:
         ['#fff', '#ffffffff'].includes(bodyBackgroundColor) && darkMode ? '#1F2837' : bodyBackgroundColor,
       overflowX: 'hidden',
@@ -306,13 +321,14 @@ export const Modal = function Modal({
           modalHeight,
           isDisabled: isDisabledModal,
           showConfigHandler: mode === 'edit',
+          fullscreen: isFullScreen,
         }}
       >
         {!isLoading ? (
           <>
             <SubContainer
               id={`${id}`}
-              canvasHeight={modalHeight}
+              canvasHeight={computedCanvasHeight}
               styles={{ backgroundColor: customStyles.modalBody.backgroundColor, height: 'inherit' }}
               canvasWidth={modalWidth}
               darkMode={darkMode}

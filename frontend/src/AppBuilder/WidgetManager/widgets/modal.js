@@ -88,6 +88,7 @@ export const modalConfig = {
         { name: 'small', value: 'sm' },
         { name: 'medium', value: 'lg' },
         { name: 'large', value: 'xl' },
+        { name: 'fullscreen', value: 'fullscreen' },
       ],
       validation: {
         schema: { type: 'string' },

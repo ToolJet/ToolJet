@@ -150,7 +150,8 @@ export const baseComponentProperties = (
           'properties',
           currentState,
           allComponents,
-          darkMode
+          darkMode,
+          ''
         )
       ),
     });

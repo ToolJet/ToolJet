@@ -3,6 +3,7 @@ import Accordion from '@/_ui/Accordion';
 import { renderElement } from '../Utils';
 import { baseComponentProperties } from './DefaultComponent';
 import { resolveReferences } from '@/_helpers/utils';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 export const Modal = ({ componentMeta, darkMode, ...restProps }) => {
   const {
@@ -66,6 +67,13 @@ export const Modal = ({ componentMeta, darkMode, ...restProps }) => {
   const filteredProperties = properties.filter(
     (property) => property !== 'useDefaultButton' && property !== 'triggerButtonLabel'
   );
+
+  if (component.component.definition.properties.size.value === 'fullscreen') {
+    component.component.properties.modalHeight = {
+      ...component.component.properties.modalHeight,
+      isHidden: true,
+    };
+  }
 
   const accordionItems = baseComponentProperties(
     filteredProperties,
