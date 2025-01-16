@@ -151,8 +151,6 @@ export function renderElement(
     }
   }
 
-  // if (isHidden) return null;
-
   return (
     <Code
       param={{ name: param, ...component.component.properties[param] }}
