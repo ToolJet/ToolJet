@@ -7,6 +7,7 @@ export const workspaceConstantsText = {
     addNewConstantButton: "+ Create new constant",
     addConstatntText: "Add new constant in production ",
     constantCreatedToast: (type) => { return `${type} constant created successfully!` },
+    secretConstantCreatedToast: "Secret constant created successfully!",
     constantsExisitToast: (type) => { return `${type} constant already exists!` }
 
 };
