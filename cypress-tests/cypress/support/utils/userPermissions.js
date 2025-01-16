@@ -1,18 +1,7 @@
 import { commonSelectors } from "Selectors/common";
-import { usersSelector } from "Selectors/manageUsers";
-import { usersText } from "Texts/manageUsers";
 import * as users from "Support/utils/manageUsers";
 import * as common from "Support/utils/common";
-import { path } from "Texts/common";
 import { groupsSelector } from "Selectors/manageGroups";
-import { groupsText } from "Texts/manageGroups";
-import { dashboardSelector } from "Selectors/dashboard";
-
-export const adminLogin = () => {
-  common.logout();
-  cy.defaultWorkspaceLogin();
-  common.navigateToManageGroups();
-};
 
 export const reset = () => {
   common.navigateToManageGroups();

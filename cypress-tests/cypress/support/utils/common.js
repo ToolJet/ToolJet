@@ -31,28 +31,6 @@ export const navigateToManageGroups = () => {
   cy.get(commonSelectors.settingsIcon).click();
   cy.get(commonSelectors.workspaceSettings).click();
   cy.get(commonSelectors.manageGroupsOption).click();
-  // navigateToAllUserGroup();
-};
-
-export const navigateToAllUserGroup = () => {
-  cy.get(groupsSelector.groupLink("Admin")).click();
-  cy.get(groupsSelector.groupLink("All users")).click();
-  cy.get(groupsSelector.groupLink("Admin")).click();
-  cy.get(groupsSelector.groupLink("All users")).click();
-  cy.wait(1000);
-  cy.get("body").then(($title) => {
-    if (
-      $title
-        .text()
-        .includes("Admin has edit access to all apps. These are not editable")
-    ) {
-      cy.get(groupsSelector.groupLink("Admin")).click();
-      cy.get(groupsSelector.groupLink("All users")).click();
-      cy.get(groupsSelector.groupLink("Admin")).click();
-      cy.get(groupsSelector.groupLink("All users")).click();
-      cy.wait(2000);
-    }
-  });
 };
 
 export const navigateToWorkspaceVariable = () => {
@@ -208,16 +186,6 @@ export const searchUser = (email) => {
   cy.wait(1000)
 };
 
-export const createWorkspace = (workspaceName) => {
-  cy.get(commonSelectors.workspaceName).click();
-  cy.get(commonSelectors.addWorkspaceButton).click();
-  cy.clearAndType(commonSelectors.workspaceNameInput, workspaceName);
-  cy.clearAndType('[data-cy="workspace-slug-input-field"]', workspaceName);
-  cy.wait(1000);
-  cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=").as("homePage");
-  cy.get(commonSelectors.createWorkspaceButton).click();
-  cy.wait("@homePage");
-};
 
 export const selectAppCardOption = (appName, appCardOption) => {
   viewAppCardOptions(appName);
@@ -254,16 +222,6 @@ export const pinInspector = () => {
   });
 };
 
-export const createGroup = (groupName) => {
-  cy.get(groupsSelector.createNewGroupButton).click();
-  cy.clearAndType(groupsSelector.groupNameInput, groupName);
-  cy.get(groupsSelector.createGroupButton).click();
-  cy.verifyToastMessage(
-    commonSelectors.toastMessage,
-    groupsText.groupCreatedToast
-  );
-};
-
 export const navigateToworkspaceConstants = () => {
   cy.get(commonSelectors.workspaceSettingsIcon).click();
   cy.get(commonSelectors.workspaceConstantsOption).click();
@@ -283,3 +241,24 @@ export const verifyTooltipDisabled = (selector, message) => {
       cy.get(".tooltip-inner").last().should("have.text", message);
     });
 };
+
+export const deleteAllGroupChips = () => {
+  cy.get('body').then(($body) => {
+    if ($body.find('[data-cy="group-chip"]').length > 0) {
+      cy.get('[data-cy="group-chip"]').then(($groupChip) => {
+        if ($groupChip.is(':visible')) {
+          cy.get('[data-cy="group-chip"]').first().click();
+          cy.get('[data-cy="delete-button"]').click();
+          cy.get('[data-cy="yes-button"]').click();
+
+          cy.wait(2000); 
+          deleteAllGroupChips(); // Recursive call to delete next chip
+        } else {
+          cy.log("Group chip is present but not visible, skipping deletion");
+        }
+      });
+    } else {
+      cy.log("No group chips left to delete");
+    }
+  });
+}

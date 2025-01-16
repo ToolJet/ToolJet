@@ -8,12 +8,11 @@ import { useEditorActions, useEditorStore } from '@/_stores/editorStore';
 
 function Logs({ logProps, idx }) {
   const [open, setOpen] = React.useState(false);
-  let titleLogType = logProps?.type;
-  // need to change the titleLogType to query for transformations because if transformation fails, it is eventually a query failure
+  let titleLogType = logProps?.type !== 'event' ? logProps?.type : '';
   if (titleLogType === 'transformations') {
     titleLogType = 'query';
   }
-  const title = ` [${capitalize(titleLogType)} ${logProps?.key}]`;
+  const title = logProps?.key;
   const message =
     logProps?.type === 'navToDisablePage'
       ? logProps?.message
@@ -21,19 +20,21 @@ function Logs({ logProps, idx }) {
       ? 'Completed'
       : logProps?.type === 'component'
       ? `Invalid property detected: ${logProps?.message}.`
+      : logProps?.type === 'Custom Log'
+      ? logProps?.description
       : `${startCase(logProps?.type)} failed: ${
           logProps?.description ||
-          logProps?.message ||
+          (isString(logProps?.message) && logProps?.message) ||
           (isString(logProps?.error?.description) && logProps?.error?.description) || //added string check since description can be an object. eg: runpy
-          logProps?.error?.message
+          logProps?.error?.message.trim()
         }`;
 
   const defaultStyles = {
-    transform: open ? 'rotate(90deg)' : 'rotate(0deg)',
+    transform: open ? 'rotate(0deg)' : 'rotate(-90deg)',
     transition: '0.2s all',
     display: logProps?.isQuerySuccessLog || logProps.type === 'navToDisablePage' ? 'none' : 'inline-block',
     cursor: 'pointer',
-    paddingTop: '8px',
+    top: '8px',
     pointerEvents: logProps?.isQuerySuccessLog || logProps.type === 'navToDisablePage' ? 'none' : 'default',
   };
 
@@ -85,20 +86,25 @@ function Logs({ logProps, idx }) {
         onClick={(e) => {
           setOpen((prev) => !prev);
         }}
-        style={{ pointerEvents: logProps?.isQuerySuccessLog ? 'none' : 'default' }}
+        style={{ pointerEvents: logProps?.isQuerySuccessLog ? 'none' : 'default', position: 'relative' }}
       >
         <span className={cx('position-absolute')} style={defaultStyles}>
-          <SolidIcon name="cheveronright" width="16" />
+          <SolidIcon name="rightarrrow" fill={`var(--icons-strong)`} width="16" />
         </span>
         <span className="w-100" style={{ paddingTop: '8px', paddingBottom: '8px', paddingLeft: '20px' }}>
           {logProps.type === 'navToDisablePage' ? (
             renderNavToDisabledPageMessage()
           ) : (
             <>
-              <span className="d-flex justify-content-between align-items-center  text-truncate">
-                <span className="text-truncate text-slate-12">{title}</span>
+              <div className="d-flex align-items-center justify-content-between">
+                <div className="error-target cursor-pointer">{logProps?.errorTarget}</div>
                 <small className="text-slate-10 text-right ">{moment(logProps?.timestamp).fromNow()}</small>
-              </span>
+              </div>
+              <div className={`d-flex justify-content-between align-items-center ${!open && 'text-truncate'}`}>
+                <span className={` cursor-pointer debugger-error-title ${!open && 'text-truncate'}`}>
+                  <HighlightSecondWord text={title} />
+                </span>
+              </div>
               <span
                 className={cx('mx-1', {
                   'text-tomato-9': !logProps?.isQuerySuccessLog,
@@ -134,3 +140,22 @@ function Logs({ logProps, idx }) {
 let isString = (value) => typeof value === 'string' || value instanceof String;
 
 export default Logs;
+
+const HighlightSecondWord = ({ text }) => {
+  const processedText = text.split(/(\[.*?\])/).map((segment, index) => {
+    if (segment.startsWith('[') && segment.endsWith(']')) {
+      const content = segment.slice(1, -1).split(' ');
+      const firstWord = content[0];
+      const secondWord = content[1];
+
+      return (
+        <span key={index}>
+          [{firstWord} <b>{secondWord}</b>]
+        </span>
+      );
+    }
+    return segment;
+  });
+
+  return <span>{processedText}</span>;
+};
