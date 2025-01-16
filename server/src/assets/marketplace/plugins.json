@@ -132,6 +132,9 @@
     "version": "1.0.0",
     "id": "anthropic",
     "author": "Tooljet",
-    "timestamp": "Mon, 06 Jan 2025 11:12:56 GMT"
+    "timestamp": "Mon, 06 Jan 2025 11:12:56 GMT",
+    "tags": [
+      "AI"
+    ]
   }
 ]
