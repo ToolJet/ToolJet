@@ -61,6 +61,8 @@ function InviteUsersForm({
 
   const hiddenFileInput = useRef(null);
 
+  const darkmode = localStorage.getItem('darkMode') === 'true';
+
   useEffect(() => {
     if (currentEditingUser && groups.length) {
       const { first_name, last_name, email, groups: addedToCustomGroups, role_group } = currentEditingUser;
@@ -159,6 +161,12 @@ function InviteUsersForm({
   };
 
   const isEditing = userDrawerMode === USER_DRAWER_MODES.EDIT;
+  let fillColor;
+  if (activeTab == 1) {
+    fillColor = darkmode ? '#FFFFFF' : '#11181C';
+  } else {
+    fillColor = darkmode ? '#AAAAAA' : '#687076';
+  }
 
   return (
     <div>
@@ -213,7 +221,7 @@ function InviteUsersForm({
                     onClick={() => setActiveTab(1)}
                     data-cy="button-invite-with-email"
                   >
-                    <SolidIcon name="mail" width="14" fill={activeTab == 1 ? '#11181C' : '#687076'} />
+                    <SolidIcon name="mail" width="14" fill={fillColor} />
                     <span> Invite with email</span>
                   </button>
                   <button
@@ -221,7 +229,7 @@ function InviteUsersForm({
                     onClick={() => setActiveTab(2)}
                     data-cy="button-upload-csv-file"
                   >
-                    <SolidIcon name="fileupload" width="14" fill={activeTab == 2 ? '#11181C' : '#687076'} />
+                    <SolidIcon name="fileupload" width="14" fill={fillColor} />
                     <span>Upload CSV file</span>
                   </button>
                 </div>
@@ -237,7 +245,7 @@ function InviteUsersForm({
                   className="invite-email-body"
                   id="inviteByEmail"
                 >
-                  <label className="form-label" data-cy="label-full-name-input-field">
+                  <label className="form-label" data-cy="name-label">
                     Name
                   </label>
                   <div className="form-group mb-3 ">
@@ -255,7 +263,7 @@ function InviteUsersForm({
                           name="fullName"
                           onChange={changeNewUserOption.bind(this, 'fullName')}
                           value={fields['fullName']}
-                          data-cy="input-field-full-name"
+                          data-cy="name-input"
                           disabled={isEditing}
                         />
                         <span className="text-danger" data-cy="error-message-fullname">
@@ -265,7 +273,7 @@ function InviteUsersForm({
                     </ToolTip>
                   </div>
                   <div className="form-group mb-3 ">
-                    <label className="form-label" data-cy="label-email-input-field">
+                    <label className="form-label" data-cy="email-label">
                       {t('header.organization.menus.manageUsers.emailAddress', 'Email Address')}
                     </label>
                     <ToolTip
@@ -283,7 +291,7 @@ function InviteUsersForm({
                           name="email"
                           onChange={changeNewUserOption.bind(this, 'email')}
                           value={fields['email']}
-                          data-cy="input-field-email"
+                          data-cy="email-input"
                           disabled={isEditing}
                         />
                         <span className="text-danger" data-cy="error-message-email">
@@ -293,7 +301,7 @@ function InviteUsersForm({
                     </ToolTip>
                   </div>
                   <div className="form-group mb-3 manage-groups-invite-form" data-cy="user-group-select">
-                    <label className="form-label" data-cy="label-group-input-field">
+                    <label className="form-label" data-cy="user-group-label">
                       {isEditing
                         ? 'User groups'
                         : t('header.organization.menus.manageUsers.selectGroup', 'Select Group')}

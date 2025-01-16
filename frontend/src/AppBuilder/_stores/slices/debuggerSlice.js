@@ -149,6 +149,7 @@ export const createDebuggerSlice = (set, get) => ({
           componentId: id,
         },
         logLevel: 'error',
+        errorTarget: 'Component Property',
         timestamp: moment().toISOString(),
       }));
 
@@ -191,6 +192,7 @@ export const createDebuggerSlice = (set, get) => ({
             effectiveProperty: { [property]: defaultValue },
             componentId,
           },
+          errorTarget: 'Component Property',
           logLevel: 'error',
           timestamp: moment().toISOString(),
         });

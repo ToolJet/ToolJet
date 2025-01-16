@@ -138,7 +138,7 @@ describe("Data source Azure Blob Storage", () => {
     );
     cy.get(dataSourceSelector.connectionAlertText).verifyVisibleElement(
       "have.text",
-      azureBlobStorageText.unableExtractAccountNameText
+      "Invalid URL"
     );
 
     fillDataSourceTextField(

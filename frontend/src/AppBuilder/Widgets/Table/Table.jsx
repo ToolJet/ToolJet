@@ -135,6 +135,7 @@ export const Table = React.memo(
       borderColor,
       isMaxRowHeightAuto,
       columnHeaderWrap,
+      headerCasing,
     } = loadPropertiesAndStyles(properties, styles, darkMode);
     const updatedDataReference = useRef([]);
     const preSelectRow = useRef(false);
@@ -153,6 +154,7 @@ export const Table = React.memo(
     const [tableDetails, dispatch] = useReducer(reducer, initialState());
     const [hoverAdded, setHoverAdded] = useState(false);
     const [generatedColumn, setGeneratedColumn] = useState([]);
+    const [isDownloadTableDataEventAssociated, setIsDownloadTableDataEventAssociated] = useState(false);
 
     const mergeToTableDetails = useCallback((payload) => dispatch(reducerActions.mergeToTableDetails(payload)), []);
     const mergeToFilterDetails = (payload) => dispatch(reducerActions.mergeToFilterDetails(payload));
@@ -174,6 +176,9 @@ export const Table = React.memo(
     useEffect(() => mergeToTableDetails({ columnProperties: properties?.columns }), [properties?.columns]);
 
     useEffect(() => {
+      const isDownloadTableDataEventAssociated = tableEvents.some((event) => event?.name === 'onTableDataDownload');
+      if (isDownloadTableDataEventAssociated) setIsDownloadTableDataEventAssociated(true);
+      else setIsDownloadTableDataEventAssociated(false);
       const hoverEvent = tableEvents?.find(({ event }) => {
         return event?.eventId == 'onRowHovered';
       });
@@ -1096,6 +1101,7 @@ export const Table = React.memo(
               columnHeaderWrap={columnHeaderWrap}
               setResizingColumnId={setResizingColumnId}
               resizingColumnId={resizingColumnId}
+              headerCasing={headerCasing}
             />
             {page.length > 0 && !loadingState && (
               <tbody
@@ -1165,6 +1171,7 @@ export const Table = React.memo(
           {loadingState ? <LoadingState /> : page.length === 0 ? <EmptyState /> : null}
         </div>
         <Footer
+          isDownloadTableDataEventAssociated={isDownloadTableDataEventAssociated}
           enablePagination={enablePagination}
           tableDetails={tableDetails}
           loadingState={loadingState}
