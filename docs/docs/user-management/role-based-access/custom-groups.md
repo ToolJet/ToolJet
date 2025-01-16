@@ -67,3 +67,9 @@ Role Required: **Admin** <br/>
 5. Click **Duplicate** to create a new group with the selected permissions.
 
 <img className="screenshot-full" src="/img/tutorial/manage-users-groups/duplicate-group.png" alt="Duplicate Group" />
+
+## Inheritance and Overrides
+- Users inherit permissions from their assigned role and any custom groups they belong to.
+- Adding users to custom groups with higher permissions than their current role will automatically upgrade their user role to match the higher access level.
+- If a user’s role is downgraded to one with lower permissions, they will automatically be removed from any custom groups that provided higher access than their new role allows.
+- When a user belongs to multiple groups, they receive the highest level of permission granted by any of their groups.

@@ -3,28 +3,26 @@ id: user-roles
 title: User Roles
 ---
 
-ToolJet employs a Role-Based Access Control (RBAC) system to manage security and access to its resources such as apps, folders and workspace variables, etc. ToolJet provides a set of default user roles and the ability to create **[custom groups](#)** for more granular access control.
-
-This guide explains about the default user roles present in ToolJet. The Super Admin role, available at the instance level, has full access to all features and settings across the instance. For more details, refer to the **[Super Admin](#)** documentation.
+ToolJet enables you to use Role-Based Access Control (RBAC) system to manage security and access to your resources such as apps, data sources and workspace variables, etc. ToolJet provides a set of default user roles and the ability to create **[custom groups](#)** for more granular access control.
 
 ## Default User Roles
 
 ToolJet has three default user roles at the workspace level, each with different levels of access:
 
-1. **Admin**: Full access to manage the workspace, including users, groups, and all resources.
-2. **Builder**: Can create and edit apps, data sources, and other resources.
-3. **End-user**: Can only view and use apps they have been given access to.
+1. **Admin**: The admin user can manage all the administrative level settings of a workspace and has full access to manage the workspace, including users, groups, and all resources.
+2. **Builder**: The builder is the user who develops and maintain the application.
+3. **End-user**: End user is the one who will use the application, end users can only view and use the released apps that they have been given access to.
 
 ## Permissions for User Roles
 
-Admin user has access to all the permission at workspace level, while an end user can only view and use apps they are given access to and permissions can be configured for a builder.
+Admin user has access to all the permission at workspace level, while an end user can only view and use the released apps they are given access to and permissions can be configured for a builder.
 
-| Permission | Admin | Builder | End User |
-|:-----------|:------|:--------|:---------|
-| App (Create / Delete) | Allowed | Configurable | Restricted | 
-| Data sources (Create / Delete) | Allowed | Configurable | Restricted |
-| Folder (Create / Update / Delete)  | Allowed | Configurable | Restricted |
-| Workspace constants/variables (Create / Update / Delete) | Allowed | Configurable | Restricted |
+|          Permission           | Admin | Builder | End User |
+|:------------------------------|:-----:|:-------:|:--------:|
+| App                           |  ✅   | Allowed |    ❌     | 
+| Data sources                  |  ✅   | Allowed |    ❌     |
+| Folder                        |  ✅   | Allowed |    ❌     |
+| Workspace constants/variables |  ✅   | Allowed |    ❌     |
 
 ## Manage User Roles
 
@@ -56,9 +54,3 @@ Role Required: **Admin** <br/>
 8. The user role will be updated for that user.
 
 <img className="screenshot-full" src="/img/user-management/rbac/user-roles/updated-role.png" alt="Workspace Level Permissions" />
-
-## Inheritance and Overrides
-- Users inherit permissions from their assigned role and any custom groups they belong to.
-- Adding users to custom groups with higher permissions than their current role will automatically upgrade their user role to match the higher access level.
-- If a user’s role is downgraded to one with lower permissions, they will automatically be removed from any custom groups that provided higher access than their new role allows.
-- When a user belongs to multiple groups, they receive the highest level of permission granted by any of their groups.
