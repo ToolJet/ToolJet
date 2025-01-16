@@ -89,7 +89,7 @@ describe("Manage SSO for multi workspace", () => {
 
     SSO.googleSSOPageElements();
     SSO.defaultSSO(false);
-    cy.logoutApi();
+    cy.apiLogout();
     cy.visit("/login/my-workspace");
     cy.get(ssoSelector.googleIcon).should("be.visible");
     cy.get(ssoSelector.googleSSOText).verifyVisibleElement(
@@ -145,7 +145,7 @@ describe("Manage SSO for multi workspace", () => {
 
     SSO.gitSSOPageElements();
     SSO.defaultSSO(false);
-    cy.logoutApi();
+    cy.apiLogout();
     cy.visit("/login/my-workspace");
 
     cy.get(ssoSelector.gitIcon).should("be.visible");

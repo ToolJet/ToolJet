@@ -38,7 +38,7 @@ describe("Groups duplication", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
     roleBasedOnboarding(data.firstName, data.email, "builder");
-    cy.logoutApi();
+    cy.apiLogout();
 
     cy.defaultWorkspaceLogin();
     navigateToManageGroups();
@@ -103,7 +103,7 @@ describe("Groups duplication", () => {
     OpenGroupCardOption(data.groupName);
     cy.get(groupsSelector.deleteGroupOption).click();
     cy.get(commonSelectors.buttonSelector("Yes")).click();
-    cy.logoutApi();
+    cy.apiLogout();
 
     cy.apiLogin(data.email, "password");
     cy.visit("/my-workspace");
@@ -112,14 +112,14 @@ describe("Groups duplication", () => {
     viewAppCardOptions(data.appName);
     cy.contains("Delete app").should("exist");
     cy.get(commonSelectors.workspaceConstantsIcon).should("be.visible");
-    cy.logoutApi();
+    cy.apiLogout();
 
     cy.defaultWorkspaceLogin();
     navigateToManageGroups();
     OpenGroupCardOption(`${data.groupName}_copy`);
     cy.get(groupsSelector.deleteGroupOption).click();
     cy.get(commonSelectors.buttonSelector("Yes")).click();
-    cy.logoutApi();
+    cy.apiLogout();
 
     cy.apiLogin(data.email, "password");
     cy.visit("/my-workspace");

@@ -38,7 +38,7 @@ describe("App share functionality", {
   it("Verify private and public app share functionality", () => {
     cy.apiCreateApp(data.appName);
     cy.openApp();
-    cy.addComponentToApp(data.appName, "text1");
+    cy.apiAddComponentToApp(data.appName, "text1");
 
     // Check unreleased version state
     cy.get('[data-cy="share-button-link"]>span').should("be.visible").click();
@@ -129,7 +129,7 @@ describe("App share functionality", {
 
     // Test public access
     cy.defaultWorkspaceLogin();
-    cy.makeAppPublic();
+    cy.apiMakeAppPublic();
     logout();
 
     cy.visitSlug({
@@ -148,7 +148,7 @@ describe("App share functionality", {
   it("Verify app private and public app visibility for the same instance user", () => {
     setupAppWithSlug(data.appName, data.slug);
 
-    cy.logoutApi();
+    cy.apiLogout();
     userSignUp(data.firstName, data.email, data.workspaceName);
     cy.wait(1000);
     cy.visitSlug({
@@ -160,7 +160,7 @@ describe("App share functionality", {
 
     // Test public access
     cy.defaultWorkspaceLogin();
-    cy.makeAppPublic();
+    cy.apiMakeAppPublic();
     logout();
 
     cy.visitSlug({
@@ -180,7 +180,7 @@ describe("App share functionality", {
     setSignupStatus(true);
     setupAppWithSlug(data.appName, data.slug);
 
-    cy.logoutApi();
+    cy.apiLogout();
     cy.visitSlug({
       actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
     });
@@ -209,6 +209,8 @@ describe("App share functionality", {
     // Setup new workspace and app
     cy.defaultWorkspaceLogin();
     cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
+    cy.apiLogout();
+    cy.apiLogin();
     cy.visit(`${data.workspaceSlug}`);
     setSignupStatus(true, data.workspaceName);
 
@@ -222,7 +224,7 @@ describe("App share functionality", {
     cy.backToApps();
 
     // Test signup flow in new workspace
-    cy.logoutApi();
+    cy.apiLogout();
     cy.visitSlug({
       actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
     });
@@ -249,8 +251,10 @@ describe("App share functionality", {
     data.workspaceSlug = fake.firstName.toLowerCase().replace(/\s+/g, "-");
 
     cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
+    cy.apiLogout();
+    cy.apiLogin();
     cy.visit(`${data.workspaceSlug}`);
-    cy.deleteGranularPermission("end-user");
+    cy.apiDeleteGranularPermission("end-user");
     setSignupStatus(true, data.workspaceName);
 
     setupAppWithSlug(data.appName, data.slug);
@@ -265,7 +269,7 @@ describe("App share functionality", {
     cy.get('[data-cy="back-to-home-button"]').click();
     cy.get(commonSelectors.homePageLogo).should("be.visible");
 
-    cy.logoutApi();
+    cy.apiLogout();
   });
 
   it.skip("Should verify private app access for different workspace users", () => {
@@ -280,6 +284,8 @@ describe("App share functionality", {
 
     // Setup workspace and app
     cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
+    cy.apiLogout();
+    cy.apiLogin();
     cy.visit(`${data.workspaceSlug}`);
     setupAppWithSlug(data.appName, data.slug);
 
@@ -296,9 +302,9 @@ describe("App share functionality", {
     cy.visitSlug({ actualUrl: urls.preview });
 
     // Switch users and verify access
-    cy.logoutApi();
+    cy.apiLogout();
     cy.apiLogin();
-    cy.deleteGranularPermission("end-user");
+    cy.apiDeleteGranularPermission("end-user");
 
     cy.apiLogin(data.email, "password");
     cy.visitSlug({ actualUrl: urls.editor });
@@ -307,7 +313,7 @@ describe("App share functionality", {
     cy.get(commonSelectors.homePageLogo).should("be.visible");
     cy.visitSlug({ actualUrl: urls.preview });
 
-    cy.logoutApi();
+    cy.apiLogout();
 
     // Test with new user
     userSignUp(firstName1, email1, data.workspaceName);

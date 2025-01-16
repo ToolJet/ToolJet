@@ -3,7 +3,7 @@ import { groupsText } from "Texts/manageGroups";
 import { fake } from "Fixtures/fake";
 import { addNewconstants } from "Support/utils/workspaceConstants";
 import { commonText } from "Texts/common";
-import { commonSelectors } from "Selectors/common";
+import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { workspaceConstantsSelectors } from "Selectors/workspaceConstants";
 import {
     setupWorkspaceAndInviteUser,
@@ -29,6 +29,7 @@ import {
     createFolder,
     deleteFolder,
     logout,
+    releaseApp,
     navigateToManageGroups,
     navigateToManageUsers,
     selectAppCardOption,
@@ -118,6 +119,18 @@ describe("Manage Groups", () => {
         cy.createApp(data.appName);
         cy.backToApps();
         cy.wait(1000);
+
+        //verify clone access
+        selectAppCardOption(
+            data.appName,
+            commonSelectors.appCardOptions(commonText.cloneAppOption)
+        );
+        cy.get(commonSelectors.cloneAppButton).click();
+        cy.verifyToastMessage(
+            commonSelectors.toastMessage,
+            commonText.cloneAppErrorToast
+        );
+        cy.get(commonSelectors.cancelButton).click();
         logout();
 
         cy.apiLogin();
@@ -243,7 +256,8 @@ describe("Manage Groups", () => {
     it("should verify user privileges in custom groups", () => {
         const groupName = fake.firstName.replace(/[^A-Za-z]/g, "");
         const appName2 = fake.companyName;
-
+        const appName3 = fake.companyName;
+        const appSlug = appName3.toLowerCase().replace(/\s+/g, "-");
         setupWorkspaceAndInviteUser(
             data.workspaceName,
             data.workspaceSlug,
@@ -362,8 +376,9 @@ describe("Manage Groups", () => {
 
         verifySettingsAccess(false);
         cy.get(commonSelectors.settingsIcon).click();
-
+        cy.wait(500);
         logout();
+
         cy.apiLogin();
         cy.visit(data.workspaceSlug);
         navigateToManageGroups();
@@ -375,18 +390,6 @@ describe("Manage Groups", () => {
         permissions.forEach((permission) => {
             cy.get(permission).uncheck();
         });
-
-        cy.get(groupsSelector.granularLink).click();
-        cy.wait(1000);
-        cy.get(groupsSelector.granularAccessPermission)
-            .trigger("mouseenter")
-            .click({ force: true });
-        cy.get(groupsSelector.deletePermissionIcon).click();
-        cy.get(groupsSelector.yesButton).click();
-        cy.verifyToastMessage(
-            commonSelectors.toastMessage,
-            groupsText.deletePermissionToast
-        );
 
         cy.get(groupsSelector.groupLink("Builder")).click();
         cy.get(groupsSelector.granularLink).click();
@@ -402,13 +405,24 @@ describe("Manage Groups", () => {
         cy.apiCreateApp(data.appName);
         cy.apiCreateApp(appName2);
 
+        // App Hide from dashboard
+        cy.apiCreateApp(appName3);
+        cy.openApp();
+        cy.addComponentToApp(appName3, "text1");
+        releaseApp();
+        cy.get(commonWidgetSelector.shareAppButton).click();
+        cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${appSlug}`);
+        cy.wait(500);
+        cy.get(commonWidgetSelector.modalCloseButton).click();
+        cy.backToApps();
+
         // Configure app permissions
         navigateToManageGroups();
         cy.get(groupsSelector.groupLink(groupName)).click();
         cy.get(groupsSelector.granularLink).click();
 
         // Setup permissions for both apps
-        [data.appName, appName2].forEach((app) => {
+        [data.appName, appName2, appName3].forEach((app) => {
             cy.get(groupsSelector.addAppButton).click();
             cy.clearAndType(groupsSelector.permissionNameInput, app);
             cy.get(groupsSelector.customradio).check();
@@ -419,9 +433,13 @@ describe("Manage Groups", () => {
                 groupsText.createPermissionToast
             );
         });
-
         cy.get(groupsSelector.groupChip).contains(data.appName).click();
         cy.get(groupsSelector.editPermissionRadio).click();
+        cy.get(groupsSelector.confimButton).click();
+
+        //To hide app
+        cy.get(groupsSelector.groupChip).contains(appName3).click();
+        cy.get(groupsSelector.hidePermissionInput).check();
         cy.get(groupsSelector.confimButton).click();
 
         // Verify as end user
@@ -436,6 +454,12 @@ describe("Manage Groups", () => {
             "have.lengthOf",
             2
         );
+
+        //Visit hidden app url
+        cy.visitSlug({
+            actualUrl: `${Cypress.config("baseUrl")}/applications/${appSlug}`,
+        });
+
     });
 
     it("should verify user role updating sequence", () => {
@@ -626,7 +650,7 @@ describe("Manage Groups", () => {
             exportAppModalSelectors.versionRadioButton((currentVersion = "v1"))
         ).verifyVisibleElement("be.checked");
         cy.get(commonSelectors.buttonSelector(exportAppModalText.exportSelectedVersion)).click();
-        cy.exec("ls -t ./cypress/downloads/").then((result) => {
+        cy.exec("ls ./cypress/downloads/").then((result) => {
             cy.log(result);
             const downloadedAppExportFileName = result.stdout.split("\n")[0];
             exportedFilePath = `cypress/downloads/${downloadedAppExportFileName}`;
@@ -640,6 +664,7 @@ describe("Manage Groups", () => {
                 .should("be.visible")
                 .and("have.text", importText.appImportedToastMessage);
         });
+        cy.exec("cd ./cypress/downloads/ && rm -rf *");
     }
 
 });

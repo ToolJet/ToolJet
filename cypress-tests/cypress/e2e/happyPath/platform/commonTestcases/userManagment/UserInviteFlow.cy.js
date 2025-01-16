@@ -11,7 +11,7 @@ import {
   inviteUserWithUserRole,
   fetchAndVisitInviteLink,
 } from "Support/utils/manageUsers";
-import { addNewUser, visitWorkspaceInvitation,addNewUsertoworkspace } from "Support/utils/onboarding";
+import { addNewUser, visitWorkspaceInvitation, addNewUsertoworkspace } from "Support/utils/onboarding";
 import { commonText } from "Texts/common";
 import { setSignupStatus } from "Support/utils/manageSSO";
 import { ssoSelector } from "Selectors/manageSSO";
@@ -147,11 +147,11 @@ describe("user invite flow cases", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
 
-  
+
 
     addNewUser(data.firstName, data.email);
-   
-    cy.logoutApi();
+
+    cy.apiLogout();
 
     cy.defaultWorkspaceLogin();
     navigateToManageUsers();
@@ -282,7 +282,7 @@ describe("user invite flow cases", () => {
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
 
     addNewUser(data.firstName, data.email);
-    cy.logoutApi();
+    cy.apiLogout();
 
     cy.defaultWorkspaceLogin();
     navigateToManageUsers();
@@ -477,7 +477,7 @@ describe("user invite flow cases", () => {
     navigateToManageUsers();
     fillUserInviteForm(data.firstName, data.email);
     cy.get(usersSelector.buttonInviteUsers).click();
-    cy.logoutApi();
+    cy.apiLogout();
 
     cy.visit("/");
     cy.get(commonSelectors.createAnAccountLink).click();

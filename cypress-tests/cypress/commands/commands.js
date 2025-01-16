@@ -501,3 +501,13 @@ Cypress.Commands.add("loginWithCredentials", (email, password) => {
   cy.clearAndType(onboardingSelectors.loginPasswordInput, password);
   cy.get(onboardingSelectors.signInButton).click();
 });
+
+Cypress.Commands.add("getAppId", (appName) => {
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `select id from apps where name='${appName}';`,
+  }).then((resp) => {
+    const appId = resp.rows[0]?.id;
+    return appId;
+  });
+});

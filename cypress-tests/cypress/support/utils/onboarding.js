@@ -187,7 +187,7 @@ export const fetchAndVisitInviteLink = (email) => {
         }).then((resp) => {
           organizationToken = resp.rows[1].invitation_token;
           url = `/invitations/${invitationToken}/workspaces/${organizationToken}?oid=${workspaceId}`;
-          cy.logoutApi();
+          cy.apiLogout();
           cy.wait(1000);
           cy.visit(url);
         });
@@ -198,7 +198,7 @@ export const fetchAndVisitInviteLink = (email) => {
 
 
 export const inviteUser = (firstName, email) => {
-  cy.userInviteApi(firstName, email);
+  cy.apiUserInvite(firstName, email);
   fetchAndVisitInviteLink(email);
   cy.wait(1000);
   cy.get(onboardingSelectors.loginPasswordInput).should("be.visible");
@@ -216,7 +216,7 @@ export const addNewUser = (firstName, email) => {
 
 export const roleBasedOnboarding = (firstName, email, userRole) => {
   navigateToManageUsers();
-  cy.userInviteApi(firstName, email, userRole);
+  cy.apiUserInvite(firstName, email, userRole);
   fetchAndVisitInviteLink(email);
   cy.wait(1000);
   cy.get(onboardingSelectors.loginPasswordInput).should("be.visible");
