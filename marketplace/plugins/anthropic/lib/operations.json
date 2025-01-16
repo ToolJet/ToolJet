@@ -36,7 +36,8 @@
           "description": "Defines role, context and/or role of the model to evaluate messages and send response",
           "placeholder": "You are a Financial advisor working in a Fortune 500 company",
           "height": "150px",
-          "mandatory": false
+          "mandatory": false,
+          "tooltip":"Defines role, context and/or role of the model to evaluate messages and send response"
         },
         "message": {
           "label": "Message",
@@ -54,7 +55,8 @@
           "description": "Defines randomness of response. Takes value between 0 and 1. Default is 1.",
           "placeholder": "0.5",
           "height": "150px",
-          "mandatory": false
+          "mandatory": false,
+          "tooltip":"Defines randomness of response. Takes value between 0 and 1. Default is 1."
         },
         "max_size": {
           "label": "Max Size",
@@ -63,7 +65,8 @@
           "description": "Maximum tokens used in response",
           "placeholder": "256",
           "height": "150px",
-          "mandatory": true
+          "mandatory": true,
+          "tooltip":"Maximum tokens used in response"
         }
       },
       "claude-3-5-haiku-20241022": {
@@ -74,7 +77,8 @@
           "description": "Defines role, context and/or role of the model to evaluate messages and send response",
           "placeholder": "You are a Financial advisor working in a Fortune 500 company",
           "height": "150px",
-          "mandatory": false
+          "mandatory": false,
+          "tooltip":"Defines role, context and/or role of the model to evaluate messages and send response"
         },
         "message": {
           "label": "Message",
@@ -92,7 +96,8 @@
           "description": "Defines randomness of response. Takes value between 0 and 1. Default is 1.",
           "placeholder": "0.5",
           "height": "150px",
-          "mandatory": false
+          "mandatory": false,
+          "tooltip":"Defines randomness of response. Takes value between 0 and 1. Default is 1."
         },
         "max_size": {
           "label": "Max Size",
@@ -101,7 +106,8 @@
           "description": "Maximum tokens used in response",
           "placeholder": "256",
           "height": "150px",
-          "mandatory": true
+          "mandatory": true,
+          "tooltip":"Maximum tokens used in response"
         }
       },
       "claude-3-opus-20240229": {
@@ -112,7 +118,8 @@
           "description": "Defines role, context and/or role of the model to evaluate messages and send response",
           "placeholder": "You are a Financial advisor working in a Fortune 500 company",
           "height": "150px",
-          "mandatory": false
+          "mandatory": false,
+          "tooltip":"Defines role, context and/or role of the model to evaluate messages and send response"
         },
         "message": {
           "label": "Message",
@@ -130,7 +137,8 @@
           "description": "Defines randomness of response. Takes value between 0 and 1. Default is 1.",
           "placeholder": "0.5",
           "height": "150px",
-          "mandatory": false
+          "mandatory": false,
+          "tooltip":"Defines randomness of response. Takes value between 0 and 1. Default is 1."
         },
         "max_size": {
           "label": "Max Size",
@@ -139,7 +147,8 @@
           "description": "Maximum tokens used in response",
           "placeholder": "256",
           "height": "150px",
-          "mandatory": true
+          "mandatory": true,
+          "tooltip":"Maximum tokens used in response"
         }
       },
       "claude-3-sonnet-20240229": {
@@ -150,7 +159,8 @@
           "description": "Defines role, context and/or role of the model to evaluate messages and send response",
           "placeholder": "You are a Financial advisor working in a Fortune 500 company",
           "height": "150px",
-          "mandatory": false
+          "mandatory": false,
+          "tooltip":"Defines role, context and/or role of the model to evaluate messages and send response"
         },
         "message": {
           "label": "Message",
@@ -168,7 +178,8 @@
           "description": "Defines randomness of response. Takes value between 0 and 1. Default is 1.",
           "placeholder": "0.5",
           "height": "150px",
-          "mandatory": false
+          "mandatory": false,
+          "tooltip":"Defines randomness of response. Takes value between 0 and 1. Default is 1."
         },
         "max_size": {
           "label": "Max Size",
@@ -177,7 +188,8 @@
           "description": "Maximum tokens used in response",
           "placeholder": "256",
           "height": "150px",
-          "mandatory": true
+          "mandatory": true,
+          "tooltip":"Maximum tokens used in response"
         }
       },
       "claude-3-haiku-20240307": {
@@ -188,7 +200,8 @@
           "description": "Defines role, context and/or role of the model to evaluate messages and send response",
           "placeholder": "You are a Financial advisor working in a Fortune 500 company",
           "height": "150px",
-          "mandatory": false
+          "mandatory": false,
+          "tooltip":"Defines role, context and/or role of the model to evaluate messages and send response"
         },
         "message": {
           "label": "Message",
@@ -206,7 +219,8 @@
           "description": "Defines randomness of response. Takes value between 0 and 1. Default is 1.",
           "placeholder": "0.5",
           "height": "150px",
-          "mandatory": false
+          "mandatory": false,
+          "tooltip":"Defines randomness of response. Takes value between 0 and 1. Default is 1."
         },
         "max_size": {
           "label": "Max Size",
@@ -215,7 +229,8 @@
           "description": "Maximum tokens used in response",
           "placeholder": "256",
           "height": "150px",
-          "mandatory": true
+          "mandatory": true,
+          "tooltip":"Maximum tokens used in response"
         }
       }
     }
