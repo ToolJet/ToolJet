@@ -126,7 +126,7 @@ Cypress.Commands.add(
     slug = "",
     workspaceId = Cypress.env("workspaceId"),
     appId = Cypress.env("appId"),
-    componentSelector = "[data-cy='widget-search-box-search-bar']"
+    componentSelector = "[data-cy='empty-editor-text']"
   ) => {
     cy.intercept("GET", "/api/v2/apps/*").as("getAppData");
     cy.window({ log: false }).then((win) => {

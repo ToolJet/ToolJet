@@ -116,7 +116,7 @@ describe("App Editor", () => {
     // Preview and release verification
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
     cy.url().should("include", "/home?version=v2");
-    cy.openApp();
+    cy.openApp("", Cypress.env("workspaceId"), Cypress.env("appId"), commonWidgetSelector.draggableWidget("text1"));
     releasedVersionAndVerify("v2");
   });
 
