@@ -408,7 +408,7 @@ describe("Manage Groups", () => {
         // App Hide from dashboard
         cy.apiCreateApp(appName3);
         cy.openApp();
-        cy.addComponentToApp(appName3, "text1");
+        cy.dragAndDropWidget("Text Input", 200, 160);
         releaseApp();
         cy.get(commonWidgetSelector.shareAppButton).click();
         cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${appSlug}`);

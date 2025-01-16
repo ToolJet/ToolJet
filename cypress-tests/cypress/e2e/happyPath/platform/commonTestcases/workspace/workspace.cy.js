@@ -13,6 +13,7 @@ describe("Workspace", () => {
         cy.defaultWorkspaceLogin();
     });
 
+    // Need to check for proxy
     it("Should verify create and edit workspace modal and flow", () => {
         cy.get(commonSelectors.workspaceName).click();
         cy.get(commonSelectors.addWorkspaceButton).click();
@@ -61,6 +62,7 @@ describe("Workspace", () => {
 
         cy.get(dashboardSelector.slugField).verifyVisibleElement(
             "have.text",
+           // need to cehck for proxy
             `${Cypress.config('baseUrl')}/<workspace-slug>`
         );
 

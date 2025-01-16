@@ -19,7 +19,8 @@ describe("App Slug", () => {
     cy.wait(1000);
     cy.apiLogout();
   });
-
+ 
+  // Need to check this for proxy
   it("Verify app slug cases in global settings", () => {
     cy.apiLogin("dev@tooljet.io", "password").then(() => {
       const workspaceId = Cypress.env("workspaceId");
@@ -47,6 +48,7 @@ describe("App Slug", () => {
         "App link"
       );
 
+      // Nedd to check this for proxy 
       cy.get(commonWidgetSelector.appLinkField).verifyVisibleElement(
         "have.text",
         `${Cypress.config("baseUrl")}/${workspaceId}/apps/${appId}`
