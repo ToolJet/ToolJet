@@ -3,13 +3,13 @@ id: user-roles
 title: User Roles
 ---
 
-ToolJet employs a Role Based Access Control (RBAC) system to manage security and access to its resources such as apps, folders and workspace variable, etc. ToolJet provides a set of default user roles and the ability to create **[custom groups](#)** for more granular access control.
+ToolJet employs a Role-Based Access Control (RBAC) system to manage security and access to its resources such as apps, folders and workspace variables, etc. ToolJet provides a set of default user roles and the ability to create **[custom groups](#)** for more granular access control.
 
 This guide explains about the default user roles present in ToolJet. The Super Admin role, available at the instance level, has full access to all features and settings across the instance. For more details, refer to the **[Super Admin](#)** documentation.
 
 ## Default User Roles
 
-ToolJet has three default user roles at workspace level, each with different levels of access:
+ToolJet has three default user roles at the workspace level, each with different levels of access:
 
 1. **Admin**: Full access to manage the workspace, including users, groups, and all resources.
 2. **Builder**: Can create and edit apps, data sources, and other resources.
@@ -17,18 +17,18 @@ ToolJet has three default user roles at workspace level, each with different lev
 
 ## Permissions for User Roles
 
-Admin user has access to all the permission at workspace level, while an end user can only view and apps they are given access to and permissions can be configured for a builder.
+Admin user has access to all the permission at workspace level, while an end user can only view and use apps they are given access to and permissions can be configured for a builder.
 
 | Permission | Admin | Builder | End User |
 |:-----------|:------|:--------|:---------|
 | App (Create / Delete) | Allowed | Configurable | Restricted | 
 | Data sources (Create / Delete) | Allowed | Configurable | Restricted |
 | Folder (Create / Update / Delete)  | Allowed | Configurable | Restricted |
-| Workspace constants/variable (Create / Update / Delete) | Allowed | Configurable | Restricted |
+| Workspace constants/variables (Create / Update / Delete) | Allowed | Configurable | Restricted |
 
 ## Manage User Roles
 
-In ToolJet, user roles can be updated easily, follow this steps to update user role:
+In ToolJet, user roles can be updated easily, follow these steps to update user role:
 
 Role Required: **Admin** <br/>
 
@@ -37,19 +37,19 @@ Role Required: **Admin** <br/>
 2. Go to **Workspace settings > Users**. <br/> 
     (Example URL - `https://app.corp.com/nexus/workspace-settings/users`)
 
-3. Spot the user who's roles need to be updated and click on the kebab menu located at the end of their row. 
+3. Spot the user whose roles need to be updated and click on the kebab menu located at the end of their row. 
 
 <img className="screenshot-full" src="/img/user-management/rbac/user-roles/edit-user-menu.png" alt="Workspace Level Permissions" />
 
 4. Click on **Edit user details**, a right panel will appear.
 
-5. Update the role from User groups dropdown.
+5. Update the role from the User groups dropdown.
 
 <img className="screenshot-full" src="/img/user-management/rbac/user-roles/update-user-role.png" alt="Workspace Level Permissions" />
 
 6. Click on **Update** button present at the bottom of the panel.
 
-7. Read and accept the pop up warning by clicking on **Continue** button.
+7. Read and accept the pop-up warning by clicking on **Continue** button.
 
 <img className="screenshot-full" src="/img/user-management/rbac/user-roles/warning.png" alt="Workspace Level Permissions" />
 

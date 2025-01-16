@@ -7,7 +7,7 @@ Single Sign-On (SSO) is an authentication process that allows users to access mu
 
 Companies use SSO to simplify authentication, enhance security, and improve user experience by allowing access to multiple applications with one set of credentials. It reduces password fatigue, streamlines IT management, and boosts productivity while maintaining robust security compliance.
 
-ToolJet support various SSOs such as:
+ToolJet supports various SSOs such as:
 - **[GitHub](#)**
 - **[Google](#)**
 - **[OpenID Connect](#)**

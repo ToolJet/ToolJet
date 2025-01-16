@@ -3,7 +3,7 @@ id: github
 title: GitHub
 ---
 
-GitHub SSO in ToolJet allows seamless authentication by enabling users to log in with their GitHub credentials. This integration simplifies access management for teams, enhances security, and ensures a streamlined workflow for developers and collaborators.
+GitHub SSO in ToolJet enables seamless authentication, allowing users to log in with their GitHub credentials. This integration simplifies team access management, enhances security, and streamlines workflows for developers and collaborators.
 
 ## Configure GitHub SSO
 
@@ -53,7 +53,7 @@ Go to **Settings > Instance login**. <br/>
 
 11. Obtain the Login URL from the Instance/Workspace login page.
 
-## Setting Default SSO
+## Setting Default SSO via Environment Variables
 
 To set GitHub as the default SSO for the instance, use the following environment variables:
 

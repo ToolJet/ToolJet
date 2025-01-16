@@ -62,10 +62,10 @@ select 'External'.
 
 <img style={{ marginBottom:'15px' }}  className="screenshot-full" src="/img/user-management/sso/google/tooljet-config.png" alt="General Settings: SSO"/>
 
-## Setting Default SSO
+## Setting Default SSO via Environment Variables
 
-To set Google as default SSO for the instance use environment variable.
+To use Google as default SSO for the instance using environment variable set the following variable:
 
-| <div style={{ width:"100px"}}> Variable </div>                             | <div style={{ width:"100px"}}>Description </div>                                                   |
-| ------------------------------------- | -----------------------------------------------------------   |
-| SSO_GOOGLE_OAUTH2_CLIENT_ID           | Google OAuth client id |
+|  Variable  | Description |
+|:---------- |:------------|
+| SSO_GOOGLE_OAUTH2_CLIENT_ID  | Google OAuth client id |

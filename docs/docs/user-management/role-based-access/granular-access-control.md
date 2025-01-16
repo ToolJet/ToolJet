@@ -3,11 +3,9 @@ id: granular-access-control
 title: Granular Access Control
 ---
 
-In ToolJet you can configure granular access control using **[roles](#)** and **[custom groups](#)**. By default, the admin user has access to all resources at the workspace level, while the end user has view access to apps. Permissions can be configured for the builder role.
+ToolJet allows configuring granular access control using **[roles](#)** and **[custom groups](#)**. By default, the admin user has full access to all workspace resources, while the end user has view-only access to apps. Permissions for the builder role can be customized as needed.
 
-Admins can configure granular access by creating multiple permissions for a group. For example, admins can add a permission to give edit access to some particular apps while create an another permission for only view access to some apps.
-
-You can configure different permissions for different apps and data sources by adding multiple permissions.
+Admins can configure granular access by defining multiple permissions for a group. For example, they can grant edit access to specific apps while assigning view-only access to other apps by configuring multiple permissions.
 
 ## Configuring Granular Access Permission
 
@@ -24,6 +22,6 @@ Role Required: **Admin** <br/>
 
 <img className="screenshot-full" src="/img/user-management/rbac/granular-access-control/select-resource.png" alt="Create Custom Group" />
 
-5. Select **Apps**/**Data source** based on requirement. Give a name for the permission, configure required permission and click on **Add** at the bottom of the modal.
+5. Select the resource (Apps/Data source) based on requirement. Give a name for the permission, configure required permission and click on **Add** at the bottom of the modal.
 
 <img className="screenshot-full" src="/img/user-management/rbac/granular-access-control/app-permission.png" alt="Create Custom Group" />
