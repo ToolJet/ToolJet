@@ -1,7 +1,7 @@
-First Name,Last Name,Email,Groups
-Test,Example,test12@example.com,All Users|Admin|Test
-Test,Example,test13@example.com,All Users
-Test,Example,test14@example.com,All Users
-Test,Example,test15@example.com,All Users
-Test,Example,test16@example.com,All Users
-Test,Example,test17@example.com,All Users
+First Name,Last Name,Email,User Role,Group
+Test,Example,test12@example.com,Admin,Admin|Builder
+Test,Example,test13@example.com,Buider,Buider|Test
+Test,Example,test14@example.com,End user,End user|Abc
+Test,Example,test15@example.com,End user,End user|Abc
+Test,Example,test16@example.com,End user,End user|Abc
+Test,Example,test17@example.com,End user,End user|Abc

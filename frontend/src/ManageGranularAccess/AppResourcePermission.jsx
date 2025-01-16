@@ -24,6 +24,7 @@ function AppResourcePermissions({
   return (
     <div
       className="manage-resource-permission"
+      data-cy="granular-access-permission"
       onMouseEnter={() => {
         setHover(true);
       }}

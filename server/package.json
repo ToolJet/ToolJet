@@ -7,6 +7,7 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
+    "postbuild": "npm run copy-schemas",
     "lint": "eslint .  '**/*.ts'",
     "format": "eslint . --fix '**/*.ts'",
     "start": "nest start",
@@ -32,7 +33,8 @@
     "db:setup": "npm run db:create && npm run db:migrate",
     "db:setup:prod": "npm run db:create:prod && npm run db:migrate:prod",
     "db:reset": "npm run db:drop && npm run db:setup",
-    "typeorm": "typeorm-ts-node-commonjs"
+    "typeorm": "typeorm-ts-node-commonjs",
+    "copy-schemas": "copyfiles -u 4 src/dto/validators/schemas/**/*.json dist/src/dto/validators/schemas"
   },
   "dependencies": {
     "@casl/ability": "^5.3.1",
@@ -60,6 +62,7 @@
     "class-validator": "^0.14.0",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.6",
+    "copyfiles": "^2.4.1",
     "dotenv": "^10.0.0",
     "express-http-proxy": "^1.6.3",
     "fast-csv": "^4.3.6",
@@ -76,8 +79,8 @@
     "lodash": "^4.17.21",
     "module-from-string": "^3.3.0",
     "nestjs-pino": "^1.4.0",
-    "node-sql-parser": "^5.3.1",
     "node-mailer": "^0.1.1",
+    "node-sql-parser": "^5.3.1",
     "nodemailer": "^6.6.3",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.0",
