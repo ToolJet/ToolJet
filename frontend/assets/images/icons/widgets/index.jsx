@@ -39,6 +39,7 @@ import Passwordinput from './passwordinput.jsx';
 import Pdf from './pdf.jsx';
 import Qrscanner from './qrscanner.jsx';
 import RadioButton from './radio-button.jsx';
+import RadioButtonV2 from './radiobuttonV2.jsx';
 import Rangeslider from './rangeslider.jsx';
 import Rating from './rating.jsx';
 import Spinner from './spinner.jsx';
@@ -140,8 +141,10 @@ const WidgetIcon = (props) => {
       return <Pdf {...props} />;
     case 'qrscanner':
       return <Qrscanner {...props} />;
-    case 'radiobutton':
+    case 'radiobuttonlegacy':
       return <RadioButton {...props} />;
+    case 'radiobutton':
+      return <RadioButtonV2 {...props} />;
     case 'rangeslider':
       return <Rangeslider {...props} />;
     case 'rating':

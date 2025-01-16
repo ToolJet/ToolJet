@@ -71,7 +71,17 @@ module.exports = defineConfig({
           return client.query(sql);
         },
       });
-
+      on('before:browser:launch', (browser = {}, launchOptions) => {
+        if (browser.name === 'chrome' && browser.isHeadless === false) {
+          launchOptions.args.push(
+            '--disable-features=AutofillAccountStorage,PasswordManager',
+            '--disable-save-password-bubble',
+            '--disable-password-generation',
+            '--disable-password-manager-reauthentication'
+          );
+        }
+        return launchOptions;
+      });
       require("@cypress/code-coverage/task")(on, config);
       // return config;
 
@@ -82,7 +92,7 @@ module.exports = defineConfig({
     experimentalModfyObstructiveThirdPartyCode: true,
     experimentalRunAllSpecs: true,
     baseUrl: "http://localhost:8082",
-    specPattern: "cypress/e2e/happyPath/platform/commonTestcases/**/*.cy.js",
+    specPattern: "cypress/e2e/happyPath/**/*.cy.js",
     downloadsFolder: "cypress/downloads",
     numTestsKeptInMemory: 0,
     redirectionLimit: 10,

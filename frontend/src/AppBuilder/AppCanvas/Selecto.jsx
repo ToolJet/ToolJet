@@ -61,9 +61,8 @@ export const EditorSelecto = () => {
       if (selection) {
         selection.removeAllRanges();
       }
-
       const target = e.inputEvent.target;
-      // This condition is to ensure selection happens only on main app canvas and not on child containers
+      // This condition is to ensure selection happens only on main app canvas and not on subcontainers
       if (target.getAttribute('component-id') === 'canvas') {
         return true;
       }
