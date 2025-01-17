@@ -61,11 +61,3 @@ select 'External'.
 12. Configure the **Client ID** in ToolJet's Google SSO settings. 
 
 <img style={{ marginBottom:'15px' }}  className="screenshot-full" src="/img/user-management/sso/google/tooljet-config.png" alt="General Settings: SSO"/>
-
-## Setting Default SSO via Environment Variables
-
-To use Google as default SSO for the instance using environment variable set the following variable:
-
-|  Variable  | Description |
-|:---------- |:------------|
-| SSO_GOOGLE_OAUTH2_CLIENT_ID  | Google OAuth client id |

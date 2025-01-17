@@ -19,10 +19,10 @@ Admin user has access to all the permission at workspace level, while an end use
 
 |          Permission           | Admin | Builder | End User |
 |:------------------------------|:-----:|:-------:|:--------:|
-| App                           |  ✅   | Allowed |    ❌     | 
-| Data sources                  |  ✅   | Allowed |    ❌     |
-| Folder                        |  ✅   | Allowed |    ❌     |
-| Workspace constants/variables |  ✅   | Allowed |    ❌     |
+| App                           |  ✅   | Allowed |    ❌    | 
+| Data sources                  |  ✅   | Allowed |    ❌    |
+| Folder                        |  ✅   | Allowed |    ❌    |
+| Workspace constants/variables |  ✅   | Allowed |    ❌    |
 
 ## Manage User Roles
 
