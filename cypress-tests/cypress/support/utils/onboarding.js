@@ -132,7 +132,7 @@ export const userSignUp = (fullName, email, workspaceName = "test") => {
   cy.visit("/");
   cy.wait("@publicConfig");
   cy.wait(1500)
-  cy.get(commonSelectors.createAnAccountLink).realClick();
+  cy.get(commonSelectors.createAnAccountLink).click({ force: true });
   cy.wait(2000);
   cy.get(onboardingSelectors.nameInput).should("not.be.disabled");
   cy.get(onboardingSelectors.nameInput).clear();

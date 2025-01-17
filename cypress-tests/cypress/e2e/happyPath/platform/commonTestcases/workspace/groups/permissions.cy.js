@@ -58,7 +58,7 @@ describe("Manage Groups", () => {
         };
 
         cy.defaultWorkspaceLogin();
-        cy.intercept("DELETE", "/api/folders/*").as("folderDeleted");
+        cy.intercept("DELETE", "*/**/api/folders/*").as("folderDeleted");
         cy.skipWalkthrough();
     });
 
@@ -382,6 +382,7 @@ describe("Manage Groups", () => {
         cy.apiLogin();
         cy.visit(data.workspaceSlug);
         navigateToManageGroups();
+
         cy.get(groupsSelector.groupLink(groupName)).click();
 
         cy.get(groupsSelector.permissionsLink).click();
@@ -407,7 +408,7 @@ describe("Manage Groups", () => {
         // App Hide from dashboard
         cy.apiCreateApp(appName3);
         cy.openApp();
-        cy.addComponentToApp(appName3, "text1");
+        cy.dragAndDropWidget("Text Input", 200, 160);
         releaseApp();
         cy.get(commonWidgetSelector.shareAppButton).click();
         cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${appSlug}`);

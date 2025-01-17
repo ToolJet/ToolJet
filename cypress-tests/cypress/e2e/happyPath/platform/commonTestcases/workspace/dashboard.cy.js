@@ -43,8 +43,8 @@ describe("dashboard", () => {
   data.workspaceSlug = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
   beforeEach(() => {
-    cy.intercept("GET", "/api/library_apps").as("appLibrary");
-    cy.intercept("DELETE", "/api/folders/*").as("folderDeleted");
+    cy.intercept("GET", "*/**/api/library_apps").as("appLibrary");
+    cy.intercept("DELETE", "*/**/api/folders/*").as("folderDeleted");
     cy.skipWalkthrough();
   });
 

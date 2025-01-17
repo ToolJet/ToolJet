@@ -50,6 +50,7 @@ describe("Groups duplication", () => {
       "disable"
     );
     duplicateMultipleGroups(["Admin", "Builder", "End-user"]);
+    cy.reload();
     createGroupAddAppAndUserToGroup(data.groupName, data.email);
     groupPermission(
       [
