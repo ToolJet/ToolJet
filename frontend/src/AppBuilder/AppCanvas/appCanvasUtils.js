@@ -392,7 +392,10 @@ function calculateComponentPosition(component, existingComponents, layout, targe
 
 function calculateGroupPosition(components, existingComponents, layout, targetParentId) {
   // Filter top-level components
-  const parentComponents = components.filter((c) => !c.component?.parent);
+  const parentComponents = components.filter(
+    (c) => !c.component?.parent || c.component?.component?.parent !== targetParentId
+  );
+
   if (parentComponents.length === 0) {
     return components.map((component) => ({
       id: component.id,
@@ -400,7 +403,6 @@ function calculateGroupPosition(components, existingComponents, layout, targetPa
       left: component.layouts[layout].left,
     }));
   }
-
   // Calculate group dimensions
   const bounds = parentComponents.reduce(
     (bounds, component) => {
@@ -446,9 +448,9 @@ function calculateGroupPosition(components, existingComponents, layout, targetPa
   // Return updated positions
   return components.map((component) => {
     const compLayout = component.layouts[layout];
-
+    const isPasteTargetParent = component.component?.component?.parent === targetParentId;
     // Only update position for top-level components
-    if (!component.component?.parent) {
+    if (!component.component?.parent || !isPasteTargetParent) {
       return {
         id: component.id,
         top: compLayout.top + deltaTop,
