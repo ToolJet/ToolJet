@@ -51,7 +51,7 @@ jobs:
 
       - name: Install and build dependencies
         run: |
-          cd marketplace && npm install && npm run build --workspaces
+          cd marketplace && npm install && npm run build 
         continue-on-error: true
       
       - name: Build marketplace plugins 
