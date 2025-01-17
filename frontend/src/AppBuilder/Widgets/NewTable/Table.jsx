@@ -6,6 +6,8 @@ import { useComponentName } from '@/_hooks/useComponentName';
 // components
 import Header from './_components/Header';
 import Footer from './_components/Footer';
+import TableContainer from './_components/TableContainer';
+import _ from 'lodash';
 
 export const Table = ({
   id,
@@ -25,10 +27,16 @@ export const Table = ({
     setTableStyles,
     getTableStyles,
     getTableProperties,
+    setColumnDetails,
   } = useTableStore();
 
   const { disabledState, visibility } = getTableProperties(id);
   const { borderRadius, boxShadow, borderColor } = getTableStyles(id);
+  const { columns, useDynamicColumn, columnData, columnDeletionHistory, autogenerateColumns, ...restOfProperties } =
+    properties;
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const firstRowOfTable = !_.isEmpty(restOfProperties.data?.[0]) ? restOfProperties.data?.[0] : {};
 
   useEffect(() => {
     initializeComponent(id);
@@ -36,8 +44,29 @@ export const Table = ({
   }, [id, initializeComponent, removeComponent]);
 
   useEffect(() => {
-    setTableProperties(id, properties);
-  }, [id, properties, setTableProperties]);
+    setTableProperties(id, restOfProperties);
+  }, [id, restOfProperties, setTableProperties]);
+
+  useEffect(() => {
+    setColumnDetails(
+      id,
+      columns,
+      useDynamicColumn,
+      columnData,
+      firstRowOfTable,
+      autogenerateColumns,
+      columnDeletionHistory
+    );
+  }, [
+    id,
+    columns,
+    useDynamicColumn,
+    columnData,
+    setColumnDetails,
+    firstRowOfTable,
+    autogenerateColumns,
+    columnDeletionHistory,
+  ]);
 
   useEffect(() => {
     setTableStyles(id, styles);
@@ -59,6 +88,7 @@ export const Table = ({
       }}
     >
       <Header id={id} darkMode={darkMode} fireEvent={fireEvent} setExposedVariables={setExposedVariables} />
+      <TableContainer id={id} data={restOfProperties.data} />
       {/* {(displaySearchBox || showFilterButton) && (
       <Header
         tableDetails={tableDetails}
@@ -75,7 +105,15 @@ export const Table = ({
         setGlobalFilter={setGlobalFilter}
       />
     )} */}
-      <Footer id={id} />
+      <Footer
+        id={id}
+        darkMode={darkMode}
+        width={width}
+        height={height}
+        exportData={() => {}}
+        allColumns={[]}
+        getToggleHideAllColumnsProps={() => {}}
+      />
     </div>
   );
 };

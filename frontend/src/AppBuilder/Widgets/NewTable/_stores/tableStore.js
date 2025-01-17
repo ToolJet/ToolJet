@@ -2,7 +2,7 @@ import { create, zustandDevTools } from '@/_stores/utils';
 import { immer } from 'zustand/middleware/immer';
 
 import { createInitSlice } from './slices/initSlice';
-
+import { createColumnSlice } from './slices/columnSlice';
 const initialState = {
   components: {},
 };
@@ -12,6 +12,7 @@ const useTableStore = create(
     immer((set, get) => ({
       ...initialState,
       ...createInitSlice(set, get),
+      ...createColumnSlice(set, get),
     })),
     { name: 'Table Store' }
   )

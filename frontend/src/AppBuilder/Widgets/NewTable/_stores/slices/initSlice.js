@@ -8,6 +8,10 @@ export const createInitSlice = (set, get) => ({
           state.components[id] = {
             filters: {},
             addRow: {},
+            columnDetails: {
+              columnProperties: [],
+              transformations: [],
+            },
             properties: {},
             styles: {},
           };
@@ -20,6 +24,7 @@ export const createInitSlice = (set, get) => ({
   setTableProperties: (id, properties) =>
     set(
       (state) => {
+        const { setColumnDetails } = get();
         const visibility = properties?.visibility ?? true;
         state.components[id].properties.visibility = visibility ? '' : 'none';
         state.components[id].properties.disabledState = properties?.disabledState ?? false;
@@ -28,7 +33,27 @@ export const createInitSlice = (set, get) => ({
         state.components[id].properties.showFilterButton = properties?.showFilterButton ?? true;
         state.components[id].properties.showAddNewRowButton = properties?.showAddNewRowButton ?? true;
         state.components[id].properties.showDownloadButton = properties?.showDownloadButton ?? true;
+        state.components[id].properties.showBulkUpdateActions = properties?.showBulkUpdateActions ?? true;
+        state.components[id].properties.totalRecords = properties?.totalRecords ?? 10;
+        state.components[id].properties.enablePrevButton = properties?.enablePrevButton ?? true; // Only for server side pagination
+        state.components[id].properties.enableNextButton = properties?.enableNextButton ?? true; // Only for server side pagination
+        state.components[id].properties.showAddNewRowButton = properties?.showAddNewRowButton ?? true;
+        state.components[id].properties.showDownloadButton = properties?.showDownloadButton ?? true;
+        state.components[id].properties.hideColumnSelectorButton = properties?.hideColumnSelectorButton ?? false;
 
+        let serverSidePagination = properties.serverSidePagination ?? false;
+        if (typeof serverSidePagination !== 'boolean') state.components[id].properties.serverSidePagination = false;
+        else state.components[id].properties.serverSidePagination = serverSidePagination;
+
+        let clientSidePagination = false;
+        if (
+          properties.clientSidePagination ||
+          typeof clientSidePagination !== 'boolean' ||
+          (properties.enablePagination && !serverSidePagination)
+        ) {
+          clientSidePagination = true;
+        }
+        state.components[id].properties.clientSidePagination = clientSidePagination;
         if (
           !has(properties, 'enablePagination') &&
           (properties.clientSidePagination || properties.serverSidePagination)
@@ -37,6 +62,7 @@ export const createInitSlice = (set, get) => ({
         } else {
           state.components[id].properties.enablePagination = properties.enablePagination;
         }
+        // setColumnDetails(id, properties);
       },
       false,
       { type: 'setProperties', payload: { id, properties } }
