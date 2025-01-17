@@ -260,7 +260,7 @@ export const JSONNode = ({ data, ...restProps }) => {
 
     return (
       <div style={{ fontSize: '9px', marginTop: '0px', right: '10px' }} className="d-flex position-absolute">
-        {enableCopyToClipboard && (
+        {enableCopyToClipboard ? (
           <ToolTip message={'Copy to clipboard'}>
             <span
               onClick={() => {
@@ -272,6 +272,12 @@ export const JSONNode = ({ data, ...restProps }) => {
               <DefaultCopyIcon />
             </span>
           </ToolTip>
+        ) : (
+          // Temporary fix for hover issue for copy value button. Need to remove this once inspector gets revamped.
+          <span
+            style={{ height: '13px', width: '13px', marginBottom: '4px' }}
+            className="mx-1 copy-to-clipboard"
+          ></span>
         )}
         <ToolTip message={'Copy value'}>
           <span
