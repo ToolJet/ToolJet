@@ -65,6 +65,9 @@
 .light-theme {
     --base: #FCFCFD;
     --base-black: #18181A;
+    --base-drawer: #FCFCFD;
+    --base-selected: #FCFCFD;
+    --base-deselected: #687076;
     --text-black-000: #000000;
     --slate12: #313739;
 
@@ -86,6 +89,7 @@
     --text-placeholder: #6A727C;
     --text-disbled: #ACB2B9;
     --text-on-solid: #FFFFFF;
+    --text-selected: #313739;
 
 
     // status
@@ -153,6 +157,9 @@
     /* Remap your colors for dark mode */
     --base: #1f2936;
     --base-black: #FBFCFD;
+    --base-drawer: #121518;
+    --base-selected: #1E2226;
+    --base-deselected: #545B64;
     --text-black-000: #ffffff;
     --slate1: #1f2936;
 
@@ -175,6 +182,7 @@
     --text-placeholder: #858C94;
     --text-disbled: #545B64;
     --text-on-solid: #FAFCFF;
+    --text-selected: #FAFCFF;
 
 
     // status
