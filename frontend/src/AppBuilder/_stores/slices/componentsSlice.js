@@ -10,7 +10,11 @@ import {
 import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { cloneDeep, merge, set as lodashSet } from 'lodash';
-import { computeComponentName, getAllChildComponents } from '@/AppBuilder/AppCanvas/appCanvasUtils';
+import {
+  computeComponentName,
+  getAllChildComponents,
+  getParentWidgetFromId,
+} from '@/AppBuilder/AppCanvas/appCanvasUtils';
 import { pageConfig } from '@/AppBuilder/RightSideBar/PageSettingsTab/pageConfig';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import { DEFAULT_COMPONENT_STRUCTURE } from './resolvedSlice';
@@ -760,7 +764,7 @@ export const createComponentsSlice = (set, get) => ({
     const { getComponentTypeFromId } = get();
     const transformedParentId = parentId?.length > 36 ? parentId.slice(0, 36) : parentId;
     let parentType = getComponentTypeFromId(transformedParentId, moduleId);
-    const parentWidget = parentType === 'Kanban' ? 'Kanban_card' : parentType;
+    const parentWidget = getParentWidgetFromId(parentType, parentId);
     const restrictedWidgets = restrictedWidgetsObj?.[parentWidget] || [];
     const isParentChangeAllowed = !restrictedWidgets.includes(currentWidget);
     if (!isParentChangeAllowed)

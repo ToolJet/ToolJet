@@ -19,6 +19,7 @@ export const Modal = ({ componentMeta, darkMode, ...restProps }) => {
 
   let properties = [];
   let additionalActions = [];
+  let dataProperties = [];
 
   const events = Object.keys(componentMeta.events);
   const validations = Object.keys(componentMeta.validation || {});
@@ -26,6 +27,8 @@ export const Modal = ({ componentMeta, darkMode, ...restProps }) => {
   for (const [key] of Object.entries(componentMeta?.properties)) {
     if (componentMeta?.properties[key]?.section === 'additionalActions') {
       additionalActions.push(key);
+    } else if (componentMeta?.properties[key]?.accordian === 'Data') {
+      dataProperties.push(key);
     } else {
       properties.push(key);
     }
@@ -51,6 +54,12 @@ export const Modal = ({ componentMeta, darkMode, ...restProps }) => {
     });
 
     accordionItems.push({
+      title: 'Data',
+      isOpen: true,
+      children: dataProperties?.map((property) => renderCustomElement(property)),
+    });
+
+    accordionItems.push({
       title: 'Additional actions',
       isOpen: true,
       children: additionalActions?.map((property) => renderCustomElement(property)),
@@ -65,7 +74,8 @@ export const Modal = ({ componentMeta, darkMode, ...restProps }) => {
   };
 
   const filteredProperties = properties.filter(
-    (property) => property !== 'useDefaultButton' && property !== 'triggerButtonLabel'
+    (property) =>
+      property !== 'useDefaultButton' && property !== 'triggerButtonLabel' && !dataProperties.includes(property)
   );
 
   if (component.component.definition.properties.size.value === 'fullscreen') {
