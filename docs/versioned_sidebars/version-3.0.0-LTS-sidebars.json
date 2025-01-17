@@ -1,5 +1,6 @@
 {
   "docs": [
+    "doc-home-page",
     {
       "type": "category",
       "label": "Getting Started",
@@ -318,6 +319,7 @@
                 "data-sources/restapi/metadata-and-cookies"
               ]
             },
+            "data-sources/soap-api",
             "data-sources/rethinkdb",
             "data-sources/run-js",
             "data-sources/run-py",

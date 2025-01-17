@@ -20,9 +20,9 @@ Follow the steps below to deploy ToolJet on Cloud run with `gcloud` CLI.
 
 2. Ingress and Authentication can be set as shown below, to begin with. Feel free to change the security configurations as per you see fit.
 
-  <div style={{textAlign: 'center'}}>
+<div style={{textAlign: 'center'}}>
   <img className="screenshot-full" src="/img/cloud-run/ingress-auth.png" alt="ingress-auth" />
-  </div>
+</div>
 
 3. Under containers tab, please make sure the port is set to 3000 and command `npm, run, start:prod` is entered in container argument field with CPU capacity set to 2GiB:
 
@@ -105,6 +105,48 @@ To use ToolJet Database, you'd have to set up and deploy PostgREST server which 
 6. Additional Environmental variable to be added to ToolJet application or ToolJet Server connect to PostgREST server. You can also refer env variable [**here**](./env-vars/#enable-tooljet-database-required)
 
     <img className="screenshot-full" src="/img/cloud-run/env-for-tooljet.png" alt="env-for-tooljet" />
+
+## Workflows
+
+ToolJet Workflows allows users to design and execute complex, data-centric automations using a visual, node-based interface. This feature enhances ToolJet's functionality beyond building secure internal tools, enabling developers to automate complex business processes.  
+
+### Enabling Workflow Scheduling
+
+Please deploy the below containers to enable workflows scheduling. 
+
+#### Worker container:
+
+You can use the same `tooljet/tooljet:ee-latest` image tag and ensure it has env variables from the tooljet-app container. 
+
+To activate workflow scheduling, set the following environment variables:
+
+```bash
+WORKFLOW_WORKER=true
+ENABLE_WORKFLOW_SCHEDULING=true
+TOOLJET_WORKFLOWS_TEMPORAL_NAMESPACE=default
+TEMPORAL_SERVER_ADDRESS=<Temporal_Server_Address>  
+```
+
+Under the containers tab, please make sure the command `npm, run, worker:prod` is set.
+
+<div style={{textAlign: 'left'}}>
+  <img className="screenshot-full" src="/img/cloud-run/tooljet-worker-settings.png" alt="ToolJet Worker Settings" />
+</div>
+
+#### Temporal server container: 
+
+1. Set the image tag as `temporalio/auto-setup:1.25.1`
+
+<div style={{textAlign: 'left'}}>
+  <img className="screenshot-full" src="/img/cloud-run/temporal-settings.png" alt="Temporal Settings" />
+</div>
+
+2. Add the below env variables to the temporal container: 
+
+<div style={{textAlign: 'left'}}>
+  <img className="screenshot-full" src="/img/cloud-run/temporal-variables-and-secrets.png" alt="Temporal Variables and Secrets" />
+</div>
+
 
 ## Upgrading to the Latest LTS Version
 

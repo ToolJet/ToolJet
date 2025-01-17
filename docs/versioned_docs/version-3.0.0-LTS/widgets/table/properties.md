@@ -34,7 +34,7 @@ Example - Passing a query data:
 Go to the **[columns](/docs/widgets/table/table-columns)** section to read more about columns.
 
 :::info
-Any property having `fx` button next to its field can be **programmatically configured**.
+Any property having **fx** button next to its field can be **programmatically configured**.
 :::
 
 ## Action Buttons
@@ -53,7 +53,7 @@ Below are the button text properties that you can set.
 | Button position | Sets the button position to left or right. |
 | Background color | Sets the background color of the action button. |
 | Text color | Sets the color of button-text of the action button. |
-| Disable Action Button | Toggle on to disable the action button. You can programmatically set its value by clicking on the `fx` button next to it, if set to `{{true}}`, the action button will be disabled and becomes non-functional. By default, its value is set to `{{false}}`. |
+| Disable Action Button | Toggle on to disable the action button. You can programmatically set its value by clicking on the **fx** button next to it, if set to `{{true}}`, the action button will be disabled and becomes non-functional. By default, its value is set to `{{false}}`. |
 | New event handler | The **New event handler** button lets you create an event handler to define behavior for action buttons based on the `On click` action. |
 
 
@@ -240,29 +240,29 @@ Disable condition allows you to control whether the Table is enabled or disabled
 
 ## Devices
 
-| Option  | Description | Expected value |
+| Property  | Description | Expected value |
 |:----------- |:----------- |:----------- |
-| **Show on desktop** | Shows or hides the component on desktop devices. | Use the toggle switch or configure it dynamically using `fx`.|
-| **Show on mobile** | Shows or hides the component on mobile devices. | Use the toggle switch or configure it dynamically using `fx`.|
+| Show on desktop |  Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.|
+| Show on mobile | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.|
 
 ## Styles
 ### Data
 | Style Property  | Description | Configuration Options   |
 |-----------------|------------------|--------------------|
-| **Text color**  | Change the text color of the component.                      | Provide a `hex color code`, choose from the picker, or set programmatically using `fx`.        |
-| **Row style**   | Selects the style of the table rows.                         | Choose from dropdown: Bordered, Regular, or Striped. You can also set it programmatically using `fx`.                                        |
-| **Cell height** | Determines the size of the table cells.                      | Choose between `Condensed` or `Regular` size. You can also set it programmatically using `fx`.                                       |
-| **Max row height** | Controls the maximum height of rows when `Content wrap` is enabled. | Select `Auto` or define a `Custom` size. You can also set it programmatically using `fx`.                                                                       |
+| **Text color**  | Change the text color of the component.                      | Provide a `hex color code`, choose from the picker, or set programmatically using **fx**.        |
+| **Row style**   | Selects the style of the table rows.                         | Choose from dropdown: Bordered, Regular, or Striped. You can also set it programmatically using **fx**.                                        |
+| **Cell height** | Determines the size of the table cells.                      | Choose between `Condensed` or `Regular` size. You can also set it programmatically using **fx**.                                       |
+| **Max row height** | Controls the maximum height of rows when `Content wrap` is enabled. | Select `Auto` or define a `Custom` size. You can also set it programmatically using **fx**.                                                                       |
 
 ## Action Button
 | Action     | Description     | Configuration Options    |
 |:-------------------|:----------------|:-----------------------|
-| **Button radius**  | Sets the radius for all action buttons.         | Enter a value (default is `0`) or dynamically configure using `fx`. |
+| **Button radius**  | Sets the radius for all action buttons.         | Enter a value (default is `0`) or dynamically configure using **fx**. |
 
 
 ## Container
 | Style Property | Description  | Configuration Options |
 |:---------------|:-----------|:----------------------|
-| **Border radius** | Adds a radius to the borders of the Table.                   | Enter a value (default is `8`) or dynamically configure using `fx`. |
-| **Border**        | Defines the border color of the Table.                        | Change the color by providing a `hex color code`, choosing from the picker, or setting programmatically using `fx`. |
-| **Box shadow**    | Sets the box shadow properties of the component.              | Select the box shadow color, adjust related properties, or set programmatically using `fx`. |
+| **Border radius** | Adds a radius to the borders of the Table.                   | Enter a value (default is `8`) or dynamically configure using **fx**. |
+| **Border**        | Defines the border color of the Table.                        | Change the color by providing a `hex color code`, choosing from the picker, or setting programmatically using **fx**. |
+| **Box shadow**    | Sets the box shadow properties of the component.              | Select the box shadow color, adjust related properties, or set programmatically using **fx**. |
