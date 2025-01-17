@@ -13,7 +13,7 @@ describe("Workspace", () => {
         cy.defaultWorkspaceLogin();
     });
 
-    // Need to check for proxy
+    // Need to check for proxy(workspace slug url)
     it("Should verify create and edit workspace modal and flow", () => {
         cy.get(commonSelectors.workspaceName).click();
         cy.get(commonSelectors.addWorkspaceButton).click();

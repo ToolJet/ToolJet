@@ -38,7 +38,8 @@ describe("App share functionality", {
   it("Verify private and public app share functionality", () => {
     cy.apiCreateApp(data.appName);
     cy.openApp();
-    cy.apiAddComponentToApp(data.appName, "text1");
+    cy.wait(1000);
+    cy.dragAndDropWidget("Text", 800, 200);
 
     // Check unreleased version state
     cy.get('[data-cy="share-button-link"]>span').should("be.visible").click();
@@ -47,6 +48,7 @@ describe("App share functionality", {
 
     // Release and verify share modal
     releaseApp();
+    cy.wait(1000);
     cy.get(commonWidgetSelector.shareAppButton).click();
     for (const elements in commonWidgetSelector.shareModalElements) {
       cy.get(commonWidgetSelector.shareModalElements[elements])
@@ -70,7 +72,7 @@ describe("App share functionality", {
     cy.get('[data-cy="app-slug-accepted-label"]')
       .should("be.visible")
       .and("have.text", "Slug accepted!");
-
+    cy.wait(500);
     cy.get(commonWidgetSelector.modalCloseButton).click();
     cy.forceClickOnCanvas();
     cy.backToApps();
