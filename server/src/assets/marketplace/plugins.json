@@ -105,8 +105,8 @@
     "timestamp": "Mon, 28 Oct 2024 08:08:28 GMT"
   },
   {
-    "name": "qdrant",
-    "description": "api plugin from qdrant",
+    "name": "Qdrant",
+    "description": "Plugin for Qdrant APIs",
     "version": "1.0.0",
     "id": "qdrant",
     "author": "Tooljet",
