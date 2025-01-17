@@ -130,6 +130,7 @@ export function renderElement(
   const paramTypeDefinition = componentDefinition[paramType] || {};
   const definition = paramTypeDefinition[param] || {};
   const meta = componentMeta[paramType][param];
+  const isHidden = component.component.properties[param]?.isHidden ?? false;
 
   if (
     componentConfig.component == 'DropDown' ||
@@ -150,6 +151,8 @@ export function renderElement(
     }
   }
 
+  // if (isHidden) return null;
+
   return (
     <Code
       param={{ name: param, ...component.component.properties[param] }}
@@ -168,6 +171,7 @@ export function renderElement(
       }}
       component={component}
       placeholder={placeholder}
+      isHidden={isHidden}
     />
   );
 }
