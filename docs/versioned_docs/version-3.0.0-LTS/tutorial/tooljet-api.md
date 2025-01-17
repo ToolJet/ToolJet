@@ -284,10 +284,6 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
 </details>
 
     - **Response:** `200 OK`
-
-
-</details>
-    - **Response:** `200 OK`
  
 ### **Replace User Workspaces Relations**
 
