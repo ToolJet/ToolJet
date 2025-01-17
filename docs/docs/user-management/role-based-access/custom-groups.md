@@ -3,7 +3,9 @@ id: custom-groups
 title: Custom Groups
 ---
 
-In ToolJet, you can create custom groups to tailor permissions and **[granular level access](#)**, **[default roles](#)** can also be used as default groups or you can create custom groups.
+ToolJet allows you to manage permissions, access, and users effectively by creating custom groups. Each custom group can be configured with a specific set of permissions and include only the users who require those permissions. This helps maintain precise control over what users can access and modify within your workspace.
+
+For example, if you want to grant edit access to certain applications or data sources to a specific team, you can create a custom group for that team. By assigning the necessary permissions to the group, only its members will have the ability to edit the specified resources, ensuring clear and secure access control.
 
 ## Creating Custom Groups
 

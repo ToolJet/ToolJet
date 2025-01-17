@@ -3,15 +3,15 @@ id: user-roles
 title: User Roles
 ---
 
-ToolJet enables you to use Role-Based Access Control (RBAC) system to manage security and access to your resources such as apps, data sources and workspace variables, etc. ToolJet provides a set of default user roles and the ability to create **[custom groups](#)** for more granular access control.
+ToolJet enables you to use Role-Based Access Control (RBAC) system to manage security and access to your resources such as apps, data sources and workspace variables, etc. ToolJet provides a set of pre-defined user roles and the ability to create **[custom groups](#)** for more granular access control. User roles are taken into account for licensing and billing purposes, refer **[ToolJet Pricing](https://www.tooljet.com/pricing)** for more information.
 
 ## Default User Roles
 
 ToolJet has three default user roles at the workspace level, each with different levels of access:
 
-1. **Admin**: The admin user can manage all the administrative level settings of a workspace and has full access to manage the workspace, including users, groups, and all resources.
-2. **Builder**: The builder is the user who develops and maintain the application.
-3. **End-user**: End user is the one who will use the application, end users can only view and use the released apps that they have been given access to.
+1. **Admin**: An admin is a user with access to manage settings, control user permissions, and oversee the overall functionality. The admin user has full access to all resources.
+2. **Builder**: A builder is a user responsible for creating, customizing, and configuring the application.
+3. **End-user**: An end user is a consumer who interacts with the final application to perform tasks or achieve specific goals. 
 
 ## Permissions for User Roles
 
