@@ -14,8 +14,7 @@ ToolJet API allows you to interact with the ToolJet platform programmatically. Y
  - [Get User by ID](#get-user-by-id)
  - [Create User](#create-user)
  - [Update User](#update-user)
- - [Add User Metadata](#add-user-metadata)
- - [Update User Metadata](#update-user-metadata)
+ - [Update User Role](#update-user-role)
  - [Replace User Workspace](#replace-user-workspace)
  - [Replace User Workspaces Relations](#replace-user-workspaces-relations)
  - [Get All Workspaces](#get-all-workspaces)
@@ -236,14 +235,7 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
         - `email` (string, optional): The updated email address of the user.
         - `password` (string, optional): The updated password for the user. Must be between 5 and 100 characters.
         - `status` (string, optional): The updated status of the user. Can be either `active` or `archived`.
-        - `workspaces` (array, optional): An updated array of workspace objects associated with the user. Each workspace object should contain:
-          - `id` (string, required): The unique identifier of the workspace.
-          - `name` (string, required): The name of the workspace.
-          - `status` (string, optional): The status of the workspace. Can be either `active` or `archived`.
-          - `groups` (array, optional): An array of group objects associated with the workspace. Each group object can contain:
-            - `id` (string, optional): The unique identifier of the group.
-            - `name` (string, optional): The name of the group.
-            - `status` (string, optional): The status of the group. Can be either `active` or `archived`.
+        
 <details>
 
 <summary>Request Body Example</summary>
@@ -251,8 +243,10 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
 ```json
 
 {
-  "name": "Allen Johnson",
-  "email": "allen@example.com"
+  "name": "Jane Doe",
+  "email": "jane.doe@example.com",
+  "password": "newsecurepassword",
+  "status": "active"
 }
 
 ```
@@ -262,56 +256,18 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
     - **Response:** `200 OK`
 
 
-### **Add User Metadata**
-    - **Description:** Adds metadata to a user's profile.
-    - **URL:** `/api/ext/user/:id/metadata`
-    - **Method:** POST
-    - **Authorization:** `Basic <access_token>`
-    - **Content-Type:** `application/json`
-    - **Params:**
-        - id (string): The ID of the user.
-    - **Body:**
-        ```json
-        {
-          "metadata": {
-            "key1": "value1",
-            "key2": "value2"
-          }
-        }
-        ```
-<details>
-
-<summary>Request Body Example</summary>
-
-```json
-
-{
-}
-
-```
-
-</details>
-
-    - **Response:** `200 OK`
-
-### **Update User Metadata**
-    - **Description:** Updates existing metadata of a user's profile.
-    - **URL:** `/api/ext/user/:id/metadata`
+### **Update User Role**
+    - **Description:** Updates the user role for a particular workspace.
+    - **URL:** `/api/ext/update-user-role/workspace/workspaceId`
     - **Method:** PUT
     - **Authorization:** `Basic <access_token>`
     - **Content-Type:** `application/json`
     - **Params:**
-        - id (string): The ID of the user.
-    - **Body:**
-        ```json
-        {
-          "metadata": {
-            "key1": "new_value1",
-            "key3": "value3"
-          }
-        }
-        ```
-
+        - workspaceId (string): The unique identifier of the workspace.
+    - **Body:** The body object can contain the following fields:
+        - `newRole` (string, required): The updated user role of the user.
+        - `userId` (string, required): The unique identifier of the user.
+        
 <details>
 
 <summary>Request Body Example</summary>
@@ -319,9 +275,16 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
 ```json
 
 {
+  "newRole":"end-user",
+  "userId":"f2065dd1-e5ea-4793-af91-4a8831de68e6"
 }
 
 ```
+
+</details>
+
+    - **Response:** `200 OK`
+
 
 </details>
     - **Response:** `200 OK`
