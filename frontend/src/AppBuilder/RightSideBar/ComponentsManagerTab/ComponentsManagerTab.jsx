@@ -112,7 +112,7 @@ export const ComponentsManagerTab = ({ darkMode }) => {
       const otherSection = { title: t('widgetManager.others', 'others'), items: [] };
       const legacySection = { title: 'Legacy', items: [] };
 
-      const commonItems = ['Table', 'Button', 'Text', 'TextInput', 'Datepicker', 'Form'];
+      const commonItems = ['Table', 'Button', 'Text', 'TextInput', 'DatetimePickerV2', 'Form'];
       const formItems = [
         'Form',
         'TextInput',
@@ -125,8 +125,10 @@ export const ComponentsManagerTab = ({ darkMode }) => {
         'RichTextEditor',
         'Checkbox',
         'RadioButtonV2',
-        'Datepicker',
-        'DateRangePicker',
+        'DatetimePickerV2',
+        'DatePickerV2',
+        'TimePicker',
+        'DaterangePicker',
         'FilePicker',
         'StarRating',
       ];

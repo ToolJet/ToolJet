@@ -13,19 +13,21 @@ import {
   CloudStorageSources,
   CommonlyUsedDataSources,
 } from '@/Editor/DataSourceManager/SourceComponents';
-import { pluginsService, globalDatasourceService, authenticationService } from '@/_services';
+import { pluginsService, globalDatasourceService, authenticationService, marketplaceService } from '@/_services';
 import { Card } from '@/_ui/Card';
 import { SegregatedList } from '../SegregatedList';
 import { SearchBox } from '@/_components';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { BreadCrumbContext } from '@/App';
+import { canDeleteDataSource } from '@/_helpers';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 import HeaderSkeleton from '../../_ui/FolderSkeleton/HeaderSkeleton';
 import Skeleton from 'react-loading-skeleton';
 export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasource }) => {
   const containerRef = useRef(null);
   const [plugins, setPlugins] = useState([]);
+  const [marketplacePlugins, setMarketplacePlugins] = useState([]);
   const [filteredDataSources, setFilteredDataSources] = useState([]);
   const [queryString, setQueryString] = useState('');
   const [addingDataSource, setAddingDataSource] = useState(false);
@@ -54,7 +56,10 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
     setCurrentEnvironment,
     activeDatasourceList,
     setActiveDatasourceList,
+    canCreateDataSource,
+    canUpdateDataSource,
     isLoading,
+    environmentLoading,
   } = useContext(GlobalDataSourcesContext);
 
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
@@ -63,6 +68,13 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
     pluginsService
       .findAll()
       .then(({ data = [] }) => setPlugins([...data]))
+      .catch((error) => {
+        toast.error(error?.message || 'Failed to fetch plugins');
+      });
+
+    marketplaceService
+      .findAll()
+      .then(({ data = [] }) => setMarketplacePlugins([...data]))
       .catch((error) => {
         toast.error(error?.message || 'Failed to fetch plugins');
       });
@@ -320,23 +332,38 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
       };
     });
 
+    const pluginsWithTags = marketplacePlugins.reduce((acc, plugin) => {
+      const isInDatasources = datasources.some((datasource) => {
+        return datasource.kind === plugin.id || datasource.pluginId === plugin.id || datasource.plugin_id === plugin.id;
+      });
+      if (isInDatasources && plugin.tags) {
+        acc[plugin.id] = plugin.tags;
+      }
+      return acc;
+    }, {});
+
     return (
       <>
         <div className="row row-deck mt-3">
-          {datasources.map((item) => (
-            <Card
-              key={item.key}
-              darkMode={darkMode}
-              title={item.title}
-              src={item?.src}
-              usePluginIcon={isEmpty(item?.iconFile?.data)}
-              height={'35px'}
-              width={'35px'}
-              actionButton={addDataSourceBtn(item)}
-              className="datasource-card"
-              titleClassName={'datasource-card-title'}
-            />
-          ))}
+          {datasources.map((item) => {
+            const tags =
+              pluginsWithTags[item.kind] || pluginsWithTags[item.pluginId] || pluginsWithTags[item.plugin_id] || [];
+            return (
+              <Card
+                key={item.key}
+                darkMode={darkMode}
+                title={item.title}
+                src={item?.src}
+                usePluginIcon={isEmpty(item?.iconFile?.data)}
+                height={'35px'}
+                width={'35px'}
+                actionButton={addDataSourceBtn(item)}
+                className="datasource-card"
+                titleClassName={'datasource-card-title'}
+                tags={tags}
+              />
+            );
+          })}
           {type === 'Plugins' && (
             <div style={{ height: '122px', width: '164px' }} className={`col-md-2  mb-4 `}>
               <div
@@ -352,7 +379,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
                 data-cy={`data-source-add-plugin`}
               >
                 <div className="card-body">
-                  <center style={{ paddingTop: '5px' }}>
+                  <center style={{ paddingTop: '5px', marginTop: '20px' }}>
                     <SolidIcon
                       name="plus"
                       fill={'var(--icon-default)'}
@@ -418,6 +445,15 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
     return dataSourceList;
   };
 
+  const selectedPlugin = marketplacePlugins.find(
+    (plugin) =>
+      plugin.id === selectedDataSource?.kind ||
+      plugin.id === selectedDataSource?.pluginId ||
+      plugin.id === selectedDataSource?.plugin_id
+  );
+
+  const tags = selectedPlugin?.tags || [];
+
   return (
     <div className="row gx-0">
       <Sidebar renderSidebarList={renderSidebarList} updateSelectedDatasource={updateSelectedDatasource} />
@@ -438,6 +474,9 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
             container={selectedDataSource ? containerRef?.current : null}
             isEditing={isEditing}
             updateSelectedDatasource={updateSelectedDatasource}
+            showSaveBtn={canCreateDataSource() || canUpdateDataSource(selectedDataSource?.id) || canDeleteDataSource()}
+            environmentLoading={environmentLoading}
+            tags={tags}
           />
         )}
         {isLoading && loadingState()}

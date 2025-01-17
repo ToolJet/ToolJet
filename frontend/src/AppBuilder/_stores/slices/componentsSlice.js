@@ -39,6 +39,7 @@ const initialState = {
   selectedComponents: [],
   currentPageHandle: null,
   showWidgetDeleteConfirmation: false,
+  focusedParentId: null,
 };
 
 export const createComponentsSlice = (set, get) => ({
@@ -1391,6 +1392,11 @@ export const createComponentsSlice = (set, get) => ({
       { type: 'setSelectedComponentAsModal', payload: { componentId } }
     );
   },
+  setFocusedParentId: (parentId) => {
+    set((state) => {
+      state.focusedParentId = parentId;
+    });
+  },
   saveComponentChanges: (diff, type, operation) => {
     set(
       (state) => {
@@ -1822,9 +1828,18 @@ export const createComponentsSlice = (set, get) => ({
     const getAllExposedValues = get().getAllExposedValues;
     // Early return for non input components
     if (
-      !['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2', 'MultiselectV2', 'RadioButtonV2'].includes(
-        componentType
-      )
+      ![
+        'TextInput',
+        'PasswordInput',
+        'NumberInput',
+        'DropdownV2',
+        'MultiselectV2',
+        'RadioButtonV2',
+        'DatetimePickerV2',
+        'DaterangePicker',
+        'DatePickerV2',
+        'TimePicker',
+      ].includes(componentType)
     ) {
       return layoutData?.height;
     }

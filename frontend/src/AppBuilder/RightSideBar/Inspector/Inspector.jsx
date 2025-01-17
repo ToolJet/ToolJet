@@ -18,7 +18,6 @@ import _ from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useDataQueries } from '@/_stores/dataQueriesStore';
-import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import Tabs from '@/ToolJetUI/Tabs/Tabs';
 import Tab from '@/ToolJetUI/Tabs/Tab';
@@ -35,8 +34,9 @@ import { EMPTY_ARRAY } from '@/_stores/editorStore';
 import { Select } from './Components/Select';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
-import { componentTypes } from '@/Editor/WidgetManager/components';
+import { componentTypes } from '@/AppBuilder/WidgetManager/componentTypes';
 import { copyComponents } from '@/AppBuilder/AppCanvas/appCanvasUtils.js';
+import DatetimePickerV2 from './Components/DatetimePickerV2.jsx';
 
 const INSPECTOR_HEADER_OPTIONS = [
   {
@@ -64,10 +64,13 @@ const NEW_REVAMPED_COMPONENTS = [
   'Table',
   'ToggleSwitchV2',
   'Checkbox',
+  'DatetimePickerV2',
   'DropdownV2',
   'MultiselectV2',
   'RadioButtonV2',
   'Button',
+  'Icon',
+  'Image',
 ];
 
 export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selectedComponentId }) => {
@@ -705,6 +708,12 @@ const GetAccordion = React.memo(
       case 'MultiselectV2':
       case 'RadioButtonV2':
         return <Select {...restProps} />;
+
+      case 'DatetimePickerV2':
+      case 'DaterangePicker':
+      case 'DatePickerV2':
+      case 'TimePicker':
+        return <DatetimePickerV2 {...restProps} componentName={componentName} />;
 
       default: {
         return <DefaultComponent {...restProps} />;

@@ -49,7 +49,7 @@ export const Container = React.memo(
     const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
     const currentMode = useStore((state) => state.currentMode, shallow);
     const currentLayout = useStore((state) => state.currentLayout, shallow);
-
+    const setFocusedParentId = useStore((state) => state.setFocusedParentId, shallow);
     const isContainerReadOnly = useMemo(() => {
       return (index !== 0 && (componentType === 'Listview' || componentType === 'Kanban')) || currentMode === 'view';
     }, [componentType, index, currentMode]);
@@ -116,6 +116,8 @@ export const Container = React.memo(
     const handleCanvasClick = useCallback(
       (e) => {
         const realCanvas = e.target.closest('.real-canvas');
+        const canvasId = realCanvas?.getAttribute('id')?.split('canvas-')[1];
+        setFocusedParentId(canvasId);
         if (realCanvas) {
           const rect = realCanvas.getBoundingClientRect();
           const x = e.clientX - rect.left;

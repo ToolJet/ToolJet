@@ -42,7 +42,7 @@ export class TooljetDbAbilityFactory {
         ).isAdmin
       : false;
 
-    const isBuilder = await this.abilityService.isBuilder(user);
+    const isBuilder = !isEmpty(user) ? await this.abilityService.isBuilder(user) : false;
 
     if (isAdmin || isBuilder) {
       can(Action.CreateTable, 'all');

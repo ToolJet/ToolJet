@@ -155,6 +155,7 @@ const EditorInput = ({
   delayOnChange = true, // Added this prop to immediately update the onBlurUpdate callback
   paramLabel = '',
   disabled = false,
+  onInputChange,
 }) => {
   const getSuggestions = useStore((state) => state.getSuggestions, shallow);
   function autoCompleteExtensionConfig(context) {
@@ -326,6 +327,7 @@ const EditorInput = ({
             onChange={(val) => {
               setFirstTimeFocus(false);
               handleOnChange(val);
+              onInputChange && onInputChange(val);
             }}
             basicSetup={{
               lineNumbers: showLineNumbers,
@@ -384,7 +386,7 @@ const DynamicEditorBridge = (props) => {
   const fxClass = isEventManagerParam ? 'justify-content-start' : 'justify-content-end';
   return (
     <div className={cx({ 'codeShow-active': codeShow }, 'wrapper-div-code-editor')}>
-      <div className={cx('d-flex align-items-center justify-content-between')}>
+      <div className={cx('d-flex align-items-center justify-content-between code-flex-wrapper')}>
         {paramLabel !== ' ' && !HIDDEN_CODE_HINTER_LABELS.includes(paramLabel) && (
           <div className={`field ${className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
             <ToolTip
@@ -419,27 +421,26 @@ const DynamicEditorBridge = (props) => {
                 />
               </div>
             )}
-
-            {!codeShow && (
-              <DynamicFxTypeRenderer
-                value={!error ? value : ''}
-                onChange={onChange}
-                paramName={paramName}
-                paramLabel={paramLabel}
-                paramType={paramType}
-                forceCodeBox={() => {
-                  setForceCodeBox(true);
-                  onFxPress(true);
-                }}
-                meta={fieldMeta}
-                cyLabel={cyLabel}
-                styleDefinition={styleDefinition}
-                component={component}
-                onVisibilityChange={onVisibilityChange}
-              />
-            )}
           </div>
         </div>
+        {!codeShow && (
+          <DynamicFxTypeRenderer
+            value={!error ? value : ''}
+            onChange={onChange}
+            paramName={paramName}
+            paramLabel={paramLabel}
+            paramType={paramType}
+            forceCodeBox={() => {
+              setForceCodeBox(true);
+              onFxPress(true);
+            }}
+            meta={fieldMeta}
+            cyLabel={cyLabel}
+            styleDefinition={styleDefinition}
+            component={component}
+            onVisibilityChange={onVisibilityChange}
+          />
+        )}
       </div>
       {codeShow && (
         <div className={`row custom-row`} style={{ display: codeShow ? 'flex' : 'none' }}>

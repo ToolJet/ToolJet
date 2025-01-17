@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import useStore from '@/AppBuilder/_stores/store';
 import { pasteComponents, copyComponents } from './appCanvasUtils';
@@ -7,16 +7,17 @@ import { shallow } from 'zustand/shallow';
 
 export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth }) => {
   const canvasRef = useRef(null);
-  const focusedParentIdRef = useRef(undefined);
+  const focusedParentId = useStore((state) => state.focusedParentId, shallow);
   const handleUndo = useStore((state) => state.handleUndo);
   const handleRedo = useStore((state) => state.handleRedo);
   const setWidgetDeleteConfirmation = useStore((state) => state.setWidgetDeleteConfirmation);
-
   const moveComponentPosition = useStore((state) => state.moveComponentPosition, shallow);
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
   const enableReleasedVersionPopupState = useStore((state) => state.enableReleasedVersionPopupState, shallow);
   const clearSelectedComponents = useStore((state) => state.clearSelectedComponents, shallow);
   const getSelectedComponents = useStore((state) => state.getSelectedComponents, shallow);
+  const setSelectedComponents = useStore((state) => state.setSelectedComponents, shallow);
+  const containerChildrenMapping = useStore((state) => state.containerChildrenMapping, shallow);
   useHotkeys('meta+z, control+z', handleUndo, { enabled: mode === 'edit' });
   useHotkeys('meta+shift+z, control+shift+z', handleRedo, { enabled: mode === 'edit' });
 
@@ -24,7 +25,7 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth }
     if (navigator.clipboard && typeof navigator.clipboard.readText === 'function') {
       try {
         const cliptext = await navigator.clipboard.readText();
-        pasteComponents(focusedParentIdRef.current, JSON.parse(cliptext));
+        pasteComponents(focusedParentId, JSON.parse(cliptext));
       } catch (err) {
         console.log(err);
       }
@@ -51,34 +52,9 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth }
     }
   };
 
-  useEffect(() => {
-    const handleClick = (e) => {
-      const modalContainer = document.getElementById('modal-container');
-      // Check if the click is within the canvas or modal
-      const isCanvasOrModalClick =
-        canvasRef.current?.contains(e.target) && modalContainer?.contains(e.target) !== false;
-      if (isCanvasOrModalClick) {
-        // If clicked anywhere in Modal, following condition plays
-        if (modalContainer?.contains(e.target) === true) {
-          const canvasId = modalContainer?.getAttribute('component-id');
-          focusedParentIdRef.current = canvasId;
-        } else {
-          // Find the closest .real-canvas element and get its id
-          const realCanvas = e.target.closest('.real-canvas');
-          const canvasId = realCanvas?.getAttribute('id');
-
-          // Set the focusedParentId based on the canvas id
-          focusedParentIdRef.current = canvasId === 'real-canvas' ? undefined : canvasId?.split('canvas-')[1];
-        }
-      }
-    };
-
-    // Add click event listener to the document
-    document.addEventListener('click', handleClick);
-
-    // Cleanup function to remove the event listener
-    return () => document.removeEventListener('click', handleClick);
-  }, [canvasRef]);
+  const handleSelectAll = () => {
+    setSelectedComponents(containerChildrenMapping?.[focusedParentId || 'canvas']);
+  };
 
   const handleHotKeysCallback = (key) => {
     if (shouldFreeze) {
@@ -104,6 +80,9 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth }
       case 'KeyV':
         paste(); // Paste operation
         break;
+      case 'KeyA':
+        handleSelectAll();
+        break;
       default:
         moveComponentPosition(key, currentLayout);
     }
@@ -117,6 +96,7 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth }
       'meta+d, ctrl+d, meta+c, ctrl+c, meta+x, ctrl+x',
       'meta+v',
       'control+v',
+      'meta+a, ctrl+a',
     ],
     handleHotKeysCallback,
     mode === 'edit'
@@ -126,8 +106,6 @@ export const HotkeyProvider = ({ children, mode, currentLayout, canvasMaxWidth }
     <div
       ref={(el) => {
         if (mode === 'edit') {
-          // undoRef.current = el;
-          // redoRef.current = el;
           canvasRef.current = el;
         }
       }}

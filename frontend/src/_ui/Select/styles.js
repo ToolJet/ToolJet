@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-export default function styles(darkMode, width = 224, height = 32, styles = {}) {
+export default function styles(darkMode, width = 224, height = 32, styles = {}, borderRadius) {
   return {
     container: (provided) => ({
       ...provided,
@@ -26,12 +26,14 @@ export default function styles(darkMode, width = 224, height = 32, styles = {}) 
       height: height,
       minHeight: height,
       cursor: styles.cursor ?? 'pointer',
+      ...(borderRadius ? { borderRadius } : {}),
     }),
     valueContainer: (provided, state) => ({
       ...provided,
       display: 'flex',
       height: height,
       marginBottom: '4px',
+      ...(styles.fontSize ? { fontSize: styles.fontSize } : {}),
     }),
     indicatorsContainer: (provided, state) => ({
       ...provided,
@@ -56,6 +58,7 @@ export default function styles(darkMode, width = 224, height = 32, styles = {}) 
       ':hover': {
         backgroundColor: darkMode ? '#323C4B' : '#d8dce9',
       },
+      ...(styles.fontSize ? { fontSize: styles.fontSize } : {}),
     }),
     placeholder: (provided) => ({
       ...provided,

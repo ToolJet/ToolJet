@@ -88,7 +88,7 @@ describe("App slug", () => {
         );
         cy.url().should(
             "eq",
-            `http://localhost:8082/my-workspace/apps/${data.slug}/home`
+            `http://localhost:8082/my-workspace/apps/${data.slug}`
         );
 
         releaseApp();

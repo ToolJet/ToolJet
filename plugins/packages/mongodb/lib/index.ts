@@ -3,6 +3,7 @@ const { MongoClient } = require('mongodb');
 const JSON5 = require('json5');
 import { EJSON } from 'bson';
 import { SourceOptions, QueryOptions } from './types';
+import tls from 'tls';
 
 export default class MongodbService implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
@@ -171,9 +172,32 @@ export default class MongodbService implements QueryService {
         ? `mongodb://${username}:${password}@${host}:${port}`
         : `mongodb://${host}:${port}`;
 
-      client = new MongoClient(uri, {
-        directConnection: true,
-      });
+      let clientOptions = {};
+
+      if (sourceOptions.tls_certificate === 'client_certificate') {
+        const secureContext = tls.createSecureContext({
+          ca: sourceOptions.ca_cert,
+          cert: sourceOptions.client_cert,
+          key: sourceOptions.client_key,
+        });
+        clientOptions = {
+          tls: true,
+          secureContext,
+        };
+      }
+
+      if (sourceOptions.tls_certificate === 'ca_certificate') {
+        const secureContext = tls.createSecureContext({
+          ca: sourceOptions.ca_cert,
+        });
+
+        clientOptions = {
+          tls: true,
+          secureContext,
+        };
+      }
+
+      client = new MongoClient(uri, clientOptions);
       await client.connect();
 
       db = client.db(database);
