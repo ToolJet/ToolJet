@@ -123,7 +123,8 @@ export function renderElement(
   currentState,
   components = {},
   darkMode = false,
-  placeholder = ''
+  placeholder = '',
+  isDisabled = false
 ) {
   const componentConfig = component.component;
   const componentDefinition = componentConfig.definition;
@@ -168,6 +169,7 @@ export function renderElement(
       }}
       component={component}
       placeholder={placeholder}
+      isDisabled={isDisabled}
     />
   );
 }
