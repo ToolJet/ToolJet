@@ -1,5 +1,6 @@
 {
   "docs": [
+    "doc-home-page",
     {
       "type": "category",
       "label": "Getting Started",
@@ -172,7 +173,8 @@
                             "widgets/table/serverside-operations/filter",
                             "widgets/table/serverside-operations/pagination"
                           ]
-                        }
+                        },
+                        "widgets/table/dynamic-column"
                       ]
                     },
                     "widgets/tabs",
@@ -317,6 +319,7 @@
                 "data-sources/restapi/metadata-and-cookies"
               ]
             },
+            "data-sources/soap-api",
             "data-sources/rethinkdb",
             "data-sources/run-js",
             "data-sources/run-py",
@@ -445,7 +448,15 @@
         "workflows/nodes",
         "workflows/workflow-triggers",
         "workflows/results",
-        "workflows/permissions"
+        "workflows/permissions",
+        {
+          "type": "category",
+          "label": "How-to",
+          "items": [
+            "workflows/trigger-using-webhook",
+            "workflows/trigger-workflow-from-app"
+          ]
+        }
       ]
     },
     {

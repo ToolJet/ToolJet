@@ -41,7 +41,7 @@ Once you have connected to the REST API data source, follow these steps to write
 4. Click **Preview** to view the data returned from the query or click **Run** to execute the query.
 
 :::tip
-Query results can be transformed using the **[Transformations](/docs/how-to/transformations)** feature.
+Query results can be transformed using the **[Transformations](/docs/tutorial/transformations)** feature.
 :::
 
 ToolJet supports the following REST HTTP methods 
