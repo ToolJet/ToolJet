@@ -9,7 +9,7 @@ export const addAndVerifyOnSingleLine = (data, property = '', componentName = 't
         commonWidgetSelector.parameterInputField(property)
     ).clearAndTypeOnCodeMirror(data)
     cy.forceClickOnCanvas()
-    cy.wait("@editorAPI");
+    // cy.wait("@editorAPI")
     openEditorSidebar(componentName)
     cy.get(
         commonWidgetSelector.parameterInputField(property)
