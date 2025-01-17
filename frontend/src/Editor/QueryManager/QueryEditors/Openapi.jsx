@@ -290,9 +290,9 @@ class OpenapiComponent extends React.Component {
                         <div className="col field overflow-hidden">
                           <CodeHinter
                             type="basic"
-                            initialValue={this.state.options.params.path[param.name]}
+                            initialValue={this.state.options.params.header[param.name]}
                             placeholder={'Value'}
-                            onChange={(value) => this.changeParam('path', param.name, value)}
+                            onChange={(value) => this.changeParam('header', param.name, value)}
                           />
                         </div>
                         <span
