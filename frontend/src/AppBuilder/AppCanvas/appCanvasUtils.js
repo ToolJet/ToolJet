@@ -337,7 +337,6 @@ function calculateComponentPosition(component, existingComponents, layout, targe
   let newTop = component.layouts[layout].top;
 
   if (lastCanvasClickPosition && (!component.component?.parent || component.component?.parent === targetParentId)) {
-    console.log(lastCanvasClickPosition, 'renderrrrrr');
     newLeft = Math.round(lastCanvasClickPosition.x / gridWidth);
     newTop = Math.round(lastCanvasClickPosition.y / 10) * 10;
   }
