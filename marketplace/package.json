@@ -25,10 +25,12 @@
   },
   "scripts": {
     "start:watch": "lerna run watch --stream --parallel",
-    "build": "npm run build --workspaces",
+    "build": "lerna run build --stream --sort",
     "start:dev": "npm run build && npm run start:watch",
     "lint": "eslint .  '**/*.ts'",
     "format": "eslint . --fix '**/*.ts'"
   },
-  "dependencies": {}
+  "dependencies": {
+    "depd": "^2.0.0"
+  }
 }
