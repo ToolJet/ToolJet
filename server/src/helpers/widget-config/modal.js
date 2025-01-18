@@ -12,27 +12,6 @@ export const modalConfig = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: {
-    title: {
-      type: 'code',
-      displayName: 'Title',
-      validation: {
-        schema: { type: 'string' },
-        defaultValue: 'This title can be changed',
-      },
-    },
-    titleAlignment: {
-      type: 'select',
-      displayName: 'Title alignment',
-      options: [
-        { name: 'left', value: 'left' },
-        { name: 'center', value: 'center' },
-        { name: 'right', value: 'right' },
-      ],
-      validation: {
-        schema: { type: 'string' },
-        defaultValue: 'left',
-      },
-    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -40,6 +19,34 @@ export const modalConfig = {
         schema: { type: 'boolean' },
         defaultValue: false,
       },
+      section: 'additionalActions',
+    },
+    triggerVisibility: {
+      type: 'toggle',
+      displayName: 'Modal trigger visibility',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+      section: 'additionalActions',
+    },
+    disabledTrigger: {
+      type: 'toggle',
+      displayName: 'Disable modal trigger',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
+    disabledModal: {
+      type: 'toggle',
+      displayName: 'Disable modal window',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
     },
     useDefaultButton: {
       type: 'toggle',
@@ -61,18 +68,18 @@ export const modalConfig = {
         defaultValue: 'Launch Modal',
       },
     },
-    hideTitleBar: { type: 'toggle', displayName: 'Hide title bar' },
-    hideCloseButton: { type: 'toggle', displayName: 'Hide close button' },
-    hideOnEsc: { type: 'toggle', displayName: 'Close on escape key' },
-    closeOnClickingOutside: { type: 'toggle', displayName: 'Close on clicking outside' },
-
+    // Data Accordion
+    showHeader: { type: 'toggle', displayName: 'Header', accordian: 'Data' },
+    showFooter: { type: 'toggle', displayName: 'Footer', accordian: 'Data' },
     size: {
       type: 'select',
-      displayName: 'Modal size',
+      displayName: 'Width',
+      accordian: 'Data',
       options: [
         { name: 'small', value: 'sm' },
         { name: 'medium', value: 'lg' },
         { name: 'large', value: 'xl' },
+        { name: 'fullscreen', value: 'fullscreen' },
       ],
       validation: {
         schema: { type: 'string' },
@@ -81,17 +88,74 @@ export const modalConfig = {
     },
     modalHeight: {
       type: 'code',
-      displayName: 'Modal height',
+      displayName: 'Height',
+      accordian: 'Data',
       validation: {
         schema: { type: 'string' },
         defaultValue: '400px',
       },
     },
+
+    hideOnEsc: { type: 'toggle', displayName: 'Close on escape key', section: 'additionalActions' },
+    closeOnClickingOutside: { type: 'toggle', displayName: 'Close on clicking outside', section: 'additionalActions' },
+    hideCloseButton: { type: 'toggle', displayName: 'Hide close button', section: 'additionalActions' },
   },
   events: {
     onOpen: { displayName: 'On open' },
     onClose: { displayName: 'On close' },
   },
+  defaultChildren: [
+    {
+      componentName: 'Text',
+      slotName: 'header',
+      layout: {
+        top: 21,
+        left: 1,
+        height: 40,
+      },
+      displayName: 'ModalHeaderTitle',
+      properties: ['text'],
+      accessorKey: 'text',
+      styles: ['fontWeight', 'textSize', 'textColor'],
+      defaultValue: {
+        text: 'Modal title',
+        textSize: 20,
+        textColor: '#000',
+      },
+    },
+    {
+      componentName: 'Button',
+      slotName: 'footer',
+      layout: {
+        top: 24,
+        left: 22,
+        height: 36,
+      },
+      displayName: 'ModalFooterCancel',
+      properties: ['text'],
+      styles: ['type', 'borderColor', 'padding'],
+      defaultValue: {
+        text: 'Button1',
+        type: 'outline',
+        borderColor: '#CCD1D5',
+      },
+    },
+    {
+      componentName: 'Button',
+      slotName: 'footer',
+      layout: {
+        top: 24,
+        left: 32,
+        height: 36,
+      },
+      displayName: 'ModalFooterConfirm',
+      properties: ['text'],
+      defaultValue: {
+        text: 'Button2',
+        padding: 'none',
+      },
+    },
+  ],
   styles: {
     headerBackgroundColor: {
       type: 'color',
@@ -101,12 +165,12 @@ export const modalConfig = {
         defaultValue: '#ffffffff',
       },
     },
-    headerTextColor: {
+    footerBackgroundColor: {
       type: 'color',
-      displayName: 'Header title color',
+      displayName: 'Footer background color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#000000',
+        defaultValue: '#ffffffff',
       },
     },
     bodyBackgroundColor: {
@@ -115,22 +179,6 @@ export const modalConfig = {
       validation: {
         schema: { type: 'string' },
         defaultValue: '#ffffffff',
-      },
-    },
-    disabledState: {
-      type: 'toggle',
-      displayName: 'Disable',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: false,
-      },
-    },
-    visibility: {
-      type: 'toggle',
-      displayName: 'Visibility',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: true,
       },
     },
     triggerButtonBackgroundColor: {
@@ -149,9 +197,29 @@ export const modalConfig = {
         defaultValue: false,
       },
     },
+    headerHeight: {
+      type: 'code',
+      displayName: 'Header height',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '80px',
+      },
+    },
+    footerHeight: {
+      type: 'code',
+      displayName: 'Footer height',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '80px',
+      },
+    },
   },
   exposedVariables: {
     show: false,
+    isDisabledModal: false,
+    isDisabledTrigger: false,
+    isVisible: true,
+    isLoading: false,
   },
   actions: [
     {
@@ -162,6 +230,26 @@ export const modalConfig = {
       handle: 'close',
       displayName: 'Close',
     },
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'setVisibility', displayName: 'Value', defaultValue: '{{true}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setDisableTrigger',
+      displayName: 'Set disable trigger',
+      params: [{ handle: 'setDisableTrigger', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setDisableModal',
+      displayName: 'Set disable modal',
+      params: [{ handle: 'setDisableModal', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setLoading',
+      displayName: 'Set loading',
+      params: [{ handle: 'setLoading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
   ],
   definition: {
     others: {
@@ -169,13 +257,15 @@ export const modalConfig = {
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
-      title: { value: 'This title can be changed' },
-      titleAlignment: { value: 'left' },
       loadingState: { value: `{{false}}` },
+      triggerVisibility: { value: '{{true}}' },
+      disabledTrigger: { value: '{{false}}' },
+      disabledModal: { value: '{{false}}' },
       useDefaultButton: { value: `{{true}}` },
       triggerButtonLabel: { value: `Launch Modal` },
       size: { value: 'lg' },
-      hideTitleBar: { value: '{{false}}' },
+      showHeader: { value: '{{true}}' },
+      showFooter: { value: '{{true}}' },
       hideCloseButton: { value: '{{false}}' },
       hideOnEsc: { value: '{{true}}' },
       closeOnClickingOutside: { value: '{{false}}' },
@@ -184,12 +274,12 @@ export const modalConfig = {
     events: [],
     styles: {
       headerBackgroundColor: { value: '#ffffffff' },
-      headerTextColor: { value: '#000000' },
+      footerBackgroundColor: { value: '#ffffffff' },
       bodyBackgroundColor: { value: '#ffffffff' },
-      disabledState: { value: '{{false}}' },
-      visibility: { value: '{{true}}' },
       triggerButtonBackgroundColor: { value: '#4D72FA' },
       triggerButtonTextColor: { value: '#ffffffff' },
+      headerHeight: { value: '80px' },
+      footerHeight: { value: '80px' },
     },
   },
 };

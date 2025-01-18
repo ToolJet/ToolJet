@@ -130,7 +130,7 @@ export function renderElement(
   const paramTypeDefinition = componentDefinition[paramType] || {};
   const definition = paramTypeDefinition[param] || {};
   const meta = componentMeta[paramType][param];
-
+  const isDisabled = component.component.properties[param]?.isDisabled ?? false;
   if (
     componentConfig.component == 'DropDown' ||
     componentConfig.component == 'Form' ||
@@ -168,6 +168,7 @@ export function renderElement(
       }}
       component={component}
       placeholder={placeholder}
+      isDisabled={isDisabled}
     />
   );
 }
