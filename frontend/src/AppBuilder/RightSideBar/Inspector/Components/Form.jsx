@@ -19,7 +19,9 @@ export const Form = ({
   allComponents,
   pages,
 }) => {
-  const properties = Object.keys(componentMeta.properties);
+  let additionalActions = [];
+  let properties = [];
+  // const properties = Object.keys(componentMeta.properties);
   const events = Object.keys(componentMeta.events);
   const validations = Object.keys(componentMeta.validation || {});
   const tempComponentMeta = deepClone(componentMeta);
@@ -31,11 +33,19 @@ export const Form = ({
       newOptions.push({ name: component.component.name, value: componentId });
     }
   });
+  for (const [key] of Object.entries(componentMeta?.properties)) {
+    if (componentMeta?.properties[key]?.section === 'additionalActions') {
+      additionalActions.push(key);
+    } else {
+      properties.push(key);
+    }
+  }
 
   tempComponentMeta.properties.buttonToSubmit.options = newOptions;
 
   const accordionItems = baseComponentProperties(
     properties,
+    additionalActions,
     events,
     component,
     tempComponentMeta,
@@ -56,6 +66,7 @@ export const Form = ({
 
 export const baseComponentProperties = (
   properties,
+  additionalActions,
   events,
   component,
   componentMeta,
@@ -87,6 +98,27 @@ export const baseComponentProperties = (
           darkMode
         )
       ),
+    });
+  }
+
+  if (additionalActions.length > 0) {
+    items.push({
+      title: `${i18next.t('widget.common.additionalActions', 'Additional Actions')}`,
+      isOpen: true,
+      children: additionalActions.map((property) => {
+        return renderElement(
+          component,
+          componentMeta,
+          paramUpdated,
+          dataQueries,
+          property,
+          'properties',
+          currentState,
+          allComponents,
+          darkMode,
+          componentMeta.properties?.[property]?.placeholder
+        );
+      }),
     });
   }
 
