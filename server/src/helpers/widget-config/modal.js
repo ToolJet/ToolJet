@@ -36,6 +36,34 @@ export const modalConfig = {
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
+    triggerVisibility: {
+      type: 'toggle',
+      displayName: 'Modal trigger visibility',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+    },
+    disabledTrigger: {
+      type: 'toggle',
+      displayName: 'Disable modal trigger',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
+    disabledModal: {
+      type: 'toggle',
+      displayName: 'Disable modal window',
+      section: 'additionalActions',
       validation: {
         schema: { type: 'boolean' },
         defaultValue: false,
@@ -117,22 +145,6 @@ export const modalConfig = {
         defaultValue: '#ffffffff',
       },
     },
-    disabledState: {
-      type: 'toggle',
-      displayName: 'Disable',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: false,
-      },
-    },
-    visibility: {
-      type: 'toggle',
-      displayName: 'Visibility',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: true,
-      },
-    },
     triggerButtonBackgroundColor: {
       type: 'color',
       displayName: 'Trigger button background color',
@@ -152,6 +164,10 @@ export const modalConfig = {
   },
   exposedVariables: {
     show: false,
+    isDisabledModal: false,
+    isDisabledTrigger: false,
+    isVisible: true,
+    isLoading: false,
   },
   actions: [
     {
@@ -161,6 +177,26 @@ export const modalConfig = {
     {
       handle: 'close',
       displayName: 'Close',
+    },
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'setVisibility', displayName: 'Value', defaultValue: '{{true}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setDisableTrigger',
+      displayName: 'Set disable trigger',
+      params: [{ handle: 'setDisableTrigger', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setDisableModal',
+      displayName: 'Set disable modal',
+      params: [{ handle: 'setDisableModal', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setLoading',
+      displayName: 'Set loading',
+      params: [{ handle: 'setLoading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
     },
   ],
   definition: {
@@ -172,6 +208,9 @@ export const modalConfig = {
       title: { value: 'This title can be changed' },
       titleAlignment: { value: 'left' },
       loadingState: { value: `{{false}}` },
+      disabledModal: { value: '{{false}}' },
+      disabledTrigger: { value: '{{false}}' },
+      triggerVisibility: { value: '{{true}}' },
       useDefaultButton: { value: `{{true}}` },
       triggerButtonLabel: { value: `Launch Modal` },
       size: { value: 'lg' },
@@ -186,8 +225,6 @@ export const modalConfig = {
       headerBackgroundColor: { value: '#ffffffff' },
       headerTextColor: { value: '#000000' },
       bodyBackgroundColor: { value: '#ffffffff' },
-      disabledState: { value: '{{false}}' },
-      visibility: { value: '{{true}}' },
       triggerButtonBackgroundColor: { value: '#4D72FA' },
       triggerButtonTextColor: { value: '#ffffffff' },
     },

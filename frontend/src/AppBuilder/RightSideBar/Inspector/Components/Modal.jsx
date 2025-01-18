@@ -16,6 +16,20 @@ export const Modal = ({ componentMeta, darkMode, ...restProps }) => {
     allComponents,
   } = restProps;
 
+  let properties = [];
+  let additionalActions = [];
+
+  const events = Object.keys(componentMeta.events);
+  const validations = Object.keys(componentMeta.validation || {});
+
+  for (const [key] of Object.entries(componentMeta?.properties)) {
+    if (componentMeta?.properties[key]?.section === 'additionalActions') {
+      additionalActions.push(key);
+    } else {
+      properties.push(key);
+    }
+  }
+
   const renderCustomElement = (param, paramType = 'properties') => {
     return renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, currentState);
   };
@@ -24,9 +38,8 @@ export const Modal = ({ componentMeta, darkMode, ...restProps }) => {
       component.component.definition.properties.useDefaultButton?.value ?? false
     );
     const accordionItems = [];
-    const options = ['useDefaultButton'];
-
     let renderOptions = [];
+    const options = ['useDefaultButton'];
 
     options.map((option) => renderOptions.push(renderCustomElement(option)));
 
@@ -37,15 +50,18 @@ export const Modal = ({ componentMeta, darkMode, ...restProps }) => {
     });
 
     accordionItems.push({
+      title: 'Additional actions',
+      isOpen: true,
+      children: additionalActions?.map((property) => renderCustomElement(property)),
+    });
+
+    accordionItems.push({
       title: 'Options',
       children: renderOptions,
     });
+
     return accordionItems;
   };
-
-  const properties = Object.keys(componentMeta.properties);
-  const events = Object.keys(componentMeta.events);
-  const validations = Object.keys(componentMeta.validation || {});
 
   const filteredProperties = properties.filter(
     (property) => property !== 'useDefaultButton' && property !== 'triggerButtonLabel'
