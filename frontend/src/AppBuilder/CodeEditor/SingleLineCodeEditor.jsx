@@ -6,7 +6,13 @@ import { useTranslation } from 'react-i18next';
 import { camelCase, isEmpty, noop } from 'lodash';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
-import { autocompletion, completionKeymap, completionStatus, acceptCompletion } from '@codemirror/autocomplete';
+import {
+  autocompletion,
+  completionKeymap,
+  completionStatus,
+  acceptCompletion,
+  startCompletion,
+} from '@codemirror/autocomplete';
 import { defaultKeymap } from '@codemirror/commands';
 import { keymap } from '@codemirror/view';
 import FxButton from '../CodeBuilder/Elements/FxButton';
@@ -158,6 +164,7 @@ const EditorInput = ({
   onInputChange,
 }) => {
   const getSuggestions = useStore((state) => state.getSuggestions, shallow);
+  const [codeMirrorView, setCodeMirrorView] = useState(undefined);
   function autoCompleteExtensionConfig(context) {
     const hints = getSuggestions();
     let word = context.matchBefore(/\w*/);
@@ -196,6 +203,7 @@ const EditorInput = ({
       from: word.from,
       options: completions,
       validFor: /^\{\{.*\}\}$/,
+      filter: false,
     };
   }
 
@@ -314,6 +322,9 @@ const EditorInput = ({
       >
         <ErrorBoundary>
           <CodeMirror
+            onCreateEditor={(view) => {
+              setCodeMirrorView(view);
+            }}
             value={currentValue}
             placeholder={placeholder}
             height={showLineNumbers ? '400px' : '100%'}
@@ -345,6 +356,11 @@ const EditorInput = ({
             theme={theme}
             indentWithTab={false}
             readOnly={disabled}
+            onKeyDown={(event) => {
+              if (event.key === 'Backspace') {
+                startCompletion(codeMirrorView);
+              }
+            }}
           />
         </ErrorBoundary>
       </CodeHinter.Portal>
