@@ -147,7 +147,7 @@ Any property having `Fx` button next to its field can be **programmatically conf
 
 ### Server-side pagination
 
-Server-side pagination can be used to run a query whenever the page is changed. Go to events section of the inspector and change the action for `on page changed` event. Number of records per page needs to be handled in your query. If server-side pagination is enabled, `pageIndex` property will be exposed on the table object, this property will have the current page index. `pageIndex` can be used to query the next set of results when page is changed.
+Server-side pagination can be used to run a query whenever the page is changed. Go to events section of the inspector and change the action for `On page changed` event. Number of records per page needs to be handled in your query. If server-side pagination is enabled, `pageIndex` property will be exposed on the table object, this property will have the current page index. `pageIndex` can be used to query the next set of results when page is changed.
 
 When Server-side pagination is enabled, you'll be able to set three other table properties:
 - **Enable previous page button**: When server-side pagination is enabled, this button is enabled by default. Toggle this off to hide the previous page button from the table.
