@@ -41,19 +41,27 @@ export class DataQueriesService {
   }
 
   async all(query: object): Promise<DataQuery[]> {
-    const { app_version_id: appVersionId }: any = query;
+    const { app_version_id: appVersionId, startDate, endDate }: any = query;
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      return await manager
+      const qb = manager
         .createQueryBuilder(DataQuery, 'data_query')
         .innerJoinAndSelect('data_query.dataSource', 'data_source')
         .leftJoinAndSelect('data_query.plugins', 'plugins')
         .leftJoinAndSelect('plugins.iconFile', 'iconFile')
         .leftJoinAndSelect('plugins.manifestFile', 'manifestFile')
         .where('data_source.appVersionId = :appVersionId', { appVersionId })
-        .where('data_query.app_version_id = :appVersionId', { appVersionId })
-        .orderBy('data_query.updatedAt', 'DESC')
-        .getMany();
+        .andWhere('data_query.app_version_id = :appVersionId', { appVersionId });
+
+      // Adicionando filtros de data
+      if (startDate) {
+        qb.andWhere('data_query.createdAt >= :startDate', { startDate });
+      }
+      if (endDate) {
+        qb.andWhere('data_query.createdAt <= :endDate', { endDate });
+      }
+
+      return await qb.orderBy('data_query.updatedAt', 'DESC').getMany();
     });
   }
 
