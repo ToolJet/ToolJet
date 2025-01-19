@@ -102,7 +102,10 @@ export const isMandatoryValid = (isMandatory, selectedDate) => {
 };
 
 export const isDateValid = (selectedDate, validation) => {
-  const { minDate, maxDate, minTime, maxTime, customRule, excludedDates } = validation;
+  const { minDate, maxDate, minTime, maxTime, customRule, excludedDates, isMandatory } = validation;
+
+  if (!isMandatoryValid(isMandatory, selectedDate)) return { isValid: false, validationError: 'Input is mandatory' };
+
   if (!isMinDateValid(minDate, selectedDate) && moment(minDate, 'DD/MM/YYYY').isValid())
     return {
       isValid: false,
