@@ -1,0 +1,9 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Anthropic datasource",
+  "description": "A schema defining Anthropic datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {}
+}

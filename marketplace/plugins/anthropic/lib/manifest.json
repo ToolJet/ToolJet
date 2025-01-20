@@ -1,0 +1,20 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Anthropic datasource",
+  "description": "A schema defining Anthropic datasource",
+  "type": "api",
+  "source": {
+    "name": "Anthropic",
+    "kind": "anthropic",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {}
+  },
+  "defaults": {},
+  "properties": {},
+  "required": []
+}
