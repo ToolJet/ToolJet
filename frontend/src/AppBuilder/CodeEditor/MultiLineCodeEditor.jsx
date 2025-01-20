@@ -19,6 +19,7 @@ import { PreviewBox } from './PreviewBox';
 import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { syntaxTree } from '@codemirror/language';
 
 const langSupport = Object.freeze({
   javascript: javascript(),
@@ -120,8 +121,27 @@ const MultiLineCodeEditor = (props) => {
       return suggestion.hint.includes(nearestSubstring);
     });
 
+    const localVariables = new Set();
+
+    // Traverse the syntax tree to extract variable declarations
+    syntaxTree(context.state).iterate({
+      enter: (node) => {
+        // JavaScript: Detect variable declarations (var, let, const)
+        if (node.name === 'VariableDefinition') {
+          const varName = context.state.sliceDoc(node.from, node.to);
+          if (varName && varName.startsWith(nearestSubstring)) localVariables.add(varName);
+        }
+      },
+    });
+
+    // Convert Set to an array of completion suggestions
+    const localVariableSuggestions = [...localVariables].map((varName) => ({
+      hint: varName,
+      type: 'variable',
+    }));
+
     const suggestions = generateHints(
-      [...JSLangHints, ...autoSuggestionList, ...suggestionList],
+      [...localVariableSuggestions, ...JSLangHints, ...autoSuggestionList, ...suggestionList],
       null,
       nearestSubstring
     ).map((hint) => {
