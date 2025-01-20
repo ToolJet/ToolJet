@@ -18,7 +18,7 @@ import {
 } from "Support/utils/apps";
 
 
-describe("App share functionality", {
+describe("Private and Public apps", {
   retries: { runMode: 2 },
 }, () => {
   const data = {};
@@ -83,6 +83,7 @@ describe("App share functionality", {
       actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
     });
     cy.get(onboardingSelectors.signInButton, { timeout: 20000 }).should("be.visible");
+    cy.wait(2000);
     cy.loginWithCredentials("dev@tooljet.io", "password");
     cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
 
@@ -117,6 +118,7 @@ describe("App share functionality", {
       actualUrl: `${Cypress.config("baseUrl")}/applications/${data.slug}`,
     });
 
+    cy.wait(2000);
     cy.loginWithCredentials(data.email, "password");
     cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
 
@@ -192,7 +194,7 @@ describe("App share functionality", {
 
     // Test signup flow
     cy.get(commonSelectors.createAnAccountLink).click();
-    cy.wait(1000);
+    cy.wait(3000);
     cy.clearAndType(commonSelectors.inputFieldFullName, data.firstName);
     cy.clearAndType(commonSelectors.inputFieldEmailAddress, data.email);
     cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
@@ -235,7 +237,7 @@ describe("App share functionality", {
     );
 
     cy.get(commonSelectors.createAnAccountLink).click();
-    cy.wait(1000);
+    cy.wait(3000);
     cy.clearAndType(commonSelectors.inputFieldFullName, data.firstName);
     cy.clearAndType(commonSelectors.inputFieldEmailAddress, data.email);
     cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");

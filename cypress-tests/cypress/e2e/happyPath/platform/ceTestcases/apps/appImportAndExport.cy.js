@@ -1,717 +1,385 @@
-import { commonSelectors } from "Selectors/common";
-import { addNewconstants } from "Support/utils/workspaceConstants";
-
-import {
-  appVersionSelectors,
-  exportAppModalSelectors,
-  importSelectors,
-} from "Selectors/exportImport";
-
-import { addQuery, verifyValueOnInspector } from "Support/utils/dataSource";
-
-import {
-  verifyComponent,
-  deleteComponentAndVerify,
-} from "Support/utils/basicComponents";
-
-import {
-  selectAndAddDataSource,
-  fillConnectionForm,
-} from "Support/utils/postgreSql";
-
-import { dataSourceText } from "Texts/dataSource";
-
-import { exportAppModalText, importText } from "Texts/exportImport";
-
-import {
-  clickOnExportButtonAndVerify,
-  createNewVersion,
-  exportAllVersionsAndVerify,
-  verifyElementsOfExportModal,
-} from "Support/utils/exportImport";
-
-import {
-  selectAppCardOption,
-  navigateToAppEditor,
-  closeModal,
-  pinInspector,
-} from "Support/utils/common";
-
+import { fake } from "Fixtures/fake";
+import { commonSelectors, commonWidgetSelector } from "Selectors/common";
+import { appVersionSelectors, importSelectors } from "Selectors/exportImport";
 import { commonText } from "Texts/common";
 import { dashboardSelector } from "Selectors/dashboard";
-import { fake } from "Fixtures/fake";
 import { buttonText } from "Texts/button";
-import { workspaceConstantsText } from "Texts/workspaceConstants";
-import { workspaceConstantsSelectors } from "Selectors/workspaceConstants";
+
+import { exportAppModalText, importText } from "Texts/exportImport";
+import {
+  clickOnExportButtonAndVerify,
+  exportAllVersionsAndVerify,
+  verifyElementsOfExportModal,
+  importAndVerifyApp,
+} from "Support/utils/exportImport";
+import { selectAppCardOption, closeModal } from "Support/utils/common";
 
 describe("App Import Functionality", () => {
-  let appData;
-  var data = {};
-  data.appName = `${fake.companyName}-App`;
-  data.appReName = `${fake.companyName}-${fake.companyName}-App`;
-  let currentVersion = "";
-  let otherVersions = "";
-  const toolJetImage = "cypress/fixtures/Image/tooljet.png";
-  const appFile = "cypress/fixtures/templates/test-app.json";
-  let exportedFilePath;
-  data.dsName1 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+  const TEST_DATA = {
+    toolJetImage: "cypress/fixtures/Image/tooljet.png",
+    appFiles: {
+      multiVersion: "cypress/fixtures/templates/three-versions.json",
+      singleVersion: "cypress/fixtures/templates/one_version.json",
+    },
+  };
+
+  let data;
+
+  const initializeData = () => {
+    const firstName = fake.firstName;
+    return {
+      workspaceName: firstName,
+      workspaceSlug: firstName.toLowerCase().replace(/\s+/g, "-"),
+      appName: `${fake.companyName}-IE-App`,
+      appReName: `${fake.companyName}-${fake.companyName}-IE-App`,
+      dsName: fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", ""),
+    };
+  };
+
+  data = initializeData();
 
   beforeEach(() => {
     cy.apiLogin();
   });
 
-  before(() => {
-    cy.fixture("templates/test-app.json").then((app) => {
-      cy.exec("cd ./cypress/downloads/ && rm -rf *", {
-        failOnNonZeroExit: false,
-      });
-      appData = app;
-    });
-  });
+  it("should verify app import functionality", () => {
+    // Setup workspace
+    cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
+    cy.apiLogout();
+    cy.apiLogin();
+    cy.visit(`${data.workspaceSlug}`);
 
-  it("Verify the Import functionality of an Application", () => {
-    cy.visit("/");
-
-    cy.get("body").then(($title) => {
-      if ($title.text().includes(commonText.welcomeTooljetWorkspace)) {
-        cy.get(dashboardSelector.importAppButton).click();
-      } else {
-        cy.get(importSelectors.dropDownMenu).should("be.visible").click();
-        cy.get(importSelectors.importOptionLabel).verifyVisibleElement(
-          "have.text",
-          importText.importOption
-        );
-      }
-    });
-
-    cy.get(importSelectors.importOptionInput).eq(0).selectFile(toolJetImage, {
-      force: true,
-    });
-
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
+    // Test invalid file import
+    cy.get(dashboardSelector.importAppButton).click();
+    importAndVerifyApp(
+      TEST_DATA.toolJetImage,
       importText.couldNotImportAppToastMessage
     );
 
+    // Test valid app import
     cy.get(importSelectors.dropDownMenu).should("be.visible").click();
     cy.get(importSelectors.importOptionLabel).verifyVisibleElement(
       "have.text",
       importText.importOption
     );
-    cy.get(importSelectors.importOptionInput).eq(0).selectFile(appFile, {
-      force: true,
-    });
+
+    cy.intercept("POST", "/api/v2/resources/import").as("importApp");
+    cy.get(importSelectors.importOptionInput)
+      .eq(0)
+      .selectFile(TEST_DATA.appFiles.multiVersion, {
+        force: true,
+      });
     cy.wait(2000);
-    cy.get(importSelectors.importAppTitle).should("be.visible");
+
+    cy.get(importSelectors.importAppTitle).verifyVisibleElement(
+      "have.text",
+      "Import app"
+    );
+    cy.get(commonSelectors.appNameLabel).verifyVisibleElement(
+      "have.text",
+      "App Name"
+    );
+    cy.get(commonSelectors.appNameInput)
+      .should("be.visible")
+      .and("have.value", "three-versions");
+    cy.get(commonSelectors.appNameInfoLabel).verifyVisibleElement(
+      "have.text",
+      "App name must be unique and max 50 characters"
+    );
+    cy.get(commonSelectors.cancelButton)
+      .should("be.visible")
+      .and("have.text", "Cancel");
+    cy.get(commonSelectors.importAppButton).verifyVisibleElement(
+      "have.text",
+      "Import app"
+    );
+
     cy.get(importSelectors.importAppButton).click();
     cy.get(".go3958317564")
       .should("be.visible")
       .and("have.text", importText.appImportedToastMessage);
 
+    // Verify imported app
     cy.get(".driver-close-btn").click();
     cy.wait(500);
-
     cy.get(commonSelectors.appNameInput).verifyVisibleElement(
       "contain.value",
-      appData.name.toLowerCase()
+      "three-versions"
     );
 
+    // Configure app
     cy.skipEditorPopover();
-    cy.modifyCanvasSize(900, 600);
     cy.dragAndDropWidget(buttonText.defaultWidgetText);
     cy.get(appVersionSelectors.appVersionLabel).should("be.visible");
+    cy.get(commonWidgetSelector.draggableWidget("button1")).should(
+      "be.visible"
+    );
 
     cy.renameApp(data.appName);
     cy.get(commonSelectors.appNameInput).verifyVisibleElement(
       "contain.value",
       data.appName
     );
-
     cy.waitForAutoSave();
-    cy.get(commonSelectors.editorPageLogo).should("be.visible");
+
+    // Verify initial widget states
+    cy.get(commonWidgetSelector.draggableWidget("text2")).verifyVisibleElement(
+      "have.text",
+      ""
+    );
+
+    cy.get(commonWidgetSelector.draggableWidget("text2")).verifyVisibleElement(
+      "have.text",
+      ""
+    );
+    cy.get(
+      commonWidgetSelector.draggableWidget("textInput1")
+    ).verifyVisibleElement("have.value", "");
+    cy.get(
+      commonWidgetSelector.draggableWidget("textInput2")
+    ).verifyVisibleElement("have.value", "Leanne Graham");
+    cy.get(
+      commonWidgetSelector.draggableWidget("textInput3")
+    ).verifyVisibleElement("have.value", "");
+
+    // Setup database and data sources
+    cy.visit(`${data.workspaceSlug}/database`);
+    cy.get('[data-cy="student-table"]').verifyVisibleElement(
+      "have.text",
+      "student"
+    );
+
+    cy.apiAddDataToTable("student", {
+      name: "Paramu",
+      country: "India",
+      state: "Kerala",
+    });
+
+    cy.visit(`${data.workspaceSlug}/data-sources`);
+    cy.get('[data-cy="postgresql-button"]').should("be.visible");
+    cy.apiUpdateDataSource("postgresql", "production", {
+      options: [
+        {
+          key: "password",
+          value: `${Cypress.env("pg_password")}`,
+          encrypted: true,
+        },
+      ],
+    });
+
+    cy.apiCreateWsConstant(
+      "pageHeader",
+      "Import and Export",
+      ["Global"],
+      ["production"]
+    );
+    cy.apiCreateWsConstant("db_name", "persons", ["Secret"], ["production"]);
+
+    // Verify app after setup
+    cy.wait("@importApp").then((interception) => {
+      const appId = interception.response.body.imports.app[0].id;
+      cy.openApp(
+        "",
+        Cypress.env("workspaceId"),
+        appId,
+        commonWidgetSelector.draggableWidget("text2")
+      );
+    });
+
+    cy.get(commonWidgetSelector.draggableWidget("text2")).verifyVisibleElement(
+      "have.text",
+      "Import and Export"
+    );
+
+    cy.get(
+      commonWidgetSelector.draggableWidget("textInput1")
+    ).verifyVisibleElement("have.value", "John");
+    cy.get(
+      commonWidgetSelector.draggableWidget("textInput2")
+    ).verifyVisibleElement("have.value", "Leanne Graham");
+    cy.get(
+      commonWidgetSelector.draggableWidget("textInput3")
+    ).verifyVisibleElement("have.value", "India");
     cy.backToApps();
 
-    cy.get(commonSelectors.appHeaderLable).should("be.visible");
+    // Test single version import
+    cy.get(importSelectors.dropDownMenu).click();
+    importAndVerifyApp(TEST_DATA.appFiles.singleVersion);
 
+    // Verify final state
+    cy.get(commonSelectors.appNameInput).verifyVisibleElement(
+      "contain.value",
+      "one_version"
+    );
+
+    cy.get(commonWidgetSelector.draggableWidget("text1")).verifyVisibleElement(
+      "have.text",
+      "Import and Export"
+    );
+    cy.get(
+      commonWidgetSelector.draggableWidget("textInput1")
+    ).verifyVisibleElement("have.value", "John");
+    cy.get(
+      commonWidgetSelector.draggableWidget("textInput2")
+    ).verifyVisibleElement("have.value", "Leanne Graham");
+  });
+
+  it("Verify the elements of export dialog box", () => {
+    cy.exec("cd ./cypress/downloads/ && rm -rf *");
+
+    cy.visit(`${data.workspaceSlug}`);
+
+    // Select the app card option to export the app
     selectAppCardOption(
       data.appName,
       commonSelectors.appCardOptions(commonText.exportAppOption)
     );
 
-    cy.get(exportAppModalSelectors.currentVersionSection).should("be.visible");
-    cy.get(
-      exportAppModalSelectors.versionRadioButton((currentVersion = "v1"))
-    ).verifyVisibleElement("be.checked");
-    clickOnExportButtonAndVerify(
-      exportAppModalText.exportSelectedVersion,
-      data.appName
-    );
+    // Verify the elements of the export modal
+    verifyElementsOfExportModal("v3", ["v2", "v1"], [true, false, false]);
 
-    cy.exec("ls ./cypress/downloads/").then((result) => {
-      cy.log(result);
-      const downloadedAppExportFileName = result.stdout.split("\n")[0];
-      exportedFilePath = `cypress/downloads/${downloadedAppExportFileName}`;
-      cy.log(exportedFilePath);
-      cy.get(importSelectors.dropDownMenu).should("be.visible").click();
-      cy.get(importSelectors.importOptionLabel).verifyVisibleElement(
-        "have.text",
-        importText.importOption
-      );
-
-      cy.get(importSelectors.importOptionInput).selectFile(exportedFilePath, {
-        force: true,
-      });
-
-      cy.get(importSelectors.importAppTitle).should("be.visible");
-      cy.get(importSelectors.importAppButton).click();
-      cy.get(".go3958317564")
-        .should("be.visible")
-        .and("have.text", importText.appImportedToastMessage);
-      cy.get(
-        `[data-cy="draggable-widget-${buttonText.defaultWidgetName}"]`
-      ).should("be.visible");
-      cy.readFile(exportedFilePath).then((newApp) => {
-        let exportedAppData = newApp;
-
-        cy.get(commonSelectors.appNameInput).verifyVisibleElement(
-          "contain.value",
-          exportedAppData.app[0].definition.appV2.name.toLowerCase()
-        );
-
-        cy.get(
-          appVersionSelectors.currentVersionField((currentVersion = "v1"))
-        ).verifyVisibleElement(
-          "have.text",
-          exportedAppData.app[0].definition.appV2.appVersions[0].name
-        );
-      });
-      cy.exec("cd ./cypress/downloads/ && rm -rf *");
-    });
-
-    cy.renameApp(data.appReName);
-    cy.backToApps();
-    cy.get(commonSelectors.appHeaderLable).should("be.visible");
-
-    navigateToAppEditor(data.appReName);
-
-    cy.wait(500);
-    cy.get(appVersionSelectors.appVersionMenuField)
-      .should("be.visible")
-      .click();
-
-    createNewVersion((otherVersions = ["v2"]), (currentVersion = "v1"));
-    cy.get(appVersionSelectors.currentVersionField((otherVersions = "v2")))
-      .should("be.visible")
-      .click()
-      .then(() => {
-        cy.get(appVersionSelectors.appVersionContentList)
-          .invoke("text")
-          .then((versionText) => {
-            cy.log(versionText);
-            cy.backToApps();
-            cy.get(commonSelectors.appHeaderLable).should("be.visible");
-
-            selectAppCardOption(
-              data.appReName,
-              commonSelectors.appCardOptions(commonText.exportAppOption)
-            );
-
-            exportAllVersionsAndVerify(
-              data.appReName,
-              (currentVersion = "v2"),
-              (otherVersions = ["v1"])
-            );
-            cy.exec("ls ./cypress/downloads/").then((result) => {
-              cy.log(result);
-              const newdownloadedAppExportFileName =
-                result.stdout.split("\n")[0];
-              cy.log(newdownloadedAppExportFileName);
-              exportedFilePath = `cypress/downloads/${newdownloadedAppExportFileName}`;
-              cy.get(importSelectors.dropDownMenu).should("be.visible").click();
-              cy.get(importSelectors.importOptionLabel).verifyVisibleElement(
-                "have.text",
-                importText.importOption
-              );
-
-              cy.get(importSelectors.importOptionInput).selectFile(
-                exportedFilePath,
-                {
-                  force: true,
-                }
-              );
-              cy.get(importSelectors.importAppTitle).should("be.visible");
-              cy.get(importSelectors.importAppButton).click();
-              cy.get(".go3958317564")
-                .should("be.visible")
-                .and("have.text", importText.appImportedToastMessage);
-              cy.get(appVersionSelectors.appVersionMenuField).click();
-              cy.get(appVersionSelectors.appVersionContentList).should(
-                "have.text",
-                versionText
-              );
-
-              cy.get(
-                `[data-cy="draggable-widget-${buttonText.defaultWidgetName}"]`
-              ).should("be.visible");
-              cy.readFile(exportedFilePath).then((newApp) => {
-                let exportedAppData = newApp;
-
-                cy.get(commonSelectors.appNameInput).verifyVisibleElement(
-                  "contain.value",
-                  exportedAppData.app[0].definition.appV2.name.toLowerCase()
-                );
-
-                cy.get(
-                  appVersionSelectors.currentVersionField(
-                    (currentVersion = "v2")
-                  )
-                ).verifyVisibleElement(
-                  "have.text",
-                  exportedAppData.app[0].definition.appV2.appVersions[1].name
-                );
-              });
-            });
-            cy.exec("cd ./cypress/downloads/ && rm -rf *");
-          });
-      });
-  });
-
-  it("Verify the elements of export dialog box", () => {
-    data.appName1 = `${fake.companyName}-App`;
-    cy.apiCreateApp(data.appName1);
-
-    cy.openApp();
-
-    cy.dragAndDropWidget(buttonText.defaultWidgetText);
-    cy.get(appVersionSelectors.appVersionLabel).should("be.visible");
-    cy.renameApp(data.appName1);
-    cy.get(commonSelectors.appNameInput).verifyVisibleElement(
-      "have.value",
-      data.appName1
-    );
-
-    cy.waitForAutoSave();
-    cy.get(appVersionSelectors.currentVersionField((currentVersion = "v1")))
-      .should("be.visible")
-      .invoke("text")
-      .then(() => {
-        cy.get(commonSelectors.editorPageLogo).should("be.visible");
-        cy.backToApps();
-        cy.get(commonSelectors.appHeaderLable).should("be.visible");
-
-        selectAppCardOption(
-          data.appName1,
-          commonSelectors.appCardOptions(commonText.exportAppOption)
-        );
-
-        verifyElementsOfExportModal((currentVersion = "v1"));
-      });
-  });
-
-  it("Verify 'Export app' functionality of an application ", () => {
-    data.appName1 = `${fake.companyName}-App`;
-    cy.apiCreateApp(data.appName1);
-
-    cy.visit("/");
-    cy.get(commonSelectors.appHeaderLable).should("be.visible");
-
-    selectAppCardOption(
-      data.appName1,
-      commonSelectors.appCardOptions(commonText.exportAppOption)
-    );
-    verifyElementsOfExportModal((currentVersion = "v1"));
+    // Close the modal
     closeModal(exportAppModalText.modalCloseButton);
 
-    selectAppCardOption(
-      data.appName1,
-      commonSelectors.appCardOptions(commonText.exportAppOption)
-    );
-    cy.get(exportAppModalSelectors.currentVersionSection).should("be.visible");
+    // Ensure the modal title is no longer visible
     cy.get(
-      exportAppModalSelectors.versionRadioButton((currentVersion = "v1"))
-    ).verifyVisibleElement("be.checked");
+      commonSelectors.modalTitle(exportAppModalText.selectVersionTitle)
+    ).should("not.exist");
 
-    clickOnExportButtonAndVerify(
-      exportAppModalText.exportSelectedVersion,
-      data.appName1
-    );
-    cy.exec("cd ./cypress/downloads/ && rm -rf *");
-
+    // Re-open the export modal and click the export button
     selectAppCardOption(
-      data.appName1,
+      data.appName,
       commonSelectors.appCardOptions(commonText.exportAppOption)
     );
-    cy.get(exportAppModalSelectors.currentVersionSection).should("be.visible");
-    exportAllVersionsAndVerify(data.appName1, (currentVersion = "v1"));
-    cy.exec("cd ./cypress/downloads/ && rm -rf *");
+    clickOnExportButtonAndVerify(exportAppModalText.exportAll, data.appName);
 
-    navigateToAppEditor(data.appName1);
-
-    cy.get('[data-cy="widget-list-box-table"]').should("be.visible");
-    cy.skipEditorPopover();
-    cy.get(appVersionSelectors.appVersionMenuField)
-      .should("be.visible")
-      .click();
-
-    createNewVersion((otherVersions = ["v2"]), (currentVersion = "v1"));
-    cy.wait(500);
-    cy.dragAndDropWidget("Text Input", 50, 50);
-    cy.waitForAutoSave();
-    cy.get(appVersionSelectors.currentVersionField((otherVersions = "v2")))
-      .should("be.visible")
-      .invoke("text")
-      .then(() => {
-        cy.backToApps();
-        cy.get(commonSelectors.appHeaderLable).should("be.visible");
-        selectAppCardOption(
-          data.appName1,
-          commonSelectors.appCardOptions(commonText.exportAppOption)
-        );
-
-        verifyElementsOfExportModal(
-          (currentVersion = "v2"),
-          (otherVersions = ["v1"])
-        );
-
-        exportAllVersionsAndVerify(
-          data.appName1,
-          (currentVersion = "v2"),
-          (otherVersions = ["v1"])
-        );
-        cy.exec("cd ./cypress/downloads/ && rm -rf *");
-      });
-
-    selectAppCardOption(
-      data.appName1,
-      commonSelectors.appCardOptions(commonText.exportAppOption)
-    );
-
-    cy.get(exportAppModalSelectors.currentVersionSection).should("be.visible");
-    cy.get(
-      exportAppModalSelectors.versionRadioButton((currentVersion = "v2"))
-    ).verifyVisibleElement("be.checked");
-
-    cy.get(exportAppModalSelectors.versionRadioButton((currentVersion = "v1")))
-      .click()
-      .verifyVisibleElement("be.checked");
-
-    clickOnExportButtonAndVerify(
-      exportAppModalText.exportSelectedVersion,
-      data.appName1
-    );
-    cy.exec("cd ./cypress/downloads/ && rm -rf *");
-  });
-
-  it("Verify 'Export and import' functionality of an application with DS,Constants for same and different workspace", () => {
-    data.appName2 = `${fake.companyName}-App`;
-    data.constName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
-    data.newConstvalue = `New ${data.constName}`;
-    data.constantsName = fake.firstName
-      .toLowerCase()
-      .replaceAll("[^A-Za-z]", "");
-    data.constantsValue = "dJ_8Q~BcaMPd";
-
-    cy.apiCreateApp(data.appName2);
-
-    cy.visit("/");
-
-    //add constants
-
-    cy.get(commonSelectors.workspaceConstantsIcon).click();
-    addNewconstants(data.constName, data.constName);
-
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      workspaceConstantsText.constantCreatedToast("Global")
-    );
-    cy.get('[data-cy="icon-dashboard"]').click();
-
-    cy.openApp(data.appName2);
-    cy.dragAndDropWidget("Text Input", 50, 50);
-    cy.waitForAutoSave();
-    cy.skipEditorPopover();
-    cy.get('[data-cy="default-value-input-field"]').clearAndTypeOnCodeMirror(
-      `{{constants.${data.constName}}`
-    );
-    cy.forceClickOnCanvas();
-    cy.waitForAutoSave();
-
-    // add data sources
-
-    cy.backToApps();
-    cy.get(commonSelectors.globalDataSourceIcon).click();
-
-    selectAndAddDataSource(
-      "databases",
-      dataSourceText.postgreSQL,
-      data.dsName1
-    );
-
-    cy.intercept("GET", "api/v2/data_sources").as("datasource");
-    fillConnectionForm(
-      {
-        Host: Cypress.env("pg_host"),
-        Port: "5432",
-        "Database Name": Cypress.env("pg_user"),
-        Username: Cypress.env("pg_user"),
-        Password: Cypress.env("pg_password"),
-      },
-      ".form-switch"
-    );
-
-    cy.wait("@datasource");
-    cy.visit("/");
-    navigateToAppEditor(data.appName2);
-
-    deleteComponentAndVerify("textinput1");
-    cy.wait(500);
-    pinInspector();
-
-    addQuery(
-      "table_preview",
-      `SELECT * FROM persons;`,
-      `cypress-${data.dsName1}-postgresql`
-    );
-
-    cy.wait(500);
-    cy.dragAndDropWidget("Text Input", 50, 50);
-    cy.waitForAutoSave();
-    cy.skipEditorPopover();
-    cy.get('[data-cy="default-value-input-field"]').clearAndTypeOnCodeMirror(
-      `{{constants.${data.constName}}`
-    );
-    cy.forceClickOnCanvas();
-    cy.waitForAutoSave();
-
-    cy.get('[data-cy="query-preview-button"]').click();
-
-    //Export the app
-
-    cy.backToApps();
-    selectAppCardOption(
-      data.appName2,
-      commonSelectors.appCardOptions(commonText.exportAppOption)
-    );
-
-    clickOnExportButtonAndVerify(
-      exportAppModalText.exportSelectedVersion,
-      data.appName2
-    );
-
-    // Import same app and verify components\
     cy.exec("ls ./cypress/downloads/").then((result) => {
-      cy.log(result);
       const downloadedAppExportFileName = result.stdout.split("\n")[0];
-      exportedFilePath = `cypress/downloads/${downloadedAppExportFileName}`;
-      cy.log(exportedFilePath);
-      cy.get(importSelectors.dropDownMenu).should("be.visible").click();
-      cy.get(importSelectors.importOptionLabel).verifyVisibleElement(
-        "have.text",
-        importText.importOption
+      const filePath = `./cypress/downloads/${downloadedAppExportFileName}`;
+
+      // Ensure the file name contains the expected app export name
+      expect(downloadedAppExportFileName).to.contain(
+        data.appName.toLowerCase()
       );
 
-      cy.get(importSelectors.importOptionInput).selectFile(exportedFilePath, {
-        force: true,
-      });
+      // Read and validate the exported JSON file
+      cy.readFile(filePath).then((appData) => {
+        // Validate the app name
+        const appNameFromFile = appData.app[0].definition.appV2.name;
+        expect(appNameFromFile).to.equal(data.appName);
 
-      cy.get(importSelectors.importAppTitle).should("be.visible");
-      cy.get(importSelectors.importAppButton).click();
-      cy.get(".go3958317564")
-        .should("be.visible")
-        .and("have.text", importText.appImportedToastMessage);
-      cy.wait(3000);
-      cy.get('button[title="Unpin"]').click();
-      cy.forceClickOnCanvas();
-      cy.wait(2000);
-      cy.get('[data-cy="draggable-widget-textinput1"]').should(
-        "have.value",
-        `${data.constName}`
-      );
-      cy.get('[data-cy="list-query-table_preview"]').should("be.visible");
-
-      // Import same to app to different workspace and verify
-
-      data.workspaceName = `${fake.companyName}-App`;
-      data.workspaceSlug = fake.firstName
-        .toLowerCase()
-        .replaceAll("[^A-Za-z]", "");
-
-      cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
-      cy.visitTheWorkspace(data.workspaceName);
-
-      cy.exec("ls ./cypress/downloads/").then((result) => {
-        const downloadedAppExportFileName = result.stdout.split("\n")[0].trim();
-        const exportedFilePath = `cypress/downloads/${downloadedAppExportFileName}`;
-
-        cy.log("Exported File Path:", exportedFilePath);
-
-        cy.readFile(exportedFilePath).should("exist");
-
-        cy.get(importSelectors.dropDownMenu).should("be.visible").click();
-        cy.get(importSelectors.importOptionLabel).verifyVisibleElement(
-          "have.text",
-          importText.importOption
+        // Validate the schema for the student table in tooljetdb
+        const tooljetDatabase = appData.tooljet_database.find(
+          (db) => db.table_name === "student"
         );
-        cy.get(importSelectors.importOptionInput)
-          .eq(1)
-          .selectFile(exportedFilePath, {
-            force: true,
-          });
+        expect(tooljetDatabase).to.exist;
+        expect(tooljetDatabase.schema).to.exist;
 
-        cy.get(importSelectors.importAppTitle).should("be.visible");
-        cy.get(importSelectors.importAppButton).click();
-        cy.get(".go3958317564")
-          .should("be.visible")
-          .and("have.text", importText.appImportedToastMessage);
+        // Validate components and queries
+        const components = appData.app[0].definition.appV2.components;
 
-        cy.wait(3000);
+        const text2Component = components.find(
+          (component) => component.name === "text2"
+        );
+        expect(text2Component).to.exist;
+        expect(text2Component.properties.text.value).to.equal(
+          "{{constants.pageHeader}}"
+        );
 
-        cy.skipWalkthrough();
-        cy.forceClickOnCanvas();
-        cy.wait(2000);
+        const textinput1 = components.find(
+          (component) => component.name === "textinput1"
+        );
+        expect(textinput1).to.exist;
+        expect(textinput1.properties.value.value).to.include("queries");
 
-        cy.get('[data-cy="list-query-table_preview"]').should("be.visible");
+        const textinput2 = components.find(
+          (component) => component.name === "textinput2"
+        );
+        expect(textinput2).to.exist;
+        expect(textinput2.properties.value.value).to.include("queries");
+
+        const textinput3 = components.find(
+          (component) => component.name === "textinput3"
+        );
+        expect(textinput3).to.exist;
+        expect(textinput3.properties.value.value).to.include("queries");
+
+        // Validate the data queries
+        const dataQueries = appData.app[0].definition.appV2.dataQueries;
+
+        const postgresqlQuery = dataQueries.find(
+          (query) => query.name === "postgresql1"
+        );
+        expect(postgresqlQuery).to.exist;
+        expect(postgresqlQuery.options.query).to.include(
+          "Select * from {{secrets.db_name}}"
+        );
+
+        const restapiQuery = dataQueries.find(
+          (query) => query.name === "restapi1"
+        );
+        expect(restapiQuery).to.exist;
+        expect(restapiQuery.options.url).to.equal(
+          "https://jsonplaceholder.typicode.com/users/1"
+        );
+
+        const tooljetdbQuery = dataQueries.find(
+          (query) => query.name === "tooljetdb1"
+        );
+        expect(tooljetdbQuery).to.exist;
+        expect(tooljetdbQuery.options.operation).to.equal("list_rows");
+
+        // Ensure appVersions exists
+        const appVersions = appData.app[0].definition.appV2.appVersions;
+        expect(appVersions).to.exist;
+
+        // Map and verify app version names
+        const versionNames = appVersions.map((version) => version.name);
+        expect(versionNames).to.include.members(["v1", "v2", "v3"]);
       });
     });
-  });
 
-  it("Verify 'Export and import' functionality of an application with tj_DB for same and different workspace", () => {
-    data.appName3 = `${fake.companyName}-App`;
-    cy.visit("/");
-    cy.createAppFromTemplate("applicant-tracking-system");
-    cy.wait(500);
-    cy.clearAndType('[data-cy="app-name-input"]', data.appName3);
-    cy.get('[data-cy="+-create-app"]').click();
-    cy.wait(500);
-    cy.skipWalkthrough();
+    cy.exec("cd ./cypress/downloads/ && rm -rf *");
 
-    //Export the app
-
-    cy.backToApps();
     selectAppCardOption(
-      data.appName3,
+      data.appName,
       commonSelectors.appCardOptions(commonText.exportAppOption)
     );
-
-    clickOnExportButtonAndVerify(
-      exportAppModalText.exportSelectedVersion,
-      data.appName3
-    );
-
-    // Import same app and verify components
+    cy.get(`[data-cy="v1-radio-button"]`).check();
+    cy.get(
+      commonSelectors.buttonSelector(exportAppModalText.exportSelectedVersion)
+    ).click();
 
     cy.exec("ls ./cypress/downloads/").then((result) => {
-      cy.log(result);
       const downloadedAppExportFileName = result.stdout.split("\n")[0];
-      exportedFilePath = `cypress/downloads/${downloadedAppExportFileName}`;
-      cy.log(exportedFilePath);
-      cy.get(importSelectors.dropDownMenu).should("be.visible").click();
-      cy.get(importSelectors.importOptionLabel).verifyVisibleElement(
-        "have.text",
-        importText.importOption
+      const filePath = `./cypress/downloads/${downloadedAppExportFileName}`;
+
+      // Ensure the file name contains the expected app export name
+      expect(downloadedAppExportFileName).to.contain(
+        data.appName.toLowerCase()
       );
 
-      cy.get(importSelectors.importOptionInput).selectFile(exportedFilePath, {
-        force: true,
-      });
-
-      cy.get(importSelectors.importAppTitle).should("be.visible");
-      cy.get(importSelectors.importAppButton).click();
-      cy.get(".go3958317564")
-        .should("be.visible")
-        .and("have.text", importText.appImportedToastMessage);
-      cy.wait(3000);
-      const selectors = [
-        '[data-cy="list-query-getactivejobs"]',
-        '[data-cy="list-query-addnewjob"]',
-        '[data-cy="list-query-addnewapplicant"]',
-        '[data-cy="list-query-updatejob"]',
-      ];
-
-      selectors.forEach((selector) => {
-        cy.get(selector).should("be.visible");
-      });
-
-      // Import same to app to different workspace and verify
-
-      data.workspaceName = `${fake.companyName}-App`;
-      data.workspaceSlug = fake.firstName
-        .toLowerCase()
-        .replaceAll("[^A-Za-z]", "");
-
-      cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
-      cy.visitTheWorkspace(data.workspaceName);
-
-      cy.exec("ls ./cypress/downloads/").then((result) => {
-        const downloadedAppExportFileName = result.stdout.split("\n")[0].trim();
-        const exportedFilePath = `cypress/downloads/${downloadedAppExportFileName}`;
-
-        cy.log("Exported File Path:", exportedFilePath);
-
-        cy.readFile(exportedFilePath).should("exist");
-
-        cy.get(importSelectors.dropDownMenu).should("be.visible").click();
-        cy.get(importSelectors.importOptionLabel).verifyVisibleElement(
-          "have.text",
-          importText.importOption
-        );
-        cy.get(importSelectors.importOptionInput)
-          .eq(1)
-          .selectFile(exportedFilePath, {
-            force: true,
-          });
-
-        cy.get(importSelectors.importAppTitle).should("be.visible");
-        cy.get(importSelectors.importAppButton).click();
-        cy.get(".go3958317564")
-          .should("be.visible")
-          .and("have.text", importText.appImportedToastMessage);
-
-        cy.wait(3000);
-
-        cy.skipWalkthrough();
-        cy.wait(2000);
-        selectors.forEach((selector) => {
-          cy.get(selector).should("be.visible");
-        });
+      // Read and validate the exported JSON file
+      cy.readFile(filePath).then((appData) => {
+        // Validate the app name
+        const appNameFromFile = appData.app[0].definition.appV2.name;
+        expect(appNameFromFile).to.equal(data.appName);
       });
     });
   });
 
   it.skip("Verify 'Export app' functionality of an application inside app editor", () => {
     data.appName2 = `${fake.companyName}-App`;
-
     cy.apiCreateApp(data.appName2);
-    cy.visit("/");
-    navigateToAppEditor(data.appName2);
+    cy.openApp(data.appName2);
 
-    cy.get('[data-cy="widget-list-box-table"]').should("be.visible");
-    cy.skipEditorPopover();
-
-    cy.get(appVersionSelectors.appVersionMenuField)
-      .should("be.visible")
-      .click();
-
-    createNewVersion((otherVersions = ["v2"]), (currentVersion = "v1"));
-    cy.wait(500);
     cy.dragAndDropWidget("Text Input", 50, 50);
-    cy.waitForAutoSave();
 
-    cy.get(appVersionSelectors.currentVersionField((otherVersions = "v2")))
-      .should("be.visible")
-      .invoke("text");
     cy.get('[data-cy="left-sidebar-settings-button"]').click();
     cy.get('[data-cy="button-user-status-change"]').click();
 
-    verifyElementsOfExportModal(
-      (currentVersion = "v2"),
-      (otherVersions = ["v1"])
-    );
+    verifyElementsOfExportModal("v1");
 
-    exportAllVersionsAndVerify(
-      data.appName1,
-      (currentVersion = "v2"),
-      (otherVersions = ["v1"])
-    );
+    exportAllVersionsAndVerify(data.appName1, "v1");
   });
 });

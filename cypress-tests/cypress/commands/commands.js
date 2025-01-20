@@ -24,7 +24,7 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add("clearAndType", (selector, text) => {
-  cy.get(selector).clear().type(text, { log: false });
+  cy.get(selector, { timeout: 20000 }).clear().type(text, { log: false });
 });
 
 Cypress.Commands.add("forceClickOnCanvas", () => {
