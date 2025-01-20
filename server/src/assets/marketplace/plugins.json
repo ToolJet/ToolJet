@@ -132,8 +132,8 @@
     "tags": ["AI"]
   },
   {
-    "name": "huggingface",
-    "description": "api plugin from huggingface",
+    "name": "Hugging Face",
+    "description": "Plugin for Hugging Face's Inference API to use listed AI models for text capabilities",
     "version": "1.0.0",
     "id": "huggingface",
     "author": "Tooljet",
