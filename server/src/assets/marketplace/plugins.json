@@ -139,7 +139,7 @@
   },
   {
     "name": "gemini",
-    "description": "Integrate with Anthropic API to consume claude Al models for chat and vision capabilities.",
+    "description": "Integrate with Gemini AI models for text generation.",
     "version": "1.0.0",
     "id": "gemini",
     "author": "Tooljet",
