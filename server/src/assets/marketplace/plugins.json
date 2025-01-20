@@ -139,7 +139,7 @@
   },
   {
     "name": "anthropic",
-    "description": "api plugin from anthropic",
+    "description": "Integrate with Anthropic API to use Claude AI models.",
     "version": "1.0.0",
     "id": "anthropic",
     "author": "Tooljet",
