@@ -50,7 +50,7 @@
       }
     },
     "summarisation":{
-      "model":{
+      "model_summarisation":{
         "label": "Model",
         "key": "model",
         "type": "codehinter",
@@ -60,7 +60,7 @@
         "height": "36px",
         "className": "codehinter-plugins"
       },
-      "input":{
+      "input_summarisation":{
         "label": "Input",
         "key": "input",
         "type": "codehinter",
@@ -70,7 +70,7 @@
         "height": "192px",
         "className": "codehinter-plugins"
       },
-      "operation_parameters":{
+      "operation_parameters_summarisation":{
         "label": "Operation parameters",
         "key": "operation_parameters",
         "type": "codehinter",
