@@ -58,16 +58,23 @@ export default class GeminiService implements QueryService {
       throw new QueryError('Connection could not be established', 'API key is missing', {});
     }
 
+    const options: QueryOptions = {
+      operation: Operation.TextGeneration,
+      model: 'models/gemini-1.5-flash',
+      system_prompt: 'Test system prompt',
+      prompt: 'This is a test prompt to generate some text.',
+      max_tokens: 100,
+      temperature: 0.7,
+    };
+
     const geminiClient = new GoogleGenerativeAI(apiKey);
 
     try {
-      await geminiClient.getGenerativeModel({
-        model: 'models/gemini-1.5-flash',
-      });
+      await generateText(geminiClient, options);
     } catch (error: any) {
-      const errorMessage = error?.message || 'Unknown error occurred';
+      const errorMessage = error.message || 'Unknown error occurred';
       throw new QueryError('Connection could not be established', errorMessage, {
-        statusCode: error?.statusCode || 500,
+        statusCode: error.response?.status || 500,
       });
     }
 
