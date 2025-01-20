@@ -125,6 +125,7 @@ export const createResolvedSlice = (set, get) => ({
       'setVariables'
     );
     get().updateDependencyValues(`variables.${key}`);
+    get().checkAndSetTrueBuildSuggestionsFlag();
   },
 
   getVariable: (key, moduleId = 'canvas') => {
@@ -153,6 +154,7 @@ export const createResolvedSlice = (set, get) => ({
       'setPageVariable'
     );
     get().updateDependencyValues(`page.variables.${key}`);
+    get().checkAndSetTrueBuildSuggestionsFlag();
   },
 
   getPageVariable: (key, moduleId = 'canvas') => {
