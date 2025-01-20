@@ -5,61 +5,34 @@ title: OpenID Connect Setup
 
 <div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
 
-# Configure OpenId Connect Single Sign-on
+OpenID Connect (OIDC) is an authentication protocol that helps applications verify users' identities using an identity provider. By configuring OIDC with identity providers like **[Azure AD](#)**, **[Google](#)** or **[Okta](#)**, you can set up easy and safe authentication for your users in ToolJet. 
 
+## Configuring OIDC
 
-- Go to the **Workspace Settings** (⚙️) from the left sidebar in the ToolJet dashboard
-  <div style={{textAlign: 'center'}}>
+Follow these steps to enable OIDC in your system:
 
-  <img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/sso/general/workside2-new.png" alt="General Settings: SSO" />
+Role Required: <br/>
+&nbsp;&nbsp;&nbsp;&nbsp; For Instance Level: **Super Admin** <br/>
+&nbsp;&nbsp;&nbsp;&nbsp; For Workspace Level: **Admin**
 
-  </div>
+1. Click on the settings icon (⚙️) on the bottom left of your dashboard.
 
-- Select `SSO` from workspace options
-  <div style={{textAlign: 'center'}}>
+2. For Instance Level: <br/>
+Go to **Settings > Instance login**. <br/> 
+    (Example URL - `https://app.corp.com/instance-settings/instance-login`)
 
-  <img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/sso/okta/sso2-new.png" alt="Okta: SSO" width="500"/> 
+    For Workspace Level: <br/>
+    Go to **Workspace Settings > Workspace login**. <br/> 
+    (Example URL - `https://app.corp.com/nexus/workspace-settings/workspace-login`)
 
-  </div>
+3. On the right, you'll see toggles to enable SSO via different clients. All the client toggles are disabled by default. Turn on the toggle in front of OpenID Connect.
 
-- Select `OpenId Connect`.
-  <div style={{textAlign: 'center'}}>
+<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/user-management/sso/github/sso-menu.png" alt="Add user button" />
 
-  <img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/sso/openid/openid.png" alt="Okta: SSO" /> 
+4. After turning it on, a modal will appear with input fields for parameters such as Name, Client ID, Client secret and Well known URL. At the top left of the modal, there is a toggle to enable this modal. Turn it on, and then, without entering any parameters, click on the Save changes button. This will generate a Redirect URL, which you will need to obtain the credentials from the Identity Provider.
 
-  </div>
+<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/user-management/sso/oidc/config.png" alt="Add user button" />
 
-- Find and set **Name**, **Client Id**, **Client Secret**, and **Well Known URL** from your Open Id provider.
+5. Find and set **Client Id**, **Client Secret**, and **Well Known URL** from your identity provider and click on **Save changes** at the bottom of the modal.
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-### Exposed ssoUserInfo
-
-Once the OpenID is configured (on ToolJet version **`v2.6.2-ee2.1.0`** or above), ToolJet will expose the user info returned by the OpenID provider. The user info will be available under the `ssoUserInfo` property of the `currentUser` variable. Check the **[Inspector](/docs/how-to/use-inspector)** doc to learn more.
-
-The exposed user info can be dynamically accessed throughout the apps using JS **`{{globals.currentUser.ssoUserInfo.<key>}}`**
-
-The following is an example of the user info returned by Google OpenID provider:
-
-| <div style={{ width:"100px"}}> Key </div>| <div style={{ width:"100px"}}> Description </div>| <div style={{ width:"135px"}}> Syntax to access </div>|
-|:--- |:----------- |:------- |
-| **sub** | Subject - Identifier for the End-User at the Issuer. | `{{globals.currentUser.ssoUserInfo.sub}}` |
-| **name** | End-User's full name in displayable form including all name parts, possibly including titles and suffixes, ordered according to the End-User's locale and preferences. | `{{globals.currentUser.ssoUserInfo.name}}` |
-| **given_name** | Given name(s) or first name(s) of the End-User. | `{{globals.currentUser.ssoUserInfo.given_name}}` |
-| **family_name** | Surname(s) or last name(s) of the End-User. | `{{globals.currentUser.ssoUserInfo.family_name}}` |
-| **picture** | URL of the End-User's profile picture. This URL MUST refer to an image file (for example, a PNG, JPEG, or GIF image file), rather than to a Web page containing an image. | `{{globals.currentUser.ssoUserInfo.picture}}` |
-| **email** | End-User's preferred e-mail address. Its value MUST conform to the RFC 5322 [RFC5322] addr-spec syntax. | `{{globals.currentUser.ssoUserInfo.email}}` |
-| **email_verified** | True if the End-User's e-mail address has been verified; otherwise false. | `{{globals.currentUser.ssoUserInfo.email_verified}}` |
-| **locale** | End-User's locale, represented as a BCP47 [RFC5646] language tag. This is typically an ISO 639-1 Alpha-2 [ISO639‑1] language code in lowercase and an ISO 3166-1 Alpha-2 [ISO3166‑1] country code in uppercase, separated by a dash. For example, en-US or fr-CA. As a compatibility note, some implementations have used an underscore as the separator rather than a dash, for example, en_US; Relying Parties MAY choose to accept this locale syntax as well. | `{{globals.currentUser.ssoUserInfo.locale}}` |
-| **hd** | End-User's hosted domain, if any. | `{{globals.currentUser.ssoUserInfo.hd}}` |
-| **access_token** | Access token returned by the OpenID provider. | `{{globals.currentUser.ssoUserInfo.access_token}}` |
-| **id_token** | ID token returned by the OpenID provider. | `{{globals.currentUser.ssoUserInfo.id_token}}` |
-| **id_token_encrpted** | It is the JSON value of encrypted `id_token` | `{{globals.currentUser.ssoUserInfo.id_token_encrpted}}` |
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/sso/openid/ssouserinfon-v2.png" alt="ssouserinfo" /> 
-
-</div>
-
-</div>
+Upon saving, OIDC SSO will be successfully enabled using your configured Identity Provider, allowing your users to seamlessly authenticate via OpenID Connect for enhanced security and ease of use.
