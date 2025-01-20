@@ -166,7 +166,7 @@
                         {
                           "type": "category",
                           "label": "Serverside Operations",
-                          "items" : [
+                          "items": [
                             "widgets/table/serverside-operations/overview",
                             "widgets/table/serverside-operations/search",
                             "widgets/table/serverside-operations/sort",
@@ -360,84 +360,36 @@
     },
     {
       "type": "category",
-      "label": "Org Management",
+      "label": "Setup ToolJet",
       "items": [
-        "dashboard",
-        {
-          "type": "category",
-          "label": "Workspaces",
-          "items": [
-            "org-management/workspaces/workspace_overview",
-            "org-management/workspaces/workspace-variables",
-            "org-management/workspaces/workspace-variables-migration",
-            "org-management/workspaces/workspace_constants"
-          ]
-        },
-        {
-          "type": "category",
-          "label": "User Authentication",
-          "items": [
-            "user-authentication/user-lifecycle",
-            "user-authentication/workspace-login",
-            {
-              "type": "category",
-              "label": "SSO",
-              "items": [
-                "user-authentication/sso/github",
-                "user-authentication/sso/google",
-                {
-                  "type": "category",
-                  "label": "OpenId Connect",
-                  "link": {
-                    "type": "generated-index",
-                    "title": "OpenId Connect",
-                    "description": " ",
-                    "keywords": [
-                      "okta",
-                      "openid",
-                      "azureAD"
-                    ]
-                  },
-                  "collapsed": true,
-                  "items": [
-                    "user-authentication/sso/openid/setup",
-                    "user-authentication/sso/openid/azuread",
-                    "user-authentication/sso/openid/okta",
-                    "user-authentication/sso/openid/google-openid"
-                  ]
-                },
-                "user-authentication/sso/oidc",
-                "user-authentication/sso/ldap",
-                "user-authentication/sso/saml",
-                "user-authentication/sso/auto-sso-login"
-              ]
-            }
-          ]
-        },
-        "org-management/permissions",
-        "tutorial/manage-users-groups",
-        "tutorial/tooljet-api",
-        "Enterprise/audit_logs",
-        "Enterprise/white-label",
-        "Enterprise/superadmin",
+        "tj-setup/overview",
+        "tj-setup/tj-deployment",
         {
           "type": "category",
           "label": "Licensing",
           "items": [
-            "org-management/licensing/tooljet-cloud",
-            "org-management/licensing/self-hosted"
+            "tj-setup/licensing/self-hosted",
+            "tj-setup/licensing/cloud"
           ]
         },
-        "org-management/smtp-configuration"
-      ]
-    },
-    {
-      "type": "category",
-      "label": "Release Management",
-      "items": [
-        "gitsync",
-        "release-management/multi-environment",
-        "tutorial/versioning-and-release"
+        "tj-setup/instances",
+        "tj-setup/workspaces",
+        {
+          "type": "category",
+          "label": "Organization Branding",
+          "items": [
+            "tj-setup/org-branding/white-labeling",
+            "tj-setup/org-branding/custom-domain"
+          ]
+        },
+        {
+          "type": "category",
+          "label": "Setup SMTP Server",
+          "items": [
+            "tj-setup/smtp-setup/configuration",
+            "tj-setup/smtp-setup/email-providers"
+          ]
+        }
       ]
     },
     {
