@@ -130,5 +130,13 @@
     "author": "Tooljet",
     "timestamp": "Mon, 28 Oct 2024 08:08:28 GMT",
     "tags": ["AI"]
+  },
+  {
+    "name": "Qdrant",
+    "description": "Plugin for Qdrant APIs",
+    "version": "1.0.0",
+    "id": "qdrant",
+    "author": "Tooljet",
+    "timestamp": "Tue, 10 Dec 2024 02:11:32 GMT"
   }
 ]
