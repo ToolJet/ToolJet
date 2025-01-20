@@ -3,80 +3,35 @@ id: google
 title: Google (OIDC)
 ---
 
-- Go to the **Workspace Settings** (⚙️) from the left sidebar in the ToolJet dashboard
-  <div style={{textAlign: 'center'}}>
+Google can be configured as the Identity Provider for OIDC, which is an authentication protocol that securely verifies user identities through a trusted provider. This document explains how to obtain the required credentials from the Google console. Refer to the **[OIDC Setup](#)** Guide to configure OIDC in your application.
 
-  <img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/sso/general/workside2-new.png" alt="Google Open ID" width="500"/>
+## Generating Client ID and Client Secret on GCS
 
-  </div>
+1. Go to **[Google Cloud console](https://console.cloud.google.com/)** and create a project.
+  
+<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/user-management/sso/google/gc-new-project.png" alt="Create New Project"/>
 
-- Select `SSO` from workspace options
-  <div style={{textAlign: 'center'}}>
+2. Go to the **[Google Cloud console credentials page](https://console.cloud.google.com/apis/credentials)**, and create an OAuth client ID.
+  
+<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/user-management/sso/google/create-oauth.png" alt="General Settings: SSO"/>
 
-  <img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/sso/okta/sso2-new.png" alt="Google Open ID" width="500"/> 
-
-  </div>
-
-- Select `Open ID Connect` from the left sidebar
-  <div style={{textAlign: 'center'}}>
-
-  <img className="screenshot-full" src="/img/sso/google-openid/openid.png" alt="Google Open ID"/> 
-
-  </div>
-
-- Set **Name** as `Google` and get the **Client ID** and **Client Secret** from your [Google Cloud Console](https://console.cloud.google.com/apis/credentials).
-
-- Set the **Well Known URL** to `https://accounts.google.com/.well-known/openid-configuration`
-
-#### Generating Client ID and Client Secret on GCS
-
-- Go to [Google cloud console](https://console.cloud.google.com/) and create a project.
-  <div style={{textAlign: 'center'}}>
-
-  <img style={{ width:'100%', border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/sso/google/create-project.png" alt="Google Open ID" width="500"/> 
-
-  </div>
-
-- Go to the [Google cloud console credentials page](https://console.cloud.google.com/apis/credentials), and create an OAuth client ID
-  <div style={{textAlign: 'center'}}>
-
-  <img className="screenshot-full" src="/img/sso/google/create-oauth.png" alt="Google Open ID" width="700"/> 
-
-  </div>
-
-- You'll be asked to select user type in consent screen. To allow only users within your workspace, select 'Internal', otherwise,
+3. You'll be asked to select user type in consent screen. To allow only users within your workspace, select 'Internal', otherwise,
 select 'External'.
-  <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/sso/google/oauth-type.png" alt="Google Open ID" width="700"/> 
+<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/user-management/sso/google/oauth-type.png" alt="General Settings: SSO" width="700"/>
 
-  </div>
+4. You'll be led to an app registration page, fill out the required details and click on **SAVE AND CONTINUE** button at the bottom.
 
-- You'll be led to an app registration page where you can set OAuth scopes. Select 'Add or remove scopes' and add the scopes
-userinfo.email and userinfo.profile as shown in the image. This will allow ToolJet to store the email and name of the
-user who is signing in
-  <div style={{textAlign: 'center'}}>
+5. On the second page you can set OAuth scopes. Select **ADD OR REMOVE SCOPES** and add the scopes **userinfo.email** and **userinfo.profile** as shown in the image. This will allow ToolJet to store the email and name of the user who is signing in. Click on **SAVE AND CONTINUE**.
 
-  <img className="screenshot-full" src="/img/sso/google/scope.png" alt="Google Open ID" width="700"/> 
+<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/user-management/sso/google/scope.png" alt="General Settings: SSO"/>
 
-  </div>
+6. Go to **Credentials** tab, click on **+ CREATE CREDENTIAL** and select **OAuth client ID**. Select Application type and give a name, under **Authorised JavaScript origins**, set the domain on which ToolJet is hosted and under **Authorized redirect URIs**, enter the Redirect URL which was generated in ToolJet's Google SSO settings.
 
-- Set the domain on which ToolJet is hosted as an authorized domain
-  <div style={{textAlign: 'center'}}>
+<img style={{ marginBottom:'15px' }}  className="screenshot-full" src="/img/user-management/sso/google/gc-uri.png" alt="General Settings: SSO"/>
 
-  <img className="screenshot-full" src="/img/sso/google/authorized-urls.png" alt="Google Open ID" width="700"/> 
+7. Click on **Create** and copy the **Client ID** and **Client secret**.
 
-  </div>
+<img style={{ marginBottom:'15px' }}  className="screenshot-full" src="/img/user-management/sso/google/client-id.png" alt="General Settings: SSO"/>
 
-- Set the `Redirect URL` generated at manage SSO `Open ID` page under Authorized redirect URIs
-  <div style={{textAlign: 'center'}}>
-
-  <img className="screenshot-full" src="/img/sso/google/authorized-redirect-urls.png" alt="Google Open ID" width="700"/> 
-
-  </div>
-
-- Now, you can view your **client ID** and **client secret** from the [Credentials page](https://console.developers.google.com/apis/credentials) in API Console:
-  - Go to the Credentials page.
-  - Click the name of your credential or the pencil icon. Your client ID and secret are at the top of the page.
-
-
+8. Use `https://accounts.google.com/.well-known/openid-configuration` as the **Well Known URL**.
