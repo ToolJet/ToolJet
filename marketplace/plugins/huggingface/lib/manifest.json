@@ -44,7 +44,6 @@
       "subtext":"Turn on cache layer on the inference API to speed up requests"
     },
     "wait_for_model": {
-      "label": "",
       "key": "wait_for_model",
       "type": "toggle",
       "text":"Wait for model",
