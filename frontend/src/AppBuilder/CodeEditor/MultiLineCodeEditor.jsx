@@ -53,7 +53,7 @@ const MultiLineCodeEditor = (props) => {
 
   const context = useContext(CodeHinterContext);
 
-  const { suggestionList } = createReferencesLookup(context, true);
+  const { suggestionList: paramList } = createReferencesLookup(context, true);
 
   const currentValueRef = useRef(initialValue);
 
@@ -139,6 +139,8 @@ const MultiLineCodeEditor = (props) => {
       hint: varName,
       type: 'variable',
     }));
+
+    const suggestionList = paramList.filter((paramSuggestion) => paramSuggestion.hint.includes(nearestSubstring));
 
     const suggestions = generateHints(
       [...localVariableSuggestions, ...JSLangHints, ...autoSuggestionList, ...suggestionList],
@@ -226,7 +228,7 @@ const MultiLineCodeEditor = (props) => {
   ]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const overRideFunction = React.useCallback((context) => autoCompleteExtensionConfig(context), []);
+  const overRideFunction = React.useCallback((context) => autoCompleteExtensionConfig(context), [paramList]);
   const { handleTogglePopupExapand, isOpen, setIsOpen, forceUpdate } = portalProps;
   let cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : props.cyLabel;
 

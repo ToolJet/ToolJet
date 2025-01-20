@@ -28,6 +28,8 @@ import CodeHinter from './CodeHinter';
 import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { CodeHinterContext } from '../CodeBuilder/CodeHinterContext';
+import { createReferencesLookup } from '@/_stores/utils';
 
 const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...restProps }) => {
   const { initialValue, onChange, enablePreview = true, portalProps } = restProps;
@@ -51,6 +53,7 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
   if (typeof initialValue === 'string' && (initialValue?.includes('components') || initialValue?.includes('queries'))) {
     newInitialValue = replaceIdsWithName(initialValue);
   }
+
   //! Re render the component when the componentName changes as the initialValue is not updated
 
   // const { variablesExposedForPreview } = useContext(EditorContext) || {};
@@ -162,11 +165,19 @@ const EditorInput = ({
   paramLabel = '',
   disabled = false,
 }) => {
+  const codeHinterContext = useContext(CodeHinterContext);
+  const { suggestionList: paramHints } = createReferencesLookup(codeHinterContext, true);
+
   const getSuggestions = useStore((state) => state.getSuggestions, shallow);
   const [codeMirrorView, setCodeMirrorView] = useState(undefined);
   function autoCompleteExtensionConfig(context) {
-    const hints = getSuggestions();
+    const hintsWithoutParamHints = getSuggestions();
     let word = context.matchBefore(/\w*/);
+
+    const hints = {
+      ...hintsWithoutParamHints,
+      appHints: [...hintsWithoutParamHints.appHints, ...paramHints],
+    };
 
     const totalReferences = (context.state.doc.toString().match(/{{/g) || []).length;
 
@@ -207,7 +218,7 @@ const EditorInput = ({
   }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const overRideFunction = React.useCallback((context) => autoCompleteExtensionConfig(context), []);
+  const overRideFunction = React.useCallback((context) => autoCompleteExtensionConfig(context), [paramHints]);
 
   const autoCompleteConfig = autocompletion({
     override: [overRideFunction],
