@@ -173,6 +173,7 @@ const sidebars = {
                         'widgets/table/table-properties',
                         'widgets/table/table-columns',
                         'widgets/table/table-csa-and-variables',
+                        'widgets/table/action-button',
                         {
                           'type': 'category',
                           'label': 'Serverside Operations',
