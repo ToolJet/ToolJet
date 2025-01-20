@@ -445,7 +445,16 @@ const sidebars = {
             'user-management/sso/overview',
             'user-management/sso/github',
             'user-management/sso/google',
-            'user-management/sso/oidc',
+            {
+              'type': 'category',
+              'label': 'OpenID Connect',
+              'items': [
+                'user-management/sso/oidc/setup',
+                'user-management/sso/oidc/azuread',
+                'user-management/sso/oidc/okta',
+                'user-management/sso/oidc/google'
+              ]
+            },
             'user-management/sso/ldap',
             'user-management/sso/saml'
           ]
