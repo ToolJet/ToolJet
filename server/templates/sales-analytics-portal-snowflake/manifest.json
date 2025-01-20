@@ -1,0 +1,16 @@
+{
+  "name": "Sales analytics portal (Snowflake)",
+  "description": "Visualize key sales metrics like total customers, revenue, AoV, and ROI using interactive dashboards for data-driven insights with Snowflake as the backend.",
+  "widgets": [
+    "Table",
+    "Chart"
+  ],
+  "sources": [
+    {
+      "name": "Snowflake",
+      "id": "snowflake"
+    }
+  ],
+  "id": "sales-analytics-portal-snowflake",
+  "category": "data-and-analytics"
+}
