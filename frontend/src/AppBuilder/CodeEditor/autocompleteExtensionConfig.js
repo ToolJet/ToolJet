@@ -163,8 +163,6 @@ export const generateHints = (hints, totalReferences = 1, input, searchText) => 
 };
 
 function filterHintsByDepth(input, hints) {
-  if (input === '') return hints;
-
   const inputParts = input.split('.');
   const inputDepth = inputParts.length + 1;
 
