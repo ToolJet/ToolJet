@@ -11,11 +11,11 @@ To connect with Anthropic, you will need the **API Key**, which can be generated
 
 <img className="screenshot-full" src="/img/marketplace/plugins/anthropic/config.png" alt="Anthropic Configuration" />
 
-## Supported Queries
+## Supported Operations
 
 ### Chat
 
-This query processes the user's input and generates appropriate, context-aware responses, simulating a natural, human-like conversation. It can handle multiple interactions, maintaining the flow of dialogue for dynamic and engaging conversations.
+This operation processes the user's input and generates appropriate, context-aware responses, simulating a natural, human-like conversation. It can handle multiple interactions, maintaining the flow of dialogue for dynamic and engaging conversations.
 
 **Required Parameters**
 
