@@ -1,0 +1,46 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Weaviate Plugin",
+  "description": "A schema defining Weaviate datasource",
+  "type": "api",
+  "source": {
+    "name": "Weaviate",
+    "kind": "weaviate",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "instanceUrl": {
+        "type": "string",
+        "encrypted": false
+      },
+      "apiKey": {
+        "type": "string",
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {},
+  "properties": {
+    "instanceUrl": {
+      "label": "Instance URL",
+      "key": "instanceUrl",
+      "type": "text",
+      "description": "Enter your Weaviate instance URL",
+      "placeholder": "https://your-weaviate-instance.com"
+    },
+    "apiKey": {
+      "label": "API Key",
+      "key": "apiKey",
+      "type": "password",
+      "description": "Enter your Weaviate API Key",
+      "helpText": "For generating API Key, visit: <a href='https://weaviate.io/docs' target='_blank' rel='noreferrer'>Weaviate Documentation</a>"
+    }
+  },
+  "required": [
+    "instanceUrl",
+    "apiKey"
+  ]
+}

@@ -1,0 +1,9 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Weaviate datasource",
+  "description": "A schema defining Weaviate datasource",
+  "type": "database",
+  "defaults": {},
+  "properties": {}
+}
