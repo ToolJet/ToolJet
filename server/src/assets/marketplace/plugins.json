@@ -138,7 +138,7 @@
     ]
   },
   {
-    "name": "anthropic",
+    "name": "Anthropic",
     "description": "Integrate with Anthropic API to use Claude AI models.",
     "version": "1.0.0",
     "id": "anthropic",
