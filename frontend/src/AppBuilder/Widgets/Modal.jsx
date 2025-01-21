@@ -260,6 +260,7 @@ export const Modal = function Modal({
     },
     modalCloseButton: {
       padding: '16px',
+      marginRight: '16px',
       flexShrink: 0,
     },
     modalHeader: {
@@ -373,6 +374,7 @@ export const Modal = function Modal({
           showFooter,
           headerHeight,
           footerHeight,
+          modalWidth,
         }}
       >
         {!isLoading ? (
@@ -471,17 +473,13 @@ const Component = ({ children, ...restProps }) => {
     customStyles,
     parentRef,
     id,
-    title,
-    titleAlignment,
-    hideTitleBar,
     showConfigHandler,
     isDisabled,
     modalHeight,
     onHideModal,
     hideCloseButton,
-    fullscreen,
     darkMode,
-    width,
+    modalWidth,
     showHeader,
     showFooter,
     headerHeight,
@@ -518,7 +516,7 @@ const Component = ({ children, ...restProps }) => {
           customStyles={customStyles}
           hideCloseButton={hideCloseButton}
           darkMode={darkMode}
-          width={width}
+          width={modalWidth}
           onHideModal={onHideModal}
           headerHeight={headerHeight}
         />
@@ -545,7 +543,7 @@ const Component = ({ children, ...restProps }) => {
           id={id}
           darkMode={darkMode}
           customStyles={customStyles}
-          width={width}
+          width={modalWidth}
           footerHeight={footerHeight}
         />
       )}
