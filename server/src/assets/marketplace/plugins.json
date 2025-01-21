@@ -138,7 +138,7 @@
     ]
   },
   {
-    "name": "gemini",
+    "name": "Gemini",
     "description": "Integrate with Gemini AI models for text generation.",
     "version": "1.0.0",
     "id": "gemini",
