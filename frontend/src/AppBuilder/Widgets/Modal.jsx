@@ -132,17 +132,6 @@ export const Modal = function Modal({
     setShowModal(true);
   }
 
-  const { isDisabledTrigger, isDisabledModal, isVisible, isLoading } = useExposeState({
-    loadingState: properties.loadingState,
-    visibleState: properties.triggerVisibility,
-    disabledModalState: properties.disabledModal,
-    disabledTriggerState: properties.disabledTrigger,
-    setExposedVariables,
-    setExposedVariable,
-    onHideModal,
-    onShowModal,
-  });
-
   // Side effects for modal, which include dom manipulation to hide overflow when opening
   // And cleaning up dom when modal is closed
 
@@ -247,6 +236,17 @@ export const Modal = function Modal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showModal]);
 
+  const { isDisabledTrigger, isDisabledModal, isVisible, isLoading } = useExposeState({
+    loadingState: properties.loadingState,
+    visibleState: properties.triggerVisibility,
+    disabledModalState: properties.disabledModal,
+    disabledTriggerState: properties.disabledTrigger,
+    setExposedVariables,
+    setExposedVariable,
+    onHideModal,
+    onShowModal,
+  });
+
   const backwardCompatibilityCheck = height == '34' || modalHeight != undefined ? true : false;
 
   const customStyles = {
@@ -277,6 +277,8 @@ export const Modal = function Modal({
       padding: 0,
       borderTop: `1px solid var(--border-weak)`,
       overflowY: 'auto',
+      overflowX: 'hidden',
+      width: '100%',
     },
     buttonStyles: {
       backgroundColor: triggerButtonBackgroundColor,
