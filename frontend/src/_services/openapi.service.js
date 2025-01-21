@@ -1,5 +1,5 @@
 import YAML from 'yaml';
-import RefResolver from '@/_helpers/ref_resolver';
+import $RefParser from '@apidevtools/json-schema-ref-parser';
 
 export const openapiService = {
   fetchSpecFromUrl,
@@ -14,13 +14,11 @@ function fetchSpecFromUrl(url) {
 async function parseOpenapiSpec(spec, format) {
   if (format === 'json') {
     const jsonParsed = JSON.parse(spec);
-    const res = new RefResolver(jsonParsed);
-    const { result } = await res.resolve();
-    return result;
+    const dereferenced = await $RefParser.dereference(jsonParsed);
+    return dereferenced;
   } else {
     const yamlParsed = YAML.parse(spec);
-    const res = new RefResolver(yamlParsed);
-    const { result } = await res.resolve();
-    return result;
+    const dereferenced = await $RefParser.dereference(yamlParsed);
+    return dereferenced;
   }
 }
