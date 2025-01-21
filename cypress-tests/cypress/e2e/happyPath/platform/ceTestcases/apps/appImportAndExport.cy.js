@@ -13,10 +13,13 @@ import {
   importAndVerifyApp,
 } from "Support/utils/exportImport";
 import { selectAppCardOption, closeModal } from "Support/utils/common";
+import { switchVersionAndVerify } from "Support/utils/version";
 
 describe("App Import Functionality", () => {
   const TEST_DATA = {
     toolJetImage: "cypress/fixtures/Image/tooljet.png",
+    invalidApp: "cypress/fixtures/templates/invalid_app.json",
+    invalidFile: "cypress/fixtures/templates/invalid_file.json",
     appFiles: {
       multiVersion: "cypress/fixtures/templates/three-versions.json",
       singleVersion: "cypress/fixtures/templates/one_version.json",
@@ -39,6 +42,7 @@ describe("App Import Functionality", () => {
   data = initializeData();
 
   beforeEach(() => {
+    cy.viewport(1200, 1300);
     cy.apiLogin();
   });
 
@@ -56,6 +60,28 @@ describe("App Import Functionality", () => {
       importText.couldNotImportAppToastMessage
     );
 
+    cy.wait(500);
+    cy.get(dashboardSelector.importAppButton).click();
+    importAndVerifyApp(
+      TEST_DATA.invalidApp,
+      "Could not import: SyntaxError: Expected ',' or '}' after property value in JSON at position 246 (line 11 column 13)"
+    );
+
+    cy.wait(500);
+    cy.get(dashboardSelector.importAppButton).click();
+    cy.get(importSelectors.importOptionInput)
+      .eq(0)
+      .selectFile(TEST_DATA.invalidFile, {
+        force: true,
+      });
+    cy.get(importSelectors.importAppTitle).should("be.visible");
+    cy.get(importSelectors.importAppButton).click();
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      "tooljet_version must be a string"
+    );
+    cy.wait(500);
+
     // Test valid app import
     cy.get(importSelectors.dropDownMenu).should("be.visible").click();
     cy.get(importSelectors.importOptionLabel).verifyVisibleElement(
@@ -69,7 +95,7 @@ describe("App Import Functionality", () => {
       .selectFile(TEST_DATA.appFiles.multiVersion, {
         force: true,
       });
-    cy.wait(2000);
+    cy.wait(1500);
 
     cy.get(importSelectors.importAppTitle).verifyVisibleElement(
       "have.text",
@@ -123,21 +149,13 @@ describe("App Import Functionality", () => {
     cy.waitForAutoSave();
 
     // Verify initial widget states
-    cy.get(commonWidgetSelector.draggableWidget("text2")).verifyVisibleElement(
-      "have.text",
-      ""
-    );
 
-    cy.get(commonWidgetSelector.draggableWidget("text2")).verifyVisibleElement(
-      "have.text",
-      ""
-    );
-    cy.get(
-      commonWidgetSelector.draggableWidget("textInput1")
-    ).verifyVisibleElement("have.value", "");
-    cy.get(
-      commonWidgetSelector.draggableWidget("textInput2")
-    ).verifyVisibleElement("have.value", "Leanne Graham");
+    verifyCommonData({
+      text2: "",
+      textInput1: "",
+      textInput2: "Leanne Graham",
+    });
+
     cy.get(
       commonWidgetSelector.draggableWidget("textInput3")
     ).verifyVisibleElement("have.value", "");
@@ -186,20 +204,24 @@ describe("App Import Functionality", () => {
       );
     });
 
-    cy.get(commonWidgetSelector.draggableWidget("text2")).verifyVisibleElement(
-      "have.text",
-      "Import and Export"
-    );
-
-    cy.get(
-      commonWidgetSelector.draggableWidget("textInput1")
-    ).verifyVisibleElement("have.value", "John");
-    cy.get(
-      commonWidgetSelector.draggableWidget("textInput2")
-    ).verifyVisibleElement("have.value", "Leanne Graham");
+    verifyCommonData({
+      text2: "Import and Export",
+      textInput1: "John",
+      textInput2: "Leanne Graham",
+    });
     cy.get(
       commonWidgetSelector.draggableWidget("textInput3")
     ).verifyVisibleElement("have.value", "India");
+
+    switchVersionAndVerify("v3", "v1");
+
+    verifyCommonData({
+      text2: "Import and Export",
+      textInput1: "John",
+      textInput2: "Leanne Graham",
+    });
+
+    cy.wait(1000)
     cy.backToApps();
 
     // Test single version import
@@ -212,16 +234,11 @@ describe("App Import Functionality", () => {
       "one_version"
     );
 
-    cy.get(commonWidgetSelector.draggableWidget("text1")).verifyVisibleElement(
-      "have.text",
-      "Import and Export"
-    );
-    cy.get(
-      commonWidgetSelector.draggableWidget("textInput1")
-    ).verifyVisibleElement("have.value", "John");
-    cy.get(
-      commonWidgetSelector.draggableWidget("textInput2")
-    ).verifyVisibleElement("have.value", "Leanne Graham");
+    verifyCommonData({
+      text2: "Import and Export",
+      textInput1: "John",
+      textInput2: "Leanne Graham",
+    });
   });
 
   it("Verify the elements of export dialog box", () => {
@@ -383,3 +400,16 @@ describe("App Import Functionality", () => {
     exportAllVersionsAndVerify(data.appName1, "v1");
   });
 });
+
+const verifyCommonData = (values) => {
+  cy.get(commonWidgetSelector.draggableWidget("text2")).verifyVisibleElement(
+    "have.text",
+    values.text2
+  );
+  cy.get(
+    commonWidgetSelector.draggableWidget("textInput1")
+  ).verifyVisibleElement("have.value", values.textInput1);
+  cy.get(
+    commonWidgetSelector.draggableWidget("textInput2")
+  ).verifyVisibleElement("have.value", values.textInput2);
+};
