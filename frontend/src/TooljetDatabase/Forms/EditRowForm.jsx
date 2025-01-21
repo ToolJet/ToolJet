@@ -295,7 +295,7 @@ const EditRowForm = ({
 
     const { hasEmptyValue, newErrorMap } = editRowColumns.reduce(
       (acc, { accessor, dataType }) => {
-        if (['double precision', 'bigint', 'integer'].includes(dataType) && rowData[accessor] === '') {
+        if (['double precision', 'bigint', 'integer', 'jsonb'].includes(dataType) && rowData[accessor] === '') {
           acc.hasEmptyValue = true;
           acc.newErrorMap[accessor] = 'Cannot be empty';
 
@@ -598,6 +598,7 @@ const EditRowForm = ({
                   placeholder="{}"
                   columnName={columnName}
                   showErrorMessage={true}
+                  className={cx(errorMap[columnName] ? 'has-empty-error' : '')}
                 />
               </div>
             )}
