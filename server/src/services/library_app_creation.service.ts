@@ -11,6 +11,7 @@ import { getMaxCopyNumber } from 'src/helpers/utils.helper';
 import * as fs from 'fs';
 import * as path from 'path';
 import { TooljetDbBulkUploadService } from '@services/tooljet_db_bulk_upload.service';
+import { PluginsService } from './plugins.service';
 
 @Injectable()
 export class LibraryAppCreationService {
@@ -19,11 +20,20 @@ export class LibraryAppCreationService {
     private readonly appImportExportService: AppImportExportService,
     private readonly appsService: AppsService,
     private readonly logger: Logger,
-    private readonly tooljetDbBulkUploadService: TooljetDbBulkUploadService
+    private readonly tooljetDbBulkUploadService: TooljetDbBulkUploadService,
+    private readonly pluginsService: PluginsService
   ) {}
 
-  async perform(currentUser: User, identifier: string, appName: string) {
+  async perform(
+    currentUser: User,
+    identifier: string,
+    appName: string,
+    dependentPluginsForTemplate: Array<string>,
+    shouldAutoImportPlugin: boolean
+  ) {
     const templateDefinition = this.findTemplateDefinition(identifier);
+    if (dependentPluginsForTemplate.length)
+      await this.pluginsService.autoInstallPluginsForTemplates(dependentPluginsForTemplate, shouldAutoImportPlugin);
     return this.importTemplate(currentUser, templateDefinition, appName, identifier);
   }
 
@@ -111,5 +121,22 @@ export class LibraryAppCreationService {
       console.error('Error processing CSV file:', error);
       throw new BadRequestException('Failed to process CSV file');
     }
+  }
+
+  async findDepedentPluginsFromTemplateDefinition(identifier: string) {
+    const templateDefinition = this.findTemplateDefinition(identifier);
+    const importDto = new ImportResourcesDto();
+    importDto.app = templateDefinition.app || templateDefinition.appV2;
+
+    const dataSourcesUsedInApps = [];
+    importDto.app.forEach((appDefinition) => {
+      appDefinition.definition?.appV2.dataSources.forEach((dataSource) => {
+        dataSourcesUsedInApps.push(dataSource);
+      });
+    });
+    const { pluginsToBeInstalled, pluginsListIdToDetailsMap } = await this.pluginsService.checkIfPluginsToBeInstalled(
+      dataSourcesUsedInApps
+    );
+    return { pluginsToBeInstalled, pluginsListIdToDetailsMap };
   }
 }
