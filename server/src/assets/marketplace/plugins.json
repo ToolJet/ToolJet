@@ -184,5 +184,14 @@
     "author": "Tooljet",
     "timestamp": "Tue, 10 Dec 2024 02:11:32 GMT",
     "tags": ["AI"]
+  },
+  {
+    "name": "Weaviate",
+    "description": "Database plugin from weaviate",
+    "version": "1.0.0",
+    "id": "weaviate",
+    "author": "Tooljet",
+    "timestamp": "Tue, 21 Jan 2025 16:55:28 GMT",
+    "tags": ["AI"]
   }
 ]
