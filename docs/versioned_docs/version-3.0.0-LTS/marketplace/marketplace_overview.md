@@ -77,6 +77,7 @@ To remove a plugin, follow these steps:
 - **[AWS Textract](/docs/marketplace/plugins/marketplace-plugin-textract)**
 - **[AWS Lambda](/docs/marketplace/plugins/marketplace-plugin-aws-lambda)**
 - **[Engagespot](/docs/marketplace/plugins/marketplace-plugin-engagespot)**
+- **[Gemini](/docs/marketplace/plugins/marketplace-plugin-gemini)**
 - **[GitHub](/docs/marketplace/plugins/marketplace-plugin-github)**
 - **[HarperDB](/docs/marketplace/plugins/marketplace-plugin-harperdb)**
 - **[Jira](/docs/marketplace/plugins/marketplace-plugin-jira)**
