@@ -11,11 +11,11 @@ To connect with Gemini, you will need the **API Key**, which can be generated fr
 
 <img className="screenshot-full" src="/img/marketplace/plugins/gemini/config.png" alt="Gemini Configuration" />
 
-## Supported Queries
+## Supported Operations
 
 ### Text Generation
 
-Use this query to generates text based on the prompt, system instructions, and model settings. It provides information or explanations tailored to the given context.
+Use this operation to generates text based on the prompt, system instructions, and model settings. It provides information or explanations tailored to the given context.
 
 **Required Parameters**
 
@@ -70,7 +70,7 @@ ToolJet supports various database systems, including:
 
 ### Chat
 
-Use this query for a chat operation, where the model responds to ongoing conversation based on the given prompts and instructions. It provides relevant and contextually appropriate answers, maintaining a smooth conversational flow.
+Use this operation for a chat like conversation, where the model responds to ongoing conversation based on the given prompts and instructions. It provides relevant and contextually appropriate answers, maintaining a smooth conversational flow.
 
 **Required Parameters**
 
