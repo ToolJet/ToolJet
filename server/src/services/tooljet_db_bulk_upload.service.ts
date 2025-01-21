@@ -258,4 +258,82 @@ export class TooljetDbBulkUploadService {
 
     throw `${str} is not a valid ${dataType}`;
   }
+
+  async bulkUpdateRowsWithPrimaryKey(
+    payload: Array<{ [key: string]: any }>,
+    tableId: string,
+    primaryKeyColumns: string | string[],
+    organizationId: string
+  ): Promise<{ status: string; updatedRows: number; error?: string; data?: Array<{ [key: string]: any }> }> {
+    if (!payload || payload.length === 0) {
+      throw new Error('Payload is empty. Nothing to update.');
+    }
+
+    const internalTable = await this.manager.findOne(InternalTable, {
+      where: { organizationId, id: tableId },
+    });
+
+    if (!internalTable) {
+      throw new NotFoundException(`Table not found`);
+    }
+
+    const primaryKeys = Array.isArray(primaryKeyColumns) ? primaryKeyColumns : [primaryKeyColumns];
+    const tenantSchema = findTenantSchema(organizationId);
+    let updatedRowsCount = 0;
+    const updatedRowsData = [];
+
+    try {
+      for (const row of payload) {
+        // Validate primary keys
+        const primaryKeyConditions = primaryKeys.map((key) => {
+          if (row[key] === undefined) {
+            throw new Error(`Primary key "${key}" is missing in row: ${JSON.stringify(row)}`);
+          }
+          return { key, value: row[key] };
+        });
+
+        // Build query dynamically for each row
+        const columnsToUpdate = Object.entries(row).filter(([key]) => !primaryKeys.includes(key));
+
+        if (columnsToUpdate.length === 0) continue; // No updateable fields
+
+        const setClause = columnsToUpdate.map(([column, _], index) => `"${column}" = $${index + 1}`).join(', ');
+
+        const whereClause = primaryKeyConditions
+          .map(({ key }, index) => `"${key}" = $${columnsToUpdate.length + index + 1}`)
+          .join(' AND ');
+
+        const query = `
+          UPDATE "${tenantSchema}"."${tableId}"
+          SET ${setClause}
+          WHERE ${whereClause}
+          RETURNING *;
+        `;
+
+        const parameters = [
+          ...columnsToUpdate.map(([, value]) => value),
+          ...primaryKeyConditions.map(({ value }) => value),
+        ];
+
+        const result = await this.tooljetDbManager.query(query, parameters);
+
+        if (result[0]?.length) {
+          updatedRowsCount += result[0].length;
+          updatedRowsData.push(...result[0]);
+        }
+      }
+
+      return {
+        status: 'ok',
+        updatedRows: updatedRowsCount,
+        data: updatedRowsData,
+      };
+    } catch (error) {
+      return {
+        status: 'failed',
+        updatedRows: 0,
+        error: error.message,
+      };
+    }
+  }
 }
