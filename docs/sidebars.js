@@ -459,6 +459,14 @@ const sidebars = {
             'user-management/sso/saml'
           ]
         },
+        {
+          'type': 'category',
+          'label': 'Profile Management',
+          'items': [
+            'user-management/profile-management/user-metadata',
+            'user-management/profile-management/password-management'
+          ]
+        }
       ]
     },
     {

@@ -18,7 +18,7 @@ Google can be configured as the Identity Provider for OIDC, which is an authenti
 3. You'll be asked to select user type in consent screen. To allow only users within your workspace, select 'Internal', otherwise,
 select 'External'.
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/user-management/sso/google/oauth-type.png" alt="General Settings: SSO" width="700"/>
+<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/user-management/sso/google/oauth-type.png" alt="General Settings: SSO" />
 
 4. You'll be led to an app registration page, fill out the required details and click on **SAVE AND CONTINUE** button at the bottom.
 
