@@ -43,7 +43,7 @@ const CustomMenuList = ({ selectProps, ...props }) => {
     }
     setIsSelectAllSelected(e.target.checked);
   };
-  console.log('virtualizer', virtualizer);
+
   return (
     <div
       id={`dropdown-multiselect-widget-custom-menu-list-${menuId}`}
