@@ -80,9 +80,9 @@ describe("Global Actions", () => {
         addInputOnQueryField(
             "runjs",
             `setTimeout(() => {
-            actions.setVariable('var', 'test');
-          actions.setPageVariable('pageVar', 'pageTest');
-        }, [0]) `
+        actions.setVariable('var', 'test');
+      actions.setPageVariable('pageVar', 'pageTest');
+    }, [0]) `
         );
         query("run");
         cy.get(commonWidgetSelector.sidebarinspector).click();
@@ -181,12 +181,6 @@ describe("Global Actions", () => {
         addInputOnQueryField("runjs", "actions.logout()");
         query("run");
         cy.get('[data-cy="sign-in-header"]').should("be.visible");
-        cy.apiLogin();
-        cy.openApp(
-            Cypress.env("workspaceId"),
-            Cypress.env("appId"),
-            '[data-cy="draggable-widget-modal1-launch-button"]'
-        );
     });
 
 });

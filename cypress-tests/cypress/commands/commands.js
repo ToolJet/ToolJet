@@ -109,17 +109,24 @@ Cypress.Commands.add("clearAndTypeOnCodeMirror", { prevSubject: "optional" }, (s
     });
 
   const splitIntoFlatArray = (value) => {
-    const regex = /(\{\{)|([^{}]+)|(\}\})/g;
+    const regex = /(\{|\}|\(|\)|\[|\]|,|:|;|=>|'[^']*'|[a-zA-Z0-9._]+|\s+)/g;
     let prefix = "";
     return value.match(regex)?.reduce((acc, part) => {
-      if (part === "{{") {
-        prefix = "{leftarrow}{leftarrow}";
-        acc.push(part); // Keep '{{' as is
+      if (part === "{{" || part === "((") {
+        prefix = "{backspace}{backspace}";
+        acc.push(part);
+      } else if (part === "{" || part === "(" || part === "[") {
+        acc.push(prefix + part);
+        prefix = "{backspace}";
       } else if (part === "}}") {
-        // Skip '}}'
+        acc.push(prefix + part);
+      } else if (part === " ") {
+        acc.push(prefix + " ");
+      } else if (part === ":") {
+        acc.push(prefix + ":");
       } else {
-        acc.push(prefix + part); // Add prefix to any other part, including spaces
-        prefix = ""; // Reset prefix
+        acc.push(prefix + part);
+        prefix = "";
       }
       return acc;
     }, []) || [];
@@ -177,7 +184,7 @@ Cypress.Commands.add("modifyCanvasSize", (x, y) => {
 Cypress.Commands.add("createAppFromTemplate", (appName) => {
   cy.get('[data-cy="import-dropdown-menu"]').click();
   cy.get('[data-cy="choose-from-template-button"]').click();
-  cy.get(`[data-cy="${appName}-list-item"]`).click(); 
+  cy.get(`[data-cy="${appName}-list-item"]`).click();
   cy.get('[data-cy="create-application-from-template-button"]').click();
   cy.get('[data-cy="app-name-label"]').should("have.text", "App Name");
 });
