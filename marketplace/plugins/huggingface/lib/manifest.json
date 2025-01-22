@@ -6,7 +6,7 @@
   "type": "api",
   "source": {
     "name": "Hugging Face",
-    "kind": "huggingface",
+    "kind": "hugging_face",
     "exposedVariables": {
       "isLoading": false,
       "data": {},
