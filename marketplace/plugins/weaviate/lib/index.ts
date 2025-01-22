@@ -1,6 +1,6 @@
 import { QueryService, QueryResult, ConnectionTestResult, QueryError } from '@tooljet-marketplace/common';
 import { SourceOptions, QueryOptions, Operation } from './types';
-import { getSchema, listObjects, createObject, getObjectById, deleteObjectById } from './query_operations';
+import { getSchema, listObjects, createObject, getObjectById, deleteObjectById, getCollection, createCollection, deleteCollection } from './query_operations';
 import weaviate, { WeaviateClient } from 'weaviate-client';
 export default class Weaviate implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
@@ -17,6 +17,15 @@ export default class Weaviate implements QueryService {
           console.log('tjdb list object switch');
           
           result = await listObjects(client, queryOptions.collectionName);
+          break;
+        case Operation.get_collection:
+          result = await getCollection(client,queryOptions.collectionName);
+          break;  
+        case Operation.create_collection:
+          result = await createCollection(client,queryOptions.collectionName);
+          break;
+        case Operation.delete_collection:
+          result = await deleteCollection(client,queryOptions.collectionName);
           break;
         case Operation.create_object:
           result = await createObject(client,queryOptions.collectionName,queryOptions.properties);
