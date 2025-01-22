@@ -3,7 +3,7 @@ id: marketplace-plugin-anthropic
 title: Anthropic
 ---
 
-ToolJet enables you to integrate with Anthropic. With it's powerful capabilities, you can create interactive chatbots, generate detailed content, and handle complex queries efficiently.
+By integrating Anthropic with ToolJet, you can create interactive chatbots, generate detailed content, and handle complex queries efficiently.
 
 ## Connection
 
