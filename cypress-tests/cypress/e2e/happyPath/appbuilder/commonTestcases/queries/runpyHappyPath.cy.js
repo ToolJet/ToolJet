@@ -1,64 +1,33 @@
 import { fake } from "Fixtures/fake";
-import { textInputText } from "Texts/textInput";
-import { commonWidgetText, widgetValue, customValidation } from "Texts/common";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { multipageSelector } from "Selectors/multipage";
-import { buttonText } from "Texts/button";
 import {
-  verifyControlComponentAction,
-  randomString,
+  openEditorSidebar
+} from "Support/utils/commonWidget";
+import {
+  randomString
 } from "Support/utils/editor/textInput";
 import {
-  openAccordion,
-  verifyAndModifyParameter,
-  openEditorSidebar,
-  verifyAndModifyToggleFx,
-  addDefaultEventHandler,
-  verifyComponentValueFromInspector,
-  selectColourFromColourPicker,
-  verifyBoxShadowCss,
-  verifyLayout,
-  verifyTooltip,
-  editAndVerifyWidgetName,
-  verifyPropertiesGeneralAccordion,
-  verifyStylesGeneralAccordion,
-  randomNumber,
-  closeAccordions,
-} from "Support/utils/commonWidget";
-import { dataCsvAssertionHelper } from "Support/utils/table";
-import {
-  selectCSA,
-  selectEvent,
-  addSupportCSAData,
+  selectEvent
 } from "Support/utils/events";
 
 import {
-  selectQueryFromLandingPage,
-  query,
-  changeQueryToggles,
-  renameQueryFromEditor,
   addInputOnQueryField,
+  changeQueryToggles,
+  query,
+  renameQueryFromEditor,
+  selectQueryFromLandingPage,
   waitForQueryAction,
 } from "Support/utils/queries";
 
 import {
-  verifyCouldnotConnectWithAlert,
   resizeQueryPanel,
-  verifypreview,
-  addInput,
+  verifypreview
 } from "Support/utils/dataSource";
+import { openNode, verifyNodeData, verifyValue } from "Support/utils/inspector";
 import {
-  hideOrUnhidePageMenu,
-  addEventHandler,
-  addNewPage,
-  setHomePage,
-  hideOrUnhidePage,
-  detetePage,
-  modifyPageHandle,
-  clearSearch,
-  searchPage,
+  addNewPage
 } from "Support/utils/multipage";
-import { verifyNodeData, openNode, verifyValue } from "Support/utils/inspector";
 
 describe("runpy", () => {
   beforeEach(() => {

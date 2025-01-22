@@ -1,65 +1,24 @@
 import { fake } from "Fixtures/fake";
-import { textInputText } from "Texts/textInput";
-import { commonWidgetText, widgetValue, customValidation } from "Texts/common";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { multipageSelector } from "Selectors/multipage";
-import { buttonText } from "Texts/button";
 import {
-    verifyControlComponentAction,
-    randomString,
+    randomString
 } from "Support/utils/editor/textInput";
-import {
-    openAccordion,
-    verifyAndModifyParameter,
-    openEditorSidebar,
-    verifyAndModifyToggleFx,
-    addDefaultEventHandler,
-    verifyComponentValueFromInspector,
-    selectColourFromColourPicker,
-    verifyBoxShadowCss,
-    verifyLayout,
-    verifyTooltip,
-    editAndVerifyWidgetName,
-    verifyPropertiesGeneralAccordion,
-    verifyStylesGeneralAccordion,
-    randomNumber,
-    closeAccordions,
-} from "Support/utils/commonWidget";
-import { dataCsvAssertionHelper } from "Support/utils/table";
-import {
-    selectCSA,
-    selectEvent,
-    addSupportCSAData,
-} from "Support/utils/events";
 
 import {
-    selectQueryFromLandingPage,
-    deleteQuery,
-    query,
-    changeQueryToggles,
-    renameQueryFromEditor,
     addInputOnQueryField,
+    query,
+    selectQueryFromLandingPage
 } from "Support/utils/queries";
 
-import {
-    verifyCouldnotConnectWithAlert,
-    resizeQueryPanel,
-    verifypreview,
-    addInput,
-} from "Support/utils/dataSource";
-import {
-    hideOrUnhidePageMenu,
-    addEventHandler,
-    addNewPage,
-    setHomePage,
-    hideOrUnhidePage,
-    detetePage,
-    modifyPageHandle,
-    clearSearch,
-    searchPage,
-} from "Support/utils/multipage";
-import { verifyNodeData, openNode, verifyValue } from "Support/utils/inspector";
 import { deleteDownloadsFolder } from "Support/utils/common";
+import {
+    resizeQueryPanel
+} from "Support/utils/dataSource";
+import { openNode, verifyNodeData, verifyValue } from "Support/utils/inspector";
+import {
+    addNewPage
+} from "Support/utils/multipage";
 
 describe("Global Actions", () => {
     beforeEach(() => {
