@@ -118,6 +118,19 @@
         "className": "codehinter-plugins",
         "placeholder": "Enter the ID of the object"
       }
+    },
+    "list_objects": {
+      "collectionName": {
+        "label": "Collection Name",
+        "key": "collectionName",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter the name of the collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter the name of the collection"
+      }
     }
 
 

@@ -13,12 +13,11 @@ export async function getSchema(client: WeaviateClient,collectionName:string ) {
 }
 
 
-export async function listObjects(client: WeaviateClient) {
+export async function listObjects(client: WeaviateClient,collectionName:string) {
   try {
-   const result=  await client.collections.listAll();
-   return result;
-   
-
+    const collection = client.collections.get(collectionName);
+    const res = await collection.query.fetchObjects();
+    return res;
   } catch (error) {
     console.log(error)
   }

@@ -7,12 +7,16 @@ export default class Weaviate implements QueryService {
     const client  = await this.getConnection(sourceOptions)
     let result = {};
     try {
+      console.log('tjdb index',{queryOptions});
+      
       switch (queryOptions.operation) {
         case Operation.get_schema:
           result = await getSchema(client,queryOptions.collectionName);
           break;
         case Operation.list_objects:
-          result = await listObjects(client);
+          console.log('tjdb list object switch');
+          
+          result = await listObjects(client, queryOptions.collectionName);
           break;
         case Operation.create_object:
           result = await createObject(client,queryOptions.collectionName,queryOptions.properties);
