@@ -38,7 +38,7 @@
     },
     "get_schema": {
       "collectionName": {
-        "label": "Collection Name",
+        "label": "Collection Name - 1",
         "key": "collectionName",
         "type": "codehinter",
         "lineNumbers": false,

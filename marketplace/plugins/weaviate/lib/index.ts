@@ -1,12 +1,11 @@
 import { QueryService, QueryResult, ConnectionTestResult, QueryError } from '@tooljet-marketplace/common';
 import { SourceOptions, QueryOptions, Operation } from './types';
-import { getSchema, listObjects, createObject, getObjectById, deleteObjectById } from './operations';
+import { getSchema, listObjects, createObject, getObjectById, deleteObjectById } from './query_operations';
 import weaviate, { WeaviateClient } from 'weaviate-client';
 export default class Weaviate implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     const client  = await this.getConnection(sourceOptions)
     let result = {};
-
     try {
       switch (queryOptions.operation) {
         case Operation.get_schema:
@@ -30,13 +29,14 @@ export default class Weaviate implements QueryService {
     } catch (error) {
       throw new QueryError('Query could not be completed', error?.message, {});
     }
+    
     return { status: 'ok', data: result };
   }
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     try {
      const client =  await this.getConnection(sourceOptions);
-    await client.collections.listAll()
+    await client.collections.listAll();
     return { status: 'ok' };
 
     } catch (error) {

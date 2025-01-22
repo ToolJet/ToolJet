@@ -25,7 +25,7 @@
   "defaults": {},
   "properties": {
     "instanceUrl": {
-      "label": "Instance URL",
+      "label": "Instance URLs",
       "key": "instanceUrl",
       "type": "text",
       "description": "Enter your Weaviate instance URL",
