@@ -75,7 +75,7 @@
         "key": "operation_parameters_summarisation",
         "type": "codehinter",
         "lineNumbers": false,
-        "placeholder": "{\n    “clean_up_tokenization_spaces”: true,\n    “truncation”: “do_not_truncate”,\n    “generate_parameters”: {}\n}",
+        "placeholder": "{\n    \"clean_up_tokenization_spaces\": true,\n    \"truncation\": \"do_not_truncate\",\n    \"temperature\": 0.7\n    \"max_length\": 130,\n    \"min_length\": 30,\n    \"do_sample\": false,\n}",
         "width": "320px",
         "height": "80px",
         "className": "codehinter-plugins",
