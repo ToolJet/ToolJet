@@ -158,9 +158,9 @@ Cypress.Commands.add(
   },
   (subject, assertion, value, ...arg) => {
     return cy
-      .wrap(subject)
-      .scrollIntoView()
-      .should("be.visible")
+      .wrap(subject, { timeout: 10000 })
+      .scrollIntoView({ timeout: 10000 })
+      .should("be.visible", { timeout: 10000 })
       .and(assertion, value, ...arg);
   }
 );
@@ -497,6 +497,7 @@ Cypress.Commands.add("verifyElement", (selector, text, eqValue) => {
 
 
 Cypress.Commands.add("loginWithCredentials", (email, password) => {
+  cy.get(onboardingSelectors.loginEmailInput, { timeout: 20000 }).should("be.visible");
   cy.clearAndType(onboardingSelectors.loginEmailInput, email);
   cy.clearAndType(onboardingSelectors.loginPasswordInput, password);
   cy.get(onboardingSelectors.signInButton).click();

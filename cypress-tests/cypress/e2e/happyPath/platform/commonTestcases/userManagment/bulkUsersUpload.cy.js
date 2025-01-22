@@ -51,10 +51,11 @@ describe("Bulk user upload", () => {
       "Missing email,groups information in 10 row(s);. No users were uploaded, please update and try again."
     );
 
-    bulkUserUploadDuplicate(
+    bulkUserUpload(
       same_email,
       "same_email",
-      "Duplicate email found. Please provide a unique email address."
+      "Duplicate email found. Please provide a unique email address.",
+      true
     );
 
     bulkUserUpload(
@@ -75,6 +76,7 @@ describe("Bulk user upload", () => {
       "2 groups doesn't exist. No users were uploaded"
     );
 
+    cy.wait(3000);
     bulkUserUpload(
       without_Role,
       "without_Role",

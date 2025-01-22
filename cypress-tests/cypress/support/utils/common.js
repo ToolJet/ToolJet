@@ -220,6 +220,8 @@ export const pinInspector = () => {
       cy.get(commonSelectors.inspectorPinIcon).click();
     }
   });
+  cy.hideTooltip();
+
 };
 
 export const navigateToworkspaceConstants = () => {
@@ -251,7 +253,7 @@ export const deleteAllGroupChips = () => {
           cy.get('[data-cy="delete-button"]').click();
           cy.get('[data-cy="yes-button"]').click();
 
-          cy.wait(2000); 
+          cy.wait(2000);
           deleteAllGroupChips(); // Recursive call to delete next chip
         } else {
           cy.log("Group chip is present but not visible, skipping deletion");

@@ -123,11 +123,11 @@ export const manageUsersElements = () => {
     usersText.buttonDownloadTemplate
   );
   cy.exec("mkdir -p ./cypress/downloads/");
-  cy.wait(3000)
+  cy.wait(3000);
   cy.exec("cd ./cypress/downloads/ && rm -rf *");
-  cy.wait(3000)
+  cy.wait(3000);
   cy.get(usersSelector.buttonDownloadTemplate).click();
-  cy.wait(4000)
+  cy.wait(4000);
   cy.exec("ls ./cypress/downloads/").then((result) => {
     const downloadedAppExportFileName = result.stdout.split("\n")[0];
     expect(downloadedAppExportFileName).to.contain.string("sample_upload.csv");
@@ -149,7 +149,6 @@ export const manageUsersElements = () => {
   );
 };
 
-
 export const inviteUserToWorkspace = (firstName, email) => {
   cy.apiUserInvite(firstName, email);
   fetchAndVisitInviteLink(email);
@@ -159,16 +158,21 @@ export const inviteUserToWorkspace = (firstName, email) => {
 };
 
 export const confirmInviteElements = (email) => {
-
   cy.get(commonSelectors.signUpSectionHeader).verifyVisibleElement(
-    "have.text", "Sign up");
+    "have.text",
+    "Sign up"
+  );
   cy.get('[data-cy="signup-info"]').verifyVisibleElement(
-    "have.text", "Sign up to the workspace - My workspace. ");
+    "have.text",
+    "Sign up to the workspace - My workspace. "
+  );
 
   // cy.verifyLabel("Email")
   // cy.verifyLabel("Create a password")
   cy.get(commonSelectors.invitedUserEmail).verifyVisibleElement(
-    "have.text", email);
+    "have.text",
+    email
+  );
 
   cy.get(commonSelectors.signUpTermsHelperText).should(($el) => {
     expect($el.contents().first().text().trim()).to.eq(
@@ -209,29 +213,32 @@ export const userStatus = (email) => {
     });
 };
 
-export const bulkUserUpload = (file, fileName, toastMessage) => {
+export const bulkUserUpload = (
+  file,
+  fileName,
+  toastMessage,
+  isDuplicate = false
+) => {
   cy.get(usersSelector.inputFieldBulkUpload).selectFile(file, {
     force: true,
   });
-  cy.get(usersSelector.uploadedFileData).should("contain", fileName);
-  cy.get(usersSelector.buttonUploadUsers).click();
-  cy.get(commonSelectors.newToastMessage)
-    .should("be.visible")
-    .and("have.text", toastMessage);
-  cy.get(usersSelector.toastCloseButton).click();
-  cy.wait(200);
-};
 
-export const bulkUserUploadDuplicate = (file, fileName, toastMessage) => {
-  cy.get(usersSelector.inputFieldBulkUpload).selectFile(file, {
-    force: true,
-  });
   cy.get(usersSelector.uploadedFileData).should("contain", fileName);
+
   cy.get(usersSelector.buttonUploadUsers).click();
-  cy.get(commonSelectors.modalMessage)
-    .should("be.visible")
-    .and("have.text", toastMessage);
-  cy.get(usersSelector.modalClose).click();
+
+  if (isDuplicate) {
+    cy.get(commonSelectors.modalMessage)
+      .should("be.visible")
+      .and("have.text", toastMessage);
+    cy.get(usersSelector.modalClose).click();
+  } else {
+    cy.get(commonSelectors.newToastMessage)
+      .should("be.visible")
+      .and("have.text", toastMessage);
+    cy.get(usersSelector.toastCloseButton).click();
+  }
+
   cy.wait(200);
 };
 
@@ -271,7 +278,7 @@ export const selectUserGroup = (groupName) => {
     }
     cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(groupName);
     cy.wait(1000);
-    cy.get('[data-cy="group-check-input"]').eq(0).check()
+    cy.get('[data-cy="group-check-input"]').eq(0).check();
   });
 };
 
@@ -293,11 +300,11 @@ export const inviteUserWithUserGroups = (
     }
     cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(groupName1);
     cy.wait(1000);
-    cy.get('[data-cy="group-check-input"]').eq(0).check()
+    cy.get('[data-cy="group-check-input"]').eq(0).check();
     cy.wait(1000);
     cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(groupName2);
     cy.wait(1000);
-    cy.get('[data-cy="group-check-input"]').eq(0).check()
+    cy.get('[data-cy="group-check-input"]').eq(0).check();
   });
 
   cy.get(usersSelector.buttonInviteUsers).click();
@@ -357,13 +364,7 @@ export const fetchAndVisitInviteLink = (email) => {
   });
 };
 
-
-export const inviteUserWithUserRole = (
-  firstName,
-  email,
-  role,
-
-) => {
+export const inviteUserWithUserRole = (firstName, email, role) => {
   fillUserInviteForm(firstName, email);
 
   cy.wait(2000);
@@ -376,7 +377,7 @@ export const inviteUserWithUserRole = (
     }
     cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(role);
     cy.wait(1000);
-    cy.get('[data-cy="group-check-input"]').eq(0).check()
+    cy.get('[data-cy="group-check-input"]').eq(0).check();
     cy.wait(1000);
   });
 
