@@ -90,7 +90,7 @@ describe("runpy", () => {
     cy.apiDeleteApp();
   });
 
-  it("should verify actions", () => {
+  it.only("should verify actions", () => {
     const data = {};
     data.customText = randomString(12);
 
@@ -186,22 +186,17 @@ actions.unsetPageVariable('pageVar')`
       );
     });
 
-    // addInputOnQueryField(
-    //   "runpy",
-    //   "actions.generateFile('runpycsv', 'csv', [{ 'name': 'John', 'email': 'john@tooljet.com' }])"
-    // );
-    // query("run");
+    addInputOnQueryField(
+      "runpy",
+      "actions.generateFile('runpycsv', 'csv', [{ 'name': 'John', 'email': 'john@tooljet.com' }])"
+    );
+    query("run");
 
-    // cy.verifyToastMessage(
-    //   commonSelectors.toastMessage,
-    //   "Query (runpy1) completed."
-    // );
+    cy.wait(3000);
 
-    // cy.wait(3000);
-
-    // cy.readFile("cypress/downloads/runpycsv.csv", "utf-8")
-    //   .should("contain", "name,email")
-    //   .and("contain", "John,john@tooljet.com");
+    cy.readFile("cypress/downloads/runpycsv.csv", "utf-8")
+      .should("contain", "name,email")
+      .and("contain", "John,john@tooljet.com");
 
     // addInputOnQueryField(
     //   "runpy",
@@ -286,7 +281,7 @@ actions.unsetPageVariable('pageVar')`
     query("run");
 
     openEditorSidebar("button1");
-    selectEvent("On Click", "Run query", 1);
+    selectEvent("On Click", "Run query");
     cy.get('[data-cy="query-selection-field"]').type("runpy1{enter}");
     cy.get(commonWidgetSelector.draggableWidget("button1")).click();
     cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runpy");
@@ -309,15 +304,18 @@ actions.unsetPageVariable('pageVar')`
       "runpy",
       "actions.showAlert('success', 'alert from runpy');"
     );
+    cy.get('[data-cy="query-tab-Settings"]').click();
     cy.wait("@editQuery");
     cy.wait(200);
     cy.waitForAutoSave();
+
     changeQueryToggles("run-on-app-load");
     cy.wait("@editQuery");
     cy.waitForAutoSave();
     cy.reload();
     cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runpy");
 
+    cy.get('[data-cy="query-tab-Settings"]').click();
     changeQueryToggles("confirmation-before-run");
     cy.wait("@editQuery");
     cy.wait(200);
@@ -330,6 +328,7 @@ actions.unsetPageVariable('pageVar')`
     cy.get('[data-cy="modal-confirm-button"]').realClick();
     cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runpy");
 
+    cy.get('[data-cy="query-tab-Settings"]').click();
     changeQueryToggles("notification-on-success");
     cy.get('[data-cy="success-message-input-field"]').clearAndTypeOnCodeMirror(
       "Success alert"
