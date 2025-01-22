@@ -1,23 +1,28 @@
 import { QueryService, QueryResult, ConnectionTestResult, QueryError } from '@tooljet-marketplace/common';
 import { SourceOptions, QueryOptions, Operation } from './types';
-import { getSchema, createClass, listObjects, createObject } from './operations';
-
+import { getSchema, listObjects, createObject, getObjectById, deleteObjectById } from './operations';
+import weaviate, { WeaviateClient } from 'weaviate-client';
 export default class Weaviate implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
+    const client  = await this.getConnection(sourceOptions)
     let result = {};
+
     try {
       switch (queryOptions.operation) {
-        case Operation.GetSchema:
-          result = await getSchema(sourceOptions);
+        case Operation.get_schema:
+          result = await getSchema(client,queryOptions.collectionName);
           break;
-        case Operation.CreateClass:
-          result = await createClass(sourceOptions, queryOptions);
+        case Operation.list_objects:
+          result = await listObjects(client);
           break;
-        case Operation.ListObjects:
-          result = await listObjects(sourceOptions, queryOptions);
+        case Operation.create_object:
+          result = await createObject(client,queryOptions.collectionName,queryOptions.properties);
           break;
-        case Operation.CreateObject:
-          result = await createObject(sourceOptions, queryOptions);
+        case Operation.get_object_by_id:
+          result = await getObjectById(client,queryOptions.collectionName,queryOptions.objectId);
+          break;
+        case Operation.delete_object_by_id:
+          result = await deleteObjectById(client,queryOptions.collectionName,queryOptions.objectId);
           break;
         default:
           throw new QueryError('Invalid operation', 'Operation not supported', {});
@@ -30,10 +35,26 @@ export default class Weaviate implements QueryService {
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     try {
-      await getSchema(sourceOptions);
-      return { status: 'ok' };
+     const client =  await this.getConnection(sourceOptions);
+    await client.collections.listAll()
+    return { status: 'ok' };
+
     } catch (error) {
       throw new QueryError('Connection failed', error?.message, {});
     }
   }
+
+  async getConnection(sourceOptions: SourceOptions) {
+
+    const weaviateURL = sourceOptions.instanceUrl as string
+    const weaviateKey = sourceOptions.apiKey as string
+    const client: WeaviateClient = await weaviate.connectToWeaviateCloud(weaviateURL, {
+        authCredentials: new weaviate.ApiKey(weaviateKey),
+      }
+    )
+
+    return client;
+    
+  }
 }
+

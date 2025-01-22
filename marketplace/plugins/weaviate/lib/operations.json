@@ -5,5 +5,121 @@
   "description": "A schema defining Weaviate datasource",
   "type": "database",
   "defaults": {},
-  "properties": {}
+  "properties": {
+    
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "get_schema",
+          "name": "Get Schema"
+        },
+        {
+          "value": "list_objects",
+          "name": "List Objects"
+        },
+        {
+          "value": "create_object",
+          "name": "Create Object"
+        },
+        {
+          "value": "get_object_by_id",
+          "name": "Get Object By Id"
+        },
+        {
+          "value": "delete_object_by_id",
+          "name": "Delete Object By Id"
+        }
+      ]
+
+    },
+    "get_schema": {
+      "collectionName": {
+        "label": "Collection Name",
+        "key": "collectionName",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter the name of the collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter the name of the collection"
+      }
+    },
+    "create_object": {
+      "collectionName": {
+        "label": "Collection Name",
+        "key": "collectionName",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter the name of the collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter the name of the collection"
+      },
+      "properties": {
+        "label": "Properties",
+        "key": "properties",
+        "type": "codehinter",
+        "height": "150px",
+        "editorType": "multiline",
+        "description": "Enter the properties of the object",
+        "placeholder": "Enter the properties of the object"
+      }
+    },
+    "get_object_by_id": {
+      "collectionName": {
+        "label": "Collection Name",
+        "key": "collectionName",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter the name of the collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter the name of the collection"
+      },
+      "objectId": {
+        "label": "Object ID",
+        "key": "objectId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter the ID of the object",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter the ID of the object"
+      }
+    },
+    "delete_object_by_id": {
+      "collectionName": {
+        "label": "Collection Name",
+        "key": "collectionName",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter the name of the collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter the name of the collection"
+      },
+      "objectId": {
+        "label": "Object ID",
+        "key": "objectId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter the ID of the object",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter the ID of the object"
+      }
+    }
+
+
+  }
 }
