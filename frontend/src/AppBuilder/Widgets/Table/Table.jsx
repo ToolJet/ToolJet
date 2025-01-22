@@ -715,8 +715,8 @@ export const Table = React.memo(
         return;
       }
 
-      const columnName = columns.find((column) => column.id === state?.sortBy?.[0]?.id).accessor;
-
+      const columnName = columns.find((column) => column.id === state?.sortBy?.[0]?.id)?.accessor;
+      if (!columnName) return;
       return [
         {
           column: columnName,
