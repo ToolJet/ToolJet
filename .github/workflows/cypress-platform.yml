@@ -66,7 +66,11 @@ jobs:
           echo "ENABLE_PRIVATE_APP_EMBED=true" >> .env
           echo "TOOLJET_DB_STATEMENT_TIMEOUT=60000" >> .env
           echo "TOOLJET_DB_RECONFIG=true" >> .env
-
+          echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=123456789.apps.googleusercontent.com" >> .env
+          echo "SSO_GOOGLE_OAUTH2_CLIENT_SECRET=ABCGFDNF-FHSDVFY-bskfh6234" >> .env
+          echo "SSO_GIT_OAUTH2_CLIENT_ID=1234567890" >> .env
+          echo "SSO_GIT_OAUTH2_CLIENT_SECRET=3346shfvkdjjsfkvxce32854e026a4531ed" >> .env
+          echo "PGRST_DB_PRE_CONFIG=postgrest.pre_config" >> .env
       - name: Set up database
         run: |
           npm run --prefix server db:create
@@ -185,6 +189,11 @@ jobs:
           echo "ENABLE_PRIVATE_APP_EMBED=true" >> .env
           echo "TOOLJET_DB_STATEMENT_TIMEOUT=60000" >> .env
           echo "TOOLJET_DB_RECONFIG=true" >> .env
+          echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=123456789.apps.googleusercontent.com" >> .env
+          echo "SSO_GOOGLE_OAUTH2_CLIENT_SECRET=ABCGFDNF-FHSDVFY-bskfh6234" >> .env
+          echo "SSO_GIT_OAUTH2_CLIENT_ID=1234567890" >> .env
+          echo "SSO_GIT_OAUTH2_CLIENT_SECRET=3346shfvkdjjsfkvxce32854e026a4531ed" >> .env
+          echo "PGRST_DB_PRE_CONFIG=postgrest.pre_config" >> .env
 
       - name: Deploy with Docker Compose
         run: |
@@ -288,6 +297,11 @@ jobs:
           echo "ENABLE_PRIVATE_APP_EMBED=true" >> .env
           echo "TOOLJET_DB_STATEMENT_TIMEOUT=60000" >> .env
           echo "TOOLJET_DB_RECONFIG=true" >> .env
+          echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=123456789.apps.googleusercontent.com" >> .env
+          echo "SSO_GOOGLE_OAUTH2_CLIENT_SECRET=ABCGFDNF-FHSDVFY-bskfh6234" >> .env
+          echo "SSO_GIT_OAUTH2_CLIENT_ID=1234567890" >> .env
+          echo "SSO_GIT_OAUTH2_CLIENT_SECRET=3346shfvkdjjsfkvxce32854e026a4531ed" >> .env
+          echo "PGRST_DB_PRE_CONFIG=postgrest.pre_config" >> .env
 
       - name: Deploy with Docker Compose
         run: |
@@ -405,6 +419,11 @@ jobs:
           echo "ENABLE_PRIVATE_APP_EMBED=true" >> .env
           echo "TOOLJET_DB_STATEMENT_TIMEOUT=60000" >> .env
           echo "TOOLJET_DB_RECONFIG=true" >> .env
+          echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=123456789.apps.googleusercontent.com" >> .env
+          echo "SSO_GOOGLE_OAUTH2_CLIENT_SECRET=ABCGFDNF-FHSDVFY-bskfh6234" >> .env
+          echo "SSO_GIT_OAUTH2_CLIENT_ID=1234567890" >> .env
+          echo "SSO_GIT_OAUTH2_CLIENT_SECRET=3346shfvkdjjsfkvxce32854e026a4531ed" >> .env
+          echo "PGRST_DB_PRE_CONFIG=postgrest.pre_config" >> .env
 
       - name: Deploy with Docker Compose
         run: |
