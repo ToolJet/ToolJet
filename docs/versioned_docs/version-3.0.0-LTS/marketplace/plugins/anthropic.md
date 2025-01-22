@@ -3,7 +3,7 @@ id: marketplace-plugin-anthropic
 title: Anthropic
 ---
 
-By integrating Anthropic with ToolJet, you can create interactive chatbots, generate detailed content, and handle complex queries efficiently.
+By integrating Anthropic with ToolJet, you can create interactive chatbots that analyze past messages to generate context-aware responses. These bots can also be customized with defined roles, making them adaptable for tasks like customer support, virtual assistants, or personalized conversations.
 
 ## Connection
 
@@ -30,7 +30,7 @@ This operation processes the user's input and generates appropriate, context-awa
 
 - **Max Size**: Maximum tokens used in response.
 
-**Optional Parameter**
+**Optional Parameters**
 
 - **System Prompt**: Defines role, context and/or role of the model to evaluate messages and send response.
 
