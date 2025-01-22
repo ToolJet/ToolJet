@@ -130,5 +130,14 @@
     "author": "Tooljet",
     "timestamp": "Mon, 28 Oct 2024 08:08:28 GMT",
     "tags": ["AI"]
+  },
+  {
+    "name": "Mistral",
+    "description": "Integrate with Mistral API to use its AI models for chat completion capabilities",
+    "version": "1.0.0",
+    "id": "mistral",
+    "author": "Tooljet",
+    "timestamp": "Tue, 21 Jan 2025 06:35:01 GMT",
+    "tags": ["AI"]
   }
 ]
