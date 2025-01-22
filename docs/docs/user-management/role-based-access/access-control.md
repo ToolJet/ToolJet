@@ -82,3 +82,10 @@ Role Required: **Admin** <br/>
 5. Select the resource (Apps/Data source) based on requirement. Give a name for the permission, configure required permission and click on **Add** at the bottom of the modal.
 
 <img className="screenshot-full" src="/img/user-management/rbac/access-control/select-resource.png" alt="Create Custom Group" />
+
+<br/><br/><br/>
+
+:::info
+If a user has the create permission and creates a resource, the user becomes the owner of that resource and has all the permissions related to it by default. <br/>
+For example, if a user creates a data source A, then by default, the user will have the configure and build access for data source A.
+:::

@@ -3,9 +3,9 @@ id: custom-groups
 title: Custom Groups
 ---
 
-ToolJet allows you to manage permissions, access, and users effectively by creating custom groups. Each custom group can be configured with a specific set of permissions and include only the users who require those permissions. This helps maintain precise control over what users can access and modify within your workspace.
+ToolJet allows you to create custom groups to manage permissions, access, and users effectively. Each custom group can be configured with a specific set of permissions and can include only the users who require those permissions. This helps maintain precise control over what users can access and modify within your workspace.
 
-For example, if you want to grant edit access to certain applications or data sources to a specific team, you can create a custom group for that team. By assigning the necessary permissions to the group, only its members will have the ability to edit the specified resources, ensuring clear and secure access control.
+For example, if you have apps built for two teams, HR and Sales, and you want team members to only have access to the apps that are relevant to their team, then you can create two custom groups named HR and Sales, and then select the desired apps by configuring the **[granular access permissions](#)**.
 
 ## Creating Custom Groups
 
@@ -16,16 +16,14 @@ Role Required: **Admin** <br/>
     (Example URL - `https://app.corp.com/nexus/workspace-settings/groups`)
 3. Click **+ Create new group**.
 4. Enter a name for the group and click **Create Group**.
-5. Set up the group's properties:
-   - Users: Add users to the group.
-   - Permissions: Set permissions for workspace resources. These include Apps, Folders and Workspace constants.
-   - Granular Permissions: Configure granular and asset-level permissions.
+5. Set up the group's users and permissions:
+   - **Users**: Add users to the group.
+   - **Permissions**: Set permissions for workspace resources. These include Apps, Folders and Workspace constants.
+   - **Granular Permissions**: Configure granular and asset-level permissions.
       - Apps: Assign app access.
       - Data Sources: Define data source access.
 
-<div style={{textAlign: 'center'}}>
 <img className="screenshot-full" src="/img/tutorial/manage-users-groups/create-custom-group.png" alt="Create Custom Group" />
-</div>
 
 ## Modifying Group Permissions
 
