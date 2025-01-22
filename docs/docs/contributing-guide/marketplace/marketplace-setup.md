@@ -51,6 +51,7 @@ Please note that the marketplace is not enabled by default. After updating the v
 For information on running ToolJet on your local machine, please refer to the instructions provided **[here](/docs/contributing-guide/setup/architecture)**. You can access the marketplace by navigating to the **'/integrations'** route.
 
 ### Step 3: Install the Required Packages
+
 The required packages must be installed from the marketplace root folder. Use the following commands to install the packages:
 
 ``` bash
@@ -58,7 +59,7 @@ cd marketplace
 npm install
 ```
 
-After the packages are installed, run the following command to build the project:
+After the packages are installed, run the following command to build the directory:
 
 ``` bash
 npm run build
