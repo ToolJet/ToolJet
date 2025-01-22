@@ -15,21 +15,17 @@ export async function text_generation_operation(api_url, queryOptions, headers) 
 }
 
 export async function summarisation_operation(api_url, queryOptions, headers) {
-  const {
-    model_summarisation: model,
-    input_summarisation: input,
-    operation_parameters_summarisation: operation_parameters,
-  } = queryOptions;
-  const response = await fetch(`${api_url}${model}`, {
+  const { model_summarisation, input_summarisation, operation_parameters_summarisation } = queryOptions;
+  const response = await fetch(`${api_url}${model_summarisation}`, {
     method: 'POST',
     headers,
     body: JSON.stringify({
-      inputs: input,
-      ...(operation_parameters ? { parameters: JSON.parse(operation_parameters) } : {}),
+      inputs: input_summarisation,
+      ...(operation_parameters_summarisation ? { parameters: JSON.parse(operation_parameters_summarisation) } : {}),
     }),
   });
   if (!response.ok) {
-    throw new Error('Text generation operation failed');
+    throw new Error('Summarisation operation failed');
   }
   return await response.json();
 }
