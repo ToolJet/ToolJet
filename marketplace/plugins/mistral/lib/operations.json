@@ -1,0 +1,165 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Mistral datasource",
+  "description": "A schema defining Mistral datasource",
+  "type": "api",
+  "defaults": {
+    "operation":{
+      "value": "text_generation"
+    },
+    "model": {
+      "value": "mistral-large-latest"
+    },
+    "response_format": {
+      "value": "text"
+    },
+    "safe_prompt": {
+      "value": false
+    }
+  },
+  "properties": {
+    "operation": {
+			"label": "Operation",
+			"key": "operation",
+			"type": "dropdown-component-flip",
+			"description": "Single select dropdown for operation",
+			"list": [
+				{ "value": "text_generation", "name": "Text Generation" }
+			]
+		},
+    "text_generation": {
+      "model": {
+        "label": "Model",
+				"key": "model",
+				"type": "dropdown",
+				"description": "Select mistral model",
+				"list": [
+          { "value": "mistral-small-latest", "name": "mistral-small-latest" },
+					{ "value": "mistral-large-latest", "name": "mistral-large-latest" },
+          { "value": "mistral-moderation-latest", "name": "mistral-moderation-latest" },
+          { "value": "ministral-3b-latest", "name": "ministral-3b-latest" },
+          { "value": "ministral-8b-latest", "name": "ministral-8b-latest" },
+          { "value": "open-mistral-nemo", "name": "open-mistral-nemo" }
+				]
+      },
+      "messages": {
+        "label": "Messages",
+        "key": "messages",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "[{\n    \"role\": \"system\",\n    \"content\": \"You are a financial advisor of a Fortune 500 company.\"\n},\n{\n    \"role\": \"user\",\n    \"content\": \"Can you help me with tax benefits for the employee?\"\n},\n{\n    \"role\": \"assistant\",\n    \"content\": \"Sure! Please help me with more specific details of your employment and salary structure.\"\n}]",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "tooltip": "Array of messages between system, user and assistant"
+      },
+      "max_size": {
+        "label": "Max size",
+        "key": "max_size",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "512",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "tooltip": "Maximum tokens used in response"
+      },
+      "temperature": {
+        "label": "Temperature",
+        "key": "temperature",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "0.0",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "tooltip": "Defines randomness of response. Takes value between 0 and 1. Default is 1"
+      },
+      "top_p": {
+        "label": "Top P",
+        "key": "top_p",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "1",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "tooltip": "Nucleus sampling, where the model considers the results of the tokens with top_p probability mass"
+      },
+      "stop_tokens": {
+        "label": "Stop tokens(s)",
+        "key": "stop_tokens",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "[]",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "tooltip": "Stop generation if this token (string or array of string) is detected"
+      },
+      "random_seed": {
+        "label": "Random seed",
+        "key": "random_seed",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "42",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "tooltip": "Used for random sampling"
+      },
+      "response_format": {
+        "label": "Response format",
+				"key": "response_format",
+				"type": "dropdown",
+				"description": "Select response format",
+				"list": [
+					{ "value": "json_object", "name": "JSON object" },
+					{ "value": "text", "name": "Text" }
+        ],
+        "tooltip": "Format of model's response"
+      },
+      "presence_penalty": {
+        "label": "Presence penalty",
+        "key": "presence_penalty",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "0",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "tooltip": "Determines how much the model penalizes the repetition of words or phrases"
+      },
+      "frequency_penalty": {
+        "label": "Frequency penalty",
+        "key": "frequency_penalty",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "0",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "tooltip": "Determines how much the model penalizes the repetition of words based on their frequency in the generated text"
+      },
+      "completions": {
+        "label": "Completions (N)",
+        "key": "completions",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "1",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "tooltip": "Number of completions to return for each request"
+      },
+      "safe_prompt": {
+        "type": "toggle",
+        "label": "Safe prompt",
+        "key": "safe_prompt",
+        "text": "Enable",
+        "tooltip": "Whether to inject a safety prompt before all conversations"
+      }
+    }
+  }
+}
