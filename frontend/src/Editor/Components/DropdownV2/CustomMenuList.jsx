@@ -28,10 +28,10 @@ const CustomMenuList = ({ selectProps, ...props }) => {
 
   const parentRef = useRef(null);
   const virtualizer = useVirtualizer({
-    count: props?.children?.length || props.options.length,
+    count: props?.children?.length || 0,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 40,
-    overscan: 8,
+    overscan: 15,
   });
 
   const handleSelectAll = (e) => {
@@ -43,6 +43,7 @@ const CustomMenuList = ({ selectProps, ...props }) => {
     }
     setIsSelectAllSelected(e.target.checked);
   };
+  console.log('virtualizer', virtualizer);
   return (
     <div
       id={`dropdown-multiselect-widget-custom-menu-list-${menuId}`}
@@ -95,10 +96,11 @@ const CustomMenuList = ({ selectProps, ...props }) => {
       >
         <div
           style={{
-            height: `${virtualizer.getTotalSize()}px`,
+            height: `${virtualizer.getTotalSize() || 38}px`,
             position: 'relative',
           }}
         >
+          {!virtualizer.getTotalSize() && props.children}
           {virtualizer.getVirtualItems().map((virtualItem) => {
             const option = props.options[virtualItem.index];
             const child = props.children[virtualItem.index];
