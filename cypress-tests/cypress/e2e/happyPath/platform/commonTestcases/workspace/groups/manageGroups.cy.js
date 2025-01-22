@@ -110,6 +110,7 @@ const verifyEmptyStates = () => {
   cy.get(groupsSelector.userEmptyPageHelperText).verifyVisibleElement("have.text", groupsText.userEmptyPageHelperText);
 
   // Granular permissions empty state
+  cy.get(groupsSelector.granularLink).click();
   cy.get(groupsSelector.granularEmptyPageIcon).should("be.visible");
   cy.get(groupsSelector.emptyPagePermissionTitle).verifyVisibleElement("have.text", groupsText.emptyPagePermissionTitle);
   cy.get(groupsSelector.emptyPagePermissionHelperText).verifyVisibleElement("have.text", groupsText.emptyPagePermissionHelperText);

@@ -41,6 +41,11 @@ describe("App Import Functionality", () => {
 
   data = initializeData();
 
+  before(() => {
+    cy.exec("mkdir -p ./cypress/downloads/");
+    cy.wait(3000);
+  });
+
   beforeEach(() => {
     cy.viewport(1200, 1300);
     cy.apiLogin();

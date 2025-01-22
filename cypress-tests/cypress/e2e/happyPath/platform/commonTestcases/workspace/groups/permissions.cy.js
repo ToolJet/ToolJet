@@ -20,9 +20,7 @@ import {
     fillConnectionForm,
     addQuery,
 } from "Support/utils/postgreSql";
-import {
-    verifyValueOnInspector,
-} from "Support/utils/dataSource";
+import { verifyValueOnInspector } from "Support/utils/dataSource";
 import { dataSourceSelector } from "Selectors/dataSource";
 import { dataSourceText } from "Texts/dataSource";
 import {
@@ -39,12 +37,15 @@ import {
     importSelectors,
 } from "Selectors/exportImport";
 import { exportAppModalText, importText } from "Texts/exportImport";
-import {
-    clickOnExportButtonAndVerify,
-} from "Support/utils/exportImport";
+import { clickOnExportButtonAndVerify } from "Support/utils/exportImport";
 
 describe("Manage Groups", () => {
     let data = {};
+
+    before(() => {
+        cy.exec("mkdir -p ./cypress/downloads/");
+        cy.wait(3000);
+    });
 
     beforeEach(() => {
         data = {
@@ -458,7 +459,6 @@ describe("Manage Groups", () => {
         cy.visitSlug({
             actualUrl: `${Cypress.config("baseUrl")}/applications/${appSlug}`,
         });
-
     });
 
     it("should verify user role updating sequence", () => {
@@ -573,21 +573,42 @@ describe("Manage Groups", () => {
     it("should verify query creation and import access for Builders and Admin", () => {
         const firstName2 = fake.firstName;
         const email2 = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
-        const workspaceName2 = fake.firstName.toLowerCase().replace(/[^A-Za-z]/g, "");
-        const workspaceSlug2 = fake.firstName.toLowerCase().replace(/[^A-Za-z]/g, "");
+        const workspaceName2 = fake.firstName
+            .toLowerCase()
+            .replace(/[^A-Za-z]/g, "");
+        const workspaceSlug2 = fake.firstName
+            .toLowerCase()
+            .replace(/[^A-Za-z]/g, "");
 
-        createQueryAndImportApp(data.firstName, data.email, data.workspaceName, data.workspaceSlug, "Builder");
+        createQueryAndImportApp(
+            data.firstName,
+            data.email,
+            data.workspaceName,
+            data.workspaceSlug,
+            "Builder"
+        );
 
         cy.backToApps();
         logout();
 
         cy.defaultWorkspaceLogin();
 
-        createQueryAndImportApp(firstName2, email2, workspaceName2, workspaceSlug2, "Admin");
+        createQueryAndImportApp(
+            firstName2,
+            email2,
+            workspaceName2,
+            workspaceSlug2,
+            "Admin"
+        );
     });
 
-    const createQueryAndImportApp = (firstName, email, workspaceName, workspaceSlug, role) => {
-
+    const createQueryAndImportApp = (
+        firstName,
+        email,
+        workspaceName,
+        workspaceSlug,
+        role
+    ) => {
         let currentVersion = "";
         let exportedFilePath;
 
@@ -621,21 +642,21 @@ describe("Manage Groups", () => {
         //Create and run postgres query in the app
         // Need to enable once bug is fixed
         /*
-        
-
-        addQuery(
-            "table_preview",
-            `SELECT * FROM persons;`,
-            `cypress-${data.dsName1}-postgresql`
-        );
-
-        cy.get('[data-cy="list-query-table_preview"]').verifyVisibleElement(
-            "have.text",
-            "table_preview "
-        );
-        cy.get(dataSourceSelector.queryCreateAndRunButton).click();
-        verifyValueOnInspector("table_preview", "7 items ");
-        */
+            
+    
+            addQuery(
+                "table_preview",
+                `SELECT * FROM persons;`,
+                `cypress-${data.dsName1}-postgresql`
+            );
+    
+            cy.get('[data-cy="list-query-table_preview"]').verifyVisibleElement(
+                "have.text",
+                "table_preview "
+            );
+            cy.get(dataSourceSelector.queryCreateAndRunButton).click();
+            verifyValueOnInspector("table_preview", "7 items ");
+            */
 
         cy.backToApps();
 
@@ -648,7 +669,9 @@ describe("Manage Groups", () => {
         cy.get(
             exportAppModalSelectors.versionRadioButton((currentVersion = "v1"))
         ).verifyVisibleElement("be.checked");
-        cy.get(commonSelectors.buttonSelector(exportAppModalText.exportSelectedVersion)).click();
+        cy.get(
+            commonSelectors.buttonSelector(exportAppModalText.exportSelectedVersion)
+        ).click();
         cy.exec("ls ./cypress/downloads/").then((result) => {
             cy.log(result);
             const downloadedAppExportFileName = result.stdout.split("\n")[0];
@@ -664,6 +687,5 @@ describe("Manage Groups", () => {
                 .and("have.text", importText.appImportedToastMessage);
         });
         cy.exec("cd ./cypress/downloads/ && rm -rf *");
-    }
-
+    };
 });

@@ -131,6 +131,7 @@ export const addQueryAndOpenEditor = (queryName, query, dbName, appName) => {
 
 export const verifyValueOnInspector = (queryName, value) => {
   cy.get('[data-cy="left-sidebar-inspect-button"]').click();
+  cy.hideTooltip();
   cy.get('[data-cy="inspector-node-queries"]')
     .parent()
     .within(() => {

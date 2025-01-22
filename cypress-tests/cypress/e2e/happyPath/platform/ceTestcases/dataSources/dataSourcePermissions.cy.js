@@ -22,24 +22,26 @@ import { inviteUserBasedOnRole } from "Support/utils/manageGroups";
 const data = {};
 data.firstName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
 data.email = fake.email.toLowerCase();
-data.dsName1 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
-data.dsName2 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Global Datasource Manager", () => {
   const workspaceName = fake.firstName;
   const workspaceSlug = fake.firstName.toLowerCase().replace(/[^A-Za-z]/g, "");
   beforeEach(() => {
-    cy.defaultWorkspaceLogin();
+    cy.apiLogin();
+    cy.visit(`${workspaceSlug}`);
     cy.viewport(1200, 1300);
     cy.skipWalkthrough();
-    cy.visit(workspaceSlug);
   });
+
   before(() => {
-    cy.apiLogin();
+    cy.defaultWorkspaceLogin();
     cy.apiCreateWorkspace(workspaceName, workspaceSlug);
+    cy.apiLogout();
   });
 
   it("Should verify the data source manager UI", () => {
+    data.dsName1 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+    data.dsName2 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.get(commonSelectors.pageSectionHeader).verifyVisibleElement(
       "have.text",
@@ -163,6 +165,9 @@ describe("Global Datasource Manager", () => {
   });
 
   it("Should verify the Datasource connection and query creation using global data source", () => {
+    data.dsName1 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+    data.dsName2 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+
     data.appName = `${fake.companyName}-App`;
 
     selectAndAddDataSource(
@@ -215,6 +220,7 @@ describe("Global Datasource Manager", () => {
       `cypress-${data.dsName2}-postgresql`,
       "postgresql",
       [
+        { key: "connection_type", value: "manual", encrypted: false },
         { key: "host", value: Cypress.env("pg_host") },
         { key: "port", value: 5432 },
         { key: "database", value: "pg_ds" },
@@ -224,9 +230,21 @@ describe("Global Datasource Manager", () => {
         { key: "ssl_certificate", value: "none", encrypted: false },
       ]
     );
+
+    //scope changing
+    cy.openApp();
+    cy.get(
+      ".w-100 > .react-select__control > .react-select__value-container > .react-select__single-value"
+    ).click();
+    cy.get("#react-select-4-listbox")
+      .contains(`cypress-${data.dsName2}-postgresql`)
+      .click();
+    cy.waitForAutoSave();
+    cy.get(dataSourceSelector.queryCreateAndRunButton).click();
+    verifyValueOnInspector("table_preview", "4 items ");
   });
 
-  it("Should verify the query creation and scope changing functionality.", () => {
+  it.skip("Should verify the query creation and scope changing functionality.", () => {
     data.appName = `${fake.companyName}-App`;
 
     navigateToManageUsers();

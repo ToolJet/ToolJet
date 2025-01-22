@@ -122,6 +122,8 @@ export const manageUsersElements = () => {
     "have.text",
     usersText.buttonDownloadTemplate
   );
+  cy.exec("mkdir -p ./cypress/downloads/");
+  cy.wait(3000)
   cy.exec("cd ./cypress/downloads/ && rm -rf *");
   cy.wait(3000)
   cy.get(usersSelector.buttonDownloadTemplate).click();
