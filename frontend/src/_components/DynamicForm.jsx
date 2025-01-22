@@ -55,14 +55,24 @@ const DynamicForm = ({
   const [workspaceVariables, setWorkspaceVariables] = React.useState([]);
   const [currentOrgEnvironmentConstants, setCurrentOrgEnvironmentConstants] = React.useState([]);
 
-  // if(schema.properties)  todo add empty check
+  const processOperationsDefaults = (defaults, existingOptions) => {
+    if (!defaults) return existingOptions || {};
+
+    const processedDefaults = { ...existingOptions };
+    Object.entries(defaults).forEach(([key, defaultValue]) => {
+      if (!processedDefaults[key]) {
+        processedDefaults[key] = defaultValue;
+      }
+    });
+    return processedDefaults;
+  };
+
   React.useLayoutEffect(() => {
     if (!isEditMode || isEmpty(options)) {
-      typeof setDefaultOptions === 'function' && setDefaultOptions(schema?.defaults);
-      optionsChanged(schema?.defaults ?? {});
+      const defaultValues = schema?.defaults ? processOperationsDefaults(schema.defaults, options) : {};
+      typeof setDefaultOptions === 'function' && setDefaultOptions(defaultValues);
+      optionsChanged(defaultValues);
     }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   React.useEffect(() => {
@@ -294,8 +304,14 @@ const DynamicForm = ({
       case 'toggle':
         return {
           defaultChecked: options?.[key],
-          checked: options?.[key]?.value,
-          onChange: (e) => optionchanged(key, e.target.checked),
+          checked:
+            typeof options?.[key]?.value === 'boolean' ? options[key].value : schema?.defaults?.[key]?.value ?? false,
+          onChange: (e) => {
+            const newValue = e.target.checked;
+            optionchanged(key, {
+              value: newValue,
+            });
+          },
           text,
           subtext,
         };
