@@ -18,9 +18,22 @@
           "name": "Get Schema"
         },
         {
+          "value": "get_collection",
+          "name": "Get Collection"
+        },
+        {
+          "value": "create_collection",
+          "name": "Create Collection"
+        },
+        {
+          "value": "delete_collection",
+          "name": "Delete Collection"
+        },
+        {
           "value": "list_objects",
           "name": "List Objects"
         },
+
         {
           "value": "create_object",
           "name": "Create Object"
@@ -49,7 +62,7 @@
         "placeholder": "Enter the name of the collection"
       }
     },
-    "create_object": {
+    "get_collection": {
       "collectionName": {
         "label": "Collection Name",
         "key": "collectionName",
@@ -60,15 +73,32 @@
         "height": "36px",
         "className": "codehinter-plugins",
         "placeholder": "Enter the name of the collection"
-      },
-      "properties": {
-        "label": "Properties",
-        "key": "properties",
+      }
+    },
+    "create_collection": {
+      "collectionName": {
+        "label": "Collection Name",
+        "key": "collectionName",
         "type": "codehinter",
-        "height": "150px",
-        "editorType": "multiline",
-        "description": "Enter the properties of the object",
-        "placeholder": "Enter the properties of the object"
+        "lineNumbers": false,
+        "description": "Enter the name of the collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter the name of the collection"
+      }
+    },
+    "delete_collection": {
+      "collectionName": {
+        "label": "Collection Name",
+        "key": "collectionName",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter the name of the collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter the name of the collection"
       }
     },
     "get_object_by_id": {

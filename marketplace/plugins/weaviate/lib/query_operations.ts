@@ -21,7 +21,6 @@ export async function listObjects(client: WeaviateClient,collectionName:string) 
   } catch (error) {
     console.log(error)
   }
-  
 }
 
 export async function createObject(client:WeaviateClient, collectionName:string, properties: Record<string,any>) {
@@ -66,5 +65,43 @@ export async function deleteObjectById(client: WeaviateClient, collectionName: s
   } catch (error) {
     console.error('Error deleting object:', error);
     throw error;
+  }
+}
+
+export async function getCollection(client: WeaviateClient,collectionName:string) {
+  try {
+    const collection = client.collections.get(collectionName);
+    return collection;
+  } catch (error) {
+    console.log("Error in getting collection", error);
+  }
+}
+
+export async function createCollection(
+  client: WeaviateClient,
+  collectionName: string,
+) {
+  try {
+    const collection = await client.collections.create({
+      name: collectionName,
+    });
+    return collection;
+  } catch (error) {
+    console.log("Error in getting collection", error);
+  }
+}
+export async function deleteCollection(
+  client: WeaviateClient,
+  collectionName: string,
+) {
+  try {
+    const collection = client.collections.get(collectionName);
+    if (!collection) {
+      throw Error(`Collection ${collectionName} does not exist`);
+    }
+    await client.collections.delete(collectionName);
+    return "Collection deleted successfully";
+  } catch (error) {
+    console.log("Error in getting collection", error);
   }
 }
