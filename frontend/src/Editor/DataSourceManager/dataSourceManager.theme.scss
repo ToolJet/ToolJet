@@ -65,3 +65,11 @@
         margin-right: 90px;
     }
 }
+
+.dataSourceWrapper .row {
+    --tblr-gutter-x: 0rem;
+}
+
+.modal-open .modal {
+    scrollbar-gutter: stable;
+}
