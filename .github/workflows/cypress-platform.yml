@@ -44,6 +44,15 @@ jobs:
           sudo docker network create tooljet
           sudo docker run -d --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_PORT=5432 -d postgres:13
 
+      - name: Run PostgREST Docker Container
+        run: |
+          sudo docker run -d --name postgrest --network tooljet -p 3001:3000 \
+          -e PGRST_DB_URI="postgres://postgres:postgres@postgres:5432/tooljet" \
+          -e PGRST_DB_ANON_ROLE="postgres" \
+          -e PGRST_JWT_SECRET="r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" \
+          -e PGRST_DB_PRE_CONFIG=postgrest.pre_config \
+          postgrest/postgrest:v12.2.0
+
       - name: Set up environment variables
         run: |
           echo "TOOLJET_HOST=http://localhost:8082" >> .env
@@ -71,20 +80,13 @@ jobs:
           echo "SSO_GIT_OAUTH2_CLIENT_ID=1234567890" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_SECRET=3346shfvkdjjsfkvxce32854e026a4531ed" >> .env
           echo "PGRST_DB_PRE_CONFIG=postgrest.pre_config" >> .env
+          echo "PGRST_DB_URI=postgres://postgres:postgres@postgres:5432/tooljet" >> .env
+
       - name: Set up database
         run: |
           npm run --prefix server db:create
           npm run --prefix server db:reset
           sleep 5
-
-      - name: Run PostgREST Docker Container
-        run: |
-          sudo docker run -d --name postgrest --network tooljet -p 3001:3000 \
-          -e PGRST_DB_URI="postgres://postgres:postgres@postgres:5432/tooljet" \
-          -e PGRST_DB_ANON_ROLE="postgres" \
-          -e PGRST_JWT_SECRET="r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" \
-          -e PGRST_DB_PRE_CONFIG=postgrest.pre_config \
-          postgrest/postgrest:v12.2.0
 
       - name: Start services
         run: |
