@@ -5,14 +5,15 @@ export interface SourceOptions {
 
 export interface QueryOptions {
   operation: Operation;
-  className?: string;
+  collectionName?: string;
   objectId?: string;
   properties?: Record<string, any>;
 }
 
 export enum Operation {
-  GetSchema = 'GetSchema',
-  CreateClass = 'CreateClass',
-  ListObjects = 'ListObjects',
-  CreateObject = 'CreateObject',
+  get_schema = 'get_schema',
+  list_objects = 'list_objects',
+  create_object = 'create_object',
+  get_object_by_id = 'get_object_by_id',
+  delete_object_by_id = 'delete_object_by_id',
 }
