@@ -36,7 +36,7 @@ export default class MistralService implements QueryService {
             ...(top_p && { top_p: parseFloat(top_p) }),
             ...(stop_tokens && { stop: JSON.parse(stop_tokens) }),
             ...(random_seed && { random_seed: parseInt(random_seed) }),
-            ...(response_format && { response_format: response_format }),
+            ...(response_format && { response_format: { type: response_format } }),
             ...(presence_penalty && { presence_penalty: parseFloat(presence_penalty) }),
             ...(frequency_penalty && { frequency_penalty: parseFloat(frequency_penalty) }),
             ...(completions && { n: parseInt(completions) }),
