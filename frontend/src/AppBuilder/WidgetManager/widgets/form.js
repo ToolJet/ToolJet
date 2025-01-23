@@ -256,6 +256,7 @@ export const formConfig = {
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
+      section: 'additionalActions',
       validation: {
         schema: { type: 'boolean' },
         defaultValue: false,
@@ -275,12 +276,62 @@ export const formConfig = {
     },
     showHeader: { type: 'toggle', displayName: 'Header' },
     showFooter: { type: 'toggle', displayName: 'Footer' },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+    },
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disable',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
   },
   events: {
     onSubmit: { displayName: 'On submit' },
     onInvalid: { displayName: 'On invalid' },
   },
   styles: {
+    headerBackgroundColor: {
+      type: 'color',
+      displayName: 'Header background color',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#ffffffff',
+      },
+    },
+    footerBackgroundColor: {
+      type: 'color',
+      displayName: 'Footer background color',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#ffffffff',
+      },
+    },
+    headerHeight: {
+      type: 'code',
+      displayName: 'Header height',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '80px',
+      },
+    },
+    footerHeight: {
+      type: 'code',
+      displayName: 'Footer height',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '80px',
+      },
+    },
     backgroundColor: {
       type: 'color',
       displayName: 'Background color',
@@ -305,22 +356,6 @@ export const formConfig = {
       validation: {
         schema: { type: 'string' },
         defaultValue: '#fff',
-      },
-    },
-    visibility: {
-      type: 'toggle',
-      displayName: 'Visibility',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: true,
-      },
-    },
-    disabledState: {
-      type: 'toggle',
-      displayName: 'Disable',
-      validation: {
-        schema: { type: 'boolean' },
-        defaultValue: false,
       },
     },
   },
@@ -350,16 +385,18 @@ export const formConfig = {
         value:
           "{{ {title: 'User registration form', properties: {firstname: {type: 'textinput',value: 'Maria',label:'First name', validation:{maxLength:6}, styles: {backgroundColor: '#f6f5ff',textColor: 'black'},},lastname:{type: 'textinput',value: 'Doe', label:'Last name', styles: {backgroundColor: '#f6f5ff',textColor: 'black'},},age:{type:'number', label:'Age'},}, submitButton: {value: 'Submit', styles: {backgroundColor: '#3a433b',borderColor:'#595959'}}} }}",
       },
-      showHeader: { value: '{{true}}' },
-      showFooter: { value: '{{true}}' },
+      showHeader: { value: '{{false}}' },
+      showFooter: { value: '{{false}}' },
+      visibility: { value: '{{true}}' },
+      disabledState: { value: '{{false}}' },
     },
     events: [],
     styles: {
       backgroundColor: { value: '#fff' },
       borderRadius: { value: '0' },
       borderColor: { value: '#fff' },
-      visibility: { value: '{{true}}' },
-      disabledState: { value: '{{false}}' },
+      headerHeight: { value: '60px' },
+      footerHeight: { value: '60px' },
     },
   },
 };

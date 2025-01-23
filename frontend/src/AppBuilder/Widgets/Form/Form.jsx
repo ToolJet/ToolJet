@@ -13,16 +13,12 @@ import RenderSchema from './RenderSchema';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 
-// STYLE CONSTANTS
-// 1. Form header
-const FORM_HEADER = {
-  HEIGHT: '80px',
-  CANVAS_HEIGHT: 6,
+const getCanvasHeight = (height) => {
+  const parsedHeight = height.includes('px') ? parseInt(height, 10) : height;
+
+  return Math.ceil(parsedHeight);
 };
-const FORM_FOOTER = {
-  HEIGHT: '80px',
-  CANVAS_HEIGHT: 6,
-};
+
 export const Form = function Form(props) {
   const {
     id,
@@ -39,8 +35,25 @@ export const Form = function Form(props) {
     dataCy,
   } = props;
   const childComponents = useStore((state) => state.getChildComponents(id), shallow);
-  const { visibility, disabledState, borderRadius, borderColor, boxShadow } = styles;
-  const { buttonToSubmit, loadingState, advanced, JSONSchema, showHeader = false, showFooter = false } = properties;
+  const {
+    borderRadius,
+    borderColor,
+    boxShadow,
+    headerHeight,
+    footerHeight,
+    footerBackgroundColor,
+    headerBackgroundColor,
+  } = styles;
+  const {
+    buttonToSubmit,
+    loadingState,
+    advanced,
+    JSONSchema,
+    showHeader = false,
+    showFooter = false,
+    visibility,
+    disabledState,
+  } = properties;
   const backgroundColor =
     ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
   const computedStyles = {
@@ -56,15 +69,19 @@ export const Form = function Form(props) {
 
   const formHeader = {
     flexShrink: 0,
-    height: FORM_HEADER.HEIGHT,
+    // height: headerHeight,
     padding: '10px 8px',
     borderBottom: '1px solid var(--border-weak)',
+    backgroundColor:
+      ['#fff', '#ffffffff'].includes(headerBackgroundColor) && darkMode ? '#1F2837' : headerBackgroundColor,
   };
   const formFooter = {
     flexShrink: 0,
-    height: FORM_FOOTER.HEIGHT,
+    // height: footerHeight,
     padding: '10px 8px',
     borderTop: '1px solid var(--border-weak)',
+    backgroundColor:
+      ['#fff', '#ffffffff'].includes(footerBackgroundColor) && darkMode ? '#1F2837' : footerBackgroundColor,
   };
   const formContent = {
     overflow: 'hidden auto',
@@ -80,6 +97,8 @@ export const Form = function Form(props) {
   const [isValid, setValidation] = useState(true);
   const [uiComponents, setUIComponents] = useState([]);
   const mounted = useMounted();
+  const canvasHeaderHeight = getCanvasHeight(headerHeight) / 10;
+  const canvasFooterHeight = getCanvasHeight(footerHeight) / 10;
 
   useEffect(() => {
     const exposedVariables = {
@@ -271,12 +290,13 @@ export const Form = function Form(props) {
         <div style={formHeader}>
           <SubContainer
             id={`${id}-header`}
-            canvasHeight={FORM_HEADER.CANVAS_HEIGHT}
+            canvasHeight={canvasHeaderHeight}
             canvasWidth={width}
             allowContainerSelect={false}
             darkMode={darkMode}
             styles={{
               backgroundColor: 'transparent',
+              height: headerHeight,
             }}
           />
         </div>
@@ -387,13 +407,14 @@ export const Form = function Form(props) {
         <div className="jet-form-footer" style={formFooter}>
           <SubContainer
             id={`${id}-footer`}
-            canvasHeight={FORM_FOOTER.CANVAS_HEIGHT}
+            canvasHeight={canvasFooterHeight}
             canvasWidth={width}
             allowContainerSelect={false}
             darkMode={darkMode}
             styles={{
               margin: 0,
               backgroundColor: 'transparent',
+              height: footerHeight,
             }}
           />
         </div>
