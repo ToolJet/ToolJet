@@ -3,7 +3,7 @@ id: marketplace-plugin-gemini
 title: Gemini
 ---
 
-Google Gemini can be integrated with ToolJet to build context-aware intelligent chatbots or generate creative text content. This integration leverages advanced AI capabilities to provide highly accurate, human-like interactions and content generation.
+Google Gemini can be integrated with ToolJet to build context-aware, intelligent chatbots or generate creative text content. 
 
 ## Connection
 
@@ -15,7 +15,7 @@ To connect with Gemini, you will need the **API Key**, which can be generated fr
 
 ### Text Generation
 
-Use this operation to generates text based on the prompt, system instructions, and model settings. It provides information or explanations tailored to the given context.
+Use this operation to generate text based on the prompt, system instructions, and model settings. It provides information or explanations tailored to the given context.
 
 **Required Parameters**
 
@@ -33,7 +33,7 @@ Use this operation to generates text based on the prompt, system instructions, a
 
 - **Max Tokens**: Limits the maximum number of tokens (words and characters) in the response.
 
-- **Temperature**: Defines randomness of response. Takes the value between 0 and 1. Default is 1.
+- **Temperature**: Defines the randomness of the response. It takes a value between 0 and 1, with a default of 1.
 
 <img className="screenshot-full" src="/img/marketplace/plugins/gemini/query.png" alt="Gemini Query" />
 
@@ -70,7 +70,7 @@ ToolJet supports various database systems, including:
 
 ### Chat
 
-Use this operation for a chat like conversation, where the model responds to ongoing conversation based on the given prompts and instructions. It provides relevant and contextually appropriate answers, maintaining a smooth conversational flow.
+Use this operation for a chat-like conversation, where the model responds based on the given prompts and instructions. It provides relevant and context-appropriate answers, maintaining a smooth conversational flow.
 
 **Required Parameters**
 
@@ -90,7 +90,7 @@ Use this operation for a chat like conversation, where the model responds to ong
 
 - **Max Tokens**: Limits the maximum number of tokens (words and characters) in the response.
 
-- **Temperature**: Defines randomness of response. Takes the value between 0 and 1. Default is 1.
+- **Temperature**: Defines the randomness of the response. It takes a value between 0 and 1, with a default of 1.
 
 <img className="screenshot-full" src="/img/marketplace/plugins/gemini/chat-query.png" alt="Gemini Query" />
 
