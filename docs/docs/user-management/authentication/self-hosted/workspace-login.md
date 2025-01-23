@@ -1,6 +1,6 @@
 ---
 id: workspace-level-login
-title: Workspace Level Authentication
+title: Workspace Level
 ---
 
 

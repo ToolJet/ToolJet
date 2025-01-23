@@ -1,6 +1,6 @@
 ---
 id: instance-level-login
-title: Instance Level Authentication
+title: Instance Level
 ---
 
 In self-hosted deployments, it can be configured at two levels: **Instance Level**, which applies globally across all workspaces and is configurable only by the super admin, and **Workspace Level**, which overrides the instance-level settings for specific workspaces and can be configured by both super admins and workspace admins. This guide focuses on configuring instance-level authentication.
