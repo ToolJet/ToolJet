@@ -422,10 +422,9 @@ const sidebars = {
           'type': 'category',
           'label': 'Authentication',
           'items': [
-            'user-management/authentication/workspace-login',
-            'user-management/authentication/password-login',
-            'user-management/authentication/automatic-sso',
-            'user-management/authentication/direct-app-access',
+            'user-management/authentication/self-hosted/overview',
+            'user-management/authentication/self-hosted/instance-level-login',
+            'user-management/authentication/self-hosted/workspace-level-login'
           ]
         },
         {
