@@ -18,8 +18,8 @@ Follow the steps below to deploy ToolJet on Digital Ocean Droplet
 
 2. Configure the droplet with the following options:
    
-   - **Image**: Ubuntu 
-   - **Plan**: Choose a plan (e.g., Basic, 4GB RAM, 2 vCPU)
+ - **Image**: Ubuntu 
+ - **Plan**: Choose a plan (e.g., Basic, 4GB RAM, 2 vCPU)
 
   <div style={{textAlign: 'center'}}>
 
@@ -27,8 +27,9 @@ Follow the steps below to deploy ToolJet on Digital Ocean Droplet
   
   </div>
   
-   - **Auth**: For authentication use password or ssh
-   - Click "**Create Droplet**" and note the assigned public IP
+
+  - **Auth**: For authentication use password or ssh
+  - Click "**Create Droplet**" and note the assigned public IP
 
 3. Create a Firewall for the Droplet to allow required ports
    
@@ -42,7 +43,7 @@ Follow the steps below to deploy ToolJet on Digital Ocean Droplet
  
 5. Install Docker & Docker Compose
 
-   Run the following commands to install Docker and Docker Compose:
+Run the following commands to install Docker and Docker Compose:
 
 ```
 apt update && apt upgrade -y
