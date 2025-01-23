@@ -109,6 +109,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
                   <p
                     key={tab.id}
                     className="m-0 d-flex align-items-center h-100"
+                    data-cy={`query-tab-${tab.label ?? 'unknown'}`}
                     onClick={() => setActiveTab(tab.id)}
                     style={{
                       borderBottom: activeTab === tab.id ? '2px solid #3E63DD' : '',
