@@ -467,6 +467,13 @@ const sidebars = {
         },
         {
           'type': 'category',
+          'label': 'Group Sync',
+          'items': [
+            'user-management/group-sync/oidc'
+          ]
+        },
+        {
+          'type': 'category',
           'label': 'Profile Management',
           'items': [
             'user-management/profile-management/user-metadata',
