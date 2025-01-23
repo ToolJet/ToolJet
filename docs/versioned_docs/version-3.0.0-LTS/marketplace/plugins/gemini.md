@@ -3,7 +3,7 @@ id: marketplace-plugin-gemini
 title: Gemini
 ---
 
-ToolJet enables you to integrate with Gemini. With its advanced features, you can build intelligent chatbots and generate creative content.
+Google Gemini can be integrated with ToolJet to build context-aware intelligent chatbots or generate creative text content. This integration leverages advanced AI capabilities to provide highly accurate, human-like interactions and content generation.
 
 ## Connection
 
