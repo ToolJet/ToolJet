@@ -20,6 +20,7 @@ export const verifySlugValidations = (inputSelector) => {
 };
 
 export const verifySuccessfulSlugUpdate = (workspaceId, slug) => {
+    const host = resolveHost();
     cy.get('[data-cy="app-slug-accepted-label"]').verifyVisibleElement(
         "have.text",
         "Slug accepted!"
@@ -30,7 +31,7 @@ export const verifySuccessfulSlugUpdate = (workspaceId, slug) => {
     );
     cy.get(commonWidgetSelector.appLinkField).verifyVisibleElement(
         "have.text",
-        `${Cypress.config("baseUrl")}/${workspaceId}/apps/${slug}`
+        `${host}/${workspaceId}/apps/${slug}`
     );
 };
 
@@ -45,10 +46,7 @@ export const verifyURLs = (workspaceId, slug, page) => {
     );
 
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
-    cy.url().should(
-        "eq",
-        `${baseUrl}/applications/${slug}/home?version=v1`
-    );
+    cy.url().should("eq", `${baseUrl}/applications/${slug}/home?version=v1`);
 
     cy.visit("/my-workspace");
     cy.visitSlug({
@@ -56,7 +54,6 @@ export const verifyURLs = (workspaceId, slug, page) => {
     });
     cy.url().should("eq", `${baseUrl}/applications/${slug}`);
 };
-
 
 export const setUpSlug = (slug) => {
     cy.get(commonWidgetSelector.shareAppButton).click();
@@ -70,8 +67,8 @@ export const setUpSlug = (slug) => {
 export const setupAppWithSlug = (appName, slug) => {
     cy.apiCreateApp(appName);
     cy.apiAddComponentToApp(appName, "text1");
-    cy.apiReleaseApp(appName)
-    cy.apiAddAppSlug(appName, slug)
+    cy.apiReleaseApp(appName);
+    cy.apiAddAppSlug(appName, slug);
 };
 
 export const verifyRestrictedAccess = () => {
@@ -89,7 +86,6 @@ export const verifyRestrictedAccess = () => {
         "Back to home page"
     );
 };
-
 
 export const onboardUserFromAppLink = (
     email,
@@ -133,4 +129,11 @@ export const onboardUserFromAppLink = (
 
             cy.visit(url);
         });
+};
+
+export const resolveHost = () => {
+    const baseUrl = Cypress.config("baseUrl");
+    return baseUrl === "http://localhost:8082/"
+        ? baseUrl
+        : Cypress.env("server_host");
 };

@@ -1,10 +1,16 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { fake } from "Fixtures/fake";
 import { releaseApp } from "Support/utils/common";
-import { verifySlugValidations, verifySuccessfulSlugUpdate, verifyURLs } from "Support/utils/apps";
+import {
+  verifySlugValidations,
+  verifySuccessfulSlugUpdate,
+  verifyURLs,
+  resolveHost,
+} from "Support/utils/apps";
 
 describe("App Slug", () => {
   const data = {};
+  const host = resolveHost();
 
   beforeEach(() => {
     data.slug = `${fake.companyName.toLowerCase()}-app`;
@@ -49,7 +55,7 @@ describe("App Slug", () => {
 
       cy.get(commonWidgetSelector.appLinkField).verifyVisibleElement(
         "have.text",
-        `${Cypress.config("baseUrl")}/${workspaceId}/apps/${appId}`
+        `${host}/${workspaceId}/apps/${appId}`
       );
 
       // Validate all error cases
@@ -98,6 +104,10 @@ describe("App Slug", () => {
 
       // Verify share modal
       cy.get(commonWidgetSelector.shareAppButton).click();
+      cy.get(commonWidgetSelector.appLink).verifyVisibleElement(
+        "have.text",
+        `${host}/applications/`
+      );
       cy.get(commonWidgetSelector.appNameSlugInput).should(
         "have.value",
         data.slug
@@ -106,12 +116,14 @@ describe("App Slug", () => {
       // Validate all error cases in share modal
       verifySlugValidations(commonWidgetSelector.appNameSlugInput);
 
-      cy.wait(500)
+      cy.wait(500);
       cy.clearAndType(commonWidgetSelector.appNameSlugInput, data.slug);
       cy.get('[data-cy="app-slug-info-label"]')
-        .invoke('text')
+        .invoke("text")
         .then((text) => {
-          expect(text.trim()).to.eq("URL-friendly 'slug' consists of lowercase letters, numbers, and hyphens");
+          expect(text.trim()).to.eq(
+            "URL-friendly 'slug' consists of lowercase letters, numbers, and hyphens"
+          );
         });
 
       // Verify successful slug update in share modal
@@ -139,5 +151,4 @@ describe("App Slug", () => {
       );
     });
   });
-
 });
