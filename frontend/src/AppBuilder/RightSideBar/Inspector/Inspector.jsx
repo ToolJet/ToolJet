@@ -78,6 +78,7 @@ const NEW_REVAMPED_COMPONENTS = [
   'Icon',
   'Image',
   'Container',
+  'Tabs'
 ];
 
 export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selectedComponentId }) => {
@@ -527,8 +528,8 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
                   componentMeta.displayName === 'Toggle Switch (Legacy)'
                     ? 'Toggle (Legacy)'
                     : componentMeta.displayName === 'Toggle Switch'
-                    ? 'Toggle Switch'
-                    : componentMeta.component,
+                      ? 'Toggle Switch'
+                      : componentMeta.component,
               })}
             </small>
           </span>
