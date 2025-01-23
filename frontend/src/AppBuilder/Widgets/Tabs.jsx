@@ -2,6 +2,8 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 import { resolveWidgetFieldValue, isExpectedDataType } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
+import Spinner from '@/_ui/Spinner';
+import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 
 export const Tabs = function Tabs({
   id,
@@ -19,6 +21,13 @@ export const Tabs = function Tabs({
   properties,
 }) {
   const { tabWidth, boxShadow } = styles;
+  const { isDisabled, isVisible, isLoading } = useExposeState(
+    properties.loadingState,
+    properties.visibility,
+    properties.disabledState,
+    setExposedVariables,
+    setExposedVariable
+  );
   const { defaultTab, hideTabs, renderOnlyActiveTab } = properties;
   const setSelectedComponents = useStore((state) => state.setSelectedComponents);
 
@@ -141,9 +150,9 @@ export const Tabs = function Tabs({
   const equalSplitWidth = 100 / tabs?.length || 1;
   return (
     <div
-      data-disabled={parsedDisabledState}
+      data-disabled={isDisabled}
       className="card tabs-component"
-      style={{ height, display: parsedWidgetVisibility ? 'flex' : 'none', backgroundColor: bgColor, boxShadow }}
+      style={{ height, display: isVisible ? 'flex' : 'none', backgroundColor: bgColor, boxShadow }}
       data-cy={dataCy}
     >
       <ul
@@ -188,22 +197,35 @@ export const Tabs = function Tabs({
           </li>
         ))}
       </ul>
-      {parsedTabs.map((tab) => (
+      {isLoading ? (
         <div
-          className="tab-content"
-          ref={(newCurrent) => {
-            if (currentTab == tab.id) {
-              parentRef.current = newCurrent;
-            }
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100%'
           }}
-          id={`${id}-${tab.id}`}
-          key={tab.id}
         >
-          {shouldRenderTabContent(tab) && renderTabContent(id, tab)}
-
-          {/* {tab.id == currentTab && <SubContainer id={`${id}-${tab.id}`} canvasHeight={'200'} canvasWidth={width} />} */}
+          <Spinner />
         </div>
-      ))}
+      ) : (
+        parsedTabs.map((tab) => (
+          <div
+            className="tab-content"
+            ref={(newCurrent) => {
+              if (currentTab == tab.id) {
+                parentRef.current = newCurrent;
+              }
+            }}
+            id={`${id}-${tab.id}`}
+            key={tab.id}
+          >
+            {shouldRenderTabContent(tab) && renderTabContent(id, tab)}
+
+            {/* {tab.id == currentTab && <SubContainer id={`${id}-${tab.id}`} canvasHeight={'200'} canvasWidth={width} />} */}
+          </div>
+        ))
+      )}
     </div>
   );
 };
