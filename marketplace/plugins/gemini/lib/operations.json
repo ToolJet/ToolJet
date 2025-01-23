@@ -3,7 +3,9 @@
   "title": "Gemini datasource",
   "description": "A schema defining Gemini datasource",
   "type": "api",
-  "defaults": {},
+  "defaults": {
+    "operation": "text_generation"
+  },
   "properties": {
     "operation": {
       "label": "Operation",
@@ -30,7 +32,7 @@
       },
       "models/gemini-1.5-flash": {
         "system_prompt": {
-          "label": "System Prompt",
+          "label": "System prompt",
           "key": "system_prompt",
           "type": "codehinter",
           "description": "Defines role, context and/or role of the model to evaluate prompts and send response",
@@ -47,7 +49,7 @@
           "mandatory": true
         },
         "max_tokens": {
-          "label": "Max Tokens",
+          "label": "Max tokens",
           "key": "max_tokens",
           "type": "codehinter",
           "description": "Controls the length of the generated text.",
@@ -67,7 +69,7 @@
     },
     "models/gemini-1.5-flash-8b": {
         "system_prompt": {
-          "label": "System Prompt",
+          "label": "System prompt",
           "key": "system_prompt",
           "type": "codehinter",
           "description": "Defines role, context and/or role of the model to evaluate prompts and send response",
@@ -84,7 +86,7 @@
           "mandatory": true
         },
         "max_tokens": {
-          "label": "Max Tokens",
+          "label": "Max tokens",
           "key": "max_tokens",
           "type": "codehinter",
           "description": "Controls the length of the generated text.",
@@ -104,7 +106,7 @@
     },
     "models/gemini-1.5-pro": {
         "system_prompt": {
-          "label": "System Prompt",
+          "label": "System prompt",
           "key": "system_prompt",
           "type": "codehinter",
           "description": "Defines role, context and/or role of the model to evaluate prompts and send response",
@@ -121,7 +123,7 @@
           "mandatory": true
         },
         "max_tokens": {
-          "label": "Max Tokens",
+          "label": "Max tokens",
           "key": "max_tokens",
           "type": "codehinter",
           "description": "Controls the length of the generated text.",
@@ -141,7 +143,7 @@
     },
     "models/gemini-2.0-flash-exp": {
         "system_prompt": {
-          "label": "System Prompt",
+          "label": "System prompt",
           "key": "system_prompt",
           "type": "codehinter",
           "description": "Defines role, context and/or role of the model to evaluate prompts and send response",
@@ -158,7 +160,7 @@
           "mandatory": true
         },
         "max_tokens": {
-          "label": "Max Tokens",
+          "label": "Max tokens",
           "key": "max_tokens",
           "type": "codehinter",
           "description": "Controls the length of the generated text.",
@@ -192,7 +194,7 @@
       },
       "models/gemini-1.5-flash": {
         "system_prompt": {
-          "label": "System Prompt",
+          "label": "System prompt",
           "key": "system_prompt",
           "type": "codehinter",
           "description": "Defines role, context and/or role of the model to evaluate prompts and send response",
@@ -210,7 +212,7 @@
           "tooltip": "Record of the conversation between the user and the model"
         },        
         "user_prompt": {
-          "label": "User Prompt",
+          "label": "User prompt",
           "key": "user_prompt",
           "type": "codehinter",
           "description": "User response/reply to previous chat",
@@ -219,7 +221,7 @@
           "tooltip":"User response/reply to previous chat"
         },
         "max_tokens": {
-          "label": "Max Tokens",
+          "label": "Max tokens",
           "key": "max_tokens",
           "type": "codehinter",
           "description": "Controls the length of the generated text.",
@@ -239,7 +241,7 @@
       },
       "models/gemini-1.5-flash-8b": {
         "system_prompt": {
-          "label": "System Prompt",
+          "label": "System prompt",
           "key": "system_prompt",
           "type": "codehinter",
           "description": "Defines role, context and/or role of the model to evaluate prompts and send response",
@@ -257,7 +259,7 @@
           "tooltip": "Record of the conversation between the user and the model"
         },        
         "user_prompt": {
-          "label": "User Prompt",
+          "label": "User prompt",
           "key": "user_prompt",
           "type": "codehinter",
           "description": "User response/reply to previous chat",
@@ -266,7 +268,7 @@
           "tooltip":"User response/reply to previous chat"
         },
         "max_tokens": {
-          "label": "Max Tokens",
+          "label": "Max tokens",
           "key": "max_tokens",
           "type": "codehinter",
           "description": "Controls the length of the generated text.",
@@ -286,7 +288,7 @@
       },
       "models/gemini-1.5-pro": {
         "system_prompt": {
-          "label": "System Prompt",
+          "label": "System prompt",
           "key": "system_prompt",
           "type": "codehinter",
           "description": "Defines role, context and/or role of the model to evaluate prompts and send response",
@@ -304,7 +306,7 @@
           "tooltip": "Record of the conversation between the user and the model"
         },        
         "user_prompt": {
-          "label": "User Prompt",
+          "label": "User prompt",
           "key": "user_prompt",
           "type": "codehinter",
           "description": "User response/reply to previous chat",
@@ -313,7 +315,7 @@
           "tooltip":"User response/reply to previous chat"
         },
         "max_tokens": {
-          "label": "Max Tokens",
+          "label": "Max tokens",
           "key": "max_tokens",
           "type": "codehinter",
           "description": "Controls the length of the generated text.",
@@ -333,7 +335,7 @@
       },
       "models/gemini-2.0-flash-exp": {
         "system_prompt": {
-          "label": "System Prompt",
+          "label": "System prompt",
           "key": "system_prompt",
           "type": "codehinter",
           "description": "Defines role, context and/or role of the model to evaluate prompts and send response",
@@ -351,7 +353,7 @@
           "tooltip": "Record of the conversation between the user and the model"
         },        
         "user_prompt": {
-          "label": "User Prompt",
+          "label": "User prompt",
           "key": "user_prompt",
           "type": "codehinter",
           "description": "User response/reply to previous chat",
@@ -360,7 +362,7 @@
           "tooltip":"User response/reply to previous chat"
         },
         "max_tokens": {
-          "label": "Max Tokens",
+          "label": "Max tokens",
           "key": "max_tokens",
           "type": "codehinter",
           "description": "Controls the length of the generated text.",
