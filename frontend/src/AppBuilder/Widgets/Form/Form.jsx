@@ -19,16 +19,6 @@ const getCanvasHeight = (height) => {
   return Math.ceil(parsedHeight);
 };
 
-// STYLE CONSTANTS
-// 1. Form header
-const FORM_HEADER = {
-  HEIGHT: '80px',
-  CANVAS_HEIGHT: 6,
-};
-const FORM_FOOTER = {
-  HEIGHT: '80px',
-  CANVAS_HEIGHT: 6,
-};
 export const Form = function Form(props) {
   const {
     id,
