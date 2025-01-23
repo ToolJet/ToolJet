@@ -80,6 +80,7 @@ const NEW_REVAMPED_COMPONENTS = [
   'Image',
   'Container',
   'ModalV2',
+  'Tabs',
 ];
 
 export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selectedComponentId }) => {

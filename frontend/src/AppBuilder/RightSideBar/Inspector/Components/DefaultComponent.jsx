@@ -24,6 +24,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'RichTextEditor',
   'Image',
   'ModalV2',
+  'Tabs',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -36,6 +37,7 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   Image: 'Data',
   Container: 'Data',
   ModalV2: 'Data',
+  Tabs: 'Data',
 };
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
