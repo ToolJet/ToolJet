@@ -3,44 +3,28 @@ id: okta
 title: Okta
 ---
 
-# Okta Single Sign-On
+Okta can be configured as the Identity Provider for OIDC, which is an authentication protocol that securely verifies user identities through a trusted provider. This document explains how to obtain the required credentials from the Okta Developer Console. Refer to the **[OIDC Setup](#)** Guide to configure OIDC in your application.
 
-1. Sign in to the [Okta developer console](https://developer.okta.com/).
+## Generating Client ID and Client Secret on Okta Developer Console
+
+1. Sign in to the [Okta Developer Console](https://developer.okta.com/).
 
 2. Navigate to the **Applications** section and click **Create App Integration**.
-<div style={{textAlign: 'center'}}>
-<img className="screenshot-full" src="/img/sso/okta/create-app.png" alt="Okta: SSO" width="700"/>
-</div>
+
+<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/user-management/sso/oidc/okta/create-app.png" alt="Okta: SSO"/>
 
 3. Select **OIDC - OpenID Connect** as the **Sign-in method** and **Web Application** as the **Application type**. Click on the **Next** button.
-<div style={{textAlign: 'center'}}>
-<img className="screenshot-full" src="/img/sso/okta/create-app-s1.png" alt="Okta: SSO" width="700"/>
-</div>
 
-4. Enter an **App integration name** and set the **Sign-in redirect URIs** to `<YOUR-DOMAIN>/sso/openid`.
-  <div style={{textAlign: 'center'}}>
-  <img className="screenshot-full" src="/img/sso/okta/create-app-s2.png" alt="Okta: SSO" width="700"/>
-  </div>
+<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/user-management/sso/oidc/okta/app-type.png" alt="Okta: SSO" />
 
-5. Create the application and configure **Client Credentials** in the UI.
-  <div style={{textAlign: 'center'}}>
-  <img className="screenshot-full" src="/img/sso/okta/create-app-s4.png" alt="Okta: SSO" width="700"/>
-  </div>
+4. Enter an **App integration name** and set the **Sign-in redirect URIs** to Redirect URL from ToolJet.
 
-6. To display your application on Okta, edit the application and set the following:
-   - **Login initiated by**: Either Okta or App
-   - Set visibility according to your preference
-   - **Login flow**: Redirect to app to initiate login (OIDC Compliant)
-  <div style={{textAlign: 'center'}}>
-  <img className="screenshot-full" src="/img/sso/okta/create-app-s5.png" alt="Okta: SSO" width="700"/>
-  </div>
+<img className="screenshot-full" src="/img/user-management/sso/oidc/okta/redirect.png" alt="Okta: SSO" />
 
-:::info Change Grant type
-To change the Login flow to **Redirect to app to initiate login (OIDC Compliant)**, you must change the **Grant type** in the **Client acting on behalf of a user** section to **Implicit (hybrid)** and enable **Allow Access Token with implicit grant type**.
-:::
+5. Create the application. 
 
-7. The Okta sign-in button will now appear on your ToolJet login screen.
+6. Copy the Client Credential and configure them in ToolJet.
 
-:::info Find Well Known URL
-For more information on finding the Well Known URL, refer to the [Okta Auth Servers documentation](https://developer.okta.com/docs/concepts/auth-servers/#org-authorization-server).
-:::
+<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/user-management/sso/oidc/okta/client-cred.png" alt="Okta: SSO" />
+
+7. Follow [Okta Auth Servers Documentation](https://developer.okta.com/docs/concepts/auth-servers/#org-authorization-server) to find the well known URL.
