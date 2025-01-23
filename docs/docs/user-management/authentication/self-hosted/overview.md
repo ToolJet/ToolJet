@@ -1,6 +1,6 @@
 ---
 id: overview
-title: Overiew
+title: Overview
 ---
 
 Authentication in ToolJet ensures secure access to your applications and data.In self-hosted deployments, authentication can be configured at two levels:
