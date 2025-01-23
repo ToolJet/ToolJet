@@ -130,5 +130,14 @@
     "author": "Tooljet",
     "timestamp": "Mon, 28 Oct 2024 08:08:28 GMT",
     "tags": ["AI"]
+  },
+  {
+    "name": "Hugging Face",
+    "description": "Plugin for Hugging Face's Inference API to use listed AI models for text capabilities",
+    "version": "1.0.0",
+    "id": "huggingface",
+    "author": "Tooljet",
+    "timestamp": "Thu, 23 Jan 2025 06:44:25 GMT",
+    "tags": ["AI"]
   }
 ]
