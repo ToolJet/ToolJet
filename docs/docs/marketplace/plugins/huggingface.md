@@ -33,6 +33,7 @@ Use this operation to generates text based on the input and model settings. It p
 
     Example Models -
     - [google/gemma-2-2b-it](https://huggingface.co/google/gemma-2-2b-it) (Recommended)
+    - [microsoft/phi-4](https://huggingface.co/microsoft/phi-4)
     - [tiiuae/falcon-7b-instruct](https://huggingface.co/tiiuae/falcon-7b-instruct)
     - [HuggingFaceH4/zephyr-7b-beta](https://huggingface.co/HuggingFaceH4/zephyr-7b-beta)
     - [mistralai/Mistral-7B-Instruct-v0.2](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2)
@@ -76,6 +77,7 @@ Use this operation to create a summary of the input text based on the model sett
     - [philschmid/bart-large-cnn-samsum](https://huggingface.co/philschmid/bart-large-cnn-samsum)
     - [google/pegasus-xsum](https://huggingface.co/google/pegasus-xsum)
     - [ainize/bart-base-cnn](https://huggingface.co/ainize/bart-base-cnn)
+    - [Falconsai/text_summarization](https://huggingface.co/Falconsai/text_summarization)
 
 
 - **Input**: Input text that needs to be summarized.
