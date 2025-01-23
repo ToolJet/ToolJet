@@ -422,9 +422,16 @@ const sidebars = {
           'type': 'category',
           'label': 'Authentication',
           'items': [
-            'user-management/authentication/self-hosted/overview',
-            'user-management/authentication/self-hosted/instance-level-login',
-            'user-management/authentication/self-hosted/workspace-level-login'
+            {
+              'type': 'category',
+              'label': 'Self-hosted',
+              'items': [
+                'user-management/authentication/self-hosted/overview',
+                'user-management/authentication/self-hosted/instance-level-login',
+                'user-management/authentication/self-hosted/workspace-level-login'
+              ]
+            },
+            'user-management/authentication/cloud-login',
           ]
         },
         {
