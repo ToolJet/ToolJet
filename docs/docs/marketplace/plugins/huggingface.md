@@ -3,7 +3,12 @@ id: marketplace-plugin-huggingface
 title: Hugging Face
 ---
 
-Hugging Face integration with ToolJet empowers you to leverage advanced natural language processing capabilities. With Hugging Face's state-of-the-art models, you can generate high-quality content and summarize text seamlessly.
+Hugging Face integration with ToolJet enables you to leverage advanced natural language processing capabilities. With Hugging Face's state-of-the-art models, you can generate high-quality content and summarize text seamlessly.
+
+This plugin leverages the Inference API from Hugging Face to ensure seamless integration with supported models. To confirm if a model is supported, refer to the Inference API section on its page on the **[Hugging Face](https://huggingface.co/models)**.
+
+<img className="screenshot-full" src="/img/marketplace/plugins/huggingface/inference-api.png" alt="Hugging Face Configuration" />
+
 
 ## Connection
 
@@ -26,11 +31,18 @@ Use this operation to generates text based on the input and model settings. It p
 
 - **Model**: Specifies the model to use for generating responses.
 
+    Example Models -
+    - [google/gemma-2-2b-it](https://huggingface.co/google/gemma-2-2b-it) (Recommended)
+    - [tiiuae/falcon-7b-instruct](https://huggingface.co/tiiuae/falcon-7b-instruct)
+    - [HuggingFaceH4/zephyr-7b-beta](https://huggingface.co/HuggingFaceH4/zephyr-7b-beta)
+    - [mistralai/Mistral-7B-Instruct-v0.2](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2)
+
+
 - **Input**: The user input for generating responses.
 
 **Optional Parameter**
 
-- **Operation Parameters**: Additional parameters to configure the model response.
+- **Operation Parameters**: Additional parameters to configure the model response. These parameters might change based on model being used.
 
 <img className="screenshot-full" src="/img/marketplace/plugins/huggingface/text-generation-query.png" alt="Gemini Query" />
 
@@ -59,11 +71,18 @@ Use this operation to create a summary of the input text based on the model sett
 
 - **Model**: Specifies the model to use for generating summary.
 
+    Example Models -
+    - [facebook/bart-large-cnn](https://huggingface.co/facebook/bart-large-cnn) (Recommended)
+    - [philschmid/bart-large-cnn-samsum](https://huggingface.co/philschmid/bart-large-cnn-samsum)
+    - [google/pegasus-xsum](https://huggingface.co/google/pegasus-xsum)
+    - [ainize/bart-base-cnn](https://huggingface.co/ainize/bart-base-cnn)
+
+
 - **Input**: Input text that needs to be summarized.
 
 **Optional Parameter**
 
-- **Operation Parameters**: Additional parameters to configure the model response.
+- **Operation Parameters**: Additional parameters to configure the model response. These parameters might change based on model being used.
 
 <img className="screenshot-full" src="/img/marketplace/plugins/huggingface/summary-query.png" alt="Gemini Query" />
 
