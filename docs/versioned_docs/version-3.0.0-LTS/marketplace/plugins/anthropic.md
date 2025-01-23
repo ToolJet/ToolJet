@@ -3,7 +3,7 @@ id: marketplace-plugin-anthropic
 title: Anthropic
 ---
 
-By integrating Anthropic with ToolJet, you can create interactive chatbots that analyze past messages to generate context-aware responses. These bots can also be customized with defined roles, making them adaptable for tasks like customer support, virtual assistants, or personalized conversations.
+Integrating Anthropic with ToolJet enables the creation of interactive chatbots that analyze past messages to generate context-aware responses. These bots can also be customized with defined roles, making them suitable for tasks such as customer support, serving as virtual assistants, or enabling personalized conversations.
 
 ## Connection
 
@@ -15,7 +15,7 @@ To connect with Anthropic, you will need the **API Key**, which can be generated
 
 ### Chat
 
-This operation processes the user's input and generates appropriate, context-aware responses, simulating a natural, human-like conversation. It can handle multiple interactions, maintaining the flow of dialogue for dynamic and engaging conversations.
+This operation processes the user's input and generates appropriate, context-aware responses, simulating a natural, human-like conversation. It can handle multiple interactions while maintaining the flow of dialogue, enabling dynamic and engaging conversations.
 
 **Required Parameters**
 
@@ -32,11 +32,11 @@ This operation processes the user's input and generates appropriate, context-awa
 
 **Optional Parameters**
 
-- **System Prompt**: Defines role, context and/or role of the model to evaluate messages and send response.
+- **System Prompt**: Defines the role and context of the model to evaluate messages and generate a response.
 
-- **Temperature**: Defines randomness of response. Takes the value between 0 and 1. Default is 1.
+- **Temperature**: Controls the randomness of the response. Accepts values between 0 and 1, with a default of 1.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/anthropic/query.png" alt="Anthropic Configuration" />
+<img className="screenshot-full" src="/img/marketplace/plugins/anthropic/query.png" alt="Anthropic Query" />
 
 <details>
 <summary>**Response Example**</summary>
