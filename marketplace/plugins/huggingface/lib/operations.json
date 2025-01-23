@@ -46,7 +46,7 @@
         "width": "320px",
         "height": "80px",
         "className": "codehinter-plugins",
-        "tooltip":"Model response configurations"
+        "tooltip":"Model response configurations. Note: These parameters might change based on model being used."
       }
     },
     "summarisation":{
@@ -79,7 +79,7 @@
         "width": "320px",
         "height": "80px",
         "className": "codehinter-plugins",
-        "tooltip":"Model response configurations"
+        "tooltip":"Model response configurations. Note: These parameters might change based on model being used."
       }
     }
   }
