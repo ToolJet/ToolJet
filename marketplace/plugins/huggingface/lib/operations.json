@@ -1,0 +1,86 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Hugging Face datasource",
+  "description": "A schema defining Hugging Face datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+			"label": "Operation",
+			"key": "operation",
+			"type": "dropdown-component-flip",
+			"description": "Single select dropdown for huggingface operations",
+			"list": [
+				{ "value": "text_generation", "name": "Text Generation" },
+				{ "value": "summarisation", "name": "Summarisation" }
+			]
+		},
+    "text_generation":{
+      "model":{
+        "label": "Model",
+        "key": "model",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "google/gemma-2-2b-it",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "input":{
+        "label": "Input",
+        "key": "input",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "Can you elaborate this: {{components.textInput1.value}}",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "operation_parameters":{
+        "label": "Operation parameters",
+        "key": "operation_parameters",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "{\n “max_new_tokens”: 1000,\n “temperature”: 0.1\n}",
+        "width": "320px",
+        "height": "80px",
+        "className": "codehinter-plugins",
+        "tooltip":"Model response configurations. Note: These parameters might change based on model being used."
+      }
+    },
+    "summarisation":{
+      "model_summarisation":{
+        "label": "Model",
+        "key": "model_summarisation",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "facebook/bart-large-cnn",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "input_summarisation":{
+        "label": "Input",
+        "key": "input_summarisation",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "{\n “clean_up_tokenization_spaces”: true,\n “truncation”: “do_not_truncate”,\n “generate_parameters”: {}\n}",
+        "width": "320px",
+        "height": "192px",
+        "className": "codehinter-plugins"
+      },
+      "operation_parameters_summarisation":{
+        "label": "Operation parameters",
+        "key": "operation_parameters_summarisation",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "placeholder": "{\n \"clean_up_tokenization_spaces\": true,\n \"truncation\": \"do_not_truncate\",\n \"temperature\": 0.7\n \"max_length\": 130,\n \"min_length\": 30,\n \"do_sample\": false,\n}",
+        "width": "320px",
+        "height": "80px",
+        "className": "codehinter-plugins",
+        "tooltip":"Model response configurations. Note: These parameters might change based on model being used."
+      }
+    }
+  }
+}
