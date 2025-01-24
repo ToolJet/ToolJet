@@ -21,7 +21,7 @@
   "defaults": {},
   "properties": {
     "apiKey": {
-      "label": "API Key",
+      "label": "API key",
       "key": "apiKey",
       "type": "password",
       "description": "Enter your Gemini API Key"    
