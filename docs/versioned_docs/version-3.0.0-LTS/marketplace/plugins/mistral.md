@@ -19,7 +19,15 @@ Use this operation to generate text content by controlling various parameters to
 
 **Required Parameters**
 
-- **Model**: Use to specify the AI model for generating content.
+- **Model**: Use to specify the AI model for generating content. The available models are:
+
+    - mistral-large-latest
+    - mistral-moderation-latest
+    - ministral-3b-latest
+    - ministral-8b-latest
+    - open-mistral-nemo
+    - mistral-small-latest
+
 - **Messages**: Provide structured input to define the context or conversation.
 
 **Optional Parameters**
