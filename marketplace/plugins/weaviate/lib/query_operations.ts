@@ -31,6 +31,11 @@ export async function createObject(client:WeaviateClient, collectionName:string,
     const result =  await collection.data.insert({
       properties: properties,
       // vectors: Array(1536).fill(0.12345)
+      vectors: {
+        title: Array(1536).fill(0.12345),
+        review_body: Array(1536).fill(0.31313),
+        title_country: Array(1536).fill(0.05050),
+      }
     });
     
     return result;
@@ -68,9 +73,13 @@ export async function deleteObjectById(client: WeaviateClient, collectionName: s
   }
 }
 
-export async function getCollection(client: WeaviateClient,collectionName:string) {
+export async function getCollection(client: WeaviateClient,collectionName:string,consistency:boolean) {
   try {
     const collection = client.collections.get(collectionName);
+    if(!collection) return "Collection not found";
+    if(collection && consistency) {
+      collection.withConsistency("QUORUM");
+    }
     return collection;
   } catch (error) {
     console.log("Error in getting collection", error);

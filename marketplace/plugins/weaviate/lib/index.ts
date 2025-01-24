@@ -19,7 +19,7 @@ export default class Weaviate implements QueryService {
           result = await listObjects(client, queryOptions.collectionName);
           break;
         case Operation.get_collection:
-          result = await getCollection(client,queryOptions.collectionName);
+          result = await getCollection(client,queryOptions.collectionName,queryOptions.consistency);
           break;  
         case Operation.create_collection:
           result = await createCollection(client,queryOptions.collectionName);

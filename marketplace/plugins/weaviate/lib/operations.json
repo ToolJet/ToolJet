@@ -72,7 +72,15 @@
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter the name of the collection"
+        "placeholder": "Enter the name of the collection",
+        "tooltip":"Enter the name of the collection"
+      },
+      "consistency": {
+        "label": "Consistency",
+        "key": "consistency",
+        "type": "toggle",
+        "value": "true",
+        "tooltip":"Enable consistency"
       }
     },
     "create_collection": {
