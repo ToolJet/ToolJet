@@ -133,7 +133,7 @@ export const onboardUserFromAppLink = (
 
 export const resolveHost = () => {
     const baseUrl = Cypress.config("baseUrl");
-    return baseUrl === "http://localhost:8082/"
+    return baseUrl === "http://localhost:8082"
         ? baseUrl
         : Cypress.env("server_host");
 };
