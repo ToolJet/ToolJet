@@ -1,12 +1,11 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { decode } from 'js-base64';
-import { requireFromString } from 'module-from-string';
 import { Plugin } from 'src/entities/plugin.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import allPlugins from '@tooljet/plugins/dist/server';
 import { TooljetDbOperationsService } from '@services/tooljet_db_operations.service';
-
+const requireFromString = require('require-from-string');
 @Injectable()
 export class PluginsHelper {
   private readonly plugins: any = {};
@@ -50,9 +49,18 @@ export class PluginsHelper {
       decoded = decode(plugin.indexFile.data.toString());
       this.plugins[pluginId] = decoded;
     }
-    const code = requireFromString(decoded, { useCurrentGlobal: true });
-    const service = new code.default();
 
-    return service;
+    // Log the decoded code for debugging
+    console.log(`Decoded code for plugin ${pluginId}:`, decoded);
+
+    try {
+      const code = requireFromString(decoded, { useCurrentGlobal: true });
+      const service = new code.default();
+      return service;
+    } catch (error) {
+      // Log the error for debugging
+      console.error(`Error requiring code for plugin ${pluginId}:`, error);
+      throw new InternalServerErrorException(error);
+    }
   }
 }
