@@ -6,6 +6,7 @@ export interface SourceOptions {
 export interface QueryOptions {
   operation: Operation;
   collectionName?: string;
+  consistency?: boolean;
   objectId?: string;
   properties?: Record<string, any>;
 }
