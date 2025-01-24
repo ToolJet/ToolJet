@@ -3,7 +3,16 @@
   "title": "Anthropic datasource",
   "description": "A schema defining Anthropic datasource",
   "type": "api",
-  "defaults": {},
+  "defaults": {
+    "operation": "chat",
+    "chat": {
+      "model": "claude-3-5-sonnet-20241022",
+      "system_prompt": "",
+      "message": "",
+      "temperature": "1",
+      "max_size": "256"
+    }
+  },
   "properties": {
     "operation": {
       "label": "Operation",
@@ -30,7 +39,7 @@
       },
       "claude-3-5-sonnet-20241022": {
         "system_prompt": {
-          "label": "System Prompt",
+          "label": "System prompt",
           "key": "system_prompt",
           "type": "codehinter",
           "description": "Defines role, context and/or role of the model to evaluate messages and send response",
@@ -59,7 +68,7 @@
           "tooltip":"Defines randomness of response. Takes value between 0 and 1. Default is 1."
         },
         "max_size": {
-          "label": "Max Size",
+          "label": "Max size",
           "key": "max_size",
           "type": "codehinter",
           "description": "Maximum tokens used in response",
@@ -71,7 +80,7 @@
       },
       "claude-3-5-haiku-20241022": {
         "system_prompt": {
-          "label": "System Prompt",
+          "label": "System prompt",
           "key": "system_prompt",
           "type": "codehinter",
           "description": "Defines role, context and/or role of the model to evaluate messages and send response",
@@ -100,7 +109,7 @@
           "tooltip":"Defines randomness of response. Takes value between 0 and 1. Default is 1."
         },
         "max_size": {
-          "label": "Max Size",
+          "label": "Max size",
           "key": "max_size",
           "type": "codehinter",
           "description": "Maximum tokens used in response",
@@ -112,7 +121,7 @@
       },
       "claude-3-opus-20240229": {
         "system_prompt": {
-          "label": "System Prompt",
+          "label": "System prompt",
           "key": "system_prompt",
           "type": "codehinter",
           "description": "Defines role, context and/or role of the model to evaluate messages and send response",
@@ -141,7 +150,7 @@
           "tooltip":"Defines randomness of response. Takes value between 0 and 1. Default is 1."
         },
         "max_size": {
-          "label": "Max Size",
+          "label": "Max size",
           "key": "max_size",
           "type": "codehinter",
           "description": "Maximum tokens used in response",
@@ -153,7 +162,7 @@
       },
       "claude-3-sonnet-20240229": {
         "system_prompt": {
-          "label": "System Prompt",
+          "label": "System prompt",
           "key": "system_prompt",
           "type": "codehinter",
           "description": "Defines role, context and/or role of the model to evaluate messages and send response",
@@ -182,7 +191,7 @@
           "tooltip":"Defines randomness of response. Takes value between 0 and 1. Default is 1."
         },
         "max_size": {
-          "label": "Max Size",
+          "label": "Max size",
           "key": "max_size",
           "type": "codehinter",
           "description": "Maximum tokens used in response",
@@ -194,7 +203,7 @@
       },
       "claude-3-haiku-20240307": {
         "system_prompt": {
-          "label": "System Prompt",
+          "label": "System prompt",
           "key": "system_prompt",
           "type": "codehinter",
           "description": "Defines role, context and/or role of the model to evaluate messages and send response",
@@ -223,7 +232,7 @@
           "tooltip":"Defines randomness of response. Takes value between 0 and 1. Default is 1."
         },
         "max_size": {
-          "label": "Max Size",
+          "label": "Max size",
           "key": "max_size",
           "type": "codehinter",
           "description": "Maximum tokens used in response",
