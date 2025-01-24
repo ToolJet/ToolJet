@@ -3,35 +3,39 @@ id: user-metadata
 title: User Metadata
 ---
 
-In ToolJet, Admin user can easily manage user profile by **[editing user detail](#)**, **[updating user metadata](#)** and **[resetting password](#)**.
+In ToolJet, user metadata allows you to store additional information about users, such as user personal details, API keys, or role-specific data. This custom data is stored at the workspace level and can be used within your ToolJet applications. It can include any key-value pairs relevant to your needs. All metadata values are encrypted in the database for security, and in the user interface, metadata values are masked to protect sensitive information.
 
-## Edit User Details
+## Adding User Metadata
 
-Super Admins can edit the details of any user in their instance. To edit the details of a user:
+User metadata can be added either when inviting the user or after the user has joined the workspace. Follow these steps to add user metadata:
 
-1. Go to the **All Users** settings from the **Settings**. <br/>
-    (Example URL)
-2. Click on the kebab menu (three dots) next to the user you want to edit and select **Edit user details**.
-3. In the drawer that opens, you can edit the **Name** of the user or toggle the Super admin toggle to promote the user.
-4. Once you have made the changes, click on the **Update** button.
+Role Required: **Admin** <br/>
 
-<img className="screenshot-full" src="/img/managing-users/user-management/user-drawer.png" alt="edit user" />
+1. Click on the settings icon (⚙️) on the bottom left of your dashboard.
 
-## User Metadata
+2. Go to **Workspace settings > Users**. <br/> 
+    (Example URL - `https://app.corp.com/nexus/workspace-settings/users`)
 
-User Metadata allows you to store additional information for users in your workspace. This custom data is stored at the workspace level and can include any key-value pairs relevant to your organization's needs.
+3. Spot the user whose metadata needs to be updated, click on the kebab menu (three dots) at the end of their row, and select **Edit user details**.
 
-- User metadata can be added when inviting a new user or editing an existing user. Additionally, you can also specify metadata while bulk inviting users.
-- It can store various types of information such as user preferences, API keys, or role-specific data.
-- Metadata is accessible in your applications through the global variable `{{globals.currentUser.metadata}}`.
-- All metadata values are encrypted in the database for security.
-- In the user interface, metadata values are masked to protect sensitive information.
+<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/user-management/profile-management/user-details.png" alt="Edit User Details" />
 
-### Using User Metadata in Applications
+4. Click on **+ Add more** below User metadata, and enter the key-value pair.
 
-You can access user metadata in the app builder using the following syntax:
+<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/user-management/profile-management/metadata.png" alt="Edit User Details" />
 
-```javascript
+5. Click on **Update** at the bottom.
+
+## Using User Metadata in Applications
+
+User metadata can be accessed within any application in the workspace through the global variable using the following syntax:
+
+```js
+{{globals.currentUser.metadata}}
+```
+To access a specific key-value pair from the metadata, use the following syntax:
+
+```js
 {{globals.currentUser.metadata.<key>}} // Replace <key> with the key of the metadata value 
 ```
 
