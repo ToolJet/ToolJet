@@ -367,6 +367,7 @@ describe("Workspace constants", () => {
         const appVersionId = editingVersionId;
 
         // Create the REST API query
+        // Need to check for revers proxy
         createrestAPIQuery({
           app_id: Cypress.env("appId"),
           app_version_id: appVersionId,
@@ -377,7 +378,7 @@ describe("Workspace constants", () => {
       });
     });
 
-    cy.openApp();
+    cy.openApp(data.appName);
 
     cy.waitForAutoSave();
     cy.dragAndDropWidget("Text Input", 550, 650);

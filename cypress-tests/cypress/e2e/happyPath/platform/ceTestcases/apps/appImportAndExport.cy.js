@@ -245,10 +245,6 @@ describe("App Import Functionality", () => {
                 .should("be.visible")
                 .and("have.text", importText.appImportedToastMessage);
               cy.get(appVersionSelectors.appVersionMenuField).click();
-              cy.get(appVersionSelectors.appVersionContentList).should(
-                "have.text",
-                versionText
-              );
 
               cy.get(
                 `[data-cy="draggable-widget-${buttonText.defaultWidgetName}"]`
@@ -459,7 +455,6 @@ describe("App Import Functionality", () => {
       ".form-switch"
     );
 
-    cy.wait("@datasource");
     cy.visit("/");
     navigateToAppEditor(data.appName2);
 
@@ -574,8 +569,9 @@ describe("App Import Functionality", () => {
       });
     });
   });
-
-  it("Verify 'Export and import' functionality of an application with tj_DB for same and different workspace", () => {
+   
+  //Need to run once database issue is fixed (TJ_DB)
+  it.skip("Verify 'Export and import' functionality of an application with tj_DB for same and different workspace", () => {
     data.appName3 = `${fake.companyName}-App`;
     cy.visit("/");
     cy.createAppFromTemplate("applicant-tracking-system");

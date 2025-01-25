@@ -111,7 +111,7 @@ describe("App Editor", () => {
       onlydeleteVersionText.deleteToastMessage("v3")
     );
     cy.get(appVersionSelectors.currentVersionField("v2")).should("be.visible");
-    cy.get(commonWidgetSelector.draggableWidget("text1")).should("be.visible");
+    cy.get(commonWidgetSelector.draggableWidget("text1")).click();
 
     // Preview and release verification
     cy.openInCurrentTab(commonWidgetSelector.previewButton);

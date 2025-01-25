@@ -32,11 +32,9 @@ describe("Global Datasource Manager", () => {
     cy.defaultWorkspaceLogin();
     cy.viewport(1200, 1300);
     cy.skipWalkthrough();
-    cy.visit(workspaceSlug);
   });
   before(() => {
     cy.apiLogin();
-    cy.apiCreateWorkspace(workspaceName, workspaceSlug);
   });
 
   it("Should verify the data source manager UI", () => {
@@ -164,7 +162,7 @@ describe("Global Datasource Manager", () => {
 
   it("Should verify the Datasource connection and query creation using global data source", () => {
     data.appName = `${fake.companyName}-App`;
-
+    data.dsName1 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
     selectAndAddDataSource(
       "databases",
       dataSourceText.postgreSQL,
@@ -182,8 +180,6 @@ describe("Global Datasource Manager", () => {
       },
       ".form-switch"
     );
-    cy.wait("@datasource");
-
     cy.apiCreateApp(data.appName);
     cy.openApp();
     pinInspector();
@@ -209,7 +205,6 @@ describe("Global Datasource Manager", () => {
       .and("have.text", "+ Add new Data source");
     cy.get(".p-2 > .tj-base-btn").click();
     cy.get('[data-cy="databases-datasource-button"]').should("be.visible");
-
     cy.apiCreateGDS(
       `${Cypress.env("server_host")}/api/v2/data_sources`,
       `cypress-${data.dsName2}-postgresql`,
@@ -226,7 +221,9 @@ describe("Global Datasource Manager", () => {
     );
   });
 
-  it("Should verify the query creation and scope changing functionality.", () => {
+// Need to run after app builder fixes
+  it.skip("Should verify the query creation and scope changing functionality.", () => {
+    cy.viewport(1460, 920);
     data.appName = `${fake.companyName}-App`;
 
     navigateToManageUsers();

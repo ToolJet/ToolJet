@@ -43,7 +43,8 @@ describe("Redirection error pages", () => {
         cy.get(commonSelectors.backToHomeButton).click();
 
     });
-
+    
+    // Nedd to check for proxy 
     it("Verify error message in case of restricted access", () => {
         data.appName = `${fake.companyName} App`;
         data.slug = data.appName.toLowerCase().replace(/\s+/g, "-");
@@ -70,6 +71,7 @@ describe("Redirection error pages", () => {
             "have.text",
             "Back to home page"
         );
+        // need to check for proxy
         cy.url().should("eq", `${Cypress.config('baseUrl')}/error/invalid-link`);
 
         cy.get(commonSelectors.backToHomeButton).click();

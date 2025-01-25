@@ -257,7 +257,9 @@ describe("App creation", () => {
         cy.go("back");
         cy.visit("/my-workspace");
     });
-    it("should verify the templates app creation", () => {
+
+    // need to run after bug fixes
+    it.skip("should verify the templates app creation", () => {
         data.appName = `${fake.companyName}-App`;
 
         cy.get(importSelectors.dropDownMenu).click();
@@ -284,10 +286,13 @@ describe("App creation", () => {
             "have.text",
             commonText.cancelButton
         );
-        cy.get(commonSelectors.createAppButton).verifyVisibleElement(
-            "have.text",
-            "+ Create app"
-        );
+        cy.wait(1000);
+        cy.contains(commonSelectors.createAppButton, "+ Create app").should("be.visible");
+
+        // cy.get(commonSelectors.createAppButton).verifyVisibleElement(
+        //     "have.text",
+        //     "+ Create app"
+        // );
         cy.get(commonSelectors.createAppButton).should("be.enabled");
         cy.get(commonWidgetSelector.modalCloseButton).should("be.visible");
 

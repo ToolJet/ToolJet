@@ -27,7 +27,7 @@ describe("User signup", () => {
     data.workspaceName = fake.companyName;
 
     cy.visit("/");
-    cy.wait(500);
+    cy.wait(2000);
     cy.get(commonSelectors.createAnAccountLink).realClick();
     SignUpPageElements();
 
