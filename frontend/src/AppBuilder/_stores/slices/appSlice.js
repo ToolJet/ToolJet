@@ -7,6 +7,7 @@ import { getWorkspaceId } from '@/_helpers/utils';
 import { navigate } from '@/AppBuilder/_utils/misc';
 import queryString from 'query-string';
 import { replaceEntityReferencesWithIds } from '../utils';
+import { getSubpath } from '@/_helpers/routes';
 
 const initialState = {
   app: {},
@@ -117,7 +118,7 @@ export const createAppSlice = (set, get) => ({
         canvas: { pages },
       },
     } = get();
-    const isPreview = currentMode !== 'edit';
+    const isViewer = currentMode !== 'edit';
     //!TODO clear all queued tasks
     cleanUpStore(true);
     setCurrentPageId(pageId, 'canvas');
@@ -132,15 +133,16 @@ export const createAppSlice = (set, get) => ({
 
     const queryParamsString = filteredQueryParams.map(([key, value]) => `${key}=${value}`).join('&');
     const slug = get().app.slug;
-
-    navigate(
-      `/${isPreview ? 'applications' : getWorkspaceId() + '/apps'}/${slug ?? appId}/${handle}?${queryParamsString}`,
-      {
-        state: {
-          isSwitchingPage: true,
-        },
-      }
-    );
+    const subpath = getSubpath();
+    let toNavigate = '';
+    toNavigate = `${subpath ? `${subpath}` : ''}/${isViewer ? 'applications' : `${getWorkspaceId() + '/apps'}`}/${
+      slug ?? appId
+    }/${handle}?${queryParamsString}`;
+    navigate(toNavigate, {
+      state: {
+        isSwitchingPage: true,
+      },
+    });
     const newPage = pages.find((p) => p.id === pageId);
     setResolvedPageConstants({
       id: newPage?.id,

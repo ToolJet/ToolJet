@@ -241,6 +241,8 @@ export const Modal = function Modal({
         size={size}
         keyboard={true}
         enforceFocus={false}
+        autoFocus={false}
+        restoreFocus={false}
         animation={false}
         onEscapeKeyDown={() => hideOnEsc && hideModal()}
         id="modal-container"

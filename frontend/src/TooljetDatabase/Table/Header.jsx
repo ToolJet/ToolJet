@@ -149,7 +149,7 @@ const Header = ({
         <div className="card border-0">
           <div className="card-body  tj-db-operations-header">
             <div className="row align-items-center">
-              <div className="col-8 align-items-center p-3 gap-1">
+              <div className="col-8 align-items-center  gap-1" style={{ padding: '0 16px' }}>
                 <>
                   {(isDirectRowExpand || Object.keys(selectedRowIds).length === 0) && (
                     <>

@@ -584,3 +584,20 @@
 .disabled-pointerevents {
     pointer-events: none;
 }
+
+.portal-container:has(.tjdb-portal-codehinter){
+    z-index: 100000 !important;
+}
+
+.tjdb-codehinter-wrapper-drawer{
+    .codehinter-error-container{
+        background: transparent;
+        font-size: 12px;
+        color: var(--tomato9);
+    }
+}
+.portal-container:has(.tjdb-hinter-error){
+    .codehinter-error-container{
+        display: none !important;
+    }
+}

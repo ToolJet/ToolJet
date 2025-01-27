@@ -30,6 +30,8 @@ export const SettingsModal = ({ darkMode }) => {
         className={`${darkMode && 'dark-theme'} page-handle-edit-modal`}
         backdrop="static"
         enforceFocus={false}
+        autoFocus={false}
+        restoreFocus={false}
       >
         <Modal.Header>
           <Modal.Title style={{ fontSize: '16px', fontWeight: '400' }} data-cy={'modal-title-page-events'}>

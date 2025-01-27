@@ -17,11 +17,11 @@
   },
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
-    "@aws-sdk/client-textract": "^3.321.1",
-    "@tooljet-marketplace/common": "^1.0.0"
+    "@aws-sdk/client-textract": "^3.321.1"
   },
   "devDependencies": {
     "@vercel/ncc": "^0.34.0",
-    "typescript": "^4.7.4"
+    "typescript": "^4.7.4",
+    "@tooljet-marketplace/common": "^1.0.0"
   }
 }
