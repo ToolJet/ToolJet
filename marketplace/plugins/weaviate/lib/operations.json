@@ -1,0 +1,176 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Weaviate datasource",
+  "description": "A schema defining Weaviate datasource",
+  "type": "database",
+  "defaults": {},
+  "properties": {
+    
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "get_schema",
+          "name": "Get Schema"
+        },
+        {
+          "value": "get_collection",
+          "name": "Get Collection"
+        },
+        {
+          "value": "create_collection",
+          "name": "Create Collection"
+        },
+        {
+          "value": "delete_collection",
+          "name": "Delete Collection"
+        },
+        {
+          "value": "list_objects",
+          "name": "List Objects"
+        },
+
+        {
+          "value": "create_object",
+          "name": "Create Object"
+        },
+        {
+          "value": "get_object_by_id",
+          "name": "Get Object By Id"
+        },
+        {
+          "value": "delete_object_by_id",
+          "name": "Delete Object By Id"
+        }
+      ]
+
+    },
+    "get_schema": {
+      "collectionName": {
+        "label": "Collection Name - 1",
+        "key": "collectionName",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter the name of the collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter the name of the collection"
+      }
+    },
+    "get_collection": {
+      "collectionName": {
+        "label": "Collection Name",
+        "key": "collectionName",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter the name of the collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter the name of the collection",
+        "tooltip":"Enter the name of the collection"
+      },
+      "consistency": {
+        "label": "Consistency",
+        "key": "consistency",
+        "type": "toggle",
+        "value": "true",
+        "tooltip":"Enable consistency"
+      }
+    },
+    "create_collection": {
+      "collectionName": {
+        "label": "Collection Name",
+        "key": "collectionName",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter the name of the collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter the name of the collection"
+      }
+    },
+    "delete_collection": {
+      "collectionName": {
+        "label": "Collection Name",
+        "key": "collectionName",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter the name of the collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter the name of the collection"
+      }
+    },
+    "get_object_by_id": {
+      "collectionName": {
+        "label": "Collection Name",
+        "key": "collectionName",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter the name of the collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter the name of the collection"
+      },
+      "objectId": {
+        "label": "Object ID",
+        "key": "objectId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter the ID of the object",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter the ID of the object"
+      }
+    },
+    "delete_object_by_id": {
+      "collectionName": {
+        "label": "Collection Name",
+        "key": "collectionName",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter the name of the collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter the name of the collection"
+      },
+      "objectId": {
+        "label": "Object ID",
+        "key": "objectId",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter the ID of the object",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter the ID of the object"
+      }
+    },
+    "list_objects": {
+      "collectionName": {
+        "label": "Collection Name",
+        "key": "collectionName",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter the name of the collection",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter the name of the collection"
+      }
+    }
+
+
+  }
+}
