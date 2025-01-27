@@ -135,7 +135,7 @@
     "name": "Hugging Face",
     "description": "Plugin for Hugging Face's Inference API to use listed AI models for text capabilities",
     "version": "1.0.0",
-    "id": "huggingface",
+    "id": "hugging_face",
     "author": "Tooljet",
     "timestamp": "Wed, 15 Jan 2025 07:55:16 GMT",
     "tags": ["AI"]
