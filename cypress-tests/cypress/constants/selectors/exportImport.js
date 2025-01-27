@@ -32,6 +32,9 @@ export const exportAppModalSelectors = {
   versionRadioButton: (versionText) => {
     return `[data-cy="${cyParamName(versionText)}-radio-button"]`;
   },
+  versionCreatedTime: (versionText) => {
+    return `[data-cy="${versionText}-version-wrapper"] > .d-flex > [data-cy="created-date-label"]`;
+  }
 };
 
 export const importSelectors = {

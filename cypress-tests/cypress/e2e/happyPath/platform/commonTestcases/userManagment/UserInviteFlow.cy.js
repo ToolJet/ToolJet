@@ -147,8 +147,6 @@ describe("user invite flow cases", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
 
-
-
     addNewUser(data.firstName, data.email);
 
     cy.apiLogout();

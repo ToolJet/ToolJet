@@ -1,5 +1,6 @@
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { groupsSelector } from "Selectors/manageGroups";
+import { resolveHost } from "Support/utils/apps";
 
 import { fake } from "Fixtures/fake";
 import {
@@ -11,6 +12,7 @@ import { commonText } from "Texts/common";
 
 describe("Redirection error pages", () => {
     const data = {};
+    const host = resolveHost();
 
     beforeEach(() => {
         cy.apiLogin();
@@ -41,13 +43,11 @@ describe("Redirection error pages", () => {
         cy.apiLogin("dev@tooljet.io", "password");
         cy.visit(`/applications/${data.lastName}`);
         cy.get(commonSelectors.backToHomeButton).click();
-
     });
 
     it("Verify error message in case of restricted access", () => {
         data.appName = `${fake.companyName} App`;
         data.slug = data.appName.toLowerCase().replace(/\s+/g, "-");
-
 
         cy.apiCreateApp(data.appName);
         cy.openApp();
@@ -70,7 +70,7 @@ describe("Redirection error pages", () => {
             "have.text",
             "Back to home page"
         );
-        cy.url().should("eq", `${Cypress.config('baseUrl')}/error/invalid-link`);
+        cy.url().should("eq", `${host}/error/invalid-link`);
 
         cy.get(commonSelectors.backToHomeButton).click();
         cy.get(commonSelectors.pageSectionHeader).should("be.visible");
@@ -87,7 +87,7 @@ describe("Redirection error pages", () => {
         cy.clearAndType(commonWidgetSelector.appSlugInput, data.slug);
         cy.wait(1000);
 
-        cy.visit(`${Cypress.config('baseUrl')}/applications/${data.slug}`);
+        cy.visit(`${Cypress.config("baseUrl")}/applications/${data.slug}`);
         cy.get(commonSelectors.modalHeader).verifyVisibleElement(
             "have.text",
             "App URL Unavailable"
@@ -106,7 +106,7 @@ describe("Redirection error pages", () => {
             "Back to home page"
         );
 
-        cy.url().should('contain', '/error/')
+        cy.url().should("contain", "/error/");
         cy.get(commonSelectors.backToHomeButton).click();
         cy.get(commonSelectors.pageSectionHeader).should("be.visible");
 
@@ -114,7 +114,7 @@ describe("Redirection error pages", () => {
         cy.apiLogin("dev@tooljet.io", "password");
         cy.wait(500);
 
-        cy.visit(`${Cypress.config('baseUrl')}/applications/${data.slug}`);
+        cy.visit(`${Cypress.config("baseUrl")}/applications/${data.slug}`);
         cy.get(commonSelectors.modalHeader).verifyVisibleElement(
             "have.text",
             "App URL Unavailable"
@@ -128,14 +128,14 @@ describe("Redirection error pages", () => {
             "have.text",
             "Back to home page"
         );
-        cy.url().should('contain', '/error/')
+        cy.url().should("contain", "/error/");
         cy.get(commonSelectors.backToHomeButton).click();
         cy.get(commonSelectors.pageSectionHeader).should("be.visible");
         logout();
         cy.apiLogin("dev@tooljet.io", "password");
         cy.wait(500);
 
-        cy.visit(`${Cypress.config('baseUrl')}/applications/${data.slug}`);
+        cy.visit(`${Cypress.config("baseUrl")}/applications/${data.slug}`);
         cy.get(commonSelectors.modalHeader).verifyVisibleElement(
             "have.text",
             "App URL Unavailable"

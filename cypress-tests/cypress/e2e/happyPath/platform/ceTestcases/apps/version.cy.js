@@ -32,7 +32,7 @@ import { deleteVersionText, onlydeleteVersionText } from "Texts/version";
 import { createRestAPIQuery } from "Support/utils/dataSource";
 import { deleteQuery } from "Support/utils/queries";
 
-describe("App Editor", () => {
+describe("App Version", () => {
   let data;
 
   let currentVersion = "";

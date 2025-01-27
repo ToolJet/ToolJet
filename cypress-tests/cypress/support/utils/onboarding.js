@@ -131,10 +131,10 @@ export const userSignUp = (fullName, email, workspaceName = "test") => {
   cy.intercept("GET", "/api/organizations/public-configs").as("publicConfig");
   cy.visit("/");
   cy.wait("@publicConfig");
-  cy.wait(1500)
-  cy.get(commonSelectors.createAnAccountLink).realClick();
+  cy.wait(2000)
+  cy.get(commonSelectors.createAnAccountLink, { timout: 10000 }).click();
   cy.wait(2000);
-  cy.get(onboardingSelectors.nameInput).should("not.be.disabled");
+  cy.get(onboardingSelectors.nameInput, { timeout: 1000 }).should("not.be.disabled");
   cy.get(onboardingSelectors.nameInput).clear();
   cy.get(onboardingSelectors.nameInput).type(fullName);
   cy.clearAndType(onboardingSelectors.loginEmailInput, email);
