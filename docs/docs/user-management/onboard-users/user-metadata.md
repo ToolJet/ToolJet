@@ -5,7 +5,7 @@ title: User Metadata
 
 In ToolJet, user metadata allows you to store additional information about users, such as user personal details, API keys, or role-specific data. This custom data is stored at the workspace level and can be used within your ToolJet applications. It can include any key-value pairs relevant to your needs. All metadata values are encrypted in the database for security, and in the user interface, metadata values are masked to protect sensitive information.
 
-For example, you can add the user's country to the metadata and apply a filter to display only country-relevant data to the user.
+For example, user metadata can be used to store the user's country and a filter can be applied on the app builder to display only the user's country-relevant data. 
 
 ## Adding User Metadata
 
