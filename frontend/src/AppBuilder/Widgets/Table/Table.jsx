@@ -380,7 +380,7 @@ export const Table = React.memo(
 
     // tableData = isArray(tableData) ? tableData : [];
 
-    const removeNullValues = (arr) => arr.filter((element) => element !== null);
+    const removeNullValues = (arr) => arr?.filter((element) => element !== null);
 
     const useDynamicColumn = getResolvedValue(properties?.useDynamicColumn);
     const dynamicColumn = useDynamicColumn ? getResolvedValue(properties?.columnData) ?? [] : [];
@@ -390,16 +390,18 @@ export const Table = React.memo(
     }, [useDynamicColumn, generatedColumn, properties.columns]);
 
     const transformations = useMemo(() => {
-      return columnProperties
-        .filter((column) => column.transformation && column.transformation != '{{cellValue}}')
-        .map((column) => ({
-          key: column.key ? column.key : column.name,
-          transformation: column.transformation,
-        }));
+      return (
+        columnProperties
+          ?.filter((column) => column?.transformation && column?.transformation != '{{cellValue}}')
+          ?.map((column) => ({
+            key: column?.key ? column?.key : column?.name,
+            transformation: column?.transformation,
+          })) || []
+      );
     }, [JSON.stringify(columnProperties)]);
 
     const tableData = useMemo(() => {
-      const resolvedData = getResolvedValue(properties.data);
+      const resolvedData = getResolvedValue(properties?.data);
       if (!Array.isArray(resolvedData) && !isArray(resolvedData)) {
         return [];
       } else {
@@ -408,8 +410,8 @@ export const Table = React.memo(
           .map((row) => {
             const transformedObject = {};
 
-            transformations.forEach(({ key, transformation }) => {
-              const nestedKeys = key.includes('.') && key.split('.');
+            transformations?.forEach(({ key, transformation }) => {
+              const nestedKeys = key?.includes('.') && key?.split('.');
               if (nestedKeys) {
                 // Single-level nested property
                 const [nestedKey, subKey] = nestedKeys;
@@ -481,30 +483,32 @@ export const Table = React.memo(
           if (getResolvedValue(column?.columnVisibility)) {
             return column;
           }
-        }),
+        }) ?? [],
       [columnData, currentState]
     );
 
-    const columnDataForAddNewRows = generateColumnsData({
-      columnProperties: useDynamicColumn ? generatedColumn : properties.columns,
-      columnSizes,
-      currentState,
-      getResolvedValue,
-      handleCellValueChange: handleNewRowCellValueChange,
-      customFilter,
-      defaultColumn,
-      changeSet: tableDetails.addNewRowsDetails.newRowsChangeSet,
-      tableData,
-      variablesExposedForPreview,
-      exposeToCodeHinter,
-      id,
-      fireEvent,
-      tableRef,
-      t,
-      darkMode,
-      validateWidget,
-      validateDates,
-    });
+    const columnDataForAddNewRows =
+      generateColumnsData({
+        columnProperties: useDynamicColumn ? generatedColumn : properties.columns,
+        columnSizes,
+        currentState,
+        getResolvedValue,
+        handleCellValueChange: handleNewRowCellValueChange,
+        customFilter,
+        defaultColumn,
+        changeSet: tableDetails.addNewRowsDetails.newRowsChangeSet,
+        tableData,
+        variablesExposedForPreview,
+        exposeToCodeHinter,
+        id,
+        fireEvent,
+        tableRef,
+        t,
+        darkMode,
+        validateWidget,
+        validateDates,
+      }) || [];
+
     const [leftActionsCellData, rightActionsCellData] = useMemo(
       () =>
         generateActionsData({
@@ -518,7 +522,7 @@ export const Table = React.memo(
       [JSON.stringify(actions), tableActionEvents]
     );
 
-    const optionsData = columnData.map((column) => column?.columnOptions?.selectOptions);
+    const optionsData = columnData?.map((column) => column?.columnOptions?.selectOptions);
     const columns = useMemo(
       () => {
         return [...leftActionsCellData, ...columnData, ...rightActionsCellData];
@@ -711,8 +715,8 @@ export const Table = React.memo(
         return;
       }
 
-      const columnName = columns.find((column) => column.id === state?.sortBy?.[0]?.id).accessor;
-
+      const columnName = columns.find((column) => column.id === state?.sortBy?.[0]?.id)?.accessor;
+      if (!columnName) return;
       return [
         {
           column: columnName,
