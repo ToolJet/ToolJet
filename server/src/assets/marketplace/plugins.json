@@ -147,5 +147,25 @@
     "tags": [
       "AI"
     ]
+  },
+  {
+    "name": "Anthropic",
+    "description": "Integrate with Anthropic API to use Claude AI models.",
+    "version": "1.0.0",
+    "id": "anthropic",
+    "author": "Tooljet",
+    "timestamp": "Mon, 20 Jan 2025 08:04:46 GMT",
+    "tags": [
+      "AI"
+    ]
+   "tags": ["AI"]
+  },
+  {
+    "name": "Qdrant",
+    "description": "Plugin for Qdrant APIs",
+    "version": "1.0.0",
+    "id": "qdrant",
+    "author": "Tooljet",
+    "timestamp": "Tue, 10 Dec 2024 02:11:32 GMT"
   }
 ]
