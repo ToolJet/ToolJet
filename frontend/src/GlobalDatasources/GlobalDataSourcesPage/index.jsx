@@ -337,16 +337,6 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
       };
     });
 
-    const pluginsWithTags = marketplacePlugins.reduce((acc, plugin) => {
-      const isInDatasources = datasources.some((datasource) => {
-        return datasource.kind === plugin.id || datasource.pluginId === plugin.id || datasource.plugin_id === plugin.id;
-      });
-      if (isInDatasources && plugin.tags) {
-        acc[plugin.id] = plugin.tags;
-      }
-      return acc;
-    }, {});
-
     return (
       <>
         <div className="row row-deck mt-3">
