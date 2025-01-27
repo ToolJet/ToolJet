@@ -13,7 +13,8 @@
 			"list": [
 				{ "value": "chat", "name": "Chat" },
 				{ "value": "completion", "name": "Completion" },
-				{ "value": "image_generation", "name": "Generate AI Image(s)" }
+				{ "value": "image_generation", "name": "Generate AI Image(s)" },
+				{ "value": "generate_embedding", "name": "Generate embedding" }
 			]
 		},
 		"chat": {
@@ -299,7 +300,124 @@
 					"height": "36px"
     			}
   			}
+		},
+		"generate_embedding": {
+			"model_embedding": {
+				"label": "Model",
+				"key": "model",
+				"type": "dropdown-component-flip",
+				"description": "Select embedding model",
+				"list": [
+					{ "value": "text-embedding-3-small", "name": "text-embedding-3-small" },
+					{ "value": "text-embedding-3-large", "name": "text-embedding-3-large" },
+					{ "value": "text-embedding-ada-002", "name": "text-embedding-ada-002" }
+				]
+			},
+			"text-embedding-3-small": {
+				"input_M1": {
+					"label": "Input",
+					"key": "input_M1",
+					"type": "codehinter",
+					"lineNumbers": false,
+					"placeholder": "The food was delicious and the waiter...",
+					"width": "320px",
+					"height": "36px",
+					"className": "codehinter-plugins",
+					"tooltip": "This inputs accepts string or array of strings"
+				},
+				"encoding_format_M1": {
+					"label": "Encoding format",
+					"key": "encoding_format_M1",
+					"type": "dropdown",
+					"description": "Select encoding format",
+					"list": [
+						{ "value": "float", "name": "Float" },
+						{ "value": "base64", "name": "Base64" }
+					],
+					"tooltip": "Format of the embeddings"
+				},
+				"dimensions_M1": {
+					"label": "Dimensions",
+					"key": "dimensions_M1",
+					"type": "codehinter",
+					"lineNumbers": false,
+					"placeholder": "2",
+					"width": "320px",
+					"height": "36px",
+					"className": "codehinter-plugins",
+					"tooltip": "Number of dimensions the resulting output embeddings should have"
+				}
+			},
+			"text-embedding-3-large": {
+				"input_M2": {
+					"label": "Input",
+					"key": "input_M2",
+					"type": "codehinter",
+					"lineNumbers": false,
+					"placeholder": "The food was delicious and the waiter...",
+					"width": "320px",
+					"height": "36px",
+					"className": "codehinter-plugins",
+					"tooltip": "This inputs accepts string or array of strings"
+				},
+				"encoding_format_M2": {
+					"label": "Encoding format",
+					"key": "encoding_format_M2",
+					"type": "dropdown",
+					"description": "Select encoding format",
+					"list": [
+						{ "value": "float", "name": "Float" },
+						{ "value": "base64", "name": "Base64" }
+					],
+					"tooltip": "Format of the embeddings"
+				},
+				"dimensions_M2": {
+					"label": "Dimensions",
+					"key": "dimensions_M2",
+					"type": "codehinter",
+					"lineNumbers": false,
+					"placeholder": "2",
+					"width": "320px",
+					"height": "36px",
+					"className": "codehinter-plugins",
+					"tooltip": "Number of dimensions the resulting output embeddings should have"
+				}
+			},
+			"text-embedding-ada-002": {
+				"input_M3": {
+					"label": "Input",
+					"key": "input_M3",
+					"type": "codehinter",
+					"lineNumbers": false,
+					"placeholder": "The food was delicious and the waiter...",
+					"width": "320px",
+					"height": "36px",
+					"className": "codehinter-plugins",
+					"tooltip": "This inputs accepts string or array of strings"
+				},
+				"encoding_format_M3": {
+					"label": "Encoding format",
+					"key": "encoding_format_M3",
+					"type": "dropdown",
+					"description": "Select encoding format",
+					"list": [
+						{ "value": "float", "name": "Float" },
+						{ "value": "base64", "name": "Base64" }
+					],
+					"tooltip": "Format of the embeddings"
+				},
+				"dimensions_M3": {
+					"label": "Dimensions",
+					"key": "dimensions_M3",
+					"type": "codehinter",
+					"lineNumbers": false,
+					"placeholder": "2",
+					"width": "320px",
+					"height": "36px",
+					"className": "codehinter-plugins",
+					"tooltip": "Number of dimensions the resulting output embeddings should have"
+				}
+			}
 		}
-
 	}
 }
