@@ -5,7 +5,7 @@ import { workspaceConstantsText } from "Texts/workspaceConstants";
 import { commonText, commonWidgetText } from "Texts/common";
 
 import { releaseApp, navigateToAppEditor } from "Support/utils/common";
-import { manageWorkspaceConstant } from "Support/utils/workspaceConstants";
+import { manageWorkspaceConstant, addConstantFormUI } from "Support/utils/workspaceConstants";
 
 import * as common from "Support/utils/common";
 
@@ -57,28 +57,29 @@ describe("Workspace constants", () => {
     cy.skipWalkthrough();
   });
 
-  it("Verify workspace constants UI and CRUD operations only", () => {
+  it("Verify workspace constants UI and CRUD operations", () => {
     data.firstName = fake.firstName;
     data.workspaceName = data.firstName;
     data.workspaceSlug = data.firstName.toLowerCase();
-    let workspaceName = data.workspaceName.replaceAll("[^A-Za-z]", "");
-    data.constName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
-    data.newConstvalue = `New ${data.constName}`;
 
     cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
     cy.visit(`${data.workspaceSlug}`);
     cy.wait(2000);
 
+    addConstantFormUI();
+
     manageWorkspaceConstant({
       constantType: "Global",
-      constName: "ExampleConstant",
+      constName: "Example_Constant1",
       newConstvalue: "UpdatedValue",
+      envName: "Production"
     });
 
     manageWorkspaceConstant({
       constantType: "Secrets",
-      constName: "ExampleConstant",
+      constName: "Example_Constant1",
       newConstvalue: "UpdatedValue",
+      envName: "Production"
     });
   });
 

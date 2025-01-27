@@ -14,7 +14,17 @@ export const workspaceConstantsSelectors = {
     constantsTableValueHeader:
         '[data-cy="workspace-variable-table-value-header"]',
     nameInputFiled: '[data-cy="name-input-field"]',
-
+    nameFieldLabel: '[data-cy="name-label"]',
+    nameFieldHelperText: '[data-cy="name-info"]',
+    typeLabel: '[data-cy="type-label"]',
+    globalConstLabel: '[data-cy="global-constants-label"]',
+    globalConstHelperText: '[data-cy="global-constants-info"]',
+    secretsConstLabel: '[data-cy="secrets-constants-label"]',
+    secretsConstHelperText: '[data-cy="secrets-constants-info"]',
+    valueLabel: '[data-cy="value-label"]',
+    alertInfoText: '[data-cy="alert-info-text"]',
+    tableAddNewConstButton: '[data-cy="table-add-new-constant-button"]',
+    searchField: '[data-cy="-search-bar"]',
     constantName: (constName) => {
         return `[data-cy="${cyParamName(constName)}-workspace-constant-name"]`;
     },
