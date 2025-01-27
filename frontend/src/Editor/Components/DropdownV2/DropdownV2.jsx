@@ -403,7 +403,7 @@ export const DropdownV2 = ({
     }),
     menuList: (provided) => ({
       ...provided,
-      padding: '8px',
+      padding: '1px 8px',
       borderRadius: '8px',
       // this is needed otherwise :active state doesn't look nice, gap is required
       display: 'flex',

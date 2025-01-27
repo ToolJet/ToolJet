@@ -403,7 +403,7 @@ export const MultiselectV2 = ({
     }),
     menuList: (provided) => ({
       ...provided,
-      padding: '4px',
+      padding: '1px 4px',
       // this is needed otherwise :active state doesn't look nice, gap is required
       display: 'flex',
       flexDirection: 'column',
