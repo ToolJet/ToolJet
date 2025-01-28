@@ -59,6 +59,14 @@ To configure the workspace-level authentication configuration
     *   Password login allows users to log in using their email and password. However, organizations can also use SSO for better security and control.
         
     *   Toggle this setting to **enable** or **disable** password login on the login page. Make sure to disable password login only when your SSO is configured otherwise, you will get locked out.
+
+    * User password authentication will be disabled after a predefined number of failed login attempts to enhance security. By default, users are allowed **5 retries**, but this can be adjusted using the `PASSWORD_RETRY_LIMIT` environment variable. To disable this feature, set `DISABLE_PASSWORD_RETRY_LIMIT` to `true`.
+
+*   | Variable | Description | Default Value |
+    | --------- |-------------|---------------|
+    | `DISABLE_PASSWORD_RETRY_LIMIT` | Set to `true` to disable the password retry limit feature. | `false` |
+    | `PASSWORD_RETRY_LIMIT` | Specifies the maximum number of allowed retries before disabling authentication. | `5` |
+
         
 ###  Automatic SSO Login
     
