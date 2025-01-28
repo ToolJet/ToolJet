@@ -62,8 +62,23 @@ export default function Grid({ gridWidth, currentLayout }) {
       if (!isVisible) return false;
 
       const draggingOrResizingId = draggingComponentId || resizingComponentId;
+      const isGrouped = findHighestLevelofSelection().length > 1;
 
-      if (draggingOrResizingId) {
+      if (isGrouped) {
+        // If component is selected, don't show its guidelines
+        if (selectedComponents.includes(box.id)) return false;
+
+        // For selected components, only show guidelines for siblings
+        const firstSelectedParent = boxList.find((b) => b.id === selectedComponents[0])?.parent;
+
+        if (firstSelectedParent) {
+          // Show guidelines only for components with same parent
+          return box.parent === firstSelectedParent;
+        }
+
+        // If selected components are top-level, only show guidelines for other top-level components
+        return !box.parent;
+      } else if (draggingOrResizingId) {
         const draggingComponentParent = boxList.find((box) => box.id === draggingOrResizingId)?.parent;
 
         if (box.id === draggingOrResizingId) return false;
