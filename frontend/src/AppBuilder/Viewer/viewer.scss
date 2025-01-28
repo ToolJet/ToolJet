@@ -12,6 +12,7 @@
   color: #11181C;
 }
 
+
 .released-version-no-header-dark-mode-icon {
   position: fixed;
   top: 1rem;
@@ -150,5 +151,25 @@
     .canvas-container {
       scrollbar-width: none;
     }
+  }
+}
+
+#page-settings-tabpane-styles {
+  .accordion-item {
+    margin-bottom: 10px;
+    border-radius: 5px;
+    overflow: hidden;
+  }
+
+  .accordion-header {
+    width: 100%;
+    text-align: left;
+    border: none;
+    padding: 10px 15px;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 }
