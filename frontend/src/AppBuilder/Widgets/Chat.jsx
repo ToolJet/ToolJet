@@ -54,7 +54,7 @@ export const Chat = function Chat({
     setChatHistory([]);
   };
 
-  if (!styles.visibility) return null;
+  if (!properties.visibility) return null;
 
   return (
     <div
@@ -74,7 +74,7 @@ export const Chat = function Chat({
         className="chat-header p-2 d-flex justify-content-between align-items-center"
         style={{ borderBottom: '1px solid var(--slate7)' }}
       >
-        <span className="chat-title">{properties.title}</span>
+        <span className="chat-title">{properties.chatTitle}</span>
         <div>
           <ButtonSolid variant="secondary" size="sm" onClick={clearHistory} className="mx-1">
             Clear History
@@ -116,7 +116,7 @@ export const Chat = function Chat({
               </div>
             </div>
           ))}
-        {styles.loadingResponse && (
+        {properties.loadingResponse && (
           <div className="message-bubble d-flex justify-content-start">
             <div
               style={{
@@ -141,12 +141,12 @@ export const Chat = function Chat({
             onKeyPress={handleKeyPress}
             placeholder="Type a message..."
             style={{ resize: 'none', height: '38px' }}
-            disabled={styles.disableInput || styles.loadingResponse}
+            disabled={properties.disableInput || properties.loadingResponse}
           />
           <ButtonSolid
             variant="primary"
             onClick={handleSendMessage}
-            disabled={!message.trim() || styles.disableInput || styles.loadingResponse}
+            disabled={!message.trim() || properties.disableInput || properties.loadingResponse}
           >
             Send
           </ButtonSolid>
