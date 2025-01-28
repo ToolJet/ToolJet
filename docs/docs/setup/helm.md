@@ -11,7 +11,7 @@ This repository contains Helm charts for deploying [ToolJet](https://github.com/
 
 ### From Helm repo
 ```bash
-helm repo add tooljet https://tooljet.github.io/helm-charts
+helm repo add tooljet 
 helm install tooljet tooljet/tooljet
 ```
 
