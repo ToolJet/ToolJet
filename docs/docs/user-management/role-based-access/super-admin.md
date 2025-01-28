@@ -44,7 +44,7 @@ On a self-hosted ToolJet, a Super Admin is the user who has full access to all t
 
 ## Reset Password
 
-Super admins can easily rest password for any user in the instance by following these steps:
+When password login is enabled, and if a user forgets their password or it needs to be updated, the super admin can easily reset the password for any user in the instance by following these steps:
 
 1. Click on the settings icon (⚙️) on the bottom left of your dashboard.
 

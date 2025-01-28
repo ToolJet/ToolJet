@@ -7,6 +7,27 @@ title: OpenID Connect
 
 In ToolJet, you can use the group synchronization feature to automatically update user roles and custom groups from the identity provider. This functionality enables centralized access management, reduces the risk of manual errors, enhances security, and simplifies the user onboarding process.
 
+## Group Mapping
+
+Group mapping in ToolJet follows these principles:
+
+- Default 1:1 mapping based on group names (case-sensitive).
+- Custom group mapping can be configured.
+- New custom groups can be created if no exact match exists.
+- Users without a matching group are assigned to the **end-users** group.
+
+### Group Mapping Scenarios
+
+| Groups in IdP | Groups in ToolJet | Role Mapping Settings | Result |
+|---------------|-------------------|------------------------|--------|
+| **admin**, **builder**, **end-user** | Exists | None | User added to corresponding default user group. |
+| **engineers** | Exists (no permissions) | None | User added to **engineers** custom group and **end-users** default group. |
+| **engineers** | Exists (with permissions) | None | User added to **engineers** custom group and either **end-users** or **builders** based on permissions. |
+| **engineers** | Doesn't exist | **engineers → all apps** | User added to **all apps** custom group and **builder** or **end-user** default group based on permissions. |
+| **engineers** | Doesn't exist | **engineers → builders** | User added to **builders** default group. |
+| **admin**, **all apps** | Exists | None | User added to **all apps** and assigned **admin** role. |
+| no group | N/A | None | User added to **end-users** default group. |
+
 ## Configure OIDC Group Sync in ToolJet
 
 To set up OIDC group synchronization in ToolJet follow these steps:
@@ -28,27 +49,6 @@ To set up OIDC group synchronization in ToolJet follow these steps:
    ```
 
    <img className="screenshot-full" src="/img/sso/group-sync-oidc.png" alt="OIDC Group Sync Config" />
-
-## Group Mapping
-
-Group mapping in ToolJet follows these principles:
-
-- Default 1:1 mapping based on group names (case-sensitive).
-- Custom group mapping can be configured.
-- New custom groups can be created if no exact match exists.
-- Users without a matching group are assigned to the **end-users** group.
-
-### Group Mapping Scenarios
-
-| Groups in IdP | Groups in ToolJet | Role Mapping Settings | Result |
-|---------------|-------------------|------------------------|--------|
-| **admin**, **builder**, **end-user** | Exists | None | User added to corresponding default user group. |
-| **engineers** | Exists (no permissions) | None | User added to **engineers** custom group and **end-users** default group. |
-| **engineers** | Exists (with permissions) | None | User added to **engineers** custom group and either **end-users** or **builders** based on permissions. |
-| **engineers** | Doesn't exist | **engineers → all apps** | User added to **all apps** custom group and **builder** or **end-user** default group based on permissions. |
-| **engineers** | Doesn't exist | **engineers → builders** | User added to **builders** default group. |
-| **admin**, **all apps** | Exists | None | User added to **all apps** and assigned **admin** role. |
-| no group | N/A | None | User added to **end-users** default group. |
 
 ## Important Considerations
 
