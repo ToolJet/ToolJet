@@ -18,8 +18,6 @@ import {
   getPositionForGroupDrag,
   adjustWidth,
 } from './gridUtils';
-import { useAppVersionStore } from '@/_stores/appVersionStore';
-import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import './Grid.css';
 import { NO_OF_GRIDS, SUBCONTAINER_WIDGETS } from '../appCanvasConstants';
@@ -29,6 +27,7 @@ const RESIZABLE_CONFIG = {
   edge: ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se'],
   renderDirections: ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se'],
 };
+const VERTICAL_GRID_HEIGHT = 10;
 
 export default function Grid({ gridWidth, currentLayout }) {
   const lastDraggedEventsRef = useRef(null);
@@ -51,6 +50,35 @@ export default function Grid({ gridWidth, currentLayout }) {
   const canvasWidth = NO_OF_GRIDS * gridWidth;
   const getHoveredComponentForGrid = useStore((state) => state.getHoveredComponentForGrid, shallow);
   const getResolvedComponent = useStore((state) => state.getResolvedComponent, shallow);
+  const draggingComponentId = useGridStore((state) => state.draggingComponentId, shallow);
+  const resizingComponentId = useGridStore((state) => state.resizingComponentId, shallow);
+
+  const elementGuidelines = boxList
+    .filter((box) => {
+      const isVisible = getResolvedValue(
+        box?.component?.definition?.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value
+      );
+
+      if (!isVisible) return false;
+
+      const draggingOrResizingId = draggingComponentId || resizingComponentId;
+
+      if (draggingOrResizingId) {
+        const draggingComponentParent = boxList.find((box) => box.id === draggingOrResizingId)?.parent;
+
+        if (box.id === draggingOrResizingId) return false;
+
+        if (draggingComponentParent) {
+          return box.parent === draggingComponentParent;
+        }
+
+        // If dragging component has no parent, only show guidelines for other top-level components
+        return !box.parent;
+      }
+
+      return true;
+    })
+    .map((box) => `.ele-${box.id}`);
 
   useEffect(() => {
     setBoxList(
@@ -919,17 +947,30 @@ export default function Grid({ gridWidth, currentLayout }) {
           }
           toggleCanvasUpdater();
         }}
-        // throttleDrag={1}
-        // edgeDraggable={false}
-        // startDragRotate={0}
-        // throttleDragRotate={0}
-        //snap settgins
-        snappable={true}
-        snapThreshold={10}
-        isDisplaySnapDigit={false}
         bounds={CANVAS_BOUNDS}
         displayAroundControls={true}
         controlPadding={20}
+        //snap settgins
+        snappable={true}
+        snapGap={true}
+        isDisplaySnapDigit={false}
+        snapGridWidth={gridWidth}
+        snapGridHeight={VERTICAL_GRID_HEIGHT}
+        snapThreshold={gridWidth / 2}
+        // Guidelines configuration
+        elementGuidelines={elementGuidelines}
+        snapDirections={{
+          top: true,
+          right: true,
+          bottom: true,
+          left: true,
+        }}
+        elementSnapDirections={{
+          top: true,
+          left: true,
+          bottom: true,
+          right: true,
+        }}
       />
     </>
   );
