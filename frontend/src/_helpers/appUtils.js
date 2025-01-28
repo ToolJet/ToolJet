@@ -927,6 +927,7 @@ export async function onEvent(_ref, eventName, events, options = {}, mode = 'edi
       'onSubmit',
       'onInvalid',
       'onNewRowsAdded',
+      'onMessageSent',
     ].includes(eventName)
   ) {
     executeActionsForEventId(_ref, eventName, events, mode, customVariables);

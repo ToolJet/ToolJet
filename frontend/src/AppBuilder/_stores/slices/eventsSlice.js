@@ -367,6 +367,8 @@ export const createEventsSlice = (set, get) => ({
           'onSubmit',
           'onInvalid',
           'onNewRowsAdded',
+          'onTableDataDownload',
+          'onMessageSent',
         ].includes(eventName)
       ) {
         executeActionsForEventId(eventName, events, mode, customVariables);

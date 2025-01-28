@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { v4 as uuidv4 } from 'uuid';
 
 export const Chat = function Chat({
   id,
@@ -9,50 +10,61 @@ export const Chat = function Chat({
   darkMode,
   properties,
   styles,
-  setExposedVariable,
+  setExposedVariables,
   fireEvent,
 }) {
+  const [chatTitle, setChatTitle] = useState(properties.chatTitle);
   const [message, setMessage] = useState('');
   const [chatHistory, setChatHistory] = useState(properties.initialChat || []);
   const chatContainerRef = useRef(null);
 
   useEffect(() => {
-    setExposedVariable('history', chatHistory);
-    setExposedVariable('messageCount', chatHistory.length);
-    setExposedVariable('lastMessage', chatHistory[chatHistory.length - 1]?.message || '');
-  }, [chatHistory]);
+    setChatTitle(properties.chatTitle);
+  }, [properties.chatTitle]);
 
-  useEffect(() => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
-    }
-  }, [chatHistory]);
+  // useEffect(() => {
+  //   setExposedVariable('history', chatHistory);
+  //   setExposedVariable('messageCount', chatHistory.length);
+  //   setExposedVariable('lastMessage', chatHistory[chatHistory.length - 1]?.message || '');
+  // }, [chatHistory]);
+
+  // useEffect(() => {
+  //   if (chatContainerRef.current) {
+  //     chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+  //   }
+  // }, [chatHistory]);
 
   const handleSendMessage = () => {
     if (!message.trim()) return;
-
+    const messageId = uuidv4();
     const newMessage = {
-      type: 'sender',
       message: message,
+      messageId,
       timestamp: new Date().toISOString(),
-      sender: properties.userName,
+      name: properties.userName,
+      avatar: properties.userAvatar,
+      type: 'message',
     };
-
     setChatHistory((prev) => [...prev, newMessage]);
     setMessage('');
-    fireEvent('onMessageSent');
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
+  useEffect(() => {
+    const lastMessage = chatHistory[chatHistory.length - 1];
+    setExposedVariables({ history: chatHistory, lastMessage: lastMessage });
+    fireEvent('onMessageSent', lastMessage);
+  }, [chatHistory]);
 
-  const clearHistory = () => {
-    setChatHistory([]);
-  };
+  // const handleKeyPress = (e) => {
+  //   if (e.key === 'Enter' && !e.shiftKey) {
+  //     e.preventDefault();
+  //     handleSendMessage();
+  //   }
+  // };
+
+  // const clearHistory = () => {
+  //   setChatHistory([]);
+  // };
 
   if (!properties.visibility) return null;
 
@@ -69,14 +81,18 @@ export const Chat = function Chat({
         borderRadius: '4px',
       }}
     >
-      {/* Header */}
       <div
         className="chat-header p-2 d-flex justify-content-between align-items-center"
         style={{ borderBottom: '1px solid var(--slate7)' }}
       >
-        <span className="chat-title">{properties.chatTitle}</span>
+        <span className="chat-title">{chatTitle}</span>
         <div>
-          <ButtonSolid variant="secondary" size="sm" onClick={clearHistory} className="mx-1">
+          <ButtonSolid
+            variant="secondary"
+            size="sm"
+            // onClick={clearHistory}
+            className="mx-1"
+          >
             Clear History
           </ButtonSolid>
         </div>
@@ -138,7 +154,7 @@ export const Chat = function Chat({
             className="form-control"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            onKeyPress={handleKeyPress}
+            // onKeyPress={handleKeyPress}
             placeholder="Type a message..."
             style={{ resize: 'none', height: '38px' }}
             disabled={properties.disableInput || properties.loadingResponse}
