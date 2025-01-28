@@ -930,6 +930,21 @@ export default function Grid({ gridWidth, currentLayout }) {
         bounds={CANVAS_BOUNDS}
         displayAroundControls={true}
         controlPadding={20}
+        onClickGroup={(e) => {
+          const targetId =
+            e.inputEvent.target.id || e.inputEvent.target.closest('.moveable-box')?.getAttribute('widgetid');
+          if (e.inputEvent.shiftKey && targetId) {
+            const currentSelectedComponents = selectedComponents;
+            if (currentSelectedComponents.includes(targetId)) {
+              // If component is already selected and shift is pressed, unselect it
+              const filteredComponents = currentSelectedComponents.filter((id) => id !== targetId);
+              setSelectedComponents(filteredComponents);
+            } else {
+              // If component is not selected and shift is pressed, add it to selection
+              setSelectedComponents([...currentSelectedComponents, targetId]);
+            }
+          }
+        }}
       />
     </>
   );
