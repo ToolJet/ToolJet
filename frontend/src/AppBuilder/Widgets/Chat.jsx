@@ -34,7 +34,7 @@ export const Chat = function Chat({
   //   }
   // }, [chatHistory]);
 
-  const handleSendMessage = () => {
+  const handleSendMessage = ({ message, type = 'message' }) => {
     if (!message.trim()) return;
     const messageId = uuidv4();
     const newMessage = {
@@ -43,7 +43,7 @@ export const Chat = function Chat({
       timestamp: new Date().toISOString(),
       name: properties.userName,
       avatar: properties.userAvatar,
-      type: 'message',
+      type: type,
     };
     setChatHistory((prev) => [...prev, newMessage]);
     setMessage('');
@@ -65,7 +65,18 @@ export const Chat = function Chat({
   // const clearHistory = () => {
   //   setChatHistory([]);
   // };
+  useEffect(() => {
+    const exposedVariables = {
+      sendMessage: async function (messageObject) {
+        const { message, type } = messageObject;
+        handleSendMessage({ message, type });
+      },
+    };
 
+    setExposedVariables(exposedVariables);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   if (!properties.visibility) return null;
 
   return (
@@ -161,7 +172,7 @@ export const Chat = function Chat({
           />
           <ButtonSolid
             variant="primary"
-            onClick={handleSendMessage}
+            onClick={() => handleSendMessage({ message, type: 'message' })}
             disabled={!message.trim() || properties.disableInput || properties.loadingResponse}
           >
             Send
