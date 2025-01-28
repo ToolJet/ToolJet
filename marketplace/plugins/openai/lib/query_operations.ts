@@ -1,6 +1,6 @@
 import OpenAI from 'openai'; // Updated SDK version
 import { QueryOptions } from './types';
-import { QueryError } from 'plugins/common/dist';
+import { QueryError } from 'plugins/common';
 
 // Updated utility function to handle size validation based on model
 const getSizeEnum = (
