@@ -52,48 +52,61 @@ export default function Grid({ gridWidth, currentLayout }) {
   const getResolvedComponent = useStore((state) => state.getResolvedComponent, shallow);
   const draggingComponentId = useGridStore((state) => state.draggingComponentId, shallow);
   const resizingComponentId = useGridStore((state) => state.resizingComponentId, shallow);
+  const [dragParentId, setDragParentId] = useState(null);
+  const [elementGuidelines, setElementGuidelines] = useState([]);
+  const componentsSnappedTo = useRef(null);
+  const prevDragParentId = useRef(null);
 
-  const elementGuidelines = boxList
-    .filter((box) => {
-      const isVisible = getResolvedValue(
-        box?.component?.definition?.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value
-      );
+  useEffect(() => {
+    const guidelines = boxList
+      .filter((box) => {
+        const isVisible = getResolvedValue(
+          box?.component?.definition?.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value
+        );
+        if (!isVisible) return false;
 
-      if (!isVisible) return false;
+        const draggingOrResizingId = draggingComponentId || resizingComponentId;
+        const isGrouped = findHighestLevelofSelection().length > 1;
 
-      const draggingOrResizingId = draggingComponentId || resizingComponentId;
-      const isGrouped = findHighestLevelofSelection().length > 1;
+        if (isGrouped) {
+          // If component is selected, don't show its guidelines
+          if (selectedComponents.includes(box.id)) return false;
 
-      if (isGrouped) {
-        // If component is selected, don't show its guidelines
-        if (selectedComponents.includes(box.id)) return false;
+          // For selected components, only show guidelines for siblings
+          const selectedParent = dragParentId || boxList.find((b) => b.id === selectedComponents[0])?.parent;
 
-        // For selected components, only show guidelines for siblings
-        const firstSelectedParent = boxList.find((b) => b.id === selectedComponents[0])?.parent;
+          if (selectedParent) {
+            // Show guidelines only for components with same parent
+            return box.parent === selectedParent;
+          }
 
-        if (firstSelectedParent) {
-          // Show guidelines only for components with same parent
-          return box.parent === firstSelectedParent;
+          // If selected components are top-level, only show guidelines for other top-level components
+          return !box.parent;
+        } else if (draggingOrResizingId) {
+          if (box.id === draggingOrResizingId) return false;
+
+          if (dragParentId) {
+            return box.parent === dragParentId;
+          }
+
+          // If dragging component has no parent, only show guidelines for other top-level components
+          return !box.parent;
         }
 
-        // If selected components are top-level, only show guidelines for other top-level components
-        return !box.parent;
-      } else if (draggingOrResizingId) {
-        const draggingComponentParent = boxList.find((box) => box.id === draggingOrResizingId)?.parent;
+        return true;
+      })
+      .map((box) => `.ele-${box.id}`);
 
-        if (box.id === draggingOrResizingId) return false;
-
-        if (draggingComponentParent) {
-          return box.parent === draggingComponentParent;
-        }
-
-        // If dragging component has no parent, only show guidelines for other top-level components
-        return !box.parent;
-      }
-
-      return true;
-    })
-    .map((box) => `.ele-${box.id}`);
+    setElementGuidelines(guidelines);
+  }, [
+    boxList,
+    currentLayout,
+    dragParentId,
+    draggingComponentId,
+    resizingComponentId,
+    selectedComponents,
+    getResolvedValue,
+  ]);
 
   useEffect(() => {
     setBoxList(
@@ -120,6 +133,7 @@ export default function Grid({ gridWidth, currentLayout }) {
   }, [currentPageComponents, setBoxList, currentLayout]);
 
   const noOfBoxs = Object.values(boxList || []).length;
+
   useEffect(() => {
     updateCanvasBottomHeight(boxList);
     noOfBoxs != 0;
@@ -420,12 +434,17 @@ export default function Grid({ gridWidth, currentLayout }) {
     };
   }, []);
 
-  const selectedComponent =
-    selectedComponents.length > 0 ? boxList.find(({ id }) => id === selectedComponents[0]) : null;
-
-  const containerGridWidth = selectedComponent?.component?.parent
-    ? useGridStore.getState().subContainerWidths[selectedComponent.component.parent]
-    : gridWidth;
+  React.useEffect(() => {
+    const components = Array.from(document.querySelectorAll('.active-target')).filter(
+      (component) => !selectedComponents.includes(component.getAttribute('widgetid'))
+    );
+    const draggingOrResizing = draggingComponentId || resizingComponentId;
+    if (!draggingOrResizing && components.length > 0) {
+      for (const component of components) {
+        component?.classList?.remove('active-target');
+      }
+    }
+  }, [draggingComponentId, resizingComponentId, selectedComponents]);
 
   if (mode !== 'edit') return null;
 
@@ -719,6 +738,8 @@ export default function Grid({ gridWidth, currentLayout }) {
               useGridStore.getState().actions.setDraggingComponentId(null);
               isDraggingRef.current = false;
             }
+            setDragParentId(null);
+            prevDragParentId.current = null;
 
             if (!e.lastEvent) {
               return;
@@ -841,10 +862,8 @@ export default function Grid({ gridWidth, currentLayout }) {
             isDraggingRef.current = true;
           }
 
-          const currentWidget = boxList.find(({ id }) => id === e.target.id);
-          const _gridWidth = useGridStore.getState().subContainerWidths[currentWidget.component?.parent] || gridWidth;
-
-          const parentComponent = boxList.find((box) => box.id === currentWidget.component?.parent);
+          const _gridWidth = useGridStore.getState().subContainerWidths[dragParentId] || gridWidth;
+          const parentComponent = boxList.find((box) => box.id === dragParentId);
 
           let top = Math.round(e.translate[1] / GRID_HEIGHT) * GRID_HEIGHT;
           let left = Math.round(e.translate[0] / _gridWidth) * _gridWidth;
@@ -887,7 +906,10 @@ export default function Grid({ gridWidth, currentLayout }) {
 
             // Determine the current parent and potential new parent
             const parentId = draggedOverContainer?.getAttribute('data-parentId') || draggedOverElem?.id;
-
+            if (parentId !== prevDragParentId.current) {
+              setDragParentId(parentId === 'canvas' ? null : parentId);
+              prevDragParentId.current = parentId;
+            }
             // Show grid for the appropriate canvas
             if (parentId) {
               const newParentCanvas = document.getElementById('canvas-' + parentId);
@@ -914,10 +936,13 @@ export default function Grid({ gridWidth, currentLayout }) {
           }
 
           events.forEach((ev) => {
-            let posX = ev.translate[0];
-            let posY = ev.translate[1];
+            const currentWidget = boxList.find(({ id }) => id === ev.target.id);
+            const _gridWidth = useGridStore.getState().subContainerWidths[currentWidget.component?.parent] || gridWidth;
 
-            ev.target.style.transform = `translate(${posX}px, ${posY}px)`;
+            let top = Math.round(ev.translate[1] / GRID_HEIGHT) * GRID_HEIGHT;
+            let left = Math.round(ev.translate[0] / _gridWidth) * _gridWidth;
+
+            ev.target.style.transform = `translate(${left}px, ${top}px)`;
           });
           updateNewPosition(events);
         }}
@@ -975,11 +1000,9 @@ export default function Grid({ gridWidth, currentLayout }) {
         controlPadding={20}
         //snap settgins
         snappable={true}
-        snapGap={true}
+        snapGap={false}
         isDisplaySnapDigit={false}
-        snapGridWidth={containerGridWidth}
-        snapGridHeight={GRID_HEIGHT}
-        snapThreshold={containerGridWidth / 2}
+        snapThreshold={10}
         // Guidelines configuration
         elementGuidelines={elementGuidelines}
         snapDirections={{
@@ -987,12 +1010,28 @@ export default function Grid({ gridWidth, currentLayout }) {
           right: true,
           bottom: true,
           left: true,
+          center: false,
+          middle: false,
         }}
         elementSnapDirections={{
           top: true,
           left: true,
           bottom: true,
           right: true,
+          center: false,
+          middle: false,
+        }}
+        onSnap={(e) => {
+          const components = e.elements;
+          if (isArray(componentsSnappedTo.current)) {
+            for (const component of componentsSnappedTo.current) {
+              component?.element?.classList?.remove('active-target');
+            }
+          }
+          componentsSnappedTo.current = components;
+          for (const component of components) {
+            component.element.classList.add('active-target');
+          }
         }}
       />
     </>
