@@ -64,6 +64,7 @@ import { emailinputConfig } from './emailinput';
 import { phoneinputConfig } from './phoneinput';
 import { currencyinputConfig } from './currencyinput';
 import { rangeSliderV2Config } from './rangesliderV2';
+import { chatConfig } from './chat';
 
 const widgets = {
   buttonConfig,
@@ -131,7 +132,8 @@ const widgets = {
   iconConfig,
   boundedBoxConfig,
   moduleContainerConfig,
-  moduleViewerConfig
+  moduleViewerConfig,
+  chatConfig
 };
 
 const universalProps = {
