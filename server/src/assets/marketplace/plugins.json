@@ -132,6 +132,15 @@
     "tags": ["AI"]
   },
   {
+    "name": "Hugging Face",
+    "description": "Plugin for Hugging Face's Inference API to use listed AI models for text capabilities",
+    "version": "1.0.0",
+    "id": "hugging_face",
+    "author": "Tooljet",
+    "timestamp": "Thu, 23 Jan 2025 06:44:25 GMT",
+    "tags": ["AI"]
+  },
+  {
     "name": "Gemini",
     "description": "Integrate with Gemini AI models for text generation.",
     "version": "1.0.0",
@@ -155,6 +164,7 @@
     "version": "1.0.0",
     "id": "qdrant",
     "author": "Tooljet",
-    "timestamp": "Tue, 10 Dec 2024 02:11:32 GMT"
+    "timestamp": "Tue, 10 Dec 2024 02:11:32 GMT",
+    "tags": ["AI"]
   }
 ]
