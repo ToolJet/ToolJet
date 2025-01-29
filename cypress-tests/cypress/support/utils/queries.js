@@ -60,3 +60,9 @@ export const addSuccessNotification = (notification) => {
     notification
   );
 };
+
+export const openAndRunQuery = (queryName) => {
+  cy.get(`[data-cy="list-query-${queryName}"]`).click();
+  query("run");
+
+}
