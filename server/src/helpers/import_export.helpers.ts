@@ -377,7 +377,7 @@ function parseExpression(expression, componentIdNameMapping, queryIdNameMapping,
 
       if (
         (rootObject && (rootObject === 'queries' || rootObject === 'components') && path.length >= 3) ||
-        ((rootObject === 'variables' || rootObject === 'globals') && path.length === 2) ||
+        ((rootObject === 'variables' || rootObject === 'globals' || rootObject === 'page') && path.length === 2) ||
         (rootObject === 'page' && path.length === 3)
       ) {
         return createReferenceObject(rootObject, path, uuidMappings, componentIdNameMapping, queryIdNameMapping);
@@ -405,9 +405,9 @@ function createReferenceObject(entityType, path, uuidMappings, componentIdNameMa
       const mapping = entityType === 'components' ? componentIdNameMapping : queryIdNameMapping;
       entityNameOrId = mapping[entityNameOrId] || entityNameOrId;
     }
-  } else if (entityType === 'variables' || entityType === 'globals') {
+  } else if (entityType === 'variables' || entityType === 'globals' || (entityType === 'page' && path.length === 2)) {
     entityKey = path[1];
-  } else if (entityType === 'page') {
+  } else if (entityType === 'page' && path.length === 3) {
     entityNameOrId = path[1];
     entityKey = path[2];
   }

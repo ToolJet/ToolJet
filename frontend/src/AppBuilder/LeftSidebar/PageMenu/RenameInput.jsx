@@ -4,6 +4,8 @@ import toast from 'react-hot-toast';
 
 export const RenameInput = ({ page, updaterCallback }) => {
   const updatePageName = useStore((state) => state.updatePageName);
+  const setResolvedPageConstants = useStore((state) => state.setResolvedPageConstants);
+
   const handleAddingNewPage = (pageName) => {
     if (pageName.trim().length === 0) {
       toast(`${page?.isPageGroup ? 'Page group' : 'Page'} name should have at least 1 character`, {
@@ -15,6 +17,9 @@ export const RenameInput = ({ page, updaterCallback }) => {
       });
     } else {
       updatePageName(page.id, pageName);
+      setResolvedPageConstants({
+        name: pageName,
+      });
     }
     if (updaterCallback) updaterCallback();
   };
