@@ -14,5 +14,9 @@ export type QueryOptions = {
   presence_penalty: string;
   frequency_penalty: string;
   completions: string;
-  safe_prompt: string;
+  safe_prompt: Value;
+};
+
+type Value = {
+  value: string;
 };
