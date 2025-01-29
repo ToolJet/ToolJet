@@ -1,0 +1,385 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Gemini datasource",
+  "description": "A schema defining Gemini datasource",
+  "type": "api",
+  "defaults": {
+    "operation": "text_generation"
+  },
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Select an operation",
+      "list": [
+        { "value": "text_generation", "name": "Text Generation" },
+        { "value": "chat", "name": "Chat" }
+      ]
+    },
+    "text_generation": {
+      "model": {
+        "label": "Model",
+        "key": "model",
+        "type": "dropdown-component-flip",
+        "description": "Select Gemini Model",
+        "list": [
+          { "value": "models/gemini-1.5-flash", "name": "Gemini 1.5 Flash" },
+          { "value": "models/gemini-1.5-flash-8b", "name": "Gemini 1.5 Flash-8B" },
+          { "value": "models/gemini-1.5-pro", "name": "Gemini 1.5 Pro" },
+          { "value": "models/gemini-2.0-flash-exp", "name": "Gemini 2.0 Flash" }
+        ]
+      },
+      "models/gemini-1.5-flash": {
+        "system_prompt": {
+          "label": "System prompt",
+          "key": "system_prompt",
+          "type": "codehinter",
+          "description": "Defines role, context and/or role of the model to evaluate prompts and send response",
+          "placeholder": "You are a Financial advisor working in a Fortune 500 company ",
+          "mandatory": false,
+          "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
+        },
+        "prompt": {
+          "label": "Prompt",
+          "key": "prompt",
+          "type": "codehinter",
+          "description": "Enter your prompt",
+          "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
+          "mandatory": true
+        },
+        "max_tokens": {
+          "label": "Max tokens",
+          "key": "max_tokens",
+          "type": "codehinter",
+          "description": "Controls the length of the generated text.",
+          "placeholder": "1000",
+          "mandatory": false,
+          "tooltip": "Controls the length of the generated text."
+        },
+        "temperature": {
+          "label": "Temperature",
+          "key": "temperature",
+          "type": "codehinter",
+          "description": "Controls the randomness/creativity of the generated text",
+          "placeholder": "0.1",
+          "mandatory": false,
+          "tooltip": "Controls the randomness/creativity of the generated text"
+        }     
+    },
+    "models/gemini-1.5-flash-8b": {
+        "system_prompt": {
+          "label": "System prompt",
+          "key": "system_prompt",
+          "type": "codehinter",
+          "description": "Defines role, context and/or role of the model to evaluate prompts and send response",
+          "placeholder": "You are a Financial advisor working in a Fortune 500 company ",
+          "mandatory": false,
+          "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
+        },
+        "prompt": {
+          "label": "Prompt",
+          "key": "prompt",
+          "type": "codehinter",
+          "description": "Enter your prompt",
+          "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
+          "mandatory": true
+        },
+        "max_tokens": {
+          "label": "Max tokens",
+          "key": "max_tokens",
+          "type": "codehinter",
+          "description": "Controls the length of the generated text.",
+          "placeholder": "1000",
+          "mandatory": false,
+          "tooltip": "Controls the length of the generated text."
+        },
+        "temperature": {
+          "label": "Temperature",
+          "key": "temperature",
+          "type": "codehinter",
+          "description": "Controls the randomness/creativity of the generated text",
+          "placeholder": "0.1",
+          "mandatory": false,
+          "tooltip": "Controls the randomness/creativity of the generated text"
+        }
+    },
+    "models/gemini-1.5-pro": {
+        "system_prompt": {
+          "label": "System prompt",
+          "key": "system_prompt",
+          "type": "codehinter",
+          "description": "Defines role, context and/or role of the model to evaluate prompts and send response",
+          "placeholder": "You are a Financial advisor working in a Fortune 500 company ",
+          "mandatory": false,
+          "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
+        },
+        "prompt": {
+          "label": "Prompt",
+          "key": "prompt",
+          "type": "codehinter",
+          "description": "Enter your prompt",
+          "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
+          "mandatory": true
+        },
+        "max_tokens": {
+          "label": "Max tokens",
+          "key": "max_tokens",
+          "type": "codehinter",
+          "description": "Controls the length of the generated text.",
+          "placeholder": "1000",
+          "mandatory": false,
+          "tooltip": "Controls the length of the generated text."
+        },
+        "temperature": {
+          "label": "Temperature",
+          "key": "temperature",
+          "type": "codehinter",
+          "description": "Controls the randomness/creativity of the generated text",
+          "placeholder": "0.1",
+          "mandatory": false,
+          "tooltip": "Controls the randomness/creativity of the generated text"
+        }
+    },
+    "models/gemini-2.0-flash-exp": {
+        "system_prompt": {
+          "label": "System prompt",
+          "key": "system_prompt",
+          "type": "codehinter",
+          "description": "Defines role, context and/or role of the model to evaluate prompts and send response",
+          "placeholder": "You are a Financial advisor working in a Fortune 500 company ",
+          "mandatory": false,
+          "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
+        },
+        "prompt": {
+          "label": "Prompt",
+          "key": "prompt",
+          "type": "codehinter",
+          "description": "Enter your prompt",
+          "placeholder": "Give a client-friendly explanation of the tax implications of different investment vehicles.",
+          "mandatory": true
+        },
+        "max_tokens": {
+          "label": "Max tokens",
+          "key": "max_tokens",
+          "type": "codehinter",
+          "description": "Controls the length of the generated text.",
+          "placeholder": "1000",
+          "mandatory": false,
+          "tooltip": "Controls the length of the generated text."
+        },
+        "temperature": {
+          "label": "Temperature",
+          "key": "temperature",
+          "type": "codehinter",
+          "description": "Controls the randomness/creativity of the generated text",
+          "placeholder": "0.1",
+          "mandatory": false,
+          "tooltip": "Controls the randomness/creativity of the generated text"
+        }
+    }
+  },
+    "chat": {
+      "model": {
+        "label": "Model",
+        "key": "model",
+        "type": "dropdown-component-flip",
+        "description": "Select Gemini Model",
+        "list": [
+          { "value": "models/gemini-1.5-flash", "name": "Gemini 1.5 Flash" },
+          { "value": "models/gemini-1.5-flash-8b", "name": "Gemini 1.5 Flash-8B" },
+          { "value": "models/gemini-1.5-pro", "name": "Gemini 1.5 Pro" },
+          { "value": "models/gemini-2.0-flash-exp", "name": "Gemini 2.0 Flash" }
+        ]
+      },
+      "models/gemini-1.5-flash": {
+        "system_prompt": {
+          "label": "System prompt",
+          "key": "system_prompt",
+          "type": "codehinter",
+          "description": "Defines role, context and/or role of the model to evaluate prompts and send response",
+          "placeholder": "You are a Financial advisor working in a Fortune 500 company ",
+          "mandatory": false,
+          "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
+        },
+        "history": {
+          "label": "History",
+          "key": "history",
+          "type": "codehinter",
+          "description": "Record of the conversation between the user and the model",
+          "placeholder": "[\n  {\n    \"role\": \"user\",\n    \"parts\": [{\"text\": \"Hello\"}]\n  },\n  {\n    \"role\": \"model\",\n    \"parts\": [{\"text\": \"Great to meet you. What would you like to know?\"}]\n  }\n]",
+          "mandatory": false,
+          "tooltip": "Record of the conversation between the user and the model"
+        },        
+        "user_prompt": {
+          "label": "User prompt",
+          "key": "user_prompt",
+          "type": "codehinter",
+          "description": "User response/reply to previous chat",
+          "placeholder": "Explain how AI works.",
+          "mandatory": true,
+          "tooltip":"User response/reply to previous chat"
+        },
+        "max_tokens": {
+          "label": "Max tokens",
+          "key": "max_tokens",
+          "type": "codehinter",
+          "description": "Controls the length of the generated text.",
+          "placeholder": "1000",
+          "mandatory": false,
+          "tooltip":"Controls the length of the generated text."
+        },
+        "temperature": {
+          "label": "Temperature",
+          "key": "temperature",
+          "type": "codehinter",
+          "description": "Controls the randomness/creativity of the generated text",
+          "placeholder": "0.1",
+          "mandatory": false,
+          "tooltip":"Controls the randomness/creativity of the generated text"
+        }
+      },
+      "models/gemini-1.5-flash-8b": {
+        "system_prompt": {
+          "label": "System prompt",
+          "key": "system_prompt",
+          "type": "codehinter",
+          "description": "Defines role, context and/or role of the model to evaluate prompts and send response",
+          "placeholder": "You are a Financial advisor working in a Fortune 500 company ",
+          "mandatory": false,
+          "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
+        },
+        "history": {
+          "label": "History",
+          "key": "history",
+          "type": "codehinter",
+          "description": "Record of the conversation between the user and the model",
+          "placeholder": "[\n  {\n    \"role\": \"user\",\n    \"parts\": [{\"text\": \"Hello\"}]\n  },\n  {\n    \"role\": \"model\",\n    \"parts\": [{\"text\": \"Great to meet you. What would you like to know?\"}]\n  }\n]",
+          "mandatory": false,
+          "tooltip": "Record of the conversation between the user and the model"
+        },        
+        "user_prompt": {
+          "label": "User prompt",
+          "key": "user_prompt",
+          "type": "codehinter",
+          "description": "User response/reply to previous chat",
+          "placeholder": "Explain how AI works.",
+          "mandatory": true,
+          "tooltip":"User response/reply to previous chat"
+        },
+        "max_tokens": {
+          "label": "Max tokens",
+          "key": "max_tokens",
+          "type": "codehinter",
+          "description": "Controls the length of the generated text.",
+          "placeholder": "1000",
+          "mandatory": false,
+          "tooltip":"Controls the length of the generated text."
+        },
+        "temperature": {
+          "label": "Temperature",
+          "key": "temperature",
+          "type": "codehinter",
+          "description": "Controls the randomness/creativity of the generated text",
+          "placeholder": "0.1",
+          "mandatory": false,
+          "tooltip":"Controls the randomness/creativity of the generated text"
+        }
+      },
+      "models/gemini-1.5-pro": {
+        "system_prompt": {
+          "label": "System prompt",
+          "key": "system_prompt",
+          "type": "codehinter",
+          "description": "Defines role, context and/or role of the model to evaluate prompts and send response",
+          "placeholder": "You are a Financial advisor working in a Fortune 500 company ",
+          "mandatory": false,
+          "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
+        },
+        "history": {
+          "label": "History",
+          "key": "history",
+          "type": "codehinter",
+          "description": "Record of the conversation between the user and the model",
+          "placeholder": "[\n  {\n    \"role\": \"user\",\n    \"parts\": [{\"text\": \"Hello\"}]\n  },\n  {\n    \"role\": \"model\",\n    \"parts\": [{\"text\": \"Great to meet you. What would you like to know?\"}]\n  }\n]",
+          "mandatory": false,
+          "tooltip": "Record of the conversation between the user and the model"
+        },        
+        "user_prompt": {
+          "label": "User prompt",
+          "key": "user_prompt",
+          "type": "codehinter",
+          "description": "User response/reply to previous chat",
+          "placeholder": "Explain how AI works.",
+          "mandatory": true,
+          "tooltip":"User response/reply to previous chat"
+        },
+        "max_tokens": {
+          "label": "Max tokens",
+          "key": "max_tokens",
+          "type": "codehinter",
+          "description": "Controls the length of the generated text.",
+          "placeholder": "1000",
+          "mandatory": false,
+          "tooltip":"Controls the length of the generated text."
+        },
+        "temperature": {
+          "label": "Temperature",
+          "key": "temperature",
+          "type": "codehinter",
+          "description": "Controls the randomness/creativity of the generated text",
+          "placeholder": "0.1",
+          "mandatory": false,
+          "tooltip":"Controls the randomness/creativity of the generated text"
+        }
+      },
+      "models/gemini-2.0-flash-exp": {
+        "system_prompt": {
+          "label": "System prompt",
+          "key": "system_prompt",
+          "type": "codehinter",
+          "description": "Defines role, context and/or role of the model to evaluate prompts and send response",
+          "placeholder": "You are a Financial advisor working in a Fortune 500 company ",
+          "mandatory": false,
+          "tooltip": "Defines role, context and/or role of the model to evaluate prompts and send response"
+        },
+        "history": {
+          "label": "History",
+          "key": "history",
+          "type": "codehinter",
+          "description": "Record of the conversation between the user and the model",
+          "placeholder": "[\n  {\n    \"role\": \"user\",\n    \"parts\": [{\"text\": \"Hello\"}]\n  },\n  {\n    \"role\": \"model\",\n    \"parts\": [{\"text\": \"Great to meet you. What would you like to know?\"}]\n  }\n]",
+          "mandatory": false,
+          "tooltip": "Record of the conversation between the user and the model"
+        },        
+        "user_prompt": {
+          "label": "User prompt",
+          "key": "user_prompt",
+          "type": "codehinter",
+          "description": "User response/reply to previous chat",
+          "placeholder": "Explain how AI works.",
+          "mandatory": true,
+          "tooltip":"User response/reply to previous chat"
+        },
+        "max_tokens": {
+          "label": "Max tokens",
+          "key": "max_tokens",
+          "type": "codehinter",
+          "description": "Controls the length of the generated text.",
+          "placeholder": "1000",
+          "mandatory": false,
+          "tooltip":"Controls the length of the generated text."
+        },
+        "temperature": {
+          "label": "Temperature",
+          "key": "temperature",
+          "type": "codehinter",
+          "description": "Controls the randomness/creativity of the generated text",
+          "placeholder": "0.1",
+          "mandatory": false,
+          "tooltip":"Controls the randomness/creativity of the generated text"
+        }
+      }
+    }
+  }
+}
