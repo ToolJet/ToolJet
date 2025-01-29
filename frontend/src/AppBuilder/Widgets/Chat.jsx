@@ -16,67 +16,64 @@ export const Chat = function Chat({
   const [chatTitle, setChatTitle] = useState(properties.chatTitle);
   const [message, setMessage] = useState('');
   const [chatHistory, setChatHistory] = useState(properties.initialChat || []);
-  const chatContainerRef = useRef(null);
 
   useEffect(() => {
     setChatTitle(properties.chatTitle);
   }, [properties.chatTitle]);
 
-  // useEffect(() => {
-  //   setExposedVariable('history', chatHistory);
-  //   setExposedVariable('messageCount', chatHistory.length);
-  //   setExposedVariable('lastMessage', chatHistory[chatHistory.length - 1]?.message || '');
-  // }, [chatHistory]);
+  const createMessage = (message, type = 'message') => ({
+    message,
+    messageId: uuidv4(),
+    timestamp: new Date().toISOString(),
+    name: properties.userName,
+    avatar: properties.userAvatar,
+    type,
+  });
 
-  // useEffect(() => {
-  //   if (chatContainerRef.current) {
-  //     chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
-  //   }
-  // }, [chatHistory]);
+  const updateChatHistory = (newMessage) => {
+    setChatHistory((currentHistory) => {
+      const updatedHistory = [...currentHistory, newMessage];
+      setExposedVariables({ history: updatedHistory, lastMessage: newMessage });
+      fireEvent('onMessageSent', newMessage);
+      return updatedHistory;
+    });
+  };
 
-  const handleSendMessage = ({ message, type = 'message' }) => {
-    if (!message.trim()) return;
-    const messageId = uuidv4();
-    const newMessage = {
-      message: message,
-      messageId,
-      timestamp: new Date().toISOString(),
-      name: properties.userName,
-      avatar: properties.userAvatar,
-      type: type,
-    };
-    setChatHistory((prev) => [...prev, newMessage]);
-    setMessage('');
+  const handleSendMessage = (message, type = 'message') => {
+    if (!message?.trim()) return;
+    const newMessage = createMessage(message, type);
+    updateChatHistory(newMessage);
+    setMessage(''); // Clear input only for UI messages
+  };
+
+  const clearHistory = () => {
+    setChatHistory([]);
+    setExposedVariables({ history: [], lastMessage: {}, lastResponse: {} });
   };
 
   useEffect(() => {
-    const lastMessage = chatHistory[chatHistory.length - 1];
-    setExposedVariables({ history: chatHistory, lastMessage: lastMessage });
-    fireEvent('onMessageSent', lastMessage);
-  }, [chatHistory]);
-
-  // const handleKeyPress = (e) => {
-  //   if (e.key === 'Enter' && !e.shiftKey) {
-  //     e.preventDefault();
-  //     handleSendMessage();
-  //   }
-  // };
-
-  // const clearHistory = () => {
-  //   setChatHistory([]);
-  // };
-  useEffect(() => {
     const exposedVariables = {
       sendMessage: async function (messageObject) {
-        const { message, type } = messageObject;
-        handleSendMessage({ message, type });
+        const { message, type = 'message' } = messageObject;
+        const newMessage = createMessage(message, type);
+        updateChatHistory(newMessage);
+      },
+      clearHistory: async function () {
+        clearHistory();
+      },
+      deleteMessage: async function (messageId) {
+        setChatHistory((currentHistory) => {
+          const messageHistoryToPersist = currentHistory.filter((message) => message.messageId !== messageId);
+          setExposedVariables({
+            history: messageHistoryToPersist,
+          });
+          return messageHistoryToPersist;
+        });
       },
     };
-
     setExposedVariables(exposedVariables);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
   if (!properties.visibility) return null;
 
   return (
@@ -98,12 +95,7 @@ export const Chat = function Chat({
       >
         <span className="chat-title">{chatTitle}</span>
         <div>
-          <ButtonSolid
-            variant="secondary"
-            size="sm"
-            // onClick={clearHistory}
-            className="mx-1"
-          >
+          <ButtonSolid variant="secondary" size="sm" onClick={clearHistory} className="mx-1">
             Clear History
           </ButtonSolid>
         </div>
@@ -111,7 +103,6 @@ export const Chat = function Chat({
 
       {/* Chat Messages */}
       <div
-        ref={chatContainerRef}
         className="chat-messages p-2"
         style={{
           flexGrow: 1,
@@ -172,7 +163,7 @@ export const Chat = function Chat({
           />
           <ButtonSolid
             variant="primary"
-            onClick={() => handleSendMessage({ message, type: 'message' })}
+            onClick={() => handleSendMessage(message, 'message')}
             disabled={!message.trim() || properties.disableInput || properties.loadingResponse}
           >
             Send
