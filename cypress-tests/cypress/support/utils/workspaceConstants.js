@@ -1,9 +1,7 @@
 import { commonSelectors } from "Selectors/common";
-import { fake } from "Fixtures/fake";
 import { workspaceConstantsSelectors } from "Selectors/workspaceConstants";
 import { workspaceConstantsText } from "Texts/workspaceConstants";
-import * as common from "Support/utils/common";
-
+import { dataSourceSelector } from "Selectors/dataSource";
 import { commonText, commonWidgetText } from "Texts/common";
 export const contantsNameValidation = (selector, value, errorSelector, error) => {
   cy.get(selector).click();
@@ -23,7 +21,8 @@ export const addNewconstants = (name, value, type = "global") => {
   cy.get(workspaceConstantsSelectors.constantsType(type)).check();
   cy.get(workspaceConstantsSelectors.addConstantButton).click();
 };
-export const deleteConstant = (name) => {
+export const deleteConstant = (name, constType = "Global") => {
+  switchToConstantTab(constType);
   cy.get(
     workspaceConstantsSelectors.constDeleteButton(name)
   ).click();
@@ -61,13 +60,16 @@ export const addConstantFormUI = () => {
   cy.get(commonSelectors.cancelButton).should('have.text', 'Cancel').click();
 }
 
+// Function to switch to a specific constant tab (Global or Secrets)
+export const switchToConstantTab = (constantType) => {
+  cy.contains("button", constantType).click({ force: true });
+  cy.wait(500); // Allow time for the tab switch
+};
+export const verifyConstantValueVisibility = (constSelector, constValue) => {
+  cy.get(constSelector).click();
+  cy.get(dataSourceSelector.editorVariablePreview).should('contain.text', constValue);
+}
 export const manageWorkspaceConstant = (data) => {
-
-  // Function to switch to a specific constant tab (Global or Secrets)
-  const switchToConstantTab = (constantType) => {
-    cy.contains("button", constantType).click({ force: true });
-    cy.wait(500); // Allow time for the tab switch
-  };
 
   // Function to perform all constant management steps
   const performConstantManagement = () => {
@@ -190,7 +192,7 @@ export const manageWorkspaceConstant = (data) => {
     cy.get('.tab-count.active').should('have.text', '(1)');
 
     //delete existing constant to validate empty screen
-    deleteConstant("Xk4jY2mLn8pQsZ9Rt6vBc7wJaHqOdEfGuVxY3NkMLzPoWX5wee");
+    deleteConstant("Xk4jY2mLn8pQsZ9Rt6vBc7wJaHqOdEfGuVxY3NkMLzPoWX5wee", data.constantType);
 
     // Verify empty state after deletion
     cy.get(workspaceConstantsSelectors.emptyStateImage).should('be.visible');
@@ -238,5 +240,5 @@ export const manageWorkspaceConstant = (data) => {
     "not.exist"
   );
   cy.get(workspaceConstantsSelectors.searchField).clear();
-  deleteConstant("secretconst");
+  deleteConstant("secretconst", "Secrets");
 };

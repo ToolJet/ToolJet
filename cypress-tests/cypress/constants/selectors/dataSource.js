@@ -52,10 +52,16 @@ export const dataSourceSelector = {
   labelTransformation: '[data-cy="label-query-transformation"]',
   toggleTransformation: '[data-cy="transformation-toggle-switch"]',
   inputFieldTransformation: '[data-cy="transformation-input-input-field"]',
-
+  editorVariablePreview: '[data-cy="variable-preview"]',
+  baseUrlTextField: '[data-cy="base-url-text-field"]',
+  previewJsonDataContainer: '[data-cy="preview-json-data-container"]',
+  editorDSPopover: '[data-cy="show-ds-popover-button"]',
+  runjsQuery: '[data-cy="ds-run javascript code"]',
+  runjsInputField: '[data-cy="runjs-input-field"]',
   headerQueryPreview: ".py-2",
   previewTabJson: '[data-cy="preview-tab-json"]',
   previewTabRaw: '[data-cy="preview-tab-raw"]',
+  previewTabRawContainer: '[data-cy="preview-raw-data-container"]',
 
   operationsDropDownLabel: '[data-cy="operation-dropdown-label"]',
   labelTableNameInputField: '[data-cy="label-table"]',

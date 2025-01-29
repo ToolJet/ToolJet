@@ -176,7 +176,7 @@ export const commonSelectors = {
   breadcrumbPageTitle: '[data-cy="breadcrumb-page-title"]',
   labelFullNameInput: '[data-cy="name-label"]',
   duplicateOption: '[data-cy="duplicate-group-card-option"]',
-  confirmDuplicateButton:'[data-cy="confim-button"]',
+  confirmDuplicateButton: '[data-cy="confim-button"]',
   inputFieldFullName: '[data-cy="name-input"]',
   labelEmailInput: '[data-cy="email-label"]',
   inputFieldEmailAddress: '[data-cy="email-input"]',
@@ -185,7 +185,7 @@ export const commonSelectors = {
   globalDataSourceIcon: '[data-cy="icon-global-datasources"]',
   addNewDataSourceButton: '[data-cy="add-new-data-source-button"]',
   saveButton: '[data-cy="save-button"]',
-
+  appEditButton: '[data-cy="edit-button"]',
   onboardingRadioButton: (radioButtonText) => {
     return `[data-cy="${cyParamName(radioButtonText)}-radio-button"]`;
   },
@@ -342,9 +342,11 @@ export const commonWidgetSelector = {
   buttonCloseEditorSideBar: "[data-cy='inspector-close-icon']",
   buttonStylesEditorSideBar: "#inspector-tab-styles",
   WidgetNameInputField: "[data-cy=edit-widget-name]",
-
+  constantInspectorIcon: '[data-cy="inspector-node-constants"]  > .node-key',
+  inspectorIcon: '[data-cy="left-sidebar-inspect-button"]',
   tooltipInputField: "[data-cy='tooltip-input-field']",
   tooltipLabel: "[id=button-tooltip]",
+  homePageLogo: '[data-cy="home-page-logo"]',
 
   noEventHandlerMessage: "[data-cy='no-items-banner']",
   addEventHandlerLink: "[data-cy='add-event-handler']",
@@ -375,7 +377,8 @@ export const commonWidgetSelector = {
   boxShadowColorPicker: "[data-cy='box-shadow-picker']",
   textInputWidget: '[data-cy="draggable-widget-textinput1"]',
   previewButton: `[data-cy="preview-link-button"]`,
-
+  defaultValueInputField: '[data-cy="default-value-input-field"]',
+  alertInfoText: '[data-cy="alert-info-text"]',
   shareAppButton: '[data-cy="share-button-link"]',
   shareModalElements: {
     modalHeader: '[data-cy="modal-header"]',

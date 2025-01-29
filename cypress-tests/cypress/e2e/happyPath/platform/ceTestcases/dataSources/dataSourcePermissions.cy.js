@@ -23,7 +23,7 @@ const data = {};
 data.firstName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
 data.email = fake.email.toLowerCase();
 
-describe("Global Datasource Manager", () => {
+describe("Datasource Manager", () => {
   const workspaceName = fake.firstName;
   const workspaceSlug = fake.firstName.toLowerCase().replace(/[^A-Za-z]/g, "");
   beforeEach(() => {
@@ -176,7 +176,7 @@ describe("Global Datasource Manager", () => {
       data.dsName1
     );
 
-    cy.intercept("GET", "api/v2/data_sources").as("datasource");
+    cy.intercept("GET", "/api/v2/data_sources").as("datasource");
     fillConnectionForm(
       {
         Host: Cypress.env("pg_host"),

@@ -837,6 +837,7 @@ export const updateRole = (user, role, email, message = null) => {
       groupsText.roleUpdateToastMessage
     );
   }
+  cy.wait(2000);
   cy.get(groupsSelector.groupLink(role)).click();
   cy.get(`[data-cy="${email}-user-row"]`).should("exist");
 };
@@ -915,5 +916,5 @@ export const setupAndUpdateRole = (currentRole, endRole, email) => {
   navigateToManageGroups();
   updateRole(currentRole, endRole, email);
   cy.wait(1000);
-  logout();
+  cy.apiLogout();
 };
