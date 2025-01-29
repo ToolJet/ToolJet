@@ -40,7 +40,7 @@ export default class MistralService implements QueryService {
             ...(presence_penalty && { presence_penalty: parseFloat(presence_penalty) }),
             ...(frequency_penalty && { frequency_penalty: parseFloat(frequency_penalty) }),
             ...(completions && { n: parseInt(completions) }),
-            ...(safe_prompt !== undefined && { safe_prompt: Boolean(safe_prompt.value) }),
+            ...(safe_prompt.value !== undefined && { safe_prompt: Boolean(safe_prompt.value) }),
           };
 
           const response = await client.chat.complete(chatRequest);
