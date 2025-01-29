@@ -16,12 +16,9 @@ export const Chat = function Chat({
   const [chatTitle, setChatTitle] = useState(properties.chatTitle);
   const [message, setMessage] = useState('');
   const [chatHistory, setChatHistory] = useState(properties.initialChat || []);
-
-  useEffect(() => {
-    setChatTitle(properties.chatTitle);
-  }, [properties.chatTitle]);
-
-  const createMessage = (message, type = 'message') => ({
+  const [visibility, setVisibility] = useState(properties.visibility);
+  const [newMessageDisabled, setNewMessageDisabled] = useState(false);
+  const createMessage = (message, type) => ({
     message,
     messageId: uuidv4(),
     timestamp: new Date().toISOString(),
@@ -30,10 +27,14 @@ export const Chat = function Chat({
     type,
   });
 
-  const updateChatHistory = (newMessage) => {
+  const updateChatHistoryWhileSendingMessage = (newMessage) => {
     setChatHistory((currentHistory) => {
       const updatedHistory = [...currentHistory, newMessage];
-      setExposedVariables({ history: updatedHistory, lastMessage: newMessage });
+      const exposedVariables = {
+        history: updatedHistory,
+        lastMessage: newMessage,
+      };
+      setExposedVariables(exposedVariables);
       fireEvent('onMessageSent', newMessage);
       return updatedHistory;
     });
@@ -42,7 +43,7 @@ export const Chat = function Chat({
   const handleSendMessage = (message, type = 'message') => {
     if (!message?.trim()) return;
     const newMessage = createMessage(message, type);
-    updateChatHistory(newMessage);
+    updateChatHistoryWhileSendingMessage(newMessage);
     setMessage(''); // Clear input only for UI messages
   };
 
@@ -52,11 +53,15 @@ export const Chat = function Chat({
   };
 
   useEffect(() => {
+    setChatTitle(properties.chatTitle);
+  }, [properties.chatTitle]);
+
+  useEffect(() => {
     const exposedVariables = {
       sendMessage: async function (messageObject) {
         const { message, type = 'message' } = messageObject;
         const newMessage = createMessage(message, type);
-        updateChatHistory(newMessage);
+        updateChatHistoryWhileSendingMessage(newMessage);
       },
       clearHistory: async function () {
         clearHistory();
@@ -70,11 +75,40 @@ export const Chat = function Chat({
           return messageHistoryToPersist;
         });
       },
+      setHistory: async function (history) {
+        setChatHistory(history);
+        setExposedVariables({ history });
+      },
+      appendHistory: async function (messageObject) {
+        const { message, type } = messageObject;
+        const newMessage = createMessage(message, type);
+        setChatHistory((currentHistory) => {
+          const updatedHistory = [...currentHistory, newMessage];
+          const exposedVariables = {
+            history: updatedHistory,
+          };
+          if (newMessage.type === 'message') {
+            exposedVariables.lastMessage = newMessage;
+          } else {
+            exposedVariables.lastResponse = newMessage;
+          }
+          setExposedVariables(exposedVariables);
+          return updatedHistory;
+        });
+      },
+      setVisibility: async function (visibility) {
+        setVisibility(visibility);
+        setExposedVariables({ isVisible: !!visibility });
+      },
+      setNewMessageDisabled: async function (disabled) {
+        setNewMessageDisabled(disabled);
+        setExposedVariables({ isDisabled: !!disabled });
+      },
     };
     setExposedVariables(exposedVariables);
   }, []);
 
-  if (!properties.visibility) return null;
+  if (!visibility) return null;
 
   return (
     <div
@@ -118,7 +152,7 @@ export const Chat = function Chat({
             <div
               key={index}
               className={`message-bubble d-flex ${
-                chat.type === 'sender' ? 'justify-content-end' : 'justify-content-start'
+                chat.type === 'response' ? 'justify-content-end' : 'justify-content-start'
               }`}
             >
               <div
@@ -164,7 +198,7 @@ export const Chat = function Chat({
           <ButtonSolid
             variant="primary"
             onClick={() => handleSendMessage(message, 'message')}
-            disabled={!message.trim() || properties.disableInput || properties.loadingResponse}
+            disabled={!message.trim() || properties.disableInput || properties.loadingResponse || newMessageDisabled}
           >
             Send
           </ButtonSolid>
