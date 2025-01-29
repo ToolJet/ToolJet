@@ -21,7 +21,7 @@
   "defaults": {},
   "properties": {
     "apiKey": {
-      "label": "Access token",
+      "label": "API key",
       "key": "apiKey",
       "type": "password",
       "description": "Enter your Cohere API Key"
