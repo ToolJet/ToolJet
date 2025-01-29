@@ -45,9 +45,9 @@
         "className": "codehinter-plugins",
         "tooltip": "Array of messages between system, user and assistant"
       },
-      "max_size": {
-        "label": "Max size",
-        "key": "max_size",
+      "max_tokens": {
+        "label": "Max tokens",
+        "key": "max_tokens",
         "type": "codehinter",
         "lineNumbers": false,
         "placeholder": "512",

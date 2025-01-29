@@ -14,7 +14,7 @@ export default class MistralService implements QueryService {
           const {
             model,
             messages,
-            max_size,
+            max_tokens,
             temperature,
             top_p,
             stop_tokens,
@@ -31,7 +31,7 @@ export default class MistralService implements QueryService {
           const chatRequest = {
             model: model,
             messages: parsedMessages,
-            ...(max_size && { max_tokens: parseInt(max_size) }),
+            ...(max_tokens && { max_tokens: parseInt(max_tokens) }),
             ...(temperature && { temperature: parseFloat(temperature) }),
             ...(top_p && { top_p: parseFloat(top_p) }),
             ...(stop_tokens && { stop: JSON.parse(stop_tokens) }),

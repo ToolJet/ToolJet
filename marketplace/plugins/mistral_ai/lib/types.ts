@@ -5,7 +5,7 @@ export type QueryOptions = {
   operation: string;
   model: string;
   messages: string;
-  max_size: string;
+  max_tokens: string;
   temperature: string;
   top_p: string;
   stop_tokens: string;
