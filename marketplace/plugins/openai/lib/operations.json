@@ -304,7 +304,7 @@
 		"generate_embedding": {
 			"model_embedding": {
 				"label": "Model",
-				"key": "model",
+				"key": "model_embedding",
 				"type": "dropdown-component-flip",
 				"description": "Select embedding model",
 				"list": [
