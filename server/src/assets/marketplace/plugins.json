@@ -132,6 +132,15 @@
     "tags": ["AI"]
   },
   {
+    "name": "Mistral",
+    "description": "Integrate with Mistral API to use its AI models for chat completion capabilities",
+    "version": "1.0.0",
+    "id": "mistral_ai",
+    "author": "Tooljet",
+    "timestamp": "Tue, 21 Jan 2025 06:35:01 GMT",
+    "tags": ["AI"]
+  },
+  {
     "name": "Hugging Face",
     "description": "Plugin for Hugging Face's Inference API to use listed AI models for text capabilities",
     "version": "1.0.0",
