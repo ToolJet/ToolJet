@@ -32,7 +32,6 @@ Use this operation to generate text based on the input and model settings. It pr
 
     Example Models -
     - [google/gemma-2-2b-it](https://huggingface.co/google/gemma-2-2b-it) (Recommended)
-    - [microsoft/phi-4](https://huggingface.co/microsoft/phi-4)
     - [tiiuae/falcon-7b-instruct](https://huggingface.co/tiiuae/falcon-7b-instruct)
     - [HuggingFaceH4/zephyr-7b-beta](https://huggingface.co/HuggingFaceH4/zephyr-7b-beta)
     - [mistralai/Mistral-7B-Instruct-v0.2](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2)
