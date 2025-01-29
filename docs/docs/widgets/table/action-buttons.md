@@ -38,21 +38,17 @@ By this configuration, whenever the button is clicked the selected row will be d
 
 This example explains how a row can be updated in a **Table** component using **Action Button**.
 
-1. Create Input Components for Editing Data:\
-Drag and drop input components (e.g., Text Input, Dropdown) onto your page and configure them to edit specific table columns.
-2. Go to the Table properties and click on **+ New action button** to create a new Action Button.
-3. Customize the button with the desired text (e.g., Update) and style it as needed.
-4. Click on **+ New event handler** for the Action Button.
-5. Configure the event handler as follows:
+1. Go to the Table properties and click on **+ New action button** to create a new Action Button.
+2. Customize the button with the desired text (e.g., Update), position the button on the left or right side, and define the background and text colors as needed.
+3. Click on **+ New event handler** for the Action Button.
+<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/widgets/table/update-button-eh.png" alt="Action Button Event Handler" />
+
+4. Configure the event handler as follows:
     - Event: **On click**
     - Action: **Run Query**
-    - Query: **updateRow** 
-<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/widgets/table/update-button-eh.png" alt="Action Button Event Handler" />
-6. Create the Update Query:
-    - Table Name: Select the table to update.
-    - Operation: Select **Update rows**.
-    - Filter: Specify the filter to identify the row to update.
-    - Columns: Map the input component values to the columns you want to update.
+    - Query: **updateRow** *(Select the query to update the row.)*
+
+
 <img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/widgets/table/update-button-query.png" alt="Action Button Query" />
 
 By this configuration, whenever the button is clicked the selected row will be updated.
