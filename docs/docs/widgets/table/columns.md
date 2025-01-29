@@ -1,6 +1,6 @@
 ---
 id: table-columns
-title: Columns
+title: Table Columns
 ---
 
 Whenever data is loaded into a Table, the columns are automatically generated. You can add, remove, or modify columns by accessing the table properties under the column section. You can also rearrange the columns by dragging and dropping them. 
