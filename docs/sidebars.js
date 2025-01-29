@@ -495,7 +495,8 @@ const sidebars = {
             'marketplace/plugins/marketplace-plugin-Presto',
             'marketplace/plugins/marketplace-plugin-jira',
             'marketplace/plugins/marketplace-plugin-sharepoint',
-            'marketplace/plugins/marketplace-plugin-pinecone'
+            'marketplace/plugins/marketplace-plugin-pinecone',
+            'marketplace/plugins/marketplace-plugin-cohere'
           ],
         },
       ],
