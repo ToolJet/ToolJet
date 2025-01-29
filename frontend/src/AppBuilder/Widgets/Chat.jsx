@@ -179,7 +179,7 @@ export const Chat = function Chat({
 
       {/* Input Area */}
       <div className="chat-input p-2" style={{ borderTop: '1px solid var(--slate7)' }}>
-        <div className="d-flex gap-2">
+        <div className="d-flex gap-2 align-items-center">
           <textarea
             className="form-control"
             value={message}
@@ -189,12 +189,22 @@ export const Chat = function Chat({
             style={{ resize: 'none', height: '38px' }}
             disabled={properties.disableInput || properties.loadingResponse}
           />
+
           <Button
-            variant="primary"
+            variant="ghost"
             onClick={() => handleSendMessage(message, 'message')}
+            iconOnly={true}
             disabled={!message.trim() || properties.disableInput || properties.loadingResponse || newMessageDisabled}
           >
-            Send
+            <SolidIcon
+              name="send"
+              width="16"
+              fill={
+                !message.trim() || properties.disableInput || properties.loadingResponse || newMessageDisabled
+                  ? 'var(--icons-weak-disabled)'
+                  : 'var(--icons-strong)'
+              }
+            />
           </Button>
         </div>
       </div>

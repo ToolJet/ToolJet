@@ -187,7 +187,7 @@ import Reset from './Reset.jsx';
 import AddPageGroupIcon from './AddPageGroup.jsx';
 import ClearHistory from './ClearHistory.jsx';
 import PageDownload from './PageDownload.jsx';
-
+import Send from './Send.jsx';
 const Icon = (props) => {
   switch (props.name) {
     case 'addrectangle':
@@ -564,6 +564,8 @@ const Icon = (props) => {
       return <ClearHistory {...props} />;
     case 'pagedownload':
       return <PageDownload {...props} />;
+    case 'send':
+      return <Send {...props} />;
     default:
       return <Apps {...props} />;
   }
