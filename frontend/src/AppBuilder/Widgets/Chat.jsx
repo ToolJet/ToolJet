@@ -3,6 +3,23 @@ import { Button } from '@/components/ui/Button/Button';
 import { v4 as uuidv4 } from 'uuid';
 import '@/_styles/widgets/chat.scss';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+
+const formatTimestamp = (timestamp) => {
+  const date = new Date(timestamp);
+  const today = new Date();
+
+  if (date.toDateString() === today.toDateString()) {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); // Shows: "3:45 PM"
+  }
+
+  return date.toLocaleString([], {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
+
 export const Chat = function Chat({
   id,
   width,
@@ -24,8 +41,8 @@ export const Chat = function Chat({
     message,
     messageId: uuidv4(),
     timestamp: new Date().toISOString(),
-    name: properties.userName,
-    avatar: properties.userAvatar,
+    name: type === 'message' ? properties.userName : properties.respondentName,
+    avatar: type === 'message' ? properties.userAvatar : properties.respondentAvatar,
     type,
   });
 
@@ -137,7 +154,7 @@ export const Chat = function Chat({
           overflowY: 'auto',
           display: 'flex',
           flexDirection: 'column',
-          gap: '8px',
+          gap: '16px',
         }}
       >
         {Array.isArray(chatHistory) &&
@@ -145,25 +162,48 @@ export const Chat = function Chat({
           chatHistory?.map((chat, index) => (
             <div
               key={index}
-              className={`message-bubble d-flex ${
+              className={`message-bubble custom-gap-16 ${
                 chat.type === 'response' ? 'justify-content-end' : 'justify-content-start'
               }`}
             >
-              <div
-                style={{
-                  maxWidth: '70%',
-                  padding: '8px 12px',
-                  borderRadius: '12px',
-                  backgroundColor: chat.type === 'sender' ? 'var(--indigo9)' : 'var(--slate5)',
-                  color: chat.type === 'sender' ? 'white' : 'inherit',
-                }}
-              >
-                {chat.message}
+              <div className="d-flex flex-row align-items-start custom-gap-8">
+                <div
+                  className="d-flex flex-row align-items-center justify-content-center"
+                  style={{
+                    borderRadius: '50%',
+                    width: '38px',
+                    height: '38px',
+                    border: '1px solid var(--borders-disabled-on-white)',
+                  }}
+                >
+                  {chat.avatar ? (
+                    <img
+                      src={chat.type === 'message' ? properties.userAvatar : properties.respondentAvatar}
+                      alt="avatar"
+                      className="avatar"
+                      style={{ width: '16px', height: '16px' }}
+                    />
+                  ) : (
+                    <SolidIcon
+                      name={chat.type === 'message' ? 'defaultsenderchatavatar' : 'defaultresponseavatar'}
+                      width="16"
+                      viewBox="0 0 20 20"
+                      fill={chat.type === 'message' ? 'var(--primary-brand)' : 'var(--icons-strong)'}
+                    />
+                  )}
+                </div>
+                <div className="d-flex flex-column custom-gap-12">
+                  <div className="d-flex flex-row custom-gap-16">
+                    <span className="tj-text tj-header-h8">{chat.name}</span>
+                    <span className="tj-text tj-text-xsm">{formatTimestamp(chat.timestamp)}</span>
+                  </div>
+                  <span className="tj-text tj-text-md">{chat.message}</span>
+                </div>
               </div>
             </div>
           ))}
         {properties.loadingResponse && (
-          <div className="message-bubble d-flex justify-content-start">
+          <div className="message-bubble d-flex justify-content-end">
             <div
               style={{
                 padding: '8px 12px',

@@ -188,6 +188,9 @@ import AddPageGroupIcon from './AddPageGroup.jsx';
 import ClearHistory from './ClearHistory.jsx';
 import PageDownload from './PageDownload.jsx';
 import Send from './Send.jsx';
+import DefaultSenderChatIcon from './DefaultSenderChatIcon.jsx';
+import DefaultResponseAvatar from './DefaultResponseAvatar.jsx';
+
 const Icon = (props) => {
   switch (props.name) {
     case 'addrectangle':
@@ -566,6 +569,10 @@ const Icon = (props) => {
       return <PageDownload {...props} />;
     case 'send':
       return <Send {...props} />;
+    case 'defaultresponseavatar':
+      return <DefaultResponseAvatar {...props} />;
+    case 'defaultsenderchatavatar':
+      return <DefaultSenderChatIcon {...props} />;
     default:
       return <Apps {...props} />;
   }
