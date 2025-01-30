@@ -6,6 +6,22 @@ import { toast } from 'react-hot-toast';
 import { CANVAS_WIDTHS, NO_OF_GRIDS, WIDGETS_WITH_DEFAULT_CHILDREN } from './appCanvasConstants';
 import _ from 'lodash';
 
+export function snapToGridAndFixOverflow({ containerWidth, containerHeight, width, height, top, left }) {
+  let [snappedX, snappedY] = snapToGrid(containerWidth, left, top);
+
+  // Bring overflow back to the container bottom, considering the padding 4px
+  if (top + height > containerHeight) {
+    snappedY = containerHeight - height;
+  }
+
+  // Bring overflow back to the container right
+  if (left + width > containerWidth) {
+    snappedX = containerWidth - width;
+  }
+
+  return [snappedX, snappedY];
+}
+
 export function snapToGrid(canvasWidth, x, y) {
   const gridX = canvasWidth / 43;
 
@@ -28,12 +44,27 @@ export const addNewWidgetToTheEditor = (componentType, eventMonitorObject, curre
   const offsetFromLeftOfWindow = canvasBoundingRect?.left;
   const currentOffset = eventMonitorObject?.getSourceClientOffset();
   const subContainerWidth = canvasBoundingRect?.width;
+  const subContainerHeight = canvasBoundingRect?.height;
 
   let left = Math.round(currentOffset?.x - offsetFromLeftOfWindow);
   let top = Math.round(currentOffset?.y - offsetFromTopOfWindow);
 
-  [left, top] = snapToGrid(subContainerWidth, left, top);
+  // Consider elemmt and box padding while snapping to grid
 
+  [left, top] = snapToGridAndFixOverflow({
+    containerWidth: subContainerWidth,
+    containerHeight: subContainerHeight,
+    width: defaultWidth,
+    height: defaultHeight,
+    top,
+    left,
+  });
+  console.log(
+    '****************',
+    `subContainerWidth => ${subContainerHeight}`,
+    `left => ${left}`,
+    `height => ${defaultWidth}`
+  );
   const gridWidth = subContainerWidth / NO_OF_GRIDS;
   left = Math.round(left / gridWidth);
 
