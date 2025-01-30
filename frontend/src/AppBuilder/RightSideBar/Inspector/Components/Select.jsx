@@ -35,8 +35,10 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   );
 
   const constructOptions = () => {
-    const optionsValue = component?.component?.definition?.properties?.options?.value;
-    const valuesToResolve = ['label', 'value'];
+    let optionsValue = component?.component?.definition?.properties?.options?.value;
+    if (!Array.isArray(optionsValue)) {
+      optionsValue = Object.values(optionsValue);
+    }
     let options = [];
 
     if (isDynamicOptionsEnabled || typeof optionsValue === 'string') {
@@ -202,9 +204,8 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
         }
       });
       setOptions(_options);
-      updateAllOptionsParams(_options);
       setMarkedAsDefault(_value);
-      paramUpdated({ name: 'value' }, 'value', _value, 'properties');
+      updateAllOptionsParams(_options);
     }
   };
 
