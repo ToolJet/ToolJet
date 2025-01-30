@@ -3,7 +3,11 @@
 	"title": "OpenAI Datasource",
 	"description": "A schema defining OpenAI datasource",
 	"type": "api",
-	"defaults": {},
+	"defaults": {
+		"encoding_format_M1": "float",
+		"encoding_format_M2": "float",
+		"encoding_format_M3": "float"
+	},
 	"properties": {
 		"operation": {
 			"label": "Operation",
