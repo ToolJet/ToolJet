@@ -104,7 +104,107 @@ export const chatConfig = {
   events: {
     onMessageSent: { displayName: 'On Message Sent' },
   },
-  styles: {},
+  styles: {
+    name: {
+      type: 'color',
+      displayName: 'Name',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#1B1F24',
+      },
+      accordian: 'Message',
+    },
+    message: {
+      type: 'color',
+      displayName: 'Message',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#1B1F24',
+      },
+      accordian: 'Message',
+    },
+    timestamp: {
+      type: 'color',
+      displayName: 'Timestamp',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#6A727C',
+      },
+      accordian: 'Message',
+    },
+    backgroundColorField: {
+      type: 'color',
+      displayName: 'Background',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#FFFFFF',
+      },
+      accordian: 'Field',
+    },
+    borderColorField: {
+      type: 'color',
+      displayName: 'Border',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#CCD1D5',
+      },
+      accordian: 'Field',
+    },
+    accentColorField: {
+      type: 'color',
+      displayName: 'Accent',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#4368E3',
+      },
+      accordian: 'Field',
+    },
+    textColorField: {
+      type: 'color',
+      displayName: 'Text',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#11181C',
+      },
+      accordian: 'Field',
+    },
+    sendIconColorField: {
+      type: 'color',
+      displayName: 'Send Icon',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#4368E3',
+      },
+      accordian: 'Field',
+    },
+    containerBackgroundColor: {
+      type: 'color',
+      displayName: 'Background',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#FFFFFF',
+      },
+      accordian: 'Container',
+    },
+    borderColorContainer: {
+      type: 'color',
+      displayName: 'Border',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#CCD1D5',
+      },
+      accordian: 'Container',
+    },
+    boxShadowContainer: {
+      type: 'color',
+      displayName: 'Box Shadow',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#121212',
+      },
+      accordian: 'Container',
+    },
+  },
   exposedVariables: {
     lastMessage: {},
     history: [],
@@ -113,7 +213,6 @@ export const chatConfig = {
     isHistoryLoading: false,
     isReplyLoading: false,
     lastResponse: {},
-    setValue: '',
   },
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -204,6 +303,18 @@ export const chatConfig = {
       loadingResponse: { value: '{{false}}' },
     },
     events: [],
-    styles: {},
+    styles: {
+      name: { value: '#1B1F24' },
+      message: { value: '#1B1F24' },
+      timestamp: { value: '#6A727C' },
+      backgroundColorField: { value: '#FFFFFF' },
+      borderColorField: { value: '#CCD1D5' },
+      accentColorField: { value: '#4368E3' },
+      textColorField: { value: '#11181C' },
+      sendIconColorField: { value: '#4368E3' },
+      containerBackgroundColor: { value: '#FFFFFF' },
+      borderColorContainer: { value: '#CCD1D5' },
+      boxShadowContainer: { value: '#121212' },
+    },
   },
 };

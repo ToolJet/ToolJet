@@ -42,6 +42,8 @@ export const Chat = function Chat({ id, component, properties, styles, setExpose
   const [respondentName, setRespondentName] = useState(properties.respondentName);
   const [respondentAvatar, setRespondentAvatar] = useState(properties.respondentAvatar);
   const [visibility, setVisibility] = useState(properties.visibility);
+  const [loadingResponse, setLoadingResponse] = useState(properties.loadingResponse);
+  const [loadingHistory, setLoadingHistory] = useState(properties.loadingHistory);
 
   const [message, setMessage] = useState('');
   const [chatHistory, setChatHistory] = useState(properties.initialChat || []);
@@ -174,6 +176,16 @@ export const Chat = function Chat({ id, component, properties, styles, setExpose
   }, [properties.chatTitle]);
 
   useEffect(() => {
+    setLoadingResponse(properties.loadingResponse);
+    setExposedVariables({ isReplyLoading: properties.loadingResponse });
+  }, [properties.loadingResponse]);
+
+  useEffect(() => {
+    setLoadingHistory(properties.loadingHistory);
+    setExposedVariables({ isHistoryLoading: properties.loadingHistory });
+  }, [properties.loadingHistory]);
+
+  useEffect(() => {
     const exposedVariables = {
       sendMessage: async function (messageObject) {
         const { message, type = 'message' } = messageObject;
@@ -222,9 +234,17 @@ export const Chat = function Chat({ id, component, properties, styles, setExpose
       downloadChat: async function () {
         downloadChatHistory();
       },
+      setResponseLoading: async function (loading) {
+        setLoadingResponse(loading);
+        setExposedVariables({ isReplyLoading: loading });
+      },
+      setHistoryLoading: async function (loading) {
+        setLoadingHistory(loading);
+        setExposedVariables({ isHistoryLoading: loading });
+      },
     };
     setExposedVariables(exposedVariables);
-  }, [chatHistory, chatTitle]);
+  }, []);
 
   if (!visibility) return null;
 
@@ -365,16 +385,40 @@ export const Chat = function Chat({ id, component, properties, styles, setExpose
             </div>
           </div>
         )}
-        {properties.loadingResponse && (
-          <div className="message-bubble d-flex justify-content-end">
-            <div
-              style={{
-                padding: '8px 12px',
-                borderRadius: '12px',
-                backgroundColor: 'var(--slate5)',
-              }}
-            >
-              ...
+        {(loadingResponse || loadingHistory) && (
+          <div className="message-bubble custom-gap-16 message-loading">
+            <div className="d-flex flex-row align-items-start custom-gap-8 position-relative message-container w-100 h-100">
+              <div
+                className="d-flex flex-row align-items-start justify-content-center"
+                style={{
+                  minWidth: '38px',
+                }}
+              >
+                <div
+                  className="d-flex flex-row align-items-center justify-content-center"
+                  style={{
+                    borderRadius: '50%',
+                    width: '38px',
+                    height: '38px',
+                    border: '1px solid var(--borders-disabled-on-white)',
+                  }}
+                >
+                  {
+                    <GetAvatar
+                      chatType={loadingResponse ? 'response' : 'message'}
+                      userAvatar={userAvatar}
+                      respondentAvatar={respondentAvatar}
+                    />
+                  }
+                </div>
+              </div>
+              <div className="h-100 d-flex align-items-center">
+                <SolidIcon
+                  name="loadingstate"
+                  width="16"
+                  fill={loadingResponse ? 'var(--icons-strong)' : 'var(--primary-brand)'}
+                />
+              </div>
             </div>
           </div>
         )}
@@ -398,7 +442,7 @@ export const Chat = function Chat({ id, component, properties, styles, setExpose
               transition: 'height 0.1s ease-out',
               minHeight: '36px', // Ensure minimum height
             }}
-            disabled={properties.disableInput || properties.loadingResponse}
+            disabled={properties.disableInput}
           />
 
           <Button
