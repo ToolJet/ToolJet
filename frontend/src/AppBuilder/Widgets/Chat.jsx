@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/Button/Button';
 import { v4 as uuidv4 } from 'uuid';
 import '@/_styles/widgets/chat.scss';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { toast } from 'react-hot-toast';
 
 const formatTimestamp = (timestamp) => {
   const date = new Date(timestamp);
@@ -18,6 +19,15 @@ const formatTimestamp = (timestamp) => {
     hour: '2-digit',
     minute: '2-digit',
   });
+};
+
+const copyToClipboard = async (text) => {
+  try {
+    await navigator.clipboard.writeText(text);
+    toast.success('Message copied to clipboard');
+  } catch (err) {
+    toast.error('Failed to copy message');
+  }
 };
 
 export const Chat = function Chat({
@@ -166,36 +176,53 @@ export const Chat = function Chat({
                 chat.type === 'response' ? 'justify-content-end' : 'justify-content-start'
               }`}
             >
-              <div className="d-flex flex-row align-items-start custom-gap-8">
+              <div className="d-flex flex-row align-items-start custom-gap-8 position-relative message-container w-100">
                 <div
-                  className="d-flex flex-row align-items-center justify-content-center"
+                  className="d-flex flex-row align-items-start justify-content-center"
                   style={{
-                    borderRadius: '50%',
-                    width: '38px',
-                    height: '38px',
-                    border: '1px solid var(--borders-disabled-on-white)',
+                    minWidth: '38px',
                   }}
                 >
-                  {chat.avatar ? (
-                    <img
-                      src={chat.type === 'message' ? properties.userAvatar : properties.respondentAvatar}
-                      alt="avatar"
-                      className="avatar"
-                      style={{ width: '16px', height: '16px' }}
-                    />
-                  ) : (
-                    <SolidIcon
-                      name={chat.type === 'message' ? 'defaultsenderchatavatar' : 'defaultresponseavatar'}
-                      width="16"
-                      viewBox="0 0 20 20"
-                      fill={chat.type === 'message' ? 'var(--primary-brand)' : 'var(--icons-strong)'}
-                    />
-                  )}
+                  <div
+                    className="d-flex flex-row align-items-center justify-content-center"
+                    style={{
+                      borderRadius: '50%',
+                      width: '38px',
+                      height: '38px',
+                      border: '1px solid var(--borders-disabled-on-white)',
+                    }}
+                  >
+                    {chat.avatar ? (
+                      <img
+                        src={chat.type === 'message' ? properties.userAvatar : properties.respondentAvatar}
+                        alt="avatar"
+                        className="avatar"
+                        style={{ width: '16px', height: '16px' }}
+                      />
+                    ) : (
+                      <SolidIcon
+                        name={chat.type === 'message' ? 'defaultsenderchatavatar' : 'defaultresponseavatar'}
+                        width="16"
+                        viewBox="0 0 20 20"
+                        fill={chat.type === 'message' ? 'var(--primary-brand)' : 'var(--icons-strong)'}
+                      />
+                    )}
+                  </div>
                 </div>
-                <div className="d-flex flex-column custom-gap-12">
-                  <div className="d-flex flex-row custom-gap-16">
-                    <span className="tj-text tj-header-h8">{chat.name}</span>
-                    <span className="tj-text tj-text-xsm">{formatTimestamp(chat.timestamp)}</span>
+                <div className="d-flex flex-column custom-gap-12 flex-grow-1">
+                  <div className="d-flex flex-row custom-gap-16 align-items-center justify-content-between">
+                    <div className="d-flex flex-row custom-gap-16">
+                      <span className="tj-text tj-header-h8">{chat.name}</span>
+                      <span className="tj-text tj-text-xsm">{formatTimestamp(chat.timestamp)}</span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      onClick={() => copyToClipboard(chat.message)}
+                      iconOnly={true}
+                      className="copy-button ms-auto"
+                    >
+                      <SolidIcon name="copy" width="14" fill="var(--icons-strong)" />
+                    </Button>
                   </div>
                   <span className="tj-text tj-text-md">{chat.message}</span>
                 </div>

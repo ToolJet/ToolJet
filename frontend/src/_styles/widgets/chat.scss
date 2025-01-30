@@ -31,4 +31,20 @@
       color: var(--text-black-000);
     }
   }
+  .message-container {
+    width: 100%;
+  
+    .copy-button {
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      margin-left: auto;
+    }
+  
+    &:hover {
+      .copy-button {
+        opacity: 1;
+      }
+    }
+  }
 }
+
