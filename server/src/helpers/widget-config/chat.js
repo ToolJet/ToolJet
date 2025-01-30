@@ -175,6 +175,11 @@ export const chatConfig = {
       displayName: 'Set User Avatar',
       params: [{ handle: 'avatar', displayName: 'Avatar', defaultValue: '', type: 'code' }],
     },
+    {
+      handle: 'setError',
+      displayName: 'Set Error',
+      params: [{ handle: 'error', displayName: 'Error', defaultValue: '', type: 'code' }],
+    },
   ],
   definition: {
     others: {

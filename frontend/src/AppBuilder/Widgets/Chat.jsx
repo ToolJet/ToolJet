@@ -5,7 +5,7 @@ import '@/_styles/widgets/chat.scss';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { toast } from 'react-hot-toast';
 import { MarkdownMessage } from './MarkdownMessage';
-
+import cx from 'classnames';
 const formatTimestamp = (timestamp) => {
   const date = new Date(timestamp);
   const today = new Date();
@@ -48,6 +48,7 @@ export const Chat = function Chat({
   const [chatHistory, setChatHistory] = useState(properties.initialChat || []);
   const [visibility, setVisibility] = useState(properties.visibility);
   const [newMessageDisabled, setNewMessageDisabled] = useState(false);
+  const [error, setError] = useState(null);
   const createMessage = (message, type) => ({
     message,
     messageId: uuidv4(),
@@ -64,6 +65,7 @@ export const Chat = function Chat({
         history: updatedHistory,
         lastMessage: newMessage,
       };
+      if (error) setError(null);
       setExposedVariables(exposedVariables);
       fireEvent('onMessageSent', newMessage);
       return updatedHistory;
@@ -74,11 +76,12 @@ export const Chat = function Chat({
     if (!message?.trim()) return;
     const newMessage = createMessage(message, type);
     updateChatHistoryWhileSendingMessage(newMessage);
-    setMessage(''); // Clear input only for UI messages
+    setMessage('');
   };
 
   const clearHistory = () => {
     setChatHistory([]);
+    if (error) setError(null);
     setExposedVariables({ history: [], lastMessage: {}, lastResponse: {} });
   };
 
@@ -107,6 +110,7 @@ export const Chat = function Chat({
       },
       setHistory: async function (history) {
         setChatHistory(history);
+        if (error) setError(null);
         setExposedVariables({ history });
       },
       appendHistory: async function (messageObject) {
@@ -133,6 +137,9 @@ export const Chat = function Chat({
       setNewMessageDisabled: async function (disabled) {
         setNewMessageDisabled(disabled);
         setExposedVariables({ isDisabled: !!disabled });
+      },
+      setError: async function (errorMessage = 'Some error occurred. Please retry.') {
+        setError(errorMessage || 'Some error occurred. Please retry.');
       },
     };
     setExposedVariables(exposedVariables);
@@ -173,9 +180,11 @@ export const Chat = function Chat({
           chatHistory?.map((chat, index) => (
             <div
               key={index}
-              className={`message-bubble custom-gap-16 ${
-                chat.type === 'response' ? 'justify-content-end' : 'justify-content-start'
-              }`}
+              className={cx('message-bubble custom-gap-16', {
+                'message-response': chat.type === 'response',
+                'message-sender': chat.type === 'message',
+                'message-error': chat.type === 'error',
+              })}
             >
               <div className="d-flex flex-row align-items-start custom-gap-8 position-relative message-container w-100">
                 <div
@@ -213,8 +222,8 @@ export const Chat = function Chat({
                 <div className="d-flex flex-column custom-gap-12 flex-grow-1">
                   <div className="d-flex flex-row custom-gap-16 align-items-center justify-content-between">
                     <div className="d-flex flex-row custom-gap-16">
-                      <span className="tj-text tj-header-h8">{chat.name}</span>
-                      <span className="tj-text tj-text-xsm">{formatTimestamp(chat.timestamp)}</span>
+                      <span className="tj-text tj-header-h8 message-title">{chat.name}</span>
+                      <span className="tj-text tj-text-xsm message-timestamp">{formatTimestamp(chat.timestamp)}</span>
                     </div>
                     <Button
                       variant="ghost"
@@ -225,13 +234,53 @@ export const Chat = function Chat({
                       <SolidIcon name="copy" width="14" fill="var(--icons-strong)" />
                     </Button>
                   </div>
-                  <div className="tj-text tj-text-md">
+                  <div className={`tj-text tj-text-md message-content`}>
                     <MarkdownMessage content={chat.message} />
                   </div>
                 </div>
               </div>
             </div>
           ))}
+        {error && (
+          <div className="message-bubble custom-gap-16 message-error">
+            <div className="d-flex flex-row align-items-start custom-gap-8 position-relative message-container w-100">
+              <div
+                className="d-flex flex-row align-items-start justify-content-center"
+                style={{
+                  minWidth: '38px',
+                }}
+              >
+                <div
+                  className="d-flex flex-row align-items-center justify-content-center"
+                  style={{
+                    borderRadius: '50%',
+                    width: '38px',
+                    height: '38px',
+                    border: '1px solid var(--borders-disabled-on-white)',
+                  }}
+                >
+                  <SolidIcon
+                    name={'defaultresponseavatar'}
+                    width="16"
+                    viewBox="0 0 20 20"
+                    fill={'var(--icons-strong)'}
+                  />
+                </div>
+              </div>
+              <div className="d-flex flex-column custom-gap-12 flex-grow-1">
+                <div className="d-flex flex-row custom-gap-16 align-items-center justify-content-between">
+                  <div className="d-flex flex-row custom-gap-16">
+                    <span className="tj-text tj-header-h8 message-title">{properties.respondentName}</span>
+                    <span className="tj-text tj-text-xsm message-timestamp">
+                      {formatTimestamp(new Date().toISOString())}
+                    </span>
+                  </div>
+                </div>
+                <div className={`tj-text tj-text-md message-content`}>{error}</div>
+              </div>
+            </div>
+          </div>
+        )}
         {properties.loadingResponse && (
           <div className="message-bubble d-flex justify-content-end">
             <div

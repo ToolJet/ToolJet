@@ -46,6 +46,11 @@
       }
     }
   }
+  .message-error{
+    .message-content {
+      color: var(--tomato9) !important;
+    }
+  }
 }
 .markdown-content {
   // Headers
