@@ -472,6 +472,15 @@ const sidebars = {
           'items': [
             'user-management/group-sync/oidc'
           ]
+        },
+        {
+          'type': 'category',
+          'label': 'Profile Management',
+          'items': [
+            'user-management/profile-management/user-details',
+            'user-management/profile-management/reset-password',
+            'user-management/profile-management/user-profile'
+          ]
         }
       ]
     },
