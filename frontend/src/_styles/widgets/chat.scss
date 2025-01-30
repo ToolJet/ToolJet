@@ -47,4 +47,117 @@
     }
   }
 }
+.markdown-content {
+  // Headers
+  h1, h2, h3, h4, h5, h6 {
+    margin: 16px 0 8px;
+    color: var(--text-black-000);
+    font-weight: 600;
+  }
+  h1 { font-size: 24px; }
+  h2 { font-size: 20px; }
+  h3 { font-size: 18px; }
+  h4, h5, h6 { font-size: 16px; }
+
+  // Text formatting
+  strong, b { font-weight: 600; }
+  em, i { font-style: italic; }
+  del { text-decoration: line-through; }
+  
+  // Lists
+  ul, ol {
+    padding-left: 24px;
+    margin: 8px 0;
+    li {
+      margin: 4px 0;
+      p { margin: 0; } // Fix extra spacing in list items
+    }
+  }
+
+  // Code blocks
+  code {
+    background: var(--surfaces-surface-02);
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: monospace;
+  }
+
+  pre {
+    background: var(--surfaces-surface-02);
+    padding: 12px;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin: 8px 0;
+    code {
+      background: none;
+      padding: 0;
+    }
+  }
+
+  // Tables
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 8px 0;
+    
+    th, td {
+      border: 1px solid var(--borders-default);
+      padding: 8px 12px;
+      text-align: left;
+    }
+
+    th {
+      background: var(--surfaces-surface-02);
+      font-weight: 600;
+    }
+
+    tr:nth-child(even) {
+      background: var(--surfaces-surface-01);
+    }
+  }
+
+  // Blockquotes
+  blockquote {
+    border-left: 4px solid var(--borders-default);
+    margin: 8px 0;
+    padding: 8px 16px;
+    background: var(--surfaces-surface-02);
+    
+    p {
+      margin: 0;
+    }
+  }
+
+  // Links
+  a {
+    color: var(--primary-brand);
+    text-decoration: none;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  // Images
+  img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    margin: 8px 0;
+  }
+
+  // Horizontal rules
+  hr {
+    border: 0;
+    border-top: 1px solid var(--borders-default);
+    margin: 16px 0;
+  }
+
+  // Paragraphs
+  p {
+    margin: 8px 0;
+    line-height: 1.5;
+  }
+}
+
 

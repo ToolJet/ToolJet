@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import '@/_styles/widgets/chat.scss';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { toast } from 'react-hot-toast';
+import { MarkdownMessage } from './MarkdownMessage';
 
 const formatTimestamp = (timestamp) => {
   const date = new Date(timestamp);
@@ -224,7 +225,9 @@ export const Chat = function Chat({
                       <SolidIcon name="copy" width="14" fill="var(--icons-strong)" />
                     </Button>
                   </div>
-                  <span className="tj-text tj-text-md">{chat.message}</span>
+                  <div className="tj-text tj-text-md">
+                    <MarkdownMessage content={chat.message} />
+                  </div>
                 </div>
               </div>
             </div>
