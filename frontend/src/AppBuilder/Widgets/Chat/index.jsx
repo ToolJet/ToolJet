@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import '@/_styles/widgets/chat.scss';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { toast } from 'react-hot-toast';
-import { MarkdownMessage } from '../MarkdownMessage';
+import { MarkdownMessage } from './MarkdownMessage';
 import cx from 'classnames';
 import GetAvatar from './Avatar';
 
@@ -33,17 +33,7 @@ const copyToClipboard = async (text) => {
   }
 };
 
-export const Chat = function Chat({
-  id,
-  width,
-  height,
-  component,
-  darkMode,
-  properties,
-  styles,
-  setExposedVariables,
-  fireEvent,
-}) {
+export const Chat = function Chat({ id, component, properties, styles, setExposedVariables, fireEvent }) {
   const darkTheme = localStorage.getItem('darkMode') === 'true';
 
   const [chatTitle, setChatTitle] = useState(properties.chatTitle);
@@ -141,6 +131,14 @@ export const Chat = function Chat({
     }
   };
 
+  const handleDeleteMessageById = (messageId) => {
+    setChatHistory((currentHistory) => {
+      const updatedHistory = currentHistory.filter((msg) => msg.messageId !== messageId);
+      setExposedVariables({ history: updatedHistory });
+      return updatedHistory;
+    });
+  };
+
   useEffect(() => {
     // To update the history exposed variable on initial load with the inital chat value
     setExposedVariables({
@@ -186,13 +184,7 @@ export const Chat = function Chat({
         clearHistory();
       },
       deleteMessage: async function (messageId) {
-        setChatHistory((currentHistory) => {
-          const messageHistoryToPersist = currentHistory.filter((message) => message.messageId !== messageId);
-          setExposedVariables({
-            history: messageHistoryToPersist,
-          });
-          return messageHistoryToPersist;
-        });
+        handleDeleteMessageById(messageId);
       },
       setHistory: async function (history) {
         setChatHistory(history);
@@ -237,7 +229,7 @@ export const Chat = function Chat({
   if (!visibility) return null;
 
   return (
-    <div className={`chat-widget ${darkTheme ? 'dark-theme' : ''}`}>
+    <div id={id} className={`chat-widget ${darkTheme ? 'dark-theme' : ''}`}>
       <div
         className="chat-header p-2 d-flex justify-content-between align-items-center"
         style={{ borderBottom: '1px solid var(--borders-disabled-on-white)' }}
@@ -308,14 +300,28 @@ export const Chat = function Chat({
                       </span>
                       <span className="tj-text tj-text-xsm message-timestamp">{formatTimestamp(chat.timestamp)}</span>
                     </div>
-                    <Button
-                      variant="ghost"
-                      onClick={() => copyToClipboard(chat.message)}
-                      iconOnly={true}
-                      className="copy-button ms-auto"
-                    >
-                      <SolidIcon name="copy" width="14" fill="var(--icons-strong)" />
-                    </Button>
+                    <div className="d-flex gap-1 message-actions">
+                      <Button
+                        variant="ghost"
+                        onClick={() => copyToClipboard(chat.message)}
+                        iconOnly={true}
+                        className="action-button"
+                        title="Copy message"
+                      >
+                        <SolidIcon name="copy" width="14" fill="var(--icons-strong)" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        onClick={() => {
+                          handleDeleteMessageById(chat.messageId);
+                        }}
+                        iconOnly={true}
+                        className="action-button"
+                        title="Delete message"
+                      >
+                        <SolidIcon name="trash" width="14" fill="var(--red9)" />
+                      </Button>
+                    </div>
                   </div>
                   <div className={`tj-text tj-text-md message-content`}>
                     <MarkdownMessage content={chat.message} />
