@@ -85,6 +85,34 @@ export const Chat = function Chat({
     setExposedVariables({ history: [], lastMessage: {}, lastResponse: {} });
   };
 
+  const downloadChatHistory = () => {
+    try {
+      if (!Array.isArray(chatHistory) || chatHistory.length === 0) {
+        toast.error('No chat history to download');
+        return;
+      }
+
+      const jsonString = JSON.stringify(chatHistory, null, 2);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `chat-history-${new Date().toISOString()}.json`;
+
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast.success('Chat history downloaded successfully');
+    } catch (error) {
+      console.error('Download error:', error);
+      toast.error(`Failed to download chat history: ${error.message || 'Unknown error'}`);
+    }
+  };
+
   useEffect(() => {
     setChatTitle(properties.chatTitle);
   }, [properties.chatTitle]);
@@ -141,9 +169,12 @@ export const Chat = function Chat({
       setError: async function (errorMessage = 'Some error occurred. Please retry.') {
         setError(errorMessage || 'Some error occurred. Please retry.');
       },
+      downloadChat: async function () {
+        downloadChatHistory();
+      },
     };
     setExposedVariables(exposedVariables);
-  }, []);
+  }, [chatHistory, chatTitle]);
 
   // Add this function to handle textarea height
   const adjustTextareaHeight = (element, value) => {
@@ -179,7 +210,13 @@ export const Chat = function Chat({
       >
         <span className="chat-title tj-text-xx-large">{chatTitle}</span>
         <div className="button-group">
-          <Button variant="ghost" iconOnly={true} className="mx-1">
+          <Button
+            variant="ghost"
+            onClick={downloadChatHistory}
+            iconOnly={true}
+            className="mx-1"
+            title="Download chat history"
+          >
             <SolidIcon name="pagedownload" width="16" fill="var(--icons-strong)" />
           </Button>
           <Button variant="ghost" onClick={clearHistory} iconOnly={true} className="mx-1">

@@ -180,6 +180,11 @@ export const chatConfig = {
       displayName: 'Set Error',
       params: [{ handle: 'error', displayName: 'Error', defaultValue: '', type: 'code' }],
     },
+    {
+      handle: 'downloadChat',
+      displayName: 'Download Chat',
+      params: [],
+    },
   ],
   definition: {
     others: {
