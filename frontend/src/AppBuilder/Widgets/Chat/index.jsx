@@ -4,8 +4,10 @@ import { v4 as uuidv4 } from 'uuid';
 import '@/_styles/widgets/chat.scss';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { toast } from 'react-hot-toast';
-import { MarkdownMessage } from './MarkdownMessage';
+import { MarkdownMessage } from '../MarkdownMessage';
 import cx from 'classnames';
+import GetAvatar from './Avatar';
+
 const formatTimestamp = (timestamp) => {
   const date = new Date(timestamp);
   const today = new Date();
@@ -43,12 +45,19 @@ export const Chat = function Chat({
   fireEvent,
 }) {
   const darkTheme = localStorage.getItem('darkMode') === 'true';
+
   const [chatTitle, setChatTitle] = useState(properties.chatTitle);
+  const [userName, setUserName] = useState(properties.userName);
+  const [userAvatar, setUserAvatar] = useState(properties.userAvatar);
+  const [respondentName, setRespondentName] = useState(properties.respondentName);
+  const [respondentAvatar, setRespondentAvatar] = useState(properties.respondentAvatar);
+  const [visibility, setVisibility] = useState(properties.visibility);
+
   const [message, setMessage] = useState('');
   const [chatHistory, setChatHistory] = useState(properties.initialChat || []);
-  const [visibility, setVisibility] = useState(properties.visibility);
   const [newMessageDisabled, setNewMessageDisabled] = useState(false);
   const [error, setError] = useState(null);
+
   const createMessage = (message, type) => ({
     message,
     messageId: uuidv4(),
@@ -113,6 +122,55 @@ export const Chat = function Chat({
     }
   };
 
+  const adjustTextareaHeight = (element, value) => {
+    if (element.scrollHeight <= 36 || value.trim() === '') {
+      element.style.height = '36px';
+      element.classList.remove('scrollable');
+      return;
+    }
+
+    // Only adjust height if content exceeds 36px
+    const newHeight = Math.min(element.scrollHeight, 36 * 5); // 36px * 5 lines max
+    element.style.height = `${newHeight}px`;
+
+    // Add scrollable class if content height reaches max height
+    if (element.scrollHeight >= 36 * 5) {
+      element.classList.add('scrollable');
+    } else {
+      element.classList.remove('scrollable');
+    }
+  };
+
+  useEffect(() => {
+    // To update the history exposed variable on initial load with the inital chat value
+    setExposedVariables({
+      history: chatHistory,
+    });
+  }, []);
+
+  useEffect(() => {
+    setChatHistory(properties.initialChat);
+    setExposedVariables({
+      history: properties.initialChat,
+    });
+  }, [properties.initialChat]);
+
+  useEffect(() => {
+    setUserName(properties.userName);
+  }, [properties.userName]);
+
+  useEffect(() => {
+    setUserAvatar(properties.userAvatar);
+  }, [properties.userAvatar]);
+
+  useEffect(() => {
+    setRespondentName(properties.respondentName);
+  }, [properties.respondentName]);
+
+  useEffect(() => {
+    setRespondentAvatar(properties.respondentAvatar);
+  }, [properties.respondentAvatar]);
+
   useEffect(() => {
     setChatTitle(properties.chatTitle);
   }, [properties.chatTitle]);
@@ -175,30 +233,6 @@ export const Chat = function Chat({
     };
     setExposedVariables(exposedVariables);
   }, [chatHistory, chatTitle]);
-
-  // Add this function to handle textarea height
-  const adjustTextareaHeight = (element, value) => {
-    // First set height to auto to get proper scrollHeight
-    // element.style.height = 'auto';
-
-    // If content height is less than or equal to 36px, keep it at 36px
-    if (element.scrollHeight <= 36 || value.trim() === '') {
-      element.style.height = '36px';
-      element.classList.remove('scrollable');
-      return;
-    }
-
-    // Only adjust height if content exceeds 36px
-    const newHeight = Math.min(element.scrollHeight, 36 * 5); // 36px * 5 lines max
-    element.style.height = `${newHeight}px`;
-
-    // Add scrollable class if content height reaches max height
-    if (element.scrollHeight >= 36 * 5) {
-      element.classList.add('scrollable');
-    } else {
-      element.classList.remove('scrollable');
-    }
-  };
 
   if (!visibility) return null;
 
@@ -263,27 +297,15 @@ export const Chat = function Chat({
                       border: '1px solid var(--borders-disabled-on-white)',
                     }}
                   >
-                    {chat.avatar ? (
-                      <img
-                        src={chat.type === 'message' ? properties.userAvatar : properties.respondentAvatar}
-                        alt="avatar"
-                        className="avatar"
-                        style={{ width: '16px', height: '16px' }}
-                      />
-                    ) : (
-                      <SolidIcon
-                        name={chat.type === 'message' ? 'defaultsenderchatavatar' : 'defaultresponseavatar'}
-                        width="16"
-                        viewBox="0 0 20 20"
-                        fill={chat.type === 'message' ? 'var(--primary-brand)' : 'var(--icons-strong)'}
-                      />
-                    )}
+                    <GetAvatar chatType={chat.type} userAvatar={userAvatar} respondentAvatar={respondentAvatar} />
                   </div>
                 </div>
                 <div className="d-flex flex-column custom-gap-12 flex-grow-1">
                   <div className="d-flex flex-row custom-gap-16 align-items-center justify-content-between">
                     <div className="d-flex flex-row custom-gap-16">
-                      <span className="tj-text tj-header-h8 message-title">{chat.name}</span>
+                      <span className="tj-text tj-header-h8 message-title">
+                        {chat.type === 'message' ? userName : respondentName}
+                      </span>
                       <span className="tj-text tj-text-xsm message-timestamp">{formatTimestamp(chat.timestamp)}</span>
                     </div>
                     <Button
@@ -320,18 +342,13 @@ export const Chat = function Chat({
                     border: '1px solid var(--borders-disabled-on-white)',
                   }}
                 >
-                  <SolidIcon
-                    name={'defaultresponseavatar'}
-                    width="16"
-                    viewBox="0 0 20 20"
-                    fill={'var(--icons-strong)'}
-                  />
+                  {<GetAvatar chatType="error" userAvatar={userAvatar} respondentAvatar={respondentAvatar} />}
                 </div>
               </div>
               <div className="d-flex flex-column custom-gap-12 flex-grow-1">
                 <div className="d-flex flex-row custom-gap-16 align-items-center justify-content-between">
                   <div className="d-flex flex-row custom-gap-16">
-                    <span className="tj-text tj-header-h8 message-title">{properties.respondentName}</span>
+                    <span className="tj-text tj-header-h8 message-title">{respondentName}</span>
                     <span className="tj-text tj-text-xsm message-timestamp">
                       {formatTimestamp(new Date().toISOString())}
                     </span>
