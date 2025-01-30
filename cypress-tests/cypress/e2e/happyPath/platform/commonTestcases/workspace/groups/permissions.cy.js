@@ -132,7 +132,7 @@ describe("Manage Groups", () => {
             commonText.cloneAppErrorToast
         );
         cy.get(commonSelectors.cancelButton).click();
-        logout();
+        cy.apiLogout();
 
         cy.apiLogin();
         cy.visit(data.workspaceSlug);
@@ -166,7 +166,7 @@ describe("Manage Groups", () => {
         cy.get(groupsSelector.usersLink).click();
         cy.get(`[data-cy="${data.email}-user-row"]`).should("exist");
 
-        logout();
+        cy.apiLogout();
         cy.apiLogin(data.email, "password");
         cy.visit(data.workspaceSlug);
         cy.get(commonSelectors.appCard(data.appName))
@@ -265,7 +265,7 @@ describe("Manage Groups", () => {
             data.firstName,
             data.email
         );
-        logout();
+        cy.apiLogout();
 
         // Setup custom group
         cy.apiLogin();
@@ -342,8 +342,9 @@ describe("Manage Groups", () => {
         cy.get(groupsSelector.groupLink("Builder")).click();
         cy.get(groupsSelector.usersLink).click();
         cy.get(`[data-cy="${data.email}-user-row"]`).should("be.visible");
-        logout();
-        cy.appUILogin(data.email);
+        cy.apiLogout();
+        cy.apiLogin(data.email);
+        cy.visit(data.workspaceSlug);
 
         // Verify builder permissions
         verifyBasicPermissions(true);
@@ -378,7 +379,7 @@ describe("Manage Groups", () => {
         verifySettingsAccess(false);
         cy.get(commonSelectors.settingsIcon).click();
         cy.wait(500);
-        logout();
+        cy.apiLogout();
 
         cy.apiLogin();
         cy.visit(data.workspaceSlug);
@@ -444,8 +445,10 @@ describe("Manage Groups", () => {
 
         // Verify as end user
         cy.wait(1000);
-        logout();
-        cy.appUILogin(data.email);
+        cy.apiLogout()
+        cy.apiLogin(data.email);
+        cy.visit(data.workspaceSlug);
+
         cy.get('.appcard-buttons-wrap [data-cy="edit-button"]').should(
             "have.lengthOf",
             1
@@ -501,7 +504,7 @@ describe("Manage Groups", () => {
             data.firstName,
             data.email
         );
-        logout();
+        cy.apiLogout();
 
         cy.apiLogin();
         cy.visit(data.workspaceSlug);
@@ -552,20 +555,20 @@ describe("Manage Groups", () => {
             navigateToManageUsers();
             inviteUserBasedOnRole(data.firstName, data.email, startRole);
             cy.wait(1000);
-            logout();
+            cy.apiLogout();
 
             transitions.forEach(({ from, to, buttonEnabled, hasSettings }) => {
                 cy.apiLogin();
                 cy.visit(data.workspaceSlug);
                 setupAndUpdateRole(from, to, data.email);
 
-                cy.appUILogin(data.email);
+                cy.apiLogin(data.email);
+                cy.visit(data.workspaceSlug);
                 verifyUserPrivileges(
                     buttonEnabled ? "be.enabled" : "be.disabled",
                     hasSettings
                 );
-                cy.get(commonSelectors.settingsIcon).click();
-                logout();
+                cy.apiLogout();
             });
         });
     });
@@ -617,7 +620,7 @@ describe("Manage Groups", () => {
         cy.wait(500);
 
         cy.apiCreateGDS(
-            "http://localhost:3000/api/v2/data_sources",
+            `${Cypress.env('server_host')}/api/v2/data_sources`,
             `cypress-${data.dsName}-qc-postgresql`,
             "postgresql",
             [

@@ -16,4 +16,5 @@ export const workspaceConstantsText = {
     secretsConstHelperText: 'The values are hidden and can only be used in data sources and queries',
     addConstantButton: 'Add constant',
     noResultFoundHeader: 'No workspace constants found',
+    secretsHiddenText: 'Values of secret constants are hidden',
 };
