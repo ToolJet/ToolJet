@@ -1,118 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/Button/Button';
-import { v4 as uuidv4 } from 'uuid';
+import React, { useEffect } from 'react';
 import '@/_styles/widgets/chat.scss';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { toast } from 'react-hot-toast';
-import { MarkdownMessage } from './MarkdownMessage';
-import cx from 'classnames';
-import GetAvatar from './Avatar';
+import { ChatHeader } from './components/ChatHeader';
+import { ChatMessage } from './components/ChatMessage';
+import { LoadingMessage } from './components/LoadingMessage';
+import { ChatInput } from './components/ChatInput';
+import { useChatState } from './hooks/useChatState';
+import { useChatActions } from './hooks/useChatActions';
+import { useExposedActions } from './hooks/useExposedActions';
 
-const formatTimestamp = (timestamp) => {
-  const date = new Date(timestamp);
-  const today = new Date();
-
-  if (date.toDateString() === today.toDateString()) {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); // Shows: "3:45 PM"
-  }
-
-  return date.toLocaleString([], {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
-
-const copyToClipboard = async (text) => {
-  try {
-    await navigator.clipboard.writeText(text);
-    toast.success('Message copied to clipboard');
-  } catch (err) {
-    toast.error('Failed to copy message');
-  }
-};
-
-export const Chat = function Chat({ id, component, properties, styles, setExposedVariables, fireEvent }) {
+export const Chat = ({ id, component, properties, styles, setExposedVariables, fireEvent }) => {
   const darkTheme = localStorage.getItem('darkMode') === 'true';
+  const state = useChatState(properties, setExposedVariables);
+  const actions = useChatActions(state, setExposedVariables, fireEvent);
+  const exposedActions = useExposedActions(actions, state, setExposedVariables);
 
-  const [chatTitle, setChatTitle] = useState(properties.chatTitle);
-  const [userName, setUserName] = useState(properties.userName);
-  const [userAvatar, setUserAvatar] = useState(properties.userAvatar);
-  const [respondentName, setRespondentName] = useState(properties.respondentName);
-  const [respondentAvatar, setRespondentAvatar] = useState(properties.respondentAvatar);
-  const [visibility, setVisibility] = useState(properties.visibility);
-  const [loadingResponse, setLoadingResponse] = useState(properties.loadingResponse);
-  const [loadingHistory, setLoadingHistory] = useState(properties.loadingHistory);
-
-  const [message, setMessage] = useState('');
-  const [chatHistory, setChatHistory] = useState(properties.initialChat || []);
-  const [newMessageDisabled, setNewMessageDisabled] = useState(false);
-  const [error, setError] = useState(null);
-
-  const createMessage = (message, type) => ({
-    message,
-    messageId: uuidv4(),
-    timestamp: new Date().toISOString(),
-    name: type === 'message' ? properties.userName : properties.respondentName,
-    avatar: type === 'message' ? properties.userAvatar : properties.respondentAvatar,
-    type,
-  });
-
-  const updateChatHistoryWhileSendingMessage = (newMessage) => {
-    setChatHistory((currentHistory) => {
-      const updatedHistory = [...currentHistory, newMessage];
-      const exposedVariables = {
-        history: updatedHistory,
-        lastMessage: newMessage,
-      };
-      if (error) setError(null);
-      setExposedVariables(exposedVariables);
-      fireEvent('onMessageSent', newMessage);
-      return updatedHistory;
-    });
-  };
-
-  const handleSendMessage = (message, type = 'message') => {
-    if (!message?.trim()) return;
-    const newMessage = createMessage(message, type);
-    updateChatHistoryWhileSendingMessage(newMessage);
-    setMessage('');
-  };
-
-  const clearHistory = () => {
-    setChatHistory([]);
-    if (error) setError(null);
-    setExposedVariables({ history: [], lastMessage: {}, lastResponse: {} });
-  };
-
-  const downloadChatHistory = () => {
-    try {
-      if (!Array.isArray(chatHistory) || chatHistory.length === 0) {
-        toast.error('No chat history to download');
-        return;
-      }
-
-      const jsonString = JSON.stringify(chatHistory, null, 2);
-      const blob = new Blob([jsonString], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `chat-history-${new Date().toISOString()}.json`;
-
-      // Trigger download
-      document.body.appendChild(link);
-      link.click();
-
-      // Cleanup
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      toast.success('Chat history downloaded successfully');
-    } catch (error) {
-      console.error('Download error:', error);
-      toast.error(`Failed to download chat history: ${error.message || 'Unknown error'}`);
-    }
-  };
+  // Set initial exposed variables
+  useEffect(() => {
+    setExposedVariables(exposedActions);
+  }, []);
 
   const adjustTextareaHeight = (element, value) => {
     if (element.scrollHeight <= 36 || value.trim() === '') {
@@ -133,336 +38,64 @@ export const Chat = function Chat({ id, component, properties, styles, setExpose
     }
   };
 
-  const handleDeleteMessageById = (messageId) => {
-    setChatHistory((currentHistory) => {
-      const updatedHistory = currentHistory.filter((msg) => msg.messageId !== messageId);
-      setExposedVariables({ history: updatedHistory });
-      return updatedHistory;
-    });
-  };
-
-  useEffect(() => {
-    // To update the history exposed variable on initial load with the inital chat value
-    setExposedVariables({
-      history: chatHistory,
-    });
-  }, []);
-
-  useEffect(() => {
-    setChatHistory(properties.initialChat);
-    setExposedVariables({
-      history: properties.initialChat,
-    });
-  }, [properties.initialChat]);
-
-  useEffect(() => {
-    setUserName(properties.userName);
-  }, [properties.userName]);
-
-  useEffect(() => {
-    setUserAvatar(properties.userAvatar);
-  }, [properties.userAvatar]);
-
-  useEffect(() => {
-    setRespondentName(properties.respondentName);
-  }, [properties.respondentName]);
-
-  useEffect(() => {
-    setRespondentAvatar(properties.respondentAvatar);
-  }, [properties.respondentAvatar]);
-
-  useEffect(() => {
-    setChatTitle(properties.chatTitle);
-  }, [properties.chatTitle]);
-
-  useEffect(() => {
-    setLoadingResponse(properties.loadingResponse);
-    setExposedVariables({ isReplyLoading: properties.loadingResponse });
-  }, [properties.loadingResponse]);
-
-  useEffect(() => {
-    setLoadingHistory(properties.loadingHistory);
-    setExposedVariables({ isHistoryLoading: properties.loadingHistory });
-  }, [properties.loadingHistory]);
-
-  useEffect(() => {
-    const exposedVariables = {
-      sendMessage: async function (messageObject) {
-        const { message, type = 'message' } = messageObject;
-        const newMessage = createMessage(message, type);
-        updateChatHistoryWhileSendingMessage(newMessage);
-      },
-      clearHistory: async function () {
-        clearHistory();
-      },
-      deleteMessage: async function (messageId) {
-        handleDeleteMessageById(messageId);
-      },
-      setHistory: async function (history) {
-        setChatHistory(history);
-        if (error) setError(null);
-        setExposedVariables({ history });
-      },
-      appendHistory: async function (messageObject) {
-        const { message, type } = messageObject;
-        const newMessage = createMessage(message, type);
-        setChatHistory((currentHistory) => {
-          const updatedHistory = [...currentHistory, newMessage];
-          const exposedVariables = {
-            history: updatedHistory,
-          };
-          if (newMessage.type === 'message') {
-            exposedVariables.lastMessage = newMessage;
-          } else {
-            exposedVariables.lastResponse = newMessage;
-          }
-          setExposedVariables(exposedVariables);
-          return updatedHistory;
-        });
-      },
-      setVisibility: async function (visibility) {
-        setVisibility(visibility);
-        setExposedVariables({ isVisible: !!visibility });
-      },
-      setNewMessageDisabled: async function (disabled) {
-        setNewMessageDisabled(disabled);
-        setExposedVariables({ isDisabled: !!disabled });
-      },
-      setError: async function (errorMessage = 'Some error occurred. Please retry.') {
-        setError(errorMessage || 'Some error occurred. Please retry.');
-      },
-      downloadChat: async function () {
-        downloadChatHistory();
-      },
-      setResponseLoading: async function (loading) {
-        setLoadingResponse(loading);
-        setExposedVariables({ isReplyLoading: loading });
-      },
-      setHistoryLoading: async function (loading) {
-        setLoadingHistory(loading);
-        setExposedVariables({ isHistoryLoading: loading });
-      },
-    };
-    setExposedVariables(exposedVariables);
-  }, []);
-
-  if (!visibility) return null;
+  if (!state.visibility) return null;
 
   return (
     <div id={id} className={`chat-widget ${darkTheme ? 'dark-theme' : ''}`}>
-      <div
-        className="chat-header p-2 d-flex justify-content-between align-items-center"
-        style={{ borderBottom: '1px solid var(--borders-disabled-on-white)' }}
-      >
-        <span className="chat-title tj-text-xx-large">{chatTitle}</span>
-        <div className="button-group">
-          <Button
-            variant="ghost"
-            onClick={downloadChatHistory}
-            iconOnly={true}
-            className="mx-1"
-            title="Download chat history"
-          >
-            <SolidIcon name="pagedownload" width="16" fill="var(--icons-strong)" />
-          </Button>
-          <Button variant="ghost" onClick={clearHistory} iconOnly={true} className="mx-1">
-            <SolidIcon name="clearhistory" width="16" fill="var(--icons-strong)" />
-          </Button>
-        </div>
-      </div>
+      <ChatHeader
+        title={state.chatTitle}
+        onDownload={exposedActions.downloadChat}
+        onClear={exposedActions.clearHistory}
+      />
 
-      {/* Chat Messages */}
       <div
         className="chat-messages p-2"
-        style={{
-          flexGrow: 1,
-          overflowY: 'auto',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '16px',
-        }}
+        style={{ flexGrow: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px' }}
       >
-        {Array.isArray(chatHistory) &&
-          chatHistory?.length > 0 &&
-          chatHistory?.map((chat, index) => (
-            <div
+        {Array.isArray(state.chatHistory) &&
+          state.chatHistory.map((chat, index) => (
+            <ChatMessage
               key={index}
-              className={cx('message-bubble custom-gap-16', {
-                'message-response': chat.type === 'response',
-                'message-sender': chat.type === 'message',
-                'message-error': chat.type === 'error',
-              })}
-            >
-              <div className="d-flex flex-row align-items-start custom-gap-8 position-relative message-container w-100">
-                <div
-                  className="d-flex flex-row align-items-start justify-content-center"
-                  style={{
-                    minWidth: '38px',
-                  }}
-                >
-                  <div
-                    className="d-flex flex-row align-items-center justify-content-center"
-                    style={{
-                      borderRadius: '50%',
-                      width: '38px',
-                      height: '38px',
-                      border: '1px solid var(--borders-disabled-on-white)',
-                    }}
-                  >
-                    <GetAvatar chatType={chat.type} userAvatar={userAvatar} respondentAvatar={respondentAvatar} />
-                  </div>
-                </div>
-                <div className="d-flex flex-column custom-gap-12 flex-grow-1">
-                  <div className="d-flex flex-row custom-gap-16 align-items-center justify-content-between">
-                    <div className="d-flex flex-row custom-gap-16">
-                      <span className="tj-text tj-header-h8 message-title">
-                        {chat.type === 'message' ? userName : respondentName}
-                      </span>
-                      <span className="tj-text tj-text-xsm message-timestamp">{formatTimestamp(chat.timestamp)}</span>
-                    </div>
-                    <div className="d-flex gap-1 message-actions">
-                      <Button
-                        variant="ghost"
-                        onClick={() => copyToClipboard(chat.message)}
-                        iconOnly={true}
-                        className="action-button"
-                        title="Copy message"
-                      >
-                        <SolidIcon name="copy" width="14" fill="var(--icons-strong)" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        onClick={() => {
-                          handleDeleteMessageById(chat.messageId);
-                        }}
-                        iconOnly={true}
-                        className="action-button"
-                        title="Delete message"
-                      >
-                        <SolidIcon name="trash" width="14" fill="var(--red9)" />
-                      </Button>
-                    </div>
-                  </div>
-                  <div className={`tj-text tj-text-md message-content`}>
-                    <MarkdownMessage content={chat.message} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        {error && (
-          <div className="message-bubble custom-gap-16 message-error">
-            <div className="d-flex flex-row align-items-start custom-gap-8 position-relative message-container w-100">
-              <div
-                className="d-flex flex-row align-items-start justify-content-center"
-                style={{
-                  minWidth: '38px',
-                }}
-              >
-                <div
-                  className="d-flex flex-row align-items-center justify-content-center"
-                  style={{
-                    borderRadius: '50%',
-                    width: '38px',
-                    height: '38px',
-                    border: '1px solid var(--borders-disabled-on-white)',
-                  }}
-                >
-                  {<GetAvatar chatType="error" userAvatar={userAvatar} respondentAvatar={respondentAvatar} />}
-                </div>
-              </div>
-              <div className="d-flex flex-column custom-gap-12 flex-grow-1">
-                <div className="d-flex flex-row custom-gap-16 align-items-center justify-content-between">
-                  <div className="d-flex flex-row custom-gap-16">
-                    <span className="tj-text tj-header-h8 message-title">{respondentName}</span>
-                    <span className="tj-text tj-text-xsm message-timestamp">
-                      {formatTimestamp(new Date().toISOString())}
-                    </span>
-                  </div>
-                </div>
-                <div className={`tj-text tj-text-md message-content`}>{error}</div>
-              </div>
-            </div>
-          </div>
-        )}
-        {(loadingResponse || loadingHistory) && (
-          <div className="message-bubble custom-gap-16 message-loading">
-            <div className="d-flex flex-row align-items-start custom-gap-8 position-relative message-container w-100 h-100">
-              <div
-                className="d-flex flex-row align-items-start justify-content-center"
-                style={{
-                  minWidth: '38px',
-                }}
-              >
-                <div
-                  className="d-flex flex-row align-items-center justify-content-center"
-                  style={{
-                    borderRadius: '50%',
-                    width: '38px',
-                    height: '38px',
-                    border: '1px solid var(--borders-disabled-on-white)',
-                  }}
-                >
-                  {
-                    <GetAvatar
-                      chatType={loadingResponse ? 'response' : 'message'}
-                      userAvatar={userAvatar}
-                      respondentAvatar={respondentAvatar}
-                    />
-                  }
-                </div>
-              </div>
-              <div className="h-100 d-flex align-items-center">
-                <SolidIcon
-                  name="loadingstate"
-                  width="16"
-                  fill={loadingResponse ? 'var(--icons-strong)' : 'var(--primary-brand)'}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Input Area */}
-      <div className="chat-input p-2" style={{ borderTop: '1px solid var(--slate7)' }}>
-        <div className="d-flex gap-2 align-items-center">
-          <textarea
-            className="form-control chat-input-textarea"
-            value={message}
-            onChange={(e) => {
-              setMessage(e.target.value);
-              adjustTextareaHeight(e.target, e.target.value);
-            }}
-            placeholder="Type a message..."
-            style={{
-              resize: 'none',
-              height: '36px',
-              maxHeight: `${36 * 5}px`, // 5 lines max
-              transition: 'height 0.1s ease-out',
-              minHeight: '36px', // Ensure minimum height
-            }}
-            disabled={properties.disableInput}
-          />
-
-          <Button
-            variant="ghost"
-            onClick={() => handleSendMessage(message, 'message')}
-            iconOnly={true}
-            disabled={!message.trim() || properties.disableInput || properties.loadingResponse || newMessageDisabled}
-          >
-            <SolidIcon
-              name="send"
-              width="16"
-              fill={
-                !message.trim() || properties.disableInput || properties.loadingResponse || newMessageDisabled
-                  ? 'var(--icons-weak-disabled)'
-                  : 'var(--icons-strong)'
-              }
+              chat={chat}
+              userName={state.userName}
+              respondentName={state.respondentName}
+              userAvatar={state.userAvatar}
+              respondentAvatar={state.respondentAvatar}
+              onDelete={exposedActions.deleteMessage}
             />
-          </Button>
-        </div>
+          ))}
+
+        {state.error && (
+          <ChatMessage
+            chat={{ type: 'error', message: state.error, timestamp: new Date().toISOString() }}
+            userName={state.userName}
+            respondentName={state.respondentName}
+            userAvatar={state.userAvatar}
+            respondentAvatar={state.respondentAvatar}
+            onDelete={exposedActions.deleteMessage}
+          />
+        )}
+
+        {(state.loadingResponse || state.loadingHistory) && (
+          <LoadingMessage
+            isResponse={state.loadingResponse}
+            userAvatar={state.userAvatar}
+            respondentAvatar={state.respondentAvatar}
+          />
+        )}
       </div>
+
+      <ChatInput
+        message={state.message}
+        onChange={(e) => {
+          state.setMessage(e.target.value);
+          adjustTextareaHeight(e.target, e.target.value);
+        }}
+        onSend={() => exposedActions.sendMessage({ message: state.message, type: 'message' })}
+        disabled={properties.disableInput}
+        loading={state.loadingResponse}
+        newMessageDisabled={state.newMessageDisabled}
+      />
     </div>
   );
 };
