@@ -441,8 +441,8 @@ const sidebars = {
           'items': [
             'user-management/role-based-access/super-admin',
             'user-management/role-based-access/user-roles',
-            'user-management/role-based-access/access-control',
             'user-management/role-based-access/custom-groups',
+            'user-management/role-based-access/access-control',
           ]
         },
         {
