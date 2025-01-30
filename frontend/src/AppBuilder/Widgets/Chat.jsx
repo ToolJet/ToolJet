@@ -145,6 +145,30 @@ export const Chat = function Chat({
     setExposedVariables(exposedVariables);
   }, []);
 
+  // Add this function to handle textarea height
+  const adjustTextareaHeight = (element, value) => {
+    // First set height to auto to get proper scrollHeight
+    // element.style.height = 'auto';
+
+    // If content height is less than or equal to 36px, keep it at 36px
+    if (element.scrollHeight <= 36 || value.trim() === '') {
+      element.style.height = '36px';
+      element.classList.remove('scrollable');
+      return;
+    }
+
+    // Only adjust height if content exceeds 36px
+    const newHeight = Math.min(element.scrollHeight, 36 * 5); // 36px * 5 lines max
+    element.style.height = `${newHeight}px`;
+
+    // Add scrollable class if content height reaches max height
+    if (element.scrollHeight >= 36 * 5) {
+      element.classList.add('scrollable');
+    } else {
+      element.classList.remove('scrollable');
+    }
+  };
+
   if (!visibility) return null;
 
   return (
@@ -300,12 +324,20 @@ export const Chat = function Chat({
       <div className="chat-input p-2" style={{ borderTop: '1px solid var(--slate7)' }}>
         <div className="d-flex gap-2 align-items-center">
           <textarea
-            className="form-control"
+            className="form-control chat-input-textarea"
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            // onKeyPress={handleKeyPress}
+            onChange={(e) => {
+              setMessage(e.target.value);
+              adjustTextareaHeight(e.target, e.target.value);
+            }}
             placeholder="Type a message..."
-            style={{ resize: 'none', height: '38px' }}
+            style={{
+              resize: 'none',
+              height: '36px',
+              maxHeight: `${36 * 5}px`, // 5 lines max
+              transition: 'height 0.1s ease-out',
+              minHeight: '36px', // Ensure minimum height
+            }}
             disabled={properties.disableInput || properties.loadingResponse}
           />
 

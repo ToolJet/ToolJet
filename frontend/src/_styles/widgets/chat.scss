@@ -51,6 +51,39 @@
       color: var(--tomato9) !important;
     }
   }
+  .chat-input-textarea{
+    border: 1px solid var(--borders-default);
+    background-color: var(--surfaces-surface-01);
+    width: 100%;
+    padding: 8px 10px;
+    color: var(--text-primary);
+    border-radius: 6px;
+    overflow-y: hidden;
+    
+    &.scrollable {
+      overflow-y: auto;
+    }
+
+    &:disabled {
+      background-color: var(--surfaces-surface-03);
+      color: var(--text-disabled);
+      border-color: var(--borders-disabled-on-white);
+    }
+
+    &:hover:not(:focus):not(:disabled) {
+      border-color: var(--tblr-input-border-color-darker);
+    }
+
+    &:focus {
+      outline: none;
+      border-color: var(--primary-accent-strong);
+      border-width: 2px;
+    }
+
+    &::placeholder {
+      color: var(--text-placeholder) !important;
+    }
+  }
 }
 .markdown-content {
   // Headers
