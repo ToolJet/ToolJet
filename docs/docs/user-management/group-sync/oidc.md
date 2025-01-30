@@ -5,7 +5,13 @@ title: OpenID Connect
 
 <div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
 
-In ToolJet, you can use the group synchronization feature to automatically update user roles and custom groups from the identity provider. This functionality enables centralized access management, reduces the risk of manual errors, enhances security, and simplifies the user onboarding process.
+In ToolJet, you can use the group synchronization feature to automatically update user roles and custom groups from the identity provider. This functionality enables centralized access management, reduces the risk of manual errors, enhances security, and simplifies the user onboarding process. 
+
+Group synchronization occurs at every login. Users must log out and log back in for changes to be reflected. Manual editing of groups in ToolJet is not recommended as changes will be overwritten upon subsequent logins.
+
+:::caution Deleting a user from Identity provider
+Whenever a user is deleted from the Identity Provider, admins needs to manually archive the user in ToolJet. Otherwise, if password login is enabled, the user can still log in using their password.
+:::
 
 ## Group Mapping
 
@@ -13,19 +19,16 @@ Group mapping in ToolJet follows these principles:
 
 - Default 1:1 mapping based on group names (case-sensitive).
 - Custom group mapping can be configured.
-- New custom groups can be created if no exact match exists.
 - Users without a matching group are assigned to the **end-users** group.
 
 ### Group Mapping Scenarios
 
-| Groups in IdP | Groups in ToolJet | Role Mapping Settings | Result |
+| Groups in IdP | <div style={{width: '180px'}}> Groups in ToolJet </div> | Role Mapping Settings | Result |
 |---------------|-------------------|------------------------|--------|
-| **admin**, **builder**, **end-user** | Exists | None | User added to corresponding default user group. |
-| **engineers** | Exists (no permissions) | None | User added to **engineers** custom group and **end-users** default group. |
-| **engineers** | Exists (with permissions) | None | User added to **engineers** custom group and either **end-users** or **builders** based on permissions. |
-| **engineers** | Doesn't exist | **engineers → all apps** | User added to **all apps** custom group and **builder** or **end-user** default group based on permissions. |
-| **engineers** | Doesn't exist | **engineers → builders** | User added to **builders** default group. |
-| **admin**, **all apps** | Exists | None | User added to **all apps** and assigned **admin** role. |
+| **admin**, **builder**, **end-user** | Exists (User Roles) | None | User is assigned with the corresponding user role. |
+| **engineers** | Exists | None | User added to **engineers** custom group and assigned either **end-users** or **builders** user role based on permissions. |
+| **engineers** | **engineers** - Doesn't exist <br/> **developer** - Exists | **engineers → developers** | User added to **developers** custom group and assigned **builder** or **end-user** role based on permissions. |
+| **admin**, **developers** | Exists | None | User added to **developers** custom group and assigned **admin** user role. |
 | no group | N/A | None | User added to **end-users** default group. |
 
 ## Configure OIDC Group Sync in ToolJet
@@ -49,13 +52,6 @@ To set up OIDC group synchronization in ToolJet follow these steps:
    ```
 
    <img className="screenshot-full" src="/img/sso/group-sync-oidc.png" alt="OIDC Group Sync Config" />
-
-## Important Considerations
-
-- Group synchronization occurs at every login. Users must log out and log back in for changes to be reflected.
-- Manual editing of groups is not recommended as changes will be overwritten upon subsequent logins.
-- User roles are assigned based on custom group permissions, taking priority over default user roles.
-- Group filtering should be configured at the IdP level during OIDC application setup.
 
 ## Licensing
 
