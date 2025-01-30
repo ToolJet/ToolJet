@@ -13,6 +13,8 @@ Group synchronization occurs at every login. Users must log out and log back in 
 Whenever a user is deleted from the Identity Provider, admins needs to manually archive the user in ToolJet. Otherwise, if password login is enabled, the user can still log in using their password.
 :::
 
+If the license expires or downgrades to a plan without group sync, both SSO and group sync features will be disabled. Users will need to log in via alternative SSO methods or email/password. If the license limit is reached, new users will not be allowed to log in.
+
 ## Group Mapping
 
 Group mapping in ToolJet follows these principles:
@@ -52,9 +54,3 @@ To set up OIDC group synchronization in ToolJet follow these steps:
    ```
 
    <img className="screenshot-full" src="/img/sso/group-sync-oidc.png" alt="OIDC Group Sync Config" />
-
-## Licensing
-
-- If a license expires or downgrades to a plan without group sync, both SSO and group sync features will be disabled.
-- Users will need to log in via alternative SSO methods or email/password.
-- If the license limit is reached, new users will not be allowed to log in.
