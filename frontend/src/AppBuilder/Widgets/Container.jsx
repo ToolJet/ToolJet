@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Container as ContainerComponent } from '@/AppBuilder/AppCanvas/Container';
 import Spinner from '@/_ui/Spinner';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
@@ -20,6 +20,15 @@ export const Container = ({
     setExposedVariables,
     setExposedVariable
   );
+
+  const [verticalBorder, setVerticalBorder] = useState(10);
+
+  useEffect(() => {
+    // Set vertical border based on height of the container so that it stays in multitples of 10.
+    const remainder = height % 10;
+    const adjustment = remainder <= 5 ? remainder : 10 - remainder;
+    setVerticalBorder(adjustment / 2); // Padding for one side
+  }, [height]);
 
   const { borderRadius, borderColor, boxShadow, headerHeight = 80 } = styles;
   const contentBgColor = useMemo(() => {
@@ -47,6 +56,7 @@ export const Container = ({
     overflow: 'hidden auto',
     position: 'relative',
     boxShadow,
+    // padding: `${verticalBorder}px 10px`,
   };
 
   const computedHeaderStyles = {

@@ -18,6 +18,7 @@ import {
   getPositionForGroupDrag,
   adjustWidth,
 } from './gridUtils';
+import { snapToGridAndFixOverflow } from '@/AppBuilder/AppCanvas/appCanvasUtils';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
@@ -625,7 +626,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           //  to handle their own interactions like column resizing or card dragging
           let isDragOnInnerElement = false;
 
-          /* If the drag or click is on a calender popup draggable interactions are not executed so that popups and other components inside calender popup works. 
+          /* If the drag or click is on a calender popup draggable interactions are not executed so that popups and other components inside calender popup works.
             Also user dont need to drag an calender from using popup */
           if (hasParentWithClass(e.inputEvent.target, 'react-datepicker-popper')) {
             return false;
@@ -674,6 +675,7 @@ export default function Grid({ gridWidth, currentLayout }) {
               return;
             }
 
+            // Implenent here
             let draggedOverElemId = boxList.find((box) => box.id === e.target.id)?.parent;
             let draggedOverElemIdType;
             const parentComponent = boxList.find((box) => box.id === boxList.find((b) => b.id === e.target.id)?.parent);
@@ -708,6 +710,7 @@ export default function Grid({ gridWidth, currentLayout }) {
 
             const _gridWidth = useGridStore.getState().subContainerWidths[draggedOverElemId] || gridWidth;
             const currentParentId = boxList.find(({ id: widgetId }) => e.target.id === widgetId)?.component?.parent;
+            const currentWidget = boxList.find(({ id }) => id === e.target.id);
             let left = e.lastEvent?.translate[0];
             let top = e.lastEvent?.translate[1];
             if (
@@ -717,11 +720,33 @@ export default function Grid({ gridWidth, currentLayout }) {
             ) {
               const elemContainer = e.target.closest('.real-canvas');
               const containerHeight = elemContainer.clientHeight;
+              const containerWidth = elemContainer.clientWidth;
+              const containerBoundingRect = elemContainer.getBoundingClientRect();
+              // const elem = boxList.find((box) => box.id === draggedOverElemId)?.component;
+
               const maxY = containerHeight - e.target.clientHeight;
               top = top > maxY ? maxY : top;
+
+              const offsetFromTopOfWindow = containerBoundingRect?.top;
+              const offsetFromLeftOfWindow = containerBoundingRect?.left;
+              const currentOffset = e.target?.getBoundingClientRect();
+
+              let leftFromParent = Math.round(currentOffset?.x - offsetFromLeftOfWindow);
+              let topFromParent = Math.round(currentOffset?.y - offsetFromTopOfWindow);
+
+              const [_left, _top] = snapToGridAndFixOverflow({
+                containerWidth,
+                containerHeight,
+                width: currentWidget.width * _gridWidth,
+                height: currentWidget.height,
+                top: topFromParent,
+                left: leftFromParent,
+              });
+
+              top = _top;
+              left = _left;
             }
 
-            const currentWidget = boxList.find(({ id }) => id === e.target.id)?.component?.component;
             const parentId = draggedOverElemId?.length > 36 ? draggedOverElemId.slice(0, 36) : draggedOverElemId;
             draggedOverElemIdType = getComponentTypeFromId(parentId);
             const parentWidget = draggedOverElemIdType === 'Kanban' ? 'Kanban_card' : draggedOverElemIdType;

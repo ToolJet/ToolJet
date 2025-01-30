@@ -116,6 +116,9 @@ export const Container = React.memo(
       const canvasId = e.target.closest('.real-canvas')?.getAttribute('id')?.split('canvas-')[1];
       setFocusedParentId(canvasId);
     };
+
+    console.log(`******************** ${id} ${id !== 'canvas' ? `${canvasHeight}` : ''}`, canvasWidth);
+
     return (
       <div
         // {...(config.COMMENT_FEATURE_ENABLE && showComments && { onClick: handleAddThread })}
@@ -184,7 +187,7 @@ export const Container = React.memo(
           ))}
         </div>
 
-        {/* Due to some reason react-dnd does not identify the dragover element if this element is dynamically removed on drag. 
+        {/* Due to some reason react-dnd does not identify the dragover element if this element is dynamically removed on drag.
         Hence display is set to none on dragover and removed only when the component is added */}
         {(!components || components?.length === 0) && (
           <div style={{ display: showEmptyContainer ? 'block' : 'none' }}>

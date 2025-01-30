@@ -1011,6 +1011,21 @@ export const createComponentsSlice = (set, get) => ({
     return [snappedX, snappedY];
   },
 
+  snapToGridAndFixOverflow({ containerWidth, containerHeight, width, height, top, left }) {
+    let [snappedX, snappedY] = this.snapToGrid(containerWidth, left, top);
+
+    // Bring overflow back to the container bottom
+    if (top + height > containerHeight) {
+      snappedY = containerHeight - height - 2;
+    }
+
+    // Bring overflow back to the container right
+    if (left + width > containerWidth) {
+      snappedX = containerWidth - width - 2;
+    }
+    return [snappedX, snappedY];
+  },
+
   setComponentLayout: (
     componentLayouts,
     newParentId,
