@@ -190,6 +190,7 @@ import PageDownload from './PageDownload.jsx';
 import Send from './Send.jsx';
 import DefaultSenderChatIcon from './DefaultSenderChatIcon.jsx';
 import DefaultResponseAvatar from './DefaultResponseAvatar.jsx';
+import LoadingState from './LoadingState.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -573,6 +574,8 @@ const Icon = (props) => {
       return <DefaultResponseAvatar {...props} />;
     case 'defaultsenderchatavatar':
       return <DefaultSenderChatIcon {...props} />;
+    case 'loadingstate':
+      return <LoadingState {...props} />;
     default:
       return <Apps {...props} />;
   }
