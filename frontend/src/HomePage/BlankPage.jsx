@@ -23,8 +23,8 @@ export const BlankPage = function BlankPage({
   const navigate = useNavigate();
 
   const staticTemplates = [
-    { id: 'customer-ticketing-form', name: 'Customer ticketing form' },
-    { id: 'inventory-management-tooljet-db', name: 'Inventory management' },
+    { id: 'customer-ticket-system', name: 'Customer ticket system' },
+    { id: 'inventory-management-system-tooljet-database', name: 'Inventory management' },
     { id: 'kpi-management-dashboard-tooljet-db', name: 'KPI management dashboard' },
   ];
 

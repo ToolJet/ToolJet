@@ -1,0 +1,20 @@
+{
+  "name": "Account receivable",
+  "description": "Monitor payments and invoices with Stripe and ToolJet DB, offering real-time tracking and financial insights.",
+  "widgets": [
+    "Table",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "account-receivable",
+  "category": "financial-services"
+}

@@ -1,0 +1,20 @@
+{
+  "name": "Weather comparison",
+  "description": "Transform ToolJet DB data into interactive charts and graphs. Uncover trends and make data-driven decisions effortlessly using advanced visualizations.",
+  "widgets": [
+    "Table",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "RestAPI",
+      "id": "restapi"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "weather-comparison",
+  "category": "data-and-analytics"
+}

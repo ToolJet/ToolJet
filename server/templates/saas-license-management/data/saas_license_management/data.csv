@@ -1,0 +1,21 @@
+id,software,assigned_to,email,cost,period,type,notes,license,url,valid_till,generation_date
+1,ToolJet,Emma Johnson,emma.johnson@example.com,350,Yearly,Team,5 workspaces,TJ7X2P9QKFM3RNLW4VBCZG6DHYS8A1E0U5IOJA,https://tooljet.com,09/12/2025,09/12/2024
+2,Slack,Michael Chen,michael.chen@example.com,75,Monthly,Team,10 user license,SL9H4T1BXKW7MNCP2RFDZY8GQVJ6E3A5U0LOIS,https://slack.com,29/11/2024,29/06/2024
+3,Adobe Creative Suite,Sarah Thompson,sarah.thompson@example.com,600,Yearly,Single,Full suite access,AD5G8R2WQNX1PVBH3TMFZJ9CKLY7D6E4U0SOIA,https://www.adobe.com/creativecloud.html,16/12/2025,16/12/2024
+4,Zoom,David Wilson,david.wilson@example.com,150,Yearly,Team,50 participant limit,ZM3F6P9TQKW2RNLX7VBCZH5GJYS1A8E0D4MOIA,https://zoom.us,12/01/2026,12/01/2025
+5,Microsoft 365,Alice Brown,alice.brown@example.com,100,Monthly,Team,Business Standard plan,MS2J7T4BXKW9MNCP5RFDZY1GQVJ8E3A6U0LOIS,https://www.microsoft.com/microsoft-365,24/12/2025,24/12/2024
+6,Asana,Robert Taylor,robert.taylor@example.com,120,Yearly,Team,Premium plan,AS6H1R8WQNX3PVBK2TMFZJ7CKLY9D5E4U0SOIA,https://asana.com,06/01/2026,06/01/2025
+7,Salesforce,Jennifer Lee,jennifer.lee@example.com,750,Yearly,Team,Enterprise edition,SF4G9P2TKFM6RNLW1VBCZG3DHYS5A7E0U8IOJA,https://www.salesforce.com,19/12/2025,19/12/2024
+8,GitHub,Christopher Davis,chris.davis@example.com,200,Monthly,Team,Team plan,GH7X3T1BXKW5MNCP8RFDZY2GQVJ4E9A6U0LOIS,https://github.com,02/01/2026,02/01/2025
+9,Jira,Elizabeth Martinez,elizabeth.martinez@example.com,140,Yearly,Team,Standard plan,JR9H5R2WQNX7PVBH6TMFZJ1CKLY3D8E4U0SOIA,https://www.atlassian.com/software/jira,14/12/2025,14/12/2024
+10,Dropbox,William Anderson,william.anderson@example.com,240,Yearly,Team,Business plan,DB1F8P9TQKW4RNLX3VBCZH7GJYS2A5E0D6MOIA,https://www.dropbox.com,26/09/2024,26/09/2024
+11,Google Workspace,Olivia White,olivia.white@example.com,180,Yearly,Team,Business Standard,GW5J2T4BXKW1MNCP7RFDZY9GQVJ3E8A6U0LOIS,https://workspace.google.com,22/12/2025,22/12/2024
+12,AWS,Daniel Garcia,daniel.garcia@example.com,500,Monthly,Team,Business support plan,AW8H7R1WQNX9PVBK4TMFZJ5CKLY6D2E4U0SOIA,https://aws.amazon.com,09/01/2026,09/01/2025
+13,Tableau,Sophia Kim,sophia.kim@example.com,840,Yearly,Team,Creator license,TB2G5P7TKFM8RNLW9VBCZG1DHYS4A3E0U6IOJA,https://www.tableau.com,04/12/2025,04/12/2024
+14,Notion,James Wilson,james.wilson@example.com,96,Yearly,Team,Team plan,NT6X9T3BXKW2MNCP1RFDZY4GQVJ7E5A6U0LOIS,https://www.notion.so,16/01/2026,16/01/2025
+15,Zendesk,Emily Clark,emily.clark@example.com,300,Monthly,Team,Enterprise plan,ZD3H8R5WQNX6PVBH9TMFZJ2CKLY1D7E4U0SOIA,https://www.zendesk.com,29/11/2025,29/11/2024
+16,InVision,Andrew Johnson,andrew.johnson@example.com,180,Yearly,Team,Professional plan,IV7F1P4TQKW9RNLX5VBCZH3GJYS6A2E0D8MOIA,https://www.invisionapp.com,12/01/2026,12/01/2025
+17,Mailchimp,Mia Rodriguez,mia.rodriguez@example.com,240,Yearly,Single,Standard plan,MC9J4T7BXKW3MNCP6RFDZY8GQVJ2E1A6U0LOIS,https://mailchimp.com,24/12/2025,24/12/2024
+18,DocuSign,Ethan Thomas,ethan.thomas@example.com,300,Yearly,Team,Business Pro,DS1H3R9WQNX2PVBK7TMFZJ6CKLY8D4E4U0SOIA,https://www.docusign.com,06/01/2026,06/01/2025
+19,Hubspot,Ava Patel,ava.patel@example.com,1200,Yearly,Team,Marketing Hub Professional,HB4G7P5TKFM1RNLW2VBCZG8DHYS9A6E0U3IOJA,https://www.hubspot.com,19/12/2025,19/12/2024
+20,Trello,Noah Martin,noah.martin@example.com,120,Yearly,Team,Business Class,TR8X6T2BXKW4MNCP9RFDZY5GQVJ1E7A6U0LOIS,https://trello.com,02/01/2026,02/01/2025
