@@ -500,7 +500,6 @@ const sidebars = {
         },
       ],
     },
-    'tooljet-copilot',
     'security',
     'tracking',
     {
