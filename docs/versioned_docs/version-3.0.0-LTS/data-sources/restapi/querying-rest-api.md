@@ -132,7 +132,7 @@ iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAA/FBMVEVAYt79/f1AYt/9/f79/ftAY9s/
 ```
 </details>
 
-Read the guide on **[loading base64 data](/docs/how-to/loading-image-pdf-from-db)**
+Read the guide on **[loading base64 data](/docs/how-to/loading-image-pdf-from-db)**.
 
 <img className="screenshot-full" src="/img/datasource-reference/rest-api/base64.png" alt="ToolJet - Data source - REST API" />
 
