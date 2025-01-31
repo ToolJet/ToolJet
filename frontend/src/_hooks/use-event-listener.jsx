@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useEventListener } from './use-event-listener';
 
 export function useEventListener(eventName, handler, element = window) {
   const savedHandler = React.useRef();
@@ -16,3 +17,21 @@ export function useEventListener(eventName, handler, element = window) {
     };
   }, [eventName, element]);
 }
+
+function ExampleComponent() {
+  const [key, setKey] = useState('');
+
+  const handleKeydown = (event) => {
+    setKey(event.key);
+  };
+
+  useEventListener('keydown', handleKeydown);
+
+  return (
+    <div>
+      <p>Press any key: {key}</p>
+    </div>
+  );
+}
+
+export default ExampleComponent;

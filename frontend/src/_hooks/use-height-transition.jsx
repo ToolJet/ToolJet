@@ -25,4 +25,32 @@ function useHeight(on = true) {
   return [ref, height];
 }
 
-export default useHeight;
+export { useHeight };
+
+import React, { useState } from 'react';
+import useHeight from './use-height-transition';
+
+function ExampleHeightComponent() {
+  const [isVisible, setIsVisible] = useState(true);
+  const [ref, height] = useHeight(isVisible);
+
+  return (
+    <div>
+      <button onClick={() => setIsVisible(!isVisible)}>
+        Toggle Height
+      </button>
+      <div
+        ref={ref}
+        style={{
+          height: isVisible ? `${height}px` : '0px',
+          overflow: 'hidden',
+          transition: 'height 0.3s ease',
+        }}
+      >
+        <p>This is some content that will expand and collapse.</p>
+      </div>
+    </div>
+  );
+}
+
+export default ExampleHeightComponent;
