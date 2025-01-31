@@ -52,6 +52,10 @@ export const tabsConfig = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: {
+    useDynamicOptions: {
+      type: 'toggle',
+      displayName: 'Dynamic options',
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -116,6 +120,7 @@ export const tabsConfig = {
     hideTabs: {
       type: 'toggle',
       displayName: 'Hide tabs',
+      section: 'additionalActions',
       validation: {
         schema: {
           type: 'boolean',
@@ -126,12 +131,20 @@ export const tabsConfig = {
     renderOnlyActiveTab: {
       type: 'toggle',
       displayName: 'Render only active tab',
+      section: 'additionalActions',
       validation: {
         schema: {
           type: 'boolean',
         },
         defaultValue: false,
       },
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' }, defaultValue: '' },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
     },
   },
   events: { onTabSwitch: { displayName: 'On tab switch' } },
@@ -212,9 +225,32 @@ export const tabsConfig = {
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
+      useDynamicOptions: { value: '{{false}}' },
       tabs: {
         value:
           "{{[ \n\t\t{ title: 'Home', id: '0' }, \n\t\t{ title: 'Profile', id: '1' }, \n\t\t{ title: 'Settings', id: '2' } \n ]}}",
+      },
+      tabItems: {
+        value: [
+          {
+            id: 1,
+            title: 'Home',
+            disable: { value: false },
+            visible: { value: true },
+          },
+          {
+            id: 2,
+            title: 'Profile',
+            disable: { value: false },
+            visible: { value: true },
+          },
+          {
+            id: 3,
+            title: 'Settings',
+            disable: { value: false },
+            visible: { value: true },
+          },
+        ]
       },
       defaultTab: { value: '0' },
       hideTabs: { value: false },
@@ -222,6 +258,7 @@ export const tabsConfig = {
       loadingState: { value: `{{false}}` },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
+      tooltip: { value: '' },
     },
     events: [],
     styles: {
