@@ -486,6 +486,29 @@ const sidebars = {
     },
     {
       'type': 'category',
+      'label': 'Development Lifecycle',
+      'items': [
+        {
+          'type': 'category',
+          'label': 'Release Management',
+          'items': [
+            'development-lifecycle/release/version-control',
+            'development-lifecycle/release/release-rollback',
+          ]
+        },
+        'development-lifecycle/share-app',
+        {
+          'type': 'category',
+          'label': 'Backup',
+          'items': [
+            'development-lifecycle/backup/gitsync',
+            'development-lifecycle/backup/sql-backup'
+          ]
+        },
+      ]
+    },
+    {
+      'type': 'category',
       'label': 'Workflows',
       'items': [
         'workflows/overview',
