@@ -32,19 +32,25 @@ class OrganizationInvitationPageComponent extends React.Component {
   }
 
   componentDidMount() {
-    authenticationService.deleteLoginOrganizationId();
-    setFaviconAndTitle(this.whiteLabelText, this.whiteLabelFavicon, this.props?.location);
-    checkWhiteLabelsDefaultState(this.organizationId).then((res) => {
-      this.setState({ defaultState: res });
-      this.whiteLabelText = retrieveWhiteLabelText();
-      this.whiteLabelFavicon = retrieveWhiteLabelFavicon();
-    });
-    document.addEventListener('keydown', this.handleEnterKey);
+    this.handleInvitation();
   }
 
-  handleEnterKey = (e) => {
-    if (e.key === 'Enter') {
-      this.acceptInvite(e);
+  handleInvitation = async () => {
+    this.setState({ isLoading: true });
+    try {
+      const response = await appService.acceptOrganizationInvitation(this.organizationId);
+      if (response.success) {
+        toast.success(this.props.t('Invitation accepted successfully'));
+        onLoginSuccess(response.data);
+        updateCurrentSession(response.data);
+        this.props.history.push('/dashboard');
+      } else {
+        toast.error(this.props.t('Failed to accept the invitation'));
+      }
+    } catch (error) {
+      toast.error(this.props.t('An error occurred while accepting the invitation'));
+    } finally {
+      this.setState({ isLoading: false });
     }
   };
 
@@ -52,106 +58,23 @@ class OrganizationInvitationPageComponent extends React.Component {
     document.removeEventListener('keydown', this.handleEnterKey);
   }
 
-  acceptInvite = (e) => {
-    e.preventDefault();
-
-    const token = this.props?.params?.token;
-    this.setState({ isLoading: true });
-
-    appService
-      .acceptInvite({
-        token,
-      })
-      .then((data) => {
-        toast.success(`Added to the workspace successfully.`);
-        updateCurrentSession({
-          isUserLoggingIn: true,
-        });
-        onLoginSuccess(data, this.props.navigate);
-      })
-      .catch(() => {
-        toast.error('Error while setting up your account.', { position: 'top-center' });
-        this.setState({ isLoading: false });
-      });
-  };
-
   render() {
     const { isLoading } = this.state;
-    const { name, email, invitedOrganizationName: organizationName } = this.props;
     return (
-      <div className="page" ref={this.formRef}>
-        <div>
-          <div className="page common-auth-section-whole-wrapper">
-            <div className="common-auth-section-left-wrapper">
-              <OnboardingNavbar darkMode={this.props.darkMode} />
-              <div className="common-auth-section-left-wrapper-grid">
-                <form action="." method="get" autoComplete="off">
-                  <div className="common-auth-container-wrapper">
-                    <h2 className="common-auth-section-header org-invite-header" data-cy="invite-page-header">
-                      Join {organizationName ? organizationName : this.whiteLabelText}
-                    </h2>
-
-                    <div className="invite-sub-header" data-cy="invite-page-sub-header">
-                      {`You are invited to ${
-                        organizationName
-                          ? `a workspace ${organizationName}. Accept the invite to join the workspace.`
-                          : this.whiteLabelText
-                      }`}
-                    </div>
-
-                    <div className="org-page-inputs-wrapper">
-                      <label className="tj-text-input-label" data-cy="name-label">
-                        Name
-                      </label>
-                      <p className="tj-text-input onbaording-disabled-field" data-cy="invited-user-name">
-                        {name}
-                      </p>
-                    </div>
-
-                    <div className="signup-inputs-wrap">
-                      <label className="tj-text-input-label" data-cy="email-label">
-                        Email
-                      </label>
-                      <p className="tj-text-input onbaording-disabled-field" data-cy="invited-user-email">
-                        {email}
-                      </p>
-                    </div>
-
-                    <div>
-                      <ButtonSolid
-                        className="org-btn login-btn"
-                        onClick={(e) => this.acceptInvite(e)}
-                        data-cy="accept-invite-button"
-                      >
-                        {isLoading ? (
-                          <div className="spinner-center">
-                            <Spinner />
-                          </div>
-                        ) : (
-                          <>
-                            <span>{this.props.t('confirmationPage.acceptInvite', 'Accept invite')}</span>
-                            <EnterIcon className="enter-icon-onboard" fill={'#fff'} />
-                          </>
-                        )}
-                      </ButtonSolid>
-                    </div>
-                    <p className="text-center-onboard d-block">
-                      By signing up you are agreeing to the
-                      <br />
-                      <span>
-                        <a href="https://www.tooljet.com/terms">Terms of Service </a>&
-                        <a href="https://www.tooljet.com/privacy"> Privacy Policy</a>
-                      </span>
-                    </p>
-                  </div>
-                </form>
-              </div>
+      <div>
+        <OnboardingNavbar />
+        <div className="invitation-container">
+          {isLoading ? (
+            <Spinner />
+          ) : (
+            <div>
+              <h1>{this.props.t('Accepting your invitation...')}</h1>
             </div>
-          </div>
+          )}
         </div>
       </div>
     );
   }
 }
 
-export const OrganizationInvitationPage = withTranslation()(withRouter(OrganizationInvitationPageComponent));
+export default withRouter(withTranslation()(OrganizationInvitationPageComponent));
