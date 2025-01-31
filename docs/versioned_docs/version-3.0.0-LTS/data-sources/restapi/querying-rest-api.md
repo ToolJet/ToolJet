@@ -51,8 +51,8 @@ For example, to send a **multipart/form-data** body, you can add the following h
 <img className="screenshot-full" src="/img/datasource-reference/rest-api/form-body.png" alt="ToolJet - Data source - REST API" />
 <br/><br/>
 
-:::info Handling Azure OAuth Token via REST API
-To obtain an OAuth token for Azure via REST API, add the following custom header: <br/>
+:::info Handling OAuth Token via REST API
+To obtain an OAuth token via REST API, add the following custom header: <br/>
 `Content-Type: application/x-www-form-urlencoded`
 :::
 
