@@ -70,17 +70,18 @@ describe("Bulk user upload", () => {
       "You can only invite 250 users at a time"
     );
 
-    bulkUserUpload(
-      non_existing_group,
-      "non_existing_group",
-      "2 groups doesn't exist. No users were uploaded"
-    );
 
     cy.wait(3000);
     bulkUserUpload(
       without_Role,
       "without_Role",
       "Missing user_role,groups information in 5 row(s);. No users were uploaded, please update and try again."
+    );
+
+    bulkUserUpload(
+      non_existing_group,
+      "non_existing_group",
+      "2 groups doesn't exist. No users were uploaded"
     );
 
     //add more groups and verify
