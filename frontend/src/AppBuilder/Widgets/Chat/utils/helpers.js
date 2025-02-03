@@ -1,4 +1,7 @@
 export const formatTimestamp = (timestamp) => {
+  if (!timestamp || isNaN(new Date(timestamp).getTime())) {
+    return '--/--';
+  }
   const date = new Date(timestamp);
   const today = new Date();
 

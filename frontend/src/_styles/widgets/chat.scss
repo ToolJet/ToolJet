@@ -51,6 +51,17 @@
         opacity: 1;
       }
     }
+
+    // Add this to control spacing in the message column
+    .d-flex.flex-column {
+      gap: 0; // Add 0px gap between header and content
+      
+      // Remove any extra spacing from children
+      > * {
+        margin: 0;
+        padding: 0;
+      }
+    }
   }
   .message-error{
     .message-content {

@@ -29,7 +29,7 @@ export const ChatMessage = ({
       'message-error': chat.type === 'error',
     })}
   >
-    <div className="d-flex flex-row align-items-start custom-gap-8 position-relative message-container w-100">
+    <div className="d-flex flex-row align-items-start custom-gap-12 position-relative message-container w-100">
       <MessageAvatar type={chat.type} userAvatar={userAvatar} respondentAvatar={respondentAvatar} />
       <div className="d-flex flex-column flex-grow-1">
         <MessageHeader
