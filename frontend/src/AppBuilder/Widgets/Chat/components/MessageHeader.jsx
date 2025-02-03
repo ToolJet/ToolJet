@@ -23,9 +23,6 @@ export const MessageHeader = ({ type, userName, respondentName, timestamp, onCop
       <Button variant="ghost" onClick={onCopy} iconOnly className="action-button" title="Copy message">
         <SolidIcon name="copy" width="14" fill="var(--icons-strong)" />
       </Button>
-      <Button variant="ghost" onClick={onDelete} iconOnly className="action-button" title="Delete message">
-        <SolidIcon name="trash" width="14" fill="var(--red9)" />
-      </Button>
     </div>
   </div>
 );
