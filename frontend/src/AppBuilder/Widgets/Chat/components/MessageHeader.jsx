@@ -20,8 +20,8 @@ export const MessageHeader = ({ type, userName, respondentName, timestamp, onCop
       </span>
     </div>
     <div className="d-flex gap-1 message-actions">
-      <Button variant="ghost" onClick={onCopy} iconOnly className="action-button" title="Copy message">
-        <SolidIcon name="copy" width="14" fill="var(--icons-strong)" />
+      <Button variant="ghost" onClick={onCopy} className="action-button" label="Copy" size="small" leadingIcon="copy">
+        Copy
       </Button>
     </div>
   </div>
