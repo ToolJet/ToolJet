@@ -5,7 +5,13 @@
 @import "../typography.scss";
 @import "../designtheme.scss";
 .chat-widget {
-  background-color: var(--surfaces-surface-01) !important;
+  .tj-text-color-not-important {
+    font-family: 'IBM Plex Sans';
+    font-style: normal;
+    margin: 0;
+    padding: 0;
+    color: var(--slate12);
+  }
   width: 100%;
   height: 100%;
   display: flex;
@@ -58,11 +64,10 @@
     }
   }
   .chat-input-textarea{
-    border: 1px solid var(--borders-default);
-    background-color: var(--surfaces-surface-01);
+    border-width: 1px;
+    border-style: solid;
     width: 100%;
     padding: 8px 10px;
-    color: var(--text-primary);
     border-radius: 6px;
     overflow-y: hidden;
     
@@ -81,9 +86,9 @@
     }
 
     &:focus {
-      outline: none;
-      border-color: var(--primary-accent-strong);
-      border-width: 2px;
+      outline: none !important;
+     
+      border-width: 2px !important;
     }
 
     &::placeholder {
@@ -93,7 +98,7 @@
   .markdown-content {
     // Headers
     h1, h2, h3, h4, h5, h6 {
-      margin: 16px 0 8px;
+      // margin: 16px 0 8px;
       color: var(--text-black-000);
       font-weight: 600;
     }
@@ -110,7 +115,7 @@
     // Lists
     ul, ol {
       padding-left: 24px;
-      margin: 8px 0;
+      // margin: 8px 0;
       li {
         margin: 4px 0;
         p { margin: 0; } // Fix extra spacing in list items
@@ -198,10 +203,21 @@
   
     // Paragraphs
     p {
-      margin: 8px 0;
+      // margin: 8px 0;
       line-height: 1.5;
     }
   }
+  &.dark-theme {
+    .form-control {
+      background-color: var(--surfaces-surface-01);
+      border-color: var(--slate7);
+      
+      // &:focus {
+      //   border-color: var(--primary-accent-strong);
+      // }
+    }
+  }
+  .chat-messages{
+    overflow-x: hidden !important;
+  }
 }
-
-

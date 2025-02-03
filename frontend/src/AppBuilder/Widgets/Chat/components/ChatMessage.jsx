@@ -13,7 +13,15 @@ const copyToClipboard = async (text) => {
     toast.error('Failed to copy message');
   }
 };
-export const ChatMessage = ({ chat, userName, respondentName, userAvatar, respondentAvatar, onDelete }) => (
+export const ChatMessage = ({
+  chat,
+  userName,
+  respondentName,
+  userAvatar,
+  respondentAvatar,
+  onDelete,
+  computedStyles,
+}) => (
   <div
     className={cx('message-bubble custom-gap-16', {
       'message-response': chat.type === 'response',
@@ -23,7 +31,7 @@ export const ChatMessage = ({ chat, userName, respondentName, userAvatar, respon
   >
     <div className="d-flex flex-row align-items-start custom-gap-8 position-relative message-container w-100">
       <MessageAvatar type={chat.type} userAvatar={userAvatar} respondentAvatar={respondentAvatar} />
-      <div className="d-flex flex-column custom-gap-12 flex-grow-1">
+      <div className="d-flex flex-column flex-grow-1">
         <MessageHeader
           type={chat.type}
           userName={userName}
@@ -31,8 +39,12 @@ export const ChatMessage = ({ chat, userName, respondentName, userAvatar, respon
           timestamp={chat.timestamp}
           onCopy={() => copyToClipboard(chat.message)}
           onDelete={() => onDelete(chat.messageId)}
+          computedStyles={computedStyles}
         />
-        <div className="tj-text tj-text-md message-content">
+        <div
+          className="tj-text-md message-content tj-text-color-not-important"
+          style={{ color: computedStyles.messageContent.message }}
+        >
           <MarkdownMessage content={chat.message} />
         </div>
       </div>

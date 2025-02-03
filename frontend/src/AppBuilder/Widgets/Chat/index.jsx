@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import '@/_styles/widgets/chat.scss';
 import { ChatHeader } from './components/ChatHeader';
 import { ChatMessage } from './components/ChatMessage';
@@ -7,17 +7,37 @@ import { ChatInput } from './components/ChatInput';
 import { useChatState } from './hooks/useChatState';
 import { useChatActions } from './hooks/useChatActions';
 import { useExposedActions } from './hooks/useExposedActions';
+import { useComputedStyles } from './hooks/useComputedStyles';
 
 export const Chat = ({ id, component, properties, styles, setExposedVariables, fireEvent }) => {
   const darkTheme = localStorage.getItem('darkMode') === 'true';
+  const chatMessagesRef = useRef(null);
   const state = useChatState(properties, setExposedVariables);
   const actions = useChatActions(state, setExposedVariables, fireEvent);
   const exposedActions = useExposedActions(actions, state, setExposedVariables);
-
+  const computedStyles = useComputedStyles(styles);
   // Set initial exposed variables
   useEffect(() => {
     setExposedVariables(exposedActions);
   }, []);
+
+  useEffect(() => {
+    // Add effect to scroll to bottom when chat history changes
+    if (chatMessagesRef.current) {
+      const lastMessage = chatMessagesRef.current.lastElementChild;
+      if (lastMessage) {
+        // Get the exact position relative to the chat container
+        const containerRect = chatMessagesRef.current.getBoundingClientRect();
+        const messageRect = lastMessage.getBoundingClientRect();
+        const relativeTop = messageRect.top - containerRect.top;
+
+        chatMessagesRef.current.scrollTo({
+          top: chatMessagesRef.current.scrollTop + relativeTop,
+          behavior: 'smooth',
+        });
+      }
+    }
+  }, [state.chatHistory, state.error, state.loadingResponse, state.loadingHistory]);
 
   const adjustTextareaHeight = (element, value) => {
     if (element.scrollHeight <= 36 || value.trim() === '') {
@@ -41,7 +61,7 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
   if (!state.visibility) return null;
 
   return (
-    <div id={id} className={`chat-widget ${darkTheme ? 'dark-theme' : ''}`}>
+    <div id={id} className={`chat-widget ${darkTheme ? 'dark-theme' : ''}`} style={computedStyles.container}>
       <ChatHeader
         title={state.chatTitle}
         onDownload={exposedActions.downloadChat}
@@ -49,6 +69,7 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
       />
 
       <div
+        ref={chatMessagesRef}
         className="chat-messages p-2"
         style={{ flexGrow: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px' }}
       >
@@ -62,6 +83,7 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
               userAvatar={state.userAvatar}
               respondentAvatar={state.respondentAvatar}
               onDelete={exposedActions.deleteMessage}
+              computedStyles={computedStyles}
             />
           ))}
 
@@ -73,6 +95,7 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
             userAvatar={state.userAvatar}
             respondentAvatar={state.respondentAvatar}
             onDelete={exposedActions.deleteMessage}
+            computedStyles={computedStyles}
           />
         )}
 
@@ -91,10 +114,13 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
           state.setMessage(e.target.value);
           adjustTextareaHeight(e.target, e.target.value);
         }}
-        onSend={() => exposedActions.sendMessage({ message: state.message, type: 'message' })}
+        onSend={() => {
+          exposedActions.sendMessage({ message: state.message, type: 'message' });
+        }}
         disabled={properties.disableInput}
         loading={state.loadingResponse}
         newMessageDisabled={state.newMessageDisabled}
+        computedStyles={computedStyles}
       />
     </div>
   );
