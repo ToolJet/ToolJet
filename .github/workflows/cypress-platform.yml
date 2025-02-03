@@ -111,7 +111,7 @@ jobs:
           postgrest/postgrest:v12.2.0
 
       - name: Postgres logs
-        run: docker logs postgrest          
+        run: docker logs postgrest
 
       - name: Create Cypress environment file
         id: create-json
@@ -129,7 +129,7 @@ jobs:
           config-file: cypress-platform.config.js
 
       - name: Capture Screenshots
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: screenshots
@@ -238,7 +238,7 @@ jobs:
           config-file: cypress-platform.config.js
 
       - name: Capture Screenshots
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: screenshots
@@ -359,7 +359,7 @@ jobs:
           config-file: cypress-platform.config.js
 
       - name: Capture Screenshots
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: screenshots
@@ -481,7 +481,7 @@ jobs:
           config-file: cypress-platform.config.js
 
       - name: Capture Screenshots
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: screenshots
