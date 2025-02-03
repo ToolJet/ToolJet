@@ -31,12 +31,6 @@
     }
   }
 
-
-  .chat-header {
-    .chat-title {
-      color: var(--text-black-000);
-    }
-  }
   .message-container {
     width: 100%;
   
@@ -262,6 +256,32 @@
     &:focus-within {
       scrollbar-width: thin;
       scrollbar-color: var(--slate7) transparent;
+    }
+  }
+  .chat-header{
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--borders-weak-disabled);
+    
+    .chat-title {
+      color: var(--text-black-000);
+      max-width: calc(100% - 90px); // Account for button group width + padding
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .button-group {
+      display: flex;
+      flex-shrink: 0; // Prevent button group from shrinking
+      
+      button {
+        width: 36px; // Fixed width for buttons
+        height: 36px;
+      }
     }
   }
 }
