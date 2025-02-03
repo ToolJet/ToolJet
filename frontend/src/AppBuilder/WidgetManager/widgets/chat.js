@@ -103,6 +103,7 @@ export const chatConfig = {
 
   events: {
     onMessageSent: { displayName: 'On Message Sent' },
+    onMessageDeleted: { displayName: 'On Message Deleted' },
   },
   styles: {
     name: {

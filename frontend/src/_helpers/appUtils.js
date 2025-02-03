@@ -928,6 +928,7 @@ export async function onEvent(_ref, eventName, events, options = {}, mode = 'edi
       'onInvalid',
       'onNewRowsAdded',
       'onMessageSent',
+      'onMessageDeleted',
     ].includes(eventName)
   ) {
     executeActionsForEventId(_ref, eventName, events, mode, customVariables);

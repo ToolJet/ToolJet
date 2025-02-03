@@ -22,7 +22,7 @@ export const useChatActions = (state, setExposedVariables, fireEvent) => {
       };
       if (error) setError(null);
       setExposedVariables(exposedVariables);
-      fireEvent('onMessageSent', newMessage);
+      fireEvent('onMessageSent');
       return updatedHistory;
     });
   };
@@ -48,6 +48,7 @@ export const useChatActions = (state, setExposedVariables, fireEvent) => {
       };
       //TODO: Add logic to discard lastMessage or lastResponse if messageId is present in the either of them
       setExposedVariables(exposedVariables);
+      fireEvent('onMessageDeleted', messageId);
       return updatedHistory;
     });
   };
