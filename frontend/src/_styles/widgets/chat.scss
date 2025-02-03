@@ -203,8 +203,11 @@
   
     // Paragraphs
     p {
-      // margin: 8px 0;
+      margin-bottom : 0 !important;
       line-height: 1.5;
+    }
+    &:first-child {
+      margin-top: 0 !important;
     }
   }
   &.dark-theme {
@@ -217,17 +220,15 @@
       // }
     }
   }
-  .chat-messages{
-    overflow-x: hidden !important;
-  }
-
+  
   .chat-messages {
+    overflow-x: hidden !important;
     flex: 1;
     overflow-y: auto;
-    padding: 1rem;
+    padding: 16px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 24px;
     
     // Hide scrollbar by default
     &::-webkit-scrollbar {
@@ -265,42 +266,4 @@
   }
 }
 
-.chat-container {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
 
-  .chat-messages {
-    flex: 1;
-    overflow-y: auto;
-    padding: 1rem;
-    
-    // Hide scrollbar by default
-    &::-webkit-scrollbar {
-      width: 0;
-      background: transparent;
-      transition: width 0.2s ease;
-    }
-
-    // Show scrollbar on hover or focus
-    &:hover,
-    &:focus,
-    &:focus-within {
-      &::-webkit-scrollbar {
-        width: 6px;
-      }
-      
-      &::-webkit-scrollbar-thumb {
-        background-color: var(--slate7);
-        border-radius: 3px;
-      }
-
-      &::-webkit-scrollbar-track {
-        background: transparent;
-      }
-    }
-  }
-
-  // ... rest of the existing styles ...
-}

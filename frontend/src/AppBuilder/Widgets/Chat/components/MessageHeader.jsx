@@ -4,7 +4,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { formatTimestamp } from '../utils/helpers';
 
 export const MessageHeader = ({ type, userName, respondentName, timestamp, onCopy, onDelete, computedStyles }) => (
-  <div className="d-flex flex-row custom-gap-16 align-items-center justify-content-between">
+  <div className="d-flex flex-row custom-gap-16 align-items-start justify-content-between">
     <div className="d-flex flex-row custom-gap-16">
       <span
         className="tj-header-h8 message-title tj-text-color-not-important"

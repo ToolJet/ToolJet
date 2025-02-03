@@ -12,6 +12,7 @@ import { useComputedStyles } from './hooks/useComputedStyles';
 export const Chat = ({ id, component, properties, styles, setExposedVariables, fireEvent }) => {
   const darkTheme = localStorage.getItem('darkMode') === 'true';
   const chatMessagesRef = useRef(null);
+  const [shouldScrollToBottom, setShouldScrollToBottom] = useState(true);
   const state = useChatState(properties, setExposedVariables);
   const actions = useChatActions(state, setExposedVariables, fireEvent);
   const exposedActions = useExposedActions(actions, state, setExposedVariables);
@@ -21,12 +22,16 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
     setExposedVariables(exposedActions);
   }, []);
 
+  // Watch for chat history changes and scroll if needed
   useEffect(() => {
-    // Add effect to scroll to bottom when chat history changes
+    if (!shouldScrollToBottom) {
+      setShouldScrollToBottom(true); // Reset for next update
+      return;
+    }
+
     if (chatMessagesRef.current) {
       const lastMessage = chatMessagesRef.current.lastElementChild;
       if (lastMessage) {
-        // Get the exact position relative to the chat container
         const containerRect = chatMessagesRef.current.getBoundingClientRect();
         const messageRect = lastMessage.getBoundingClientRect();
         const relativeTop = messageRect.top - containerRect.top;
@@ -38,6 +43,12 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
       }
     }
   }, [state.chatHistory, state.error, state.loadingResponse, state.loadingHistory]);
+
+  // Modify the delete handler to prevent scrolling
+  const handleDeleteMessage = (messageId) => {
+    setShouldScrollToBottom(false); // Prevent scrolling on delete
+    exposedActions.deleteMessage(messageId);
+  };
 
   const adjustTextareaHeight = (element, value) => {
     if (element.scrollHeight <= 36 || value.trim() === '') {
@@ -78,7 +89,7 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
               respondentName={state.respondentName}
               userAvatar={state.userAvatar}
               respondentAvatar={state.respondentAvatar}
-              onDelete={exposedActions.deleteMessage}
+              onDelete={handleDeleteMessage}
               computedStyles={computedStyles}
             />
           ))}
@@ -90,7 +101,7 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
             respondentName={state.respondentName}
             userAvatar={state.userAvatar}
             respondentAvatar={state.respondentAvatar}
-            onDelete={exposedActions.deleteMessage}
+            onDelete={handleDeleteMessage}
             computedStyles={computedStyles}
           />
         )}
@@ -112,6 +123,7 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
         }}
         onSend={() => {
           exposedActions.sendMessage({ message: state.message, type: 'message' });
+          setShouldScrollToBottom(true); // Ensure scrolling on new message
         }}
         disabled={properties.disableInput}
         loading={state.loadingResponse}
