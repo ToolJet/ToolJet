@@ -1,19 +1,26 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 
-export const LinkColumn = ({ cellValue, linkTarget, linkColor, underlineColor, underline, displayText, darkMode }) => {
+export const LinkColumn = ({ cellValue, linkTarget, underline, underlineColor, linkColor, displayText, darkMode }) => {
+  const linkTextColor = useMemo(
+    () => (linkColor !== '#1B1F24' ? linkColor : darkMode && linkColor === '#1B1F24' ? '#FFFFFF' : linkColor),
+    [linkColor, darkMode]
+  );
+
   return (
     <div className="h-100 d-flex align-items-center">
       <a
+        className={underline === 'hover' ? 'table-link-hover' : 'table-link'}
         href={cellValue}
-        target={linkTarget ? '_blank' : '_self'}
+        target={linkTarget === '_self' || !linkTarget ? '_self' : '_blank'}
+        onClick={(e) => e.stopPropagation()}
         style={{
-          color: linkColor,
-          textDecoration: underline ? 'underline' : 'none',
+          color: linkTextColor,
+          textDecoration: underline === 'always' ? 'underline' : 'none',
           textDecorationColor: underlineColor,
         }}
-        rel="noreferrer"
+        rel="noopener noreferrer"
       >
-        {displayText || cellValue}
+        {displayText || String(cellValue)}
       </a>
     </div>
   );

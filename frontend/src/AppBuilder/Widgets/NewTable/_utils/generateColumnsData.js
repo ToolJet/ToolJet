@@ -4,20 +4,25 @@ import moment from 'moment';
 import { v4 as uuidv4 } from 'uuid';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
+import { filterFunctions } from '../_components/Filter/filterUtils';
 import {
-  SelectColumn,
-  MultiSelectColumn,
+  StringColumn,
+  NumberColumn,
+  BooleanColumn,
   TagsColumn,
   RadioColumn,
   ToggleColumn,
   DatepickerColumn,
   LinkColumn,
-  BooleanColumn,
-  StringColumn,
-  NumberColumn,
-  //   CustomSelectColumn,
+  // SelectColumn,
+  // MultiSelectColumn,
   ImageColumn,
+  CustomSelectColumn,
+  CustomDropdownColumn,
+  TextColumn,
 } from '../_components/DataTypes';
+
+import SelectSearch from 'react-select-search';
 
 export default function generateColumnsData({
   columnProperties,
@@ -33,6 +38,7 @@ export default function generateColumnsData({
   validateDates,
   currentState,
   tableColumnEvents,
+  searchText,
 }) {
   const getResolvedValue = useStore.getState().getResolvedValue;
   if (!columnProperties) return [];
@@ -81,6 +87,10 @@ export default function generateColumnsData({
         enableResizing: true,
         enableHiding: true,
         enableColumnFilter: true,
+        filterFn: (row, columnId, filterValue) => {
+          const { condition, value } = filterValue;
+          return filterFunctions[condition](row, columnId, { value });
+        },
         size: columnSize || defaultColumn.width,
         minSize: 30,
         show: column?.columnVisibility ?? true,
@@ -100,18 +110,6 @@ export default function generateColumnsData({
           const cellValue = changeSet?.[row.index]?.[column.key || column.name] ?? cell.getValue();
           const rowData = tableData?.[row.index];
 
-          const cellStyles = {
-            color: getResolvedValue(column.textColor, { cellValue, rowData }) ?? '',
-            backgroundColor: getResolvedValue(column.cellBackgroundColor, { cellValue, rowData }) ?? '',
-            justifyContent: determineJustifyContentValue(column?.horizontalAlignment),
-          };
-
-          const CellWrapper = ({ children }) => (
-            <div className="d-flex align-items-center h-100 w-100" style={cellStyles}>
-              {children}
-            </div>
-          );
-
           switch (columnType) {
             case 'string':
             case undefined:
@@ -129,53 +127,109 @@ export default function generateColumnsData({
                   containerWidth={columnSize}
                   cell={cell}
                   row={row}
+                  id={id}
+                  searchText={searchText}
+                />
+              );
+
+            case 'text':
+              return (
+                <TextColumn
+                  isEditable={column.isEditable}
+                  darkMode={darkMode}
+                  handleCellValueChange={handleCellValueChange}
+                  cellTextColor={getResolvedValue(column.textColor, { cellValue, rowData })}
+                  horizontalAlignment={column?.horizontalAlignment}
+                  cellValue={cellValue}
+                  column={column}
+                  currentState={currentState}
+                  containerWidth={columnSize}
+                  cell={cell}
+                  row={row}
+                  id={id}
+                  searchText={searchText}
                 />
               );
 
             case 'number':
-              return <CellWrapper>{Number(cellValue)}</CellWrapper>;
+              return (
+                <NumberColumn
+                  isEditable={column.isEditable}
+                  handleCellValueChange={handleCellValueChange}
+                  cellTextColor={getResolvedValue(column.textColor, { cellValue, rowData })}
+                  horizontalAlignment={column?.horizontalAlignment}
+                  cellValue={cellValue}
+                  column={column}
+                  currentState={currentState}
+                  containerWidth={columnSize}
+                  cell={cell}
+                  row={row}
+                  id={id}
+                  searchText={searchText}
+                />
+              );
 
             case 'boolean':
               return (
-                <div className="h-100 d-flex align-items-center">
-                  <BooleanColumn
-                    value={!!cellValue}
-                    isEditable={column.isEditable}
-                    onChange={(value) =>
-                      handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original)
-                    }
-                    toggleOnBg={column?.toggleOnBg}
-                    toggleOffBg={column?.toggleOffBg}
-                  />
-                </div>
+                <BooleanColumn
+                  value={!!cellValue}
+                  isEditable={column.isEditable}
+                  onChange={(value) =>
+                    handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original)
+                  }
+                  toggleOnBg={column?.toggleOnBg}
+                  toggleOffBg={column?.toggleOffBg}
+                />
               );
 
-            // case 'dropdown':
-            // case 'select':
-            //   return (
-            //     <CustomSelect
-            //       options={columnOptions.selectOptions}
-            //       value={cellValue}
-            //       onChange={(value) => handleCellValueChange(row.index, column.key || column.name, value, row.original)}
-            //       readOnly={!column.isEditable}
-            //     />
-            //   );
+            case 'tags':
+              return <TagsColumn tags={Array.isArray(cellValue) ? cellValue : [cellValue]} darkMode={darkMode} />;
 
-            // case 'multiselect':
-            // case 'newMultiSelect':
-            //   return (
-            //     <CustomDropdown
-            //       options={columnOptions.selectOptions}
-            //       value={cellValue}
-            //       onChange={(value) => handleCellValueChange(row.index, column.key || column.name, value, row.original)}
-            //       readOnly={!column.isEditable}
-            //       darkMode={darkMode}
-            //     />
-            //   );
+            case 'dropdown':
+            case 'multiselect':
+              return (
+                <SelectSearch
+                  options={columnOptions.selectOptions}
+                  value={cellValue}
+                  onChange={(value) => handleCellValueChange(row.index, column.key || column.name, value, row.original)}
+                  readOnly={!column.isEditable}
+                  darkMode={darkMode}
+                  containerWidth={columnSize}
+                  isEditable={column.isEditable}
+                  multiple={columnType === 'multiselect'}
+                />
+              );
+
+            case 'select':
+            case 'newMultiSelect':
+              return (
+                <CustomSelectColumn
+                  options={columnOptions.selectOptions}
+                  value={cellValue}
+                  onChange={(value) => handleCellValueChange(row.index, column.key || column.name, value, row.original)}
+                  readOnly={!column.isEditable}
+                  darkMode={darkMode}
+                  containerWidth={columnSize}
+                  isEditable={column.isEditable}
+                  isMulti={columnType === 'newMultiSelect'}
+                  className="select-search table-select-search"
+                />
+              );
 
             case 'badge':
             case 'badges':
-              return <TagsColumn tags={Array.isArray(cellValue) ? cellValue : [cellValue]} darkMode={darkMode} />;
+              return (
+                <CustomDropdownColumn
+                  options={columnOptions.selectOptions}
+                  value={cellValue}
+                  onChange={(value) => handleCellValueChange(row.index, column.key || column.name, value, row.original)}
+                  readOnly={!column.isEditable}
+                  darkMode={darkMode}
+                  multiple={columnType === 'badges'}
+                  width={columnSize}
+                  isEditable={column.isEditable}
+                />
+              );
 
             case 'radio':
               return (
@@ -228,57 +282,29 @@ export default function generateColumnsData({
                 />
               );
 
-            case 'link': {
-              const linkTarget =
-                getResolvedValue(column?.linkTarget ?? '{{true}}', {
-                  cellValue,
-                  rowData,
-                }) ?? '';
-              const displayText =
-                getResolvedValue(column?.displayText ?? '{{}}', {
-                  cellValue,
-                  rowData,
-                }) ?? '';
-              const linkColor =
-                getResolvedValue(column?.linkColor ?? '#1B1F24', {
-                  cellValue,
-                  rowData,
-                }) ?? '';
-              const underlineColor =
-                getResolvedValue(column.underlineColor ?? '', {
-                  cellValue,
-                  rowData,
-                }) ?? '';
-
+            case 'link':
               return (
-                <div className="h-100 d-flex align-items-center">
-                  <LinkColumn
-                    cellValue={cellValue}
-                    linkTarget={linkTarget}
-                    linkColor={linkColor}
-                    underlineColor={underlineColor}
-                    underline={column.underline}
-                    displayText={displayText}
-                    darkMode={darkMode}
-                  />
-                </div>
+                <LinkColumn
+                  cellValue={cellValue}
+                  linkTarget={getResolvedValue(column?.linkTarget, { cellValue, rowData })}
+                  linkColor={getResolvedValue(column?.linkColor ?? '#1B1F24', { cellValue, rowData })}
+                  underlineColor={getResolvedValue(column?.underlineColor, { cellValue, rowData })}
+                  underline={column.underline}
+                  displayText={getResolvedValue(column?.displayText, { cellValue, rowData })}
+                  darkMode={darkMode}
+                />
               );
-            }
 
-            case 'image': {
-              const computeImageHeight = column?.height ? `${column?.height}px` : '100%';
+            case 'image':
               return (
-                <div style={{ height: '100%', display: 'flex', alignItems: 'center' }}>
-                  <ImageColumn
-                    cellValue={cellValue}
-                    width={column?.width}
-                    height={computeImageHeight}
-                    borderRadius={column?.borderRadius}
-                    objectFit={column?.objectFit}
-                  />
-                </div>
+                <ImageColumn
+                  cellValue={cellValue}
+                  width={column?.width}
+                  height={column?.height ? `${column?.height}px` : '100%'}
+                  borderRadius={column?.borderRadius}
+                  objectFit={column?.objectFit}
+                />
               );
-            }
 
             default:
               return cellValue || '';

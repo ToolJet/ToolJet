@@ -13,7 +13,7 @@ export const SearchBar = React.memo(
   }) => {
     const [value, setValue] = React.useState(globalFilter);
     const onChange = (filterValue) => {
-      // setGlobalFilter(filterValue || undefined);
+      setGlobalFilter(filterValue || undefined);
       fireEvent('onSearch');
     };
 

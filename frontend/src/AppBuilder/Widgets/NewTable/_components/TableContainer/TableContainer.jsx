@@ -1,95 +1,396 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import useTableStore from '../../_stores/tableStore';
 import LoadingState from '../LoadingState';
 import EmptyState from '../EmptyState';
 import TableHeader from '../TableHeader';
+import Header from '../Header';
+import Footer from '../Footer';
 import generateColumnsData from '../../_utils/generateColumnsData';
+import cx from 'classnames';
+import { determineJustifyContentValue } from '@/_helpers/utils';
+import useStore from '@/AppBuilder/_stores/store';
+import { generateActionColumns } from '../../_utils/generateActionColumns';
+import { filterFunctions } from '../Filter/filterUtils';
 
-import { getCoreRowModel, useReactTable, flexRender, getSortedRowModel } from '@tanstack/react-table';
+import {
+  getCoreRowModel,
+  useReactTable,
+  flexRender,
+  getSortedRowModel,
+  getPaginationRowModel,
+  getFilteredRowModel,
+} from '@tanstack/react-table';
+import IndeterminateCheckbox from '../IndeterminateCheckbox';
+// eslint-disable-next-line import/no-unresolved
+import { useVirtualizer } from '@tanstack/react-virtual';
 
-export const TableContainer = React.memo(({ id, data }) => {
-  const { getLoadingState, getColumnProperties } = useTableStore();
+let count = 0;
+export const TableContainer = React.memo(({ id, data, width, height, darkMode, componentName }) => {
+  const {
+    getLoadingState,
+    getColumnProperties,
+    getTableProperties,
+    getActions,
+    getEnablePagination,
+    getRowsPerPage,
+    getMaxRowHeightValue,
+    getSelectRowOnCellEdit,
+    // getResizingColumnId,
+    // setExposedVariables,
+    // fireEvent,
+  } = useTableStore();
+
+  console.log('rendering--- ', ++count);
+
+  const getResolvedValue = useStore.getState().getResolvedValue;
   const loadingState = getLoadingState(id);
   const page = data;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const columnProperties = getColumnProperties(id) ?? [];
+  const { allowSelection, highlightSelectedRow, showBulkSelector, contentWrapProperty, maxRowHeight, cellSize } =
+    getTableProperties(id);
+  const maxRowHeightValue = getMaxRowHeightValue(id);
+  // const selectRowOnCellEdit = getSelectRowOnCellEdit(id);
+  const resizingColumnId = '';
+  const actions = getActions(id);
+  const pageSize = getRowsPerPage(id);
 
-  //   const [sorting, setSorting] = useState([]);
+  // Pagination state
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: pageSize,
+  });
 
-  //   const columns = useMemo(
-  //     () =>
-  //       columnProperties.map((column) => {
-  //         return {
-  //           id: column.id,
-  //           header: column.name,
-  //           accessorKey: column.key || column.name,
-  //           cell: (info) => info.getValue(),
-  //           enableResizing: true,
-  //           enableSorting: true,
-  //         };
-  //       }),
-  //     [columnProperties]
-  //   );
+  const [columnVisibility, setColumnVisibility] = useState({});
+  const [globalFilter, setGlobalFilter] = useState('');
+  const [columnFilters, setColumnFilters] = useState([]);
 
   const columns = useMemo(
     () =>
-      generateColumnsData({
-        columnProperties,
-        columnSizes: {}, // Add your column sizes
-        defaultColumn: { width: 150 }, // Adjust default width as needed
-        changeSet: {},
-        tableData: data,
-        id,
-      }),
-    [columnProperties, data, id] // Add other dependencies as needed
+      [
+        {
+          id: 'selection',
+          accessorKey: 'selection',
+          meta: { columnType: 'selector', skipExport: true, skipFilter: true, skipAddNewRow: true },
+          size: 40,
+          header: ({ table }) =>
+            showBulkSelector ? (
+              <IndeterminateCheckbox
+                {...{
+                  checked: table.getIsAllRowsSelected(),
+                  indeterminate: table.getIsSomeRowsSelected(),
+                  onChange: table.getToggleAllRowsSelectedHandler(),
+                }}
+              />
+            ) : null,
+          cell: ({ row }) => (
+            <IndeterminateCheckbox
+              {...{
+                checked: row.getIsSelected(),
+                indeterminate: row.getIsSomeSelected(),
+                onChange: row.getToggleSelectedHandler(),
+              }}
+              isCell={true}
+            />
+          ),
+        },
+        ...generateActionColumns({
+          actions: actions.filter((action) => action.position === 'left'),
+          // fireEvent,
+          // setExposedVariables,
+          // tableActionEvents: getTableActionEvents(id),
+        }),
+        ...generateColumnsData({
+          columnProperties,
+          columnSizes: {},
+          defaultColumn: { width: 150 },
+          changeSet: {},
+          tableData: data,
+          id,
+          darkMode,
+          currentState: {},
+          searchText: globalFilter,
+        }).filter(Boolean),
+
+        ...generateActionColumns({
+          actions: actions.filter((action) => action.position === 'right'),
+          // fireEvent,
+          // setExposedVariables,
+          // tableActionEvents: getTableActionEvents(id),
+        }),
+      ].filter(Boolean),
+    [columnProperties, data, id, darkMode, showBulkSelector, actions, globalFilter]
   );
+
+  const [columnOrder, setColumnOrder] = useState(columns.map((column) => column.id));
 
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
     enableColumnResizing: true,
     columnResizeMode: 'onChange',
-    // sorting,
-    // onSortingChange: setSorting,
-    // state: {
-    //   sorting,
-    // },
+    enableRowSelection: true,
+    enableMultiRowSelection: showBulkSelector,
+    state: {
+      pagination,
+      columnVisibility,
+      columnOrder,
+      globalFilter,
+      columnFilters,
+    },
+    onPaginationChange: setPagination,
+    onColumnVisibilityChange: setColumnVisibility,
+    onColumnOrderChange: setColumnOrder,
+    onGlobalFilterChange: setGlobalFilter,
+    onColumnFiltersChange: setColumnFilters,
+    filterFns: filterFunctions,
+    globalFilterFn: (row, columnId, filterValue) => {
+      const value = String(row.getValue(columnId) || '').toLowerCase();
+      return value.includes(String(filterValue).toLowerCase());
+    },
+    manualPagination: false,
+    pageCount: Math.ceil(data.length / pagination.pageSize),
   });
 
-  console.log('columnProperties--- ', columnProperties, columns);
-  console.log('table.getState().sorting--- here---', table.getState().sorting);
+  const allColumns = table.getAllLeafColumns();
 
-  if (loadingState) {
+  // Create ref for table body
+  const tableBodyRef = React.useRef(null);
+
+  // Setup virtualizer
+  const rowVirtualizer = useVirtualizer({
+    count: table.getRowModel().rows.length,
+    getScrollElement: () => tableBodyRef.current,
+    estimateSize: () => (cellSize === 'condensed' ? 40 : 46),
+    overscan: 5,
+    scrollMargin: 0,
+  });
+
+  useEffect(() => {
+    setPagination((prev) => ({
+      ...prev,
+      pageSize: pageSize,
+    }));
+  }, [pageSize]);
+
+  useEffect(() => {
+    setColumnOrder(columns.map((column) => column.id));
+  }, [columns]);
+
+  useEffect(() => {
+    console.log('here--- columnFilters--- ', columnFilters);
+  }, [columnFilters]);
+
+  // Handles row click for row selection
+  const handleRowClick = (row) => {
+    if (!allowSelection) return;
+
+    const selectedRow = row.original;
+    const selectedRowId = row.id;
+
+    // Update row selection
+    row.toggleSelected();
+
+    // Update exposed variables and fire event if needed
+    // setExposedVariables({ selectedRow, selectedRowId });
+    // fireEvent('onRowClicked');
+  };
+
+  const renderRow = (row) => {
+    if (!row) return null;
+
+    // Get row styles
+    const rowStyles = {
+      minHeight: cellSize === 'condensed' ? '39px' : '45px',
+      display: 'flex',
+    };
+
+    const contentWrap = getResolvedValue(contentWrapProperty);
+    const isMaxRowHeightAuto = maxRowHeight === 'auto';
+
+    let cellMaxHeight;
+    let cellHeight;
+    if (contentWrap) {
+      cellMaxHeight = isMaxRowHeightAuto ? 'fit-content' : getResolvedValue(maxRowHeightValue) + 'px';
+      rowStyles.maxHeight = cellMaxHeight;
+    } else {
+      cellMaxHeight = cellSize === 'condensed' ? 40 : 46;
+      cellHeight = cellSize === 'condensed' ? 40 : 46;
+      rowStyles.maxHeight = `${cellMaxHeight}px`;
+      rowStyles.height = `${cellHeight}px`;
+    }
+
     return (
-      <div className={'table-responsive jet-data-table overflow-hidden'}>
-        <LoadingState />
+      <tr
+        key={row.id}
+        style={rowStyles}
+        className={cx('table-row table-editor-component-row', {
+          'row-selected': allowSelection && highlightSelectedRow && row.getIsSelected(),
+          'table-row-condensed': cellSize === 'condensed',
+        })}
+        onClick={() => handleRowClick(row)}
+        // onMouseOver={() => {
+        //   if (getHoverAdded()) {
+        //     const hoveredRowDetails = { hoveredRowId: row.id, hoveredRow: row.original };
+        //     setRowDetails(hoveredRowDetails);
+        //     getHoverRef().current = rowDetails?.hoveredRowId;
+        //   }
+        // }}
+        // onMouseLeave={() => {
+        //   getHoverAdded() && setRowDetails({ hoveredRowId: '', hoveredRow: '' });
+        // }}
+      >
+        {row.getVisibleCells().map((cell) => {
+          const cellStyles = {
+            width: cell.column.getSize(),
+            height: '100%',
+            backgroundColor: getResolvedValue(cell.column.columnDef?.meta?.cellBackgroundColor) ?? 'inherit',
+            justifyContent: determineJustifyContentValue(cell.column.columnDef?.meta?.horizontalAlignment),
+            display: 'flex',
+            alignItems: 'center',
+          };
+
+          const isEditable = cell.column.columnDef?.meta?.isEditable;
+          const cellValue = cell.getValue();
+
+          return (
+            <td
+              key={cell.id}
+              style={cellStyles}
+              className={cx('table-cell td condensed', {
+                'has-text': cell.column.columnDef?.meta?.columnType === 'text' || isEditable,
+                'has-number': cell.column.columnDef?.meta?.columnType === 'number',
+                'has-badge': ['badge', 'badges'].includes(cell.column.columnDef?.meta?.columnType),
+                [cellSize]: true,
+                'overflow-hidden':
+                  ['text', 'string', undefined, 'number'].includes(cell.column.columnDef?.meta?.columnType) &&
+                  !contentWrap,
+                'selector-column': cell.column.columnDef?.meta?.columnType === 'selector',
+                'resizing-column': cell.column.columnDef?.isResizing || cell.column.columnDef?.id === resizingColumnId,
+                'has-select': ['select', 'newMultiSelect'].includes(cell.column.columnDef?.meta?.columnType),
+                'has-tags': cell.column.columnDef?.meta?.columnType === 'tags',
+                'has-link': cell.column.columnDef?.meta?.columnType === 'link',
+                'has-radio': cell.column.columnDef?.meta?.columnType === 'radio',
+                'has-toggle': cell.column.columnDef?.meta?.columnType === 'toggle',
+                'has-textarea': ['string', 'text'].includes(cell.column.columnDef?.meta?.columnType),
+                isEditable: isEditable,
+              })}
+            >
+              <div
+                className={`td-container ${
+                  cell.column.columnDef?.meta?.columnType === 'image' && 'jet-table-image-column h-100'
+                } ${cell.column.columnDef?.meta?.columnType !== 'image' && `w-100 h-100`}`}
+                style={{ display: 'flex', alignItems: 'center' }}
+              >
+                {flexRender(cell.column?.columnDef?.cell, cell.getContext())}
+              </div>
+            </td>
+          );
+        })}
+      </tr>
+    );
+  };
+
+  const renderTable = () => {
+    if (loadingState) {
+      return (
+        <div className={'table-responsive jet-data-table overflow-hidden'}>
+          <LoadingState />
+        </div>
+      );
+    } else if (page.length === 0) {
+      return (
+        <div className={'table-responsive jet-data-table overflow-hidden position-relative'}>
+          <EmptyState />
+        </div>
+      );
+    }
+    return (
+      <div
+        className={`table-responsive jet-data-table`}
+        style={{ maxHeight: '100%', overflow: 'auto' }}
+        ref={tableBodyRef}
+      >
+        <table className="table">
+          <TableHeader
+            id={id}
+            table={table}
+            darkMode={darkMode}
+            columnOrder={columnOrder}
+            setColumnOrder={setColumnOrder}
+          />
+          <tbody
+            style={{
+              position: 'relative',
+              height: `${rowVirtualizer.getTotalSize()}px`,
+            }}
+          >
+            {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+              const row = table.getRowModel().rows[virtualRow.index];
+              return (
+                <tr
+                  key={row.id}
+                  data-index={virtualRow.index}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: `${virtualRow.size}px`,
+                    transform: `translateY(${virtualRow.start}px)`,
+                  }}
+                >
+                  {renderRow(row)}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     );
-  } else if (page.length === 0) {
-    return (
-      <div className={'table-responsive jet-data-table overflow-hidden position-relative'}>
-        <EmptyState />
-      </div>
-    );
-  }
+  };
+
+  const handleFilterChange = (filters) => {
+    setColumnFilters(filters);
+    console.log('here--- filters--- ', filters);
+  };
 
   return (
-    <div className={`table-responsive jet-data-table`}>
-      <table>
-        <TableHeader id={id} table={table} />
-
-        <tbody>
-          {table.getRowModel().rows.map((row) => (
-            <tr key={row.id}>
-              {row.getVisibleCells().map((cell) => (
-                <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <>
+      <Header
+        id={id}
+        darkMode={darkMode}
+        fireEvent={() => {}}
+        setExposedVariables={() => {}}
+        setGlobalFilter={setGlobalFilter}
+        globalFilter={globalFilter}
+        table={table}
+        setFilters={handleFilterChange}
+      />
+      {renderTable()}
+      <Footer
+        id={id}
+        darkMode={darkMode}
+        width={width}
+        height={height}
+        exportData={() => {}}
+        allColumns={allColumns}
+        getToggleHideAllColumnsProps={() => {}}
+        table={table}
+        pageIndex={pagination.pageIndex + 1}
+        pageSize={pagination.pageSize}
+        pageCount={table.getPageCount()}
+        totalRecords={data.length}
+        canPreviousPage={table.getCanPreviousPage()}
+        canNextPage={table.getCanNextPage()}
+        onPageChange={table.setPageIndex}
+        onPageSizeChange={table.setPageSize}
+        componentName={componentName}
+        columns={columns}
+      />
+    </>
   );
 });

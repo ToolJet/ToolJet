@@ -15,19 +15,27 @@ export const Pagination = function Pagination({
   pageIndex = 1,
   setPageIndex = () => {},
   tableWidth,
+  pageSize,
+  pageCount,
+  canPreviousPage,
+  canNextPage,
+  onPageChange,
+  onPageSizeChange,
+  table,
 }) {
-  const { getTableProperties } = useTableStore();
+  const { getTableProperties, getRowsPerPage } = useTableStore();
   const { enablePrevButton, enableNextButton, serverSidePagination } = getTableProperties(id);
-  const [pageCount, setPageCount] = useState(autoPageCount);
+  const [pageCountState, setPageCountState] = useState(autoPageCount);
+  const defaultPageSize = getRowsPerPage(id);
 
   useEffect(() => {
-    setPageCount(autoPageCount);
+    setPageCountState(autoPageCount);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoPageCount]);
 
   useEffect(() => {
     if (serverSidePagination && lastActivePageIndex > 0) {
-      setPageCount(lastActivePageIndex);
+      setPageCountState(lastActivePageIndex);
     } else if (serverSidePagination || lastActivePageIndex === 0) {
       setPageIndex(1);
     }
@@ -43,11 +51,11 @@ export const Pagination = function Pagination({
   }
 
   function goToNextPage() {
-    gotoPage(Number(pageIndex) + 1);
+    table.nextPage();
   }
 
   function goToPreviousPage() {
-    gotoPage(Number(pageIndex) - 1);
+    table.previousPage();
   }
 
   return (
@@ -75,7 +83,8 @@ export const Pagination = function Pagination({
               disabled={pageIndex === 1}
               onClick={(event) => {
                 event.stopPropagation();
-                gotoPage(1);
+                table.firstPage();
+                // gotoPage(1);
               }}
               data-cy={`pagination-button-to-first`}
             ></ButtonSolid>
@@ -176,7 +185,8 @@ export const Pagination = function Pagination({
               size="md"
               onClick={(event) => {
                 event.stopPropagation();
-                gotoPage(pageCount);
+                table.lastPage();
+                // gotoPage(pageCount);
               }}
               disabled={!autoCanNextPage && !serverSidePagination}
               data-cy={`pagination-button-to-last`}

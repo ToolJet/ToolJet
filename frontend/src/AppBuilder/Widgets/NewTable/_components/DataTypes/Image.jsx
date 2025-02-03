@@ -1,20 +1,21 @@
 import React from 'react';
 
 export const ImageColumn = ({ cellValue, width, height, borderRadius, objectFit }) => {
-  console.log('here--- cellValue', cellValue);
-
   if (!cellValue) return null;
 
   return (
-    <img
-      src={cellValue}
-      style={{
-        pointerEvents: 'auto',
-        width: `${width}px`,
-        height: height,
-        borderRadius: `${borderRadius}%`,
-        objectFit: `${objectFit}`,
-      }}
-    />
+    <div className="h-100 d-flex align-items-center">
+      <img
+        src={cellValue}
+        style={{
+          pointerEvents: 'auto',
+          width: width ? `${width}px` : 'auto',
+          height: height || '100%',
+          borderRadius: borderRadius ? `${borderRadius}%` : '0',
+          objectFit: objectFit || 'contain',
+        }}
+        alt=""
+      />
+    </div>
   );
 };

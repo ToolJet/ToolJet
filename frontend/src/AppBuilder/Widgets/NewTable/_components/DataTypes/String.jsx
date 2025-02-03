@@ -1,5 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import useStore from '@/AppBuilder/_stores/store';
+import { shallow } from 'zustand/shallow';
 import { determineJustifyContentValue } from '@/_helpers/utils';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import useTableStore from '@/AppBuilder/Widgets/NewTable/_stores/tableStore';
+import HighLightSearch from '@/AppBuilder/Widgets/NewTable/_components/HighLight';
 
 export const StringColumn = ({
   isEditable,
@@ -9,31 +14,140 @@ export const StringColumn = ({
   horizontalAlignment,
   cellValue,
   column,
-  currentState,
   containerWidth,
   cell,
   row,
   isMaxRowHeightAuto,
   cellSize,
   maxRowHeightValue,
+  searchText,
+  id,
 }) => {
-  return (
+  const validateWidget = useStore((state) => state.validateWidget, shallow);
+  const { getTableStyles } = useTableStore();
+  const { contentWrap } = getTableStyles(id);
+  const ref = useRef(null);
+  const [showOverlay, setShowOverlay] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+
+  const validationData = validateWidget({
+    validationObject: {
+      regex: { value: column.regex },
+      minLength: { value: column.minLength },
+      maxLength: { value: column.maxLength },
+      customRule: { value: column.customRule },
+    },
+    widgetValue: cellValue,
+    customResolveObjects: { cellValue },
+  });
+  const { isValid, validationError } = validationData;
+
+  useEffect(() => {
+    setShowOverlay(hovered);
+  }, [hovered]);
+
+  useEffect(() => {
+    if (!isEditable && isEditing) {
+      setIsEditing(false);
+    }
+  }, [isEditable, isEditing]);
+
+  const getOverlay = () => (
+    <div
+      className={`overlay-cell-table ${darkMode ? 'dark-theme' : ''}`}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{ color: 'var(--text-primary)' }}
+    >
+      <span style={{ width: `${containerWidth}px` }}>{String(cellValue)}</span>
+    </div>
+  );
+
+  const _showOverlay =
+    ref?.current &&
+    (ref?.current?.clientWidth < ref?.current?.children[0]?.offsetWidth ||
+      ref?.current?.clientHeight < ref?.current?.children[0]?.offsetHeight);
+
+  const renderEditableContent = () => (
+    <div className="h-100 d-flex flex-column justify-content-center position-relative">
+      <div
+        onMouseMove={() => !hovered && setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        className={`${!isValid ? 'is-invalid h-100' : ''} ${isEditing ? 'h-100 content-editing' : ''} h-100`}
+      >
+        <div
+          ref={ref}
+          contentEditable={true}
+          className={`${!isValid ? 'is-invalid' : ''} h-100 text-container long-text-input d-flex align-items-center ${
+            darkMode ? 'textarea-dark-theme' : ''
+          } justify-content-${determineJustifyContentValue(horizontalAlignment)}`}
+          style={{
+            color: cellTextColor || 'inherit',
+            outline: 'none',
+            border: 'none',
+            background: 'inherit',
+            position: 'relative',
+            height: '100%',
+          }}
+          onBlur={(e) => {
+            setIsEditing(false);
+            if (cellValue !== e.target.textContent) {
+              handleCellValueChange(row.index, column.key || column.name, e.target.textContent, row.original);
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.target.blur();
+            }
+          }}
+          onFocus={(e) => {
+            setIsEditing(true);
+            e.stopPropagation();
+          }}
+        >
+          <HighLightSearch text={String(cellValue)} searchTerm={searchText} />
+        </div>
+      </div>
+      {!isValid && <div className="invalid-feedback text-truncate">{validationError}</div>}
+    </div>
+  );
+
+  const renderReadOnlyContent = () => (
     <div
       className={`d-flex align-items-center h-100 w-100 justify-content-${determineJustifyContentValue(
         horizontalAlignment
       )}`}
-      style={{ color: cellTextColor }}
+      style={{ color: cellTextColor || 'inherit' }}
+      onMouseMove={() => !hovered && setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      ref={ref}
     >
-      {isEditable ? (
-        <input
-          type="text"
-          className="form-control"
-          value={cellValue || ''}
-          onChange={(e) => handleCellValueChange(row.index, column.key || column.name, e.target.value, row.original)}
-        />
-      ) : (
-        String(cellValue)
-      )}
+      <span
+        style={{
+          maxHeight: isMaxRowHeightAuto
+            ? 'fit-content'
+            : maxRowHeightValue
+            ? `${maxRowHeightValue}px`
+            : cellSize === 'condensed'
+            ? '39px'
+            : '45px',
+        }}
+      >
+        <HighLightSearch text={String(cellValue)} searchTerm={searchText} />
+      </span>
     </div>
+  );
+
+  return (
+    <OverlayTrigger
+      placement="bottom"
+      overlay={_showOverlay ? getOverlay() : <div />}
+      trigger={_showOverlay && ['hover', 'focus']}
+      rootClose={true}
+      show={_showOverlay && showOverlay && !isEditing}
+    >
+      {isEditable ? renderEditableContent() : renderReadOnlyContent()}
+    </OverlayTrigger>
   );
 };

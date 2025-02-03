@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const IndeterminateCheckbox = React.forwardRef(({ indeterminate, fireEvent, ...rest }, ref) => {
+export const IndeterminateCheckbox = React.forwardRef(({ indeterminate, fireEvent, isCell = false, ...rest }, ref) => {
   const defaultRef = React.useRef();
   const resolvedRef = ref || defaultRef;
 
@@ -9,7 +9,7 @@ export const IndeterminateCheckbox = React.forwardRef(({ indeterminate, fireEven
   }, [resolvedRef, indeterminate]);
 
   return (
-    <>
+    <div className={`d-flex flex-column align-items-center ${isCell ? 'justify-content-center h-100' : ''}`}>
       <input
         data-cy={`checkbox-input`}
         type="checkbox"
@@ -30,6 +30,6 @@ export const IndeterminateCheckbox = React.forwardRef(({ indeterminate, fireEven
         }}
         onMouseDown={(e) => e.preventDefault()}
       />
-    </>
+    </div>
   );
 });

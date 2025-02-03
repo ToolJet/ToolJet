@@ -24,7 +24,6 @@ export const createInitSlice = (set, get) => ({
   setTableProperties: (id, properties) =>
     set(
       (state) => {
-        const { setColumnDetails } = get();
         const visibility = properties?.visibility ?? true;
         state.components[id].properties.visibility = visibility ? '' : 'none';
         state.components[id].properties.disabledState = properties?.disabledState ?? false;
@@ -35,11 +34,23 @@ export const createInitSlice = (set, get) => ({
         state.components[id].properties.showDownloadButton = properties?.showDownloadButton ?? true;
         state.components[id].properties.showBulkUpdateActions = properties?.showBulkUpdateActions ?? true;
         state.components[id].properties.totalRecords = properties?.totalRecords ?? 10;
-        state.components[id].properties.enablePrevButton = properties?.enablePrevButton ?? true; // Only for server side pagination
-        state.components[id].properties.enableNextButton = properties?.enableNextButton ?? true; // Only for server side pagination
-        state.components[id].properties.showAddNewRowButton = properties?.showAddNewRowButton ?? true;
-        state.components[id].properties.showDownloadButton = properties?.showDownloadButton ?? true;
+        state.components[id].properties.enablePrevButton = properties?.enablePrevButton ?? true;
+        state.components[id].properties.enableNextButton = properties?.enableNextButton ?? true;
         state.components[id].properties.hideColumnSelectorButton = properties?.hideColumnSelectorButton ?? false;
+        state.components[id].properties.serverSideSearch = properties?.serverSideSearch ?? false;
+        state.components[id].properties.serverSideSort = properties?.serverSideSort ?? false;
+        state.components[id].properties.serverSideFilter = properties?.serverSideFilter ?? false;
+        state.components[id].properties.showBulkSelector = properties?.showBulkSelector ?? false;
+        state.components[id].properties.highlightSelectedRow = properties?.highlightSelectedRow ?? false;
+        state.components[id].properties.rowsPerPage = properties?.rowsPerPage ?? 10;
+        state.components[id].properties.enabledSort = properties?.enabledSort ?? true;
+        state.components[id].properties.columnSizes = properties?.columnSizes ?? {};
+        state.components[id].properties.allowSelection =
+          properties?.allowSelection ?? (properties?.showBulkSelector || properties?.highlightSelectedRow)
+            ? true
+            : false;
+        state.components[id].properties.defaultSelectedRow = properties?.defaultSelectedRow ?? { id: 1 };
+        state.components[id].properties.selectRowOnCellEdit = properties?.selectRowOnCellEdit ?? true;
 
         let serverSidePagination = properties.serverSidePagination ?? false;
         if (typeof serverSidePagination !== 'boolean') state.components[id].properties.serverSidePagination = false;
@@ -62,22 +73,57 @@ export const createInitSlice = (set, get) => ({
         } else {
           state.components[id].properties.enablePagination = properties.enablePagination;
         }
-        // setColumnDetails(id, properties);
-      },
-      false,
-      { type: 'setProperties', payload: { id, properties } }
+      }
+      // false,
+      // { type: 'setProperties', payload: { id, properties } }
     ),
 
   setTableStyles: (id, styles) =>
     set(
       (state) => {
-        const { borderRadius = 0, boxShadow, borderColor } = styles;
+        const {
+          borderRadius = 0,
+          boxShadow,
+          borderColor = 'var(--borders-weak-disabled)',
+          contentWrap = true,
+          textColor,
+          tableType = 'table-bordered',
+          cellSize,
+          actionButtonRadius = 0,
+          maxRowHeight = 'auto',
+          maxRowHeightValue = 80,
+          columnHeaderWrap = 'fixed',
+        } = styles;
+
         state.components[id].styles.borderRadius = Number.parseFloat(borderRadius);
         state.components[id].styles.boxShadow = boxShadow;
         state.components[id].styles.borderColor = borderColor;
+        state.components[id].styles.contentWrap = contentWrap;
+        state.components[id].styles.textColor = textColor;
+        state.components[id].styles.tableType = tableType;
+        state.components[id].styles.cellSize = cellSize;
+        state.components[id].styles.actionButtonRadius = parseFloat(actionButtonRadius);
+        state.components[id].styles.maxRowHeight = maxRowHeight;
+        state.components[id].styles.maxRowHeightValue = maxRowHeightValue;
+        state.components[id].styles.columnHeaderWrap = columnHeaderWrap;
       },
       false,
       { type: 'setStyles', payload: { id, styles } }
+    ),
+
+  setTableActions: (id, actions) =>
+    set(
+      (state) => {
+        state.components[id].properties.actions = actions.map((action) => {
+          return {
+            ...action,
+            position: action?.position ?? 'right',
+            actionButtonRadius: 0,
+          };
+        });
+      },
+      false,
+      { type: 'setTableActions', payload: { id, actions } }
     ),
 
   removeComponent: (id) =>
@@ -112,4 +158,15 @@ export const createInitSlice = (set, get) => ({
           get().components[id].properties.showDownloadButton
       : false;
   },
+  getMaxRowHeightValue: (id) => {
+    return get().components[id] ? get().components[id].styles.maxRowHeightValue : 80;
+  },
+  getSelectRowOnCellEdit: (id) => {
+    return get().components[id] ? get().components[id].properties.selectRowOnCellEdit : false;
+  },
+  getActions: (id) => {
+    return get().components[id] ? get().components[id].properties.actions : [];
+  },
+  getEnablePagination: (id) => get().components[id]?.properties.enablePagination ?? true,
+  getRowsPerPage: (id) => get().components[id]?.properties.rowsPerPage ?? 10,
 });

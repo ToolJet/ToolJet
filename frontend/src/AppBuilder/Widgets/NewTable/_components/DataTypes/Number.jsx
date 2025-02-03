@@ -1,5 +1,9 @@
 import React from 'react';
+import useStore from '@/AppBuilder/_stores/store';
+import { shallow } from 'zustand/shallow';
+import { determineJustifyContentValue } from '@/_helpers/utils';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import HighLightSearch from '@/AppBuilder/Widgets/NewTable/_components/HighLight';
 
 export const NumberColumn = ({
   isEditable,
@@ -8,22 +12,30 @@ export const NumberColumn = ({
   horizontalAlignment,
   cellValue,
   column,
+  cell,
   row,
-  validateWidget,
-  currentState,
+  searchText,
 }) => {
-  const validationData =
-    validateWidget?.({
-      validationObject: {
-        regex: { value: column.regex },
-        minValue: { value: column.minValue },
-        maxValue: { value: column.maxValue },
-        customRule: { value: column.customRule },
+  const validateWidget = useStore((state) => state.validateWidget, shallow);
+
+  const validationData = validateWidget({
+    validationObject: {
+      minValue: {
+        value: column?.minValue,
       },
-      widgetValue: cellValue,
-      currentState,
-      customResolveObjects: { cellValue },
-    }) || {};
+      maxValue: {
+        value: column?.maxValue,
+      },
+      regex: {
+        value: column?.regex,
+      },
+      customRule: {
+        value: column?.customRule,
+      },
+    },
+    widgetValue: cellValue,
+    customResolveObjects: { cellValue },
+  });
 
   const { isValid, validationError } = validationData;
 
@@ -43,29 +55,66 @@ export const NumberColumn = ({
     }
   };
 
-  return (
-    <div className="h-100 d-flex flex-column justify-content-center position-relative">
-      <input
-        type="number"
-        style={{
-          color: cellTextColor,
-          outline: 'none',
-          border: 'none',
-          background: 'inherit',
-          paddingRight: '20px',
-        }}
-        disabled={!isEditable}
-        onFocus={(e) => e.stopPropagation()}
-        className={`table-column-type-input-element input-number h-100 ${!isValid ? 'is-invalid' : ''}`}
-        defaultValue={cellValue}
-        onChange={(e) => handleCellValueChange(row.index, column.key || column.name, e.target.value, row.original)}
-      />
-      {isEditable && (
+  const removingExcessDecimalPlaces = (value, allowedDecimalPlaces) => {
+    if (value?.toString()?.includes('.')) {
+      const [integerPart, decimalPart] = value.toString().split('.');
+      const truncatedDecimalPart = decimalPart.slice(0, allowedDecimalPlaces);
+      return Number(`${integerPart}.${truncatedDecimalPart}`);
+    }
+    return value;
+  };
+
+  const handleValueChange = (value) => {
+    if (value === '') return;
+
+    const numValue = Number(value);
+    if (isNaN(numValue)) return;
+
+    const allowedDecimalPlaces = column?.decimalPlaces ?? null;
+    const processedValue = allowedDecimalPlaces
+      ? removingExcessDecimalPlaces(numValue, allowedDecimalPlaces)
+      : numValue;
+
+    handleCellValueChange(row.index, column.key || column.name, processedValue, row.original);
+  };
+
+  if (isEditable) {
+    return (
+      <div className="h-100 d-flex flex-column justify-content-center position-relative">
+        <input
+          type="number"
+          style={{
+            color: cellTextColor || 'inherit',
+            outline: 'none',
+            border: 'none',
+            background: 'inherit',
+            paddingRight: '20px',
+          }}
+          className={`table-column-type-input-element input-number h-100 ${!isValid ? 'is-invalid' : ''}`}
+          defaultValue={cellValue}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              if (e.target.defaultValue !== e.target.value) {
+                handleValueChange(e.target.value);
+              }
+            }
+          }}
+          onBlur={(e) => {
+            if (e.target.defaultValue !== e.target.value) {
+              handleValueChange(e.target.value);
+            }
+          }}
+          onFocus={(e) => e.stopPropagation()}
+        />
         <div className="arror-container">
           <div onClick={handleIncrement}>
             <SolidIcon
               width="16px"
-              style={{ top: '1px', right: '1px', zIndex: 3 }}
+              style={{
+                top: '1px',
+                right: '1px',
+                zIndex: 3,
+              }}
               className="numberinput-up-arrow-table"
               name="uparrow"
               fill="var(--icons-default)"
@@ -73,16 +122,31 @@ export const NumberColumn = ({
           </div>
           <div onClick={handleDecrement}>
             <SolidIcon
+              style={{
+                right: '1px',
+                bottom: '1px',
+                zIndex: 3,
+              }}
               width="16px"
-              style={{ right: '1px', bottom: '1px', zIndex: 3 }}
               className="numberinput-down-arrow-table"
               name="downarrow"
               fill="var(--icons-default)"
             />
           </div>
         </div>
-      )}
-      {!isValid && <div className="invalid-feedback d-block">{validationError}</div>}
+        {!isValid && <div className="invalid-feedback text-truncate">{validationError}</div>}
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={`d-flex align-items-center h-100 w-100 justify-content-${determineJustifyContentValue(
+        horizontalAlignment
+      )}`}
+      style={{ color: cellTextColor || 'inherit', overflow: 'hidden' }}
+    >
+      <HighLightSearch text={String(cellValue)} searchTerm={searchText} />
     </div>
   );
 };

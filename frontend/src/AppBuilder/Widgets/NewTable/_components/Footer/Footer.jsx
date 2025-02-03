@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 // Store files
 import useTableStore from '../../_stores/tableStore';
 // Local components
@@ -9,9 +9,28 @@ import { Tooltip } from 'react-tooltip';
 import OverlayTriggerComponent from '../OverlayTriggerComponent';
 import IndeterminateCheckbox from '../IndeterminateCheckbox';
 import Popover from 'react-bootstrap/Popover';
-
+import { exportToCSV, exportToExcel, exportToPDF } from '@/AppBuilder/Widgets/NewTable/_utils/exportData';
+import AddNewRow from '../AddNewRow';
 export const Footer = React.memo(
-  ({ id, darkMode, height, width, exportData, allColumns, getToggleHideAllColumnsProps }) => {
+  ({
+    id,
+    darkMode,
+    height,
+    width,
+    exportData,
+    allColumns,
+    getToggleHideAllColumnsProps,
+    table,
+    pageIndex,
+    pageSize,
+    pageCount,
+    canPreviousPage,
+    canNextPage,
+    onPageChange,
+    onPageSizeChange,
+    componentName,
+    columns,
+  }) => {
     const { getFooterVisibility, getLoadingState, getTableProperties } = useTableStore();
     const loadingState = getLoadingState(id);
     const {
@@ -24,6 +43,12 @@ export const Footer = React.memo(
       showDownloadButton,
       hideColumnSelectorButton,
     } = getTableProperties(id);
+
+    const [showAddNewRowPopup, setShowAddNewRowPopup] = useState(false);
+
+    const hideAddNewRowPopup = () => {
+      setShowAddNewRowPopup(false);
+    };
 
     // Hide footer if the properties are not enabled
     if (!getFooterVisibility(id)) return null;
@@ -58,33 +83,39 @@ export const Footer = React.memo(
             placement="top-end"
           >
             <div className="dropdown-item cursor-pointer">
-              <IndeterminateCheckbox {...getToggleHideAllColumnsProps()} />
+              <IndeterminateCheckbox
+                checked={table.getIsAllColumnsVisible()}
+                onChange={table.getToggleAllColumnsVisibilityHandler()}
+              />
               <span className="hide-column-name tj-text-xsm" data-cy={`options-select-all-coloumn`}>
-                Select All
+                Selects All
               </span>
             </div>
-            {allColumns.map(
-              (column) =>
-                typeof column?.Header === 'string' && (
+            {allColumns.map((column) => {
+              const header = column?.columnDef?.header;
+              return (
+                typeof header === 'string' && (
                   <div key={column.id}>
                     <div>
                       <label className="dropdown-item d-flex cursor-pointer">
                         <input
                           type="checkbox"
-                          data-cy={`checkbox-coloumn-${String(column.Header).toLowerCase().replace(/\s+/g, '-')}`}
-                          {...column.getToggleHiddenProps()}
+                          data-cy={`checkbox-coloumn-${String(header).toLowerCase().replace(/\s+/g, '-')}`}
+                          checked={column.getIsVisible()}
+                          onChange={column.getToggleVisibilityHandler()}
                         />
                         <span
                           className="hide-column-name tj-text-xsm"
-                          data-cy={`options-coloumn-${String(column.Header).toLowerCase().replace(/\s+/g, '-')}`}
+                          data-cy={`options-coloumn-${String(header).toLowerCase().replace(/\s+/g, '-')}`}
                         >
-                          {` ${column.Header}`}
+                          {` ${header}`}
                         </span>
                       </label>
                     </div>
                   </div>
                 )
-            )}
+              );
+            })}
           </div>
         </Popover>
       );
@@ -100,20 +131,24 @@ export const Footer = React.memo(
         >
           <Popover.Body className="p-0">
             <div className="table-download-option cursor-pointer">
-              <span data-cy={`option-download-CSV`} className="cursor-pointer" onClick={() => exportData('csv', true)}>
+              <span
+                data-cy={`option-download-CSV`}
+                className="cursor-pointer"
+                onClick={() => exportToCSV(table, componentName)}
+              >
                 Download as CSV
               </span>
               <span
                 data-cy={`option-download-execel`}
                 className="pt-2 cursor-pointer"
-                onClick={() => exportData('xlsx', true)}
+                onClick={() => exportToExcel(table, componentName)}
               >
                 Download as Excel
               </span>
               <span
                 data-cy={`option-download-pdf`}
                 className="pt-2 cursor-pointer"
-                onClick={() => exportData('pdf', true)}
+                onClick={() => exportToPDF(table, componentName)}
               >
                 Download as PDF
               </span>
@@ -223,6 +258,7 @@ export const Footer = React.memo(
                 leftIcon="plus"
                 iconWidth="16"
                 onClick={() => {
+                  setShowAddNewRowPopup(true);
                   // if (!tableDetails.addNewRowsDetails.addingNewRows) {
                   //   showAddNewRowPopup();
                   // }
@@ -241,23 +277,41 @@ export const Footer = React.memo(
     };
 
     return (
-      <div
-        className={`card-footer d-flex align-items-center jet-table-footer justify-content-center ${
-          darkMode && 'dark-theme'
-        }`}
-        // ${
-        //   (tableDetails.addNewRowsDetails.addingNewRows || tableDetails.filterDetails.filtersVisible) && 'disabled'
-        // }`}
-      >
-        <div className={`table-footer row gx-0 d-flex align-items-center h-100`}>
-          <div className="col d-flex justify-content-start custom-gap-4">
-            {/* {!1 ? renderChangeSetUI() : renderRowCount()} */}
-            {renderRowCount()}
+      <>
+        <div
+          className={`card-footer d-flex align-items-center jet-table-footer justify-content-center ${
+            darkMode && 'dark-theme'
+          }`}
+          // ${
+          //   (tableDetails.addNewRowsDetails.addingNewRows || tableDetails.filterDetails.filtersVisible) && 'disabled'
+          // }`}
+        >
+          <div className={`table-footer row gx-0 d-flex align-items-center h-100`}>
+            <div className="col d-flex justify-content-start custom-gap-4">
+              {/* {!1 ? renderChangeSetUI() : renderRowCount()} */}
+              {renderRowCount()}
+            </div>
+            {enablePagination && (
+              <Pagination
+                id={id}
+                tableWidth={width}
+                pageIndex={pageIndex}
+                pageSize={pageSize}
+                pageCount={pageCount}
+                canPreviousPage={canPreviousPage}
+                canNextPage={canNextPage}
+                onPageChange={onPageChange}
+                onPageSizeChange={onPageSizeChange}
+                table={table}
+              />
+            )}
+            {renderControlButtons()}
           </div>
-          {enablePagination && <Pagination id={id} tableWidth={width} loadingState={loadingState} />}
-          {renderControlButtons()}
         </div>
-      </div>
+        {showAddNewRowPopup && (
+          <AddNewRow hideAddNewRowPopup={hideAddNewRowPopup} darkMode={darkMode} columns={columns} />
+        )}
+      </>
     );
   }
 );
