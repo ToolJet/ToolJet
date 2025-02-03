@@ -9,7 +9,7 @@ export const MessageAvatar = ({ type, userAvatar, respondentAvatar }) => (
         borderRadius: '50%',
         width: '38px',
         height: '38px',
-        border: '1px solid var(--borders-disabled-on-white)',
+        border: '1px solid var(--borders-weak-disabled)',
       }}
     >
       <GetAvatar chatType={type} userAvatar={userAvatar} respondentAvatar={respondentAvatar} />
