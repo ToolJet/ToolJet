@@ -16,7 +16,7 @@ import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConsta
 import { DEFAULT_COMPONENT_STRUCTURE } from './resolvedSlice';
 import { savePageChanges } from './pageMenuSlice';
 import { toast } from 'react-hot-toast';
-import { restrictedWidgetsObj } from '@/AppBuilder/WidgetManager/configs/restrictedWidgetsConfig';
+import { RESTRICTED_WIDGETS_CONFIG } from '@/AppBuilder/WidgetManager/configs/restrictedWidgetsConfig';
 import moment from 'moment';
 import { getDateTimeFormat } from '@/AppBuilder/Widgets/Table/Datepicker';
 
@@ -761,7 +761,7 @@ export const createComponentsSlice = (set, get) => ({
     const transformedParentId = parentId?.length > 36 ? parentId.slice(0, 36) : parentId;
     let parentType = getComponentTypeFromId(transformedParentId, moduleId);
     const parentWidget = parentType === 'Kanban' ? 'Kanban_card' : parentType;
-    const restrictedWidgets = restrictedWidgetsObj?.[parentWidget] || [];
+    const restrictedWidgets = RESTRICTED_WIDGETS_CONFIG?.[parentWidget] || [];
     const isParentChangeAllowed = !restrictedWidgets.includes(currentWidget);
     if (!isParentChangeAllowed)
       toast.error(`${currentWidget} is not compatible as a child component of ${parentWidget}`);
