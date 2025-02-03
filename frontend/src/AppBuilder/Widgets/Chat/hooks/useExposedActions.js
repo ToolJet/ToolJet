@@ -1,3 +1,5 @@
+import toast from 'react-hot-toast';
+
 export const useExposedActions = (actions, state, setExposedVariables) => {
   const { handleSendMessage, clearHistory, handleDeleteMessageById, downloadChatHistory, createMessage } = actions;
 
@@ -23,12 +25,26 @@ export const useExposedActions = (actions, state, setExposedVariables) => {
       handleDeleteMessageById(messageId);
     },
     setHistory: async function (history) {
+      if (!Array.isArray(history)) {
+        toast.error('History is not an array');
+        return;
+      }
       setChatHistory(history);
       if (error) setError(null);
       setExposedVariables({ history });
     },
     appendHistory: async function (messageObject) {
+      if (!messageObject || typeof messageObject !== 'object' || Array.isArray(messageObject)) {
+        toast.error('Invalid message object');
+        return;
+      }
+
       const { message, type } = messageObject;
+      if (!message || !type) {
+        toast.error('Message and type are required');
+        return;
+      }
+
       const newMessage = createMessage(message, type);
       setChatHistory((currentHistory) => {
         const updatedHistory = [...currentHistory, newMessage];
