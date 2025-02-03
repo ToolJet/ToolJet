@@ -253,8 +253,8 @@ export const chatConfig = {
       params: [{ handle: 'visible', displayName: 'Visible', defaultValue: '{{true}}', type: 'toggle' }],
     },
     {
-      handle: 'setNewMessageDisabled',
-      displayName: 'Set New Message Disabled',
+      handle: 'disableInput',
+      displayName: 'Disable Input',
       params: [{ handle: 'disabled', displayName: 'Disabled', defaultValue: '{{false}}', type: 'toggle' }],
     },
     {
