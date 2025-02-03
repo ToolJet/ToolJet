@@ -64,6 +64,7 @@
     padding: 8px 10px;
     border-radius: 6px;
     overflow-y: hidden;
+    position: relative;
     
     &.scrollable {
       overflow-y: auto;
@@ -81,8 +82,9 @@
 
     &:focus {
       outline: none !important;
-     
-      border-width: 2px !important;
+      border-color: var(--primary-brand) !important;
+      box-shadow: 0 0 0 1px var(--primary-brand);
+      border-width: 1px !important;
     }
 
     &::placeholder {
@@ -283,6 +285,10 @@
         height: 36px;
       }
     }
+
+  }
+  .chat-input{
+    padding: 10px 20px;
   }
 }
 

@@ -20,8 +20,8 @@ export const ChatInput = ({ message, onChange, onSend, disabled, loading, newMes
   };
 
   return (
-    <div className="chat-input p-2" style={{ borderTop: '1px solid var(--slate7)' }}>
-      <div className="d-flex gap-2 align-items-end">
+    <div className="chat-input">
+      <div className="d-flex gap-2 align-items-center">
         <textarea
           className="form-control chat-input-textarea"
           value={message}
@@ -34,12 +34,11 @@ export const ChatInput = ({ message, onChange, onSend, disabled, loading, newMes
             resize: 'none',
             height: '36px',
             maxHeight: `${36 * 3.22}px`,
-            transition: 'height 0.1s ease-out, border-color 0.15s ease',
+            transition: 'height 0.1s ease-out, border-color 0.15s ease, box-shadow 0.15s ease',
             minHeight: '36px',
             backgroundColor: computedStyles.chatInput.backgroundColor,
             color: computedStyles.chatInput.textColor,
             borderColor: isFocused ? computedStyles.chatInput.accentColor : computedStyles.chatInput.borderColor,
-            borderWidth: isFocused ? '2px' : '1px',
             outline: 'none',
           }}
           disabled={disabled || newMessageDisabled}
@@ -54,7 +53,7 @@ export const ChatInput = ({ message, onChange, onSend, disabled, loading, newMes
               textarea.classList.remove('scrollable');
             }
           }}
-          iconOnly
+          iconOnly={true}
           disabled={!message.trim() || disabled || loading}
         >
           <SolidIcon
