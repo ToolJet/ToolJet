@@ -42,7 +42,7 @@ export const ChatInput = ({ message, onChange, onSend, disabled, loading, newMes
             borderWidth: isFocused ? '2px' : '1px',
             outline: 'none',
           }}
-          disabled={disabled}
+          disabled={disabled || newMessageDisabled}
         />
         <Button
           variant="ghost"
@@ -55,13 +55,13 @@ export const ChatInput = ({ message, onChange, onSend, disabled, loading, newMes
             }
           }}
           iconOnly
-          disabled={!message.trim() || disabled || loading || newMessageDisabled}
+          disabled={!message.trim() || disabled || loading}
         >
           <SolidIcon
             name="send"
             width="16"
             fill={
-              !message.trim() || disabled || loading || newMessageDisabled
+              !message.trim() || disabled || loading
                 ? 'var(--icons-weak-disabled)'
                 : computedStyles.chatInput.sendIconColor
             }
