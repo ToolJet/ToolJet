@@ -58,11 +58,11 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
     }
 
     // Only adjust height if content exceeds 36px
-    const newHeight = Math.min(element.scrollHeight, 36 * 5); // 36px * 5 lines max
+    const newHeight = Math.min(element.scrollHeight, 36 * 3.22); // 36px * 5 lines max
     element.style.height = `${newHeight}px`;
 
     // Add scrollable class if content height reaches max height
-    if (element.scrollHeight >= 36 * 5) {
+    if (element.scrollHeight >= 36 * 3.22) {
       element.classList.add('scrollable');
     } else {
       element.classList.remove('scrollable');
