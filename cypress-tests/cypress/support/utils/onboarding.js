@@ -227,50 +227,6 @@ export const roleBasedOnboarding = (firstName, email, userRole) => {
   cy.get(commonSelectors.acceptInviteButton).click();
 };
 
-export const updateWorkspaceName = (email, workspaceName = email) => {
-  let workspaceNametimeStamp, workspaceId, userId, defuserId, defWorkspaceId;
-
-  cy.task("updateId", {
-    dbconfig: Cypress.env("app_db"),
-    sql: `select id from users where email='${email}';`,
-  }).then((resp) => {
-    userId = resp.rows[0].id;
-
-    cy.task("updateId", {
-      dbconfig: Cypress.env("app_db"),
-      sql: "select id from users where email='dev@tooljet.io';",
-    }).then((resp) => {
-      defuserId = resp.rows[0].id;
-
-      cy.task("updateId", {
-        dbconfig: Cypress.env("app_db"),
-        sql: `SELECT organization_id FROM organization_users WHERE user_id = '${defuserId}' `,
-      }).then((resp) => {
-        defWorkspaceId = resp.rows[0].organization_id;
-        cy.task("updateId", {
-          dbconfig: Cypress.env("app_db"),
-          sql: `SELECT organization_id FROM organization_users WHERE user_id = '${userId}'AND organization_id <> '${defWorkspaceId}';`,
-        }).then((resp) => {
-          workspaceId = resp.rows[0].organization_id;
-
-          cy.task("updateId", {
-            dbconfig: Cypress.env("app_db"),
-            sql: `select name from organizations where id='${workspaceId}';`,
-          }).then((resp) => {
-            workspaceNametimeStamp = resp.rows[0].name;
-            cy.get(commonSelectors.workspaceName).eq(0).click();
-            cy.contains(`${workspaceNametimeStamp}`).should("exist");
-
-            cy.task("updateId", {
-              dbconfig: Cypress.env("app_db"),
-              sql: `update organizations set name ='${workspaceName}' where name='${workspaceNametimeStamp}';`,
-            });
-          });
-        });
-      });
-    });
-  });
-};
 
 export const visitWorkspaceInvitation = (email, workspaceName) => {
   let workspaceId, userId, url, organizationToken;

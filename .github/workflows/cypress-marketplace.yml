@@ -83,15 +83,13 @@ jobs:
           echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=dummy" >> .env
           echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
 
-
       - name: Pulling the docker-compose file
         run: curl -LO https://tooljet-test.s3.us-west-1.amazonaws.com/docker-compose.yaml && mkdir postgres_data
 
-
       - name: Update docker-compose file
         run: |
-            # Update docker-compose.yaml with the new image
-            sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}|' docker-compose.yaml
+          # Update docker-compose.yaml with the new image
+          sed -i '/^[[:space:]]*tooljet:/,/^$/ s|^\([[:space:]]*image:[[:space:]]*\).*|\1tooljet/tj-osv:${{ env.SAFE_BRANCH_NAME }}|' docker-compose.yaml
 
       - name: Install Docker Compose
         run: |
@@ -133,12 +131,11 @@ jobs:
           config-file: cypress-marketplace.config.js
 
       - name: Capture Screenshots
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: screenshots
           path: cypress-tests/cypress/screenshots
-
 
   Cypress-Marketplace-Subpath:
     runs-on: ubuntu-22.04
@@ -233,7 +230,7 @@ jobs:
           config-file: cypress-marketplace.config.js
 
       - name: Capture Screenshots
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: screenshots
