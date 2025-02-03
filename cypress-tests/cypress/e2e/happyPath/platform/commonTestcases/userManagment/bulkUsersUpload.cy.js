@@ -56,14 +56,12 @@ describe("Bulk User Upload", () => {
       successMessage: "10 users are being added",
     },
   };
-  const firstName = fake.firstName;
-  const workspaceName = firstName.toLowerCase();
-  before(() => {
+
+  beforeEach(() => {
+    const firstName = fake.firstName;
+    const workspaceName = firstName.toLowerCase();
     cy.apiLogin();
     cy.apiCreateWorkspace(firstName, workspaceName);
-  });
-  beforeEach(() => {
-    cy.apiLogin();
     cy.visit(`${workspaceName}`);
     common.navigateToManageUsers();
   });
@@ -91,7 +89,7 @@ describe("Bulk User Upload", () => {
     });
   });
 
-  it.only("Should successfully upload valid users", () => {
+  it("Should successfully upload valid users", () => {
     cy.get(usersSelector.buttonAddUsers).click();
     cy.get(usersSelector.buttonUploadCsvFile).click();
 

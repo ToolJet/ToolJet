@@ -103,6 +103,7 @@ describe("Manage Groups", () => {
         const appName2 = fake.companyName;
         const appName3 = fake.companyName;
         const appSlug = appName3.toLowerCase().replace(/\s+/g, "-");
+
         setupWorkspaceAndInviteUser(
             data.workspaceName,
             data.workspaceSlug,
@@ -236,9 +237,10 @@ describe("Manage Groups", () => {
             cy.get(permission).uncheck();
         });
 
+        cy.wait(2000);
         cy.get(groupsSelector.groupLink("Builder")).click();
         cy.get(groupsSelector.granularLink).click();
-        cy.wait(1000);
+        cy.wait(2000);
         cy.get(groupsSelector.granularAccessPermission)
             .trigger("mouseenter")
             .click({ force: true });
