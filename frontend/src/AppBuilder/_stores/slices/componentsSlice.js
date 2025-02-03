@@ -1149,6 +1149,7 @@ export const createComponentsSlice = (set, get) => ({
     moduleId = 'canvas',
     { skipUndoRedo = false, saveAfterAction = true } = {}
   ) => {
+    console.log('setComponentProperty', { componentId, property, value, paramType, attr, skipResolve, moduleId });
     const {
       currentPageIndex,
       saveComponentChanges,

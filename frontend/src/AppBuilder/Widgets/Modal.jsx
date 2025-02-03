@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import React, { useRef, useState, useEffect } from 'react';
 import { default as BootstrapModal } from 'react-bootstrap/Modal';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
@@ -5,6 +6,8 @@ import { ConfigHandle } from '@/AppBuilder/AppCanvas/ConfigHandle/ConfigHandle';
 import { useGridStore } from '@/_stores/gridStore';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import Moveable from 'react-moveable';
+import { withMoveable } from './useMovable';
 var tinycolor = require('tinycolor2');
 
 export const Modal = function Modal({
@@ -251,7 +254,9 @@ export const Modal = function Modal({
           hideCloseButton,
           hideModal,
           component,
+          isShowing: showModal,
           showConfigHandler: mode === 'edit',
+          modalHeight,
         }}
       >
         {!loadingState ? (
@@ -287,22 +292,67 @@ const Component = ({ children, ...restProps }) => {
     hideCloseButton,
     hideModal,
     showConfigHandler,
+    isShowing,
+    modalHeight,
   } = restProps['modalProps'];
+  const [target, setTarget] = useState(null);
+
+  useEffect(() => {
+    setTimeout(() => {
+      if (modalRef.current?.dialog) {
+        const modalTarget = modalRef.current.dialog.querySelector('.modal-content.modal-component');
+        setTarget(modalTarget);
+      }
+    }, 500);
+  }, [isShowing, modalRef]);
+
+  useEffect(() => {
+    if (isShowing && target) {
+      moveableRef.current?.updateRect(); // Forces Moveable to recalculate the target's size
+    }
+  }, [isShowing, target]);
 
   const setSelectedComponentAsModal = useStore((state) => state.setSelectedComponentAsModal, shallow);
 
   // When the modal body is clicked capture it and use the callback to set the selected component as modal
   const handleModalBodyClick = (event) => {
     const clickedComponentId = event.target.getAttribute('component-id');
-
+    setTarget(document.querySelector('.tj-modal-dialog'));
     // Check if the clicked element is part of the modal canvas & same widget with id
     if (id === clickedComponentId) {
       setSelectedComponentAsModal(id);
     }
   };
+  const modalRef = useRef(null);
+  const [isEditing, setIsEditing] = useState(true);
+  const targetRef = useRef(null);
+  const moveableRef = useRef(null);
+  const [size, setSize] = useState({ height: 200, width: 100 }); // Default height
+  const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
 
+  const getModalContainer = () => {
+    // debugger;
+    return modalRef.current?.dialog ? modalRef.current : null;
+  };
+
+  const modalContainer = getModalContainer();
+  const updateSizeInStore = (height, width) => {
+    console.log('Updating size in store', height, width); // Debugging log
+    const heightInPx = `${height}px`;
+    setComponentProperty(id, 'modalHeight', heightInPx, 'properties', 'value', false);
+  };
+
+
+  const onResize = ({ height, width }) => {
+    setSize({ height, width });
+    updateSizeInStore(height, width);
+  };
   return (
-    <BootstrapModal {...restProps} onClick={handleModalBodyClick}>
+    <BootstrapModal
+      {...restProps}
+      ref={modalRef}
+      onClick={handleModalBodyClick}
+    >
       {showConfigHandler && (
         <ConfigHandle
           id={id}
@@ -313,6 +363,38 @@ const Component = ({ children, ...restProps }) => {
           isModalOpen={true}
         />
       )}
+      <div className='modal-moveable-wrap' style={{
+            // width: size.width,
+            // height: size.height,
+            minWidth: '200px',
+            minHeight: '200px',
+            // background: 'red',
+            // padding: '10px',
+          }}>
+      <Moveable
+        target={target}
+        ref={moveableRef}
+        keepRatio={false}
+        resizable={true}
+        renderDirections={['nw', 'ne', 'sw', 'se', 'n', 's', 'e', 'w']}
+        useResizeObserver={true}
+        linePadding={10}
+        // viewContainer={document.body}
+        // rootContainer={modalContainer}
+        onDrag={(e) => {
+          e.target.style.transform = e.transform;
+        }}
+        onResize={(e) => {
+          const { width, height } = e;
+          e.target.style.width = `${width}px`;
+          e.target.style.height = `${height}px`;
+          onResize({ width, height }); // Ensure the state updates
+        }}
+        onRotate={(e) => {
+          e.target.style.transform = e.drag.transform;
+        }}
+        edge={true}
+      />
       {!hideTitleBar && (
         <BootstrapModal.Header style={{ ...customStyles.modalHeader }} data-cy={`modal-header`}>
           <BootstrapModal.Title
@@ -356,9 +438,15 @@ const Component = ({ children, ...restProps }) => {
           )}
         </BootstrapModal.Header>
       )}
-      <BootstrapModal.Body style={{ ...customStyles.modalBody }} ref={parentRef} id={id} data-cy={`modal-body`}>
+      <BootstrapModal.Body
+        style={{ ...customStyles.modalBody, padding: '50px' }}
+        ref={parentRef}
+        id={id}
+        data-cy={`modal-body`}
+      >
         {children}
       </BootstrapModal.Body>
+    </div>
     </BootstrapModal>
   );
 };
