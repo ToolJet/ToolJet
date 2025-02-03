@@ -38,6 +38,7 @@ import useStore from '@/AppBuilder/_stores/store';
 // import { componentTypes } from '@/Editor/WidgetManager/components';
 import { componentTypes } from '@/AppBuilder/WidgetManager/componentTypes.js';
 import { copyComponents } from '@/AppBuilder/AppCanvas/appCanvasUtils.js';
+import { Chat } from './Components/Chat.jsx';
 
 const INSPECTOR_HEADER_OPTIONS = [
   {
@@ -68,6 +69,7 @@ const NEW_REVAMPED_COMPONENTS = [
   'DropdownV2',
   'MultiselectV2',
   'Button',
+  'Chat',
 ];
 
 export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selectedComponentId }) => {
@@ -704,6 +706,9 @@ const GetAccordion = React.memo(
       case 'DropdownV2':
       case 'MultiselectV2':
         return <Select {...restProps} />;
+
+      case 'Chat':
+        return <Chat {...restProps} />;
 
       default: {
         return <DefaultComponent {...restProps} />;

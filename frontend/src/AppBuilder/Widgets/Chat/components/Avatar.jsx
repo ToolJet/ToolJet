@@ -12,7 +12,7 @@ const Avatar = ({ initialSrc, alt, fallbackIcon }) => {
   return error || !initialSrc ? (
     fallbackIcon
   ) : (
-    <img src={src} alt={alt} className="avatar" style={{ width: '16px', height: '16px' }} onError={handleError} />
+    <img src={src} alt={alt} className="avatar" style={{ width: '24px', height: '24px' }} onError={handleError} />
   );
 };
 
@@ -23,7 +23,7 @@ const GetAvatar = ({ chatType, userAvatar, respondentAvatar }) => {
         initialSrc={userAvatar}
         alt="User avatar"
         fallbackIcon={
-          <SolidIcon name="defaultsenderchatavatar" width="16" viewBox="0 0 20 20" fill={'var(--primary-brand)'} />
+          <SolidIcon name="defaultsenderchatavatar" width="24" viewBox="0 0 24 24" fill={'var(--primary-brand)'} />
         }
       />
     );
@@ -33,7 +33,7 @@ const GetAvatar = ({ chatType, userAvatar, respondentAvatar }) => {
         initialSrc={respondentAvatar}
         alt="Respondent avatar"
         fallbackIcon={
-          <SolidIcon name="defaultresponseavatar" width="16" viewBox="0 0 20 20" fill={'var(--icons-strong)'} />
+          <SolidIcon name="defaultresponseavatar" width="24" viewBox="0 0 24 24" fill={'var(--icons-strong)'} />
         }
       />
     );

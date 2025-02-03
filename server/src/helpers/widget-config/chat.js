@@ -34,7 +34,6 @@ export const chatConfig = {
         schema: { type: 'string' },
         defaultValue: '{{globals.currentUser.firstName}}',
       },
-      section: 'settings',
     },
     userAvatar: {
       type: 'code',
@@ -43,7 +42,6 @@ export const chatConfig = {
         schema: { type: 'string' },
         defaultValue: '',
       },
-      section: 'settings',
     },
     respondentName: {
       type: 'code',
@@ -52,7 +50,6 @@ export const chatConfig = {
         schema: { type: 'string' },
         defaultValue: '',
       },
-      section: 'settings',
     },
     respondentAvatar: {
       type: 'code',
@@ -61,7 +58,6 @@ export const chatConfig = {
         schema: { type: 'string' },
         defaultValue: '',
       },
-      section: 'settings',
     },
     visibility: {
       type: 'toggle',
@@ -70,7 +66,6 @@ export const chatConfig = {
         schema: { type: 'boolean' },
         defaultValue: true,
       },
-      section: 'additionalActions',
     },
     disableInput: {
       type: 'toggle',
@@ -79,7 +74,6 @@ export const chatConfig = {
         schema: { type: 'boolean' },
         defaultValue: false,
       },
-      section: 'additionalActions',
     },
     loadingHistory: {
       type: 'toggle',
@@ -88,7 +82,6 @@ export const chatConfig = {
         schema: { type: 'boolean' },
         defaultValue: false,
       },
-      section: 'additionalActions',
     },
     loadingResponse: {
       type: 'toggle',
@@ -97,7 +90,6 @@ export const chatConfig = {
         schema: { type: 'boolean' },
         defaultValue: false,
       },
-      section: 'additionalActions',
     },
   },
 
