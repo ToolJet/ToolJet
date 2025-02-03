@@ -5,6 +5,20 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 export const ChatInput = ({ message, onChange, onSend, disabled, loading, newMessageDisabled, computedStyles }) => {
   const [isFocused, setIsFocused] = useState(false);
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (message.trim() && !disabled && !loading && !newMessageDisabled) {
+        onSend();
+        const textarea = document.querySelector('.chat-input-textarea');
+        if (textarea) {
+          textarea.style.height = '36px';
+          textarea.classList.remove('scrollable');
+        }
+      }
+    }
+  };
+
   return (
     <div className="chat-input p-2" style={{ borderTop: '1px solid var(--slate7)' }}>
       <div className="d-flex gap-2 align-items-end">
@@ -12,6 +26,7 @@ export const ChatInput = ({ message, onChange, onSend, disabled, loading, newMes
           className="form-control chat-input-textarea"
           value={message}
           onChange={onChange}
+          onKeyDown={handleKeyDown}
           placeholder="Type a message..."
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
