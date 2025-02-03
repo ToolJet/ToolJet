@@ -220,4 +220,87 @@
   .chat-messages{
     overflow-x: hidden !important;
   }
+
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    
+    // Hide scrollbar by default
+    &::-webkit-scrollbar {
+      width: 0;
+      background: transparent;
+      transition: all 0.2s ease;
+    }
+
+    // Show scrollbar on hover or focus
+    &:hover,
+    &:focus,
+    &:focus-within {
+      &::-webkit-scrollbar {
+        width: 6px;
+      }
+      
+      &::-webkit-scrollbar-thumb {
+        background-color: var(--slate7);
+        border-radius: 3px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: transparent;
+      }
+    }
+
+    // Firefox scrollbar styles
+    scrollbar-width: none;
+    &:hover,
+    &:focus,
+    &:focus-within {
+      scrollbar-width: thin;
+      scrollbar-color: var(--slate7) transparent;
+    }
+  }
+}
+
+.chat-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    
+    // Hide scrollbar by default
+    &::-webkit-scrollbar {
+      width: 0;
+      background: transparent;
+      transition: width 0.2s ease;
+    }
+
+    // Show scrollbar on hover or focus
+    &:hover,
+    &:focus,
+    &:focus-within {
+      &::-webkit-scrollbar {
+        width: 6px;
+      }
+      
+      &::-webkit-scrollbar-thumb {
+        background-color: var(--slate7);
+        border-radius: 3px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: transparent;
+      }
+    }
+  }
+
+  // ... rest of the existing styles ...
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import '@/_styles/widgets/chat.scss';
 import { ChatHeader } from './components/ChatHeader';
 import { ChatMessage } from './components/ChatMessage';
@@ -68,11 +68,7 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
         onClear={exposedActions.clearHistory}
       />
 
-      <div
-        ref={chatMessagesRef}
-        className="chat-messages p-2"
-        style={{ flexGrow: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px' }}
-      >
+      <div ref={chatMessagesRef} className="chat-messages" tabIndex={0} style={{ flexGrow: 1, overflowY: 'auto' }}>
         {Array.isArray(state.chatHistory) &&
           state.chatHistory.map((chat, index) => (
             <ChatMessage
