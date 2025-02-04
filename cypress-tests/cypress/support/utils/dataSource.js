@@ -111,7 +111,7 @@ export const addQuery = (queryName, query, dbName) => {
   });
 };
 
-export const addDsAndaddQuery = (queryName, query, dbName) => {
+export const addDsAndAddQuery = (queryName, query, dbName) => {
   cy.get('[data-cy="show-ds-popover-button"]').click();
   cy.get(".css-4e90k9").type(`${dbName}`);
   cy.contains(`[id*="react-select-"]`, dbName).click();
