@@ -21,6 +21,7 @@ export const SearchBox = forwardRef(
       autoFocus = false,
       showClearButton,
       initialValue = '',
+      setShowInput
     },
     ref
   ) => {
@@ -32,6 +33,12 @@ export const SearchBox = forwardRef(
       setSearchText(e.target.value);
       callBack?.(e);
     };
+    function handleBlur() {
+      if (setShowInput && searchText.trim() == '') {
+        setShowInput(false);
+      }
+      setFocussed(false);
+    }
 
     const clearSearchText = () => {
       setSearchText('');
@@ -70,7 +77,7 @@ export const SearchBox = forwardRef(
             })}
             placeholder={placeholder}
             onFocus={() => setFocussed(true)}
-            onBlur={() => setFocussed(false)}
+            onBlur={handleBlur}
             data-cy={`${dataCy}-search-bar`}
             autoFocus={autoFocus}
             ref={ref}
