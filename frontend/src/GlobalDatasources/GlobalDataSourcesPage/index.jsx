@@ -277,72 +277,54 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
           </div>
           <div className="tj-text-sm font-weight-500 tj-text">No plugins added</div>
           {admin && (
+          {/* Remove this block of code that adds the 'Add plugins' button */}
+          {/* {admin && (
             <>
               <div className="tj-text-xsm font-weight-400 mt-2 mb-3">
                 Browse through plugins in marketplace to add them as a Data Source.{' '}
+                Browse through plugins in marketplace to add them as a Data Source. 
               </div>
               <ButtonSolid
                 onClick={() => {
-                  marketplaceEnabled
-                    ? navigate('/integrations')
-                    : toast.error('Please enable marketplace to add plugins');
-                }}
-                style={{ margin: 'auto' }}
-                variant="secondary"
-              >
+@@ -293,10 +294,11 @@
                 Add plugins
               </ButtonSolid>
             </>
           )}
+          )} */}
         </div>
       );
     }
+  
     const addDataSourceBtn = (item) => (
       <ButtonSolid
         disabled={addingDataSource}
-        isLoading={addingDataSource}
-        variant="secondary"
-        onClick={() => createDataSource(item)}
-        data-cy={`${item.title.toLowerCase().replace(/\s+/g, '-')}-add-button`}
-      >
-        <SolidIcon name="plus" fill={darkMode ? '#3E63DD' : '#3E63DD'} width={18} viewBox="0 0 25 25" />
+@@ -309,19 +311,19 @@
         <span className="ml-2">Add</span>
       </ButtonSolid>
     );
-
+  
     const datasources = source.map((datasource) => {
       const src = datasource?.iconFile?.data
         ? `data:image/svg+xml;base64,${datasource.iconFile?.data}`
         : datasource.kind.toLowerCase();
-
+  
       return {
         ...datasource,
         src,
         title: datasource.name,
       };
     });
-
+  
     return (
       <>
         <div className="row row-deck mt-3">
-          {datasources.map((item) => (
-            <Card
-              key={item.key}
-              darkMode={darkMode}
-              title={item.title}
-              src={item?.src}
-              usePluginIcon={isEmpty(item?.iconFile?.data)}
-              height="35px"
-              width="35px"
-              actionButton={addDataSourceBtn(item)}
-              className="datasource-card"
-              titleClassName={'datasource-card-title'}
-            />
-          ))}
+@@ -342,78 +344,78 @@
         </div>
       </>
     );
   };
+  };  
 
   const datasourcesGroups = () => {
     const allDataSourcesList = {
