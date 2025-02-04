@@ -44,18 +44,19 @@ describe("App Import Functionality", () => {
   before(() => {
     cy.exec("mkdir -p ./cypress/downloads/");
     cy.wait(3000);
-    cy.apiLogin();
-    cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
-    cy.apiLogout();
   });
 
   beforeEach(() => {
     cy.viewport(1200, 1300);
     cy.apiLogin();
-    cy.visit(`${data.workspaceSlug}`);
   });
 
   it("should verify app import functionality", () => {
+    cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
+    cy.apiLogout();
+    cy.apiLogin();
+    cy.visit(`${data.workspaceSlug}`);
+
     // Test invalid file import
     cy.get(dashboardSelector.importAppButton).click();
     importAndVerifyApp(

@@ -10,48 +10,48 @@ describe("Bulk User Upload", () => {
   // Test data configuration
   const TEST_FILES = {
     MISSING_NAME: {
-      path: "cypress/fixtures/bulkUser/without_name - Sheet1.csv",
+      path: "cypress/fixtures/bulkUser/without_name.csv",
       fileName: "without_name",
       error:
         "Missing first_name,last_name,groups information in 2 row(s);. No users were uploaded, please update and try again.",
     },
     MISSING_EMAIL: {
-      path: "cypress/fixtures/bulkUser/without_email - Sheet1.csv",
+      path: "cypress/fixtures/bulkUser/without_email.csv",
       fileName: "without_email",
       error:
         "Missing email,groups information in 2 row(s);. No users were uploaded, please update and try again.",
     },
     DUPLICATE_EMAIL: {
-      path: "cypress/fixtures/bulkUser/same_email - Sheet1.csv",
+      path: "cypress/fixtures/bulkUser/same_email.csv",
       fileName: "same_email",
       error: "Duplicate email found. Please provide a unique email address.",
       isDuplicate: true,
     },
     EMPTY_NAMES: {
-      path: "cypress/fixtures/bulkUser/empty_first_and_last_name - Sheet1.csv",
+      path: "cypress/fixtures/bulkUser/empty_first_and_last_name.csv",
       fileName: "empty_first_and_last_name",
       error:
         "Missing first_name,last_name,groups information in 1 row(s);. No users were uploaded, please update and try again.",
     },
     LIMIT_EXCEEDED: {
-      path: "cypress/fixtures/bulkUser/500_invite_users - Sheet1.csv",
+      path: "cypress/fixtures/bulkUser/500_invite_users.csv",
       fileName: "500_invite_users",
       error: "You can only invite 250 users at a time",
     },
     MISSING_ROLE: {
-      path: "cypress/fixtures/bulkUser/without_Role - Sheet1.csv",
+      path: "cypress/fixtures/bulkUser/without_Role.csv",
       fileName: "without_Role",
       error:
         "Missing user_role,groups information in 2 row(s);. No users were uploaded, please update and try again.",
     },
     NONEXISTENT_GROUP: {
-      path: "cypress/fixtures/bulkUser/non_existing_group -Sheet1 .csv",
+      path: "cypress/fixtures/bulkUser/non_existing_group.csv",
       fileName: "non_existing_group",
       error: "2 groups doesn't exist. No users were uploaded",
     },
     VALID_USERS: {
-      path: "cypress/fixtures/bulkUser/10usersupload.csv",
-      fileName: "10usersupload",
+      path: "cypress/fixtures/bulkUser/3usersupload.csv",
+      fileName: "3usersupload",
       testEmail: "test12@gmail.com",
       successMessage: "3 users are being added",
     },

@@ -49,7 +49,7 @@ describe("Datasource Manager", () => {
     );
     cy.get(dataSourceSelector.allDatasourceLabelAndCount).verifyVisibleElement(
       "have.text",
-      dataSourceText.allDataSources
+      dataSourceText.allDataSources()
     );
     cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
       expect($el.contents().first().text().trim()).to.eq("Data sources");
@@ -63,7 +63,7 @@ describe("Datasource Manager", () => {
       },
       {
         selector: dataSourceSelector.databaseLabelAndCount,
-        text: dataSourceText.allDatabase,
+        text: dataSourceText.allDatabase(),
         title: " Databases",
       },
       {
