@@ -21,11 +21,10 @@ import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.fact
 import { AppsService } from '@services/apps.service';
 import { CreateDataQueryDto, UpdateDataQueryDto, UpdatingReferencesOptionsDto } from '@dto/data-query.dto';
 import { User } from 'src/decorators/user.decorator';
-import { decode } from 'js-base64';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { EntityManager } from 'typeorm';
 import { DataSource } from 'src/entities/data_source.entity';
-import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.constants';
+import { DataSourceScopes } from 'src/helpers/data_source.constants';
 import { App } from 'src/entities/app.entity';
 import { isEmpty } from 'class-validator';
 
@@ -41,40 +40,46 @@ export class DataQueriesController {
   @UseGuards(JwtAuthGuard)
   @Get()
   async index(@User() user, @Query() query) {
-    const app = await this.appsService.findAppFromVersion(query.app_version_id);
-    const ability = await this.appsAbilityFactory.appsActions(user, app.id);
+    try {
+      const app = await this.appsService.findAppFromVersion(query.app_version_id);
+      const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
-    if (!ability.can('getQueries', app)) {
-      throw new ForbiddenException('you do not have permissions to perform this action');
-    }
-
-    const queries = await this.dataQueriesService.all(query);
-    const seralizedQueries = [];
-
-    // serialize
-    for (const query of queries) {
-      if (query.dataSource.type === DataSourceTypes.STATIC) {
-        delete query['dataSourceId'];
-      }
-      delete query['dataSource'];
-
-      const decamelizedQuery = decamelizeKeys(query);
-
-      decamelizedQuery['options'] = query.options;
-
-      if (query.plugin) {
-        decamelizedQuery['plugin'].manifest_file.data = JSON.parse(
-          decode(query.plugin.manifestFile.data.toString('utf8'))
-        );
-        decamelizedQuery['plugin'].icon_file.data = query.plugin.iconFile.data.toString('utf8');
+      if (!ability.can('getQueries', app)) {
+        throw new ForbiddenException('You do not have permissions to perform this action');
       }
 
-      seralizedQueries.push(decamelizedQuery);
+      // Adding date filters
+      const startDate = query.startDate ? new Date(query.startDate) : null;
+      const endDate = query.endDate ? new Date(query.endDate) : null;
+
+      // Date validation
+      if (startDate && isNaN(startDate.getTime())) {
+        throw new BadRequestException('Invalid start date');
+      }
+      if (endDate && isNaN(endDate.getTime())) {
+        throw new BadRequestException('Invalid end date');
+      }
+
+      // Updating the call to pass only the query object
+      query.startDate = startDate; // Adds startDate to the query object
+      query.endDate = endDate; // Adds endDate to the query object
+
+      const queries = await this.dataQueriesService.all(query); // Passes only the query object
+      const serializedQueries = queries.map((query) => {
+        // Logic to serialize query objects
+        return {
+          id: query.id,
+          name: query.name,
+          options: query.options,
+          // Add other fields as necessary
+        };
+      });
+
+      return { data_queries: serializedQueries }; // Return JSON response
+    } catch (error) {
+      console.error('Error fetching queries:', error); // Log the error
+      throw new BadRequestException('Error fetching queries');
     }
-
-    const response = { data_queries: seralizedQueries };
-
-    return response;
   }
 
   @UseGuards(JwtAuthGuard)
