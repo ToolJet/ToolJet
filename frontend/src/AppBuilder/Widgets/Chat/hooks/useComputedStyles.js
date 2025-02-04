@@ -32,9 +32,9 @@ export const useComputedStyles = (styles) => {
 
     if (
       styles?.borderColorContainer &&
-      ['#CCD1D5', '#ccd1d5', '#ccd1d5ff', '#CCD1D5FF'].includes(styles.borderColorContainer)
+      ['#E4E7EB', '#e4e7eb', '#e4e7ebff', '#E4E7EBFF'].includes(styles.borderColorContainer)
     ) {
-      computedStyles.container.border = '1px solid var(--borders-default)';
+      computedStyles.container.border = '1px solid var(--borders-disabled-on-white)';
     } else {
       computedStyles.container.border = `1px solid ${styles.borderColorContainer}`;
     }

@@ -65,7 +65,15 @@
   }
   .message-error{
     .message-content {
-      color: var(--tomato9) !important;
+      color: var(--status-error-strong) !important;
+      font-family: IBM Plex Sans;
+      font-size: 14px !important;
+      font-weight: 400 !important;
+      line-height: 22.4px !important;
+      text-align: left !important;
+      text-underline-position: from-font !important;
+      text-decoration-skip-ink: none !important;
+
     }
   }
   .chat-input-textarea{

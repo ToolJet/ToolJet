@@ -306,7 +306,7 @@ export const chatConfig = {
       textColorField: { value: '#11181C' },
       sendIconColorField: { value: '#4368E3' },
       containerBackgroundColor: { value: '#FFFFFF' },
-      borderColorContainer: { value: '#CCD1D5' },
+      borderColorContainer: { value: '#E4E7EB' },
       boxShadowContainer: { value: '#121212' },
     },
   },
