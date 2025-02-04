@@ -108,16 +108,7 @@ export default class MistralService implements QueryService {
     const { api_key } = sourceOptions;
     return new MistralClient({
       apiKey: api_key,
-      retryConfig: {
-        strategy: 'backoff',
-        backoff: {
-          initialInterval: 1,
-          maxInterval: 50,
-          exponent: 1.1,
-          maxElapsedTime: 100,
-        },
-        retryConnectionErrors: false,
-      },
+      timeoutMs: 15000,
     });
   }
 }
