@@ -401,10 +401,10 @@ export const Modal = function Modal({
   );
 };
 
-const ModalHeader = ({ id, customStyles, hideCloseButton, darkMode, width, onHideModal, headerHeight }) => {
+const ModalHeader = ({ id, customStyles, hideCloseButton, darkMode, width, onHideModal, headerHeight, onClick }) => {
   const canvasHeaderHeight = getCanvasHeight(headerHeight);
   return (
-    <BootstrapModal.Header style={{ ...customStyles.modalHeader }} data-cy={`modal-header`}>
+    <BootstrapModal.Header style={{ ...customStyles.modalHeader }} data-cy={`modal-header`} onClick={onClick}>
       <SubContainer
         id={`${id}-header`}
         canvasHeight={canvasHeaderHeight}
@@ -451,10 +451,10 @@ const ModalHeader = ({ id, customStyles, hideCloseButton, darkMode, width, onHid
   );
 };
 
-const ModalFooter = ({ id, customStyles, darkMode, width, footerHeight }) => {
+const ModalFooter = ({ id, customStyles, darkMode, width, footerHeight, onClick }) => {
   const canvasFooterHeight = getCanvasHeight(footerHeight);
   return (
-    <BootstrapModal.Footer style={{ ...customStyles.modalFooter }} data-cy={`modal-footer`}>
+    <BootstrapModal.Footer style={{ ...customStyles.modalFooter }} data-cy={`modal-footer`} onClick={onClick}>
       <SubContainer
         id={`${id}-footer`}
         canvasHeight={canvasFooterHeight}
@@ -500,6 +500,15 @@ const Component = ({ children, ...restProps }) => {
     }
   };
 
+  const handleModalSlotClick = (event) => {
+    const clickedComponentId = event.target.getAttribute('component-id');
+
+    // Check if the clicked element is part of the modal canvas & same widget with id
+    if (clickedComponentId.includes(id)) {
+      setSelectedComponentAsModal(id);
+    }
+  };
+
   return (
     <BootstrapModal {...restProps} animation={true} onClick={handleModalBodyClick}>
       {showConfigHandler && (
@@ -521,6 +530,7 @@ const Component = ({ children, ...restProps }) => {
           width={modalWidth}
           onHideModal={onHideModal}
           headerHeight={headerHeight}
+          onClick={handleModalSlotClick}
         />
       )}
       <BootstrapModal.Body style={{ ...customStyles.modalBody }} ref={parentRef} id={id} data-cy={`modal-body`}>
@@ -547,6 +557,7 @@ const Component = ({ children, ...restProps }) => {
           customStyles={customStyles}
           width={modalWidth}
           footerHeight={footerHeight}
+          onClick={handleModalSlotClick}
         />
       )}
     </BootstrapModal>

@@ -101,7 +101,7 @@ export const Modal = ({ componentMeta, darkMode, ...restProps }) => {
     darkMode
   );
 
-  accordionItems.splice(1, 0, ...conditionalAccordionItems(component));
+  accordionItems.splice(0, 0, ...conditionalAccordionItems(component));
 
   return <Accordion items={accordionItems} />;
 };
