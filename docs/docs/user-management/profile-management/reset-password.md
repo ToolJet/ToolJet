@@ -3,7 +3,7 @@ id: reset-password
 title: Reset Password
 ---
 
-There are two ways through which a user can reset their password. The first method is where user can reset their password by themselves. The second method is where a **Super Admin** can reset password for a user.
+When password login is enabled then there are two ways through which a user can reset their password. The first method is where user can reset their password by themselves. The second method is where a **Super Admin** can reset password for a user.
 
 ## Forgot Password
 
@@ -15,8 +15,7 @@ There are two ways through which a user can reset their password. The first meth
 
 ## Super Admin Reset Password
 
-
-When password login is enabled, and if a user forgets their password or it needs to be updated, the super admin can easily reset the password for any user in the instance by following these steps:
+If a user forgets their password or it needs to be updated, the super admin can easily reset the password for any user in the instance by following these steps:
 
 1. Click on the settings icon (⚙️) on the bottom left of your dashboard.
 

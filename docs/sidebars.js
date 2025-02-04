@@ -501,7 +501,15 @@ const sidebars = {
           'type': 'category',
           'label': 'Backup',
           'items': [
-            'development-lifecycle/backup/gitsync',
+            {
+              'type': 'category',
+              'label': 'GitSync',
+              'items': [
+                'development-lifecycle/backup/gitsync/overview',
+                'development-lifecycle/backup/gitsync/cloud',
+                'development-lifecycle/backup/gitsync/self-hosted'
+              ]
+            },
             'development-lifecycle/backup/sql-backup'
           ]
         },

@@ -1,4 +1,0 @@
----
-id: gitsync
-title: GitSync
----
