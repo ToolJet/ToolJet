@@ -436,7 +436,18 @@
       "type": "category",
       "label": "Release Management",
       "items": [
-        "gitsync",
+        {
+          "type": "category",
+          "label": "GitSync",
+          "items": [
+            "release-management/gitsync/overview",
+            "release-management/gitsync/tj-config",
+            "release-management/gitsync/ssh-config",
+            "release-management/gitsync/delete-gitsync",
+            "release-management/gitsync/git-push",
+            "release-management/gitsync/git-pull"
+          ]
+        },
         "release-management/multi-environment",
         "tutorial/versioning-and-release"
       ]
