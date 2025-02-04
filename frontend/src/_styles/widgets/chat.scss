@@ -349,6 +349,21 @@
       }
     }
   }
-
+  
+  .loader {
+  width: 8px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  animation: l5 1s infinite linear alternate;
+  height: 8px;
+  position: absolute;
+  left: 24px;
+  }
+  @keyframes l5 {
+    0%  {box-shadow: 20px 0 var(--primary-accent-subtle ), -20px 0 var(--primary-accent-subtle);background: var(--primary-accent-strong) }
+    33% {box-shadow: 20px 0 var(--primary-accent-subtle), -20px 0 var(--primary-accent-subtle);background: var(--primary-accent-strong) }
+    66% {box-shadow: 20px 0 var(--primary-accent-subtle),-20px 0 var(--primary-accent-subtle); background: var(--primary-accent-strong) }
+    100%{box-shadow: 20px 0 var(--primary-accent-subtle),-20px 0 var(--primary-accent-subtle); background: var(--primary-accent-strong) }
+  }
 }
 

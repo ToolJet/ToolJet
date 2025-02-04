@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import '@/_styles/widgets/chat.scss';
 import { ChatHeader } from './components/ChatHeader';
 import { ChatMessage } from './components/ChatMessage';
-import { LoadingMessage } from './components/LoadingMessage';
+import { RespondentLoadingMessage } from './components/RespondentLoadingMessage';
 import { ChatInput } from './components/ChatInput';
 import { useChatState } from './hooks/useChatState';
 import { useChatActions } from './hooks/useChatActions';
@@ -106,12 +106,8 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
           />
         )}
 
-        {(state.loadingResponse || state.loadingHistory) && (
-          <LoadingMessage
-            isResponse={state.loadingResponse}
-            userAvatar={state.userAvatar}
-            respondentAvatar={state.respondentAvatar}
-          />
+        {state.loadingResponse && (
+          <RespondentLoadingMessage userAvatar={state.userAvatar} respondentAvatar={state.respondentAvatar} />
         )}
       </div>
 
