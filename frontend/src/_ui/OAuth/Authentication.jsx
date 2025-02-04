@@ -32,9 +32,13 @@ const Authentication = ({
     return (
       <div>
         <hr />
-        <h3 className="text-muted">Authentication</h3>
+        <h3 className="text-muted" data-cy="label-authentication">
+          Authentication
+        </h3>
         <div className="row mt-3">
-          <label className="form-label text-muted">Grant Type</label>
+          <label className="form-label text-muted" data-cy="label-grant-type">
+            Grant Type
+          </label>
           <Select
             options={[{ name: 'Authorization Code', value: 'authorization_code' }]}
             value={grant_type}
@@ -42,7 +46,9 @@ const Authentication = ({
             width={'100%'}
             useMenuPortal={false}
           />
-          <label className="form-label text-muted mt-3">Add Access Token To</label>
+          <label className="form-label text-muted mt-3" data-cy="label-add-access-token-to">
+            Add Access Token To
+          </label>
           <Select
             options={[{ name: 'Request Header', value: 'header' }]}
             value={add_token_to}
@@ -53,8 +59,11 @@ const Authentication = ({
 
           {add_token_to === 'header' && (
             <div className="col-md-12">
-              <label className="form-label text-muted mt-3">Header Prefix</label>
+              <label className="form-label text-muted mt-3" data-cy="label-header-prefix">
+                Header Prefix
+              </label>
               <Input
+                data-cy="header-prefix-input-field"
                 type="text"
                 className="form-control"
                 onChange={(e) => optionchanged('header_prefix', e.target.value)}
@@ -66,8 +75,11 @@ const Authentication = ({
         </div>
 
         <div className="col-md-12">
-          <label className="form-label text-muted mt-3">Access Token URL</label>
+          <label className="form-label text-muted mt-3" data-cy="label-access-token-url">
+            Access Token URL
+          </label>
           <Input
+            data-cy="access-token-url-input-field"
             type="text"
             placeholder="https://api.example.com/oauth/token"
             className="form-control"
@@ -79,7 +91,9 @@ const Authentication = ({
 
         <div className="row mt-3">
           <div className="col">
-            <label className="form-label pt-2">Access Token URL custom headers</label>
+            <label className="form-label pt-2" data-cy="label-access-token-url-custom-headers">
+              Access Token URL custom headers
+            </label>
           </div>
         </div>
         <Headers
@@ -87,11 +101,15 @@ const Authentication = ({
           options={access_token_custom_headers}
           optionchanged={optionchanged}
           workspaceConstants={workspaceConstants}
+          dataCy={'access-token-url-custom-headers'}
         />
 
         <div className="col-md-12">
-          <label className="form-label text-muted mt-3">Client ID</label>
+          <label className="form-label text-muted mt-3" data-cy="label-client-id">
+            Client ID
+          </label>
           <Input
+            data-cy="client-id-input-field"
             type="text"
             className="form-control"
             onChange={(e) => optionchanged('client_id', e.target.value)}
@@ -110,6 +128,7 @@ const Authentication = ({
             label="Client Secret"
           >
             <Input
+              data-cy="client-secret-input-field"
               type="password"
               className="form-control"
               onChange={(e) => optionchanged('client_secret', e.target.value)}
@@ -120,8 +139,11 @@ const Authentication = ({
         </div>
 
         <div className="col-md-12">
-          <label className="form-label text-muted mt-3">Scope(s)</label>
+          <label className="form-label text-muted mt-3" data-cy="label-scope">
+            Scope(s)
+          </label>
           <Input
+            data-cy="scope-input-field"
             type="text"
             className="form-control"
             onChange={(e) => optionchanged('scopes', e.target.value)}
@@ -132,7 +154,9 @@ const Authentication = ({
 
         <div className="row mt-3">
           <div className="col">
-            <label className="form-label pt-2">Custom Query Parameters</label>
+            <label className="form-label pt-2" data-cy="label-custom-query-parameters">
+              Custom Query Parameters
+            </label>
           </div>
         </div>
         <Headers
@@ -140,13 +164,17 @@ const Authentication = ({
           options={custom_query_params}
           optionchanged={optionchanged}
           workspaceConstants={workspaceConstants}
+          dataCy={'custom-query-parameters'}
         />
 
         {grant_type === 'authorization_code' && (
           <div>
             <div className="col-md-12">
-              <label className="form-label text-muted mt-3">Authorization URL</label>
+              <label className="form-label text-muted mt-3" data-cy="label-authorization-url">
+                Authorization URL
+              </label>
               <Input
+                data-cy="authorization-url-input-field"
                 type="text"
                 placeholder="https://api.example.com/oauth/authorize"
                 className="form-control"
@@ -158,7 +186,9 @@ const Authentication = ({
 
             <div className="row mt-3">
               <div className="col">
-                <label className="form-label pt-2">Custom Authentication Parameters</label>
+                <label className="form-label pt-2" data-cy="label-custom-authentication-parameters">
+                  Custom Authentication Parameters
+                </label>
               </div>
             </div>
             <Headers
@@ -166,8 +196,11 @@ const Authentication = ({
               options={custom_auth_params}
               optionchanged={optionchanged}
               workspaceConstants={workspaceConstants}
+              dataCy={'custom-authentication-parameters'}
             />
-            <label className="form-label text-muted mt-3">Client Authentication</label>
+            <label className="form-label text-muted mt-3" data-cy="label-client-authentication">
+              Client Authentication
+            </label>
             <Select
               options={[
                 { name: 'Send as Basic Auth header', value: 'header' },
@@ -180,12 +213,15 @@ const Authentication = ({
             />
             <label className="form-check form-switch my-4 ">
               <input
+                data-cy="authentication-required-for-all-users-toggle-switch"
                 className="form-check-input"
                 type="checkbox"
                 checked={multiple_auth_enabled}
                 onChange={() => optionchanged('multiple_auth_enabled', !multiple_auth_enabled)}
               />
-              <span className="form-check-label">Authentication Required for All Users</span>
+              <span className="form-check-label" data-cy="label-authentication-required-for-all-users">
+                Authentication Required for All Users
+              </span>
             </label>
           </div>
         )}
@@ -195,8 +231,11 @@ const Authentication = ({
     return (
       <div>
         <div className="col-md-12">
-          <label className="form-label text-muted mt-3">Username</label>
+          <label className="form-label text-muted mt-3" data-cy="label-username">
+            Username
+          </label>
           <Input
+            data-cy="username-input-field"
             type="text"
             className="form-control"
             onChange={(e) => optionchanged('username', e.target.value)}
@@ -214,6 +253,7 @@ const Authentication = ({
             label="Password"
           >
             <Input
+              data-cy="password-input-field"
               type="password"
               className="form-control"
               onChange={(e) => optionchanged('password', e.target.value)}
@@ -237,6 +277,7 @@ const Authentication = ({
             label="Token"
           >
             <Input
+              data-cy="token-input-field"
               type="password"
               className="form-control"
               onChange={(e) => optionchanged('bearer_token', e.target.value)}

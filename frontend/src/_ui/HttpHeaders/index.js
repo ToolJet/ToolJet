@@ -4,7 +4,14 @@ import QueryEditor from './QueryEditor';
 import SourceEditor from './SourceEditor';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
-export default ({ getter, options = [['', '']], optionchanged, isRenderedAsQueryEditor, workspaceConstants }) => {
+export default ({
+  getter,
+  options = [['', '']],
+  optionchanged,
+  isRenderedAsQueryEditor,
+  workspaceConstants,
+  dataCy,
+}) => {
   function addNewKeyValuePair(options) {
     const newPairs = [...options, ['', '']];
     optionchanged(getter, newPairs);
@@ -32,6 +39,7 @@ export default ({ getter, options = [['', '']], optionchanged, isRenderedAsQuery
     addNewKeyValuePair,
     removeKeyValuePair,
     keyValuePairValueChanged,
+    dataCy,
   };
 
   return isRenderedAsQueryEditor ? (
