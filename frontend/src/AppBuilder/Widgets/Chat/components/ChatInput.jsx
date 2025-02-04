@@ -4,17 +4,21 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export const ChatInput = ({ message, onChange, onSend, disabled, loading, newMessageDisabled, computedStyles }) => {
   const [isFocused, setIsFocused] = useState(false);
+  const textareaRef = React.useRef(null);
+
+  const resetTextareaHeight = () => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = '36px';
+      textareaRef.current.classList.remove('scrollable');
+    }
+  };
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       if (message.trim() && !disabled && !loading && !newMessageDisabled) {
         onSend();
-        const textarea = document.querySelector('.chat-input-textarea');
-        if (textarea) {
-          textarea.style.height = '36px';
-          textarea.classList.remove('scrollable');
-        }
+        resetTextareaHeight();
       }
     }
   };
@@ -23,6 +27,7 @@ export const ChatInput = ({ message, onChange, onSend, disabled, loading, newMes
     <div className="chat-input">
       <div className="d-flex gap-2 align-items-center">
         <textarea
+          ref={textareaRef}
           className="form-control chat-input-textarea"
           value={message}
           onChange={onChange}
@@ -48,11 +53,7 @@ export const ChatInput = ({ message, onChange, onSend, disabled, loading, newMes
           variant="outline"
           onClick={() => {
             onSend();
-            const textarea = document.querySelector('.chat-input-textarea');
-            if (textarea) {
-              textarea.style.height = '36px';
-              textarea.classList.remove('scrollable');
-            }
+            resetTextareaHeight();
           }}
           iconOnly={true}
           disabled={!message.trim() || disabled || loading}

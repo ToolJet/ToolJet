@@ -333,9 +333,22 @@
     }
 
   }
-  .chat-input{
+  .chat-input {
     padding: 10px 20px;
-  }
-}
 
+    .d-flex {
+      position: relative;
+      width: 100%;
+
+      textarea {
+        flex: 1;
+      }
+
+      button {
+        align-self: flex-end; // Align button to bottom
+      }
+    }
+  }
+
+}
 
