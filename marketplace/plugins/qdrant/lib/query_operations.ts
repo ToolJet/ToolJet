@@ -12,7 +12,9 @@ export async function getCollectionInfo(qdrant: QdrantClient, options: QueryOpti
 }
 
 export async function listCollections(qdrant: QdrantClient, options: QueryOptions): Promise<any> {
+  console.log('here');
   const collections = (await qdrant.getCollections()).collections;
+  console.log({ collections });
   return collections.map((c) => c.name);
 }
 
@@ -41,7 +43,7 @@ export async function upsertPoints(qdrant: QdrantClient, options: QueryOptions):
 
   const response = await qdrant.upsert(collectionName, {
     points: JSON.parse(points),
-    wait: true
+    wait: true,
   });
   return response.status;
 }
@@ -56,7 +58,7 @@ export async function deletePoints(qdrant: QdrantClient, options: QueryOptions):
   const response = await qdrant.delete(collectionName, {
     filter: filter ? JSON.parse(filter) : undefined,
     points: ids ? JSON.parse(ids) : undefined,
-    wait: true
+    wait: true,
   });
 
   return response.status;
@@ -65,7 +67,7 @@ export async function deletePoints(qdrant: QdrantClient, options: QueryOptions):
 export async function queryPoints(qdrant: QdrantClient, options: QueryOptions): Promise<any> {
   const { collectionName, query, filter, limit, withPayload, withVectors } = options;
 
-  console.log("OPTIONS ARE " + JSON.stringify(options));
+  console.log('OPTIONS ARE ' + JSON.stringify(options));
 
   if (!collectionName) {
     throw new Error('Collection name is required');
