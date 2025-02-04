@@ -14,7 +14,7 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 [![Follow us on X, formerly Twitter](https://img.shields.io/twitter/follow/ToolJet?style=social)](https://twitter.com/ToolJet)
 
 <p align="center">
-    <img src="https://user-images.githubusercontent.com/7828962/211444352-4d6d2e4a-13c9-4980-9e16-4aed4af9811b.png" alt="Tooljet dashboard showing inventory and orders"/>
+    <img src="https://user-images.githubusercontent.com/7828962/211444352-4d6d2e4a-13c9-4980-9e16-4aed4af9811b.png" alt="ToolJet dashboard shows inventory and orders."/>
 </p>
 
 <p align="center">
@@ -40,7 +40,7 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 - **No-code query editors:** Query Editors are available for all supported data sources.
 - **Join and transform data:** Transform query results using JavaScript or Python code.
 - **Secure:** All the credentials are securely encrypted using `aes-256-gcm`.
-- **Data Privacy:** ToolJet serves solely as a proxy and does not store data.
+- **Data Privacy:** ToolJet only serves as a proxy and does not store data..
 - **SSO:** Supports multiple Single Sign-On providers.
 
 <hr>
@@ -112,7 +112,7 @@ For general help using ToolJet, please refer to the official [documentation](htt
 Check out our [roadmap](https://github.com/orgs/ToolJet/projects/15) to stay updated on recently released features and learn about what's coming next.
 
 ## Branching model
-We use the git-flow branching model. The base branch is `develop`. If you are looking for a stable version, please use the main branch or tags labeled as v1.x.x.
+We use the Git-flow branching model. The base branch is `develop`. If you are looking for a stable version, please use the main branch or tags labeled as v1.x.x.
 
 ## Contributing
 Kindly read our [Contributing Guide](CONTRIBUTING.md) to familiarize yourself with ToolJet's development process, how to suggest bug fixes and improvements, and the steps for building and testing your changes. <br>
