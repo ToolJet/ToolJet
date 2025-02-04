@@ -8,6 +8,7 @@ import { useChatState } from './hooks/useChatState';
 import { useChatActions } from './hooks/useChatActions';
 import { useExposedActions } from './hooks/useExposedActions';
 import { useComputedStyles } from './hooks/useComputedStyles';
+import { LoadingMessageSkeleton } from './components/LoadingMessageSkeleton';
 
 export const Chat = ({ id, component, properties, styles, setExposedVariables, fireEvent }) => {
   const darkTheme = localStorage.getItem('darkMode') === 'true';
@@ -109,6 +110,8 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
         {state.loadingResponse && (
           <RespondentLoadingMessage userAvatar={state.userAvatar} respondentAvatar={state.respondentAvatar} />
         )}
+
+        {state.loadingHistory && <LoadingMessageSkeleton />}
       </div>
 
       <ChatInput
