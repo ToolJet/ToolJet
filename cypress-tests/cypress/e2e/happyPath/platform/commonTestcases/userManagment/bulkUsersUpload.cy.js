@@ -39,7 +39,7 @@ describe("Bulk User Upload", () => {
       error: "You can only invite 250 users at a time",
     },
     MISSING_ROLE: {
-      path: "cypress/fixtures/bulkUser/without_Role.csv",
+      path: "cypress/fixtures/bulkUser/without_role.csv",
       fileName: "without_Role",
       error:
         "Missing user_role,groups information in 2 row(s);. No users were uploaded, please update and try again.",
