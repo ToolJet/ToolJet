@@ -95,13 +95,13 @@
     --status-warning-subtle: rgba(191, 79, 3, 30%);
     --status-success-strong: #1E823B;
     --status-success-subtle: rgba(30, 130, 59, 30%);
-
     //icon 
     --icons-strong: #6A727C;
     --icons-default: #ACB2B9;
     --icons-weak-disabled: #6A727C;
     --icons-disabled-on-white: #6A727C;
     --icons-on-solid: #FFFFFF;
+    --icons-disabled: #E4E7EB;
 
     // borders
     --borders-strong: #ACB2B9;
@@ -191,7 +191,8 @@
     --icons-weak-disabled: rgba(207, 211, 216, 35%);
     --icons-disabled-on-white: rgba(207, 211, 216, 20%);
     --icons-on-solid: #FAFCFF;
-
+    --icons-disabled: #3C434B;
+    
     // borders
     --borders-strong: #545B64;
     --borders-default: #3C434B;

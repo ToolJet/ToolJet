@@ -40,11 +40,12 @@ export const ChatInput = ({ message, onChange, onSend, disabled, loading, newMes
             color: computedStyles.chatInput.textColor,
             borderColor: isFocused ? computedStyles.chatInput.accentColor : computedStyles.chatInput.borderColor,
             outline: 'none',
+            boxShadow: isFocused ? `0 0 0 1px ${computedStyles.chatInput.accentColor}` : `0 0 0 1px transparent`,
           }}
           disabled={disabled || newMessageDisabled}
         />
         <Button
-          variant="ghost"
+          variant="outline"
           onClick={() => {
             onSend();
             const textarea = document.querySelector('.chat-input-textarea');
@@ -55,14 +56,16 @@ export const ChatInput = ({ message, onChange, onSend, disabled, loading, newMes
           }}
           iconOnly={true}
           disabled={!message.trim() || disabled || loading}
+          style={{
+            width: '36px',
+            height: '36px',
+          }}
         >
           <SolidIcon
             name="send"
             width="16"
             fill={
-              !message.trim() || disabled || loading
-                ? 'var(--icons-weak-disabled)'
-                : computedStyles.chatInput.sendIconColor
+              !message.trim() || disabled || loading ? 'var(--icons-disabled)' : computedStyles.chatInput.sendIconColor
             }
           />
         </Button>

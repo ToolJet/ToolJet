@@ -93,8 +93,6 @@
 
     &:focus {
       outline: none !important;
-      border-color: var(--primary-brand) !important;
-      box-shadow: 0 0 0 1px var(--primary-brand);
       border-width: 1px !important;
     }
 
