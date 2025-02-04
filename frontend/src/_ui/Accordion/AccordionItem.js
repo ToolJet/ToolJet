@@ -31,10 +31,20 @@ const AccordionItem = ({ open = true, index, title, children }) => {
   }
   return (
     <div className="accordion-item">
-      <h2 className="accordion-header" id={`heading-${index}`} data-cy={`widget-accordion-${title.toLowerCase()}`}>
+      <h2
+        className="accordion-header"
+        id={`heading-${index}`}
+        data-cy={`widget-accordion-${title.toLowerCase().replace(/\s+/g, '-')}`}
+      >
         <div className={cx('accordion-button inspector')}>
-          <span className="text-capitalize accordion-title-text">{title}</span>
+          <span
+            className="text-capitalize accordion-title-text"
+            data-cy={`label-${title.toLowerCase().replace(/\s+/g, '-')}`}
+          >
+            {title}
+          </span>
           <div
+            data-cy={`${title.toLowerCase().replace(/\s+/g, '-')}-collapse-button`}
             type="button"
             data-bs-toggle="collapse"
             data-bs-target={`collapse-${index}`}

@@ -1009,6 +1009,7 @@ class DataSourceManagerComponent extends React.Component {
                   <SolidIcon name="logs" fill="#3E63DD" width="20" style={{ marginRight: '8px' }} />
                   <a
                     className="color-primary tj-docs-link tj-text-sm"
+                    data-cy="link-read-documentation"
                     href={
                       selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
                         ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource.kind}/`
