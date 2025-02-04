@@ -87,6 +87,35 @@
     
     &.scrollable {
       overflow-y: auto;
+
+      // Always show scrollbar when scrollable
+      &::-webkit-scrollbar {
+        width: 4px;
+        height: 4px;
+        background: transparent;
+      }
+      
+      &::-webkit-scrollbar-thumb {
+        background-color: var(--slate7);
+        border-radius: 2px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      // Firefox scrollbar styles
+      scrollbar-width: thin;
+      scrollbar-color: var(--slate7) transparent;
+
+      // Remove hover/focus states since scrollbar is always visible
+      &:hover,
+      &:focus {
+        &::-webkit-scrollbar {
+          width: 4px;
+          height: 4px;
+        }
+      }
     }
 
     &:disabled {
@@ -255,12 +284,12 @@
     &:focus,
     &:focus-within {
       &::-webkit-scrollbar {
-        width: 6px;
+        width: 4px;
       }
       
       &::-webkit-scrollbar-thumb {
         background-color: var(--slate7);
-        border-radius: 3px;
+        border-radius: 2px;
       }
 
       &::-webkit-scrollbar-track {
