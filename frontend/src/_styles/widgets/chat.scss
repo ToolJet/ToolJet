@@ -53,7 +53,7 @@
     }
 
     // Add this to control spacing in the message column
-    .d-flex.flex-column {
+    .message-content-title-container {
       gap: 0; // Add 0px gap between header and content
       
       // Remove any extra spacing from children

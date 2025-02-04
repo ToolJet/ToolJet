@@ -31,7 +31,7 @@ export const ChatMessage = ({
   >
     <div className="d-flex flex-row align-items-start custom-gap-12 position-relative message-container w-100">
       <MessageAvatar type={chat.type} userAvatar={userAvatar} respondentAvatar={respondentAvatar} />
-      <div className="d-flex flex-column flex-grow-1">
+      <div className="d-flex flex-column flex-grow-1 message-content-title-container">
         <MessageHeader
           type={chat.type}
           userName={userName}
