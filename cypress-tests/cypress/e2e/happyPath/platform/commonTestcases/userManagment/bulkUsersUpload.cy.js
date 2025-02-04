@@ -40,7 +40,7 @@ describe("Bulk User Upload", () => {
     },
     MISSING_ROLE: {
       path: "cypress/fixtures/bulkUser/without_role.csv",
-      fileName: "without_Role",
+      fileName: "without_role",
       error:
         "Missing user_role,groups information in 2 row(s);. No users were uploaded, please update and try again.",
     },
