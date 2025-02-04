@@ -133,7 +133,14 @@ export const onboardUserFromAppLink = (
 
 export const resolveHost = () => {
     const baseUrl = Cypress.config("baseUrl");
-    return baseUrl === "http://localhost:8082"
-        ? baseUrl
-        : Cypress.env("server_host");
+
+    const urlMapping = {
+        "http://localhost:8082": "http://localhost:8082",
+        "http://localhost:3000/apps": "http://localhost:3000/apps",
+        "http://localhost:4001": "http://localhost:3000",
+        "http://localhost:4001/apps": "http://localhost:3000/apps"
+    };
+
+    return urlMapping[baseUrl];
 };
+

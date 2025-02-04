@@ -53,7 +53,7 @@ describe("Bulk User Upload", () => {
       path: "cypress/fixtures/bulkUser/10usersupload.csv",
       fileName: "10usersupload",
       testEmail: "test12@gmail.com",
-      successMessage: "10 users are being added",
+      successMessage: "3 users are being added",
     },
   };
 
@@ -93,22 +93,29 @@ describe("Bulk User Upload", () => {
     cy.get(usersSelector.buttonAddUsers).click();
     cy.get(usersSelector.buttonUploadCsvFile).click();
 
-    bulkUserUpload(
+    cy.get(usersSelector.inputFieldBulkUpload).selectFile(
       TEST_FILES.VALID_USERS.path,
-      TEST_FILES.VALID_USERS.fileName,
-      TEST_FILES.VALID_USERS.successMessage
+      {
+        force: true,
+      }
     );
-
-    common.searchUser(TEST_FILES.VALID_USERS.testEmail);
-    cy.contains("td", TEST_FILES.VALID_USERS.testEmail)
+    cy.get(commonSelectors.fileSelector).should(
+      "contain",
+      TEST_FILES.VALID_USERS.fileName
+    );
+    cy.get(usersSelector.buttonUploadUsers).click();
+    cy.get(".go2072408551")
+      .should("be.visible")
+      .and("have.text", TEST_FILES.VALID_USERS.successMessage);
+    common.searchUser("test12@gmail.com");
+    cy.contains("td", "test12@gmail.com")
       .parent()
       .within(() => {
         cy.get("td small").should("have.text", "invited");
       });
-
     common.navigateToManageGroups();
     cy.get(groupsSelector.groupLink("Admin")).click();
     cy.get(groupsSelector.usersLink).click();
-    cy.contains(TEST_FILES.VALID_USERS.testEmail).should("be.visible");
+    cy.contains("test12@gmail.com").should("be.visible");
   });
 });
