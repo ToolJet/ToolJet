@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
 
-export const useExposeState = (
+export const useExposeState = ({
   loadingState,
   visibleState,
   disabledModalState,
   disabledTriggerState,
   setExposedVariables,
-  setExposedVariable
-) => {
+  setExposedVariable,
+  onHideModal,
+  onShowModal,
+}) => {
   const [isVisible, setVisibility] = useState(visibleState || true);
   const [isLoading, setLoading] = useState(loadingState || false);
   const [isDisabledModal, setDisabledModal] = useState(disabledModalState || false);
@@ -37,6 +39,8 @@ export const useExposeState = (
       setDisableModal: async (value) => setDisabledModal(value),
       setVisibility: async (value) => setVisibility(value),
       setLoading: async (value) => setLoading(value),
+      open: async () => onShowModal(),
+      close: async () => onHideModal(),
     });
   }, [setExposedVariables]);
 
