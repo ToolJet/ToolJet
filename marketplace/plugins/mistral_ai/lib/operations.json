@@ -28,7 +28,6 @@
 				"list": [
           { "value": "mistral-small-latest", "name": "mistral-small-latest" },
 					{ "value": "mistral-large-latest", "name": "mistral-large-latest" },
-          { "value": "mistral-moderation-latest", "name": "mistral-moderation-latest" },
           { "value": "ministral-3b-latest", "name": "ministral-3b-latest" },
           { "value": "ministral-8b-latest", "name": "ministral-8b-latest" },
           { "value": "open-mistral-nemo", "name": "open-mistral-nemo" }
