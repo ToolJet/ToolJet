@@ -39,6 +39,12 @@ export const useComputedStyles = (styles) => {
       computedStyles.container.border = `1px solid ${styles.borderColorContainer}`;
     }
 
+    if (styles?.boxShadowContainer && ['#121212', '#121212ff'].includes(styles.boxShadowContainer)) {
+      computedStyles.container.boxShadow = 'var(--elevation-400-box-shadow) var(--elevation-700-box-shadow)';
+    } else {
+      computedStyles.container.boxShadow = `0px 8px 16px 0px ${styles.boxShadowContainer}, 0px 0px 1px 0px ${styles.boxShadowContainer}`;
+    }
+
     // message styles
     if (styles?.message && ['#1B1F24', '#1b1f24', '#1b1f24ff', '#1B1F24FF'].includes(styles.message)) {
       computedStyles.messageContent.message = 'var(--text-primary)';
