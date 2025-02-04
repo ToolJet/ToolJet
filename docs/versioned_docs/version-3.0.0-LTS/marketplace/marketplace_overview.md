@@ -79,6 +79,7 @@ To remove a plugin, follow these steps:
 - **[Engagespot](/docs/marketplace/plugins/marketplace-plugin-engagespot)**
 - **[GitHub](/docs/marketplace/plugins/marketplace-plugin-github)**
 - **[HarperDB](/docs/marketplace/plugins/marketplace-plugin-harperdb)**
+- **[Hugging Face](/docs/marketplace/plugins/marketplace-plugin-huggingface)**
 - **[Jira](/docs/marketplace/plugins/marketplace-plugin-jira)**
 - **[OpenAI](/docs/marketplace/plugins/marketplace-plugin-openai)**
 - **[Pinecone](/docs/marketplace/plugins/marketplace-plugin-pinecone)**
