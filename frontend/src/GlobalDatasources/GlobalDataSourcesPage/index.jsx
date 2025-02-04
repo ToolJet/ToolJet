@@ -330,22 +330,12 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
       };
     });
 
-    const pluginsWithTags = marketplacePlugins.reduce((acc, plugin) => {
-      const isInDatasources = datasources.some((datasource) => {
-        return datasource.kind === plugin.id || datasource.pluginId === plugin.id || datasource.plugin_id === plugin.id;
-      });
-      if (isInDatasources && plugin.tags) {
-        acc[plugin.id] = plugin.tags;
-      }
-      return acc;
-    }, {});
-
     return (
       <>
         <div className="row row-deck mt-3">
           {datasources.map((item) => {
-            const tags =
-              pluginsWithTags[item.kind] || pluginsWithTags[item.pluginId] || pluginsWithTags[item.plugin_id] || [];
+            const plugin = marketplacePlugins.find((p) => p.id === item.pluginId);
+            const tags = plugin?.tags;
             return (
               <Card
                 key={item.key}
@@ -443,14 +433,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
     return dataSourceList;
   };
 
-  const selectedPlugin = marketplacePlugins.find(
-    (plugin) =>
-      plugin.id === selectedDataSource?.kind ||
-      plugin.id === selectedDataSource?.pluginId ||
-      plugin.id === selectedDataSource?.plugin_id
-  );
-
-  const tags = selectedPlugin?.tags || [];
+  const tags = marketplacePlugins.find((plugin) => plugin.id === selectedDataSource?.kind)?.tags || [];
 
   return (
     <div className="row gx-0">
