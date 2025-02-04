@@ -72,11 +72,11 @@ describe("Bulk User Upload", () => {
 
     // Test all error cases
     [
+      TEST_FILES.MISSING_ROLE,
       TEST_FILES.MISSING_NAME,
       TEST_FILES.MISSING_EMAIL,
       TEST_FILES.DUPLICATE_EMAIL,
       TEST_FILES.EMPTY_NAMES,
-      TEST_FILES.MISSING_ROLE,
       TEST_FILES.NONEXISTENT_GROUP,
       TEST_FILES.LIMIT_EXCEEDED,
     ].forEach((testCase) => {

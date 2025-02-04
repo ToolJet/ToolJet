@@ -13,17 +13,15 @@ describe("Password reset functionality", () => {
   };
   let passwordResetLink = "";
 
-  before(() => {
-    cy.apiLogin();
-    inviteUser(data.firstName, data.email);
-    logout();
-  });
-
   beforeEach(() => {
     cy.visit("/");
   });
 
   it("Verify password reset flow and login with new password", () => {
+    cy.apiLogin();
+    inviteUser(data.firstName, data.email);
+    logout();
+
     // Invalid login attempts
     Cypress._.times(5, () => {
       cy.clearAndType(onboardingSelectors.signupEmailInput, data.email);
