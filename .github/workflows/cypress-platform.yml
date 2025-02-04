@@ -47,7 +47,7 @@ jobs:
       - name: Run PostgREST Docker Container
         run: |
           sudo docker run -d --name postgrest --network tooljet -p 3001:3000 \
-          -e PGRST_DB_URI="postgres://postgres:postgres@postgres:5432/tooljet" \
+          -e PGRST_DB_URI="postgres://postgres:postgres@localhost:5432/tooljet" \
           -e PGRST_DB_ANON_ROLE="postgres" \
           -e PGRST_JWT_SECRET="r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" \
           -e PGRST_DB_PRE_CONFIG=postgrest.pre_config \
@@ -68,19 +68,19 @@ jobs:
           echo "TOOLJET_DB_USER=postgres" >> .env
           echo "TOOLJET_DB_HOST=localhost" >> .env
           echo "TOOLJET_DB_PASS=postgres" >> .env
+          echo "TOOLJET_DB_STATEMENT_TIMEOUT=60000" >> .env
+          echo "TOOLJET_DB_RECONFIG=true" >> .env          
           echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
           echo "PGRST_HOST=localhost:3001" >> .env
+          echo "PGRST_DB_PRE_CONFIG=postgrest.pre_config" >> .env
+          echo "PGRST_DB_URI=postgres://postgres:postgres@localhost:5432/tooljet" >> .env
           echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
           echo "ENABLE_MARKETPLACE_DEV_MODE=true" >> .env
           echo "ENABLE_PRIVATE_APP_EMBED=true" >> .env
-          echo "TOOLJET_DB_STATEMENT_TIMEOUT=60000" >> .env
-          echo "TOOLJET_DB_RECONFIG=true" >> .env
           echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=123456789.apps.googleusercontent.com" >> .env
           echo "SSO_GOOGLE_OAUTH2_CLIENT_SECRET=ABCGFDNF-FHSDVFY-bskfh6234" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_ID=1234567890" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_SECRET=3346shfvkdjjsfkvxce32854e026a4531ed" >> .env
-          echo "PGRST_DB_PRE_CONFIG=postgrest.pre_config" >> .env
-          echo "PGRST_DB_URI=postgres://postgres:postgres@postgres:5432/tooljet" >> .env
 
       - name: Set up database
         run: |
