@@ -27,7 +27,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
   const [plugins, setPlugins] = useState([]);
   const [filteredDataSources, setFilteredDataSources] = useState([]);
   const [queryString, setQueryString] = useState('');
-  const [addingDataSource, setAddingDataSource] = useState(false);
+  const [addingDataSource, setAddingDataSource] = useState(null);
   const [suggestingDataSource, setSuggestingDataSource] = useState(false);
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -146,7 +146,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
     const pluginId = id;
     const kind = selectedDataSource?.kind;
     const scope = 'global';
-
+    const dataSourceKey = `${kind}-${name}`.toLowerCase();
     const parsedOptions = Object?.keys(options)?.map((key) => {
       const keyMeta = selectedDataSource.options[key];
       return {
@@ -157,7 +157,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
       };
     });
     if (name.trim() !== '') {
-      setAddingDataSource(true);
+      setAddingDataSource(dataSourceKey);
       globalDatasourceService
         .create({
           plugin_id: pluginId,
@@ -168,16 +168,16 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
         })
         .then((data) => {
           setActiveDatasourceList('');
-          setAddingDataSource(false);
+          setAddingDataSource(null);
           toast.success(t('editor.queryManager.dataSourceManager.toast.success.dataSourceAdded', 'Data Source Added'), {
             position: 'top-center',
           });
 
           dataSourcesChanged(false, data);
-          setAddingDataSource(false);
+          setAddingDataSource(null);
         })
         .catch(({ error }) => {
-          setAddingDataSource(false);
+          setAddingDataSource(null);
           error && toast.error(error, { position: 'top-center' });
         });
     } else {
@@ -267,7 +267,11 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
       </div>
     );
   };
-
+  const getDataSourceKey = (item) => {
+    const name = item.manifestFile?.data?.source?.kind ?? item.kind;
+    const kind = (item.manifestFile?.data?.source ?? item)?.kind;
+    return `${kind}-${name}`.toLowerCase();
+  };
   const renderCardGroup = (source, type) => {
     if (type === 'Plugins' && source.length === 0) {
       return (
@@ -297,10 +301,13 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
         </div>
       );
     }
-    const addDataSourceBtn = (item) => (
-      <ButtonSolid
-        disabled={addingDataSource}
-        isLoading={addingDataSource}
+
+    
+    const addDataSourceBtn = (item) => {
+      const dataSourceKey = getDataSourceKey(item);
+      return <ButtonSolid
+        disabled={addingDataSource === dataSourceKey}
+        isLoading={addingDataSource === dataSourceKey}
         variant="secondary"
         onClick={() => createDataSource(item)}
         data-cy={`${item.title.toLowerCase().replace(/\s+/g, '-')}-add-button`}
@@ -308,7 +315,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
         <SolidIcon name="plus" fill={darkMode ? '#3E63DD' : '#3E63DD'} width={18} viewBox="0 0 25 25" />
         <span className="ml-2">Add</span>
       </ButtonSolid>
-    );
+    };
 
     const datasources = source.map((datasource) => {
       const src = datasource?.iconFile?.data
