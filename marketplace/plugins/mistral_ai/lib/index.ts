@@ -106,6 +106,9 @@ export default class MistralService implements QueryService {
 
   async getConnection(sourceOptions: SourceOptions) {
     const { api_key } = sourceOptions;
-    return new MistralClient({ apiKey: api_key });
+    return new MistralClient({
+      apiKey: api_key,
+      timeoutMs: 15000,
+    });
   }
 }
