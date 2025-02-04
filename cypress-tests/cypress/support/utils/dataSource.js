@@ -111,6 +111,23 @@ export const addQuery = (queryName, query, dbName) => {
   });
 };
 
+export const addDsAndaddQuery = (queryName, query, dbName) => {
+  cy.get('[data-cy="show-ds-popover-button"]').click();
+  cy.get(".css-4e90k9").type(`${dbName}`);
+  cy.contains(`[id*="react-select-"]`, dbName).click();
+  cy.get('[data-cy="query-rename-input"]').clear().type(queryName);
+  cy.get(postgreSqlSelector.queryInputField)
+    .realMouseDown({ position: "center" })
+    .realType(" ");
+  cy.get(postgreSqlSelector.queryInputField).clearAndTypeOnCodeMirror(query);
+  cy.wait(1000);
+  cy.get(dataSourceSelector.queryPreviewButton).click();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    `Query (${queryName}) completed.`
+  );
+};
+
 export const addQueryAndOpenEditor = (queryName, query, dbName, appName) => {
   cy.get('[data-cy="show-ds-popover-button"]').click();
   cy.get(".css-4e90k9").type(`${dbName}`);

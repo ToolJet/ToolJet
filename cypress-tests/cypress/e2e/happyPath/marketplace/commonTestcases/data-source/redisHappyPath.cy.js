@@ -4,27 +4,33 @@ import { postgreSqlText } from "Texts/postgreSql";
 import { redisText } from "Texts/redis";
 import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
+
 import {
   fillDataSourceTextField,
   selectAndAddDataSource,
 } from "Support/utils/postgreSql";
+
 import {
   verifyCouldnotConnectWithAlert,
   deleteDatasource,
   closeDSModal,
+  addQuery,
+  addDsAndaddQuery,
 } from "Support/utils/dataSource";
 
+import { openQueryEditor } from "Support/utils/dataSource";
+import { dataSourceSelector } from "../../../../../constants/selectors/dataSource";
+
 const data = {};
+data.dsName1 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data source Redis", () => {
   beforeEach(() => {
     cy.appUILogin();
-    data.dataSourceName = fake.lastName
-      .toLowerCase()
-      .replaceAll("[^A-Za-z]", "");
+    cy.intercept("POST", "/api/data_queries").as("createQuery");
   });
 
-  it("Should verify elements on connecti Redison form", () => {
+  it("Should verify elements on connection Redison form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
 
@@ -49,7 +55,7 @@ describe("Data source Redis", () => {
       postgreSqlText.allCloudStorage
     );
 
-    selectAndAddDataSource("databases", redisText.redis, data.dataSourceName);
+    selectAndAddDataSource("databases", redisText.redis, data.dsName1);
     cy.get(postgreSqlSelector.labelHost).verifyVisibleElement(
       "have.text",
       postgreSqlText.labelHost
@@ -105,10 +111,11 @@ describe("Data source Redis", () => {
       commonSelectors.toastMessage,
       postgreSqlText.toastDSSaved
     );
-    deleteDatasource(`cypress-${data.dataSourceName}-redis`);
+    deleteDatasource(`cypress-${data.dsName1}-redis`);
   });
+
   it("Should verify the functionality of Redis connection form.", () => {
-    selectAndAddDataSource("databases", redisText.redis, data.dataSourceName);
+    selectAndAddDataSource("databases", redisText.redis, data.dsName1);
 
     fillDataSourceTextField(
       postgreSqlText.labelHost,
@@ -207,9 +214,47 @@ describe("Data source Redis", () => {
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.get(
-      `[data-cy="cypress-${data.dataSourceName}-redis-button"]`
-    ).verifyVisibleElement("have.text", `cypress-${data.dataSourceName}-redis`);
+      `[data-cy="cypress-${data.dsName1}-redis-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.dsName1}-redis`);
+    deleteDatasource(`cypress-${data.dsName1}-redis`);
+  });
 
-    deleteDatasource(`cypress-${data.dataSourceName}-redis`);
+  it("Should able to run the query with valid conection", () => {
+    selectAndAddDataSource("databases", redisText.redis, data.dsName1);
+
+    fillDataSourceTextField(
+      postgreSqlText.labelHost,
+      postgreSqlText.placeholderEnterHost,
+      Cypress.env("redis_host")
+    );
+    fillDataSourceTextField(
+      postgreSqlText.labelPort,
+      postgreSqlText.placeholderEnterPort,
+      Cypress.env("redis_port")
+    );
+
+    cy.wait(1000);
+    cy.get(postgreSqlSelector.buttonTestConnection).click();
+    cy.get(postgreSqlSelector.textConnectionVerified, {
+      timeout: 10000,
+    }).should("have.text", postgreSqlText.labelConnectionVerified);
+    cy.get(postgreSqlSelector.buttonSave).click();
+
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      postgreSqlText.toastDSSaved
+    );
+
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    cy.get(
+      `[data-cy="cypress-${data.dsName1}-redis-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.dsName1}-redis`);
+    cy.get(commonSelectors.dashboardIcon).click();
+    cy.get(commonSelectors.appCreateButton).click();
+    cy.get(commonSelectors.appNameInput).click().type(data.dsName1);
+    cy.get(commonSelectors.createAppButton).click();
+    cy.skipWalkthrough();
+
+    addDsAndaddQuery("redis", `TIME`, `cypress-${data.dsName1}-redis`);
   });
 });
