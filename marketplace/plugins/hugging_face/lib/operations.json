@@ -4,7 +4,9 @@
   "title": "Hugging Face datasource",
   "description": "A schema defining Hugging Face datasource",
   "type": "api",
-  "defaults": {},
+  "defaults": {
+    "operation":"text_generation"
+  },
   "properties": {
     "operation": {
 			"label": "Operation",
