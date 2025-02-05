@@ -65,7 +65,6 @@ export const useExposedActions = (actions, state, setExposedVariables) => {
       setExposedVariables({ isVisible: !!visibility });
     },
     disableInput: async function (disabled) {
-      console.log('disabled --->', disabled);
       setNewMessageDisabled(disabled);
       setExposedVariables({ isInputDisabled: !!disabled });
     },
