@@ -100,7 +100,9 @@ export class ComponentsService {
                 if (componentData.type === 'Table' && _.isArray(objValue)) {
                   return srcValue;
                 } else if (
-                  (componentData.type === 'DropdownV2' || componentData.type === 'MultiselectV2') &&
+                  (componentData.type === 'DropdownV2' ||
+                    componentData.type === 'MultiselectV2' ||
+                    componentData.type === 'Tabs') &&
                   _.isArray(objValue)
                 ) {
                   return _.isArray(srcValue) ? srcValue : Object.values(srcValue);
