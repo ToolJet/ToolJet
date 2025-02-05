@@ -16,7 +16,7 @@ import Trash from '@/_ui/Icon/solidIcons/Trash';
 import { ProgramaticallyHandleProperties } from './Table/ProgramaticallyHandleProperties';
 
 
-export function TabComponent({ componentMeta, darkMode, ...restProps }) {
+export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
     const {
         layoutPropertyChanged,
         component,

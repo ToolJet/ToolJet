@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Table } from './Components/Table/Table.jsx';
-import { TabComponent } from './Components/TabComponent';
+import { TabsLayout } from './Components/TabComponent';
 import { Chart } from './Components/Chart';
 import { Form } from './Components/Form';
 import { renderElement, renderCustomStyles } from './Utils';
@@ -700,7 +700,7 @@ const GetAccordion = React.memo(
         return <Table {...restProps} />;
 
       case 'Tabs':
-        return <TabComponent {...restProps} />;
+        return <TabsLayout {...restProps} />;
 
       case 'Chart':
         return <Chart {...restProps} />;
