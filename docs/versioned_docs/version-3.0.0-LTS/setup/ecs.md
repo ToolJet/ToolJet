@@ -87,11 +87,6 @@ Follow the steps below to deploy ToolJet on a ECS cluster.
         <br/>
         Read **[environment variables reference](/docs/setup/env-vars)**
         :::
-:::warning
-
-To enable AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`
-
-:::
         Additionally, include the Redis environment variables within the ToolJet container mentioned above if you have followed the previous steps to create Redis.
         ```
         REDIS_HOST=<public ip of redis task>
@@ -189,6 +184,25 @@ Follow the steps below to deploy PostgREST on a ECS cluster.
 Update ToolJet deployment with the appropriate env variables [here](/docs/setup/env-vars/#enable-tooljet-database-required) and apply the changes.
 
 </div>
+
+
+## Setup to Enable AI
+Now you can build business applications in ToolJet with just one AI prompt. Refer (this)[https://docs.tooljet.com/] doc to learn more.
+
+Follow this guide to enable AI features in your self-hosted setup.
+
+**Deployment Steps**
+
+1. 
+2. 
+3. 
+
+
+:::warning
+
+To enable AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`
+
+:::
 
 ## Upgrading to the Latest LTS Version
 

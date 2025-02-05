@@ -80,12 +80,6 @@ We are using a multi-container setup
 
   Update `TOOLJET_HOST` environment variable if you want to use the default url assigned with Cloud run after the initial deploy.
 
-
-:::warning
-
-To enable AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`
-
-:::
 :::tip
 If you are using [Public IP](https://cloud.google.com/sql/docs/postgres/connect-run) for Cloud SQL, then database host connection (value for `PG_HOST`) needs to be set using unix socket format, `/cloudsql/<CLOUD_SQL_CONNECTION_NAME>`.  
 :::
@@ -145,6 +139,23 @@ For the Redis container we recommend using image `redis:6.2`
     Once the Service is created and live, to make the  Cloud Service URL public. Please follow the steps [**here**](https://cloud.google.com/run/docs/securing/managing-access) to make the service public.
     :::
 
+## Setup to Enable AI
+Now you can build business applications in ToolJet with just one AI prompt. Refer [this](https://docs.tooljet.com/) doc to learn more.
+
+Follow this guide to enable AI features in your self-hosted setup.
+
+**Deployment Steps**
+
+1. 
+2. 
+3. 
+
+
+:::warning
+
+To enable AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`
+
+:::
 
 ## Upgrading to the Latest LTS Version
 
