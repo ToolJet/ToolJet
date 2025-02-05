@@ -193,9 +193,17 @@ Follow this guide to enable AI features in your self-hosted setup.
 
 **Deployment Steps**
 
-1. 
-2. 
-3. 
+1. Add another container for ChromaDB in the same service along with the three containers above to enable AI.
+
+<div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/setup/ecs/chromadb_1.png" alt="add-chromadb" />
+  </div>
+
+  <div style={{textAlign: 'center'}}>
+  <img className="screenshot-full" src="/img/setup/ecs/chromadb_2.png" alt="add-chromadb" />
+  </div>
+
+2. Add an extra env `CHROMA_DB_URL = chromadb:8000` in the tooljet container so tooljet can connect to ChromaDB.
 
 
 :::warning
@@ -215,5 +223,7 @@ If this is a new installation of the application, you may start directly with th
 - It is crucial to perform a **comprehensive backup of your database** before starting the upgrade process to prevent data loss.
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
+
+ **Note:** For existing user wants to [upgrade](#setup-to-enable-ai), would require to add chromadb along with the existing setup.
 
 *If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
