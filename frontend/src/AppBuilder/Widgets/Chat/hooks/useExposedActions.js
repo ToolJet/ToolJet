@@ -65,8 +65,9 @@ export const useExposedActions = (actions, state, setExposedVariables) => {
       setExposedVariables({ isVisible: !!visibility });
     },
     disableInput: async function (disabled) {
+      console.log('disabled --->', disabled);
       setNewMessageDisabled(disabled);
-      setExposedVariables({ isDisabled: !!disabled });
+      setExposedVariables({ isInputDisabled: !!disabled });
     },
     setError: async function (errorMessage = 'Some error occurred. Please retry.') {
       setError(errorMessage || 'Some error occurred. Please retry.');
@@ -74,7 +75,7 @@ export const useExposedActions = (actions, state, setExposedVariables) => {
     downloadChat: downloadChatHistory,
     setResponseLoading: async function (loading) {
       setLoadingResponse(loading);
-      setExposedVariables({ isReplyLoading: loading });
+      setExposedVariables({ isResponseLoading: loading });
     },
     setHistoryLoading: async function (loading) {
       setLoadingHistory(loading);

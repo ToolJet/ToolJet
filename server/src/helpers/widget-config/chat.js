@@ -23,7 +23,24 @@ export const chatConfig = {
         schema: {
           type: 'array',
           element: { type: 'object' },
-          defaultValue: '{{[]}}',
+          defaultValue: `{{[
+            {
+              message: 'Ask me anything!',
+              messageId: 'e3dd6f60-d5e8-46c5-b73b-006f2f4a34f2',
+              timestamp: '',
+              name: 'Assistant',
+              avatar: '',
+              type: 'response',
+            },
+            {
+              message: 'Explain software development cycle',
+              messageId: 'aad219d2-0349-4f61-a959-424bf62795f6',
+              timestamp: '',
+              name: 'User',
+              avatar: '',
+              type: 'message',
+            },
+          ]}}`,
         },
       },
     },
@@ -48,7 +65,7 @@ export const chatConfig = {
       displayName: 'Respondent Name',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '',
+        defaultValue: 'Assistant',
       },
     },
     respondentAvatar: {
@@ -69,7 +86,7 @@ export const chatConfig = {
     },
     disableInput: {
       type: 'toggle',
-      displayName: 'Disable Input',
+      displayName: 'Disable input state',
       validation: {
         schema: { type: 'boolean' },
         defaultValue: false,
@@ -77,7 +94,7 @@ export const chatConfig = {
     },
     loadingHistory: {
       type: 'toggle',
-      displayName: 'Loading History',
+      displayName: 'History loading state',
       validation: {
         schema: { type: 'boolean' },
         defaultValue: false,
@@ -85,7 +102,7 @@ export const chatConfig = {
     },
     loadingResponse: {
       type: 'toggle',
-      displayName: 'Loading Response',
+      displayName: 'Response loading state',
       validation: {
         schema: { type: 'boolean' },
         defaultValue: false,
@@ -202,9 +219,9 @@ export const chatConfig = {
     lastMessage: {},
     history: [],
     isVisible: true,
-    isDisabled: false,
+    isInputDisabled: false,
     isHistoryLoading: false,
-    isReplyLoading: false,
+    isResponseLoading: false,
     lastResponse: {},
   },
   others: {
@@ -254,7 +271,7 @@ export const chatConfig = {
     },
     {
       handle: 'disableInput',
-      displayName: 'Disable Input',
+      displayName: 'Disable input state',
       params: [{ handle: 'disabled', displayName: 'Disabled', defaultValue: '{{false}}', type: 'toggle' }],
     },
     {
@@ -285,7 +302,26 @@ export const chatConfig = {
     },
     properties: {
       chatTitle: { value: 'Chat' },
-      initialChat: { value: '{{[]}}' },
+      initialChat: {
+        value: `{{[
+            {
+              message: 'Ask me anything!',
+              messageId: 'e3dd6f60-d5e8-46c5-b73b-006f2f4a34f2',
+              timestamp: '',
+              name: 'Assistant',
+              avatar: '',
+              type: 'response',
+            },
+            {
+              message: 'Explain software development cycle',
+              messageId: 'aad219d2-0349-4f61-a959-424bf62795f6',
+              timestamp: '',
+              name: 'User',
+              avatar: '',
+              type: 'message',
+            },
+          ]}}`,
+      },
       userName: { value: '{{globals.currentUser.firstName}}' },
       userAvatar: { value: '' },
       respondentName: { value: 'Assistant' },

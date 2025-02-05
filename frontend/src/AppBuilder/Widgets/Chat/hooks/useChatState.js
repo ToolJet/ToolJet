@@ -27,7 +27,7 @@ export const useChatState = (properties, setExposedVariables) => {
 
   useEffect(() => {
     setLoadingResponse(properties.loadingResponse);
-    setExposedVariables({ isReplyLoading: properties.loadingResponse });
+    setExposedVariables({ isResponseLoading: properties.loadingResponse });
   }, [properties.loadingResponse]);
 
   useEffect(() => {
@@ -39,6 +39,11 @@ export const useChatState = (properties, setExposedVariables) => {
     setVisibility(properties.visibility);
     setExposedVariables({ isVisible: properties.visibility });
   }, [properties.visibility]);
+
+  useEffect(() => {
+    setNewMessageDisabled(properties.disableInput);
+    setExposedVariables({ isInputDisabled: properties.disableInput });
+  }, [properties.disableInput]);
 
   return {
     chatTitle,
