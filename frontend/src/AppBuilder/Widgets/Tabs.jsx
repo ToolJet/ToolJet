@@ -60,7 +60,7 @@ export const Tabs = function Tabs({
   // Default tab
   let parsedDefaultTab = defaultTab;
 
-  const defaultTabExists = parsedTabs?.some(tab => tab.id === parsedDefaultTab);
+  const defaultTabExists = parsedTabs?.some((tab) => tab.id === parsedDefaultTab);
   if (!defaultTabExists && parsedTabs.length > 0) {
     parsedDefaultTab = parsedTabs[0].id;
   }
@@ -128,10 +128,9 @@ export const Tabs = function Tabs({
   }, [setCurrentTab, currentTab]);
 
   const renderTabContent = (id, tab) => {
-
-    const loading = tab?.loading
-    const disable = tab?.disable
-    const visible = tab?.visible
+    const loading = tab?.loading;
+    const disable = tab?.disable;
+    const visible = tab?.visible;
 
     if (visible === false) return null;
 
@@ -147,17 +146,18 @@ export const Tabs = function Tabs({
           width: '100%',
         }}
       >
-        {loading ?
+        {loading ? (
           <div
             style={{
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              height: '100%'
+              height: '100%',
             }}
           >
             <Spinner />
-          </div> :
+          </div>
+        ) : (
           <SubContainer
             id={`${id}-${tab.id}`}
             canvasHeight={'200'}
@@ -166,7 +166,7 @@ export const Tabs = function Tabs({
             styles={{ backgroundColor: bgColor }}
             darkMode={darkMode}
           />
-        }
+        )}
       </div>
     );
   };
@@ -176,7 +176,6 @@ export const Tabs = function Tabs({
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
   const [canScroll, setCanScroll] = useState(false);
-
 
   const checkScroll = () => {
     if (tabsRef.current) {
@@ -192,7 +191,7 @@ export const Tabs = function Tabs({
       const scrollAmount = tabsRef.current.clientWidth / 2;
       tabsRef.current.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' });
     }
-    checkScroll()
+    checkScroll();
   };
 
   useEffect(() => {
@@ -251,11 +250,15 @@ export const Tabs = function Tabs({
           backgroundColor: darkMode ? '#324156' : '#fff',
         }}
       >
-        {(canScroll) && <div className="px-2"
-          onClick={() => scrollTabs('left')}
-          style={{ cursor: canScrollLeft ? 'pointer' : 'default' }}>
-          <SolidIcon fill={canScrollLeft ? '#6A727C' : '#C1C8CD'} name={'cheveronleft'} />
-        </div>}
+        {canScroll && (
+          <div
+            className="px-2"
+            onClick={() => scrollTabs('left')}
+            style={{ cursor: canScrollLeft ? 'pointer' : 'default' }}
+          >
+            <SolidIcon fill={canScrollLeft ? '#6A727C' : '#C1C8CD'} name={'cheveronleft'} />
+          </div>
+        )}
 
         <ul
           ref={tabsRef}
@@ -274,44 +277,49 @@ export const Tabs = function Tabs({
             flexGrow: 1,
           }}
         >
-          {parsedTabs?.filter(tab => tab?.visible !== false)?.map((tab) => (
-            <li
-              className="nav-item"
-              style={{ opacity: tab?.disabled && '0.5', width: tabWidth == 'split' && equalSplitWidth + '%' }}
-              onClick={() => {
-                if (currentTab == tab.id) return;
+          {parsedTabs
+            ?.filter((tab) => tab?.visible !== false)
+            ?.map((tab) => (
+              <li
+                className="nav-item"
+                style={{ opacity: tab?.disabled && '0.5', width: tabWidth == 'split' && equalSplitWidth + '%' }}
+                onClick={() => {
+                  if (currentTab == tab.id) return;
 
-                !tab?.disabled && setCurrentTab(tab.id);
-                !tab?.disabled && setExposedVariable('currentTab', tab.id);
-                fireEvent('onTabSwitch');
-              }}
-              key={tab.id}
-            >
-              <a
-                className={`nav-link ${currentTab == tab.id ? 'active' : ''}`}
-                style={{
-                  color: currentTab == tab.id && parsedHighlightColor,
-                  borderBottom: currentTab == tab.id && `1px solid ${parsedHighlightColor}`,
-                  overflowWrap: 'anywhere',
-                  ...(tabWidth == 'split' ? { minWidth: 'auto' } : { minWidth: '100px' }),
+                  !tab?.disabled && setCurrentTab(tab.id);
+                  !tab?.disabled && setExposedVariable('currentTab', tab.id);
+                  fireEvent('onTabSwitch');
                 }}
-                ref={(el) => {
-                  if (el && currentTab == tab.id) {
-                    el.style.setProperty('color', parsedHighlightColor, 'important');
-                  }
-                }}
+                key={tab.id}
               >
-                {tab.title}
-              </a>
-            </li>
-          ))}
-
+                <a
+                  className={`nav-link ${currentTab == tab.id ? 'active' : ''}`}
+                  style={{
+                    color: currentTab == tab.id && parsedHighlightColor,
+                    borderBottom: currentTab == tab.id && `1px solid ${parsedHighlightColor}`,
+                    overflowWrap: 'anywhere',
+                    ...(tabWidth == 'split' ? { minWidth: 'auto' } : { minWidth: '100px' }),
+                  }}
+                  ref={(el) => {
+                    if (el && currentTab == tab.id) {
+                      el.style.setProperty('color', parsedHighlightColor, 'important');
+                    }
+                  }}
+                >
+                  {tab.title}
+                </a>
+              </li>
+            ))}
         </ul>
-        {(canScroll) && <div className="px-2" onClick={() => scrollTabs('right')}
-          style={{ cursor: canScrollRight ? 'pointer' : 'default' }}
-        >
-          <SolidIcon fill={canScrollRight ? '#6A727C' : '#C1C8CD'} name='cheveronright' width="25" height="25" />
-        </div>}
+        {canScroll && (
+          <div
+            className="px-2"
+            onClick={() => scrollTabs('right')}
+            style={{ cursor: canScrollRight ? 'pointer' : 'default' }}
+          >
+            <SolidIcon fill={canScrollRight ? '#6A727C' : '#C1C8CD'} name="cheveronright" width="25" height="25" />
+          </div>
+        )}
       </div>
       {isLoading ? (
         <div
@@ -319,7 +327,7 @@ export const Tabs = function Tabs({
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            height: '100%'
+            height: '100%',
           }}
         >
           <Spinner />
