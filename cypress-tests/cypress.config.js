@@ -10,9 +10,9 @@ const pdf = require("pdf-parse");
 module.exports = defineConfig({
   execTimeout: 1800000,
   defaultCommandTimeout: 30000,
-  requestTimeout: 10000,
-  pageLoadTimeout: 20000,
-  responseTimeout: 10000,
+  requestTimeout: 30000,
+  pageLoadTimeout: 30000,
+  responseTimeout: 30000,
   viewportWidth: 1440,
   viewportHeight: 960,
   chromeWebSecurity: false,

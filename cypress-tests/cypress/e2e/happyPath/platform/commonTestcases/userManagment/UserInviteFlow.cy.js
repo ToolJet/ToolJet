@@ -27,7 +27,6 @@ import {
   searchUser,
   navigateToManageGroups,
 } from "Support/utils/common";
-import { updateWorkspaceName } from "Support/utils/userPermissions";
 import { groupsSelector } from "Selectors/manageGroups";
 import { groupsText } from "Texts/manageGroups";
 import { onboardingSelectors } from "Selectors/onboarding";
@@ -130,7 +129,6 @@ describe("user invite flow cases", () => {
       "have.text",
       "My workspace"
     );
-    updateWorkspaceName(data.email);
 
     logout();
     cy.defaultWorkspaceLogin();

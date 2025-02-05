@@ -7,7 +7,6 @@ import {
   verifyConfirmPageElements,
   verifyOnboardingQuestions,
   verifyInvalidInvitationLink,
-  updateWorkspaceName,
 } from "Support/utils/onboarding";
 import { dashboardText } from "Texts/dashboard";
 import {

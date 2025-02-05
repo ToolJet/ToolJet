@@ -2,8 +2,17 @@ export const dataSourceText = {
   labelDataSources: "Datasources",
   labelAddDataSource: "+ add data source",
 
-  allDataSources: "All data sources (42)",
-  allDatabase: "Databases (18)",
+  allDataSources: () => {
+    return Cypress.env("marketplace_action")
+      ? "All data sources (44)"
+      : "All data sources (42)";
+  },
+  commonlyUsed: "Commonly used (5)",
+  allDatabase: () => {
+    return Cypress.env("marketplace_action")
+      ? "Databases (20)"
+      : "Databases (18)";
+  },
   allApis: "APIs (20)",
   allCloudStorage: "Cloud Storages (4)",
   pluginsLabelAndCount: "Plugins (0)",

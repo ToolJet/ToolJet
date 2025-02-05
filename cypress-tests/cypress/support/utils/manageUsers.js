@@ -222,11 +222,8 @@ export const bulkUserUpload = (
   cy.get(usersSelector.inputFieldBulkUpload).selectFile(file, {
     force: true,
   });
-
   cy.get(usersSelector.uploadedFileData).should("contain", fileName);
-
   cy.get(usersSelector.buttonUploadUsers).click();
-
   if (isDuplicate) {
     cy.get(commonSelectors.modalMessage)
       .should("be.visible")
@@ -238,8 +235,7 @@ export const bulkUserUpload = (
       .and("have.text", toastMessage);
     cy.get(usersSelector.toastCloseButton).click();
   }
-
-  cy.wait(200);
+  cy.wait(1500);
 };
 
 export const copyInvitationLink = (firstName, email) => {

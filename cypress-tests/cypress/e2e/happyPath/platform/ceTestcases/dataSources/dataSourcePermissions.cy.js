@@ -18,12 +18,15 @@ import {
   navigateToManageUsers,
 } from "Support/utils/common";
 import { inviteUserBasedOnRole } from "Support/utils/manageGroups";
+import { resolveHost } from "Support/utils/apps";
 
 const data = {};
 data.firstName = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
 data.email = fake.email.toLowerCase();
 
+
 describe("Datasource Manager", () => {
+  const host = resolveHost();
   const workspaceName = fake.firstName;
   const workspaceSlug = fake.firstName.toLowerCase().replace(/[^A-Za-z]/g, "");
   beforeEach(() => {
@@ -42,6 +45,10 @@ describe("Datasource Manager", () => {
   it("Should verify the data source manager UI", () => {
     data.dsName1 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
     data.dsName2 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+
+    const allDataSources = host.includes("8082") ? "All data sources (42)" : "All data sources (44)";
+    const allDatabase = host.includes("8082") ? "Databases (18)" : "Databases (20)";
+
     cy.get(commonSelectors.globalDataSourceIcon).click();
     cy.get(commonSelectors.pageSectionHeader).verifyVisibleElement(
       "have.text",
@@ -49,7 +56,7 @@ describe("Datasource Manager", () => {
     );
     cy.get(dataSourceSelector.allDatasourceLabelAndCount).verifyVisibleElement(
       "have.text",
-      dataSourceText.allDataSources
+      allDataSources
     );
     cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
       expect($el.contents().first().text().trim()).to.eq("Data sources");
@@ -63,7 +70,7 @@ describe("Datasource Manager", () => {
       },
       {
         selector: dataSourceSelector.databaseLabelAndCount,
-        text: dataSourceText.allDatabase,
+        text: allDatabase,
         title: " Databases",
       },
       {
