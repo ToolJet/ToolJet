@@ -14,9 +14,7 @@
 @import 'react-loading-skeleton/dist/skeleton.css';
 @import './table-component.scss';
 @import './groups-permissions.scss';
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+
 @import "./componentdesign.scss";
 @import './pages-sidebar.scss';
 @import "./componentdesign.scss";
@@ -191,16 +189,6 @@
   }
   &::-webkit-scrollbar-thumb:hover {
     background-color: #E4E7EB;
-  }
-}
-
-@layer base {
-  input[type='number']::-webkit-outer-spin-button,
-  input[type='number']::-webkit-inner-spin-button,
-  input[type='number'] {
-    -webkit-appearance: none;
-    margin: 0;
-    -moz-appearance: textfield !important;
   }
 }
 
@@ -7027,7 +7015,7 @@ tbody {
       .react-datepicker__month-select,
       .react-datepicker__year-select {
         color: white;
-        
+
       }
 
       .react-datepicker__month-select,
@@ -11876,7 +11864,7 @@ tbody {
   .current-org-indicator {
     display: none;
   }
-  
+
   &:hover .current-org-indicator {
     display: block;
   }
@@ -13984,8 +13972,8 @@ color: var(--text-default);
 }
 
 /*
-* remove this once whole app is migrated to new styles. use only `theme-dark` class everywhere. 
-* This is added since some of the pages are in old theme and making changes to `theme-dark` styles can break UI style somewhere else 
+* remove this once whole app is migrated to new styles. use only `theme-dark` class everywhere.
+* This is added since some of the pages are in old theme and making changes to `theme-dark` styles can break UI style somewhere else
 */
 .tj-dark-mode {
   background-color: var(--base) !important;
@@ -16246,7 +16234,7 @@ fieldset:disabled {
   .react-datepicker__day--disabled {
     color: #ccc !important;
   }
-  
+
   .react-datepicker__time-list{
       li.react-datepicker__time-list-item--disabled.react-datepicker__time-list-item {
         color: #ccc !important;
@@ -16264,7 +16252,7 @@ fieldset:disabled {
       }
 
     }
-    
+
   }
 
 
@@ -16278,7 +16266,7 @@ fieldset:disabled {
       height:auto;
     }
   }
-  
+
 
   .react-datepicker-time-component {
     border-radius: 10px;
@@ -16293,7 +16281,7 @@ fieldset:disabled {
     .time-input-body {
       padding-bottom:0px;
     }
-    
+
     .time-col {
       height: 200px;
     }
@@ -16302,13 +16290,13 @@ fieldset:disabled {
       border-radius: 10px;
       box-shadow: 8px 8px 16px 0px #3032331A;
     }
-    
+
     .react-datepicker-time__input-container{
       border-radius:10px;
     }
   }
 
-  
+
   .dark-theme {
     .react-datepicker__year-text, .react-datepicker__month-text {
       color: #fff;
@@ -16452,7 +16440,7 @@ fieldset:disabled {
     color: #ccc !important;
     pointer-events: none;
   }
-  
+
   .react-datepicker-time__input {
     margin-left: 0px !important;
 
@@ -16465,7 +16453,7 @@ fieldset:disabled {
   .react-datepicker-wrapper {
     width: 100%;
   }
-  
+
   .react-datepicker-time__caption {
     display:none;
   }
@@ -16473,7 +16461,7 @@ fieldset:disabled {
   .custom-time-input {
     background-color: #fff;
     border-left: 1px solid #CCD1D5;
-    border-top-right-radius: 10px; 
+    border-top-right-radius: 10px;
     border-bottom-right-radius: 10px;
   }
 
@@ -16489,16 +16477,16 @@ fieldset:disabled {
     font-family: 'IBM Plex Sans';
     color:#ACB2B9;
   }
-  
+
   .time-input-body {
     padding-bottom: 12px;
   }
 
   .time-col {
     margin-top: 5px;
-    overflow-y: auto; 
+    overflow-y: auto;
     overflow-x: hidden;
-    scrollbar-width: none; 
+    scrollbar-width: none;
     height: 265px;
     width: 62px;
   }
@@ -16510,7 +16498,7 @@ fieldset:disabled {
   }
 
   .time-item {
-    width: 50px; 
+    width: 50px;
     height:22px;
     display: flex;
     justify-content: center;
@@ -16565,7 +16553,7 @@ fieldset:disabled {
   font-family: monospace;
   font-size: 12px;
   height:32px;
- 
+
   .react-datepicker-wrapper {
     width: 100%;
     input {
@@ -16581,10 +16569,10 @@ fieldset:disabled {
     input.dark-theme {
       background-color: #272822;
       color: rgb(174, 129, 255);
-      
+
     }
   }
-  
+
 
 }
 
@@ -16601,9 +16589,9 @@ fieldset:disabled {
   .react-datepicker__input-time-container {
     border-radius:10px;
   }
-  
 
-  
+
+
 }
 
 .custom-inspector-validation-time-picker-popper {
@@ -16683,7 +16671,7 @@ fieldset:disabled {
     border-top-right-radius: 8px;
     border-bottom-right-radius: 8px;
   }
-  
+
   .react-datepicker__day--in-range:has(+ .react-datepicker__day--range-end) {
     box-shadow: 10px 0 0 0px #4368E31A;
   }
@@ -16696,20 +16684,20 @@ fieldset:disabled {
   .react-datepicker__day--range-start + .react-datepicker__day--in-range {
     box-shadow: -10px 0 0 0px #4368E31A;
   }
-  
+
   .react-datepicker__week {
 
-    .react-datepicker__day--in-range:first-of-type, 
-    .react-datepicker__day--in-selecting-range:first-of-type, 
-    .react-datepicker__day--outside-month + .react-datepicker__day--in-range,  
+    .react-datepicker__day--in-range:first-of-type,
+    .react-datepicker__day--in-selecting-range:first-of-type,
+    .react-datepicker__day--outside-month + .react-datepicker__day--in-range,
     .react-datepicker__day--outside-month + .react-datepicker__day--in-selecting-range{
       border-top-left-radius: 8px;
       border-bottom-left-radius: 8px;
     }
 
-    .react-datepicker__day--in-range:last-of-type, 
-    .react-datepicker__day--in-selecting-range:last-of-type, 
-    .react-datepicker__day--in-range:has(+ .react-datepicker__day--outside-month), 
+    .react-datepicker__day--in-range:last-of-type,
+    .react-datepicker__day--in-selecting-range:last-of-type,
+    .react-datepicker__day--in-range:has(+ .react-datepicker__day--outside-month),
     .react-datepicker__day--in-selecting-range:has(+ .react-datepicker__day--outside-month){
       border-top-right-radius: 8px;
       border-bottom-right-radius: 8px;
@@ -16755,7 +16743,7 @@ fieldset:disabled {
     border-radius:10px !important;
     border:none;
   }
-  
+
 }
 
 .tj-daterangepicker-widget-month-selector, .tj-daterangepicker-widget-year-selector {
@@ -16779,7 +16767,7 @@ fieldset:disabled {
     height: 24px;
     text-align: center;
     color: var(--text-primary);
-    font-weight: 500; 
+    font-weight: 500;
     width:auto;
 }
 
