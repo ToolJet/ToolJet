@@ -76,6 +76,34 @@ To enable AI features in your ToolJet deployment, whitelist `api-gateway.tooljet
 
 :::
 
+
+## Setup to Enable AI
+Now you can build business applications in ToolJet with just one AI prompt. Refer [this](https://docs.tooljet.com/) doc to learn more.
+
+Follow this guide to enable AI features in your self-hosted setup.
+
+**Deployment Steps**
+
+1. Add **chroma** under service and volumes under the volume section in the docker-compose.
+ 
+ ```
+ services:
+  chroma:
+    image: chromadb/chroma
+    ports:
+      - "8000:8000"
+    environment:
+      - CHROMA_HOST_PORT=8000
+    volumes:
+      - chromadb_data:/chroma
+
+ volumes:
+  chromadb_data:
+    driver: local
+```
+2. Add an env in the .env file in the Tooljet server `CHROMA_DB_URL=chroma:8000>`
+
+
 ## Upgrading to the Latest LTS Version
 
 New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
@@ -87,5 +115,7 @@ If this is a new installation of the application, you may start directly with th
 - It is crucial to perform a **comprehensive backup of your database** before starting the upgrade process to prevent data loss.
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
+
+ **Note:** For existing user wants to [upgrade](#setup-to-enable-ai), would require to add chromadb along with the existing setup.
 
 If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.
