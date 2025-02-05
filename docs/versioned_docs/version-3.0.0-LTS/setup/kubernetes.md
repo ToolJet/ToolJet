@@ -80,6 +80,20 @@ Starting with ToolJet 3.0, deploying the ToolJet Database is mandatory to avoid 
 
 2. Update ToolJet deployment with the appropriate env variables [here](https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/GKE/deployment.yaml) and apply the changes.
 
+
+## Setup to Enable AI
+Now you can build business applications in ToolJet with just one AI prompt. Refer [this](https://docs.tooljet.com/) doc to learn more.
+
+Follow this guide to enable AI features in your self-hosted setup.
+
+**Deployment Steps**
+
+1. Setup chromadb deployment 
+
+```bash
+curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/chromadb-deployment.yml
+```
+
 ## Upgrading to the Latest LTS Version
 
 New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
@@ -91,5 +105,7 @@ If this is a new installation of the application, you may start directly with th
 - It is crucial to perform a **comprehensive backup of your database** before starting the upgrade process to prevent data loss.
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
+
+ **Note:** For existing user wants to [upgrade](#setup-to-enable-ai), would require to add chromadb along with the existing setup.
 
 *If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
