@@ -55,6 +55,10 @@ export const tabsConfig = {
     useDynamicOptions: {
       type: 'toggle',
       displayName: 'Dynamic options',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
     },
     loadingState: {
       type: 'toggle',
@@ -225,7 +229,7 @@ export const tabsConfig = {
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
-      useDynamicOptions: { value: '{{false}}' },
+      useDynamicOptions: { value: '{{true}}' },
       tabs: {
         value:
           "{{[ \n\t\t{ title: 'Home', id: '0' }, \n\t\t{ title: 'Profile', id: '1' }, \n\t\t{ title: 'Settings', id: '2' } \n ]}}",
@@ -233,20 +237,30 @@ export const tabsConfig = {
       tabItems: {
         value: [
           {
-            id: 1,
+            id: '0',
             title: 'Home',
+            loading: { value: false },
             disable: { value: false },
             visible: { value: true },
           },
           {
-            id: 2,
+            id: '1',
             title: 'Profile',
+            loading: { value: false },
             disable: { value: false },
             visible: { value: true },
           },
           {
-            id: 3,
+            id: '2',
             title: 'Settings',
+            loading: { value: false },
+            disable: { value: false },
+            visible: { value: true },
+          },
+          {
+            id: '3',
+            title: 'Additional Tab',
+            loading: { value: false },
             disable: { value: false },
             visible: { value: true },
           },

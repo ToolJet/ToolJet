@@ -57,10 +57,10 @@ export function TabComponent({ componentMeta, darkMode, ...restProps }) {
         } else {
             tabItems = tabItemsValue?.map((tabItem) => tabItem);
         }
-        return tabItems.map((tabItem) => {
+        return tabItems?.map((tabItem) => {
             const newTabItem = { ...tabItem };
 
-            Object.keys(tabItem).forEach((key) => {
+            Object.keys(tabItem)?.forEach((key) => {
                 if (typeof tabItem[key]?.value === 'boolean') {
                     newTabItem[key]['value'] = `{{${tabItem[key]?.value}}}`;
                 }
@@ -130,6 +130,30 @@ export function TabComponent({ componentMeta, darkMode, ...restProps }) {
         reorderTabItems(source.index, destination.index);
     };
 
+    const handleBackgroundColorChange = (value, index) => {
+        const newTabItems = [...tabItems];
+        newTabItems[index].fieldBackgroundColor = { value };
+        setTabItems(newTabItems);
+        updateAllTabItemsParams(newTabItems);
+    };
+
+    const handleValueChange = (item, value, property, index) => {
+        const updatedTabItems = tabItems.map((tabItem) => {
+            if (tabItem.id === item.id) {
+                return {
+                    ...tabItem,
+                    [property]: value
+                };
+            }
+            return tabItem;
+        });
+
+        setTabItems(updatedTabItems);
+        updateAllTabItemsParams(updatedTabItems);
+    };
+
+
+
     const _renderOverlay = (item, index) => {
         return (
             <Popover className={`${darkMode && 'dark-theme theme-dark'}`} style={{ minWidth: '248px' }}>
@@ -146,9 +170,64 @@ export function TabComponent({ componentMeta, darkMode, ...restProps }) {
                             mode="javascript"
                             lineNumbers={false}
                             placeholder={'Tab Title'}
-                            onChange={(value) => handleTitleChange(value, index)}
+                            onChange={(value) => handleValueChange(item, value, 'title', index)}
                         />
                     </div>
+
+                    <div className="field mb-3" data-cy={`input-and-label-tab-id`}>
+                        <label data-cy={`label-tab-id`} className="font-weight-500 mb-1 font-size-12">
+                            {'Id'}
+                        </label>
+                        <CodeHinter
+                            currentState={currentState}
+                            type={'basic'}
+                            initialValue={item?.id}
+                            theme={darkMode ? 'monokai' : 'default'}
+                            mode="javascript"
+                            lineNumbers={false}
+                            placeholder={'Tab ID'}
+                            onChange={(value) => handleValueChange(item, value, 'id', index)}
+                        />
+                    </div>
+
+
+                    <div className="field mb-2">
+                        <CodeHinter
+                            type="fxEditor"
+                            initialValue={'#11181C'}
+                            onChange={(value) => { }}
+                            componentName={`component/${component?.component?.name}::${{ name: 'textColor' }}`}
+                            paramType={'color'}
+                            paramName={'textColor'}
+                            paramLabel={'Background'}
+                            fieldMeta={{ type: 'color', displayName: '' }}
+                            onFxPress={(active) => {
+
+                            }}
+                            fxActive={() => { }}
+                            component={component.component}
+                        />
+                    </div>
+
+                    <div className="field mb-2">
+                        <CodeHinter
+                            currentState={currentState}
+                            initialValue={item?.loading?.value}
+                            theme={darkMode ? 'monokai' : 'default'}
+                            mode="javascript"
+                            lineNumbers={false}
+                            component={component}
+                            type={'fxEditor'}
+                            paramLabel={'Loading'}
+                            paramName={'loading'}
+                            onChange={(value) => {
+                                handleValueChange(item, { value }, 'loading', index)
+                            }}
+                            fieldMeta={{ type: 'toggle', displayName: 'Loading' }}
+                            paramType={'toggle'}
+                        />
+                    </div>
+
                     <div className="field mb-2" data-cy={`input-and-label-tab-visible`}>
                         <CodeHinter
                             currentState={currentState}
@@ -159,7 +238,7 @@ export function TabComponent({ componentMeta, darkMode, ...restProps }) {
                             component={component}
                             type={'fxEditor'}
                             paramLabel={'Visibility'}
-                            onChange={(value) => handleVisibilityChange(value, index)}
+                            onChange={(value) => handleValueChange(item, { value }, 'visible', index)}
                             paramName={'visible'}
                             onFxPress={(active) => handleOnFxPress(active, index, 'visible')}
                             fxActive={item?.visible?.fxActive}
@@ -181,7 +260,7 @@ export function TabComponent({ componentMeta, darkMode, ...restProps }) {
                             type={'fxEditor'}
                             paramLabel={'Disable'}
                             paramName={'disable'}
-                            onChange={(value) => handleDisableChange(value, index)}
+                            onChange={(value) => handleValueChange(item, { value }, 'disable', index)}
                             onFxPress={(active) => handleOnFxPress(active, index, 'disable')}
                             fxActive={item?.disable?.fxActive}
                             fieldMeta={{
