@@ -1,6 +1,5 @@
 import React from 'react';
 import { Button } from '@/components/ui/Button/Button';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { formatTimestamp } from '../utils/helpers';
 
 export const MessageHeader = ({ type, userName, respondentName, timestamp, onCopy, onDelete, computedStyles }) => (
@@ -20,7 +19,15 @@ export const MessageHeader = ({ type, userName, respondentName, timestamp, onCop
       </span>
     </div>
     <div className="d-flex gap-1 message-actions">
-      <Button variant="ghost" onClick={onCopy} className="action-button" label="Copy" size="small" leadingIcon="copy">
+      <Button
+        variant="ghost"
+        onClick={onCopy}
+        className="action-button"
+        label="Copy"
+        size="small"
+        leadingIcon="copy"
+        fill="var(--borders-weak-disabled)"
+      >
         Copy
       </Button>
     </div>
