@@ -213,7 +213,7 @@ export const tabsConfig = {
     properties: {
       tabs: {
         value:
-          "{{[ \n\t\t{ title: 'Home 1', id: '0' }, \n\t\t{ title: 'Profile', id: '1' }, \n\t\t{ title: 'Settings', id: '2' } \n ]}}",
+          "{{[ \n\t\t{ title: 'Home', id: '0' }, \n\t\t{ title: 'Profile', id: '1' }, \n\t\t{ title: 'Settings', id: '2' } \n ]}}",
       },
       defaultTab: { value: '0' },
       hideTabs: { value: false },

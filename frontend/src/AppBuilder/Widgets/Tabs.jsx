@@ -52,7 +52,6 @@ export const Tabs = function Tabs({
   parsedTabs = parsedTabs
     ?.filter((tab) => tab.visible !== false)
     ?.map((parsedTab, index) => ({ ...parsedTab, id: parsedTab.id ? parsedTab.id : index }));
-  console.log('parsedTabs 3', parsedTabs);
   // Highlight color - for active tab text and border
   const highlightColor = styles?.highlightColor ?? '#f44336';
   let parsedHighlightColor = highlightColor;
@@ -61,7 +60,7 @@ export const Tabs = function Tabs({
   // Default tab
   let parsedDefaultTab = defaultTab;
 
-  const defaultTabExists = parsedTabs.some((tab) => tab.id === parsedDefaultTab);
+  const defaultTabExists = parsedTabs?.some((tab) => tab.id === parsedDefaultTab);
   if (!defaultTabExists && parsedTabs.length > 0) {
     parsedDefaultTab = parsedTabs[0].id;
   }
