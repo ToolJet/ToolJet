@@ -161,26 +161,6 @@ export const tabsConfig = {
         defaultValue: '#375FCF',
       },
     },
-    visibility: {
-      type: 'toggle',
-      displayName: 'Visibility',
-      validation: {
-        schema: {
-          type: 'boolean',
-        },
-        defaultValue: false,
-      },
-    },
-    disabledState: {
-      type: 'toggle',
-      displayName: 'Disable',
-      validation: {
-        schema: {
-          type: 'boolean',
-        },
-        defaultValue: false,
-      },
-    },
     tabWidth: {
       type: 'select',
       displayName: 'Tab width',
@@ -277,8 +257,6 @@ export const tabsConfig = {
     events: [],
     styles: {
       highlightColor: { value: '#375FCF' },
-      visibility: { value: '{{true}}' },
-      disabledState: { value: '{{false}}' },
       tabWidth: { value: 'auto' },
     },
   },
