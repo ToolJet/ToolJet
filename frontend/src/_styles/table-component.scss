@@ -1467,5 +1467,56 @@
 }
 
 .tj-table-tag-col-readonly {
-  margin-left: -2px !important; //this -ve margin offset for the margin given to each tags in overall column width
+  margin-left: -2px !important;  //this -ve margin offset for the margin given to each tags in overall column width
 }
+
+.jet-data-table {
+  .table-bordered {
+    th,
+    td {
+      border-bottom: 1px solid var(--interactive-overlay-border-pressed) !important;
+      border-right: 1px solid var(--interactive-overlay-border-pressed) !important;
+
+      &:first-child {
+        border-left: none !important;
+      }
+
+      &:last-child {
+        border-right: none !important;
+      }
+    }
+
+    thead th {
+      border-top: none !important;
+      
+      &:first-child {
+        border-left: none !important;
+      }
+      
+      &:last-child {
+        border-right: none !important;
+      }
+    }
+  }
+
+  .table-striped {
+    tbody {
+      div[data-index]:nth-child(odd) {
+        background-color: transparent !important;
+      }
+
+      div[data-index]:nth-child(even) {
+        background-color: var(--slate2) !important;
+      }
+    }
+  }
+}
+
+// hide scrollbar on touch devices
+  @media (hover: none) and (pointer: coarse) {
+    .jet-data-table::-webkit-scrollbar {
+      width: 0;
+      height: 0;
+      background: transparent;
+    }
+  }
