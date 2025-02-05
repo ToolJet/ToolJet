@@ -87,7 +87,11 @@ Follow the steps below to deploy ToolJet on a ECS cluster.
         <br/>
         Read **[environment variables reference](/docs/setup/env-vars)**
         :::
+:::warning
 
+To enable AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`
+
+:::
         Additionally, include the Redis environment variables within the ToolJet container mentioned above if you have followed the previous steps to create Redis.
         ```
         REDIS_HOST=<public ip of redis task>

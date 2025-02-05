@@ -81,7 +81,11 @@ We are using a multi-container setup
   Update `TOOLJET_HOST` environment variable if you want to use the default url assigned with Cloud run after the initial deploy.
 
 
+:::warning
 
+To enable AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`
+
+:::
 :::tip
 If you are using [Public IP](https://cloud.google.com/sql/docs/postgres/connect-run) for Cloud SQL, then database host connection (value for `PG_HOST`) needs to be set using unix socket format, `/cloudsql/<CLOUD_SQL_CONNECTION_NAME>`.  
 :::

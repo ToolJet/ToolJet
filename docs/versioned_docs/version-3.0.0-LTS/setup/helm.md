@@ -22,7 +22,11 @@ helm install tooljet tooljet/tooljet
 4. Run `helm install -n $NAMESPACE --create-namespace $RELEASE .`
 
 Remember to replace the variables with your specific configuration values.
+:::warning
 
+To enable AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`
+
+:::
 ## ToolJet Database
 
 ToolJet offers a hosted database solution that allows you to build applications quickly and manage your data effortlessly. The ToolJet database requires no setup and provides a user-friendly interface for data management.
