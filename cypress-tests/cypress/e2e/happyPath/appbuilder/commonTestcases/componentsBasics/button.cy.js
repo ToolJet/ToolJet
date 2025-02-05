@@ -6,6 +6,7 @@ import {
 } from "Support/utils/editor/textInput";
 import { addMultiEventsWithAlert } from "Support/utils/events";
 import { openAndVerifyNode, openNode, verifyfunctions, verifyNodes, verifyValue } from "Support/utils/inspector";
+import { openAndRunQuery } from "Support/utils/queries";
 
 
 describe('Button Component Tests', () => {
@@ -76,7 +77,7 @@ describe('Button Component Tests', () => {
         cy.apiCreateApp(`${fake.companyName}-Button-App`);
         cy.openApp();
         cy.dragAndDropWidget("Button", 50, 50);
-        cy.get('[data-cy="query-manager-collapse-button"]').click();
+        //cy.get('[data-cy="query-manager-collapse-button"]').click();
     });
 
     it('should verify all the exposed values on inspector', () => {
@@ -154,6 +155,66 @@ describe('Button Component Tests', () => {
             });
 
         cy.get(commonWidgetSelector.draggableWidget("button9")).click();
+        cy.notVisible(".tj-widget-loader");
+
+    });
+
+    it("should verify that button CSA through Runjs", () => {
+        addMultiEventsWithAlert([
+            { event: "On hover", message: "On hover Event" },
+            { event: "On Click", message: "On Click Event" },
+        ]);
+
+        const actions = [
+            { action: "setVisibility", value: false }, //b2
+            { action: "visibility", value: true },//b3
+            { action: "disable", value: true },//b4
+            { action: "setDisable", value: false },//b5
+            { action: "setText", value: `"New Button Text"` },//b6
+            { action: "click", value: "" },//b7
+            { action: "setLoading", value: true },//b8
+            { action: "loading", value: false },//b9
+
+        ];
+
+        actions.forEach((actions, index) => {
+            const jsAction = `components.button1.${actions.action}(${actions.value})`;
+            cy.apiAddQueryToApp(
+                index,
+                { code: jsAction, hasParamSupport: true, parameters: [] },
+                null,
+                "runjs"
+            );
+        });
+        cy.reload()
+
+        let component = "button1"
+        openAndRunQuery("0");
+        cy.get(commonWidgetSelector.draggableWidget(component)).should("not.be.visible");
+
+        openAndRunQuery("1");
+        cy.get(commonWidgetSelector.draggableWidget(component)).should("be.visible");
+
+        openAndRunQuery("2");
+        cy.get(commonWidgetSelector.draggableWidget(component)).parent().should("have.attr", "disabled");
+
+        openAndRunQuery("3");
+        cy.get(commonWidgetSelector.draggableWidget(component)).parent().should("not.have.attr", "disabled");
+
+        openAndRunQuery("4");
+        cy.get(commonWidgetSelector.draggableWidget(component)).should("have.text", "New Button Text");
+
+        openAndRunQuery("5");
+        cy.verifyToastMessage(commonSelectors.toastMessage, 'On Click Event', false);
+
+        openAndRunQuery("6");
+        cy.get(commonWidgetSelector.draggableWidget(component))
+            .parent()
+            .within(() => {
+                cy.get(".tj-widget-loader").should("be.visible");
+            });
+
+        openAndRunQuery("7");
         cy.notVisible(".tj-widget-loader");
 
     });
