@@ -22,7 +22,6 @@ Use this operation to generate text content by controlling various parameters to
 - **Model**: Use to specify the AI model for generating content. The available models are:
 
     - mistral-large-latest
-    - mistral-moderation-latest
     - ministral-3b-latest
     - ministral-8b-latest
     - open-mistral-nemo
