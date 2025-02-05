@@ -5,13 +5,7 @@
   "type": "api",
   "defaults": {
     "operation": "chat",
-    "chat": {
-      "model": "claude-3-5-sonnet-20241022",
-      "system_prompt": "",
-      "message": "",
-      "temperature": "1",
-      "max_size": "256"
-    }
+    "model": "claude-3-5-sonnet-20241022"
   },
   "properties": {
     "operation": {
