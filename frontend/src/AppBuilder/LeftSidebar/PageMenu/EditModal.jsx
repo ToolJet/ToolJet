@@ -17,6 +17,9 @@ export const EditModal = ({ darkMode }) => {
   const page = editingPage;
   const windowUrl = window.location.href;
   const toggleEditPageHandleModal = useStore((state) => state.toggleEditPageHandleModal);
+  const setResolvedPageConstants = useStore((state) => state.setResolvedPageConstants);
+  const setCurrentPageHandle = useStore((state) => state.setCurrentPageHandle);
+  const currentPageId = useStore((state) => state.currentPageId);
 
   const slug = windowUrl.split(page?.handle)[0];
 
@@ -41,6 +44,12 @@ export const EditModal = ({ darkMode }) => {
     const transformedPageHandle = _.kebabCase(pageHandle);
     setIsSaving(true);
     updatePageHandle(page.id, transformedPageHandle);
+    setResolvedPageConstants({
+      handle: transformedPageHandle,
+    });
+    if (page.id === currentPageId) {
+      setCurrentPageHandle(transformedPageHandle);
+    }
     setTimeout(() => {
       setIsSaving(false);
     }, 900);

@@ -121,8 +121,11 @@ export const sanitizeSearchParams = (sourceOptions: any, queryOptions: any, hasD
   });
 
   if (!hasDataSource) return _urlParams;
+  const sanitisedUrlParamsFromSourceOptions = (sourceOptions.url_params || []).filter((o) => {
+    return o.some((e) => !isEmpty(e));
+  });
 
-  const urlParams = _urlParams.concat(sourceOptions.url_params || []);
+  const urlParams = _urlParams.concat(sanitisedUrlParamsFromSourceOptions || []);
   return urlParams;
 };
 

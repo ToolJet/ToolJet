@@ -44,7 +44,7 @@ export default function generateColumnsData({
     );
   };
   const transformedColumnProperties = _.cloneDeep(columnProperties);
-  return transformedColumnProperties.map((column) => {
+  return transformedColumnProperties?.map((column) => {
     if (!column) return;
     const columnSize = columnSizes[column?.id] || columnSizes[column?.name] || column.columnSize;
 
