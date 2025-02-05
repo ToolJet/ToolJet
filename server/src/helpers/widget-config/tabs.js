@@ -51,6 +51,41 @@ export const tabsConfig = {
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
   properties: {
+    useDynamicOptions: {
+      type: 'toggle',
+      displayName: 'Dynamic options',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+    },
+    loadingState: {
+      type: 'toggle',
+      displayName: 'Loading state',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
+    visibility: {
+      type: 'toggle',
+      displayName: 'Visibility',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+    },
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disable',
+      section: 'additionalActions',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+    },
     tabs: {
       type: 'code',
       displayName: 'Tabs',
@@ -88,6 +123,7 @@ export const tabsConfig = {
     hideTabs: {
       type: 'toggle',
       displayName: 'Hide tabs',
+      section: 'additionalActions',
       validation: {
         schema: {
           type: 'boolean',
@@ -98,12 +134,20 @@ export const tabsConfig = {
     renderOnlyActiveTab: {
       type: 'toggle',
       displayName: 'Render only active tab',
+      section: 'additionalActions',
       validation: {
         schema: {
           type: 'boolean',
         },
         defaultValue: false,
       },
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' }, defaultValue: '' },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
     },
   },
   events: { onTabSwitch: { displayName: 'On tab switch' } },
@@ -114,26 +158,6 @@ export const tabsConfig = {
       validation: {
         schema: { type: 'string' },
         defaultValue: '#375FCF',
-      },
-    },
-    visibility: {
-      type: 'toggle',
-      displayName: 'Visibility',
-      validation: {
-        schema: {
-          type: 'boolean',
-        },
-        defaultValue: false,
-      },
-    },
-    disabledState: {
-      type: 'toggle',
-      displayName: 'Disable',
-      validation: {
-        schema: {
-          type: 'boolean',
-        },
-        defaultValue: false,
       },
     },
     tabWidth: {
@@ -156,27 +180,82 @@ export const tabsConfig = {
         },
       ],
     },
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'setVisibility', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setLoading',
+      displayName: 'Set disable',
+      params: [{ handle: 'setLoading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setLoading',
+      displayName: 'Set loading',
+      params: [{ handle: 'setLoading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
   ],
-  exposedVariables: { currentTab: '' },
+  exposedVariables: {
+    currentTab: '',
+    isVisible: true,
+    isDisabled: false,
+    isLoading: false,
+  },
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
+      useDynamicOptions: { value: '{{true}}' },
       tabs: {
         value:
           "{{[ \n\t\t{ title: 'Home', id: '0' }, \n\t\t{ title: 'Profile', id: '1' }, \n\t\t{ title: 'Settings', id: '2' } \n ]}}",
       },
+      tabItems: {
+        value: [
+          {
+            id: '0',
+            title: 'Home',
+            loading: { value: false },
+            disable: { value: false },
+            visible: { value: true },
+          },
+          {
+            id: '1',
+            title: 'Profile',
+            loading: { value: false },
+            disable: { value: false },
+            visible: { value: true },
+          },
+          {
+            id: '2',
+            title: 'Settings',
+            loading: { value: false },
+            disable: { value: false },
+            visible: { value: true },
+          },
+          {
+            id: '3',
+            title: 'Additional Tab',
+            loading: { value: false },
+            disable: { value: false },
+            visible: { value: true },
+          },
+        ]
+      },
       defaultTab: { value: '0' },
       hideTabs: { value: false },
       renderOnlyActiveTab: { value: false },
+      loadingState: { value: `{{false}}` },
+      visibility: { value: '{{true}}' },
+      disabledState: { value: '{{false}}' },
+      tooltip: { value: '' },
     },
     events: [],
     styles: {
       highlightColor: { value: '#375FCF' },
-      visibility: { value: '{{true}}' },
-      disabledState: { value: '{{false}}' },
       tabWidth: { value: 'auto' },
     },
   },
