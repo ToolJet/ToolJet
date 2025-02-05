@@ -28,6 +28,11 @@ Follow the steps below to deploy ToolJet on a Kubernetes cluster.
    - **LOCKBOX_KEY**
 
    Read **[environment variables reference](/docs/setup/env-vars)**
+:::warning
+
+To enable AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`
+
+:::
 3. Create a Kubernetes deployment
 
    ```bash

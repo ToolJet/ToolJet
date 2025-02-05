@@ -26,7 +26,11 @@ Follow the steps below to deploy ToolJet on Openshift.
  - **LOCKBOX_KEY**
 
 Read **[environment variables reference](/docs/setup/env-vars)**
+:::warning
 
+To enable AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`
+
+:::
 3. Once you have logged into the Openshift developer dashboard click on `+Add` tab. Select import YAML from the local machine.
 
 :::note

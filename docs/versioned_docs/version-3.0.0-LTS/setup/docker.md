@@ -64,6 +64,12 @@ Confused about which setup to select? Feel free to ask the community via Slack: 
   
   If you've set a custom domain for `TOOLJET_HOST`, add a `A record` entry in your DNS settings to point to the IP address of the server. 
 
+:::warning
+
+To enable AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`
+
+:::
+
   :::info
   i. Please make sure that `TOOLJET_HOST` starts with either `http://` or `https://`
 

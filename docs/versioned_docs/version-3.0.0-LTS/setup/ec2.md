@@ -61,7 +61,11 @@ Follow the steps below to deploy ToolJet on AWS EC2 instances.
    `TOOLJET_DB_HOST=http://12.34.56.78` or
    `TOOLJET_DB_HOST=https://yourdomain.com` or
    `TOOLJET_DB_HOST=https://tooljet.yourdomain.com`
+:::warning
 
+To enable AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`
+
+:::
    :::info
    We use a [lets encrypt](https://letsencrypt.org/) plugin on top of nginx to create TLS certificates on the fly.
    :::
