@@ -13,6 +13,7 @@ import ListGroup from 'react-bootstrap/ListGroup';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SortableList from '@/_components/SortableList';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
+import { ProgramaticallyHandleProperties } from './Table/ProgramaticallyHandleProperties';
 
 
 export function TabComponent({ componentMeta, darkMode, ...restProps }) {
@@ -192,20 +193,17 @@ export function TabComponent({ componentMeta, darkMode, ...restProps }) {
 
 
                     <div className="field mb-2">
-                        <CodeHinter
-                            type="fxEditor"
-                            initialValue={'#11181C'}
-                            onChange={(value) => { }}
-                            componentName={`component/${component?.component?.name}::${{ name: 'textColor' }}`}
-                            paramType={'color'}
-                            paramName={'textColor'}
-                            paramLabel={'Background'}
-                            fieldMeta={{ type: 'color', displayName: '' }}
-                            onFxPress={(active) => {
-
-                            }}
-                            fxActive={() => { }}
-                            component={component.component}
+                        <ProgramaticallyHandleProperties
+                            label="Background"
+                            currentState={currentState}
+                            index={index}
+                            darkMode={darkMode}
+                            callbackFunction={handleBackgroundColorChange}
+                            property="textColor"
+                            props={component}
+                            component={component}
+                            paramMeta={{ type: 'color', displayName: 'Background' }}
+                            paramType="properties"
                         />
                     </div>
 
@@ -244,7 +242,7 @@ export function TabComponent({ componentMeta, darkMode, ...restProps }) {
                             fxActive={item?.visible?.fxActive}
                             fieldMeta={{
                                 type: 'toggle',
-                                displayName: 'Make editable',
+                                displayName: 'Visible',
                             }}
                             paramType={'toggle'}
                         />
@@ -265,7 +263,7 @@ export function TabComponent({ componentMeta, darkMode, ...restProps }) {
                             fxActive={item?.disable?.fxActive}
                             fieldMeta={{
                                 type: 'toggle',
-                                displayName: 'Make editable',
+                                displayName: 'Disable',
                             }}
                             paramType={'toggle'}
                         />
