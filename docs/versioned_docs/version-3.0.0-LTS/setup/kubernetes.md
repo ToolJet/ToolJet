@@ -102,10 +102,15 @@ Setup ChromaDB deployment:
 curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/chromadb-deployment.yml
 ```
 
-2. Add an environment variable in the .env file of the ToolJet server:
+2. Add these environment variable in the .env file of the ToolJet server:
 ```
             - name: CHROMA_DB_URL
               value: chromadb.default.svc.cluster.local
 ``` 
+```
+            - name: AI_GATEWAY_URL
+              value: https://api-gateway.tooljet.ai
+```
+
 
 *If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*

@@ -152,7 +152,11 @@ Follow this guide to enable AI features in your self-hosted setup.
   <img className="screenshot-full" src="/img/cloud-run/add-chromadb.png" alt="add-chromadb" />
   </div>
 
-2. Add an extra env `CHROMA_DB_URL = localhost:8000` in the tooljet container so tooljet can connect to ChromaDB.
+2. Add these envs in the tooljet container so tooljet can connect to ChromaDB.
+
+`CHROMA_DB_URL = localhost:8000`
+`AI_GATEWAY_URL = https://api-gateway.tooljet.ai`
+
 
  
 

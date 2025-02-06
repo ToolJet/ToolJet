@@ -114,7 +114,10 @@ Follow this guide to enable AI features in your self-hosted setup.
   chromadb_data:
     driver: local
 ```
-2. Add an env in the .env file in the Tooljet server `CHROMA_DB_URL=<server_ip:8000>`
+2. Add these envs to the .env file in the Tooljet server 
+
+`CHROMA_DB_URL=<server_ip:8000>`
+`AI_GATEWAY_URL=https://api-gateway.tooljet.ai`
 
 
 ## Upgrading to the Latest LTS Version

@@ -190,6 +190,9 @@ volumes:
     driver: local
 ```
 
-2. Add an env in the .env file in the Tooljet server `CHROMA_DB_URL=chromadb:8000`
+2. Add these envs to the .env file in the Tooljet server 
+
+`CHROMA_DB_URL=chromadb:8000`
+`AI_GATEWAY_URL=https://api-gateway.tooljet.ai`
 
 *If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
