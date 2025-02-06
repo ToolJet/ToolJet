@@ -24,7 +24,7 @@ You can use the following toggles:
 
 ### Text Generation
 
-Use this operation to generate text based on the input and model settings. It provides information or explanations tailored to the given context. Check out all the available text generation models on **[Huggingface](https://huggingface.co/models?pipeline_tag=text-generation&sort=trending)**.
+Use this operation to generate text based on the input and model settings. It provides information or explanations tailored to the given context. Check out all the available text generation models on [Hugging Face](https://huggingface.co/models?pipeline_tag=text-generation&sort=trending).
 
 **Required Parameters**
 
@@ -82,7 +82,7 @@ ToolJet's integration capabilities significantly enhance the power and flexibili
 
 ### Summarisation
 
-Use this operation to create a summary of the input text based on the model settings. Check out all the available summarisation models on **[Huggingface](https://huggingface.co/models?pipeline_tag=summarization&sort=trending)**.
+Use this operation to create a summary of the input text based on the model settings. Check out all the available summarisation models on [Hugging Face](https://huggingface.co/models?pipeline_tag=summarization&sort=trending).
 
 **Required Parameters**
 
