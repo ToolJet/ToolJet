@@ -17,13 +17,12 @@ export const Container = ({ id, properties, styles, darkMode, height, width }) =
     border: `1px solid ${borderColor}`,
     height,
     display: visibility ? 'flex' : 'none',
-    overflow: 'hidden auto',
     position: 'relative',
     boxShadow,
   };
   return (
     <div
-      className={`jet-container ${properties.loadingState && 'jet-container-loading'}`}
+      className={`jet-container widget-type-container ${properties.loadingState && 'jet-container-loading'}`}
       id={id}
       data-disabled={disabledState}
       style={computedStyles}
