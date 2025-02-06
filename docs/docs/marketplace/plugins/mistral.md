@@ -9,7 +9,7 @@ Mistral AI can be integrated with ToolJet to generate high-quality text content.
 
 To connect with Mistral AI, you will need an **API Key**, which can be generated from **[Mistral AI Console](https://console.mistral.ai/api-keys/)**.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/mistral/config.png" alt="Anthropic Configuration" />
+<img className="screenshot-full" src="/img/marketplace/plugins/mistral/config.png" alt="Mistral Configuration" />
 
 ## Supported Operations
 
@@ -27,7 +27,13 @@ Use this operation to generate text content by controlling various parameters to
     - open-mistral-nemo
     - mistral-small-latest
 
-- **Messages**: Provide structured input to define the context or conversation.
+- **Messages**: Provide structured input to define the context or conversation. <br/>
+
+:::info
+
+1. A message object with the role **assistant** should always have both a prefix and suffix message object in the messages array.
+2. If a message object with the role **assistant** is the last in the array then set `prefix: true` in that object.
+:::
 
 **Optional Parameters**
 
@@ -42,33 +48,53 @@ Use this operation to generate text content by controlling various parameters to
 - **Completions (N)**: Set the number of response variations to generate.
 - **Safe prompt**: Ensure the prompt is free of inappropriate or sensitive content.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/mistral/query.png" alt="Anthropic Configuration" />
+<img className="screenshot-full" src="/img/marketplace/plugins/mistral/query.png" alt="Mistral Query" />
 
 <details>
 <summary>**Response Example**</summary>
 
-"ToolJet is often considered one of the best low-code platforms for several reasons. Here are some key features and advantages that set it apart:
+"While I can't provide personalized financial advice, I can certainly help you understand some common investment options that may offer tax benefits. Here are some strategies to consider:
 
-1. **Open-Source**: ToolJet is open-source, which means it's free to use, and you can customize it to fit your specific needs. It also has an active community of contributors, ensuring continuous improvement and innovation.
+#### 1. **Retirement Accounts**
+- **401(k) or 403(b):** These are employer-sponsored retirement plans. Contributions are made with pre-tax dollars, reducing your taxable income. Employer matching contributions can also boost your savings.
+- **Traditional IRA:** Contributions may be tax-deductible, depending on your income and whether you have access to a workplace retirement plan. Withdrawals are taxed as ordinary income.
+- **Roth IRA:** Contributions are made with after-tax dollars, but qualified withdrawals are tax-free. This can be beneficial for those who expect to be in a higher tax bracket in retirement.
 
-2. **Easy to Use**: ToolJet provides a drag-and-drop interface for building internal tools, making it accessible for both technical and non-technical users. This lowers the barrier to entry and enables a wider range of people to create and manage tools.
+#### 2. **Health Savings Accounts (HSAs)**
+- **HSAs:** These are available to individuals with high-deductible health plans. Contributions are tax-deductible, earnings grow tax-free, and withdrawals for qualified medical expenses are tax-free.
 
-3. **Integration Capabilities**: ToolJet allows you to connect to various data sources and APIs, making it easy to integrate with other tools and services in your tech stack. This includes databases like PostgreSQL, MongoDB, and MySQL, as well as external APIs.
+#### 3. **Tax-Loss Harvesting**
+- **Selling Losing Investments:** You can sell investments that have lost value to offset gains from other investments, reducing your capital gains tax liability.
 
-4. **Flexibility and Extensibility**: Despite being a low-code platform, ToolJet offers the flexibility to write custom code when needed. This means you can extend its capabilities and build more complex tools if required.
+#### 4. **Municipal Bonds**
+- **Muni Bonds:** These are issued by state and local governments and are often exempt from federal taxes and sometimes state taxes as well.
 
-5. **Pre-built Widgets**: ToolJet comes with a library of pre-built widgets, which are reusable UI components. These widgets can help you build tools faster and with less effort.
+#### 5. **Education Savings Accounts**
+- **529 Plans:** Contributions grow tax-free, and withdrawals are tax-free if used for qualified education expenses. Some states offer tax deductions or credits for contributions.
+- **Coverdell ESAs:** Similar to 529 plans but with more restrictions on contributions and uses.
 
-6. **Real-time Collaboration**: ToolJet supports real-time collaboration, allowing multiple users to work on the same tool simultaneously. This is particularly useful for teams working remotely.
+#### 6. **Real Estate Investments**
+- **Rental Income:** Income from rental properties can be offset by depreciation, reducing your taxable income.
+- **1031 Exchanges:** Allows you to defer capital gains taxes by reinvesting the proceeds from the sale of an investment property into a similar property.
 
-7. **Security and Permissions**: ToolJet provides fine-grained access control, ensuring that your tools and data are secure. You can set permissions at the tool, page, and even individual widget levels.
+#### 7. **Tax-Efficient Investments**
+- **Index Funds and ETFs:** These often have lower turnover rates, which can reduce capital gains distributions and therefore tax liabilities.
+- **Dividend-Paying Stocks:** Qualified dividends are taxed at lower rates than ordinary income.
 
-8. **Self-Hosted**: ToolJet can be self-hosted, giving you full control over your data and tools. This is particularly important for businesses with strict data privacy and security requirements.
+#### 8. **Charitable Contributions**
+- **Donations:** Contributions to qualified charities can be tax-deductible, reducing your taxable income.
+- **Donor-Advised Funds:** Allow you to make a charitable contribution and receive an immediate tax deduction, while deciding later where to allocate the funds.
 
-9. **Active Community and Support**: ToolJet has an active community of users and developers. This means you can get help and support when you need it, and you can contribute to the platform's development if you wish.
+#### 9. **Energy-Efficient Home Improvements**
+- **Tax Credits:** Certain energy-efficient home improvements may qualify for tax credits.
 
-10. **Cost-Effective**: As an open-source platform, ToolJet can be a cost-effective solution for businesses looking to build internal tools without breaking the bank.
+#### 10. **Business Ownership**
+- **Sole Proprietorships, LLCs, S-Corps:** Different business structures offer various tax benefits, such as pass-through income and deductions for business expenses.
 
-These features make ToolJet a strong contender in the low-code platform space, particularly for businesses looking for an open-source, flexible, and user-friendly solution. However, the "best" platform ultimately depends on your specific needs and context."
+#### Steps to Create a Plan:
+1. **Assess Your Financial Goals:** Determine what you want to achieve with your investments (e.g., retirement savings, education funding).
+2. **Evaluate Your Tax Situation:** Understand your current and future tax brackets to choose the right investment vehicles.
+3. **Diversify Your Portfolio:** Spread your investments across different asset classes to manage risk.
+4. **Consult a Professional:** Consider working with a financial advisor or tax professional to tailor a plan to your specific needs."
 
 </details>
