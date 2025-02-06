@@ -56,7 +56,7 @@ export const ChatInput = ({ message, onChange, onSend, disabled, loading, newMes
             resetTextareaHeight();
           }}
           iconOnly={true}
-          disabled={!message.trim() || disabled || loading || newMessageDisabled}
+          disabled={!message?.trim() || disabled || loading || newMessageDisabled}
           style={{
             width: '36px',
             height: '36px',

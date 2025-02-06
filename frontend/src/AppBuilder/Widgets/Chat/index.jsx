@@ -121,7 +121,10 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
           adjustTextareaHeight(e.target, e.target.value);
         }}
         onSend={() => {
-          exposedActions.sendMessage({ message: state.message, type: 'message' });
+          const message = state.message;
+          const type = 'message';
+          const shouldFireEvent = true;
+          actions.handleSendMessage(message, type, shouldFireEvent);
           setShouldScrollToBottom(true); // Ensure scrolling on new message
         }}
         disabled={properties.disableInput}

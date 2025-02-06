@@ -13,7 +13,7 @@ export const useChatActions = (state, setExposedVariables, fireEvent) => {
     type,
   });
 
-  const updateChatHistoryWhileSendingMessage = (newMessage) => {
+  const updateChatHistoryWhileSendingMessage = (newMessage, shouldFireEvent) => {
     setChatHistory((currentHistory) => {
       const updatedHistory = [...currentHistory, newMessage];
       const exposedVariables = {
@@ -22,15 +22,16 @@ export const useChatActions = (state, setExposedVariables, fireEvent) => {
       };
       if (error) setError(null);
       setExposedVariables(exposedVariables);
-      fireEvent('onMessageSent');
+      if (shouldFireEvent) fireEvent('onMessageSent');
       return updatedHistory;
     });
   };
 
-  const handleSendMessage = (message, type = 'message') => {
-    if (!message?.trim()) return;
+  const handleSendMessage = (message, type = 'message', shouldFireEvent = true) => {
+    // No event should fired internally for csa , hence use this shouldFireEvent flag
+    if (!message) return;
     const newMessage = createMessage(message, type);
-    updateChatHistoryWhileSendingMessage(newMessage);
+    updateChatHistoryWhileSendingMessage(newMessage, shouldFireEvent);
     setMessage('');
   };
 

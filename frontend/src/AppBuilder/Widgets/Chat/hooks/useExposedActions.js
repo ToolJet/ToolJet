@@ -18,7 +18,8 @@ export const useExposedActions = (actions, state, setExposedVariables) => {
   return {
     sendMessage: async function (messageObject) {
       const { message, type = 'message' } = messageObject;
-      handleSendMessage(message, type);
+      //addded thrid parameter as false to not fire event internally for csa, user has to fire event manually
+      handleSendMessage(message, type, false);
     },
     clearHistory,
     deleteMessage: async function (messageId) {
