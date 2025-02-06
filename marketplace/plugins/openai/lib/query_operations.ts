@@ -1,5 +1,6 @@
 import OpenAI from 'openai'; // Updated SDK version
 import { QueryOptions } from './types';
+import { QueryError } from 'plugins/common';
 
 // Updated utility function to handle size validation based on model
 const getSizeEnum = (
@@ -129,5 +130,38 @@ export async function generateImage(
       description: error?.response?.data?.error?.message || 'An unexpected error occurred',
       data: error?.response?.data || {},
     };
+  }
+}
+
+export async function generateEmbedding(openai: OpenAI, options: QueryOptions) {
+  try {
+    const { model_embedding: model } = options;
+    let input, encoding_format, dimensions;
+    switch (model) {
+      case 'text-embedding-3-small':
+        input = options.input_M1;
+        encoding_format = options.encoding_format_M1;
+        dimensions = options.dimensions_M1;
+        break;
+      case 'text-embedding-3-large':
+        input = options.input_M2;
+        encoding_format = options.encoding_format_M2;
+        dimensions = options.dimensions_M2;
+        break;
+      case 'text-embedding-ada-002':
+        input = options.input_M3;
+        encoding_format = options.encoding_format_M3;
+        dimensions = options.dimensions_M3;
+        break;
+    }
+    const embedding = await openai.embeddings.create({
+      model: model,
+      input: input,
+      encoding_format: encoding_format,
+      dimensions: Number(dimensions),
+    });
+    return embedding.data[0].embedding;
+  } catch (error) {
+    throw new QueryError('Failed to generate embedding', error.message, {});
   }
 }
