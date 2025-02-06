@@ -24,7 +24,8 @@
       "label": "API key",
       "key": "apiKey",
       "type": "password",
-      "description": "Enter your Gemini API Key"    
+      "description": "Enter your Gemini API Key",
+      "encrypted": true  
     }
   },
   "required": [

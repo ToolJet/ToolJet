@@ -24,7 +24,8 @@
       "label": "API Key",
       "key": "apiKey",
       "type": "password",
-      "description": "Enter your Pinecone API Key"
+      "description": "Enter your Pinecone API Key",
+      "encrypted": true
     }
   },
   "required": [
