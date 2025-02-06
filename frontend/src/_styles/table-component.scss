@@ -1484,11 +1484,14 @@
   }
 }
 
-// hide scrollbar on touch devices
-  @media (hover: none) and (pointer: coarse) {
-    .jet-data-table::-webkit-scrollbar {
-      width: 0;
-      height: 0;
-      background: transparent;
-    }
+@media (hover: none) and (pointer: coarse) {
+  .jet-data-table {
+    overflow: auto;
   }
+  // hide scrollbar on touch devices
+  .jet-data-table::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    background: transparent;
+  }
+}

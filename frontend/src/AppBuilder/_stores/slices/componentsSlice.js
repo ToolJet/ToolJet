@@ -1737,7 +1737,10 @@ export const createComponentsSlice = (set, get) => ({
   getCustomResolvableReference: (value, parentId, moduleId) => {
     const { getParentComponentType } = get();
     const parentComponentType = getParentComponentType(parentId, moduleId);
-    if (parentComponentType === 'Listview' && value.includes('listItem') && checkSubstringRegex(value, 'listItem')) {
+    if (
+      (parentComponentType === 'Listview' && value.includes('listItem') && checkSubstringRegex(value, 'listItem')) ||
+      value === '{{listItem}}'
+    ) {
       return { entityType: 'components', entityNameOrId: parentId, entityKey: 'listItem' };
     } else if (
       parentComponentType === 'Kanban' &&
