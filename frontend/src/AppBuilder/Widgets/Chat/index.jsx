@@ -55,18 +55,18 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
     }
   };
 
-  const createMessage = (message, type) => {
+  const createMessage = (messageObject) => {
+    const { message, type, name = '', avatar = '' } = messageObject;
     console.log('createMessage', { type, userName, respondentName, userAvatar, respondentAvatar });
 
     const newMessage = {
       message,
       messageId: uuidv4(),
       timestamp: new Date().toISOString(),
-      name: type === 'message' ? userName : respondentName,
-      avatar: type === 'message' ? userAvatar : respondentAvatar,
+      name: name || (type === 'message' ? userName : respondentName),
+      avatar: avatar || (type === 'message' ? userAvatar : respondentAvatar),
       type,
     };
-    console.log('createMessage newMessage', { newMessage });
 
     return newMessage;
   };
@@ -85,10 +85,9 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
     });
   };
 
-  const handleSendMessage = (message, type = 'message', shouldFireEvent = true) => {
+  const handleSendMessage = (messageObject, shouldFireEvent = true) => {
     // No event should fired internally for csa , hence use this shouldFireEvent flag
-    if (!message) return;
-    const newMessage = createMessage(message, type);
+    const newMessage = createMessage(messageObject);
     updateChatHistoryWhileSendingMessage(newMessage, shouldFireEvent);
     setMessage('');
   };
@@ -197,9 +196,9 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
           toast.error(error);
           return;
         }
-        const { message, type = 'message' } = messageObject;
+        // const { message, type = 'message' } = messageObject;
         //addded thrid parameter as false to not fire event internally for csa, user has to fire event manually
-        handleSendMessage(message, type, false);
+        handleSendMessage(messageObject, false);
       },
       clearHistory: async function () {
         if (error) setError(null);
@@ -224,8 +223,7 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
           return;
         }
 
-        const { message, type } = messageObject;
-        const newMessage = createMessage(message, type);
+        const newMessage = createMessage(messageObject);
         setChatHistory((currentHistory) => {
           const updatedHistory = [...currentHistory, newMessage];
           const exposedVariables = {
@@ -346,7 +344,7 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
         onSend={() => {
           const type = 'message';
           const shouldFireEvent = true;
-          handleSendMessage(message, type, shouldFireEvent);
+          handleSendMessage({ message, type }, shouldFireEvent);
           setShouldScrollToBottom(true); // Ensure scrolling on new message
         }}
         disabled={properties.disableInput}
