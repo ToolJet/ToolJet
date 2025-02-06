@@ -171,6 +171,28 @@ export const Chat = ({
           components,
           darkMode
         )}
+        {renderElement(
+          component,
+          componentMeta,
+          paramUpdated,
+          dataQueries,
+          'enableClearHistoryButton',
+          'properties',
+          currentState,
+          components,
+          darkMode
+        )}
+        {renderElement(
+          component,
+          componentMeta,
+          paramUpdated,
+          dataQueries,
+          'enableDownloadHistoryButton',
+          'properties',
+          currentState,
+          components,
+          darkMode
+        )}
       </>
     ),
   });

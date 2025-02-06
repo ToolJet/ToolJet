@@ -108,6 +108,22 @@ export const chatConfig = {
         defaultValue: false,
       },
     },
+    enableClearHistoryButton: {
+      type: 'toggle',
+      displayName: 'Enable clear history button',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+    },
+    enableDownloadHistoryButton: {
+      type: 'toggle',
+      displayName: 'Enable download history button',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: true,
+      },
+    },
   },
 
   events: {
@@ -325,6 +341,8 @@ export const chatConfig = {
       disableInput: { value: '{{false}}' },
       loadingHistory: { value: '{{false}}' },
       loadingResponse: { value: '{{false}}' },
+      enableClearHistoryButton: { value: '{{true}}' },
+      enableDownloadHistoryButton: { value: '{{true}}' },
     },
     events: [],
     styles: {

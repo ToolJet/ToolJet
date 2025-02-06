@@ -74,7 +74,13 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
 
   return (
     <div id={id} className={`chat-widget ${darkTheme ? 'dark-theme' : ''}`} style={computedStyles.container}>
-      <ChatHeader title={state.chatTitle} onDownload={exposedActions.downloadChat} onClear={actions.clearHistory} />
+      <ChatHeader
+        title={state.chatTitle}
+        onDownload={exposedActions.downloadChat}
+        onClear={actions.clearHistory}
+        enableClearHistoryButton={state.enableClearHistoryButton}
+        enableDownloadHistoryButton={state.enableDownloadHistoryButton}
+      />
 
       <div ref={chatMessagesRef} className="chat-messages" tabIndex={0} style={{ flexGrow: 1, overflowY: 'auto' }}>
         {Array.isArray(state.chatHistory) &&

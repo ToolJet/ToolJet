@@ -13,6 +13,10 @@ export const useChatState = (properties, setExposedVariables) => {
   const [chatHistory, setChatHistory] = useState(properties.initialChat || []);
   const [newMessageDisabled, setNewMessageDisabled] = useState(false);
   const [error, setError] = useState(null);
+  const [enableClearHistoryButton, setEnableClearHistoryButton] = useState(properties.enableClearHistoryButton);
+  const [enableDownloadHistoryButton, setEnableDownloadHistoryButton] = useState(
+    properties.enableDownloadHistoryButton
+  );
 
   useEffect(() => {
     setChatHistory(properties.initialChat);
@@ -45,6 +49,14 @@ export const useChatState = (properties, setExposedVariables) => {
     setExposedVariables({ isInputDisabled: properties.disableInput });
   }, [properties.disableInput]);
 
+  useEffect(() => {
+    setEnableClearHistoryButton(properties.enableClearHistoryButton);
+  }, [properties.enableClearHistoryButton]);
+
+  useEffect(() => {
+    setEnableDownloadHistoryButton(properties.enableDownloadHistoryButton);
+  }, [properties.enableDownloadHistoryButton]);
+
   return {
     chatTitle,
     setChatTitle,
@@ -71,5 +83,7 @@ export const useChatState = (properties, setExposedVariables) => {
     error,
     setError,
     properties,
+    enableClearHistoryButton,
+    enableDownloadHistoryButton,
   };
 };
