@@ -1,7 +1,4 @@
-export const formatTimestamp = (timestamp) => {
-  if (!timestamp || isNaN(new Date(timestamp).getTime())) {
-    return '--/--';
-  }
+const toLocaleDateString = (timestamp) => {
   const date = new Date(timestamp);
   const today = new Date();
 
@@ -15,6 +12,17 @@ export const formatTimestamp = (timestamp) => {
     hour: '2-digit',
     minute: '2-digit',
   });
+};
+
+export const formatTimestamp = (timestamp) => {
+  if (timestamp === 'new Date().toISOString()') {
+    return toLocaleDateString(new Date().toISOString());
+  }
+
+  if (!timestamp || isNaN(new Date(timestamp).getTime())) {
+    return '--/--';
+  }
+  return toLocaleDateString(timestamp);
 };
 
 export const validateSingleMessageObject = (message) => {

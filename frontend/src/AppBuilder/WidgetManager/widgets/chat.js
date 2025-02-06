@@ -27,7 +27,7 @@ export const chatConfig = {
             {
               message: 'Ask me anything!',
               messageId: 'e3dd6f60-d5e8-46c5-b73b-006f2f4a34f2',
-              timestamp: '',
+              timestamp: 'new Date().toISOString()',
               name: 'Assistant',
               avatar: '',
               type: 'response',
@@ -35,7 +35,7 @@ export const chatConfig = {
             {
               message: 'Explain software development cycle',
               messageId: 'aad219d2-0349-4f61-a959-424bf62795f6',
-              timestamp: '',
+              timestamp: 'new Date().toISOString()',
               name: 'User',
               avatar: '',
               type: 'message',
@@ -326,7 +326,7 @@ export const chatConfig = {
             {
               message: 'Ask me anything!',
               messageId: 'e3dd6f60-d5e8-46c5-b73b-006f2f4a34f2',
-              timestamp: '',
+              timestamp: 'new Date().toISOString()',
               name: 'Assistant',
               avatar: '',
               type: 'response',
@@ -334,7 +334,7 @@ export const chatConfig = {
             {
               message: 'Explain software development cycle',
               messageId: 'aad219d2-0349-4f61-a959-424bf62795f6',
-              timestamp: '',
+              timestamp: 'new Date().toISOString()',
               name: 'User',
               avatar: '',
               type: 'message',
