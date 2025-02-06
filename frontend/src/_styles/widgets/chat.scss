@@ -55,6 +55,7 @@
     // Add this to control spacing in the message column
     .message-content-title-container {
       gap: 0; // Add 0px gap between header and content
+      width: calc(100% - 52px); 
       
       // Remove any extra spacing from children
       > * {
@@ -66,7 +67,7 @@
   .message-error{
     .message-content {
       color: var(--status-error-strong) !important;
-      font-family: IBM Plex Sans;
+      font-family: 'IBM Plex Sans';
       font-size: 14px !important;
       font-weight: 400 !important;
       line-height: 22.4px !important;
@@ -138,6 +139,7 @@
     }
   }
   .markdown-content {
+ 
     // Headers
     h1, h2, h3, h4, h5, h6 {
       // margin: 16px 0 8px;
@@ -170,7 +172,8 @@
       padding: 2px 4px;
       border-radius: 4px;
       font-size: 14px;
-      font-family: monospace;
+      font-family: inherit;
+      width: max-content;
     }
   
     pre {
@@ -187,21 +190,58 @@
   
     // Tables
     table {
-      border-collapse: collapse;
       width: 100%;
+      max-width: 100%;
+      display: block;
+      border-collapse: collapse;
       margin: 8px 0;
+      max-height: 500px;
+      overflow: auto;
+      
+      // Hide scrollbar by default
+      &::-webkit-scrollbar {
+        height: 0;
+        background: transparent;
+        transition: all 0.2s ease;
+      }
+
+      // Firefox scrollbar styles
+      scrollbar-width: none;
+
+      // Show scrollbar on hover/focus
+      &:hover,
+      &:focus,
+      &:focus-within {
+        &::-webkit-scrollbar {
+          height: 4px;
+        }
+        
+        &::-webkit-scrollbar-thumb {
+          background-color: var(--slate7);
+          border-radius: 2px;
+        }
+
+        &::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        // Firefox scrollbar styles
+        scrollbar-width: thin;
+        scrollbar-color: var(--slate7) transparent;
+      }
       
       th, td {
         border: 1px solid var(--borders-default);
         padding: 8px 12px;
         text-align: left;
+        white-space: nowrap; // Prevent text wrapping in cells
       }
-  
+
       th {
         background: var(--surfaces-surface-02);
         font-weight: 600;
       }
-  
+
       tr:nth-child(even) {
         background: var(--surfaces-surface-01);
       }
@@ -213,6 +253,39 @@
       margin: 8px 0;
       padding: 8px 16px;
       background: var(--surfaces-surface-02);
+      width: 100%;
+      overflow-x: auto;
+      // Hide scrollbar by default
+      &::-webkit-scrollbar {
+        height: 0;
+        background: transparent;
+        transition: all 0.2s ease;
+      }
+
+      // Firefox scrollbar styles
+      scrollbar-width: none;
+
+      // Show scrollbar on hover/focus
+      &:hover,
+      &:focus,
+      &:focus-within {
+        &::-webkit-scrollbar {
+          height: 4px;
+        }
+        
+        &::-webkit-scrollbar-thumb {
+          background-color: var(--slate7);
+          border-radius: 2px;
+        }
+
+        &::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        // Firefox scrollbar styles
+        scrollbar-width: thin;
+        scrollbar-color: var(--slate7) transparent;
+      }
       
       p {
         margin: 0;
@@ -279,32 +352,9 @@
       transition: all 0.2s ease;
     }
 
-    // Show scrollbar on hover or focus
-    &:hover,
-    &:focus,
-    &:focus-within {
-      &::-webkit-scrollbar {
-        width: 4px;
-      }
-      
-      &::-webkit-scrollbar-thumb {
-        background-color: var(--slate7);
-        border-radius: 2px;
-      }
-
-      &::-webkit-scrollbar-track {
-        background: transparent;
-      }
-    }
-
     // Firefox scrollbar styles
     scrollbar-width: none;
-    &:hover,
-    &:focus,
-    &:focus-within {
-      scrollbar-width: thin;
-      scrollbar-color: var(--slate7) transparent;
-    }
+    
   }
   .chat-header{
     height: 60px;
