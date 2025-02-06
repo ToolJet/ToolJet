@@ -132,6 +132,15 @@
     "tags": ["AI"]
   },
   {
+    "name": "Cohere",
+    "description": "Integrate with Cohere API to use its AI models for chat and text generation.",
+    "version": "1.0.0",
+    "id": "cohere",
+    "author": "Tooljet",
+    "timestamp": "Tue, 21 Jan 2025 05:09:30 GMT",
+    "tags": ["AI"]
+  },
+  {
     "name": "Mistral",
     "description": "Integrate with Mistral API to use its AI models for chat completion capabilities",
     "version": "1.0.0",
