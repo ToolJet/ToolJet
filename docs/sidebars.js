@@ -333,7 +333,17 @@ const sidebars = {
             },
             'data-sources/soap-api',
             'data-sources/rethinkdb',
-            'data-sources/run-js',
+            {
+              'type': 'category',
+              'label': 'Run JavaScript Code',
+              'collapsed': false,
+              'items': [
+                'data-sources/run-javascript-code/run-js',
+                'data-sources/run-javascript-code/parameters-in-run-javascript-code',
+                'data-sources/run-javascript-code/runjs-example-queries',
+                
+              ],
+            },
             'data-sources/run-py',
             'data-sources/saphana',
             'data-sources/sendgrid',
