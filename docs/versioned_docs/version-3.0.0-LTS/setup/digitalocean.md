@@ -89,6 +89,7 @@ Follow this guide to enable AI features in your self-hosted setup.
  ```
  services:
   chroma:
+    name: chromadb
     image: chromadb/chroma
     ports:
       - "8000:8000"
@@ -101,7 +102,7 @@ Follow this guide to enable AI features in your self-hosted setup.
   chromadb_data:
     driver: local
 ```
-2. Add an env in the .env file in the Tooljet server `CHROMA_DB_URL=chroma:8000>`
+2. Add an env in the .env file in the Tooljet server `CHROMA_DB_URL=chromadb:8000`
 
 
 ## Upgrading to the Latest LTS Version

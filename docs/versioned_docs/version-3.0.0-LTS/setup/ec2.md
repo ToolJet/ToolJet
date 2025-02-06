@@ -61,11 +61,7 @@ Follow the steps below to deploy ToolJet on AWS EC2 instances.
    `TOOLJET_DB_HOST=http://12.34.56.78` or
    `TOOLJET_DB_HOST=https://yourdomain.com` or
    `TOOLJET_DB_HOST=https://tooljet.yourdomain.com`
-:::warning
 
-To enable AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`
-
-:::
    :::info
    We use a [lets encrypt](https://letsencrypt.org/) plugin on top of nginx to create TLS certificates on the fly.
    :::
@@ -84,6 +80,12 @@ ToolJet AMI comes inbuilt with PostgREST. If you intend to use this feature, you
 
 You can learn more about this feature [here](/docs/tooljet-db/tooljet-database).
 
+:::warning
+
+To enable AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`
+
+:::
+
 ## Setup to Enable AI
 Now you can build business applications in ToolJet with just one AI prompt. Refer [this](https://docs.tooljet.com/) doc to learn more.
 
@@ -98,6 +100,7 @@ Follow this guide to enable AI features in your self-hosted setup.
 
  services:
   chroma:
+    name: chromadb
     image: chromadb/chroma
     ports:
       - "8000:8000"
@@ -126,6 +129,8 @@ If this is a new installation of the application, you may start directly with th
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
- **Note:** For existing user wants to [upgrade](#setup-to-enable-ai), would require to add chromadb along with the existing setup.
+:::info
+If upgrading from version v3.0.33-ee-lts to the latest LTS, ensure that the following configuration is applied, including the addition of [ChromaDB to the existing setup](#setup-to-enable-ai).
+:::
 
 *If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*

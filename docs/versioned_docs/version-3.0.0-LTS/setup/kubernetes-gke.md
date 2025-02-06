@@ -112,4 +112,19 @@ If this is a new installation of the application, you may start directly with th
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
+**Additional Step for Upgrading from v3.0.33-ee-lts to the Latest LTS Version:**
+
+1. If upgrading from version v3.0.33-ee-lts to the latest LTS, ensure that the following configuration is applied:
+
+Setup ChromaDB deployment:
+```
+curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/chromadb-deployment.yml
+```
+
+2. Add an environment variable in the .env file of the ToolJet server:
+```
+            - name: CHROMA_DB_URL
+              value: chromadb.default.svc.cluster.local
+```
+
 *If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*

@@ -224,6 +224,8 @@ If this is a new installation of the application, you may start directly with th
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
- **Note:** For existing user wants to [upgrade](#setup-to-enable-ai), would require to add chromadb along with the existing setup.
+:::info
+If upgrading from version v3.0.33-ee-lts to the latest LTS, ensure that the following configuration is applied, including the addition of [ChromaDB to the existing setup](#setup-to-enable-ai).
+:::
 
 *If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
