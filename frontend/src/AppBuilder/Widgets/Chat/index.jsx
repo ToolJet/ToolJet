@@ -174,15 +174,16 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
     return (
       Array.isArray(chatHistory) &&
       chatHistory.map((chat, index) => (
-        <ChatMessage
-          key={chat.messageId || index} // Use messageId if available, fallback to index
-          chat={chat}
-          userName={userName}
-          respondentName={respondentName}
-          userAvatar={userAvatar}
-          respondentAvatar={respondentAvatar}
-          computedStyles={computedStyles}
-        />
+        <div key={chat.messageId || index}>
+          <ChatMessage
+            chat={chat}
+            userName={userName}
+            respondentName={respondentName}
+            userAvatar={userAvatar}
+            respondentAvatar={respondentAvatar}
+            computedStyles={computedStyles}
+          />
+        </div>
       ))
     );
   }, [chatHistory]);

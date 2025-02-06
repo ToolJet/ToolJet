@@ -1,7 +1,7 @@
 import React from 'react';
 import GetAvatar from './Avatar';
 
-export const MessageAvatar = ({ type, userAvatar, respondentAvatar }) => (
+export const MessageAvatar = ({ type, userAvatar, respondentAvatar, chatAvatar }) => (
   <div
     className="d-flex flex-row align-items-center justify-content-center"
     style={{
@@ -13,6 +13,6 @@ export const MessageAvatar = ({ type, userAvatar, respondentAvatar }) => (
       flexShrink: 0,
     }}
   >
-    <GetAvatar chatType={type} userAvatar={userAvatar} respondentAvatar={respondentAvatar} />
+    <GetAvatar chatType={type} chatAvatar={chatAvatar} userAvatar={userAvatar} respondentAvatar={respondentAvatar} />
   </div>
 );

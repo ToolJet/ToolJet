@@ -22,10 +22,16 @@ export const ChatMessage = ({ chat, userName, respondentName, userAvatar, respon
     })}
   >
     <div className="d-flex flex-row align-items-start custom-gap-12 position-relative message-container w-100">
-      <MessageAvatar type={chat.type} userAvatar={userAvatar} respondentAvatar={respondentAvatar} />
+      <MessageAvatar
+        type={chat.type}
+        chatAvatar={chat.avatar}
+        userAvatar={userAvatar}
+        respondentAvatar={respondentAvatar}
+      />
       <div className="d-flex flex-column flex-grow-1 message-content-title-container">
         <MessageHeader
           type={chat.type}
+          name={chat.name}
           userName={userName}
           respondentName={respondentName}
           timestamp={chat.timestamp}

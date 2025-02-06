@@ -27,13 +27,13 @@ const Avatar = ({ initialSrc, alt, fallbackIcon }) => {
   );
 };
 
-const GetAvatar = ({ chatType, userAvatar, respondentAvatar }) => {
+const GetAvatar = ({ chatType, userAvatar, respondentAvatar, chatAvatar }) => {
   console.log('Avatar props:', { chatType, userAvatar, respondentAvatar }); // Debug log
 
   if (chatType === 'message') {
     return (
       <Avatar
-        initialSrc={userAvatar}
+        initialSrc={chatAvatar || userAvatar}
         alt="User avatar"
         fallbackIcon={
           <SolidIcon name="defaultsenderchatavatar" width="24" viewBox="0 0 24 24" fill={'var(--icons-strong)'} />
@@ -43,7 +43,7 @@ const GetAvatar = ({ chatType, userAvatar, respondentAvatar }) => {
   } else {
     return (
       <Avatar
-        initialSrc={respondentAvatar}
+        initialSrc={chatAvatar || respondentAvatar}
         alt="Respondent avatar"
         fallbackIcon={
           <SolidIcon name="defaultresponseavatar" width="24" viewBox="0 0 24 24" fill={'var(--primary-brand)'} />
