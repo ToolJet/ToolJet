@@ -1,15 +1,14 @@
-import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import '@/_styles/widgets/chat.scss';
 import { ChatHeader } from './components/ChatHeader';
 import { ChatMessage } from './components/ChatMessage';
 import { RespondentLoadingMessage } from './components/RespondentLoadingMessage';
 import { ChatInput } from './components/ChatInput';
-// import { useChatState } from './hooks/useChatState';
-// import { useChatActions } from './hooks/useChatActions';
-// import { useExposedActions } from './hooks/useExposedActions';
 import { useComputedStyles } from './hooks/useComputedStyles';
 import { LoadingMessageSkeleton } from './components/LoadingMessageSkeleton';
 import { v4 as uuidv4 } from 'uuid';
+import { validateMessageHistory, validateSingleMessageObject } from './utils/helpers';
+
 import toast from 'react-hot-toast';
 
 export const Chat = ({ id, component, properties, styles, setExposedVariables, fireEvent }) => {
@@ -192,40 +191,39 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
   useEffect(() => {
     const exposedVariables = {
       sendMessage: async function (messageObject) {
+        const { isValid, error } = validateSingleMessageObject(messageObject);
+        if (!isValid) {
+          toast.error(error);
+          return;
+        }
         const { message, type = 'message' } = messageObject;
         //addded thrid parameter as false to not fire event internally for csa, user has to fire event manually
         handleSendMessage(message, type, false);
       },
       clearHistory: async function () {
+        if (error) setError(null);
         clearHistory(false);
       },
 
       setHistory: async function (history) {
-        if (!Array.isArray(history)) {
-          toast.error('History is not an array');
+        const { isValid, error } = validateMessageHistory(history);
+        if (!isValid) {
+          toast.error(error);
           return;
         }
         setChatHistory(history);
         if (error) setError(null);
         setExposedVariables({ history });
       },
+
       appendHistory: async function (messageObject) {
-        if (!messageObject || typeof messageObject !== 'object' || Array.isArray(messageObject)) {
-          toast.error('Invalid message object');
+        const { isValid, error } = validateSingleMessageObject(messageObject);
+        if (!isValid) {
+          toast.error(error);
           return;
         }
 
         const { message, type } = messageObject;
-        if (!message || !type) {
-          toast.error('Message and type are required');
-          return;
-        }
-        console.log('createMessage inside appendHistory exposes', {
-          userName,
-          respondentName,
-          userAvatar,
-          respondentAvatar,
-        });
         const newMessage = createMessage(message, type);
         setChatHistory((currentHistory) => {
           const updatedHistory = [...currentHistory, newMessage];
@@ -237,33 +235,42 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
           } else {
             exposedVariables.lastResponse = newMessage;
           }
+          if (error) setError(null);
           setExposedVariables(exposedVariables);
           return updatedHistory;
         });
       },
+
       setVisibility: async function (visibility) {
         setVisibility(visibility);
         setExposedVariables({ isVisible: !!visibility });
       },
+
       setInputDisable: async function (disabled) {
         setNewMessageDisabled(disabled);
         setExposedVariables({ isInputDisabled: !!disabled });
       },
+
       setError: async function (errorMessage = 'Some error occurred. Please retry.') {
         setError(errorMessage || 'Some error occurred. Please retry.');
       },
+
       downloadChat: downloadChatHistory,
+
       setResponseLoading: async function (loading) {
         setLoadingResponse(loading);
         setExposedVariables({ isResponseLoading: loading });
       },
+
       setHistoryLoading: async function (loading) {
         setLoadingHistory(loading);
         setExposedVariables({ isHistoryLoading: loading });
       },
+
       setResponderAvatar: async function (avatar) {
         setRespondentAvatar(avatar);
       },
+
       setUserAvatar: async function (avatar) {
         setUserAvatar(avatar);
       },

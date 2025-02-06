@@ -31,7 +31,7 @@ export const ChatMessage = ({ chat, userName, respondentName, userAvatar, respon
       <div className="d-flex flex-column flex-grow-1 message-content-title-container">
         <MessageHeader
           type={chat.type}
-          name={chat.name}
+          name={typeof chat.name === 'string' ? chat.name : ''}
           userName={userName}
           respondentName={respondentName}
           timestamp={chat.timestamp}
