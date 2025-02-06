@@ -5,7 +5,9 @@
   "description": "A schema defining Hugging Face datasource",
   "type": "api",
   "defaults": {
-    "operation":"text_generation"
+    "operation":"text_generation",
+    "model": "google/gemma-2-2b-it",
+    "model_summarisation": "facebook/bart-large-cnn"
   },
   "properties": {
     "operation": {
