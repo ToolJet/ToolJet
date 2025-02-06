@@ -36,9 +36,7 @@ This operation retrieves statistics about a specific index in your Pinecone data
 
 - **Index**: The name of the index to get statistics for.
 
-<!-- 
-    <img className="screenshot-full" src="/img/marketplace/plugins/pinecone/get-index-stats.png" alt="Get Index Stats Operation" />
- -->
+<img className="screenshot-full" src="/img/marketplace/plugins/pinecone/get-index-stats.png" alt="Get Index Stats Operation" />
 
 <details>
 <summary>**Example Response**</summary>
@@ -72,12 +70,10 @@ This operation retrieves a list of vector IDs from a specified index.
 - **Pagination Token**: Token for retrieving the next page of results.
 - **Namespace**: Specific namespace to query within the index.
 
-<!-- 
-    <img className="screenshot-full" src="/img/marketplace/plugins/pinecone/list-vector-ids.png" alt="List Vector IDs Operation" />
- -->
+<img className="screenshot-full" src="/img/marketplace/plugins/pinecone/list-vector-ids.png" alt="List Vector IDs Operation" />
 
 <details>
-<summary>**Example Values**</summary>
+<summary>**Example Response**</summary>
 
 ```yaml
 Index: example-index
@@ -101,12 +97,10 @@ This operation retrieves specific vectors by their IDs from an index.
 
 - **Namespace**: Specific namespace to fetch vectors from.
 
-<!-- 
-    <img className="screenshot-full" src="/img/marketplace/plugins/pinecone/fetch-vectors.png" alt="Fetch Vectors Operation" />
- -->
+<img className="screenshot-full" src="/img/marketplace/plugins/pinecone/fetch-vectors.png" alt="Fetch Vectors Operation" />
 
 <details>
-<summary>**Example Values**</summary>
+<summary>**Example Response**</summary>
 
 ```yaml
 Index: example-index
@@ -126,12 +120,12 @@ This operation inserts or updates vectors in an index.
 
 #### Optional Parameters:
 
-- **Namespace**: Specific namespace to upsert vectors into.
-<!-- 
-    <img className="screenshot-full" src="/img/marketplace/plugins/pinecone/upsert-vectors.png" alt="Upsert Vectors Operation" /> -->
+- **Namespace**: Specific namespace to upsert vectors into
+
+<img className="screenshot-full" src="/img/marketplace/plugins/pinecone/upsert-vectors.png" alt="Upsert Vectors Operation" /> 
 
 <details>
-<summary>**Example Values**</summary>
+<summary>**Example Response**</summary>
 
 ```yaml
 Index: example-index
@@ -155,12 +149,11 @@ This operation updates a single vector's values or metadata.
 - **Sparse Vector**: Sparse vector representation.
 - **Metadata**: Additional metadata for the vector.
 - **Namespace**: Specific namespace containing the vector.
-<!-- 
-    <img className="screenshot-full" src="/img/marketplace/plugins/pinecone/update-vector.png" alt="Update Vector Operation" /> 
-    -->
+
+<img className="screenshot-full" src="/img/marketplace/plugins/pinecone/update-vector.png" alt="Update Vector Operation" />
 
 <details>
-<summary>**Example Values**</summary>
+<summary>**Example Response**</summary>
 
 ```yaml
 Index: example-index
@@ -187,12 +180,10 @@ This operation deletes vectors from an index.
 - **Namespace**: Specific namespace to delete vectors from.
 - **Filter**: Filter condition for selective deletion.
 
-<!-- 
-    <img className="screenshot-full" src="/img/marketplace/plugins/pinecone/delete-vectors.png" alt="Delete Vectors Operation" />
- -->
+<img className="screenshot-full" src="/img/marketplace/plugins/pinecone/delete-vectors.png" alt="Delete Vectors Operation" />
 
 <details>
-<summary>**Example Values**</summary>
+<summary>**Example Response**</summary>
 
 ```yaml
 Index: example-index
@@ -221,12 +212,10 @@ This operation queries vectors in an index based on similarity.
 - **Include Metadata**: Boolean to include metadata in results.
 - **Sparse Vector**: Sparse vector for hybrid search.
 
-<!-- 
-    <img className="screenshot-full" src="/img/marketplace/plugins/pinecone/query-vectors.png" alt="Query Vectors Operation" />
- -->
+<img className="screenshot-full" src="/img/marketplace/plugins/pinecone/query-vectors.png" alt="Query Vectors Operation" />
 
 <details>
-<summary>**Example Values**</summary>
+<summary>**Example Response**</summary>
 
 ```yaml
 Index: example-index
