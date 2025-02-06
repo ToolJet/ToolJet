@@ -133,6 +133,7 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
         loading={state.loadingResponse}
         newMessageDisabled={state.newMessageDisabled}
         computedStyles={computedStyles}
+        placeholder={state.placeholder}
       />
     </div>
   );

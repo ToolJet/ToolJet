@@ -124,6 +124,14 @@ export const chatConfig = {
         defaultValue: true,
       },
     },
+    placeholder: {
+      type: 'code',
+      displayName: 'Placeholder for input field',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'Ask me anything!',
+      },
+    },
   },
 
   events: {
@@ -343,6 +351,7 @@ export const chatConfig = {
       loadingResponse: { value: '{{false}}' },
       enableClearHistoryButton: { value: '{{true}}' },
       enableDownloadHistoryButton: { value: '{{true}}' },
+      placeholder: { value: 'Ask me anything!' },
     },
     events: [],
     styles: {

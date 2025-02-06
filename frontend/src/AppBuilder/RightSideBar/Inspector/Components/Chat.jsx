@@ -46,6 +46,17 @@ export const Chat = ({
           components,
           darkMode
         )}
+        {renderElement(
+          component,
+          componentMeta,
+          paramUpdated,
+          dataQueries,
+          'placeholder',
+          'properties',
+          currentState,
+          components,
+          darkMode
+        )}
       </>
     ),
   });

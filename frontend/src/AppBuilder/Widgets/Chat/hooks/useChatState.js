@@ -17,6 +17,7 @@ export const useChatState = (properties, setExposedVariables) => {
   const [enableDownloadHistoryButton, setEnableDownloadHistoryButton] = useState(
     properties.enableDownloadHistoryButton
   );
+  const [placeholder, setPlaceholder] = useState(properties.placeholder);
 
   useEffect(() => {
     setChatHistory(properties.initialChat);
@@ -57,6 +58,10 @@ export const useChatState = (properties, setExposedVariables) => {
     setEnableDownloadHistoryButton(properties.enableDownloadHistoryButton);
   }, [properties.enableDownloadHistoryButton]);
 
+  useEffect(() => {
+    setPlaceholder(properties.placeholder);
+  }, [properties.placeholder]);
+
   return {
     chatTitle,
     setChatTitle,
@@ -85,5 +90,6 @@ export const useChatState = (properties, setExposedVariables) => {
     properties,
     enableClearHistoryButton,
     enableDownloadHistoryButton,
+    placeholder,
   };
 };

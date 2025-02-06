@@ -2,7 +2,16 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/Button/Button';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
-export const ChatInput = ({ message, onChange, onSend, disabled, loading, newMessageDisabled, computedStyles }) => {
+export const ChatInput = ({
+  message,
+  onChange,
+  onSend,
+  disabled,
+  loading,
+  newMessageDisabled,
+  computedStyles,
+  placeholder = 'Ask me anything!',
+}) => {
   const [isFocused, setIsFocused] = useState(false);
   const textareaRef = React.useRef(null);
 
@@ -32,7 +41,7 @@ export const ChatInput = ({ message, onChange, onSend, disabled, loading, newMes
           value={message}
           onChange={onChange}
           onKeyDown={handleKeyDown}
-          placeholder="Type a message..."
+          placeholder={placeholder}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           style={{
