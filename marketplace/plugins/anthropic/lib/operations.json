@@ -47,9 +47,10 @@
           "key": "message",
           "type": "codehinter",
           "description": "Enter messages",
-          "placeholder": "[\n\t{ \"role\": \"user\", \"content\": \"Hello Claude!\" },\n\t{ \"role\": \"assistant\", \"content\": \"Hello! How can I assist you today?\" }\n]",
+          "placeholder": "[\n\t{ \"role\": \"user\", \"content\": \"Hello Claude!\" },\n\t{ \"role\": \"assistant\", \"content\": \"Hello! How can I assist you today?\" },\n\t{ \"role\": \"user\", \"content\": \"Give a report on stock performances of top 10 Fortune 500 companies\" }\n]",
           "height": "150px",
-          "mandatory": true
+          "mandatory": true,
+          "tooltip": "Message object with role as \"assistant\" should always have a prefix and suffix message object with role as \"user\" in this array"
         },
         "temperature": {
           "label": "Temperature",
@@ -88,9 +89,10 @@
           "key": "message",
           "type": "codehinter",
           "description": "Enter messages",
-          "placeholder": "[\n\t{ \"role\": \"user\", \"content\": \"Hello Claude!\" },\n\t{ \"role\": \"assistant\", \"content\": \"Hello! How can I assist you today?\" }\n]",
+          "placeholder": "[\n\t{ \"role\": \"user\", \"content\": \"Hello Claude!\" },\n\t{ \"role\": \"assistant\", \"content\": \"Hello! How can I assist you today?\" },\n\t{ \"role\": \"user\", \"content\": \"Give a report on stock performances of top 10 Fortune 500 companies\" }\n]",
           "height": "150px",
-          "mandatory": true
+          "mandatory": true,
+          "tooltip": "Message object with role as \"assistant\" should always have a prefix and suffix message object with role as \"user\" in this array"
         },
         "temperature": {
           "label": "Temperature",
@@ -129,9 +131,10 @@
           "key": "message",
           "type": "codehinter",
           "description": "Enter messages",
-          "placeholder": "[\n\t{ \"role\": \"user\", \"content\": \"Hello Claude!\" },\n\t{ \"role\": \"assistant\", \"content\": \"Hello! How can I assist you today?\" }\n]",
+          "placeholder": "[\n\t{ \"role\": \"user\", \"content\": \"Hello Claude!\" },\n\t{ \"role\": \"assistant\", \"content\": \"Hello! How can I assist you today?\" },\n\t{ \"role\": \"user\", \"content\": \"Give a report on stock performances of top 10 Fortune 500 companies\" }\n]",
           "height": "150px",
-          "mandatory": true
+          "mandatory": true,
+          "tooltip": "Message object with role as \"assistant\" should always have a prefix and suffix message object with role as \"user\" in this array"
         },
         "temperature": {
           "label": "Temperature",
@@ -170,9 +173,10 @@
           "key": "message",
           "type": "codehinter",
           "description": "Enter messages",
-          "placeholder": "[\n\t{ \"role\": \"user\", \"content\": \"Hello Claude!\" },\n\t{ \"role\": \"assistant\", \"content\": \"Hello! How can I assist you today?\" }\n]",
+          "placeholder": "[\n\t{ \"role\": \"user\", \"content\": \"Hello Claude!\" },\n\t{ \"role\": \"assistant\", \"content\": \"Hello! How can I assist you today?\" },\n\t{ \"role\": \"user\", \"content\": \"Give a report on stock performances of top 10 Fortune 500 companies\" }\n]",
           "height": "150px",
-          "mandatory": true
+          "mandatory": true,
+          "tooltip": "Message object with role as \"assistant\" should always have a prefix and suffix message object with role as \"user\" in this array"
         },
         "temperature": {
           "label": "Temperature",
@@ -211,9 +215,10 @@
           "key": "message",
           "type": "codehinter",
           "description": "Enter messages",
-          "placeholder": "[\n\t{ \"role\": \"user\", \"content\": \"Hello Claude!\" },\n\t{ \"role\": \"assistant\", \"content\": \"Hello! How can I assist you today?\" }\n]",
+          "placeholder": "[\n\t{ \"role\": \"user\", \"content\": \"Hello Claude!\" },\n\t{ \"role\": \"assistant\", \"content\": \"Hello! How can I assist you today?\" },\n\t{ \"role\": \"user\", \"content\": \"Give a report on stock performances of top 10 Fortune 500 companies\" }\n]",
           "height": "150px",
-          "mandatory": true
+          "mandatory": true,
+          "tooltip": "Message object with role as \"assistant\" should always have a prefix and suffix message object with role as \"user\" in this array"
         },
         "temperature": {
           "label": "Temperature",
