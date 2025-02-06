@@ -136,7 +136,7 @@ export const chatConfig = {
 
   events: {
     onMessageSent: { displayName: 'On message sent' },
-    onClearHistory: { displayName: 'On clear history' },
+    onClearHistory: { displayName: 'On history cleared' },
   },
   styles: {
     name: {
@@ -255,62 +255,62 @@ export const chatConfig = {
   actions: [
     {
       handle: 'sendMessage',
-      displayName: 'Send Message',
+      displayName: 'Send message',
       params: [{ handle: 'message', displayName: 'Message', defaultValue: '{{{}}}', type: 'code' }],
     },
     {
       handle: 'clearHistory',
-      displayName: 'Clear History',
+      displayName: 'Clear history',
       params: [],
     },
     {
       handle: 'setResponseLoading',
-      displayName: 'Set Response Loading',
+      displayName: 'Set response loading',
       params: [{ handle: 'loading', displayName: 'Loading', defaultValue: '{{false}}', type: 'toggle' }],
     },
     {
       handle: 'setHistoryLoading',
-      displayName: 'Set History Loading',
+      displayName: 'Set history loading',
       params: [{ handle: 'loading', displayName: 'Loading', defaultValue: '{{false}}', type: 'toggle' }],
     },
     {
       handle: 'setHistory',
-      displayName: 'Set History',
+      displayName: 'Set history',
       params: [{ handle: 'history', displayName: 'History', defaultValue: '{{[]}}', type: 'code' }],
     },
     {
       handle: 'appendHistory',
-      displayName: 'Append History',
+      displayName: 'Append history',
       params: [{ handle: 'message', displayName: 'Message', defaultValue: '{{{}}}', type: 'code' }],
     },
     {
       handle: 'setVisibility',
-      displayName: 'Set Visibility',
+      displayName: 'Set visibility',
       params: [{ handle: 'visible', displayName: 'Visible', defaultValue: '{{true}}', type: 'toggle' }],
     },
     {
-      handle: 'disableInput',
-      displayName: 'Disable input state',
+      handle: 'setInputDisable',
+      displayName: 'Set input disable',
       params: [{ handle: 'disabled', displayName: 'Disabled', defaultValue: '{{false}}', type: 'toggle' }],
     },
     {
       handle: 'setResponderAvatar',
-      displayName: 'Set Responder Avatar',
+      displayName: 'Set respondent avatar',
       params: [{ handle: 'avatar', displayName: 'Avatar', defaultValue: '', type: 'code' }],
     },
     {
       handle: 'setUserAvatar',
-      displayName: 'Set User Avatar',
+      displayName: 'Set user avatar',
       params: [{ handle: 'avatar', displayName: 'Avatar', defaultValue: '', type: 'code' }],
     },
     {
       handle: 'setError',
-      displayName: 'Set Error',
+      displayName: 'Set error',
       params: [{ handle: 'error', displayName: 'Error', defaultValue: '', type: 'code' }],
     },
     {
       handle: 'downloadChat',
-      displayName: 'Download Chat',
+      displayName: 'Download chat',
       params: [],
     },
   ],

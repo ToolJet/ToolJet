@@ -75,7 +75,9 @@ export const ChatInput = ({
             name="send"
             width="16"
             fill={
-              !message.trim() || disabled || loading ? 'var(--icons-disabled)' : computedStyles.chatInput.sendIconColor
+              !message.trim() || disabled || loading || newMessageDisabled
+                ? 'var(--icons-disabled)'
+                : computedStyles.chatInput.sendIconColor
             }
           />
         </Button>
