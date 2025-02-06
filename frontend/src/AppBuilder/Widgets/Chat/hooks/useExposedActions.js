@@ -1,7 +1,7 @@
 import toast from 'react-hot-toast';
 
 export const useExposedActions = (actions, state, setExposedVariables) => {
-  const { handleSendMessage, clearHistory, handleDeleteMessageById, downloadChatHistory, createMessage } = actions;
+  const { handleSendMessage, clearHistory, downloadChatHistory, createMessage } = actions;
 
   const {
     setChatHistory,
@@ -24,9 +24,7 @@ export const useExposedActions = (actions, state, setExposedVariables) => {
     clearHistory: async function () {
       clearHistory(false);
     },
-    deleteMessage: async function (messageId) {
-      handleDeleteMessageById(messageId);
-    },
+
     setHistory: async function (history) {
       if (!Array.isArray(history)) {
         toast.error('History is not an array');

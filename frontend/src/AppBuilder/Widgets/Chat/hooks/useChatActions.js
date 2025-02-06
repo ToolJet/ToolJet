@@ -42,19 +42,6 @@ export const useChatActions = (state, setExposedVariables, fireEvent) => {
     if (shouldFireEvent) fireEvent('onClearHistory');
   };
 
-  const handleDeleteMessageById = (messageId) => {
-    setChatHistory((currentHistory) => {
-      const updatedHistory = currentHistory.filter((msg) => msg.messageId !== messageId);
-      const exposedVariables = {
-        history: updatedHistory,
-      };
-      //TODO: Add logic to discard lastMessage or lastResponse if messageId is present in the either of them
-      setExposedVariables(exposedVariables);
-      fireEvent('onMessageDeleted', messageId);
-      return updatedHistory;
-    });
-  };
-
   const downloadChatHistory = () => {
     try {
       if (!Array.isArray(state.chatHistory) || state.chatHistory.length === 0) {
@@ -83,7 +70,6 @@ export const useChatActions = (state, setExposedVariables, fireEvent) => {
   return {
     handleSendMessage,
     clearHistory,
-    handleDeleteMessageById,
     downloadChatHistory,
     createMessage,
   };

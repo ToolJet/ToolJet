@@ -112,7 +112,6 @@ export const chatConfig = {
 
   events: {
     onMessageSent: { displayName: 'On message sent' },
-    onMessageDeleted: { displayName: 'On message deleted' },
     onClearHistory: { displayName: 'On clear history' },
   },
   styles: {
@@ -239,11 +238,6 @@ export const chatConfig = {
       handle: 'clearHistory',
       displayName: 'Clear History',
       params: [],
-    },
-    {
-      handle: 'deleteMessage',
-      displayName: 'Delete Message',
-      params: [{ handle: 'messageId', displayName: 'Message Id', defaultValue: '', type: 'code' }],
     },
     {
       handle: 'setResponseLoading',

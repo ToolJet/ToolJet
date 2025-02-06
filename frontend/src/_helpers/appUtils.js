@@ -928,7 +928,6 @@ export async function onEvent(_ref, eventName, events, options = {}, mode = 'edi
       'onInvalid',
       'onNewRowsAdded',
       'onMessageSent',
-      'onMessageDeleted',
       'onClearHistory',
     ].includes(eventName)
   ) {
