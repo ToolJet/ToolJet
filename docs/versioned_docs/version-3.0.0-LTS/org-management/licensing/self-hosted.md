@@ -3,13 +3,13 @@ id: self-hosted
 title: Self-Hosted
 ---
 
-This guide explains you about the different types of licenses present and provides instructions on upgrading your license for Self-Hosted ToolJet. Self Hosted ToolJet works on a license model and you can reach out to the **[ToolJet Team](mailto:hello@tooljet.com)** to generate the key. For assistance in selecting an appropriate plan visit the **[ToolJet Pricing](https://www.tooljet.com/pricing)** page or contact the **[ToolJet team](mailto:hello@tooljet.com)**.
+This guide explains the different types of licenses present and provides instructions on upgrading your license for Self-Hosted ToolJet. Self-Hosted ToolJet works on a license model and you can reach out to the **[ToolJet Team](mailto:hello@tooljet.com)** to generate the key. For assistance in selecting an appropriate plan visit the **[ToolJet Pricing](https://www.tooljet.com/pricing)** page or contact the **[ToolJet team](mailto:hello@tooljet.com)**.
 
 <div style={{paddingTop:'24px'}}>
 
 ## Types of Licenses
 
-ToolJet provides three types of licenses - **Basic**, **Trial** and **Paid**. Which can be further categorized in different subscription plan. Visit **[ToolJet Pricing](https://www.tooljet.com/pricing)** page for more details on different subscription plans.
+ToolJet provides three types of licenses - **Basic**, **Trial**, and **Paid**. Which can be further categorized into different subscription plans. Visit **[ToolJet Pricing](https://www.tooljet.com/pricing)** page for more details on different subscription plans.
 
 ### Basic License
 
@@ -21,7 +21,7 @@ ToolJet offers a trial license which is valid for 14 days, where user can access
 
 ### Paid License
 
-ToolJet offers various subscription plans for paid license visit **[ToolJet Pricing](https://www.tooljet.com/pricing)** page for more details on different subscription plans. Once you have decided a suitable plan for your needs then you can contact **[ToolJet Team](mailto:hello@tooljet.com)** to complete the onboarding process.
+ToolJet offers various subscription plans for paid licenses visit **[ToolJet Pricing](https://www.tooljet.com/pricing)** page for more details on different subscription plans. Once you have decided on a suitable plan for your needs then you can contact **[ToolJet Team](mailto:hello@tooljet.com)** to complete the onboarding process.
 
 </div>
 
@@ -53,17 +53,17 @@ AI-powered assistance for the following actions consumes **1 credit**:
 
 **5 credits - Advanced builds**
 
-Th entire app UI generation consumes **5 credits**.
+The entire app UI generation consumes **5 credits**.
 
 
 ### Credit calculation
-AI credits are calculated based on the pricing plan and are assigned per builder in a instance. These credits are then available for use by all users across within that workspace.
+AI credits are calculated based on the pricing plan and are assigned per builder in an instance. These credits are then available for use by all users across that workspace.
 
 <div style={{paddingTop:'24px'}}>
 
 ## Updating License Key
 
-Once you have received the license key from the ToolJet Team, after that you can update the license key by following steps:
+Once you have received the license key from the ToolJet Team, you can update the license key by following the steps:
 
 1. Log in as a **[Super Admin](/docs/Enterprise/superadmin)**, ensuring that you are on the correct instance URL.
 2. Go to the Settings page.
@@ -80,7 +80,7 @@ Once you have received the license key from the ToolJet Team, after that you can
 
 ## FAQs
 
-#### Q. What Happens if my License Expires?
+#### Q. What Happens if My License Expires?
 
 If your paid or trial license key expires, your instance will revert to operating as a basic plan. Upon expiration, access to premium features like OpenID SSO login and Audit logs will be restricted, ensuring no data loss occurs. However, don't worry! You can still renew to any of the paid plans and enjoy the premium features again.
 
