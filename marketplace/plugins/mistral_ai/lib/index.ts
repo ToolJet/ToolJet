@@ -43,10 +43,7 @@ export default class MistralService implements QueryService {
             ...(safe_prompt.value !== undefined && { safe_prompt: Boolean(safe_prompt.value) }),
           };
 
-          const response = await client.chat.complete(chatRequest);
-          result = {
-            chat: response.choices[0].message.content,
-          };
+          result = await client.chat.complete(chatRequest);
           break;
         }
       }
