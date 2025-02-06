@@ -24,14 +24,14 @@ You can use the following toggles:
 
 ### Text Generation
 
-Use this operation to generate text based on the input and model settings. It provides information or explanations tailored to the given context.
+Use this operation to generate text based on the input and model settings. It provides information or explanations tailored to the given context. Check out all the available text generation models on **[Huggingface](https://huggingface.co/models?pipeline_tag=text-generation&sort=trending)**.
 
 **Required Parameters**
 
 - **Model**: Specifies the model to use for generating responses.
 
     Example Models -
-    - [google/gemma-2-2b-it](https://huggingface.co/google/gemma-2-2b-it) (Recommended)
+    - [google/gemma-2-2b-it](https://huggingface.co/google/gemma-2-2b-it)
     - [tiiuae/falcon-7b-instruct](https://huggingface.co/tiiuae/falcon-7b-instruct)
     - [HuggingFaceH4/zephyr-7b-beta](https://huggingface.co/HuggingFaceH4/zephyr-7b-beta)
     - [mistralai/Mistral-7B-Instruct-v0.2](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2)
@@ -82,14 +82,14 @@ ToolJet's integration capabilities significantly enhance the power and flexibili
 
 ### Summarisation
 
-Use this operation to create a summary of the input text based on the model settings.
+Use this operation to create a summary of the input text based on the model settings. Check out all the available summarisation models on **[Huggingface](https://huggingface.co/models?pipeline_tag=summarization&sort=trending)**.
 
 **Required Parameters**
 
 - **Model**: Specifies the model to use for generating summary.
 
     Example Models -
-    - [facebook/bart-large-cnn](https://huggingface.co/facebook/bart-large-cnn) (Recommended)
+    - [facebook/bart-large-cnn](https://huggingface.co/facebook/bart-large-cnn)
     - [philschmid/bart-large-cnn-samsum](https://huggingface.co/philschmid/bart-large-cnn-samsum)
     - [google/pegasus-xsum](https://huggingface.co/google/pegasus-xsum)
     - [ainize/bart-base-cnn](https://huggingface.co/ainize/bart-base-cnn)
