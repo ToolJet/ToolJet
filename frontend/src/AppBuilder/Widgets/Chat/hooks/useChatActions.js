@@ -36,9 +36,9 @@ export const useChatActions = (state, setExposedVariables, fireEvent) => {
   };
 
   const clearHistory = (shouldFireEvent = true) => {
-    setChatHistory([]);
+    setChatHistory(properties.initialChat);
     if (error) setError(null);
-    setExposedVariables({ history: [], lastMessage: {}, lastResponse: {} });
+    setExposedVariables({ history: properties.initialChat, lastMessage: {}, lastResponse: {} });
     if (shouldFireEvent) fireEvent('onClearHistory');
   };
 
