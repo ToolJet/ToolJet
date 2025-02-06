@@ -127,6 +127,7 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
 
   useEffect(() => {
     setChatHistory(properties.initialChat);
+    if (error) setError(null);
     setExposedVariables({ history: properties.initialChat });
   }, [properties.initialChat]);
 
@@ -278,6 +279,10 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
 
     setExposedVariables(exposedVariables);
   }, [userName, respondentName, userAvatar, respondentAvatar]);
+
+  useEffect(() => {
+    if (error) setError(null);
+  }, [chatHistory]);
 
   // Watch for chat history changes and scroll if needed
   useEffect(() => {
