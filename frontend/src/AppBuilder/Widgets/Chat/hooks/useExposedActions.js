@@ -21,7 +21,9 @@ export const useExposedActions = (actions, state, setExposedVariables) => {
       //addded thrid parameter as false to not fire event internally for csa, user has to fire event manually
       handleSendMessage(message, type, false);
     },
-    clearHistory,
+    clearHistory: async function () {
+      clearHistory(false);
+    },
     deleteMessage: async function (messageId) {
       handleDeleteMessageById(messageId);
     },

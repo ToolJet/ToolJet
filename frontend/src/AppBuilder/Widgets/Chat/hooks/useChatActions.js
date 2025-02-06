@@ -35,10 +35,11 @@ export const useChatActions = (state, setExposedVariables, fireEvent) => {
     setMessage('');
   };
 
-  const clearHistory = () => {
+  const clearHistory = (shouldFireEvent = true) => {
     setChatHistory([]);
     if (error) setError(null);
     setExposedVariables({ history: [], lastMessage: {}, lastResponse: {} });
+    if (shouldFireEvent) fireEvent('onClearHistory');
   };
 
   const handleDeleteMessageById = (messageId) => {

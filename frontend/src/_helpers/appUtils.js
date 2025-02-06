@@ -929,6 +929,7 @@ export async function onEvent(_ref, eventName, events, options = {}, mode = 'edi
       'onNewRowsAdded',
       'onMessageSent',
       'onMessageDeleted',
+      'onClearHistory',
     ].includes(eventName)
   ) {
     executeActionsForEventId(_ref, eventName, events, mode, customVariables);

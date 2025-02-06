@@ -370,6 +370,7 @@ export const createEventsSlice = (set, get) => ({
           'onTableDataDownload',
           'onMessageSent',
           'onMessageDeleted',
+          'onClearHistory',
         ].includes(eventName)
       ) {
         executeActionsForEventId(eventName, events, mode, customVariables);
