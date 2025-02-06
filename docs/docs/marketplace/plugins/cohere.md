@@ -38,7 +38,9 @@ Use this operation to generate creative text content by selecting the desired mo
 
 **Optional Parameter**
 
-- **Advanced parameters**: Additional parameters to configure the model response. Example Parameters:
+- **Advanced parameters**: Additional parameters to configure the model response. Refer [Advanced Parameters](#advanced-parameters) for more information.
+
+Example Parameters:
 
 ```js 
 {
@@ -116,7 +118,9 @@ Use this operation for a chat-like conversation, where the model responds based 
 
 **Optional Parameter**
 
-- **Advanced parameters**: Additional parameters to configure the model response. Example Parameters:
+- **Advanced parameters**: Additional parameters to configure the model response. Refer [Advanced Parameters](#advanced-parameters) for more information.
+
+Example Parameters:
 
 ```js 
 {
@@ -146,3 +150,19 @@ To integrate Cohere AI into your ToolJet app, you should have a Cohere AI API ke
 As a next step, you can refer to our documentation to see a step-by-step guide to integrate Cohere AI with ToolJet. If you have any further questions, please let me know!
 
 </details>
+
+## Advanced Parameters
+
+| Parameter| Description |
+|----------|-------------|
+| Response Format | Configure the model to give output in specified format. |
+| Temperature | Controls the degree of randomness of the output. |
+| Max Tokens | The maximum number of tokens the model will generate as part of the response. |
+| Seed | Set to ensure consistent results by initializing the generator. |
+| P | Use to limit randomness by setting a probability threshold. |
+| K | Defines the use of the top k most likely tokens for generation at each step. | 
+| Frequency Penalty | Use to discourage frequent word usage for more varied responses. |
+| Presence Penalty | Use to reduce repetition of words or phrases. |
+| Citation Options | Options for controlling citation generation. |
+| Safety Mode | Use to select the safety instruction inserted into the prompt. Allowed values: CONTEXTUAL, STRICT, OFF  |
+| Stop Sequences | Defines a list of up to 5 strings that, when matched, will stop the generation and return the text generated so far. |
