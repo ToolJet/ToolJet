@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/Button/Button';
 import { formatTimestamp } from '../utils/helpers';
 
-export const MessageHeader = ({ type, userName, respondentName, timestamp, onCopy, onDelete, computedStyles }) => (
+export const MessageHeader = ({ type, userName, respondentName, timestamp, onCopy, computedStyles }) => (
   <div className="d-flex flex-row custom-gap-16 align-items-start justify-content-between">
     <div className="d-flex flex-row custom-gap-16">
       <span

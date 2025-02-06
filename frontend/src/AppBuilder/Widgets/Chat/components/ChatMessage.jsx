@@ -13,15 +13,7 @@ const copyToClipboard = async (text) => {
     toast.error('Failed to copy message');
   }
 };
-export const ChatMessage = ({
-  chat,
-  userName,
-  respondentName,
-  userAvatar,
-  respondentAvatar,
-  onDelete,
-  computedStyles,
-}) => (
+export const ChatMessage = ({ chat, userName, respondentName, userAvatar, respondentAvatar, computedStyles }) => (
   <div
     className={cx('message-bubble custom-gap-16', {
       'message-response': chat.type === 'response',
@@ -38,7 +30,6 @@ export const ChatMessage = ({
           respondentName={respondentName}
           timestamp={chat.timestamp}
           onCopy={() => copyToClipboard(chat.message)}
-          onDelete={() => onDelete(chat.messageId)}
           computedStyles={computedStyles}
         />
         <div
