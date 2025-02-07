@@ -7,9 +7,9 @@ You can access the AI Doc Assistant under the Learn tab in the ToolJet AI sideba
 
 ### Examples
 
-1. Custom Schema in Form component:
+1. Custom Schema in [Form](/docs/widgets/form/) component:
 
- **Prompt**: Can you create a custom schema for a form component with two input fields for name and phone number, and a dropdown for gender?
+ **Prompt**: Can you create a custom schema for a Form component with two input fields for name and phone number, and a dropdown for gender?
 
 <div style={{textAlign: 'center'}}>
 
@@ -18,7 +18,7 @@ You can access the AI Doc Assistant under the Learn tab in the ToolJet AI sideba
 </div>
 
 
- 2. Dynamic columns in Table component:
+ 2. Dynamic columns in [Table](/docs/widgets/table/table-properties/) component:
 
  **Prompt**: Can you explain dynamic columns in the Table component?
 
@@ -29,9 +29,9 @@ You can access the AI Doc Assistant under the Learn tab in the ToolJet AI sideba
 </div>
 
 
- 3. Plotly JSON in Chart component:
+ 3. Plotly JSON in [Chart](/docs/widgets/chart/) component:
 
-   **Prompt**: Can you help me with the structure of the Plotly JSON that I can pass into chart components?
+   **Prompt**: Can you help me with the structure of the Plotly JSON that I can pass into Chart components?
 
 <div style={{textAlign: 'center'}}>
 
