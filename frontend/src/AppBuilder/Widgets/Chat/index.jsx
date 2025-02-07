@@ -36,6 +36,9 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
 
   const computedStyles = useComputedStyles(styles);
 
+  // Add a ref to track pending message events
+  const pendingMessageEventRef = useRef(false);
+
   const adjustTextareaHeight = (element, value) => {
     if (element.scrollHeight <= 36 || value.trim() === '') {
       element.style.height = '36px';
@@ -72,6 +75,11 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
   };
 
   const updateChatHistoryWhileSendingMessage = (newMessage, shouldFireEvent) => {
+    // Set the ref if we should fire event
+    if (shouldFireEvent) {
+      pendingMessageEventRef.current = true;
+    }
+
     setChatHistory((currentHistory) => {
       const updatedHistory = [...currentHistory, newMessage];
       const exposedVariables = {
@@ -80,15 +88,13 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
       };
       if (error) setError(null);
       setExposedVariables(exposedVariables);
-      if (shouldFireEvent) fireEvent('onMessageSent');
       return updatedHistory;
     });
   };
 
-  const handleSendMessage = (messageObject, shouldFireEvent = true) => {
-    // No event should fired internally for csa , hence use this shouldFireEvent flag
+  const handleSendMessage = async (messageObject, shouldFireEvent = true) => {
     const newMessage = createMessage(messageObject);
-    updateChatHistoryWhileSendingMessage(newMessage, shouldFireEvent);
+    await updateChatHistoryWhileSendingMessage(newMessage, shouldFireEvent);
     setMessage('');
   };
 
@@ -303,6 +309,16 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
       }
     }
   }, [chatHistory, error, loadingResponse, loadingHistory]);
+
+  // Add useEffect to handle message sent event after render
+  useEffect(() => {
+    if (pendingMessageEventRef.current) {
+      // Reset the ref
+      pendingMessageEventRef.current = false;
+      // Fire the event
+      fireEvent('onMessageSent');
+    }
+  }, [chatHistory]); // This will run after chatHistory updates and renders
 
   if (!visibility) return null;
 
