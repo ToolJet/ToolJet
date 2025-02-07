@@ -82,11 +82,20 @@ export const Tabs = function Tabs({
 
   const parentRef = useRef(null);
   const [currentTab, setCurrentTab] = useState(parsedDefaultTab);
+  const [tabItems, setTabItems] = useState(parsedTabs);
+  const tabItemsRef = useRef(tabItems);
   const [bgColor, setBgColor] = useState('#fff');
 
   useEffect(() => {
     setCurrentTab(parsedDefaultTab);
   }, [parsedDefaultTab]);
+
+  useEffect(() => {
+    if (JSON.stringify(tabItemsRef.current) !== JSON.stringify(parsedTabs)) {
+      setTabItems(parsedTabs);
+      tabItemsRef.current = parsedTabs;
+    }
+  }, [parsedTabs]);
 
   useEffect(() => {
     const currentTabData = parsedTabs.filter((tab) => tab.id == currentTab);
@@ -120,6 +129,17 @@ export const Tabs = function Tabs({
           setSelectedComponents([]);
         }
       },
+      setTabDisable: async function (id) {
+        setTabItems((prevTabItems) => {
+          return prevTabItems.map((tab) => {
+            if (tab.id == id) {
+              return { ...tab, disable: true };
+            }
+            return tab;
+          });
+        });
+        setSelectedComponents([]);
+      },
       currentTab: currentTab,
     };
     setExposedVariables(exposedVariables);
@@ -131,7 +151,9 @@ export const Tabs = function Tabs({
     const loading = tab?.loading;
     const disable = tab?.disable;
     const visible = tab?.visible;
+    console.log('logging', tab);
 
+    const fieldBackgroundColor = tab?.fieldBackgroundColor;
     if (visible === false) return null;
 
     return (
@@ -163,7 +185,7 @@ export const Tabs = function Tabs({
             canvasHeight={'200'}
             canvasWidth={width}
             allowContainerSelect={true}
-            styles={{ backgroundColor: bgColor }}
+            styles={{ backgroundColor: fieldBackgroundColor || bgColor }}
             darkMode={darkMode}
           />
         )}
@@ -277,7 +299,7 @@ export const Tabs = function Tabs({
             flexGrow: 1,
           }}
         >
-          {parsedTabs
+          {tabItems
             ?.filter((tab) => tab?.visible !== false)
             ?.map((tab) => (
               <li
@@ -333,7 +355,7 @@ export const Tabs = function Tabs({
           <Spinner />
         </div>
       ) : (
-        parsedTabs?.map((tab) => (
+        tabItems?.map((tab) => (
           <div
             className="tab-content"
             ref={(newCurrent) => {
