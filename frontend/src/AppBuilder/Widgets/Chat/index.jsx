@@ -129,12 +129,6 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
     }
   };
 
-  useEffect(() => {
-    setChatHistory(properties.initialChat);
-    if (error) setError(null);
-    setExposedVariables({ history: properties.initialChat });
-  }, [properties.initialChat]);
-
   useEffect(() => setUserName(properties.userName), [properties.userName]);
   useEffect(() => setUserAvatar(properties.userAvatar), [properties.userAvatar]);
   useEffect(() => setRespondentName(properties.respondentName), [properties.respondentName]);
