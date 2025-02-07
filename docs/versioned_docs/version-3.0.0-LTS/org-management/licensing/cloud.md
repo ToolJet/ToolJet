@@ -32,10 +32,10 @@ AI credits are allocated at the workspace level, varying based on the pricing pl
 
 ### Credit Usage
 
-**1 Credit - Standard Operations**
+**3 Credit - Standard Operations**
 
 
-AI-powered assistance for the following actions consumes **1 credit**:
+AI-powered assistance for the following actions consumes **3 credit**:
 
 
 * Generating or editing single UI components
@@ -62,12 +62,12 @@ AI-powered assistance for the following actions consumes **1 credit**:
 * Receiving guidance from documentation
 
 
-**5 credits - Advanced builds**
-The entire app UI generation consumes **5 credits**.
+**10 credits - Advanced builds**
+The entire app UI generation consumes **10 credits**.
 
 
 ### Credit calculation
-AI credits are calculated based on the pricing plan and are assigned per builder. These credits are then available for use by all users across all workspaces within that instance.
+AI credits are calculated based on the pricing plan and are assigned per builder in a workspace. These credits are then available for use by all users across all workspaces within that instance.
 
 
 <div style={{paddingTop:'24px'}}>
