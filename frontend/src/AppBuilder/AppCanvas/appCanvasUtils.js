@@ -33,10 +33,8 @@ export const addNewWidgetToTheEditor = (componentType, eventMonitorObject, curre
   let top = Math.round(currentOffset?.y - offsetFromTopOfWindow);
 
   [left, top] = snapToGrid(subContainerWidth, left, top);
-
   const gridWidth = subContainerWidth / NO_OF_GRIDS;
   left = Math.round(left / gridWidth);
-
   if (currentLayout === 'mobile') {
     componentData.definition.others.showOnDesktop.value = `{{false}}`;
     componentData.definition.others.showOnMobile.value = `{{true}}`;

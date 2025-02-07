@@ -55,6 +55,11 @@ export const Container = React.memo(
 
     const [{ isOverCurrent }, drop] = useDrop({
       accept: 'box',
+      hover: (item) => {
+        item.canvasRef = realCanvasRef?.current;
+        item.canvasId = id;
+        item.canvasWidth = getContainerCanvasWidth();
+      },
       drop: async ({ componentType }, monitor) => {
         const didDrop = monitor.didDrop();
         if (didDrop) return;
@@ -88,14 +93,13 @@ export const Container = React.memo(
     function getContainerCanvasWidth() {
       if (canvasWidth !== undefined) {
         if (componentType === 'Listview' && listViewMode == 'grid') return canvasWidth / columns - 2;
-        return canvasWidth;
+        return canvasWidth - 2;
       }
       return realCanvasRef?.current?.offsetWidth;
     }
     const gridWidth = getContainerCanvasWidth() / NO_OF_GRIDS;
-
     useEffect(() => {
-      useGridStore.getState().actions.setSubContainerWidths(id, (getContainerCanvasWidth() - 2) / NO_OF_GRIDS);
+      useGridStore.getState().actions.setSubContainerWidths(id, getContainerCanvasWidth() / NO_OF_GRIDS);
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [canvasWidth, listViewMode, columns]);
 

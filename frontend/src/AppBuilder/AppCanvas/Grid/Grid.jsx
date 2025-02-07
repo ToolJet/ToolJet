@@ -394,7 +394,6 @@ export default function Grid({ gridWidth, currentLayout }) {
           }
         }
         newParent = parent ? parent : null;
-
         layouts[id] = {
           width: _width,
           height: _height,
@@ -445,7 +444,7 @@ export default function Grid({ gridWidth, currentLayout }) {
       }
     }
   }, [draggingComponentId, resizingComponentId, selectedComponents]);
-
+  const snapGridWidth = useGridStore.getState().subContainerWidths[dragParentId] || gridWidth;
   if (mode !== 'edit') return null;
 
   return (
@@ -738,9 +737,8 @@ export default function Grid({ gridWidth, currentLayout }) {
               useGridStore.getState().actions.setDraggingComponentId(null);
               isDraggingRef.current = false;
             }
-            setDragParentId(null);
             prevDragParentId.current = null;
-
+            setDragParentId(null);
             if (!e.lastEvent) {
               return;
             }
@@ -825,7 +823,6 @@ export default function Grid({ gridWidth, currentLayout }) {
                 e.target.style.transform = `translate(${left}px, ${top}px)`;
               }
             }
-
             e.target.style.transform = `translate(${Math.round(left / _gridWidth) * _gridWidth}px, ${
               Math.round(top / GRID_HEIGHT) * GRID_HEIGHT
             }px)`;
@@ -856,18 +853,26 @@ export default function Grid({ gridWidth, currentLayout }) {
           toggleCanvasUpdater();
         }}
         onDrag={(e) => {
-          // Since onDrag is called multiple times when dragging, hence we are using isDraggingRef to prevent setting state again and again
           if (!isDraggingRef.current) {
             useGridStore.getState().actions.setDraggingComponentId(e.target.id);
             isDraggingRef.current = true;
           }
 
-          const _gridWidth = useGridStore.getState().subContainerWidths[dragParentId] || gridWidth;
+          const currentWidget = boxList.find((box) => box.id === e.target.id);
+          const currentParentId = currentWidget?.component?.parent || 'canvas';
+          const _gridWidth = useGridStore.getState().subContainerWidths?.[dragParentId] || gridWidth;
           const parentComponent = boxList.find((box) => box.id === dragParentId);
 
-          let top = Math.round(e.translate[1] / GRID_HEIGHT) * GRID_HEIGHT;
-          let left = Math.round(e.translate[0] / _gridWidth) * _gridWidth;
-
+          // Adjust width when dragging between different containers
+          if (dragParentId && dragParentId !== currentParentId) {
+            const oldContainerWidth = currentParentId
+              ? useGridStore.getState().subContainerWidths[currentParentId]
+              : _gridWidth;
+            const newWidth = Math.round((currentWidget.width * oldContainerWidth) / _gridWidth);
+            e.target.style.width = `${newWidth * _gridWidth}px`;
+          }
+          let top = e.translate[1];
+          let left = e.translate[0];
           // Special case for Modal
           if (parentComponent?.component?.component === 'Modal') {
             const elemContainer = e.target.closest('.real-canvas');
@@ -1005,6 +1010,8 @@ export default function Grid({ gridWidth, currentLayout }) {
         snapThreshold={10}
         // Guidelines configuration
         elementGuidelines={elementGuidelines}
+        snapGridHeight={GRID_HEIGHT}
+        snapGridWidth={useGridStore.getState().subContainerWidths?.[dragParentId] || gridWidth}
         snapDirections={{
           top: true,
           right: true,
@@ -1033,6 +1040,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             component.element.classList.add('active-target');
           }
         }}
+        snapGridAll={true}
       />
     </>
   );
