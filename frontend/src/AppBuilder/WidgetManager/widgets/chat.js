@@ -133,8 +133,8 @@ export const chatConfig = {
   },
 
   events: {
-    onClearHistory: { displayName: 'On history cleared' },
     onMessageSent: { displayName: 'On message sent' },
+    onClearHistory: { displayName: 'On history cleared' },
   },
   styles: {
     name: {
