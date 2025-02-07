@@ -409,6 +409,10 @@
     background: var(--primary-accent-subtle);
     box-shadow: 12px 0 0 var(--primary-accent-subtle), -12px 0 0 var(--primary-accent-subtle);
     animation: l5 2s infinite cubic-bezier(0.4, 0, 0.2, 1);
+    &::after{
+      border-top-color: transparent;
+      border-left-color: transparent;
+    }
   }
 
   @keyframes l5 {
