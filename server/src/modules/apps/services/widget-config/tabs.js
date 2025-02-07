@@ -196,6 +196,11 @@ export const tabsConfig = {
       displayName: 'Set loading',
       params: [{ handle: 'setLoading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
     },
+    {
+      handle: 'setTabDisable',
+      displayName: 'Set Tab disable',
+      params: [{ handle: 'setTabDisable', displayName: 'Id', type: 'select', isDynamicOpiton: true, optionsGetter: 'component.definition.properties.tabItems.value' }],
+    },
   ],
   exposedVariables: {
     currentTab: '',
@@ -244,7 +249,7 @@ export const tabsConfig = {
             disable: { value: false },
             visible: { value: true },
           },
-        ]
+        ],
       },
       defaultTab: { value: '0' },
       hideTabs: { value: false },

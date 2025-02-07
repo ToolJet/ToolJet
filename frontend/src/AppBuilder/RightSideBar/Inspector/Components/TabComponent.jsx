@@ -125,13 +125,6 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
     reorderTabItems(source.index, destination.index);
   };
 
-  const handleBackgroundColorChange = (value, index) => {
-    const newTabItems = [...tabItems];
-    newTabItems[index].fieldBackgroundColor = { value };
-    setTabItems(newTabItems);
-    updateAllTabItemsParams(newTabItems);
-  };
-
   const handleValueChange = (item, value, property, index) => {
     const updatedTabItems = tabItems.map((tabItem) => {
       if (tabItem.id === item.id) {
