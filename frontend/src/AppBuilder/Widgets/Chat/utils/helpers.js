@@ -29,17 +29,22 @@ export const validateSingleMessageObject = (message) => {
   if (!message || typeof message !== 'object' || message === null || Array.isArray(message)) {
     return {
       isValid: false,
-      error: 'Invalid input, provided data is not an object',
+      error: 'Invalid input: Data must be an object.',
     };
   } else if (typeof message?.message !== 'string') {
     return {
       isValid: false,
-      error: 'Invalid data, message property is not a string',
+      error: `Invalid input: 'Message' property must be a string.`,
     };
   } else if (!message.type || typeof message.type !== 'string') {
     return {
       isValid: false,
-      error: 'Invalid data, type property is not a string',
+      error: `Invalid input: 'Type' property must be a string.`,
+    };
+  } else if (!['response', 'error', 'message'].includes(message.type)) {
+    return {
+      isValid: false,
+      error: `Invalid input: 'Type' property must be one of the following: 'response', 'error', 'message'.`,
     };
   }
   return {
@@ -52,7 +57,7 @@ export const validateMessageHistory = (history) => {
   if (!history || !Array.isArray(history)) {
     return {
       isValid: false,
-      error: 'Invalid input, provided data is not an array',
+      error: 'Invalid input: History data must be an array.',
     };
   }
   return {

@@ -108,7 +108,7 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
   const downloadChatHistory = () => {
     try {
       if (!Array.isArray(chatHistory) || chatHistory.length === 0) {
-        toast.error('No chat history to download');
+        toast.error('No chat history available to download.');
         return;
       }
 
@@ -125,8 +125,7 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
       URL.revokeObjectURL(url);
       toast.success('Chat history downloaded successfully');
     } catch (error) {
-      console.error('Download error:', error);
-      toast.error(`Failed to download chat history: ${error.message || 'Unknown error'}`);
+      toast.error(`Failed to download chat history`);
     }
   };
 

@@ -7,7 +7,7 @@ import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import toast from 'react-hot-toast';
 export const MarkdownMessage = ({ content }) => {
   if (typeof content !== 'string') {
-    toast.error('Invalid content, content is not a string');
+    toast.error('Invalid input: Content must be a string.');
     return null;
   }
   return (
