@@ -18,8 +18,7 @@
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
     "@tooljet-marketplace/common": "^1.0.0",
-    "got": "^11.8.6",
-    "weaviate-client": "^3.3.6"
+    "got": "^11.8.6"
   },
   "devDependencies": {
     "@vercel/ncc": "^0.34.0",
