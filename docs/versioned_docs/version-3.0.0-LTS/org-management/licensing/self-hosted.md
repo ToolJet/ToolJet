@@ -14,7 +14,7 @@ Let's look into three types of licenses:
 1. **Trial License**: This is a free license that grants access to premium features for a 14-day trial period.
  - **New Users**: Choose the 14-day trial during onboarding.
  - **Existing Users**: Request a trial license key from our sales or support team.
-2. **Business License**: This is a paid license that you can purchase **[directly](https://www.tooljet.com/pricing)**.
+2. **Business License**: This is a paid license that you can purchase **[directly](https://www.tooljet.ai/pricing)**.
 3. **Enterprise License**: This is a paid license with customizable options. To obtain this license, you have to contact our sales team.
 
 
@@ -92,7 +92,7 @@ As a super admin, you can conveniently view the remaining days of your enterpris
 ## Frequently Asked Questions (FAQs)
 
 ### 1) How can I upgrade or renew my license?
-If your business or enterprise edition license key is nearing expiration, please click the **Upgrade** button or contact us via email at hello@tooljet.com to obtain an extended license key. If you intend to increase the number of users, please reach out to us via **[Slack](https://tooljet.com/slack)** or review our pricing page at https://www.tooljet.com/pricing before making a request.
+If your business or enterprise edition license key is nearing expiration, please click the **Upgrade** button or contact us via email at hello@tooljet.com to obtain an extended license key. If you intend to increase the number of users, please reach out to us via **[Slack](https://tooljet.com/slack)** or review our pricing page at https://www.tooljet.ai/pricing before making a request.
 
 <div style={{textAlign: 'center'}}>
 
@@ -109,13 +109,13 @@ If you have an active license, you can find its validity period in the Settings.
 - Enterprise licenses can be customized to suit your needs.
 
 ### 3) What happens if my license expires?
-If your business or enterprise license key expires, your instance will revert to operating as a free plan. While you can still create unlimited apps, workspaces, and add users, premium features such as OpenID and Audit logs will no longer be accessible. For further information, please refer to the relevant **[plans](https://www.tooljet.com/pricing)**.
+If your business or enterprise license key expires, your instance will revert to operating as a free plan. While you can still create unlimited apps, workspaces, and add users, premium features such as OpenID and Audit logs will no longer be accessible. For further information, please refer to the relevant **[plans](https://www.tooljet.ai/pricing)**.
 
 ### 4) How can I add more users? 
 
 There are different methods to do this:
 
-**a)** You can renew directly using the **[business plan](https://www.tooljet.com/pricing)**. (Note: Please do check the list of premium features available with this plan)
+**a)** You can renew directly using the **[business plan](https://www.tooljet.ai/pricing)**. (Note: Please do check the list of premium features available with this plan)
 
 **b)** You can directly reach out to us via **[Slack](https://tooljet.com/slack)** or **[email](mailto:hello@tooljet.com)** and we will be happy to provide you the support. 
 

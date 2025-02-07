@@ -1,6 +1,7 @@
 ---
 id: overview
-title: Overview
+title: GitSync Overview
+slug: /gitsync/
 ---
 
 <div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
