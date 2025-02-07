@@ -32,10 +32,10 @@ AI credits are allocated at the workspace level, varying based on the pricing pl
 
 ### Credit Usage
 
-**3 Credit - Standard Operations**
+**3 Credits - Standard Operations**
 
 
-AI-powered assistance for the following actions consumes **3 credit**:
+AI-powered assistance for the following actions consumes **3 credits**:
 
 
 * Generating or editing single UI components

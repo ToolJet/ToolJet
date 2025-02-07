@@ -31,9 +31,9 @@ The AI credit system operates at an instance level. Credits are allocated based 
 
 ### Credit Usage
 
-**3 Credit - Standard Operations**
+**3 Credits - Standard Operations**
 
-AI-powered assistance for the following actions consumes **3 credit**:
+AI-powered assistance for the following actions consumes **3 credits**:
 
 * Generating or editing single UI components
 
