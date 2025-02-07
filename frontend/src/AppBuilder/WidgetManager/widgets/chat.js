@@ -133,8 +133,8 @@ export const chatConfig = {
   },
 
   events: {
-    onMessageSent: { displayName: 'On message sent' },
     onClearHistory: { displayName: 'On history cleared' },
+    onMessageSent: { displayName: 'On message sent' },
   },
   styles: {
     name: {
@@ -238,12 +238,12 @@ export const chatConfig = {
     },
   },
   exposedVariables: {
-    lastMessage: {},
     history: [],
-    isVisible: true,
-    isInputDisabled: false,
     isHistoryLoading: false,
+    isInputDisabled: false,
     isResponseLoading: false,
+    isVisible: true,
+    lastMessage: {},
     lastResponse: {},
   },
   others: {
@@ -252,8 +252,8 @@ export const chatConfig = {
   },
   actions: [
     {
-      handle: 'sendMessage',
-      displayName: 'Send message',
+      handle: 'appendHistory',
+      displayName: 'Append history',
       params: [{ handle: 'message', displayName: 'Message', defaultValue: '{{{}}}', type: 'code' }],
     },
     {
@@ -262,14 +262,19 @@ export const chatConfig = {
       params: [],
     },
     {
-      handle: 'setResponseLoading',
-      displayName: 'Set response loading',
-      params: [{ handle: 'loading', displayName: 'Loading', defaultValue: '{{false}}', type: 'toggle' }],
+      handle: 'downloadChat',
+      displayName: 'Download chat',
+      params: [],
     },
     {
-      handle: 'setHistoryLoading',
-      displayName: 'Set history loading',
-      params: [{ handle: 'loading', displayName: 'Loading', defaultValue: '{{false}}', type: 'toggle' }],
+      handle: 'sendMessage',
+      displayName: 'Send message',
+      params: [{ handle: 'message', displayName: 'Message', defaultValue: '{{{}}}', type: 'code' }],
+    },
+    {
+      handle: 'setError',
+      displayName: 'Set error',
+      params: [{ handle: 'error', displayName: 'Error', defaultValue: '', type: 'code' }],
     },
     {
       handle: 'setHistory',
@@ -277,14 +282,9 @@ export const chatConfig = {
       params: [{ handle: 'history', displayName: 'History', defaultValue: '{{[]}}', type: 'code' }],
     },
     {
-      handle: 'appendHistory',
-      displayName: 'Append history',
-      params: [{ handle: 'message', displayName: 'Message', defaultValue: '{{{}}}', type: 'code' }],
-    },
-    {
-      handle: 'setVisibility',
-      displayName: 'Set visibility',
-      params: [{ handle: 'visible', displayName: 'Visible', defaultValue: '{{true}}', type: 'toggle' }],
+      handle: 'setHistoryLoading',
+      displayName: 'Set history loading',
+      params: [{ handle: 'loading', displayName: 'Loading', defaultValue: '{{false}}', type: 'toggle' }],
     },
     {
       handle: 'setInputDisable',
@@ -297,19 +297,19 @@ export const chatConfig = {
       params: [{ handle: 'avatar', displayName: 'Avatar', defaultValue: '', type: 'code' }],
     },
     {
+      handle: 'setResponseLoading',
+      displayName: 'Set response loading',
+      params: [{ handle: 'loading', displayName: 'Loading', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
       handle: 'setUserAvatar',
       displayName: 'Set user avatar',
       params: [{ handle: 'avatar', displayName: 'Avatar', defaultValue: '', type: 'code' }],
     },
     {
-      handle: 'setError',
-      displayName: 'Set error',
-      params: [{ handle: 'error', displayName: 'Error', defaultValue: '', type: 'code' }],
-    },
-    {
-      handle: 'downloadChat',
-      displayName: 'Download chat',
-      params: [],
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'visible', displayName: 'Visible', defaultValue: '{{true}}', type: 'toggle' }],
     },
   ],
   definition: {
