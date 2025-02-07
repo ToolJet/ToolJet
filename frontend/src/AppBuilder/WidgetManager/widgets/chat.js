@@ -108,7 +108,7 @@ export const chatConfig = {
     },
     enableClearHistoryButton: {
       type: 'toggle',
-      displayName: 'Enable clear history button',
+      displayName: 'Enable clear history icon',
       validation: {
         schema: { type: 'boolean' },
         defaultValue: true,
@@ -116,7 +116,7 @@ export const chatConfig = {
     },
     enableDownloadHistoryButton: {
       type: 'toggle',
-      displayName: 'Enable download history button',
+      displayName: 'Enable download history icon',
       validation: {
         schema: { type: 'boolean' },
         defaultValue: true,
