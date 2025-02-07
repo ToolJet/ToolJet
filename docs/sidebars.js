@@ -136,7 +136,9 @@ const sidebars = {
                       'type': 'category',
                       'label': 'Chat',
                       'items': [
-                        'widgets/chat/overview'
+                        'widgets/chat/overview',
+                        'widgets/chat/properties',
+                        'widgets/chat/csa',
                       ]
                     },
                     'widgets/checkbox',
