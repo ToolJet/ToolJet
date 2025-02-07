@@ -1,7 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/Button/Button';
 import { ToolTip } from '@/_components/ToolTip';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export const ChatHeader = ({ title, onDownload, onClear, enableDownloadHistoryButton, enableClearHistoryButton }) => (
   <div className="chat-header">
@@ -15,7 +14,7 @@ export const ChatHeader = ({ title, onDownload, onClear, enableDownloadHistoryBu
           title="Download chat history"
           disabled={!enableDownloadHistoryButton}
           leadingIcon="pagedownload"
-          fill="var(--icons-strong)"
+          fill={enableDownloadHistoryButton ? 'var(--icons-strong)' : 'var(--icons-disabled)'}
         />
       </ToolTip>
 
@@ -26,7 +25,7 @@ export const ChatHeader = ({ title, onDownload, onClear, enableDownloadHistoryBu
           iconOnly
           disabled={!enableClearHistoryButton}
           leadingIcon="clearhistory"
-          fill="var(--icons-strong)"
+          fill={enableClearHistoryButton ? 'var(--icons-strong)' : 'var(--icons-disabled)'}
         />
       </ToolTip>
     </div>
