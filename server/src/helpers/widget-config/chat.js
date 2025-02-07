@@ -10,7 +10,7 @@ export const chatConfig = {
   properties: {
     chatTitle: {
       type: 'code',
-      displayName: 'Chat Title',
+      displayName: 'Chat title',
       validation: {
         schema: { type: 'string' },
         defaultValue: 'Chat',
@@ -18,13 +18,12 @@ export const chatConfig = {
     },
     initialChat: {
       type: 'code',
-      displayName: 'Initial Chat',
+      displayName: 'Initial chat',
       validation: {
         schema: {
           type: 'array',
           element: { type: 'object' },
-          defaultValue: `{{[
-            {
+          defaultValue: `{{[{
               message: 'Ask me anything!',
               messageId: 'e3dd6f60-d5e8-46c5-b73b-006f2f4a34f2',
               timestamp: 'new Date().toISOString()',
@@ -39,14 +38,13 @@ export const chatConfig = {
               name: 'User',
               avatar: '',
               type: 'message',
-            },
-          ]}}`,
+            }]}}`,
         },
       },
     },
     userName: {
       type: 'code',
-      displayName: 'User Name',
+      displayName: 'User name',
       validation: {
         schema: { type: 'string' },
         defaultValue: '{{globals.currentUser.firstName}}',
@@ -54,7 +52,7 @@ export const chatConfig = {
     },
     userAvatar: {
       type: 'code',
-      displayName: 'User Avatar',
+      displayName: 'User avatar',
       validation: {
         schema: { type: 'string' },
         defaultValue: '',
@@ -62,7 +60,7 @@ export const chatConfig = {
     },
     respondentName: {
       type: 'code',
-      displayName: 'Respondent Name',
+      displayName: 'Respondent name',
       validation: {
         schema: { type: 'string' },
         defaultValue: 'Assistant',
@@ -70,7 +68,7 @@ export const chatConfig = {
     },
     respondentAvatar: {
       type: 'code',
-      displayName: 'Respondent Avatar',
+      displayName: 'Respondent avatar',
       validation: {
         schema: { type: 'string' },
         defaultValue: '',
@@ -204,7 +202,7 @@ export const chatConfig = {
     },
     sendIconColorField: {
       type: 'color',
-      displayName: 'Send Icon',
+      displayName: 'Send icon',
       validation: {
         schema: { type: 'string' },
         defaultValue: '#4368E3',
@@ -231,7 +229,7 @@ export const chatConfig = {
     },
     boxShadowContainer: {
       type: 'color',
-      displayName: 'Box Shadow',
+      displayName: 'Box shadow',
       validation: {
         schema: { type: 'string' },
         defaultValue: '#121212',
@@ -322,8 +320,7 @@ export const chatConfig = {
     properties: {
       chatTitle: { value: 'Chat' },
       initialChat: {
-        value: `{{[
-            {
+        value: `{{[{
               message: 'Ask me anything!',
               messageId: 'e3dd6f60-d5e8-46c5-b73b-006f2f4a34f2',
               timestamp: 'new Date().toISOString()',
@@ -338,8 +335,7 @@ export const chatConfig = {
               name: 'User',
               avatar: '',
               type: 'message',
-            },
-          ]}}`,
+            }]}}`,
       },
       userName: { value: '{{globals.currentUser.firstName}}' },
       userAvatar: { value: '' },
