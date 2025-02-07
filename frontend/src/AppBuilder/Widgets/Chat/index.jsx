@@ -333,9 +333,9 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
       />
 
       <div ref={chatMessagesRef} className="chat-messages" tabIndex={0} style={{ flexGrow: 1, overflowY: 'auto' }}>
-        {chatMessages}
+        {!loadingHistory && chatMessages}
 
-        {error && (
+        {!loadingHistory && error && (
           <ChatMessage
             chat={{ type: 'error', message: error, timestamp: new Date().toISOString() }}
             userName={userName}
