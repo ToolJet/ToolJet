@@ -15,7 +15,7 @@ To connect with Qdrant, you will need Qdrant URL and an API key, which can be ge
 
 ## Supported Operations
 
-### Get Collection info
+### Get Collection Info
 
 Use this operation to retrieve metadata and configuration details about a specific collection in Qdrant.
 
@@ -26,7 +26,7 @@ Use this operation to retrieve metadata and configuration details about a specif
 <img className="screenshot-full" src="/img/marketplace/plugins/qdrant/get-collection-info.png" alt="Get Collection Info" />
 
 <details>
-<summary>**Example Values**</summary>
+<summary>**Example Response**</summary>
 ```yaml
 {
     "status": "green",
@@ -78,7 +78,7 @@ Use this operation to retrieve metadata and configuration details about a specif
 
 ### Get Points
 
-Use it to retrieve specific data points from a collection using their unique identifiers.
+Use this operation to retrieve specific data points from a collection using their unique identifiers.
 
 **Required Parameters:**
 
@@ -88,7 +88,7 @@ Use it to retrieve specific data points from a collection using their unique ide
 <img className="screenshot-full" src="/img/marketplace/plugins/qdrant/get-points.png" alt="Get Points" />
 
 <details>
-<summary>**Example Values**</summary>
+<summary>**Example Response**</summary>
 
 ```yaml
 [{
@@ -106,7 +106,7 @@ Use it to retrieve specific data points from a collection using their unique ide
 
 ### Delete Points
 
-Used to remove specific data points from a collection using their unique identifiers.
+Used this operation to remove specific data points from a collection using their unique identifiers.
 
 **Required Parameters:**
 
@@ -121,7 +121,7 @@ Used to remove specific data points from a collection using their unique identif
 
 ### Query Points
 
-Used to search data points in a collection using a query, typically based on vector similarity or filtering conditions.
+Use this operation to search data points in a collection using a query, typically based on vector similarity or filtering conditions.
 
 **Required Parameters:**
 
@@ -138,7 +138,7 @@ Used to search data points in a collection using a query, typically based on vec
 <img className="screenshot-full" src="/img/marketplace/plugins/qdrant/query-points.png" alt="Query Points" />
 
 <details>
-<summary>**Example Values**</summary>
+<summary>**Example Response**</summary>
 
 ```yaml
 [{
@@ -159,7 +159,7 @@ Used to search data points in a collection using a query, typically based on vec
 
 ### Upsert Points
 
-Use it to add new data points or update existing ones in a collection based on their unique identifiers.
+Use this operation to add new data points or update existing ones in a collection based on their unique identifiers.
 
 **Required Parameters:**
 
