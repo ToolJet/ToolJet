@@ -22,11 +22,11 @@ helm install tooljet tooljet/tooljet
 4. Run `helm install -n $NAMESPACE --create-namespace $RELEASE .`
 
 Remember to replace the variables with your specific configuration values.
+
 :::warning
-
-To enable AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`
-
+To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`.
 :::
+
 ## ToolJet Database
 
 ToolJet offers a hosted database solution that allows you to build applications quickly and manage your data effortlessly. The ToolJet database requires no setup and provides a user-friendly interface for data management.
@@ -47,21 +47,19 @@ If this is a new installation of the application, you may start directly with th
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
-**Additional Step for Upgrading from v3.0.33-ee-lts to the Latest LTS Version:**
+### Additional Step for Upgrading from v3.0.33-ee-lts to the Latest LTS Version
 
-- If upgrading from version **v3.0.33-ee-lts** to the latest LTS, ensure that the following configuration is applied:
+If you are upgrading from version v3.0.33-ee-lts to the latest LTS, please ensure that the following configuration is done:
 
-Setup ChromaDB deployment.
+Setup ChromaDB Deployment.
 
 *Currently, ChromaDB does not have support for Kubernetes.*
 
-For more info check the official docs [here](https://tooljet.slack.com/archives/C088QU76LT1/p1738941897135449).
-
-To use ChromaDB, you need to set up a VM, deploy ChromaDB on it, and then connect to it for usage.
+1. To use ChromaDB, you need to set up a VM, deploy ChromaDB on it, and then connect to it for usage.
 
 This service helps to deploy chromadb using docker-compose.
 
- ```
+ ```yml
  name: ChromaDB
 
  services:
@@ -83,12 +81,12 @@ This service helps to deploy chromadb using docker-compose.
 
 2. Add these environment variable in the ToolJet deployment file:
 ```
-            - name: CHROMA_DB_URL
-              value: <instance_ip:8000>
+- name: CHROMA_DB_URL
+  value: <instance_ip:8000>
 ``` 
 ```
-            - name: AI_GATEWAY_URL
-              value: https://api-gateway.tooljet.ai
+- name: AI_GATEWAY_URL
+  value: https://api-gateway.tooljet.ai
 ```
 
 *If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*

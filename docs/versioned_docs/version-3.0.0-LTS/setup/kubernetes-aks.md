@@ -42,11 +42,11 @@ Make sure to edit the environment variables in the `deployment.yaml`. We advise 
 :::info
 If there are self signed HTTPS endpoints that Tooljet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates. You can make use of kubernetes secrets to mount the certificate file onto the containers.
 :::
+
 :::warning
-
-To enable AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`
-
+To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`.
 :::
+
 3. Create k8s service and reserve a static IP and expose it via a service load balancer as mentioned in the [doc](https://docs.microsoft.com/en-us/azure/aks/static-ip). You can refer `service.yaml`.
    ```bash
     curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/AKS/service.yaml
@@ -88,21 +88,19 @@ If this is a new installation of the application, you may start directly with th
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
-**Additional Step for Upgrading from v3.0.33-ee-lts to the Latest LTS Version:**
+### Additional Step for Upgrading from v3.0.33-ee-lts to the Latest LTS Version
 
-1. If upgrading from version v3.0.33-ee-lts to the latest LTS, ensure that the following configuration is applied:
+If you are upgrading from version v3.0.33-ee-lts to the latest LTS, please ensure that the following configuration is done:
 
-Setup ChromaDB deployment.
+Setup ChromaDB Deployment.
 
 *Currently, ChromaDB does not have support for Kubernetes.*
 
-For more info check the official docs [here](https://tooljet.slack.com/archives/C088QU76LT1/p1738941897135449).
-
-To use ChromaDB, you need to set up a VM, deploy ChromaDB on it, and then connect to it for usage.
+1. To use ChromaDB, you need to set up a VM, deploy ChromaDB on it, and then connect to it for usage.
 
 This service helps to deploy chromadb using docker-compose.
 
- ```
+ ```yml
  name: ChromaDB
 
  services:
@@ -122,14 +120,14 @@ This service helps to deploy chromadb using docker-compose.
     driver: local
 ```
 
-2. Add these environment variable in the ToolJet server:
+2. Add these environment variable in the ToolJet deployment file:
 ```
-            - name: CHROMA_DB_URL
-              value: <instance_ip:8000>
+- name: CHROMA_DB_URL
+  value: <instance_ip:8000>
 ``` 
 ```
-            - name: AI_GATEWAY_URL
-              value: https://api-gateway.tooljet.ai
+- name: AI_GATEWAY_URL
+  value: https://api-gateway.tooljet.ai
 ```
 
 *If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*

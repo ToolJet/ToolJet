@@ -62,7 +62,7 @@ Confused about which setup to select? Feel free to ask the community via Slack: 
   `TOOLJET_HOST=http://12.34.56.78` or
   `TOOLJET_HOST=https://tooljet.yourdomain.com`
   
-  If you've set a custom domain for `TOOLJET_HOST`, add a `A record` entry in your DNS settings to point to the IP address of the server.
+  If you've set a custom domain for `TOOLJET_HOST`, add a `A record` entry in your DNS settings to point to the IP address of the server. 
 
   :::info
   i. Please make sure that `TOOLJET_HOST` starts with either `http://` or `https://`
@@ -167,32 +167,29 @@ If this is a new installation of the application, you may start directly with th
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
-**Additional Step for Upgrading from v3.0.33-ee-lts to the Latest LTS Version**
+### Additional Step for Upgrading from v3.0.33-ee-lts to the Latest LTS Version
 
-If upgrading from version v3.0.33-ee-lts to the latest LTS, ensure that the following configuration is applied:
+If you are upgrading from version v3.0.33-ee-lts to the latest LTS, please ensure that the following configuration is done:
 
-1. Add chroma under services and volumes under the volume section in the docker-compose.yml file:
+1. Add Chroma under the services section and define volumes under the volumes section in the docker-compose.
+  ```yml
+  services:
+    chroma:
+      name: chromadb
+      image: chromadb/chroma
+      ports:
+        - "8000:8000"
+      environment:
+        - CHROMA_HOST_PORT=8000
+      volumes:
+        - chromadb_data:/chroma
 
-```
-services:
-  chroma:
-    name: chromadb
-    image: chromadb/chroma
-    ports:
-      - "8000:8000"
-    environment:
-      - CHROMA_HOST_PORT=8000
-    volumes:
-      - chromadb_data:/chroma
-
-volumes:
-  chromadb_data:
-    driver: local
-```
-
-2. Add these envs to the .env file in the Tooljet server 
-
-`CHROMA_DB_URL=chromadb:8000`
-`AI_GATEWAY_URL=https://api-gateway.tooljet.ai`
+  volumes:
+    chromadb_data:
+      driver: local
+  ```
+2. Add these environment variables to the .env file in the ToolJet server.
+  `CHROMA_DB_URL=chromadb:8000` <br/>
+  `AI_GATEWAY_URL=https://api-gateway.tooljet.ai`
 
 *If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*

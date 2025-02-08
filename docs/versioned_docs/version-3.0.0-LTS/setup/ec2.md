@@ -81,43 +81,37 @@ ToolJet AMI comes inbuilt with PostgREST. If you intend to use this feature, you
 You can learn more about this feature [here](/docs/tooljet-db/tooljet-database).
 
 :::warning
-
-To enable AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`
-
+To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`.
 :::
 
-## Setup to Enable AI
-Now you can build business applications in ToolJet with just one AI prompt. Refer [this](https://docs.tooljet.com/) doc to learn more.
+## Setup to Enable ToolJet AI
+
+Build applications effortlessly with ToolJet AI, using natural language to generate and customize apps. Refer to [ToolJet AI](/docs/tooljet-ai/overview) guide for more information.
 
 Follow this guide to enable AI features in your self-hosted setup.
 
 **Deployment Steps**
 
-1. Run the ChromaDB in a different server using docker-compose, to enable AI.
- 
- ```
- name: ChromaDB
+1. Add Chroma under the services section and define volumes under the volumes section in the docker-compose.
+  ```yml
+  services:
+    chroma:
+      name: chromadb
+      image: chromadb/chroma
+      ports:
+        - "8000:8000"
+      environment:
+        - CHROMA_HOST_PORT=8000
+      volumes:
+        - chromadb_data:/chroma
 
- services:
-  chroma:
-    name: chromadb
-    image: chromadb/chroma
-    ports:
-      - "8000:8000"
-    environment:
-      - CHROMA_HOST_ADDR=0.0.0.0
-      - CHROMA_HOST_PORT=8000
-    volumes:
-      - chromadb_data:/chroma
-
- volumes:
-  chromadb_data:
-    driver: local
-```
-2. Add these envs to the .env file in the Tooljet server 
-
-`CHROMA_DB_URL=<server_ip:8000>`
-`AI_GATEWAY_URL=https://api-gateway.tooljet.ai`
+  volumes:
+    chromadb_data:
+      driver: local
+  ```
+2. Add these environment variables to the .env file in the ToolJet server.
+  `CHROMA_DB_URL=chromadb:8000` <br/>
+  `AI_GATEWAY_URL=https://api-gateway.tooljet.ai`
 
 
 ## Upgrading to the Latest LTS Version
@@ -133,7 +127,7 @@ If this is a new installation of the application, you may start directly with th
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
 :::info
-If upgrading from version v3.0.33-ee-lts to the latest LTS, ensure that the following configuration is applied, including the addition of [ChromaDB to the existing setup](#setup-to-enable-ai).
+If you are upgrading from version v3.0.33-ee-lts to the latest LTS, please ensure that the following configuration is done, including the addition of [ChromaDB to the existing setup](#setup-to-enable-tooljet-ai).
 :::
 
 *If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*

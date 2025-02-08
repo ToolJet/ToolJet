@@ -71,41 +71,37 @@ docker-compose --version
 **7. Use the [Docker Documentation](https://docs.tooljet.com/docs/setup/docker) to deploy ToolJet.**
 
 :::warning
-
-To enable AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`
-
+To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`.
 :::
 
+## Setup to Enable ToolJet AI
 
-## Setup to Enable AI
-Now you can build business applications in ToolJet with just one AI prompt. Refer [this](https://docs.tooljet.com/) doc to learn more.
+Build applications effortlessly with ToolJet AI, using natural language to generate and customize apps. Refer to [ToolJet AI](/docs/tooljet-ai/overview) guide for more information.
 
 Follow this guide to enable AI features in your self-hosted setup.
 
 **Deployment Steps**
 
-1. Add **chroma** under service and volumes under the volume section in the docker-compose.
- 
- ```
- services:
-  chroma:
-    name: chromadb
-    image: chromadb/chroma
-    ports:
-      - "8000:8000"
-    environment:
-      - CHROMA_HOST_PORT=8000
-    volumes:
-      - chromadb_data:/chroma
+1. Add Chroma under the services section and define volumes under the volumes section in the docker-compose.
+  ```yml
+  services:
+    chroma:
+      name: chromadb
+      image: chromadb/chroma
+      ports:
+        - "8000:8000"
+      environment:
+        - CHROMA_HOST_PORT=8000
+      volumes:
+        - chromadb_data:/chroma
 
- volumes:
-  chromadb_data:
-    driver: local
-```
-2. Add these envs to the .env file in the Tooljet server 
-
-`CHROMA_DB_URL=chromadb:8000`
-`AI_GATEWAY_URL=https://api-gateway.tooljet.ai`
+  volumes:
+    chromadb_data:
+      driver: local
+  ```
+2. Add these environment variables to the .env file in the ToolJet server.
+  `CHROMA_DB_URL=chromadb:8000` <br/>
+  `AI_GATEWAY_URL=https://api-gateway.tooljet.ai`
 
 
 ## Upgrading to the Latest LTS Version
