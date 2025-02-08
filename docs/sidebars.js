@@ -139,6 +139,7 @@ const sidebars = {
                         'widgets/chat/overview',
                         'widgets/chat/properties',
                         'widgets/chat/csa',
+                        'widgets/chat/markdown'
                       ]
                     },
                     'widgets/checkbox',
