@@ -273,8 +273,7 @@ const sidebars = {
         'how-to/upload-files-gcs',
         'how-to/loading-image-pdf-from-db',
         'how-to/use-events-on-chart',
-        'how-to/print-multi-tabs-report',
-        'how-to/display-listview-record-on-new-page'
+        'how-to/print-multi-tabs-report'
       ],
     },
     {
@@ -447,18 +446,7 @@ const sidebars = {
       'type': 'category',
       'label': 'Release Management',
       'items': [
-        {
-          'type': 'category',
-          'label': 'GitSync',
-          'items': [
-            'release-management/gitsync/overview',
-            'release-management/gitsync/tj-config',
-            'release-management/gitsync/ssh-config',
-            'release-management/gitsync/delete-gitsync',
-            'release-management/gitsync/git-push',
-            'release-management/gitsync/git-pull',
-          ]
-        },
+        'gitsync',
         'release-management/multi-environment',
         'tutorial/versioning-and-release',
       ],
