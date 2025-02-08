@@ -8,13 +8,6 @@ import {
 export const featureCards = [
     {
         icon: Grid3x3,
-        title: "ToolJet AI",
-        color: "text-blue-500",
-        content: "Build applications effortlessly with ToolJet AI, using natural language to generate and customize apps.",
-        href: "/docs/2.50.0-LTS/tooljet-ai/overview"
-    },
-    {
-        icon: Grid3x3,
         title: "App Builder",
         color: "text-blue-500",
         content: "Design and create applications with ToolJet's intuitive app builder, featuring a drag-and-drop interface and powerful pre-built components to streamline development.",
