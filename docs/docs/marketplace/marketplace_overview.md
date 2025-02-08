@@ -73,7 +73,6 @@ To remove a plugin, follow these steps:
 - On the `Installed` page, click on the `Remove` button of the related plugin that you wish to remove.
 
 ## Available Plugins
-
 - **[AWS Redshift](/docs/marketplace/plugins/marketplace-plugin-awsredshift)**
 - **[AWS Textract](/docs/marketplace/plugins/marketplace-plugin-textract)**
 - **[AWS Lambda](/docs/marketplace/plugins/marketplace-plugin-aws-lambda)**
