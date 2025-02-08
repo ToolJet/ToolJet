@@ -88,12 +88,13 @@ To remove a plugin, follow these steps:
 - **[Pocketbase](/docs/marketplace/plugins/marketplace-plugin-pocketbase)**
 - **[Portkey](/docs/marketplace/plugins/marketplace-plugin-portkey)**
 - **[PrestoDB](/docs/marketplace/plugins/marketplace-plugin-Presto)**
+- **[Qdrant](/docs/marketplace/plugins/marketplace-plugin-qdrant)**
 - **[Salesforce](/docs/marketplace/plugins/marketplace-plugin-salesforce)**
 - **[Sharepoint](/docs/marketplace/plugins/marketplace-plugin-sharepoint)**
 - **[Supabase](/docs/marketplace/plugins/marketplace-plugin-supabase)**
-- **[Qdrant](/docs/marketplace/plugins/marketplace-plugin-qdrant)**
-  :::info For Plugin Developers
-  Refer to the **[Plugin Development guide](/docs/contributing-guide/marketplace/marketplace-setup)** to learn how to create plugins for the ToolJet Marketplace.
-  :::
+
+:::info For Plugin Developers
+Refer to the **[Plugin Development guide](/docs/contributing-guide/marketplace/marketplace-setup)** to learn how to create plugins for the ToolJet Marketplace.
+:::
 
 </div>
