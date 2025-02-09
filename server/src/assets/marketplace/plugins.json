@@ -186,8 +186,8 @@
     "tags": ["AI"]
   },
   {
-    "name": "Weaviate",
-    "description": "Database plugin from weaviate",
+    "name": "Weaviate DB",
+    "description": "Integrate with Weaviate DB to store and query vectors.",
     "version": "1.0.0",
     "id": "weaviate",
     "author": "Tooljet",
