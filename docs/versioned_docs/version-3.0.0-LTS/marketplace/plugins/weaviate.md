@@ -17,7 +17,7 @@ To connect with Weaviate Cloud, you will need the **Instance URL** and the **API
 
 To connect ToolJet with Weaviate Local, you will need the **Host** and the **Port**.
 
-Run the following Docker command to start the container locally. This will set both the host and port to 8080.
+Run the following Docker command to start the container locally. This will set the host to `localhost` and port to `8080`.
 
 ```yaml
 docker run -p 8080:8080 -p 50051:50051 cr.weaviate.io/semitechnologies/weaviate:1.28.4
