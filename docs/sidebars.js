@@ -132,6 +132,16 @@ const sidebars = {
                         'widgets/chart/transforming-data-for-charts'
                       ]
                     },
+                    {
+                      'type': 'category',
+                      'label': 'Chat',
+                      'items': [
+                        'widgets/chat/overview',
+                        'widgets/chat/properties',
+                        'widgets/chat/csa',
+                        'widgets/chat/markdown'
+                      ]
+                    },
                     'widgets/checkbox',
                     'widgets/circular-progress-bar',
                     'widgets/code-editor',
