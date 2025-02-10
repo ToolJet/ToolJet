@@ -316,7 +316,7 @@
           "type": "codehinter",
           "description": "Optional advanced parameters",
           "mandatory": false,
-          "placeholder":"{\n    \"response_format\": {\"type\": \"text\"},\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"seed\": 3,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"CONTEXTUAL\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
+          "placeholder":"{\n    \"response_format\": {\"type\": \"text\"},\n    \"temperature\": 0.3,\n    \"max_tokens\": 256,\n    \"seed\": 3,\n    \"p\": 0.3,\n    \"k\": 1,\n    \"frequency_penalty\": 0.3,\n    \"presence_penalty\": 0.3,\n    \"citation_options\": {\"mode\": \"fast\"},\n    \"safety_mode\": \"NONE\",\n    \"stop_sequences\": [\"spam\", \"fraud\"]\n}"
 
         }
     },
