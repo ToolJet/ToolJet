@@ -3,7 +3,7 @@ id: marketplace-plugin-weaviate
 title: Weaviate
 ---
 
-Integrating Weaviate with ToolJet enables efficient vector search and semantic querying, allowing applications to retrieve relevant information based on meaning rather than exact keywords. This integration is ideal for building AI-powered search engines, recommendation systems, and knowledge retrieval applications that enhance user experience with context-aware results.
+Weaviate is a vector database, integrating Weaviate with ToolJet enables efficient vector search and semantic querying, allowing applications to retrieve relevant information based on meaning rather than exact keywords. This integration is ideal for building AI-powered search engines, recommendation systems, and knowledge retrieval applications that enhance user experience with context-aware results.
 
 ## Connections
 
@@ -15,7 +15,13 @@ To connect with Weaviate Cloud, you will need the **Instance URL** and the **API
 
 ### Local
 
-To connect with Weaviate Local, you will need the **Host** and the **Port**.
+To connect ToolJet with Weaviate Local, you will need the **Host** and the **Port**.
+
+Run the following Docker command to start the container locally. This will set both the host and port to 8080.
+
+```yaml
+docker run -p 8080:8080 -p 50051:50051 cr.weaviate.io/semitechnologies/weaviate:1.28.4
+```
 
 <img className="screenshot-full" src="/img/marketplace/plugins/weaviate/local-config.png" alt="Weaviate Configuration" />
 
@@ -29,7 +35,7 @@ Run this opetation to get the database schema.
 
 **Optional Patameter**
 
-- **Consistency**: Toggle on for consistency.
+- **Consistency**: Ensures the request is handled by the leader node to maintain accuracy.
 
 <img className="screenshot-full" src="/img/marketplace/plugins/weaviate/db-schema.png" alt="Weaviate Configuration" />
 
@@ -151,7 +157,7 @@ Run this opetation to get the database schema.
 
 **Optional Parameter**
 
-- **Consistency**: Toggle on for consistency.
+- **Consistency**: Ensures the request is handled by the leader node to maintain accuracy.
 
 <img className="screenshot-full" src="/img/marketplace/plugins/weaviate/get-collection.png" alt="Weaviate Configuration" />
 
@@ -230,25 +236,30 @@ Run this opetation to get the database schema.
 
 Use this operation to create a new collection.
 
-**Parameters**
+**Required Parameters**
 
-- Collection Name
-- Vectorizer
-- Vector index config
-- Sharding config
-- Factor
-- Async enabled
-- Deletion strategy
-- Cleanup interval seconds
-- Bm 25
-- Stop words
-- Index time stamps
-- Index null state
-- Index property length
-- Module config
-- Description
-- Consistency
-- Properties
+- **Collection Name**: The name of the collection.
+- **Vectorizer**: Vectorizer to use for data objects added to this collection.
+- **Vector index config**: Vector index type specific settings, including distance metric.
+- **Module config**: Module-specific settings.
+- **Description**: A description for your reference.
+- **Properties**: An array of the properties you are adding, same as a Property Object.
+
+**Required Parameters**
+
+- **Consistency**: Ensures the request is handled by the leader node to maintain accuracy.
+- **Sharding config**: Controls behavior of the collection in a multi-node setting.
+- **Stop words**: Controls which words should be ignored in the inverted index.
+- **Index time stamps**: Maintains inverted indexes for each object by its internal timestamps.
+- **Index null state**: Maintains inverted indexes for each property regarding its null state.
+- **Index property length**: Maintains inverted indexes for each property by its length.
+- **Bm 25**: Search ranking method that boosts result accuracy using adjustable k1 and b values. By default, k1 = 1.2 and b = 0.75.
+- **Factor**: Controls replication or sharding behavior for scaling.
+- **Async enabled**: Runs operations in the background for better performance.
+- **Deletion strategy**: Defines how deleted data is handled (e.g., immediate or delayed).
+- **Cleanup interval seconds**: Sets how often old or deleted data is removed.
+
+Refer to **[weaviate documentation](https://weaviate.io/developers/weaviate/config-refs/schema)** for more information.
 
 <img className="screenshot-full" src="/img/marketplace/plugins/weaviate/create-collection.png" alt="Weaviate Configuration" />
 
@@ -375,18 +386,18 @@ Use this operation to list all the objects of a collection.
 
 **Required Parameter**
 
-- **Collection Name**: Collection name to list it's objects.
+- **Collection Name**: Collection name to list its objects.
 
 **Optional Parameter**
 
-- **Include vectors**
-- **After**
-- **Offset**
-- **Limit**
-- **Include**
-- **Sort**
-- **Order**
-- **Tenant**
+- **Include vectors**: Specify names of the vectors to include.
+- **After**: A threshold UUID of the objects to retrieve after.
+- **Offset**: The starting index of the result window.
+- **Limit**: The maximum number of items to be returned per page. 
+- **Include**: Include additional information, such as classification infos. Allowed values include: classification, vector, interpretation.
+- **Sort**: Name(s) of the property to sort by.
+- **Order**: Determines sorting direction (asc or desc).
+- **Tenant**: Specifies the tenant in a request targeting a multi-tenant class.
 
 <img className="screenshot-full" src="/img/marketplace/plugins/weaviate/list-object.png" alt="Weaviate Configuration" />
 
@@ -442,12 +453,12 @@ Use this operation to create a new object within the selected collection.
 **Required Parameters**
 
 - **Collection Name**: Collection name to create an object inside it.
-- **Properties**: Define title and content of the object.
+- **Properties**: An array of the properties you are adding, same as a Property Object.
 - **Vector**: Enter the vector for the object.
 
 **Optional Parameter**
 
-- **Object uuid**
+- **Object uuid**: The UUID of the object.
 
 <img className="screenshot-full" src="/img/marketplace/plugins/weaviate/create-object.png" alt="Weaviate Configuration" />
 
@@ -507,6 +518,6 @@ Use this operation to delete the object using it's ID.
 **Required Parameters**
 
 - **Collection Name**: Collection Name of the object.
-- **Object ID**: Object ID to of the object to be deleted.
+- **Object ID**: Object ID of the object to be deleted.
 
 <img className="screenshot-full" src="/img/marketplace/plugins/weaviate/delete-object.png" alt="Weaviate Configuration" />
