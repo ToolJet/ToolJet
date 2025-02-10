@@ -330,10 +330,20 @@ const sidebars = {
 
               ],
             },
+            {
+              'type': 'category',
+              'label': 'Run Python Code',
+              'collapsed': false,
+              'items': [
+                'data-sources/runpython/python',
+                'data-sources/runpython/get-query',
+                'data-sources/runpython/get-variables',
+                'data-sources/runpython/using-transformation'
+              ],
+            },
             'data-sources/soap-api',
             'data-sources/rethinkdb',
             'data-sources/run-js',
-            'data-sources/run-py',
             'data-sources/saphana',
             'data-sources/sendgrid',
             'data-sources/slack',
