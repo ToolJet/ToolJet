@@ -8,10 +8,10 @@ import {
 export const featureCards = [
     {
         icon: BrainCircuit,
-        title: "ToolJet AI",
+        title: "Build with AI",
         color: "text-blue-500",
         content: "Build applications effortlessly with ToolJet AI, using natural language to generate and customize apps.",
-        href: "/docs/beta/tooljet-ai/overview"
+        href: "/docs/beta/build-with-ai/overview"
     },
     {
         icon: Grid3x3,
