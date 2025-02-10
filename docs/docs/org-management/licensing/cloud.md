@@ -96,7 +96,7 @@ When you've identified the ideal paid plan to meet your needs, the next step is 
 6. Upon successful payment, you'll return to the ToolJet subscription tab. A success message will display, and your subscription overview card will update shortly to reflect your new plan.
 
 <img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/licensing/cloud-license-price.png" alt="Dashboard"/>
-If you've decided to move forward with the customized enterprise plan, please schedule a call with **[ToolJet team](mailto:hello@tooljet.com)** and expect a response from the team within 24-48 hours for onboarding.
+If you've decided to move forward with Pro or customized Enterprise plan, please schedule a call with **[ToolJet team](mailto:hello@tooljet.com)** and expect a response from the team within 24-48 hours for onboarding.
 
 </div>
 

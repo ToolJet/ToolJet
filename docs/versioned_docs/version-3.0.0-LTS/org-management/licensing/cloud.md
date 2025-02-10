@@ -97,7 +97,7 @@ When you've identified the ideal paid plan to meet your needs, the next step is 
 
 <img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/licensing/cloud-license-price.png" alt="Dashboard"/>
 
-If you've decided to move forward with the customized enterprise plan, please schedule a call with **[ToolJet team](mailto:hello@tooljet.com)** and expect a response from the team within 24-48 hours for onboarding.
+If you've decided to move forward with Pro or customized Enterprise plan, please schedule a call with **[ToolJet team](mailto:hello@tooljet.com)** and expect a response from the team within 24-48 hours for onboarding.
 
 </div>
 
