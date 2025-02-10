@@ -105,7 +105,7 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
   };
 
   const clearHistory = (shouldFireEvent = true) => {
-    setChatHistory(properties.initialChat);
+    setChatHistory(Array.isArray(properties.initialChat) ? properties.initialChat : []);
     if (error) setError(null);
     setExposedVariables({
       history: Array.isArray(properties.initialChat) ? properties.initialChat : [],
