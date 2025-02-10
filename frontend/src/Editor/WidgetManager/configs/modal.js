@@ -21,7 +21,7 @@ export const modalConfig = {
       },
       section: 'additionalActions',
     },
-    triggerVisibility: {
+    visibility: {
       type: 'toggle',
       displayName: 'Modal trigger visibility',
       validation: {
@@ -259,7 +259,7 @@ export const modalConfig = {
     },
     properties: {
       loadingState: { value: `{{false}}` },
-      triggerVisibility: { value: '{{true}}' },
+      visibility: { value: '{{true}}' },
       disabledTrigger: { value: '{{false}}' },
       disabledModal: { value: '{{false}}' },
       useDefaultButton: { value: `{{true}}` },

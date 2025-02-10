@@ -238,7 +238,7 @@ export const Modal = function Modal({
 
   const { isDisabledTrigger, isDisabledModal, isVisible, isLoading } = useExposeState({
     loadingState: properties.loadingState,
-    visibleState: properties.triggerVisibility,
+    visibleState: properties.visibility,
     disabledModalState: properties.disabledModal,
     disabledTriggerState: properties.disabledTrigger,
     setExposedVariables,
