@@ -185,25 +185,6 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
     setPlaceholder(properties.placeholder);
   }, [properties.placeholder]);
 
-  // Memoize the chat messages to prevent unnecessary re-renders
-  const chatMessages = useMemo(() => {
-    return (
-      Array.isArray(chatHistory) &&
-      chatHistory.map((chat, index) => (
-        <div key={chat.messageId}>
-          <ChatMessage
-            chat={chat}
-            userName={userName}
-            respondentName={respondentName}
-            userAvatar={userAvatar}
-            respondentAvatar={respondentAvatar}
-            computedStyles={computedStyles}
-          />
-        </div>
-      ))
-    );
-  }, [chatHistory]);
-
   // Set initial exposed variables
   useEffect(() => {
     const exposedVariables = {
@@ -344,7 +325,20 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
       />
 
       <div ref={chatMessagesRef} className="chat-messages" tabIndex={0} style={{ flexGrow: 1, overflowY: 'auto' }}>
-        {!loadingHistory && chatMessages}
+        {!loadingHistory &&
+          Array.isArray(chatHistory) &&
+          chatHistory.map((chat) => (
+            <div key={chat.messageId}>
+              <ChatMessage
+                chat={chat}
+                userName={userName}
+                respondentName={respondentName}
+                userAvatar={userAvatar}
+                respondentAvatar={respondentAvatar}
+                computedStyles={computedStyles}
+              />
+            </div>
+          ))}
 
         {!loadingHistory && error && (
           <ChatMessage

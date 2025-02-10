@@ -18,7 +18,12 @@ export const useComputedStyles = (styles) => {
       },
     };
 
-    console.log('manish styles ---> use computed styles', styles);
+    // Ensure styles is an object
+    if (!styles || typeof styles !== 'object') {
+      console.warn('useComputedStyles received invalid styles:', styles);
+      return computedStyles;
+    }
+
     // Container styles
 
     if (
@@ -100,6 +105,20 @@ export const useComputedStyles = (styles) => {
       computedStyles.chatInput.sendIconColor = styles.sendIconColorField;
     }
 
+    // Log final computed styles
     return computedStyles;
-  }, [styles]);
+  }, [
+    // Explicitly list all style properties we depend on
+    styles?.containerBackgroundColor,
+    styles?.borderColorContainer,
+    styles?.boxShadowContainer,
+    styles?.message,
+    styles?.timestamp,
+    styles?.name,
+    styles?.backgroundColorField,
+    styles?.borderColorField,
+    styles?.accentColorField,
+    styles?.textColorField,
+    styles?.sendIconColorField,
+  ]);
 };
