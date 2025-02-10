@@ -11,11 +11,11 @@
     },
     {
       "type": "category",
-      "label": "ToolJet AI",
+      "label": "Build with AI",
       "items": [
-        "tooljet-ai/overview",
-        "tooljet-ai/build-with-ai",
-        "tooljet-ai/ai-docs-assistant"
+        "build-with-ai/overview",
+        "build-with-ai/generate-apps",
+        "build-with-ai/ai-docs-assistant"
       ]
     },
     {
