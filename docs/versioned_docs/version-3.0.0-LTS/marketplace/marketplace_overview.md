@@ -77,6 +77,7 @@ To remove a plugin, follow these steps:
 - **[AWS Redshift](/docs/marketplace/plugins/marketplace-plugin-awsredshift)**
 - **[AWS Textract](/docs/marketplace/plugins/marketplace-plugin-textract)**
 - **[AWS Lambda](/docs/marketplace/plugins/marketplace-plugin-aws-lambda)**
+- **[Cohere](/docs/marketplace/plugins/marketplace-plugin-cohere)**
 - **[Engagespot](/docs/marketplace/plugins/marketplace-plugin-engagespot)**
 - **[Gemini](/docs/marketplace/plugins/marketplace-plugin-gemini)**
 - **[GitHub](/docs/marketplace/plugins/marketplace-plugin-github)**
