@@ -249,7 +249,7 @@ const hello = "world";
 console.log(hello);
 \```
 ```
-Note: Please remove `/` from the syntax.
+Note: Please remove `\` from the syntax.
 
 </div>
 
