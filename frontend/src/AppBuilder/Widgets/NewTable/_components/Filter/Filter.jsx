@@ -82,7 +82,7 @@ const FilterRow = React.memo(
 
 export const Filter = React.memo(({ table, darkMode, setFilters, setShowFilter }) => {
   const { t } = useTranslation();
-  const [localFilters, setLocalFilters] = useState([]);
+  const [localFilters, setLocalFilters] = useState(table.getState().columnFilters);
 
   table.getHeaderGroups().map((headerGroup) => (
     <tr key={headerGroup.id}>
@@ -134,6 +134,7 @@ export const Filter = React.memo(({ table, darkMode, setFilters, setShowFilter }
     if (value === 'isEmpty' || value === 'isNotEmpty') {
       newFilters[index].value.value = '';
     }
+    console.log('here--- filterOperationChanged--- ', newFilters);
     setLocalFilters(newFilters);
     applyFilters(newFilters.filter((filter) => filter.id !== ''));
   };

@@ -1,32 +1,69 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useMemo, useCallback, useRef } from 'react';
 import { useReactTable, getCoreRowModel, flexRender } from '@tanstack/react-table';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { Tooltip } from 'react-tooltip';
 import cx from 'classnames';
-import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import _ from 'lodash';
-export function AddNewRow({
-  hideAddNewRowPopup,
-  darkMode,
-  mergeToAddNewRowsDetails = () => {},
-  setExposedVariables = () => {},
-  columns,
-  addNewRowsDetails,
-  utilityForNestedNewRow,
-  //   component,
-  //   tableEvents,
-}) {
+import useTableStore from '../../_stores/tableStore';
+import generateColumnsData from '../../_utils/generateColumnsData';
+
+export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEvent }) {
   const onEvent = useStore((state) => state.eventsSlice.onEvent);
 
-  const newRow = useMemo(() => {
-    return columns.reduce((accumulator, column) => {
-      const key = column.accessorKey;
-      if (!column.meta?.skipAddNewRow) accumulator[key] = '';
+  const { getColumnProperties, getAllAddNewRowDetails, updateAddNewRowDetails, clearAddNewRowDetails } =
+    useTableStore();
+  const columnProperties = getColumnProperties(id);
+  const addNewRowDetails = getAllAddNewRowDetails(id);
+  const addNewRowDetailsLength = addNewRowDetails.size;
+
+  const newEmptyRow = useMemo(() => {
+    return allColumns.reduce((accumulator, column) => {
+      const key = column.columnDef.accessorKey;
+      if (column.id !== 'selection') accumulator[key] = '';
       return accumulator;
     }, {});
-  }, [columns]);
+  }, [allColumns]);
+
+  useEffect(() => {
+    if (addNewRowDetailsLength === 0) {
+      updateAddNewRowDetails(id, addNewRowDetailsLength, newEmptyRow);
+    }
+  }, [addNewRowDetailsLength, id, newEmptyRow, updateAddNewRowDetails]);
+
+  const handleCellValueChange = useCallback(
+    (index, name, value, row) => {
+      const rowDetails = addNewRowDetails.get(index) ?? row;
+      updateAddNewRowDetails(id, index, { ...rowDetails, [name]: value });
+    },
+    [addNewRowDetails, id, updateAddNewRowDetails]
+  );
+
+  const addRowTableRef = useRef();
+
+  const columns = useMemo(
+    () =>
+      [
+        ...generateColumnsData({
+          columnProperties: columnProperties.map((column) => ({
+            ...column,
+            isEditable: true,
+          })),
+          columnSizes: {},
+          defaultColumn: { width: 150 },
+          tableData: addNewRowDetailsLength > 0 ? [...addNewRowDetails.values()] : [newEmptyRow],
+          id,
+          darkMode,
+          fireEvent: () => {},
+          tableRef: addRowTableRef,
+          handleCellValueChange,
+          searchText: '',
+          columnForAddNewRow: true,
+        }).filter(Boolean),
+      ].filter(Boolean),
+    [id, columnProperties, darkMode, handleCellValueChange, newEmptyRow, addNewRowDetails, addNewRowDetailsLength]
+  );
 
   //   const { newRowsChangeSet } = addNewRowsDetails;
   //   const rowsFromPrevOperationPresent = !_.isEmpty(addNewRowsDetails.newRowsDataUpdates);
@@ -37,19 +74,9 @@ export function AddNewRow({
   //       }, [])
   //     : null;
 
-  const [rows, setRows] = useState([newRow]);
-
   const table = useReactTable({
-    data: rows,
-    columns: columns
-      .filter((column) => !column.meta?.skipAddNewRow)
-      .map((column) => ({
-        ...column,
-        meta: {
-          ...column.meta,
-          isEditable: true,
-        },
-      })),
+    data: [...addNewRowDetails.values()],
+    columns: columns,
     getCoreRowModel: getCoreRowModel(),
   });
 
@@ -73,7 +100,8 @@ export function AddNewRow({
     // rowData.push(newRow);
     // let newRowDataUpdates = addNewRowsDetails.newRowsDataUpdates;
     // newRowDataUpdates[index] = newRow;
-    setRows((prevRows) => [...prevRows, newRow]);
+    // setRows((prevRows) => [...prevRows, newEmptyRow]);
+    updateAddNewRowDetails(id, addNewRowDetailsLength, newEmptyRow);
   };
 
   return (
@@ -90,7 +118,7 @@ export function AddNewRow({
           </button>
         </div>
       </div>
-      <div className="table-responsive jet-data-table">
+      <div className="table-responsive jet-data-table" ref={addRowTableRef}>
         <table className={`table table-vcenter table-nowrap ${darkMode && 'dark-theme table-dark'}`}>
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -171,10 +199,9 @@ export function AddNewRow({
           variant="primary"
           className="tj-text-xsm"
           onClick={async () => {
-            // await onEvent('onNewRowsAdded', tableEvents, { component });
-            // mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {}, addingNewRows: false });
-            setRows([]);
+            await fireEvent('onNewRowsAdded');
             hideAddNewRowPopup();
+            clearAddNewRowDetails(id);
           }}
           size="sm"
           customStyles={{ padding: '10px 20px' }}
@@ -185,10 +212,8 @@ export function AddNewRow({
           variant="tertiary"
           className="tj-text-xsm"
           onClick={() => {
-            // setExposedVariables({ newRows: [] });
-            // mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {}, addingNewRows: false });
-            setRows([]);
             hideAddNewRowPopup();
+            clearAddNewRowDetails(id);
           }}
           size="sm"
           customStyles={{ padding: '10px 20px' }}

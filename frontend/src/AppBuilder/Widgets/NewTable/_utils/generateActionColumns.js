@@ -1,14 +1,14 @@
 import React from 'react';
 import { ActionButtons } from '../_components/ActionButtons/ActionButtons';
 
-export const generateActionColumns = ({ actions, fireEvent, setExposedVariables, tableActionEvents }) => {
+export const generateActionColumns = ({ actions, fireEvent, setExposedVariables, id }) => {
   const leftActions = actions?.filter((action) => action.position === 'left') || [];
   const rightActions = actions?.filter((action) => [undefined, 'right'].includes(action.position)) || [];
 
   const createActionColumn = (position) => ({
     id: `${position}Actions`,
     accessorKey: 'actions',
-    meta: { columnType: 'action', position, skipFilter: true, skipAddNewRow: true },
+    meta: { columnType: 'action', position, skipFilter: true },
     size: 150,
     header: 'Actions',
     cell: ({ row }) => (
@@ -17,7 +17,7 @@ export const generateActionColumns = ({ actions, fireEvent, setExposedVariables,
         row={row}
         fireEvent={fireEvent}
         setExposedVariables={setExposedVariables}
-        tableActionEvents={tableActionEvents}
+        id={id}
       />
     ),
   });

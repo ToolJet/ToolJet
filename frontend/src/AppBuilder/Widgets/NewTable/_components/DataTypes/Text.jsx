@@ -13,7 +13,6 @@ export const TextColumn = ({
   cellTextColor,
   cellValue,
   column,
-  currentState,
   containerWidth,
   cell,
   horizontalAlignment,
@@ -35,7 +34,6 @@ export const TextColumn = ({
       customRule: { value: column.customRule },
     },
     widgetValue: cellValue,
-    currentState,
     customResolveObjects: { cellValue },
   });
 

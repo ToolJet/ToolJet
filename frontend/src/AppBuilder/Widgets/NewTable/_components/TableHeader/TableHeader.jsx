@@ -7,11 +7,18 @@ import { flexRender } from '@tanstack/react-table';
 import { DndContext, useSensor, useSensors, PointerSensor, closestCenter } from '@dnd-kit/core';
 import { SortableContext, horizontalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import useStore from '@/AppBuilder/_stores/store';
+import { determineJustifyContentValue } from '@/_helpers/utils';
 
 const DraggableHeader = ({ header, darkMode }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging, setActivatorNodeRef } = useSortable({
     id: header.id,
   });
+
+  const getResolvedValue = useStore.getState().getResolvedValue;
+
+  const column = header.column.columnDef.meta;
+  const isEditable = getResolvedValue(column.isEditable);
 
   const style = {
     opacity: isDragging ? 0.8 : 1,
@@ -48,7 +55,24 @@ const DraggableHeader = ({ header, darkMode }) => {
         onClick={header.column.getCanSort() ? () => header.column.toggleSorting() : undefined}
         style={{ cursor: header.column.getCanSort() ? 'pointer' : 'default', width: '100%' }}
       >
-        <div className="header-text">
+        <div
+          className={`d-flex thead-editable-icon-header-text-wrapper ${
+            column.columnType === 'selector'
+              ? 'justify-content-center'
+              : `justify-content-${determineJustifyContentValue(column?.horizontalAlignment ?? '')}`
+          } ${column.columnType !== 'selector' && isEditable && 'custom-gap-4'}`}
+        >
+          <div>
+            {column.columnType !== 'selector' && column.columnType !== 'image' && isEditable && (
+              <SolidIcon
+                name="editable"
+                width="16px"
+                height="16px"
+                fill={darkMode ? '#4C5155' : '#C1C8CD'}
+                vievBox="0 0 16 16"
+              />
+            )}
+          </div>
           {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
         </div>
         {header.column.getIsSorted() && (

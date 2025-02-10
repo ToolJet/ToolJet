@@ -1,7 +1,11 @@
+// TODO: Remove getTableColumnEvents when the toggle column is removed as it is used only for the toggle column
 import React, { useState, useCallback, useEffect } from 'react';
+import useTableStore from '../../_stores/tableStore';
 
-export const ToggleColumn = ({ value, readOnly, onChange, activeColor }) => {
+export const ToggleColumn = ({ id, value, readOnly, onChange, activeColor }) => {
   const [isOn, setIsOn] = useState(() => value);
+
+  const { getTableColumnEvents } = useTableStore();
 
   // Sync internal state with external value
   useEffect(() => {
@@ -12,9 +16,9 @@ export const ToggleColumn = ({ value, readOnly, onChange, activeColor }) => {
     if (!readOnly) {
       const newValue = !isOn;
       setIsOn(newValue);
-      onChange(newValue);
+      onChange(newValue, getTableColumnEvents(id));
     }
-  }, [isOn, readOnly, onChange]);
+  }, [isOn, readOnly, onChange, id, getTableColumnEvents]);
 
   return (
     <div className="h-100 d-flex align-items-center">

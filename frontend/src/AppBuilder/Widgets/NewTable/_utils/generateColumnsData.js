@@ -21,6 +21,7 @@ import {
   CustomDropdownColumn,
   TextColumn,
 } from '../_components/DataTypes';
+import useTableStore from '../_stores/tableStore';
 
 import SelectSearch from 'react-select-search';
 
@@ -28,7 +29,6 @@ export default function generateColumnsData({
   columnProperties,
   columnSizes,
   defaultColumn = { width: 150 },
-  changeSet,
   tableData,
   id,
   darkMode,
@@ -36,11 +36,12 @@ export default function generateColumnsData({
   tableRef,
   handleCellValueChange,
   validateDates,
-  currentState,
-  tableColumnEvents,
   searchText,
+  columnForAddNewRow = false,
 }) {
   const getResolvedValue = useStore.getState().getResolvedValue;
+  const getEditedRowFromIndex = useTableStore.getState().getEditedRowFromIndex;
+  const getAddNewRowDetailFromIndex = useTableStore.getState().getAddNewRowDetailFromIndex;
   if (!columnProperties) return [];
 
   return columnProperties
@@ -79,6 +80,8 @@ export default function generateColumnsData({
         }
       }
 
+      const isEditable = getResolvedValue(column.isEditable);
+
       const columnDef = {
         id: column.id || uuidv4(),
         accessorKey: column.key || column.name,
@@ -96,7 +99,7 @@ export default function generateColumnsData({
         show: column?.columnVisibility ?? true,
         meta: {
           columnType,
-          isEditable: column.isEditable,
+          isEditable: isEditable,
           textColor: column.textColor,
           cellBackgroundColor: column.cellBackgroundColor,
           horizontalAlignment: column?.horizontalAlignment ?? 'left',
@@ -107,7 +110,12 @@ export default function generateColumnsData({
         },
 
         cell: ({ cell, row }) => {
-          const cellValue = changeSet?.[row.index]?.[column.key || column.name] ?? cell.getValue();
+          const changeSet = columnForAddNewRow
+            ? getAddNewRowDetailFromIndex(id, row.index)
+            : getEditedRowFromIndex(id, row.index);
+          const cellValue = changeSet
+            ? changeSet[cell.column.columnDef?.meta?.name] ?? cell.getValue()
+            : cell.getValue();
           const rowData = tableData?.[row.index];
 
           switch (columnType) {
@@ -116,14 +124,13 @@ export default function generateColumnsData({
             case 'default':
               return (
                 <StringColumn
-                  isEditable={column.isEditable}
+                  isEditable={isEditable}
                   darkMode={darkMode}
                   handleCellValueChange={handleCellValueChange}
                   cellTextColor={getResolvedValue(column.textColor, { cellValue, rowData })}
                   horizontalAlignment={column?.horizontalAlignment}
                   cellValue={cellValue}
                   column={column}
-                  currentState={currentState}
                   containerWidth={columnSize}
                   cell={cell}
                   row={row}
@@ -135,14 +142,13 @@ export default function generateColumnsData({
             case 'text':
               return (
                 <TextColumn
-                  isEditable={column.isEditable}
+                  isEditable={isEditable}
                   darkMode={darkMode}
                   handleCellValueChange={handleCellValueChange}
                   cellTextColor={getResolvedValue(column.textColor, { cellValue, rowData })}
                   horizontalAlignment={column?.horizontalAlignment}
                   cellValue={cellValue}
                   column={column}
-                  currentState={currentState}
                   containerWidth={columnSize}
                   cell={cell}
                   row={row}
@@ -154,13 +160,12 @@ export default function generateColumnsData({
             case 'number':
               return (
                 <NumberColumn
-                  isEditable={column.isEditable}
+                  isEditable={isEditable}
                   handleCellValueChange={handleCellValueChange}
                   cellTextColor={getResolvedValue(column.textColor, { cellValue, rowData })}
                   horizontalAlignment={column?.horizontalAlignment}
                   cellValue={cellValue}
                   column={column}
-                  currentState={currentState}
                   containerWidth={columnSize}
                   cell={cell}
                   row={row}
@@ -173,7 +178,7 @@ export default function generateColumnsData({
               return (
                 <BooleanColumn
                   value={!!cellValue}
-                  isEditable={column.isEditable}
+                  isEditable={isEditable}
                   onChange={(value) =>
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original)
                   }
@@ -192,10 +197,10 @@ export default function generateColumnsData({
                   options={columnOptions.selectOptions}
                   value={cellValue}
                   onChange={(value) => handleCellValueChange(row.index, column.key || column.name, value, row.original)}
-                  readOnly={!column.isEditable}
+                  readOnly={!isEditable}
                   darkMode={darkMode}
                   containerWidth={columnSize}
-                  isEditable={column.isEditable}
+                  isEditable={isEditable}
                   multiple={columnType === 'multiselect'}
                 />
               );
@@ -207,10 +212,10 @@ export default function generateColumnsData({
                   options={columnOptions.selectOptions}
                   value={cellValue}
                   onChange={(value) => handleCellValueChange(row.index, column.key || column.name, value, row.original)}
-                  readOnly={!column.isEditable}
+                  readOnly={!isEditable}
                   darkMode={darkMode}
                   containerWidth={columnSize}
-                  isEditable={column.isEditable}
+                  isEditable={isEditable}
                   isMulti={columnType === 'newMultiSelect'}
                   className="select-search table-select-search"
                 />
@@ -223,11 +228,11 @@ export default function generateColumnsData({
                   options={columnOptions.selectOptions}
                   value={cellValue}
                   onChange={(value) => handleCellValueChange(row.index, column.key || column.name, value, row.original)}
-                  readOnly={!column.isEditable}
+                  readOnly={!isEditable}
                   darkMode={darkMode}
                   multiple={columnType === 'badges'}
                   width={columnSize}
-                  isEditable={column.isEditable}
+                  isEditable={isEditable}
                 />
               );
 
@@ -236,7 +241,7 @@ export default function generateColumnsData({
                 <RadioColumn
                   options={columnOptions.selectOptions}
                   value={cellValue}
-                  readOnly={!column.isEditable}
+                  readOnly={!isEditable}
                   onChange={(value) => handleCellValueChange(row.index, column.key || column.name, value, row.original)}
                   containerWidth={columnSize}
                 />
@@ -245,15 +250,14 @@ export default function generateColumnsData({
             case 'toggle':
               return (
                 <ToggleColumn
+                  id={id}
                   value={cellValue}
-                  readOnly={!column.isEditable}
+                  readOnly={!isEditable}
                   activeColor={column.activeColor}
-                  onChange={(value) => {
+                  onChange={(value, tableColumnEvents) => {
                     handleCellValueChange(row.index, column.key || column.name, value, row.original);
                     fireEvent('OnTableToggleCellChanged', {
                       column: column,
-                      rowId: row.id,
-                      row: row.original,
                       tableColumnEvents,
                     });
                   }}
@@ -268,7 +272,7 @@ export default function generateColumnsData({
                   dateDisplayFormat={column.dateFormat}
                   isTimeChecked={getResolvedValue(column?.isTimeChecked, { cellValue, rowData }) ?? false}
                   value={cellValue}
-                  readOnly={!column.isEditable}
+                  readOnly={!isEditable}
                   parseDateFormat={column.parseDateFormat}
                   onChange={(value) => handleCellValueChange(row.index, column.key || column.name, value, row.original)}
                   tableRef={tableRef}

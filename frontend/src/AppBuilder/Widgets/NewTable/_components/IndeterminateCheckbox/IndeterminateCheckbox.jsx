@@ -15,7 +15,6 @@ export const IndeterminateCheckbox = React.forwardRef(({ indeterminate, fireEven
         type="checkbox"
         ref={resolvedRef}
         onClick={(event) => {
-          event.stopPropagation();
           if (fireEvent) {
             //! This is a hack to make sure the event is fired after exposed values are updated
             setTimeout(() => {

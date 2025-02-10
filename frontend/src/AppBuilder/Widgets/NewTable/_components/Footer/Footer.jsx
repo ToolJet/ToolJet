@@ -11,15 +11,14 @@ import IndeterminateCheckbox from '../IndeterminateCheckbox';
 import Popover from 'react-bootstrap/Popover';
 import { exportToCSV, exportToExcel, exportToPDF } from '@/AppBuilder/Widgets/NewTable/_utils/exportData';
 import AddNewRow from '../AddNewRow';
+import useStore from '@/AppBuilder/_stores/store';
 export const Footer = React.memo(
   ({
     id,
     darkMode,
     height,
     width,
-    exportData,
     allColumns,
-    getToggleHideAllColumnsProps,
     table,
     pageIndex,
     pageSize,
@@ -29,9 +28,13 @@ export const Footer = React.memo(
     onPageChange,
     onPageSizeChange,
     componentName,
-    columns,
+    handleChangesSaved,
+    handleChangesDiscarded,
+    fireEvent,
   }) => {
-    const { getFooterVisibility, getLoadingState, getTableProperties } = useTableStore();
+    const onEvent = useStore((state) => state.eventsSlice.onEvent);
+    const { getFooterVisibility, getLoadingState, getTableProperties, getAllEditedRows, getTableComponentEvents } =
+      useTableStore();
     const loadingState = getLoadingState(id);
     const {
       showBulkUpdateActions,
@@ -45,6 +48,8 @@ export const Footer = React.memo(
     } = getTableProperties(id);
 
     const [showAddNewRowPopup, setShowAddNewRowPopup] = useState(false);
+    const editedRows = getAllEditedRows(id);
+    const tableComponentEvents = getTableComponentEvents(id);
 
     const hideAddNewRowPopup = () => {
       setShowAddNewRowPopup(false);
@@ -165,7 +170,6 @@ export const Footer = React.memo(
           className="font-weight-500"
           style={{ color: 'var(--text-placeholder)' }}
         >
-          {/* {clientSidePagination && !serverSidePagination && `${rowCount} Records`} */}
           {clientSidePagination && !serverSidePagination && `10 Records`}
           {serverSidePagination && totalRecords ? `${totalRecords} Records` : ''}
         </span>
@@ -178,11 +182,11 @@ export const Footer = React.memo(
           <ButtonSolid
             variant="primary"
             className={`tj-text-xsm`}
-            // onClick={() => {
-            //   onEvent('onBulkUpdate', tableEvents, { component }).then(() => {
-            //     handleChangesSaved();
-            //   });
-            // }}
+            onClick={() => {
+              onEvent('onBulkUpdate', tableComponentEvents).then(() => {
+                handleChangesSaved();
+              });
+            }}
             data-cy={`table-button-save-changes`}
             size="md"
             // isLoading={tableDetails.isSavingChanges ? true : false}
@@ -196,9 +200,7 @@ export const Footer = React.memo(
           <ButtonSolid
             variant="tertiary"
             className={`tj-text-xsm`}
-            // onClick={() => {
-            //   handleChangesDiscarded();
-            // }}
+            onClick={handleChangesDiscarded}
             data-cy={`table-button-discard-changes`}
             size="md"
             customStyles={{ minWidth: '32px', padding: width > 650 ? '6px 16px' : 0 }}
@@ -288,8 +290,7 @@ export const Footer = React.memo(
         >
           <div className={`table-footer row gx-0 d-flex align-items-center h-100`}>
             <div className="col d-flex justify-content-start custom-gap-4">
-              {/* {!1 ? renderChangeSetUI() : renderRowCount()} */}
-              {renderRowCount()}
+              {editedRows.size > 0 ? renderChangeSetUI() : renderRowCount()}
             </div>
             {enablePagination && (
               <Pagination
@@ -309,7 +310,13 @@ export const Footer = React.memo(
           </div>
         </div>
         {showAddNewRowPopup && (
-          <AddNewRow hideAddNewRowPopup={hideAddNewRowPopup} darkMode={darkMode} columns={columns} />
+          <AddNewRow
+            id={id}
+            hideAddNewRowPopup={hideAddNewRowPopup}
+            darkMode={darkMode}
+            allColumns={allColumns}
+            fireEvent={fireEvent}
+          />
         )}
       </>
     );

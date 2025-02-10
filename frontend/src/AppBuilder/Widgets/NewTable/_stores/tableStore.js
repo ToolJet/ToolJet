@@ -1,5 +1,7 @@
 import { create, zustandDevTools } from '@/_stores/utils';
 import { immer } from 'zustand/middleware/immer';
+// eslint-disable-next-line import/no-unresolved
+import { enableMapSet } from 'immer';
 
 import { createInitSlice } from './slices/initSlice';
 import { createColumnSlice } from './slices/columnSlice';
@@ -7,6 +9,7 @@ const initialState = {
   components: {},
 };
 
+enableMapSet();
 const useTableStore = create(
   zustandDevTools(
     immer((set, get) => ({

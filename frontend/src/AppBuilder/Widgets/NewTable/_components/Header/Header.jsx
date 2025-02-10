@@ -12,6 +12,7 @@ export const Header = React.memo(
     const { getHeaderVisibility, getLoadingState, getTableProperties } = useTableStore();
     const loadingState = getLoadingState(id);
     const { displaySearchBox, showFilterButton } = getTableProperties(id);
+    const appliedFilters = table.getState().columnFilters;
 
     const [showFilter, setShowFilter] = useState(false);
 
@@ -36,7 +37,7 @@ export const Header = React.memo(
           <Tooltip id="tooltip-for-filter-data" className="tooltip" />
           <ButtonSolid
             variant="tertiary"
-            // className={`tj-text-xsm ${tableDetails.filterDetails.filtersVisible && 'always-active-btn'}`}
+            // className={`tj-text-xsm always-active-btn`}
             customStyles={{ minWidth: '32px' }}
             leftIcon="filter"
             fill={`var(--icons-default)`}
@@ -55,7 +56,7 @@ export const Header = React.memo(
             data-tooltip-id="tooltip-for-filter-data"
             data-tooltip-content="Filter data"
           ></ButtonSolid>
-          {/* {(tableDetails?.filterDetails?.filtersVisible || !isEmpty(tableDetails.filterDetails.filters)) && (
+          {appliedFilters.length > 0 && (
             <div className="filter-applied-state position-absolute">
               <svg
                 className="filter-applied-svg"
@@ -75,7 +76,7 @@ export const Header = React.memo(
                 />
               </svg>
             </div>
-          )} */}
+          )}
         </div>
       );
     };

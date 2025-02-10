@@ -6,14 +6,24 @@ export const createInitSlice = (set, get) => ({
       (state) => {
         if (!state.components[id]) {
           state.components[id] = {
+            properties: {},
+            styles: {},
             filters: {},
-            addRow: {},
+            addNewRow: new Map(),
+            editedRowDetails: {
+              editedRows: new Map(),
+              editedFields: new Map(),
+            },
+            events: {
+              hasHoveredEvent: false,
+              tableComponentEvents: [],
+              tableColumnEvents: [],
+              tableActionEvents: [],
+            },
             columnDetails: {
               columnProperties: [],
               transformations: [],
             },
-            properties: {},
-            styles: {},
           };
         }
       },
@@ -50,6 +60,7 @@ export const createInitSlice = (set, get) => ({
             ? true
             : false;
         state.components[id].properties.defaultSelectedRow = properties?.defaultSelectedRow ?? { id: 1 };
+        console.log('here--- properties--- ', properties?.selectRowOnCellEdit);
         state.components[id].properties.selectRowOnCellEdit = properties?.selectRowOnCellEdit ?? true;
 
         let serverSidePagination = properties.serverSidePagination ?? false;
@@ -111,7 +122,7 @@ export const createInitSlice = (set, get) => ({
       { type: 'setStyles', payload: { id, styles } }
     ),
 
-  setTableActions: (id, actions) =>
+  setTableActions: (id, actions = []) =>
     set(
       (state) => {
         state.components[id].properties.actions = actions.map((action) => {
@@ -124,6 +135,33 @@ export const createInitSlice = (set, get) => ({
       },
       false,
       { type: 'setTableActions', payload: { id, actions } }
+    ),
+
+  setTableEvents: (id, events = []) =>
+    set(
+      (state) => {
+        const tableEvents = events.filter((event) => event.sourceId === id);
+        console.log('here--- tableEvents--- ', tableEvents);
+        const tableComponentEvents = tableEvents.filter((event) => event.target === 'component');
+        state.components[id].events.tableComponentEvents = tableComponentEvents;
+        state.components[id].events.hasHoveredEvent = tableComponentEvents.some(
+          (event) => event.event.eventId === 'onRowHovered'
+        );
+        state.components[id].events.tableColumnEvents = tableEvents.filter((event) => event.target === 'table_column');
+        state.components[id].events.tableActionEvents = tableEvents.filter((event) => event.target === 'table_action');
+      },
+      false,
+      { type: 'setTableEvents', payload: { id, events } }
+    ),
+
+  updateEditedRowsAndFields: (id, index, rowDetail, editedFields) =>
+    set(
+      (state) => {
+        state.components[id].editedRowDetails.editedRows.set(index, rowDetail);
+        state.components[id].editedRowDetails.editedFields.set(index, editedFields);
+      },
+      false,
+      { type: 'updateEditedRowsAndFields', payload: { id, index, rowDetail, editedFields } }
     ),
 
   removeComponent: (id) =>
@@ -169,4 +207,50 @@ export const createInitSlice = (set, get) => ({
   },
   getEnablePagination: (id) => get().components[id]?.properties.enablePagination ?? true,
   getRowsPerPage: (id) => get().components[id]?.properties.rowsPerPage ?? 10,
+  getAllEditedRows: (id) => get().components[id]?.editedRowDetails.editedRows ?? new Map(),
+  getAllEditedFields: (id) => get().components[id]?.editedRowDetails.editedFields ?? new Map(),
+  getEditedRowFromIndex: (id, index) => get().components[id]?.editedRowDetails.editedRows.get(index),
+  getEditedFieldsOnIndex: (id, index) => get().components[id]?.editedRowDetails.editedFields.get(index),
+  clearEditedRows: (id) =>
+    set(
+      (state) => {
+        state.components[id].editedRowDetails.editedRows.clear();
+        state.components[id].editedRowDetails.editedFields.clear();
+      },
+      false,
+      { type: 'clearEditedRows', payload: { id } }
+    ),
+  getAllAddNewRowDetails: (id) => get().components[id]?.addNewRow,
+  getAddNewRowDetailFromIndex: (id, index) => get().components[id]?.addNewRow.get(index),
+  updateAddNewRowDetails: (id, index, newRow) =>
+    set(
+      (state) => {
+        state.components[id].addNewRow.set(index, newRow);
+      },
+      false,
+      { type: 'updateAddNewRowDetails', payload: { id, index, newRow } }
+    ),
+  clearAddNewRowDetails: (id) =>
+    set(
+      (state) => {
+        state.components[id].addNewRow.clear();
+      },
+      false,
+      { type: 'clearNewRow', payload: { id } }
+    ),
+  getTableComponentEvents: (id) => {
+    console.log('here--- getTableComponentEvents--- ', get().components[id]?.events);
+    return get().components[id]?.events?.tableComponentEvents || [];
+  },
+  getTableActionEvents: (id) => {
+    return get().components[id]?.events?.tableActionEvents || [];
+  },
+  // Remove this when the toggle column is removed as it is used only for the toggle column
+  // TODO: Remove the above comment if this function is added for other columns
+  getTableColumnEvents: (id) => {
+    return get().components[id]?.events?.tableColumnEvents || [];
+  },
+  getHasHoveredEvent: (id) => {
+    return get().components[id]?.events?.hasHoveredEvent || false;
+  },
 });

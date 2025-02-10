@@ -1,19 +1,23 @@
-import React from 'react';
+import React, { useCallback } from 'react';
+import useTableStore from '../../_stores/tableStore';
 
-export const ActionButtons = ({ actions, row, fireEvent, setExposedVariables, tableActionEvents }) => {
-  const handleActionClick = (action) => {
-    setExposedVariables({
-      selectedRowId: row.id,
-      selectedRow: row.original,
-    });
+export const ActionButtons = ({ actions, row, fireEvent, setExposedVariables, id }) => {
+  const { getTableActionEvents } = useTableStore();
 
-    fireEvent('onTableActionButtonClicked', {
-      data: row.original,
-      rowId: row.id,
-      action,
-      tableActionEvents,
-    });
-  };
+  const handleActionClick = useCallback(
+    (action) => {
+      setExposedVariables({
+        selectedRowId: row.id,
+        selectedRow: row.original,
+      });
+
+      fireEvent('onTableActionButtonClicked', {
+        action,
+        tableActionEvents: getTableActionEvents(id),
+      });
+    },
+    [id, row, setExposedVariables, fireEvent, getTableActionEvents]
+  );
 
   return (
     <div className="d-flex align-items-center">
@@ -26,7 +30,7 @@ export const ActionButtons = ({ actions, row, fireEvent, setExposedVariables, ta
             color: action.textColor,
             borderRadius: action.actionButtonRadius,
           }}
-          onClick={() => handleActionClick(action)}
+          onClick={() => handleActionClick(action, id)}
           disabled={action.isDisabled}
         >
           {action.buttonText}

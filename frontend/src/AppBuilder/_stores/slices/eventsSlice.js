@@ -363,6 +363,7 @@ export const createEventsSlice = (set, get) => ({
           'onNewRowsAdded',
         ].includes(eventName)
       ) {
+        console.log('here--- action--- events--- ', events, eventName);
         executeActionsForEventId(eventName, events, mode, customVariables);
       }
       if (eventName === 'onBulkUpdate') {

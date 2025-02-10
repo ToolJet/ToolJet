@@ -5,6 +5,7 @@ import useTableStore from './_stores/tableStore';
 // components
 import TableContainer from './_components/TableContainer';
 import _ from 'lodash';
+import { useEvents } from '@/AppBuilder/_stores/slices/eventsSlice';
 
 export const Table = React.memo(
   ({ id, componentName, width, height, properties, styles, darkMode, fireEvent, setExposedVariables }) => {
@@ -17,6 +18,7 @@ export const Table = React.memo(
       getTableProperties,
       setColumnDetails,
       setTableActions,
+      setTableEvents,
     } = useTableStore();
 
     const { disabledState, visibility } = getTableProperties(id);
@@ -33,7 +35,7 @@ export const Table = React.memo(
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const firstRowOfTable = !_.isEmpty(restOfProperties.data?.[0]) ? restOfProperties.data?.[0] : {};
-
+    const allAppEvents = useEvents();
     useEffect(() => {
       initializeComponent(id);
       return () => removeComponent(id);
@@ -72,6 +74,10 @@ export const Table = React.memo(
       setTableStyles(id, styles);
     }, [id, styles, setTableStyles]);
 
+    useEffect(() => {
+      setTableEvents(id, allAppEvents);
+    }, [id, allAppEvents, setTableEvents]);
+
     return (
       <div
         data-cy={`draggable-widget-${componentName}`}
@@ -92,6 +98,8 @@ export const Table = React.memo(
           height={height}
           darkMode={darkMode}
           componentName={componentName}
+          setExposedVariables={setExposedVariables}
+          fireEvent={fireEvent}
         />
       </div>
     );
