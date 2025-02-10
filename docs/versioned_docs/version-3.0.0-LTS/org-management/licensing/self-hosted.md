@@ -31,27 +31,27 @@ The AI credit system operates at an instance level. Credits are allocated based 
 
 ### Credit Usage
 
-**3 Credits - Standard Operations**
+**Standard Operations**
 
 AI-powered assistance for the following actions consumes **3 credits**:
 
-* Generating or editing single UI components
+- Generating or editing single UI components
 
-* Generating or modifying queries
+- Generating or modifying queries
 
-* Incorporating business logic
+- Incorporating business logic
 
-* Debugging assistance
+- Debugging assistance
 
-* Generating database tables
+- Generating database tables
 
-* Bulk modifying component styles
+- Bulk modifying component styles
 
-* Generating or modifying multi-component layouts
+- Generating or modifying multi-component layouts
 
-* Guidance from documentation
+- Guidance from documentation
 
-**10 credits - Advanced builds**
+**Advanced Builds**
 
 The entire app UI generation consumes **10 credits**.
 
