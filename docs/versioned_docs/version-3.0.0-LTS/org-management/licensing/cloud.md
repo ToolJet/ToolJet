@@ -3,13 +3,13 @@ id: tooljet-cloud
 title: ToolJet Cloud
 ---
 
-This guide explains the different types of subscriptions present and provides instructions on upgrading your subscription for ToolJet Cloud. For assistance in selecting an appropriate plan, visit the **[ToolJet Pricing](https://www.tooljet.com/pricing)** page or **[contact the ToolJet team](mailto:hello@tooljet.com)**.
+This guide explains the different types of subscriptions present and provides instructions on upgrading your subscription for ToolJet Cloud. For assistance in selecting an appropriate plan, visit the **[ToolJet Pricing](https://www.tooljet.ai/pricing)** page or **[contact the ToolJet team](mailto:hello@tooljet.com)**.
 
 <div style={{paddingTop:'24px'}}>
 
 ## Types of Subscriptions
 
-ToolJet provides three types of subscriptions - **Basic**, **Trial**, and **Paid**. Which can be further categorized in different plans based on the services and features. Visit **[ToolJet Pricing](https://www.tooljet.com/pricing)** page for more details on different plans.
+ToolJet provides three types of subscriptions - **Basic**, **Trial**, and **Paid**. Which can be further categorized in different plans based on the services and features. Visit **[ToolJet Pricing](https://www.tooljet.ai/pricing)** page for more details on different plans.
 
 ### Basic Subscription
 
@@ -21,13 +21,13 @@ ToolJet offers a trial subscription which is valid for 14 days, where user can a
 
 ### Paid Subscription
 
-ToolJet offers various plans for paid subscription visit **[ToolJet Pricing](https://www.tooljet.com/pricing)** page for more details on different plans. Once you have decided a suitable plan for your needs then you can upgrade to a paid subscription by simply clicking on the upgrade button.
+ToolJet offers various plans for paid subscription visit **[ToolJet Pricing](https://www.tooljet.ai/pricing)** page for more details on different plans. Once you have decided a suitable plan for your needs then you can upgrade to a paid subscription by simply clicking on the upgrade button.
 
 </div>
 
 ## AI Credit System
 
-AI credits are allocated at the workspace level, varying based on the pricing plan and replenishing every month. Unused credits do not carry over to the next month. AI-powered operations consume credits depending on their complexity. Visit **[ToolJet Pricing](https://www.tooljet.com/pricing)** page for more details.
+AI credits are allocated at the workspace level, varying based on the pricing plan and replenishing every month. Unused credits do not carry over to the next month. AI-powered operations consume credits depending on their complexity. Visit **[ToolJet Pricing](https://www.tooljet.ai/pricing)** page for more details.
 
 
 ### Credit Usage
