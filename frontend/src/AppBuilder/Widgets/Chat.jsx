@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/Button/Button';
 import { v4 as uuidv4 } from 'uuid';
-
+import '@/_styles/widgets/chat.scss';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 export const Chat = function Chat({
   id,
   width,
@@ -13,6 +14,7 @@ export const Chat = function Chat({
   setExposedVariables,
   fireEvent,
 }) {
+  const darkTheme = localStorage.getItem('darkMode') === 'true';
   const [chatTitle, setChatTitle] = useState(properties.chatTitle);
   const [message, setMessage] = useState('');
   const [chatHistory, setChatHistory] = useState(properties.initialChat || []);
@@ -111,27 +113,19 @@ export const Chat = function Chat({
   if (!visibility) return null;
 
   return (
-    <div
-      className="chat-widget"
-      style={{
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        backgroundColor: darkMode ? 'var(--slate3)' : 'white',
-        border: '1px solid var(--slate7)',
-        borderRadius: '4px',
-      }}
-    >
+    <div className={`chat-widget ${darkTheme ? 'dark-theme' : ''}`}>
       <div
         className="chat-header p-2 d-flex justify-content-between align-items-center"
-        style={{ borderBottom: '1px solid var(--slate7)' }}
+        style={{ borderBottom: '1px solid var(--borders-disabled-on-white)' }}
       >
-        <span className="chat-title">{chatTitle}</span>
-        <div>
-          <ButtonSolid variant="secondary" size="sm" onClick={clearHistory} className="mx-1">
-            Clear History
-          </ButtonSolid>
+        <span className="chat-title tj-text-xx-large">{chatTitle}</span>
+        <div className="button-group">
+          <Button variant="ghost" iconOnly={true} className="mx-1">
+            <SolidIcon name="pagedownload" width="16" fill="var(--icons-strong)" />
+          </Button>
+          <Button variant="ghost" onClick={clearHistory} iconOnly={true} className="mx-1">
+            <SolidIcon name="clearhistory" width="16" fill="var(--icons-strong)" />
+          </Button>
         </div>
       </div>
 
@@ -195,13 +189,13 @@ export const Chat = function Chat({
             style={{ resize: 'none', height: '38px' }}
             disabled={properties.disableInput || properties.loadingResponse}
           />
-          <ButtonSolid
+          <Button
             variant="primary"
             onClick={() => handleSendMessage(message, 'message')}
             disabled={!message.trim() || properties.disableInput || properties.loadingResponse || newMessageDisabled}
           >
             Send
-          </ButtonSolid>
+          </Button>
         </div>
       </div>
     </div>

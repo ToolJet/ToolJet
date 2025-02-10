@@ -184,6 +184,9 @@ import SerialCol from './SerialCol.jsx';
 import DatetimeCol from './DatetimeCol';
 import AITag from './AITag.jsx';
 import Reset from './Reset.jsx';
+import AddPageGroupIcon from './AddPageGroup.jsx';
+import ClearHistory from './ClearHistory.jsx';
+import PageDownload from './PageDownload.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -557,6 +560,10 @@ const Icon = (props) => {
       return <DatetimeCol {...props} />;
     case 'AI-tag':
       return <AITag {...props} />;
+    case 'clearhistory':
+      return <ClearHistory {...props} />;
+    case 'pagedownload':
+      return <PageDownload {...props} />;
     default:
       return <Apps {...props} />;
   }

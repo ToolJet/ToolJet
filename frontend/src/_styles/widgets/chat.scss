@@ -1,0 +1,34 @@
+@import "../colors.scss";
+@import "../tabler.scss";
+@import "../z-index.scss";
+@import "../mixins.scss";
+@import "../typography.scss";
+@import "../designtheme.scss";
+.chat-widget {
+  background-color: var(--surfaces-surface-01) !important;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-shadow:  var(--elevation-400-box-shadow)  var(--elevation-700-box-shadow);
+  border-radius: 8px;
+  .button-group {
+    display: flex;
+    border: 1px solid var(--borders-default);
+    border-radius: 6px;
+    button {
+      margin: 0 !important;
+      border-radius: 0 !important;
+    }
+    button:not(:last-child) {
+      border-right: 1px solid var(--borders-default);
+    }
+  }
+
+
+  .chat-header {
+    .chat-title {
+      color: var(--text-black-000);
+    }
+  }
+}
