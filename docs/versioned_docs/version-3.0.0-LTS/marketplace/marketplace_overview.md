@@ -82,6 +82,7 @@ To remove a plugin, follow these steps:
 - **[GitHub](/docs/marketplace/plugins/marketplace-plugin-github)**
 - **[HarperDB](/docs/marketplace/plugins/marketplace-plugin-harperdb)**
 - **[Jira](/docs/marketplace/plugins/marketplace-plugin-jira)**
+- **[Mistral AI](/docs/marketplace/plugins/marketplace-plugin-mistral_ai)**
 - **[OpenAI](/docs/marketplace/plugins/marketplace-plugin-openai)**
 - **[Pinecone](/docs/marketplace/plugins/marketplace-plugin-pinecone)**
 - **[Plivo](/docs/marketplace/plugins/marketplace-plugin-plivo)**

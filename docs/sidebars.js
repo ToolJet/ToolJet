@@ -509,7 +509,8 @@ const sidebars = {
             'marketplace/plugins/marketplace-plugin-sharepoint',
             'marketplace/plugins/marketplace-plugin-pinecone',
             'marketplace/plugins/marketplace-plugin-gemini',
-            'marketplace/plugins/marketplace-plugin-anthropic'
+            'marketplace/plugins/marketplace-plugin-anthropic',
+            'marketplace/plugins/marketplace-plugin-mistral_ai'
           ],
         },
       ],
