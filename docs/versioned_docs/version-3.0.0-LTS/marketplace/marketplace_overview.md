@@ -94,6 +94,8 @@ To remove a plugin, follow these steps:
 - **[Salesforce](/docs/marketplace/plugins/marketplace-plugin-salesforce)**
 - **[Sharepoint](/docs/marketplace/plugins/marketplace-plugin-sharepoint)**
 - **[Supabase](/docs/marketplace/plugins/marketplace-plugin-supabase)**
+- **[Weaviate](/docs/marketplace/plugins/marketplace-plugin-weaviate)**
+
 :::info For Plugin Developers
 Refer to the **[Plugin Development guide](/docs/contributing-guide/marketplace/marketplace-setup)** to learn how to create plugins for the ToolJet Marketplace.
 :::
