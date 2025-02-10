@@ -70,6 +70,10 @@ curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/GKE/i
 
 Change the domain name to the domain/subdomain that you wish to use for ToolJet installation.
 
+:::info
+If app generation encounters a connection timeout, consider increasing the load balancer's timeout to 300 seconds.
+:::
+
 6. Apply YAML configs
 
 ```bash

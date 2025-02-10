@@ -61,6 +61,9 @@ If there are self signed HTTPS endpoints that ToolJet needs to connect to, pleas
 :::tip
 If you want to serve ToolJet client from services such as Firebase or Netlify, please read the client Setup documentation **[here](/docs/setup/client)**.
 :::
+:::info
+If app generation encounters a connection timeout, consider increasing the load balancer's timeout to 300 seconds.
+:::
 
 ## ToolJet Database
 

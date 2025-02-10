@@ -57,6 +57,10 @@ If there are self signed HTTPS endpoints that Tooljet needs to connect to, pleas
    ```
 
 You will be able to access your ToolJet installation once the pods and services running.
+:::info
+If app generation encounters a connection timeout, consider increasing the load balancer's timeout to 300 seconds.
+:::
+
 
 ## ToolJet Database
 

@@ -47,6 +47,11 @@ Make sure to edit the environment variables in the `deployment.yaml`. We advise 
 **Example:**
 - [Application load balancing on Amazon EKS](https://docs.aws.amazon.com/eks/latest/userguide/alb-ingress.html)
 
+:::info
+If app generation encounters a connection timeout, consider increasing the load balancer's timeout to 300 seconds.
+:::
+
+
 ## ToolJet Database
 
 To use the ToolJet Database, you need to set up and deploy a PostgREST server, which facilitates querying the database. Detailed setup instructions are available [here](/docs/tooljet-db/tooljet-database).
