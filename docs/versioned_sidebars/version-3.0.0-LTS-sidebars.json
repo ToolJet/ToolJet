@@ -14,7 +14,7 @@
       "label": "Build with AI",
       "items": [
         "build-with-ai/overview",
-        "build-with-ai/generate-apps",
+        "build-with-ai/generate-applications",
         "build-with-ai/ai-docs-assistant"
       ]
     },
