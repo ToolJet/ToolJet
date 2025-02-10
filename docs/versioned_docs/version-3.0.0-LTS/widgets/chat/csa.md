@@ -3,7 +3,7 @@ id: csa
 title: Component Specific Actions & Exposed Variables
 ---
 
-This guide covers component-specific actions for the chat component and its exposed variables. To learn how to build a chatbot, refer to the [Chat Component Overview](/docs/widgets/chat/) guide. For more information on Chat Component Properties, check out the [Properties](/docs/widgets/chat/properties) guide.
+This guide covers component-specific actions for the **Chat Component** and its exposed variables. To learn how to build a chatbot, refer to the [Chat Component Overview](/docs/widgets/chat/) guide. For more information on Chat Component Properties, check out the [Properties](/docs/widgets/chat/properties) guide.
 
 ## Component Specific Actions (CSA)
 

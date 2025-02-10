@@ -3,29 +3,29 @@ id: properties
 title: Properties
 ---
 
-The **Chat Component** can be customized by setting different properties or performing actions by adding events. To learn how to build a chatbot, refer to the [Chat Component Overview](/docs/widgets/chat/) guide. For more information on CSAs and Exposed Variables, check out the [Component Specific Actions](/docs/widgets/chat/csa) guide.
+The **Chat Component** can be customized by configuring various properties or adding events to perform specific actions. To learn how to build a chatbot, refer to the [Chat Component Overview](/docs/widgets/chat/) guide. For more information on CSAs and Exposed Variables, check out the [Component Specific Actions](/docs/widgets/chat/csa) guide.
 
 ## Properties
 
 | Property | Description | Expected Value |
 |----------|-------------|--------------- |
-| Chat Title | Title of the chat component. | String (e.g. ToolJet Support Chatbot) |
+| Chat Title | Title of the chat component. | String (e.g. `ToolJet Support Chatbot`) |
 | Initial Chat | Initial messages to be loaded when the chat starts. | Array of Objects ( e.g. `{{[ { message: 'Hey! Welcome to ToolJet. How may I help you?' } ]}}` ) |
-| User Name | Defines the user's name. | String (e.g. John Doe) |
+| User Name | Defines the user's name. | String (e.g. `John Doe`) |
 | User Avatar | Defines the user's avatar. | Image URL |
-| Respondent Name | Defines the respondent's name. | String (e.g. ToolJet Bot) |
+| Respondent Name | Defines the respondent's name. | String (e.g. `ToolJet Bot`) |
 | Respondent Avatar | Defines the respondent's avatar. | Image URL |
 
 ## Message Object Properties
 
 | Property | Description | Required | Expected Value |
 |----------|-------------|----------|----------------|
-| Message | The content of the message. | ✅ | String (e.g. "Hey! How can I help you?") |
-| Message ID | ID of the message. | Auto-generated | String (e.g. "e3dd6f60-d5e8-46c5-b73b-006f2f4a34f2") |
-| Timestamp | Date and Time of the message. | Auto-generated | DateTime in ISO 8601 format (e.g. "2025-02-05T09:33:32.468Z") |
-| Name | Message sender's name. | ❌ | String (e.g. "John Doe") |
+| Message | The content of the message. | ✅ | String (e.g. `"Hey! How can I help you?"`) |
+| Message ID | ID of the message. | Auto-generated | String (e.g. `"e3dd6f60-d5e8-46c5-b73b-006f2f4a34f2"`) |
+| Timestamp | Date and Time of the message. | Auto-generated | DateTime in ISO 8601 format (e.g. `"2025-02-05T09:33:32.468Z"`) |
+| Name | Message sender's name. | ❌ | String (e.g. `"John Doe"`) |
 | Avatar | Message sender's avatar. | ❌ | Image URL |
-| Type | Type of the message. | ✅ | Accepted Values: "response", "message" or "error". |
+| Type | Type of the message. | ✅ | Accepted Values: `"response"`, `"message"` or `"error"`. |
 
 ## Events
 
@@ -40,7 +40,7 @@ All the following actions can be enabled or disabled either by using the toggle 
 
 | Action | Description |
 |--------|-------------|
-| Visibility | Controls component visibility. |
+| Visibility | Controls the component's visibility. |
 | Disable input state | Enables or disables the input state. |
 | Histroy loading state | Enables the history loading state, often used with `isLoading` to indicate progress. |
 | Response loading state | Enables the response loading state, often used with `isLoading` to indicate progress. |

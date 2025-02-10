@@ -4,9 +4,9 @@ title: Overview
 slug: /widgets/chat/
 ---
 
-The **Chat Component** is used to implement a chat-based interface in the application. It can be used with AI plugins to build an AI-enabled chatbot or for traditional chat functionalities, making it suitable for both AI-powered and human-to-human conversations.
+The **Chat Component** is used to implement a chat-based interface in an application. It can be integrated with AI plugins to build an AI-enabled chatbot or used for traditional chat functionalities, making it suitable for both AI-powered and human-to-human conversations.
 
-This guide talks about how to build an AI Enabled Support Chatbot using the **Chat Component**, refer to the following guides for more information on:
+This guide explains how to build an AI-enabled support chatbot using the Chat Component. For more details, refer to the following guides:
 - **[Chat Component Properties](/docs/widgets/chat/properties)**
 - **[Component Specific Actions (CSA)](/docs/widgets/chat/csa)**
 
@@ -25,14 +25,14 @@ This guide talks about how to build an AI Enabled Support Chatbot using the **Ch
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/widgets/chat/set-component.png" alt="Customize your Chat Component" />
 
-3. Setup an AI query to generate responses, check out **[marketplace](/docs/marketplace/marketplace-overview)** for all the available plugins.
+3. Setup an AI query to generate responses. Check out **[marketplace](/docs/marketplace/marketplace-overview)** for all the available plugins.
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/widgets/chat/query.png" alt="Setup the AI Query" />
 
 4. Add a new event handler for the query with the following configurations:
     - Event: **Query Success**
     - Action: **Control Component**
-    - Component: **chat1** *(Select your chat component from the dropdown.)*
+    - Component: **chat1** *(Select your chat component name from the dropdown.)*
     - Action: **Append History**
     - Message: 
         `{{{message: queries.openai1.data, type:"response"}}}`
@@ -42,7 +42,7 @@ This guide talks about how to build an AI Enabled Support Chatbot using the **Ch
 5. Now add a new event handler for the **Chat Component**, with the following configuration:
     - Event: **On Message Sent**
     - Action: **Run Query**
-    - Query: **openai1** *(Select your AI query from the dropdown.)*
+    - Query: **openai1** *(Select your AI query name from the dropdown.)*
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/widgets/chat/component-eh.png" alt="Component Event Handler" />
 
@@ -50,7 +50,7 @@ This guide talks about how to build an AI Enabled Support Chatbot using the **Ch
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/widgets/chat/response-loading.png" alt="Add Response Loading State" />
 
-By following the above steps your AI Enabled Chatbot will be ready.
+By following the above steps, your AI Enabled Chatbot will be ready.
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/widgets/chat/final-bot.png" alt="Final Chatbot" />
 
