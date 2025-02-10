@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-catch */
 import { CollectionOperation, ObjectsOperation, QueryOptions } from './types';
 
 export async function getSchema(queryOptions: QueryOptions, BASE_URL, headers) {
@@ -14,7 +15,7 @@ export async function getSchema(queryOptions: QueryOptions, BASE_URL, headers) {
     }
     return await response.json();
   } catch (error) {
-    return error;
+    throw error;
   }
 }
 
@@ -47,7 +48,7 @@ export async function getCollection(collectionName: string, consistency: boolean
     }
     return await response.json();
   } catch (error) {
-    return error;
+    throw error;
   }
 }
 
@@ -91,7 +92,7 @@ export async function createCollection(queryOptions: QueryOptions, SCHEMA_URL, h
 
     return await response.json();
   } catch (error) {
-    return error;
+    throw error;
   }
 }
 
@@ -110,7 +111,7 @@ export async function deleteCollection(collectionName: string, SCHEMA_URL, heade
 
     return true;
   } catch (error) {
-    return error;
+    throw error;
   }
 }
 
@@ -162,7 +163,7 @@ export async function listObjects(queryOptions: QueryOptions, OBJECT_URL, header
     }
     return await response.json();
   } catch (error) {
-    return error;
+    throw error;
   }
 }
 
@@ -196,7 +197,7 @@ export async function createObject(queryOptions: QueryOptions, OBJECT_URL, heade
 
     return await response.json();
   } catch (error) {
-    return error;
+    throw error;
   }
 }
 
@@ -213,7 +214,7 @@ export async function getObjectById(queryOptions: QueryOptions, OBJECT_URL, head
 
     return await response.json();
   } catch (error) {
-    return error;
+    throw error;
   }
 }
 
@@ -233,6 +234,6 @@ export async function deleteObjectById(queryOptions: QueryOptions, OBJECT_URL, h
 
     return true;
   } catch (error) {
-    return error;
+    throw error;
   }
 }

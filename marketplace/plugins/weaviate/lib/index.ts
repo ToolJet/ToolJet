@@ -30,7 +30,15 @@ export default class Weaviate implements QueryService {
           throw new QueryError('Invalid operation', 'Operation not supported', {});
       }
     } catch (error) {
-      throw new QueryError('Query could not be completed', error?.message, {});
+      const errorMessage = error.message || 'An unknown error occurred';
+      const errorDetails: any = {};
+
+      if (error && error instanceof Error) {
+        const weaviateError = error as any;
+        errorDetails.message = weaviateError.message;
+      }
+
+      throw new QueryError('Query could not be completed', errorMessage, errorDetails);
     }
 
     return { status: 'ok', data: result };
