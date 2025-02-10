@@ -25,7 +25,13 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
   const [loadingResponse, setLoadingResponse] = useState(properties.loadingResponse);
   const [loadingHistory, setLoadingHistory] = useState(properties.loadingHistory);
   const [message, setMessage] = useState('');
-  const [chatHistory, setChatHistory] = useState(properties.initialChat || []);
+  const [chatHistory, setChatHistory] = useState(() => {
+    if (Array.isArray(properties.initialChat)) {
+      return properties.initialChat;
+    } else {
+      return [];
+    }
+  });
   const [newMessageDisabled, setNewMessageDisabled] = useState(false);
   const [error, setError] = useState(null);
   const [enableClearHistoryButton, setEnableClearHistoryButton] = useState(properties.enableClearHistoryButton);
@@ -101,7 +107,11 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
   const clearHistory = (shouldFireEvent = true) => {
     setChatHistory(properties.initialChat);
     if (error) setError(null);
-    setExposedVariables({ history: properties.initialChat, lastMessage: {}, lastResponse: {} });
+    setExposedVariables({
+      history: Array.isArray(properties.initialChat) ? properties.initialChat : [],
+      lastMessage: {},
+      lastResponse: {},
+    });
     if (shouldFireEvent) fireEvent('onClearHistory');
   };
 
@@ -128,6 +138,12 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
       toast.error(`Failed to download chat history`);
     }
   };
+
+  useEffect(() => {
+    setExposedVariables({
+      history: chatHistory,
+    });
+  }, []);
 
   useEffect(() => setUserName(properties.userName), [properties.userName]);
   useEffect(() => setUserAvatar(properties.userAvatar), [properties.userAvatar]);
