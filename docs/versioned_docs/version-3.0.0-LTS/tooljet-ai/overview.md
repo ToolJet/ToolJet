@@ -12,4 +12,4 @@ Follow these step-by-step instructions to create an inventory management applica
 3. **Customize your app** – Use ToolJet AI to customize the generated application to your specific needs, adjusting components and its styles, and also data source queries.
 
 
-Refer to [Build with AI](/docs/tooljet-ai/build-with-ai) and [AI Doc Assitant](/docs/tooljet-ai/ai-doc-assistant) documentation to learn more.
+Refer to [Build with AI](/docs/tooljet-ai/build-with-ai) and [AI Docs Assitant](/docs/tooljet-ai/ai-doc-assistant) documentation to learn more.
