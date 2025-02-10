@@ -27,7 +27,9 @@ ToolJet offers various subscription plans for paid licenses visit **[ToolJet Pri
 
 ## AI Credit System 
 
-The AI credit system operates at an instance level. Credits are allocated based on the pricing plan and are replenished monthly. Unused credits do not carry over to the next month. AI-powered operations consume credits depending on their complexity. Visit **[ToolJet Pricing](https://www.tooljet.ai/pricing)** page for more details.
+Build applications effortlessly in Tooljet using natural language. Refer to [Build with AI](/docs/build-with-ai/overview) guide for more information. 
+
+The AI credits are consumed on every AI operation performed in ToolJet. Credits operates at an instance level and are allocated based on the pricing plan and are replenished monthly. Unused credits do not carry over to the next month. AI-powered operations consume credits depending on their complexity. Visit **[ToolJet Pricing](https://www.tooljet.ai/pricing)** page for more details.
 
 ### Credit Usage
 
@@ -57,7 +59,7 @@ The entire app UI generation consumes **10 credits**.
 
 
 ### Credit calculation
-AI credits are calculated based on the pricing plan and are assigned per builder in an instance. These credits are then available for use by all users across that workspace.
+AI credits are calculated based on the pricing plan and are assigned per builder in an instance. These credits are then available for use by all users in the instance across all workspaces.
 
 <div style={{paddingTop:'24px'}}>
 
@@ -68,11 +70,19 @@ Once you have received the license key from the ToolJet Team, you can update the
 1. Log in as a **[Super Admin](/docs/Enterprise/superadmin)**, ensuring that you are on the correct instance URL.
 2. Go to the Settings page.
 3. In the license key tab, update the provided license key.
+
+<div style={{marginBottom:'12px'}}>
+<img className="screenshot-full" src="/img/licensing/self-hosted-license.png" alt="Licensing" />
+</div>
 4. Within the license tab of the Settings page, you can access the limit tab, which provides details about available total users, builders, and end users. You can also see the expiry date of your license key.
 
-<img className="screenshot-full" src="/img/licensing/licensingpage2-v2.png" alt="Licensing" />
+<div style={{marginBottom:'12px'}}>
+<img className="screenshot-full" src="/img/licensing/selfhosted-limits.png" alt="Licensing" />
+</div>
 
-<img className="screenshot-full" src="/img/licensing/licensingpage3-v2.png" alt="Licensing" />
+<div style={{marginBottom:'12px'}}>
+<img className="screenshot-full" src="/img/licensing/selfhosted-access.png" alt="Licensing" />
+</div>
 
 </div>
 

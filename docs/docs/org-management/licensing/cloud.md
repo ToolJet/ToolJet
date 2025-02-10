@@ -27,7 +27,10 @@ ToolJet offers various plans for paid subscription visit **[ToolJet Pricing](htt
 
 ## AI Credit System
 
-AI credits are allocated at the workspace level, varying based on the pricing plan and replenishing every month. Unused credits do not carry over to the next month. AI-powered operations consume credits depending on their complexity. Visit **[ToolJet Pricing](https://www.tooljet.ai/pricing)** page for more details.
+Build applications effortlessly in Tooljet using natural language. Refer to [Build with AI](/docs/build-with-ai/overview) guide for more information. 
+
+
+The AI credits are consumed on every AI operation performed in ToolJet. Credits are allocated at the workspace level, varying based on the pricing plan and replenishing every month. Unused credits do not carry over to the next month. AI-powered operations consume credits depending on their complexity. Visit **[ToolJet Pricing](https://www.tooljet.ai/pricing)** page for more details.
 
 
 ### Credit Usage
@@ -79,7 +82,7 @@ AI credits are calculated based on the pricing plan and are assigned per builder
 
 If you are not currently on a paid plan and have not yet used your free trial, you will see a **Start Trial** banner within the ToolJet dashboard. Click on the **Start free trial** button inside this banner to initiate your free trial.
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/licensing/dashboard-free-trial.png" alt="TJ Dashboard: Start free trial" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/licensing/cloud-license.png" alt="TJ Dashboard: Start free trial" />
 
 ### Upgrading to Paid Subscription
 
@@ -92,8 +95,7 @@ When you've identified the ideal paid plan to meet your needs, the next step is 
 5. You'll be directed to a payment gateway. Complete the payment process.
 6. Upon successful payment, you'll return to the ToolJet subscription tab. A success message will display, and your subscription overview card will update shortly to reflect your new plan.
 
-<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/licensing/upgrade-business-plan.gif" alt="Dashboard"/>
-
+<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/licensing/cloud-license-price.png" alt="Dashboard"/>
 If you've decided to move forward with the customized enterprise plan, please schedule a call with **[ToolJet team](mailto:hello@tooljet.com)** and expect a response from the team within 24-48 hours for onboarding.
 
 </div>
