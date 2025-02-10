@@ -68,7 +68,7 @@ The entire app UI generation consumes **10 credits**.
 
 
 ### Credit calculation
-AI credits are calculated based on the pricing plan and are assigned per builder in a workspace. These credits are then available for use by all users across all workspaces within that instance.
+AI credits are calculated based on the pricing plan and are assigned per builder in a workspace. These credits are then available for use by all users in the workspace.
 
 
 <div style={{paddingTop:'24px'}}>
