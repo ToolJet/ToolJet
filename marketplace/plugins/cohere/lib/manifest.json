@@ -24,7 +24,8 @@
       "label": "API key",
       "key": "apiKey",
       "type": "password",
-      "description": "Enter your Cohere API Key"
+      "description": "Enter your Cohere API Key",
+      "encrypted": true
     }
   },
   "required": [

@@ -38,11 +38,11 @@
         "key": "messages",
         "type": "codehinter",
         "lineNumbers": false,
-        "placeholder": "[{\n    \"role\": \"system\",\n    \"content\": \"You are a financial advisor of a Fortune 500 company.\"\n},\n{\n    \"role\": \"user\",\n    \"content\": \"Can you help me with tax benefits for the employee?\"\n},\n{\n    \"role\": \"assistant\",\n    \"content\": \"Sure! Please help me with more specific details of your employment and salary structure.\"\n}]",
+        "placeholder": "[{\n    \"role\": \"system\",\n    \"content\": \"You are a financial advisor of a fortune 500 company\"\n},\n{\n    \"role\": \"user\",\n    \"content\": \"Can you help me with tax benefits for the employee\"\n},\n{\n    \"role\": \"assistant\",\n    \"content\": \"Sure! Please help me with more specific details of your employment and salary structure.\"\n},\n{\n    \"role\": \"user\",\n    \"content\": \"I am a salaried employee with 220,000 USD yearly compensation\"\n}]",
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "tooltip": "Array of messages between system, user and assistant"
+        "tooltip": "Array of messages between system, assistant and user."
       },
       "max_tokens": {
         "label": "Max tokens",

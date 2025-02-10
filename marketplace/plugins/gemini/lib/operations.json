@@ -4,7 +4,8 @@
   "description": "A schema defining Gemini datasource",
   "type": "api",
   "defaults": {
-    "operation": "text_generation"
+    "operation": "text_generation",
+    "model": "models/gemini-1.5-flash"
   },
   "properties": {
     "operation": {

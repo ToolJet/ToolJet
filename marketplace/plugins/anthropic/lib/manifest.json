@@ -24,7 +24,8 @@
       "label": "API key",
       "key": "apiKey",
       "type": "password",
-      "description": "Enter your Anthropic API Key"
+      "description": "Enter your Anthropic API Key",
+      "encrypted": true
     }
   },
   "required": [
