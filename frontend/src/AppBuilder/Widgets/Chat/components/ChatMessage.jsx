@@ -24,7 +24,7 @@ export const ChatMessage = ({ chat, userName, respondentName, userAvatar, respon
     <div className="d-flex flex-row align-items-start custom-gap-12 position-relative message-container w-100">
       <MessageAvatar
         type={chat.type}
-        chatAvatar={chat.avatar}
+        chatAvatar={chat?.avatar || ''}
         userAvatar={userAvatar}
         respondentAvatar={respondentAvatar}
       />

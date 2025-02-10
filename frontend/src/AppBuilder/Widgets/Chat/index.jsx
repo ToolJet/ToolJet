@@ -140,10 +140,12 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
   };
 
   useEffect(() => {
+    const historyTOUpdate = Array.isArray(properties.initialChat) ? properties.initialChat : [];
+    setChatHistory(historyTOUpdate);
     setExposedVariables({
-      history: chatHistory,
+      history: historyTOUpdate,
     });
-  }, []);
+  }, [properties.initialChat]);
 
   useEffect(() => setUserName(properties.userName), [properties.userName]);
   useEffect(() => setUserAvatar(properties.userAvatar), [properties.userAvatar]);
@@ -188,7 +190,7 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
     return (
       Array.isArray(chatHistory) &&
       chatHistory.map((chat, index) => (
-        <div key={chat.messageId || index}>
+        <div key={chat.messageId}>
           <ChatMessage
             chat={chat}
             userName={userName}

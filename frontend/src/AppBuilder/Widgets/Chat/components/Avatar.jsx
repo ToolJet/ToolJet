@@ -33,7 +33,7 @@ const GetAvatar = ({ chatType, userAvatar, respondentAvatar, chatAvatar }) => {
   if (chatType === 'message') {
     return (
       <Avatar
-        initialSrc={chatAvatar || userAvatar}
+        initialSrc={chatAvatar}
         alt="User avatar"
         fallbackIcon={
           <SolidIcon name="defaultsenderchatavatar" width="24" viewBox="0 0 24 24" fill={'var(--icons-strong)'} />
@@ -43,7 +43,7 @@ const GetAvatar = ({ chatType, userAvatar, respondentAvatar, chatAvatar }) => {
   } else {
     return (
       <Avatar
-        initialSrc={chatAvatar || respondentAvatar}
+        initialSrc={chatAvatar}
         alt="Respondent avatar"
         fallbackIcon={
           <SolidIcon name="defaultresponseavatar" width="24" viewBox="0 0 24 24" fill={'var(--primary-brand)'} />
