@@ -7,6 +7,10 @@ title: Helm
 
 This repository contains Helm charts for deploying [ToolJet](https://github.com/ToolJet/helm-charts) on a Kubernetes Cluster using Helm v3. The charts include an integrated PostgreSQL server that is enabled by default. However, you have the option to disable it and configure a different PostgreSQL server by updating the `values.yml` file.
 
+:::info
+Whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`
+:::
+
 ## Installation
 
 ### From Helm repo
@@ -22,10 +26,6 @@ helm install tooljet tooljet/tooljet
 4. Run `helm install -n $NAMESPACE --create-namespace $RELEASE .`
 
 Remember to replace the variables with your specific configuration values.
-
-:::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`.
-:::
 
 ## ToolJet Database
 

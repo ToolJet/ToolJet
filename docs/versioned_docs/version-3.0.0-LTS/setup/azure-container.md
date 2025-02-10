@@ -6,7 +6,8 @@ title: Azure container apps
 # Deploying ToolJet on Azure container apps
 
 :::info
-Please note that you need to set up a PostgreSQL database manually to be used by ToolJet. Additionally, you must set up a Redis service through Azure Cache for Redis.
+- Please note that you need to set up a PostgreSQL database manually to be used by ToolJet. Additionally, you must set up a Redis service through Azure Cache for Redis.
+- Whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`
 :::
 
 ## Deploying ToolJet application
@@ -54,10 +55,6 @@ Please note that you need to set up a PostgreSQL database manually to be used by
 
    If using Azure Database for Postgresql-Flexible server, add:
    - **PGSSLMODE = require**
-
-:::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`.
-:::
 
    <div style={{textAlign: 'center'}}>
  

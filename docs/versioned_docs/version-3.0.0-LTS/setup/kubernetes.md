@@ -6,7 +6,8 @@ title: Kubernetes
 # Deploying ToolJet on Kubernetes
 
 :::info
-You should setup a PostgreSQL database manually to be used by ToolJet.
+- You should setup a PostgreSQL database manually to be used by ToolJet.
+- Whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`
 :::
 
 Follow the steps below to deploy ToolJet on a Kubernetes cluster.
@@ -29,9 +30,6 @@ Follow the steps below to deploy ToolJet on a Kubernetes cluster.
 
    Read **[environment variables reference](/docs/setup/env-vars)**
 
-:::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`.
-:::
 
 3. Create a Kubernetes deployment
 

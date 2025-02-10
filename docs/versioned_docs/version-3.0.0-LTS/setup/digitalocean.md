@@ -3,6 +3,12 @@ id: digitalocean
 title: DigitalOcean 
 ---
 
+:::info
+
+Whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`
+
+:::
+
 Follow the steps below to deploy ToolJet on a DigitalOcean Droplet.
 
 **1. Navigate to the Droplets section in DigitalOcean.**
@@ -70,15 +76,12 @@ docker-compose --version
 
 **7. Use the [Docker Documentation](https://docs.tooljet.com/docs/setup/docker) to deploy ToolJet.**
 
-:::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`.
-:::
 
-## Setup to Enable ToolJet AI
+## Setup to Enable AI
 
-Build applications effortlessly with ToolJet AI, using natural language to generate and customize apps. Refer to [ToolJet AI](/docs/tooljet-ai/overview) guide for more information.
+Build applications effortlessly in Tooljet using natural language. Refer to [Build with AI](/docs/build-with-ai/overview) guide for more information.
 
-Follow this guide to enable AI features in your self-hosted setup.
+Follow this guide to enable AI in your self-hosted setup.
 
 **Deployment Steps**
 

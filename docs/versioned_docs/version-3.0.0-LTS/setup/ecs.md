@@ -6,7 +6,8 @@ title: AWS ECS
 # Deploying ToolJet on Amazon ECS
 
 :::info
-You should setup a PostgreSQL database manually to be used by ToolJet.
+- You should setup a PostgreSQL database manually to be used by ToolJet.
+- Whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`
 :::
 
 You can effortlessly deploy Amazon Elastic Container Service (ECS) by utilizing a [CloudFormation template](https://aws.amazon.com/cloudformation/):
@@ -186,15 +187,11 @@ Update ToolJet deployment with the appropriate env variables [here](/docs/setup/
 
 </div>
 
-:::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`.
-:::
+## Setup to Enable AI
 
-## Setup to Enable ToolJet AI
+Build applications effortlessly in Tooljet using natural language. Refer to [Build with AI](/docs/build-with-ai/overview) guide for more information.
 
-Build applications effortlessly with ToolJet AI, using natural language to generate and customize apps. Refer to [ToolJet AI](/docs/tooljet-ai/overview) guide for more information.
-
-Follow this guide to enable AI features in your self-hosted setup.
+Follow this guide to enable AI in your self-hosted setup.
 
 **Deployment Steps**
 

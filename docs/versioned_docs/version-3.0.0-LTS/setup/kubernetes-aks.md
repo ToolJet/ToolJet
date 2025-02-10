@@ -6,7 +6,8 @@ title: Kubernetes (AKS)
 # Deploying ToolJet on Kubernetes (AKS)
 
 :::info
-You should setup a PostgreSQL database manually to be used by ToolJet. We recommend using Azure Database for PostgreSQL since this guide is for deploying using AKS.
+- You should setup a PostgreSQL database manually to be used by ToolJet. We recommend using Azure Database for PostgreSQL since this guide is for deploying using AKS.
+- Whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`
 :::
 
 Follow the steps below to deploy ToolJet on a AKS Kubernetes cluster.
@@ -43,9 +44,6 @@ Make sure to edit the environment variables in the `deployment.yaml`. We advise 
 If there are self signed HTTPS endpoints that Tooljet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates. You can make use of kubernetes secrets to mount the certificate file onto the containers.
 :::
 
-:::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`.
-:::
 
 3. Create k8s service and reserve a static IP and expose it via a service load balancer as mentioned in the [doc](https://docs.microsoft.com/en-us/azure/aks/static-ip). You can refer `service.yaml`.
    ```bash

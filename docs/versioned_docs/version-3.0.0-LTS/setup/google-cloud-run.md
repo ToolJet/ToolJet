@@ -6,8 +6,10 @@ title: Google Cloud Run
 # Deploying ToolJet on Google Cloud Run
 
 :::info
-You should manually set up a PostgreSQL database to be used by ToolJet. We recommend using **Cloud SQL** for this purpose.
+- You should manually set up a PostgreSQL database to be used by ToolJet. We recommend using **Cloud SQL** for this purpose.
 Also for deploying ToolJet 3.0, Redis, Postgrest along with PostgreSQL are required.
+- Whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`
+
 :::
 
 <!-- Follow the steps below to deploy ToolJet on Cloud run with `gcloud` CLI. -->
@@ -141,15 +143,11 @@ For the Redis container we recommend using image `redis:6.2`
     Once the Service is created and live, to make the  Cloud Service URL public. Please follow the steps [**here**](https://cloud.google.com/run/docs/securing/managing-access) to make the service public.
     :::
 
-:::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`.
-:::
+## Setup to Enable AI
 
-## Setup to Enable ToolJet AI
+Build applications effortlessly in Tooljet using natural language. Refer to [Build with AI](/docs/build-with-ai/overview) guide for more information.
 
-Build applications effortlessly with ToolJet AI, using natural language to generate and customize apps. Refer to [ToolJet AI](/docs/tooljet-ai/overview) guide for more information.
-
-Follow this guide to enable AI features in your self-hosted setup.
+Follow this guide to enable AI in your self-hosted setup.
 
 **Deployment Steps**
 

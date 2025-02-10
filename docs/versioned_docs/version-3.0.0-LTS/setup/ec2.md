@@ -6,7 +6,8 @@ title: AWS EC2
 # Deploying ToolJet on Amazon EC2
 
 :::info
-You should setup a PostgreSQL database manually to be used by the ToolJet server.
+- You should setup a PostgreSQL database manually to be used by the ToolJet server.
+- Whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`
 :::
 
 You can effortlessly deploy Amazon Elastic Compute Cloud Service (EC2) by utilizing a **CloudFormation template**. This template will deploy all the services required to run ToolJet on AWS EC2 instances. 
@@ -80,15 +81,11 @@ ToolJet AMI comes inbuilt with PostgREST. If you intend to use this feature, you
 
 You can learn more about this feature [here](/docs/tooljet-db/tooljet-database).
 
-:::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`.
-:::
+## Setup to Enable AI
 
-## Setup to Enable ToolJet AI
+Build applications effortlessly in Tooljet using natural language. Refer to [Build with AI](/docs/build-with-ai/overview) guide for more information.
 
-Build applications effortlessly with ToolJet AI, using natural language to generate and customize apps. Refer to [ToolJet AI](/docs/tooljet-ai/overview) guide for more information.
-
-Follow this guide to enable AI features in your self-hosted setup.
+Follow this guide to enable AI in your self-hosted setup.
 
 **Deployment Steps**
 
