@@ -27,5 +27,5 @@ This guide covers component-specific actions for the **Chat Component** and its 
 | isResponseLoading | Indicates if the response is loading. | Accessible dynamically with JS (for e.g., `{{components.chat1.isResponseLoading}}`). |
 | isInputDisabled | Indicates if the input is disabled. | Accessible dynamically with JS (for e.g., `{{components.chat1.isInputDisabled}}`). |
 | isVisible | Indicates if the component is visible. | Accessible dynamically with JS (for e.g., `{{components.chat1.isVisible}}`). |
-| lastMessage | Holds the last message sent by the user. | Accessible dynamically with JS (for e.g., `{{components.chat1.lastMessage.message}}`). |
-| lastResponse | Holds the last response sent by the responder. | Accessible dynamically with JS (for e.g., `{{components.chat1.lastResponse.message}}`). |
+| lastMessage | Holds the last message object of type message in the array. | Accessible dynamically with JS (for e.g., `{{components.chat1.lastMessage}}`). |
+| lastResponse | Holds the last message object of type response in the array. | Accessible dynamically with JS (for e.g., `{{components.chat1.lastResponse}}`). |

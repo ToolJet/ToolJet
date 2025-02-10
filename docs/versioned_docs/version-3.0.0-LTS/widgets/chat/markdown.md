@@ -1,6 +1,6 @@
 ---
 id: markdown
-title: Markdown
+title: Supported Markdown Syntax
 ---
 
 In ToolJet, the Chat Component supports Markdown formatting for both responses and messages. This can be used enhance text formatting using Markdown syntax, making conversations more readable and structured.
