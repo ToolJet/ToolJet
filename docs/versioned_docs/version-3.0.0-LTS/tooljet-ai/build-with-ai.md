@@ -20,7 +20,7 @@ You can modify any application using ToolJet AI, whether it's a newly created ap
 
 ## Limitations
 ToolJet AI supports generating queries for the following data sources:
-- Postgres
-- MySQL
-- SQL Server
-- RunJS Queries
+- [Postgres](/docs/data-sources/postgresql/)
+- [MySQL](/docs/data-sources/mysql/)
+- [SQL Server](/docs/data-sources/mssql/)
+- [RunJS Queries](/docs/tooljet-concepts/run-js/)
