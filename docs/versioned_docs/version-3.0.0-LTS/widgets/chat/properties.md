@@ -20,12 +20,12 @@ The **Chat Component** can be customized by configuring various properties or ad
 
 | Property | Description | Required | Expected Value |
 |----------|-------------|----------|----------------|
-| Message | The content of the message. | ✅ | String (e.g. `"Hey! How can I help you?"`) |
+| Message | The content of the message. | Required | String (e.g. `"Hey! How can I help you?"`) |
 | Message ID | ID of the message. | Auto-generated | String (e.g. `"e3dd6f60-d5e8-46c5-b73b-006f2f4a34f2"`) |
 | Timestamp | Date and Time of the message. | Auto-generated | DateTime in ISO 8601 format (e.g. `"2025-02-05T09:33:32.468Z"`) |
-| Name | Message sender's name. | ❌ | String (e.g. `"John Doe"`) |
-| Avatar | Message sender's avatar. | ❌ | Image URL |
-| Type | Type of the message. | ✅ | Accepted Values: `"response"`, `"message"` or `"error"`. |
+| Name | Message sender's name. | Optional | String (e.g. `"John Doe"`) |
+| Avatar | Message sender's avatar. | Optional | Image URL |
+| Type | Type of the message. | Required | Accepted Values: `"response"`, `"message"` or `"error"`. |
 
 ## Events
 
