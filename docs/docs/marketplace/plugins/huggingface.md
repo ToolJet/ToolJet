@@ -1,5 +1,5 @@
 ---
-id: marketplace-plugin-huggingface
+id: marketplace-plugin-hugging_face
 title: Hugging Face
 ---
 
