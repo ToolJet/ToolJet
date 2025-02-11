@@ -54,6 +54,10 @@ Make sure to edit the environment variables in the `deployment.yaml`. You can ch
 If there are self signed HTTPS endpoints that Tooljet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates. You can make use of kubernetes secrets to mount the certificate file onto the containers.
 :::
 
+:::warning
+To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`.
+:::
+
 4. Create k8s service
 
 ```bash
@@ -107,5 +111,47 @@ If this is a new installation of the application, you may start directly with th
 - It is crucial to perform a **comprehensive backup of your database** before starting the upgrade process to prevent data loss.
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
+
+### Additional Step for Upgrading from v3.0.33-ee-lts to the Latest LTS Version
+
+If you are upgrading from version v3.0.33-ee-lts to the latest LTS, please ensure that the following configuration is done:
+
+Setup ChromaDB Deployment.
+
+*Currently, ChromaDB does not have support for Kubernetes.*
+
+1. To use ChromaDB, you need to set up a VM, deploy ChromaDB on it, and then connect to it for usage.
+
+This service helps to deploy chromadb using docker-compose.
+
+ ```yml
+ name: ChromaDB
+
+ services:
+  chroma:
+    name: chromadb
+    image: chromadb/chroma
+    ports:
+      - "8000:8000"
+    environment:
+      - CHROMA_HOST_ADDR=0.0.0.0
+      - CHROMA_HOST_PORT=8000
+    volumes:
+      - chromadb_data:/chroma
+
+ volumes:
+  chromadb_data:
+    driver: local
+```
+
+2. Add these environment variable in the ToolJet deployment file:
+```
+- name: CHROMA_DB_URL
+  value: <instance_ip:8000>
+``` 
+```
+- name: AI_GATEWAY_URL
+  value: https://api-gateway.tooljet.ai
+```
 
 *If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*

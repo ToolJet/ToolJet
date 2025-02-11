@@ -70,6 +70,40 @@ docker-compose --version
 
 **7. Use the [Docker Documentation](https://docs.tooljet.com/docs/setup/docker) to deploy ToolJet.**
 
+:::warning
+To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`.
+:::
+
+## Setup to Enable ToolJet AI
+
+Build applications effortlessly with ToolJet AI, using natural language to generate and customize apps. Refer to [ToolJet AI](/docs/tooljet-ai/overview) guide for more information.
+
+Follow this guide to enable AI features in your self-hosted setup.
+
+**Deployment Steps**
+
+1. Add Chroma under the services section and define volumes under the volumes section in the docker-compose.
+  ```yml
+  services:
+    chroma:
+      name: chromadb
+      image: chromadb/chroma
+      ports:
+        - "8000:8000"
+      environment:
+        - CHROMA_HOST_PORT=8000
+      volumes:
+        - chromadb_data:/chroma
+
+  volumes:
+    chromadb_data:
+      driver: local
+  ```
+2. Add these environment variables to the .env file in the ToolJet server.
+  `CHROMA_DB_URL=chromadb:8000` <br/>
+  `AI_GATEWAY_URL=https://api-gateway.tooljet.ai`
+
+
 ## Upgrading to the Latest LTS Version
 
 New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
@@ -81,5 +115,7 @@ If this is a new installation of the application, you may start directly with th
 - It is crucial to perform a **comprehensive backup of your database** before starting the upgrade process to prevent data loss.
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
+
+ **Note:** For existing user wants to [upgrade](#setup-to-enable-ai), would require to add chromadb along with the existing setup.
 
 If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.
