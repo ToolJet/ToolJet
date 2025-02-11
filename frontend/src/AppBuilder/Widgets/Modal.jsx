@@ -549,6 +549,19 @@ const Component = ({ children, ...restProps }) => {
     }
   };
 
+  useEffect(() => {
+    const preventBackdropDrop = (e) => {
+      if (e.target.className === 'fade modal show') {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+    document.addEventListener('drop', preventBackdropDrop);
+    return () => {
+      document.removeEventListener('drop', preventBackdropDrop);
+    };
+  }, []);
+
   return (
     <BootstrapModal {...restProps} animation={true} onClick={() => handleModalBodyClick(id)}>
       {showConfigHandler && (
