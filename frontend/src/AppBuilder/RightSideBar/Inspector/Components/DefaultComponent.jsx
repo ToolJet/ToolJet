@@ -24,7 +24,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'RichTextEditor',
   'Image',
   'ModalV2',
-  'Tabs'
+  'Tabs',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
