@@ -140,6 +140,26 @@ export const Tabs = function Tabs({
         });
         setSelectedComponents([]);
       },
+      setTabLoading: async function (id) {
+        setTabItems((prevTabItems) => {
+          return prevTabItems.map((tab) => {
+            if (tab.id == id) {
+              return { ...tab, loading: !tab.loading };
+            }
+            return tab;
+          });
+        });
+      },
+      setTabVisibility: async function (id) {
+        setTabItems((prevTabItems) => {
+          return prevTabItems.map((tab) => {
+            if (tab.id == id) {
+              return { ...tab, visible: !tab.visible };
+            }
+            return tab;
+          });
+        });
+      },
       currentTab: currentTab,
     };
     setExposedVariables(exposedVariables);
@@ -264,85 +284,89 @@ export const Tabs = function Tabs({
       data-cy={dataCy}
       ref={containerRef}
     >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          width: '100%',
-          backgroundColor: darkMode ? '#324156' : '#fff',
-        }}
-      >
-        {canScroll && (
-          <div
-            className="px-2"
-            onClick={() => scrollTabs('left')}
-            style={{ cursor: canScrollLeft ? 'pointer' : 'default' }}
-          >
-            <SolidIcon fill={canScrollLeft ? '#6A727C' : '#C1C8CD'} name={'cheveronleft'} />
-          </div>
-        )}
-
-        <ul
-          ref={tabsRef}
-          className="nav nav-tabs"
-          data-bs-toggle="tabs"
+      {isLoading ? (
+        <div></div>
+      ) : (
+        <div
           style={{
-            zIndex: 1,
-            display: parsedHideTabs ? 'none' : 'flex',
+            display: 'flex',
+            alignItems: 'center',
+            width: '100%',
             backgroundColor: darkMode ? '#324156' : '#fff',
-            overflowX: 'auto',
-            whiteSpace: 'nowrap',
-            flexWrap: 'nowrap',
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none',
-            scrollBehavior: 'smooth',
-            flexGrow: 1,
           }}
         >
-          {tabItems
-            ?.filter((tab) => tab?.visible !== false)
-            ?.map((tab) => (
-              <li
-                className="nav-item"
-                style={{ opacity: tab?.disabled && '0.5', width: tabWidth == 'split' && equalSplitWidth + '%' }}
-                onClick={() => {
-                  if (currentTab == tab.id) return;
+          {canScroll && (
+            <div
+              className="px-2"
+              onClick={() => scrollTabs('left')}
+              style={{ cursor: canScrollLeft ? 'pointer' : 'default' }}
+            >
+              <SolidIcon fill={canScrollLeft ? '#6A727C' : '#C1C8CD'} name={'cheveronleft'} />
+            </div>
+          )}
 
-                  !tab?.disabled && setCurrentTab(tab.id);
-                  !tab?.disabled && setExposedVariable('currentTab', tab.id);
-                  fireEvent('onTabSwitch');
-                }}
-                key={tab.id}
-              >
-                <a
-                  className={`nav-link ${currentTab == tab.id ? 'active' : ''}`}
-                  style={{
-                    color: currentTab == tab.id && parsedHighlightColor,
-                    borderBottom: currentTab == tab.id && `1px solid ${parsedHighlightColor}`,
-                    overflowWrap: 'anywhere',
-                    ...(tabWidth == 'split' ? { minWidth: 'auto' } : { minWidth: '100px' }),
-                  }}
-                  ref={(el) => {
-                    if (el && currentTab == tab.id) {
-                      el.style.setProperty('color', parsedHighlightColor, 'important');
-                    }
-                  }}
-                >
-                  {tab.title}
-                </a>
-              </li>
-            ))}
-        </ul>
-        {canScroll && (
-          <div
-            className="px-2"
-            onClick={() => scrollTabs('right')}
-            style={{ cursor: canScrollRight ? 'pointer' : 'default' }}
+          <ul
+            ref={tabsRef}
+            className="nav nav-tabs"
+            data-bs-toggle="tabs"
+            style={{
+              zIndex: 1,
+              display: parsedHideTabs ? 'none' : 'flex',
+              backgroundColor: darkMode ? '#324156' : '#fff',
+              overflowX: 'auto',
+              whiteSpace: 'nowrap',
+              flexWrap: 'nowrap',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+              scrollBehavior: 'smooth',
+              flexGrow: 1,
+            }}
           >
-            <SolidIcon fill={canScrollRight ? '#6A727C' : '#C1C8CD'} name="cheveronright" width="25" height="25" />
-          </div>
-        )}
-      </div>
+            {tabItems
+              ?.filter((tab) => tab?.visible !== false)
+              ?.map((tab) => (
+                <li
+                  className="nav-item"
+                  style={{ opacity: tab?.disabled && '0.5', width: tabWidth == 'split' && equalSplitWidth + '%' }}
+                  onClick={() => {
+                    if (currentTab == tab.id) return;
+
+                    !tab?.disabled && setCurrentTab(tab.id);
+                    !tab?.disabled && setExposedVariable('currentTab', tab.id);
+                    fireEvent('onTabSwitch');
+                  }}
+                  key={tab.id}
+                >
+                  <a
+                    className={`nav-link ${currentTab == tab.id ? 'active' : ''}`}
+                    style={{
+                      color: currentTab == tab.id && parsedHighlightColor,
+                      borderBottom: currentTab == tab.id && `1px solid ${parsedHighlightColor}`,
+                      overflowWrap: 'anywhere',
+                      ...(tabWidth == 'split' ? { minWidth: 'auto' } : { minWidth: '100px' }),
+                    }}
+                    ref={(el) => {
+                      if (el && currentTab == tab.id) {
+                        el.style.setProperty('color', parsedHighlightColor, 'important');
+                      }
+                    }}
+                  >
+                    {tab.title}
+                  </a>
+                </li>
+              ))}
+          </ul>
+          {canScroll && (
+            <div
+              className="px-2"
+              onClick={() => scrollTabs('right')}
+              style={{ cursor: canScrollRight ? 'pointer' : 'default' }}
+            >
+              <SolidIcon fill={canScrollRight ? '#6A727C' : '#C1C8CD'} name="cheveronright" width="25" height="25" />
+            </div>
+          )}
+        </div>
+      )}
       {isLoading ? (
         <div
           style={{

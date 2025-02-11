@@ -57,7 +57,7 @@ export const tabsConfig = {
       displayName: 'Dynamic options',
       validation: {
         schema: { type: 'boolean' },
-        defaultValue: true,
+        defaultValue: false,
       },
     },
     loadingState: {
@@ -209,6 +209,32 @@ export const tabsConfig = {
         },
       ],
     },
+    {
+      handle: 'setTabLoading',
+      displayName: 'Set Tab Loading',
+      params: [
+        {
+          handle: 'setTabDisable',
+          displayName: 'Id',
+          type: 'select',
+          isDynamicOpiton: true,
+          optionsGetter: 'component.definition.properties.tabItems.value',
+        },
+      ],
+    },
+    {
+      handle: 'setTabVisibility',
+      displayName: 'Set Tab visibility',
+      params: [
+        {
+          handle: 'setTabVisibility',
+          displayName: 'Id',
+          type: 'select',
+          isDynamicOpiton: true,
+          optionsGetter: 'component.definition.properties.tabItems.value',
+        },
+      ],
+    },
   ],
   exposedVariables: {
     currentTab: '',
@@ -222,7 +248,7 @@ export const tabsConfig = {
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
-      useDynamicOptions: { value: '{{true}}' },
+      useDynamicOptions: { value: '{{false}}' },
       tabs: {
         value:
           "{{[ \n\t\t{ title: 'Home', id: '0' }, \n\t\t{ title: 'Profile', id: '1' }, \n\t\t{ title: 'Settings', id: '2' } \n ]}}",
@@ -231,28 +257,21 @@ export const tabsConfig = {
         value: [
           {
             id: '0',
-            title: 'Home',
+            title: 'Tab 1',
             loading: { value: false },
             disable: { value: false },
             visible: { value: true },
           },
           {
             id: '1',
-            title: 'Profile',
+            title: 'Tab 2',
             loading: { value: false },
             disable: { value: false },
             visible: { value: true },
           },
           {
             id: '2',
-            title: 'Settings',
-            loading: { value: false },
-            disable: { value: false },
-            visible: { value: true },
-          },
-          {
-            id: '3',
-            title: 'Additional Tab',
+            title: 'Tab 3',
             loading: { value: false },
             disable: { value: false },
             visible: { value: true },
