@@ -6,6 +6,27 @@ import Spinner from '@/_ui/Spinner';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
+const TabsNavShimmer = () => {
+  return (
+    <div className="d-flex gap-4 px-1.5 px-2" style={{ borderBottom: '0.5px solid #CCD1D5' }}>
+      {Array(3)
+        .fill(0)
+        .map((ind) => (
+          <div
+            key={ind}
+            style={{
+              width: '70px',
+              height: '24px',
+              backgroundColor: '#88909914',
+              borderRadius: '16px',
+              margin: '8px 0px',
+            }}
+          ></div>
+        ))}
+    </div>
+  );
+};
+
 export const Tabs = function Tabs({
   id,
   component,
@@ -285,7 +306,7 @@ export const Tabs = function Tabs({
       ref={containerRef}
     >
       {isLoading ? (
-        <div></div>
+        <TabsNavShimmer />
       ) : (
         <div
           style={{
