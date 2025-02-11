@@ -18,6 +18,14 @@ const sidebars = {
         'getting-started/platform-overview',
         'getting-started/quickstart-guide',
       ],
+    }, {
+      "type": "category",
+      "label": "Build with AI",
+      "items": [
+        "build-with-ai/overview",
+        "build-with-ai/generate-applications",
+        "build-with-ai/ai-docs-assistant"
+      ]
     },
     {
       'type': 'category',
@@ -90,7 +98,7 @@ const sidebars = {
             'app-builder/walkthrough/variables',
             'app-builder/importing-exporting-applications',
           ],
-        },   
+        },
         {
           'type': 'category',
           'label': 'References',
@@ -186,7 +194,7 @@ const sidebars = {
                         {
                           'type': 'category',
                           'label': 'Serverside Operations',
-                          'items' : [
+                          'items': [
                             'widgets/table/serverside-operations/overview',
                             'widgets/table/serverside-operations/search',
                             'widgets/table/serverside-operations/sort',
