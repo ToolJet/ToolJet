@@ -5,6 +5,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import Spinner from '@/_ui/Spinner';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import * as Icons from '@tabler/icons-react';
 
 const TabsNavShimmer = () => {
   return (
@@ -192,7 +193,6 @@ export const Tabs = function Tabs({
     const loading = tab?.loading;
     const disable = tab?.disable;
     const visible = tab?.visible;
-    console.log('logging', tab);
 
     const fieldBackgroundColor = tab?.fieldBackgroundColor;
     if (visible === false) return null;
@@ -296,6 +296,24 @@ export const Tabs = function Tabs({
     return true; // Render by default if no specific conditions are met
   }
 
+  function getTabIcon(tab) {
+    const iconName = tab?.icon;
+    // eslint-disable-next-line import/namespace
+    const IconElement = Icons[iconName] == undefined ? Icons['IconHome2'] : Icons[iconName];
+
+    return tab?.iconVisibility ? (
+      <IconElement
+        color={`${darkMode ? '#fff' : '#000'}`}
+        style={{
+          width: '16px',
+          height: '16px',
+          color: '#6A727C',
+        }}
+        stroke={1.5}
+      />
+    ) : null;
+  }
+
   const equalSplitWidth = 100 / tabs?.length || 1;
   return (
     <div
@@ -372,6 +390,7 @@ export const Tabs = function Tabs({
                       }
                     }}
                   >
+                    {getTabIcon(tab)}
                     {tab.title}
                   </a>
                 </li>
