@@ -34,7 +34,7 @@
     "schema": {
       "operation_schema": {
         "label": "Operation",
-        "key": "operation",
+        "key": "operation_schema",
         "type": "dropdown-component-flip",
         "description": "Single select dropdown for operation",
         "list": [
