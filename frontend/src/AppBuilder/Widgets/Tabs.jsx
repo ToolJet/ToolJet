@@ -129,32 +129,32 @@ export const Tabs = function Tabs({
           setSelectedComponents([]);
         }
       },
-      setTabDisable: async function (id) {
+      setTabDisable: async function (id, value) {
         setTabItems((prevTabItems) => {
           return prevTabItems.map((tab) => {
             if (tab.id == id) {
-              return { ...tab, disable: true };
+              return { ...tab, disable: value };
             }
             return tab;
           });
         });
         setSelectedComponents([]);
       },
-      setTabLoading: async function (id) {
+      setTabLoading: async function (id, value) {
         setTabItems((prevTabItems) => {
           return prevTabItems.map((tab) => {
             if (tab.id == id) {
-              return { ...tab, loading: !tab.loading };
+              return { ...tab, loading: value };
             }
             return tab;
           });
         });
       },
-      setTabVisibility: async function (id) {
+      setTabVisibility: async function (id, value) {
         setTabItems((prevTabItems) => {
           return prevTabItems.map((tab) => {
             if (tab.id == id) {
-              return { ...tab, visible: !tab.visible };
+              return { ...tab, visible: value };
             }
             return tab;
           });
