@@ -5,7 +5,10 @@
   "description": "A schema defining Weaviate datasource",
   "type": "database",
   "defaults": {
-    "data_type": "schema"
+    "data_type": "schema",
+    "operation_schema": "get_schema",
+    "operation_collection": "get_collection",
+    "operation_objects": "list_objects"
   },
   "properties": {
     "data_type": {
