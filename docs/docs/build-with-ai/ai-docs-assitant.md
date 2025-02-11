@@ -3,7 +3,7 @@ id: ai-docs-assistant
 title: AI Docs Assistant
 ---
 
-The **AI Docs Assistant** is an intelligent assistant designed to help you navigate ToolJet’s documentation with ease. Whether you need quick answers, step-by-step guides, or concept explanations, this assistant provides instant support by summarizing docs, troubleshooting issues, and guiding you through best practices.
+The **AI Docs Assistant** is designed to help you navigate ToolJet’s capabilities and build enterprise applications with ease. Whether you need quick answers, step-by-step guides, or concept explanations, this assistant provides instant support.
 
 You can access the AI Docs Assistant under the **Learn** tab in the Build with AI sidebar. Simply ask a question or describe what you're looking for, and the assistant will provide relevant documentation and insights.
 

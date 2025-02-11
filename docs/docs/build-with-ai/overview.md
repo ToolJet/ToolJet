@@ -2,11 +2,11 @@
 id: overview
 title: Overview
 ---
-With ToolJet, you can build business applications effortlessly using natural language. Whether you're starting from scratch or refining an existing app, it simplifies the process with it's intelligence.
+With ToolJet, building business apps is simple. Describe what you need, and its AI turns ideas into functional apps. 
 
-Additionally, it comes with an AI-powered [documentation assistant](/docs/tooljet-ai/ai-doc-assistant), ready to answer any questions about ToolJet's features, components, and integrations, helping you build faster.
+ToolJet also comes with an AI-powered [documentation assistant](/docs/tooljet-ai/ai-doc-assistant), ready to answer any questions on how to utilize ToolJet's features and build complex enterprise applications. 
 
-Follow these step-by-step instructions to create an inventory management application:
+Follow these step-by-step instructions to create an inventory management application using ToolJet's powerful AI capabilities:
 1. **Describe your application** – Provide a prompt detailing the business application you want to create. (Example: "Inventory management system for a manufacturing company.")
 <div style={{textAlign: 'center',  marginBottom:'15px'}}>
 
