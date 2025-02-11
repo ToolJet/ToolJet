@@ -176,6 +176,25 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
             />
           </div>
 
+          <div className="field mb-3" data-cy={`input-and-label-tab-id`}>
+            <CodeHinter
+              currentState={currentState}
+              initialValue={item?.icon?.value}
+              theme={darkMode ? 'monokai' : 'default'}
+              mode="javascript"
+              lineNumbers={false}
+              component={component}
+              type={'fxEditor'}
+              paramLabel={'Icon'}
+              paramName={'icon'}
+              onChange={(value) => {
+                handleValueChange(item, { value }, 'icon', index);
+              }}
+              fieldMeta={{ type: 'icon', displayName: 'Icon' }}
+              paramType={'icon'}
+            />
+          </div>
+
           <div className="field mb-2">
             <CodeHinter
               currentState={currentState}

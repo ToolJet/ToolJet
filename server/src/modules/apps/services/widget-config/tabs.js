@@ -236,6 +236,7 @@ export const tabsConfig = {
           {
             id: '0',
             title: 'Tab 1',
+            icon: { value: 'IconHome2' },
             loading: { value: false },
             disable: { value: false },
             visible: { value: true },
@@ -243,6 +244,7 @@ export const tabsConfig = {
           {
             id: '1',
             title: 'Tab 2',
+            icon: { value: 'IconHome2' },
             loading: { value: false },
             disable: { value: false },
             visible: { value: true },
@@ -251,6 +253,7 @@ export const tabsConfig = {
             id: '2',
             title: 'Tab 3',
             loading: { value: false },
+            icon: { value: 'IconHome2' },
             disable: { value: false },
             visible: { value: true },
           },
