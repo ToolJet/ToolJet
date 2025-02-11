@@ -274,7 +274,7 @@ export const Chat = ({ id, component, properties, styles, setExposedVariables, f
     };
 
     setExposedVariables(exposedVariables);
-  }, [userName, respondentName, userAvatar, respondentAvatar]);
+  }, [userName, respondentName, userAvatar, respondentAvatar, chatHistory, error]);
 
   useEffect(() => {
     if (error) setError(null);
