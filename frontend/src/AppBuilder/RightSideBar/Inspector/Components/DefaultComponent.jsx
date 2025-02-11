@@ -22,7 +22,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'MultiselectV2',
   'Button',
   'RichTextEditor',
-  'Tabs'
+  'Tabs',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
