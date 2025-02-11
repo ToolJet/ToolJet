@@ -50,7 +50,6 @@
         "key": "apiKey",
         "type": "password",
         "description": "Enter your Weaviate API Key",
-        "helpText": "For generating API Key, visit: <a href='https://weaviate.io/docs' target='_blank' rel='noreferrer'>Weaviate Documentation</a>",
         "encrypted": true
       }
     },
