@@ -82,7 +82,7 @@ To remove a plugin, follow these steps:
 - **[Gemini](/docs/marketplace/plugins/marketplace-plugin-gemini)**
 - **[GitHub](/docs/marketplace/plugins/marketplace-plugin-github)**
 - **[HarperDB](/docs/marketplace/plugins/marketplace-plugin-harperdb)**
-- **[Hugging Face](/docs/marketplace/plugins/marketplace-plugin-huggingface)**
+- **[Hugging Face](/docs/marketplace/plugins/marketplace-plugin-hugging_face)**
 - **[Jira](/docs/marketplace/plugins/marketplace-plugin-jira)**
 - **[Mistral AI](/docs/marketplace/plugins/marketplace-plugin-mistral_ai)**
 - **[OpenAI](/docs/marketplace/plugins/marketplace-plugin-openai)**
