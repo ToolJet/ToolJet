@@ -33,7 +33,7 @@ The workspace manager is located on the bottom left corner of the dashboard. Cli
 
 On clicking the `Add new workspace` button, a modal will open where you can enter the name of the workspace, enter the unique workspace slug, and can see the preview of the workspace URL. Click on the `+ Create Workspace` button to create a new workspace.
 
-Previously, the workspace slug was an automatically generated workspace ID, like this: `https://tooljet.com/262750db-b2b8-4abb-9404-8995c2ecb2a0`. Now, you can set a custom, unique slug for your workspace which will generate a more accessible or readable URL such as `https://tooljet.com/apac-team)`.
+Previously, the workspace slug was an automatically generated workspace ID, like this: `https://app.tooljet.ai/262750db-b2b8-4abb-9404-8995c2ecb2a0`. Now, you can set a custom, unique slug for your workspace which will generate a more accessible or readable URL such as `https://app.tooljet.ai/apac-team)`.
 
 #### Conditions for workspace slug
 
@@ -184,7 +184,7 @@ The folder's URL slug is generated automatically from its name, providing direct
 
 To get the URL of a specific folder, the user will have to select that folder and then copy the URL from the address bar of the browser. The copied URL can be used to share with other users of the workspace.
 
-Example: If the name of the folder is `Customer Support`, The folder can be accessed directly from the URL `https://tooljet.com/<workspace-name>?folder=Customer%20Support`.
+Example: If the name of the folder is `Customer Support`, The folder can be accessed directly from the URL `https://app.tooljet.ai/<workspace-name>?folder=Customer%20Support`.
 
 <div style={{textAlign: 'center'}}>
 

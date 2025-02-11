@@ -68,7 +68,7 @@ docker-compose --version
 
 `TOOLJET_HOST=http://<public_ip>:80`
 
-**7. Use the [Docker Documentation](https://docs.tooljet.com/docs/setup/docker) to deploy ToolJet.**
+**7. Use the [Docker Documentation](https://docs.tooljet.ai/docs/setup/docker) to deploy ToolJet.**
 
 :::warning
 To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`.

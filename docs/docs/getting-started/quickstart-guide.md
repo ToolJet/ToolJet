@@ -21,7 +21,7 @@ This quickstart guide walks you through the process of creating an employee dire
 
 ### 1. Create Your First Application
 
-To begin, create a free **[ToolJet](https://www.tooljet.com/signup)** account and follow the steps below.
+To begin, create a free **[ToolJet](https://www.tooljet.ai/signup)** account and follow the steps below.
 
 <div class="video-container">
     <iframe width="560" height="315" src="https://www.youtube.com/embed/Cdi9XW-0rkA?si=ue3XS5986NZiaoLC&rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
