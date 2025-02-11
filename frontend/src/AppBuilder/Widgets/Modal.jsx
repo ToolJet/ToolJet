@@ -86,6 +86,7 @@ export const Modal = function Modal({
   const mode = useStore((state) => state.currentMode, shallow);
   const isFullScreen = properties.size === 'fullscreen';
 
+  const setSelectedComponentAsModal = useStore((state) => state.setSelectedComponentAsModal, shallow);
   const computedModalBodyHeight = getModalBodyHeight(modalHeight, showHeader, showFooter, headerHeight, footerHeight);
   const computedCanvasHeight = isFullScreen
     ? `calc(100vh - 48px - 40px - ${showHeader ? headerHeight : '0px'} - ${showFooter ? footerHeight : '0px'})`
@@ -173,11 +174,13 @@ export const Modal = function Modal({
   const onShowModal = () => {
     openModal();
     onShowSideEffects();
+    setSelectedComponentAsModal(id);
   };
 
   const onHideModal = () => {
     onHideSideEffects();
     hideModal();
+    setSelectedComponentAsModal(null);
   };
 
   // When query panel opens or closes, the modal container height should change to
@@ -255,7 +258,7 @@ export const Modal = function Modal({
       backgroundColor:
         ['#fff', '#ffffffff'].includes(bodyBackgroundColor) && darkMode ? '#1F2837' : bodyBackgroundColor,
       overflowX: 'hidden',
-      overflowY: 'auto',
+      overflowY: isDisabledModal ? 'hidden' : 'auto',
       position: 'relative',
     },
     modalCloseButton: {
@@ -268,15 +271,16 @@ export const Modal = function Modal({
         ['#fff', '#ffffffff'].includes(headerBackgroundColor) && darkMode ? '#1F2837' : headerBackgroundColor,
       height: headerHeight,
       padding: 0,
-      overflowY: 'auto',
+      overflowY: isDisabledModal ? 'hidden' : 'auto',
     },
     modalFooter: {
       backgroundColor:
         ['#fff', '#ffffffff'].includes(footerBackgroundColor) && darkMode ? '#1F2837' : footerBackgroundColor,
       height: footerHeight,
+      position: 'relative',
       padding: 0,
       borderTop: `1px solid var(--border-weak)`,
-      overflowY: 'auto',
+      overflowY: isDisabledModal ? 'hidden' : 'auto',
       overflowX: 'hidden',
       width: '100%',
     },
@@ -376,6 +380,7 @@ export const Modal = function Modal({
           showFooter,
           headerHeight,
           footerHeight,
+          modalBodyHeight: computedCanvasHeight,
           modalWidth,
         }}
       >
@@ -401,22 +406,50 @@ export const Modal = function Modal({
   );
 };
 
-const ModalHeader = ({ id, customStyles, hideCloseButton, darkMode, width, onHideModal, headerHeight, onClick }) => {
+const ModalHeader = ({
+  id,
+  isDisabled,
+  customStyles,
+  hideCloseButton,
+  darkMode,
+  width,
+  onHideModal,
+  headerHeight,
+  onClick,
+}) => {
   const canvasHeaderHeight = getCanvasHeight(headerHeight);
   return (
-    <BootstrapModal.Header style={{ ...customStyles.modalHeader }} data-cy={`modal-header`} onClick={onClick}>
-      <SubContainer
-        id={`${id}-header`}
-        canvasHeight={canvasHeaderHeight}
-        canvasWidth={width}
-        allowContainerSelect={false}
-        darkMode={darkMode}
-        styles={{
-          backgroundColor: 'transparent',
-          overflowX: 'hidden',
-        }}
-      />
-
+    <BootstrapModal.Header style={{ ...customStyles.modalHeader }} data-cy={`modal-header`} onClick={() => onClick(id)}>
+      <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+        <SubContainer
+          id={`${id}-header`}
+          canvasHeight={canvasHeaderHeight}
+          canvasWidth={width}
+          allowContainerSelect={false}
+          darkMode={darkMode}
+          styles={{
+            backgroundColor: 'transparent',
+            overflowX: 'hidden',
+            overflowY: isDisabled ? 'hidden' : 'auto',
+          }}
+        />
+        {isDisabled && (
+          <div
+            id={`${id}-header-disabled`}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: headerHeight || '100%',
+              backgroundColor: 'rgba(255, 255, 255, 0.8)',
+              zIndex: 1,
+            }}
+            onClick={() => onClick(id)}
+          />
+        )}
+      </div>
       {!hideCloseButton && (
         <span
           className="cursor-pointer"
@@ -451,10 +484,10 @@ const ModalHeader = ({ id, customStyles, hideCloseButton, darkMode, width, onHid
   );
 };
 
-const ModalFooter = ({ id, customStyles, darkMode, width, footerHeight, onClick }) => {
+const ModalFooter = ({ id, isDisabled, customStyles, darkMode, width, footerHeight, onClick }) => {
   const canvasFooterHeight = getCanvasHeight(footerHeight);
   return (
-    <BootstrapModal.Footer style={{ ...customStyles.modalFooter }} data-cy={`modal-footer`} onClick={onClick}>
+    <BootstrapModal.Footer style={{ ...customStyles.modalFooter }} data-cy={`modal-footer`} onClick={() => onClick(id)}>
       <SubContainer
         id={`${id}-footer`}
         canvasHeight={canvasFooterHeight}
@@ -464,8 +497,25 @@ const ModalFooter = ({ id, customStyles, darkMode, width, footerHeight, onClick 
         styles={{
           margin: 0,
           backgroundColor: 'transparent',
+          overflowY: isDisabled ? 'hidden' : 'auto',
         }}
       />
+      {isDisabled && (
+        <div
+          id={`${id}-footer-disabled`}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: footerHeight || '100%',
+            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+            zIndex: 1,
+          }}
+          onClick={() => onClick(id)}
+        />
+      )}
     </BootstrapModal.Footer>
   );
 };
@@ -478,6 +528,7 @@ const Component = ({ children, ...restProps }) => {
     showConfigHandler,
     isDisabled,
     modalHeight,
+    modalBodyHeight,
     onHideModal,
     hideCloseButton,
     darkMode,
@@ -491,18 +542,7 @@ const Component = ({ children, ...restProps }) => {
   const setSelectedComponentAsModal = useStore((state) => state.setSelectedComponentAsModal, shallow);
 
   // When the modal body is clicked capture it and use the callback to set the selected component as modal
-  const handleModalBodyClick = (event) => {
-    const clickedComponentId = event.target.getAttribute('component-id');
-
-    // Check if the clicked element is part of the modal canvas & same widget with id
-    if (id === clickedComponentId) {
-      setSelectedComponentAsModal(id);
-    }
-  };
-
-  const handleModalSlotClick = (event) => {
-    const clickedComponentId = event.target.getAttribute('component-id');
-
+  const handleModalBodyClick = (clickedComponentId) => {
     // Check if the clicked element is part of the modal canvas & same widget with id
     if (clickedComponentId.includes(id)) {
       setSelectedComponentAsModal(id);
@@ -510,7 +550,7 @@ const Component = ({ children, ...restProps }) => {
   };
 
   return (
-    <BootstrapModal {...restProps} animation={true} onClick={handleModalBodyClick}>
+    <BootstrapModal {...restProps} animation={true} onClick={() => handleModalBodyClick(id)}>
       {showConfigHandler && (
         <ConfigHandle
           id={id}
@@ -524,25 +564,27 @@ const Component = ({ children, ...restProps }) => {
       {showHeader && (
         <ModalHeader
           id={id}
+          isDisabled={isDisabled}
           customStyles={customStyles}
           hideCloseButton={hideCloseButton}
           darkMode={darkMode}
           width={modalWidth}
           onHideModal={onHideModal}
           headerHeight={headerHeight}
-          onClick={handleModalSlotClick}
+          onClick={handleModalBodyClick}
         />
       )}
       <BootstrapModal.Body style={{ ...customStyles.modalBody }} ref={parentRef} id={id} data-cy={`modal-body`}>
         {isDisabled && (
           <div
+            id={`${id}-body-disabled`}
             style={{
               position: 'absolute',
               top: 0,
               left: 0,
               right: 0,
               bottom: 0,
-              height: modalHeight || '100%',
+              height: modalBodyHeight || '100%',
               backgroundColor: 'rgba(255, 255, 255, 0.8)',
               zIndex: 1,
             }}
@@ -553,11 +595,12 @@ const Component = ({ children, ...restProps }) => {
       {showFooter && (
         <ModalFooter
           id={id}
+          isDisabled={isDisabled}
           darkMode={darkMode}
           customStyles={customStyles}
           width={modalWidth}
           footerHeight={footerHeight}
-          onClick={handleModalSlotClick}
+          onClick={handleModalBodyClick}
         />
       )}
     </BootstrapModal>
