@@ -340,7 +340,7 @@ const sidebars = {
             {
               'type': 'category',
               'label': 'REST API',
-              'collapsed': false,
+              'collapsed': true,
               'items': [
                 'data-sources/restapi/configuration',
                 'data-sources/restapi/authentication',
