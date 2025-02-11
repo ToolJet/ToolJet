@@ -6,46 +6,6 @@ export const tabsConfig = {
     width: 30,
     height: 300,
   },
-  defaultChildren: [
-    {
-      componentName: 'Image',
-      layout: {
-        top: 60,
-        left: 17,
-        height: 100,
-        width: 7,
-      },
-      tab: 0,
-      properties: ['source'],
-      defaultValue: {
-        source: 'https://uploads-ssl.webflow.com/6266634263b9179f76b2236e/62666392f32677b5cb2fb84b_logo.svg',
-      },
-    },
-    {
-      componentName: 'Text',
-      layout: {
-        top: 100,
-        left: 5,
-        height: 50,
-        width: 34,
-      },
-      tab: 1,
-      properties: ['text'],
-      defaultValue: {
-        text: 'Open-source low-code framework to build & deploy internal tools within minutes.',
-      },
-    },
-    {
-      componentName: 'Table',
-      layout: {
-        top: 0,
-        left: 1,
-        width: 41,
-        height: 250,
-      },
-      tab: 2,
-    },
-  ],
   component: 'Tabs',
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -201,11 +161,17 @@ export const tabsConfig = {
       displayName: 'Set Tab disable',
       params: [
         {
-          handle: 'setTabDisable',
+          handle: 'tabId',
           displayName: 'Id',
           type: 'select',
           isDynamicOpiton: true,
           optionsGetter: 'component.definition.properties.tabItems.value',
+        },
+        {
+          handle: 'value',
+          type: 'toggle',
+          displayName: 'Value',
+          defaultValue: '{{false}}',
         },
       ],
     },
@@ -214,11 +180,17 @@ export const tabsConfig = {
       displayName: 'Set Tab Loading',
       params: [
         {
-          handle: 'setTabDisable',
+          handle: 'tabId',
           displayName: 'Id',
           type: 'select',
           isDynamicOpiton: true,
           optionsGetter: 'component.definition.properties.tabItems.value',
+        },
+        {
+          handle: 'value',
+          type: 'toggle',
+          displayName: 'Value',
+          defaultValue: '{{false}}',
         },
       ],
     },
@@ -227,11 +199,17 @@ export const tabsConfig = {
       displayName: 'Set Tab visibility',
       params: [
         {
-          handle: 'setTabVisibility',
+          handle: 'tabId',
           displayName: 'Id',
           type: 'select',
           isDynamicOpiton: true,
           optionsGetter: 'component.definition.properties.tabItems.value',
+        },
+        {
+          handle: 'value',
+          type: 'toggle',
+          displayName: 'Value',
+          defaultValue: '{{false}}',
         },
       ],
     },
