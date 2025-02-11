@@ -5,6 +5,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { toast } from 'react-hot-toast';
 import { CANVAS_WIDTHS, NO_OF_GRIDS, WIDGETS_WITH_DEFAULT_CHILDREN } from './appCanvasConstants';
 import _ from 'lodash';
+import { useGridStore } from '@/_stores/gridStore';
 
 export function snapToGrid(canvasWidth, x, y) {
   const gridX = canvasWidth / 43;
@@ -36,6 +37,9 @@ export const addNewWidgetToTheEditor = (componentType, eventMonitorObject, curre
 
   const gridWidth = subContainerWidth / NO_OF_GRIDS;
   left = Math.round(left / gridWidth);
+  // Adjust widget width based on the dropping canvas width
+  const mainCanvasWidth = useGridStore.getState().subContainerWidths['canvas'];
+  const width = Math.round((defaultWidth * mainCanvasWidth) / gridWidth);
 
   if (currentLayout === 'mobile') {
     componentData.definition.others.showOnDesktop.value = `{{false}}`;
@@ -54,13 +58,13 @@ export const addNewWidgetToTheEditor = (componentType, eventMonitorObject, curre
       [currentLayout]: {
         top: top,
         left: left,
-        width: defaultWidth,
+        width,
         height: defaultHeight,
       },
       [nonActiveLayout]: {
         top: top,
         left: left,
-        width: defaultWidth,
+        width,
         height: defaultHeight,
       },
     },
@@ -409,6 +413,16 @@ export function pasteComponents(parentId, copiedComponentObj) {
     componentData.definition.others.showOnDesktop.value = currentLayout === 'desktop' ? `{{true}}` : `{{false}}`;
     componentData.definition.others.showOnMobile.value = currentLayout === 'mobile' ? `{{true}}` : `{{false}}`;
 
+    // Adjust width if parent changed
+    let width = component.layouts.desktop.width;
+
+    if (parentId !== component.component?.parent) {
+      const containerWidth = useGridStore.getState().subContainerWidths[parentId || 'canvas'];
+      const oldContainerWidth = useGridStore.getState().subContainerWidths[component?.component?.parent || 'canvas'];
+      width = Math.round((width * oldContainerWidth) / containerWidth);
+    }
+
+    component.layouts[currentLayout].width = width;
     const newComponent = {
       component: {
         ...componentData,
