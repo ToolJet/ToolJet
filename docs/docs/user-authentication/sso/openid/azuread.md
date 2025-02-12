@@ -18,7 +18,11 @@ To construct a Well Known URL refer this link :: https://docs.microsoft.com/en-u
 </div>
 
 - Enter name, select supported account type and enter the redirect URL which can be copied from `Manage SSO -> Open Id -> Redirect URL, click on register`.
+:::info
 
+If you are a ToolJet Cloud user, you need to update the redirect URL domain in your identity provider from `tooljet.com` to `tooljet.ai`.
+
+:::
 <div style={{textAlign: 'left'}}>
 
 <img className="screenshot-full" src="/img/sso/azuread/azure-3.png" alt="Azure AD: SSO" width="700"/>

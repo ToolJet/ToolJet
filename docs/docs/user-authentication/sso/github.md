@@ -11,6 +11,12 @@ To enable GitHub Single Sign-on (SSO) for your ToolJet instance, follow these st
 
 2. In the **Workspace Settings**, select **Workspace login** from the sidebar. On the right, you'll see toggles to enable SSO via different clients. All the client toggles are disabled by default. After turning it on, a modal will appear with input fields for parameters such as Host name, Client ID, and Client secret. At the top left of the modal, there is a toggle to enable this modal. Turn it on, and then, without entering any parameters, click on the **Save changes** button. This will generate a `Redirect URL` that you will need to utilize in the GitHub Developer settings.
 
+:::info
+
+If you are a ToolJet Cloud user, you need to update the redirect URL domain in your identity provider from `tooljet.com` to `tooljet.ai`.
+
+:::
+
    <img className="screenshot-full" src="/img/sso/git/generate-redirect-url.gif" alt="GitHub SSO" />
 
 3. Now go to the **[GitHub Developer settings](https://github.com/settings/developers)** and navigate to `OAuth Apps` and create a new OAuth App.

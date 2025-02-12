@@ -69,6 +69,12 @@ user who is signing in
   </div>
 
 - Set the `Redirect URL` generated at manage SSO `Open ID` page under Authorized redirect URIs
+
+:::info
+
+If you are a ToolJet Cloud user, you need to update the redirect URL domain in your identity provider from `tooljet.com` to `tooljet.ai`.
+
+:::
   <div style={{textAlign: 'center'}}>
 
   <img className="screenshot-full" src="/img/sso/google/authorized-redirect-urls.png" alt="Google Open ID" width="700"/> 
