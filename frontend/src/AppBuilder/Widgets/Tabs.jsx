@@ -270,7 +270,7 @@ export const Tabs = function Tabs({
         currentTabsRef.removeEventListener('scroll', onScroll);
       }
     };
-  }, [tabsRef.current]);
+  }, [tabsRef.current, tabWidth]);
 
   useEffect(() => {
     checkScroll();
@@ -314,7 +314,7 @@ export const Tabs = function Tabs({
     ) : null;
   }
 
-  const equalSplitWidth = 100 / tabs?.length || 1;
+  const equalSplitWidth = 100 / tabItems?.length || 1;
   return (
     <div
       data-disabled={isDisabled}
@@ -365,8 +365,18 @@ export const Tabs = function Tabs({
               ?.filter((tab) => tab?.visible !== false)
               ?.map((tab) => (
                 <li
-                  className="nav-item"
-                  style={{ opacity: tab?.disabled && '0.5', width: tabWidth == 'split' && equalSplitWidth + '%' }}
+                  className={`nav-item nav-link ${currentTab == tab.id ? 'active' : ''}`}
+                  style={{
+                    opacity: tab?.disabled && '0.5',
+                    width: tabWidth == 'split' && equalSplitWidth + '%',
+                    color: currentTab === tab.id ? parsedHighlightColor : 'inherit',
+                    borderBottom: currentTab === tab.id ? `1px solid ${parsedHighlightColor}` : 'none',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    ...(tabWidth == 'split' ? { minWidth: 'auto' } : { minWidth: '100px' }),
+                    justifyContent: 'left',
+                  }}
                   onClick={() => {
                     if (currentTab == tab.id) return;
 
@@ -374,25 +384,15 @@ export const Tabs = function Tabs({
                     !tab?.disabled && setExposedVariable('currentTab', tab.id);
                     fireEvent('onTabSwitch');
                   }}
+                  ref={(el) => {
+                    if (el && currentTab == tab.id) {
+                      el.style.setProperty('color', parsedHighlightColor, 'important');
+                    }
+                  }}
                   key={tab.id}
                 >
-                  <a
-                    className={`nav-link ${currentTab == tab.id ? 'active' : ''}`}
-                    style={{
-                      color: currentTab == tab.id && parsedHighlightColor,
-                      borderBottom: currentTab == tab.id && `1px solid ${parsedHighlightColor}`,
-                      overflowWrap: 'anywhere',
-                      ...(tabWidth == 'split' ? { minWidth: 'auto' } : { minWidth: '100px' }),
-                    }}
-                    ref={(el) => {
-                      if (el && currentTab == tab.id) {
-                        el.style.setProperty('color', parsedHighlightColor, 'important');
-                      }
-                    }}
-                  >
-                    {getTabIcon(tab)}
-                    {tab.title}
-                  </a>
+                  <a>{getTabIcon(tab)}</a>
+                  {tab.title}
                 </li>
               ))}
           </ul>
