@@ -15,7 +15,7 @@ To create an application, follow these steps:
  
 </div>
 
-2. **Accept or modify requriements** – After submitting your prompt, the app will be created, and you’ll be taken to the App Builder, where a list of features, a database schema, design details, and query specifications will be generated based on your prompt. 
+2. **Accept or modify requirements** – After submitting your prompt, the app will be created, and you’ll be taken to the App Builder, where a list of features, a database schema, design details, and query specifications will be generated based on your prompt. 
 <div style={{textAlign: 'center',  marginBottom:'15px'}}>
 
 <img className="screenshot-full" src="/img/tooljet-ai/generate02.png" alt="tooljet generate apps " />
@@ -39,9 +39,9 @@ You can accept or modify these application requirements after reviewing them tho
 
 ## Modifying Application
 
-You can modify any application in ToolJet with AI assitance, whether it's a newly created app or an existing one. You can update components and queries within your application with just a prompt. 
+You can modify any application in ToolJet with AI assistance, whether it's a newly created app or an existing one. You can update components and queries within your application with just a prompt. 
 
-For example, if you want add a button in your app you can write a prompt for the same.
+For example, if you want to add a button in your app you can write a prompt for the same.
 <div style={{textAlign: 'center',  marginBottom:'15px'}}>
 
 <img className="screenshot-full" src="/img/tooljet-ai/generate05.png" alt="tooljet generate apps " />
