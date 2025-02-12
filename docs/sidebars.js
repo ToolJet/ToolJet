@@ -333,12 +333,12 @@ const sidebars = {
             {
               'type': 'category',
               'label': 'Run Python Code',
-              'collapsed': false,
+              'collapsed': true,
               'items': [
-                'data-sources/runpython/python',
-                'data-sources/runpython/get-query',
-                'data-sources/runpython/get-variables',
-                'data-sources/runpython/using-transformation'
+                'data-sources/run-py/python-integration',
+                'data-sources/run-py/get-query',
+                'data-sources/run-py/get-variables',
+                'data-sources/run-py/using-transformation'
               ],
             },
             'data-sources/soap-api',

@@ -1,7 +1,7 @@
 ---
-id: python
-title: Get Started
-slug: /data-sources/runpython/
+id: python-integration
+title: Python Integration
+slug: /data-sources/run-py
 ---
 
 In ToolJet, custom **Run Python Code** can be used to interact with components and queries, making it possible to customize actions and data handling.
@@ -63,6 +63,8 @@ queries.getSalesData.run()
 Just like other dynamic values, you can refer the data returned by **Run Python code** queries using double curly braces`{{}}`.
 
 For instance, if you have a **Run Python code** query named *updatedProductInfo*, you can pass `{{queries.updatedProductInfo.data}}` under the **Data** property of a Table component to populate it with the data returned by the *updatedProductInfo* query. 
+
+<img className="screenshot-full" src="/img/datasource-reference/custom-python/query-data.png" alt="Python Query Data in Components" />
 
 :::info
 Issues with writing custom Python code? Ask in our [Slack community](https://www.tooljet.com/slack).
