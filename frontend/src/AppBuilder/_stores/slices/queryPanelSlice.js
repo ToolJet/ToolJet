@@ -910,6 +910,8 @@ export const createQueryPanelSlice = (set, get) => ({
       try {
         const AsyncFunction = new Function(`return Object.getPrototypeOf(async function(){}).constructor`)();
 
+        //Proxy Func required to get current execution line number from stack to log in debugger
+
         const proxiedComponents = createProxy(resolvedState?.components);
         const proxiedGlobals = createProxy(resolvedState?.globals);
         const proxiedConstants = createProxy(resolvedState?.constants);
