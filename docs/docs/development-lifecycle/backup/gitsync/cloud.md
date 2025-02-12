@@ -1,4 +1,0 @@
----
-id: cloud
-title: Cloud
----
