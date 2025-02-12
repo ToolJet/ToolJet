@@ -885,9 +885,11 @@ export const createComponentsSlice = (set, get) => ({
       selectedComponents,
       deleteComponentNameIdMapping,
       removeNode,
+      deleteTemporaryLayouts,
     } = get();
     const appEvents = get().eventsSlice.getModuleEvents(moduleId);
     const componentNames = [];
+    const componentIds = [];
     const _selectedComponents = selected?.length ? selected : selectedComponents;
     if (!_selectedComponents.length) return;
     set(
@@ -935,6 +937,7 @@ export const createComponentsSlice = (set, get) => ({
             state.containerChildrenMapping.canvas = state.containerChildrenMapping.canvas.filter((wid) => wid !== id);
           }
           componentNames.push(page.components[id]?.component?.name);
+          componentIds.push(id);
           const eventsToRemove = appEvents.filter((event) => event.sourceId === id).map((event) => event.id);
           toDeleteEvents.push(...eventsToRemove);
           delete page.components[id]; // Remove the component from the page
@@ -976,6 +979,9 @@ export const createComponentsSlice = (set, get) => ({
     );
     componentNames.forEach((componentName) => {
       deleteComponentNameIdMapping(componentName);
+    });
+    componentIds.forEach((componentId) => {
+      deleteTemporaryLayouts(componentId);
     });
   },
 
@@ -1024,6 +1030,7 @@ export const createComponentsSlice = (set, get) => ({
       getComponentDefinition,
       currentLayout,
       checkValueAndResolve,
+      deleteTemporaryLayouts,
     } = get();
     let hasParentChanged = false;
     let oldParentId;
@@ -1069,6 +1076,7 @@ export const createComponentsSlice = (set, get) => ({
                 state.containerChildrenMapping.canvas.push(componentId);
               }
             }
+
             // ============ Parent update logic ends ============
           });
         }
@@ -1131,6 +1139,10 @@ export const createComponentsSlice = (set, get) => ({
       };
       return acc;
     }, {});
+
+    Object.keys(componentLayouts).forEach((componentId) => {
+      deleteTemporaryLayouts(componentId);
+    });
 
     if (saveAfterAction) {
       saveComponentChanges(diff, 'components/layout', 'update');

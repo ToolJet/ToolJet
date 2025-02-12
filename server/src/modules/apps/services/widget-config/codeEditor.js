@@ -20,6 +20,15 @@ export const codeEditorConfig = {
         defaultValue: true,
       },
     },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
     mode: {
       type: 'code',
       displayName: 'Mode',
@@ -80,6 +89,7 @@ export const codeEditorConfig = {
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
+      dynamicHeight: { value: '{{false}}' },
       enableLineNumber: { value: '{{true}}' },
       mode: { value: 'javascript' },
       placeholder: { value: '' },

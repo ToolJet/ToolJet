@@ -29,8 +29,9 @@ export const createAppSlice = (set, get) => ({
     set(() => ({ isComponentLayoutReady: isReady }), false, 'setIsComponentLayoutReady'),
   setCanvasHeight: (canvasHeight) => set({ canvasHeight }, false, 'setCanvasHeight'),
   updateCanvasBottomHeight: (components) => {
-    const { currentLayout, currentMode, setCanvasHeight } = get();
-    const maxHeight = Object.values(components).reduce((max, component) => {
+    const { currentLayout, currentMode, setCanvasHeight, temporaryLayouts } = get();
+
+    const maxPermanentHeight = Object.values(components).reduce((max, component) => {
       const layout = component?.layouts?.[currentLayout];
       if (!layout) {
         return max;
@@ -38,6 +39,14 @@ export const createAppSlice = (set, get) => ({
       const sum = layout.top + layout.height;
       return Math.max(max, sum);
     }, 0);
+
+    const temporaryLayoutsMaxHeight = Object.values(temporaryLayouts).reduce((max, layout) => {
+      const sum = layout.top + layout.height;
+      return Math.max(max, sum);
+    }, 0);
+
+    const maxHeight = Math.max(maxPermanentHeight, temporaryLayoutsMaxHeight);
+
     const bottomPadding = currentMode === 'view' ? 100 : 300;
     const frameHeight = currentMode === 'view' ? 45 : 85;
     setCanvasHeight(`max(100vh - ${frameHeight}px, ${maxHeight + bottomPadding}px)`);

@@ -652,3 +652,9 @@
 .cm-searchMatch.cm-searchMatch-selected {
     background-color: #F28F2D;
 }
+
+.code-editor-component {
+    .cm-editor {
+        min-height: 0 !important;
+    }
+}

@@ -19,7 +19,12 @@ export const Form = ({
   allComponents,
   pages,
 }) => {
-  const properties = Object.keys(componentMeta.properties);
+  const properties = Object.keys(componentMeta.properties || {}).filter(
+    (key) => componentMeta.properties[key].section !== 'additionalActions'
+  );
+  const additionalActions = Object.keys(componentMeta.properties || {}).filter(
+    (key) => componentMeta.properties[key].section === 'additionalActions'
+  );
   const events = Object.keys(componentMeta.events);
   const validations = Object.keys(componentMeta.validation || {});
   const tempComponentMeta = deepClone(componentMeta);
@@ -48,7 +53,8 @@ export const Form = ({
     allComponents,
     validations,
     darkMode,
-    pages
+    pages,
+    additionalActions
   );
 
   return <Accordion items={accordionItems} />;
@@ -68,7 +74,8 @@ export const baseComponentProperties = (
   allComponents,
   validations,
   darkMode,
-  pages
+  pages,
+  additionalActions
 ) => {
   let items = [];
   if (properties.length > 0) {
@@ -147,6 +154,26 @@ export const baseComponentProperties = (
         )}
       </>
     ),
+  });
+
+  items.push({
+    title: `${i18next.t('widget.common.additionalActions', 'Additional Actions')}`,
+    isOpen: true,
+    children: additionalActions?.map((property) => {
+      const paramType = property === 'Tooltip' ? 'general' : 'properties';
+      return renderElement(
+        component,
+        componentMeta,
+        paramUpdated,
+        dataQueries,
+        property,
+        paramType,
+        currentState,
+        allComponents,
+        darkMode,
+        componentMeta.properties?.[property]?.placeholder
+      );
+    }),
   });
 
   items.push({

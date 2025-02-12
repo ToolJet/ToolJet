@@ -4,6 +4,7 @@ import DOMPurify from 'dompurify';
 import Markdown from 'react-markdown';
 import './text.scss';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 
 const VERTICAL_ALIGNMENT_VS_CSS_VALUE = {
   top: 'flex-start',
@@ -16,6 +17,7 @@ let count = 0;
 export const Text = function Text({
   id,
   height,
+  width,
   properties,
   fireEvent,
   styles,
@@ -54,8 +56,7 @@ export const Text = function Text({
   const [isDisabled, setIsDisabled] = useState(disabledState);
   const color = ['#000', '#000000'].includes(textColor) ? (darkMode ? '#fff' : '#000') : textColor;
   count = count + 1;
-  const prevDynamicHeight = useRef(dynamicHeight);
-
+  // const prevDynamicHeight = useRef(dynamicHeight);
   useEffect(() => {
     if (visibility !== properties.visibility) setVisibility(properties.visibility);
     if (isLoading !== loadingState) setLoading(loadingState);
@@ -64,27 +65,7 @@ export const Text = function Text({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility, loadingState, disabledState]);
 
-  useEffect(() => {
-    if (dynamicHeight) {
-      const element = document.querySelector(`.ele-${id}`);
-      if (element) {
-        element.style.height = 'auto';
-        // Wait for the next frame to ensure the height has updated
-        requestAnimationFrame(() => {
-          adjustComponentPositions(id, currentLayout, false);
-        });
-      }
-    } else if (!dynamicHeight && prevDynamicHeight.current) {
-      const element = document.querySelector(`.ele-${id}`);
-      if (element) {
-        element.style.height = `${height}px`;
-        requestAnimationFrame(() => {
-          adjustComponentPositions(id, currentLayout, false);
-        });
-      }
-    }
-    prevDynamicHeight.current = dynamicHeight;
-  }, [dynamicHeight, id, text, adjustComponentPositions, currentLayout, height]);
+  useDynamicHeight({ dynamicHeight, id, height, value: text, adjustComponentPositions, currentLayout, width });
 
   useEffect(() => {
     if (isInitialRender.current) return;

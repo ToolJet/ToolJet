@@ -23,6 +23,13 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'Button',
   'RichTextEditor',
   'Image',
+  'CodeEditor',
+  'TextArea',
+  'Container',
+  'Modal',
+  'Tabs',
+  'Form',
+  'Listview',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',

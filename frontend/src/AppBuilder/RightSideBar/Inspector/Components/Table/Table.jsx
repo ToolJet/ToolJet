@@ -767,6 +767,7 @@ class TableComponent extends React.Component {
       'showBulkUpdateActions',
       'visibility',
       'disabledState',
+      'dynamicHeight',
     ];
 
     items.push({

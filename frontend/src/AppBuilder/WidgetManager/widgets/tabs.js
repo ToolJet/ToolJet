@@ -105,6 +105,15 @@ export const tabsConfig = {
         defaultValue: false,
       },
     },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
   },
   events: { onTabSwitch: { displayName: 'On tab switch' } },
   styles: {
@@ -164,6 +173,7 @@ export const tabsConfig = {
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
+      dynamicHeight: { value: '{{false}}' },
       tabs: {
         value:
           "{{[ \n\t\t{ title: 'Home', id: '0' }, \n\t\t{ title: 'Profile', id: '1' }, \n\t\t{ title: 'Settings', id: '2' } \n ]}}",

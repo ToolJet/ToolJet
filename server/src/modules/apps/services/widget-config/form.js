@@ -230,6 +230,15 @@ export const formConfig = {
         defaultValue: false,
       },
     },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
     advanced: {
       type: 'toggle',
       displayName: ' Use custom schema',
@@ -312,11 +321,13 @@ export const formConfig = {
     },
     properties: {
       loadingState: { value: '{{false}}' },
+      dynamicHeight: { value: '{{false}}' },
       advanced: { value: '{{false}}' },
       JSONSchema: {
         value:
           "{{ {title: 'User registration form', properties: {firstname: {type: 'textinput',value: 'Maria',label:'First name', validation:{maxLength:6}, styles: {backgroundColor: '#f6f5ff',textColor: 'black'},},lastname:{type: 'textinput',value: 'Doe', label:'Last name', styles: {backgroundColor: '#f6f5ff',textColor: 'black'},},age:{type:'number', label:'Age'},}, submitButton: {value: 'Submit', styles: {backgroundColor: '#3a433b',borderColor:'#595959'}}} }}",
       },
+      buttonToSubmit: { value: '{{"none"}}' },
     },
     events: [],
     styles: {

@@ -8,6 +8,7 @@ import { generateUIComponents } from './FormUtils';
 import { useMounted } from '@/_hooks/use-mount';
 import { onComponentClick, removeFunctionObjects } from '@/_helpers/appUtils';
 import { useAppInfo } from '@/_stores/appDataStore';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import RenderSchema from './RenderSchema';
 import useStore from '@/AppBuilder/_stores/store';
@@ -27,17 +28,19 @@ export const Form = function Form(props) {
     properties,
     resetComponent = () => {},
     dataCy,
+    adjustComponentPositions,
+    currentLayout,
   } = props;
   const childComponents = useStore((state) => state.getChildComponents(id), shallow);
   const { visibility, disabledState, borderRadius, borderColor, boxShadow } = styles;
-  const { buttonToSubmit, loadingState, advanced, JSONSchema } = properties;
+  const { buttonToSubmit, loadingState, advanced, JSONSchema, dynamicHeight } = properties;
   const backgroundColor =
     ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
   const computedStyles = {
     backgroundColor,
     borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
     border: `1px solid ${borderColor}`,
-    height,
+    height: dynamicHeight ? '100%' : height,
     display: visibility ? 'flex' : 'none',
     position: 'relative',
     overflow: 'hidden auto',
@@ -50,6 +53,15 @@ export const Form = function Form(props) {
       return { ...acc, [id]: component?.name };
     }, {});
   }, [childComponents]);
+
+  useDynamicHeight({
+    dynamicHeight,
+    id,
+    height,
+    adjustComponentPositions,
+    currentLayout,
+    isContainer: true,
+  });
 
   const parentRef = useRef(null);
   const childDataRef = useRef({});
@@ -235,7 +247,9 @@ export const Form = function Form(props) {
 
   return (
     <form
-      className={`jet-container ${advanced && 'jet-container-json-form'}`}
+      className={`jet-container ${advanced && 'jet-container-json-form'} ${
+        properties.dynamicHeight && `dynamic-${id}`
+      }`}
       id={id}
       data-cy={dataCy}
       ref={parentRef}
@@ -257,7 +271,7 @@ export const Form = function Form(props) {
             <div className={'json-form-wrapper-disabled'} style={{ width: '100%', height: '100%' }}>
               <SubContainer
                 id={id}
-                canvasHeight={computedStyles.height}
+                canvasHeight={dynamicHeight ? '100%' : computedStyles.height}
                 canvasWidth={width}
                 onOptionChange={onOptionChange}
                 onOptionsChange={onOptionsChange}

@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { Container as ContainerComponent } from '@/AppBuilder/AppCanvas/Container';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import Spinner from '@/_ui/Spinner';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 
@@ -12,6 +13,8 @@ export const Container = ({
   width,
   setExposedVariables,
   setExposedVariable,
+  adjustComponentPositions,
+  currentLayout,
 }) => {
   const { borderRadius, borderColor, boxShadow, headerHeight = 80 } = styles;
 
@@ -22,6 +25,16 @@ export const Container = ({
     setExposedVariables,
     setExposedVariable
   );
+  const { dynamicHeight } = properties;
+
+  useDynamicHeight({
+    dynamicHeight: properties.dynamicHeight,
+    id,
+    height,
+    adjustComponentPositions,
+    currentLayout,
+    isContainer: true,
+  });
 
   const contentBgColor = useMemo(() => {
     return {
@@ -43,7 +56,7 @@ export const Container = ({
     backgroundColor: contentBgColor.backgroundColor,
     borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
     border: `1px solid ${borderColor}`,
-    height,
+    height: dynamicHeight ? '100%' : height,
     display: isVisible ? 'flex' : 'none',
     overflow: 'hidden auto',
     position: 'relative',
@@ -66,9 +79,9 @@ export const Container = ({
 
   return (
     <div
-      className={`jet-container tw-flex tw-flex-col ${isLoading && 'jet-container-loading'} ${
-        properties.showHeader && 'jet-container--with-header'
-      }`}
+      className={`${properties.dynamicHeight && `dynamic-${id}`} jet-container tw-flex tw-flex-col ${
+        isLoading && 'jet-container-loading'
+      } ${properties.showHeader && 'jet-container--with-header'}`}
       id={id}
       data-disabled={isDisabled}
       style={computedStyles}
@@ -91,9 +104,10 @@ export const Container = ({
         <ContainerComponent
           id={id}
           styles={computedContentStyles}
-          canvasHeight={height}
+          canvasHeight={dynamicHeight ? '100%' : height}
           canvasWidth={width}
           darkMode={darkMode}
+          dynamicHeight={dynamicHeight}
         />
       )}
     </div>
