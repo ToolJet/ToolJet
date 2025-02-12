@@ -19,7 +19,7 @@ Follow these step-by-step instructions to create an inventory management applica
 <img className="screenshot-full" src="/img/tooljet-ai/overview-ai-2.png" alt="tooljet ai overview" />
  
 </div>
-3. **Customize your application** – Use AI to customize the generated application to your specific needs, adjusting components and its styles, and also data source queries.
+3. **Customize your application** – Use AI to customize the generated application to your specific needs, adjusting components and styles, and also data source queries.
 
 - **Generated Application**
 <div style={{textAlign: 'center',  marginBottom:'15px'}}>
