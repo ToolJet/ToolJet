@@ -25,7 +25,7 @@ You can access the AI Docs Assistant under the **Learn** tab in the Build with A
 
 1. Custom Schema in [Form](/docs/widgets/form/) component:
 
- **Prompt**: Can you create a custom schema for a Form component with two input fields for name and phone number, and a dropdown for gender?
+ **Prompt**: Can you create a custom schema for a Form component with two input fields for name, phone number, and a dropdown for gender?
 
 <div style={{textAlign: 'center',  marginBottom:'15px'}}>
 
