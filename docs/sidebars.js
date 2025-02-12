@@ -505,7 +505,12 @@ const sidebars = {
               'type': 'category',
               'label': 'GitSync',
               'items': [
-                'development-lifecycle/backup/gitsync/overview'
+                'development-lifecycle/backup/gitsync/overview',
+                'development-lifecycle/backup/gitsync/tj-config',
+                'development-lifecycle/backup/gitsync/ssh-config',
+                'development-lifecycle/backup/gitsync/delete-gitsync',
+                'development-lifecycle/backup/gitsync/git-push',
+                'development-lifecycle/backup/gitsync/git-pull',
               ]
             },
             'development-lifecycle/backup/sql-backup'
