@@ -834,7 +834,7 @@ export const createQueryPanelSlice = (set, get) => ({
 
     executeMultilineJS: async (code, queryId, isPreview, mode = '', parameters = {}, moduleId = 'canvas') => {
       const { queryPanel, dataQuery, getAllExposedValues, eventsSlice } = get();
-      const { runQuery, createProxy } = queryPanel;
+      const { createProxy } = queryPanel;
       const { generateAppActions } = eventsSlice;
       const isValidCode = validateMultilineCode(code, true);
 
@@ -964,7 +964,7 @@ export const createQueryPanelSlice = (set, get) => ({
         }
 
         console.log('JS execution failed: ', err);
-        error = err.message || err.stack.split('\n')[0];
+        error = err.message || err.stack.split('\n')[0] || 'JS execution failed';
         result = { status: 'failed', data: { message: error, description: error, lineNumber } };
       }
 
