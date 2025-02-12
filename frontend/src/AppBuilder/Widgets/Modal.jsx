@@ -197,6 +197,13 @@ export const Modal = function Modal({
       for (let entry of entries) {
         // Update the height state when the element's height changes
         onShowSideEffects();
+
+        // When modal is in fullscreen and width of browser changes, update the modal width
+        if (properties.size === 'fullscreen') {
+          const canvasElement = document.querySelector('.page-container.canvas-container');
+          const width = canvasElement.offsetWidth;
+          setModalWidth(width);
+        }
       }
     });
 
@@ -314,7 +321,16 @@ export const Modal = function Modal({
 
   useEffect(() => {
     if (showModal && parentRef.current) {
-      setModalWidth(parentRef.current.offsetWidth);
+      if (properties.size === 'fullscreen') {
+        // First time modal is opened, the whole modal is part of the full body, later put into the canvas
+        // This delay is to get the correct width of the modal
+
+        const canvasElement = document.querySelector('.page-container.canvas-container');
+        const width = canvasElement.offsetWidth;
+        setModalWidth(width);
+      } else {
+        setModalWidth(parentRef.current.offsetWidth);
+      }
     }
   }, [showModal, properties.size, id]);
 
@@ -418,8 +434,9 @@ const ModalHeader = ({
   onClick,
 }) => {
   const canvasHeaderHeight = getCanvasHeight(headerHeight);
+
   return (
-    <BootstrapModal.Header style={{ ...customStyles.modalHeader }} data-cy={`modal-header`} onClick={() => onClick(id)}>
+    <BootstrapModal.Header style={{ ...customStyles.modalHeader }} data-cy={`modal-header`} onClick={onClick}>
       <div style={{ position: 'relative', width: '100%', height: '100%' }}>
         <SubContainer
           id={`${id}-header`}
@@ -445,8 +462,10 @@ const ModalHeader = ({
               height: headerHeight || '100%',
               backgroundColor: 'rgba(255, 255, 255, 0.8)',
               zIndex: 1,
+              margin: 0,
             }}
-            onClick={() => onClick(id)}
+            onClick={onClick}
+            onDrop={(e) => e.stopPropagation()}
           />
         )}
       </div>
@@ -486,8 +505,9 @@ const ModalHeader = ({
 
 const ModalFooter = ({ id, isDisabled, customStyles, darkMode, width, footerHeight, onClick }) => {
   const canvasFooterHeight = getCanvasHeight(footerHeight);
+  console.log('canvasFooter width', width);
   return (
-    <BootstrapModal.Footer style={{ ...customStyles.modalFooter }} data-cy={`modal-footer`} onClick={() => onClick(id)}>
+    <BootstrapModal.Footer style={{ ...customStyles.modalFooter }} data-cy={`modal-footer`} onClick={onClick}>
       <SubContainer
         id={`${id}-footer`}
         canvasHeight={canvasFooterHeight}
@@ -497,6 +517,7 @@ const ModalFooter = ({ id, isDisabled, customStyles, darkMode, width, footerHeig
         styles={{
           margin: 0,
           backgroundColor: 'transparent',
+          overflowX: 'hidden',
           overflowY: isDisabled ? 'hidden' : 'auto',
         }}
       />
@@ -512,8 +533,10 @@ const ModalFooter = ({ id, isDisabled, customStyles, darkMode, width, footerHeig
             height: footerHeight || '100%',
             backgroundColor: 'rgba(255, 255, 255, 0.8)',
             zIndex: 1,
+            margin: 0,
           }}
-          onClick={() => onClick(id)}
+          onClick={onClick}
+          onDrop={(e) => e.stopPropagation()}
         />
       )}
     </BootstrapModal.Footer>
@@ -542,14 +565,20 @@ const Component = ({ children, ...restProps }) => {
   const setSelectedComponentAsModal = useStore((state) => state.setSelectedComponentAsModal, shallow);
 
   // When the modal body is clicked capture it and use the callback to set the selected component as modal
-  const handleModalBodyClick = (clickedComponentId) => {
+  const handleModalSlotClick = (event) => {
+    const clickedComponentId = event.target.getAttribute('component-id');
+    const clickedId = event.target.getAttribute('id');
+
     // Check if the clicked element is part of the modal canvas & same widget with id
-    if (clickedComponentId.includes(id)) {
+    if (clickedComponentId?.includes(id)) {
+      setSelectedComponentAsModal(id);
+    } else if (clickedId?.includes(id)) {
       setSelectedComponentAsModal(id);
     }
   };
 
   useEffect(() => {
+    // When modal is active, prevent drop event on backdrop (else widgets droppped will get added to canvas)
     const preventBackdropDrop = (e) => {
       if (e.target.className === 'fade modal show') {
         e.preventDefault();
@@ -563,7 +592,7 @@ const Component = ({ children, ...restProps }) => {
   }, []);
 
   return (
-    <BootstrapModal {...restProps} animation={true} onClick={() => handleModalBodyClick(id)}>
+    <BootstrapModal {...restProps} animation={true} onClick={handleModalSlotClick}>
       {showConfigHandler && (
         <ConfigHandle
           id={id}
@@ -584,7 +613,7 @@ const Component = ({ children, ...restProps }) => {
           width={modalWidth}
           onHideModal={onHideModal}
           headerHeight={headerHeight}
-          onClick={handleModalBodyClick}
+          onClick={handleModalSlotClick}
         />
       )}
       <BootstrapModal.Body style={{ ...customStyles.modalBody }} ref={parentRef} id={id} data-cy={`modal-body`}>
@@ -600,7 +629,9 @@ const Component = ({ children, ...restProps }) => {
               height: modalBodyHeight || '100%',
               backgroundColor: 'rgba(255, 255, 255, 0.8)',
               zIndex: 1,
+              margin: 0,
             }}
+            onDrop={(e) => e.stopPropagation()}
           />
         )}
         {children}
@@ -613,7 +644,7 @@ const Component = ({ children, ...restProps }) => {
           customStyles={customStyles}
           width={modalWidth}
           footerHeight={footerHeight}
-          onClick={handleModalBodyClick}
+          onClick={handleModalSlotClick}
         />
       )}
     </BootstrapModal>
