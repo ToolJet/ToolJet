@@ -16,7 +16,7 @@ const isProd = process.env.NODE_ENV === 'production';
 module.exports = {
   title: 'ToolJet',
   tagline: 'Low-code framework to Build internal tools and business apps.',
-  url: 'https://docs.tooljet.com',
+  url: 'https://docs.tooljet.ai',
   baseUrl: '/',
   onBrokenLinks: 'ignore',
   onBrokenMarkdownLinks: 'warn',
@@ -66,7 +66,7 @@ module.exports = {
           'aria-label': 'GitHub repository',
         },
         {
-          href: 'https://tooljet.com/slack',
+          href: 'https://tooljet.ai/slack',
           position: 'right',
           className: 'navbar-social-link navbar-slack-logo',
           'aria-label': 'Slack workspace',
@@ -90,7 +90,7 @@ module.exports = {
           items: [
             {
               label: 'Slack',
-              href: 'https://tooljet.com/slack',
+              href: 'https://tooljet.ai/slack',
             },
           ],
         },
