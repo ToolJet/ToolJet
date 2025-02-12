@@ -2,7 +2,9 @@ import { useEffect, useCallback, useMemo, useRef } from 'react';
 import useTableStore from '@/AppBuilder/Widgets/NewTable/_stores/tableStore';
 import { exportToCSV, exportToExcel, exportToPDF } from '@/AppBuilder/Widgets/NewTable/_utils/exportData';
 import { filterFunctions } from '../_components/Filter/filterUtils';
-import { isArray } from 'lodash';
+import { isArray, debounce } from 'lodash';
+import { shallow } from 'zustand/shallow';
+import useStore from '@/AppBuilder/_stores/store';
 
 export const useTableExposed = (
   id,
@@ -15,6 +17,9 @@ export const useTableExposed = (
 ) => {
   const { getTableProperties, clearEditedRows } = useTableStore();
   const { showBulkSelector, clientSidePagination } = getTableProperties(id);
+  const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
+
+  const columnSizes = useTableStore((state) => state.getTableProperties(id)?.columnSizes, shallow);
 
   const {
     selectedRows,
@@ -29,6 +34,7 @@ export const useTableExposed = (
     setColumnFilters,
     tableData,
     columns,
+    columnSizing,
   } = {
     selectedRows: table.getFilteredSelectedRowModel()?.rows,
     sorting: table.getState()?.sorting,
@@ -42,7 +48,11 @@ export const useTableExposed = (
     setColumnFilters: table.setColumnFilters,
     tableData: table.getRowModel().rows,
     columns: table.getAllColumns(),
+    columnSizing: table.getState().columnSizing,
   };
+
+  const defaultSelectedRow = useTableStore((state) => state.getTableProperties(id)?.defaultSelectedRow, shallow);
+  const allowSelection = useTableStore((state) => state.getTableProperties(id)?.allowSelection, shallow);
 
   const getColumnName = useCallback(
     (columnId) => {
@@ -54,14 +64,23 @@ export const useTableExposed = (
 
   // Expose selected rows
   useEffect(() => {
-    setExposedVariables({
-      selectedRows: selectedRows.map((row) => row.original),
-      selectedRowsId: selectedRows.map((row) => row.id),
-      selectedRow: lastClickedRow,
-      selectedRowId: isNaN(lastClickedRow?.id) ? String(lastClickedRow?.id) : lastClickedRow?.id,
-    });
-    fireEvent('onRowClicked');
-  }, [selectedRows, setExposedVariables, fireEvent, lastClickedRow]);
+    if (allowSelection) {
+      setExposedVariables({
+        selectedRows: selectedRows.map((row) => row.original),
+        selectedRowsId: selectedRows.map((row) => row.id),
+        selectedRow: lastClickedRow,
+        selectedRowId: isNaN(lastClickedRow?.id) ? String(lastClickedRow?.id) : lastClickedRow?.id,
+      });
+      fireEvent('onRowClicked');
+    } else {
+      setExposedVariables({
+        selectedRows: [],
+        selectedRowsId: [],
+        selectedRow: {},
+        selectedRowId: null,
+      });
+    }
+  }, [selectedRows, allowSelection, setExposedVariables, fireEvent, lastClickedRow]);
 
   // Expose page index
   useEffect(() => {
@@ -144,8 +163,16 @@ export const useTableExposed = (
         setRowSelection({ [item.id - 1]: false });
       }
     }
+
+    if (defaultSelectedRow) {
+      const key = Object?.keys(defaultSelectedRow)[0] ?? '';
+      const value = defaultSelectedRow?.[key] ?? undefined;
+      if (key && value) {
+        selectRow(key, value);
+      }
+    }
     setExposedVariables({ selectRow, deselectRow });
-  }, [tableData, setExposedVariables, selectedRows, setRowSelection]);
+  }, [tableData, setExposedVariables, setRowSelection, defaultSelectedRow]);
 
   // CSA to set & clear filters
   useEffect(() => {
@@ -195,6 +222,24 @@ export const useTableExposed = (
     clearEditedRows(id);
     fireEvent('onCancelChanges');
   }, [setExposedVariables, fireEvent, clearEditedRows, id]);
+
+  // Create debounced function using useRef to persist between renders
+  const debouncedSetProperty = useRef(
+    debounce((sizing) => {
+      setComponentProperty(id, 'columnSizes', sizing, 'properties');
+    }, 300)
+  ).current;
+
+  useEffect(() => {
+    if (Object.keys(columnSizing).length > 0) {
+      debouncedSetProperty({ ...columnSizes, ...columnSizing });
+    }
+
+    // Cleanup debounced function on unmount
+    return () => {
+      debouncedSetProperty.cancel();
+    };
+  }, [columnSizing, columnSizes, debouncedSetProperty, id]);
 
   return { handleChangesSaved, handleChangesDiscarded };
 };

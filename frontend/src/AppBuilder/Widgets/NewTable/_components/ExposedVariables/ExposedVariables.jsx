@@ -1,11 +1,13 @@
 import { useEffect } from 'react';
 import useTableStore from '../../_stores/tableStore';
+import { shallow } from 'zustand/shallow';
 
-export const ExposedVariables = ({ id, data, setExposedVariables, fireEvent }) => {
-  const { getAllEditedRows, getAllEditedFields, getAllAddNewRowDetails } = useTableStore();
-  const editedRows = getAllEditedRows(id);
-  const editedFields = getAllEditedFields(id);
-  const addNewRowDetails = getAllAddNewRowDetails(id);
+export const ExposedVariables = ({ id, data, setExposedVariables, fireEvent, table }) => {
+  const editedRows = useTableStore((state) => state.getAllEditedRows(id), shallow);
+  const editedFields = useTableStore((state) => state.getAllEditedFields(id), shallow);
+  const addNewRowDetails = useTableStore((state) => state.getAllAddNewRowDetails(id), shallow);
+  const allowSelection = useTableStore((state) => state.getTableProperties(id)?.allowSelection, shallow);
+  const showBulkSelector = useTableStore((state) => state.getTableProperties(id)?.showBulkSelector, shallow);
 
   useEffect(() => {
     setExposedVariables({
@@ -37,6 +39,15 @@ export const ExposedVariables = ({ id, data, setExposedVariables, fireEvent }) =
       });
     }
   }, [addNewRowDetails, setExposedVariables]);
+
+  useEffect(() => {
+    if (!allowSelection) {
+      return table.toggleAllRowsSelected(false);
+    }
+    if (allowSelection && !showBulkSelector) {
+      return table.toggleAllRowsSelected(false);
+    }
+  }, [allowSelection, showBulkSelector, table, setExposedVariables]);
 
   return null;
 };

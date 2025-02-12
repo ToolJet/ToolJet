@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { debounce } from 'lodash';
 
@@ -11,7 +11,7 @@ export const SearchBar = React.memo(
     setExposedVariables,
     fireEvent,
   }) => {
-    const [value, setValue] = React.useState(globalFilter);
+    const [value, setValue] = useState(globalFilter);
     const onChange = (filterValue) => {
       setGlobalFilter(filterValue || undefined);
       fireEvent('onSearch');
@@ -46,7 +46,7 @@ export const SearchBar = React.memo(
             }}
           />
           <div
-            className={`d-flex table-clear-icon align-items-center ${globalFilter ? 'visible' : 'invisible'}`}
+            className={`d-flex table-clear-icon align-items-center ${value ? 'visible' : 'invisible'}`}
             style={{ cursor: 'pointer' }}
             onClick={() => {
               // setGlobalFilter(undefined);

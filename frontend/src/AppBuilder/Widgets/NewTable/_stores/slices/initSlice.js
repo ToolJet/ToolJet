@@ -1,9 +1,12 @@
 import { has } from 'lodash';
+import { utilityForNestedNewRow } from '../helper';
+import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 export const createInitSlice = (set, get) => ({
   initializeComponent: (id) =>
     set(
       (state) => {
+        console.log('here--- state--- init');
         if (!state.components[id]) {
           state.components[id] = {
             properties: {},
@@ -60,7 +63,6 @@ export const createInitSlice = (set, get) => ({
             ? true
             : false;
         state.components[id].properties.defaultSelectedRow = properties?.defaultSelectedRow ?? { id: 1 };
-        console.log('here--- properties--- ', properties?.selectRowOnCellEdit);
         state.components[id].properties.selectRowOnCellEdit = properties?.selectRowOnCellEdit ?? true;
 
         let serverSidePagination = properties.serverSidePagination ?? false;
@@ -106,15 +108,17 @@ export const createInitSlice = (set, get) => ({
           columnHeaderWrap = 'fixed',
         } = styles;
 
+        console.log('style--- cellSize--- ', cellSize);
+
         state.components[id].styles.borderRadius = Number.parseFloat(borderRadius);
         state.components[id].styles.boxShadow = boxShadow;
         state.components[id].styles.borderColor = borderColor;
         state.components[id].styles.contentWrap = contentWrap;
         state.components[id].styles.textColor = textColor;
-        state.components[id].styles.tableType = tableType;
-        state.components[id].styles.cellSize = cellSize;
+        state.components[id].styles.rowStyle = tableType;
+        state.components[id].styles.cellHeight = cellSize;
         state.components[id].styles.actionButtonRadius = parseFloat(actionButtonRadius);
-        state.components[id].styles.maxRowHeight = maxRowHeight;
+        state.components[id].styles.isMaxRowHeightAuto = maxRowHeight === 'auto';
         state.components[id].styles.maxRowHeightValue = maxRowHeightValue;
         state.components[id].styles.columnHeaderWrap = columnHeaderWrap;
       },
@@ -141,7 +145,6 @@ export const createInitSlice = (set, get) => ({
     set(
       (state) => {
         const tableEvents = events.filter((event) => event.sourceId === id);
-        console.log('here--- tableEvents--- ', tableEvents);
         const tableComponentEvents = tableEvents.filter((event) => event.target === 'component');
         state.components[id].events.tableComponentEvents = tableComponentEvents;
         state.components[id].events.hasHoveredEvent = tableComponentEvents.some(
@@ -225,7 +228,11 @@ export const createInitSlice = (set, get) => ({
   updateAddNewRowDetails: (id, index, newRow) =>
     set(
       (state) => {
-        state.components[id].addNewRow.set(index, newRow);
+        let transformedNewRow = deepClone(newRow);
+        if (Object.keys(newRow).find((key) => key.includes('.'))) {
+          transformedNewRow = utilityForNestedNewRow(transformedNewRow);
+        }
+        state.components[id].addNewRow.set(index, transformedNewRow);
       },
       false,
       { type: 'updateAddNewRowDetails', payload: { id, index, newRow } }
@@ -239,7 +246,6 @@ export const createInitSlice = (set, get) => ({
       { type: 'clearNewRow', payload: { id } }
     ),
   getTableComponentEvents: (id) => {
-    console.log('here--- getTableComponentEvents--- ', get().components[id]?.events);
     return get().components[id]?.events?.tableComponentEvents || [];
   },
   getTableActionEvents: (id) => {

@@ -12,13 +12,17 @@ import Popover from 'react-bootstrap/Popover';
 import { exportToCSV, exportToExcel, exportToPDF } from '@/AppBuilder/Widgets/NewTable/_utils/exportData';
 import AddNewRow from '../AddNewRow';
 import useStore from '@/AppBuilder/_stores/store';
+import { shallow } from 'zustand/shallow';
+
+let count = 0;
+
 export const Footer = React.memo(
   ({
     id,
     darkMode,
     height,
     width,
-    allColumns,
+    allColumns = [],
     table,
     pageIndex,
     pageSize,
@@ -31,32 +35,38 @@ export const Footer = React.memo(
     handleChangesSaved,
     handleChangesDiscarded,
     fireEvent,
+    dataLength,
+    columnVisibility,
   }) => {
     const onEvent = useStore((state) => state.eventsSlice.onEvent);
-    const { getFooterVisibility, getLoadingState, getTableProperties, getAllEditedRows, getTableComponentEvents } =
-      useTableStore();
-    const loadingState = getLoadingState(id);
-    const {
-      showBulkUpdateActions,
-      totalRecords,
-      clientSidePagination,
-      serverSidePagination,
-      enablePagination,
-      showAddNewRowButton,
-      showDownloadButton,
-      hideColumnSelectorButton,
-    } = getTableProperties(id);
+
+    const isFooterVisible = useTableStore((state) => state.getFooterVisibility(id), shallow);
+    const loadingState = useTableStore((state) => state.getLoadingState(id), shallow);
+    const editedRows = useTableStore((state) => state.getAllEditedRows(id), shallow);
+    const tableComponentEvents = useTableStore((state) => state.getTableComponentEvents(id), shallow);
+    const showAddNewRowButton = useTableStore((state) => state.getTableProperties(id)?.showAddNewRowButton, shallow);
+    const showDownloadButton = useTableStore((state) => state.getTableProperties(id)?.showDownloadButton, shallow);
+    const hideColumnSelectorButton = useTableStore(
+      (state) => state.getTableProperties(id)?.hideColumnSelectorButton,
+      shallow
+    );
+    const enablePagination = useTableStore((state) => state.getTableProperties(id)?.enablePagination, shallow);
+    const clientSidePagination = useTableStore((state) => state.getTableProperties(id)?.clientSidePagination, shallow);
+    const serverSidePagination = useTableStore((state) => state.getTableProperties(id)?.serverSidePagination, shallow);
+    const totalRecords = useTableStore((state) => state.getTableProperties(id)?.totalRecords, shallow);
+    const showBulkUpdateActions = useTableStore(
+      (state) => state.getTableProperties(id)?.showBulkUpdateActions,
+      shallow
+    );
 
     const [showAddNewRowPopup, setShowAddNewRowPopup] = useState(false);
-    const editedRows = getAllEditedRows(id);
-    const tableComponentEvents = getTableComponentEvents(id);
+
+    // Hide footer if the properties are not enabled
+    if (!isFooterVisible) return null;
 
     const hideAddNewRowPopup = () => {
       setShowAddNewRowPopup(false);
     };
-
-    // Hide footer if the properties are not enabled
-    if (!getFooterVisibility(id)) return null;
 
     // Loading state for footer
     if (loadingState) {
@@ -96,7 +106,7 @@ export const Footer = React.memo(
                 Selects All
               </span>
             </div>
-            {allColumns.map((column) => {
+            {table.getAllLeafColumns().map((column) => {
               const header = column?.columnDef?.header;
               return (
                 typeof header === 'string' && (
@@ -170,7 +180,7 @@ export const Footer = React.memo(
           className="font-weight-500"
           style={{ color: 'var(--text-placeholder)' }}
         >
-          {clientSidePagination && !serverSidePagination && `10 Records`}
+          {clientSidePagination && !serverSidePagination && `${dataLength} Records`}
           {serverSidePagination && totalRecords ? `${totalRecords} Records` : ''}
         </span>
       );
@@ -290,7 +300,7 @@ export const Footer = React.memo(
         >
           <div className={`table-footer row gx-0 d-flex align-items-center h-100`}>
             <div className="col d-flex justify-content-start custom-gap-4">
-              {editedRows.size > 0 ? renderChangeSetUI() : renderRowCount()}
+              {editedRows.size > 0 && showBulkUpdateActions ? renderChangeSetUI() : renderRowCount()}
             </div>
             {enablePagination && (
               <Pagination

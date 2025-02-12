@@ -9,11 +9,14 @@ import { SortableContext, horizontalListSortingStrategy, useSortable, arrayMove 
 import { CSS } from '@dnd-kit/utilities';
 import useStore from '@/AppBuilder/_stores/store';
 import { determineJustifyContentValue } from '@/_helpers/utils';
+import { shallow } from 'zustand/shallow';
 
-const DraggableHeader = ({ header, darkMode }) => {
+const DraggableHeader = ({ header, darkMode, id }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging, setActivatorNodeRef } = useSortable({
     id: header.id,
   });
+
+  const columnHeaderWrap = useTableStore((state) => state.getTableStyles(id)?.columnHeaderWrap, shallow);
 
   const getResolvedValue = useStore.getState().getResolvedValue;
 
@@ -73,7 +76,15 @@ const DraggableHeader = ({ header, darkMode }) => {
               />
             )}
           </div>
-          {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+          <div
+            className={cx('header-text', {
+              'selector-column': column.id === 'selection' && column.columnType === 'selector',
+              'text-truncate': getResolvedValue(columnHeaderWrap) === 'fixed',
+              'wrap-wrapper': getResolvedValue(columnHeaderWrap) === 'wrap',
+            })}
+          >
+            {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+          </div>
         </div>
         {header.column.getIsSorted() && (
           <div>
@@ -143,7 +154,7 @@ export const TableHeader = ({ id, table, darkMode, columnOrder, setColumnOrder }
           <SortableContext items={columnOrder} strategy={horizontalListSortingStrategy} key={headerGroup.id}>
             <tr className="tr" style={{ display: 'flex' }}>
               {headerGroup.headers.map((header) => (
-                <DraggableHeader key={header.id} header={header} darkMode={darkMode} />
+                <DraggableHeader key={header.id} header={header} darkMode={darkMode} id={id} />
               ))}
             </tr>
           </SortableContext>

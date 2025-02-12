@@ -89,6 +89,7 @@ export const Header = React.memo(
         darkMode={darkMode}
         setExposedVariables={setExposedVariables}
         fireEvent={fireEvent}
+        id={id}
       />
     );
 

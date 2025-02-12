@@ -17,15 +17,15 @@ export const StringColumn = ({
   containerWidth,
   cell,
   row,
-  isMaxRowHeightAuto,
-  cellSize,
-  maxRowHeightValue,
   searchText,
   id,
 }) => {
   const validateWidget = useStore((state) => state.validateWidget, shallow);
-  const { getTableStyles } = useTableStore();
-  const { contentWrap } = getTableStyles(id);
+
+  const cellSize = useTableStore((state) => state.getTableStyles(id)?.cellHeight, shallow);
+  const isMaxRowHeightAuto = useTableStore((state) => state.getTableStyles(id)?.isMaxRowHeightAuto, shallow);
+  const maxRowHeightValue = useTableStore((state) => state.getTableStyles(id)?.maxRowHeightValue, shallow);
+
   const ref = useRef(null);
   const [showOverlay, setShowOverlay] = useState(false);
   const [hovered, setHovered] = useState(false);

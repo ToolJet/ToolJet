@@ -4,6 +4,7 @@ import DOMPurify from 'dompurify';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import useTableStore from '@/AppBuilder/Widgets/NewTable/_stores/tableStore';
 
 const Text = ({
   isEditable,
@@ -16,11 +17,14 @@ const Text = ({
   containerWidth,
   cell,
   horizontalAlignment,
-  isMaxRowHeightAuto,
-  cellSize,
-  maxRowHeightValue,
+  id,
 }) => {
   const validateWidget = useStore((state) => state.validateWidget, shallow);
+
+  const cellSize = useTableStore((state) => state.getTableStyles(id)?.cellHeight, shallow);
+  const isMaxRowHeightAuto = useTableStore((state) => state.getTableStyles(id)?.isMaxRowHeightAuto, shallow);
+  const maxRowHeightValue = useTableStore((state) => state.getTableStyles(id)?.maxRowHeightValue, shallow);
+
   const validationData = validateWidget({
     validationObject: {
       minLength: {

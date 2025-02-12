@@ -8,8 +8,9 @@ export const generateActionColumns = ({ actions, fireEvent, setExposedVariables,
   const createActionColumn = (position) => ({
     id: `${position}Actions`,
     accessorKey: 'actions',
+    enableResizing: false,
     meta: { columnType: 'action', position, skipFilter: true },
-    size: 150,
+    size: 90,
     header: 'Actions',
     cell: ({ row }) => (
       <ActionButtons

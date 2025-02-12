@@ -49,6 +49,15 @@ export default function generateColumnsData({
       if (!column) return null;
 
       const columnSize = columnSizes[column?.id] || columnSizes[column?.name] || column.columnSize;
+      console.log(
+        'columnSize--- ',
+        columnProperties,
+        columnSizes,
+        column?.id,
+        column?.name,
+        column.columnSize,
+        columnSize
+      );
       const columnType = column?.columnType;
 
       // Process column options for select types

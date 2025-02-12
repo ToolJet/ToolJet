@@ -14,6 +14,12 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
 
   const { getColumnProperties, getAllAddNewRowDetails, updateAddNewRowDetails, clearAddNewRowDetails } =
     useTableStore();
+
+  // const getColumnProperties = useTableStore((state) => state.getColumnProperties);
+  // const getAllAddNewRowDetails = useTableStore((state) => state.getAllAddNewRowDetails);
+  // const updateAddNewRowDetails = useTableStore((state) => state.updateAddNewRowDetails);
+  // const clearAddNewRowDetails = useTableStore((state) => state.clearAddNewRowDetails);
+
   const columnProperties = getColumnProperties(id);
   const addNewRowDetails = getAllAddNewRowDetails(id);
   const addNewRowDetailsLength = addNewRowDetails.size;
@@ -65,42 +71,13 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
     [id, columnProperties, darkMode, handleCellValueChange, newEmptyRow, addNewRowDetails, addNewRowDetailsLength]
   );
 
-  //   const { newRowsChangeSet } = addNewRowsDetails;
-  //   const rowsFromPrevOperationPresent = !_.isEmpty(addNewRowsDetails.newRowsDataUpdates);
-  //   const previousRowsData = rowsFromPrevOperationPresent
-  //     ? Object.keys(addNewRowsDetails.newRowsDataUpdates).reduce((accumulator, row) => {
-  //         accumulator[row] = addNewRowsDetails.newRowsDataUpdates[row];
-  //         return accumulator;
-  //       }, [])
-  //     : null;
-
   const table = useReactTable({
     data: [...addNewRowDetails.values()],
     columns: columns,
     getCoreRowModel: getCoreRowModel(),
   });
 
-  //   React.useEffect(() => {
-  //     if (!rowsFromPrevOperationPresent) {
-  //       const newRowDataUpdates = newRowsState.reduce((accumulator, row, index) => {
-  //         const nestedData = utilityForNestedNewRow(row);
-  //         accumulator[index] = nestedData;
-  //         return accumulator;
-  //       }, {});
-  //       setExposedVariables({ newRows: newRowsState });
-  //       mergeToAddNewRowsDetails({ newRowsDataUpdates: newRowDataUpdates });
-  //     }
-  //   }, []);
-
   const addNewRow = () => {
-    // const rowData = deepClone(rows);
-    // const index = rowData.length;
-    // let newRow = getNewRowObject();
-    // // newRow = utilityForNestedNewRow(newRow);
-    // rowData.push(newRow);
-    // let newRowDataUpdates = addNewRowsDetails.newRowsDataUpdates;
-    // newRowDataUpdates[index] = newRow;
-    // setRows((prevRows) => [...prevRows, newEmptyRow]);
     updateAddNewRowDetails(id, addNewRowDetailsLength, newEmptyRow);
   };
 

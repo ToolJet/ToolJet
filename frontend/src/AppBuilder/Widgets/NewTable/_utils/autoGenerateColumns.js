@@ -2,8 +2,8 @@ import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 
 export default function autogenerateColumns(
-  firstRow,
-  existingColumns,
+  firstRow = {},
+  existingColumns = [],
   columnDeletionHistory,
   useDynamicColumn,
   dynamicColumn = [],

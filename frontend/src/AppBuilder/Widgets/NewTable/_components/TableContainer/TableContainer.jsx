@@ -25,6 +25,8 @@ import IndeterminateCheckbox from '../IndeterminateCheckbox';
 // eslint-disable-next-line import/no-unresolved
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useTableExposed } from '../../_hooks/useTableExposed';
+import { shallow } from 'zustand/shallow';
+
 let count = 0;
 export const TableContainer = React.memo(
   ({ id, data, width, height, darkMode, componentName, fireEvent, setExposedVariables }) => {
@@ -51,11 +53,20 @@ export const TableContainer = React.memo(
     const getResolvedValue = useStore.getState().getResolvedValue;
     const loadingState = getLoadingState(id);
     const columnProperties = getColumnProperties(id);
-    const { allowSelection, highlightSelectedRow, showBulkSelector, contentWrapProperty, maxRowHeight, cellSize } =
-      getTableProperties(id);
+    const { showBulkSelector } = getTableProperties(id);
+
+    const allowSelection = useTableStore((state) => state.getTableProperties(id)?.allowSelection, shallow);
+    const enableSorting = useTableStore((state) => state.getTableProperties(id)?.enabledSort, shallow);
+    const highlightSelectedRow = useTableStore((state) => state.getTableProperties(id)?.highlightSelectedRow, shallow);
+    const columnSizes = useTableStore((state) => state.getTableProperties(id)?.columnSizes, shallow);
+
+    const isMaxRowHeightAuto = useTableStore((state) => state.getTableStyles(id)?.isMaxRowHeightAuto, shallow);
+    const cellHeight = useTableStore((state) => state.getTableStyles(id)?.cellHeight, shallow);
+    const contentWrapProperty = useTableStore((state) => state.getTableStyles(id)?.contentWrap, shallow);
+    const rowStyle = useTableStore((state) => state.getTableStyles(id)?.rowStyle, shallow);
+
     const maxRowHeightValue = getMaxRowHeightValue(id);
     const selectRowOnCellEdit = getSelectRowOnCellEdit(id);
-    const resizingColumnId = '';
     const actions = getActions(id);
     const pageSize = getRowsPerPage(id);
     const hasHoveredEvent = getHasHoveredEvent(id);
@@ -116,7 +127,7 @@ export const TableContainer = React.memo(
           }),
           ...generateColumnsData({
             columnProperties,
-            columnSizes: {},
+            columnSizes,
             defaultColumn: { width: 150 },
             tableData: data,
             id,
@@ -140,6 +151,7 @@ export const TableContainer = React.memo(
         setExposedVariables,
         id,
         columnProperties,
+        columnSizes,
         data,
         darkMode,
         handleCellValueChange,
@@ -150,11 +162,10 @@ export const TableContainer = React.memo(
 
     const [columnOrder, setColumnOrder] = useState(columns.map((column) => column.id));
 
-    console.log('here--- columns--- ', columns);
-
     const table = useReactTable({
       data,
       columns,
+      enableSorting,
       getCoreRowModel: getCoreRowModel(),
       getSortedRowModel: getSortedRowModel(),
       getPaginationRowModel: getPaginationRowModel(),
@@ -196,7 +207,24 @@ export const TableContainer = React.memo(
       data
     );
 
-    const allColumns = table.getAllLeafColumns();
+    // Memoizing allColumns to avoid re-rendering on every render
+    // New reference for columnOrder is created on every render, so stringifying it
+    const allColumns = useMemo(() => {
+      return table.getAllLeafColumns();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [JSON.stringify(table.getState().columnOrder), table]);
+
+    useEffect(() => {
+      if (allowSelection) {
+        if (highlightSelectedRow) {
+          table.getColumn('selection')?.toggleVisibility(false);
+        } else {
+          table.getColumn('selection')?.toggleVisibility(true);
+        }
+      } else {
+        table.getColumn('selection')?.toggleVisibility(false);
+      }
+    }, [allowSelection, highlightSelectedRow, table]);
 
     // Create ref for table body
     const tableBodyRef = React.useRef(null);
@@ -205,7 +233,7 @@ export const TableContainer = React.memo(
     const rowVirtualizer = useVirtualizer({
       count: table.getRowModel().rows.length,
       getScrollElement: () => tableBodyRef.current,
-      estimateSize: () => (cellSize === 'condensed' ? 40 : 46),
+      estimateSize: () => (cellHeight === 'condensed' ? 40 : 46),
       overscan: 5,
       scrollMargin: 0,
     });
@@ -230,37 +258,44 @@ export const TableContainer = React.memo(
       row.toggleSelected();
     };
 
-    const renderRow = (row) => {
+    const renderRow = (row, virtualRow) => {
       if (!row) return null;
 
       // Get row styles
       const rowStyles = {
-        minHeight: cellSize === 'condensed' ? '39px' : '45px',
+        minHeight: cellHeight === 'condensed' ? '39px' : '45px',
         display: 'flex',
       };
 
       const contentWrap = getResolvedValue(contentWrapProperty);
-      const isMaxRowHeightAuto = maxRowHeight === 'auto';
 
       let cellMaxHeight;
-      let cellHeight;
+      let calculatedCellHeight;
       if (contentWrap) {
         cellMaxHeight = isMaxRowHeightAuto ? 'fit-content' : getResolvedValue(maxRowHeightValue) + 'px';
         rowStyles.maxHeight = cellMaxHeight;
       } else {
-        cellMaxHeight = cellSize === 'condensed' ? 40 : 46;
-        cellHeight = cellSize === 'condensed' ? 40 : 46;
-        rowStyles.maxHeight = `${cellMaxHeight}px`;
-        rowStyles.height = `${cellHeight}px`;
+        calculatedCellHeight = cellHeight === 'condensed' ? 40 : 46;
+        calculatedCellHeight = cellHeight === 'condensed' ? 40 : 46;
+        rowStyles.maxHeight = `${calculatedCellHeight}px`;
+        rowStyles.height = `${calculatedCellHeight}px`;
       }
 
       return (
         <tr
           key={row.id}
-          style={rowStyles}
+          data-index={virtualRow.index}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            transform: `translateY(${virtualRow.start}px)`,
+            ...rowStyles,
+          }}
           className={cx('table-row table-editor-component-row', {
-            'row-selected': allowSelection && highlightSelectedRow && row.getIsSelected(),
-            'table-row-condensed': cellSize === 'condensed',
+            selected: allowSelection && highlightSelectedRow && row.getIsSelected(),
+            'table-row-condensed': cellHeight === 'condensed',
           })}
           onClick={() => {
             handleRowClick(row);
@@ -279,7 +314,6 @@ export const TableContainer = React.memo(
           {row.getVisibleCells().map((cell) => {
             const cellStyles = {
               width: cell.column.getSize(),
-              height: '100%',
               backgroundColor: getResolvedValue(cell.column.columnDef?.meta?.cellBackgroundColor) ?? 'inherit',
               justifyContent: determineJustifyContentValue(cell.column.columnDef?.meta?.horizontalAlignment),
               display: 'flex',
@@ -296,16 +330,15 @@ export const TableContainer = React.memo(
                 key={cell.id}
                 style={cellStyles}
                 className={cx('table-cell td condensed', {
+                  'wrap-wrapper': contentWrap,
                   'has-text': cell.column.columnDef?.meta?.columnType === 'text' || isEditable,
                   'has-number': cell.column.columnDef?.meta?.columnType === 'number',
                   'has-badge': ['badge', 'badges'].includes(cell.column.columnDef?.meta?.columnType),
-                  [cellSize]: true,
+                  [cellHeight]: true,
                   'overflow-hidden':
                     ['text', 'string', undefined, 'number'].includes(cell.column.columnDef?.meta?.columnType) &&
                     !contentWrap,
                   'selector-column': cell.column.columnDef?.meta?.columnType === 'selector',
-                  'resizing-column':
-                    cell.column.columnDef?.isResizing || cell.column.columnDef?.id === resizingColumnId,
                   'has-select': ['select', 'newMultiSelect'].includes(cell.column.columnDef?.meta?.columnType),
                   'has-tags': cell.column.columnDef?.meta?.columnType === 'tags',
                   'has-link': cell.column.columnDef?.meta?.columnType === 'link',
@@ -315,13 +348,6 @@ export const TableContainer = React.memo(
                   isEditable: isEditable,
                 })}
                 onClick={(e) => {
-                  console.log(
-                    'here--- cell.column.id--- ',
-                    cell.column,
-                    isEditable,
-                    allowSelection,
-                    !selectRowOnCellEdit
-                  );
                   if (
                     (isEditable || ['rightActions', 'leftActions'].includes(cell.column.id)) &&
                     allowSelection &&
@@ -367,7 +393,7 @@ export const TableContainer = React.memo(
           style={{ maxHeight: '100%', overflow: 'auto' }}
           ref={tableBodyRef}
         >
-          <table className="table">
+          <table className={`table ${rowStyle} ${darkMode && 'table-dark'}`}>
             <TableHeader
               id={id}
               table={table}
@@ -382,22 +408,23 @@ export const TableContainer = React.memo(
               }}
             >
               {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                // {table.getRowModel().rows.map((row) => {
                 const row = table.getRowModel().rows[virtualRow.index];
                 return (
-                  <tr
-                    key={row.id}
-                    data-index={virtualRow.index}
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      height: `${virtualRow.size}px`,
-                      transform: `translateY(${virtualRow.start}px)`,
-                    }}
-                  >
-                    {renderRow(row)}
-                  </tr>
+                  // <tr
+                  //   key={row.id}
+                  //   data-index={virtualRow.index}
+                  //   style={{
+                  //     position: 'absolute',
+                  //     top: 0,
+                  //     left: 0,
+                  //     width: '100%',
+                  //     height: `${virtualRow.size}px`,
+                  //     transform: `translateY(${virtualRow.start}px)`,
+                  //   }}
+                  // >
+                  renderRow(row, virtualRow)
+                  // </tr>
                 );
               })}
             </tbody>
@@ -412,7 +439,13 @@ export const TableContainer = React.memo(
 
     return (
       <>
-        <ExposedVariables id={id} data={data} setExposedVariables={setExposedVariables} fireEvent={fireEvent} />
+        <ExposedVariables
+          id={id}
+          data={data}
+          setExposedVariables={setExposedVariables}
+          fireEvent={fireEvent}
+          table={table}
+        />
         <Header
           id={id}
           darkMode={darkMode}
@@ -434,7 +467,7 @@ export const TableContainer = React.memo(
           pageIndex={pagination.pageIndex + 1}
           pageSize={pagination.pageSize}
           pageCount={table.getPageCount()}
-          totalRecords={data.length}
+          dataLength={table.getFilteredRowModel().rows.length}
           canPreviousPage={table.getCanPreviousPage()}
           canNextPage={table.getCanNextPage()}
           onPageChange={table.setPageIndex}
@@ -443,6 +476,7 @@ export const TableContainer = React.memo(
           handleChangesSaved={handleChangesSaved}
           handleChangesDiscarded={handleChangesDiscarded}
           fireEvent={fireEvent}
+          columnVisibility={columnVisibility} // Passed to trigger a re-render when columnVisibility changes
         />
       </>
     );
