@@ -666,7 +666,7 @@ export default function Grid({ gridWidth, currentLayout }) {
         onDragEnd={(e) => {
           try {
             if (isDraggingRef.current) {
-              useGridStore.getState().actions.setDraggingComponentId(null);
+              useStore.getState().setDraggingComponentId(null);
               isDraggingRef.current = false;
             }
 
@@ -787,7 +787,7 @@ export default function Grid({ gridWidth, currentLayout }) {
         onDrag={(e) => {
           // Since onDrag is called multiple times when dragging, hence we are using isDraggingRef to prevent setting state again and again
           if (!isDraggingRef.current) {
-            useGridStore.getState().actions.setDraggingComponentId(e.target.id);
+            useStore.getState().setDraggingComponentId(e.target.id);
             isDraggingRef.current = true;
           }
           const parentComponent = boxList.find((box) => box.id === boxList.find((b) => b.id === e.target.id)?.parent);
