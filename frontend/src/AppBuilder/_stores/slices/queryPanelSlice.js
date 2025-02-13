@@ -815,9 +815,26 @@ export const createQueryPanelSlice = (set, get) => ({
       // });
     },
 
+    createProxy: (obj, path = '') => {
+      const { queryPanel } = get();
+      const { createProxy } = queryPanel;
+      return new Proxy(obj, {
+        get(target, prop) {
+          const fullPath = path ? `${path}.${prop}` : prop;
+
+          if (!(prop in target)) {
+            throw new Error(`Property "${fullPath}" is not defined`);
+          }
+
+          const value = target[prop];
+          return typeof value === 'object' && value !== null ? createProxy(value, fullPath) : value;
+        },
+      });
+    },
+
     executeMultilineJS: async (code, queryId, isPreview, mode = '', parameters = {}, moduleId = 'canvas') => {
       const { queryPanel, dataQuery, getAllExposedValues, eventsSlice } = get();
-      const { runQuery } = queryPanel;
+      const { createProxy } = queryPanel;
       const { generateAppActions } = eventsSlice;
       const isValidCode = validateMultilineCode(code, true);
 
@@ -892,6 +909,17 @@ export const createQueryPanelSlice = (set, get) => ({
 
       try {
         const AsyncFunction = new Function(`return Object.getPrototypeOf(async function(){}).constructor`)();
+
+        //Proxy Func required to get current execution line number from stack to log in debugger
+
+        const proxiedComponents = createProxy(resolvedState?.components);
+        const proxiedGlobals = createProxy(resolvedState?.globals);
+        const proxiedConstants = createProxy(resolvedState?.constants);
+        const proxiedVariables = createProxy(resolvedState?.variables);
+        const proxiedPage = createProxy(deepClone(resolvedState?.page));
+        const proxiedQueriesInResolvedState = createProxy(queriesInResolvedState);
+        const proxiedFormattedParams = createProxy(!_.isEmpty(proxiedFormattedParams) ? [proxiedFormattedParams] : []);
+
         const fnParams = [
           'moment',
           '_',
@@ -903,39 +931,42 @@ export const createQueryPanelSlice = (set, get) => ({
           'variables',
           'actions',
           'constants',
-          ...(!_.isEmpty(formattedParams) ? ['parameters'] : []), // Parameters are supported if builder has added atleast one parameter to the query
+          ...(!_.isEmpty(formattedParams) ? ['parameters'] : []),
           code,
         ];
-        var evalFn = new AsyncFunction(...fnParams);
+        const evalFn = new AsyncFunction(...fnParams);
 
         const fnArgs = [
           moment,
           _,
-          resolvedState.components,
-          queriesInResolvedState,
-          resolvedState.globals,
-          deepClone(resolvedState.page),
+          proxiedComponents,
+          proxiedQueriesInResolvedState,
+          proxiedGlobals,
+          proxiedPage,
           axios,
-          deepClone(resolvedState.variables),
+          proxiedVariables,
           actions,
-          resolvedState?.constants,
-          ...(!_.isEmpty(formattedParams) ? [formattedParams] : []), // Parameters are supported if builder has added atleast one parameter to the query
+          proxiedConstants,
+          ...proxiedFormattedParams,
         ];
+
         result = {
           status: 'ok',
           data: await evalFn(...fnArgs),
         };
       } catch (err) {
         const stackLines = err.stack.split('\n');
-        const errorLocation = stackLines[1]?.match(/<anonymous>:(\d+):(\d+)/);
+        const errorLocation =
+          stackLines[2]?.match(/<anonymous>:(\d+):(\d+)/) ?? stackLines[1]?.match(/<anonymous>:(\d+):(\d+)/);
 
         let lineNumber = null;
 
         if (errorLocation) {
-          lineNumber = errorLocation[1];
+          lineNumber = errorLocation[1] - 2;
         }
+
         console.log('JS execution failed: ', err);
-        error = err.stack.split('\n')[0];
+        error = err.message || err.stack.split('\n')[0] || 'JS execution failed';
         result = { status: 'failed', data: { message: error, description: error, lineNumber } };
       }
 
