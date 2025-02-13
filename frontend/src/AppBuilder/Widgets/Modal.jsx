@@ -393,13 +393,14 @@ export const Modal = function Modal({
           size,
           isDisabled: isDisabledModal,
           showConfigHandler: mode === 'edit',
-          fullscreen: isFullScreen,
+          isFullScreen,
           showHeader,
           showFooter,
           headerHeight,
           footerHeight,
           modalBodyHeight: computedCanvasHeight,
           modalWidth,
+          modalHeight,
           isShowing: showModal,
         }}
       >
@@ -559,14 +560,21 @@ const Component = ({ children, ...restProps }) => {
     hideCloseButton,
     darkMode,
     modalWidth,
+    modalHeight,
     showHeader,
     showFooter,
     headerHeight,
     footerHeight,
     isShowing,
+    isFullScreen,
   } = restProps['modalProps'];
 
   const [target, setTarget] = useState(null);
+  const computedModalBodyHeight = getModalBodyHeight(modalHeight, showHeader, showFooter, headerHeight, footerHeight);
+  const computedCanvasHeight = isFullScreen
+    ? `calc(100vh - 48px - 40px - ${showHeader ? headerHeight : '0px'} - ${showFooter ? footerHeight : '0px'})`
+    : computedModalBodyHeight;
+
   const setMoveableTarget = () => {
     setTimeout(() => {
       if (modalRef.current?.dialog) {
@@ -582,7 +590,7 @@ const Component = ({ children, ...restProps }) => {
 
   // Reset the height set on the dom of the modal when it is fullscreen
   useEffect(() => {
-    if (target && size === 'fullscreen') {
+    if (target && isFullScreen) {
       target.style.height = '';
     }
   }, [size]);
@@ -640,7 +648,7 @@ const Component = ({ children, ...restProps }) => {
       onClick={handleModalSlotClick}
     >
       <div style={{ minWidth: '20px', minHeight: '20px', display: 'contents' }}>
-        {size !== 'fullscreen' && (
+        {!isFullScreen && (
           <Moveable
             target={target}
             ref={moveableRef}
@@ -685,7 +693,12 @@ const Component = ({ children, ...restProps }) => {
             onClick={handleModalSlotClick}
           />
         )}
-        <BootstrapModal.Body style={{ ...customStyles.modalBody }} ref={parentRef} id={id} data-cy={`modal-body`}>
+        <BootstrapModal.Body
+          style={{ ...customStyles.modalBody, height: computedCanvasHeight }}
+          ref={parentRef}
+          id={id}
+          data-cy={`modal-body`}
+        >
           {isDisabled && (
             <div
               id={`${id}-body-disabled`}
