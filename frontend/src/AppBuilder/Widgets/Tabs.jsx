@@ -89,7 +89,7 @@ export const Tabs = function Tabs({
   const divider = styles?.divider ?? '#CCD1D5';
   const borderRadius = styles?.borderRadius ?? '0px';
   const border = styles?.border ?? '#CCD1D5';
-  const padding = styles?.padding ?? 'default';
+  const padding = styles?.padding ?? 'none';
 
   // Default tab
   let parsedDefaultTab = defaultTab;
@@ -334,9 +334,12 @@ export const Tabs = function Tabs({
       style={{
         height,
         display: isVisible ? 'flex' : 'none',
-        backgroundColor: bgColor,
+        backgroundColor: accent,
         boxShadow,
         borderRadius: `${borderRadius}px`,
+        borderColor: border,
+        overflow: 'hidden',
+        ...(padding === 'default' ? { padding: '4px' } : { padding: '0px' }),
       }}
       data-cy={dataCy}
       ref={containerRef}
