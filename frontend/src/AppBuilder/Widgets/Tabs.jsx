@@ -90,6 +90,11 @@ export const Tabs = function Tabs({
   const borderRadius = styles?.borderRadius ?? '0px';
   const border = styles?.border ?? '#CCD1D5';
   const padding = styles?.padding ?? 'none';
+  const transition = styles?.transition ?? 'none';
+  // options: [
+  //   { name: 'Slide', value: 'slide' },
+  //   { name: 'None', value: 'none' },
+  // ],
 
   // Default tab
   let parsedDefaultTab = defaultTab;
@@ -308,6 +313,10 @@ export const Tabs = function Tabs({
     return true; // Render by default if no specific conditions are met
   }
 
+  const findTabIndex = (tabId) => {
+    return tabItems.findIndex((tab) => tab.id === tabId);
+  };
+
   function getTabIcon(tab) {
     const iconName = tab?.icon;
     // eslint-disable-next-line import/namespace
@@ -441,13 +450,19 @@ export const Tabs = function Tabs({
           <Spinner />
         </div>
       ) : (
-        tabItems?.map((tab) => (
+        tabItems?.map((tab, index) => (
           <div
-            className="tab-content"
+            className={`tab-content ${
+              transition == 'slide' && currentTab === tab.id ? 'tab-slide-in' : 'tab-slide-out'
+            }`}
             ref={(newCurrent) => {
               if (currentTab == tab.id) {
                 parentRef.current = newCurrent;
               }
+            }}
+            style={{
+              transition: 'transform 0.3s ease-in-out, opacity 0.3s ease-in-out',
+              transform: currentTab === tab.id ? 'translateX(0%)' : 'translateX(100%)',
             }}
             id={`${id}-${tab.id}`}
             key={tab.id}
