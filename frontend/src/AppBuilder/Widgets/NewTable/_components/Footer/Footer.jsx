@@ -26,16 +26,10 @@ export const Footer = React.memo(
     table,
     pageIndex,
     pageSize,
-    pageCount,
-    canPreviousPage,
-    canNextPage,
-    onPageChange,
-    onPageSizeChange,
     componentName,
     handleChangesSaved,
     handleChangesDiscarded,
     fireEvent,
-    dataLength,
     columnVisibility,
   }) => {
     const onEvent = useStore((state) => state.eventsSlice.onEvent);
@@ -58,6 +52,8 @@ export const Footer = React.memo(
       (state) => state.getTableProperties(id)?.showBulkUpdateActions,
       shallow
     );
+
+    const dataLength = table.getFilteredRowModel().rows.length;
 
     const [showAddNewRowPopup, setShowAddNewRowPopup] = useState(false);
 
@@ -262,18 +258,11 @@ export const Footer = React.memo(
                 variant="ghostBlack"
                 fill={`var(--icons-default)`}
                 className={'tj-text-xsm'}
-                //   ${
-                //   tableDetails.addNewRowsDetails.addingNewRows && 'cursor-not-allowed always-active-btn'
-                // }
-                // }
                 customStyles={{ minWidth: '32px' }}
                 leftIcon="plus"
                 iconWidth="16"
                 onClick={() => {
                   setShowAddNewRowPopup(true);
-                  // if (!tableDetails.addNewRowsDetails.addingNewRows) {
-                  //   showAddNewRowPopup();
-                  // }
                 }}
                 size="md"
                 data-tooltip-id="tooltip-for-add-new-row"
@@ -294,28 +283,12 @@ export const Footer = React.memo(
           className={`card-footer d-flex align-items-center jet-table-footer justify-content-center ${
             darkMode && 'dark-theme'
           }`}
-          // ${
-          //   (tableDetails.addNewRowsDetails.addingNewRows || tableDetails.filterDetails.filtersVisible) && 'disabled'
-          // }`}
         >
           <div className={`table-footer row gx-0 d-flex align-items-center h-100`}>
             <div className="col d-flex justify-content-start custom-gap-4">
               {editedRows.size > 0 && showBulkUpdateActions ? renderChangeSetUI() : renderRowCount()}
             </div>
-            {enablePagination && (
-              <Pagination
-                id={id}
-                tableWidth={width}
-                pageIndex={pageIndex}
-                pageSize={pageSize}
-                pageCount={pageCount}
-                canPreviousPage={canPreviousPage}
-                canNextPage={canNextPage}
-                onPageChange={onPageChange}
-                onPageSizeChange={onPageSizeChange}
-                table={table}
-              />
-            )}
+            {enablePagination && <Pagination id={id} tableWidth={width} pageIndex={pageIndex} table={table} />}
             {renderControlButtons()}
           </div>
         </div>

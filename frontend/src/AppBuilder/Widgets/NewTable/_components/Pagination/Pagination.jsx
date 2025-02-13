@@ -1,54 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import React, { useState } from 'react';
+import { PaginationButton } from './PaginationButton';
+import { PaginationInput } from './PaginationInput';
 import useTableStore from '../../_stores/tableStore';
+import { shallow } from 'zustand/shallow';
 
 // TODO: Need to replace all the default data
 
-export const Pagination = function Pagination({
-  id,
-  onPageIndexChanged = () => {},
-  autoGotoPage = () => {},
-  autoCanNextPage = true,
-  autoPageCount = 1,
-  autoPageOptions = [],
-  lastActivePageIndex = 1,
-  pageIndex = 1,
-  setPageIndex = () => {},
-  tableWidth,
-  pageSize,
-  pageCount,
-  canPreviousPage,
-  canNextPage,
-  onPageChange,
-  onPageSizeChange,
-  table,
-}) {
-  const { getTableProperties, getRowsPerPage } = useTableStore();
-  const { enablePrevButton, enableNextButton, serverSidePagination } = getTableProperties(id);
-  const [pageCountState, setPageCountState] = useState(autoPageCount);
-  const defaultPageSize = getRowsPerPage(id);
+export const Pagination = function Pagination({ id, pageIndex = 1, tableWidth, table }) {
+  const serverSidePagination = useTableStore((state) => state.getTableProperties(id)?.serverSidePagination, shallow);
+  const enablePrevButton = useTableStore((state) => state.getTableProperties(id)?.enablePrevButton, shallow);
+  const enableNextButton = useTableStore((state) => state.getTableProperties(id)?.enableNextButton, shallow);
 
-  useEffect(() => {
-    setPageCountState(autoPageCount);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoPageCount]);
+  const pageCount = table.getPageCount();
 
-  useEffect(() => {
-    if (serverSidePagination && lastActivePageIndex > 0) {
-      setPageCountState(lastActivePageIndex);
-    } else if (serverSidePagination || lastActivePageIndex === 0) {
-      setPageIndex(1);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [serverSidePagination, lastActivePageIndex]);
+  const canGoToNextPage = serverSidePagination ? enableNextButton : table.getCanNextPage();
+  const canGoToPreviousPage = serverSidePagination ? enablePrevButton : table.getCanPreviousPage();
 
-  function gotoPage(page) {
-    setPageIndex(page);
-    onPageIndexChanged(page);
-    if (!serverSidePagination) {
-      autoGotoPage(page - 1);
-    }
-  }
+  const showGoToFirstAndLast = !serverSidePagination && tableWidth > 460;
 
   function goToNextPage() {
     table.nextPage();
@@ -62,135 +30,52 @@ export const Pagination = function Pagination({
     <div className={'col d-flex justify-content-center h-100'}>
       <div className="pagination-container d-flex h-100 align-items-center custom-gap-4" data-cy="pagination-section">
         <div className="d-flex">
-          {!serverSidePagination && tableWidth > 460 && (
-            <ButtonSolid
-              variant="ghostBlack"
-              className="tj-text-xsm table-pagination-btn"
-              style={{
-                minWidth: '28px',
-                width: '28px',
-                height: '28px',
-                padding: '7px',
-                borderRadius: '6px',
-                display: 'flex',
-                justifyContent: 'center',
-                cursor: pageIndex === 1 ? 'not-allowed' : 'pointer',
-              }}
-              leftIcon="cheveronleftdouble"
-              fill={`var(--icons-default)`}
-              iconWidth="14"
-              size="md"
-              disabled={pageIndex === 1}
-              onClick={(event) => {
-                event.stopPropagation();
+          {showGoToFirstAndLast && (
+            <PaginationButton
+              onClick={() => {
                 table.firstPage();
-                // gotoPage(1);
               }}
-              data-cy={`pagination-button-to-first`}
-            ></ButtonSolid>
+              disabled={!canGoToPreviousPage}
+              icon="cheveronleftdouble"
+              dataCy="pagination-button-to-first"
+            />
           )}
-          <ButtonSolid
-            variant="ghostBlack"
-            className="tj-text-xsm table-pagination-btn"
-            style={{
-              minWidth: '28px',
-              width: '28px',
-              height: '28px',
-              padding: '7px',
-              borderRadius: '6px',
-              display: 'flex',
-              justifyContent: 'center',
-              cursor: pageIndex === 1 || !enablePrevButton ? 'not-allowed' : 'pointer',
-            }}
-            leftIcon="cheveronleft"
-            fill={`var(--icons-default)`}
-            iconWidth="14"
-            size="md"
-            disabled={pageIndex === 1 || !enablePrevButton}
-            onClick={(event) => {
-              event.stopPropagation();
+
+          <PaginationButton
+            onClick={() => {
               goToPreviousPage();
             }}
-            data-cy={`pagination-button-to-previous`}
-          ></ButtonSolid>
+            disabled={!canGoToPreviousPage}
+            icon="cheveronleft"
+            dataCy="pagination-button-to-previous"
+          />
         </div>
 
-        <div
-          className="d-flex align-items-center tj-text-xsm h-100 page-info custom-gap-4"
-          data-cy={`page-index-details`}
-        >
-          {serverSidePagination && <span className="color-slate-11">{pageIndex}</span>}
-          {!serverSidePagination && (
-            <>
-              <input
-                type="text"
-                className={`form-control h-100`}
-                value={pageIndex}
-                onChange={(event) => {
-                  if (event.target.value <= pageCount) gotoPage(event.target.value);
-                }}
-              />
-              <span
-                className="font-weight-500 total-page-number"
-                style={{ width: 'max-content' }}
-                data-cy={`total-page-number-${autoPageOptions.length || 1}`}
-              >
-                of {pageCount || 1}
-              </span>
-            </>
-          )}
-        </div>
+        <PaginationInput
+          pageIndex={pageIndex}
+          serverSidePagination={serverSidePagination}
+          table={table}
+          pageCount={pageCount}
+        />
+
         <div className="d-flex">
-          <ButtonSolid
-            variant="ghostBlack"
-            className="tj-text-xsm table-pagination-btn"
-            style={{
-              minWidth: '28px',
-              width: '28px',
-              height: '28px',
-              padding: '7px',
-              borderRadius: '6px',
-              display: 'flex',
-              justifyContent: 'center',
-              cursor: (!autoCanNextPage && !serverSidePagination) || !enableNextButton ? 'not-allowed' : 'pointer',
-            }}
-            leftIcon="cheveronright"
-            fill={`var(--icons-default)`}
-            iconWidth="14"
-            size="md"
-            disabled={(!autoCanNextPage && !serverSidePagination) || !enableNextButton}
-            onClick={(event) => {
-              event.stopPropagation();
+          <PaginationButton
+            onClick={() => {
               goToNextPage();
             }}
-            data-cy={`pagination-button-to-next`}
-          ></ButtonSolid>
-          {!serverSidePagination && tableWidth > 460 && (
-            <ButtonSolid
-              variant="ghostBlack"
-              className="tj-text-xsm table-pagination-btn"
-              style={{
-                minWidth: '28px',
-                width: '28px',
-                height: '28px',
-                padding: '7px',
-                borderRadius: '6px',
-                display: 'flex',
-                justifyContent: 'center',
-                cursor: !autoCanNextPage && !serverSidePagination ? 'not-allowed' : 'pointer',
-              }}
-              leftIcon="cheveronrightdouble"
-              fill={`var(--icons-default)`}
-              iconWidth="14"
-              size="md"
-              onClick={(event) => {
-                event.stopPropagation();
+            disabled={!canGoToNextPage}
+            icon="cheveronright"
+            dataCy="pagination-button-to-next"
+          />
+          {showGoToFirstAndLast && (
+            <PaginationButton
+              onClick={() => {
                 table.lastPage();
-                // gotoPage(pageCount);
               }}
-              disabled={!autoCanNextPage && !serverSidePagination}
-              data-cy={`pagination-button-to-last`}
-            ></ButtonSolid>
+              disabled={!canGoToNextPage}
+              icon="cheveronrightdouble"
+              dataCy="pagination-button-to-last"
+            />
           )}
         </div>
       </div>

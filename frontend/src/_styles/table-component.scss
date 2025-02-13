@@ -1497,3 +1497,13 @@
     background: transparent;
   }
 }
+
+.table-pagination-btn {
+  min-width: 28px;
+  width: 28px;
+  height: 28px;
+  padding: 7px;
+  border-radius: 6px;
+  display: flex;
+  justify-content: center;
+}

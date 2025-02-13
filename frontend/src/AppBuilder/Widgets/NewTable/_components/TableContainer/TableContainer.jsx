@@ -55,17 +55,25 @@ export const TableContainer = React.memo(
     const columnProperties = getColumnProperties(id);
     const { showBulkSelector } = getTableProperties(id);
 
+    // Table properties
     const allowSelection = useTableStore((state) => state.getTableProperties(id)?.allowSelection, shallow);
     const enableSorting = useTableStore((state) => state.getTableProperties(id)?.enabledSort, shallow);
     const highlightSelectedRow = useTableStore((state) => state.getTableProperties(id)?.highlightSelectedRow, shallow);
     const columnSizes = useTableStore((state) => state.getTableProperties(id)?.columnSizes, shallow);
 
+    // Server side properties
+    const serverSidePagination = useTableStore((state) => state.getTableProperties(id)?.serverSidePagination, shallow);
+    const serverSideSort = useTableStore((state) => state.getTableProperties(id)?.serverSideSort, shallow);
+    const serverSideFilter = useTableStore((state) => state.getTableProperties(id)?.serverSideFilter, shallow);
+    const serverSideSearch = useTableStore((state) => state.getTableProperties(id)?.serverSideSearch, shallow);
+
+    // Table styles
     const isMaxRowHeightAuto = useTableStore((state) => state.getTableStyles(id)?.isMaxRowHeightAuto, shallow);
+    const maxRowHeightValue = useTableStore((state) => state.getTableStyles(id)?.maxRowHeightValue, shallow);
     const cellHeight = useTableStore((state) => state.getTableStyles(id)?.cellHeight, shallow);
     const contentWrapProperty = useTableStore((state) => state.getTableStyles(id)?.contentWrap, shallow);
     const rowStyle = useTableStore((state) => state.getTableStyles(id)?.rowStyle, shallow);
 
-    const maxRowHeightValue = getMaxRowHeightValue(id);
     const selectRowOnCellEdit = getSelectRowOnCellEdit(id);
     const actions = getActions(id);
     const pageSize = getRowsPerPage(id);
@@ -135,7 +143,7 @@ export const TableContainer = React.memo(
             fireEvent,
             tableRef: tableBodyRef,
             handleCellValueChange,
-            searchText: globalFilter,
+            searchText: serverSideSearch ? '' : globalFilter,
           }).filter(Boolean),
 
           ...generateActionColumns({
@@ -157,6 +165,7 @@ export const TableContainer = React.memo(
         handleCellValueChange,
         globalFilter,
         showBulkSelector,
+        serverSideSearch,
       ]
     );
 
@@ -192,7 +201,9 @@ export const TableContainer = React.memo(
         const value = String(row.getValue(columnId) || '').toLowerCase();
         return value.includes(String(filterValue).toLowerCase());
       },
-      manualPagination: false,
+      manualPagination: serverSidePagination,
+      manualSorting: serverSideSort,
+      manualFiltering: serverSideFilter,
       pageCount: Math.ceil(data.length / pagination.pageSize),
     });
 
@@ -449,8 +460,8 @@ export const TableContainer = React.memo(
         <Header
           id={id}
           darkMode={darkMode}
-          fireEvent={() => {}}
-          setExposedVariables={() => {}}
+          fireEvent={fireEvent}
+          setExposedVariables={setExposedVariables}
           setGlobalFilter={setGlobalFilter}
           globalFilter={globalFilter}
           table={table}
@@ -466,12 +477,6 @@ export const TableContainer = React.memo(
           table={table}
           pageIndex={pagination.pageIndex + 1}
           pageSize={pagination.pageSize}
-          pageCount={table.getPageCount()}
-          dataLength={table.getFilteredRowModel().rows.length}
-          canPreviousPage={table.getCanPreviousPage()}
-          canNextPage={table.getCanNextPage()}
-          onPageChange={table.setPageIndex}
-          onPageSizeChange={table.setPageSize}
           componentName={componentName}
           handleChangesSaved={handleChangesSaved}
           handleChangesDiscarded={handleChangesDiscarded}
