@@ -23,7 +23,6 @@ export const EditorSelecto = () => {
         };
       })
     );
-    console.log('highestLevelComponents', highestLevelComponents);
     if (highestLevelComponents.length === 1) {
       return selectedIds.filter((id) => highestLevelComponents[0].id !== id);
     }
@@ -77,7 +76,6 @@ export const EditorSelecto = () => {
           ? [...getSelectedComponents().filter((id) => !allSelectedIds.includes(id)), ...allSelectedIds]
           : allSelectedIds;
 
-        console.log('newSelection', newSelection, isCanvasSelectStartEndSame);
         setSelectedComponents(
           !isCanvasSelectStartEndSame ? newSelection : filterSelectedComponentsByHighestLevel(newSelection)
         );

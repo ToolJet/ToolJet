@@ -416,7 +416,7 @@ export default function Grid({ gridWidth, currentLayout }) {
 
     useGridStore.getState().actions.setDragTarget(parentId);
   };
-  console.log(selectedComponents, '4213ca1f-1022-49fa-a55a-9ed4bbcdc446');
+
   const handleDragGroupEnd = (e) => {
     try {
       const { events, clientX, clientY } = e;
