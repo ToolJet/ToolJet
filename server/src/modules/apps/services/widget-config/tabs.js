@@ -203,6 +203,15 @@ export const tabsConfig = {
       },
       accordian: 'Tabs',
     },
+    transition: {
+      type: 'select',
+      displayName: 'Transition',
+      options: [
+        { name: 'Slide', value: 'slide' },
+        { name: 'None', value: 'none' },
+      ],
+      accordian: 'Tabs',
+    },
     border: {
       type: 'color',
       displayName: 'Border',
@@ -393,6 +402,7 @@ export const tabsConfig = {
       accent: { value: '#4368E3' },
       tabWidth: { value: 'auto' },
       divider: { value: '#CCD1D5' },
+      transition: { value: 'none' },
       borderRadius: { value: '{{6}}' },
       border: { value: '#CCD1D5' },
       padding: { value: 'default' },
