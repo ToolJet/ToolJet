@@ -6,7 +6,15 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useDrop } from 'react-dnd';
 import { addChildrenWidgetsToParent, addNewWidgetToTheEditor, computeViewerBackgroundColor } from './appCanvasUtils';
-import { CANVAS_WIDTHS, NO_OF_GRIDS, WIDGETS_WITH_DEFAULT_CHILDREN } from './appCanvasConstants';
+import {
+  CANVAS_WIDTHS,
+  NO_OF_GRIDS,
+  WIDGETS_WITH_DEFAULT_CHILDREN,
+  GRID_HEIGHT,
+  CONTAINER_CANVAS_PADDING,
+  CONTAINER_CANVAS_BORDER_WIDTH,
+  BOX_PADDING,
+} from './appCanvasConstants';
 import { useGridStore } from '@/_stores/gridStore';
 import NoComponentCanvasContainer from './NoComponentCanvasContainer';
 import { RIGHT_SIDE_BAR_TAB } from '../RightSideBar/rightSidebarConstants';
@@ -95,7 +103,10 @@ export const Container = React.memo(
       if (canvasWidth !== undefined) {
         if (componentType === 'Listview' && listViewMode == 'grid') return canvasWidth / columns - 2;
         if (id === 'canvas') return canvasWidth;
-        return canvasWidth - 2;
+        if (componentType === 'Container') {
+          return canvasWidth - (2 * CONTAINER_CANVAS_PADDING + 2 * CONTAINER_CANVAS_BORDER_WIDTH + 2 * BOX_PADDING);
+        }
+        return canvasWidth - 2; // Need to update this 2 to correct value for other subcontainers
       }
       return realCanvasRef?.current?.offsetWidth;
     }
@@ -143,7 +154,7 @@ export const Container = React.memo(
         }}
         style={{
           height: id === 'canvas' ? `${canvasHeight}` : '100%',
-          backgroundSize: `${gridWidth}px ${10}px`,
+          backgroundSize: `${gridWidth}px ${GRID_HEIGHT}px`,
           backgroundColor:
             currentMode === 'view'
               ? computeViewerBackgroundColor(darkMode, canvasBgColor)

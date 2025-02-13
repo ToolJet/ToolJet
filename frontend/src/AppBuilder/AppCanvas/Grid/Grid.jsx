@@ -830,7 +830,7 @@ export default function Grid({ gridWidth, currentLayout }) {
         onDragEnd={(e) => {
           try {
             if (isDraggingRef.current) {
-              useGridStore.getState().actions.setDraggingComponentId(null);
+              useStore.getState().setDraggingComponentId(null);
               isDraggingRef.current = false;
             }
             prevDragParentId.current = null;

@@ -2,6 +2,9 @@ import React, { useMemo } from 'react';
 import { Container as ContainerComponent } from '@/AppBuilder/AppCanvas/Container';
 import Spinner from '@/_ui/Spinner';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
+import { shallow } from 'zustand/shallow';
+import { CONTAINER_CANVAS_PADDING, CONTAINER_CANVAS_BORDER_WIDTH } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import useStore from '@/AppBuilder/_stores/store';
 
 export const Container = ({
   id,
@@ -23,6 +26,11 @@ export const Container = ({
     setExposedVariable
   );
 
+  const isWidgetInContainerDragging = useStore(
+    (state) => state.containerChildrenMapping[id].includes(state.draggingComponentId),
+    shallow
+  );
+
   const contentBgColor = useMemo(() => {
     return {
       backgroundColor:
@@ -42,8 +50,9 @@ export const Container = ({
   const computedStyles = {
     backgroundColor: contentBgColor.backgroundColor,
     borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
-    border: `1px solid ${borderColor}`,
+    border: `${CONTAINER_CANVAS_BORDER_WIDTH}px solid ${borderColor}`,
     height,
+    padding: `${CONTAINER_CANVAS_PADDING}px`,
     display: isVisible ? 'flex' : 'none',
     flexDirection: 'column',
     position: 'relative',
@@ -61,9 +70,9 @@ export const Container = ({
   const computedContentStyles = {
     ...contentBgColor,
     flex: 1,
-    overflow: 'auto',
+    // Prevent the scroll when dragging a widget inside the container or moving out of the container
+    overflow: isWidgetInContainerDragging ? 'hidden' : 'hidden auto',
   };
-
   return (
     <div
       className={`jet-container widget-type-container ${properties.loadingState && 'jet-container-loading'}`}
