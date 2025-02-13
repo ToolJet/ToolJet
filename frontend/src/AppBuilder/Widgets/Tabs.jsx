@@ -462,7 +462,12 @@ export const Tabs = function Tabs({
             }}
             style={{
               transition: 'transform 0.3s ease-in-out, opacity 0.3s ease-in-out',
-              transform: currentTab === tab.id ? 'translateX(0%)' : 'translateX(100%)',
+              transform:
+                currentTab === tab.id
+                  ? 'translateX(0%)'
+                  : findTabIndex(currentTab) > index
+                  ? 'translateX(-100%)'
+                  : 'translateX(100%)',
             }}
             id={`${id}-${tab.id}`}
             key={tab.id}
