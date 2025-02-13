@@ -6,7 +6,7 @@ import { OverlayTrigger } from 'react-bootstrap';
 import { renderTooltip } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
 import ErrorBoundary from '@/_ui/ErrorBoundary';
-
+import { BOX_PADDING } from './appCanvasConstants';
 const shouldAddBoxShadowAndVisibility = [
   'Table',
   'TextInput',
@@ -163,7 +163,7 @@ const RenderWidget = ({
         <div
           style={{
             height: '100%',
-            padding: resolvedStyles?.padding == 'none' ? '0px' : '2px', //chart and image has a padding property other than container padding
+            padding: resolvedStyles?.padding == 'none' ? '0px' : `${BOX_PADDING}px`, //chart and image has a padding property other than container padding
           }}
           role={'Box'}
           className={inCanvas ? `_tooljet-${component?.component} _tooljet-${component?.name}` : ''} //required for custom CSS

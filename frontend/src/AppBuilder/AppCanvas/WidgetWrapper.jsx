@@ -27,7 +27,7 @@ const WidgetWrapper = memo(
     );
     const layoutData = useStore((state) => state.getComponentDefinition(id)?.layouts?.[currentLayout], shallow);
     const isWidgetActive = useStore((state) => state.selectedComponents.find((sc) => sc === id) && !readOnly, shallow);
-    const isDragging = useGridStore((state) => state.draggingComponentId === id);
+    const isDragging = useStore((state) => state.draggingComponentId === id);
     const isResizing = useGridStore((state) => state.resizingComponentId === id);
     const componentType = useStore((state) => state.getComponentDefinition(id)?.component?.component, shallow);
     const setHoveredComponentForGrid = useStore((state) => state.setHoveredComponentForGrid, shallow);
