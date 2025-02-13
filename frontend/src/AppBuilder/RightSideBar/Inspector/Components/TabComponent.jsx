@@ -179,7 +179,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
           <div className="field mb-3" data-cy={`input-and-label-tab-id`}>
             <CodeHinter
               currentState={currentState}
-              initialValue={item?.icon?.value}
+              initialValue={item?.icon?.value || ''}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
