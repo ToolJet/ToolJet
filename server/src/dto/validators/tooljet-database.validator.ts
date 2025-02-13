@@ -28,7 +28,7 @@ export const getLatestSchemaVersion = (schemaName: string): string | null => {
 
   if (!fs.existsSync(schemasDir)) {
     console.error(`Schemas directory not found: ${schemasDir}`);
-    return null;
+    throw new Error('ToolJet database schema validation: Schema directory were not found');
   }
 
   const versions = fs
@@ -57,7 +57,7 @@ export const loadSchema = (version: string, schemaName: string): Record<string, 
     return JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
   }
   console.error(`Schema file not found: ${schemaPath}`);
-  return null;
+  throw new Error(`ToolJet database schema validation: Schema file not found`);
 };
 
 @ValidatorConstraint({ name: 'validateTooljetDatabase', async: false })
@@ -69,13 +69,13 @@ export class ValidateTooljetDatabaseConstraint implements ValidatorConstraintInt
       const latestVersion = getLatestSchemaVersion(schemaName);
       if (!latestVersion) {
         logger.error(`No schema version found for ${schemaName}`);
-        return false;
+        throw new Error(`ToolJet database schema validation: Schema versions were not found`);
       }
 
       const schema = loadSchema(latestVersion, schemaName);
       if (!schema) {
         logger.error(`Failed to load schema for version ${latestVersion}`);
-        return false;
+        throw new Error(`Failed to load ToolJet database validation schema for version ${latestVersion}`);
       }
 
       const validate = ajv.compile(schema);
@@ -89,7 +89,7 @@ export class ValidateTooljetDatabaseConstraint implements ValidatorConstraintInt
       return true;
     } catch (error) {
       logger.error('Error in ValidateTooljetDatabase:', error);
-      return false;
+      throw error;
     }
   }
 
