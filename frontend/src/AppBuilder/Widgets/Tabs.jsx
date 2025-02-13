@@ -392,6 +392,7 @@ export const Tabs = function Tabs({
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
+                    fontWeight: 'bold',
                     ...(currentTab == tab.id ? { color: selectedText } : { color: unselectedText }),
                     ...(tabWidth == 'split' ? { minWidth: 'auto' } : { minWidth: '100px' }),
                   }}
