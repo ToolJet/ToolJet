@@ -11,6 +11,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import SectionCollapse from '@/_ui/Icon/solidIcons/SectionCollapse';
 import SectionExpand from '@/_ui/Icon/solidIcons/SectionExpand';
 import { shallow } from 'zustand/shallow';
+import QueryKeyHooks from './QueryKeyHooks';
 
 const MemoizedQueryDataPane = memo(QueryDataPane);
 const MemoizedQueryManager = memo(QueryManager);
@@ -192,14 +193,14 @@ export const QueryPanel = ({ darkMode }) => {
         }}
       >
         {isExpanded && (
-          <div className="row main-row">
+          <QueryKeyHooks isExpanded={isExpanded}>
             <MemoizedQueryDataPane darkMode={darkMode} />
             <div className="query-definition-pane-wrapper">
               <div className="query-definition-pane">
                 <MemoizedQueryManager darkMode={darkMode} />
               </div>
             </div>
-          </div>
+          </QueryKeyHooks>
         )}
       </div>
       <Tooltip id="tooltip-for-query-panel-footer-btn" className="tooltip" />
