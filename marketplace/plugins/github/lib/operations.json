@@ -120,10 +120,10 @@
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter number of issues per page"
+        "placeholder": "Default is 30"
       },
       "page": {
-        "label": "Page",
+        "label": "Page number",
         "key": "page",
         "type": "codehinter",
         "lineNumbers": false,
@@ -131,7 +131,7 @@
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter page number"
+        "placeholder": "Default is 1"
       }
     },
     "get_repo_pull_requests": {
@@ -187,10 +187,10 @@
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter number of pull requests per page"
+        "placeholder": "Default is 30"
       },
       "page": {
-        "label": "Page",
+        "label": "Page number",
         "key": "page",
         "type": "codehinter",
         "lineNumbers": false,
@@ -198,7 +198,7 @@
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins",
-        "placeholder": "Enter page number"
+        "placeholder": "Default is 1"
       }
     }
   }
