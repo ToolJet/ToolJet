@@ -22,7 +22,6 @@ export type QueryOptions = {
   encoding_format_M3: string;
   dimensions_M1: string;
   dimensions_M2: string;
-  dimensions_M3: string;
 };
 
 export enum Operation {

@@ -122,14 +122,13 @@ export async function generateEmbedding(openai: OpenAI, options: QueryOptions) {
     case 'text-embedding-ada-002':
       input = options.input_M3;
       encoding_format = options.encoding_format_M3;
-      dimensions = options.dimensions_M3;
       break;
   }
   const embedding = await openai.embeddings.create({
     model: model,
     input: input,
     encoding_format: encoding_format,
-    dimensions: Number(dimensions),
+    ...(dimensions !== undefined && { dimensions: Number(dimensions) }),
   });
   return embedding.data[0].embedding;
 }

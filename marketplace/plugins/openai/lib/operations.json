@@ -409,17 +409,6 @@
 						{ "value": "base64", "name": "Base64" }
 					],
 					"tooltip": "Format of the embeddings"
-				},
-				"dimensions_M3": {
-					"label": "Dimensions",
-					"key": "dimensions_M3",
-					"type": "codehinter",
-					"lineNumbers": false,
-					"placeholder": "2",
-					"width": "320px",
-					"height": "36px",
-					"className": "codehinter-plugins",
-					"tooltip": "Number of dimensions the resulting output embeddings should have"
 				}
 			}
 		}
