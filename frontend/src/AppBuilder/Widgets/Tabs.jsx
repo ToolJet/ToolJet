@@ -79,6 +79,18 @@ export const Tabs = function Tabs({
   let parsedHighlightColor = highlightColor;
   parsedHighlightColor = resolveWidgetFieldValue(highlightColor);
 
+  const headerBackground = styles?.headerBackground ?? '#fff';
+  const unselectedText = styles?.unselectedText ?? '#6A727C';
+  const selectedText = styles?.selectedText ?? '#fff';
+  const hoverBackground = styles?.hoverBackground ?? '#F1F3F4';
+  const unselectedIcon = styles?.unselectedIcon ?? '#6A727C';
+  const selectedIcon = styles?.selectedIcon ?? '#fff';
+  const accent = styles?.accent ?? '#3c92dc';
+  const divider = styles?.divider ?? '#CCD1D5';
+  const borderRadius = styles?.borderRadius ?? '0px';
+  const border = styles?.border ?? '#CCD1D5';
+  const padding = styles?.padding ?? 'default';
+
   // Default tab
   let parsedDefaultTab = defaultTab;
 
@@ -303,11 +315,11 @@ export const Tabs = function Tabs({
 
     return tab?.iconVisibility ? (
       <IconElement
-        color={`${darkMode ? '#fff' : '#000'}`}
+        color={`${currentTab == tab?.id ? selectedIcon : unselectedIcon}`}
         style={{
           width: '16px',
           height: '16px',
-          color: '#6A727C',
+          ...(currentTab == tab.id ? { color: selectedIcon } : { color: unselectedIcon }),
         }}
         stroke={1.5}
       />
@@ -319,7 +331,13 @@ export const Tabs = function Tabs({
     <div
       data-disabled={isDisabled}
       className="card tabs-component"
-      style={{ height, display: isVisible ? 'flex' : 'none', backgroundColor: bgColor, boxShadow }}
+      style={{
+        height,
+        display: isVisible ? 'flex' : 'none',
+        backgroundColor: bgColor,
+        boxShadow,
+        borderRadius: `${borderRadius}px`,
+      }}
       data-cy={dataCy}
       ref={containerRef}
     >
@@ -351,7 +369,7 @@ export const Tabs = function Tabs({
             style={{
               zIndex: 1,
               display: parsedHideTabs ? 'none' : 'flex',
-              backgroundColor: darkMode ? '#324156' : '#fff',
+              backgroundColor: headerBackground,
               overflowX: 'auto',
               whiteSpace: 'nowrap',
               flexWrap: 'nowrap',
@@ -369,13 +387,13 @@ export const Tabs = function Tabs({
                   style={{
                     opacity: tab?.disabled && '0.5',
                     width: tabWidth == 'split' && equalSplitWidth + '%',
-                    color: currentTab === tab.id ? parsedHighlightColor : 'inherit',
-                    borderBottom: currentTab === tab.id ? `1px solid ${parsedHighlightColor}` : 'none',
+                    background: headerBackground,
+                    borderBottom: currentTab === tab.id ? `2px solid ${border}` : '#CCD1D5',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
+                    ...(currentTab == tab.id ? { color: selectedText } : { color: unselectedText }),
                     ...(tabWidth == 'split' ? { minWidth: 'auto' } : { minWidth: '100px' }),
-                    justifyContent: 'left',
                   }}
                   onClick={() => {
                     if (currentTab == tab.id) return;
