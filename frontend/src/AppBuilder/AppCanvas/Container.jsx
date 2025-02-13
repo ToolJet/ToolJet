@@ -93,11 +93,13 @@ export const Container = React.memo(
     function getContainerCanvasWidth() {
       if (canvasWidth !== undefined) {
         if (componentType === 'Listview' && listViewMode == 'grid') return canvasWidth / columns - 2;
+        if (id === 'canvas') return canvasWidth;
         return canvasWidth - 2;
       }
       return realCanvasRef?.current?.offsetWidth;
     }
     const gridWidth = getContainerCanvasWidth() / NO_OF_GRIDS;
+
     useEffect(() => {
       useGridStore.getState().actions.setSubContainerWidths(id, getContainerCanvasWidth() / NO_OF_GRIDS);
       // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -120,6 +122,7 @@ export const Container = React.memo(
       const canvasId = e.target.closest('.real-canvas')?.getAttribute('id')?.split('canvas-')[1];
       setFocusedParentId(canvasId);
     };
+
     return (
       <div
         // {...(config.COMMENT_FEATURE_ENABLE && showComments && { onClick: handleAddThread })}
@@ -129,8 +132,7 @@ export const Container = React.memo(
         }}
         style={{
           height: id === 'canvas' ? `${canvasHeight}` : '100%',
-          // backgroundSize: '25.3953px 10px',
-          backgroundSize: `${gridWidth}px 10px`,
+          backgroundSize: `${gridWidth}px ${10}px`,
           backgroundColor:
             currentMode === 'view'
               ? computeViewerBackgroundColor(darkMode, canvasBgColor)

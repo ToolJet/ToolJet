@@ -56,6 +56,12 @@ export default function Grid({ gridWidth, currentLayout }) {
   const [elementGuidelines, setElementGuidelines] = useState([]);
   const componentsSnappedTo = useRef(null);
   const prevDragParentId = useRef(null);
+  const newDragParentId = useRef(null);
+  const [snapGridWidth, setSnapGridWidth] = useState(gridWidth);
+
+  useEffect(() => {
+    setSnapGridWidth(useGridStore.getState().subContainerWidths?.[dragParentId] || gridWidth);
+  }, [dragParentId]);
 
   useEffect(() => {
     const guidelines = boxList
@@ -444,7 +450,6 @@ export default function Grid({ gridWidth, currentLayout }) {
       }
     }
   }, [draggingComponentId, resizingComponentId, selectedComponents]);
-  const snapGridWidth = useGridStore.getState().subContainerWidths[dragParentId] || gridWidth;
   if (mode !== 'edit') return null;
 
   return (
@@ -681,6 +686,10 @@ export default function Grid({ gridWidth, currentLayout }) {
         }}
         checkInput
         onDragStart={(e) => {
+          if (getHoveredComponentForGrid() !== e.target.id) {
+            return false;
+          }
+          newDragParentId.current = boxList.find((box) => box.id === e.target.id)?.parent;
           e?.moveable?.controlBox?.removeAttribute('data-off-screen');
           const box = boxList.find((box) => box.id === e.target.id);
           // Prevent drag if shift is pressed for SUBCONTAINER_WIDGETS
@@ -727,9 +736,6 @@ export default function Grid({ gridWidth, currentLayout }) {
             }
           }
           // This is to prevent parent component from being dragged and the stop the propagation of the event
-          if (getHoveredComponentForGrid() !== e.target.id) {
-            return false;
-          }
         }}
         onDragEnd={(e) => {
           try {
@@ -738,7 +744,9 @@ export default function Grid({ gridWidth, currentLayout }) {
               isDraggingRef.current = false;
             }
             prevDragParentId.current = null;
+            newDragParentId.current = null;
             setDragParentId(null);
+
             if (!e.lastEvent) {
               return;
             }
@@ -859,20 +867,30 @@ export default function Grid({ gridWidth, currentLayout }) {
           }
 
           const currentWidget = boxList.find((box) => box.id === e.target.id);
-          const currentParentId = currentWidget?.component?.parent || 'canvas';
-          const _gridWidth = useGridStore.getState().subContainerWidths?.[dragParentId] || gridWidth;
+          const currentParentId =
+            currentWidget?.component?.parent === null ? 'canvas' : currentWidget?.component?.parent;
+          const _gridWidth = useGridStore.getState().subContainerWidths[dragParentId] || gridWidth;
           const parentComponent = boxList.find((box) => box.id === dragParentId);
+          const _dragParentId = newDragParentId.current === null ? 'canvas' : newDragParentId.current;
 
-          // Adjust width when dragging between different containers
-          if (dragParentId && dragParentId !== currentParentId) {
-            const oldContainerWidth = currentParentId
-              ? useGridStore.getState().subContainerWidths[currentParentId]
-              : _gridWidth;
-            const newWidth = Math.round((currentWidget.width * oldContainerWidth) / _gridWidth);
-            e.target.style.width = `${newWidth * _gridWidth}px`;
-          }
-          let top = e.translate[1];
           let left = e.translate[0];
+          let top = e.translate[1];
+
+          // This logic is to handle the case when the dragged element is over a new canvas
+          if (_dragParentId !== currentParentId) {
+            // const oldContainer = document.getElementById(`canvas-${currentParentId}`);
+            // const newContainer = document.getElementById(`canvas-${dragParentId}`);
+            // const oldContainerWidth = currentParentId
+            //   ? useGridStore.getState().subContainerWidths[currentParentId]
+            //   : _gridWidth;
+            // const newWidth = Math.round((currentWidget.width * oldContainerWidth) / _gridWidth);
+            // e.target.style.width = `${newWidth * _gridWidth}px`;
+          }
+
+          // Snap to grid
+          top = Math.round(top / GRID_HEIGHT) * GRID_HEIGHT;
+          left = Math.round(left / _gridWidth) * _gridWidth;
+
           // Special case for Modal
           if (parentComponent?.component?.component === 'Modal') {
             const elemContainer = e.target.closest('.real-canvas');
@@ -886,7 +904,6 @@ export default function Grid({ gridWidth, currentLayout }) {
           }
 
           e.target.style.transform = `translate(${left}px, ${top}px)`;
-          e.target.setAttribute('widget-pos2', `translate: ${e.translate[0]} | Round: ${left} | ${_gridWidth}`);
 
           // This block is to show grid lines on the canvas when the dragged element is over a new canvas
           if (document.elementFromPoint(e.clientX, e.clientY)) {
@@ -913,6 +930,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             const parentId = draggedOverContainer?.getAttribute('data-parentId') || draggedOverElem?.id;
             if (parentId !== prevDragParentId.current) {
               setDragParentId(parentId === 'canvas' ? null : parentId);
+              newDragParentId.current = parentId === 'canvas' ? null : parentId;
               prevDragParentId.current = parentId;
             }
             // Show grid for the appropriate canvas
@@ -944,8 +962,8 @@ export default function Grid({ gridWidth, currentLayout }) {
             const currentWidget = boxList.find(({ id }) => id === ev.target.id);
             const _gridWidth = useGridStore.getState().subContainerWidths[currentWidget.component?.parent] || gridWidth;
 
-            let top = Math.round(ev.translate[1] / GRID_HEIGHT) * GRID_HEIGHT;
-            let left = Math.round(ev.translate[0] / _gridWidth) * _gridWidth;
+            let left = Math.round(left / _gridWidth) * _gridWidth;
+            let top = Math.round(top / GRID_HEIGHT) * GRID_HEIGHT;
 
             ev.target.style.transform = `translate(${left}px, ${top}px)`;
           });
@@ -1011,7 +1029,7 @@ export default function Grid({ gridWidth, currentLayout }) {
         // Guidelines configuration
         elementGuidelines={elementGuidelines}
         snapGridHeight={GRID_HEIGHT}
-        snapGridWidth={useGridStore.getState().subContainerWidths?.[dragParentId] || gridWidth}
+        snapGridWidth={snapGridWidth}
         snapDirections={{
           top: true,
           right: true,
