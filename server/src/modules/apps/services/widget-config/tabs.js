@@ -231,15 +231,16 @@ export const tabsConfig = {
       accordian: 'Container',
     },
     boxShadow: {
-      type: 'color',
-      displayName: 'Border',
-      validation: {
-        schema: { type: 'string' },
-        defaultValue: '#121212',
-      },
+      type: 'boxShadow',
+      displayName: 'Box shadow',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
       accordian: 'Container',
+      conditionallyRender: {
+        key: 'type',
+        value: 'primary',
+      },
     },
-    type: {
+    padding: {
       type: 'switch',
       displayName: 'Padding',
       validation: { schema: { type: 'string' } },
@@ -405,7 +406,8 @@ export const tabsConfig = {
       transition: { value: 'none' },
       borderRadius: { value: '{{6}}' },
       border: { value: '#CCD1D5' },
-      padding: { value: 'default' },
+      boxShadow: { value: '0px 0px 0px 0px #00000090' },
+      padding: { value: 'none' },
     },
   },
 };
