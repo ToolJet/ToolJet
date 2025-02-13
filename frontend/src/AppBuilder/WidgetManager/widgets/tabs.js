@@ -113,14 +113,78 @@ export const tabsConfig = {
   },
   events: { onTabSwitch: { displayName: 'On tab switch' } },
   styles: {
-    highlightColor: {
+    headerBackground: {
       type: 'color',
-      displayName: 'Highlight color',
+      displayName: 'Header background',
       validation: {
         schema: { type: 'string' },
         defaultValue: '#375FCF',
       },
+      accordian: 'Tabs',
     },
+    unselectedText: {
+      type: 'color',
+      displayName: 'Unselected text',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#375FCF',
+      },
+      accordian: 'Tabs',
+    },
+    selectedText: {
+      type: 'color',
+      displayName: 'Selected text',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#375FCF',
+      },
+      accordian: 'Tabs',
+    },
+    hoverBackground: {
+      type: 'color',
+      displayName: 'Hover Background',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#375FCF',
+      },
+      accordian: 'Tabs',
+    },
+    unselectedIcon: {
+      type: 'color',
+      displayName: 'Unselected Icon',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#CCD1D5',
+      },
+      accordian: 'Tabs',
+    },
+    selectedIcon: {
+      type: 'color',
+      displayName: 'Selected Icon',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#CCD1D5',
+      },
+      accordian: 'Tabs',
+    },
+    accent: {
+      type: 'color',
+      displayName: 'Accent',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#CCD1D5',
+      },
+      accordian: 'Tabs',
+    },
+    // highlightColor: {
+    //   type: 'color',
+    //   displayName: 'Highlight color',
+    //   validation: {
+    //     schema: { type: 'string' },
+    //     defaultValue: '#375FCF',
+    //   },
+    //   accordian: 'Tabs',
+    // },
     tabWidth: {
       type: 'select',
       displayName: 'Tab width',
@@ -128,6 +192,63 @@ export const tabsConfig = {
         { name: 'Auto', value: 'auto' },
         { name: 'Equally split', value: 'split' },
       ],
+      accordian: 'Tabs',
+    },
+    divider: {
+      type: 'color',
+      displayName: 'Divider',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#CCD1D5',
+      },
+      accordian: 'Tabs',
+    },
+    transition: {
+      type: 'select',
+      displayName: 'Transition',
+      options: [
+        { name: 'Slide', value: 'slide' },
+        { name: 'None', value: 'none' },
+      ],
+      accordian: 'Tabs',
+    },
+    border: {
+      type: 'color',
+      displayName: 'Border',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#375FCF',
+      },
+      accordian: 'Container',
+    },
+    borderRadius: {
+      type: 'numberInput',
+      displayName: 'Border radius',
+      validation: {
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        defaultValue: false,
+      },
+      accordian: 'Container',
+    },
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+      accordian: 'Container',
+      conditionallyRender: {
+        key: 'type',
+        value: 'primary',
+      },
+    },
+    padding: {
+      type: 'switch',
+      displayName: 'Padding',
+      validation: { schema: { type: 'string' } },
+      options: [
+        { displayName: 'Default', value: 'default' },
+        { displayName: 'None', value: 'none' },
+      ],
+      accordian: 'Container',
     },
   },
   actions: [
@@ -229,13 +350,15 @@ export const tabsConfig = {
       useDynamicOptions: { value: '{{false}}' },
       tabs: {
         value:
-          "{{[ \n\t\t{ title: 'Home', id: '0' }, \n\t\t{ title: 'Profile', id: '1' }, \n\t\t{ title: 'Settings', id: '2' } \n ]}}",
+          "{{[ \n\t\t{ title: 'Home', id: '0' }, \n\t\t{ title: 'Profile', id: '1' }, \n\t\t{ title: 'Settings', id: '2',  } \n ]}}",
       },
       tabItems: {
         value: [
           {
             id: '0',
             title: 'Tab 1',
+            icon: { value: 'IconHome2' },
+            iconVisibility: { value: true },
             loading: { value: false },
             disable: { value: false },
             visible: { value: true },
@@ -243,6 +366,8 @@ export const tabsConfig = {
           {
             id: '1',
             title: 'Tab 2',
+            icon: { value: 'IconHome2' },
+            iconVisibility: { value: true },
             loading: { value: false },
             disable: { value: false },
             visible: { value: true },
@@ -250,6 +375,8 @@ export const tabsConfig = {
           {
             id: '2',
             title: 'Tab 3',
+            icon: { value: 'IconHome2' },
+            iconVisibility: { value: true },
             loading: { value: false },
             disable: { value: false },
             visible: { value: true },
@@ -266,8 +393,21 @@ export const tabsConfig = {
     },
     events: [],
     styles: {
+      headerBackground: { value: '#FFFFFF' },
+      unselectedText: { value: '#6A727C' },
+      selectedText: { value: '#1B1F24' },
       highlightColor: { value: '#375FCF' },
+      hoverBackground: { value: '#1B1F24' },
+      unselectedIcon: { value: '#CCD1D5' },
+      selectedIcon: { value: '#CCD1D5' },
+      accent: { value: '#4368E3' },
       tabWidth: { value: 'auto' },
+      divider: { value: '#CCD1D5' },
+      transition: { value: 'none' },
+      borderRadius: { value: '{{6}}' },
+      border: { value: '#CCD1D5' },
+      boxShadow: { value: '0px 0px 0px 0px #00000090' },
+      padding: { value: 'none' },
     },
   },
 };
