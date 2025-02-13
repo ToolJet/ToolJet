@@ -113,14 +113,78 @@ export const tabsConfig = {
   },
   events: { onTabSwitch: { displayName: 'On tab switch' } },
   styles: {
-    highlightColor: {
+    headerBackground: {
       type: 'color',
-      displayName: 'Highlight color',
+      displayName: 'Header background',
       validation: {
         schema: { type: 'string' },
         defaultValue: '#375FCF',
       },
+      accordian: 'Tabs',
     },
+    unselectedText: {
+      type: 'color',
+      displayName: 'Unselected text',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#375FCF',
+      },
+      accordian: 'Tabs',
+    },
+    selectedText: {
+      type: 'color',
+      displayName: 'Selected text',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#375FCF',
+      },
+      accordian: 'Tabs',
+    },
+    hoverBackground: {
+      type: 'color',
+      displayName: 'Hover Background',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#375FCF',
+      },
+      accordian: 'Tabs',
+    },
+    unselectedIcon: {
+      type: 'color',
+      displayName: 'Unselected Icon',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#CCD1D5',
+      },
+      accordian: 'Tabs',
+    },
+    selectedIcon: {
+      type: 'color',
+      displayName: 'Selected Icon',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#CCD1D5',
+      },
+      accordian: 'Tabs',
+    },
+    accent: {
+      type: 'color',
+      displayName: 'Accent',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#CCD1D5',
+      },
+      accordian: 'Tabs',
+    },
+    // highlightColor: {
+    //   type: 'color',
+    //   displayName: 'Highlight color',
+    //   validation: {
+    //     schema: { type: 'string' },
+    //     defaultValue: '#375FCF',
+    //   },
+    //   accordian: 'Tabs',
+    // },
     tabWidth: {
       type: 'select',
       displayName: 'Tab width',
@@ -128,6 +192,53 @@ export const tabsConfig = {
         { name: 'Auto', value: 'auto' },
         { name: 'Equally split', value: 'split' },
       ],
+      accordian: 'Tabs',
+    },
+    divider: {
+      type: 'color',
+      displayName: 'Divider',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#CCD1D5',
+      },
+      accordian: 'Tabs',
+    },
+    border: {
+      type: 'color',
+      displayName: 'Border',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#375FCF',
+      },
+      accordian: 'Container',
+    },
+    borderRadius: {
+      type: 'numberInput',
+      displayName: 'Border radius',
+      validation: {
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+        defaultValue: false,
+      },
+      accordian: 'Container',
+    },
+    boxShadow: {
+      type: 'color',
+      displayName: 'Border',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#121212',
+      },
+      accordian: 'Container',
+    },
+    type: {
+      type: 'switch',
+      displayName: 'Padding',
+      validation: { schema: { type: 'string' } },
+      options: [
+        { displayName: 'Default', value: 'default' },
+        { displayName: 'None', value: 'none' },
+      ],
+      accordian: 'Container',
     },
   },
   actions: [
@@ -272,8 +383,19 @@ export const tabsConfig = {
     },
     events: [],
     styles: {
+      headerBackground: { value: '#FFFFFF' },
+      unselectedText: { value: '#6A727C' },
+      selectedText: { value: '#1B1F24' },
       highlightColor: { value: '#375FCF' },
+      hoverBackground: { value: '#1B1F24' },
+      unselectedIcon: { value: '#CCD1D5' },
+      selectedIcon: { value: '#CCD1D5' },
+      accent: { value: '#4368E3' },
       tabWidth: { value: 'auto' },
+      divider: { value: '#CCD1D5' },
+      borderRadius: { value: '{{6}}' },
+      border: { value: '#CCD1D5' },
+      padding: { value: 'default' },
     },
   },
 };
