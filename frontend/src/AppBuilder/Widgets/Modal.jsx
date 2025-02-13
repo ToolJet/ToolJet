@@ -41,7 +41,7 @@ const getModalBodyHeight = (
   if (showFooter) {
     modalHeight = modalHeight - footerHeight;
   }
-  return `${Math.max(modalHeight, 40)}px`;
+  return `${Math.max(modalHeight - 3, 40)}px`;
 };
 
 export const Modal = function Modal({
@@ -664,7 +664,7 @@ const Component = ({ children, ...restProps }) => {
             onResize={(e) => {
               const { height } = e;
               // To prevent the modal from showing scrollbars when resized
-              e.target.style.height = `${height + 3}px`;
+              e.target.style.height = `${height}px`;
               onResize({ height });
             }}
             edge={true}
