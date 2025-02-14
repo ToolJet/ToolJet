@@ -14,7 +14,11 @@ const preview = {
       },
     },
   },
-  decorators: [withColorScheme], // Adding the decorator to the decorators array
+
+  // Adding the decorator to the decorators array
+  decorators: [withColorScheme],
+
+  tags: ['autodocs']
 };
 
 export default preview;
