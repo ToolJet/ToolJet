@@ -424,7 +424,9 @@ export const Tabs = function Tabs({
                 >
                   <div
                     style={{
-                      ...{ width: `${tabsRef.current?.clientWidth / (tabItems?.length || 1)}px` },
+                      ...(tabWidth == 'split' && {
+                        width: `${tabsRef.current?.clientWidth / (tabItems?.length || 1)}px`,
+                      }),
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       textAlign: 'center',
