@@ -72,7 +72,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
       let found = false;
       let title = '';
       let currentNumber = tabItems.length + 1;
-      let id = currentNumber;
+      let id = 't' + currentNumber;
       while (!found) {
         title = `Tab ${currentNumber}`;
         id = currentNumber;
