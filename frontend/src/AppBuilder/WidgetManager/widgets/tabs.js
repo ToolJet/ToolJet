@@ -330,8 +330,8 @@ export const tabsConfig = {
           handle: 'value',
           type: 'toggle',
           displayName: 'Value',
-          defaultValue: '{{false}}',
-        },
+          defaultValue: '{{false}}'
+        }
       ],
     },
   ],
@@ -350,33 +350,33 @@ export const tabsConfig = {
       useDynamicOptions: { value: '{{false}}' },
       tabs: {
         value:
-          "{{[ \n\t\t{ title: 'Home', id: '0' }, \n\t\t{ title: 'Profile', id: '1' }, \n\t\t{ title: 'Settings', id: '2',  } \n ]}}",
+          "{{[ \n\t\t{ title: 'Home', id: '0' }, \n\t\t{ title: 'Profile', id: '1' }, \n\t\t{ title: 'Settings', id: '2' } \n ]}}",
       },
       tabItems: {
         value: [
           {
-            id: '0',
+            id: 't0',
             title: 'Tab 1',
             icon: { value: 'IconHome2' },
-            iconVisibility: { value: true },
+            iconVisibility: { value: false },
             loading: { value: false },
             disable: { value: false },
             visible: { value: true },
           },
           {
-            id: '1',
+            id: 't1',
             title: 'Tab 2',
             icon: { value: 'IconHome2' },
-            iconVisibility: { value: true },
+            iconVisibility: { value: false },
             loading: { value: false },
             disable: { value: false },
             visible: { value: true },
           },
           {
-            id: '2',
+            id: 't2',
             title: 'Tab 3',
             icon: { value: 'IconHome2' },
-            iconVisibility: { value: true },
+            iconVisibility: { value: false },
             loading: { value: false },
             disable: { value: false },
             visible: { value: true },
