@@ -430,7 +430,7 @@ export const Tabs = function Tabs({
                       textAlign: 'center',
                     }}
                   >
-                    <a style={{ paddingBottom: '2px' }}>{getTabIcon(tab)}</a>
+                    <a style={{ paddingBottom: '16px' }}>{getTabIcon(tab)}</a>
                     {tab.title}
                   </div>
                 </li>
