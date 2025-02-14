@@ -5,7 +5,9 @@ title: Version Control
 
 Version Control in ToolJet helps track changes, maintain a history of application updates, enable **[recovery and rollback](#)**, and deploy updates systematically. It ensures stability, and allows seamless rollouts of new features or fixes.
 
-For example, after deploying a new payment gateway integration in version v1.2.0, users report checkout failures due to a misconfigured API endpoint. Using ToolJet’s versioning, the team can quickly rolls back to the stable version v1.1.0, restoring functionality within minutes. This minimizes downtime, preserves transaction data, and allows developers to debug the faulty version offline without disrupting users.
+For example, after releasing a new version v1.2.0, users report failures of the form component. Using ToolJet’s versioning, the team can quickly rollback to the stable version v1.1.0, restoring functionality within minutes. This minimizes downtime, and allows developers to debug the faulty version offline without disrupting users.
+
+Each version is isolated from the others and can have different environments, such as development, staging, or production. Check out the **[Multi-Environment](#)** guide for more information.
 
 ## Creating a Version
 
