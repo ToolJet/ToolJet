@@ -5,13 +5,13 @@ title: Workspace Variables and Migration
 
 ## Workspace Variables
 
+Workspace Variables in ToolJet are designed to store values such as tokens, secret keys, or API keys, facilitating their use across multiple applications within the same workspace. This centralized approach ensures that sensitive information is managed securely and efficiently, promoting consistency and ease of access throughout the workspace.
+
 :::caution
 Workspace variables are currently marked as deprecated, indicating that it will be removed in future releases. In the current version, you are still able to delete existing variables and use it through out any ToolJet apps, but creating and updating variables are no longer supported. 
 
 Please use **[Workspace Constants](/docs/org-management/workspaces/workspace_constants)** instead. This guide will help you migrate from **Workspace Variables** to **Workspace Constants**.
 :::
-
-Workspace Variables in ToolJet are designed to store values such as tokens, secret keys, or API keys, facilitating their use across multiple applications within the same workspace. This centralized approach ensures that sensitive information is managed securely and efficiently, promoting consistency and ease of access throughout the workspace.
 
 ## Workspace Variables Migration Guide
 
