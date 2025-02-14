@@ -404,6 +404,7 @@ export const Tabs = function Tabs({
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
                     fontWeight: 'bold',
+                    cursor: 'pointer',
                     ...(currentTab == tab.id ? { color: selectedText } : { color: unselectedText }),
                     ...(tabWidth == 'split' ? { minWidth: 'auto' } : { minWidth: '100px' }),
                   }}
@@ -421,8 +422,17 @@ export const Tabs = function Tabs({
                   }}
                   key={tab.id}
                 >
-                  <a>{getTabIcon(tab)}</a>
-                  {tab.title}
+                  <div
+                    style={{
+                      ...{ width: `${tabsRef.current?.clientWidth / (tabItems?.length || 1)}px` },
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <a style={{ paddingBottom: '2px' }}>{getTabIcon(tab)}</a>
+                    {tab.title}
+                  </div>
                 </li>
               ))}
           </ul>
