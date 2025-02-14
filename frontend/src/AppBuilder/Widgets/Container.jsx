@@ -27,7 +27,7 @@ export const Container = ({
   );
 
   const isWidgetInContainerDragging = useStore(
-    (state) => state.containerChildrenMapping[id].includes(state.draggingComponentId),
+    (state) => state.containerChildrenMapping?.[id]?.includes(state?.draggingComponentId),
     shallow
   );
 
