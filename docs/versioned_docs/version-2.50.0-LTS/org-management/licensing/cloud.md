@@ -131,4 +131,4 @@ If you have an active subscription, you can find its validity period in the Sett
 
 ### 3) What happens if my subscription expires?
 
-If your business or enterprise subscription expires, your instance will revert to operating as a free plan. While you can still create unlimited apps, workspaces, and add users, premium features such as OpenID and Audit logs will no longer be accessible. For further information, please refer to the relevant **[plans](https://www.tooljet.com/pricing)**.
+If your business or enterprise subscription expires, your instance will revert to operating as a free plan. While you can still create unlimited apps, workspaces, and add users, premium features such as OpenID and Audit logs will no longer be accessible. For further information, please refer to the relevant **[plans](https://www.tooljet.ai/pricing)**.

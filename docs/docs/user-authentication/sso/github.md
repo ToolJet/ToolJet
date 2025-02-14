@@ -34,7 +34,7 @@ To enable GitHub Single Sign-on (SSO) for your ToolJet instance, follow these st
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/sso/git/enter-creds.png" alt="GitHub SSO" />
   </div>
 
-5. If you are using **GitHub Enterprise** self-hosted, enter the `Host Name`. The host name should be a URL and should not end with `/`, for example, `https://github.tooljet.com`. If it is not self-hosted, you can skip this field.
+5. If you are using **GitHub Enterprise** self-hosted, enter the `Host Name`. The host name should be a URL and should not end with `/`, for example, `https://github.tooljet.ai`. If it is not self-hosted, you can skip this field.
 
 6. Finally, click on the **Save changes** button and the GitHub sign-in button will now be available in your ToolJet login screen.
 

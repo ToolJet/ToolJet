@@ -286,7 +286,7 @@ This can be an absolute path, or relative to main HTML file.
 
 | variable   | description                                                    |
 | ---------- | -------------------------------------------------------------- |
-| ASSET_PATH | the asset path for the website ( eg: https://app.tooljet.com/) |
+| ASSET_PATH | the asset path for the website ( eg: https://app.tooljet.ai/) |
 
 ### Serve client as a server end-point ( optional )
 

@@ -1,11 +1,18 @@
 import {
-    Grid3x3, Database, Workflow, Cog, Target, Scale,
+    BrainCircuit, Grid3x3, Database, Workflow, Cog, Target, Scale,
     Layers, FileSpreadsheet, Folder, Wand2, LayoutDashboard, Users, UserCheck,
     Lock, UserPlus, ScrollText, Megaphone, Gem, Mail, GitBranch,
     Box, GitMerge, ShoppingBag, Wand, Flag, ShieldCheck, Cloud, Container, Boxes, Server, Telescope, Globe
 } from 'lucide-react';
 
 export const featureCards = [
+    {
+        icon: BrainCircuit,
+        title: "Build with AI",
+        color: "text-blue-500",
+        content: "Build applications effortlessly with ToolJet AI, using natural language to generate and customize apps.",
+        href: "/docs/build-with-ai/overview"
+    },
     {
         icon: Grid3x3,
         title: "App Builder",

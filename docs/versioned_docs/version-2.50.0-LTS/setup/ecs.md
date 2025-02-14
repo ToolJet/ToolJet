@@ -133,7 +133,7 @@ Follow the steps below to deploy PostgREST on a ECS cluster.
 
   </div>
   
-  Under environmental variable please add corresponding PostgREST env variables. You can also refer [env variable](/docs/setup/env-vars/#postgrest-server-optional).
+  Under environmental variable please add corresponding PostgREST env variables. You can also refer [env variable](/docs/setup/env-vars).
 
   <div style={{textAlign: 'center'}}>
 

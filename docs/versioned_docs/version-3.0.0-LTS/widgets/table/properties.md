@@ -1,6 +1,7 @@
 ---
 id: table-properties
-title: Properties
+title: Table Properties
+slug: /widgets/table/
 ---
 
 The Table component displays and manages data, connecting seamlessly with databases and APIs. It allows users to view and edit data directly within the table. This document goes through all the properties related to the Table component.

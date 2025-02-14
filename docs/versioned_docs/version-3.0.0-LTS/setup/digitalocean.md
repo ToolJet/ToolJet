@@ -1,113 +1,108 @@
 ---
 id: digitalocean
-title: DigitalOcean
+title: DigitalOcean 
 ---
 
-# Deploying ToolJet on DigitalOcean
+Follow the steps below to deploy ToolJet on a DigitalOcean Droplet.
 
-Now you can quickly deploy ToolJet using the Deploy to DigitalOcean button.
+**1. Navigate to the Droplets section in DigitalOcean.**
+   
+  <div style={{textAlign: 'center'}}>
 
-### Redis setup
+  <img className="screenshot-full" src="/img/setup/digitalocean/droplet_1.png" alt="create a Droplet" />
 
-:::info
-ToolJet requires configuring Redis which is used for enabling multiplayer editing and for background jobs.
+  </div>
+
+**2. Configure the **Droplet** with the following options:**
+   
+ - **Image**: Ubuntu 
+ - **Plan**: Choose a plan (e.g., Basic, 4GB RAM, 2 vCPU)
+
+  <div style={{textAlign: 'center'}}>
+     <img className="screenshot-full" src="/img/setup/digitalocean/droplet_plan.png" alt="use a droplet plan" />
+  </div>
+  
+  - **Auth**: For authentication, use password or ssh
+  - Click **Create Droplet** and note the assigned public IP
+
+**3. Create a Firewall for the **Droplets** to allow required ports.**
+   
+   protocol | port     | allowed_cidr|
+   :---| :----------  | :---------- |
+   tcp | 22           | your IP     |
+   tcp | 80           | 0.0.0.0/0   |
+   tcp | 443          | 0.0.0.0/0   |
+
+**4. Connect to the **Droplets** via SSH.**
+ 
+**5. Install Docker and Docker Compose using the following commands:**
+
+```bash
+apt update && apt upgrade -y
+apt install -y docker.io
+```
+
+Enable and start Docker:
+
+```bash
+systemctl enable docker 
+systemctl start docker
+```
+
+Install Docker Compose:
+
+```bash
+apt install -y curl 
+curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose 
+chmod +x /usr/local/bin/docker-compose
+```
+
+Verify installation:
+
+```bash
+docker --version 
+docker-compose --version
+```
+
+**6. Update the `TOOLJET_HOST` in the `.env` file:**
+
+`TOOLJET_HOST=http://<public_ip>:80`
+
+**7. Use the [Docker Documentation](https://docs.tooljet.ai/docs/setup/docker) to deploy ToolJet.**
+
+:::warning
+To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`.
 :::
 
-Follow the steps below to configure Redis database:
+## Setup to Enable ToolJet AI
 
-1. Navigate to **Database** and create a database cluster.
+Build applications effortlessly with ToolJet AI, using natural language to generate and customize apps. Refer to [ToolJet AI](/docs/tooljet-ai/overview) guide for more information.
 
-  <div style={{textAlign: 'center'}}>
+Follow this guide to enable AI features in your self-hosted setup.
 
-  <img className="screenshot-full" src="/img/setup/digitalocean/5.png" alt="ToolJet - Deploy on DigitalOcean" />
+**Deployment Steps**
 
-  </div>
+1. Add Chroma under the services section and define volumes under the volumes section in the docker-compose.
+  ```yml
+  services:
+    chroma:
+      name: chromadb
+      image: chromadb/chroma
+      ports:
+        - "8000:8000"
+      environment:
+        - CHROMA_HOST_PORT=8000
+      volumes:
+        - chromadb_data:/chroma
 
-2. Select `Redis` from the database engine and add a unique name to the cluster and click on **Create Database cluster**.
+  volumes:
+    chromadb_data:
+      driver: local
+  ```
+2. Add these environment variables to the .env file in the ToolJet server.
+  `CHROMA_DB_URL=chromadb:8000` <br/>
+  `AI_GATEWAY_URL=https://api-gateway.tooljet.ai`
 
-  <div style={{textAlign: 'center'}}>
-
-  <img className="screenshot-full" src="/img/setup/digitalocean/6.png" alt="ToolJet - Deploy on DigitalOcean" />
-
-  </div>
-
-3. Once the set-up is complete, add the Redis connection string in the environmental variable of `tooliet-app`.
-
-## Deploying
-
-#### Follow the Steps Below to Deploy ToolJet on DigitalOcean:
-
-1. Click on the button below to start one click deployment
-
-  <div style={{textAlign: 'center'}}>
-
-  [![Deploy to DigitalOcean](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/ToolJet/ToolJet/tree/main)
-
-  </div>
-
-2. A new tab will open up, sign-in to your DigitalOCean account. Once signed-in, the **Create App** page will open up and **Resources** will be already selected. Click on **Next** button.
-
-  <div style={{textAlign: 'center'}}>
-
-  <img className="screenshot-full" src="/img/setup/digitalocean/resources.png" alt="ToolJet - Deploy on DigitalOcean - Resources" />
-
-  </div>
-
-3. Now, on **Environment Variables** page you can add new variables or edit the existing ones. Check the [environment variables here](/docs/setup/env-vars).
-
-  Also, please add the redis url in the environment variable `REDIS_URL= #connection string`
-
-  <div style={{textAlign: 'center'}}>
-
-  <img className="screenshot-full" src="/img/setup/digitalocean/env.png" alt="ToolJet - Deploy on DigitalOcean - Environment Variables" />
-
-  </div>
-
-4. On the next page, you can change the **App name**, **Project**, and the **Region**.
-
-  <div style={{textAlign: 'center'}}>
-
-  <img className="screenshot-full" src="/img/setup/digitalocean/region.png" alt="ToolJet - Deploy on DigitalOcean - Launch" />
-
-  </div>
-
-5. On the last page, you'll be asked to **Review** all the app details such that we entered before such as **Resources**, **Environment Variables**, **Region**, and there will also be **Billing** section at the end. Review all the details and click the **Create Resource** button.
-
-  <div style={{textAlign: 'center'}}>
-
-  <img className="screenshot-full" src="/img/setup/digitalocean/review.png" alt="ToolJet - Deploy on DigitalOcean - Launch" />
-
-  </div>
-
-6. Once you click the **Create Resource** button, the build will begin. Once the build is complete, you'll see the resource and a **URL** next to it. Click on the URL to open the deployed **ToolJet**.
-
-:::tip
-ToolJet server and client can be deployed as standalone applications. If you do not want to deploy the client on DigitalOcean, modify `package.json` accordingly. We have a [guide](/docs/setup/client) on deploying ToolJet client using services such as Firebase.
-:::
-
-## Deploying ToolJet Database
-
-To use the ToolJet Database, you need to set up and deploy a PostgREST server, which facilitates querying the database. Detailed setup instructions are available [here](/docs/tooljet-db/tooljet-database).
-
-Starting with ToolJet 3.0, deploying the ToolJet Database is mandatory to avoid migration issues. Refer to the documentation below for details on the new major version, including breaking changes and required adjustments for your applications.
-
-- [ToolJet 3.0 Migration Guide for Self-Hosted Versions](./upgrade-to-v3.md)
-
-Follow the steps below to deploy ToolJet Database on DigitalOcean:
-
-1. If you are using dev database within ToolJet deployment, upgrade it to managed database. You could also add a separate database, if you intent use a different database, please refer the [environment variables](/docs/setup/env-vars#enable-tooljet-database-required) for additional env variables. 
-
-2. Create a new app for PostgREST server. You can opt for docker hub to deploy PostgREST image of version `12.2.0`.
-
-  <img className="screenshot-full" src="/img/setup/digitalocean/postgrest-build.png" alt="ToolJet - Deploy on DigitalOcean - PostgREST resource" />
-
-3. Update the [environment variables](/docs/setup/env-vars#postgrest-server-required) for PostgREST and expose the HTTP port `3000`.
-
-  <img className="screenshot-full" src="/img/setup/digitalocean/postgrest-env.png" alt="ToolJet - Deploy on DigitalOcean - PostgREST environment variables" />
-
-4. Add your newly created PostgREST app to the trusted sources of your managed or separate database.
-
-5. Update your existing ToolJet application deployment with [environment variables](/docs/setup/env-vars#enable-tooljet-database-required) required for PostgREST. 
 
 ## Upgrading to the Latest LTS Version
 
@@ -120,5 +115,7 @@ If this is a new installation of the application, you may start directly with th
 - It is crucial to perform a **comprehensive backup of your database** before starting the upgrade process to prevent data loss.
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
+
+ **Note:** For existing user wants to [upgrade](#setup-to-enable-ai), would require to add chromadb along with the existing setup.
 
 If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.
