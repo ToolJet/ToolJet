@@ -5,9 +5,18 @@ title: Workspace Constants and Secrets
 
 ---
 
-**Workspace Constants:** These are predefined values, such as tokens, secret keys, or API keys, that remain unchanged during an application's runtime. They facilitate easy updates and provide a consistent reference point across various parts of the application.
+Workspace constants and secrets are predefined values that can be used across your application to maintain consistency, facilitate easy updates, and securely store sensitive information. This document will guide you through the usage and management of workspace constants and secrets within your workspaces.
 
-**Secrets:** These are a specific type of workspace constant designed for securely storing sensitive information like API keys and database credentials. Secrets are masked in the frontend to prevent exposure to unauthorized users.
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+## Types of Constants
+
+ToolJet offers two types of constants:
+
+1. **Global Constants**: Used for reusable values that can be applied consistently across the product.
+2. **Secrets**: Used for secure storage of sensitive data.
+
+</div>
 
 <div style={{paddingBottom:'24px'}}>
 
@@ -33,10 +42,7 @@ Secrets cannot be used in RunJS or RunPy queries.
 
 ## Environment-Specific Configurations
 
-ToolJet allows users to define environment-specific configurations by assigning different values to constants and secrets across various environments. This approach is essential for managing sensitive information, such as API keys, database credentials, and external service endpoints, which may differ between development, staging, and production environments. 
-
-For instance, you can configure unique API keys for each environment to ensure seamless integration and security.
-
+Users can define environment-specific configurations by setting different values for constants and secrets across environments. This is useful for managing sensitive information such as API keys, database credentials, or external service endpoints which may vary between different environments. For example, you can set different API keys for development, staging, and production environments.
 </div>
 
 <div style={{textAlign: 'center'}}>
@@ -47,7 +53,7 @@ For instance, you can configure unique API keys for each environment to ensure s
 
 ## Server-Side Resolution and Security
 
-Both workspace constants and secrets are resolved exclusively on the server side, preventing exposure to the client. To enhance security, all constants and secrets are encrypted before being stored in the database, providing an additional layer of protection for sensitive data.
+Both workspace constants and secrets are resolved on the server side only. This ensures that sensitive data remains secure and is not exposed to the client-side. All constants and secrets are encrypted before being stored in the database, providing an additional layer of security.
 
 </div>
 
@@ -55,7 +61,7 @@ Both workspace constants and secrets are resolved exclusively on the server side
 
 ## Access Control
 
-Creating, updating, and deleting constants and secrets are exclusive privileges granted to **Admins**. Additionally, workspace constants and secrets are confined to the workspace in which they are created and cannot be accessed or shared across different workspaces.
+Creating, updating, and deleting constants and secrets are exclusive privileges granted to **Admins**. Workspace constants and secrets are specific to the workspace where they are created and cannot be utilized in other workspaces.
 
 </div>
 
@@ -148,8 +154,8 @@ Secrets cannot be used within the App Builder or workflows.
 
 ## Best Practices
 
-- Utilize global constants to maintain consistency by storing frequently used values across the application.
-- Securely store secrets to prevent unauthorized access and exposure in the codebase or frontend.
-- Regularly audit and update constants and secrets to ensure security, compliance, and relevance.
+- Use global constants for reusable values that are frequently used across your application.
+- Use secrets for storing sensitive information that should not be exposed in the codebase or frontend.
+- Regularly review and update your constants and secrets to ensure they remain relevant and secure.
 
 </div>
