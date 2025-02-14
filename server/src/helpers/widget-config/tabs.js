@@ -355,7 +355,7 @@ export const tabsConfig = {
       tabItems: {
         value: [
           {
-            id: '0',
+            id: 't0',
             title: 'Tab 1',
             icon: { value: 'IconHome2' },
             iconVisibility: { value: false },
@@ -364,7 +364,7 @@ export const tabsConfig = {
             visible: { value: true },
           },
           {
-            id: '1',
+            id: 't1',
             title: 'Tab 2',
             icon: { value: 'IconHome2' },
             iconVisibility: { value: false },
@@ -373,7 +373,7 @@ export const tabsConfig = {
             visible: { value: true },
           },
           {
-            id: '2',
+            id: 't2',
             title: 'Tab 3',
             icon: { value: 'IconHome2' },
             iconVisibility: { value: false },
