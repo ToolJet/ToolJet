@@ -110,16 +110,15 @@ export const EditorSelecto = () => {
       if (closest && !target.classList.contains('delete-icon')) {
         const id = closest.getAttribute('widgetid');
         const isMultiSelect = e.inputEvent.shiftKey;
-        if (isMultiSelect) {
+        if (!isMultiSelect) {
+          setSelectedComponents([id]);
+        } else {
           const selectedComponents = getSelectedComponents();
           if (!selectedComponents.includes(id)) {
             const mergedArray = [...selectedComponents, id];
             setSelectedComponents(mergedArray);
           }
-        } else {
-          setSelectedComponents([id]);
         }
-
         setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
       }
       return false;
