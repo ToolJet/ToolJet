@@ -483,6 +483,19 @@ const sidebars = {
     },
     {
       'type': 'category',
+      'label': 'Security and Monitoring',
+      'items': [
+      {
+          "type": "category",
+          "label": "Constants",
+          "items": [
+            "security/constants/constants",
+          ]
+        }
+      ]
+      },
+    {
+      'type': 'category',
       'label': 'Workflows',
       'items': [
         'workflows/overview',

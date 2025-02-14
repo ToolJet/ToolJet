@@ -1,13 +1,11 @@
 ---
-
-id: workspace_constants
+id: constants
 title: Workspace Constants and Secrets
-
 ---
 
-**Workspace Constants:** These are predefined values, such as tokens, secret keys, or API keys, that remain unchanged during an application's runtime. They facilitate easy updates and provide a consistent reference point across various parts of the application.
+**Workspace Constants:** These are predefined values that can be used across your applications within a workspace. They allow you to store frequently used values, such as API keys, URLs, configuration settings and access them within the workspace.
 
-**Secrets:** These are a specific type of workspace constant designed for securely storing sensitive information like API keys and database credentials. Secrets are masked in the frontend to prevent exposure to unauthorized users.
+**Secrets:** These are a specific type of workspace constants designed for securely storing sensitive information like API keys and database credentials. Secrets are masked in the frontend to prevent exposure to unauthorized users.
 
 <div style={{paddingBottom:'24px'}}>
 
@@ -40,7 +38,7 @@ For instance, you can configure unique API keys for each environment to ensure s
 </div>
 
 <div style={{textAlign: 'center'}}>
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/workspace-const/env-specific-const.png" alt="Environment-Specific Constants"/>
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/workspace-const/env-specific-const-v2.png" alt="Environment-Specific Constants"/>
 </div>
 
 <div style={{paddingTop:'24px'}}>
@@ -55,7 +53,7 @@ Both workspace constants and secrets are resolved exclusively on the server side
 
 ## Access Control
 
-Creating, updating, and deleting constants and secrets are exclusive privileges granted to **Admins**. Additionally, workspace constants and secrets are confined to the workspace in which they are created and cannot be accessed or shared across different workspaces.
+**Admins** can only create, update, and delete constants and secrets. Additionally, workspace constants and secrets are confined to the workspace in which they are created and cannot be accessed or shared across different workspaces.
 
 </div>
 
@@ -65,16 +63,16 @@ Creating, updating, and deleting constants and secrets are exclusive privileges 
 
 To create workspace constants or secrets, follow these steps:
 
-1. Access the ToolJet Dashboard and click on the Workspace Constants tab from the left sidebar.
-3. Click on the **Create new constant** button.
-4. A drawer will appear. Enter the desired name and value for the constant or secret.
-5. Select one of the following types:
+1. Navigate to the ToolJet Dashboard and select the Workspace Constants tab from the left sidebar.
+2. Click on **Create new constant** button to open the configuration drawer.
+3. Enter a name and value for the constant or secret.
+4. Select one of the following types:
     - **Global constant**
     - **Secret**
-6. Click the **Add constant** button to save.
+5. Click the **Add constant** button to save.
 
 <div style={{textAlign: 'center'}}>
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/workspace-const/create-new.png" alt="Create New Constant"/>
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/workspace-const/create-new-V2.png" alt="Create New Constant"/>
 </div>
 
 :::info
@@ -87,24 +85,24 @@ Once a constant or secret is created, its type cannot be changed. You'll need to
 
 ## Using Global Constants
 
-Global constants can be used in the app builder, data sources, data queries, and workflows.
+Global constants, accessed using the syntax `{{constants.constant_name}}` can be used in the app builder, data sources, data queries, and workflows.
 
 ### In App Builder
 
 Inside the App Builder, you'll find the **Inspector** on the left sidebar with a Constants section displaying all available global constant values.
 
 <div style={{textAlign: 'center'}}>
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/workspace-const/global-constants-app-builder.png" alt="Use Global Constants Inside App Builder"/>
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/workspace-const/global-constants-app-builder-v2.png" alt="Use Global Constants Inside App Builder"/>
 </div>
 
 ### In Data Sources and Queries
 
-You can use global constants in datasource connection forms and queries using the syntax `{{constants.constant_name}}`.
+Global constants in ToolJet allow you to define values once and reuse them across your data sources and queries.
 
 **Data Source Connection Form**:
 
 <div style={{textAlign: 'center'}}>
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/workspace-const/golbal-constants-data-source-connection.png" alt="Use Global Constants Data Source Connection Form"/>
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/workspace-const/golbal-constants-data-source-connection-v2.png" alt="Use Global Constants Data Source Connection Form"/>
 </div>
 
 **Inside Queries in Query Manager**:
@@ -119,16 +117,16 @@ You can use global constants in datasource connection forms and queries using th
 
 ## Using Secrets
 
-Secrets are designed for secure storage of sensitive information like API keys, database credentials, and encryption keys.
+Secrets are designed for secure storage of sensitive information like API keys, database credentials, and encryption keys using the syntax `{{secrets.secret_name}}`.
 
 ### In Data Sources and Queries
 
-You can use secrets in datasource connection forms and queries using the syntax `{{secrets.secret_name}}`. The values of secrets will be masked in the frontend and cannot be viewed except in the workspace constant dashboard.
+In Data Sources and Queries, secret values are masked in the frontend and can only be viewed in the Workspace Constants dashboard.
 
 **Data Source Connection Form**:
 
 <div style={{textAlign: 'center'}}>
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/workspace-const/secrets-data-source-connection.png" alt="Use Secrets in Data Source Connection Form"/>
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/workspace-const/secrets-data-source-connection-v2.png" alt="Use Secrets in Data Source Connection Form"/>
 </div>
 
 **Inside Queries in Query Manager**:
