@@ -3,7 +3,7 @@ id: get-variables
 title: Get Variables
 ---
 
-To store and retrieve data dynamically within **Run Python Code** in ToolJet, users can set and access variables and page variables using specific functions.
+To store and retrieve data dynamically within **Run Python Code** in ToolJet, users can set and access variables and page variables using specific actions. Below are some actions that you can use:
 
 ## Set a Variable
 
