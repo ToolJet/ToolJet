@@ -82,7 +82,7 @@ Follow the steps below to deploy ToolJet on a ECS cluster.
         - **PG_USER**
         - **PG_PASS**
         - **SECRET_KEY_BASE** 
-        - **LOCKBOX_KEY**
+        - **LOCKBOX_MASTER_KEY**
         </ul>
         <br/>
         Read **[environment variables reference](/docs/setup/env-vars)**
@@ -95,7 +95,7 @@ Follow the steps below to deploy ToolJet on a ECS cluster.
         REDIS_USER=default
         REDIS_PASSWORD=
         ```
-    5. Make sure `Use log collection checked` and `Docker configuration` with the command `npm run start:dev`
+    5. Make sure `Use log collection checked` and `Docker configuration` with the command `npm run start:prod`
         <img className="screenshot-full" src="/img/setup/ecs/ecs-8.png" alt="ECS Setup" />
 
 4. Create a service to run your task definition within your cluster.
@@ -137,6 +137,10 @@ Follow the steps below to deploy PostgREST on a ECS cluster.
   </div>
   
   Add the container details and image tag as shown below:
+  
+  For the Postgrest container image use `postgrest/postgrest:v12.2.0`.
+
+  **Note:** v12.2.0 is recommended for Postgrest.
 
   <div style={{textAlign: 'center'}}>
 
@@ -182,6 +186,39 @@ Update ToolJet deployment with the appropriate env variables [here](/docs/setup/
 
 </div>
 
+:::warning
+To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`.
+:::
+
+## Setup to Enable ToolJet AI
+
+Build applications effortlessly with ToolJet AI, using natural language to generate and customize apps. Refer to [ToolJet AI](/docs/tooljet-ai/overview) guide for more information.
+
+Follow this guide to enable AI features in your self-hosted setup.
+
+**Deployment Steps**
+
+1. Add Chroma under the services section and define volumes under the volumes section in the docker-compose.
+  ```yml
+  services:
+    chroma:
+      name: chromadb
+      image: chromadb/chroma
+      ports:
+        - "8000:8000"
+      environment:
+        - CHROMA_HOST_PORT=8000
+      volumes:
+        - chromadb_data:/chroma
+
+  volumes:
+    chromadb_data:
+      driver: local
+  ```
+2. Add these environment variables to the .env file in the ToolJet server.
+  `CHROMA_DB_URL=chromadb:8000` <br/>
+  `AI_GATEWAY_URL=https://api-gateway.tooljet.ai`
+
 ## Upgrading to the Latest LTS Version
 
 New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
@@ -193,5 +230,9 @@ If this is a new installation of the application, you may start directly with th
 - It is crucial to perform a **comprehensive backup of your database** before starting the upgrade process to prevent data loss.
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
+
+:::info
+If you are upgrading from version v3.0.33-ee-lts to the latest LTS, please ensure that the following configuration is done, including the addition of [ChromaDB to the existing setup](#setup-to-enable-tooljet-ai).
+:::
 
 *If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
