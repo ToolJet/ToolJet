@@ -87,3 +87,54 @@ Any property having **fx** button next to its field can be **programmatically co
 :::
 
 </div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Pagination 2.0 Features
+
+Pagination 2.0 introduces several new features to enhance the user experience and performance:
+
+- **Dynamic Page Size**: Allows users to select the number of records per page dynamically.
+- **Jump to Page**: Users can directly jump to a specific page number.
+- **Loading Indicator**: Improved loading indicators for better user feedback.
+- **Enhanced Accessibility**: Improved keyboard navigation and screen reader support.
+
+</div>
+
+<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+
+### Example Usage of Pagination 2.0
+
+Here is an example of how to use the new Pagination 2.0 component:
+
+```jsx
+import React, { useState } from 'react';
+import Pagination from '@/_ui/Pagination';
+
+const MyComponent = () => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(10);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    // Fetch new data based on the page number
+  };
+
+  return (
+    <div>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+        dynamicPageSize
+        jumpToPage
+        showLoadingIndicator
+      />
+    </div>
+  );
+};
+
+export default MyComponent;
+```
+
+</div>
