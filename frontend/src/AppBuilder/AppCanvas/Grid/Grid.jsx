@@ -41,6 +41,7 @@ export default function Grid({ gridWidth, currentLayout }) {
   const setSelectedComponents = useStore((state) => state.setSelectedComponents, shallow);
   const getComponentTypeFromId = useStore((state) => state.getComponentTypeFromId, shallow);
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
+  const temporaryHeight = useStore((state) => state.temporaryLayouts?.[selectedComponents?.[0]]?.height, shallow);
   const isGroupHandleHoverd = useIsGroupHandleHoverd();
   const openModalWidgetId = useOpenModalWidgetId();
   const moveableRef = useRef(null);
@@ -268,6 +269,11 @@ export default function Grid({ gridWidth, currentLayout }) {
 
   const groupedTargets = [...findHighestLevelofSelection().map((component) => '.ele-' + component.id)];
 
+  useEffect(() => {
+    if (moveableRef.current) {
+      moveableRef.current.updateTarget();
+    }
+  }, [temporaryHeight]);
   useEffect(() => {
     reloadGrid();
     // eslint-disable-next-line react-hooks/exhaustive-deps

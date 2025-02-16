@@ -89,18 +89,11 @@ export const createGridSlice = (set, get) => ({
     }
   },
 
-  adjustComponentPositions: (
-    componentId,
-    currentLayout = 'desktop',
-    shouldPersist = false,
-    isContainer = false,
-    isInitialRender
-  ) => {
+  adjustComponentPositions: (componentId, currentLayout = 'desktop', shouldReset = false, isContainer = false) => {
     const {
       getResolvedValue,
       getCurrentPageComponents,
       setTemporaryLayouts,
-      setComponentLayout,
       toggleCanvasUpdater,
       temporaryLayouts,
       deleteContainerTemporaryLayouts,
@@ -182,7 +175,7 @@ export const createGridSlice = (set, get) => ({
       if (!componentElement) return;
 
       // Get the actual new height from the DOM
-      const newHeight = isContainer ? maxHeight : componentElement.offsetHeight;
+      const newHeight = shouldReset ? 0 : isContainer ? maxHeight : componentElement.offsetHeight;
       const oldHeight = temporaryLayouts?.[componentId]?.height ?? changedComponent.layouts[currentLayout].height;
 
       // Update the changed component's height in layouts
@@ -200,8 +193,6 @@ export const createGridSlice = (set, get) => ({
       const changedCompTop = temporaryLayouts?.[componentId]?.top ?? changedComponent.layouts[currentLayout].top;
       const changedCompBottom = changedCompTop + newHeight;
       const dynamicHeightDifference = newHeight - oldHeight;
-
-      // Test
 
       const componentsToAdjust = boxList
         .filter((box) => {
@@ -374,9 +365,8 @@ export const createGridSlice = (set, get) => ({
       //   };
       // });
 
-      if (shouldPersist) {
-        setComponentLayout(updatedLayouts);
-        get().clearTemporaryLayouts();
+      if (shouldReset) {
+        setTemporaryLayouts(updatedLayouts);
       } else {
         if (isContainer) {
           const element = document.querySelector(`.ele-${componentId}`);
@@ -389,7 +379,7 @@ export const createGridSlice = (set, get) => ({
       if (changedComponent.component?.parent) {
         console.log('Adjusting parent component positions', changedComponent.component?.parent);
         console.log('Updated layouts:', changedComponent.component?.parent?.slice(0, 36));
-        adjustComponentPositions(changedComponent.component?.parent?.slice(0, 36), currentLayout, shouldPersist, true);
+        adjustComponentPositions(changedComponent.component?.parent?.slice(0, 36), currentLayout, shouldReset, true);
       }
       return updatedLayouts;
     } catch (error) {
