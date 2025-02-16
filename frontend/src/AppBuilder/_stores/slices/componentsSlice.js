@@ -886,12 +886,43 @@ export const createComponentsSlice = (set, get) => ({
       deleteComponentNameIdMapping,
       removeNode,
       deleteTemporaryLayouts,
+      currentLayout,
+      adjustComponentPositions,
     } = get();
     const appEvents = get().eventsSlice.getModuleEvents(moduleId);
     const componentNames = [];
     const componentIds = [];
+    const childParentMapping = {};
     const _selectedComponents = selected?.length ? selected : selectedComponents;
     if (!_selectedComponents.length) return;
+
+    const toDeleteComponents = [];
+    const toDeleteEvents = [];
+    const allComponents = getCurrentPageComponents();
+
+    const findAllChildComponents = (componentId) => {
+      if (!toDeleteComponents.includes(componentId)) {
+        toDeleteComponents.push(componentId);
+
+        // Find the children of this component
+        const children = getAllChildComponents(allComponents, componentId).map((child) => child.id);
+        if (children.length > 0) {
+          // Recursively find children of children
+          children.forEach((child) => {
+            findAllChildComponents(child);
+          });
+        }
+      }
+    };
+
+    _selectedComponents.forEach((componentId) => {
+      findAllChildComponents(componentId);
+    });
+
+    toDeleteComponents.forEach((componentId) => {
+      adjustComponentPositions(componentId, currentLayout, true);
+    });
+
     set(
       withUndoRedo((state) => {
         const toDeleteComponents = [];
@@ -920,12 +951,16 @@ export const createComponentsSlice = (set, get) => ({
         const page = state.modules?.canvas?.pages.find((page) => page.id === state.currentPageId);
         const resolvedComponents = state.resolvedStore.modules?.[moduleId]?.components;
         const componentsExposedValues = state.resolvedStore.modules?.[moduleId]?.exposedValues.components;
-
         toDeleteComponents.forEach((id) => {
           // Remove from containerChildrenMapping
           Object.keys(state.containerChildrenMapping).forEach((containerId) => {
             state.containerChildrenMapping[containerId] = state.containerChildrenMapping[containerId].filter(
-              (componentId) => componentId !== id
+              (componentId) => {
+                if (componentId === id) {
+                  childParentMapping[id] = containerId;
+                }
+                return componentId !== id;
+              }
             );
           });
 
@@ -977,10 +1012,14 @@ export const createComponentsSlice = (set, get) => ({
       false,
       'deleteComponents'
     );
+
     componentNames.forEach((componentName) => {
       deleteComponentNameIdMapping(componentName);
     });
     componentIds.forEach((componentId) => {
+      if (childParentMapping[componentId]) {
+        adjustComponentPositions(childParentMapping[componentId], currentLayout, false, true);
+      }
       deleteTemporaryLayouts(componentId);
     });
   },

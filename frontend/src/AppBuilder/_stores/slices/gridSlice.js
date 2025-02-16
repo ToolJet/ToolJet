@@ -101,9 +101,11 @@ export const createGridSlice = (set, get) => ({
     } = get();
 
     try {
+      // Getting all the components on the current page
       const currentPageComponents = getCurrentPageComponents();
+
+      // If the component is a container, we need to calculate the height of the container
       let maxHeight = 0;
-      console.log(currentPageComponents[componentId]);
 
       if (isContainer) {
         const componentLayouts = get()
@@ -132,6 +134,7 @@ export const createGridSlice = (set, get) => ({
 
         const mergedLayouts = { ...componentLayouts, ...filteredTemporaryLayouts };
 
+        // Calculate the maximum height of the container
         const currentMax = Object.values(mergedLayouts).reduce((max, layout) => {
           if (!layout) {
             return max;
@@ -139,11 +142,6 @@ export const createGridSlice = (set, get) => ({
           const sum = layout.top + layout.height;
           return Math.max(max, sum);
         }, 100);
-
-        // const temporaryLayoutsMaxHeight = Object.values(temporaryLayouts).reduce((max, layout) => {
-        //   const sum = layout.top + layout.height;
-        //   return Math.max(max, sum);
-        // }, 0);
 
         maxHeight = currentMax + 20;
       }
@@ -177,6 +175,9 @@ export const createGridSlice = (set, get) => ({
       // Get the actual new height from the DOM
       const newHeight = shouldReset ? 0 : isContainer ? maxHeight : componentElement.offsetHeight;
       const oldHeight = temporaryLayouts?.[componentId]?.height ?? changedComponent.layouts[currentLayout].height;
+      const dynamicHeightDifference = newHeight - oldHeight;
+
+      if (dynamicHeightDifference === 0) return;
 
       // Update the changed component's height in layouts
       const updatedLayouts = {
@@ -187,69 +188,75 @@ export const createGridSlice = (set, get) => ({
         },
       };
 
+      // Calculate the new top, bottom, left, right of the changed component
       const changedCompLeft = changedComponent.layouts[currentLayout].left;
       const changedCompWidth = changedComponent.layouts[currentLayout].width;
       const changedCompRight = changedCompLeft + changedCompWidth;
       const changedCompTop = temporaryLayouts?.[componentId]?.top ?? changedComponent.layouts[currentLayout].top;
       const changedCompBottom = changedCompTop + newHeight;
-      const dynamicHeightDifference = newHeight - oldHeight;
 
-      const componentsToAdjust = boxList
-        .filter((box) => {
-          if (box.id === componentId) return false;
-          const sameParent = box.component?.parent === changedComponent.component?.parent;
-          const isBelow =
-            (temporaryLayouts?.[box.id]?.top ?? box.layouts[currentLayout].top) + box.layouts[currentLayout].height >=
-            changedCompTop;
-          return sameParent && isBelow;
-        })
-        .sort(
-          (a, b) =>
-            (temporaryLayouts?.[a.id]?.top ?? a.layouts[currentLayout].top) -
-            (temporaryLayouts?.[b.id]?.top ?? b.layouts[currentLayout].top)
-        );
+      //Fetch all the components that are below the changed component
+      const componentsToAdjust = boxList.filter((box) => {
+        if (box.id === componentId) return false;
+        const sameParent = box.component?.parent === changedComponent.component?.parent;
+        const isBelow =
+          (temporaryLayouts?.[box.id]?.top ?? box.layouts[currentLayout].top) + box.layouts[currentLayout].height >=
+          changedCompTop;
+        return sameParent && isBelow;
+      });
 
       let realDiff = 0;
+      let minimumDist = Infinity;
+
+      const isHorizontallyOverlapping = (element1Left, element1Right, element2Left, element2Right) => {
+        return (
+          (element1Left <= element2Left && element1Right >= element2Right) || // Completely contains
+          (element1Left >= element2Left && element1Right <= element2Right) || // Completely contained
+          (element1Left <= element2Left && element1Right >= element2Left) || // Left edge overlaps
+          (element1Left <= element2Right && element1Right >= element2Right) // Right edge overlaps
+        );
+      };
+
+      //Find the distance by which to move the components up or down
       for (let component of componentsToAdjust) {
         const compLeft = component.layouts[currentLayout].left;
         const compWidth = component.layouts[currentLayout].width;
         const compRight = compLeft + compWidth;
-        // const compBottom =
-        //   (temporaryLayouts?.[component.id]?.top ?? component.layouts[currentLayout].top) +
-        //   component.layouts[currentLayout].height;
-        const hasHorizontalOverlap =
-          (compLeft <= changedCompLeft && compRight >= changedCompRight) || // Completely contains
-          (compLeft >= changedCompLeft && compRight <= changedCompRight) || // Completely contained
-          (compLeft <= changedCompLeft && compRight >= changedCompLeft) || // Left edge overlaps
-          (compLeft <= changedCompRight && compRight >= changedCompRight); // Right edge overlaps
-        if (hasHorizontalOverlap) {
+        const hasHorizontalOverlap = isHorizontallyOverlapping(compLeft, compRight, changedCompLeft, changedCompRight);
+        const currentDist =
+          (temporaryLayouts?.[component.id]?.top ?? component.layouts[currentLayout].top) - changedCompTop;
+
+        const isInitialTopAboveChangedBottom =
+          component.layouts[currentLayout].top <
+          changedComponent.layouts[currentLayout].top + changedComponent.layouts[currentLayout].height;
+
+        if (hasHorizontalOverlap && currentDist < minimumDist && !isInitialTopAboveChangedBottom) {
           const difference =
             changedCompBottom - (temporaryLayouts?.[component.id]?.top ?? component.layouts[currentLayout].top);
           realDiff = Math.ceil(difference / 10) * 10;
-          break;
+          minimumDist = currentDist;
         }
       }
 
       let currentLeft = changedCompLeft;
       let currentRight = changedCompRight;
       let currentBottom = changedCompBottom;
-      for (let component of componentsToAdjust) {
-        const element = document.querySelector(`.ele-${component.id}`);
-        if (!element) continue;
-        const compLeft = component.layouts[currentLayout].left;
-        const compWidth = component.layouts[currentLayout].width;
-        const compRight = compLeft + compWidth;
-        // const compTop = temporaryLayouts?.[component.id]?.top ?? component.layouts[currentLayout].top;
 
-        const hasHorizontalOverlap =
-          (compLeft <= currentLeft && compRight >= currentRight) || // Completely contains
-          (compLeft >= currentLeft && compRight <= currentRight) || // Completely contained
-          (compLeft <= currentLeft && compRight >= currentLeft) || // Left edge overlaps
-          (compLeft <= currentRight && compRight >= currentRight); // Right edge overlaps
+      if (realDiff > 0) {
+        const componentsToAdjustSorted = componentsToAdjust.sort(
+          (a, b) =>
+            (temporaryLayouts?.[a.id]?.top ?? a.layouts[currentLayout].top) -
+            (temporaryLayouts?.[b.id]?.top ?? b.layouts[currentLayout].top)
+        );
 
-        // const isUnderNewHeight = currentBottom >= compTop;
-        if (hasHorizontalOverlap) {
-          if (realDiff > 0) {
+        for (let component of componentsToAdjustSorted) {
+          const element = document.querySelector(`.ele-${component.id}`);
+          if (!element) continue;
+          const compLeft = component.layouts[currentLayout].left;
+          const compWidth = component.layouts[currentLayout].width;
+          const compRight = compLeft + compWidth;
+          const hasHorizontalOverlap = isHorizontallyOverlapping(compLeft, compRight, currentLeft, currentRight);
+          if (hasHorizontalOverlap) {
             const newTop = (temporaryLayouts?.[component.id]?.top ?? component.layouts[currentLayout].top) + realDiff;
             const currentTransform = window.getComputedStyle(element).transform;
 
@@ -273,9 +280,76 @@ export const createGridSlice = (set, get) => ({
             if (compRight > currentRight) {
               currentRight = compRight;
             }
-          } else if (dynamicHeightDifference < 0 && realDiff < 0) {
+          }
+        }
+      } else if (dynamicHeightDifference < 0 && realDiff < 0) {
+        const componentsToAdjustSorted = componentsToAdjust.sort((a, b) => {
+          const aBottom =
+            (temporaryLayouts?.[a.id]?.top ?? a.layouts[currentLayout].top) +
+            (temporaryLayouts?.[a.id]?.height ?? a.layouts[currentLayout].height);
+          const bBottom =
+            (temporaryLayouts?.[b.id]?.top ?? b.layouts[currentLayout].top) +
+            (temporaryLayouts?.[b.id]?.height ?? b.layouts[currentLayout].height);
+          return aBottom - bBottom;
+        });
+
+        componentsToAdjustSorted.forEach((component, index) => {
+          const element = document.querySelector(`.ele-${component.id}`);
+          if (!element) return;
+          const compLeft = component.layouts[currentLayout].left;
+          const compWidth = component.layouts[currentLayout].width;
+          const compRight = compLeft + compWidth;
+          const hasHorizontalOverlap = isHorizontallyOverlapping(compLeft, compRight, currentLeft, currentRight);
+
+          const componentInitialTop = component.layouts[currentLayout].top;
+          const componentInitialBottom = componentInitialTop + component.layouts[currentLayout].height;
+
+          if (hasHorizontalOverlap) {
             let newTop =
               (temporaryLayouts?.[component.id]?.top ?? component.layouts[currentLayout].top) + dynamicHeightDifference;
+
+            //Situations to accomodate the case when there is a component above the current component
+            if (index > 0) {
+              let prevIndex = index - 1;
+              while (prevIndex >= 0) {
+                const currentComponentLeft = component.layouts[currentLayout].left;
+                const currentComponentRight = currentComponentLeft + component.layouts[currentLayout].width;
+                const prevComponent = componentsToAdjustSorted[prevIndex];
+                const prevTop = temporaryLayouts?.[prevComponent.id]?.top ?? prevComponent.layouts[currentLayout].top;
+                const prevBottom =
+                  prevTop +
+                  (temporaryLayouts?.[prevComponent.id]?.height ?? prevComponent.layouts[currentLayout].height);
+                if (newTop >= prevBottom) {
+                  break;
+                } else {
+                  const prevCompLeft = prevComponent.layouts[currentLayout].left;
+                  const prevCompWidth = prevComponent.layouts[currentLayout].width;
+                  const prevCompRight = prevCompLeft + prevCompWidth;
+                  const prevCompInitialTop = prevComponent.layouts[currentLayout].top;
+                  const prevCompInitialBottom = prevCompInitialTop + prevComponent.layouts[currentLayout].height;
+
+                  const hasHorizontalOverlap = isHorizontallyOverlapping(
+                    prevCompLeft,
+                    prevCompRight,
+                    currentComponentLeft,
+                    currentComponentRight
+                  );
+
+                  const hasInitialVerticalOverlap =
+                    (componentInitialTop < prevCompInitialBottom && componentInitialBottom > prevCompInitialTop) || //  Bottom of the current component is above the top of the previous component
+                    (componentInitialTop > prevCompInitialTop && componentInitialBottom < prevCompInitialBottom) || // Current component is completely inside the previous component
+                    (componentInitialTop < prevCompInitialTop && componentInitialBottom > prevCompInitialTop) || // Top of the current component is below the bottom of the previous component
+                    (componentInitialTop < prevCompInitialBottom && componentInitialBottom > prevCompInitialBottom); // Bottom of the current component is below the bottom of the previous component
+
+                  if (hasHorizontalOverlap && !hasInitialVerticalOverlap) {
+                    newTop = prevBottom;
+                    break;
+                  }
+                }
+                prevIndex--;
+              }
+            }
+
             if (component.layouts[currentLayout].top > newTop) {
               newTop = component.layouts[currentLayout].top;
             }
@@ -302,68 +376,8 @@ export const createGridSlice = (set, get) => ({
               currentRight = compRight;
             }
           }
-        }
+        });
       }
-
-      // componentsToAdjust.forEach((component) => {
-      //   const element = document.querySelector(`.ele-${component.id}`);
-      //   if (!element) return;
-
-      //   const newTop =
-      //     (temporaryLayouts?.[component.id]?.top ?? component.layouts[currentLayout].top) +
-      //     Math.ceil(heightDifference / 10) * 10;
-
-      //   const currentTransform = window.getComputedStyle(element).transform;
-      //   const matrix = new DOMMatrix(currentTransform);
-      //   const currentX = matrix.m41;
-      //   element.style.transform = `translate(${currentX}px, ${newTop}px)`;
-
-      //   updatedLayouts[component.id] = {
-      //     ...component.layouts[currentLayout],
-      //     top: newTop,
-      //   };
-      // });
-
-      // // Filter components that need adjustment
-      // const componentsToAdjust = boxList
-      //   .filter((box) => {
-      //     if (box.id === componentId) return false;
-
-      //     const sameParent = box.component?.parent === changedComponent.component?.parent;
-      //     const isBelow =
-      //       (temporaryLayouts?.[box.id]?.top ?? box.layouts[currentLayout].top) >= changedCompTop + oldHeight;
-
-      //     const boxLeft = temporaryLayouts?.[box.id]?.left ?? box.layouts[currentLayout].left;
-      //     const boxRight = boxLeft + (temporaryLayouts?.[box.id]?.width ?? box.layouts[currentLayout].width);
-      //     const hasHorizontalOverlap =
-      //       (boxLeft >= changedCompLeft && boxLeft < changedCompRight) || // Left edge overlaps
-      //       (boxRight > changedCompLeft && boxRight <= changedCompRight) || // Right edge overlaps
-      //       (boxLeft <= changedCompLeft && boxRight >= changedCompRight); // Completely contains'
-
-      //     return sameParent && isBelow && hasHorizontalOverlap;
-      //   })
-      //   .sort((a, b) => a.layouts[currentLayout].top - b.layouts[currentLayout].top);
-
-      // // Update positions of affected components
-
-      // componentsToAdjust.forEach((component) => {
-      //   const element = document.querySelector(`.ele-${component.id}`);
-      //   if (!element) return;
-
-      //   const newTop =
-      //     (temporaryLayouts?.[component.id]?.top ?? component.layouts[currentLayout].top) +
-      //     Math.ceil(heightDifference / 10) * 10;
-
-      //   const currentTransform = window.getComputedStyle(element).transform;
-      //   const matrix = new DOMMatrix(currentTransform);
-      //   const currentX = matrix.m41;
-      //   element.style.transform = `translate(${currentX}px, ${newTop}px)`;
-
-      //   updatedLayouts[component.id] = {
-      //     ...component.layouts[currentLayout],
-      //     top: newTop,
-      //   };
-      // });
 
       if (shouldReset) {
         setTemporaryLayouts(updatedLayouts);
@@ -377,8 +391,6 @@ export const createGridSlice = (set, get) => ({
 
       toggleCanvasUpdater();
       if (changedComponent.component?.parent) {
-        console.log('Adjusting parent component positions', changedComponent.component?.parent);
-        console.log('Updated layouts:', changedComponent.component?.parent?.slice(0, 36));
         adjustComponentPositions(changedComponent.component?.parent?.slice(0, 36), currentLayout, shouldReset, true);
       }
       return updatedLayouts;

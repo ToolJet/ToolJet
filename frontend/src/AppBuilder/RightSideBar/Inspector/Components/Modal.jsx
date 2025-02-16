@@ -48,11 +48,7 @@ export const Modal = ({ componentMeta, darkMode, ...restProps }) => {
   );
   const events = Object.keys(componentMeta.events);
   const validations = Object.keys(componentMeta.validation || {});
-  const additionalActions = [];
-  // const additionalActions = Object.keys(componentMeta.properties || {}).filter(
-  //   (key) => componentMeta.properties[key].section === 'additionalActions'
-  // );
-  console.log('additionalActions', additionalActions);
+
   const filteredProperties = properties.filter(
     (property) => property !== 'useDefaultButton' && property !== 'triggerButtonLabel'
   );
@@ -71,8 +67,7 @@ export const Modal = ({ componentMeta, darkMode, ...restProps }) => {
     allComponents,
     validations,
     darkMode,
-    undefined,
-    additionalActions
+    undefined
   );
 
   accordionItems.splice(1, 0, ...conditionalAccordionItems(component));
