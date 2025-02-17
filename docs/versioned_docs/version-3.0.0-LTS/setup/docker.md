@@ -174,8 +174,7 @@ If you are upgrading from version v3.0.33-ee-lts to the latest LTS, please ensur
 1. Add Chroma under the services section and define volumes under the volumes section in the docker-compose.
   ```yml
   services:
-    chroma:
-      name: chromadb
+    chromadb:
       image: chromadb/chroma
       ports:
         - "8000:8000"
@@ -189,7 +188,7 @@ If you are upgrading from version v3.0.33-ee-lts to the latest LTS, please ensur
       driver: local
   ```
 2. Add these environment variables to the .env file in the ToolJet server.
-  `CHROMA_DB_URL=chromadb:8000` <br/>
+  `CHROMA_DB_URL="http://chromadb:8000"` <br/>
   `AI_GATEWAY_URL=https://api-gateway.tooljet.ai`
 
 *If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*

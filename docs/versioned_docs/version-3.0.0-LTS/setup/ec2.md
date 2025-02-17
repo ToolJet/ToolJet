@@ -94,23 +94,22 @@ Follow this guide to enable AI features in your self-hosted setup.
 
 1. Add Chroma under the services section and define volumes under the volumes section in the docker-compose.
   ```yml
-  services:
-    chroma:
-      name: chromadb
-      image: chromadb/chroma
-      ports:
-        - "8000:8000"
-      environment:
-        - CHROMA_HOST_PORT=8000
-      volumes:
-        - chromadb_data:/chroma
+   services:
+     chromadb:
+       image: chromadb/chroma
+       ports:
+         - "8000:8000"
+       environment:
+         - CHROMA_HOST_PORT=8000
+       volumes:
+         - chromadb_data:/chroma
 
-  volumes:
-    chromadb_data:
-      driver: local
+   volumes:
+      chromadb_data:
+        driver: local
   ```
 2. Add these environment variables to the .env file in the ToolJet server.
-  `CHROMA_DB_URL=chromadb:8000` <br/>
+  `CHROMA_DB_URL="http://chromadb:8000"` <br/>
   `AI_GATEWAY_URL=https://api-gateway.tooljet.ai`
 
 
