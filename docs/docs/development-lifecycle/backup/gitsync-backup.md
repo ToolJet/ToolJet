@@ -1,5 +1,5 @@
 ---
-id: git-pull
+id: gitsync-backup
 title: Pulling Changes from Git Repo
 ---
 

@@ -505,14 +505,13 @@ const sidebars = {
             'development-lifecycle/gitsync/gitsync-config',
             'development-lifecycle/gitsync/ssh-config',
             'development-lifecycle/gitsync/delete-gitsync',
-            'development-lifecycle/gitsync/git-push',
-            'development-lifecycle/gitsync/git-pull',
           ]
         },
         {
           'type': 'category',
           'label': 'Backup',
           'items': [
+            'development-lifecycle/backup/gitsync-backup',
             'development-lifecycle/backup/sql-backup'
           ]
         },
