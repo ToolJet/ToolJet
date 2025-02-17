@@ -402,6 +402,7 @@ export const Modal = function Modal({
           modalWidth,
           modalHeight,
           isShowing: showModal,
+          mode,
         }}
       >
         {!isLoading ? (
@@ -567,6 +568,7 @@ const Component = ({ children, ...restProps }) => {
     footerHeight,
     isShowing,
     isFullScreen,
+    mode,
   } = restProps['modalProps'];
 
   const [target, setTarget] = useState(null);
@@ -663,6 +665,7 @@ const Component = ({ children, ...restProps }) => {
   };
 
   const isHovered = useHover(() => document.querySelector(`[component-id="${id}"]`));
+  const isMoveable = !isFullScreen && isHovered && mode === 'edit';
 
   return (
     <BootstrapModal
@@ -673,7 +676,7 @@ const Component = ({ children, ...restProps }) => {
       onClick={handleModalSlotClick}
     >
       <div style={{ minWidth: '20px', minHeight: '20px', display: 'contents' }}>
-        {!isFullScreen && isHovered && (
+        {isMoveable && (
           <Moveable
             target={target}
             ref={moveableRef}
