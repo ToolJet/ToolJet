@@ -3,11 +3,11 @@ id: release-rollback
 title: Release and Rollback
 ---
 
-ToolJet allows you to release and share your application and rollback to a stable version whenever needed. 
+ToolJet allows you to **[release and share](#release-and-share)** your application and **[rollback](#rollback)** to a stable version whenever needed. 
 
-## Release 
+## Release and Share
 
-Releasing an app in ToolJet makes the selected version available to end users, allowing them to access and use the application for their tasks. This ensures a controlled rollout of features, bug fixes, and that users use the latest version of the app.
+Releasing an app in ToolJet makes the selected version available to end users, allowing them to access and use the application for their tasks. This ensures a controlled rollout of features and bug fixes while ensuring that users have access to the latest version of the app. After an application is released, it can be accessed in multiple ways, such as via a URL, the dashboard, or by embedding it into another application. Refer to **[Share an Application](#)** guide for more information.
 
 ### Steps to Release an App
 
@@ -21,13 +21,11 @@ Releasing an app in ToolJet makes the selected version available to end users, a
 
 <img style={{ marginTop:'15px' }} className="screenshot-full" src="/img/development-lifecycle/release/release/confirm-v2.png" alt="release"/>
 
-## Share
-
 ## Rollback
 
-The Rollback feature in ToolJet allows you to revert to a previously stable version of your app whenever needed. Whether fixing bugs, resolving errors, or addressing unexpected issues after a release, rollback ensures minimal disruption to end users. By instantly restoring a prior version, teams can maintain application stability while debugging the faulty version offline.
+The Rollback feature in ToolJet allows you to revert to a previously stable version of your app whenever needed. Whether fixing bugs, resolving errors, or addressing unexpected issues after a release, rollback ensures minimal disruption to end users. It instantly restores a prior version while keeping the application's URL the same, allowing the team to maintain application stability while debugging the faulty version offline.
 
-To rollback to a stable version:
+### Steps to Rollback
 
 1. Go to the **App Version Manager** from the toolbar and click on the dropdown. It will display all the available versions of the app. The released version name will be in green color.
 <img className="screenshot-full" src="/img/development-lifecycle/release/version-control/version-menu.png" alt="app version"/>

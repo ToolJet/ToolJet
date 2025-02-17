@@ -494,9 +494,9 @@ const sidebars = {
           'items': [
             'development-lifecycle/release/version-control',
             'development-lifecycle/release/release-rollback',
+            'development-lifecycle/release/share-app',
           ]
         },
-        'development-lifecycle/share-app',
         {
           'type': 'category',
           'label': 'Backup',
