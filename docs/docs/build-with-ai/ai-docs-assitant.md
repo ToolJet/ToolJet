@@ -3,7 +3,7 @@ id: ai-docs-assistant
 title: AI Docs Assistant
 ---
 
-The **AI Docs Assistant** is designed to help you navigate ToolJet’s capabilities and build enterprise applications with ease. Whether you need quick answers, step-by-step guides, or concept explanations, this assistant provides instant support.
+The **AI Docs Assistant** is an intelligent assistant designed to help you navigate ToolJet’s documentation with ease. Whether you need quick answers, step-by-step guides, or concept explanations, this assistant provides instant support by summarizing docs, troubleshooting issues, and guiding you through best practices.
 
 You can access the AI Docs Assistant under the **Learn** tab in the Build with AI sidebar. Simply ask a question or describe what you're looking for, and the assistant will provide relevant documentation and insights.
 
@@ -25,7 +25,7 @@ You can access the AI Docs Assistant under the **Learn** tab in the Build with A
 
 1. Custom Schema in [Form](/docs/widgets/form/) component:
 
- **Prompt**: Can you create a custom schema for a Form component with two input fields for name and phone number, and a dropdown for gender?
+ **Prompt**: Can you create a custom schema for a Form component with two input fields for name, phone number, and a dropdown for gender?
 
 <div style={{textAlign: 'center',  marginBottom:'15px'}}>
 

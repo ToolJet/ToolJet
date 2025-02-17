@@ -2,11 +2,11 @@
 id: overview
 title: Overview
 ---
-With ToolJet, building business apps is simple. Describe what you need, and its AI turns ideas into functional apps. 
+With ToolJet, you can build business applications effortlessly using natural language. Whether you're starting from scratch or refining an existing app, it simplifies the process with it's intelligence.
 
-ToolJet also comes with an AI-powered [documentation assistant](/docs/tooljet-ai/ai-doc-assistant), ready to answer any questions on how to utilize ToolJet's features and build complex enterprise applications. 
+Additionally, it comes with an AI-powered [documentation assistant](/docs/build-with-ai/ai-docs-assistant), ready to answer any questions about ToolJet's features, components, and integrations, helping you build faster.
 
-Follow these step-by-step instructions to create an inventory management application using ToolJet's powerful AI capabilities:
+Follow these step-by-step instructions to create an inventory management application:
 1. **Describe your application** – Provide a prompt detailing the business application you want to create. (Example: "Inventory management system for a manufacturing company.")
 <div style={{textAlign: 'center',  marginBottom:'15px'}}>
 
@@ -19,7 +19,7 @@ Follow these step-by-step instructions to create an inventory management applica
 <img className="screenshot-full" src="/img/tooljet-ai/overview-ai-2.png" alt="tooljet ai overview" />
  
 </div>
-3. **Customize your application** – Use AI to customize the generated application to your specific needs, adjusting components and its styles, and also data source queries.
+3. **Customize your application** – Use AI to customize the generated application to your specific needs, adjusting components and styles, and also data source queries.
 
 - **Generated Application**
 <div style={{textAlign: 'center',  marginBottom:'15px'}}>
@@ -37,4 +37,4 @@ Follow these step-by-step instructions to create an inventory management applica
 </div>
 
 
-Refer to [Generate Applications](/docs/build-with-ai/generate-applications) and [AI Docs Assitant](/docs/tooljet-ai/ai-docs-assistant) documentation to learn more.
+Refer to [Generate Applications](/docs/build-with-ai/generate-applications) and [AI Docs Assistant](/docs/build-with-ai/ai-docs-assistant) documentation to learn more.
