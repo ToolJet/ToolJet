@@ -499,20 +499,20 @@ const sidebars = {
         },
         {
           'type': 'category',
+          'label': 'GitSync',
+          'items': [
+            'development-lifecycle/gitsync/overview',
+            'development-lifecycle/gitsync/gitsync-config',
+            'development-lifecycle/gitsync/ssh-config',
+            'development-lifecycle/gitsync/delete-gitsync',
+            'development-lifecycle/gitsync/git-push',
+            'development-lifecycle/gitsync/git-pull',
+          ]
+        },
+        {
+          'type': 'category',
           'label': 'Backup',
           'items': [
-            {
-              'type': 'category',
-              'label': 'GitSync',
-              'items': [
-                'development-lifecycle/backup/gitsync/overview',
-                'development-lifecycle/backup/gitsync/tj-config',
-                'development-lifecycle/backup/gitsync/ssh-config',
-                'development-lifecycle/backup/gitsync/delete-gitsync',
-                'development-lifecycle/backup/gitsync/git-push',
-                'development-lifecycle/backup/gitsync/git-pull',
-              ]
-            },
             'development-lifecycle/backup/sql-backup'
           ]
         },
