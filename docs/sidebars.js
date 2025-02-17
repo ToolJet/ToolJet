@@ -488,6 +488,7 @@ const sidebars = {
       'type': 'category',
       'label': 'Development Lifecycle',
       'items': [
+        'development-lifecycle/overview',
         {
           'type': 'category',
           'label': 'Release Management',
@@ -495,6 +496,29 @@ const sidebars = {
             'development-lifecycle/release/version-control',
             'development-lifecycle/release/release-rollback',
             'development-lifecycle/release/share-app',
+          ]
+        },
+        {
+          'type': 'category',
+          'label': 'Self-hosted',
+          'items': [
+            {
+              'type': 'category',
+              'label': 'Environment',
+              'items': [
+                'development-lifecycle/self-hosted/environment/concept',
+                'development-lifecycle/self-hosted/environment/example'
+              ]
+            },
+            'development-lifecycle/self-hosted/multi-instance'
+          ]
+        },
+        {
+          'type': 'category',
+          'label': 'Cloud',
+          'items': [
+            'development-lifecycle/cloud/concept',
+            'development-lifecycle/cloud/example'
           ]
         },
         {
