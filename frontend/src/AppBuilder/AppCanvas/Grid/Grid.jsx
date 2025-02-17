@@ -873,11 +873,12 @@ export default function Grid({ gridWidth, currentLayout }) {
           const parentComponent = boxList.find((box) => box.id === dragParentId);
           const _dragParentId = newDragParentId.current === null ? 'canvas' : newDragParentId.current;
 
-          let left = e.translate[0];
-          let top = e.translate[1];
-
+          let left = Math.round(e.translate[0] / _gridWidth) * _gridWidth;
+          let top = Math.round(e.translate[1] / GRID_HEIGHT) * GRID_HEIGHT;
           // This logic is to handle the case when the dragged element is over a new canvas
           if (_dragParentId !== currentParentId) {
+            left = e.translate[0];
+            top = e.translate[1];
             // const oldContainer = document.getElementById(`canvas-${currentParentId}`);
             // const newContainer = document.getElementById(`canvas-${dragParentId}`);
             // const oldContainerWidth = currentParentId
@@ -888,8 +889,6 @@ export default function Grid({ gridWidth, currentLayout }) {
           }
 
           // Snap to grid
-          top = Math.round(top / GRID_HEIGHT) * GRID_HEIGHT;
-          left = Math.round(left / _gridWidth) * _gridWidth;
 
           // Special case for Modal
           if (parentComponent?.component?.component === 'Modal') {
@@ -1028,8 +1027,8 @@ export default function Grid({ gridWidth, currentLayout }) {
         snapThreshold={10}
         // Guidelines configuration
         elementGuidelines={elementGuidelines}
-        snapGridHeight={GRID_HEIGHT}
-        snapGridWidth={snapGridWidth}
+        // snapGridHeight={GRID_HEIGHT}
+        // snapGridWidth={snapGridWidth}
         snapDirections={{
           top: true,
           right: true,
