@@ -3,9 +3,12 @@ import { shallow } from 'zustand/shallow';
 import './configHandle.scss';
 import useStore from '@/AppBuilder/_stores/store';
 import { findHighestLevelofSelection } from '../Grid/gridUtils';
+
+const CONFIG_HANDLE_HEIGHT = 20;
+const BUFFER_HEIGHT = 1;
+
 export const ConfigHandle = ({
   id,
-  position,
   widgetTop,
   widgetHeight,
   setSelectedComponentAsModal = () => null, //! Only Modal widget passes this uses props down. All other widgets use selecto lib
@@ -27,6 +30,7 @@ export const ConfigHandle = ({
     (state) => componentType === 'Tabs' && state.getExposedValueOfComponent(id)?.currentTab,
     shallow
   );
+  const position = widgetTop < 15 ? 'bottom' : 'top';
 
   const setComponentToInspect = useStore((state) => state.setComponentToInspect);
   const isModal = componentType === 'Modal' || componentType === 'ModalV2';
@@ -36,9 +40,7 @@ export const ConfigHandle = ({
     // If one component is hovered and one is selected, show the handle for the hovered component
     return (
       isWidgetHovered ||
-      (showHandle &&
-        (!isMultipleComponentsSelected || (isModal && isModalOpen)) &&
-        !anyComponentHovered)
+      (showHandle && (!isMultipleComponentsSelected || (isModal && isModalOpen)) && !anyComponentHovered)
     );
   }, shallow);
   let height = visibility === false ? 10 : widgetHeight;
@@ -48,7 +50,7 @@ export const ConfigHandle = ({
       className={`config-handle ${customClassName}`}
       widget-id={id}
       style={{
-        top: position === 'top' ? '-20px' : widgetTop + height - (widgetTop < 10 ? 15 : 10),
+        top: position === 'top' ? '-20px' : `${height - (CONFIG_HANDLE_HEIGHT + BUFFER_HEIGHT)}px`,
         visibility: _showHandle ? 'visible' : 'hidden',
         left: '-1px',
       }}
@@ -63,7 +65,8 @@ export const ConfigHandle = ({
     >
       <span
         style={{
-          background: isModal && isModalOpen ? '#c6cad0' : '#4D72FA',
+          background: componentType === 'Modal' && isModalOpen ? '#c6cad0' : '#4D72FA',
+          border: position === 'bottom' ? '1px solid white' : 'none',
         }}
         className="badge handle-content"
       >

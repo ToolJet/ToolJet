@@ -84,7 +84,6 @@ const WidgetWrapper = memo(
           {mode == 'edit' && (
             <ConfigHandle
               id={id}
-              position={layoutData.top < 15 ? 'bottom' : 'top'}
               widgetTop={layoutData.top}
               widgetHeight={layoutData.height}
               showHandle={isWidgetActive}
