@@ -639,6 +639,31 @@ const Component = ({ children, ...restProps }) => {
     };
   }, []);
 
+  // To idenitfy if the passed DOM element is being hovered or not, move as a common util
+  const useHover = (getElement) => {
+    const [isHovered, setIsHovered] = useState(false);
+
+    useEffect(() => {
+      const element = getElement();
+      if (!element) return;
+
+      const handleMouseEnter = () => setIsHovered(true);
+      const handleMouseLeave = () => setIsHovered(false);
+
+      element.addEventListener('mouseenter', handleMouseEnter);
+      element.addEventListener('mouseleave', handleMouseLeave);
+
+      return () => {
+        element.removeEventListener('mouseenter', handleMouseEnter);
+        element.removeEventListener('mouseleave', handleMouseLeave);
+      };
+    }, [getElement]);
+
+    return isHovered;
+  };
+
+  const isHovered = useHover(() => document.querySelector(`[component-id="${id}"]`));
+
   return (
     <BootstrapModal
       {...restProps}
@@ -648,7 +673,7 @@ const Component = ({ children, ...restProps }) => {
       onClick={handleModalSlotClick}
     >
       <div style={{ minWidth: '20px', minHeight: '20px', display: 'contents' }}>
-        {!isFullScreen && (
+        {!isFullScreen && isHovered && (
           <Moveable
             target={target}
             ref={moveableRef}
