@@ -315,7 +315,10 @@ export const createGridSlice = (set, get) => ({
                 const currentComponentLeft = component.layouts[currentLayout].left;
                 const currentComponentRight = currentComponentLeft + component.layouts[currentLayout].width;
                 const prevComponent = componentsToAdjustSorted[prevIndex];
-                const prevTop = temporaryLayouts?.[prevComponent.id]?.top ?? prevComponent.layouts[currentLayout].top;
+                const prevTop =
+                  prevComponent.layouts?.newTop ??
+                  temporaryLayouts?.[prevComponent.id]?.top ??
+                  prevComponent.layouts[currentLayout].top;
                 const prevBottom =
                   prevTop +
                   (temporaryLayouts?.[prevComponent.id]?.height ?? prevComponent.layouts[currentLayout].height);
@@ -353,6 +356,7 @@ export const createGridSlice = (set, get) => ({
             if (component.layouts[currentLayout].top > newTop) {
               newTop = component.layouts[currentLayout].top;
             }
+            component.layouts.newTop = newTop;
             const currentTransform = window.getComputedStyle(element).transform;
             const matrix = new DOMMatrix(currentTransform);
             const currentX = matrix.m41;
