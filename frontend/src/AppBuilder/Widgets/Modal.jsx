@@ -7,6 +7,8 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useExposeState } from '@/AppBuilder/_hooks/useModalCSA';
 import { useEventListener } from '@/_hooks/use-event-listener';
+import Moveable from 'react-moveable';
+import { debounce } from 'lodash';
 var tinycolor = require('tinycolor2');
 
 const MODAL_HEADER = {
@@ -39,7 +41,7 @@ const getModalBodyHeight = (
   if (showFooter) {
     modalHeight = modalHeight - footerHeight;
   }
-  return `${Math.max(modalHeight, 40)}px`;
+  return `${Math.max(modalHeight - 3, 40)}px`;
 };
 
 export const Modal = function Modal({
@@ -388,16 +390,19 @@ export const Modal = function Modal({
           hideCloseButton,
           onHideModal,
           component,
-          modalHeight,
+          size,
           isDisabled: isDisabledModal,
           showConfigHandler: mode === 'edit',
-          fullscreen: isFullScreen,
+          isFullScreen,
           showHeader,
           showFooter,
           headerHeight,
           footerHeight,
           modalBodyHeight: computedCanvasHeight,
           modalWidth,
+          modalHeight,
+          isShowing: showModal,
+          mode,
         }}
       >
         {!isLoading ? (
@@ -550,17 +555,47 @@ const Component = ({ children, ...restProps }) => {
     id,
     showConfigHandler,
     isDisabled,
-    modalHeight,
+    size,
     modalBodyHeight,
     onHideModal,
     hideCloseButton,
     darkMode,
     modalWidth,
+    modalHeight,
     showHeader,
     showFooter,
     headerHeight,
     footerHeight,
+    isShowing,
+    isFullScreen,
+    mode,
   } = restProps['modalProps'];
+
+  const [target, setTarget] = useState(null);
+  const computedModalBodyHeight = getModalBodyHeight(modalHeight, showHeader, showFooter, headerHeight, footerHeight);
+  const computedCanvasHeight = isFullScreen
+    ? `calc(100vh - 48px - 40px - ${showHeader ? headerHeight : '0px'} - ${showFooter ? footerHeight : '0px'})`
+    : computedModalBodyHeight;
+
+  const setMoveableTarget = () => {
+    setTimeout(() => {
+      if (modalRef.current?.dialog) {
+        const modalTarget = modalRef.current.dialog.querySelector('.modal-content.modal-component');
+        setTarget(modalTarget);
+      }
+    }, 500);
+  };
+
+  useEffect(() => {
+    setMoveableTarget();
+  }, [isShowing, modalRef]);
+
+  // Reset the height set on the dom of the modal when it is fullscreen
+  useEffect(() => {
+    if (target && isFullScreen) {
+      target.style.height = '';
+    }
+  }, [size]);
 
   const setSelectedComponentAsModal = useStore((state) => state.setSelectedComponentAsModal, shallow);
 
@@ -575,7 +610,22 @@ const Component = ({ children, ...restProps }) => {
     } else if (clickedId?.includes(id)) {
       setSelectedComponentAsModal(id);
     }
+    setMoveableTarget();
   };
+
+  const modalRef = useRef(null);
+  const moveableRef = useRef(null);
+  const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
+
+  const updateSizeInStore = (height, width) => {
+    console.log('Updating size in store', height, width); // Debugging log
+    const heightInPx = `${parseInt(height, 10)}px`;
+    setComponentProperty(id, 'modalHeight', heightInPx, 'properties', 'value', false);
+  };
+
+  const onResize = debounce(({ height }) => {
+    updateSizeInStore(height);
+  }, 300);
 
   useEffect(() => {
     // When modal is active, prevent drop event on backdrop (else widgets droppped will get added to canvas)
@@ -591,62 +641,123 @@ const Component = ({ children, ...restProps }) => {
     };
   }, []);
 
+  // To idenitfy if the passed DOM element is being hovered or not, move as a common util
+  const useHover = (getElement) => {
+    const [isHovered, setIsHovered] = useState(false);
+
+    useEffect(() => {
+      const element = getElement();
+      if (!element) return;
+
+      const handleMouseEnter = () => setIsHovered(true);
+      const handleMouseLeave = () => setIsHovered(false);
+
+      element.addEventListener('mouseenter', handleMouseEnter);
+      element.addEventListener('mouseleave', handleMouseLeave);
+
+      return () => {
+        element.removeEventListener('mouseenter', handleMouseEnter);
+        element.removeEventListener('mouseleave', handleMouseLeave);
+      };
+    }, [getElement]);
+
+    return isHovered;
+  };
+
+  const isHovered = useHover(() => document.querySelector(`[component-id="${id}"]`));
+  const isMoveable = !isFullScreen && isHovered && mode === 'edit';
+
   return (
-    <BootstrapModal {...restProps} animation={true} onClick={handleModalSlotClick}>
-      {showConfigHandler && (
-        <ConfigHandle
-          id={id}
-          customClassName={showHeader ? '' : 'modalWidget-config-handle tw-h-0'}
-          showHandle={showConfigHandler}
-          setSelectedComponentAsModal={setSelectedComponentAsModal}
-          componentType="Modal"
-          isModalOpen={true}
-        />
-      )}
-      {showHeader && (
-        <ModalHeader
-          id={id}
-          isDisabled={isDisabled}
-          customStyles={customStyles}
-          hideCloseButton={hideCloseButton}
-          darkMode={darkMode}
-          width={modalWidth}
-          onHideModal={onHideModal}
-          headerHeight={headerHeight}
-          onClick={handleModalSlotClick}
-        />
-      )}
-      <BootstrapModal.Body style={{ ...customStyles.modalBody }} ref={parentRef} id={id} data-cy={`modal-body`}>
-        {isDisabled && (
-          <div
-            id={`${id}-body-disabled`}
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              height: modalBodyHeight || '100%',
-              backgroundColor: 'rgba(255, 255, 255, 0.8)',
-              zIndex: 1,
-              margin: 0,
+    <BootstrapModal
+      {...restProps}
+      ref={modalRef}
+      animation={true}
+      onEntered={setMoveableTarget}
+      onClick={handleModalSlotClick}
+    >
+      <div style={{ minWidth: '20px', minHeight: '20px', display: 'contents' }}>
+        {isMoveable && (
+          <Moveable
+            target={target}
+            ref={moveableRef}
+            keepRatio={false}
+            resizable={true}
+            origin={false}
+            renderDirections={['sw', 'se', 's']}
+            useResizeObserver={true}
+            linePadding={10}
+            onDrag={(e) => {
+              e.target.style.transform = e.transform;
             }}
-            onDrop={(e) => e.stopPropagation()}
+            onResize={(e) => {
+              const { height } = e;
+              // To prevent the modal from showing scrollbars when resized
+              e.target.style.height = `${height}px`;
+              onResize({ height });
+            }}
+            edge={true}
           />
         )}
-        {children}
-      </BootstrapModal.Body>
-      {showFooter && (
-        <ModalFooter
+        {showConfigHandler && (
+          <ConfigHandle
+            id={id}
+            customClassName={showHeader ? '' : 'modalWidget-config-handle tw-h-0'}
+            showHandle={showConfigHandler}
+            setSelectedComponentAsModal={setSelectedComponentAsModal}
+            componentType="Modal"
+            isModalOpen={true}
+          />
+        )}
+        {showHeader && (
+          <ModalHeader
+            id={id}
+            isDisabled={isDisabled}
+            customStyles={customStyles}
+            hideCloseButton={hideCloseButton}
+            darkMode={darkMode}
+            width={modalWidth}
+            onHideModal={onHideModal}
+            headerHeight={headerHeight}
+            onClick={handleModalSlotClick}
+          />
+        )}
+        <BootstrapModal.Body
+          style={{ ...customStyles.modalBody, height: computedCanvasHeight }}
+          ref={parentRef}
           id={id}
-          isDisabled={isDisabled}
-          darkMode={darkMode}
-          customStyles={customStyles}
-          width={modalWidth}
-          footerHeight={footerHeight}
-          onClick={handleModalSlotClick}
-        />
-      )}
+          data-cy={`modal-body`}
+        >
+          {isDisabled && (
+            <div
+              id={`${id}-body-disabled`}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                height: modalBodyHeight || '100%',
+                backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                zIndex: 1,
+                margin: 0,
+              }}
+              onDrop={(e) => e.stopPropagation()}
+            />
+          )}
+          {children}
+        </BootstrapModal.Body>
+        {showFooter && (
+          <ModalFooter
+            id={id}
+            isDisabled={isDisabled}
+            darkMode={darkMode}
+            customStyles={customStyles}
+            width={modalWidth}
+            footerHeight={footerHeight}
+            onClick={handleModalSlotClick}
+          />
+        )}
+      </div>
     </BootstrapModal>
   );
 };
