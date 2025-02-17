@@ -333,3 +333,14 @@ export const signUpLink = (email) => {
     cy.wait(3000);
   });
 };
+
+export const bannerElementsVerification = () => {
+  const bannerElements = [
+    { selector: commonSelectors.HostBanner },
+    { selector: commonSelectors.pageLogo },
+    { selector: onboardingSelectors.stepsDetails },
+  ];
+  bannerElements.forEach((element) => {
+    cy.get(element.selector).should("be.visible");
+  });
+};
