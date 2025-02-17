@@ -72,7 +72,7 @@ To create workspace constants or secrets, follow these steps:
 5. Click the **Add constant** button to save.
 
 <div style={{textAlign: 'center'}}>
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/workspace-const/create-new-V2.png" alt="Create New Constant"/>
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/workspace-const/create-new-v2.png" alt="Create New Constant"/>
 </div>
 
 :::info
