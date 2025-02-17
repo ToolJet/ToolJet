@@ -1,3 +1,6 @@
+// eslint-disable-next-line import/no-unresolved
+import { diff as deepDiff } from 'deep-object-diff';
+
 export const filterFunctions = {
   contains: (row, columnId, filterValue) => {
     const value = String(row.getValue(columnId) || '').toLowerCase();
@@ -57,4 +60,43 @@ export const filterFunctions = {
     const value = row.getValue(columnId);
     return Number(value) <= Number(filterValue.value);
   },
+};
+
+export const findFilterDiff = (oldFilters, newFilters) => {
+  const filterDiff = deepDiff(oldFilters, newFilters);
+
+  const getType = (obj) => {
+    if (!obj?.column && !obj?.condition) return 'value';
+    if (obj?.column) return 'column';
+    if (obj?.condition) return 'condition';
+  };
+
+  const diff = Object.entries(filterDiff).reduce((acc, [key, value]) => {
+    const type = getType(value?.value);
+    return { ...acc, keyIndex: key, type: type, diff: value?.value?.[type] };
+  }, {});
+
+  return shouldFireEvent(diff, newFilters);
+};
+
+const shouldFireEvent = (diff, filter) => {
+  if (!diff || !filter) return false;
+
+  const forEmptyOperationAndNotEmptyOperation = (condition) => {
+    if (condition !== 'isEmpty' || condition !== 'isNotEmpty') {
+      return filter[diff.keyIndex]?.value?.column ? true : false;
+    }
+    return filter[diff.keyIndex]?.value?.value && filter[diff.keyIndex]?.value?.column ? true : false;
+  };
+
+  switch (diff.type) {
+    case 'value':
+      return filter[diff.keyIndex]?.value?.column && filter[diff.keyIndex]?.value?.condition ? true : false;
+    case 'column':
+      return filter[diff.keyIndex]?.value?.value && filter[diff.keyIndex]?.value?.condition ? true : false;
+    case 'condition':
+      return forEmptyOperationAndNotEmptyOperation(filter[diff.keyIndex]?.value?.condition);
+    default:
+      return false;
+  }
 };

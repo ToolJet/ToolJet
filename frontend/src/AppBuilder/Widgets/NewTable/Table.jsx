@@ -1,47 +1,37 @@
-import React, { useEffect, useMemo } from 'react';
-import './_styles/table_component.scss';
-// hooks for table properties and styles
-import useTableStore from './_stores/tableStore';
-// components
-import TableContainer from './_components/TableContainer';
-import { isEmpty, isArray } from 'lodash';
+import React, { useEffect, useMemo, memo } from 'react';
+// eslint-disable-next-line import/no-unresolved
+import { diff } from 'deep-object-diff';
+import { shallow } from 'zustand/shallow';
+import { isEmpty } from 'lodash';
 import { useEvents } from '@/AppBuilder/_stores/slices/eventsSlice';
 import useStore from '@/AppBuilder/_stores/store';
-import { shallow } from 'zustand/shallow';
+import useTableStore from './_stores/tableStore';
+import TableContainer from './_components/TableContainer';
+import { transformTableData } from './_utils/transformTableData';
+import './_styles/table_component.scss';
 
-export const Table = React.memo(
+export const Table = memo(
   ({ id, componentName, width, height, properties, styles, darkMode, fireEvent, setExposedVariables }) => {
-    // const {
-    //   initializeComponent,
-    //   removeComponent,
-    //   setTableProperties,
-    //   setTableStyles,
-    //   getTableStyles,
-    //   getTableProperties,
-    //   setColumnDetails,
-    //   setTableActions,
-    //   setTableEvents,
-    //   getColumnTransformations,
-    // } = useTableStore();
+    // get table store functions
+    const initializeComponent = useTableStore((state) => state.initializeComponent, shallow);
+    const removeComponent = useTableStore((state) => state.removeComponent, shallow);
+    const setTableProperties = useTableStore((state) => state.setTableProperties, shallow);
+    const setTableActions = useTableStore((state) => state.setTableActions, shallow);
+    const setTableEvents = useTableStore((state) => state.setTableEvents, shallow);
+    const setTableStyles = useTableStore((state) => state.setTableStyles, shallow);
+    const setColumnDetails = useTableStore((state) => state.setColumnDetails, shallow);
+    const getColumnTransformations = useTableStore((state) => state.getColumnTransformations, shallow);
 
-    const initializeComponent = useTableStore((state) => state.initializeComponent);
-    const removeComponent = useTableStore((state) => state.removeComponent);
-    const setTableProperties = useTableStore((state) => state.setTableProperties);
-    const setTableActions = useTableStore((state) => state.setTableActions);
-    const setTableEvents = useTableStore((state) => state.setTableEvents);
-    const setTableStyles = useTableStore((state) => state.setTableStyles);
-    const setColumnDetails = useTableStore((state) => state.setColumnDetails);
-    const getColumnTransformations = useTableStore((state) => state.getColumnTransformations);
-
+    // get table properties
     const visibility = useTableStore((state) => state.getTableProperties(id)?.visibility, shallow);
     const disabledState = useTableStore((state) => state.getTableProperties(id)?.disabledState, shallow);
-
     const borderRadius = useTableStore((state) => state.getTableStyles(id)?.borderRadius, shallow);
+
+    // get table styles
     const boxShadow = useTableStore((state) => state.getTableStyles(id)?.boxShadow, shallow);
     const borderColor = useTableStore((state) => state.getTableStyles(id)?.borderColor, shallow);
 
-    console.log('here--- visibility--- ', visibility);
-
+    // get resolved value for transformations from app builder store
     const getResolvedValue = useStore((state) => state.getResolvedValue);
 
     const {
@@ -54,24 +44,29 @@ export const Table = React.memo(
       ...restOfProperties
     } = properties;
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     const firstRowOfTable = !isEmpty(restOfProperties.data?.[0]) ? restOfProperties.data?.[0] : undefined;
     const transformations = getColumnTransformations(id);
 
+    // Get all app events. Needed for certain events like onBulkUpdate
     const allAppEvents = useEvents();
+
+    // Initialize component on the table store
     useEffect(() => {
       initializeComponent(id);
       return () => removeComponent(id);
     }, [id, initializeComponent, removeComponent]);
 
+    // Set properties to the table store
     useEffect(() => {
       setTableProperties(id, restOfProperties);
     }, [id, restOfProperties, setTableProperties]);
 
+    // Set actions to the table store
     useEffect(() => {
       setTableActions(id, actions);
     }, [id, actions, setTableActions]);
 
+    // Set column details to the table store. This is responsible for auto-generating columns
     useEffect(() => {
       setColumnDetails(
         id,
@@ -93,56 +88,19 @@ export const Table = React.memo(
       columnDeletionHistory,
     ]);
 
+    // Set styles to the table store
     useEffect(() => {
       setTableStyles(id, styles);
     }, [id, styles, setTableStyles]);
 
+    // Set events to the table store
     useEffect(() => {
       setTableEvents(id, allAppEvents);
     }, [id, allAppEvents, setTableEvents]);
 
+    // Transform table data if transformations are present
     const tableData = useMemo(() => {
-      const resolvedData = restOfProperties.data;
-      if (!Array.isArray(resolvedData) && !isArray(resolvedData)) {
-        return [];
-      } else {
-        return resolvedData
-          .filter((data) => data !== null && data !== undefined)
-          .map((row) => {
-            const transformedObject = {};
-
-            transformations.forEach(({ key, transformation }) => {
-              const nestedKeys = key.includes('.') && key.split('.');
-              if (nestedKeys) {
-                // Single-level nested property
-                const [nestedKey, subKey] = nestedKeys;
-                const nestedObject = transformedObject?.[nestedKey] || { ...row[nestedKey] }; // Retain existing nested object
-                const newValue =
-                  getResolvedValue(transformation, {
-                    cellValue: row?.[nestedKey]?.[subKey],
-                    rowData: row,
-                  }) ?? row[key];
-
-                // Apply transformation to subKey
-                nestedObject[subKey] = newValue;
-
-                // Update transformedObject with the new nested object
-                transformedObject[nestedKey] = nestedObject;
-              } else {
-                // Non-nested property
-                transformedObject[key] =
-                  getResolvedValue(transformation, {
-                    cellValue: row[key],
-                    rowData: row,
-                  }) ?? row[key];
-              }
-            });
-            return {
-              ...row,
-              ...transformedObject,
-            };
-          });
-      }
+      return transformTableData(restOfProperties.data, transformations, getResolvedValue);
     }, [getResolvedValue, restOfProperties.data, transformations]);
 
     return (
@@ -170,5 +128,9 @@ export const Table = React.memo(
         />
       </div>
     );
+  },
+  (prevProps, nextProps) => {
+    // Avoid re-rendering if the props are same
+    return Object.keys(diff(prevProps, nextProps)).length === 0;
   }
 );

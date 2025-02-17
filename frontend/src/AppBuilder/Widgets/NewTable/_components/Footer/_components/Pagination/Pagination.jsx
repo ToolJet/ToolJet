@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { PaginationButton } from './PaginationButton';
 import { PaginationInput } from './PaginationInput';
-import useTableStore from '../../_stores/tableStore';
+import useTableStore from '../../../../_stores/tableStore';
 import { shallow } from 'zustand/shallow';
 
 // TODO: Need to replace all the default data

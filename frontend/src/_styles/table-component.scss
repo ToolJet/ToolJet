@@ -13,6 +13,11 @@
   .table-filters {
     border: 1px solid var(--slate3, #F1F3F5) !important;
 
+    .card-body {
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
     .card-footer {
       background-color: inherit !important;
     }

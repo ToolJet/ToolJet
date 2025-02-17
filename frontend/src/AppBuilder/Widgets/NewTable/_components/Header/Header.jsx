@@ -1,23 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { Tooltip } from 'react-tooltip';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 // Store files
 import useTableStore from '../../_stores/tableStore';
+import { shallow } from 'zustand/shallow';
 // Local Components
-import SearchBar from '../SearchBar';
+import { SearchBar } from './_components/SearchBar';
 import Loader from '../Loader';
-import Filter from '../Filter';
-export const Header = React.memo(
+import { Filter } from './_components/Filter/Filter';
+
+let count = 0;
+export const Header = memo(
   ({ id, darkMode, fireEvent, setExposedVariables, setGlobalFilter, globalFilter, table, setFilters }) => {
-    const { getHeaderVisibility, getLoadingState, getTableProperties } = useTableStore();
-    const loadingState = getLoadingState(id);
-    const { displaySearchBox, showFilterButton } = getTableProperties(id);
+    const displaySearchBox = useTableStore((state) => state.getTableProperties(id)?.displaySearchBox, shallow);
+    const showFilterButton = useTableStore((state) => state.getTableProperties(id)?.showFilterButton, shallow);
+
+    const loadingState = useTableStore((state) => state.getLoadingState(id), shallow);
+    const headerVisibility = useTableStore((state) => state.getHeaderVisibility(id), shallow);
+
     const appliedFilters = table.getState().columnFilters;
+
+    console.log('count--- Header--- ', ++count);
 
     const [showFilter, setShowFilter] = useState(false);
 
     // Hide header if the properties are not enabled
-    if (!getHeaderVisibility(id)) return null;
+    if (!headerVisibility) return null;
 
     // Loading state for header
     if (loadingState) {
@@ -37,7 +45,6 @@ export const Header = React.memo(
           <Tooltip id="tooltip-for-filter-data" className="tooltip" />
           <ButtonSolid
             variant="tertiary"
-            // className={`tj-text-xsm always-active-btn`}
             customStyles={{ minWidth: '32px' }}
             leftIcon="filter"
             fill={`var(--icons-default)`}
@@ -95,14 +102,7 @@ export const Header = React.memo(
 
     return (
       <>
-        <div
-          className={
-            'table-card-header d-flex justify-content-between align-items-center '
-            //   ${
-            //   (tableDetails.addNewRowsDetails.addingNewRows || tableDetails.filterDetails.filtersVisible) && 'disabled'
-            // }
-          }
-        >
+        <div className={'table-card-header d-flex justify-content-between align-items-center '}>
           <div>{showFilterButton && renderFilter()}</div>
           <div className="d-flex custom-gap-8" style={{ maxHeight: 32 }}>
             {displaySearchBox && renderSearchBox()}

@@ -1,13 +1,17 @@
-import { useEffect } from 'react';
+import { useEffect, memo } from 'react';
 import useTableStore from '../../_stores/tableStore';
 import { shallow } from 'zustand/shallow';
 
-export const ExposedVariables = ({ id, data, setExposedVariables, fireEvent, table }) => {
+let count = 0;
+
+export const ExposedVariables = memo(({ id, data, setExposedVariables, fireEvent, table }) => {
   const editedRows = useTableStore((state) => state.getAllEditedRows(id), shallow);
   const editedFields = useTableStore((state) => state.getAllEditedFields(id), shallow);
   const addNewRowDetails = useTableStore((state) => state.getAllAddNewRowDetails(id), shallow);
   const allowSelection = useTableStore((state) => state.getTableProperties(id)?.allowSelection, shallow);
   const showBulkSelector = useTableStore((state) => state.getTableProperties(id)?.showBulkSelector, shallow);
+
+  console.log('count--- ExposedVariables--- ', ++count);
 
   useEffect(() => {
     setExposedVariables({
@@ -33,7 +37,6 @@ export const ExposedVariables = ({ id, data, setExposedVariables, fireEvent, tab
 
   useEffect(() => {
     if (addNewRowDetails) {
-      console.log('here--- addNewRowDetails--- ', [...addNewRowDetails.values()]);
       setExposedVariables({
         newRows: [...addNewRowDetails.values()],
       });
@@ -50,4 +53,4 @@ export const ExposedVariables = ({ id, data, setExposedVariables, fireEvent, tab
   }, [allowSelection, showBulkSelector, table, setExposedVariables]);
 
   return null;
-};
+});

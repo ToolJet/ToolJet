@@ -1,11 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState, memo } from 'react';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { debounce } from 'lodash';
-import useTableStore from '../../_stores/tableStore';
-import { shallow } from 'zustand/shallow';
 
 // Table Search
-export const SearchBar = React.memo(({ globalFilter = '', setGlobalFilter }) => {
+export const SearchBar = memo(({ globalFilter = '', setGlobalFilter }) => {
   const [value, setValue] = useState(globalFilter);
 
   const onChange = (filterValue) => {

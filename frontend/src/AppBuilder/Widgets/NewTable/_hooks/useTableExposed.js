@@ -1,7 +1,7 @@
 import { useEffect, useCallback, useMemo, useRef } from 'react';
 import useTableStore from '@/AppBuilder/Widgets/NewTable/_stores/tableStore';
 import { exportToCSV, exportToExcel, exportToPDF } from '@/AppBuilder/Widgets/NewTable/_utils/exportData';
-import { filterFunctions } from '../_components/Filter/filterUtils';
+import { filterFunctions } from '../_components/Header/_components/Filter/filterUtils';
 import { isArray, debounce } from 'lodash';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';

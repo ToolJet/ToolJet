@@ -4,24 +4,16 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { Tooltip } from 'react-tooltip';
 import cx from 'classnames';
-import useStore from '@/AppBuilder/_stores/store';
-import _ from 'lodash';
 import useTableStore from '../../_stores/tableStore';
+import { shallow } from 'zustand/shallow';
 import generateColumnsData from '../../_utils/generateColumnsData';
 
 export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEvent }) {
-  const onEvent = useStore((state) => state.eventsSlice.onEvent);
+  const { updateAddNewRowDetails, clearAddNewRowDetails } = useTableStore();
 
-  const { getColumnProperties, getAllAddNewRowDetails, updateAddNewRowDetails, clearAddNewRowDetails } =
-    useTableStore();
+  const columnProperties = useTableStore((state) => state.getColumnProperties(id), shallow);
+  const addNewRowDetails = useTableStore((state) => state.getAllAddNewRowDetails(id), shallow);
 
-  // const getColumnProperties = useTableStore((state) => state.getColumnProperties);
-  // const getAllAddNewRowDetails = useTableStore((state) => state.getAllAddNewRowDetails);
-  // const updateAddNewRowDetails = useTableStore((state) => state.updateAddNewRowDetails);
-  // const clearAddNewRowDetails = useTableStore((state) => state.clearAddNewRowDetails);
-
-  const columnProperties = getColumnProperties(id);
-  const addNewRowDetails = getAllAddNewRowDetails(id);
   const addNewRowDetailsLength = addNewRowDetails.size;
 
   const newEmptyRow = useMemo(() => {

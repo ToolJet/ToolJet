@@ -2,9 +2,8 @@ import React from 'react';
 import _ from 'lodash';
 import moment from 'moment';
 import { v4 as uuidv4 } from 'uuid';
-import { determineJustifyContentValue } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
-import { filterFunctions } from '../_components/Filter/filterUtils';
+import { filterFunctions } from '../_components/Header/_components/Filter/filterUtils';
 import {
   StringColumn,
   NumberColumn,
