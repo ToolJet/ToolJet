@@ -50,7 +50,12 @@ export const ConfigHandle = ({
       className={`config-handle ${customClassName}`}
       widget-id={id}
       style={{
-        top: position === 'top' ? '-20px' : `${height - (CONFIG_HANDLE_HEIGHT + BUFFER_HEIGHT)}px`,
+        top:
+          componentType === 'Modal' && isModalOpen
+            ? '0px'
+            : position === 'top'
+            ? '-20px'
+            : `${height - (CONFIG_HANDLE_HEIGHT + BUFFER_HEIGHT)}px`,
         visibility: _showHandle ? 'visible' : 'hidden',
         left: '-1px',
       }}
@@ -65,7 +70,8 @@ export const ConfigHandle = ({
     >
       <span
         style={{
-          background: componentType === 'Modal' && isModalOpen ? '#c6cad0' : '#4D72FA',
+          background:
+            visibility === false ? '#c6cad0' : componentType === 'Modal' && isModalOpen ? '#c6cad0' : '#4D72FA',
           border: position === 'bottom' ? '1px solid white' : 'none',
         }}
         className="badge handle-content"
