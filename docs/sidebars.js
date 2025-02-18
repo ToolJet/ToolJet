@@ -543,6 +543,13 @@ const sidebars = {
     },
     {
       'type': 'category',
+      'label': 'Security and Monitoring',
+      'items': [
+        'security/audit-logs'
+      ]
+    },
+    {
+      'type': 'category',
       'label': 'Workflows',
       'items': [
         'workflows/overview',
