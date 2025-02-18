@@ -52,7 +52,6 @@ describe("App Import Functionality", () => {
   });
 
   it("should verify app import functionality", () => {
-    // Setup workspace
     cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
     cy.apiLogout();
     cy.apiLogin();
@@ -226,7 +225,7 @@ describe("App Import Functionality", () => {
       textInput2: "Leanne Graham",
     });
 
-    cy.wait(1000)
+    cy.wait(1000);
     cy.backToApps();
 
     // Test single version import
