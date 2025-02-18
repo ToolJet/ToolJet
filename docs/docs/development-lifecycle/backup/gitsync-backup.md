@@ -1,26 +1,121 @@
 ---
 id: gitsync-backup
-title: Pulling Changes from Git Repo
+title: GitSync Backup
 ---
 
-You can configure the GitSync feature on another workspace to pull the changes from the git repository. To configure the GitSync feature on another workspace, follow the steps mentioned in the [Setting up GitSync](#setting-up-gitsync) section.
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 
-Once the GitSync feature is configured, go to the ToolJet dashboard and click on the three dots on the right side of the **Create new app** button. Click on the **Import from git repository** option.
+Once the GitSync feature is configured, you can start pushing changes to the git repository. 
 
-<img className="screenshot-full" src="/img/gitsync/importgit-v2.png" alt="GitSync" />
+## App Creation
 
-On clicking the **Import from git repository** option, a modal will open with the dropdown to select the app to be imported from the git repository. Once the app is selected, the app name and the last commit will be displayed. Click on the **Import app** button to import the app from the git repository. 
+When you create a new app, you will see an option to select the **Commit changes**. If you select the **commit changes** option, the changes will be committed to the git repository.
 
-:::caution
-- The app imported from the git repository cannot be edited.
-- The app imported from the Git repository should have a unique name. If the app's name is the same as that of an existing app in the workspace, the user will need to either rename the existing app or delete it to successfully import another app with the same name.
-- Workspace constants are not synced with the git repository. After pulling the app, if the app throws an error, the user will need to manually add the workspace constants.
+:::info
+If the app name is same as the name of the existing app in the git repo, it will overwrite the existing app in the git repo.
 :::
 
-<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/gitsync/importmodal-v2.png" alt="GitSync" />
+<img className="screenshot-full" src="/img/gitsync/commitchanges.png" alt="GitLab SSH Key" />
 
-### Checking for Updates
+Selecting the **Commit changes** option will create a new commit in the git repository. The commit message will be `App creation` and the author will be the user who created the app.
 
-You can check for updates in the git repository by clicking on the **GitSync** button on the topbar. On clicking the **GitSync** button, a modal will open with the option to **Check for updates**. Click on the **Check for updates** button to check for updates in the git repository. If there are any updates, you will see the details of the updates such as commit message, author, and the date in the modal. Click on the **Pull changes** button to pull the changes from the git repository.
+<Tabs>
 
-<img className="screenshot-full" src="/img/gitsync/updatecheck.png" alt="GitSync" />
+    <TabItem value="GitHub" label="GitHub"> 
+
+        <img className="screenshot-full" src="/img/gitsync/firstcommit.png" alt="GitSync" />
+
+    </TabItem>
+
+    <TabItem value="GitLab" label="GitLab"> 
+
+        <img className="screenshot-full" src="/img/gitsync/gitlab/author.png" alt="GitSync" />
+
+    </TabItem>
+
+</Tabs>
+
+## App Rename
+
+Whenever an app is renamed, the changes will be automatically committed to the git repository. The commit message will be `App is renamed` and the author will be the user who renamed the app.
+
+<Tabs>
+
+    <TabItem value="GitHub" label="GitHub"> 
+
+        <img className="screenshot-full" src="/img/gitsync/rename.png" alt="GitSync" />
+
+    </TabItem>
+
+    <TabItem value="GitLab" label="GitLab"> 
+
+        <img className="screenshot-full" src="/img/gitsync/gitlab/apprename.png" alt="GitSync" />
+
+    </TabItem>
+
+</Tabs>
+
+## App Updates
+
+Whenever a user makes a change in an app, they can make a commit to the git repository by clicking on the **GitSync** button on the topbar. On clicking the **GitSync** button, a modal will open with the option to enter the commit message. The user can enter the commit message and click on the **Commit changes** button to commit the changes to the git repository. Along with the commit message, the user can also see the connnected **Git repo URL** and the **last commit details**. 
+
+**Last commit details** helps the user to know the last commit message, author, date, and time. This helps the user to know the last commit details and make the commit message accordingly.
+
+<img className="screenshot-full" src="/img/gitsync/gitlab/message.png" alt="GitLab SSH Key" />
+
+Once the changes are committed, the user can see the commit message, author, and date in the git repository.
+
+<Tabs>
+
+    <TabItem value="GitHub" label="GitHub"> 
+
+        <img className="screenshot-full" src="/img/gitsync/commitgitsync.png" alt="GitSync" />
+
+    </TabItem>
+
+    <TabItem value="GitLab" label="GitLab"> 
+
+        <img className="screenshot-full" src="/img/gitsync/gitlab/lastcommitmsg.png" alt="GitSync" />
+
+    </TabItem>
+
+</Tabs>
+
+## App Deletion
+
+Whenever a user deleted an app from the workspace, the app will not be deleted from the git repository. The app will be available in the git repository in the same state as it was before the app was deleted.
+
+## App Version Update
+
+When a user creates a new version of an app, there will be an option to select the **Commit changes**. If you select the **commit changes** option, the new version of the app will be committed to the git repository.
+
+<img className="screenshot-full" src="/img/gitsync/gitlab/newversion.png" alt="GitLab SSH Key" />
+
+The **JSON** file in the app folder will be replaced with the new version of the app, the **meta.json** file in the **.meta** folder gets updated with the new version id and version name. The commit message will be `Version creation` and the author will be the user who created the new version of the app. 
+
+<Tabs>
+
+    <TabItem value="GitHub" label="GitHub"> 
+
+        <img className="screenshot-full" src="/img/gitsync/replace.png" alt="GitSync" />
+
+    </TabItem>
+
+    <TabItem value="GitLab" label="GitLab"> 
+
+        <img className="screenshot-full" src="/img/gitsync/gitlab/newversion1.png" alt="GitSync" />
+
+    </TabItem>
+
+</Tabs>
+
+## Auto-commit on Promoting Environment
+
+When you promote an environment, from **Developement to Staging**, the changes will be automatically committed to the git repository. The commit message will be `<version_number> Version of <app_name> promoted from <source_environment> to <destination_environment>`. The author will be the user who promoted the environment. When you promote an environment, from **Staging to Production**, no changes will be committed to the git repository.
+
+<img className="screenshot-full" src="/img/gitsync/promoted.png" alt="GitSync" />
+
+This option can be enabled or disabled from the **Configure git** tab on the **Workspace settings** page. By default, this option is disabled.
+
+<img className="screenshot-full" src="/img/gitsync/autocommit-v2.png" alt="GitSync" />
