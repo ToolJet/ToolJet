@@ -60,23 +60,21 @@ Setup ChromaDB Deployment.
 This service helps to deploy chromadb using docker-compose.
 
  ```yml
- name: ChromaDB
+  services:  
+    chromadb:
+      container_name: chromadb
+      image: chromadb/chroma
+      ports:
+        - "8000:8000"
+      environment:
+        - CHROMA_HOST_ADDR=0.0.0.0
+        - CHROMA_HOST_PORT=8000
+      volumes:
+        - chromadb_data:/chroma
 
- services:
-  chroma:
-    name: chromadb
-    image: chromadb/chroma
-    ports:
-      - "8000:8000"
-    environment:
-      - CHROMA_HOST_ADDR=0.0.0.0
-      - CHROMA_HOST_PORT=8000
-    volumes:
-      - chromadb_data:/chroma
-
- volumes:
-  chromadb_data:
-    driver: local
+  volumes:
+    chromadb_data:
+      driver: local
 ```
 
 2. Add these environment variable in the ToolJet deployment file:
