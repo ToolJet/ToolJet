@@ -3,7 +3,6 @@ import Accordion from '@/_ui/Accordion';
 import { renderElement } from '../Utils';
 import { baseComponentProperties } from './DefaultComponent';
 import { resolveReferences } from '@/_helpers/utils';
-import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 export const Modal = ({ componentMeta, darkMode, ...restProps }) => {
   const {
@@ -43,7 +42,7 @@ export const Modal = ({ componentMeta, darkMode, ...restProps }) => {
     );
     const accordionItems = [];
     let renderOptions = [];
-    const options = ['useDefaultButton'];
+    const options = ['visibility', 'disabledTrigger', 'useDefaultButton'];
 
     options.map((option) => renderOptions.push(renderCustomElement(option)));
 
@@ -54,29 +53,12 @@ export const Modal = ({ componentMeta, darkMode, ...restProps }) => {
     });
 
     accordionItems.push({
-      title: 'Data',
-      isOpen: true,
-      children: dataProperties?.map((property) => renderCustomElement(property)),
-    });
-
-    accordionItems.push({
-      title: 'Additional actions',
-      isOpen: true,
-      children: additionalActions?.map((property) => renderCustomElement(property)),
-    });
-
-    accordionItems.push({
-      title: 'Options',
+      title: 'Trigger',
       children: renderOptions,
     });
 
     return accordionItems;
   };
-
-  const filteredProperties = properties.filter(
-    (property) =>
-      property !== 'useDefaultButton' && property !== 'triggerButtonLabel' && !dataProperties.includes(property)
-  );
 
   if (component.component.definition.properties.size.value === 'fullscreen') {
     component.component.properties.modalHeight = {
@@ -86,7 +68,7 @@ export const Modal = ({ componentMeta, darkMode, ...restProps }) => {
   }
 
   const accordionItems = baseComponentProperties(
-    filteredProperties,
+    dataProperties,
     events,
     component,
     componentMeta,
@@ -98,10 +80,13 @@ export const Modal = ({ componentMeta, darkMode, ...restProps }) => {
     apps,
     allComponents,
     validations,
-    darkMode
+    darkMode,
+    [],
+    additionalActions
   );
 
-  accordionItems.splice(0, 0, ...conditionalAccordionItems(component));
+  const [optionsItems] = conditionalAccordionItems(component);
+  accordionItems.splice(2, 0, optionsItems);
 
   return <Accordion items={accordionItems} />;
 };

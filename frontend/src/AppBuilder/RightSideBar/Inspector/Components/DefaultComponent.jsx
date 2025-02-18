@@ -23,6 +23,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'Button',
   'RichTextEditor',
   'Image',
+  'Modal',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -33,6 +34,7 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   Checkbox: 'Data',
   Button: 'Data',
   Image: 'Data',
+  Modal: 'Data',
 };
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {

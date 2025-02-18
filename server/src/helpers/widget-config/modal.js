@@ -28,7 +28,6 @@ export const modalConfig = {
         schema: { type: 'boolean' },
         defaultValue: true,
       },
-      section: 'additionalActions',
     },
     disabledTrigger: {
       type: 'toggle',
@@ -37,7 +36,6 @@ export const modalConfig = {
         schema: { type: 'boolean' },
         defaultValue: false,
       },
-      section: 'additionalActions',
     },
     disabledModal: {
       type: 'toggle',
@@ -89,13 +87,22 @@ export const modalConfig = {
       },
     },
     modalHeight: {
-      type: 'code',
+      type: 'numberInput',
       displayName: 'Height',
       accordian: 'Data',
-      validation: {
-        schema: { type: 'string' },
-        defaultValue: '400px',
-      },
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 400 },
+    },
+    headerHeight: {
+      type: 'numberInput',
+      displayName: 'Header height',
+      accordian: 'Data',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 80 },
+    },
+    footerHeight: {
+      type: 'numberInput',
+      displayName: 'Footer height',
+      accordian: 'Data',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 80 },
     },
     hideOnEsc: { type: 'toggle', displayName: 'Close on escape key', section: 'additionalActions' },
     closeOnClickingOutside: { type: 'toggle', displayName: 'Close on clicking outside', section: 'additionalActions' },
@@ -198,22 +205,6 @@ export const modalConfig = {
         defaultValue: false,
       },
     },
-    headerHeight: {
-      type: 'code',
-      displayName: 'Header height',
-      validation: {
-        schema: { type: 'string' },
-        defaultValue: '80px',
-      },
-    },
-    footerHeight: {
-      type: 'code',
-      displayName: 'Footer height',
-      validation: {
-        schema: { type: 'string' },
-        defaultValue: '80px',
-      },
-    },
   },
   exposedVariables: {
     show: false,
@@ -270,7 +261,9 @@ export const modalConfig = {
       hideCloseButton: { value: '{{false}}' },
       hideOnEsc: { value: '{{true}}' },
       closeOnClickingOutside: { value: '{{false}}' },
-      modalHeight: { value: '400px' },
+      modalHeight: { value: 400 },
+      headerHeight: { value: 80 },
+      footerHeight: { value: 80 },
     },
     events: [],
     styles: {
@@ -279,8 +272,6 @@ export const modalConfig = {
       bodyBackgroundColor: { value: '#ffffffff' },
       triggerButtonBackgroundColor: { value: '#4D72FA' },
       triggerButtonTextColor: { value: '#ffffffff' },
-      headerHeight: { value: '80px' },
-      footerHeight: { value: '80px' },
     },
   },
 };

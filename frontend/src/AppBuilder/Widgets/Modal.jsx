@@ -7,6 +7,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useExposeState } from '@/AppBuilder/_hooks/useModalCSA';
 import { useEventListener } from '@/_hooks/use-event-listener';
+import '@/_styles/widgets/modal.scss';
 var tinycolor = require('tinycolor2');
 
 const MODAL_HEADER = {
@@ -26,20 +27,32 @@ const getModalBodyHeight = (
   height,
   showHeader,
   showFooter,
-  headerHeightPx = MODAL_HEADER.HEIGHT,
-  footerHeightPx = MODAL_FOOTER.HEIGHT
+  headerHeight = MODAL_HEADER.HEIGHT,
+  footerHeight = MODAL_FOOTER.HEIGHT
 ) => {
-  let modalHeight = height.includes('px') ? parseInt(height, 10) : height;
-  let headerHeight = showHeader ? parseInt(headerHeightPx, 10) : 0;
-  let footerHeight = showFooter ? parseInt(footerHeightPx, 10) : 0;
+  let modalHeight = height ? parseInt(height, 10) : 0;
+  let parsedHeaderHeight = showHeader ? parseInt(headerHeight, 10) : 0;
+  let parsedFooterHeight = showFooter ? parseInt(footerHeight, 10) : 0;
 
   if (showHeader) {
-    modalHeight = modalHeight - headerHeight;
+    modalHeight = modalHeight - parsedHeaderHeight;
   }
   if (showFooter) {
-    modalHeight = modalHeight - footerHeight;
+    modalHeight = modalHeight - parsedFooterHeight;
   }
   return `${Math.max(modalHeight, 40)}px`;
+};
+
+const getModalHeaderHeight = (showHeader, headerHeight = MODAL_FOOTER.HEIGHT) => {
+  let parsedHeight = showHeader ? parseInt(headerHeight, 10) : 0;
+
+  return `${parsedHeight}px`;
+};
+
+const getModalFooterHeight = (showFooter, footerHeight = MODAL_FOOTER.HEIGHT) => {
+  let parsedHeight = showFooter ? parseInt(footerHeight, 10) : 0;
+
+  return `${parsedHeight}px`;
 };
 
 export const Modal = function Modal({
@@ -65,6 +78,8 @@ export const Modal = function Modal({
     modalHeight,
     showHeader,
     showFooter,
+    headerHeight,
+    footerHeight,
   } = properties;
   const {
     headerBackgroundColor,
@@ -73,8 +88,6 @@ export const Modal = function Modal({
     triggerButtonBackgroundColor,
     triggerButtonTextColor,
     boxShadow,
-    headerHeight,
-    footerHeight,
   } = styles;
   const parentRef = useRef(null);
   const controlBoxRef = useRef(null);
@@ -88,8 +101,10 @@ export const Modal = function Modal({
 
   const setSelectedComponentAsModal = useStore((state) => state.setSelectedComponentAsModal, shallow);
   const computedModalBodyHeight = getModalBodyHeight(modalHeight, showHeader, showFooter, headerHeight, footerHeight);
+  const headerHeightPx = getModalHeaderHeight(showHeader, headerHeight);
+  const footerHeightPx = getModalFooterHeight(showFooter, footerHeight);
   const computedCanvasHeight = isFullScreen
-    ? `calc(100vh - 48px - 40px - ${showHeader ? headerHeight : '0px'} - ${showFooter ? footerHeight : '0px'})`
+    ? `calc(100vh - 48px - 40px - ${headerHeightPx} - ${footerHeightPx})`
     : computedModalBodyHeight;
 
   /**** Start - Logic to reset the zIndex of modal control box ****/
@@ -148,7 +163,6 @@ export const Modal = function Modal({
 
       modalContainer.style.height = `${canvasElement.offsetHeight}px`;
       modalContainer.style.top = `${currentScroll}px`;
-      fireEvent('onOpen');
     }
   };
 
@@ -174,6 +188,7 @@ export const Modal = function Modal({
   const onShowModal = () => {
     openModal();
     onShowSideEffects();
+    fireEvent('onOpen');
     setSelectedComponentAsModal(id);
   };
 
@@ -200,8 +215,7 @@ export const Modal = function Modal({
 
         // When modal is in fullscreen and width of browser changes, update the modal width
         if (properties.size === 'fullscreen') {
-          const canvasElement = document.querySelector('.page-container.canvas-container');
-          const width = canvasElement.offsetWidth;
+          const width = entry.target.offsetWidth;
           setModalWidth(width);
         }
       }
@@ -214,7 +228,7 @@ export const Modal = function Modal({
       // Cleanup observer on component unmount
       resizeObserver.disconnect();
     };
-  }, []);
+  }, [properties.size]);
 
   useEffect(() => {
     if (showModal) {
@@ -232,7 +246,7 @@ export const Modal = function Modal({
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [modalHeight, size]);
+  }, [size]);
 
   useEffect(() => {
     if (isInitialRender.current) {
@@ -240,7 +254,6 @@ export const Modal = function Modal({
       return;
     }
 
-    fireEvent(!showModal ? 'onClose' : 'onOpen');
     const inputRef = document?.getElementsByClassName('tj-text-input-widget')?.[0];
     inputRef?.blur();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -272,18 +285,44 @@ export const Modal = function Modal({
       padding: '16px',
       marginRight: '16px',
       flexShrink: 0,
+      borderRadius: 4,
+      ':hover': {
+        backgroundColor: 'rgba(0,0,0,0.1)',
+      },
+      transition: 'background-color 0.2s ease',
+    },
+    modalCloseOnDisabled: {
+      position: 'absolute',
+      top: 0,
+      bottom: 0,
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      right: 0,
+      zIndex: 1,
     },
     modalHeader: {
       backgroundColor:
         ['#fff', '#ffffffff'].includes(headerBackgroundColor) && darkMode ? '#1F2837' : headerBackgroundColor,
-      height: headerHeight,
+      height: headerHeightPx,
       padding: 0,
       overflowY: isDisabledModal ? 'hidden' : 'auto',
+      position: 'relative',
+    },
+    modalSlotDisabledOverlay: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(255, 255, 255, 0.8)',
+      zIndex: 1,
+      margin: 0,
     },
     modalFooter: {
       backgroundColor:
         ['#fff', '#ffffffff'].includes(footerBackgroundColor) && darkMode ? '#1F2837' : footerBackgroundColor,
-      height: footerHeight,
+      height: footerHeightPx,
       position: 'relative',
       padding: 0,
       borderTop: `1px solid var(--border-weak)`,
@@ -388,14 +427,15 @@ export const Modal = function Modal({
           hideCloseButton,
           onHideModal,
           component,
+          hideOnEsc,
           modalHeight,
           isDisabled: isDisabledModal,
           showConfigHandler: mode === 'edit',
           fullscreen: isFullScreen,
           showHeader,
           showFooter,
-          headerHeight,
-          footerHeight,
+          headerHeight: headerHeightPx,
+          footerHeight: footerHeightPx,
           modalBodyHeight: computedCanvasHeight,
           modalWidth,
         }}
@@ -435,6 +475,9 @@ const ModalHeader = ({
 }) => {
   const canvasHeaderHeight = getCanvasHeight(headerHeight);
 
+  const closeButtonOnDisabled = isDisabled ? customStyles.modalCloseOnDisabled : {};
+  const computedModalCloseStyles = { ...customStyles.modalCloseButton, ...closeButtonOnDisabled };
+
   return (
     <BootstrapModal.Header style={{ ...customStyles.modalHeader }} data-cy={`modal-header`} onClick={onClick}>
       <div style={{ position: 'relative', width: '100%', height: '100%' }}>
@@ -453,17 +496,7 @@ const ModalHeader = ({
         {isDisabled && (
           <div
             id={`${id}-header-disabled`}
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              height: headerHeight || '100%',
-              backgroundColor: 'rgba(255, 255, 255, 0.8)',
-              zIndex: 1,
-              margin: 0,
-            }}
+            style={{ ...customStyles.modalSlotDisabledOverlay, height: headerHeight || '100%' }}
             onClick={onClick}
             onDrop={(e) => e.stopPropagation()}
           />
@@ -471,8 +504,10 @@ const ModalHeader = ({
       </div>
       {!hideCloseButton && (
         <span
-          className="cursor-pointer"
-          style={customStyles.modalCloseButton}
+          className="cursor-pointer hover:tw-bg-interactive-hover"
+          style={{
+            ...computedModalCloseStyles,
+          }}
           data-cy={`modal-close-button`}
           size="sm"
           onClick={(e) => {
@@ -505,7 +540,7 @@ const ModalHeader = ({
 
 const ModalFooter = ({ id, isDisabled, customStyles, darkMode, width, footerHeight, onClick }) => {
   const canvasFooterHeight = getCanvasHeight(footerHeight);
-  console.log('canvasFooter width', width);
+  console.log('************* width', width);
   return (
     <BootstrapModal.Footer style={{ ...customStyles.modalFooter }} data-cy={`modal-footer`} onClick={onClick}>
       <SubContainer
@@ -524,17 +559,7 @@ const ModalFooter = ({ id, isDisabled, customStyles, darkMode, width, footerHeig
       {isDisabled && (
         <div
           id={`${id}-footer-disabled`}
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            height: footerHeight || '100%',
-            backgroundColor: 'rgba(255, 255, 255, 0.8)',
-            zIndex: 1,
-            margin: 0,
-          }}
+          style={{ ...customStyles.modalSlotDisabledOverlay, height: footerHeight || '100%' }}
           onClick={onClick}
           onDrop={(e) => e.stopPropagation()}
         />
@@ -557,6 +582,7 @@ const Component = ({ children, ...restProps }) => {
     darkMode,
     modalWidth,
     showHeader,
+    hideOnEsc,
     showFooter,
     headerHeight,
     footerHeight,
@@ -592,7 +618,18 @@ const Component = ({ children, ...restProps }) => {
   }, []);
 
   return (
-    <BootstrapModal {...restProps} animation={true} onClick={handleModalSlotClick}>
+    <BootstrapModal
+      {...restProps}
+      contentClassName="modal-component tj-modal-widget-content"
+      animation={true}
+      onEscapeKeyDown={(e) => {
+        e.preventDefault();
+        if (hideOnEsc) {
+          onHideModal();
+        }
+      }}
+      onClick={handleModalSlotClick}
+    >
       {showConfigHandler && (
         <ConfigHandle
           id={id}
@@ -621,15 +658,8 @@ const Component = ({ children, ...restProps }) => {
           <div
             id={`${id}-body-disabled`}
             style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
+              ...customStyles.modalSlotDisabledOverlay,
               height: modalBodyHeight || '100%',
-              backgroundColor: 'rgba(255, 255, 255, 0.8)',
-              zIndex: 1,
-              margin: 0,
             }}
             onDrop={(e) => e.stopPropagation()}
           />
