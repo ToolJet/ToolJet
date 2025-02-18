@@ -130,6 +130,18 @@ export const multiselectV2Config = {
       },
       accordian: 'Options',
     },
+    sort: {
+      type: 'switch',
+      displayName: 'Sort options',
+      validation: { schema: { type: 'string' }, defaultValue: 'none' },
+      options: [
+        { displayName: 'None', value: 'none' },
+        { displayName: 'a-z', value: 'asc' },
+        { displayName: 'z-a', value: 'desc' },
+      ],
+      accordian: 'Options',
+      isFxNotRequired: true,
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -313,6 +325,7 @@ export const multiselectV2Config = {
       advanced: { value: `{{false}}` },
       showAllOption: { value: '{{false}}' },
       optionsLoadingState: { value: '{{false}}' },
+      sort: { value: 'none' },
       placeholder: { value: 'Select the options' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },

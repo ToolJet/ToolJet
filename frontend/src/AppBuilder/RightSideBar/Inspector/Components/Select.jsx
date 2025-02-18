@@ -32,6 +32,8 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
 
   const isDynamicOptionsEnabled = getResolvedValue(component?.component?.definition?.properties?.advanced?.value);
 
+  const isSortingEnabled = componentMeta?.properties['sort'] ?? false;
+
   const constructOptions = () => {
     let optionsValue = component?.component?.definition?.properties?.options?.value;
     if (!Array.isArray(optionsValue)) {
@@ -508,6 +510,17 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
             paramUpdated,
             dataQueries,
             'showAllOption',
+            'properties',
+            currentState,
+            allComponents
+          )}
+        {isSortingEnabled &&
+          renderElement(
+            component,
+            componentMeta,
+            paramUpdated,
+            dataQueries,
+            'sort',
             'properties',
             currentState,
             allComponents

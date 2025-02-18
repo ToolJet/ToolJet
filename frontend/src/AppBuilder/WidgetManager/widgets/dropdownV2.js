@@ -63,6 +63,18 @@ export const dropdownV2Config = {
       },
       accordian: 'Options',
     },
+    sort: {
+      type: 'switch',
+      displayName: 'Sort options',
+      validation: { schema: { type: 'string' }, defaultValue: 'none' },
+      options: [
+        { displayName: 'None', value: 'none' },
+        { displayName: 'a-z', value: 'asc' },
+        { displayName: 'z-a', value: 'desc' },
+      ],
+      accordian: 'Options',
+      isFxNotRequired: true,
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -301,6 +313,7 @@ export const dropdownV2Config = {
       label: { value: 'Select' },
       value: { value: '{{"2"}}' },
       optionsLoadingState: { value: '{{false}}' },
+      sort: { value: 'none' },
       placeholder: { value: 'Select an option' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
