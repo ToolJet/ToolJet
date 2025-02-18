@@ -43,7 +43,7 @@ export const ListItem = ({
     dataSource.type === DATA_SOURCE_TYPE.SAMPLE ? (
       <SolidIcon name="tooljet" />
     ) : (
-      getSvgIcon(sourceMeta?.kind?.toLowerCase(), 24, 24, dataSource?.plugin?.iconFile?.data)
+      getSvgIcon(sourceMeta?.kind?.toLowerCase(), 24, 22, dataSource?.plugin?.iconFile?.data)
     );
 
   const focusModal = () => {
