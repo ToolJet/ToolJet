@@ -88,3 +88,11 @@ export const postgreSqlSelector = {
 
   eventQuerySelectionField: '[data-cy="query-selection-field"]',
 };
+
+export const airTableSelector = {
+  operationSelectDropdown: '[data-cy="operation-select-dropdown"]',
+  baseIdInputField: '[data-cy="base_id-input-field"]',
+  tableNameInputField: '[data-cy="table_name-input-field"]',
+  recordIdInputField: '[data-cy="record_id-input-field"]',
+   bodyInputField: '[data-cy="body-input-field"]',
+};

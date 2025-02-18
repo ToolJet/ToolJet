@@ -145,6 +145,58 @@ Cypress.Commands.add("clearAndTypeOnCodeMirror", { prevSubject: "optional" }, (s
   }
 });
 
+Cypress.Commands.add("clearAndTypeOnCodeMirrorForEachField", (selector, value) => {
+  // Click on the CodeMirror editor and get the text inside
+  cy.get(selector)
+    .realClick()  
+    .find(".cm-line")  
+     .invoke("text")  
+    .then((text) => {
+      // Clear the current content by simulating backspace to erase the existing text
+      cy.get(selector)
+        .last()
+        .click()
+        .realType(createBackspaceText(text), { delay: 0, force: true });
+    });
+
+  // Function to split the input value into parts that can be typed out
+  const splitIntoFlatArray = (value) => {
+    const regex = /(\{|\}|\(|\)|\[|\]|,|:|;|=>|'[^']*'|[a-zA-Z0-9._]+|\s+)/g;
+    let prefix = "";
+    return String(value).match(regex)?.reduce((acc, part) => {
+      if (part === "{{" || part === "((") {
+        prefix = "{backspace}{backspace}";
+        acc.push(part);
+      } else if (part === "{" || part === "(" || part === "[") {
+        acc.push(prefix + part);
+        prefix = "{backspace}";
+      } else if (part === "}}") {
+        acc.push(prefix + part);
+      } else if (part === " ") {
+        acc.push(prefix + " ");
+      } else if (part === ":") {
+        acc.push(prefix + ":");
+      } else {
+        acc.push(prefix + part);
+        prefix = "";
+      }
+      return acc;
+    }, []) || [];
+  };
+
+  // Check if value is an array or a string, and type it accordingly
+  if (Array.isArray(value)) {
+    cy.get(selector).last().realType(value, { parseSpecialCharSequences: false, delay: 0, force: true });
+  } else {
+    // For non-array values, split and type them one by one
+    splitIntoFlatArray(value).forEach((i) => {
+      cy.get(selector)
+        .last()
+        .click()
+        .realType(`{end}${i}`, { parseSpecialCharSequences: false, delay: 0, force: true });
+    });
+  }
+});
 
 Cypress.Commands.add("deleteApp", (appName) => {
   cy.intercept("DELETE", "/api/apps/*").as("appDeleted");
