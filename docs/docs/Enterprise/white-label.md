@@ -5,55 +5,40 @@ title: White Label
 
 <div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
 
-The White Label feature allows you to completely remove ToolJet's branding from the ToolJet platform, allowing you to replace it with your own customized logo, favicon and page title. This feature grants you full control over the visual identity of your ToolJet-powered application, ensuring a seamless and personalized user experience.
+The White Label feature in ToolJet lets you customize the look and feel of your ToolJet deployment to match your branding guidelines, including your logo, favicon, and page title, making ToolJet appear like your own product. This guide will help you understand the configuration of white labeling for your organization. For **self-hosted** instances, white labeling is set at the **instance level**, while for the **cloud**, it is applied at the **workspace level**, automatically updating the sign-up page and sign-up email after setup.
 
-With this feature, you gain the ability to rebrand the following key elements:
+<img className="screenshot-full" src="/img/enterprise/white-label/whitelabelling.png" alt="ToolJet White Labeling" />
 
-- **Application Logo**: This includes the logo displayed on the login screen, dashboard, and app-editor.
+## Self-hosted Configuration
 
-  <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/white-label/whitelabeln1.png" alt="ToolJet - Enterprise - White label" />
-  </div>
+To access the White Labelling configuration, go to **Settings > White Labelling**. ( Example URL - `https://app.tooljetcorp.com/instance-settings/white-labelling`)
 
-- **Favicon**: The small icon associated with your application. It is displayed in the browser tab.
+In this section you can configure the following branding elements:
 
-- **Page Title**: This is the text displayed in the browser tab. 
+-   **Application Logo**: This includes the logo displayed on the login screen, dashboard, and app-editor and deployed application. (Preferred dimensions: 130px by 26px).
+-   **Favicon**: It is an icon associated with the webpage displayed in the browser tab. (Preferred dimensions: 32px x 32px or 16px x 16px.)
+-   **Page Title**: This is the title associated with the webpage displayed in the browser tab. (Preferred title length: 50-60 characters.)
 
-Example, we have set a favicon image and page title as `Bon Ton` in the below image. 
+<img className="screenshot-full" src="/img/enterprise/white-label/self-hosted.png" alt="ToolJet White Labeling Self Hosted" />
 
-  <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/white-label/title-and-favicon.png" alt="ToolJet - Enterprise - White label" />
-  </div>
+## Cloud Configuration
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+To access the White Labelling configuration, go to **Settings > White Labelling**. ( Example URL - `https://app.tooljetcorp.com/<workspace-slug>/settings/white-labelling`)
 
-## Configuration
+In this section you can configure the following branding elements:
 
-To enable white labelling, click on the gear icon on the bottom left of the dashboard and select `Settings`. From the settings page, click on the `White labelling` tab. On the White labelling page, you'll be able to configure the following:
+-   **Application Logo**: This includes the logo displayed on the login screen, dashboard, and app-editor and deployed application. (Preferred dimensions: 130px by 26px).
+-   **Favicon**: It is an icon associated with the webpage displayed in the browser tab. (Preferred dimensions: 32px x 32px or 16px x 16px.)
+-   **Page Title**: This is the title associated with the webpage displayed in the browser tab. (Preferred title length: 50-60 characters.)
 
-- **Application Logo**: Add the URL of the image you want to use as your application logo. Preferred dimensions of the logo are: width `130px` and height `26px`.
-- **Favicon**: Enter the URL of the image you want to use as your application's favicon. Preferred dimensions of the favicon are: width `32px` and height `32px` or `16px` and height `16px`.
-- **Page Title**: Enter the text you want to display as your application's title. Preferred title length are 50-60 characters.
+<img className="screenshot-full" src="/img/enterprise/white-label/cloud.png" alt="ToolJet White Labeling Cloud" />
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/white-label/settings.png" alt="ToolJet - Enterprise - White label" />
-</div>
+## FAQ
 
-</div>
+<details>
+    <summary>
+         **Q. What happens to white labeling if the license or subscription expires?**
+    </summary>
+If your license or subscription expires, white labeling will automatically revert to ToolJet's default branding until the license is renewed.
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
-
-## ToolJet Cloud
-
-If you are using ToolJet Cloud, click on the gear icon on the bottom left of the dashboard and select `Settings`. From the settings page, click on the `White labelling` tab. On the White labelling page, you'll be able to configure the following:
-
-- **Application Logo**: Add the URL of the image you want to use as your application logo. Preferred dimensions of the logo are: width `130px` and height `26px`.
-- **Page Title**: Enter the text you want to display as your application's title. Preferred title length are 50-60 characters.
-- **Favicon**: Enter the URL of the image you want to use as your application's favicon. Preferred dimensions of the favicon are: width `32px` and height `32px` or `16px` and height `16px`.
-
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/enterprise/white-label/cloud1.png" alt="ToolJet - Enterprise - White label" />
-</div>
-
-</div>
-
+</details>
