@@ -15,7 +15,7 @@ import { DynamicFxTypeRenderer } from './DynamicFxTypeRenderer';
 import { resolveReferences } from './utils';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
-import { getAutocompletion } from './autocompleteExtensionConfig';
+import { getAutocompletion, hasBalancedBraces } from './autocompleteExtensionConfig';
 import ErrorBoundary from '../ErrorBoundary';
 import CodeHinter from './CodeHinter';
 import { EditorContext } from '../Context/EditorContextWrapper';
@@ -139,18 +139,42 @@ const EditorInput = ({
   paramLabel = '',
   disabled = false,
 }) => {
+  /**
+   * Configures autocompletion for a custom template expression system.
+   *
+   * This function prepares the context for autocompletion in a document that may contain
+   * template expressions enclosed in double curly braces {{}}. It performs the following steps:
+   *
+   * 1. Identifies the current word being typed.
+   * 2. Counts the total number of template expressions in the document.//{{}}
+   * 3. Extracts the current input context, focusing on the content within the current template expression.
+   * 4. Processes the current word or expression, handling cases such as:
+   *    - Empty current word
+   *    - Words with spaces
+   *    - Removing newline characters
+   * 5. Prepares a simplified query input for the autocompletion engine.
+   * 6. Calls the getAutocompletion function to generate completion suggestions.
+   * 7. Returns an object with:
+   *    - The starting position for completions
+   *    - The generated completion options
+   *    - A regular expression to validate the completion context
+   *
+   */
   function autoCompleteExtensionConfig(context) {
-    let word = context.matchBefore(/\w*/);
-
-    const totalReferences = (context.state.doc.toString().match(/{{/g) || []).length;
-
-    let queryInput = context.state.doc.toString();
+    let word = context.matchBefore(/\w*/); // finds the word before cursor
+    const totalReferences = (context.state.doc.toString().match(/{{/g) || []).length; //totalReferences will be set to the number of times '{{' appears in the document
+    let queryInput = context.state.doc.toString(); // gives the whole input
     const originalQueryInput = queryInput;
 
+    if (!hasBalancedBraces(queryInput)) {
+      return null; // Return null to prevent showing suggestions
+    }
+
     if (totalReferences > 0) {
+      //currentCursor is the start position of current typed word and currentCursorPos is current position of cursor
       const currentCursor = context.state.selection.main.head;
       const currentCursorPos = context.pos;
-
+      //currentWord is the currently typed word Building{{inter|al}} tools. means current word in 'inter'
       let currentWord = queryInput.substring(currentCursor, currentCursorPos);
 
       if (currentWord?.length === 0) {
@@ -160,18 +184,17 @@ const EditorInput = ({
         currentWord = removeNestedDoubleCurlyBraces(currentWord);
       }
 
+      //this gets the last word after space
       if (currentWord.includes(' ')) {
         currentWord = currentWord.split(' ').pop();
       }
 
       // remove \n from the current word if it is present
       currentWord = currentWord.replace(/\n/g, '');
-
       queryInput = '{{' + currentWord + '}}';
     }
 
     let completions = getAutocompletion(queryInput, validationType, hints, totalReferences, originalQueryInput);
-
     return {
       from: word.from,
       options: completions,
