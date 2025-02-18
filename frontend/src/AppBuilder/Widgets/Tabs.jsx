@@ -399,13 +399,12 @@ export const Tabs = function Tabs({
                     opacity: tab?.disabled && '0.5',
                     width: tabWidth == 'split' && equalSplitWidth + '%',
                     background: headerBackground,
-                    borderBottom: currentTab === tab.id ? `2px solid ${border}` : '#CCD1D5',
+                    borderBottom: currentTab === tab.id ? `2px solid ${accent}` : '#CCD1D5',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
                     fontWeight: 'bold',
                     cursor: 'pointer',
-                    ...(currentTab == tab.id ? { color: selectedText } : { color: unselectedText }),
                     ...(tabWidth == 'split' ? { minWidth: 'auto' } : { minWidth: '100px' }),
                   }}
                   onClick={() => {
@@ -423,13 +422,16 @@ export const Tabs = function Tabs({
                   key={tab.id}
                 >
                   <div
+                    data-disabled={tab?.disable}
                     style={{
-                      ...(tabWidth == 'split' && {
-                        width: `${tabsRef.current?.clientWidth / (tabItems?.length || 1)}px`,
-                      }),
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       textAlign: 'center',
+                      fontWeight: '500',
+                      ...(currentTab == tab.id ? { color: selectedText } : { color: unselectedText }),
+                      ...(tabWidth == 'split' && {
+                        width: `${tabsRef.current?.clientWidth / (tabItems?.length || 1)}px`,
+                      }),
                     }}
                   >
                     <a style={{ paddingBottom: '16px' }}>{getTabIcon(tab)}</a>
