@@ -52,53 +52,11 @@ Once the changes are committed, the user can see the commit message, author, and
 
 </Tabs>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
----------------
-
 ## App Creation
 
-When you create a new app, you will see an option to select the **Commit changes**. If you select the **commit changes** option, the changes will be committed to the git repository.
+Whenever you create a new app, you will see an option to select the **Commit changes**. If you select the **commit changes** option, the changes will be committed to the git repository.
 
-:::info
-If the app name is same as the name of the existing app in the git repo, it will overwrite the existing app in the git repo.
-:::
+**Note**: If the app name is same as the name of an existing app in the git repo, it will overwrite the existing app in the git repo.
 
 <img className="screenshot-full" src="/img/gitsync/commitchanges.png" alt="GitLab SSH Key" />
 
@@ -120,7 +78,11 @@ Selecting the **Commit changes** option will create a new commit in the git repo
 
 </Tabs>
 
-## App Rename
+## App Deletion
+
+Whenever a user delete an app from the workspace, the app will not be deleted from the git repository. The app will be available in the git repository in the same state as it was before the app was deleted.
+
+## Auto-commit on App Rename
 
 Whenever an app is renamed, the changes will be automatically committed to the git repository. The commit message will be `App is renamed` and the author will be the user who renamed the app.
 
@@ -140,13 +102,9 @@ Whenever an app is renamed, the changes will be automatically committed to the g
 
 </Tabs>
 
-## App Deletion
-
-Whenever a user deleted an app from the workspace, the app will not be deleted from the git repository. The app will be available in the git repository in the same state as it was before the app was deleted.
-
 ## App Version Update
 
-When a user creates a new version of an app, there will be an option to select the **Commit changes**. If you select the **commit changes** option, the new version of the app will be committed to the git repository.
+Whenever a user creates a new version of an app, there will be an option to select **Commit changes**. If the user selects **commit changes** option, the new version of the app will be committed to the git repository and the old version will be overridden.
 
 <img className="screenshot-full" src="/img/gitsync/gitlab/newversion.png" alt="GitLab SSH Key" />
 
