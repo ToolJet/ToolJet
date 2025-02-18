@@ -6,7 +6,91 @@ title: GitSync Backup
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-Once the GitSync feature is configured, you can start pushing changes to the git repository. 
+GitSync enables users to back up their applications by pushing changes to a Git repository, ensuring a secure and versioned history. This guide explains how to take backups using GitSync. For details on configuring GitSync, refer to the **[GitSync Configuration](#)** guide.
+
+**Note**: When a new version is pushed to a Git repository, only the latest version is stored. Previous versions are overridden.
+
+An application can be backed up (i.e., a commit is created in the Git repository) at various points, including:
+- [App Update](#)
+- [App Creation](#)
+- [App Deletion](#)
+- [Auto-commit on App Rename](#)
+- [App Version Update](#)
+- [Auto-commit on Promoting Environment](#)
+
+## App Updates
+
+Whenever a user makes a change in an app, they can make a commit to the git repository by following these steps:
+
+1. After making the changes, click on the **GitSync** button on the topbar. 
+
+<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/development-lifecycle/backup/gitsync/gitsync-button.png" alt="GitSync Button" />
+
+2. On clicking the **GitSync** button, a modal will open with the option to enter the commit message. 
+
+<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/development-lifecycle/backup/gitsync/commit-message.png" alt="GitSync Commit Message" />
+
+3. Enter the commit message and click on the **Commit changes** button to commit the changes to the git repository. 
+
+Along with the commit message, the user can also see the connnected **Git repo URL** and the last commit details. **Last commit details** helps the user to know the last commit message, author, date, and time. This helps the user to know the last commit details and make the commit message accordingly.
+
+Once the changes are committed, the user can see the commit message, author, and date in the git repository.
+
+<Tabs>
+
+    <TabItem value="GitHub" label="GitHub"> 
+
+        <img className="screenshot-full" src="/img/development-lifecycle/backup/gitsync/github-commit.png" alt="GitSync" />
+
+    </TabItem>
+
+    <TabItem value="GitLab" label="GitLab"> 
+
+        <img className="screenshot-full" src="/img/gitsync/gitlab/lastcommitmsg.png" alt="GitSync" />
+
+    </TabItem>
+
+</Tabs>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---------------
 
 ## App Creation
 
@@ -51,32 +135,6 @@ Whenever an app is renamed, the changes will be automatically committed to the g
     <TabItem value="GitLab" label="GitLab"> 
 
         <img className="screenshot-full" src="/img/gitsync/gitlab/apprename.png" alt="GitSync" />
-
-    </TabItem>
-
-</Tabs>
-
-## App Updates
-
-Whenever a user makes a change in an app, they can make a commit to the git repository by clicking on the **GitSync** button on the topbar. On clicking the **GitSync** button, a modal will open with the option to enter the commit message. The user can enter the commit message and click on the **Commit changes** button to commit the changes to the git repository. Along with the commit message, the user can also see the connnected **Git repo URL** and the **last commit details**. 
-
-**Last commit details** helps the user to know the last commit message, author, date, and time. This helps the user to know the last commit details and make the commit message accordingly.
-
-<img className="screenshot-full" src="/img/gitsync/gitlab/message.png" alt="GitLab SSH Key" />
-
-Once the changes are committed, the user can see the commit message, author, and date in the git repository.
-
-<Tabs>
-
-    <TabItem value="GitHub" label="GitHub"> 
-
-        <img className="screenshot-full" src="/img/gitsync/commitgitsync.png" alt="GitSync" />
-
-    </TabItem>
-
-    <TabItem value="GitLab" label="GitLab"> 
-
-        <img className="screenshot-full" src="/img/gitsync/gitlab/lastcommitmsg.png" alt="GitSync" />
 
     </TabItem>
 

@@ -500,6 +500,16 @@ const sidebars = {
         },
         {
           'type': 'category',
+          'label': 'GitSync',
+          'items': [
+            'development-lifecycle/gitsync/overview',
+            'development-lifecycle/gitsync/gitsync-config',
+            'development-lifecycle/gitsync/ssh-config',
+            'development-lifecycle/gitsync/delete-gitsync',
+          ]
+        },
+        {
+          'type': 'category',
           'label': 'Self-hosted',
           'items': [
             {
@@ -519,16 +529,6 @@ const sidebars = {
           'items': [
             'development-lifecycle/cloud/concept',
             'development-lifecycle/cloud/example'
-          ]
-        },
-        {
-          'type': 'category',
-          'label': 'GitSync',
-          'items': [
-            'development-lifecycle/gitsync/overview',
-            'development-lifecycle/gitsync/gitsync-config',
-            'development-lifecycle/gitsync/ssh-config',
-            'development-lifecycle/gitsync/delete-gitsync',
           ]
         },
         {
