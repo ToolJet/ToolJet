@@ -10,7 +10,7 @@ export const featureCards = [
         icon: BrainCircuit,
         title: "Build with AI",
         color: "text-blue-500",
-        content: "Build applications effortlessly with ToolJet AI, using natural language to generate and customize apps.",
+        content: "Build applications effortlessly using natural language to generate and customize apps.",
         href: "/docs/beta/build-with-ai/overview"
     },
     {
