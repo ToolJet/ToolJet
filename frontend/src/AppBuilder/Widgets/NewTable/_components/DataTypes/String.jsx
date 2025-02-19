@@ -4,7 +4,8 @@ import { shallow } from 'zustand/shallow';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import useTableStore from '@/AppBuilder/Widgets/NewTable/_stores/tableStore';
-import HighLightSearch from '@/AppBuilder/Widgets/NewTable/_components/HighLight';
+import HighLightSearch from '@/AppBuilder/Widgets/NewTable/_components/HighLightSearch';
+import { getMaxHeight } from '../../_utils/helper';
 
 export const StringColumn = ({
   isEditable,
@@ -22,7 +23,7 @@ export const StringColumn = ({
 }) => {
   const validateWidget = useStore((state) => state.validateWidget, shallow);
 
-  const cellSize = useTableStore((state) => state.getTableStyles(id)?.cellHeight, shallow);
+  const cellHeight = useTableStore((state) => state.getTableStyles(id)?.cellHeight, shallow);
   const isMaxRowHeightAuto = useTableStore((state) => state.getTableStyles(id)?.isMaxRowHeightAuto, shallow);
   const maxRowHeightValue = useTableStore((state) => state.getTableStyles(id)?.maxRowHeightValue, shallow);
 
@@ -125,13 +126,7 @@ export const StringColumn = ({
     >
       <span
         style={{
-          maxHeight: isMaxRowHeightAuto
-            ? 'fit-content'
-            : maxRowHeightValue
-            ? `${maxRowHeightValue}px`
-            : cellSize === 'condensed'
-            ? '39px'
-            : '45px',
+          maxHeight: getMaxHeight(isMaxRowHeightAuto, maxRowHeightValue, cellHeight),
         }}
       >
         <HighLightSearch text={String(cellValue)} searchTerm={searchText} />

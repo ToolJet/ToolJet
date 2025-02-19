@@ -4,7 +4,7 @@ import { shallow } from 'zustand/shallow';
 
 let count = 0;
 
-export const ExposedVariables = memo(({ id, data, setExposedVariables, fireEvent, table }) => {
+export const TableExposedVariables = memo(({ id, data, setExposedVariables, fireEvent, table }) => {
   const editedRows = useTableStore((state) => state.getAllEditedRows(id), shallow);
   const editedFields = useTableStore((state) => state.getAllEditedFields(id), shallow);
   const addNewRowDetails = useTableStore((state) => state.getAllAddNewRowDetails(id), shallow);

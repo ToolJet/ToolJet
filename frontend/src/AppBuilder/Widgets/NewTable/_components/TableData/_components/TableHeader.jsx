@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import cx from 'classnames';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import Loader from '../Loader';
-import useTableStore from '../../_stores/tableStore';
+import Loader from '../../Loader';
+import useTableStore from '../../../_stores/tableStore';
 import { flexRender } from '@tanstack/react-table';
 import { DndContext, useSensor, useSensors, PointerSensor, closestCenter } from '@dnd-kit/core';
 import { SortableContext, horizontalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';

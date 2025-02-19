@@ -4,9 +4,9 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { Tooltip } from 'react-tooltip';
 import cx from 'classnames';
-import useTableStore from '../../_stores/tableStore';
+import useTableStore from '../../../_stores/tableStore';
 import { shallow } from 'zustand/shallow';
-import generateColumnsData from '../../_utils/generateColumnsData';
+import generateColumnsData from '../../../_utils/generateColumnsData';
 
 export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEvent }) {
   const { updateAddNewRowDetails, clearAddNewRowDetails } = useTableStore();

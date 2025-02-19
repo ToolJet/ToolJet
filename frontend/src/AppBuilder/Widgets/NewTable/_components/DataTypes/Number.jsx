@@ -3,7 +3,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import HighLightSearch from '@/AppBuilder/Widgets/NewTable/_components/HighLight';
+import HighLightSearch from '@/AppBuilder/Widgets/NewTable/_components/HighLightSearch';
 
 export const NumberColumn = ({
   isEditable,

@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { memo } from 'react';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 
-export const EmptyState = React.memo(() => {
+export const EmptyState = memo(() => {
   return (
     <div
       className="d-flex flex-column align-items-center custom-gap-8 justify-content-center h-100"

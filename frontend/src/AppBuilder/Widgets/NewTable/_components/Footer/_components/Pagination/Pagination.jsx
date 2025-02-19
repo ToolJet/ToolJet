@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { PaginationButton } from './PaginationButton';
 import { PaginationInput } from './PaginationInput';
 import useTableStore from '../../../../_stores/tableStore';
@@ -6,12 +6,12 @@ import { shallow } from 'zustand/shallow';
 
 // TODO: Need to replace all the default data
 
-export const Pagination = function Pagination({ id, pageIndex = 1, tableWidth, table }) {
+export const Pagination = function Pagination({ id, pageIndex = 1, tableWidth, table, pageCount }) {
   const serverSidePagination = useTableStore((state) => state.getTableProperties(id)?.serverSidePagination, shallow);
   const enablePrevButton = useTableStore((state) => state.getTableProperties(id)?.enablePrevButton, shallow);
   const enableNextButton = useTableStore((state) => state.getTableProperties(id)?.enableNextButton, shallow);
 
-  const pageCount = table.getPageCount();
+  console.log('pageCount--- ', pageCount);
 
   const canGoToNextPage = serverSidePagination ? enableNextButton : table.getCanNextPage();
   const canGoToPreviousPage = serverSidePagination ? enablePrevButton : table.getCanPreviousPage();

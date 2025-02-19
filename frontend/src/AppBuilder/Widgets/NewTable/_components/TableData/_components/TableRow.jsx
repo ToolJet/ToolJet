@@ -1,7 +1,7 @@
 import React from 'react';
 import cx from 'classnames';
 import { flexRender } from '@tanstack/react-table';
-import useTableStore from '../../_stores/tableStore';
+import useTableStore from '../../../_stores/tableStore';
 import { shallow } from 'zustand/shallow';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 
@@ -18,27 +18,20 @@ export const TableRow = ({
   setExposedVariables,
   fireEvent,
   rowStyles,
+  measureElement,
 }) => {
   const selectRowOnCellEdit = useTableStore((state) => state.getTableProperties(id)?.selectRowOnCellEdit, shallow);
   const hasHoveredEvent = useTableStore((state) => state.getTableProperties(id)?.hasHoveredEvent, shallow);
-
-  console.log('rowStyles--- ', rowStyles, cellHeight);
 
   if (!row) return null;
 
   return (
     <tr
       key={row.id}
+      ref={measureElement}
       data-index={virtualRow.index}
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        transform: `translateY(${virtualRow.start}px)`,
-        ...rowStyles,
-      }}
-      className={cx('table-row table-editor-component-row ', {
+      style={rowStyles}
+      className={cx('table-row table-editor-component-row', {
         selected: allowSelection && highlightSelectedRow && row.getIsSelected(),
         'table-row-condensed': cellHeight === 'condensed',
       })}
@@ -74,7 +67,7 @@ export const TableRow = ({
           <td
             key={cell.id}
             style={cellStyles}
-            className={cx('table-cell td condensed', {
+            className={cx('table-cell table-text-align-left td', {
               'wrap-wrapper': contentWrap,
               'has-text': cell.column.columnDef?.meta?.columnType === 'text' || isEditable,
               'has-number': cell.column.columnDef?.meta?.columnType === 'number',

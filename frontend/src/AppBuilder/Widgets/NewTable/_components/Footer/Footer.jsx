@@ -3,7 +3,7 @@ import React, { useState, memo } from 'react';
 import useTableStore from '../../_stores/tableStore';
 // Local components
 import { Pagination } from './_components/Pagination/Pagination';
-import AddNewRow from '../AddNewRow';
+import { AddNewRow } from './_components/AddNewRow';
 import { shallow } from 'zustand/shallow';
 import { LoadingFooter } from './_components/LoadingFooter';
 import { ControlButtons } from './_components/ControlButtons';
@@ -24,6 +24,7 @@ export const Footer = memo(
     handleChangesSaved,
     handleChangesDiscarded,
     fireEvent,
+    pageCount,
     columnVisibility, // Passed to trigger a re-render when columnVisibility changes
   }) => {
     console.log('count--- Footer--- ', ++count);
@@ -55,7 +56,7 @@ export const Footer = memo(
     };
 
     const renderRowCount = () => {
-      return <RowCount dataLength={dataLength} />;
+      return <RowCount dataLength={dataLength} id={id} />;
     };
 
     const renderChangeSetUI = () => {
@@ -80,7 +81,9 @@ export const Footer = memo(
             <div className="col d-flex justify-content-start custom-gap-4">
               {editedRows.size > 0 && showBulkUpdateActions ? renderChangeSetUI() : renderRowCount()}
             </div>
-            {enablePagination && <Pagination id={id} tableWidth={width} pageIndex={pageIndex} table={table} />}
+            {enablePagination && (
+              <Pagination id={id} tableWidth={width} pageIndex={pageIndex} table={table} pageCount={pageCount} />
+            )}
             <ControlButtons
               id={id}
               table={table}
@@ -88,6 +91,7 @@ export const Footer = memo(
               height={height}
               componentName={componentName}
               setShowAddNewRowPopup={setShowAddNewRowPopup}
+              columnVisibility={columnVisibility} // Passed to trigger a re-render when columnVisibility changes
             />
           </div>
         </div>

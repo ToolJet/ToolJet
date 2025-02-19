@@ -1,12 +1,15 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useRef, useCallback, useMemo } from 'react';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 import DOMPurify from 'dompurify';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import HighLightSearch from '@/AppBuilder/Widgets/NewTable/_components/HighLight';
+import HighLightSearch from '@/AppBuilder/Widgets/NewTable/_components/HighLightSearch';
+import useTableStore from '@/AppBuilder/Widgets/NewTable/_stores/tableStore';
+import { getMaxHeight } from '../../_utils/helper';
 
 export const TextColumn = ({
+  id,
   isEditable,
   darkMode,
   handleCellValueChange,
@@ -16,11 +19,12 @@ export const TextColumn = ({
   containerWidth,
   cell,
   horizontalAlignment,
-  isMaxRowHeightAuto,
-  cellSize,
-  maxRowHeightValue,
   searchText,
 }) => {
+  const cellHeight = useTableStore((state) => state.getTableStyles(id)?.cellHeight, shallow);
+  const isMaxRowHeightAuto = useTableStore((state) => state.getTableStyles(id)?.isMaxRowHeightAuto, shallow);
+  const maxRowHeightValue = useTableStore((state) => state.getTableStyles(id)?.maxRowHeightValue, shallow);
+
   const [showOverlay, setShowOverlay] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const containerRef = useRef(null);
@@ -63,13 +67,9 @@ export const TextColumn = ({
   const cellStyle = useMemo(
     () => ({
       color: cellTextColor || 'inherit',
-      maxHeight: isMaxRowHeightAuto
-        ? 'fit-content'
-        : maxRowHeightValue
-        ? `${maxRowHeightValue}px`
-        : `${cellSize === 'condensed' ? 39 : 45}px`,
+      maxHeight: getMaxHeight(isMaxRowHeightAuto, maxRowHeightValue, cellHeight),
     }),
-    [cellTextColor, isMaxRowHeightAuto, maxRowHeightValue, cellSize]
+    [cellTextColor, isMaxRowHeightAuto, maxRowHeightValue, cellHeight]
   );
 
   const renderContent = useCallback(() => {

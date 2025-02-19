@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback, memo } from 'react';
 import useTableStore from '../../_stores/tableStore';
-import ExposedVariables from '../ExposedVariables';
+import TableExposedVariables from '../TableExposedVariables';
 import Header from '../Header';
 import Footer from '../Footer';
 import { buildTableColumn } from '../../_utils/buildTableColumn';
@@ -12,14 +12,8 @@ let count = 0;
 
 export const TableContainer = memo(
   ({ id, data, width, height, darkMode, componentName, fireEvent, setExposedVariables }) => {
-    const {
-      getColumnProperties,
-      getActions,
-      getRowsPerPage,
-      getEditedRowFromIndex,
-      getEditedFieldsOnIndex,
-      updateEditedRowsAndFields,
-    } = useTableStore();
+    const { getColumnProperties, getEditedRowFromIndex, getEditedFieldsOnIndex, updateEditedRowsAndFields } =
+      useTableStore();
 
     console.log('count--- TableContainer--- ', ++count);
 
@@ -35,9 +29,9 @@ export const TableContainer = memo(
     const serverSideSort = useTableStore((state) => state.getTableProperties(id)?.serverSideSort, shallow);
     const serverSideFilter = useTableStore((state) => state.getTableProperties(id)?.serverSideFilter, shallow);
     const serverSideSearch = useTableStore((state) => state.getTableProperties(id)?.serverSideSearch, shallow);
+    const rowsPerPage = useTableStore((state) => state.getTableProperties(id)?.rowsPerPage, shallow);
 
-    const actions = getActions(id);
-    const pageSize = getRowsPerPage(id);
+    const actions = useTableStore((state) => state.getActions(id), shallow);
 
     const [globalFilter, setGlobalFilter] = useState('');
     const lastClickedRowRef = useRef([]);
@@ -92,7 +86,7 @@ export const TableContainer = memo(
         serverSidePagination,
         serverSideSort,
         serverSideFilter,
-        pageSize,
+        rowsPerPage,
         globalFilter,
         setGlobalFilter,
       });
@@ -118,9 +112,9 @@ export const TableContainer = memo(
     useEffect(() => {
       setPagination((prev) => ({
         ...prev,
-        pageSize: pageSize,
+        pageSize: rowsPerPage,
       }));
-    }, [pageSize, setPagination]);
+    }, [rowsPerPage, setPagination]);
 
     useEffect(() => {
       setColumnOrder(columns.map((column) => column.id));
@@ -135,7 +129,7 @@ export const TableContainer = memo(
 
     return (
       <>
-        <ExposedVariables
+        <TableExposedVariables
           id={id}
           data={data}
           setExposedVariables={setExposedVariables}
@@ -176,6 +170,7 @@ export const TableContainer = memo(
           handleChangesSaved={handleChangesSaved}
           handleChangesDiscarded={handleChangesDiscarded}
           fireEvent={fireEvent}
+          pageCount={table.getPageCount()}
           columnVisibility={columnVisibility} // Passed to trigger a re-render when columnVisibility changes
         />
       </>

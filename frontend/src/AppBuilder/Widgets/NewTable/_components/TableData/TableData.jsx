@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo } from 'react';
-import LoadingState from '../LoadingState';
-import EmptyState from '../EmptyState';
-import TableHeader from '../TableHeader';
-import TableRow from '../TableRow';
+import { LoadingState } from './_components/LoadingState';
+import { EmptyState } from './_components/EmptyState';
+import { TableHeader } from './_components/TableHeader';
+import { TableRow } from './_components/TableRow';
 // eslint-disable-next-line import/no-unresolved
 import { useVirtualizer } from '@tanstack/react-virtual';
 import useTableStore from '../../_stores/tableStore';
@@ -58,7 +58,6 @@ export const TableData = ({
       styles.maxHeight = cellMaxHeight;
     } else {
       calculatedCellHeight = cellHeight === 'condensed' ? 40 : 46;
-      calculatedCellHeight = cellHeight === 'condensed' ? 40 : 46;
       styles.maxHeight = `${calculatedCellHeight}px`;
       styles.height = `${calculatedCellHeight}px`;
     }
@@ -109,7 +108,6 @@ export const TableData = ({
         <tbody
           style={{
             position: 'relative',
-            height: `${rowVirtualizer.getTotalSize()}px`,
           }}
         >
           {rowVirtualizer.getVirtualItems().map((virtualRow) => {
@@ -129,6 +127,7 @@ export const TableData = ({
                 setExposedVariables={setExposedVariables}
                 fireEvent={fireEvent}
                 rowStyles={rowStyles}
+                measureElement={rowVirtualizer.measureElement}
               />
             );
           })}
