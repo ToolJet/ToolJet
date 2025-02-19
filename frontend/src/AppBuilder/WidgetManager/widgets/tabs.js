@@ -397,7 +397,7 @@ export const tabsConfig = {
       unselectedText: { value: '#6A727C' },
       selectedText: { value: '#1B1F24' },
       highlightColor: { value: '#375FCF' },
-      hoverBackground: { value: '#1B1F24' },
+      hoverBackground: { value: '#E4E6E8' },
       unselectedIcon: { value: '#CCD1D5' },
       selectedIcon: { value: '#CCD1D5' },
       accent: { value: '#4368E3' },

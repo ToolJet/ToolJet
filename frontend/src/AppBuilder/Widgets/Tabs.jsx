@@ -6,10 +6,11 @@ import Spinner from '@/_ui/Spinner';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import * as Icons from '@tabler/icons-react';
+import { set } from 'lodash';
 
-const TabsNavShimmer = () => {
+const TabsNavShimmer = ({ divider }) => {
   return (
-    <div className="d-flex gap-4 px-1.5 px-2" style={{ borderBottom: '0.5px solid #CCD1D5' }}>
+    <div className="d-flex gap-4 px-1.5 px-2" style={{ borderBottom: `0.5px solid ${divider}` }}>
       {Array(3)
         .fill(0)
         .map((ind) => (
@@ -256,6 +257,8 @@ export const Tabs = function Tabs({
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
   const [canScroll, setCanScroll] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const [hoveredTabId, setHoveredTabId] = useState(null);
 
   const checkScroll = () => {
     if (tabsRef.current) {
@@ -317,6 +320,15 @@ export const Tabs = function Tabs({
     return tabItems.findIndex((tab) => tab.id === tabId);
   };
 
+  const handleMouseEnter = (id) => {
+    setHoveredTabId(id);
+    setIsHovered(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+  };
+
   function getTabIcon(tab) {
     const iconName = tab?.icon;
     // eslint-disable-next-line import/namespace
@@ -348,15 +360,17 @@ export const Tabs = function Tabs({
         borderRadius: `${borderRadius}px`,
         overflow: 'hidden',
         ...(padding === 'default' ? { padding: '4px' } : { padding: '0px' }),
+        ...(border ? { border: `1px solid ${border}` } : { border: 'none' }),
       }}
       data-cy={dataCy}
       ref={containerRef}
     >
       {isLoading ? (
-        <TabsNavShimmer />
+        <TabsNavShimmer divider={divider} />
       ) : (
         <div
           style={{
+            borderBottom: `0.5px solid ${divider}`,
             display: 'flex',
             alignItems: 'center',
             width: '100%',
@@ -375,7 +389,7 @@ export const Tabs = function Tabs({
 
           <ul
             ref={tabsRef}
-            className="nav nav-tabs"
+            className="nav"
             data-bs-toggle="tabs"
             style={{
               zIndex: 1,
@@ -388,22 +402,24 @@ export const Tabs = function Tabs({
               msOverflowStyle: 'none',
               scrollBehavior: 'smooth',
               flexGrow: 1,
+              marginLeft: '4px',
+              marginRight: '4px',
             }}
           >
             {tabItems
               ?.filter((tab) => tab?.visible !== false)
               ?.map((tab) => (
                 <li
-                  className={`nav-item nav-link ${currentTab == tab.id ? 'active' : ''}`}
+                  className={`nav-item ${currentTab == tab.id ? 'active' : ''}`}
                   style={{
                     opacity: tab?.disabled && '0.5',
                     width: tabWidth == 'split' && equalSplitWidth + '%',
-                    background: headerBackground,
-                    borderBottom: currentTab === tab.id ? `2px solid ${accent}` : '#CCD1D5',
+                    borderBottom: currentTab === tab.id ? `1.5px solid ${accent}` : '#CCD1D5',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
                     fontWeight: 'bold',
+                    padding: '.25rem .5rem',
                     cursor: 'pointer',
                     ...(tabWidth == 'split' ? { minWidth: 'auto' } : { minWidth: '100px' }),
                   }}
@@ -414,6 +430,8 @@ export const Tabs = function Tabs({
                     !tab?.disabled && setExposedVariable('currentTab', tab.id);
                     fireEvent('onTabSwitch');
                   }}
+                  onMouseEnter={() => handleMouseEnter(tab?.id)}
+                  onMouseLeave={handleMouseLeave}
                   ref={(el) => {
                     if (el && currentTab == tab.id) {
                       el.style.setProperty('color', parsedHighlightColor, 'important');
@@ -428,6 +446,10 @@ export const Tabs = function Tabs({
                       textOverflow: 'ellipsis',
                       textAlign: 'center',
                       fontWeight: '500',
+                      background: isHovered && hoveredTabId === tab.id ? hoverBackground : 'transparent',
+                      borderRadius: '6px',
+                      width: '100%',
+                      padding: '.25rem .25rem',
                       ...(currentTab == tab.id ? { color: selectedText } : { color: unselectedText }),
                       ...(tabWidth == 'split' && {
                         width: `${tabsRef.current?.clientWidth / (tabItems?.length || 1)}px`,
