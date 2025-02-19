@@ -66,7 +66,7 @@ export const dropdownV2Config = {
     sort: {
       type: 'switch',
       displayName: 'Sort options',
-      validation: { schema: { type: 'string' }, defaultValue: 'none' },
+      validation: { schema: { type: 'string' }, defaultValue: 'asc' },
       options: [
         { displayName: 'None', value: 'none' },
         { displayName: 'a-z', value: 'asc' },
@@ -313,7 +313,7 @@ export const dropdownV2Config = {
       label: { value: 'Select' },
       value: { value: '{{"2"}}' },
       optionsLoadingState: { value: '{{false}}' },
-      sort: { value: 'none' },
+      sort: { value: 'asc' },
       placeholder: { value: 'Select an option' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },

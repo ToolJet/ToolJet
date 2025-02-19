@@ -133,7 +133,7 @@ export const multiselectV2Config = {
     sort: {
       type: 'switch',
       displayName: 'Sort options',
-      validation: { schema: { type: 'string' }, defaultValue: 'none' },
+      validation: { schema: { type: 'string' }, defaultValue: 'asc' },
       options: [
         { displayName: 'None', value: 'none' },
         { displayName: 'a-z', value: 'asc' },
@@ -325,7 +325,7 @@ export const multiselectV2Config = {
       advanced: { value: `{{false}}` },
       showAllOption: { value: '{{false}}' },
       optionsLoadingState: { value: '{{false}}' },
-      sort: { value: 'none' },
+      sort: { value: 'asc' },
       placeholder: { value: 'Select the options' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
