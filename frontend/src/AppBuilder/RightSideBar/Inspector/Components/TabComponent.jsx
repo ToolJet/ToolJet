@@ -155,6 +155,22 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
     updateAllTabItemsParams(updatedTabItems);
   };
 
+  const onChangeIcon = (item, value, property, index) => {
+    const updatedTabItems = tabItems.map((tabItem) => {
+      if (tabItem.id === item.id) {
+        return {
+          ...tabItem,
+          [property]: value,
+          iconVisibility: { value: true },
+        };
+      }
+      return tabItem;
+    });
+
+    setTabItems(updatedTabItems);
+    updateAllTabItemsParams(updatedTabItems);
+  };
+
   const _renderOverlay = (item, index) => {
     return (
       <Popover className={`${darkMode && 'dark-theme theme-dark'}`} style={{ minWidth: '248px' }}>
@@ -203,7 +219,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
               paramLabel={'Icon'}
               paramName={'icon'}
               onChange={(value) => {
-                handleValueChange(item, { value }, 'icon', index);
+                onChangeIcon(item, { value }, 'icon', index);
               }}
               onVisibilityChange={(value) =>
                 onChangeVisibility(item, { value: resolveReferences(value) }, 'iconVisibility', index)
