@@ -402,8 +402,8 @@ export const Tabs = function Tabs({
               msOverflowStyle: 'none',
               scrollBehavior: 'smooth',
               flexGrow: 1,
-              marginLeft: '4px',
-              marginRight: '4px',
+              paddingLeft: '4px',
+              paddingRight: '4px',
             }}
           >
             {tabItems
