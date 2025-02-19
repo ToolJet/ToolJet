@@ -30,7 +30,13 @@ export const TableRow = ({
       key={row.id}
       ref={measureElement}
       data-index={virtualRow.index}
-      style={rowStyles}
+      style={{
+        position: 'absolute',
+        top: `${virtualRow.start}px`,
+        left: 0,
+        width: '100%',
+        ...rowStyles,
+      }}
       className={cx('table-row table-editor-component-row', {
         selected: allowSelection && highlightSelectedRow && row.getIsSelected(),
         'table-row-condensed': cellHeight === 'condensed',

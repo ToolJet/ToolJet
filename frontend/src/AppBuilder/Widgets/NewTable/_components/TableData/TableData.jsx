@@ -82,9 +82,22 @@ export const TableData = ({
     row.toggleSelected();
   };
 
+  const renderTableHeader = () => {
+    return (
+      <TableHeader
+        id={id}
+        table={table}
+        darkMode={darkMode}
+        columnOrder={columnOrder}
+        setColumnOrder={setColumnOrder}
+      />
+    );
+  };
+
   if (loadingState) {
     return (
       <div className={'table-responsive jet-data-table overflow-hidden'}>
+        {renderTableHeader()}
         <LoadingState />
       </div>
     );
@@ -95,19 +108,15 @@ export const TableData = ({
       </div>
     );
   }
+
   return (
     <div className={`table-responsive jet-data-table`} style={{ maxHeight: '100%' }} ref={tableBodyRef}>
       <table className={`table ${rowStyle} ${darkMode && 'table-dark'}`}>
-        <TableHeader
-          id={id}
-          table={table}
-          darkMode={darkMode}
-          columnOrder={columnOrder}
-          setColumnOrder={setColumnOrder}
-        />
+        {renderTableHeader()}
         <tbody
           style={{
             position: 'relative',
+            height: `${rowVirtualizer.getTotalSize()}px`,
           }}
         >
           {rowVirtualizer.getVirtualItems().map((virtualRow) => {

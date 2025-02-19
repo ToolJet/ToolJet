@@ -9,7 +9,6 @@ import { SearchBar } from './_components/SearchBar';
 import Loader from '../Loader';
 import { Filter } from './_components/Filter/Filter';
 
-let count = 0;
 export const Header = memo(
   ({ id, darkMode, fireEvent, setExposedVariables, setGlobalFilter, globalFilter, table, setFilters }) => {
     const displaySearchBox = useTableStore((state) => state.getTableProperties(id)?.displaySearchBox, shallow);
@@ -19,8 +18,6 @@ export const Header = memo(
     const headerVisibility = useTableStore((state) => state.getHeaderVisibility(id), shallow);
 
     const appliedFilters = table.getState().columnFilters;
-
-    console.log('count--- Header--- ', ++count);
 
     const [showFilter, setShowFilter] = useState(false);
 

@@ -8,11 +8,11 @@ import useTableStore from '../../../_stores/tableStore';
 import { shallow } from 'zustand/shallow';
 import generateColumnsData from '../../../_utils/generateColumnsData';
 
-export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEvent }) {
-  const { updateAddNewRowDetails, clearAddNewRowDetails } = useTableStore();
-
+export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEvent, setExposedVariables }) {
   const columnProperties = useTableStore((state) => state.getColumnProperties(id), shallow);
   const addNewRowDetails = useTableStore((state) => state.getAllAddNewRowDetails(id), shallow);
+  const updateAddNewRowDetails = useTableStore((state) => state.updateAddNewRowDetails, shallow);
+  const clearAddNewRowDetails = useTableStore((state) => state.clearAddNewRowDetails, shallow);
 
   const addNewRowDetailsLength = addNewRowDetails.size;
 
@@ -23,6 +23,14 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
       return accumulator;
     }, {});
   }, [allColumns]);
+
+  useEffect(() => {
+    function discardNewlyAddedRows() {
+      clearAddNewRowDetails(id);
+      hideAddNewRowPopup();
+    }
+    setExposedVariables({ discardNewlyAddedRows });
+  }, [clearAddNewRowDetails, setExposedVariables, id, hideAddNewRowPopup]);
 
   useEffect(() => {
     if (addNewRowDetailsLength === 0) {

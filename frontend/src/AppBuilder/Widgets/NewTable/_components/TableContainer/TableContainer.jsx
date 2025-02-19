@@ -4,18 +4,14 @@ import TableExposedVariables from '../TableExposedVariables';
 import Header from '../Header';
 import Footer from '../Footer';
 import { buildTableColumn } from '../../_utils/buildTableColumn';
-import { useTableExposed } from '../../_hooks/useTableExposed';
 import { useTable } from '../../_hooks/useTable';
 import { shallow } from 'zustand/shallow';
 import TableData from '../TableData';
-let count = 0;
 
 export const TableContainer = memo(
   ({ id, data, width, height, darkMode, componentName, fireEvent, setExposedVariables }) => {
     const { getColumnProperties, getEditedRowFromIndex, getEditedFieldsOnIndex, updateEditedRowsAndFields } =
       useTableStore();
-
-    console.log('count--- TableContainer--- ', ++count);
 
     const columnProperties = getColumnProperties(id);
 
@@ -30,6 +26,7 @@ export const TableContainer = memo(
     const serverSideFilter = useTableStore((state) => state.getTableProperties(id)?.serverSideFilter, shallow);
     const serverSideSearch = useTableStore((state) => state.getTableProperties(id)?.serverSideSearch, shallow);
     const rowsPerPage = useTableStore((state) => state.getTableProperties(id)?.rowsPerPage, shallow);
+    const clearEditedRows = useTableStore((state) => state.clearEditedRows, shallow);
 
     const actions = useTableStore((state) => state.getActions(id), shallow);
 
@@ -91,17 +88,7 @@ export const TableContainer = memo(
         setGlobalFilter,
       });
 
-    const { handleChangesSaved, handleChangesDiscarded } = useTableExposed(
-      id,
-      componentName,
-      table,
-      pagination.pageIndex,
-      fireEvent,
-      setExposedVariables,
-      lastClickedRowRef.current,
-      data
-    );
-
+    console.log('rowsPerPage--- ', rowsPerPage);
     // Memoizing allColumns to avoid re-rendering on every render
     // New reference for columnOrder is created on every render, so stringifying it
     const allColumns = useMemo(() => {
@@ -127,6 +114,16 @@ export const TableContainer = memo(
       [setColumnFilters]
     );
 
+    const clearChangeSet = useCallback(() => {
+      setExposedVariables({ dataUpdates: [], changeSet: {} });
+      clearEditedRows(id);
+    }, [setExposedVariables, clearEditedRows, id]);
+
+    const handleChangesDiscarded = useCallback(() => {
+      clearChangeSet();
+      fireEvent('onCancelChanges');
+    }, [clearChangeSet, fireEvent]);
+
     return (
       <>
         <TableExposedVariables
@@ -135,6 +132,9 @@ export const TableContainer = memo(
           setExposedVariables={setExposedVariables}
           fireEvent={fireEvent}
           table={table}
+          componentName={componentName}
+          pageIndex={pagination.pageIndex + 1}
+          lastClickedRow={lastClickedRowRef.current}
         />
         <Header
           id={id}
@@ -167,8 +167,9 @@ export const TableContainer = memo(
           table={table}
           pageIndex={pagination.pageIndex + 1}
           componentName={componentName}
-          handleChangesSaved={handleChangesSaved}
+          handleChangesSaved={clearChangeSet}
           handleChangesDiscarded={handleChangesDiscarded}
+          setExposedVariables={setExposedVariables}
           fireEvent={fireEvent}
           pageCount={table.getPageCount()}
           columnVisibility={columnVisibility} // Passed to trigger a re-render when columnVisibility changes

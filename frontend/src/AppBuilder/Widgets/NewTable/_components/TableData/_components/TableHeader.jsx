@@ -142,7 +142,7 @@ export const TableHeader = ({ id, table, darkMode, columnOrder, setColumnOrder }
   if (loadingState) {
     return (
       <div className="w-100">
-        <Loader />
+        <Loader height={28} />
       </div>
     );
   }

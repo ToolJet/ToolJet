@@ -16,14 +16,14 @@ export function useTable({
   serverSidePagination,
   serverSideSort,
   serverSideFilter,
-  pageSize,
+  rowsPerPage,
   globalFilter,
   setGlobalFilter,
 }) {
   // Pagination state
   const [pagination, setPagination] = useState({
     pageIndex: 0,
-    pageSize: pageSize,
+    pageSize: rowsPerPage,
   });
 
   const [columnVisibility, setColumnVisibility] = useState({});

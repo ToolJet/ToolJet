@@ -9,7 +9,6 @@ import { LoadingFooter } from './_components/LoadingFooter';
 import { ControlButtons } from './_components/ControlButtons';
 import { ChangeSetUI } from './_components/ChangeSetUI';
 import { RowCount } from './_components/RowCount';
-let count = 0;
 
 export const Footer = memo(
   ({
@@ -24,11 +23,10 @@ export const Footer = memo(
     handleChangesSaved,
     handleChangesDiscarded,
     fireEvent,
+    setExposedVariables,
     pageCount,
     columnVisibility, // Passed to trigger a re-render when columnVisibility changes
   }) => {
-    console.log('count--- Footer--- ', ++count);
-
     const isFooterVisible = useTableStore((state) => state.getFooterVisibility(id), shallow);
     const loadingState = useTableStore((state) => state.getLoadingState(id), shallow);
     const editedRows = useTableStore((state) => state.getAllEditedRows(id), shallow);
@@ -102,6 +100,7 @@ export const Footer = memo(
             darkMode={darkMode}
             allColumns={allColumns}
             fireEvent={fireEvent}
+            setExposedVariables={setExposedVariables}
           />
         )}
       </>

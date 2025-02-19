@@ -11,8 +11,6 @@ export const Pagination = function Pagination({ id, pageIndex = 1, tableWidth, t
   const enablePrevButton = useTableStore((state) => state.getTableProperties(id)?.enablePrevButton, shallow);
   const enableNextButton = useTableStore((state) => state.getTableProperties(id)?.enableNextButton, shallow);
 
-  console.log('pageCount--- ', pageCount);
-
   const canGoToNextPage = serverSidePagination ? enableNextButton : table.getCanNextPage();
   const canGoToPreviousPage = serverSidePagination ? enablePrevButton : table.getCanPreviousPage();
 
