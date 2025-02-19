@@ -52,7 +52,9 @@ const WidgetWrapper = memo(
       height: visibility === false ? '10px' : `${height}px`,
       transform: `translate(${layoutData.left * gridWidth}px, ${layoutData.top}px)`,
       WebkitFontSmoothing: 'antialiased',
+      border: visibility === false ? `1px solid var(--border-default)` : 'none',
     };
+
     if (!componentType) return null;
     return (
       <>
