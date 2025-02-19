@@ -22,6 +22,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'MultiselectV2',
   'Button',
   'RichTextEditor',
+  'Tabs',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -31,6 +32,7 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   ToggleSwitchV2: 'Data',
   Checkbox: 'Data',
   Button: 'Data',
+  Tabs: 'Data',
 };
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
