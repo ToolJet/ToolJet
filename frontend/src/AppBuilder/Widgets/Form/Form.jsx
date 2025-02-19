@@ -1,21 +1,22 @@
-import React, { useRef, useState, useEffect, useMemo } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 // eslint-disable-next-line import/no-unresolved
-import { diff } from 'deep-object-diff';
 import _, { debounce, omit } from 'lodash';
-import { Box } from '@/Editor/Box';
 import { generateUIComponents } from './FormUtils';
 import { useMounted } from '@/_hooks/use-mount';
 import { onComponentClick, removeFunctionObjects } from '@/_helpers/appUtils';
-import { useAppInfo } from '@/_stores/appDataStore';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import RenderSchema from './RenderSchema';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import {
+  CONTAINER_FORM_CANVAS_PADDING,
+  SUBCONTAINER_CANVAS_BORDER_WIDTH,
+} from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import './form.scss';
 
 const getCanvasHeight = (height) => {
   const parsedHeight = height.includes('px') ? parseInt(height, 10) : height;
-
   return Math.ceil(parsedHeight);
 };
 
@@ -59,7 +60,7 @@ export const Form = function Form(props) {
   const computedStyles = {
     backgroundColor,
     borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
-    border: `1px solid ${borderColor}`,
+    border: `${SUBCONTAINER_CANVAS_BORDER_WIDTH}px solid ${borderColor}`,
     height,
     display: visibility ? 'flex' : 'none',
     position: 'relative',
@@ -69,25 +70,29 @@ export const Form = function Form(props) {
 
   const formHeader = {
     flexShrink: 0,
-    // height: headerHeight,
-    padding: '10px 8px',
-    borderBottom: '1px solid var(--border-weak)',
+    paddingBottom: '3px',
+    paddingTop: '7px',
+    paddingLeft: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+    paddingRight: `${CONTAINER_FORM_CANVAS_PADDING}px`,
     backgroundColor:
       ['#fff', '#ffffffff'].includes(headerBackgroundColor) && darkMode ? '#1F2837' : headerBackgroundColor,
   };
-  const formFooter = {
-    flexShrink: 0,
-    // height: footerHeight,
-    padding: '10px 8px',
-    borderTop: '1px solid var(--border-weak)',
-    backgroundColor:
-      ['#fff', '#ffffffff'].includes(footerBackgroundColor) && darkMode ? '#1F2837' : footerBackgroundColor,
-  };
+
   const formContent = {
     overflow: 'hidden auto',
     display: 'flex',
     height: '100%',
-    padding: '10px 8px',
+    paddingTop: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+    paddingBottom: showFooter ? '3px' : '7px',
+    paddingLeft: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+    paddingRight: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+  };
+
+  const formFooter = {
+    flexShrink: 0,
+    padding: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+    backgroundColor:
+      ['#fff', '#ffffffff'].includes(footerBackgroundColor) && darkMode ? '#1F2837' : footerBackgroundColor,
   };
 
   const parentRef = useRef(null);
@@ -287,7 +292,7 @@ export const Form = function Form(props) {
       }} //Hack, should find a better solution - to prevent losing z index+1 when container element is clicked
     >
       {showHeader && (
-        <div style={formHeader}>
+        <div style={formHeader} className="wj-form-header">
           <SubContainer
             id={`${id}-header`}
             canvasHeight={canvasHeaderHeight}
@@ -298,6 +303,7 @@ export const Form = function Form(props) {
               backgroundColor: 'transparent',
               height: headerHeight,
             }}
+            componentType="Form"
           />
         </div>
       )}
@@ -320,29 +326,8 @@ export const Form = function Form(props) {
                   onOptionsChange={onOptionsChange}
                   styles={{ backgroundColor: computedStyles.backgroundColor }}
                   darkMode={darkMode}
+                  componentType="Form"
                 />
-                {/* <SubContainer
-                  parentComponent={component}
-                  containerCanvasWidth={width}
-                  parent={id}
-                  parentRef={parentRef}
-                  removeComponent={removeComponent}
-                  onOptionChange={function ({ component, optionName, value, componentId }) {
-                    if (componentId) {
-                      onOptionChange({ component, optionName, value, componentId });
-                    }
-                  }}
-                  currentPageId={props.currentPageId}
-                  {...props}
-                  {...containerProps}
-                  height={'100%'} // This height is required since Subcontainer has a issue if height is provided, it stores it in the ref and never updates that ref
-                />
-                <SubCustomDragLayer
-                  containerCanvasWidth={width}
-                  parent={id}
-                  parentRef={parentRef}
-                  currentLayout={currentLayout}
-                /> */}
               </div>
             )}
             {advanced &&
@@ -375,28 +360,6 @@ export const Form = function Form(props) {
                         onOptionsChange={onComponentOptionsChangedForSubcontainer}
                       />
                     </div>
-                    {/* <Box
-                      {...props}
-                      component={item}
-                      id={index}
-                      width={width}
-                      height={item.defaultSize.height}
-                      mode={mode}
-                      inCanvas={true}
-                      paramUpdated={paramUpdated}
-                      onEvent={onEvent}
-                      onComponentClick={onComponentClick}
-                      darkMode={darkMode}
-                      removeComponent={removeComponent}
-                      // canvasWidth={width}
-                      // readOnly={readOnly}
-                      // customResolvables={customResolvables}
-                      parentId={id}
-                      getContainerProps={getContainerProps}
-                      onOptionChanged={onComponentOptionChangedForSubcontainer}
-                      onOptionsChanged={onComponentOptionsChanged}
-                      isFromSubContainer={true}
-                    /> */}
                   </div>
                 );
               })}
@@ -404,7 +367,7 @@ export const Form = function Form(props) {
         )}
       </div>
       {showFooter && (
-        <div className="jet-form-footer" style={formFooter}>
+        <div className="jet-form-footer wj-form-footer" style={formFooter}>
           <SubContainer
             id={`${id}-footer`}
             canvasHeight={canvasFooterHeight}
@@ -416,6 +379,7 @@ export const Form = function Form(props) {
               backgroundColor: 'transparent',
               height: footerHeight,
             }}
+            componentType="Form"
           />
         </div>
       )}

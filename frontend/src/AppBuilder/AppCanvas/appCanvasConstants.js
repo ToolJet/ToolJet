@@ -8,7 +8,7 @@ export const CANVAS_WIDTHS = Object.freeze({
   rightSideBarWidth: 300,
 });
 
-export const WIDGETS_WITH_DEFAULT_CHILDREN = ['Listview', 'Tabs', 'Form', 'Kanban', 'Container', 'Form'];
+export const WIDGETS_WITH_DEFAULT_CHILDREN = ['Listview', 'Tabs', 'Form', 'Kanban', 'Container'];
 
 export const DEFAULT_CANVAS_WIDTH = 1292;
 
@@ -18,8 +18,8 @@ export const LEFT_SIDEBAR_WIDTH = 348; // exclusive of border
 
 export const SUBCONTAINER_WIDGETS = ['Container', 'Tabs', 'Listview', 'Kanban', 'Form'];
 
-export const CONTAINER_CANVAS_PADDING = 2;
+export const CONTAINER_FORM_CANVAS_PADDING = 7;
 
-export const CONTAINER_CANVAS_BORDER_WIDTH = 1;
+export const SUBCONTAINER_CANVAS_BORDER_WIDTH = 1;
 
 export const BOX_PADDING = 2;

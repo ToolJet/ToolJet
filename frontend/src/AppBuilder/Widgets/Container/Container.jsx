@@ -3,8 +3,12 @@ import { Container as ContainerComponent } from '@/AppBuilder/AppCanvas/Containe
 import Spinner from '@/_ui/Spinner';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import { shallow } from 'zustand/shallow';
-import { CONTAINER_CANVAS_PADDING, CONTAINER_CANVAS_BORDER_WIDTH } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import {
+  CONTAINER_FORM_CANVAS_PADDING,
+  SUBCONTAINER_CANVAS_BORDER_WIDTH,
+} from '@/AppBuilder/AppCanvas/appCanvasConstants';
 import useStore from '@/AppBuilder/_stores/store';
+import './container.scss';
 
 export const Container = ({
   id,
@@ -49,33 +53,30 @@ export const Container = ({
   const computedStyles = {
     backgroundColor: contentBgColor.backgroundColor,
     borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
-    border: `${CONTAINER_CANVAS_BORDER_WIDTH}px solid ${borderColor}`,
+    border: `${SUBCONTAINER_CANVAS_BORDER_WIDTH}px solid ${borderColor}`,
     height,
-    padding: `${CONTAINER_CANVAS_PADDING}px`,
     display: isVisible ? 'flex' : 'none',
+    flexDirection: 'column',
     position: 'relative',
     boxShadow,
   };
 
-  const computedHeaderStyles = {
-    ...headerBgColor,
-    height: `${headerHeight}px`,
+  const containerHeaderStyles = {
     flexShrink: 0,
-    flexGrow: 0,
-    borderBottom: `1px solid var(--border-weak)`,
+    padding: `${CONTAINER_FORM_CANVAS_PADDING}px ${CONTAINER_FORM_CANVAS_PADDING}px 3px ${CONTAINER_FORM_CANVAS_PADDING}px`,
+    ...headerBgColor,
   };
 
-  const computedContentStyles = {
-    ...contentBgColor,
-    flex: 1,
-    // Prevent the scroll when dragging a widget inside the container or moving out of the container
-    overflow: isWidgetInContainerDragging ? 'hidden' : 'hidden auto',
+  const containerContentStyles = {
+    overflow: 'hidden auto',
+    display: 'flex',
+    height: '100%',
+    padding: `${CONTAINER_FORM_CANVAS_PADDING}px`,
   };
+
   return (
     <div
-      className={`jet-container tw-flex tw-flex-col ${isLoading ? 'jet-container-loading' : ''} ${
-        properties.showHeader && 'jet-container--with-header'
-      }`}
+      className={`jet-container ${isLoading ? 'jet-container-loading' : ''}`}
       id={id}
       data-disabled={isDisabled}
       style={computedStyles}
@@ -85,22 +86,32 @@ export const Container = ({
       ) : (
         <>
           {properties.showHeader && (
-            <ContainerComponent
-              id={`${id}-header`}
-              styles={computedHeaderStyles}
-              canvasHeight={headerHeight / 10}
-              canvasWidth={width}
-              allowContainerSelect={true}
-              darkMode={darkMode}
-            />
+            <div style={containerHeaderStyles} className="wj-container-header">
+              <ContainerComponent
+                id={`${id}-header`}
+                styles={{ ...headerBgColor, height: `${headerHeight}px` }}
+                canvasHeight={headerHeight / 10}
+                canvasWidth={width}
+                allowContainerSelect={true}
+                darkMode={darkMode}
+                componentType="Container"
+              />
+            </div>
           )}
-          <ContainerComponent
-            id={id}
-            styles={computedContentStyles}
-            canvasHeight={height}
-            canvasWidth={width}
-            darkMode={darkMode}
-          />
+          <div style={containerContentStyles}>
+            <ContainerComponent
+              id={id}
+              styles={{
+                ...contentBgColor,
+                // Prevent the scroll when dragging a widget inside the container or moving out of the container
+                overflow: isWidgetInContainerDragging ? 'hidden' : 'hidden auto',
+              }}
+              canvasHeight={height}
+              canvasWidth={width}
+              darkMode={darkMode}
+              componentType="Container"
+            />
+          </div>
         </>
       )}
     </div>
