@@ -374,7 +374,7 @@ export const Tabs = function Tabs({
             display: 'flex',
             alignItems: 'center',
             width: '100%',
-            backgroundColor: darkMode ? '#324156' : '#fff',
+            backgroundColor: headerBackground,
           }}
         >
           {canScroll && (
@@ -416,6 +416,7 @@ export const Tabs = function Tabs({
                     width: tabWidth == 'split' && equalSplitWidth + '%',
                     borderBottom: currentTab === tab.id ? `1.5px solid ${accent}` : '#CCD1D5',
                     overflow: 'hidden',
+                    backgroundColor: headerBackground,
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
                     fontWeight: 'bold',
