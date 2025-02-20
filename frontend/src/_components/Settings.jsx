@@ -7,9 +7,18 @@ import { useTranslation } from 'react-i18next';
 import { ToolTip } from '@/_components/ToolTip';
 import { getPrivateRoute } from '@/_helpers/routes';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { useAppDataStore } from '@/_stores/appDataStore';
+import { shallow } from 'zustand/shallow';
+import { checkIfToolJetCloud } from '@/_helpers/utils';
 
 export default function Settings({ darkMode, checkForUnsavedChanges }) {
   const [showOverlay, setShowOverlay] = useState(false);
+  const { tooljetVersion } = useAppDataStore(
+    (state) => ({
+      tooljetVersion: state?.metadata?.installed_version,
+    }),
+    shallow
+  );
   const currentUserValue = authenticationService.currentSessionValue;
   const admin = currentUserValue?.admin;
   const marketplaceEnabled = admin;
@@ -26,11 +35,11 @@ export default function Settings({ darkMode, checkForUnsavedChanges }) {
   const getOverlay = () => {
     return (
       <div className={`settings-card tj-text card ${darkMode && 'dark-theme'}`}>
-        {marketplaceEnabled && (
+        {marketplaceEnabled && tooljetVersion && !checkIfToolJetCloud(tooljetVersion) && (
           <>
             <Link
-              onClick={(event) => checkForUnsavedChanges('/integrations', event)}
-              to={'/integrations'}
+              onClick={(event) => checkForUnsavedChanges('/integrations/marketplace', event)}
+              to={'/integrations/marketplace'}
               className="dropdown-item tj-text-xsm"
               data-cy="marketplace-option"
             >

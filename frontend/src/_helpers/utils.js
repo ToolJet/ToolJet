@@ -1477,3 +1477,8 @@ export const hasBuilderRole = (roleObj) => {
   if (roleObj.name) return roleObj.name === 'builder';
   return false;
 };
+
+export function checkIfToolJetCloud(version) {
+  const parsed = version.split('-');
+  return parsed[1] === 'cloud';
+}

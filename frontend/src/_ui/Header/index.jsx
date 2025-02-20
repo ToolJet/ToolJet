@@ -25,7 +25,8 @@ function Header({ enableCollapsibleSidebar = false, collapseSidebar = false, tog
         return 'Data sources';
       case 'settings':
         return 'Profile settings';
-      case 'integrations':
+      case 'installed':
+      case 'marketplace':
         return 'Integrations';
       case 'workspace-constants':
         return 'Workspace constants';

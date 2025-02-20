@@ -14,7 +14,7 @@ export const getPrivateRoute = (page, params = {}) => {
     workspace_settings: '/workspace-settings/users',
     settings: '/settings',
     database: '/database',
-    integrations: '/integrations',
+    integrations: '/integrations/marketplace',
     data_sources: '/data-sources',
     workspace_constants: '/workspace-constants',
   };

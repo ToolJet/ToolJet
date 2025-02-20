@@ -13,6 +13,8 @@ import { Viewer } from '@/AppBuilder/Viewer/Viewer.jsx';
 import { OrganizationSettings } from '@/OrganizationSettingsPage';
 import { SettingsPage } from '../SettingsPage/SettingsPage';
 import { MarketplacePage } from '@/MarketplacePage';
+import { InstalledPlugins } from '@/MarketplacePage/InstalledPlugins';
+import { MarketplacePlugins } from '@/MarketplacePage/MarketplacePlugins';
 import SwitchWorkspacePage from '@/HomePage/SwitchWorkspacePage';
 import { GlobalDatasources } from '@/GlobalDatasources';
 import { lt } from 'semver';
@@ -36,6 +38,7 @@ import { setFaviconAndTitle } from '@white-label/whiteLabelling';
 import { onboarding, auth } from '@/modules';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
+import { checkIfToolJetCloud } from '@/_helpers/utils';
 
 const AppWrapper = (props) => {
   const { isAppDarkMode } = useAppDarkMode();
@@ -72,6 +75,7 @@ class AppComponent extends React.Component {
     tooljetService.fetchMetaData().then((data) => {
       useAppDataStore.getState().actions.setMetadata(data);
       localStorage.setItem('currentVersion', data.installed_version);
+      this.setState({ tooljetVersion: data.installed_version });
       if (data.latest_version && lt(data.installed_version, data.latest_version) && data.version_ignored === false) {
         this.setState({ updateAvailable: true });
       }
@@ -301,15 +305,20 @@ class AppComponent extends React.Component {
                 }
               />
 
-              <Route
-                exact
-                path="/integrations"
-                element={
-                  <AdminRoute {...this.props}>
-                    <MarketplacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                  </AdminRoute>
-                }
-              />
+              {this.state.tooljetVersion && !checkIfToolJetCloud(this.state.tooljetVersion) && (
+                <Route
+                  exact
+                  path="/integrations"
+                  element={
+                    <AdminRoute {...this.props}>
+                      <MarketplacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </AdminRoute>
+                  }
+                >
+                  <Route path="installed" element={<InstalledPlugins />} />
+                  <Route path="marketplace" element={<MarketplacePlugins />} />/
+                </Route>
+              )}
 
               <Route exact path="/" element={<Navigate to="/:workspaceId" />} />
               <Route
