@@ -1,0 +1,19 @@
+{
+  "name": "Business intelligence portal",
+  "description": "Gain valuable insights and make data-driven decisions with our powerful business intelligence dashboard.",
+  "widgets": [
+    "Chart"
+  ],
+  "sources": [
+    {
+      "name": "PostgreSQL",
+      "id": "postgresql"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "business-intelligence-portal",
+  "category": "data-and-analytics"
+}

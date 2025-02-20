@@ -1,0 +1,28 @@
+{
+  "name": "Customer ticket system",
+  "description": "The Customer Ticketing Form optimizes support ticket management, seamlessly gathering customer info and tracking ticket progress with deep integration into Customer Support Admin.",
+  "widgets": [
+    "Table",
+    "Chart"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "SMTP",
+      "id": "smtp"
+    },
+    {
+      "name": "AWS S3",
+      "id": "s3"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "customer-ticket-system",
+  "category": "customer-support"
+}

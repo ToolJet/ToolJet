@@ -1,0 +1,21 @@
+id,customer_name,email,items,subtotal,delivery,total_cost
+1,John Smith,john.smith@example.com,"[{""item"":""Product X"",""category"":""Category X"",""quantity"":10,""cost"":50},{""item"":""Product Y"",""category"":""Category Y"",""quantity"":20,""cost"":100},{""item"":""Product B"",""category"":""Category C"",""quantity"":4,""cost"":20}]",2580,150,2730
+6,Lisa Wong,lisa.wong@example.com,"[{""item"":""Product C"",""category"":""Category Y"",""quantity"":7,""cost"":20}]",140,22,162
+7,Robert Taylor,robert.taylor@example.com,"[{""item"":""Product B"",""category"":""Category Z"",""quantity"":5,""cost"":20}]",100,5,105
+4,Sarah Johnson,sarah.johnson@example.com,"[{""item"":""Product B"",""category"":""Category C"",""quantity"":12,""cost"":20},{""item"":""Product X"",""category"":""Category B"",""quantity"":2,""cost"":20}]",280,43,323
+8,Amanda Garcia,amanda.garcia@example.com,"[{""item"":""Product A"",""category"":""Category Y"",""quantity"":4,""cost"":100}]",400,31,431
+9,James Wilson,james.wilson@example.com,"[{""item"":""Product C"",""category"":""Category Z"",""quantity"":6,""cost"":30}]",180,32,212
+10,Sophia Kim,sophia.kim@example.com,"[{""item"":""Product B"",""category"":""Category Y"",""quantity"":5,""cost"":120}]",600,43,643
+5,David Lee,david.lee@example.com,"[{""item"":""Product A"",""category"":""Category A"",""quantity"":2,""cost"":20},{""item"":""Product A"",""category"":""Category A"",""quantity"":2,""cost"":20},{""item"":""Product A"",""category"":""Category A"",""quantity"":2,""cost"":20}]",80,16,96
+11,Daniel Brown,daniel.brown@example.com,"[{""item"":""Product A"",""category"":""Category X"",""quantity"":1,""cost"":20}]",20,19,39
+12,Olivia Martinez,olivia.martinez@example.com,"[{""item"":""Product C"",""category"":""Category X"",""quantity"":5,""cost"":10}]",50,44,94
+13,Ethan Nguyen,ethan.nguyen@example.com,"[{""item"":""Product B"",""category"":""Category Y"",""quantity"":5,""cost"":20}]",100,26,126
+14,Isabella Clark,isabella.clark@example.com,"[{""item"":""Product B"",""category"":""Category C"",""quantity"":12,""cost"":20},{""item"":""Product X"",""category"":""Category B"",""quantity"":2,""cost"":20}]",280,43,323
+15,William Park,william.park@example.com,"[{""item"":""Product A"",""category"":""Category X"",""quantity"":6,""cost"":20}]",120,44,164
+2,Emily Brown,emily.brown@example.com,"[{""item"":""Product X"",""category"":""Category C"",""quantity"":5,""cost"":200}]",1000,32,1032
+16,Grace Liu,grace.liu@example.com,"[{""item"":""Product A"",""category"":""Category Z"",""quantity"":3,""cost"":120}]",360,26,386
+3,Michael Chen,michael.chen@example.com,"[{""item"":""Product A"",""category"":""Category A"",""quantity"":2,""cost"":20},{""item"":""Product B"",""category"":""Category A"",""quantity"":4,""cost"":20},{""item"":""Product X"",""category"":""Category X"",""quantity"":3,""cost"":50},{""item"":""Product X"",""category"":""Category Y"",""quantity"":2,""cost"":100}]",470,40,510
+17,Alexander Lee,alexander.lee@example.com,"[{""item"":""Product C"",""category"":""Category Z"",""quantity"":15,""cost"":20}]",3000,50,3050
+18,Ava Thompson,ava.thompson@example.com,"[{""item"":""Product B"",""category"":""Category Y"",""quantity"":5,""cost"":20}]",100,50,150
+19,Noah Rodriguez,noah.rodriguez@example.com,"[{""item"":""Product C"",""category"":""Category X"",""quantity"":3,""cost"":60}]",180,26,206
+20,Emma White,emma.white@example.com,"[{""item"":""Product A"",""category"":""Category A"",""quantity"":2,""cost"":20},{""item"":""Product A"",""category"":""Category A"",""quantity"":2,""cost"":20},{""item"":""Product A"",""category"":""Category A"",""quantity"":2,""cost"":20}]",80,16,96
