@@ -3,7 +3,7 @@ id: marketplace-plugin-qdrant
 title: Qdrant
 ---
 
-Qdrant integrates with ToolJet to enable efficient vector search at scale.
+Qdrant is a Vector Database that integrates with ToolJet to enable efficient vector search at scale.
 
 Qdrant uses points, which are data records containing a vector and an optional payload. The vector is a numerical representation of data, while the payload lets you store extra information like context or metadata. This helps make searches more accurate and meaningful.
 
