@@ -189,7 +189,7 @@ The date with time column stores data in the ISO 8601 format. When querying a ta
 
 ## Querying JSON Data Type
 
-In ToolJet Database, a column can be set to JSON Data Type, and can be used to store the structured data like arrays or nested objects, making it useful for complex data structures such as configurations or logs. To query the JSON Data Type follow the following steps:
+In ToolJet Database, a column can be set to JSON Data Type. It can be used to store structured data like arrays or nested objects, making it useful for complex data structures such as configurations or logs. To query the JSON Data Type, follow the following steps:
 
 ### Flat JSON Object
 
