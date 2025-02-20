@@ -16,7 +16,7 @@ import SuccessNotificationInputs from './SuccessNotificationInputs';
 import ParameterList from './ParameterList';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
-import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
+import { canDeleteDataSource, canReadDataSource, canUpdateDataSource, canUseDataSourceForQuery } from '@/_helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { EventManager } from '@/AppBuilder/RightSideBar/Inspector/EventManager';
 import NotificationBanner from '@/_components/NotificationBanner';
@@ -346,6 +346,7 @@ export const QueryManagerBody = ({ darkMode, activeTab }) => {
     selectedDataSource?.scope === 'global' && selectedDataSource?.type !== DATA_SOURCE_TYPE.SAMPLE
       ? canUpdateDataSource(selectedQuery?.data_source_id) ||
         canReadDataSource(selectedQuery?.data_source_id) ||
+        canUseDataSourceForQuery(selectedQuery?.data_source_id) ||
         canDeleteDataSource()
       : true;
 
