@@ -35,4 +35,39 @@ export default class Apyhub implements QueryService {
       data: result,
     };
   }
+
+  async getConnection(sourceOptions: SourceOptions, _options?: object): Promise<any> {
+    const baseURL = 'https://api.apyhub.com';
+    const apiToken = sourceOptions.apiKey;
+    
+    return {
+      baseURL,
+      apiToken
+    };
+  }
+
+  async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
+    const connection = await this.getConnection(sourceOptions);
+
+    try {
+      const response = await fetch(`${connection.baseURL}/data/info/country?country=in`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'apy-token': connection.apiToken
+        }
+      });
+
+      if (response.status !== 200) {
+        throw new QueryError('Connection test failed', 'API returned non-200 status', {});
+      }
+
+      return {
+        status: 'ok',
+      };
+    } catch (error) {
+      throw new QueryError('Connection test failed', error.message, {});
+    }
+  }
+
 }

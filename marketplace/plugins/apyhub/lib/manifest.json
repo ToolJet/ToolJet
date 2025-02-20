@@ -26,7 +26,7 @@
       "key": "apiKey",
       "type": "password",
       "description": "Enter your OpenAI API Key",
-      "helpText": "For generating API Key, visit: <a href='https://apyhub.com/signup' target='_blank' rel='noreferrer'>ApyHub</a>"
+      "helpText": "For generating API Key, visit: <a href='https://apyhub.com/signup' target='_blank' rel='noreferrer'>ApyHub</a><br/>Note: Testing the connection will consume 5 Atoms"
     }
   },
   "required": [
