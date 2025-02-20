@@ -690,7 +690,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             const parentComponent = boxList.find((box) => box.id === draggedOverElemId);
             let draggedOverElem;
 
-            const isParentModal = parentComponent?.component?.component === 'Modal';
+            const isParentModal = parentComponent?.component?.component === 'ModalV2';
             const isDraggingInModalSlots = isParentModal && isOnHeaderOrFooter;
             if (document.elementFromPoint(e.clientX, e.clientY) && !isParentModal) {
               const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
@@ -707,9 +707,17 @@ export default function Grid({ gridWidth, currentLayout }) {
                     widgetType = boxList.find(({ id }) => id === widgetId)?.component?.component;
                   }
                   if (
-                    !['Calendar', 'Kanban', 'Form', 'Tabs', 'Modal', 'Listview', 'Container', 'Table'].includes(
-                      widgetType
-                    )
+                    ![
+                      'Calendar',
+                      'Kanban',
+                      'Form',
+                      'Tabs',
+                      'Modal',
+                      'ModalV2',
+                      'Listview',
+                      'Container',
+                      'Table',
+                    ].includes(widgetType)
                   ) {
                     isDroppable = false;
                   }
@@ -725,7 +733,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             let left = e.lastEvent?.translate[0];
             let top = e.lastEvent?.translate[1];
             if (
-              ['Listview', 'Kanban', 'Container', 'Modal'].includes(
+              ['Listview', 'Kanban', 'Container', 'ModalV2'].includes(
                 boxList.find((box) => box.id === draggedOverElemId)?.component?.component
               )
             ) {

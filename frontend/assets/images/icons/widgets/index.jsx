@@ -63,6 +63,7 @@ import Upstatistics from './upstatistics.jsx';
 import Verticaldivider from './verticaldivider.jsx';
 import TimePicker from './timepicker.jsx';
 import DatepickerV2 from './datepickerv2.jsx';
+import ModalV2 from './modalV2.jsx';
 
 const WidgetIcon = (props) => {
   switch (props.name) {
@@ -142,6 +143,8 @@ const WidgetIcon = (props) => {
     case 'map':
       return <Map {...props} />;
     case 'modal':
+      return <ModalV2 {...props} />;
+    case 'modallegacy':
       return <Modal {...props} />;
     case 'multiselectlegacy':
       return <Multiselect {...props} />;

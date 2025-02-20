@@ -6,7 +6,7 @@ export const CANVAS_WIDTHS = Object.freeze({
   rightSideBarWidth: 300,
 });
 
-export const WIDGETS_WITH_DEFAULT_CHILDREN = ['Listview', 'Tabs', 'Form', 'Kanban', 'Container', 'Modal'];
+export const WIDGETS_WITH_DEFAULT_CHILDREN = ['Listview', 'Tabs', 'Form', 'Kanban', 'Container', 'ModalV2'];
 
 export const DEFAULT_CANVAS_WIDTH = 1292;
 

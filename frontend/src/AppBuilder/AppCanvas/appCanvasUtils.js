@@ -200,7 +200,7 @@ export const getAllChildComponents = (allComponents, parentId) => {
       allComponents[parentId]?.component?.component === 'Calendar' ||
       allComponents[parentId]?.component?.component === 'Kanban' ||
       allComponents[parentId]?.component?.component === 'Container' ||
-      allComponents[parentId]?.component?.component === 'Modal';
+      allComponents[parentId]?.component?.component === 'ModalV2';
 
     if (componentParentId && isParentTabORCalendar) {
       let childComponent = deepClone(allComponents[componentId]);
@@ -347,7 +347,7 @@ const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentI
       parentComponent.component.component === 'Tabs' ||
       parentComponent.component.component === 'Calendar' ||
       parentComponent.component.component === 'Container' ||
-      parentComponent.component.component === 'Modal'
+      parentComponent.component.component === 'ModalV2'
     );
   }
 
@@ -474,7 +474,7 @@ export const getParentComponentIdByType = ({ child, parentComponent, parentId, s
   const { tab } = child;
 
   if (parentComponent === 'Tabs') return `${parentId}-${tab}`;
-  else if (parentComponent === 'Container' || parentComponent === 'Modal') {
+  else if (parentComponent === 'Container' || parentComponent === 'ModalV2') {
     return `${parentId}-${slotName}`;
   }
   return parentId;
@@ -483,7 +483,7 @@ export const getParentComponentIdByType = ({ child, parentComponent, parentId, s
 export const getParentWidgetFromId = (parentType, parentId) => {
   const isAddingToSlot = parentId?.includes('-header') || parentId?.includes('-footer');
 
-  if (parentType === 'Modal' && isAddingToSlot) {
+  if (parentType === 'ModalV2' && isAddingToSlot) {
     return 'ModalSlot';
   } else if (parentType === 'Kanban') {
     return 'Kanban_card';
