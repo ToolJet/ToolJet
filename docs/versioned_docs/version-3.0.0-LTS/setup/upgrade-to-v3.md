@@ -21,14 +21,7 @@ Before attempting to upgrade to the ToolJet 3.0:
 - **Application Review**: Check your apps for breaking and deprecated features listed in this guide.
 - **Test Environment**: Only attempt upgrade in a testing environment first.
 
-To upgrade, update your Docker image to:
-
-```bash
-tooljet/tooljet:v3.0.0-ee-lts
-```
-:::warning
-This is a beta release. Test thoroughly in a non-production environment first.
-:::
+To upgrade, checkout the latest docker image **[here](/docs/setup/choose-your-tooljet)**.
 
 ## Breaking Changes
 
