@@ -26,6 +26,42 @@
         {
           "value": "parse_resume",
           "name": "Parse Resume"
+        },
+        {
+          "value" : "paraphrase_text",
+          "name" : "Paraphrase Text"
+        },
+        {
+          "value": "proofread_text",
+          "name": "Proofread & Grammar Check"
+        },
+        {
+          "value": "generate_keywords",
+          "name": "Generate Keywords/Tags"
+        },
+        {
+          "value": "generate_seo_tags",
+          "name": "Generate SEO Tags"
+        },
+        {
+          "value": "ocr_multipage",
+          "name": "Document Multipage OCR Data Extraction"
+        },
+        {
+          "value": "extract_document_data",
+          "name": "Document Data Extraction"
+        },
+        {
+          "value": "translate_documents",
+          "name": "Translate Documents"
+        },
+        {
+          "value": "extract_webpage_text",
+          "name": "Extract Text from Webpage"
+        },
+        {
+          "value": "extract_pdf_text",
+          "name": "Extract Text from PDF"
         }
       ]
     },
@@ -71,6 +107,86 @@
         }
       }
     },
+    "translate_documents" : {
+      "inputType": {
+        "label": "Input Type",
+        "key": "model",
+        "type": "dropdown-component-flip",
+        "description": "Select Input Type",
+        "list": [
+          {
+            "value": "file",
+            "name": "File"
+          },
+          {
+            "value": "url",
+            "name": "URL"
+          }
+        ]
+      },
+      "file": { 
+        "file": {
+          "label": "File",
+          "key": "file",
+          "type": "codehinter",
+          "placeholder": "Provide Document in PDF format"
+        },
+        "language": {
+          "label": "Language",
+          "key": "language",
+          "type": "codehinter",
+          "placeholder": "Enter Language"
+        }
+      },
+      "url": {
+        "url": {
+          "label": "URL",
+          "key": "url",
+          "type": "codehinter",
+          "placeholder": "Provide URL"
+        },
+        "language": {
+          "label": "Language",
+          "key": "language",
+          "type": "codehinter",
+          "placeholder": "Enter Language"
+        }
+      }
+    },
+   "extract_pdf_text" : {
+      "inputType": {
+        "label": "Input Type",
+        "key": "model",
+        "type": "dropdown-component-flip",
+        "description": "Select Input Type",
+        "list": [
+          {
+            "value": "file",
+            "name": "File"
+          },
+          {
+            "value": "url",
+            "name": "URL"
+          }
+        ]
+      },
+      "file": { 
+        "file": {
+          "label": "File",
+          "key": "file",
+          "type": "codehinter",
+          "placeholder": "Provide Document in PDF format"
+        }
+      },
+      "url": {
+        "url": {
+          "label": "URL",
+          "key": "url",
+          "type": "codehinter",
+          "placeholder": "Provide URL"
+        }
+      }
+    },
     "translate_text": {
       "content": {
         "label": "Content",
@@ -103,6 +219,111 @@
         "key": "language",
         "type": "codehinter",
         "placeholder": "Enter Language"
+      }
+    },
+    "paraphrase_text": {
+      "text": {
+        "label": "Text",
+        "key": "text",
+        "type": "codehinter",
+        "placeholder": "Enter Text"
+      }
+    },
+    "proofread_text": {
+     "content": {
+        "label": "Content",
+        "key": "content",
+        "type": "codehinter",
+        "placeholder": "Enter Content"
+      }
+    },
+    "generate_seo_tags": {
+      "content": {
+        "label": "Content",
+        "key": "content",
+        "type": "codehinter",
+        "placeholder": "Enter Content"
+      },
+      "voice_tone": {
+        "label": "Voice Tone",
+        "key": "voice_tone",
+        "type": "codehinter",
+        "placeholder": "Enter Voice Tone (Optional)"
+      },
+      "language": {
+        "label": "Language",
+        "key": "language",
+        "type": "codehinter",
+        "placeholder": "Enter Language (Optional)"
+      }
+    },
+    "ocr_multipage" :{
+     "inputType": {
+        "label": "Input Type",
+        "key": "model",
+        "type": "dropdown-component-flip",
+        "description": "Select Input Type",
+        "list": [
+          {
+            "value": "file",
+            "name": "File"
+          },
+          {
+            "value": "url",
+            "name": "URL"
+          }
+        ]
+      },
+      "file": { 
+        "file": {
+          "label": "File",
+          "key": "file",
+          "type": "codehinter",
+          "placeholder": "Provide Document in PDF format"
+        }
+      },
+      "url": {
+        "url": {
+          "label": "URL",
+          "key": "url",
+          "type": "codehinter",
+          "placeholder": "Provide URL"
+        }
+      }
+    },
+    
+    "extract_document_data": {
+      "inputType": {
+        "label": "Input Type",
+        "key": "model",
+        "type": "dropdown-component-flip",
+        "description": "Select Input Type",
+        "list": [
+          {
+            "value": "file",
+            "name": "File"
+          },
+          {
+            "value": "url",
+            "name": "URL"
+          }
+        ]
+      },
+      "file": { 
+        "file": {
+          "label": "File",
+          "key": "file",
+          "type": "codehinter",
+          "placeholder": "Provide Document in PDF format"
+        }
+      },
+      "url": {
+        "url": {
+          "label": "URL",
+          "key": "url",
+          "type": "codehinter",
+          "placeholder": "Provide URL"
+        }
       }
     }
   }

@@ -1,10 +1,19 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-marketplace/common';
 import { SourceOptions, QueryOptions, Operation } from './types';
-import { getSummarizedContent, getTranslatedContent, getValidatedEmail,getParsedResume } from './query_operations';
+import {
+  getSummarizedContent,
+  getTranslatedContent,
+  getValidatedEmail,
+  getParsedResume,
+  getProofreadContent,
+  getParaphrasedContent,
+  getSeoTags,
+  getDocumentExtraction,
+} from './query_operations';
 
+import { translateDocument, getWebpageText, getPdfText, getDocumentData } from './operations/data_extractions_operation';
 export default class Apyhub implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
-
     const operation: Operation = queryOptions.operation;
     let result = {};
     try {
@@ -23,6 +32,30 @@ export default class Apyhub implements QueryService {
         case Operation.ParseResume:
           result = await getParsedResume(queryOptions, sourceOptions);
           break;
+        case Operation.ProofreadText:
+          result = await getProofreadContent(queryOptions, sourceOptions);
+          break;
+        case Operation.ParaphraseText:
+          result = await getParaphrasedContent(queryOptions, sourceOptions);
+          break;
+        case Operation.GenerateSeoTags:
+          result = await getSeoTags(queryOptions, sourceOptions);
+          break;
+        case Operation.OCRDocumentExtraction:
+          result = await getDocumentExtraction(queryOptions, sourceOptions);
+          break;
+        case Operation.TranslateDocuments:
+          result = await translateDocument(queryOptions, sourceOptions);
+          break;
+        case Operation.ExtractWebpageText:
+          result = await getWebpageText(queryOptions, sourceOptions);
+          break;
+        case Operation.ExtractPDFText:
+          result = await getPdfText(queryOptions, sourceOptions);
+          break;
+        case Operation.DocumentDataExtraction:
+          result = await getDocumentData(queryOptions, sourceOptions);
+          break;
         default:
           throw new QueryError('Query could not be completed', 'Invalid operation', {});
       }
@@ -39,7 +72,6 @@ export default class Apyhub implements QueryService {
   async getConnection(sourceOptions: SourceOptions, _options?: object): Promise<any> {
     const baseURL = 'https://api.apyhub.com';
     const apiToken = sourceOptions.apiKey;
-    
     return {
       baseURL,
       apiToken
