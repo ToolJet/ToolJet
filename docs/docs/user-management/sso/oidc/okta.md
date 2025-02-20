@@ -3,7 +3,7 @@ id: okta
 title: Okta
 ---
 
-Okta can be configured as the Identity Provider for OIDC, which is an authentication protocol that securely verifies user identities through a trusted provider. This document explains how to obtain the required credentials from the Okta Developer Console. Refer to the **[OIDC Setup](#)** Guide to configure OIDC in your application.
+Okta can be configured as the Identity Provider for OIDC, which is an authentication protocol that securely verifies user identities through a trusted provider. This document explains how to obtain the required credentials from the Okta Developer Console. Refer to the **[OIDC Setup](#)** guide to configure OIDC in your application.
 
 ## Generating Client ID and Client Secret on Okta Developer Console
 

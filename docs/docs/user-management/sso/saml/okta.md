@@ -3,41 +3,49 @@ id: okta
 title: Okta
 ---
 
-ToolJet supports SAML authentication for your workspace, including the Okta SAML provider.
+Okta can be configured as the Identity Provider for SAML, which is an authentication protocol that securely verifies user identities through a trusted provider. This document explains how to obtain the required credentials from the Okta Developer Console. Refer to the **[SAML Setup](#)** guide to configure SAML in your application.
 
-### Prerequisites
+## Generating Metadata
 
-Before you begin, ensure you have:
+1. Sign in to the [Okta Developer Console](https://developer.okta.com/).
 
-- Admin access to ToolJet
-- Okta SAML provider details, including the metadata file
+2. Navigate to the **Applications** section and click **Create App Integration**.
+    <img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/user-management/sso/oidc/okta/create-app.png" alt="Okta: SSO"/>
 
-### Configuration
+3. Select **SAML 2.0** as the **Sign-in method**. Click on the **Next** button.    
+    <img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/user-management/sso/saml/signin-method.png" alt="Okta: SSO" />
 
-1. Navigate to the **Workspace Settings** section in ToolJet.
-2. Select the **Workspace login** tab.
-3. Toggle the **SAML** switch under the SSO section.
-4. Click on the **Save changes** button.
-5. Configure the following fields:
-    <img className="screenshot-full" src="/img/user-management/sso/saml/okta-configuration.png" alt="Okta SAML Configuration" />
+4. Configure the **General Settings**:
+    - **App Name**: Enter the application name to be displayed on the login page.
+    - **App Logo (optional)**: Upload a logo to be shown on the login page. <br/><br/>
+    <img className="screenshot-full" src="/img/user-management/sso/saml/okta-general-settings.png" alt="Okta General Settings" />
 
-| Field                      | Description                                                                                   |
-|----------------------------|-----------------------------------------------------------------------------------------------|
-| Name                       | Enter the name you want to display for the Okta SAML provider on the login page.              |
-| Identity provider metadata | Upload the metadata file provided by your Okta SAML provider.                                 |
-| Group Attribute            | Enter the name of the attribute that contains the group information of the user. e.g `groups` |
-| Redirect URL               | Copy the redirect URL provided and paste it in the Okta SAML provider's configuration page.   |
 
-:::info
-For setting up Okta SAML for the first time, the Redirect URL will only be visible after clicking on the **Save Changes** button. You can click on the **Save Changes** button even before configuring the rest of the fields.
-:::
+5. In the **Configure SAML** tab, configure the following fields: <br/><br/>
+    **General**: 
+    - **Single sign-on URL**: Redirect URL copied from the SAML configuration page in ToolJet.
+    - **Audience URI** (SP Entity ID):  entityID present in XML file.
+    - **Default RelayState**: Leave this field blank. 
+    - **Name ID format**: EmailAddress.
+    - **Application username**: Email.
+    - **Update application username on**: Create and update. <br/><br/>
+    <img className="screenshot-full" src="/img/user-management/sso/saml/okta-configure-saml-general.png" alt="Okta Configure SAML General" />
 
-:::tip Downloading the metadata from Okta
-The metadata is available in the form of an XML file, which can be downloaded from the Okta dashboard. Copy the metadata from the XML file and paste it into the ToolJet's SAML SSO configuration settings. Please ensure that the metadata is pasted in the correct format, as it contains essential configuration details from Okta necessary for authentication.
-Additionally, you can often find this data by navigating to `https://<your-okta-domain>/federationmetadata/2007-06/federationmetadata.xml`.
-:::
+    **Attribute Statements**:
 
-6. Click **Save Changes** to apply the new Okta SAML configuration.
+    | Name | Name format | Value |
+    | --- | --- | ---- |
+    | email | Unspecified | user.email |
+    | name | Unspecified | user.firstName |
+
+<img className="screenshot-full" src="/img/user-management/sso/saml/okta-configure-saml-attribute.png" alt="Okta Configure SAML ATTRIBUTE STATEMENTS" />
+
+
+
+
+
+
+
 
 ### Okta SAML Configuration
 
@@ -49,36 +57,8 @@ Additionally, you can often find this data by navigating to `https://<your-okta-
 
 3. Click on the **Create App Integration** button and select the **SAML 2.0** sign-on method.
 
-4. In the **General Settings** tab, provide the following details:
-  - **App Name**: Enter the application name to be displayed on the login page.
-  - **App Logo (optional)**: Upload a logo to be shown on the login page.
 
 
-<img className="screenshot-full" src="/img/user-management/sso/saml/okta-general-settings.png" alt="Okta General Settings" />
-
-5. In the **Configure SAML** tab, configure the following fields:
-
-**General**:
-
-<img className="screenshot-full" src="/img/user-management/sso/saml/okta-configure-saml-general.png" alt="Okta Configure SAML General" />
-
-| Field | Value |
-| --- | --- |
-| Single sign-on URL | Redirect URL copied from the SAML configuration page in ToolJet. |
-| Audience URI (SP Entity ID) |  entityID present in XML file |
-| Default RelayState | Leave this field blank |
-| Name ID format | EmailAddress |
-| Application username | Email |
-| Update application username on | Create and update |
-
-**Attribute Statements**:
-
-<img className="screenshot-full" src="/img/user-management/sso/saml/okta-configure-saml-attribute.png" alt="Okta Configure SAML ATTRIBUTE STATEMENTS" />
-
-| Name | Name format | Value |
-| --- | --- | ---- |
-| email | Unspecified | user.email |
-| name | Unspecified | user.firstName |
 
 **Group Attribute Statements**:
 
