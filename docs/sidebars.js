@@ -463,7 +463,14 @@ const sidebars = {
               ]
             },
             'user-management/sso/ldap',
-            'user-management/sso/saml'
+            {
+              'type': 'category',
+              'label': 'SAML',
+              'items': [
+                'user-management/sso/saml/setup',
+                'user-management/sso/saml/okta'
+              ]
+            },
           ]
         },
         {

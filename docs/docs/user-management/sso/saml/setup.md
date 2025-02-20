@@ -1,6 +1,6 @@
 ---
-id: saml
-title: SAML
+id: setup
+title: SAML Setup
 ---
 
 Security Assertion Markup Language (SAML) is a protocol that facilitates secure SSO authentication by exchanging user identity data between an identity provider and a service provider. Integrating SAML with providers like Okta, Active Directory Federation Services, Auth0 or Azure AD allows you to implement seamless and secure authentication for your users in ToolJet.
