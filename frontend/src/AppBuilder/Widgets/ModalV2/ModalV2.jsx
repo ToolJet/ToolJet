@@ -61,10 +61,10 @@ export const ModalV2 = function Modal({
   const computedModalBodyHeight = getModalBodyHeight(modalHeight, showHeader, showFooter, headerHeight, footerHeight);
   const headerHeightPx = getModalHeaderHeight(showHeader, headerHeight);
   const footerHeightPx = getModalFooterHeight(showFooter, footerHeight);
+  const isFullScreen = properties.size === 'fullscreen';
   const computedCanvasHeight = isFullScreen
     ? `calc(100vh - 48px - 40px - ${headerHeightPx} - ${footerHeightPx})`
     : computedModalBodyHeight;
-  const isFullScreen = properties.size === 'fullscreen';
 
   useEffect(() => {
     const exposedVariables = {

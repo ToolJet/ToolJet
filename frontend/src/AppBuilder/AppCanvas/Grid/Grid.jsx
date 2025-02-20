@@ -764,8 +764,8 @@ export default function Grid({ gridWidth, currentLayout }) {
                 // @TODO - When dropping back to container from canvas, the boxList doesn't have canvas header,
                 // boxList will return null. But we need to tell getMouseDistanceFromParentDiv parentWidgetType is container
                 // As container id is like 'canvas-2375e23765e-123234'
-                const isOnHeaderOrFooter = draggedOverElemId
-                  ? draggedOverElemId.includes('-header') || draggedOverElemId.includes('-footer')
+                const isOnHeaderOrFooter = draggedOverParent
+                  ? draggedOverParent.includes('-header') || draggedOverParent.includes('-footer')
                   : false;
                 if (parentId && !parentWidgetType && isOnHeaderOrFooter) {
                   parentWidgetType = 'Container';
@@ -792,7 +792,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             }px)`;
 
             if (
-              // draggedOverElemId === currentParentId ||
+              draggedOverElemId === currentParentId ||
               draggedOverParent === currentParentId ||
               isParentChangeAllowed
             ) {
