@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Accordion from '@/_ui/Accordion';
 import { EventManager } from '../EventManager';
 import { renderElement } from '../Utils';
@@ -27,12 +27,13 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     allComponents,
     pages,
   } = restProps;
+
+  const isInitialRender = useRef(true);
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const isMultiSelect = component?.component?.component === 'MultiselectV2';
-
   const isDynamicOptionsEnabled = getResolvedValue(component?.component?.definition?.properties?.advanced?.value);
-
   const isSortingEnabled = componentMeta?.properties['sort'] ?? false;
+  const sort = component?.component?.definition?.properties?.sort?.value;
 
   const constructOptions = () => {
     let optionsValue = component?.component?.definition?.properties?.options?.value;
@@ -83,6 +84,15 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     }
   }
 
+  const sortArray = (arr) => {
+    if (sort === 'asc') {
+      return arr.sort((a, b) => a.label?.localeCompare(b.label));
+    } else if (sort === 'desc') {
+      return arr.sort((a, b) => b.label?.localeCompare(a.label));
+    }
+    return arr;
+  };
+
   const getItemStyle = (isDragging, draggableStyle) => ({
     userSelect: 'none',
     ...draggableStyle,
@@ -90,6 +100,15 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
 
   const updateAllOptionsParams = (options, props) => {
     paramUpdated({ name: 'options' }, 'value', options, 'properties', false, props);
+  };
+
+  const updateSortParam = (value) => {
+    paramUpdated({ name: 'sort' }, 'value', value, 'properties');
+  };
+
+  const updateOptions = (options) => {
+    setOptions(options);
+    updateAllOptionsParams(options);
   };
 
   const generateNewOptions = () => {
@@ -117,8 +136,8 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   const handleAddOption = () => {
     let _option = generateNewOptions();
     const _items = [...options, _option];
-    setOptions(_items);
-    updateAllOptionsParams(_items);
+    const sortedItems = sortArray(_items);
+    updateOptions(sortedItems);
   };
 
   const handleDeleteOption = (index) => {
@@ -137,8 +156,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
       }
       return option;
     });
-    setOptions(_options);
-    updateAllOptionsParams(_options);
+    updateOptions(_options);
   };
 
   const handleValueChange = (value, index) => {
@@ -151,16 +169,17 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
       }
       return option;
     });
-    setOptions(_options);
-    updateAllOptionsParams(_options);
+    updateOptions(_options);
   };
 
   const reorderOptions = async (startIndex, endIndex) => {
     const result = [...options];
     const [removed] = result.splice(startIndex, 1);
     result.splice(endIndex, 0, removed);
-    setOptions(result);
-    updateAllOptionsParams(result);
+    updateOptions(result);
+    if (isSortingEnabled && sort !== 'none') {
+      updateSortParam('none');
+    }
   };
 
   const onDragEnd = ({ source, destination }) => {
@@ -203,8 +222,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
           };
         }
       });
-      setOptions(_options);
-      updateAllOptionsParams(_options);
+      updateOptions(_options);
       setMarkedAsDefault(_value);
       paramUpdated({ name: 'value' }, 'value', _value, 'properties');
     }
@@ -223,8 +241,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
       }
       return option;
     });
-    setOptions(_options);
-    updateAllOptionsParams(_options);
+    updateOptions(_options);
   };
 
   const handleDisableChange = (value, index) => {
@@ -240,8 +257,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
       }
       return option;
     });
-    setOptions(_options);
-    updateAllOptionsParams(_options);
+    updateOptions(_options);
   };
 
   const handleOnFxPress = (active, index, key) => {
@@ -257,12 +273,20 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
       }
       return option;
     });
-    setOptions(_options);
-    updateAllOptionsParams(_options);
+    updateOptions(_options);
   };
 
   useEffect(() => {
-    setOptions(constructOptions());
+    if (!isInitialRender.current && isSortingEnabled) {
+      const sortedOptions = sortArray([...options]);
+      updateOptions(sortedOptions);
+    }
+  }, [sort]);
+
+  useEffect(() => {
+    const sortedOptions = sortArray(constructOptions());
+    updateOptions(sortedOptions);
+    isInitialRender.current = false;
   }, [isMultiSelect, component?.id]);
 
   const _renderOverlay = (item, index) => {
@@ -389,6 +413,12 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
                             trigger="click"
                             placement="left"
                             rootClose
+                            onExited={() => {
+                              if (isSortingEnabled && sort !== 'none') {
+                                const sortedOptions = sortArray([...options]);
+                                updateOptions(sortedOptions);
+                              }
+                            }}
                             overlay={_renderOverlay(item, index)}
                           >
                             <div key={item.value}>

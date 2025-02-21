@@ -68,6 +68,7 @@ export const DropdownV2 = ({
     loadingState: dropdownLoadingState,
     disabledState,
     optionsLoadingState,
+    sort,
   } = properties;
   const {
     selectedTextColor,
@@ -112,6 +113,16 @@ export const DropdownV2 = ({
     const foundItem = _schema?.find((item) => item?.default === true);
     return !hasVisibleFalse(foundItem?.value) ? foundItem?.value : undefined;
   }
+
+  const sortArray = (arr) => {
+    if (sort === 'asc') {
+      return arr.sort((a, b) => a.label?.localeCompare(b.label));
+    } else if (sort === 'desc') {
+      return arr.sort((a, b) => b.label?.localeCompare(a.label));
+    }
+    return arr;
+  };
+
   const selectOptions = useMemo(() => {
     let _options = advanced ? schema : options;
     if (Array.isArray(_options)) {
@@ -124,11 +135,11 @@ export const DropdownV2 = ({
           isDisabled: data?.disable ?? false,
         }));
 
-      return _selectOptions;
+      return sortArray(_selectOptions);
     } else {
       return [];
     }
-  }, [advanced, schema, options]);
+  }, [advanced, schema, options, sort]);
 
   function selectOption(value) {
     const val = selectOptions.filter((option) => !option.isDisabled)?.find((option) => option.value === value);

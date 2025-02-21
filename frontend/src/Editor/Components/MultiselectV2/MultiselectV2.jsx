@@ -36,6 +36,7 @@ export const MultiselectV2 = ({
     placeholder,
     loadingState: multiSelectLoadingState,
     optionsLoadingState,
+    sort,
   } = properties;
   const {
     selectedTextColor,
@@ -84,6 +85,15 @@ export const MultiselectV2 = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.visibility, multiSelectLoadingState, disabledState]);
 
+  const sortArray = (arr) => {
+    if (sort === 'asc') {
+      return arr.sort((a, b) => a.label?.localeCompare(b.label));
+    } else if (sort === 'desc') {
+      return arr.sort((a, b) => b.label?.localeCompare(a.label));
+    }
+    return arr;
+  };
+
   const selectOptions = useMemo(() => {
     const _options = advanced ? schema : options;
     let _selectOptions = Array.isArray(_options)
@@ -96,9 +106,9 @@ export const MultiselectV2 = ({
             isDisabled: data?.disable ?? false,
           }))
       : [];
-    return _selectOptions;
+    return sortArray(_selectOptions);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [advanced, JSON.stringify(schema), JSON.stringify(options)]);
+  }, [advanced, JSON.stringify(schema), JSON.stringify(options), sort]);
 
   function findDefaultItem(value, isAdvanced, isDefault) {
     if (isAdvanced) {
