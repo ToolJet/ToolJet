@@ -30,7 +30,7 @@ describe("Data source Redis", () => {
     cy.intercept("POST", "/api/data_queries").as("createQuery");
   });
 
-  it("Should verify elements on connection Redison form", () => {
+  it("Should verify elements on Redis connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
 
