@@ -475,7 +475,7 @@ const EditRowForm = ({
 
       case 'boolean':
         return (
-          <label className={`form-switch`}>
+          <label className={`form-switch`} style={{ width: 'fit-content' }}>
             <input
               className="form-check-input"
               type="checkbox"
