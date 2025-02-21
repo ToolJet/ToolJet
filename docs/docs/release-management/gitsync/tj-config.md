@@ -45,3 +45,14 @@ Once the SSH key is generated, follow the **[SSH Configuration](/docs/release-ma
 After deploying the SSH Key, go to the **Configure git** tab on ToolJet, and click on the **Finalize setup** button. If the SSH key is configured correctly, you will see a success message.
 
 <img className="screenshot-full" src="/img/gitsync/finalize-ssh2-configuration-v2.png" alt="GitSync" />
+
+## Configuring GitSync on a Different Branch
+
+Starting from version **v3.5.3-ee-lts**, GitSync in ToolJet supports custom branches. This feature is available only in the Self-Hosted version of ToolJet. The custom branch for GitSync is configured at the instance level via the environment variable.
+
+Different repositories can be configured for different workspaces, but the custom branch set in the **.env** file must be present in all the configured repositories to ensure smooth operation. The branch specified in the **.env** will apply to all workspaces with GitSync support.
+
+To configure a custom branch for the GitSync, you need to set the following environment variable in your **.env** file: <br/>
+`GITSYNC_TARGET_BRANCH` = **branch-name**
+
+**Note:** **Existing GitSync users** who want to use custom git branch must first create a new custom branch from the master branch in the git repository manager. Then, configure the branch name in the .env file to ensure all operations work smoothly.
