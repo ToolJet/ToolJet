@@ -38,48 +38,28 @@ Okta can be configured as the Identity Provider for SAML, which is an authentica
     | email | Unspecified | user.email |
     | name | Unspecified | user.firstName |
 
-<img className="screenshot-full" src="/img/user-management/sso/saml/okta-configure-saml-attribute.png" alt="Okta Configure SAML ATTRIBUTE STATEMENTS" />
+    <img className="screenshot-full" src="/img/user-management/sso/saml/okta-configure-saml-attribute.png" alt="Okta Configure SAML ATTRIBUTE STATEMENTS" />
 
+    **Group Attribute Statements**:
 
+    | Name | Name format | Filter | Value |
+    | --- | --- | --- | --- |
+    | groups | Unspecified | Matches regex | "*" |
 
-
-
-
-
-
-### Okta SAML Configuration
-
-1. Navigate to the **Workspace Settings** > **Workspace login** and copy the **Login URL** provided.
-2. In the Okta admin console, navigate to the **Applications** > **Applications** section from the sidebar.
-
-<img className="screenshot-full" src="/img/user-management/sso/saml/okta-create-app-integration.png" alt="Okta Create App Integration" />
-
-
-3. Click on the **Create App Integration** button and select the **SAML 2.0** sign-on method.
-
-
-
-
-**Group Attribute Statements**:
-
-<img className="screenshot-full" src="/img/user-management/sso/saml/okta-configure-saml-attribute.png" alt="Okta Configure SAML ATTRIBUTE STATEMENTS" />
-
-
-| Name | Name format | Filter | Value |
-| --- | --- | --- | --- |
-| groups | Unspecified | Matches regex | "*" |
+    <img className="screenshot-full" src="/img/user-management/sso/saml/okta-grp-attribute.png" alt="Okta Configure SAML ATTRIBUTE STATEMENTS" />
 
 6. Review and click on the **Next** button.
+
 7. Click on the **Finish** button to complete the Okta application configuration.
 
-<img className="screenshot-full" src="/img/user-management/sso/saml/okta-sign-on.png" alt="Okta Sign On" />
+8. Navigate to the **Sign On** tab and make sure **Application username format** is set to **Email**, otherwise click on the **Edit** button and update.
 
-8. Navigate to the **Sign On** tab and click on the **Edit** button.
-9. Update the **Application username format** to  to **Email**.
-10. Click on the **Save** button to apply the changes.
-11. Copy the **Metadata URL**. This URL will retrieve the XML metadata file for the Okta application.
-12. Paste the metadata URL into the **Identity provider metadata** field in the ToolJet SAML configuration.
-13. Ensure that Audience URI (SP Entity ID) from the XML file is added to the Configure SAML tab in the Okta application configuration.
-14. Test the SAML configuration by logging in to ToolJet using the Login URL.
+9. Copy the **Metadata URL**. This URL will retrieve the XML metadata file for the Okta application.
+    <img className="screenshot-full" src="/img/user-management/sso/saml/okta-sign-on.png" alt="Okta Sign On" />
 
-<img className="screenshot-full" src="/img/user-management/sso/saml/okta-tj-login.png" alt="Okta SAML ToolJet Login" />
+10. Paste the metadata URL into the **Identity provider metadata** field in the ToolJet SAML configuration.
+
+11. Ensure that Audience URI (SP Entity ID) from the XML file is added to the Configure SAML tab in the Okta application configuration.
+
+12. Test the SAML configuration by logging in to ToolJet using the Login URL.
+    <img className="screenshot-full" src="/img/user-management/sso/saml/okta-tj-login.png" alt="Okta SAML ToolJet Login" />
