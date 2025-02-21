@@ -60,56 +60,34 @@ export default function Grid({ gridWidth, currentLayout }) {
   const [isGroupDragging, setIsGroupDragging] = useState(false);
 
   useEffect(() => {
+    const selectedSet = new Set(selectedComponents);
+    const draggingOrResizingId = draggingComponentId || resizingComponentId;
+    const isGrouped = findHighestLevelofSelection().length > 1;
+    const firstSelectedParent =
+      selectedComponents.length > 0 ? boxList.find((b) => b.id === selectedComponents[0])?.parent : null;
+    const selectedParent = dragParentId || firstSelectedParent;
+
     const guidelines = boxList
       .filter((box) => {
-        const isVisible = getResolvedValue(box?.component?.definition?.properties?.visibility?.value);
-        console.log(isVisible, 'isVisible');
-        if (!isVisible) return false;
-
-        const draggingOrResizingId = draggingComponentId || resizingComponentId;
-        const isGrouped = findHighestLevelofSelection().length > 1;
+        // Early return for non-visible elements
+        if (!getResolvedValue(box?.component?.definition?.properties?.visibility?.value)) return false;
 
         if (isGrouped) {
           // If component is selected, don't show its guidelines
-          if (selectedComponents.includes(box.id)) return false;
+          if (selectedSet.has(box.id)) return false;
+          return selectedParent ? box.parent === selectedParent : !box.parent;
+        }
 
-          // For selected components, only show guidelines for siblings
-          const selectedParent = dragParentId || boxList.find((b) => b.id === selectedComponents[0])?.parent;
-
-          if (selectedParent) {
-            // Show guidelines only for components with same parent
-            return box.parent === selectedParent;
-          }
-
-          // If selected components are top-level, only show guidelines for other top-level components
-          return !box.parent;
-        } else if (draggingOrResizingId) {
+        if (draggingOrResizingId) {
           if (box.id === draggingOrResizingId) return false;
-
-          if (dragParentId) {
-            return box.parent === dragParentId;
-          }
-
-          // If dragging component has no parent, only show guidelines for other top-level components
-          return !box.parent;
+          return dragParentId ? box.parent === dragParentId : !box.parent;
         }
 
         return true;
       })
       .map((box) => `.ele-${box.id}`);
-
     setElementGuidelines(guidelines);
-  }, [
-    boxList,
-    currentLayout,
-    dragParentId,
-    draggingComponentId,
-    resizingComponentId,
-    selectedComponents,
-    getResolvedValue,
-  ]);
-
-  console.log(elementGuidelines, 'elementGuidelines');
+  }, [boxList, dragParentId, draggingComponentId, resizingComponentId, selectedComponents, getResolvedValue]);
 
   useEffect(() => {
     setBoxList(
