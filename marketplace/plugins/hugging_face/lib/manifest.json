@@ -1,0 +1,54 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Hugging Face datasource",
+  "description": "A schema defining Hugging Face datasource",
+  "type": "api",
+  "source": {
+    "name": "Hugging Face",
+    "kind": "hugging_face",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "personal_access_token": {
+        "type": "string",
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {
+    "personal_access_token": {
+      "value": ""
+    },
+    "use_cache":{
+      "value": true
+    },
+    "wait_for_model":{
+      "value": false
+    }
+  },
+  "properties": {
+    "personal_access_token": {
+      "label": "Personal access token",
+      "key": "personal_access_token",
+      "type": "textarea",
+      "encrypted": true
+    },
+    "use_cache": {
+      "key": "use_cache",
+      "type": "toggle",
+      "text":"Use cache",
+      "subtext":"Turn on cache layer on the inference API to speed up requests"
+    },
+    "wait_for_model": {
+      "key": "wait_for_model",
+      "type": "toggle",
+      "text":"Wait for model",
+      "subtext":"Turn on to wait for model if it is not ready instead of receiving 503"
+    }
+  },
+  "required": []
+}
