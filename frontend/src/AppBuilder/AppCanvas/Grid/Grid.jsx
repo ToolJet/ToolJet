@@ -690,8 +690,11 @@ export default function Grid({ gridWidth, currentLayout }) {
             const parentComponent = boxList.find((box) => box.id === draggedOverElemId);
             let draggedOverElem;
 
-            const isParentModal = parentComponent?.component?.component === 'ModalV2';
-            const isDraggingInModalSlots = isParentModal && isOnHeaderOrFooter;
+            const isParentNewModal = parentComponent?.component?.component === 'ModalV2';
+            const isParentLegacyModal = parentComponent?.component?.component === 'Modal';
+            const isDraggingInModalSlots = isParentNewModal && isOnHeaderOrFooter;
+            const isParentModal = isParentNewModal || isParentLegacyModal || isDraggingInModalSlots;
+
             if (document.elementFromPoint(e.clientX, e.clientY) && !isParentModal) {
               const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
               draggedOverElem = targetElems.find((ele) => {
@@ -798,7 +801,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             ) {
               // If moving within modals, prevent it from going beyond the boundary
               const computedX =
-                isDraggingInModalSlots || isParentModal
+                isDraggingInModalSlots || isParentNewModal
                   ? Math.min(Math.max(0, left), _gridWidth * 43)
                   : Math.round(left / _gridWidth) * _gridWidth;
               handleDragEnd([
@@ -845,10 +848,9 @@ export default function Grid({ gridWidth, currentLayout }) {
             ? oldParentId.includes('-header') || oldParentId.includes('-footer')
             : false;
           const isParentModalSlot = parentWidgetType === 'ModalV2' && isOnHeaderOrFooter;
-          const isParentModal =
-            parentComponent?.component?.component === 'Modal' ||
-            parentComponent?.component?.component === 'ModalV2' ||
-            isParentModalSlot;
+          const isParentNewModal = parentComponent?.component?.component === 'ModalV2';
+          const isParentLegacyModal = parentComponent?.component?.component === 'Modal';
+          const isParentModal = isParentNewModal || isParentLegacyModal || isParentModalSlot;
 
           if (isParentModal) {
             const elemContainer = e.target.closest('.real-canvas');
