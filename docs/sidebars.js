@@ -513,6 +513,8 @@ const sidebars = {
             'development-lifecycle/gitsync/gitsync-config',
             'development-lifecycle/gitsync/ssh-config',
             'development-lifecycle/gitsync/delete-gitsync',
+            'development-lifecycle/gitsync/push',
+            'development-lifecycle/gitsync/pull'
           ]
         },
         {
