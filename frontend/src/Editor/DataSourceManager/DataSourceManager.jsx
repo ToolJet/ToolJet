@@ -892,9 +892,10 @@ class DataSourceManagerComponent extends React.Component {
             </Modal.Header>
             <Modal.Body style={sampleDBmodalBodyStyle}>
               {selectedDataSource && !isSampleDb ? (
-                <div>{this.renderSourceComponent(selectedDataSource.kind, isPlugin)}</div>
+                <div className="dataSourceWrapper">{this.renderSourceComponent(selectedDataSource.kind, isPlugin)}</div>
               ) : (
-                selectedDataSource && isSampleDb && <div>{this.renderSampleDBModal()}</div>
+                selectedDataSource &&
+                isSampleDb && <div className="dataSourceWrapper">{this.renderSampleDBModal()}</div>
               )}
               {!selectedDataSource && this.segregateDataSources(this.state.suggestingDatasources, this.props.darkMode)}
             </Modal.Body>

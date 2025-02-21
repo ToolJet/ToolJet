@@ -1,0 +1,16 @@
+{
+  "name": "URL splitter and parser",
+  "description": "Break down URLs into individual components for easy analysis and debugging in web development.",
+  "widgets": [
+    "Table",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "url-splitter-and-parser",
+  "category": "developer-utilities"
+}

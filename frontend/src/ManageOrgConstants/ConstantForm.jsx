@@ -193,17 +193,19 @@ const ConstantForm = ({
                   {error['name']}
                 </span>
                 {!error['name'] && (
-                  <small style={{ color: 'var(--text-placeholder)' }}>Name must be unique and max 50 characters</small>
+                  <small style={{ color: 'var(--text-placeholder)' }} data-cy="name-info">
+                    Name must be unique and max 50 characters
+                  </small>
                 )}
               </div>
             </div>
             <div className="form-group">
-              <label className="form-label" data-cy="name-label">
+              <label className="form-label" data-cy="type-label">
                 Type
               </label>
               <div className="radio-group" data-tooltip-id="type-tooltip">
                 <div className="radio-item">
-                  <label style={{ color: mode === 'edit' ? '#adb5bd' : 'inherit' }}>
+                  <label style={{ color: mode === 'edit' ? '#adb5bd' : 'inherit' }} data-cy="global-constants-label">
                     <input
                       type="radio"
                       name="type"
@@ -211,15 +213,16 @@ const ConstantForm = ({
                       checked={fields['type'] === Constants.Global}
                       onChange={handleFieldChange}
                       disabled={mode === 'edit'}
+                      data-cy="global-constants-input"
                     />
                     Global constants
                   </label>
-                  <small style={{ color: mode === 'edit' ? '#adb5bd' : 'inherit' }}>
+                  <small style={{ color: mode === 'edit' ? '#adb5bd' : 'inherit' }} data-cy="global-constants-info">
                     The values can be used anywhere in the product
                   </small>
                 </div>
                 <div className="radio-item">
-                  <label style={{ color: mode === 'edit' ? '#adb5bd' : 'inherit' }}>
+                  <label style={{ color: mode === 'edit' ? '#adb5bd' : 'inherit' }} data-cy="secrets-constants-label">
                     <input
                       type="radio"
                       name="type"
@@ -227,10 +230,11 @@ const ConstantForm = ({
                       checked={fields['type'] === Constants.Secret}
                       onChange={handleFieldChange}
                       disabled={mode === 'edit'}
+                      data-cy="secrets-constants-input"
                     />
                     Secrets
                   </label>
-                  <small style={{ color: mode === 'edit' ? '#adb5bd' : 'inherit' }}>
+                  <small style={{ color: mode === 'edit' ? '#adb5bd' : 'inherit' }} data-cy="secrets-constants-info">
                     The values are hidden and can only be used in data sources and queries
                   </small>
                 </div>
@@ -246,7 +250,7 @@ const ConstantForm = ({
                 <label className="form-label" data-cy="value-label">
                   Value
                 </label>
-                <small className="text-green d-flex align-items-center" data-cy="encrypted-label">
+                <small className="text-green d-flex align-items-center" data-cy="form-encrypted-label">
                   <img
                     className="encrypted-icon me-1"
                     src="assets/images/icons/padlock.svg"

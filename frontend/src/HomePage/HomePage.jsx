@@ -27,6 +27,7 @@ import FolderFilter from './FolderFilter';
 import { APP_ERROR_TYPE } from '@/_helpers/error_constants';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 import HeaderSkeleton from '@/_ui/FolderSkeleton/HeaderSkeleton';
+import ModalBase from '@/_ui/Modal';
 
 const { iconList, defaultIcon } = configs;
 
@@ -702,6 +703,7 @@ class HomePageComponent extends React.Component {
               actionLoadingButton={'Renaming'}
             />
           )}
+
           <ConfirmDialog
             show={showAppDeletionConfirmation}
             message={this.props.t(
