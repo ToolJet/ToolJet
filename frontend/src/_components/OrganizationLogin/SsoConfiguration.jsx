@@ -64,7 +64,7 @@ class SSOConfiguration extends React.Component {
           try {
             await this.props.onUpdateAnySSOEnabled(
               this.state.ssoOptions?.some((obj) => obj.sso !== 'form' && obj.enabled) ||
-                (this.state.defaultSSO && this.state.instanceSSO?.some((obj) => obj.sso !== 'form' && obj.enabled))
+              (this.state.defaultSSO && this.state.instanceSSO?.some((obj) => obj.sso !== 'form' && obj.enabled))
             );
             const enabledSSOCount = this.getCountOfEnabledSSO();
             this.setState({ inheritedInstanceSSO: enabledSSOCount });
@@ -123,7 +123,7 @@ class SSOConfiguration extends React.Component {
       await organizationService.editOrganization({ inheritSSO: !this.state.defaultSSO });
       await this.props.onUpdateAnySSOEnabled(
         this.state.ssoOptions?.some((obj) => obj.sso !== 'form' && obj.enabled) ||
-          (!this.state.defaultSSO && this.state.instanceSSO?.some((obj) => obj.sso !== 'form' && obj.enabled))
+        (!this.state.defaultSSO && this.state.instanceSSO?.some((obj) => obj.sso !== 'form' && obj.enabled))
       );
       this.setState({
         defaultSSO: !this.state.defaultSSO,
@@ -158,7 +158,7 @@ class SSOConfiguration extends React.Component {
           try {
             await this.props.onUpdateAnySSOEnabled(
               this.state.ssoOptions?.some((obj) => obj.sso !== 'form' && obj.enabled) ||
-                (this.state.defaultSSO && this.state.instanceSSO?.some((obj) => obj.sso !== 'form' && obj.enabled))
+              (this.state.defaultSSO && this.state.instanceSSO?.some((obj) => obj.sso !== 'form' && obj.enabled))
             );
             const enabledSSOCount = this.getCountOfEnabledSSO();
             this.setState({ inheritedInstanceSSO: enabledSSOCount });
@@ -225,7 +225,11 @@ class SSOConfiguration extends React.Component {
   };
 
   getSSOIcon = (key) => {
+    const isDarkMode = document.documentElement.classList.contains("dark");
     const iconStyles = { width: '20px', height: '20x' };
+    if (key === "git" && isDarkMode) {
+      iconStyles.filter = "invert(100%)";
+    }
     switch (key) {
       case 'google':
         return <img src="assets/images/Google.png" alt="Google" style={iconStyles} />;
