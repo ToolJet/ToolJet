@@ -18,6 +18,7 @@ export const Code = ({
   component,
   accordian,
   placeholder,
+  isHidden = false,
 }) => {
   const currentState = useCurrentState();
 
@@ -42,6 +43,7 @@ export const Code = ({
     onChange({ name: 'iconVisibility' }, 'value', value, 'styles');
   }
 
+  if (isHidden) return null;
   return (
     <div className={`field ${options.className}`} style={{ marginBottom: '8px' }}>
       <CodeEditor

@@ -142,6 +142,7 @@ const WidgetIcon = (props) => {
     case 'map':
       return <Map {...props} />;
     case 'modal':
+    case 'modallegacy':
       return <Modal {...props} />;
     case 'multiselectlegacy':
       return <Multiselect {...props} />;
