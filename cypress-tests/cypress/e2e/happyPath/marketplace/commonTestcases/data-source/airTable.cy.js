@@ -80,8 +80,8 @@ describe("Data source Airtable", () => {
     selectAndAddDataSource("databases", airtableText.airtable, data.dsName);
 
     fillDataSourceTextField(
-      airtableText.apiKey,
-      airtableText.apikeyPlaceholder,
+      airtableText.airTableApiKey,
+      airtableText.airTableapikeyPlaceholder,
       Cypress.env("airTable_apikey")
     );
     cy.get(postgreSqlSelector.buttonSave).click();
@@ -100,15 +100,15 @@ describe("Data source Airtable", () => {
 
   it("Should able to run the query with valid conection", () => {
     const airTable_apiKey = Cypress.env("airTable_apikey");
-    const airTable_baseId = Cypress.env("baseId");
-    const airTable_tableName = Cypress.env("tableName");
-    const airTable_recordID = Cypress.env("recordId");
+    const airTable_baseId = Cypress.env("airtabelbaseId");
+    const airTable_tableName = Cypress.env("airtable_tableName");
+    const airTable_recordID = Cypress.env("airtable_recordId");
 
     selectAndAddDataSource("databases", airtableText.airtable, data.dsName);
 
     fillDataSourceTextField(
-      airtableText.apiKey,
-      airtableText.apikeyPlaceholder,
+      airtableText.airTableApiKey,
+      airtableText.airTableapikeyPlaceholder,
       airTable_apiKey
     );
 
@@ -135,6 +135,7 @@ describe("Data source Airtable", () => {
     cy.get('[data-cy="query-rename-input"]').clear().type(data.dsName);
 
     // Verfiy List Recored operation
+
     cy.get(airTableSelector.operationSelectDropdown)
       .click()
       .type("List records{enter}");
@@ -158,6 +159,7 @@ describe("Data source Airtable", () => {
     );
 
     // Verfiy Retrieve record operation
+
     cy.get(airTableSelector.operationSelectDropdown)
       .click()
       .type("Retrieve record{enter}");
@@ -256,15 +258,13 @@ describe("Data source Airtable", () => {
       .type("Delete record{enter}");
     cy.wait(500);
 
-    // Generate a unique dummy ID for the record
     const recordId = Cypress._.uniqueId("recDummy_");
 
-    // Create a new record in Airtable
     cy.request({
       method: "POST",
-      url: `https://api.airtable.com/v0/${airTable_baseId}/${airTable_tableName}`, // Your Airtable Base ID and Table Name
+      url: `https://api.airtable.com/v0/${airTable_baseId}/${airTable_tableName}`, 
       headers: {
-        Authorization: `Bearer ${Cypress.env("airTable_apikey")}`, // Your Airtable API Key
+        Authorization: `Bearer ${Cypress.env("airTable_apikey")}`,
         "Content-Type": "application/json",
       },
       body: {
@@ -281,9 +281,8 @@ describe("Data source Airtable", () => {
         ],
       },
     }).then((createResponse) => {
-      const newRecordId = createResponse.body.records[0].id; // Get the ID of the newly created record
+      const newRecordId = createResponse.body.records[0].id; 
 
-      // Use the newly created record ID in your test case to delete the record
       cy.get(airTableSelector.operationSelectDropdown)
         .click()
         .type("Delete record{enter}");
@@ -301,7 +300,7 @@ describe("Data source Airtable", () => {
 
       cy.clearAndTypeOnCodeMirrorForEachField(
         airTableSelector.recordIdInputField,
-        newRecordId // Using the newly created record ID
+        newRecordId
       );
       cy.wait(1000);
 

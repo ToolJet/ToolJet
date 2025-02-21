@@ -164,20 +164,18 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add("clearAndTypeOnCodeMirrorForEachField", (selector, value) => {
-  // Click on the CodeMirror editor and get the text inside
   cy.get(selector)
     .realClick()  
     .find(".cm-line")  
      .invoke("text")  
     .then((text) => {
-      // Clear the current content by simulating backspace to erase the existing text
+
       cy.get(selector)
         .last()
         .click()
         .realType(createBackspaceText(text), { delay: 0, force: true });
     });
 
-  // Function to split the input value into parts that can be typed out
   const splitIntoFlatArray = (value) => {
     const regex = /(\{|\}|\(|\)|\[|\]|,|:|;|=>|'[^']*'|[a-zA-Z0-9._]+|\s+)/g;
     let prefix = "";
@@ -202,11 +200,10 @@ Cypress.Commands.add("clearAndTypeOnCodeMirrorForEachField", (selector, value) =
     }, []) || [];
   };
 
-  // Check if value is an array or a string, and type it accordingly
   if (Array.isArray(value)) {
     cy.get(selector).last().realType(value, { parseSpecialCharSequences: false, delay: 0, force: true });
   } else {
-    // For non-array values, split and type them one by one
+
     splitIntoFlatArray(value).forEach((i) => {
       cy.get(selector)
         .last()

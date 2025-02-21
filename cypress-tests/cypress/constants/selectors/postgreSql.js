@@ -94,5 +94,5 @@ export const airTableSelector = {
   baseIdInputField: '[data-cy="base_id-input-field"]',
   tableNameInputField: '[data-cy="table_name-input-field"]',
   recordIdInputField: '[data-cy="record_id-input-field"]',
-   bodyInputField: '[data-cy="body-input-field"]',
+  bodyInputField: '[data-cy="body-input-field"]',
 };
