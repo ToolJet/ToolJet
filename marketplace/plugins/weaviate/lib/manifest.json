@@ -1,0 +1,76 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Weaviate Plugin",
+  "description": "A schema defining Weaviate datasource",
+  "type": "api",
+  "source": {
+    "name": "Weaviate",
+    "kind": "weaviate",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "instanceUrl": {
+        "type": "string"
+      },
+      "apiKey": {
+        "type": "string",
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {
+    "connection_type": {
+      "value": "cloud"
+    }
+  },
+  "properties": {
+    "connection_type": {
+      "label": "Connection type",
+			"key": "connection_type",
+			"type": "dropdown-component-flip",
+			"description": "Single select dropdown for connection type",
+			"list": [
+				{ "value": "cloud", "name": "Cloud" },
+				{ "value": "local", "name": "Local" }
+			]
+    },
+    "cloud": {
+      "instanceUrl": {
+        "label": "Instance URLs",
+        "key": "instanceUrl",
+        "type": "text",
+        "description": "Enter your Weaviate instance URL",
+        "placeholder": "https://your-weaviate-instance.com"
+      },
+      "apiKey": {
+        "label": "API Key",
+        "key": "apiKey",
+        "type": "password",
+        "description": "Enter your Weaviate API Key",
+        "helpText": "For generating API Key, visit: <a href='https://weaviate.io/docs' target='_blank' rel='noreferrer'>Weaviate Documentation</a>",
+        "encrypted": true
+      }
+    },
+    "local": {
+      "host": {
+        "label": "Host",
+        "key": "host",
+        "type": "text",
+        "description": "Enter host"
+      },
+      "port": {
+        "label": "Port",
+        "key": "port",
+        "type": "text",
+        "description": "Enter port"
+      }
+    }
+  },
+  "required": [
+    "instanceUrl",
+    "apiKey"
+  ]
+}

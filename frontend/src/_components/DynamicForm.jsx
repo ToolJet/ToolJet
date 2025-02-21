@@ -293,9 +293,14 @@ const DynamicForm = ({
       }
       case 'toggle':
         return {
-          defaultChecked: options?.[key],
-          checked: options?.[key]?.value,
-          onChange: (e) => optionchanged(key, e.target.checked),
+          checked:
+            typeof options?.[key]?.value === 'boolean' ? options[key].value : schema?.defaults?.[key]?.value ?? false,
+          onChange: (e) => {
+            const newValue = e.target.checked;
+            optionchanged(key, {
+              value: newValue,
+            });
+          },
           text,
           subtext,
         };

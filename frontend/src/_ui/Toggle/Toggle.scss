@@ -5,10 +5,21 @@
 .form-check-input.tj-toggle-switch{
     width: 28px !important;
     height: 16px !important;
+    background-color: var(--text-disabled) !important;
 }
 
-.form-check-input:checked {
-    background-color: var(--indigo9);
+.form-check-input.tj-toggle-switch::before {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    transition: transform 0.3s ease-in-out;
+}
+
+.form-check-input.tj-toggle-switch:checked {
+    background-color: var(--indigo9) !important;
 }
 
 .form-check-input:hover{
