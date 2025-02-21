@@ -27,7 +27,7 @@ const data = {};
 data.dsName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 data.dsName1 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
-describe("Data source Redis", () => {
+describe("Data source Airtable", () => {
   beforeEach(() => {
     cy.appUILogin();
   });
