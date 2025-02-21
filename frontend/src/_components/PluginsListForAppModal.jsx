@@ -23,9 +23,9 @@ export const PluginsListForAppModal = ({ dependentPluginsForTemplate, dependentP
       <span onClick={toggleExpanded}>
         <span className="mr-1 tj-text-xsm text-default font-weight-500">View all plugins</span>
         {isExpanded ? (
-          <SolidIcon name="arrowDownTriangle" width="12" />
-        ) : (
           <SolidIcon name="arrowUpTriangle" width="12" />
+        ) : (
+          <SolidIcon name="arrowDownTriangle" width="12" />
         )}
       </span>
 
