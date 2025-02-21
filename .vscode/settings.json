@@ -10,6 +10,7 @@
     ],
     "eslint.format.enable": true,
     "editor.formatOnSave": true,
+    "typescript.tsdk": "node_modules/typescript/lib",
     "json.schemas": [
         {
             "fileMatch": [
