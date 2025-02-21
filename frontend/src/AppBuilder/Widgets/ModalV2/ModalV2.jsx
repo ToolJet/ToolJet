@@ -15,7 +15,7 @@ import {
 import { createModalStyles } from '@/AppBuilder/Widgets/ModalV2/helpers/stylesFactory';
 import { onShowSideEffects, onHideSideEffects } from '@/AppBuilder/Widgets/ModalV2/helpers/sideEffects';
 
-import '@/_styles/widgets/modal.scss';
+import '@/AppBuilder/Widgets/ModalV2/style.scss';
 
 export const ModalV2 = function Modal({
   id,

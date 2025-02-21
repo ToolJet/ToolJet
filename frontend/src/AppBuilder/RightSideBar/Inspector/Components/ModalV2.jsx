@@ -4,6 +4,8 @@ import { renderElement } from '../Utils';
 import { baseComponentProperties } from './DefaultComponent';
 import { resolveReferences } from '@/_helpers/utils';
 
+const INDEX_OF_TRIGGER = 2;
+
 export const ModalV2 = ({ componentMeta, darkMode, ...restProps }) => {
   const {
     layoutPropertyChanged,
@@ -86,7 +88,9 @@ export const ModalV2 = ({ componentMeta, darkMode, ...restProps }) => {
   );
 
   const [optionsItems] = conditionalAccordionItems(component);
-  accordionItems.splice(2, 0, optionsItems);
+
+  // Insert the Trigger option as the third item
+  accordionItems.splice(INDEX_OF_TRIGGER, 0, optionsItems);
 
   return <Accordion items={accordionItems} />;
 };
