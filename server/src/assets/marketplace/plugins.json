@@ -111,5 +111,13 @@
     "id": "qdrant",
     "author": "Tooljet",
     "timestamp": "Tue, 10 Dec 2024 02:11:32 GMT"
+  },
+  {
+    "name": "couchbase",
+    "description": "database plugin from couchbase",
+    "version": "1.0.0",
+    "id": "couchbase",
+    "author": "Tooljet",
+    "timestamp": "Tue, 21 Jan 2025 03:45:09 GMT"
   }
 ]
