@@ -25,6 +25,8 @@ Releasing an app in ToolJet makes the selected version available to end users, a
 
 The Rollback feature in ToolJet allows you to revert to a previously stable version of your app whenever needed. Whether fixing bugs, resolving errors, or addressing unexpected issues after a release, rollback ensures minimal disruption to end users. It instantly restores a prior version while keeping the application's URL the same, allowing the team to maintain application stability while debugging the faulty version offline.
 
+For example, after releasing a new version v1.2.0, users report failures of the form component. Using ToolJet’s version rollback, the team can quickly rollback to the stable version v1.1.0, restoring functionality within minutes. This minimizes downtime, and allows developers to debug the faulty version offline.
+
 ### Steps to Rollback
 
 1. Go to the **App Version Manager** from the toolbar and click on the dropdown. It will display all the available versions of the app. The released version name will be in green color.
