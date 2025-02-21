@@ -19,6 +19,7 @@ import { toast } from 'react-hot-toast';
 import { restrictedWidgetsObj } from '@/AppBuilder/WidgetManager/configs/restrictedWidgetsConfig';
 import moment from 'moment';
 import { getDateTimeFormat } from '@/AppBuilder/Widgets/Table/Datepicker';
+import { findHighestLevelofSelection } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 
 // TODO: page id to index mapping to be created and used across the state for current page access
 const initialState = {
@@ -854,11 +855,9 @@ export const createComponentsSlice = (set, get) => ({
           false,
           'addComponentToCurrentPage'
         );
-        if (index === 0) {
-          //incase of multiple components, only first one will be selected since it will be the parent component
-          get().setSelectedComponents([newComponent.id]);
-        }
       });
+      const selectedComponents = findHighestLevelofSelection(newComponents);
+      get().setSelectedComponents(selectedComponents.map((component) => component.id));
 
       if (saveAfterAction) {
         saveComponentChanges(diff, 'components', 'create')

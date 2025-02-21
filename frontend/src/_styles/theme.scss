@@ -12215,7 +12215,7 @@ color: var(--text-default);
     border-radius: 6px !important;
     margin-bottom: 4px !important;
     color: var(--slate12) !important;
-    transition: none;
+    transition: background 0.2s ease-in-out, border-color 0.2s ease-in-out;
     font-weight: 400;
 
     &:hover {
