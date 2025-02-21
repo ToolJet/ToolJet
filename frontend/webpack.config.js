@@ -24,6 +24,10 @@ function stripTrailingSlash(str) {
 }
 
 const plugins = [
+  new webpack.ProvidePlugin({
+    process: 'process/browser.js',
+    Buffer: ['buffer', 'Buffer'],
+  }),
   new HtmlWebpackPlugin({
     template: './src/index.ejs',
     favicon: './assets/images/logo.svg',
@@ -83,6 +87,10 @@ module.exports = {
   target: 'web',
   resolve: {
     extensions: ['.js', '.jsx', '.png', '.wasm', '.tar', '.data', '.svg', '.png', '.jpg', '.jpeg', '.gif', '.json'],
+    fallback: {
+      process: require.resolve('process/browser.js'),
+      path: require.resolve('path-browserify'),
+    },
     alias: {
       '@': path.resolve(__dirname, 'src/'),
       '@ee': path.resolve(__dirname, 'ee/'),
