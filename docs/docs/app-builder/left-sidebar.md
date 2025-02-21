@@ -96,3 +96,29 @@ While developers can access the current theme's value through global variables u
 <img className="screenshot-full" src="/img/v2-beta/app-builder/leftsidebar/theme.png" alt="App Builder: Left-sidebar"/>
 
 </div>
+
+## Additional Details
+
+### Pages
+
+Pages in ToolJet allow you to create multi-page applications, enhancing the user experience by organizing content into separate sections. Each page can have its own set of components, queries, and logic, making it easier to manage complex applications.
+
+### Inspector
+
+The Inspector provides a detailed view of the properties and values of the components on the canvas. It also displays the data of the queries and the global variables. This tool is essential for debugging and fine-tuning your application.
+
+### Debugger
+
+The Debugger is a powerful tool for identifying and resolving issues in your application. It logs all the errors that occur during the execution of queries and provides detailed information about each error. This helps in quickly diagnosing and fixing problems.
+
+### Global Settings
+
+Global Settings allow you to configure various aspects of your application, such as the unique app slug, app link, canvas width, and background color. These settings help in customizing the appearance and behavior of your application.
+
+### Comments
+
+The Comments feature enables collaboration among team members by allowing them to leave comments on the canvas. This is useful for discussing specific components or sections of the application and for providing feedback.
+
+### Theme Switch
+
+The Theme Switch button allows you to toggle between light and dark modes in ToolJet. This feature enhances the usability of the application by providing a comfortable viewing experience in different lighting conditions.
