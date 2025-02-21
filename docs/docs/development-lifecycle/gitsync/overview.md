@@ -5,15 +5,13 @@ title: GitSync Overview
 
 <div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
 
-The GitSync feature in ToolJet allows seamless synchronization of workspace applications with a Git repository, enhancing version control, environment migration, and backup management. It supports both cloud-based Git providers such as GitHub and GitLab, as well as self-hosted Git solutions like Gitea and BitBucket, offering flexibility in managing application development and deployment. 
+The GitSync feature in ToolJet allows seamless synchronization of workspace applications with a Git repository, enhancing version control, environment migration, and backup management. It supports both cloud-based and self-hosted Git providers offering flexibility in managing application development and deployment. GitSync can also be configured for a custom branch. Refer to **[Configure GitSync](#)** guide for more information.
 
 ## Key Use-Cases
 
-### Environment Migration
+### Application Migration
 
 GitSync can be used to facilitate the movement of application across different ToolJet instances such as from development to staging to production. Users can effortlessly transfer their applications across instances by pushing changes to a Git repository. This means that once an application is developed in one instance, it can be easily moved to another by simply syncing with the repository, ensuring a smooth transition without the need for manual configurations. Refer to the **[multi-instance](#)** guide for detailed steps.
-
-<img className="screenshot-full" src="/img/gitsync/envmigration.png" alt="GitSync" />
 
 ### Backup of Apps
 
