@@ -47,12 +47,11 @@ After deploying the SSH Key, go to the **Configure git** tab on ToolJet, and cli
 <img className="screenshot-full" src="/img/gitsync/finalize-ssh2-configuration-v2.png" alt="GitSync" />
 
 ## Configuring GitSync on a Different Branch
+Starting from version **v3.5.3-ee-lts**, GitSync in ToolJet supports custom branches. This feature is available only in the Self-Hosted version of ToolJet. The custom branch for GitSync is configured at the instance level via an environment variable.
 
-Starting from version **v3.5.3-ee-lts**, GitSync in ToolJet supports custom branches. This feature is available only in the Self-Hosted version of ToolJet. The custom branch for GitSync is configured at the instance level via the environment variable.
+Different repositories can be configured for different workspaces, but the custom branch set in the **.env** file must be present in all configured repositories to ensure smooth operation. The branch specified in the **.env** file will apply to all workspaces with GitSync support.
 
-Different repositories can be configured for different workspaces, but the custom branch set in the **.env** file must be present in all the configured repositories to ensure smooth operation. The branch specified in the **.env** will apply to all workspaces with GitSync support.
-
-To configure a custom branch for the GitSync, you need to set the following environment variable in your **.env** file: <br/>
+To configure a custom branch for GitSync, you need to set the following environment variable in your **.env** file:  <br/>
 `GITSYNC_TARGET_BRANCH` = **branch-name**
 
-**Note:** **Existing GitSync users** who want to use custom git branch must first create a new custom branch from the master branch in the git repository manager. Then, configure the branch name in the .env file to ensure all operations work smoothly.
+**Note:** **Existing GitSync users** who want to use a custom Git branch must first create a new custom branch from the master branch in the Git repository manager. Then, they must configure the branch name in the **.env** file to ensure all operations work smoothly.
