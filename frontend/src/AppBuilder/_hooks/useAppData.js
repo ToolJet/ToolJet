@@ -250,6 +250,11 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
       setCurrentPageHandle(startingPage.handle);
       // updateFeatureAccess();
       setCurrentPageId(startingPage.id, moduleId);
+      setResolvedPageConstants({
+        id: startingPage?.id,
+        handle: startingPage?.handle,
+        name: startingPage?.name,
+      });
       setComponentNameIdMapping(moduleId);
       updateEventsField('events', appData.events);
       setCurrentVersionId(appData.editing_version?.id || appData.current_version_id);
@@ -295,11 +300,6 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
           : {}),
       });
       setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(location?.search))));
-      setResolvedPageConstants({
-        id: appData.pages[0].id,
-        handle: appData.pages[0].handle,
-        name: appData.pages[0].name,
-      });
       initDependencyGraph(moduleId);
       setCurrentMode(mode); // TODO: set mode based on the slug/appDef
       // fetchDataSources(appData.editing_version.id, editorEnvironment.id);

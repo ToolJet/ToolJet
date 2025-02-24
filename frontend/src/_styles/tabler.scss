@@ -2077,23 +2077,9 @@ progress {
     padding: .25rem .25rem
 }
 
-.markdown>table>:not(caption)>*,
-.table-bordered>:not(caption)>* {
-    border-width: 1px 0
-}
-
-.markdown>table>:not(caption)>*>*,
-.table-bordered>:not(caption)>*>* {
-    border-width: 0 1px
-}
 
 .table-borderless>:not(caption)>*>* {
     border-bottom-width: 0
-}
-
-.table-striped>tbody>tr:nth-of-type(even) {
-    --tblr-table-accent-bg: var(--tblr-table-striped-bg);
-    color: var(--tblr-table-striped-color)
 }
 
 .table-active {

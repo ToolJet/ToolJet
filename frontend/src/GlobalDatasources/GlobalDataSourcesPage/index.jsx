@@ -359,7 +359,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
               />
             );
           })}
-          {type === 'Plugins' && !checkIfToolJetCloud(tooljetVersion) && (
+          {type === 'Plugins' && tooljetVersion && !checkIfToolJetCloud(tooljetVersion) && (
             <div style={{ height: '122px', width: '164px' }} className={`col-md-2  mb-4 `}>
               <div
                 className="card add-plugin-card"
