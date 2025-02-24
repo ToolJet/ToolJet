@@ -9,5 +9,4 @@ export const pluginSelectors = {
     sendEmailFromInputField: '[data-cy="send_mail_from-input-field"]',
     emailSubjetInputField: '[data-cy="subject-input-field"]',
     emailbodyInputField: '[data-cy="body-input-field"]',
-
 };

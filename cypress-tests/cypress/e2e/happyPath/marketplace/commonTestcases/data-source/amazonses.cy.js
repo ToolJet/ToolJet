@@ -25,9 +25,10 @@ import { dataSourceSelector } from "../../../../../constants/selectors/dataSourc
 const data = {};
 data.dsName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
-describe("Data source Redis", () => {
+describe("Data source amazon ses", () => {
   beforeEach(() => {
-    cy.appUILogin();
+    cy.apiLogin();
+    cy.defaultWorkspaceLogin();
     cy.intercept("POST", "/api/data_queries").as("createQuery");
   });
 
@@ -61,12 +62,11 @@ describe("Data source Redis", () => {
 
     selectAndAddDataSource("databases", amazonSesText.AmazonSES, data.dsName);
 
-    cy.get('[data-cy="region-section"] .react-select__control').click(); // Click to open the dropdown
+    cy.get('[data-cy="region-section"] .react-select__control').click(); 
     cy.get('[data-cy="region-section"] .react-select__option')
       .contains("US West (N. California)")
       .click();
 
-    // Verify that the selected value is displayed correctly
     cy.get('[data-cy="region-section"] .react-select__single-value').should(
       "have.text",
       "US West (N. California)"
@@ -94,12 +94,11 @@ describe("Data source Redis", () => {
   it("Should verify the functionality of amazonses connection form.", () => {
     selectAndAddDataSource("databases", amazonSesText.AmazonSES, data.dsName);
 
-    cy.get('[data-cy="region-section"] .react-select__control').click(); // Click to open the dropdown
+    cy.get('[data-cy="region-section"] .react-select__control').click();
     cy.get('[data-cy="region-section"] .react-select__option')
       .contains("US West (N. California)")
       .click();
 
-    // Verify that the selected value is displayed correctly
     cy.get('[data-cy="region-section"] .react-select__single-value').should(
       "have.text",
       "US West (N. California)"
@@ -135,19 +134,12 @@ describe("Data source Redis", () => {
     const email = "adish" + "@" + "tooljet.com";
     selectAndAddDataSource("databases", amazonSesText.AmazonSES, data.dsName);
 
-    cy.get('[data-cy="region-section"] .react-select__control').click(); // Click to open the dropdown
+    cy.get('[data-cy="region-section"] .react-select__control').click(); 
     cy.get('[data-cy="region-section"] .react-select__option')
       .contains("US West (N. California)")
       .click();
 
-    // Verify that the selected value is displayed correctly
     cy.get('[data-cy="region-section"] .react-select__single-value').should(
-      "have.text",
-      "US West (N. California)"
-    );
-
-    // Verify that the selected value is displayed correctly
-    cy.get(pluginSelectors.regionField).should(
       "have.text",
       "US West (N. California)"
     );
@@ -187,7 +179,6 @@ describe("Data source Redis", () => {
     cy.contains(`[id*="react-select-"]`, data.dsName).click();
     cy.get('[data-cy="query-rename-input"]').clear().type(data.dsName);
 
-    // Verfiy List Recored operation
     cy.get(pluginSelectors.operationDropdown)
       .click()
       .type("Email service{enter}");
