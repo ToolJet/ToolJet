@@ -1,0 +1,503 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Weaviate datasource",
+  "description": "A schema defining Weaviate datasource",
+  "type": "database",
+  "defaults": {
+    "data_type": "schema"
+  },
+  "properties": {
+    "data_type": {
+      "label": "Data type",
+      "key": "data_type",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for data type",
+      "list": [
+        {
+          "value": "schema",
+          "name": "Schema"
+        },
+        {
+          "value": "collection",
+          "name": "Collection"
+        },
+        {
+          "value": "objects",
+          "name": "Objects"
+        }
+      ]
+    },
+    "schema": {
+      "operation_schema": {
+        "label": "Operation",
+        "key": "operation",
+        "type": "dropdown-component-flip",
+        "description": "Single select dropdown for operation",
+        "list": [
+          {
+            "value": "get_schema",
+            "name": "Get database schema"
+          }
+        ]
+      },
+      "get_schema": {
+        "consistency": {
+          "label": "Consistency",
+          "key": "consistency",
+          "type": "toggle",
+          "value": "true",
+          "tooltip":"Enable consistency"
+        }
+      }
+    },
+    "collection": {
+      "operation_collection": {
+        "label": "Operation",
+        "key": "operation_collection",
+        "type": "dropdown-component-flip",
+        "description": "Single select dropdown for operation",
+        "list": [
+          {
+            "value": "get_collection",
+            "name": "Get Collection"
+          },
+          {
+            "value": "create_collection",
+            "name": "Create Collection"
+          },
+          {
+            "value": "delete_collection",
+            "name": "Delete Collection"
+          }
+        ]
+      },
+      "get_collection": {
+        "collectionName": {
+          "label": "Collection Name",
+          "key": "collectionName",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter the name of the collection",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter the name of the collection",
+          "tooltip":"Enter the name of the collection"
+        },
+        "consistency": {
+          "label": "Consistency",
+          "key": "consistency",
+          "type": "toggle",
+          "value": "true",
+          "tooltip":"Enable consistency"
+        }
+      },
+      "create_collection": {
+        "collectionName": {
+          "label": "Collection Name",
+          "key": "collectionName",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter the name of the collection",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter the name of the collection"
+        },
+        "vectorizer": {
+          "label": "Vectorizer",
+          "key": "vectorizer",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "{}"
+        },
+        "vector_index_type": {
+          "label": "Vector index type",
+          "key": "vector_index_type",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Value"
+        },
+        "vector_index_config": {
+          "label": "Vector index config",
+          "key": "vector_index_config",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "{}"
+        },
+        "sharding_config": {
+          "label": "Sharding config",
+          "key": "sharding_config",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "{}"
+        },
+        "factor": {
+          "label": "Factor",
+          "key": "factor",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "1"
+        },
+        "async_enabled": {
+          "label": "Async enabled",
+          "key": "async_enabled",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "true"
+        },
+        "deletion_strategy": {
+          "label": "Deletion strategy",
+          "key": "deletion_strategy",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "NoAutomatedResolution"
+        },
+        "clean_up_interval_seconds": {
+          "label": "Cleanup interval seconds",
+          "key": "clean_up_interval_seconds",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "1"
+        },
+        "bm_25": {
+          "label": "Bm 25",
+          "key": "bm_25",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "{“k1”:1,”b”:1}"
+        },
+        "stop_words": {
+          "label": "Stop words",
+          "key": "stop_words",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "{“preset”:””,”additions”:[“”],”removals”:[“”]}"
+        },
+        "index_time_stamps": {
+          "label": "Index time stamps",
+          "key": "index_time_stamps",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "true"
+        },
+        "index_null_state": {
+          "label": "Index null state",
+          "key": "index_null_state",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "true"
+        },
+        "index_property_length": {
+          "label": "Index property length",
+          "key": "index_property_length",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "true"
+        },
+        "module_config": {
+          "label": "Module config",
+          "key": "module_config",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "{}"
+        },
+        "description": {
+          "label": "Description",
+          "key": "description",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "{}"
+        },
+        "consistency": {
+          "label": "Consistency",
+          "key": "consistency",
+          "type": "toggle",
+          "value": "true",
+          "tooltip":"Enable consistency"
+        },
+        "properties": {
+          "label": "Properties",
+          "key": "properties",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "width": "320px",
+          "height": "256px",
+          "className": "codehinter-plugins",
+          "placeholder": "[\n\t{\n\t\t\"dataType\": [\"\"],\n\t\t\"description\": \"\",\n\t\t\"moduleConfig\": {},\n\t\t\"name\": \"\",\n\t\t\"indexInverted\": true,\n\t\t\"indexFilterable\": true,\n\t\t\"indexSearchable\": true,\n\t\t\"indexRangeFilters\": true,\n\t\t\"tokenization\": \"word\",\n\t\t\"nestedProperties\": []\n\t}\n]"
+        }
+      },
+      "delete_collection": {
+        "collectionName": {
+          "label": "Collection Name",
+          "key": "collectionName",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter the name of the collection",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter the name of the collection"
+        }
+      }
+    },
+    "objects": {
+      "operation_objects": {
+        "label": "Operation",
+        "key": "operation_objects",
+        "type": "dropdown-component-flip",
+        "description": "Single select dropdown for operation",
+        "list": [
+          {
+            "value": "list_objects",
+            "name": "List Objects"
+          },
+          {
+            "value": "create_object",
+            "name": "Create Object"
+          },
+          {
+            "value": "get_object_by_id",
+            "name": "Get Object By Id"
+          },
+          {
+            "value": "delete_object_by_id",
+            "name": "Delete Object By Id"
+          }
+        ]
+      },
+      "get_object_by_id": {
+        "collectionName_get_object": {
+          "label": "Collection Name",
+          "key": "collectionName_get_object",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter the name of the collection",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter the name of the collection"
+        },
+        "objectId_get_object": {
+          "label": "Object ID",
+          "key": "objectId_get_object",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter the ID of the object"
+        }
+      },
+      "delete_object_by_id": {
+        "collectionName_delete_object": {
+          "label": "Collection Name",
+          "key": "collectionName_delete_object",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter the name of the collection",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter the name of the collection"
+        },
+        "objectId_delete_object": {
+          "label": "Object ID",
+          "key": "objectId_delete_object",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter the ID of the object",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter the ID of the object"
+        }
+      },
+      "list_objects": {
+        "collectionName": {
+          "label": "Collection Name",
+          "key": "collectionName",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter the name of the collection",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter the name of the collection"
+        },
+        "include_vectors": {
+          "label": "Include vectors",
+          "key": "include_vectors",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "true or ['title','review_body']"
+        },
+        "after": {
+          "label": "After",
+          "key": "after",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "{}"
+        },
+        "offset": {
+          "label": "Offset",
+          "key": "offset",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "{}"
+        },
+        "limit": {
+          "label": "Limit",
+          "key": "limit",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "10"
+        },
+        "include": {
+          "label": "Include",
+          "key": "include",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "value1, value2"
+        },
+        "sort": {
+          "label": "Sort",
+          "key": "sort",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "value1, value2"
+        },
+        "order": {
+          "label": "Order",
+          "key": "order",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "value1, value2"
+        },
+        "tenant": {
+          "label": "Tenant",
+          "key": "tenant",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "value"
+        }
+      },
+      "create_object": {
+        "collectionName_create_object": {
+          "label": "Collection Name",
+          "key": "collectionName_create_object",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter the name of the collection",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "ArticleAuthor"
+        },
+        "object_uuid": {
+          "label": "Object uuid",
+          "key": "object_uuid",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter the name of the collection",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "ed89d9e7-4c9d-4a6a-8d20-095cb0026f54"
+        },
+        "properties_create_object": {
+          "label": "Properties",
+          "key": "properties_create_object",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter the name of the collection",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "{\n 'question': 'This vector DB is OSS & supports automatic property type inference on import',\n 'newProperty': 123\n}"
+        },
+        "vectors_create_object": {
+          "label": "Vectors",
+          "key": "vectors_create_object",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter the name of the collection",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "{\n title: Array(1536).fill(0.12345),\n review_body: Array(1536).fill(0.31313),\n title_country: Array(1536).fill(0.05050)\n}"
+        }
+      }
+    }
+  }
+}
