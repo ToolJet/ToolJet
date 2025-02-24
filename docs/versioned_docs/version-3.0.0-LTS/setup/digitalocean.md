@@ -71,7 +71,7 @@ docker-compose --version
 **7. Use the [Docker Documentation](https://docs.tooljet.ai/docs/setup/docker) to deploy ToolJet.**
 
 :::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`.
+To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
 :::
 
 

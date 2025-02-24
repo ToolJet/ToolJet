@@ -187,7 +187,7 @@ Update ToolJet deployment with the appropriate env variables [here](/docs/setup/
 </div>
 
 :::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`.
+To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
 :::
 
 

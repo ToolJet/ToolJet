@@ -81,7 +81,7 @@ ToolJet AMI comes inbuilt with PostgREST. If you intend to use this feature, you
 You can learn more about this feature [here](/docs/tooljet-db/tooljet-database).
 
 :::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`.
+To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
 :::
 
 

@@ -55,7 +55,7 @@ If there are self signed HTTPS endpoints that Tooljet needs to connect to, pleas
 :::
 
 :::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`.
+To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
 :::
 
 4. Create k8s service

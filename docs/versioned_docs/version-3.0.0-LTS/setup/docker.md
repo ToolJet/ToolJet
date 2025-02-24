@@ -151,7 +151,7 @@ curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/backup-re
 
 :::warning
 
-To enable AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`
+To enable AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
 
 :::
 

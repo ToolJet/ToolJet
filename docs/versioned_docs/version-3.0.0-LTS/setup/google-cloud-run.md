@@ -142,7 +142,7 @@ For the Redis container we recommend using image `redis:6.2`
     :::
 
 :::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`.
+To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai`.
 :::
 
 
