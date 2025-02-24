@@ -229,9 +229,18 @@ class Restapi extends React.Component {
               <div className="font-weight-bold color-slate12">URL</div>
               <div className="d-flex">
                 {dataSourceURL && (
-                  <BaseUrl theme={this.props.darkMode ? 'monokai' : 'default'} dataSourceURL={dataSourceURL} />
+                  <BaseUrl
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
+                    dataSourceURL={dataSourceURL}
+                    style={{ overflowWrap: 'anywhere', maxHeight: '218px', overflowY: 'auto', height: 'fit-content' }}
+                    className="col-6"
+                  />
                 )}
-                <div className={`flex-grow-1 rest-api-url-codehinter  ${dataSourceURL ? 'url-input-group' : ''}`}>
+                <div
+                  className={`${dataSourceURL ? 'col-6' : 'flex-grow-1'} rest-api-url-codehinter ${
+                    dataSourceURL ? 'url-input-group' : ''
+                  }`}
+                >
                   <CodeHinter
                     type="basic"
                     initialValue={options.url}
