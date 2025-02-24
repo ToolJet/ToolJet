@@ -15,8 +15,7 @@ Role Required: **Admin** <br/>
     (Example URL - `https://app.corp.com/nexus/workspace-settings/users`)
 
 3. Click on **Add users** button.
-
-<img className="screenshot-full" src="/img/user-management/onboard-user/invite-user/add-user.png" alt="Add user button" />
+    <img className="screenshot-full" src="/img/user-management/onboard-user/invite-user/add-user.png" alt="Add user button" />
 
 4. Fill out the following details:
     | Field | Required/Optional | Example |
@@ -25,11 +24,12 @@ Role Required: **Admin** <br/>
     | Email address | Required | john@corp.com |
     | Select groups | Required | USER ROLE: **Admin** |
     | | Optional | CUSTOM GROUPS: **Manager** |
-    | Metadata | Optional | `{"apiKey": "abc123"}` |
+    | [User metadata](#) | Optional | `{"apiKey": "abc123"}` |
+
+    <img className="screenshot-full" src="/img/user-management/onboard-user/invite-user/user-details.png" alt="Invite User" />
 
 5. Click on **Invite users** button to send the invitation.
-
-<img className="screenshot-full" src="/img/user-management/onboard-user/invite-user/user-details.png" alt="Invite User" />
+    
 
 ## Email Invitation
 

@@ -32,19 +32,17 @@ If you have upgraded from a version prior to v2.62.0, the SMTP variables in your
 1. Navigate to the **Settings** section in ToolJet.
 2. Select the **Email protocol (SMTP)** tab.
 3. Toggle the switch to enable **Email protocol (SMTP)**.
-4. Configure the following fields:
-
-| Field         | Description              | Example                           |
-|---------------|--------------------------|-----------------------------------|
-| Host          | SMTP server hostname     | smtp.gmail.com                    |
-| Port          | SMTP server port number  | 587                               |
-| User          | SMTP account username    | hello@johndoe.tech                |
-| Password      | SMTP account password    | a13d0sd344                        |
-| Sender's email| Email address of the sender | hello@johndoe.tech             |
+4. Configure the following fields: <br/>
+    | Field         | Description              | Example                           |
+    |---------------|--------------------------|-----------------------------------|
+    | Host          | SMTP server hostname     | smtp.gmail.com                    |
+    | Port          | SMTP server port number  | 587                               |
+    | User          | SMTP account username    | hello@johndoe.tech                |
+    | Password      | SMTP account password    | a13d0sd344                        |
+    | Sender's email| Email address of the sender | hello@johndoe.tech             |
 
 5. Click **Save changes** to apply the new SMTP configuration.
-
-<img className="screenshot-full" src="/img/enterprise/smtp/configuration-v2.png" alt="SMTP     Configuration Without Environment Variables" />
+    <img className="screenshot-full" src="/img/enterprise/smtp/configuration-v2.png" alt="SMTP     Configuration Without Environment Variables" />
 
 </div>
 
