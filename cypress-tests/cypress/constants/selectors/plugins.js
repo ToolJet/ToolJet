@@ -11,3 +11,10 @@ export const pluginSelectors = {
     emailbodyInputField: '[data-cy="body-input-field"]',
     amazonAthenaDbName: '[data-cy="database-text-field"]'
 };
+
+export const baserowSelectors = {
+    hostField: '[data-cy="host-select-dropdown"]',
+    baserowApiKey: '[data-cy="api-token-text-field"]',
+    baserowTabelId: '[data-cy="table_id-input-field"]',
+    baserow_rowIdinputfield: '[data-cy="row_id-input-field"]',
+};
