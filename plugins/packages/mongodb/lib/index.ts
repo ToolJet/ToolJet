@@ -126,9 +126,22 @@ export default class MongodbService implements QueryService {
             .toArray();
           break;
       }
-    } catch (err) {
-      console.log(err);
-      throw new QueryError('Query could not be completed', err.message, {});
+    } catch (error) {
+      let errorMessage = 'An unknown error occurred';
+      let errorDetails = {};
+
+      if (error instanceof Error) {
+        errorMessage = error.message || errorMessage;
+        errorDetails = {
+          name: error.name,
+          code: (error as any).code || null,
+          codeName: (error as any).codeName || null,
+          keyPattern: (error as any).keyPattern || null,
+          keyValue: (error as any).keyValue || null,
+        };
+      }
+
+      throw new QueryError('Query could not be completed', errorMessage, errorDetails);
     } finally {
       await close();
     }
