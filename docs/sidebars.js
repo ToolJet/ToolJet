@@ -554,6 +554,14 @@ const sidebars = {
       'type': 'category',
       'label': 'Security and Monitoring',
       'items': [
+        {
+          'type': 'category',
+          'label': 'Constants',
+          'items': [
+            'security/constants/constants',
+            'security/constants/variables'
+          ]
+        },
         'security/audit-logs'
       ]
     },
