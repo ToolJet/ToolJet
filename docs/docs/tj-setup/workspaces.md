@@ -19,9 +19,9 @@ To create a new workspace,
 3.  Fill in the workspace name and slug in the modal.
 4.  Click **Create workspace**.
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/tooljet-setup/workspace/create-workspace.png" alt="Marketplace Plugin: Amazon Redshift" />
-</div>
+
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/tooljet-setup/workspace/create-workspace.png" alt="Marketplace Plugin: Amazon Redshift" />
+
 
 
 
@@ -58,9 +58,9 @@ To switch between the workspaces,
 2.  A table listing all workspaces will appear.
 3.  Click the Archive button to open a confirmation modal. Once you confirm, the selected workspace will be archived.
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/tooljet-setup/workspace/archive.png" alt="Marketplace Plugin: Amazon Redshift" />
-</div>
+
+<img style={{ marginBottom:'15px'}} className="screenshot-full img-l" src="/img/tooljet-setup/workspace/archive.png" alt="Marketplace Plugin: Amazon Redshift" />
+
 
 
 For more details on archiving workspaces, refer to the [Super Admin](https://docs.tooljet.com/docs/enterprise/superadmin/#archive-workspaces) documentation.

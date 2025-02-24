@@ -5,12 +5,12 @@ title: Instances
 
 Instances in ToolJet refer to self-hosted deployments of the ToolJet platform. Each instance operates independently and can have its own configurations, data, and user base. You can create multiple [workspaces](/docs/tj-setup/workspaces) inside of an instance. Workspaces are collaborative environments that enable teams to build, customize, and deploy applications, as well as manage data, workflows, and permissions.
 
-When it comes to roles, ToolJet offers a [Super Admin](https://docs.tooljet.com/docs/enterprise/superadmin/#how-super-admin-is-different-from-admin) role, who can manage the instances and has full access to all the Workspaces, Users, and Groups of an instance. Within each workspace, users can be assigned one of the predefined roles (Admin, Builder, or End User) or we can add the user to a create custom group with custom permissions . For more details on managing users and roles within workspaces, refer to the [Workspace Users and Groups](https://docs.tooljet.com/docs/tutorial/manage-users-groups/#managing-groups) documentation.
+When it comes to roles, ToolJet offers a [Super Admin](/docs/enterprise/superadmin/#how-super-admin-is-different-from-admin) role, who can manage the instances and has full access to all the Workspaces, Users, and Groups of an instance. Within each workspace, users can be assigned one of the predefined roles (Admin, Builder, or End User) or we can add the user to a create custom group with custom permissions . For more details on managing users and roles within workspaces, refer to the [Workspace Users and Groups](/docs/tutorial/manage-users-groups/#managing-groups) documentation.
 
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/tooljet-setup/instance/overview.png" alt="Marketplace Plugin: Amazon Redshift" />
-</div>
+
+<img style={{ marginBottom:'15px'}} className="screenshot-full img-l" src="/img/tooljet-setup/instance/overview.png" alt="Marketplace Plugin: Amazon Redshift" />
+
 
 
 
@@ -34,7 +34,7 @@ Check out the [setup guide](https://docs.tooljet.com/docs/setup/) to explore the
 
 The diagram below illustrates the multi-instance setup.
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/tooljet-setup/instance/multi-instance.png" alt="Marketplace Plugin: Amazon Redshift" />
-</div>
+
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/tooljet-setup/instance/multi-instance.png" alt="Marketplace Plugin: Amazon Redshift" />
+
 If you’d like to discuss your use case or need assistance, reach out via [support](mailto:hello@tooljet.com).
