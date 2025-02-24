@@ -1021,7 +1021,7 @@ class DataSourceManagerComponent extends React.Component {
                     {this.props.t('globals.readDocumentation', 'Read documentation')}
                   </a>
                 </div>
-                <div className="col-auto">
+                <div className="col-auto" data-cy="db-connection-save-button">
                   <ButtonSolid
                     leftIcon="floppydisk"
                     fill={'#FDFDFE'}
@@ -1120,7 +1120,7 @@ const EmptyStateContainer = ({
                 />
               </div>
             </div>
-            <div className="col-auto">
+            <div className="col-auto" data-cy="db-connection-save-button">
               <Button className="mt-2" disabled={!inputValue.length} variant="primary" onClick={handleSend}>
                 {t('editor.queryManager.dataSourceManager.send', 'Send')}
               </Button>
