@@ -1,9 +1,9 @@
 import React from 'react';
 
-export const BaseUrl = ({ dataSourceURL, theme }) => {
+export const BaseUrl = ({ dataSourceURL, theme, className = 'col-8', style = {} }) => {
   return (
     <span
-      className="col-auto"
+      className={className}
       htmlFor=""
       style={{
         padding: '5px',
@@ -13,6 +13,7 @@ export const BaseUrl = ({ dataSourceURL, theme }) => {
         color: theme === 'default' ? '#9ca1a6' : '#9e9e9e',
         height: '32px',
         borderRadius: '6px 0 0 6px',
+        ...style,
       }}
     >
       {dataSourceURL}
