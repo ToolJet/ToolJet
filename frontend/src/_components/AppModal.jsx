@@ -2,9 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 import Modal from '../HomePage/Modal';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import _ from 'lodash';
+import _, { noop } from 'lodash';
 import { validateName } from '@/_helpers/utils';
 import { FormWrapper } from './FormWrapper';
+import { PluginsListForAppModal } from './PluginsListForAppModal';
 
 export function AppModal({
   closeModal,
@@ -17,6 +18,8 @@ export function AppModal({
   title,
   actionButton,
   actionLoadingButton,
+  dependentPluginsDetail = [],
+  dependentPluginsForTemplate = [],
 }) {
   if (!selectedAppName && templateDetails) {
     selectedAppName = templateDetails?.name || '';
@@ -151,7 +154,7 @@ export function AppModal({
       }
     >
       <FormWrapper callback={handleAction} id="createAppForm">
-        <div className="row workspace-folder-modal mb-3">
+        <div className="row workspace-folder-modal custom-gap-16">
           <div className="col modal-main tj-app-input">
             <label className="tj-input-label" data-cy="app-name-label">
               {'App Name'}
@@ -206,6 +209,14 @@ export function AppModal({
               </small>
             )}
           </div>
+          {dependentPluginsForTemplate && dependentPluginsForTemplate.length >= 1 && (
+            <div onClick={(e) => e.stopPropagation()}>
+              <PluginsListForAppModal
+                dependentPluginsForTemplate={dependentPluginsForTemplate}
+                dependentPluginsDetail={dependentPluginsDetail}
+              />
+            </div>
+          )}
         </div>
       </FormWrapper>
     </Modal>
