@@ -3,9 +3,7 @@ id: constants
 title: Workspace Constants
 ---
 
-ToolJet allows you to set workspace constants to store pre-defined values that can be used across your application to maintain consistency, facilitate easy updates, and securely store sensitive information.
-
-Only **Workspace Admins** can create, update, or delete workspace constants. Workspace constants are specific to the workspace where they are created and cannot be accessed in other workspaces.
+ToolJet allows you to set workspace constants to store pre-defined values that can be used across your application to maintain consistency, facilitate easy updates, and securely store sensitive information. Workspace constants are specific to the workspace where they are created and cannot be accessed in other workspaces.
 
 There are two types of constants:
 1. **Global Constants:** These are predefined values that can be used across your applications within a workspace. They allow you to store frequently used values, such as API URLs, configuration settings, etc. and access them within the workspace.
@@ -37,9 +35,7 @@ Both workspace constants and secrets are resolved exclusively on the server side
 
 ## Creating Workspace Constants
 
-To create workspace constants or secrets, follow these steps:
-
-Role Required: **Admin**
+Workspace constants/variables permissions is needed to Create, Update or Delete workspace constants, refer to **[Access Control](#)** guide for more information. After having the required permission, follow these steps to create a workspace constant:
 
 1. Navigate to the Workspace Constants tab from the left sidebar in ToolJet dashboard. <br/>
     (Example URL - `https://app.corp.com/nexus/workspace-constants`)
