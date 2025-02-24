@@ -15,9 +15,7 @@ To configure the workspace-level authentication configuration
     
 2.  On this page, you can configure the following settings:
 
-<div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/user-management/authentication/selfhosted/workspace-login.png" alt="cloud login" />
-</div>
+<img className="screenshot-full img-l" src="/img/user-management/authentication/selfhosted/workspace-level.png" alt=" workspace level login" />
     
 
 ###   SSO (Single Sign-On)

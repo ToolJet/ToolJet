@@ -14,23 +14,19 @@ Workspace contains applications, data sources, users (admins, developers, or bui
 
 To create a new workspace,
 
-1.  Open the workspace dropdown at the bottom left on dashboard (Example URL - `https://app.tooljetcorp.com/<workspace-slug>`)
+1.  Open the workspace dropdown at the bottom left on dashboard (Example URL - `https://app.corp.com/<workspace-slug>`)
 2.  Select **Add a new workspace**.
 3.  Fill in the workspace name and slug in the modal.
 4.  Click **Create workspace**.
 
-
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/tooljet-setup/workspace/create-workspace.png" alt="Marketplace Plugin: Amazon Redshift" />
-
-
-
+<img className="screenshot-full img-l" src="/img/tooljet-setup/workspace/create-workspace.png" alt="Create workspace" />
 
 ## Editing Workspaces
 **Role required** - Workspace Admin
 
 To edit a workspace,
 
-1. Open the workspace dropdown at the bottom left on dashboard (Example URL - `https://app.tooljetcorp.com/<workspace-slug>`)
+1. Open the workspace dropdown at the bottom left on dashboard (Example URL - `https://app.corp.com/<workspace-slug>`)
 2. Hover over the **current workspace** in the dropdown menu.
 3.  Click the **edit icon** to modify the workspace name or slug.
 4.  Save the changes, and the updates will reflect immediately across the platform.
@@ -39,8 +35,9 @@ To edit a workspace,
 
 To switch between the workspaces,
 
-1.  Open the workspace dropdown at the bottom left on dashboard (Example URL - `https://app.tooljetcorp.com/<workspace-slug>`)
+1.  Open the workspace dropdown at the bottom left on dashboard (Example URL - `https://app.corp.com/<workspace-slug>`)
 2.  Select the desired workspace from the list to switch instantly.
+<img className="screenshot-full img-s" src="/img/tooljet-setup/workspace/switch-workspace.png" alt="Archive workspace" />
 
 ## Archiving Workspaces
 **Role required** - Super Admin
@@ -54,12 +51,12 @@ To switch between the workspaces,
 
 -   To archive a workspace:
 
-1.  Go to **Settings** > **All Workspaces**. ( Example URL - `https://app.tooljetcorp.com/instance-settings/all-workspaces`)
+1.  Go to **Settings** > **All Workspaces**. ( Example URL - `https://app.corp.com/instance-settings/all-workspaces`)
 2.  A table listing all workspaces will appear.
 3.  Click the Archive button to open a confirmation modal. Once you confirm, the selected workspace will be archived.
 
 
-<img style={{ marginBottom:'15px'}} className="screenshot-full img-l" src="/img/tooljet-setup/workspace/archive.png" alt="Marketplace Plugin: Amazon Redshift" />
+<img className="screenshot-full img-l" src="/img/tooljet-setup/workspace/archive-workspace.png" alt="Archive workspace" />
 
 
 
@@ -71,7 +68,7 @@ For more details on archiving workspaces, refer to the [Super Admin](https://doc
 
 -   To unarchive a workspace:
 
-1.  Go to **Settings** > **All Workspaces**. ( Example URL - `https://app.tooljetcorp.com/instance-settings/all-workspaces`)
+1.  Go to **Settings** > **All Workspaces**. ( Example URL - `https://app.corp.com/instance-settings/all-workspaces`)
 2.  A table displaying all workspaces will appear. Click on the Archived tab to view archived workspaces.
 3.  Click the Unarchive button to unarchive the selected workspace.
 
