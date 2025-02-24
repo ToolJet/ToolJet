@@ -3,7 +3,7 @@ id: gitsync-config
 title: Configure GitSync
 ---
 
-In this guide, we will explore how to configure GitSync using GitHub as the repository manager. By default GitSync is configured for the **master** branch, but this can be configured to a different branch 
+In this guide, we will explore how to configure GitSync using GitHub as the repository manager. By default GitSync is configured for the **master** branch, but this can be configured to a different branch as well, refer to **[Configuring GitSync on a Different Branch](#configuring-gitsync-on-a-different-branch)** section for more information.
 
 For more information on using other repository managers, such as GitLab or Gitea, refer to the **[SSH Configuration for Git Repo Manager](#)** guide.
 
@@ -62,9 +62,11 @@ Role Required: **Admin**
 
 ## Configuring GitSync on a Different Branch
 
-Starting from version **v3.5.3-ee-lts**, GitSync supports custom branches. This feature is available only in the Self-Hosted version of ToolJet, and the Git repository can only be configured at the instance level. This means that if you use a custom branch for GitSync, you cannot configure different repositories for different workspaces.
+Starting from version **v3.5.3-ee-lts**, GitSync in ToolJet supports custom branches. This feature is available only in the Self-Hosted version of ToolJet. The custom branch for GitSync is configured at the instance level via an environment variable.
 
-To configure a custom branch for the GitSync, you need to set the following environment variable in your **.env** file: <br/>
+Different repositories can be configured for different workspaces, but the custom branch set in the **.env** file must be present in all configured repositories to ensure smooth operation. The branch specified in the **.env** file will apply to all workspaces with GitSync support.
+
+To configure a custom branch for GitSync, you need to set the following environment variable in your **.env** file:  <br/>
 `GITSYNC_TARGET_BRANCH` = **branch-name**
 
-**Note:** **Existing GitSync users** must create the new custom branch from the master branch to retain all previous commits.
+**Note:** **Existing GitSync users** who want to use a custom Git branch must first create a new custom branch from the master branch in the Git repository manager. Then, they must configure the branch name in the **.env** file to ensure all operations work smoothly.
