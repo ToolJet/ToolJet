@@ -175,9 +175,8 @@ The date with time column stores data in the ISO 8601 format. When querying a ta
 1. Connect the query to the Table Component and navigate to its properties panel.
 2. In the Columns section, select the column that stores the date with time.
 3. Change the column type from String to **Date Picker**.
-4. In the **Parse format** section, enable the **Parse in unix timestamp** and **Unix timestamp** options as needed.
-5. Under the date format section, toggle on the **Enable date** and **Enable time** options accordingly.
-6. In the transformation field, the `{{cellValue}}` variable contains the ISO 8601 formatted date. Convert it to a Date object using `{{new Date(cellValue)}}`, then format the Date object to meet your requirements.
+4.  Under the date format section, toggle on the **Enable date** and **Enable time** options accordingly.
+5. In the transformation field, the `{{cellValue}}` variable contains the ISO 8601 formatted date. Convert it to a Date object using `{{new Date(cellValue)}}`, then format the Date object to meet your requirements.
 
 
 <div style={{textAlign: 'center'}}>
@@ -186,6 +185,108 @@ The date with time column stores data in the ISO 8601 format. When querying a ta
 
 </div>
 
+<div style={{paddingTop:'24px'}}>
+
+## Querying JSON Data Type
+
+In ToolJet Database, a column can be set to JSON Data Type. It can be used to store structured data like arrays or nested objects, making it useful for complex data structures such as configurations or logs. To query the JSON Data Type, follow the following steps:
+
+### Flat JSON Object
+
+A flat JSON object is a JSON structure where all key-value pairs exist at a single level, without any nesting. Each key is unique within the object, and all values are direct data entries rather than other objects or arrays.
+
+1. Add **ToolJet DB** as the Data Source from the query panel.
+2. Select **GUI mode** (else you can select SQL mode as well).
+3. Select the **Table name**.
+4. Select the desired operation from the dropdown.
+5. Click on **+ Add Condition** button in front of Filter.
+6. Choose column that consist JSON Data, choose the desired operation and enter the value.
+7. In the input box below the column name, enter the desired key by adding `->>` before the key, example `->>city`.
+
+<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/v2-beta/database/newui/flat_json.png" alt="ToolJet Database Date" />
+
+<details>
+<summary>**Response Example**</summary>
+
+```json
+[
+  {
+    "id":1,
+    "json":{
+      "id":101,
+      "age":30,
+      "city":"Los Angeles",
+      "name":"Alice Johnson",
+      "email":"alice@example.com",
+      "country":"USA"
+    }
+  }
+]
+```
+
+</details>
+
+### Nested JSON Object
+
+A nested JSON object is a JSON structure that contains key-value pairs, where some values are themselves JSON objects or arrays. This creates a hierarchical, multi-level structure with nested layers, which can represent complex relationships between data elements.
+
+1. Add **ToolJet DB** as the Data Source from the query panel.
+2. Select **GUI mode** (else you can select SQL mode as well).
+3. Select the **Table name**.
+4. Select the desired operation from the dropdown.
+5. Click on **+ Add Condition** button in front of Filter.
+6. Choose column that consist JSON Data, choose the desired operation and enter the value.
+7. In the input box below the column name, enter the desired JSON path by adding `->` before each key, example `->user->preferences->settings->notifications->sms->alerts->appointments->cancellations`. 
+
+<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/v2-beta/database/newui/nested_json_gui.png" alt="ToolJet Database Date" />
+
+**Note:** You can use `->` to access nested JSON fields and use `->>` to access the text.
+
+<details>
+<summary>**Response Example**</summary>
+
+```json
+[
+  {
+    "id": 102,
+    "name": "Michael Brown",
+    "age": 25,
+    "email": "michael@example.com",
+    "user": {
+      "preference": {
+        "settings": {
+          "notification": {
+            "sms": {
+              "alert": false
+            }
+          }
+        }
+     }
+    }
+  },
+  {
+    "id": 104,
+    "name": "David Miller",
+    "age": 35,
+    "email": "david@example.com",
+    "user": {
+      "preference": {
+        "settings": {
+          "notification": {
+            "sms": {
+              "alert": false
+            }
+          }
+        }
+      }
+    }
+  }
+]
+```
+
+</details>
+
+</div>
 
 
 :::info

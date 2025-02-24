@@ -39,6 +39,10 @@ Make sure to edit the environment variables in the `deployment.yaml`. We advise 
         Read **[environment variables reference](/docs/setup/env-vars)**
 :::
 
+:::warning
+To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`.
+:::
+
 3. Create a Kubernetes service to publish the Kubernetes deployment that you have created. We have a [template](https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/service.yaml) for exposing the ToolJet server as a service using an AWS Load Balancer.
 
 **Example:**
@@ -46,15 +50,19 @@ Make sure to edit the environment variables in the `deployment.yaml`. We advise 
 
 ## ToolJet Database
 
-To use ToolJet Database, you'd have to set up and deploy a PostgREST server, which helps in querying the ToolJet Database. Please [follow the instructions here](/docs/setup/env-vars/#enable-tooljet-database-required).
+To use the ToolJet Database, you need to set up and deploy a PostgREST server, which facilitates querying the database. Detailed setup instructions are available [here](/docs/tooljet-db/tooljet-database).
 
-1. Set up PostgREST server
+Starting with ToolJet 3.0, deploying the ToolJet Database is mandatory to avoid migration issues. Refer to the documentation below for details on the new major version, including breaking changes and required adjustments for your applications.
 
- ```
- kubectl apply -f https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/kubernetes/postgrest.yaml
-```
+- [ToolJet 3.0 Migration Guide for Self-Hosted Versions](./upgrade-to-v3.md)
 
-Update ToolJet deployment with the appropriate env variables [here](https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/deployment.yaml) and apply the changes.
+1. Setup PostgREST server
+
+   ```bash
+   kubectl apply -f https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/GKE/postgrest.yaml
+   ```
+
+2. Update ToolJet deployment with the appropriate env variables [here](https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/GKE/deployment.yaml) and apply the changes.
 
 ## Upgrading to the Latest LTS Version
 
@@ -67,5 +75,47 @@ If this is a new installation of the application, you may start directly with th
 - It is crucial to perform a **comprehensive backup of your database** before starting the upgrade process to prevent data loss.
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
+
+### Additional Step for Upgrading from v3.0.33-ee-lts to the Latest LTS Version
+
+If you are upgrading from version v3.0.33-ee-lts to the latest LTS, please ensure that the following configuration is done:
+
+Setup ChromaDB Deployment.
+
+*Currently, ChromaDB does not have support for Kubernetes.*
+
+1. To use ChromaDB, you need to set up a VM, deploy ChromaDB on it, and then connect to it for usage.
+
+This service helps to deploy chromadb using docker-compose.
+
+ ```yml
+ name: ChromaDB
+
+ services:
+  chroma:
+    name: chromadb
+    image: chromadb/chroma
+    ports:
+      - "8000:8000"
+    environment:
+      - CHROMA_HOST_ADDR=0.0.0.0
+      - CHROMA_HOST_PORT=8000
+    volumes:
+      - chromadb_data:/chroma
+
+ volumes:
+  chromadb_data:
+    driver: local
+```
+
+2. Add these environment variable in the ToolJet deployment file:
+```
+- name: CHROMA_DB_URL
+  value: <instance_ip:8000>
+``` 
+```
+- name: AI_GATEWAY_URL
+  value: https://api-gateway.tooljet.ai
+```
 
 *If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*

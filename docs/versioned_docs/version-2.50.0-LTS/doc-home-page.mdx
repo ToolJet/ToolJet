@@ -3,6 +3,7 @@ description: Home Page
 hide_table_of_contents: true
 sidebar_label: Home
 title: Home
+slug: /
 ---
 
 import './homepage.css';
@@ -199,7 +200,7 @@ style={{
                 <div className="relative display-block">
                     <div className='pb-14'>
                         <h1 className="text-4xl font-bold flex flex-col md:flex-row">
-                            {textLabels.title.prefix} <span className="text-blue-600">{textLabels.title.highlight}</span>
+                            {textLabels.title.prefix}&nbsp;<span className="text-blue-600">{textLabels.title.highlight}</span>
                         </h1>
                         <p className="text-xl text-gray-600">
                             {textLabels.subtitle}
@@ -262,7 +263,7 @@ style={{
                 <div className="text-center">
                     <Link 
                         className="no-underline" 
-                        to="/docs/setup/"
+                        to="/docs/2.50.0-LTS/setup/"
     >
                     <Button variant="link">
                         {textLabels.exploreMore}

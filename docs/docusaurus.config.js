@@ -16,15 +16,15 @@ const isProd = process.env.NODE_ENV === 'production';
 module.exports = {
   title: 'ToolJet',
   tagline: 'Low-code framework to Build internal tools and business apps.',
-  url: 'https://docs.tooljet.com',
+  url: 'https://docs.tooljet.ai',
   baseUrl: '/',
   onBrokenLinks: 'ignore',
   onBrokenMarkdownLinks: 'warn',
-  favicon: 'img/tooljet-favicon.svg',
+  favicon: 'img/tooljet-ai-favicon.svg',
   organizationName: 'ToolJet', // Usually your GitHub org/user name.
   projectName: 'ToolJet', // Usually your repo name.
   themeConfig: {
-    image: 'img/tooljet-og-image.png',
+    image: 'img/tooljet-ai-og-image.png',
     announcementBar: {
       id: 'support_us',
       content:
@@ -46,9 +46,9 @@ module.exports = {
       logo: {
         href: '/docs/',
         alt: 'ToolJet Logo',
-        src: 'img/Logomark.svg',
-        srcDark: `img/Logomark_white.svg`,
-        width: 90
+        src: 'img/Logomark-v2.svg',
+        srcDark: `img/Logomark_white-v2.svg`,
+        width: 120
       },
       items: [
         {
@@ -66,7 +66,7 @@ module.exports = {
           'aria-label': 'GitHub repository',
         },
         {
-          href: 'https://tooljet.com/slack',
+          href: 'https://tooljet.ai/slack',
           position: 'right',
           className: 'navbar-social-link navbar-slack-logo',
           'aria-label': 'Slack workspace',
@@ -90,7 +90,7 @@ module.exports = {
           items: [
             {
               label: 'Slack',
-              href: 'https://tooljet.com/slack',
+              href: 'https://tooljet.ai/slack',
             },
           ],
         },

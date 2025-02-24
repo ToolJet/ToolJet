@@ -49,7 +49,12 @@ For example, to send a **multipart/form-data** body, you can add the following h
 <img className="screenshot-full" src="/img/datasource-reference/rest-api/form-headers.png" alt="ToolJet - Data source - REST API" />
 
 <img className="screenshot-full" src="/img/datasource-reference/rest-api/form-body.png" alt="ToolJet - Data source - REST API" />
+<br/><br/>
 
+:::info Handling OAuth Token via REST API
+To obtain an OAuth token via REST API, add the following custom header: <br/>
+`Content-Type: application/x-www-form-urlencoded`
+:::
 
 ## Response Types and Handling
 
@@ -127,7 +132,7 @@ iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAA/FBMVEVAYt79/f1AYt/9/f79/ftAY9s/
 ```
 </details>
 
-Read the guide on **[loading base64 data](/docs/how-to/loading-image-pdf-from-db)**
+Read the guide on **[loading base64 data](/docs/how-to/loading-image-pdf-from-db)**.
 
 <img className="screenshot-full" src="/img/datasource-reference/rest-api/base64.png" alt="ToolJet - Data source - REST API" />
 

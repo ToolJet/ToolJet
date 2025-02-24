@@ -13,7 +13,7 @@ This document outlines the key improvements introduced in ToolJet 3.0, a major u
 2. Smooth app development even with 1000s of components and 100s of queries
 2. More intuitive experience in designing applications on the canvas with the new grid system
 4. Highly configurable **[page management system](/docs/tutorial/pages)**
-5. Revamped **[components](/docs/widgets/table/table-properties/)** with more styling and functionality customizations
+5. Revamped **[components](/docs/widgets/table/)** with more styling and functionality customizations
 6. Enhanced developer experience in managing queries with the **[new query manager UI](/docs/app-builder/query-panel)**
 7. Improved coding experience with better code suggestions, linting, and type-casting
 8. Better debugging with easy-to-understand error messages
@@ -30,7 +30,7 @@ This document outlines the key improvements introduced in ToolJet 3.0, a major u
 
 ## ToolJet Database (TJ DB)
 
-1. **[Custom primary key](/docs/tooljet-db/database-editor/#primary-key)** and **[foreign key support](/docs/tooljet-db/database-editor/#foreign-key)**
+1. **[Custom primary key](/docs/tooljet-db/constraints/primary-key)** and **[foreign key support](/docs/tooljet-db/constraints/foreign-key)**
 2. Support for more data types for advanced use cases
 3. **[SQL mode](/docs/tooljet-db/querying-tooljet-db#sql-editor)** for complex querying 
 4. Bulk upload using CSV 

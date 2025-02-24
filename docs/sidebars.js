@@ -18,6 +18,14 @@ const sidebars = {
         'getting-started/platform-overview',
         'getting-started/quickstart-guide',
       ],
+    }, {
+      "type": "category",
+      "label": "Build with AI",
+      "items": [
+        "build-with-ai/overview",
+        "build-with-ai/generate-applications",
+        "build-with-ai/ai-docs-assistant"
+      ]
     },
     {
       'type': 'category',
@@ -90,7 +98,7 @@ const sidebars = {
             'app-builder/walkthrough/variables',
             'app-builder/importing-exporting-applications',
           ],
-        },   
+        },
         {
           'type': 'category',
           'label': 'References',
@@ -130,6 +138,16 @@ const sidebars = {
                         'widgets/chart/chart-properties',
                         'widgets/chart/chart-examples',
                         'widgets/chart/transforming-data-for-charts'
+                      ]
+                    },
+                    {
+                      'type': 'category',
+                      'label': 'Chat',
+                      'items': [
+                        'widgets/chat/overview',
+                        'widgets/chat/properties',
+                        'widgets/chat/csa',
+                        'widgets/chat/markdown'
                       ]
                     },
                     'widgets/checkbox',
@@ -176,7 +194,7 @@ const sidebars = {
                         {
                           'type': 'category',
                           'label': 'Serverside Operations',
-                          'items' : [
+                          'items': [
                             'widgets/table/serverside-operations/overview',
                             'widgets/table/serverside-operations/search',
                             'widgets/table/serverside-operations/sort',
@@ -273,7 +291,8 @@ const sidebars = {
         'how-to/upload-files-gcs',
         'how-to/loading-image-pdf-from-db',
         'how-to/use-events-on-chart',
-        'how-to/print-multi-tabs-report'
+        'how-to/print-multi-tabs-report',
+        'how-to/display-listview-record-on-new-page'
       ],
     },
     {
@@ -321,7 +340,7 @@ const sidebars = {
             {
               'type': 'category',
               'label': 'REST API',
-              'collapsed': false,
+              'collapsed': true,
               'items': [
                 'data-sources/restapi/configuration',
                 'data-sources/restapi/authentication',
@@ -330,6 +349,7 @@ const sidebars = {
 
               ],
             },
+            'data-sources/soap-api',
             'data-sources/rethinkdb',
             'data-sources/run-js',
             'data-sources/run-py',
@@ -445,7 +465,18 @@ const sidebars = {
       'type': 'category',
       'label': 'Release Management',
       'items': [
-        'gitsync',
+        {
+          'type': 'category',
+          'label': 'GitSync',
+          'items': [
+            'release-management/gitsync/overview',
+            'release-management/gitsync/tj-config',
+            'release-management/gitsync/ssh-config',
+            'release-management/gitsync/delete-gitsync',
+            'release-management/gitsync/git-push',
+            'release-management/gitsync/git-pull',
+          ]
+        },
         'release-management/multi-environment',
         'tutorial/versioning-and-release',
       ],
@@ -494,7 +525,14 @@ const sidebars = {
             'marketplace/plugins/marketplace-plugin-Presto',
             'marketplace/plugins/marketplace-plugin-jira',
             'marketplace/plugins/marketplace-plugin-sharepoint',
-            'marketplace/plugins/marketplace-plugin-pinecone'
+            'marketplace/plugins/marketplace-plugin-pinecone',
+            'marketplace/plugins/marketplace-plugin-gemini',
+            'marketplace/plugins/marketplace-plugin-anthropic',
+            'marketplace/plugins/marketplace-plugin-mistral_ai',
+            'marketplace/plugins/marketplace-plugin-hugging_face',
+            'marketplace/plugins/marketplace-plugin-cohere',
+            'marketplace/plugins/marketplace-plugin-weaviate',
+            'marketplace/plugins/marketplace-plugin-qdrant'
           ],
         },
       ],
