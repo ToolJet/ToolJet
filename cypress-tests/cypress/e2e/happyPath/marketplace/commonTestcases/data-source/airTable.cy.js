@@ -29,7 +29,8 @@ data.dsName1 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data source Airtable", () => {
   beforeEach(() => {
-    cy.appUILogin();
+    cy.apiLogin();
+    cy.defaultWorkspaceLogin();
   });
 
   it("Should verify elements on connection AirTable form", () => {
@@ -140,8 +141,6 @@ describe("Data source Airtable", () => {
       .click()
       .type("List records{enter}");
 
-    cy.wait(500);
-
     cy.clearAndTypeOnCodeMirrorForEachField(
       airTableSelector.baseIdInputField,
       airTable_baseId
@@ -150,8 +149,7 @@ describe("Data source Airtable", () => {
       airTableSelector.tableNameInputField,
       airTable_tableName
     );
-    cy.wait(1000);
-
+  
     cy.get(dataSourceSelector.queryPreviewButton).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
@@ -163,7 +161,6 @@ describe("Data source Airtable", () => {
     cy.get(airTableSelector.operationSelectDropdown)
       .click()
       .type("Retrieve record{enter}");
-    cy.wait(500);
 
     cy.clearAndTypeOnCodeMirrorForEachField(
       airTableSelector.baseIdInputField,
@@ -177,7 +174,6 @@ describe("Data source Airtable", () => {
       airTableSelector.recordIdInputField,
       airTable_recordID
     );
-    cy.wait(1000);
     cy.get(dataSourceSelector.queryPreviewButton).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
@@ -189,7 +185,6 @@ describe("Data source Airtable", () => {
     cy.get(airTableSelector.operationSelectDropdown)
       .click()
       .type("Create record{enter}");
-    cy.wait(500);
 
     cy.clearAndTypeOnCodeMirrorForEachField(
       airTableSelector.baseIdInputField,
@@ -206,7 +201,6 @@ describe("Data source Airtable", () => {
       .realType("fields", { force: true, delay: 0 })
       .realType('": {}', { force: true, delay: 0 });
 
-    cy.wait(1000);
     cy.get(dataSourceSelector.queryPreviewButton).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
@@ -223,7 +217,6 @@ describe("Data source Airtable", () => {
     cy.get(airTableSelector.operationSelectDropdown)
       .click()
       .type("Update record{enter}");
-    cy.wait(500);
 
     cy.clearAndTypeOnCodeMirrorForEachField(
       airTableSelector.baseIdInputField,
@@ -244,7 +237,6 @@ describe("Data source Airtable", () => {
       .realType("{enter}", { force: true, delay: 0 })
       .realType('"Phone Number": "555_98"', { force: true, delay: 0 });
 
-    cy.wait(1000);
     cy.get(dataSourceSelector.queryPreviewButton).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
@@ -256,7 +248,6 @@ describe("Data source Airtable", () => {
     cy.get(airTableSelector.operationSelectDropdown)
       .click()
       .type("Delete record{enter}");
-    cy.wait(500);
 
     const recordId = Cypress._.uniqueId("recDummy_");
 
@@ -286,8 +277,7 @@ describe("Data source Airtable", () => {
       cy.get(airTableSelector.operationSelectDropdown)
         .click()
         .type("Delete record{enter}");
-      cy.wait(500);
-
+    
       cy.clearAndTypeOnCodeMirrorForEachField(
         airTableSelector.baseIdInputField,
         airTable_baseId
@@ -302,8 +292,7 @@ describe("Data source Airtable", () => {
         airTableSelector.recordIdInputField,
         newRecordId
       );
-      cy.wait(1000);
-
+    
       cy.get(dataSourceSelector.queryPreviewButton).click();
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
