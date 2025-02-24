@@ -918,7 +918,7 @@ class DataSourceManagerComponent extends React.Component {
                           </p>
                         </div>
 
-                        <div className="col-auto" data-cy="db-connection-save-button">
+                        <div className="col-auto">
                           {isCopied ? (
                             <center className="my-2">
                               <span className="copied" data-cy="label-ip-copied">
