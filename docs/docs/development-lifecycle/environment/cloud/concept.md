@@ -27,7 +27,7 @@ ToolJet provides environment management across different components:
 
 #### Applications
 
-Each application can have development, staging, and production environments. Developers build the application in the development environment and then move it to staging for testing. Your testing team can review the application in staging, and once it's thoroughly tested, you can promote it to production and release it to your end users.
+Each application has development, staging, and production environments. Developers build  the application in the development environment and then move it to staging for testing. Your testing team can review the application in staging, and once it's thoroughly tested, you can promote it to production and release it to your end users.
 
 #### Data Sources
 
@@ -37,9 +37,9 @@ Data sources can be configured separately for each environment, allowing applica
 
 Constants such as API keys, credentials, or other configuration variables can be defined uniquely for each environment. This helps maintain security and prevents misconfigurations across different deployment stages.
 
-### Environment Promotion in Applications
+### Application Life cycle
 
-ToolJet supports promoting applications across development, staging, and production  environments.
+The application lifecycle in ToolJet involves managing applications across different environments development, staging, and production. You can build the application in development environment and promote it to staging for testing.  After testing you can promote it to production and release the app for your end-users.
 
 You can configure data sources and constants for each environment, and ToolJet will automatically use the appropriate ones based on the target environment.
 
@@ -48,6 +48,21 @@ You can configure data sources and constants for each environment, and ToolJet w
 -   **Staging** – The testing or product team validates requirements and tests the application using staging data. Apps and queries cannot be edited in this environment.
     
 -   **Production** – After thorough testing in staging, the application is promoted to production. This can serve as a pre-release environment where you test with production data and constants before releasing the application to end users. Refer to [Release](http://s) documentation to learn more.
+
+<img className="screenshot-full img-l" src="/img/development-lifecycle/environments/self-hosted-concept.png" alt="self-hosted-env-concept" />
+
     
+### Impacted behavior with environment permission 
+
+Each environment has a different impact on your application. Please refer the following table for details.
+
+| Action             | Development | Staging | Production |
+|--------------------|------------|---------|------------|
+| Edit versions     | ✔️         | ❌      | ❌         |
+| Rename versions   | ✔️         | ❌      | ❌         |
+| Delete versions   | ✔️         | ❌      | ❌         |
+| Create new versions | ✔️      | ❌      | ❌         |
+| Promote           | ✔️         | ✔️      | -          |
+
 
 Checkout the [Environment-Example](http://f) guide to learn about multi-environment in ToolJet with a practical example.

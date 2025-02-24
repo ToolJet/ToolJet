@@ -519,17 +519,33 @@ const sidebars = {
         },
         {
           'type': 'category',
-          'label': 'Self-hosted',
+          'label': 'Environment',
           'items': [
             {
               'type': 'category',
-              'label': 'Environment',
+              'label': 'Self-Hosted',
               'items': [
-                'development-lifecycle/self-hosted/environment/concept',
-                'development-lifecycle/self-hosted/environment/example'
+                'development-lifecycle/environment/self-hosted/concept',
+                'development-lifecycle/environment/self-hosted/example',
+                {
+                  'type': 'category',
+                  'label': 'Multi-Instance',
+                  'items': [
+                    'development-lifecycle/environment/self-hosted/multi-instance/concept',
+                    'development-lifecycle/environment/self-hosted/multi-instance/example'
+                  ]
+                },
+
               ]
             },
-            'development-lifecycle/self-hosted/multi-instance'
+            {
+              'type': 'category',
+              'label': 'Cloud',
+              'items': [
+                'development-lifecycle/environment/cloud/concept',
+                'development-lifecycle/environment/cloud/example'
+              ]
+            }
           ]
         },
         {
