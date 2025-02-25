@@ -11,37 +11,31 @@ To configure a Git Manager with ToolJet using GitSync, you need the SSH URL from
 
 1. **Create a New Repository** <br/>
     Create a new repository on your GitHub. The repository can be public or private. You can also use an existing repository. Make sure that the repository is empty and the default branch name should be **master**.
-
- <img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/gitsync/github1.png" alt="GitSync" />
+    <img className="screenshot-full" src="/img/gitsync/github1.png" alt="GitSync" />
 
 2. **Obtain the SSH URL** <br/>
     When a repository is created, GitHub shows a screen with the SSH URL. If the repository is already created, you can obtain the URL by clicking on the **Clone or download** button.
-        
-<img className="screenshot-full" src="/img/gitsync/github2.png" alt="GitSync" />
+    <img className="screenshot-full" src="/img/gitsync/github2.png" alt="GitSync" />
 
 ### GitLab
 
 1. **Create a New Repository** <br/>
     Create a new repository on your GitLab. The repository can be public or private. You can also use an existing repository. Make sure that the repository is empty and the default branch name should be **master**.
-
- <img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/gitsync/gitlab/repo.png" alt="GitSync" />
+    <img className="screenshot-full" src="/img/gitsync/gitlab/repo.png" alt="GitSync" />
 
 2. **Obtain the SSH URL** <br/>
     On GitLab, you can obtain the URL by clicking on the **Clone** button and selecting the **SSH** option.
-        
-<img className="screenshot-full" src="/img/gitsync/gitlab/gitlabssh.png" alt="GitSync" />
+    <img className="screenshot-full" src="/img/gitsync/gitlab/gitlabssh.png" alt="GitSync" />
 
 ### Gitea
 
 1. **Create a New Repository** <br/>
     Create a new repository on your Gitea. You can also use an existing repository. Make sure that the repository is empty and the default branch name should be **master**.
-
- <img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/gitsync/gitea/new-repo.png" alt="GitSync" />
+    <img className="screenshot-full" src="/img/gitsync/gitea/new-repo.png" alt="GitSync" />
 
 2. **Obtain the SSH URL** <br/>
     When a repository is created, Gitea shows a screen with the SSH URL. 
-        
-<img className="screenshot-full" src="/img/gitsync/gitea/ssh-url.png" alt="GitSync" />
+    <img className="screenshot-full" src="/img/gitsync/gitea/ssh-url.png" alt="GitSync" />
 
 
 ## Deploy the SSH Key
@@ -49,8 +43,7 @@ To configure a Git Manager with ToolJet using GitSync, you need the SSH URL from
 ### GitHub
 
 1. Go to the **Settings** tab of the GitHub repository, and click on the **Deploy keys** tab. Click on the **Add deploy key** button. 
-
-<img className="screenshot-full" src="/img/gitsync/github3.png" alt="GitSync" />
+    <img className="screenshot-full" src="/img/gitsync/github3.png" alt="GitSync" />
 
 2. Enter a title for the SSH key in the **Title** field. 
         
@@ -59,8 +52,7 @@ To configure a Git Manager with ToolJet using GitSync, you need the SSH URL from
 4. Make sure that the **Allow write access** checkbox is checked, especially when configuring the GitSync feature to [push changes to Git](#pushing-changes-to-git-repo). However, it is not mandatory to check this option when setting up the GitSync feature for [pulling changes from Git](#pulling-changes-from-git-repo).
         
 5. Finally, click on the **Add key** button.
-
-<img className="screenshot-full" src="/img/gitsync/github4.png" alt="GitSync" />
+    <img className="screenshot-full" src="/img/gitsync/github4.png" alt="GitSync" />
 
 ### GitLab
 
@@ -73,8 +65,7 @@ Use this option for access to all your repositories.
 1. Click on your avatar in the top-left corner and select **Edit Profile**.
 
 2. Navigate to the **SSH Keys** tab and click the **Add new key** button.
-
-<img className="screenshot-full" src="/img/gitsync/gitlab/addingssh.png" alt="GitLab SSH Key" />
+    <img className="screenshot-full" src="/img/gitsync/gitlab/addingssh.png" alt="GitLab SSH Key" />
 
 3. In the **Key** field, paste the SSH key you generated from the ToolJet.
 
@@ -85,8 +76,7 @@ Use this option for access to all your repositories.
 6. Optionally, set an expiration date.
         
 7. Click **Add key** to save.
-
-<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/gitsync/gitlab/activessh.png" alt="GitLab SSH Key" />
+    <img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/gitsync/gitlab/activessh.png" alt="GitLab SSH Key" />
 
 #### Option 2: Add as a Deploy Key 
 
@@ -107,14 +97,12 @@ Use this option for access to a specific repository only.
 7. Enable the **Grant write permissions to this key** checkbox. We need this permission to push changes to the repository.
 
 8. Click **Add key** to save.
-
-<img className="screenshot-full" src="/img/gitsync/gitlab/deploy-keys.png" alt="GitLab Deploy Key" />
+    <img className="screenshot-full" src="/img/gitsync/gitlab/deploy-keys.png" alt="GitLab Deploy Key" />
 
 ### Gitea
 
 1. Go to the **Settings** tab of the Gitea repository, and click on the **Deploy keys** tab. Click on the **Add deploy key** button. 
-
-<img className="screenshot-full" src="/img/gitsync/gitea/deploy-ssh.png" alt="GitSync" />
+    <img className="screenshot-full" src="/img/gitsync/gitea/deploy-ssh.png" alt="GitSync" />
 
 2. Enter a title for the SSH key in the **Title** field. 
         
@@ -123,5 +111,4 @@ Use this option for access to a specific repository only.
 4. Make sure that the **Allow write access** checkbox is checked, especially when configuring the GitSync feature to [push changes to Git](#pushing-changes-to-git-repo). However, it is not mandatory to check this option when setting up the GitSync feature for [pulling changes from Git](#pulling-changes-from-git-repo).
         
 5. Finally, click on the **Add Deploy key** button.
-
-<img className="screenshot-full" src="/img/gitsync/gitea/final.png" alt="GitSync" />
+    <img className="screenshot-full" src="/img/gitsync/gitea/final.png" alt="GitSync" />

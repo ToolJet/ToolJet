@@ -24,14 +24,12 @@ Role Required: **Super Admin** <br/>
     (Example URL - `https://app.corp.com/instance-settings/all-users`)
 
 3. Spot the user that need to be archived and click on the kebab menu located at the end of their row. 
-
-<img className="screenshot-full" src="/img/user-management/onboard-user/archive-user/sh-archive-user-menu.png" alt="Workspace Level Permissions" />
+    <img className="screenshot-full" src="/img/user-management/onboard-user/archive-user/sh-archive-user-menu.png" alt="Workspace Level Permissions" />
 
 4. Select **Archive user**.
 
 5. The status of the user will be updated to archived.
-
-<img className="screenshot-full" src="/img/user-management/onboard-user/archive-user/sh-archived-user.png" alt="Workspace Level Permissions" />
+    <img className="screenshot-full" src="/img/user-management/onboard-user/archive-user/sh-archived-user.png" alt="Workspace Level Permissions" />
 
 ### Workspace Level
 
@@ -45,14 +43,12 @@ Role Required: **Admin** <br/>
     (Example URL - `https://app.corp.com/nexus/workspace-settings/users`)
 
 3. Spot the user that need to be archived and click on the kebab menu located at the end of their row. 
-
-<img className="screenshot-full" src="/img/user-management/onboard-user/archive-user/archive-user-menu.png" alt="Workspace Level Permissions" />
+    <img className="screenshot-full" src="/img/user-management/onboard-user/archive-user/archive-user-menu.png" alt="Workspace Level Permissions" />
 
 4. Select **Archive user**.
 
 5. The status of the user will be updated to archived.
-
-<img className="screenshot-full" src="/img/user-management/onboard-user/archive-user/archived-user.png" alt="Workspace Level Permissions" />
+    <img className="screenshot-full" src="/img/user-management/onboard-user/archive-user/archived-user.png" alt="Workspace Level Permissions" />
 
 ## Steps to Unarchive User
 
@@ -68,14 +64,12 @@ Role Required: **Super Admin** <br/>
     (Example URL - `https://app.corp.com/instance-settings/all-users`)
 
 3. Spot the user that need to be unarchived and click on the kebab menu located at the end of their row. 
-
-<img className="screenshot-full" src="/img/user-management/onboard-user/archive-user/sh-unarchive-user-menu.png" alt="Workspace Level Permissions" />
+    <img className="screenshot-full" src="/img/user-management/onboard-user/archive-user/sh-unarchive-user-menu.png" alt="Workspace Level Permissions" />
 
 4. Select **Unarchive user**.
 
 5. The status of the user will be updated to invited.
-
-<img className="screenshot-full" src="/img/user-management/onboard-user/archive-user/sh-unarchived-user.png" alt="Workspace Level Permissions" />
+    <img className="screenshot-full" src="/img/user-management/onboard-user/archive-user/sh-unarchived-user.png" alt="Workspace Level Permissions" />
 
 ### Workspace Level
 
@@ -89,11 +83,9 @@ Role Required: **Admin** <br/>
     (Example URL - `https://app.corp.com/nexus/workspace-settings/users`)
 
 3. Spot the user that need to be unarchived and click on the kebab menu located at the end of their row. 
-
-<img className="screenshot-full" src="/img/user-management/onboard-user/archive-user/unarchive-user-menu.png" alt="Workspace Level Permissions" />
+    <img className="screenshot-full" src="/img/user-management/onboard-user/archive-user/unarchive-user-menu.png" alt="Workspace Level Permissions" />
 
 3. Select **Unarchive user**.
 
 4. The status of the user will be updated to invited and the user will recive a new invitation mail to join the workspace.
-
-<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/user-management/onboard-user/archive-user/unarchived-user.png" alt="Workspace Level Permissions" />
+    <img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/user-management/onboard-user/archive-user/unarchived-user.png" alt="Workspace Level Permissions" />

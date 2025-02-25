@@ -36,8 +36,7 @@ Role Required: **Admin** <br/>
 3. Select the group to configure permissions.
 
 4. Switch to the **Permissions** tab and configure the required permissions.
-
-<img className="screenshot-full" src="/img/user-management/rbac/access-control/select-permission.png" alt="Create Custom Group" />
+    <img className="screenshot-full" src="/img/user-management/rbac/access-control/select-permission.png" alt="Create Custom Group" />
 
 
 ## Granular Access Control
@@ -57,7 +56,7 @@ To configure Granular Access Control, you need to create custom groups. Refer to
 
 - **Custom**: Provide the selected access (Edit or View) only to the specified apps.
 
-<img className="screenshot-full" src="/img/user-management/rbac/access-control/app-permission.png" alt="Create Custom Group" />
+    <img className="screenshot-full img-m" src="/img/user-management/rbac/access-control/app-permission.png" alt="Create Custom Group" />
 
 ### Data Sources
 
@@ -69,7 +68,7 @@ To configure Granular Access Control, you need to create custom groups. Refer to
 
 - **Custom**: Provide the selected access (Configure or Build with) only to the specified data sources.
 
-<img className="screenshot-full" src="/img/user-management/rbac/access-control/ds-permission.png" alt="Create Custom Group" />
+    <img className="screenshot-full img-m" src="/img/user-management/rbac/access-control/ds-permission.png" alt="Create Custom Group" />
 
 ### Configuring Granular Access Permission
 
@@ -86,4 +85,4 @@ Role Required: **Admin** <br/>
 
 5. Select the resource (Apps/Data source) based on requirement. Give a name for the permission, configure required permission and click on **Add** at the bottom of the modal.
 
-<img className="screenshot-full" src="/img/user-management/rbac/access-control/select-resource.png" alt="Create Custom Group" />
+    <img className="screenshot-full" src="/img/user-management/rbac/access-control/select-resource.png" alt="Create Custom Group" />

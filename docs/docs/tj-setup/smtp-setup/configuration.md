@@ -52,7 +52,7 @@ If you have upgraded from a version prior to v2.62.0, the SMTP variables in your
 
 ToolJet allows you to configure SMTP settings using environment variables. You can enable a toggle in the Email protocol (SMTP) settings to apply or fetch the configuration directly from your .env file.
 
-<img className="screenshot-full" src="/img/enterprise/smtp/configuration-v2-env.png" alt="SMTP Configuration Without Environment Variables" />
+<img className="screenshot-full img-l" src="/img/enterprise/smtp/configuration-v2-env.png" alt="SMTP Configuration Without Environment Variables" />
 
 **Example Environment Variables**:<br/>
 

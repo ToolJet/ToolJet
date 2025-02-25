@@ -550,14 +550,6 @@ const sidebars = {
         },
         {
           'type': 'category',
-          'label': 'Cloud',
-          'items': [
-            'development-lifecycle/cloud/concept',
-            'development-lifecycle/cloud/example'
-          ]
-        },
-        {
-          'type': 'category',
           'label': 'Backup',
           'items': [
             'development-lifecycle/backup/gitsync-backup',

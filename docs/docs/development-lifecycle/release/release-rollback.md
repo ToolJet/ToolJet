@@ -14,12 +14,10 @@ Releasing an app in ToolJet makes the selected version available to end users, a
 1. Promote the required version to the **[production environment](#)**.
 
 2. Click on the Release button at the top-right corner.
-
-<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/development-lifecycle/release/release/release-v3.png" alt="release"/>
+    <img className="screenshot-full" src="/img/development-lifecycle/release/release/release-v3.png" alt="release"/>
 
 3. A confirmation dialog will popup that prompts you to decide whether to release the current version of the app. Clicking on the **Release** button will release the current version of the app.
-
-<img style={{ marginTop:'15px' }} className="screenshot-full" src="/img/development-lifecycle/release/release/confirm-v2.png" alt="release"/>
+    <img className="screenshot-full" src="/img/development-lifecycle/release/release/confirm-v2.png" alt="release"/>
 
 ## Rollback
 
@@ -30,14 +28,12 @@ For example, after releasing a new version v1.2.0, users report failures of the 
 ### Steps to Rollback
 
 1. Go to the **App Version Manager** from the toolbar and click on the dropdown. It will display all the available versions of the app. The released version name will be in green color.
-<img className="screenshot-full" src="/img/development-lifecycle/release/version-control/version-menu.png" alt="app version"/>
+    <img className="screenshot-full" src="/img/development-lifecycle/release/version-control/version-menu.png" alt="app version"/>
 
 2. Choose the desired stable version from the dropdown. 
 
 3. Click on the Release button at the top-right corner.
-
-<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/development-lifecycle/release/release/release-v3.png" alt="release"/>
+    <img className="screenshot-full" src="/img/development-lifecycle/release/release/release-v3.png" alt="release"/>
 
 4. A confirmation dialog will popup that prompts you to decide whether to release the current version of the app. Clicking on the **Release** button will release the current version of the app.
-
-<img style={{ marginTop:'15px' }} className="screenshot-full" src="/img/development-lifecycle/release/release/confirm-v2.png" alt="release"/>
+    <img className="screenshot-full" src="/img/development-lifecycle/release/release/confirm-v2.png" alt="release"/>

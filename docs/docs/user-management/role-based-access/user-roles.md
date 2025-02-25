@@ -36,21 +36,17 @@ Role Required: **Admin** <br/>
     (Example URL - `https://app.corp.com/nexus/workspace-settings/users`)
 
 3. Spot the user whose roles need to be updated and click on the kebab menu located at the end of their row. 
-
-<img className="screenshot-full" src="/img/user-management/rbac/user-roles/edit-user-menu.png" alt="Workspace Level Permissions" />
+    <img className="screenshot-full" src="/img/user-management/rbac/user-roles/edit-user-menu.png" alt="Workspace Level Permissions" />
 
 4. Click on **Edit user details**, a right panel will appear.
 
 5. Update the role from the User groups dropdown.
-
-<img className="screenshot-full" src="/img/user-management/rbac/user-roles/update-user-role.png" alt="Workspace Level Permissions" />
+    <img className="screenshot-full" src="/img/user-management/rbac/user-roles/update-user-role.png" alt="Workspace Level Permissions" />
 
 6. Click on **Update** button present at the bottom of the panel.
 
 7. Read and accept the pop-up warning by clicking on **Continue** button.
-
-<img className="screenshot-full" src="/img/user-management/rbac/user-roles/warning.png" alt="Workspace Level Permissions" />
+    <img className="screenshot-full img-s" src="/img/user-management/rbac/user-roles/warning.png" alt="Workspace Level Permissions" />
 
 8. The user role will be updated for that user.
-
-<img className="screenshot-full" src="/img/user-management/rbac/user-roles/updated-role.png" alt="Workspace Level Permissions" />
+    <img className="screenshot-full" src="/img/user-management/rbac/user-roles/updated-role.png" alt="Workspace Level Permissions" />

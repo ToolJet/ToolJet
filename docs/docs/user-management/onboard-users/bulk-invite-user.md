@@ -15,11 +15,10 @@ Role Required: **Admin**
     (Example URL - `https://app.corp.com/nexus/workspace-settings/users`)
 
 3. Click on **Add users** button.
+    <img className="screenshot-full" src="/img/user-management/onboard-user/invite-user/add-user.png" alt="Add user button" />
 
-<img className="screenshot-full" src="/img/user-management/onboard-user/invite-user/add-user.png" alt="Add user button" />
-
-3. Switch to **Upload CSV file** tab.
-4. Upload a CSV file consiting following fields:
+4. Switch to **Upload CSV file** tab.
+5. Upload a CSV file consiting following fields:
 
     | Field | Required/Optional | Example |
     |:-----|:---------|:-------|
@@ -31,9 +30,8 @@ Role Required: **Admin**
     | Metadata | Optional | `{"apiKey": "abc123"}` |
 
     You can also download the template to edit.
-5. Click on **Upload users**.
-
-<img className="screenshot-full" src="/img/user-management/onboard-user/bulk-invite/upload-csv.png" alt="Add user button" />
+6. Click on **Upload users**.
+    <img className="screenshot-full" src="/img/user-management/onboard-user/bulk-invite/upload-csv.png" alt="Add user button" />
 
 ## Email Invitation
 
@@ -41,13 +39,13 @@ Pre-Requisite: **[Setup SMTP Server](/docs/tj-setup/smtp-setup/configuration)**
 
 Once a user is invited to the workspace, they will receive an email containing a unique workspace invite link. By clicking the link, the user will be redirected to the workspace login or signup page to complete the onboarding process. 
 
-<img className="screenshot-full" src="/img/user-management/onboard-user/invite-user/email.png" alt="Workspace Level Permissions" />
+<img className="screenshot-full img-l" src="/img/user-management/onboard-user/invite-user/email.png" alt="Workspace Level Permissions" />
 
 ## Invitation URL 
 
 On Self-Hosted ToolJet, admin users can copy unique invitation URL and share with the user.
 
-<img className="screenshot-full" src="/img/user-management/onboard-user/invite-user/copy-link.png" alt="Workspace Level Permissions" />
+<img className="screenshot-full img-l" src="/img/user-management/onboard-user/invite-user/copy-link.png" alt="Workspace Level Permissions" />
 
 ## User Status
 

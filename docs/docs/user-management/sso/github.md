@@ -24,28 +24,22 @@ Go to **Settings > Instance login**. <br/>
     (Example URL - `https://app.corp.com/nexus/workspace-settings/workspace-login`)
 
 3. On the right, you'll see toggles to enable SSO via different clients. All the client toggles are disabled by default. Turn on the toggle in front of GitHub.
-
-<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/user-management/sso/github/sso-menu.png" alt="Add user button" />
+    <img className="screenshot-full" src="/img/user-management/sso/github/sso-menu.png" alt="Add user button" />
 
 4. After turning it on, a modal will appear with input fields for parameters such as Host name, Client ID, and Client secret. At the top left of the modal, there is a toggle to enable this modal. Turn it on, and then, without entering any parameters, click on the Save changes button. This will generate a Redirect URL that you will need to utilize in the GitHub Developer settings.
-
-<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/user-management/sso/github/github-modal.png" alt="Add user button" />
+    <img className="screenshot-full" src="/img/user-management/sso/github/github-modal.png" alt="Add user button" />
 
 5. Go to **[GitHub Developer Settings](https://github.com/settings/developers)** and navigate to **OAuth Apps** and create a new OAuth App.
-
-<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/user-management/sso/github/oauth-app.png" alt="Add user button" />
+    <img className="screenshot-full" src="/img/user-management/sso/github/oauth-app.png" alt="Add user button" />
 
 6. Enter the **App Name**, **Homepage URL**, and **Authorization callback URL**. The Authorization callback URL should be the generated **Redirect URL** in the ToolJet GitHub manage SSO page. Click on the Register application button to create the OAuth App.
-
-<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/user-management/sso/github/oauth-config.png" alt="Add user button" />
+    <img className="screenshot-full" src="/img/user-management/sso/github/oauth-config.png" alt="Add user button" />
 
 7. The **Client ID** will be generated automatically. Generate the **Client Secret** by clicking the **Generate a new client secret** button.
-
-<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/user-management/sso/github/github-clientid.png" alt="Add user button" />
+    <img className="screenshot-full" src="/img/user-management/sso/github/github-clientid.png" alt="Add user button" />
 
 8. Open the ToolJet's GitHub SSO settings and enter the obtained **Client ID** and **Client Secret**.
-
-<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/user-management/sso/github/config-github.png" alt="Add user button" />
+    <img className="screenshot-full" src="/img/user-management/sso/github/config-github.png" alt="Add user button" />
 
 9. If you are using GitHub Enterprise self-hosted, enter the Host Name. The host name should be a URL and should not end with `/`, for example, `https://github.tooljet.com`. If it is not self-hosted, you can skip this field.
 

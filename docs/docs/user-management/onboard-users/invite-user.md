@@ -26,7 +26,7 @@ Role Required: **Admin** <br/>
     | | Optional | CUSTOM GROUPS: **Manager** |
     | [User metadata](#) | Optional | `{"apiKey": "abc123"}` |
 
-    <img className="screenshot-full" src="/img/user-management/onboard-user/invite-user/user-details.png" alt="Invite User" />
+    <img className="screenshot-full img-m" src="/img/user-management/onboard-user/invite-user/user-details.png" alt="Invite User" />
 
 5. Click on **Invite users** button to send the invitation.
     
@@ -37,7 +37,7 @@ Pre-Requisite: **[Setup SMTP Server](/docs/tj-setup/smtp-setup/configuration)**
 
 Once a user is invited to the workspace, they will receive an email containing a unique workspace invite link. By clicking the link, the user will be redirected to the workspace login or signup page to complete the onboarding process. 
 
-<img className="screenshot-full" src="/img/user-management/onboard-user/invite-user/email.png" alt="Workspace Level Permissions" />
+<img className="screenshot-full img-l" src="/img/user-management/onboard-user/invite-user/email.png" alt="Workspace Level Permissions" />
 
 ## Invitation URL 
 

@@ -26,12 +26,10 @@ Go to **Settings > Instance login**. <br/>
     (Example URL - `https://app.corp.com/nexus/workspace-settings/workspace-login`)
 
 3. On the right, you'll see toggles to enable SSO via different clients. All the client toggles are disabled by default. Turn on the toggle in front of OpenID Connect.
-
-<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/user-management/sso/github/sso-menu.png" alt="Add user button" />
+    <img className="screenshot-full" src="/img/user-management/sso/github/sso-menu.png" alt="Add user button" />
 
 4. After turning it on, a modal will appear with input fields for parameters such as Name, Client ID, Client secret and Well known URL. At the top left of the modal, there is a toggle to enable this modal. Turn it on, and then, without entering any parameters, click on the Save changes button. This will generate a Redirect URL, which you will need to obtain the credentials from the Identity Provider.
-
-<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/user-management/sso/oidc/config.png" alt="Add user button" />
+    <img className="screenshot-full img-l" src="/img/user-management/sso/oidc/config.png" alt="Add user button" />
 
 5. Find and set **Client Id**, **Client Secret**, and **Well Known URL** from your identity provider and click on **Save changes** at the bottom of the modal.
 
