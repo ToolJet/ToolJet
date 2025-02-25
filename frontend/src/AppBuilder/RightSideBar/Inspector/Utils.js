@@ -50,7 +50,8 @@ export function renderCustomStyles(
     componentConfig.component == 'MultiselectV2' ||
     componentConfig.component == 'RadioButtonV2' ||
     componentConfig.component == 'Button' ||
-    componentConfig.component == 'Image'
+    componentConfig.component == 'Image' ||
+    componentConfig.component == 'ModalV2'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
@@ -150,8 +151,6 @@ export function renderElement(
       }
     }
   }
-
-  // if (isHidden) return null;
 
   return (
     <Code
