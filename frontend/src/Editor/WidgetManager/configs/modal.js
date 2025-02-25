@@ -1,6 +1,6 @@
 export const modalConfig = {
-  name: 'Modal',
-  displayName: 'Modal',
+  name: 'ModalLegacy',
+  displayName: 'Modal (Legacy)',
   description: 'Show pop-up windows',
   component: 'Modal',
   defaultSize: {

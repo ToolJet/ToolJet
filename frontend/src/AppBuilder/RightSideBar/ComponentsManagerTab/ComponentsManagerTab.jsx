@@ -133,7 +133,7 @@ export const ComponentsManagerTab = ({ darkMode }) => {
         'StarRating',
       ];
       const integrationItems = ['Map'];
-      const layoutItems = ['Container', 'Listview', 'Tabs', 'Modal'];
+      const layoutItems = ['Container', 'Listview', 'Tabs', 'ModalV2'];
 
       filteredComponents.forEach((f) => {
         if (commonItems.includes(f)) commonSection.items.push(f);

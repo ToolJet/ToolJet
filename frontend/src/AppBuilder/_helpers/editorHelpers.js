@@ -65,6 +65,7 @@ import { Tabs } from '@/AppBuilder/Widgets/Tabs';
 import { Kanban } from '@/AppBuilder/Widgets/Kanban/Kanban';
 import { Form } from '@/AppBuilder/Widgets/Form/Form';
 import { Modal } from '@/AppBuilder/Widgets/Modal';
+import { ModalV2 } from '@/AppBuilder/Widgets/ModalV2/ModalV2';
 import { Calendar } from '@/AppBuilder/Widgets/Calendar/Calendar';
 // import './requestIdleCallbackPolyfill';
 
@@ -106,6 +107,7 @@ export const AllComponents = {
   Multiselect,
   MultiselectV2,
   Modal,
+  ModalV2,
   Chart,
   Map: MapComponent,
   QrScanner,
