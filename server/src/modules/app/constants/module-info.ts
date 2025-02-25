@@ -16,7 +16,6 @@ import { FEATURES as DATA_QUERY_FEATURES } from '@modules/data-queries/constants
 import { FEATURES as LOGIN_CONFIGS } from '@modules/login-configs/constants/feature';
 import { FEATURES as CONFIGS_FEATURES } from '@modules/configs/constants/feature';
 import { FEATURES as SESSION_FEATURES } from '@modules/session/constants/feature';
-import { EDITIONS } from '.';
 import { FEATURES as ONBOARDING_FEATURES } from '@modules/onboarding/constants/feature';
 import { FEATURES as AUTH_FEATURES } from '@modules/auth/constants/feature';
 import { FEATURES as ORGANIZATIONS_FEATURES } from '@modules/organizations/constants/feature';
@@ -32,9 +31,11 @@ import { FEATURES as TOOLJET_DATABASE_FEATURES } from '@modules/tooljet-db/const
 import { FEATURES as IMPORT_EXPORT_RESOURCES_FEATURES } from '@modules/import-export-resources/constants/feature';
 import { FEATURES as TEMPLATES_FEATURES } from '@modules/templates/constants/features';
 import { FEATURES as AI_FEATURES } from '@modules/ai/constants/feature';
+import { getTooljetEdition } from '@helpers/utils.helper';
+import { TOOLJET_EDITIONS } from '.';
 
 const GROUP_PERMISSIONS_FEATURES =
-  process.env.EDITION === EDITIONS.EE ? GROUP_PERMISSIONS_FEATURES_EE : GROUP_PERMISSIONS_FEATURES_CE;
+  getTooljetEdition() === TOOLJET_EDITIONS.EE ? GROUP_PERMISSIONS_FEATURES_EE : GROUP_PERMISSIONS_FEATURES_CE;
 
 //every module should be here
 export const MODULE_INFO: { [key: string]: any } = {

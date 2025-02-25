@@ -5,14 +5,15 @@ import { fetchEdition } from './utils';
 // Static imports for all possible modules
 import * as commonWhiteLabelling from '@/modules/common/helpers/whiteLabelling';
 import * as eeWhiteLabelling from '@ee/modules/helpers/whiteLabelling';
-import * as cloudWhiteLabelling from '@cloud/modules/helpers/whiteLabelling';
+// import * as cloudWhiteLabelling from '@cloud/modules/helpers/whiteLabelling';
 
 // Map of all helpers
 const helperModules = {
   whiteLabelling: {
     ce: commonWhiteLabelling,
     ee: eeWhiteLabelling,
-    cloud: cloudWhiteLabelling,
+    /* Can uncomment this once the cloud sub-module is ready */
+    // cloud: cloudWhiteLabelling,
   },
   // Add other helpers here in the same structure
 };

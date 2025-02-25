@@ -8,9 +8,9 @@ import * as fs from 'fs';
 import * as dotenv from 'dotenv';
 import { AppModule } from '@modules/app/module';
 import { DataSourceScopes, DataSourceTypes } from '@modules/data-sources/constants';
-import { EDITIONS, getImportPath } from '@modules/app/constants';
+import { TOOLJET_EDITIONS, getImportPath } from '@modules/app/constants';
 import { IDataSourcesUtilService } from '@modules/data-sources/interfaces/IUtilService';
-import { ConfigService } from '@nestjs/config';
+import { getTooljetEdition } from '@helpers/utils.helper';
 
 export class CreateSampleDataSourceToExistingWorkspace1714626631309 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -22,8 +22,8 @@ export class CreateSampleDataSourceToExistingWorkspace1714626631309 implements M
       data = { ...data, ...dotenv.parse(fs.readFileSync(envVarsFilePath)) };
     }
 
-    const configs = appCtx.get(ConfigService);
-    const edition: EDITIONS = configs.get<string>('EDITION') as EDITIONS;
+    const edition: TOOLJET_EDITIONS = getTooljetEdition() as TOOLJET_EDITIONS;
+    console.log('inside', edition);
     const { DataSourcesUtilService } = await import(`${await getImportPath(true, edition)}/data-sources/util.service`);
 
     const dataSourceService = appCtx.get(DataSourcesUtilService, { strict: false });
