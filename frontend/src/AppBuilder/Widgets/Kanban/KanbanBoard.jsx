@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import {
   DndContext,
@@ -69,6 +69,18 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id }) {
     backgroundColor: accentColor ?? '#4d72fa',
   };
 
+  const flatCardData = Object.values(cardDataAsObj).flat();
+
+  const updateCardDataInCustomResolvable = useCallback((cardDataAsObj) => {
+    const flatCardData = Object.values(cardDataAsObj).flat();
+    if (flatCardData.length === 0) return;
+    updateCustomResolvables(
+      id,
+      flatCardData.map((d) => ({ cardData: d })),
+      'cardData'
+    );
+  }, []);
+
   // Check if the previous filtered data is different from the current filtered data
   if (Object.keys(diff(cardData, prevCardData.current)).length > 0) {
     prevCardData.current = cardData;
@@ -79,7 +91,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id }) {
       };
     });
     // Update the customResolvables with the new listItems
-    updateCustomResolvables(id, cardDetails, 'cardData');
+    updateCardDataInCustomResolvable(cardDataAsObj);
   }
 
   useEffect(() => {
@@ -128,7 +140,10 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id }) {
     setExposedVariable('updateCardData', async function (cardId, value) {
       if (cardDataAsObj[cardId] === undefined) return toast.error('Card not found');
       const cardToBeUpdated = { ...cardDataAsObj[cardId] };
-      cardDataAsObj[cardId] = value;
+      cardDataAsObj[cardId] = {
+        ...cardDataAsObj[cardId],
+        ...value,
+      };
       const diffKeys = Object.keys(diff(cardToBeUpdated, value));
       if (lastSelectedCard?.id === cardId) {
         setExposedVariables({
@@ -147,6 +162,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id }) {
         setExposedVariable('updatedCardData', getData(cardDataAsObj));
         fireEvent('onUpdate');
       }
+      updateCardDataInCustomResolvable(cardDataAsObj);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastSelectedCard, JSON.stringify(cardDataAsObj)]);
@@ -171,6 +187,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id }) {
         destinationIndex: 0,
         cardDetails: { ...cardDataAsObj[cardId] },
       };
+      updateCardDataInCustomResolvable(cardDataAsObj);
       setExposedVariable('lastCardMovement', lastCardMovement);
       fireEvent('onCardMoved');
     });
@@ -188,6 +205,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id }) {
         ...items,
         [columnId]: [...items[columnId], cardDetails.id],
       }));
+      updateCardDataInCustomResolvable(cardDataAsObj);
       setExposedVariables({ lastAddedCard: { ...cardDetails }, updatedCardData: getData(cardDataAsObj) });
       fireEvent('onCardAdded');
     });
@@ -201,6 +219,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id }) {
       const deletedCard = cardDataAsObj[cardId];
       delete cardDataAsObj[cardId];
       showModal && setShowModal(false);
+      updateCardDataInCustomResolvable(cardDataAsObj);
       setItems((items) => ({
         ...items,
         [columnId]: items[columnId].filter((id) => id !== cardId),
@@ -319,6 +338,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id }) {
         ...items,
         [activeContainer]: items[activeContainer].filter((id) => id !== activeId),
       }));
+      updateCardDataInCustomResolvable(cardDataAsObj);
       setExposedVariable('lastRemovedCard', { ...deletedCard });
       fireEvent('onCardRemoved');
       setActiveId(null);
@@ -357,7 +377,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id }) {
         }
       }
     }
-
+    updateCardDataInCustomResolvable(cardDataAsObj);
     setActiveId(null);
   };
 
@@ -410,7 +430,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id }) {
                           setShowModal={setShowModal}
                           cardDataAsObj={cardDataAsObj}
                           setLastSelectedCard={setLastSelectedCard}
-                          cardData={cardData}
+                          cardData={flatCardData}
                         />
                       );
                     })}
@@ -455,7 +475,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id }) {
         parentRef={parentRef}
         isDragActive={true}
         cardDataAsObj={cardDataAsObj}
-        cardData={cardData}
+        cardData={flatCardData}
       />
     );
   }

@@ -11,6 +11,7 @@ import { restrictedWidgetsObj } from './WidgetManager/restrictedWidgetsConfig';
 import { useGridStore, useIsGroupHandleHoverd, useOpenModalWidgetId } from '@/_stores/gridStore';
 import toast from 'react-hot-toast';
 import { individualGroupableProps } from './gridUtils';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 
 const CANVAS_BOUNDS = { left: 0, top: 0, right: 0, bottom: 0, position: 'css' };
@@ -118,7 +119,9 @@ export default function DragContainer({
   const boxList = boxes
     .filter((box) =>
       ['{{true}}', true].includes(
-        box?.component?.definition?.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value
+        resolveWidgetFieldValue(
+          box?.component?.definition?.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value
+        )
       )
     )
     .map((box) => ({
@@ -169,6 +172,22 @@ export default function DragContainer({
   }, [hoveredComponent, reloadGrid]);
 
   useEffect(() => {
+    const boxList = boxes
+      .filter((box) =>
+        ['{{true}}', true].includes(
+          resolveWidgetFieldValue(
+            box?.component?.definition?.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value
+          )
+        )
+      )
+      .map((box) => ({
+        id: box.id,
+        height: box?.layouts?.[currentLayout]?.height,
+        left: box?.layouts?.[currentLayout]?.left,
+        top: box?.layouts?.[currentLayout]?.top,
+        width: box?.layouts?.[currentLayout]?.width,
+        parent: box?.component?.parent,
+      }));
     setList(boxList);
     setTimeout(reloadGrid, 100);
   }, [currentLayout]);
@@ -226,7 +245,7 @@ export default function DragContainer({
         }
       }
     }
-  }, [selectedComponents]);
+  }, [selectedComponents, currentLayout]);
 
   useEffect(() => {
     setList(boxList);
@@ -248,6 +267,15 @@ export default function DragContainer({
     lastDraggedEventsRef.current = posWithParent;
   };
 
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
+    }),
+    shallow
+  );
+
+  const shouldFreeze = isVersionReleased || isEditorFreezed;
   const widgetsWithDefinitions = Object.entries(boxes).map(([id, box]) => {
     const propertiesDefinition = box?.component?.definition?.properties || {};
     const stylesDefinition = box?.component?.definition?.styles || {};
@@ -287,8 +315,8 @@ export default function DragContainer({
         target={groupedTargets?.length > 1 ? groupedTargets : '.target'}
         origin={false}
         individualGroupable={groupedTargets.length <= 1}
-        draggable={true}
-        resizable={RESIZABLE_CONFIG}
+        draggable={!shouldFreeze}
+        resizable={!shouldFreeze ? RESIZABLE_CONFIG : false}
         keepRatio={false}
         // key={list.length}
         individualGroupableProps={individualGroupableProps}

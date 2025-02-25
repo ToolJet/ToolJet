@@ -97,7 +97,9 @@ export const radiobuttonConfig = {
       ],
     },
   ],
-  exposedVariables: {},
+  exposedVariables: {
+    value: true,
+  },
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },

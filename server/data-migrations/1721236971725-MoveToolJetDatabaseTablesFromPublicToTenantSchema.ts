@@ -1,11 +1,10 @@
 import { tooljetDbOrmconfig } from 'ormconfig';
 import { EntityManager, MigrationInterface, QueryRunner, DataSource } from 'typeorm';
-import { Organization } from 'src/entities/organization.entity';
-import { InternalTable } from 'src/entities/internal_table.entity';
-import { MigrationProgress } from 'src/helpers/migration.helper';
-import { processDataInBatches } from 'src/helpers/utils.helper';
+import { Organization } from '@entities/organization.entity';
+import { InternalTable } from '@entities/internal_table.entity';
+import { MigrationProgress, processDataInBatches } from '@helpers/migration.helper';
 import { getEnvVars } from 'scripts/database-config-utils';
-import { EncryptionService } from '@services/encryption.service';
+import { EncryptionService } from '@modules/encryption/service';
 import {
   createNewTjdbRole,
   createAndGrantSchemaPrivilege,
@@ -15,7 +14,7 @@ import {
   syncTenantSchemaWithPostgrest,
   revokeAccessToPublicSchema,
   grantTenantRoleToTjdbAdminRole,
-} from 'src/helpers/tooljet_db.helper';
+} from '@helpers/tooljet_db.helper';
 const crypto = require('crypto');
 
 export class MoveToolJetDatabaseTablesFromPublicToTenantSchema1721236971725 implements MigrationInterface {

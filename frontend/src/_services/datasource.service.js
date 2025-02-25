@@ -1,5 +1,6 @@
 import config from 'config';
 import { authHeader, handleResponse } from '@/_helpers';
+import { constructSearchParams } from '../_helpers/utils';
 
 export const datasourceService = {
   create,
@@ -9,15 +10,18 @@ export const datasourceService = {
   setOauth2Token,
   save,
   fetchOauth2BaseUrl,
+  testSampleDb,
 };
 
-function getAll(appVersionId) {
+function getAll(appVersionId, environment_id, includeStaticSources = false) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  let searchParams = new URLSearchParams(`app_version_id=${appVersionId}`);
-  return fetch(`${config.apiUrl}/data_sources?` + searchParams, requestOptions).then(handleResponse);
+  let searchParams = new URLSearchParams(
+    `app_version_id=${appVersionId}&environment_id=${environment_id}&includeStaticSources=${includeStaticSources}`
+  );
+  return fetch(`${config.apiUrl}/data-sources?` + searchParams, requestOptions).then(handleResponse);
 }
 
-function create({ plugin_id, name, kind, options, app_id, app_version_id }) {
+function create({ plugin_id, name, kind, options, app_id, app_version_id, environment_id }) {
   const body = {
     plugin_id,
     name,
@@ -28,10 +32,12 @@ function create({ plugin_id, name, kind, options, app_id, app_version_id }) {
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/data_sources`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/data-sources?` + constructSearchParams({ environment_id }), requestOptions).then(
+    handleResponse
+  );
 }
 
-function save({ id, name, options, app_id }) {
+function save({ id, name, options, app_id, environment_id }) {
   const body = {
     name,
     options,
@@ -39,24 +45,24 @@ function save({ id, name, options, app_id }) {
   };
 
   const requestOptions = { method: 'PUT', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/data_sources/${id}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/data-sources/${id}?` + constructSearchParams({ environment_id }), requestOptions).then(
+    handleResponse
+  );
 }
 
 function deleteDataSource(id) {
   const requestOptions = { method: 'DELETE', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/data_sources/${id}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/data-sources/${id}`, requestOptions).then(handleResponse);
 }
 
-function test(kind, options, plugin_id, environment_id) {
-  const body = {
-    kind,
-    options,
-    plugin_id,
-    environment_id,
-  };
-
+function test(body) {
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/data_sources/test_connection`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/data-sources/test-connection`, requestOptions).then(handleResponse);
+}
+
+function testSampleDb(body) {
+  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/data-sources/test-connection/sample-db`, requestOptions).then(handleResponse);
 }
 
 function setOauth2Token(dataSourceId, body, current_organization_id) {
@@ -66,16 +72,24 @@ function setOauth2Token(dataSourceId, body, current_organization_id) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/data_sources/${dataSourceId}/authorize_oauth2`, requestOptions).then(handleResponse);
+  return fetch(
+    `${config.apiUrl}/data-sources/${dataSourceId}/authorize_oauth2?` +
+      constructSearchParams({
+        ...(localStorage.getItem('currentAppEnvironmentIdForOauth') !== 'undefined' && {
+          environment_id: localStorage.getItem('currentAppEnvironmentIdForOauth'),
+        }),
+      }),
+    requestOptions
+  ).then(handleResponse);
 }
 
 function fetchOauth2BaseUrl(provider, plugin_id = null, source_options = {}) {
   const payload = { provider, ...(plugin_id && { plugin_id }), ...(source_options && { source_options }) };
   const requestOptions = {
-    method: 'POST',
+    method: 'GET',
     headers: authHeader(),
     credentials: 'include',
     body: JSON.stringify(payload),
   };
-  return fetch(`${config.apiUrl}/data_sources/fetch_oauth2_base_url`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/data-sources/fetch-oauth2-base-url`, requestOptions).then(handleResponse);
 }

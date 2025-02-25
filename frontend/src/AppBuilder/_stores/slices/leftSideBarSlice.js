@@ -11,9 +11,10 @@ const initialState = {
   isLeftSideBarPinned: storedIsSidebarPinned,
   selectedSidebarItem: storedIsSidebarPinned ? storedSelectedSidebarItem : null,
   isSidebarOpen: storedIsSidebarPinned,
+  pathToBeInspected: null,
 };
 
-export const createLeftSideBarSlice = (set) => ({
+export const createLeftSideBarSlice = (set, get) => ({
   ...initialState,
   setIsLeftSideBarPinned: (status) => {
     localStorage.setItem('isLeftSideBarPinned', status === true ? 'true' : 'false');
@@ -22,5 +23,18 @@ export const createLeftSideBarSlice = (set) => ({
   setSelectedSidebarItem: (selectedSidebarItem) =>
     set(() => ({ selectedSidebarItem }), false, 'setSelectedSidebarItem'),
   toggleLeftSidebar: (isSidebarOpen) =>
-    set(() => ({ isSidebarOpen, ...(!isSidebarOpen && { selectedSidebarItem: null }) }), false, 'setIsSidebarOpen'),
+    set(
+      () => ({ isSidebarOpen, ...(!isSidebarOpen && { selectedSidebarItem: null, pathToBeInspected: null }) }),
+      false,
+      'setIsSidebarOpen'
+    ),
+  setPathToBeInspected: (pathToBeInspected) => set(() => ({ pathToBeInspected }), false, 'setPathToBeInspected'),
+  setComponentToInspect: (componentToInspect) => {
+    const { setPathToBeInspected, setSelectedSidebarItem, toggleLeftSidebar, selectedSidebarItem } = get();
+    setPathToBeInspected(['components', componentToInspect]);
+    if (selectedSidebarItem !== 'inspect') {
+      setSelectedSidebarItem('inspect');
+      toggleLeftSidebar(true);
+    }
+  },
 });

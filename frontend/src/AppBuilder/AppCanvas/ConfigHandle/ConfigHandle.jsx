@@ -1,10 +1,8 @@
 import React from 'react';
-import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import './configHandle.scss';
 import useStore from '@/AppBuilder/_stores/store';
 import { findHighestLevelofSelection } from '../Grid/gridUtils';
-
 export const ConfigHandle = ({
   id,
   position,
@@ -15,7 +13,6 @@ export const ConfigHandle = ({
   customClassName = '',
   showHandle,
   componentType,
-  visibility,
 }) => {
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
   const componentName = useStore((state) => state.getComponentDefinition(id)?.component?.name || '', shallow);
@@ -24,14 +21,32 @@ export const ConfigHandle = ({
     shallow
   );
   const deleteComponents = useStore((state) => state.deleteComponents, shallow);
-  let height = visibility === false ? 10 : widgetHeight;
+  const setFocusedParentId = useStore((state) => state.setFocusedParentId, shallow);
+  const currentTab = useStore(
+    (state) => componentType === 'Tabs' && state.getExposedValueOfComponent(id)?.currentTab,
+    shallow
+  );
+
+  const setComponentToInspect = useStore((state) => state.setComponentToInspect);
   return (
     <div
       className={`config-handle ${customClassName}`}
+      widget-id={id}
       style={{
-        top: position === 'top' ? '-20px' : widgetTop + height - (widgetTop < 10 ? 15 : 10),
-        visibility: showHandle && !isMultipleComponentsSelected ? 'visible' : 'hidden',
+        top: position === 'top' ? '-20px' : widgetTop + widgetHeight - (widgetTop < 10 ? 15 : 10),
+        visibility:
+          showHandle && (!isMultipleComponentsSelected || (componentType === 'Modal' && isModalOpen))
+            ? 'visible'
+            : 'hidden',
         left: '-1px',
+      }}
+      onClick={(e) => {
+        e.stopPropagation();
+        if (componentType === 'Tabs') {
+          setFocusedParentId(`${id}-${currentTab}`);
+        } else {
+          setFocusedParentId(id);
+        }
       }}
     >
       <span
@@ -61,6 +76,17 @@ export const ConfigHandle = ({
         </div>
         {!isMultipleComponentsSelected && !shouldFreeze && (
           <div className="delete-part">
+            <img
+              style={{ cursor: 'pointer', marginLeft: '5px' }}
+              src="assets/images/icons/inspect.svg"
+              width="12"
+              role="button"
+              height="12"
+              draggable="false"
+              onClick={() => setComponentToInspect(componentName)}
+              data-cy={`${componentName.toLowerCase()}-inspect-button`}
+              className="config-handle-inspect"
+            />
             <img
               style={{ cursor: 'pointer', marginLeft: '5px' }}
               src="assets/images/icons/trash-light.svg"

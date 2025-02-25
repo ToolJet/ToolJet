@@ -19,6 +19,12 @@ const shouldAddBoxShadowAndVisibility = [
   'DropdownV2',
   'MultiselectV2',
   'RadioButtonV2',
+  'Icon',
+  'Image',
+  'DatetimePickerV2',
+  'DaterangePicker',
+  'DatePickerV2',
+  'TimePicker',
 ];
 
 const RenderWidget = ({
@@ -81,6 +87,7 @@ const RenderWidget = ({
         ...{ validationObject: unResolvedValidation },
         customResolveObjects: customResolvables,
       }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [validateWidget, customResolvables, unResolvedValidation, resolvedValidation]
   );
 
@@ -170,13 +177,13 @@ const RenderWidget = ({
             setExposedVariables={setExposedVariables}
             height={widgetHeight - 4}
             width={widgetWidth}
+            parentId={parentId}
             fireEvent={fireEventWrapper}
             validate={validate}
             resetComponent={resetComponent}
             onComponentClick={onComponentClick}
             darkMode={darkMode}
             componentName={componentName}
-            dataCy={`draggable-widget-${componentName}`}
           />
         </div>
       </OverlayTrigger>

@@ -18,6 +18,7 @@ export const Code = ({
   component,
   accordian,
   placeholder,
+  validationFn,
 }) => {
   const currentState = useCurrentState();
 
@@ -61,6 +62,7 @@ export const Code = ({
         component={component?.component?.component}
         onVisibilityChange={onVisibilityChange}
         placeholder={placeholder}
+        validationFn={validationFn}
         cyLabel=""
       />
     </div>

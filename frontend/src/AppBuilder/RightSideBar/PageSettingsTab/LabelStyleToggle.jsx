@@ -25,20 +25,22 @@ const LabelStyleToggle = ({ pageSettingChanged, settings }) => {
     });
     pageSettingChanged({ style: value }, 'properties');
   };
-
   return (
-    <div className="d-flex align-items-center mb-3">
-      <span>Style</span>
-      <div className="ms-auto position-relative app-mode-switch" style={{ paddingLeft: '0px', width: '194px' }}>
-        <ToggleGroup className="label-style" onValueChange={handleValueChange} defaultValue={style}>
-          {MODES.map((mode) => (
-            <ToggleGroupItem key={mode.value} value={mode.value}>
-              {mode.label}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
+    <>
+      <div className="d-flex align-items-center mb-3">
+        <span>Style</span>
+        <div className="ms-auto position-relative app-mode-switch" style={{ paddingLeft: '0px' }}>
+          <ToggleGroup className="label-style" onValueChange={handleValueChange} defaultValue={style}>
+            {MODES.map((mode) => (
+              <ToggleGroupItem key={mode.value} value={mode.value}>
+                {mode.label}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+        </div>
       </div>
-    </div>
+      {style == 'icon' && <div className="page-group-icon-text">Nested menu is not available on icon only mode.</div>}
+    </>
   );
 };
 

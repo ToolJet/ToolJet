@@ -41,6 +41,7 @@ export const Container = React.memo(
     const componentType = useStore((state) => state.getComponentTypeFromId(id), shallow);
     const addComponentToCurrentPage = useStore((state) => state.addComponentToCurrentPage, shallow);
     const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab, shallow);
+    const setLastCanvasClickPosition = useStore((state) => state.setLastCanvasClickPosition, shallow);
     const canvasBgColor = useStore(
       (state) => (id === 'canvas' ? state.getCanvasBackgroundColor('canvas', darkMode) : ''),
       shallow
@@ -48,7 +49,7 @@ export const Container = React.memo(
     const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
     const currentMode = useStore((state) => state.currentMode, shallow);
     const currentLayout = useStore((state) => state.currentLayout, shallow);
-
+    const setFocusedParentId = useStore((state) => state.setFocusedParentId, shallow);
     const isContainerReadOnly = useMemo(() => {
       return (index !== 0 && (componentType === 'Listview' || componentType === 'Kanban')) || currentMode === 'view';
     }, [componentType, index, currentMode]);
@@ -112,6 +113,21 @@ export const Container = React.memo(
       return '100%';
     }, [isViewerSidebarPinned, currentLayout, id, currentMode, pageSidebarStyle]);
 
+    const handleCanvasClick = useCallback(
+      (e) => {
+        const realCanvas = e.target.closest('.real-canvas');
+        const canvasId = realCanvas?.getAttribute('id')?.split('canvas-')[1];
+        setFocusedParentId(canvasId);
+        if (realCanvas) {
+          const rect = realCanvas.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          setLastCanvasClickPosition({ x, y });
+        }
+      },
+      [setLastCanvasClickPosition]
+    );
+
     return (
       <div
         // {...(config.COMMENT_FEATURE_ENABLE && showComments && { onClick: handleAddThread })}
@@ -152,6 +168,7 @@ export const Container = React.memo(
         data-cy="real-canvas"
         data-parentId={id}
         canvas-height={canvasHeight}
+        onClick={handleCanvasClick}
       >
         <div
           className={cx('container-fluid rm-container p-0', {

@@ -21,10 +21,12 @@ export function SortableTreeItem({ id, depth, ...props }) {
     id,
     animateLayoutChanges,
   });
-  const style = {
-    transform: CSS.Translate.toString(transform),
-    transition,
-  };
+  const style = props?.disabledBorder
+    ? {}
+    : {
+        transform: CSS.Translate.toString(transform),
+        transition,
+      };
 
   return (
     <TreeItem

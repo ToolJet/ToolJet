@@ -2,8 +2,15 @@ import React from 'react';
 import { SearchBox } from '@/_components/SearchBox';
 import { useTranslation } from 'react-i18next';
 
-export default function Header({ onSearchSubmit, darkMode }) {
+export default function HomeHeader({ onSearchSubmit, darkMode, appType }) {
   const { t } = useTranslation();
+  const page = appType === 'workflow' ? 'workflows' : 'apps';
+
+  const placeholderText =
+    page === 'apps'
+      ? t('globals.searchItem', 'Search apps in this workspace')
+      : t('globals.workflowsSearchItem', 'Search workflows in this workspace');
+
   return (
     <div className="row">
       <div className="home-search-holder">
@@ -12,7 +19,7 @@ export default function Header({ onSearchSubmit, darkMode }) {
           className="border-0 homepage-search"
           onSubmit={onSearchSubmit}
           darkMode={darkMode}
-          placeholder={t('globals.searchItem', 'Search apps in this workspace')}
+          placeholder={placeholderText}
           width={'100%'}
         />
       </div>

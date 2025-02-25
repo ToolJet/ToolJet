@@ -7,7 +7,7 @@ const GeneralFeatureImage = () => {
   return (
     <div className="general-feature-image">
       <div className="content-wrapper">
-        <div className="image-wrapper" data-cy="onboarding-image">
+        <div className="image-wrapper">
           <FeatImage />
         </div>
         <div className="slogan-wrapper">

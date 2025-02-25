@@ -33,6 +33,9 @@ export const ERROR_TYPES = {
   RESTRICTED: 'restricted',
   INVALID: 'invalid-link',
   UNKNOWN: 'unknown',
+  WORKSPACE_ARCHIVED: 'Organization is Archived',
+  USERS_EXCEEDING_LICENSE_LIMIT: 'user-count-exceeding',
+  WORKSPACE_LOGIN_RESTRICTED: 'ws-login-restricted',
 };
 
 export const ERROR_MESSAGES = {
@@ -46,6 +49,14 @@ export const ERROR_MESSAGES = {
   restricted: {
     title: 'Restricted access',
     message: 'You don’t have access to this app. Kindly contact admin to know more.',
+    cta: 'Back to home page',
+    retry: false,
+    queryParams: [],
+  },
+  'ws-login-restricted': {
+    title: 'Restricted access',
+    message:
+      'Enable workspace login from the instance login setting to be able to access this page. Contact super admin to know more.',
     cta: 'Back to home page',
     retry: false,
     queryParams: [],
@@ -75,6 +86,20 @@ export const ERROR_MESSAGES = {
     retry: true,
     queryParams: [],
   },
+  'user-count-exceeding': {
+    title: 'User count exceeding',
+    message:
+      'Your builder or end-user count exceeds the limit for your upgraded plan. Please archive users or increase your plan limits to upgrade successfully.',
+    retry: false,
+    icon: 'user',
+  },
+  'app-count-exceeding': {
+    title: 'App count exceeding',
+    message:
+      'The number of apps existing exceeds the limit for your upgraded plan. Please delete apps or increase your plan limits to upgrade successfully.',
+    retry: false,
+    icon: 'apps',
+  },
   'invited-workspace-archived': {
     title: 'Archived workspace',
     message: 'The workspace you are invited to has been archived. Kindly contact admin to know more.',
@@ -89,6 +114,11 @@ export const ERROR_MESSAGES = {
   },
 };
 
+export const DEFAULT_ERROR_MESSAGE = {
+  title: 'Unknown error',
+  message: 'Please try again.',
+};
+
 export const TOOLTIP_MESSAGES = {
   SHARE_URL_UNAVAILABLE: 'Share URL is unavailable until current version is released',
   RELEASE_VERSION_URL_UNAVAILABLE: 'Release the version to make it public',
@@ -98,6 +128,7 @@ export const DATA_SOURCE_TYPE = {
   SAMPLE: 'sample',
   LOCAL: 'local',
   GLOBAL: 'global',
+  STATIC: 'static',
 };
 
 export const SAMPLE_DB_KIND = {

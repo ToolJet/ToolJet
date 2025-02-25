@@ -17,6 +17,14 @@ describe('oauth controller', () => {
     'first_name',
     'last_name',
     'current_organization_id',
+    'admin',
+    'app_group_permissions',
+    'avatar_id',
+    'data_source_group_permissions',
+    'group_permissions',
+    'organization',
+    'organization_id',
+    'super_admin',
     'current_organization_slug',
   ].sort();
 
@@ -40,7 +48,7 @@ describe('oauth controller', () => {
     beforeEach(async () => {
       const { organization } = await createUser(app, {
         email: 'anotherUser@tooljet.io',
-        ssoConfigs: [{ sso: 'google', enabled: true, configs: { clientId: 'client-id' } }],
+        ssoConfigs: [{ sso: 'google', enabled: true, configs: { clientId: 'client-id' }, configScope: 'organization' }],
         enableSignUp: true,
       });
       current_organization = organization;

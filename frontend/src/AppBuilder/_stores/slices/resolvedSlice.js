@@ -51,9 +51,6 @@ export const DEFAULT_COMPONENT_STRUCTURE = {
 export const createResolvedSlice = (set, get) => ({
   ...initialState,
   setResolvedGlobals: (objKey, values, moduleId = 'canvas') => {
-    if (!values) {
-      return;
-    }
     set(
       (state) => {
         // Handle object assignment
@@ -73,8 +70,8 @@ export const createResolvedSlice = (set, get) => ({
       false,
       'setResolvedGlobals'
     );
-    Object.entries(values).forEach(([key, value]) => {
-      get().updateDependencyValues(`globals.${objKey}.${key}`);
+    Object.entries(values).forEach(() => {
+      get().updateDependencyValues(`globals.${objKey}`);
     });
   },
   setResolvedConstants: (constants = {}, moduleId = 'canvas') => {

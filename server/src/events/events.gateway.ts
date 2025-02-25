@@ -7,13 +7,13 @@ import {
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Server } from 'ws';
-import { AuthService } from 'src/services/auth.service';
 import { isEmpty } from 'lodash';
 import { maybeSetSubPath } from '../helpers/utils.helper';
+import { SessionUtilService } from '@modules/session/util.service';
 
 @WebSocketGateway({ path: maybeSetSubPath('/ws') })
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  constructor(private authService: AuthService) {}
+  constructor(private sessionUtilService: SessionUtilService) {}
   @WebSocketServer()
   server: Server;
 
@@ -23,13 +23,14 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   broadcast(data) {
     this.server.clients.forEach((client: any) => {
-      if (client.isAuthenticated && client.appId === data.appId) client.send(data.message);
+      if (client.isAuthenticated && client.appId === data.appId && client.id != data.senderId)
+        client.send(data.message);
     });
   }
 
   @SubscribeMessage('authenticate')
   onAuthenticateEvent(client: any, data: string) {
-    const signedJwt = this.authService.verifyToken(data);
+    const signedJwt = this.sessionUtilService.verifyToken(data);
     if (isEmpty(signedJwt)) client.close();
     else client.isAuthenticated = true;
     return;

@@ -1,29 +1,34 @@
-import { CreateGranularPermissionDto } from '@dto/granular-permissions.dto';
-import { MigrationProgress } from 'src/helpers/utils.helper';
-import {
-  DEFAULT_GRANULAR_PERMISSIONS_NAME,
-  ResourceType,
-} from '@modules/user_resource_permissions/constants/granular-permissions.constant';
-import {
-  GROUP_PERMISSIONS_TYPE,
-  USER_ROLE,
-} from '@modules/user_resource_permissions/constants/group-permissions.constant';
+import { MigrationProgress } from '@helpers/migration.helper';
+import { NestFactory } from '@nestjs/core';
+import { AppGroupPermission } from '@entities/app_group_permission.entity';
+import { AppsGroupPermissions } from '@entities/apps_group_permissions.entity';
+import { DataSourceGroupPermission } from '@entities/data_source_group_permission.entity';
+import { GranularPermissions } from '@entities/granular_permissions.entity';
+import { GroupPermission } from '@entities/group_permission.entity';
+import { GroupPermissions } from '@entities/group_permissions.entity';
+import { Organization } from '@entities/organization.entity';
+import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
+import { AppModule } from '@modules/app/module';
+import { GROUP_PERMISSIONS_TYPE, ResourceType, USER_ROLE } from '@modules/group-permissions/constants';
 import {
   CreateResourcePermissionObject,
   ResourcePermissionMetaData,
-} from '@modules/user_resource_permissions/interface/granular-permissions.interface';
-import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
-import { AppsGroupPermissions } from 'src/entities/apps_group_permissions.entity';
-import { GranularPermissions } from 'src/entities/granular_permissions.entity';
-import { GroupPermission } from 'src/entities/group_permission.entity';
-import { GroupPermissions } from 'src/entities/group_permissions.entity';
-import { Organization } from 'src/entities/organization.entity';
-import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
+} from '@modules/group-permissions/types/granular_permissions';
+import { CreateGranularPermissionDto } from '@modules/group-permissions/dto/granular-permissions';
+import { DEFAULT_GRANULAR_PERMISSIONS_NAME } from '@modules/group-permissions/constants/granular_permissions';
+import { EDITIONS } from '@modules/app/constants';
+import { LicenseInitService } from '@modules/licensing/interfaces/IService';
 
 export class MigrateCustomGroupToNewUserGroup1720434737529 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const manager = queryRunner.manager;
-    const licenseValid = true;
+    const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }));
+    const licenseService = nestApp.get(LicenseInitService);
+
+    const licenseValid =
+      !process.env.EDITION || process.env.EDITION === EDITIONS.CE
+        ? true
+        : await licenseService.initForMigration(manager);
 
     if (!licenseValid) {
       console.log('Not considering groups for basic plans');
@@ -49,6 +54,7 @@ export class MigrateCustomGroupToNewUserGroup1720434737529 implements MigrationI
         })
         .leftJoinAndSelect('groupPermission.appGroupPermission', 'appGroupPermission')
         .leftJoinAndSelect('groupPermission.userGroupPermission', 'userGroupPermission')
+        .leftJoinAndSelect('groupPermission.dataSourceGroupPermission', 'dataSourceGroupPermission')
         .andWhere('groupPermission.group != :admin', {
           admin: 'admin',
         })
@@ -57,9 +63,28 @@ export class MigrateCustomGroupToNewUserGroup1720434737529 implements MigrationI
       for (const groupPermissions of groups) {
         // check if all user groups has any privileges, if yes -> create a custom group for it
         if (groupPermissions.group === 'all_users') {
-          const { appGroupPermission, appCreate, appDelete, folderCreate, orgEnvironmentConstantCreate } =
-            groupPermissions;
-          if (!(appGroupPermission?.length || appCreate || appDelete || folderCreate || orgEnvironmentConstantCreate)) {
+          const {
+            appGroupPermission,
+            dataSourceGroupPermission,
+            appCreate,
+            appDelete,
+            dataSourceCreate,
+            dataSourceDelete,
+            folderCreate,
+            orgEnvironmentConstantCreate,
+          } = groupPermissions;
+          if (
+            !(
+              appGroupPermission?.length ||
+              dataSourceGroupPermission?.length ||
+              appCreate ||
+              appDelete ||
+              dataSourceCreate ||
+              dataSourceDelete ||
+              folderCreate ||
+              orgEnvironmentConstantCreate
+            )
+          ) {
             continue;
           }
         }
@@ -82,20 +107,20 @@ export class MigrateCustomGroupToNewUserGroup1720434737529 implements MigrationI
             ${groupPermissions.appDelete},
             ${groupPermissions.folderCreate},
             ${groupPermissions.orgEnvironmentConstantCreate},
-            false,
-            false
+            ${groupPermissions.dataSourceCreate},
+            ${groupPermissions.dataSourceDelete}
           ) RETURNING *;
         `;
         const group: GroupPermissions = (await manager.query(query))[0];
         const existingGroupUsers = groupPermissions.userGroupPermission;
         await this.migrateUserGroup(manager, [...new Set(existingGroupUsers.map((record) => record.userId))], group.id);
-        const resources = [ResourceType.APP];
+        const resources = [ResourceType.APP, ResourceType.DATA_SOURCE];
         for (const resource of resources) {
           if (resource === ResourceType.APP) {
             const updateLevelAndHideAppsPermissions = groupPermissions.appGroupPermission.filter(
               (appPermissions) => appPermissions.read && appPermissions.hideFromDashboard
             );
-            const createResourcePermissionObjViewAndHide: CreateResourcePermissionObject = {
+            const createResourcePermissionObjViewAndHide: CreateResourcePermissionObject<ResourceType.APP> = {
               canView: true,
               canEdit: false,
               hideFromDashboard: true,
@@ -111,7 +136,7 @@ export class MigrateCustomGroupToNewUserGroup1720434737529 implements MigrationI
             const updateLevelAppsPermissions = groupPermissions.appGroupPermission.filter(
               (appPermissions) => appPermissions.update && !appPermissions.hideFromDashboard
             );
-            const createResourcePermissionObjEdit: CreateResourcePermissionObject = {
+            const createResourcePermissionObjEdit: CreateResourcePermissionObject<ResourceType.APP> = {
               canView: false,
               canEdit: true,
               hideFromDashboard: false,
@@ -127,7 +152,7 @@ export class MigrateCustomGroupToNewUserGroup1720434737529 implements MigrationI
             const viewLevelAppsPermissions = groupPermissions.appGroupPermission.filter(
               (appPermissions) => appPermissions.read && !appPermissions.update
             );
-            const createResourcePermissionObjView: CreateResourcePermissionObject = {
+            const createResourcePermissionObjView: CreateResourcePermissionObject<ResourceType.APP> = {
               canView: true,
               canEdit: false,
               hideFromDashboard: false,
@@ -140,10 +165,47 @@ export class MigrateCustomGroupToNewUserGroup1720434737529 implements MigrationI
               createResourcePermissionObjView
             );
           }
+
+          if (resource === ResourceType.DATA_SOURCE) {
+            const updateLevelDataSourcePermissions = groupPermissions.dataSourceGroupPermission.filter(
+              (dataSourcePermissions) => dataSourcePermissions.update
+            );
+            const createResourcePermissionObjEdit: CreateResourcePermissionObject<ResourceType.DATA_SOURCE> = {
+              action: {
+                canConfigure: true,
+                canUse: false,
+              },
+            };
+            await this.createDataSourceLevelPermissions(
+              manager,
+              updateLevelDataSourcePermissions,
+              organizationId,
+              group,
+              createResourcePermissionObjEdit
+            );
+
+            const viewLevelDataSourcePermissions = groupPermissions.dataSourceGroupPermission.filter(
+              (dataSourcePermissions) => dataSourcePermissions.read && !dataSourcePermissions.update
+            );
+            const createResourcePermissionObjView: CreateResourcePermissionObject<ResourceType.DATA_SOURCE> = {
+              action: {
+                canConfigure: false,
+                canUse: true,
+              },
+            };
+            await this.createDataSourceLevelPermissions(
+              manager,
+              viewLevelDataSourcePermissions,
+              organizationId,
+              group,
+              createResourcePermissionObjView
+            );
+          }
         }
       }
       migrationProgress.show();
     }
+    await nestApp.close();
   }
 
   getGroupName(name: string) {
@@ -188,7 +250,7 @@ export class MigrateCustomGroupToNewUserGroup1720434737529 implements MigrationI
   async createAppsResourcePermission(
     manager: EntityManager,
     createMeta: ResourcePermissionMetaData,
-    createObject: CreateResourcePermissionObject
+    createObject: CreateResourcePermissionObject<ResourceType.APP>
   ): Promise<AppsGroupPermissions> {
     const { granularPermissions } = createMeta;
     const query = `
@@ -207,6 +269,31 @@ export class MigrateCustomGroupToNewUserGroup1720434737529 implements MigrationI
       createObject.canEdit,
       createObject.canView,
       createObject.hideFromDashboard,
+    ];
+
+    return (await manager.query(query, parameters))[0];
+  }
+
+  async createDataSourceResourcePermission(
+    manager: EntityManager,
+    createMeta: ResourcePermissionMetaData,
+    createObject: CreateResourcePermissionObject<ResourceType.DATA_SOURCE>
+  ): Promise<AppsGroupPermissions> {
+    const { granularPermissions } = createMeta;
+    const query = `
+    INSERT INTO data_sources_group_permissions (
+      granular_permission_id,
+      can_configure,
+      can_use
+    ) VALUES (
+      $1, $2, $3
+    ) RETURNING *;
+  `;
+
+    const parameters = [
+      granularPermissions.id,
+      createObject.action?.canConfigure || false,
+      createObject.action?.canUse || false,
     ];
 
     return (await manager.query(query, parameters))[0];
@@ -231,12 +318,25 @@ export class MigrateCustomGroupToNewUserGroup1720434737529 implements MigrationI
     return await manager.query(query);
   }
 
+  async addDataSourceGroupToPermissions(
+    manager: EntityManager,
+    dataSourceIds: string[],
+    dataSourcePermissionsId: string
+  ) {
+    const valuesString = dataSourceIds.map((id) => `('${id}', '${dataSourcePermissionsId}')`).join(',');
+    const query = `
+    INSERT INTO group_data_sources (data_source_id, data_sources_group_permissions_id)
+    VALUES ${valuesString};
+  `;
+    return await manager.query(query);
+  }
+
   async createAppLevelPermissions(
     manager: EntityManager,
     appsPermissions: AppGroupPermission[],
     organizationId: string,
     group: GroupPermissions,
-    createResourcePermissionObj: CreateResourcePermissionObject
+    createResourcePermissionObj: CreateResourcePermissionObject<ResourceType.APP>
   ) {
     const nameInit = createResourcePermissionObj.canEdit
       ? 'Updatable'
@@ -247,7 +347,7 @@ export class MigrateCustomGroupToNewUserGroup1720434737529 implements MigrationI
       groupId: group.id,
       type: ResourceType.APP,
       isAll: false,
-      createAppsPermissionsObject: {},
+      createResourcePermissionObject: {},
     };
     const granularPermissions = await this.createGranularPermission(manager, dtoObject);
     const appsGroupPermissions = await this.createAppsResourcePermission(
@@ -259,6 +359,35 @@ export class MigrateCustomGroupToNewUserGroup1720434737529 implements MigrationI
       manager,
       appsPermissions.map((record) => record.appId),
       appsGroupPermissions.id
+    );
+  }
+
+  async createDataSourceLevelPermissions(
+    manager: EntityManager,
+    dataSourcePermissions: DataSourceGroupPermission[],
+    organizationId: string,
+    group: GroupPermissions,
+    createResourcePermissionObj: CreateResourcePermissionObject<ResourceType.DATA_SOURCE>
+  ) {
+    const nameInit = createResourcePermissionObj.action?.canConfigure ? 'Configurable' : 'Usable';
+    if (dataSourcePermissions.length === 0) return;
+    const dtoObject = {
+      name: `${nameInit} ${DEFAULT_GRANULAR_PERMISSIONS_NAME[ResourceType.DATA_SOURCE]}`,
+      groupId: group.id,
+      type: ResourceType.DATA_SOURCE,
+      isAll: false,
+      createResourcePermissionObject: {},
+    };
+    const granularPermissions = await this.createGranularPermission(manager, dtoObject);
+    const dataSourceGroupPermissions = await this.createDataSourceResourcePermission(
+      manager,
+      { granularPermissions, organizationId },
+      createResourcePermissionObj
+    );
+    await this.addDataSourceGroupToPermissions(
+      manager,
+      dataSourcePermissions.map((record) => record.dataSourceId),
+      dataSourceGroupPermissions.id
     );
   }
 

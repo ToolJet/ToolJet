@@ -15,7 +15,6 @@ export const appService = {
   deleteApp,
   getApp,
   fetchApp,
-  getAppBySlug,
   fetchAppBySlug,
   getAppByVersion,
   fetchAppByVersion,
@@ -43,8 +42,16 @@ function getAll(page, folder, searchKey) {
 }
 
 function createApp(body = {}) {
+  if (body.type === 'workflow') {
+    return createWorkflow(body);
+  }
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/apps`, requestOptions).then(handleResponse);
+}
+
+function createWorkflow(body = {}) {
+  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/workflows`, requestOptions).then(handleResponse);
 }
 
 function cloneApp(id) {
@@ -91,19 +98,9 @@ function cloneResource(body) {
   return fetch(`${config.apiUrl}/v2/resources/clone`, requestOptions).then(handleResponse);
 }
 
-function getVersions(id) {
-  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/apps/${id}/versions`, requestOptions).then(handleResponse);
-}
-
 function importApp(body) {
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/apps/import`, requestOptions).then(handleResponse);
-}
-
-function getTables(id) {
-  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/apps/${id}/tables`, requestOptions).then(handleResponse);
 }
 
 function changeIcon(icon, appId) {
@@ -126,7 +123,7 @@ function getApp(id, accessType) {
 // v2 api for fetching app
 function fetchApp(id) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/v2/apps/${id}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/apps/${id}`, requestOptions).then(handleResponse);
 }
 
 function deleteApp(id) {
@@ -134,14 +131,9 @@ function deleteApp(id) {
   return fetch(`${config.apiUrl}/apps/${id}`, requestOptions).then(handleResponse);
 }
 
-function getAppBySlug(slug) {
-  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/apps/slugs/${slug}`, requestOptions).then(handleResponse);
-}
-
 function fetchAppBySlug(slug) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/v2/apps/slugs/${slug}`, requestOptions).then((resp) => handleResponse(resp, true));
+  return fetch(`${config.apiUrl}/apps/slugs/${slug}`, requestOptions).then((resp) => handleResponse(resp, true));
 }
 
 function getAppByVersion(appId, versionId) {
@@ -201,10 +193,10 @@ function acceptInvite({ token, password }) {
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/accept-invite`, requestOptions).then(handleResponseWithoutValidation);
+  return fetch(`${config.apiUrl}/onboarding/accept-invite`, requestOptions).then(handleResponseWithoutValidation);
 }
 
 function getInviteeDetails(token) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/invitee-details?token=${token}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/onboarding/invitee-details?token=${token}`, requestOptions).then(handleResponse);
 }

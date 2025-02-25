@@ -8,9 +8,9 @@ import { LinkExpiredPage } from '@/ConfirmationPage/LinkExpiredPage';
 import { utils } from '@/modules/common/helpers';
 import { getSubpath } from '@/_helpers/routes';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
-import useOnboardingStore from '@/modules/onboarding/stores/onboardingStore';
-const PostOnboardingComponent = () => <TJLoader />;
+import useOnboardingStore from '@/modules/common/helpers/onboardingStoreHelper';
 
+const PostOnboardingComponent = () => <TJLoader />;
 export const InvitationPage = (darkMode = false) => {
   const [isLoading, setIsLoading] = useState(true);
   const [fallBack, setFallBack] = useState(false);
@@ -25,9 +25,23 @@ export const InvitationPage = (darkMode = false) => {
   const redirectTo = searchParams.get('redirectTo');
 
   const { initiateInvitedUserOnboarding } = invitationsStore();
-  const { isOnboardingStepsCompleted } = useOnboardingStore();
+  const { resumeSignupOnboarding, isOnboardingStepsCompleted } = useOnboardingStore();
   useEffect(() => {
-    getUserDetails();
+    // getUserDetails();
+    resumeSignupOnboarding((resumeOnboardingSession) => {
+      if (!resumeOnboardingSession) getUserDetails();
+      else {
+        initiateInvitedUserOnboarding(
+          {
+            source,
+            organizationId,
+            redirectTo,
+          },
+          true
+        );
+        setIsLoading(false);
+      }
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

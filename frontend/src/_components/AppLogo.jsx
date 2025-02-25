@@ -8,13 +8,13 @@ export default function AppLogo({ isLoadingFromHeader, className }) {
   return (
     <>
       {url ? (
-        <img src={url} height={26} />
+        <img src={url} height={26} data-cy="page-logo" />
       ) : (
         <>
           {isLoadingFromHeader ? (
-            <Logo />
+            <Logo height={26} data-cy="page-logo" />
           ) : (
-            <img src="assets/images/logo-color.svg" height={26} className={className} />
+            <img src="assets/images/rocket.svg" className={className} />
           )}
         </>
       )}

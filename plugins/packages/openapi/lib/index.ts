@@ -27,6 +27,23 @@ export default class Openapi implements QueryService {
     return params;
   }
 
+  private parseValue = (value) => {
+    if (typeof value !== 'string') return value;
+    try {
+      return JSON.parse(value);
+    } catch (e) {
+      return value;
+    }
+  };
+
+  private parseRequest = (obj) => {
+    if (!obj) return obj;
+    return Object.keys(obj).reduce((acc, key) => {
+      acc[key] = this.parseValue(obj[key]);
+      return acc;
+    }, {});
+  };
+
   async run(
     sourceOptions: SourceOptions,
     queryOptions: QueryOptions,
@@ -37,7 +54,8 @@ export default class Openapi implements QueryService {
     const { host, path, operation, params } = queryOptions;
     const { request, query, header, path: pathParams } = params;
     const url = new URL(host + this.resolvePathParams(pathParams, path));
-    const json = operation !== 'get' ? this.sanitizeObject(request) : undefined;
+    const parsedRequest = request ? this.parseRequest(request) : undefined;
+    const json = operation !== 'get' ? this.sanitizeObject(parsedRequest) : undefined;
 
     const _requestOptions: OptionsOfTextResponseBody = {
       method: operation,
@@ -66,8 +84,9 @@ export default class Openapi implements QueryService {
 
     try {
       const response = await got(url, requestOptions);
+      const contentType = response.headers['content-type'];
 
-      result = JSON.parse(response.body);
+      result = contentType !== 'application/json' ? response.body : JSON.parse(response.body);
       requestObject = {
         requestUrl: response.request.requestUrl,
         method: response.request.options.method,

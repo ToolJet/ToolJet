@@ -36,6 +36,8 @@ export const JSONNode = ({ data, ...restProps }) => {
     debuggerTree,
   } = restProps;
   const setSelectedComponents = useStore((state) => state.setSelectedComponents);
+  const pathToBeInspected = useStore((state) => state.pathToBeInspected);
+
   const [expandable, set] = React.useState(() =>
     typeof shouldExpandNode === 'function' ? shouldExpandNode(path, data) : shouldExpandNode
   );
@@ -48,6 +50,13 @@ export const JSONNode = ({ data, ...restProps }) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  React.useEffect(() => {
+    if (typeof shouldExpandNode === 'function') {
+      set(shouldExpandNode(path, data));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathToBeInspected]);
 
   const toggleExpandNode = (node) => {
     if (expandable) {
@@ -244,7 +253,7 @@ export const JSONNode = ({ data, ...restProps }) => {
         const { name, icon, src, iconName, dispatchAction, width = 12, height = 12 } = actionOption;
         if (icon) {
           return (
-            <ToolTip key={`${name}-${index}`} message={`${name} ${currentNode}`}>
+            <ToolTip key={`${name}-${index}`} message={`${name} ${name === 'Go to component' ? '' : currentNode}`}>
               <span
                 style={{ height: '13px', width: '13px' }}
                 className="mx-1"

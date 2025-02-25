@@ -11,14 +11,20 @@ import { staticDataSources as staticDatasources } from '../constants';
 import { useQueryPanelActions } from '@/_stores/queryPanelStore';
 import Search from '@/_ui/Icon/solidIcons/Search';
 import { Tooltip } from 'react-tooltip';
-import { DataBaseSources, ApiSources, CloudStorageSources } from '@/Editor/DataSourceManager/SourceComponents';
+import { DataBaseSources, ApiSources, CloudStorageSources } from '@/modules/common/components/DataSourceComponents';
 import { canCreateDataSource } from '@/_helpers';
 import './../queryManager.theme.scss';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import useStore from '@/AppBuilder/_stores/store';
+
 function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSources, onNewNode, defaultDataSources }) {
-  const dataSources = useStore((state) => state.dataSources);
-  const globalDataSources = useStore((state) => state.globalDataSources);
+  const dataSources = useStore((state) => state.globalDataSources);
+  const globalDataSources = useStore((state) => state.globalDataSources)?.filter(
+    (gds) => gds.type === DATA_SOURCE_TYPE.GLOBAL
+  );
+  const defaultStaticDataSources = useStore((state) => state.globalDataSources)?.filter(
+    (gds) => gds.type === DATA_SOURCE_TYPE.STATIC
+  );
   const sampleDataSource = useStore((state) => state.sampleDataSource);
   const [userDefinedSources, setUserDefinedSources] = useState(
     [...dataSources, ...globalDataSources, !!sampleDataSource && sampleDataSource].filter(Boolean)
@@ -28,6 +34,7 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSourc
   const createDataQuery = useStore((state) => state.dataQuery.createDataQuery);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
   const handleChangeDataSource = (source) => {
+    console.log({ source });
     createDataQuery(source);
     setPreviewData(null);
     closePopup();
@@ -59,19 +66,21 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSourc
   const availableDataSources = workflowDataSources ? workflowDataSources : userDefinedSources;
 
   useEffect(() => {
-    const sortedUserDefinedSources = availableDataSources.sort((sourceA, sourceB) => {
-      // Custom sorting function
-      const typeA = sourceA?.type;
-      const typeB = sourceB?.type;
-      if (typeA === 'sample' && typeB !== 'sample') {
-        return -1; // typeA is 'sample', so it comes before typeB
-      } else if (typeB === 'sample' && typeA !== 'sample') {
-        return 1; // typeB is 'sample', so it comes after typeA
-      } else {
-        // Otherwise, maintain the original order
-        return 0;
-      }
-    });
+    const sortedUserDefinedSources = availableDataSources
+      .filter((ds) => ds.type !== DATA_SOURCE_TYPE.STATIC)
+      .sort((sourceA, sourceB) => {
+        // Custom sorting function
+        const typeA = sourceA?.type;
+        const typeB = sourceB?.type;
+        if (typeA === 'sample' && typeB !== 'sample') {
+          return -1; // typeA is 'sample', so it comes before typeB
+        } else if (typeB === 'sample' && typeA !== 'sample') {
+          return 1; // typeB is 'sample', so it comes after typeA
+        } else {
+          // Otherwise, maintain the original order
+          return 0;
+        }
+      });
     setUserDefinedSourcesOpts(
       Object.entries(groupBy(sortedUserDefinedSources, 'type')).flatMap(([type, sourcesWithType], index) =>
         Object.entries(groupBy(sourcesWithType, 'kind')).map(([kind, sources], innerIndex) => ({
@@ -121,7 +130,7 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSourc
       ),
       isDisabled: true,
       options: [
-        ...staticDataSources.map((source) => ({
+        ...defaultStaticDataSources.map((source) => ({
           label: (
             <div>
               <DataSourceIcon source={source} height={16} />{' '}

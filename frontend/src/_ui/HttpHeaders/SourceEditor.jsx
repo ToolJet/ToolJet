@@ -12,41 +12,23 @@ export default ({
   removeKeyValuePair,
   keyValuePairValueChanged,
   workspaceConstants,
-  dataCy,
+  isDisabled,
+  width,
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
+
   return (
     <div className="table-content-wrapper">
       {options.length === 0 && (
-        <div className="empty-key-value" data-cy="label-empty-key-value">
+        <div className="empty-key-value">
           <InfoIcon style={{ width: '16px', marginRight: '5px' }} />
           <span>There are no key value pairs added</span>
-        </div>
-      )}
-
-      {options?.length > 0 && (
-        <div>
-          <div style={{ display: 'flex' }}>
-            <div
-              style={{ width: '300px', color: '#687076', fontSize: '12px', paddingLeft: '5px' }}
-              data-cy="label-key-header"
-            >
-              KEY
-            </div>
-            <div
-              style={{ width: '316px', color: '#687076', fontSize: '12px', paddingLeft: '5px' }}
-              data-cy="label-value-header"
-            >
-              VALUE
-            </div>
-          </div>
         </div>
       )}
 
       {options.map((option, index) => (
         <div className="d-flex align-items-top row-container query-manager-border-color" key={index}>
           <Input
-            data-cy={`${dataCy}-key-input-field-${index}`}
             type="text"
             className="input-control"
             onChange={(e) => keyValuePairValueChanged(e.target.value, 0, index)}
@@ -54,9 +36,10 @@ export default ({
             workspaceConstants={workspaceConstants}
             placeholder="Key"
             autoComplete="off"
+            disabled={isDisabled}
             style={{
               flex: 1,
-              width: '300px',
+              width: width ? width : '300px',
               borderTopRightRadius: '0',
               borderBottomRightRadius: '0',
               borderRight: 'none',
@@ -64,7 +47,6 @@ export default ({
           />
 
           <Input
-            data-cy={`${dataCy}-value-input-field-${index}`}
             type="text"
             value={option[1]}
             placeholder="Value"
@@ -72,9 +54,10 @@ export default ({
             className="input-control"
             onChange={(e) => keyValuePairValueChanged(e.target.value, 1, index)}
             workspaceConstants={workspaceConstants}
+            disabled={isDisabled}
             style={{
               flex: 2,
-              width: '316px',
+              width: width ? width : '316px',
               borderTopLeftRadius: '0',
               borderBottomLeftRadius: '0',
               borderTopRightRadius: '0',
@@ -83,12 +66,12 @@ export default ({
           />
 
           <button
-            data-cy={`${dataCy}-delete-button-${index}`}
             className={`d-flex justify-content-center align-items-center delete-field-option bg-transparent border-0 rounded-0 border-top border-bottom border-end rounded-end ${
               darkMode ? 'delete-field-option-dark' : ''
             }`}
             style={{ height: '35px' }}
             role="button"
+            disabled={isDisabled}
             onClick={() => removeKeyValuePair(index)}
           >
             <Trash fill="var(--slate9)" style={{ height: '16px' }} />
@@ -98,14 +81,14 @@ export default ({
 
       <div className="d-flex mb-2" style={{ height: '16px' }}>
         <ButtonSolid
-          data-cy={`${dataCy}-add-more-button`}
           variant="ghostBlue"
           size="sm"
           onClick={() => addNewKeyValuePair(options)}
           style={{ gap: '0px', fontSize: '12px', fontWeight: '500', padding: '0px 9px' }}
+          disabled={isDisabled}
         >
           <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
-          &nbsp;&nbsp;Add more
+          &nbsp;&nbsp;Add
         </ButtonSolid>
       </div>
     </div>

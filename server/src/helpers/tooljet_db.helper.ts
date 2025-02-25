@@ -1,4 +1,4 @@
-import { EncryptionService } from '@services/encryption.service';
+import { EncryptionService } from '@modules/encryption/service';
 import { tooljetDbOrmconfig } from 'ormconfig';
 import { OrganizationTjdbConfigurations } from 'src/entities/organization_tjdb_configurations.entity';
 import { EntityManager, DataSource } from 'typeorm';

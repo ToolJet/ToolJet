@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import List from '../TableList';
 import CreateTableDrawer from '../Drawers/CreateTableDrawer';
-import { OrganizationList } from '@/_components/OrganizationManager/List';
+import { OrganizationList } from '@/modules/dashboard/components';
 import cx from 'classnames';
 
 export default function Sidebar({ collapseSidebar }) {

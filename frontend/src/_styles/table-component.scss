@@ -308,18 +308,44 @@
   }
 }
 
+// .jet-data-table>thead+div::-webkit-scrollbar,
+.jet-data-table tbody::-webkit-scrollbar,
 .jet-data-table::-webkit-scrollbar {
   background: transparent;
 }
 
+// .jet-data-table>thead+div::-webkit-scrollbar-track,
+.jet-data-table tbody::-webkit-scrollbar-track,
 .jet-data-table::-webkit-scrollbar-track {
   background: transparent;
 }
 
+.jet-data-table tbody:hover,
 .jet-data-table:hover {
   overflow-x: auto;
   overflow-y: auto;
 }
+
+.jet-data-table tbody {
+  overflow-x: hidden !important;
+}
+
+// .jet-data-table>thead+div {
+
+//   overflow: hidden !important;
+
+//   &::-webkit-scrollbar-thumb {
+//     background-color: var(--slate4) !important;
+//     /* Color of the scrollbar thumb */
+//     border-radius: 8px;
+//     /* Rounded corners of the thumb */
+//   }
+
+//   &:hover {
+//     overflow-x: auto !important;
+//     overflow-y: auto !important;
+//   }
+// }
 
 .jet-data-table {
 
@@ -870,6 +896,8 @@
 .jet-data-table {
   .table {
     .td {
+
+      border-bottom: 1px solid #656d7729;
 
       // overflow: hidden;
       &:hover {
@@ -1439,5 +1467,5 @@
 }
 
 .tj-table-tag-col-readonly {
-  margin-left: -2px !important;  //this -ve margin offset for the margin given to each tags in overall column width
+  margin-left: -2px !important; //this -ve margin offset for the margin given to each tags in overall column width
 }

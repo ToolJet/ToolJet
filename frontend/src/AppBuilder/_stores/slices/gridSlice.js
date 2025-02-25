@@ -4,6 +4,8 @@ import { debounce } from 'lodash';
 const initialState = {
   hoveredComponentForGrid: '',
   triggerCanvasUpdater: false,
+  lastCanvasIdClick: '',
+  lastCanvasClickPosition: null,
 };
 
 export const createGridSlice = (set, get) => ({
@@ -61,5 +63,9 @@ export const createGridSlice = (set, get) => ({
     });
     setComponentLayout(layouts);
     debouncedToggleCanvasUpdater();
+  },
+  setLastCanvasIdClick: (id) => set(() => ({ lastCanvasIdClick: id })),
+  setLastCanvasClickPosition: (position) => {
+    set({ lastCanvasClickPosition: position });
   },
 });

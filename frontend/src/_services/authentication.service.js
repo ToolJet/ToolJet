@@ -20,6 +20,7 @@ const currentSessionSubject = new BehaviorSubject({
   user_permissions: null,
   group_permissions: null,
   app_group_permissions: null,
+  data_source_group_permissions: null,
   role: null,
   organizations: [],
   isUserLoggingIn: false,
@@ -28,17 +29,18 @@ const currentSessionSubject = new BehaviorSubject({
   isOrgSwitchingFailed: null,
   isUserUpdated: false,
   load_app: false, //key is used only in the viewer mode
+  instance_id: null,
   noWorkspaceAttachedInTheSession: false,
+  triggeredOnce: null,
+  createdAt: null,
 });
 
 export const authenticationService = {
   login,
-  getOrganizationConfigs,
-  logout,
+  superAdminLogin,
   signup,
   verifyToken,
   verifyOrganizationToken,
-  onboarding,
   setupAdmin,
   currentSession: currentSessionSubject.asObservable(),
   get currentSessionValue() {
@@ -51,13 +53,12 @@ export const authenticationService = {
   resetPassword,
   saveLoginOrganizationId,
   getLoginOrganizationId,
-  //TODO: delete this function from files if not needed
   deleteLoginOrganizationId,
   forgotPassword,
   resendInvite,
   authorize,
-  validateSession,
   getUserDetails,
+  activateTrial,
   getLoginOrganizationSlug,
   saveLoginOrganizationSlug,
   getInvitedUserSession,
@@ -95,7 +96,6 @@ function login(email, password, organizationId) {
     body: JSON.stringify({ email, password, redirectTo }),
     credentials: 'include',
   };
-
   return fetch(`${config.apiUrl}/authenticate${organizationId ? `/${organizationId}` : ''}`, requestOptions)
     .then(handleResponseWithoutValidation)
     .then((user) => {
@@ -103,15 +103,19 @@ function login(email, password, organizationId) {
     });
 }
 
-function validateSession(appId, workspaceSlug) {
+function superAdminLogin(email, password) {
   const requestOptions = {
-    method: 'GET',
+    method: 'POST',
+    headers: authHeader(),
+    body: JSON.stringify({ email, password }),
     credentials: 'include',
   };
-  const query = queryString.stringify({ appId, workspaceSlug });
-  return fetch(`${config.apiUrl}/session${query ? `?${query}` : ''}`, requestOptions).then(
-    handleResponseWithoutValidation
-  );
+  return fetch(`${config.apiUrl}/authenticate/super-admin`, requestOptions)
+    .then(handleResponseWithoutValidation)
+    .then((user) => {
+      authenticationService.updateCurrentSession(user);
+      return user;
+    });
 }
 
 function getUserDetails() {
@@ -151,20 +155,6 @@ function getLoginOrganizationSlug() {
   return getCookie('login-workspace-slug');
 }
 
-function getOrganizationConfigs(organizationId) {
-  const requestOptions = {
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json' },
-  };
-
-  return fetch(
-    `${config.apiUrl}/organizations/${organizationId ? `${organizationId}/` : ''}public-configs`,
-    requestOptions
-  )
-    .then(handleResponse)
-    .then((configs) => configs?.sso_configs);
-}
-
 function signup(email, name, password, organizationId, redirectTo) {
   const requestOptions = {
     method: 'POST',
@@ -173,7 +163,7 @@ function signup(email, name, password, organizationId, redirectTo) {
     credentials: 'include',
   };
 
-  return fetch(`${config.apiUrl}/signup`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/onboarding/signup`, requestOptions).then(handleResponse);
 }
 
 function activateAccountWithToken(email, password, organizationToken) {
@@ -184,7 +174,7 @@ function activateAccountWithToken(email, password, organizationToken) {
     body: JSON.stringify({ email, password, organizationToken }),
   };
 
-  return fetch(`${config.apiUrl}/activate-account-with-token`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/onboarding/activate-account-with-token`, requestOptions).then(handleResponse);
 }
 
 function resendInvite(email, organizationId, redirectTo) {
@@ -194,36 +184,13 @@ function resendInvite(email, organizationId, redirectTo) {
     body: JSON.stringify({ email, organizationId, redirectTo }),
   };
 
-  return fetch(`${config.apiUrl}/resend-invite`, requestOptions)
+  return fetch(`${config.apiUrl}/onboarding/resend-invite`, requestOptions)
     .then(handleResponse)
     .then((response) => {
       return response;
     });
 }
-function onboarding({ companyName, companySize, role, token, organizationToken, source, password, phoneNumber }) {
-  const requestOptions = {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify({
-      ...(companyName?.length > 0 && { companyName }),
-      ...(companySize?.length > 0 && { companySize }),
-      ...(role?.length > 0 && { role }),
-      ...(token?.length > 0 && { token }),
-      ...(organizationToken?.length > 0 && { organizationToken }),
-      ...(source?.length > 0 && { source }),
-      ...(password?.length > 0 && { password }),
-      ...(phoneNumber?.length > 0 && { phoneNumber: `+${phoneNumber}` }),
-    }),
-  };
-
-  return fetch(`${config.apiUrl}/setup-account-from-token`, requestOptions)
-    .then(handleResponse)
-    .then((response) => {
-      return response;
-    });
-}
-function setupAdmin({ companyName, companySize, name, role, workspace, password, email, phoneNumber }) {
+function setupAdmin({ companyName, companySize, name, role, workspace, password, email, phoneNumber, requestedTrial }) {
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -236,10 +203,24 @@ function setupAdmin({ companyName, companySize, name, role, workspace, password,
       workspace,
       email,
       password,
+      requestedTrial,
       ...(phoneNumber?.length > 0 && { phoneNumber: `+${phoneNumber}` }),
     }),
   };
   return fetch(`${config.apiUrl}/setup-admin`, requestOptions)
+    .then(handleResponse)
+    .then((response) => {
+      return response;
+    });
+}
+
+function activateTrial() {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/onboarding/activate-trial`, requestOptions)
     .then(handleResponse)
     .then((response) => {
       return response;
@@ -251,7 +232,7 @@ function verifyOrganizationToken(token) {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' },
   };
-  return fetch(`${config.apiUrl}/verify-organization-token?token=${token}`, requestOptions)
+  return fetch(`${config.apiUrl}/onboarding/verify-organization-token?token=${token}`, requestOptions)
     .then(handleResponse)
     .then((response) => {
       return response;
@@ -263,7 +244,7 @@ function verifyToken(token, organizationToken) {
     headers: { 'Content-Type': 'application/json' },
   };
   return fetch(
-    `${config.apiUrl}/verify-invite-token?token=${token}${
+    `${config.apiUrl}/onboarding/verify-invite-token?token=${token}${
       organizationToken ? `&organizationToken=${organizationToken}` : ''
     }`,
     requestOptions
@@ -294,29 +275,6 @@ function resetPassword(params) {
   };
 
   return fetch(`${config.apiUrl}/reset-password`, requestOptions).then(handleResponse);
-}
-
-function logout(avoidRedirection = false, organizationId = null) {
-  const requestOptions = {
-    method: 'GET',
-    headers: authHeader(),
-    credentials: 'include',
-  };
-  const workspaceId = getWorkspaceId() || organizationId;
-
-  const redirectToLoginPage = () => {
-    const loginPath = (window.public_config?.SUB_PATH || '/') + 'login' + `${workspaceId ? `/${workspaceId}` : ''}`;
-    if (avoidRedirection) {
-      window.location.href = loginPath;
-    } else {
-      const pathname = getRedirectToWithParams(true);
-      window.location.href = loginPath + `?redirectTo=${`${pathname.indexOf('/') === 0 ? '' : '/'}${pathname}`}`;
-    }
-  };
-
-  return fetch(`${config.apiUrl}/logout`, requestOptions)
-    .then(handleResponseWithoutValidation)
-    .finally(() => redirectToLoginPage());
 }
 
 function signInViaOAuth(configId, ssoType, ssoResponse) {
@@ -355,5 +313,5 @@ function authorize() {
 function getInvitedUserSession({ accountToken, organizationToken }) {
   const body = { organizationToken, ...(accountToken && { accountToken }) };
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/invited-user-session`, requestOptions).then(handleResponseWithoutValidation);
+  return fetch(`${config.apiUrl}/session/invited-user-session`, requestOptions).then(handleResponseWithoutValidation);
 }

@@ -27,6 +27,9 @@
 .cm-widgetBuffer {
     display: none !important;
 }
+.codehinter-preview-popover{
+    z-index: 9999 !important;
+}
 
 
 .cm-base-hint-info {
@@ -204,7 +207,31 @@
     }
 }
 
+.portal-container{
+    .cm-editor{
+        height: 100% !important;
+    }
+}
+
 .code-hinter-wrapper {
+    // in query panel we want the height of editor to increase depending on the content 
+    &.code-editor-query-panel{
+        display: flex;
+        .query-hinter{
+            flex-grow: 1;
+        }
+    }
+    .code-editor-query-panel{
+        &.show-line-numbers{
+            .cm-editor {
+                min-height: 220px ;
+                max-height: 2500px ;
+                .cm-scroller {
+                    flex-grow: 1 !important;
+                }
+            }
+        }
+    }
     .cm-editor {
         min-height: 32px;
         max-height: 220px;
@@ -252,6 +279,17 @@
             height: 100%;
         }
     }
+}
+    // in query panel we want the height of editor to increase depending on the content 
+
+.code-editor-query-panel{
+    .codehinter-multi-line-input {
+        .cm-editor {
+            max-height: 2500px !important;
+            height: 100%;
+        }
+    }
+    
 }
 
 .codehinter-multi-line-input {
@@ -451,6 +489,8 @@
     background-color: var(--interactive-default) !important;
     color: var(--text-disabled) !important;
     border-right: 1px solid var(--borders-disabled-on-white) !important;
+    align-self: stretch !important;
+    height: auto !important;
 }
 
 
@@ -498,6 +538,7 @@
 .cm-content {
     max-width: 98%;
     flex-shrink: 1 !important;
+    align-self: stretch !important;
 }
 
 .cm-line {
@@ -600,4 +641,14 @@
     .codehinter-error-container{
         display: none !important;
     }
+}
+
+.cm-searchMatch {
+    .cm-selectionMatch {
+        background-color: #F9E71A !important;
+    }
+}
+
+.cm-searchMatch.cm-searchMatch-selected {
+    background-color: #F28F2D;
 }

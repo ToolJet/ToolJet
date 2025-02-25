@@ -10,6 +10,9 @@
   background-color: var(--base) !important;
   border-right: 2px solid var(--slate6, #313538);
 
+  &.tooljetai {
+    width: 440px;
+  }
 
   select {
     cursor: pointer;
@@ -50,8 +53,9 @@ div[data-radix-popper-content-wrapper]:has(.PopoverContent.drawer-height) {
   margin-left: 47px !important;
   transform: none !important;
 }
+
 @-moz-document url-prefix() {
-  div[data-radix-popper-content-wrapper]{
+  div[data-radix-popper-content-wrapper] {
     z-index: 100 !important;
     left: 1px !important;
   }

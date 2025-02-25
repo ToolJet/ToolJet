@@ -30,6 +30,32 @@ const useCallbackActions = () => {
     return toast.success('Copied to the clipboard', { position: 'top-center' });
   };
 
+  const autoScrollTo = (id) => {
+    setSelectedComponents([id]);
+    const target = document.getElementById(id);
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
+  const handleAutoScrollToComponent = (data) => {
+    const currentPageComponents = useStore.getState().getCurrentPageComponents();
+    const component = currentPageComponents?.[data.id];
+
+    let parentId = component?.component?.parent;
+    if (parentId) {
+      const regex = /-\d+$/;
+      if (regex.test(parentId)) {
+        parentId = parentId.replace(regex, ''); // To get parentId without tab index if parent type is Tab
+      }
+      const parentType = currentPageComponents?.[parentId]?.component?.component;
+      if (parentType && (parentType === 'Modal' || parentType === 'Tabs')) {
+        autoScrollTo(parentId); // To scroll to parent component if parent type is Modal or Tabs
+        return;
+      }
+    }
+
+    autoScrollTo(data.id);
+  };
+
   const callbackActions = [
     {
       for: 'queries',
@@ -50,6 +76,7 @@ const useCallbackActions = () => {
       for: 'components',
       actions: [
         { name: 'Select Widget', dispatchAction: handleSelectComponentOnEditor, icon: false, onSelect: true },
+        { name: 'Go to component', dispatchAction: handleAutoScrollToComponent, icon: true, iconName: 'select' },
         ...(!shouldFreeze
           ? [{ name: 'Delete Component', dispatchAction: handleRemoveComponent, icon: true, iconName: 'trash' }]
           : []),

@@ -27,7 +27,6 @@ const SignupPage = ({ configs, organizationId }) => {
   const inviteOrganizationId = organizationId;
   const paramInviteOrganizationSlug = params.organizationId;
   const redirectTo = location?.search?.split('redirectTo=')[1];
-
   useEffect(() => {
     const errorMessage = location?.state?.errorMessage;
     if (errorMessage) {
@@ -38,15 +37,13 @@ const SignupPage = ({ configs, organizationId }) => {
     });
   }, []);
 
-  const handleSignup = (formData, onSuccess = () => {}, onFailure = () => {}) => {
+  const handleSignup = (formData, onSuccess = () => {}, onFaluire = () => {}) => {
     const { email, name, password } = formData;
+
     if (organizationToken) {
       authenticationService
         .activateAccountWithToken(email, password, organizationToken)
-        .then((response) => {
-          onInvitedUserSignUpSuccess(response, navigate);
-          onSuccess();
-        })
+        .then((response) => onInvitedUserSignUpSuccess(response, navigate))
         .catch((errorObj) => {
           let errorMessage;
           const isThereAnyErrorsArray = errorObj?.error?.length && typeof errorObj?.error?.[0] === 'string';
@@ -56,7 +53,6 @@ const SignupPage = ({ configs, organizationId }) => {
             errorMessage = errorObj?.error?.error;
           }
           errorMessage && toast.error(errorMessage);
-          onFailure();
         });
     } else {
       authenticationService
@@ -72,7 +68,7 @@ const SignupPage = ({ configs, organizationId }) => {
           toast.error(e?.error || 'Something went wrong!', {
             position: 'top-center',
           });
-          onFailure();
+          onFaluire();
         });
     }
   };

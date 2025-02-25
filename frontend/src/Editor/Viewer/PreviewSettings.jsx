@@ -10,34 +10,83 @@ import Navbar from 'react-bootstrap/Navbar';
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import classNames from 'classnames';
+import { shallow } from 'zustand/shallow';
+import { useEditorStore } from '@/_stores/editorStore';
+import Cross from '@/_ui/Icon/solidIcons/Cross';
+import { checkIfLicenseNotValid } from '@/_helpers/appUtils';
 import EnvironmentManager from '@/Editor/Header/EnvironmentManager';
 
-const PreviewSettings = ({ isMobileLayout, setAppDefinitionFromVersion, showHeader, darkMode }) => {
-  const { editingVersion } = useAppVersionStore((state) => ({
-    editingVersion: state?.editingVersion,
-  }));
-  const { appId } = useAppInfo();
+const PreviewSettings = ({
+  isMobileLayout,
+  onAppEnvironmentChanged,
+  setAppDefinitionFromVersion,
+  showHeader,
+  darkMode,
+}) => {
+  const { featureAccess, currentAppEnvironment, setCurrentAppEnvironmentId } = useEditorStore(
+    (state) => ({
+      featureAccess: state?.featureAccess,
+      currentAppEnvironment: state?.currentAppEnvironment,
+      setCurrentAppEnvironmentId: state?.actions?.setCurrentAppEnvironmentId,
+    }),
+    shallow
+  );
+  const { editingVersion } = useAppVersionStore(
+    (state) => ({
+      editingVersion: state?.editingVersion,
+    }),
+    shallow
+  );
+  const { appId, isPublic, environments, creationMode } = useAppInfo();
+  const isLicenseNotValid = checkIfLicenseNotValid();
+
   const [previewNavbar, togglePreviewNavbar] = useState(false);
 
-  const overlay = (
-    <div className={classNames({ 'dark-theme theme-dark': darkMode })}>
+  const _renderAppVersionsManager = () => {
+    return (
+      <AppVersionsManager
+        appId={appId}
+        setAppDefinitionFromVersion={(data) => {
+          togglePreviewNavbar(false);
+          setAppDefinitionFromVersion(data);
+        }}
+        onVersionDelete={noop}
+        environments={environments}
+        currentEnvironment={currentAppEnvironment}
+        setCurrentEnvironment={setCurrentAppEnvironmentId}
+        isPublic={isPublic ?? false}
+        appCreationMode={creationMode}
+        isEditable={false}
+        isViewer
+        darkMode={darkMode}
+      />
+    );
+  };
+
+  const _renderEnvironmentManager = () => {
+    return (
+      <EnvironmentManager
+        appEnvironmentChanged={(currentEnvironment, envSelection) => {
+          togglePreviewNavbar(false);
+          onAppEnvironmentChanged(currentEnvironment, envSelection);
+        }}
+        environments={environments}
+        multiEnvironmentEnabled={featureAccess?.multiEnvironment}
+        setCurrentEnvironment={setCurrentAppEnvironmentId}
+        setCurrentAppVersionPromoted={noop}
+        licenseValid={!isLicenseNotValid}
+        isViewer
+      />
+    );
+  };
+
+  const _renderOverlay = () => (
+    <div className={classNames({ 'dark-theme theme-dark': darkMode })} style={{ borderRadius: '6px' }}>
       <div className="preview-settings-overlay" style={{ borderColor: darkMode ? '#2B3036' : '#E4E7EB' }}>
         <span className="preview-settings-text">Preview settings</span>
-        <span>
-          <EnvironmentManager />
-          {editingVersion && (
-            <AppVersionsManager
-              appId={appId}
-              setAppDefinitionFromVersion={(data) => {
-                setAppDefinitionFromVersion(data);
-              }}
-              onVersionDelete={noop}
-              isEditable={false}
-              isViewer
-              darkMode={darkMode}
-            />
-          )}
-        </span>
+        <span>{editingVersion && _renderAppVersionsManager()}</span>
+        <div className="navbar-seperator"></div>
+        <span>{editingVersion && _renderEnvironmentManager()}</span>
         <span>
           <HeaderActions showToggleLayoutBtn darkMode={darkMode} />
         </span>
@@ -85,30 +134,20 @@ const PreviewSettings = ({ isMobileLayout, setAppDefinitionFromVersion, showHead
           }}
         />
         <Navbar.Offcanvas placement="top" className={classNames({ 'dark-theme theme-dark': darkMode })}>
-          <Offcanvas.Header closeButton>
+          <Offcanvas.Header>
             <Offcanvas.Title>Preview settings</Offcanvas.Title>
+            <div onClick={() => togglePreviewNavbar(false)} className="cursor-pointer">
+              <Cross fill={'var(--slate12)'} />
+            </div>
           </Offcanvas.Header>
           {previewNavbar && (
             <Offcanvas.Body>
-              <span>
-                <EnvironmentManager />
-                {editingVersion && (
-                  <AppVersionsManager
-                    appId={appId}
-                    setAppDefinitionFromVersion={(data) => {
-                      togglePreviewNavbar(false);
-                      setAppDefinitionFromVersion(data);
-                    }}
-                    onVersionDelete={noop}
-                    isEditable={false}
-                    isViewer
-                    darkMode={darkMode}
-                  />
-                )}
-              </span>
+              <span style={{ marginTop: '4px' }}>{_renderEnvironmentManager()}</span>
+              <hr className="m-0" />
+              <span>{_renderAppVersionsManager()}</span>
               <div className="d-flex p-2 align-items-center">
-                <span style={{ marginRight: '24px' }}>layout</span>
-                <HeaderActions showToggleLayoutBtn showFullWidth darkMode={darkMode} />
+                <span style={{ marginRight: '24px' }}>Layout</span>
+                <HeaderActions showToggleLayoutBtn showFullWidth />
               </div>
             </Offcanvas.Body>
           )}
@@ -129,7 +168,7 @@ const PreviewSettings = ({ isMobileLayout, setAppDefinitionFromVersion, showHead
       >
         Preview
       </span>
-      <OverlayTrigger rootClose trigger="click" placement="bottom" overlay={overlay}>
+      <OverlayTrigger rootClose trigger="click" placement="bottom" overlay={_renderOverlay()}>
         <span
           style={{
             marginLeft: '12px',
