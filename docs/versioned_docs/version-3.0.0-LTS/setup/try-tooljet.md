@@ -7,6 +7,11 @@ title: Try ToolJet
 
 ## On local with Docker
 
+:::warning
+To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
+:::
+
+
 You can run the command below to have ToolJet up and running right away.
 
 ```bash
