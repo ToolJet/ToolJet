@@ -7,9 +7,9 @@ import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
 import { Credential } from '@entities/credential.entity';
 import { cloneDeep } from 'lodash';
 import { AppModule } from '@modules/app/module';
-import { EDITIONS, getImportPath } from '@modules/app/constants';
+import { TOOLJET_EDITIONS, getImportPath } from '@modules/app/constants';
 import { IDataSourcesUtilService } from '@modules/data-sources/interfaces/IUtilService';
-import { ConfigService } from '@nestjs/config';
+import { getTooljetEdition } from '@helpers/utils.helper';
 
 export class BackfillDataSourcesAndQueriesForAppVersions1639734070615 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -19,8 +19,7 @@ export class BackfillDataSourcesAndQueriesForAppVersions1639734070615 implements
     });
 
     const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }));
-    const configs = nestApp.get(ConfigService);
-    const edition: EDITIONS = configs.get<string>('EDITION') as EDITIONS;
+    const edition: TOOLJET_EDITIONS = getTooljetEdition() as TOOLJET_EDITIONS;
     const { DataSourcesUtilService } = await import(`${await getImportPath(true, edition)}/data-sources/util.service`);
 
     const dataSourcesService = nestApp.get(DataSourcesUtilService);

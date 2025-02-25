@@ -1,15 +1,16 @@
 import { join } from 'path';
+import { getTooljetEdition } from '@helpers/utils.helper';
 const fs = require('fs').promises;
 
 export const LICENSE_FEATURE_ID_KEY = 'tjLicenseFeatureId';
-export enum EDITIONS {
+export enum TOOLJET_EDITIONS {
   CE = 'ce',
   EE = 'ee',
   Cloud = 'cloud',
 }
-export const getImportPath = async (isGetContext?: boolean, edition?: EDITIONS) => {
+export const getImportPath = async (isGetContext?: boolean, edition?: TOOLJET_EDITIONS) => {
   // isGetContext - true for migrations
-  const repoType = edition || process.env.EDITION || EDITIONS.CE;
+  const repoType = edition || getTooljetEdition() || TOOLJET_EDITIONS.CE;
   let baseDir = 'dist';
 
   if (isGetContext) {
@@ -19,14 +20,14 @@ export const getImportPath = async (isGetContext?: boolean, edition?: EDITIONS) 
   }
 
   switch (repoType) {
-    case EDITIONS.CE:
+    case TOOLJET_EDITIONS.CE:
       return `${join(process.cwd(), baseDir, 'src/modules')}`;
-    case EDITIONS.EE:
+    case TOOLJET_EDITIONS.EE:
       return `${join(process.cwd(), baseDir, 'ee')}`;
-    case EDITIONS.Cloud:
+    case TOOLJET_EDITIONS.Cloud:
       return `${join(process.cwd(), baseDir, 'cloud')}`;
     default:
-      break;
+      return `${join(process.cwd(), baseDir, 'src/modules')}`;
   }
 };
 

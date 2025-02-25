@@ -7,13 +7,13 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from '@modules/app/module';
 import { filterEncryptedFromOptions } from '@helpers/migration.helper';
 import { ConfigService } from '@nestjs/config';
-import { EDITIONS, getImportPath } from '@modules/app/constants';
+import { TOOLJET_EDITIONS, getImportPath } from '@modules/app/constants';
 
 export class addMultipleEnvForCEcreatedApps1681463532466 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }));
     const configs = nestApp.get(ConfigService);
-    const edition: EDITIONS = configs.get<string>('EDITION') as EDITIONS;
+    const edition: TOOLJET_EDITIONS = configs.get<string>('TOOLJET_EDITIONS') as TOOLJET_EDITIONS;
     const { EncryptionService } = await import(`${await getImportPath(true, edition)}/encryption/service`);
     const { CredentialsService } = await import(
       `${await getImportPath(true, edition)}/encryption/services/credentials.service`

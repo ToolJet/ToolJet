@@ -16,19 +16,18 @@ import {
 } from '@modules/group-permissions/types/granular_permissions';
 import { CreateGranularPermissionDto } from '@modules/group-permissions/dto/granular-permissions';
 import { DEFAULT_GRANULAR_PERMISSIONS_NAME } from '@modules/group-permissions/constants/granular_permissions';
-import { EDITIONS } from '@modules/app/constants';
+import { TOOLJET_EDITIONS } from '@modules/app/constants';
 import { LicenseInitService } from '@modules/licensing/interfaces/IService';
-import { getEnvVars } from '../scripts/database-config-utils';
+import { getTooljetEdition } from '@helpers/utils.helper';
 
 export class MigrateCustomGroupToNewUserGroup1720434737529 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const envData = getEnvVars();
     const manager = queryRunner.manager;
     const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }));
     const licenseService = nestApp.get(LicenseInitService);
 
     const licenseValid =
-      !envData.EDITION || envData.EDITION === EDITIONS.CE ? true : await licenseService.initForMigration(manager);
+      getTooljetEdition() === TOOLJET_EDITIONS.CE ? true : await licenseService.initForMigration(manager);
 
     if (!licenseValid) {
       console.log('Not considering groups for basic plans');

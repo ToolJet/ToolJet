@@ -15,7 +15,7 @@ function clearPageHistory() {
 }
 
 const fetchEdition = () => {
-  return config.EDITION?.toLowerCase() || 'ce';
+  return config.TOOLJET_EDITION?.toLowerCase() || 'ce';
 };
 
 export { processErrorMessage, clearPageHistory, fetchEdition };

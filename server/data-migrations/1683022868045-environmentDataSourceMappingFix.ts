@@ -4,15 +4,14 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '@modules/app/module';
 import { filterEncryptedFromOptions } from '@helpers/migration.helper';
-import { ConfigService } from '@nestjs/config';
-import { EDITIONS, getImportPath } from '@modules/app/constants';
+import { TOOLJET_EDITIONS, getImportPath } from '@modules/app/constants';
+import { getTooljetEdition } from '@helpers/utils.helper';
 
 export class environmentDataSourceMappingFix1683022868045 implements MigrationInterface {
   // This is to fix apps having only single environment option values (Imported from CE)
   public async up(queryRunner: QueryRunner): Promise<void> {
     const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }));
-    const configs = nestApp.get(ConfigService);
-    const edition: EDITIONS = configs.get<string>('EDITION') as EDITIONS;
+    const edition: TOOLJET_EDITIONS = getTooljetEdition() as TOOLJET_EDITIONS;
     const { EncryptionService } = await import(`${await getImportPath(true, edition)}/encryption/service`);
     const encryptionService = nestApp.get(EncryptionService);
     const entityManager = queryRunner.manager;
