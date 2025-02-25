@@ -43,7 +43,7 @@ To switch between the workspaces,
 **Role required** - Super Admin
 
 -   This feature is available only for self-hosted users, and only [Super admins](https://docs.tooljet.com/docs/enterprise/superadmin/#archive-workspaces) can archive workspaces. A Super Admin is the user who has full access to all the Workspaces, Users, and Groups of an instance
--   You need to have atleast one active workspace in an instance to archive the workspace
+-   To archive a workspace, at least one active workspace must exist in the instance.
 
 -   **Impact**
     -   The apps within the archived workspace will no longer be accessible through the URL.
@@ -78,8 +78,16 @@ For more details on archiving workspaces, refer to the [Super Admin](https://doc
 -   The user who creates a workspace is automatically assigned as its **Admin**.
 -   An **Admin** can:
     -   Manage users, groups, data and apps within each workspace.
-    -   Create custom groups for users with custom permissions.
     -   Configure authentication methods for their workspaces.
+
+Admin user has access to all the permission at workspace level, while an end user can only view and use the released apps they are given access to and permissions can be configured for a builder.
+
+|          Permission           | Admin | Builder | End User |
+|:------------------------------|:-----:|:-------:|:--------:|
+| App                           |  ✅   | Allowed |    ❌    | 
+| Data sources                  |  ✅   | Allowed |    ❌    |
+| Folder                        |  ✅   | Allowed |    ❌    |
+| Workspace constants/variables |  ✅   | Allowed |    ❌    |
 
 
 ## FAQ
