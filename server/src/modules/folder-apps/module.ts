@@ -13,7 +13,7 @@ export class FolderAppsModule {
     return {
       module: FolderAppsModule,
       controllers: [FolderAppsController],
-      imports: [await FoldersModule.register()],
+      imports: [await FoldersModule.register(configs)],
       providers: [FolderAppsService, FolderAppsUtilService, FeatureAbilityFactory],
       exports: [FolderAppsUtilService],
     };
