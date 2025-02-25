@@ -17,7 +17,7 @@ In this case, the company uses data from a Postgres data source for their ToolJe
 
 The company also uses different global and secret constants for each environment. Global Constants are reusable values that can be applied consistently across the product, while Secrets are used for securely storing sensitive data. These can be configured in the Workspace Constants section. For more details, check the [Workspace Constants and Secrets](http://s) Documentation.
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/development-lifecycle/environments/selfhosted-constants.png" alt="self-hosted-env-concept" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/development-lifecycle/environments/cloud-constants.png" alt="self-hosted-env-concept" />
 
 **Multi-Environment Setup in ToolJet**
 - The company's developers can start building applications in the **development environment**, where they create and iterate on new features. In this environment, they have access to the development database, which is configured during data source setup.
