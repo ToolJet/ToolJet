@@ -13,10 +13,21 @@ export type QueryOptions = {
   suffix?: string | null;
   //num_images?: number | string; // Number of images for generation
   size?: string; // Size of the generated image
+  model_embedding: string;
+  input_M1: string;
+  input_M2: string;
+  input_M3: string;
+  encoding_format_M1: string;
+  encoding_format_M2: string;
+  encoding_format_M3: string;
+  dimensions_M1: string;
+  dimensions_M2: string;
+  dimensions_M3: string;
 };
 
 export enum Operation {
   Completion = 'completion',
   Chat = 'chat',
-  ImageGeneration = 'image_generation' // New operation for image generation
+  ImageGeneration = 'image_generation',
+  GenerateEmbedding = 'generate_embedding',
 }
