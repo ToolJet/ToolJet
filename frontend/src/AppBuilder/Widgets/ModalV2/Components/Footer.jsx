@@ -3,7 +3,7 @@ import { default as BootstrapModal } from 'react-bootstrap/Modal';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 import { getCanvasHeight } from '@/AppBuilder/Widgets/ModalV2/helpers/utils';
 
-export const ModalFooter = ({ id, isDisabled, customStyles, darkMode, width, footerHeight, onClick }) => {
+export const ModalFooter = React.memo(({ id, isDisabled, customStyles, darkMode, width, footerHeight, onClick }) => {
   const canvasFooterHeight = getCanvasHeight(footerHeight);
   return (
     <BootstrapModal.Footer style={{ ...customStyles.modalFooter }} data-cy={`modal-footer`} onClick={onClick}>
@@ -31,4 +31,4 @@ export const ModalFooter = ({ id, isDisabled, customStyles, darkMode, width, foo
       )}
     </BootstrapModal.Footer>
   );
-};
+});
