@@ -6,7 +6,15 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useDrop } from 'react-dnd';
 import { addChildrenWidgetsToParent, addNewWidgetToTheEditor, computeViewerBackgroundColor } from './appCanvasUtils';
-import { CANVAS_WIDTHS, NO_OF_GRIDS, WIDGETS_WITH_DEFAULT_CHILDREN } from './appCanvasConstants';
+import {
+  CANVAS_WIDTHS,
+  NO_OF_GRIDS,
+  WIDGETS_WITH_DEFAULT_CHILDREN,
+  GRID_HEIGHT,
+  CONTAINER_FORM_CANVAS_PADDING,
+  SUBCONTAINER_CANVAS_BORDER_WIDTH,
+  BOX_PADDING,
+} from './appCanvasConstants';
 import { useGridStore } from '@/_stores/gridStore';
 import NoComponentCanvasContainer from './NoComponentCanvasContainer';
 import { RIGHT_SIDE_BAR_TAB } from '../RightSideBar/rightSidebarConstants';
@@ -35,10 +43,10 @@ export const Container = React.memo(
     canvasMaxWidth,
     isViewerSidebarPinned,
     pageSidebarStyle,
+    componentType,
   }) => {
     const realCanvasRef = useRef(null);
     const components = useStore((state) => state.getContainerChildrenMapping(id), shallow);
-    const componentType = useStore((state) => state.getComponentTypeFromId(id), shallow);
     const addComponentToCurrentPage = useStore((state) => state.addComponentToCurrentPage, shallow);
     const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab, shallow);
     const setLastCanvasClickPosition = useStore((state) => state.setLastCanvasClickPosition, shallow);
@@ -89,12 +97,17 @@ export const Container = React.memo(
     function getContainerCanvasWidth() {
       if (canvasWidth !== undefined) {
         if (componentType === 'Listview' && listViewMode == 'grid') return canvasWidth / columns - 2;
-        return canvasWidth;
+        if (id === 'canvas') return canvasWidth;
+        if (componentType === 'Container' || componentType === 'Form') {
+          return (
+            canvasWidth - (2 * CONTAINER_FORM_CANVAS_PADDING + 2 * SUBCONTAINER_CANVAS_BORDER_WIDTH + 2 * BOX_PADDING)
+          );
+        }
+        return canvasWidth - 2; // Need to update this 2 to correct value for other subcontainers
       }
       return realCanvasRef?.current?.offsetWidth;
     }
     const gridWidth = getContainerCanvasWidth() / NO_OF_GRIDS;
-
     useEffect(() => {
       useGridStore.getState().actions.setSubContainerWidths(id, (getContainerCanvasWidth() - 2) / NO_OF_GRIDS);
       // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -137,8 +150,7 @@ export const Container = React.memo(
         }}
         style={{
           height: id === 'canvas' ? `${canvasHeight}` : '100%',
-          // backgroundSize: '25.3953px 10px',
-          backgroundSize: `${gridWidth}px 10px`,
+          backgroundSize: `${gridWidth}px ${GRID_HEIGHT}px`,
           backgroundColor:
             currentMode === 'view'
               ? computeViewerBackgroundColor(darkMode, canvasBgColor)
