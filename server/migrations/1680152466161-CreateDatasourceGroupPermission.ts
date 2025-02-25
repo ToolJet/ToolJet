@@ -1,7 +1,11 @@
 import { MigrationInterface, QueryRunner, Table, TableForeignKey } from 'typeorm';
+import { EDITIONS } from '@modules/app/constants';
 
 export class CreateDatasourceGroupPermission1680152466161 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    if (!process.env.EDITION || process.env.EDITION === EDITIONS.CE) {
+      return;
+    }
     await queryRunner.createTable(
       new Table({
         name: 'data_source_group_permissions',
@@ -80,6 +84,9 @@ export class CreateDatasourceGroupPermission1680152466161 implements MigrationIn
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    if (!process.env.EDITION || process.env.EDITION === EDITIONS.CE) {
+      return;
+    }
     await queryRunner.dropTable('data_source_group_permissions');
   }
 }
