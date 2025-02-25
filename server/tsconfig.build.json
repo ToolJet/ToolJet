@@ -9,8 +9,7 @@
     "src/services/ignored",
     "src/temporal",
     "src/modules/ignored",
-    "src/modules/auth/oauth",
     "src/modules/feature",
-    "ee/ignored",
+    "ee/ignored"
   ]
 }
