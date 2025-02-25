@@ -35,7 +35,7 @@ COPY ./plugins/ ./plugins/
 RUN NODE_ENV=production npm --prefix plugins run build
 RUN npm --prefix plugins prune --production
 
-ENV EDITION=ee
+ENV TOOLJET_EDITION=ee
 
 # Build frontend
 COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
@@ -45,7 +45,7 @@ RUN npm --prefix frontend run build --production
 RUN npm --prefix frontend prune --production
 
 ENV NODE_ENV=production
-ENV EDITION=ee
+ENV TOOLJET_EDITION=ee
 
 # Build server
 COPY ./server/package.json ./server/package-lock.json ./server/
@@ -65,7 +65,7 @@ RUN apt-get update -yq \
 COPY --from=postgrest/postgrest:v12.2.0 /bin/postgrest /bin
 
 ENV NODE_ENV=production
-ENV EDITION=ee
+ENV TOOLJET_EDITION=ee
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN apt-get update && apt-get install -y postgresql-client freetds-dev libaio1 wget supervisor
 

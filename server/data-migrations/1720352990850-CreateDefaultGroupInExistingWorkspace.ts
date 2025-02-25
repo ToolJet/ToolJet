@@ -29,8 +29,6 @@ import { getTooljetEdition } from '@helpers/utils.helper';
 
 export class CreateDefaultGroupInExistingWorkspace1720352990850 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const envData = getEnvVars();
-
     const manager = queryRunner.manager;
     const nestApp = await NestFactory.createApplicationContext(await AppModule.register({ IS_GET_CONTEXT: true }));
 
