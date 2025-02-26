@@ -240,6 +240,12 @@ const getSelectedText = () => {
 
 // TODO: Move this function to componentSlice
 export const copyComponents = ({ isCut = false, isCloning = false }) => {
+  const selectedText = window.getSelection()?.toString().trim();
+  if (selectedText) {
+    navigator.clipboard.writeText(selectedText);
+    return;
+  }
+
   const selectedComponents = useStore.getState().getSelectedComponentsDefinition();
   if (selectedComponents.length < 1) return getSelectedText();
   const allComponents = useStore.getState().getCurrentPageComponents();
