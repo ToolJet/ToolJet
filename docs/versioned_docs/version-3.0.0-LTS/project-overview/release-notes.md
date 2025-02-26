@@ -7,10 +7,6 @@ title: Release Notes
 
 This document outlines the key improvements introduced in ToolJet 3.0, a major upgrade focused on performance, scalability, and developer experience.
 
-:::info
-For the latest release updates, refer to the **[Release Notes](https://app.tooljet.ai/applications/release-notes)** application.
-:::
-
 ## App Builder
 
 1. Up to 10 times faster app loading speeds 
