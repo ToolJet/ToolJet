@@ -1,13 +1,13 @@
 FROM node:18.18.2-buster AS builder
 # Fix for JS heap limit allocation issue
-ENV NODE_OPTIONS="--max-old-space-size=9096"
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 RUN mkdir -p /app
 
 WORKDIR /app
 
 ARG CUSTOM_GITHUB_TOKEN
-ARG BRANCH_NAME=modularisation/v3
+ARG BRANCH_NAME
 
 # Clone and checkout the frontend repository
 RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
@@ -17,8 +17,7 @@ RUN git config --global http.postBuffer 524288000
 RUN git clone https://github.com/ToolJet/ToolJet.git .
 
 # The branch name needs to be changed the branch with modularisation in CE repo
-RUN git checkout modularisation/v3
-
+RUN git checkout ${BRANCH_NAME}
 
 RUN git submodule update --init --recursive
 
