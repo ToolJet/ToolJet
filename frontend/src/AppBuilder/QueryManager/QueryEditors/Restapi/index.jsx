@@ -210,21 +210,21 @@ class Restapi extends React.Component {
               />
             </div>
 
-            <div className={`field w-100 rest-methods-url`}>
+            <div className={`field rest-methods-url`} style={{ width: 'calc(100% - 214px)' }}>
               <div className="font-weight-medium color-slate12">URL</div>
-              <div className="d-flex">
+              <div className="d-flex h-100 w-100">
                 {dataSourceURL && (
                   <BaseUrl
                     theme={this.props.darkMode ? 'monokai' : 'default'}
                     dataSourceURL={dataSourceURL}
-                    style={{ overflowWrap: 'anywhere', maxHeight: '218px', overflowY: 'auto', height: 'fit-content' }}
-                    className="col-6"
+                    style={{ overflowWrap: 'anywhere', width: '40%' }}
                   />
                 )}
                 <div
-                  className={`${dataSourceURL ? 'col-6' : 'flex-grow-1'} rest-api-url-codehinter ${
+                  className={`${dataSourceURL ? '' : 'flex-grow-1'} rest-api-url-codehinter ${
                     dataSourceURL ? 'url-input-group' : ''
                   }`}
+                  style={{ width: dataSourceURL ? '60%' : '100%' }}
                 >
                   <CodeHinter
                     type="basic"

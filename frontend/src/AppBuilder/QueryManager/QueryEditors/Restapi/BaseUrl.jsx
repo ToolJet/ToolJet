@@ -1,6 +1,6 @@
 import React from 'react';
-
-export const BaseUrl = ({ dataSourceURL, theme, className = 'col-8', style = {} }) => {
+import OverflowTooltip from '@/_components/OverflowTooltip';
+export const BaseUrl = ({ dataSourceURL, theme, className = 'col-auto', style = {} }) => {
   return (
     <span
       className={className}
@@ -16,7 +16,9 @@ export const BaseUrl = ({ dataSourceURL, theme, className = 'col-8', style = {} 
         ...style,
       }}
     >
-      {dataSourceURL}
+      <OverflowTooltip text={dataSourceURL} width="559px">
+        {dataSourceURL}
+      </OverflowTooltip>
     </span>
   );
 };
