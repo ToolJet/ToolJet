@@ -5,12 +5,6 @@ title: HarperDB
 
 HarperDB is a database and application development platform that is focused on performance and ease of use. With flexible user-defined APIs, simple HTTP/S interface, and a high-performance single-model data store that accommodates both NoSQL and SQL workloads, HarperDB scales with your application from proof of concept to production. ToolJet integrates with HarperDB, providing a streamlined interface for reading and writing data.
 
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/harperconnect.gif" alt="Marketplace: HarperDB" />
-
-</div>
-
 :::note
 Before following this guide, it is recommended to check the following doc: **[Using Marketplace plugins](/docs/marketplace/marketplace-overview#using-marketplace-plugins)**.
 :::
@@ -28,7 +22,7 @@ To establish a connection with HarperDB, you need the following credentials:
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/creds.png" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/creds-v2.png" alt="Marketplace: HarperDB" />
 
 </div>
 
@@ -41,7 +35,7 @@ To perform queries on HarperDB, click the `+Add` button in the query manager loc
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/query.png" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/query-v2.png" alt="Marketplace: HarperDB" />
 
 </div>
 
@@ -63,12 +57,12 @@ The SELECT statement is used to query data from the database.
 
 Syntax:
 ```sql
-SELECT * FROM sampleorg.people WHERE id = 1
+SELECT * FROM test_schema.test_table WHERE id=1
 ```
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/select.png" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/select-v2.png" alt="Marketplace: HarperDB" />
 
 </div>
 
@@ -77,12 +71,13 @@ The INSERT statement is used to add one or more rows to a database table.
 
 Syntax:
 ```sql
-INSERT INTO sampleorg.people (id, name, age, country, hobby) VALUE (5, 'Shubh', 26, 'India', 'Football')
+INSERT INTO test_schema.test_table (id, __createdtime__, __updatedtime__, name, email)  
+VALUES (4, 1739964155629.8826, 1739964155629.8826, 'Jane Doe', 'janedoe@example.com');
 ```
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/insert.png" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/insert-v2.png" alt="Marketplace: HarperDB" />
 
 </div>
 
@@ -91,12 +86,12 @@ The UPDATE statement is used to change the values of specified attributes in one
 
 Syntax:
 ```sql
-UPDATE sampleorg.people SET hobby = 'chess' WHERE id = 5
+UPDATE test_schema.test_table SET email = 'johnsondoe@gmail.com' WHERE id = 5
 ```
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/update.png" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/update-v2.png" alt="Marketplace: HarperDB" />
 
 </div>
 
@@ -105,12 +100,12 @@ The DELETE statement is used to remove one or more rows of data from a database 
 
 Syntax:
 ```sql
-DELETE FROM sampleorg.people WHERE id = 5
+DELETE FROM test_schema.test_table WHERE id = 5
 ```
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/delete.png" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/delete-v2.png" alt="Marketplace: HarperDB" />
 
 </div>
 
@@ -141,12 +136,12 @@ Insert operation allows to add one or more rows of data to a database table.
 
 **Example Records:**
 ```js
-[{id: 22, name: "James Scott", age: 26, country:"Italy", hobby: "football"},...] 
+[{id:22, name:"James Scott", email:"jamescott@gmail.com"},...] 
 ```
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/nosql_insert.png" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/nosql_insert-v2.png" alt="Marketplace: HarperDB" />
 
 </div>
 
@@ -162,12 +157,12 @@ The Update operation modifies the values of specified attributes in one or more 
 
 **Example Records:**
 ```js
-[{id:12, name:"Jeff Hannistor"},...] // Record having 12 as Primary key value will be updated
+[{id:12, name:"Jess Hannistor"},...] // Record having 12 as Primary key value will be updated
 ```
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/nosql_update.png" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/nosql_update-v2.png" alt="Marketplace: HarperDB" />
 
 </div>
 
@@ -188,7 +183,7 @@ Removes one or more rows of data from a specified table.
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/nosql_delete.png" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/nosql_delete-v2.png" alt="Marketplace: HarperDB" />
 
 </div>
 
@@ -210,12 +205,12 @@ Returns data from a table for one or more hash values.
 
 **Example Table Attributes:**
 ```js
-['id', 'name', 'age', 'hobby', 'country'] // Only the provided columns will be retrieved from the table
+['id', 'name', 'email'] // Only the provided columns will be retrieved from the table
 ```
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/searchbyhash.png" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/searchbyhash-v2.png" alt="Marketplace: HarperDB" />
 
 </div>
 
@@ -239,19 +234,19 @@ name
 
 **Example Search Value:**
 ```bash
-John Doe 
+Jess Hannistor
 or
-Joh* // using wild card
+Jess* // using wild card
 ```
 
 **Example Table Attributes:**
 ```js
-['id', 'name', 'age', 'hobby', 'country'] // Only the provided columns will be retrieved from the table
+['id', 'name', 'email'] // Only the provided columns will be retrieved from the table
 ```
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/searchbyvalue.png" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/searchbyvalue-v2.png" alt="Marketplace: HarperDB" />
 
 </div>
 
@@ -271,17 +266,17 @@ Returns data from a table for one or more matching conditions.
 
 **Example Table Attributes:**
 ```js
-['id', 'name', 'age', 'hobby', 'country'] // Only the provided columns will be retrieved from the table
+['id', 'name', 'email'] // Only the provided columns will be retrieved from the table
 ```
 
 **Example Conditions to filter:**
 ```js
-[{'search_attribute': 'age', 'search_type': 'between', 'search_value': [20, 28]}, {'search_attribute': 'name', 'search_type': 'contains', 'search_value': 'Ray'}]
+[ {'search_attribute': 'name', 'search_type': 'contains', 'search_value': 'Jeff'}]
 ```
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/searchbyconditions.png" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/searchbyconditions-v2.png" alt="Marketplace: HarperDB" />
 
 </div>
 

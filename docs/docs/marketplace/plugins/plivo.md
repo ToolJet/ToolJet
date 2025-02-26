@@ -23,11 +23,11 @@ To use the Plivo plugin, you need the following credentials:
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/plivo/connection-v2.png" alt="Configuring Plivo In ToolJet" />
+<img className="screenshot-full" src="/img/marketplace/plugins/plivo/connection-v3.png" alt="Configuring Plivo In ToolJet" />
 
 </div>
 
-## Supported Queries
+## Supported Operations
 
 ### Send SMS
 
@@ -41,6 +41,6 @@ You can use the Send SMS operation to send an SMS to a specified mobile number.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/plivo/sendsms-v2.png" alt="Send SMS Using plivo" />
+<img className="screenshot-full" src="/img/marketplace/plugins/plivo/sendsms-v3.png" alt="Send SMS Using plivo" />
 
 </div>
