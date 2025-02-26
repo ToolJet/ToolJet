@@ -111,5 +111,13 @@
     "id": "qdrant",
     "author": "Tooljet",
     "timestamp": "Tue, 10 Dec 2024 02:11:32 GMT"
+  },
+  {
+    "name": "ApyHub",
+    "description": "Plugin for ApyHub APIs",
+    "version": "1.0.0",
+    "id": "apyhub",
+    "author": "Tooljet",
+    "timestamp": "Mon, 23 Dec 2024 09:47:57 GMT"
   }
 ]
