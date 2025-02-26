@@ -17,6 +17,8 @@ import {
   hasParentWithClass,
   getPositionForGroupDrag,
   adjustWidth,
+  hideGridLines,
+  showGridLines,
 } from './gridUtils';
 import useStore from '@/AppBuilder/_stores/store';
 import './Grid.css';
@@ -69,8 +71,12 @@ export default function Grid({ gridWidth, currentLayout }) {
 
     const guidelines = boxList
       .filter((box) => {
+        const isVisible =
+          getResolvedValue(box?.component?.definition?.properties?.visibility?.value) ||
+          getResolvedValue(box?.component?.definition?.styles?.visibility?.value);
+
         // Early return for non-visible elements
-        if (!getResolvedValue(box?.component?.definition?.properties?.visibility?.value)) return false;
+        if (!isVisible) return false;
 
         if (isGrouped) {
           // If component is selected, don't show its guidelines
@@ -212,7 +218,6 @@ export default function Grid({ gridWidth, currentLayout }) {
       </div>
     );
   };
-
   //TO-DO -> Move this to moveableExtensions.js
   const MultiComponentHandle = {
     name: 'multiComponentHandle',
@@ -661,6 +666,7 @@ export default function Grid({ gridWidth, currentLayout }) {
         }}
         checkInput
         onDragStart={(e) => {
+          // This is to prevent parent component from being dragged and the stop the propagation of the event
           if (getHoveredComponentForGrid() !== e.target.id) {
             return false;
           }
@@ -671,6 +677,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           if (SUBCONTAINER_WIDGETS.includes(box?.component?.component) && e.inputEvent.shiftKey) {
             return false;
           }
+          showGridLines();
           //  This flag indicates whether the drag event originated on a child element within a component
           //  (e.g., inside a Table's columns, Calendar's dates, or Kanban's cards).
           //  When true, it prevents the parent component from being dragged, allowing the inner elements
@@ -710,7 +717,6 @@ export default function Grid({ gridWidth, currentLayout }) {
               return false;
             }
           }
-          // This is to prevent parent component from being dragged and the stop the propagation of the event
         }}
         onDragEnd={(e) => {
           try {
@@ -825,14 +831,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           } catch (error) {
             console.log('draggedOverElemId->error', error);
           }
-          // Hide all sub-canvases
-          var canvasElms = document.getElementsByClassName('sub-canvas');
-          var elementsArray = Array.from(canvasElms);
-          elementsArray.forEach(function (element) {
-            element.classList.remove('show-grid');
-            element.classList.add('hide-grid');
-          });
-          document.getElementById('real-canvas')?.classList.remove('show-grid');
+          hideGridLines();
           toggleCanvasUpdater();
         }}
         onDrag={(e) => {
@@ -877,39 +876,23 @@ export default function Grid({ gridWidth, currentLayout }) {
             const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
             const draggedOverElements = targetElems.filter(
               (ele) =>
-                ele.id !== e.target.id && (ele.classList.contains('target') || ele.classList.contains('real-canvas'))
+                (ele.id !== e.target.id && ele.classList.contains('target')) || ele.classList.contains('real-canvas')
             );
             const draggedOverElem = draggedOverElements.find((ele) => ele.classList.contains('target'));
             const draggedOverContainer = draggedOverElements.find((ele) => ele.classList.contains('real-canvas'));
-            const appCanvas = document.getElementById('real-canvas');
-
-            // Show grid line for manin canvas
-            draggedOverContainer?.classList.remove('hide-grid');
-            draggedOverContainer?.classList.add('show-grid');
-            // Remove 'show-grid' class from all sub-canvases
-            const canvasElms = document.getElementsByClassName('sub-canvas');
-            Array.from(canvasElms).forEach((element) => {
-              element.classList.remove('show-grid');
-              element.classList.add('hide-grid');
-            });
 
             // Determine the current parent and potential new parent
-            const parentId = draggedOverContainer?.getAttribute('data-parentId') || draggedOverElem?.id;
+            let parentId = draggedOverContainer?.getAttribute('data-parentId') || draggedOverElem?.id;
+
+            if (parentId === e.target.id) {
+              parentId = boxList.find((box) => box.id === e.target.id)?.component?.parent;
+            }
+
             if (parentId !== prevDragParentId.current) {
               setDragParentId(parentId === 'canvas' ? null : parentId);
               newDragParentId.current = parentId === 'canvas' ? null : parentId;
               prevDragParentId.current = parentId;
             }
-            // Show grid for the appropriate canvas
-            if (parentId) {
-              const newParentCanvas = document.getElementById('canvas-' + parentId);
-              if (newParentCanvas) {
-                appCanvas?.classList?.remove('show-grid');
-                newParentCanvas?.classList.remove('hide-grid');
-                newParentCanvas?.classList.add('show-grid');
-              }
-            }
-            useGridStore.getState().actions.setDragTarget(parentId);
           }
           // Postion ghost element exactly as same at dragged element
           if (document.getElementById('moveable-drag-ghost')) {
