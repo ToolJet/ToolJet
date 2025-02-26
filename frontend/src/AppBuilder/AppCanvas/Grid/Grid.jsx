@@ -88,7 +88,6 @@ export default function Grid({ gridWidth, currentLayout }) {
       .map((box) => `.ele-${box.id}`);
     setElementGuidelines(guidelines);
   }, [boxList, dragParentId, draggingComponentId, resizingComponentId, selectedComponents, getResolvedValue]);
-
   useEffect(() => {
     setBoxList(
       Object.keys(currentPageComponents)
@@ -452,7 +451,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           let _gridWidth = useGridStore.getState().subContainerWidths[currentWidget.component?.parent] || gridWidth;
           if (currentWidget.component?.parent) {
             document.getElementById('canvas-' + currentWidget.component?.parent)?.classList.add('show-grid');
-            useGridStore.getState().actions.setDragTarget(currentWidget.component?.parent);
+            setDragParentId(currentWidget.component?.parent);
           } else {
             document.getElementById('real-canvas').classList.add('show-grid');
           }
@@ -577,7 +576,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           } catch (error) {
             console.error('ResizeEnd error ->', error);
           }
-          useGridStore.getState().actions.setDragTarget();
+          setDragParentId(null);
           toggleCanvasUpdater();
         }}
         onResizeGroupStart={({ events }) => {
