@@ -545,7 +545,11 @@ const sidebars = {
       'label': 'Project Overview',
       'collapsed': true,
       'items': [
-        'project-overview/release-notes',
+        {
+          'type': 'link',
+          'label': 'Release Notes',
+          'href': 'https://app.tooljet.ai/applications/release-notes',
+        },
         {
           'type': 'link',
           'label': 'Roadmap',
