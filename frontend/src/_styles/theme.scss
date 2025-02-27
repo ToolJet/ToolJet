@@ -10166,6 +10166,7 @@ tbody {
     display: flex;
     justify-content: space-between;
     padding: 0px !important;
+    background-color: var(--base-drawer);
   }
 
   .card-header-inner-wrap {
@@ -10207,7 +10208,7 @@ tbody {
   box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
   border-radius: 4px;
   border: none;
-  color: var(--slate11);
+  color: var(--base-deselected);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -10222,7 +10223,7 @@ tbody {
 }
 
 .tj-drawer-tabs-btn-active {
-  background: var(--base);
+  background: var(--base-selected);
   color: var(--slate12);
 }
 
