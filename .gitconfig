@@ -139,3 +139,10 @@
         echo \"Pushing changes in submodules...\"; \
         git submodule foreach --quiet --recursive \"git push\"; \
     }; f"
+
+    status-all = "!f() { \
+        echo \"Status of base repo...\"; \
+        git status; \
+        echo \"Status of submodules...\"; \
+        git submodule foreach --quiet --recursive \"git status\"; \
+    }; f"
