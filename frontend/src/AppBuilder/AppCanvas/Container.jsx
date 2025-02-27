@@ -181,6 +181,7 @@ export const Container = React.memo(
         data-parentId={id}
         canvas-height={canvasHeight}
         onClick={handleCanvasClick}
+        component-type={componentType}
       >
         <div
           className={cx('container-fluid rm-container p-0', {
