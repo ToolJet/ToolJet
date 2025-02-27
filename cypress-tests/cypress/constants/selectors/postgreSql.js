@@ -12,7 +12,7 @@ export const postgreSqlSelector = {
   dataSourceSearchInputField: '[data-cy="home-page-search-bar"]',
 
   postgresDataSource: "[data-cy='data-source-postgresql']",
-  dataSourceNameInputField: '[data-cy="data-source-name-input-filed"]',
+  dataSourceNameInputField: '[data-cy="data-source-name-input-field"]',
   labelHost: '[data-cy="label-host"]',
   labelPort: '[data-cy="label-port"]',
   labelSsl: '[data-cy="label-ssl"]',

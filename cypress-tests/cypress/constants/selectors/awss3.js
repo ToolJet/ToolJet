@@ -5,5 +5,5 @@ export const s3Selector = {
   regionLabel: '[data-cy="label-region"]',
   customEndpointLabel: '[data-cy="label-custom-endpoint"]',
   customEndpointInput: '[data-cy="undefined-text-field"]',
-  dataSourceNameInput: '[data-cy="data-source-name-input-filed"]',
+  dataSourceNameInput: '[data-cy="data-source-name-input-field"]',
 };
