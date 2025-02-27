@@ -111,5 +111,13 @@
     "id": "qdrant",
     "author": "Tooljet",
     "timestamp": "Tue, 10 Dec 2024 02:11:32 GMT"
+  },
+  {
+    "name": "azurerepos",
+    "description": "api plugin from azurerepos",
+    "version": "1.0.0",
+    "id": "azurerepos",
+    "author": "Tooljet",
+    "timestamp": "Mon, 23 Dec 2024 11:57:30 GMT"
   }
 ]
