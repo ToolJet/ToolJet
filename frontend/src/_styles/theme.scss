@@ -15808,11 +15808,6 @@ color: var(--text-default);
   }
 }
 
-.rest-api-url-codehinter {
-  .cm-content>.cm-line {
-    max-width: 505px !important;
-  }
-}
 
 .rest-api-options-codehinter {
   .cm-content>.cm-line {
@@ -15904,23 +15899,7 @@ color: var(--text-default);
   box-shadow: 0px 2px 4px -2px var(--indigo1), 0px 4px 8px -2px var(--indigo1);
 }
 
-.rest-api-url-codehinter {
-  .cm-content>.cm-line {
-    max-width: 505px !important;
-  }
-}
 
-.rest-api-options-codehinter {
-  .cm-content>.cm-line {
-    // max-width: 357px !important;
-  }
-}
-
-.rest-api-codehinter-key-field {
-  .cm-content>.cm-line {
-    // max-width: 184px !important;
-  }
-}
 
 .rest-api-codehinter-key-field,
 .rest-api-url-codehinter,
