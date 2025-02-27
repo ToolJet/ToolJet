@@ -141,7 +141,7 @@
 }
 
 .non-dragging-component { 
-    outline: 1px dotted var(--border-accent-weak) !important;
+    outline: 1px dashed var(--border-accent-weak) !important;
     outline-offset: 0px; /* Creates space between element and outline */
     z-index: 999 !important;
 }
