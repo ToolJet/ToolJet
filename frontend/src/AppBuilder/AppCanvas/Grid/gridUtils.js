@@ -1,7 +1,7 @@
 import { useGridStore } from '@/_stores/gridStore';
 import { isEmpty } from 'lodash';
 import useStore from '@/AppBuilder/_stores/store';
-
+import { getTabId, getSubContainerIdWithSlots } from '../appCanvasUtils';
 export function correctBounds(layout, bounds) {
   layout = scaleLayouts(layout);
   const collidesWith = [];
@@ -414,3 +414,77 @@ export function hideGridLines() {
   document.getElementById('real-canvas')?.classList.remove('show-grid');
   document.getElementById('real-canvas')?.classList.add('hide-grid');
 }
+
+// Track previously active elements for efficient cleanup
+let previousActiveWidgets = null;
+let previousActiveCanvas = null;
+
+export const handleActivateNonDraggingComponents = () => {
+  // Only add non-dragging class to visible components in viewport
+  document.querySelectorAll('.moveable-box:not(.active-target)').forEach((component) => {
+    // Check if element is visible in viewport
+    const rect = component.getBoundingClientRect();
+    const isVisible =
+      rect.top < window.innerHeight && rect.bottom > 0 && rect.left < window.innerWidth && rect.right > 0;
+
+    if (isVisible) {
+      component.classList.add('non-dragging-component');
+    }
+  });
+};
+
+export const handleActivateTargets = (parentId) => {
+  const WIDGETS_WITH_CANVAS_OUTLINE = ['Container', 'Modal', 'Form', 'Listview', 'Kanban'];
+
+  const newParentType = document.getElementById('canvas-' + parentId)?.getAttribute('component-type');
+  let _parentId = parentId;
+  if (newParentType === 'Tabs') {
+    _parentId = getTabId(parentId);
+  } else if (WIDGETS_WITH_CANVAS_OUTLINE.includes(newParentType)) {
+    _parentId = getSubContainerIdWithSlots(parentId);
+  }
+
+  // Clean up previous active elements
+  if (previousActiveWidgets) {
+    previousActiveWidgets.classList.remove('dragging-component-canvas');
+    previousActiveWidgets = null;
+  }
+
+  if (previousActiveCanvas) {
+    previousActiveCanvas.classList.remove('dragging-component-canvas');
+    previousActiveCanvas = null;
+  }
+
+  const parentComponent = document.getElementById(_parentId);
+  if (!parentComponent) return;
+
+  if (WIDGETS_WITH_CANVAS_OUTLINE?.includes(newParentType)) {
+    // If it's multiple canvas in single widget, highlight the specific canvas
+    const canvasElm = document.getElementById('canvas-' + parentId);
+    if (canvasElm) {
+      canvasElm.classList.add('dragging-component-canvas');
+      previousActiveCanvas = canvasElm;
+    }
+  } else {
+    // Otherwise highlight the component box
+    parentComponent.classList.remove('non-dragging-component');
+    parentComponent.classList.add('dragging-component-canvas');
+    previousActiveWidgets = parentComponent;
+  }
+};
+
+export const handleDeactivateTargets = () => {
+  if (previousActiveWidgets) {
+    previousActiveWidgets.classList.remove('dragging-component-canvas');
+    previousActiveWidgets = null;
+  }
+
+  if (previousActiveCanvas) {
+    previousActiveCanvas.classList.remove('dragging-component-canvas');
+    previousActiveCanvas = null;
+  }
+
+  document.querySelectorAll('.non-dragging-component').forEach((component) => {
+    component.classList.remove('non-dragging-component');
+  });
+};

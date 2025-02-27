@@ -19,6 +19,9 @@ import {
   adjustWidth,
   hideGridLines,
   showGridLines,
+  handleActivateTargets,
+  handleDeactivateTargets,
+  handleActivateNonDraggingComponents,
 } from './gridUtils';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
@@ -580,7 +583,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           } else {
             document.getElementById('real-canvas').classList.add('show-grid');
           }
-
+          handleActivateTargets(currentWidget.component?.parent);
           const currentWidth = currentWidget.width * _gridWidth;
           const diffWidth = e.width - currentWidth;
           const diffHeight = e.height - currentWidget.height;
@@ -632,6 +635,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           if (!isComponentVisible(e.target.id)) {
             return false;
           }
+          handleActivateNonDraggingComponents();
           useGridStore.getState().actions.setResizingComponentId(e.target.id);
           e.setMin([gridWidth, GRID_HEIGHT]);
         }}
@@ -695,17 +699,19 @@ export default function Grid({ gridWidth, currentLayout }) {
           } catch (error) {
             console.error('ResizeEnd error ->', error);
           }
+          handleDeactivateTargets();
           setDragParentId(null);
           toggleCanvasUpdater();
         }}
         onResizeGroupStart={({ events }) => {
           showGridLines();
+          handleActivateNonDraggingComponents();
         }}
         onResizeGroup={({ events }) => {
           const parentElm = events[0].target.closest('.real-canvas');
           const parentWidth = parentElm?.clientWidth;
           const parentHeight = parentElm?.clientHeight;
-
+          handleActivateTargets(parentElm?.id?.replace('canvas-', ''));
           const { posRight, posLeft, posTop, posBottom } = getPositionForGroupDrag(events, parentWidth, parentHeight);
           events.forEach((ev) => {
             ev.target.style.width = `${ev.width}px`;
@@ -774,6 +780,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           } catch (error) {
             console.error('Error resizing group', error);
           }
+          handleDeactivateTargets();
           toggleCanvasUpdater();
         }}
         checkInput
@@ -784,6 +791,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           }
           newDragParentId.current = boxList.find((box) => box.id === e.target.id)?.parent;
           e?.moveable?.controlBox?.removeAttribute('data-off-screen');
+
           const box = boxList.find((box) => box.id === e.target.id);
           // Prevent drag if shift is pressed for SUBCONTAINER_WIDGETS
           if (SUBCONTAINER_WIDGETS.includes(box?.component?.component) && e.inputEvent.shiftKey) {
@@ -817,7 +825,6 @@ export default function Grid({ gridWidth, currentLayout }) {
               container.contains(e.inputEvent.target)
             );
           }
-
           if (['RangeSlider', 'BoundedBox'].includes(box?.component?.component) || isDragOnInnerElement) {
             const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
             const isHandle = targetElems.find((ele) => ele.classList.contains('handle-content'));
@@ -825,8 +832,10 @@ export default function Grid({ gridWidth, currentLayout }) {
               return false;
             }
           }
+          handleActivateNonDraggingComponents();
         }}
         onDragEnd={(e) => {
+          handleDeactivateTargets();
           try {
             if (isDraggingRef.current) {
               useStore.getState().setDraggingComponentId(null);
@@ -961,6 +970,7 @@ export default function Grid({ gridWidth, currentLayout }) {
               setDragParentId(newParentId === 'canvas' ? null : newParentId);
               newDragParentId.current = newParentId === 'canvas' ? null : newParentId;
               prevDragParentId.current = newParentId;
+              handleActivateTargets(newParentId);
             }
           }
           // Postion ghost element exactly as same at dragged element
@@ -987,14 +997,17 @@ export default function Grid({ gridWidth, currentLayout }) {
 
             ev.target.style.transform = `translate(${left}px, ${top}px)`;
           });
+          handleActivateTargets(parentElm?.id?.replace('canvas-', ''));
           updateNewPosition(events);
         }}
         onDragGroupStart={({ events }) => {
           showGridLines();
           setIsGroupDragging(true);
+          handleActivateNonDraggingComponents();
         }}
         onDragGroupEnd={(e) => {
           handleDragGroupEnd(e);
+          handleDeactivateTargets();
           toggleCanvasUpdater();
         }}
         onClickGroup={(e) => {
