@@ -37,11 +37,10 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 ## Layout
 
-| <div style={{ width:"135px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div>    | Expected Value                                                  |
-| :------------------------------------------- | :----------------------------------------------------| :-------------------------------------------------------------- |
-| Show on Desktop                              | Makes the component visible in desktop view.         | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Show on Mobile                               | Makes the component visible in mobile view.          | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-
+| <div style={{ width:"135px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | Expected Value                                                                                                                    |
+| :------------------------------------------- | :------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------- |
+| Show on Desktop                              | Makes the component visible in desktop view.      | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on Mobile                               | Makes the component visible in mobile view.       | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 </div>
 
@@ -51,13 +50,10 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 ## Styles
 
-| <div style={{ width:"100px"}}> Style </div> | <div style={{ width:"100px"}}> Description </div>                                               |
-| ------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| Divider Color                               | It is used to set the color of the divider. Use hex code to set the background color.           |
-| Visibility                                  | This property is used to set the visibility of the divider. The property accepts Boolean value. |
-
-:::info
-Any property having **fx** button next to its field can be **programmatically configured**.
-:::
+| Property      | Description                            | Configuration Options                         |
+| ------------- | -------------------------------------- | --------------------------------------------- |
+| Divider Color | Sets the color of the divider.         | Accepts any valid CSS color (e.g., hex, rgb). |
+| Visibility    | Toggles the visibility of the divider. | `true` or `false`.                            |
+| Box Shadow    | Applies shadow to the divider.         | Accepts valid `box-shadow` CSS values.        |
 
 </div>
