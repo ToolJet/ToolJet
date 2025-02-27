@@ -345,3 +345,24 @@ This operation allows you to create or replace an item in a table. It enables yo
 <img style={{ border:'0', marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/dynamodb/putitem-v2.png" alt="ToolJet - DynamoDB operations" />
 
 </div>
+
+## Additional Information
+
+### Rate Limits
+
+DynamoDB enforces rate limits to ensure fair usage and prevent abuse. It is important to design your queries and applications to handle rate limits gracefully. You can read more about rate limits in the [DynamoDB documentation](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/ServiceQuotas.html).
+
+### Error Handling
+
+When working with DynamoDB, it is important to handle errors appropriately. Common errors include authentication errors, rate limit errors, and validation errors. Make sure to check the response status and handle errors accordingly in your application.
+
+### Best Practices
+
+- **Use Caching**: To reduce the number of API requests and improve performance, consider implementing caching mechanisms for frequently accessed data.
+- **Optimize Queries**: Use filters, sorting, and pagination to optimize your queries and retrieve only the necessary data.
+- **Handle Rate Limits**: Implement retry mechanisms and exponential backoff to handle rate limit errors gracefully.
+- **Secure Credentials**: Keep your DynamoDB credentials secure and avoid exposing them in client-side code. Use environment variables or secure storage mechanisms to store credentials.
+
+For more detailed information and best practices, refer to the [DynamoDB documentation](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html).
+
+</div>
