@@ -29,7 +29,11 @@ Set up an OIDC application in your Identity Provider with the following details:
 
 - Configure grant types, sign-in redirect URIs, and sign-out redirect URIs as required
 - Optionally limit access to specific groups for filtering
+:::info
 
+If you are a ToolJet Cloud user, you need to update the redirect URL domain in your identity provider from `tooljet.com` to `tooljet.ai`.
+
+:::
 
 ### 2. Configure OIDC Group Sync in ToolJet
 

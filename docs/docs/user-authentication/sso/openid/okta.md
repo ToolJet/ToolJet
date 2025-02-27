@@ -18,6 +18,11 @@ title: Okta
 </div>
 
 4. Enter an **App integration name** and set the **Sign-in redirect URIs** to `<YOUR-DOMAIN>/sso/openid`.
+  :::info
+
+If you are a ToolJet Cloud user, you need to update the redirect URL domain in your identity provider from `tooljet.com` to `tooljet.ai`.
+
+:::
   <div style={{textAlign: 'center'}}>
   <img className="screenshot-full" src="/img/sso/okta/create-app-s2.png" alt="Okta: SSO" width="700"/>
   </div>

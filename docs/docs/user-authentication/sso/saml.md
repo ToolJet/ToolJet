@@ -37,6 +37,11 @@ Additionally, you can often find this data by navigating to https://&ltyour-iden
 :::
 
 Once the configuration is complete, click **Save Changes** to view the **Redirect URL**.
+:::info
+
+If you are a ToolJet Cloud user, you need to update the redirect URL domain in your identity provider from `tooljet.com` to `tooljet.ai`.
+
+:::
 
 <img className="screenshot-full" src="/img/sso/saml/SAML-Redirect-URL.png" alt="SSO :SAMP" />
 

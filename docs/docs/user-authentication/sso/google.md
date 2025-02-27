@@ -10,6 +10,11 @@ To enable Google Single Sign-on (SSO) for your ToolJet instance, follow these st
 1. From the ToolJet dashboard, go to **Settings** (⚙️) from the bottom of the left sidebar and select the **Workspace Settings**.
 
 2. In the **Workspace Settings**, select **Workspace login** from the sidebar. On the right, you'll see toggles to enable SSO via different clients. All the client toggles are disabled by default. Turn on the Google toggle, a modal will appear with the input field for the parameter Client ID. At the top left of the modal, there is a toggle to enable this modal. Turn it on, and then, without entering the Client ID, click on the **Save changes** button. This will generate a `Redirect URL` that you will need to utilize in the Google Cloud console. 
+:::info
+
+If you are a ToolJet Cloud user, you need to update the redirect URL domain in your identity provider from `tooljet.com` to `tooljet.ai`.
+
+:::
 
     <img className="screenshot-full" src="/img/sso/google/generate-redirect-url.gif" alt="Generate Redirect URL"/>
 
