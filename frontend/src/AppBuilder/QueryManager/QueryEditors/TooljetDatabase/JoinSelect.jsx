@@ -340,10 +340,7 @@ const JsonBfieldsForSelect = ({ selectedJsonbColumns, handleJSonChange, table })
                     <ButtonSolid
                       size="sm"
                       variant="ghostBlack"
-                      className="px-1 rounded-0 border rounded-end"
-                      customStyles={{
-                        height: '30px',
-                      }}
+                      className="px-1 rounded-0 border rounded-end qm-delete-btn"
                       onClick={() => handleRemove(colDetails.id, colDetails.name, colDetails.table)}
                     >
                       <Trash fill="var(--slate9)" style={{ height: '16px' }} />
