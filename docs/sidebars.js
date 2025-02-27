@@ -483,6 +483,19 @@ const sidebars = {
     },
     {
       'type': 'category',
+      'label': 'security',
+      'items': [
+    {
+          "type": "category",
+          "label": "constants",
+          "items": [
+            "security/constants/variables",
+          ]
+        }
+      ]
+      },
+    {
+      'type': 'category',
       'label': 'Workflows',
       'items': [
         'workflows/overview',
