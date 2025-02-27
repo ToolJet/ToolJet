@@ -27,7 +27,7 @@ ToolJet offers various subscription plans for paid licenses visit **[ToolJet Pri
 
 ## AI Credit System 
 
-Build applications effortlessly in Tooljet using natural language. Refer to [Build with AI](/docs/build-with-ai/overview) guide for more information. 
+Build applications effortlessly in ToolJet using natural language. Refer to [Build with AI](/docs/build-with-ai/overview) guide for more information. 
 
 The AI credits are consumed on every AI operation performed in ToolJet. Credits operates at an instance level and are allocated based on the pricing plan and are replenished monthly. Unused credits do not carry over to the next month. AI-powered operations consume credits depending on their complexity. Visit **[ToolJet Pricing](https://www.tooljet.ai/pricing)** page for more details.
 
