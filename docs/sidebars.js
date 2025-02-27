@@ -157,6 +157,7 @@ const sidebars = {
                     'widgets/container',
                     'widgets/custom-component',
                     'widgets/date-range-picker',
+                    'widgets/date-range',
                     'widgets/datepicker',
                     'widgets/divider',
                     'widgets/dropdown',
