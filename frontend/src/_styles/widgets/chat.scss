@@ -1,0 +1,437 @@
+@import "../colors.scss";
+@import "../tabler.scss";
+@import "../z-index.scss";
+@import "../mixins.scss";
+@import "../typography.scss";
+@import "../designtheme.scss";
+.chat-widget {
+  .tj-text-color-not-important {
+    font-family: 'IBM Plex Sans';
+    font-style: normal;
+    margin: 0;
+    padding: 0;
+    color: var(--slate12);
+  }
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-shadow:  var(--elevation-400-box-shadow)  var(--elevation-700-box-shadow);
+  border-radius: 8px;
+  .button-group {
+    display: flex;
+    border: 1px solid var(--borders-default);
+    border-radius: 6px;
+    button {
+      margin: 0 !important;
+      border-radius: 0 !important;
+    }
+    button:not(:last-child) {
+      border-right: 1px solid var(--borders-default);
+    }
+  }
+
+  .message-container {
+    width: 100%;
+  
+    .message-actions {
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      margin-left: auto;
+      
+      .action-button {
+        &:hover {
+          background-color: var(--slate3);
+        }
+      }
+    }
+  
+    &:hover {
+      .message-actions {
+        opacity: 1;
+      }
+    }
+
+    // Add this to control spacing in the message column
+    .message-content-title-container {
+      gap: 0; // Add 0px gap between header and content
+      width: calc(100% - 52px); 
+      
+      // Remove any extra spacing from children
+      > * {
+        margin: 0;
+        padding: 0;
+      }
+    }
+  }
+  .message-error{
+    .message-content {
+      color: var(--status-error-strong) !important;
+      font-family: 'IBM Plex Sans';
+      font-size: 14px !important;
+      font-weight: 400 !important;
+      line-height: 22.4px !important;
+      text-align: left !important;
+      text-underline-position: from-font !important;
+      text-decoration-skip-ink: none !important;
+
+    }
+  }
+  .chat-input-textarea{
+    border-width: 1px;
+    border-style: solid;
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 6px;
+    overflow-y: hidden;
+    position: relative;
+    
+    &.scrollable {
+      overflow-y: auto;
+
+      // Always show scrollbar when scrollable
+      &::-webkit-scrollbar {
+        width: 4px;
+        height: 4px;
+        background: transparent;
+      }
+      
+      &::-webkit-scrollbar-thumb {
+        background-color: var(--slate7);
+        border-radius: 2px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      // Firefox scrollbar styles
+      scrollbar-width: thin;
+      scrollbar-color: var(--slate7) transparent;
+
+      // Remove hover/focus states since scrollbar is always visible
+      &:hover,
+      &:focus {
+        &::-webkit-scrollbar {
+          width: 4px;
+          height: 4px;
+        }
+      }
+    }
+
+    &:disabled {
+      background-color: var(--surfaces-surface-03);
+      color: var(--text-disabled);
+      border-color: var(--borders-disabled-on-white);
+    }
+
+    &:hover:not(:focus):not(:disabled) {
+      border-color: var(--tblr-input-border-color-darker);
+    }
+
+    &:focus {
+      outline: none !important;
+      border-width: 1px !important;
+    }
+
+    &::placeholder {
+      color: var(--text-placeholder) !important;
+    }
+  }
+  .markdown-content {
+ 
+    // Headers
+    h1, h2, h3, h4, h5, h6 {
+      // margin: 16px 0 8px;
+      color: var(--text-black-000);
+      font-weight: 600;
+    }
+    h1 { font-size: 24px; }
+    h2 { font-size: 20px; }
+    h3 { font-size: 18px; }
+    h4, h5, h6 { font-size: 16px; }
+  
+    // Text formatting
+    strong, b { font-weight: 600; }
+    em, i { font-style: italic; }
+    del { text-decoration: line-through; }
+    
+    // Lists
+    ul, ol {
+      padding-left: 24px;
+      // margin: 8px 0;
+      li {
+        margin: 4px 0;
+        p { margin: 0; } // Fix extra spacing in list items
+      }
+    }
+  
+    // Code blocks
+    code {
+      background: var(--surfaces-surface-02);
+      padding: 2px 4px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: inherit;
+      width: max-content;
+    }
+  
+    pre {
+      background: var(--surfaces-surface-02);
+      padding: 12px;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin: 8px 0;
+      code {
+        background: none;
+        padding: 0;
+      }
+    }
+  
+    // Tables
+    table {
+      width: 100%;
+      max-width: 100%;
+      display: block;
+      border-collapse: collapse;
+      margin: 8px 0;
+      max-height: 500px;
+      overflow: auto;
+      
+      // Hide scrollbar by default
+      &::-webkit-scrollbar {
+        height: 0;
+        background: transparent;
+        transition: all 0.2s ease;
+      }
+
+      // Firefox scrollbar styles
+      scrollbar-width: none;
+
+      // Show scrollbar on hover/focus
+      &:hover,
+      &:focus,
+      &:focus-within {
+        &::-webkit-scrollbar {
+          height: 4px;
+        }
+        
+        &::-webkit-scrollbar-thumb {
+          background-color: var(--slate7);
+          border-radius: 2px;
+        }
+
+        &::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        // Firefox scrollbar styles
+        scrollbar-width: thin;
+        scrollbar-color: var(--slate7) transparent;
+      }
+      
+      th, td {
+        border: 1px solid var(--borders-default);
+        padding: 8px 12px;
+        text-align: left;
+        white-space: nowrap; // Prevent text wrapping in cells
+      }
+
+      th {
+        background: var(--surfaces-surface-02);
+        font-weight: 600;
+      }
+
+      tr:nth-child(even) {
+        background: var(--surfaces-surface-01);
+      }
+    }
+  
+    // Blockquotes
+    blockquote {
+      border-left: 4px solid var(--borders-default);
+      margin: 8px 0;
+      padding: 8px 16px;
+      background: var(--surfaces-surface-02);
+      width: 100%;
+      overflow-x: auto;
+      // Hide scrollbar by default
+      &::-webkit-scrollbar {
+        height: 0;
+        background: transparent;
+        transition: all 0.2s ease;
+      }
+
+      // Firefox scrollbar styles
+      scrollbar-width: none;
+
+      // Show scrollbar on hover/focus
+      &:hover,
+      &:focus,
+      &:focus-within {
+        &::-webkit-scrollbar {
+          height: 4px;
+        }
+        
+        &::-webkit-scrollbar-thumb {
+          background-color: var(--slate7);
+          border-radius: 2px;
+        }
+
+        &::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        // Firefox scrollbar styles
+        scrollbar-width: thin;
+        scrollbar-color: var(--slate7) transparent;
+      }
+      
+      p {
+        margin: 0;
+      }
+    }
+  
+    // Links
+    a {
+      color: var(--primary-brand);
+      text-decoration: none;
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  
+    // Images
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+      margin: 8px 0;
+    }
+  
+    // Horizontal rules
+    hr {
+      border: 0;
+      border-top: 1px solid var(--borders-default);
+      margin: 16px 0;
+    }
+  
+    // Paragraphs
+    p {
+      margin-bottom : 0 !important;
+      line-height: 1.5;
+    }
+    &:first-child {
+      margin-top: 0 !important;
+    }
+  }
+  &.dark-theme {
+    .form-control {
+      background-color: var(--surfaces-surface-01);
+      border-color: var(--slate7);
+      
+      // &:focus {
+      //   border-color: var(--primary-accent-strong);
+      // }
+    }
+  }
+  
+  .chat-messages {
+    overflow-x: hidden !important;
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    
+    // Hide scrollbar by default
+    &::-webkit-scrollbar {
+      width: 0;
+      background: transparent;
+      transition: all 0.2s ease;
+    }
+
+    // Firefox scrollbar styles
+    scrollbar-width: none;
+    
+  }
+  .chat-header{
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--borders-weak-disabled);
+    
+    .chat-title {
+      color: var(--text-black-000);
+      max-width: calc(100% - 90px); // Account for button group width + padding
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .button-group {
+      display: flex;
+      flex-shrink: 0; // Prevent button group from shrinking
+      
+      button {
+        width: 36px; // Fixed width for buttons
+        height: 36px;
+      }
+    }
+
+  }
+  .chat-input {
+    padding: 10px 20px;
+
+    .d-flex {
+      position: relative;
+      width: 100%;
+
+      textarea {
+        flex: 1;
+      }
+
+      button {
+        align-self: flex-end; // Align button to bottom
+      }
+    }
+  }
+  
+  .loader {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    position: absolute;
+    left: 20px;
+    background: var(--primary-accent-subtle);
+    box-shadow: 12px 0 0 var(--primary-accent-subtle), -12px 0 0 var(--primary-accent-subtle);
+    animation: l5 2s infinite cubic-bezier(0.4, 0, 0.2, 1);
+    &::after{
+      border-top-color: transparent;
+      border-left-color: transparent;
+    }
+  }
+
+  @keyframes l5 {
+    0%, 5%, 95%, 100% {
+      background: var(--primary-accent-strong);
+      box-shadow: 12px 0 0 var(--primary-accent-subtle), -12px 0 0 var(--primary-accent-subtle);
+    }
+    20%, 25%, 30% {
+      background: var(--primary-accent-subtle);
+      box-shadow: 12px 0 0 var(--primary-accent-strong), -12px 0 0 var(--primary-accent-subtle);
+    }
+    45%, 50%, 55% {
+      background: var(--primary-accent-subtle);
+      box-shadow: 12px 0 0 var(--primary-accent-subtle), -12px 0 0 var(--primary-accent-strong);
+    }
+    70%, 75%, 80% {
+      background: var(--primary-accent-strong);
+      box-shadow: 12px 0 0 var(--primary-accent-subtle), -12px 0 0 var(--primary-accent-subtle);
+    }
+  }
+}
+

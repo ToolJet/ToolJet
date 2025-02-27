@@ -59,6 +59,7 @@ import ToggleSwitchV2 from './toggleswitchV2.jsx';
 import Treeselect from './treeselect.jsx';
 import Upstatistics from './upstatistics.jsx';
 import Verticaldivider from './verticaldivider.jsx';
+import Chat from './chat.jsx';
 
 const WidgetIcon = (props) => {
   switch (props.name) {
@@ -184,6 +185,8 @@ const WidgetIcon = (props) => {
       return <Upstatistics {...props} />;
     case 'verticaldivider':
       return <Verticaldivider {...props} />;
+    case 'chat':
+      return <Chat {...props} />;
 
     default:
       return <BoundedBox {...props} />;

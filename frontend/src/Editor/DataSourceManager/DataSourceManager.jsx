@@ -114,13 +114,15 @@ class DataSourceManagerComponent extends React.Component {
     if (!dataSource) return {};
 
     if (dataSource?.pluginId) {
-      let dataSourceMeta = camelizeKeys(dataSource?.plugin?.manifestFile?.data.source);
-      dataSourceMeta.options = decamelizeKeys(dataSourceMeta.options);
-
-      return dataSourceMeta;
+      const dataSourceMeta = dataSource?.plugin?.manifestFile?.data.source;
+      const options = dataSourceMeta?.options;
+      return {
+        ...camelizeKeys(dataSourceMeta),
+        options,
+      };
     }
 
-    return DataSourceTypes.find((source) => source.kind === dataSource.kind);
+    return DataSourceTypes.find((source) => source.kind === dataSource.kind) || {};
   };
 
   selectDataSource = (source) => {
