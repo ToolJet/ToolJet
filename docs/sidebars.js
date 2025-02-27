@@ -215,6 +215,7 @@ const sidebars = {
                     'widgets/timer',
                     'widgets/toggle-switch-v2',
                     'widgets/tree-select',
+                    'widgets/timepicker',
                     'widgets/vertical-divider',
                   ],
                 },
