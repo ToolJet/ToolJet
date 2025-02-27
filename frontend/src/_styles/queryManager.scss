@@ -1244,6 +1244,11 @@ $border-radius: 4px;
         color: var(--slate12) !important;
       }
     }
+    &.data-source-exists {
+      .cm-editor {
+        border-radius: 0 4px 4px 0 !important;
+      }
+    }
   }
 
   .rest-api-methods-select-element-container {

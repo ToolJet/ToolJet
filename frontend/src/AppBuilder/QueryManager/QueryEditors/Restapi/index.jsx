@@ -20,7 +20,11 @@ class Restapi extends React.Component {
 
     this.state = {
       options,
+      codeHinterHeight: 32, // Default height
     };
+
+    this.codeHinterRef = React.createRef();
+    this.resizeObserver = null;
   }
 
   componentDidUpdate(prevProps) {
@@ -31,6 +35,11 @@ class Restapi extends React.Component {
           parameters: this.props.options.parameters,
         },
       });
+    }
+
+    // Setup resize observer if it's not already set up
+    if (this.codeHinterRef.current && !this.resizeObserver) {
+      this.setupResizeObserver();
     }
   }
 
@@ -58,9 +67,63 @@ class Restapi extends React.Component {
       setTimeout(() => {
         this.initizalizeRetryNetworkErrorsToggle();
       }, 1000);
+
+      this.setupResizeObserver();
     } catch (error) {
       console.log(error);
     }
+  }
+
+  componentWillUnmount() {
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+    }
+  }
+
+  setupResizeObserver() {
+    if (!this.codeHinterRef.current) return;
+
+    // Try to find the editor element, checking multiple possible selectors
+    const findEditorElement = () => {
+      const element =
+        this.codeHinterRef.current.querySelector('.cm-editor') ||
+        this.codeHinterRef.current.querySelector('.codehinter-input') ||
+        this.codeHinterRef.current.querySelector('.code-hinter-wrapper');
+      return element;
+    };
+
+    // Initial attempt to find editor
+    let editorElement = findEditorElement();
+
+    // If not found immediately, try again after a short delay
+    if (!editorElement) {
+      setTimeout(() => {
+        editorElement = findEditorElement();
+        if (editorElement) {
+          this.setupObserverForElement(editorElement);
+        }
+      }, 100);
+      return;
+    }
+
+    this.setupObserverForElement(editorElement);
+  }
+
+  setupObserverForElement(element) {
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+    }
+
+    this.resizeObserver = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        const height = Math.max(32, Math.min(entry.contentRect.height, 220));
+        if (height !== this.state.codeHinterHeight) {
+          this.setState({ codeHinterHeight: height });
+        }
+      }
+    });
+
+    this.resizeObserver.observe(element);
   }
 
   initizalizeRetryNetworkErrorsToggle = () => {
@@ -210,21 +273,31 @@ class Restapi extends React.Component {
               />
             </div>
 
-            <div className={`field rest-methods-url`} style={{ width: 'calc(100% - 214px)' }}>
+            <div
+              className={`field rest-methods-url ${dataSourceURL && 'data-source-exists'}`}
+              style={{ width: 'calc(100% - 214px)' }}
+            >
               <div className="font-weight-medium color-slate12">URL</div>
               <div className="d-flex h-100 w-100">
                 {dataSourceURL && (
                   <BaseUrl
                     theme={this.props.darkMode ? 'monokai' : 'default'}
                     dataSourceURL={dataSourceURL}
-                    style={{ overflowWrap: 'anywhere', width: '40%' }}
+                    style={{
+                      overflowWrap: 'anywhere',
+                      maxWidth: '40%',
+                      width: 'fit-content',
+                      height: `${this.state.codeHinterHeight}px`,
+                      minHeight: '32px',
+                      maxHeight: '220px',
+                    }}
                   />
                 )}
                 <div
-                  className={`${dataSourceURL ? '' : 'flex-grow-1'} rest-api-url-codehinter ${
+                  ref={this.codeHinterRef}
+                  className={`${dataSourceURL ? 'flex-grow-1' : 'flex-grow-1'} rest-api-url-codehinter ${
                     dataSourceURL ? 'url-input-group' : ''
                   }`}
-                  style={{ width: dataSourceURL ? '60%' : '100%' }}
                 >
                   <CodeHinter
                     type="basic"
