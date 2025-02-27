@@ -2,6 +2,7 @@ import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { AppEnvironmentActionParametersDto } from '../dto';
 import { IAppEnvironmentResponse } from './IAppEnvironmentResponse';
+import { EntityManager } from 'typeorm';
 
 export interface IAppEnvironmentService {
   init(editingVersionId: string, organizationId: string): Promise<IAppEnvironmentResponse>;
@@ -10,7 +11,13 @@ export interface IAppEnvironmentService {
     action: string,
     actionParameters: AppEnvironmentActionParametersDto
   ): Promise<any>;
-  get(organizationId: string, id?: string, priorityCheck?: boolean, licenseCheck?: boolean): Promise<AppEnvironment>;
+  get(
+    organizationId: string,
+    id?: string,
+    priorityCheck?: boolean,
+    licenseCheck?: boolean,
+    manager?: EntityManager
+  ): Promise<AppEnvironment>;
   create(organizationId: string, name: string, isDefault?: boolean, priority?: number): Promise<AppEnvironment>;
   update(id: string, name: string, organizationId: string): Promise<any>;
   getAll(organizationId: string, appId?: string): Promise<AppEnvironment[]>;

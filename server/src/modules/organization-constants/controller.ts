@@ -43,8 +43,12 @@ export class OrganizationConstantController implements IOrganizationConstantCont
   @Get(':app_slug')
   @InitFeature(FEATURE_KEY.GET_FROM_APP)
   async getConstantsFromApp(@User() user, @Query('environmentId') environmentId) {
-    const result = await this.organizationConstantsService.allEnvironmentConstants(user.organizationId);
-    return { constants: {} };
+    const result = await this.organizationConstantsService.getConstantsForEnvironment(
+      user.organizationId,
+      environmentId,
+      OrganizationConstantType.GLOBAL
+    );
+    return { constants: result };
   }
 
   @UseGuards(JwtAuthGuard, FeatureAbilityGuard)

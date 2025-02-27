@@ -8,10 +8,13 @@ import { AppVersion } from '@entities/app_version.entity';
 import { App } from '@entities/app.entity';
 import { FindOneOptions } from 'typeorm';
 import { defaultAppEnvironments } from '@helpers/utils.helper';
+import { LICENSE_FIELD } from '@modules/licensing/constants';
+import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
+import { IAppEnvironmentResponse } from './interfaces/IAppEnvironmentResponse';
 
 @Injectable()
 export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
-  constructor() {}
+  constructor(protected readonly licenseTermsService: LicenseTermsService) {}
   async updateOptions(options: object, environmentId: string, dataSourceId: string, manager?: EntityManager) {
     await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.update(
@@ -124,14 +127,15 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
     organizationId: string,
     id?: string,
     priorityCheck = false,
-    manager?: EntityManager,
-    licenseCheck = false
+    manager?: EntityManager
   ): Promise<AppEnvironment> {
+    const isMultiEnvironmentEnabled = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
+
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const condition: FindOneOptions<AppEnvironment> = {
         where: {
           organizationId,
-          ...(id ? { id } : !priorityCheck && { isDefault: true }),
+          ...(id ? { id } : !isMultiEnvironmentEnabled ? { priority: 1 } : !priorityCheck ? { isDefault: true } : {}),
         },
         ...(priorityCheck && { order: { priority: 'ASC' } }),
       };
@@ -180,5 +184,36 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
         where: { environmentId: envId, dataSourceId },
       });
     });
+  }
+
+  async init(
+    editorVersion: Partial<AppVersion>,
+    organizationId: string,
+    isMultiEnvironmentEnabled = false,
+    manager?: EntityManager
+  ): Promise<IAppEnvironmentResponse> {
+    const environments: AppEnvironment[] = await this.getAll(organizationId, editorVersion.appId, manager);
+    let editorEnvironment: AppEnvironment;
+    if (!isMultiEnvironmentEnabled) {
+      editorEnvironment = environments.find((env) => env.priority === 1);
+    } else {
+      editorEnvironment = environments.find((env) => env.id === editorVersion.currentEnvironmentId);
+    }
+    const { shouldRenderPromoteButton, shouldRenderReleaseButton } = await this.calculateButtonVisibility(
+      isMultiEnvironmentEnabled,
+      editorEnvironment,
+      editorVersion.appId,
+      editorVersion.id,
+      manager
+    );
+    const response: IAppEnvironmentResponse = {
+      editorVersion,
+      editorEnvironment,
+      appVersionEnvironment: editorEnvironment,
+      shouldRenderPromoteButton,
+      shouldRenderReleaseButton,
+      environments,
+    };
+    return response;
   }
 }
