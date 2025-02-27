@@ -210,6 +210,7 @@ const sidebars = {
                     'widgets/text-input',
                     'widgets/text',
                     'widgets/textarea',
+                    'widgets/text-area',
                     'widgets/rich-text-editor',
                     'widgets/timeline',
                     'widgets/timer',
