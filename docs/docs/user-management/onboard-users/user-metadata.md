@@ -21,12 +21,12 @@ Role Required: **Admin** <br/>
     (Example URL - `https://app.corp.com/nexus/workspace-settings/users`)
 
 3. Spot the user whose metadata needs to be updated, click on the kebab menu (three dots) at the end of their row, and select **Edit user details**.
-    <img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/user-management/profile-management/user-details.png" alt="Edit User Details" />
+    <img className="screenshot-full" src="/img/user-management/profile-management/user-details.png" alt="Edit User Details" />
 
 4. Click on **+ Add more** below User metadata, and enter the key-value pair.
-    <img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/user-management/profile-management/metadata.png" alt="Edit User Details" />
+    <img className="screenshot-full" src="/img/user-management/profile-management/metadata.png" alt="Edit User Details" />
 
-5. Click on **Update** at the bottom.
+5. Click on **Update** button at the bottom.
 
 ## Using User Metadata in Applications
 
