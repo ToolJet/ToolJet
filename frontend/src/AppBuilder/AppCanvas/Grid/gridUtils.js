@@ -403,7 +403,6 @@ export const handleActivateNonDraggingComponents = () => {
     const rect = component.getBoundingClientRect();
     const isVisible =
       rect.top < window.innerHeight && rect.bottom > 0 && rect.left < window.innerWidth && rect.right > 0;
-
     if (isVisible) {
       component.classList.add('non-dragging-component');
     }
@@ -414,7 +413,6 @@ export const handleActivateTargets = (parentId) => {
   const WIDGETS_WITH_CANVAS_OUTLINE = ['Container', 'Modal', 'Form', 'Listview', 'Kanban'];
 
   const newParentType = document.getElementById('canvas-' + parentId)?.getAttribute('component-type');
-  console.log('newParentType', newParentType);
   let _parentId = parentId;
   if (newParentType === 'Tabs') {
     _parentId = getTabId(parentId);
@@ -433,13 +431,14 @@ export const handleActivateTargets = (parentId) => {
     previousActiveCanvas = null;
   }
 
+  handleActivateNonDraggingComponents();
+
   const parentComponent = document.getElementById(_parentId);
   if (!parentComponent) return;
 
   if (WIDGETS_WITH_CANVAS_OUTLINE?.includes(newParentType)) {
     // If it's multiple canvas in single widget, highlight the specific canvas
     const canvasElm = document.getElementById('canvas-' + parentId);
-    console.log('canvasElm', canvasElm);
     if (canvasElm) {
       canvasElm.classList.add('dragging-component-canvas');
       previousActiveCanvas = canvasElm;

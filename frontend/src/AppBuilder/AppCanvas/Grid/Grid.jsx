@@ -19,7 +19,6 @@ import {
   adjustWidth,
   handleActivateTargets,
   handleDeactivateTargets,
-  handleActivateNonDraggingComponents,
 } from './gridUtils';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
@@ -465,7 +464,6 @@ export default function Grid({ gridWidth, currentLayout }) {
           if (!isComponentVisible(e.target.id)) {
             return false;
           }
-          handleActivateNonDraggingComponents();
           useGridStore.getState().actions.setResizingComponentId(e.target.id);
           e.setMin([gridWidth, 10]);
         }}
@@ -539,7 +537,6 @@ export default function Grid({ gridWidth, currentLayout }) {
         onResizeGroupStart={({ events }) => {
           const parentElm = events[0].target.closest('.real-canvas');
           parentElm.classList.add('show-grid');
-          handleActivateNonDraggingComponents();
         }}
         onResizeGroup={({ events }) => {
           const parentElm = events[0].target.closest('.real-canvas');
@@ -620,6 +617,10 @@ export default function Grid({ gridWidth, currentLayout }) {
         }}
         checkInput
         onDragStart={(e) => {
+          // This is to prevent parent component from being dragged and the stop the propagation of the event
+          if (getHoveredComponentForGrid() !== e.target.id) {
+            return false;
+          }
           e?.moveable?.controlBox?.removeAttribute('data-off-screen');
 
           const box = boxList.find((box) => box.id === e.target.id);
@@ -665,11 +666,6 @@ export default function Grid({ gridWidth, currentLayout }) {
             if (!isHandle) {
               return false;
             }
-          }
-          handleActivateNonDraggingComponents();
-          // This is to prevent parent component from being dragged and the stop the propagation of the event
-          if (getHoveredComponentForGrid() !== e.target.id) {
-            return false;
           }
         }}
         onDragEnd={(e) => {
@@ -863,11 +859,12 @@ export default function Grid({ gridWidth, currentLayout }) {
             handleActivateTargets(parentId);
             useGridStore.getState().actions.setDragTarget(parentId);
           }
+          const ghostElement = document.getElementById('moveable-drag-ghost');
           // Postion ghost element exactly as same at dragged element
-          if (document.getElementById('moveable-drag-ghost')) {
-            document.getElementById('moveable-drag-ghost').style.transform = `translate(${left}px, ${top}px)`;
-            document.getElementById('moveable-drag-ghost').style.width = `${e.target.clientWidth}px`;
-            document.getElementById('moveable-drag-ghost').style.height = `${e.target.clientHeight}px`;
+          if (ghostElement) {
+            ghostElement.style.transform = `translate(${left}px, ${top}px)`;
+            ghostElement.style.width = `${e.target.clientWidth}px`;
+            ghostElement.style.height = `${e.target.clientHeight}px`;
           }
         }}
         onDragGroup={(ev) => {
@@ -889,7 +886,6 @@ export default function Grid({ gridWidth, currentLayout }) {
         onDragGroupStart={({ events }) => {
           const parentElm = events[0]?.target?.closest('.real-canvas');
           parentElm?.classList?.add('show-grid');
-          handleActivateNonDraggingComponents();
         }}
         onDragGroupEnd={(e) => {
           try {
@@ -948,6 +944,7 @@ export default function Grid({ gridWidth, currentLayout }) {
         bounds={CANVAS_BOUNDS}
         displayAroundControls={true}
         controlPadding={20}
+        stopPropagation={true}
       />
     </>
   );

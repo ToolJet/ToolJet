@@ -10,6 +10,7 @@ export const DragGhostWidget = ({ isDragging }) => {
         position: 'absolute',
         background: '#D9E2FC',
         opacity: '0.7',
+        pointerEvents: 'none',
       }}
     ></div>
   );
