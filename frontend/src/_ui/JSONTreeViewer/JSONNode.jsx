@@ -53,7 +53,7 @@ export const JSONNode = ({ data, ...restProps }) => {
 
   React.useEffect(() => {
     if (typeof shouldExpandNode === 'function') {
-      set(shouldExpandNode(path, data));
+      set(shouldExpandNode(path, data, currentNode));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathToBeInspected]);
@@ -337,6 +337,7 @@ export const JSONNode = ({ data, ...restProps }) => {
             'group-object-container': shouldDisplayIntendedBlock,
             'mx-2': typeofCurrentNode !== 'Object' && typeofCurrentNode !== 'Array',
           })}
+          id={`inspector-node-${String(currentNode).toLowerCase()}`}
           data-cy={`inspector-node-${String(currentNode).toLowerCase()}`}
         >
           {$NODEIcon && <div className="json-tree-icon-container">{$NODEIcon}</div>}
