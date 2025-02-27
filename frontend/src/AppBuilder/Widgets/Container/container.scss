@@ -1,0 +1,13 @@
+.wj-container-header {
+    position: relative;
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: -7px;
+      right: -7px;
+      height: 1px;
+      background-color: var(--border-weak);
+    }
+  }
+  

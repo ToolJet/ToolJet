@@ -12,11 +12,8 @@ import { shallow } from 'zustand/shallow';
 
 export const Listview = function Listview({
   id,
-  component,
   width,
   height,
-  containerProps,
-  removeComponent,
   properties,
   styles,
   fireEvent,
@@ -270,38 +267,8 @@ export const Listview = function Listview({
               columns={positiveColumns}
               listViewMode={mode}
               darkMode={darkMode}
+              componentType="Listview"
             />
-            {/* <SubContainer
-              columns={positiveColumns}
-              listmode={mode}
-              parentComponent={component}
-              containerCanvasWidth={width}
-              parent={`${id}`}
-              parentName={component.name}
-              {...containerProps}
-              readOnly={index !== 0}
-              customResolvables={{ listItem }}
-              parentRef={parentRef}
-              removeComponent={removeComponent}
-              listViewItemOptions={{ index }}
-              exposedVariables={childrenData[index]}
-              onOptionChange={function ({ component, optionName, value, componentId }) {
-                setChildrenData((prevData) => {
-                  const changedData = { [component.name]: { [optionName]: value } };
-                  const existingDataAtIndex = prevData[index] ?? {};
-                  const newDataAtIndex = {
-                    ...prevData[index],
-                    [component.name]: {
-                      ...existingDataAtIndex[component.name],
-                      ...changedData[component.name],
-                      id: componentId,
-                    },
-                  };
-                  const newChildrenData = { ...prevData, [index]: newDataAtIndex };
-                  return { ...prevData, ...newChildrenData };
-                });
-              }}
-            /> */}
           </div>
         ))}
       </div>

@@ -17,6 +17,8 @@ import {
   hasParentWithClass,
   getPositionForGroupDrag,
   adjustWidth,
+  handleActivateTargets,
+  handleDeactivateTargets,
 } from './gridUtils';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
@@ -407,7 +409,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           } else {
             document.getElementById('real-canvas').classList.add('show-grid');
           }
-
+          handleActivateTargets(currentWidget.component?.parent);
           const currentWidth = currentWidget.width * _gridWidth;
           const diffWidth = e.width - currentWidth;
           const diffHeight = e.height - currentWidget.height;
@@ -528,6 +530,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           } catch (error) {
             console.error('ResizeEnd error ->', error);
           }
+          handleDeactivateTargets();
           useGridStore.getState().actions.setDragTarget();
           toggleCanvasUpdater();
         }}
@@ -539,7 +542,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           const parentElm = events[0].target.closest('.real-canvas');
           const parentWidth = parentElm?.clientWidth;
           const parentHeight = parentElm?.clientHeight;
-
+          handleActivateTargets(parentElm?.id?.replace('canvas-', ''));
           const { posRight, posLeft, posTop, posBottom } = getPositionForGroupDrag(events, parentWidth, parentHeight);
           events.forEach((ev) => {
             ev.target.style.width = `${ev.width}px`;
@@ -609,11 +612,17 @@ export default function Grid({ gridWidth, currentLayout }) {
           } catch (error) {
             console.error('Error resizing group', error);
           }
+          handleDeactivateTargets();
           toggleCanvasUpdater();
         }}
         checkInput
         onDragStart={(e) => {
+          // This is to prevent parent component from being dragged and the stop the propagation of the event
+          if (getHoveredComponentForGrid() !== e.target.id) {
+            return false;
+          }
           e?.moveable?.controlBox?.removeAttribute('data-off-screen');
+
           const box = boxList.find((box) => box.id === e.target.id);
           // Prevent drag if shift is pressed for SUBCONTAINER_WIDGETS
           if (SUBCONTAINER_WIDGETS.includes(box?.component?.component) && e.inputEvent.shiftKey) {
@@ -625,7 +634,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           //  to handle their own interactions like column resizing or card dragging
           let isDragOnInnerElement = false;
 
-          /* If the drag or click is on a calender popup draggable interactions are not executed so that popups and other components inside calender popup works. 
+          /* If the drag or click is on a calender popup draggable interactions are not executed so that popups and other components inside calender popup works.
             Also user dont need to drag an calender from using popup */
           if (hasParentWithClass(e.inputEvent.target, 'react-datepicker-popper')) {
             return false;
@@ -658,15 +667,12 @@ export default function Grid({ gridWidth, currentLayout }) {
               return false;
             }
           }
-          // This is to prevent parent component from being dragged and the stop the propagation of the event
-          if (getHoveredComponentForGrid() !== e.target.id) {
-            return false;
-          }
         }}
         onDragEnd={(e) => {
+          handleDeactivateTargets();
           try {
             if (isDraggingRef.current) {
-              useGridStore.getState().actions.setDraggingComponentId(null);
+              useStore.getState().setDraggingComponentId(null);
               isDraggingRef.current = false;
             }
 
@@ -711,7 +717,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             let left = e.lastEvent?.translate[0];
             let top = e.lastEvent?.translate[1];
             if (
-              ['Listview', 'Kanban', 'Container'].includes(
+              ['Listview', 'Kanban', 'Container', 'Form'].includes(
                 boxList.find((box) => box.id === draggedOverElemId)?.component?.component
               )
             ) {
@@ -735,7 +741,11 @@ export default function Grid({ gridWidth, currentLayout }) {
                 // @TODO - When dropping back to container from canvas, the boxList doesn't have canvas header,
                 // boxList will return null. But we need to tell getMouseDistanceFromParentDiv parentWidgetType is container
                 // As container id is like 'canvas-2375e23765e-123234'
-                if (parentId && !parentWidgetType && draggedOverElemId.includes('-header')) {
+                if (
+                  parentId &&
+                  !parentWidgetType &&
+                  (draggedOverElemId.includes('-footer') || draggedOverElemId.includes('-header'))
+                ) {
                   parentWidgetType = 'Container';
                 }
 
@@ -787,7 +797,7 @@ export default function Grid({ gridWidth, currentLayout }) {
         onDrag={(e) => {
           // Since onDrag is called multiple times when dragging, hence we are using isDraggingRef to prevent setting state again and again
           if (!isDraggingRef.current) {
-            useGridStore.getState().actions.setDraggingComponentId(e.target.id);
+            useStore.getState().setDraggingComponentId(e.target.id);
             isDraggingRef.current = true;
           }
           const parentComponent = boxList.find((box) => box.id === boxList.find((b) => b.id === e.target.id)?.parent);
@@ -846,13 +856,15 @@ export default function Grid({ gridWidth, currentLayout }) {
                 newParentCanvas?.classList.add('show-grid');
               }
             }
+            handleActivateTargets(parentId);
             useGridStore.getState().actions.setDragTarget(parentId);
           }
+          const ghostElement = document.getElementById('moveable-drag-ghost');
           // Postion ghost element exactly as same at dragged element
-          if (document.getElementById('moveable-drag-ghost')) {
-            document.getElementById('moveable-drag-ghost').style.transform = `translate(${left}px, ${top}px)`;
-            document.getElementById('moveable-drag-ghost').style.width = `${e.target.clientWidth}px`;
-            document.getElementById('moveable-drag-ghost').style.height = `${e.target.clientHeight}px`;
+          if (ghostElement) {
+            ghostElement.style.transform = `translate(${left}px, ${top}px)`;
+            ghostElement.style.width = `${e.target.clientWidth}px`;
+            ghostElement.style.height = `${e.target.clientHeight}px`;
           }
         }}
         onDragGroup={(ev) => {
@@ -868,6 +880,7 @@ export default function Grid({ gridWidth, currentLayout }) {
 
             ev.target.style.transform = `translate(${posX}px, ${posY}px)`;
           });
+          handleActivateTargets(parentElm?.id?.replace('canvas-', ''));
           updateNewPosition(events);
         }}
         onDragGroupStart={({ events }) => {
@@ -917,6 +930,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           } catch (error) {
             console.error('Error dragging group', error);
           }
+          handleDeactivateTargets();
           toggleCanvasUpdater();
         }}
         // throttleDrag={1}
@@ -930,6 +944,7 @@ export default function Grid({ gridWidth, currentLayout }) {
         bounds={CANVAS_BOUNDS}
         displayAroundControls={true}
         controlPadding={20}
+        stopPropagation={true}
       />
     </>
   );

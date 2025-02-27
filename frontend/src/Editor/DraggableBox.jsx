@@ -10,7 +10,7 @@ import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import ErrorBoundary from './ErrorBoundary';
 import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
-import { useNoOfGrid, useGridStore } from '@/_stores/gridStore';
+import { useGridStore } from '@/_stores/gridStore';
 import WidgetBox from './WidgetBox';
 import * as Sentry from '@sentry/react';
 import { findHighestLevelofSelection } from './DragContainer';
@@ -61,7 +61,7 @@ const DraggableBox = React.memo(
   }) => {
     const isResizing = useGridStore((state) => state.resizingComponentId === id);
     const [canDrag, setCanDrag] = useState(true);
-    const noOfGrid = useNoOfGrid();
+    const noOfGrid = 43;
     const {
       currentLayout,
       setHoveredComponent,

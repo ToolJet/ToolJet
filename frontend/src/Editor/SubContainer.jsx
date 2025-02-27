@@ -23,7 +23,7 @@ import { useEditorStore } from '@/_stores/editorStore';
 
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
-import { useGridStore, useResizingComponentId } from '@/_stores/gridStore';
+import { useGridStore } from '@/_stores/gridStore';
 import GhostWidget from './GhostWidget';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
@@ -67,7 +67,7 @@ export const SubContainer = ({
     shallow
   );
 
-  const resizingComponentId = useResizingComponentId();
+  const resizingComponentId = useGridStore((state) => state.resizingComponentId, shallow);
 
   const noOfGrids = 43;
   const { isGridActive } = useGridStore((state) => ({ isGridActive: state.activeGrid === parent }), shallow);
