@@ -16,7 +16,8 @@ export interface IOrganizationConstantsService {
   ): Promise<OrganizationConstant[]>;
   create(
     organizationConstant: CreateOrganizationConstantDto,
-    organizationId: string
+    organizationId: string,
+    isMultiEnvEnabled?: boolean
   ): Promise<OrganizationConstant | []>;
   update(
     constantId: string,

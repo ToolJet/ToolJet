@@ -1,8 +1,8 @@
-import { EntityManager, DeleteResult } from 'typeorm';
+import { EntityManager } from 'typeorm';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
-import { OrgEnvironmentConstantValue } from 'src/entities/org_environment_constant_values.entity';
 import { DataSourceOptions } from '@entities/data_source_options.entity';
-import { OrganizationConstantType } from '@modules/organization-constants/constants';
+import { IAppEnvironmentResponse } from './IAppEnvironmentResponse';
+import { AppVersion } from '@entities/app_version.entity';
 
 export interface IAppEnvironmentUtilService {
   getByPriority(organizationId: string, ASC?: boolean, manager?: EntityManager): Promise<AppEnvironment>;
@@ -27,4 +27,10 @@ export interface IAppEnvironmentUtilService {
   ): Promise<AppEnvironment>;
   getAll(organizationId: string, appId?: string, manager?: EntityManager): Promise<AppEnvironment[]>;
   getOptions(dataSourceId: string, organizationId: string, environmentId?: string): Promise<DataSourceOptions>;
+  init(
+    editorVersion: Partial<AppVersion>,
+    organizationId: string,
+    isMultiEnvironmentEnabled: boolean,
+    manager?: EntityManager
+  ): Promise<IAppEnvironmentResponse>;
 }
