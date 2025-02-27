@@ -295,9 +295,7 @@ class Restapi extends React.Component {
                 )}
                 <div
                   ref={this.codeHinterRef}
-                  className={`${dataSourceURL ? 'flex-grow-1' : 'flex-grow-1'} rest-api-url-codehinter ${
-                    dataSourceURL ? 'url-input-group' : ''
-                  }`}
+                  className={` flex-grow-1 rest-api-url-codehinter ${dataSourceURL ? 'url-input-group' : ''}`}
                 >
                   <CodeHinter
                     type="basic"
