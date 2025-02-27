@@ -14,6 +14,7 @@ import EditorHeader from '@/AppBuilder/Header';
 import LeftSidebar from '@/AppBuilder/LeftSidebar';
 import Popups from './Popups';
 import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
+import { setPageStateOnLoad } from '@/AppBuilder/_utils/misc';
 
 // const EditorHeader = lazy(() => import('@/AppBuilder/Header'));
 // const LeftSidebar = lazy(() => import('@/AppBuilder/LeftSidebar'));
@@ -26,6 +27,14 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
   useAppData(appId, moduleId, darkMode);
   const isEditorLoading = useStore((state) => state.isEditorLoading);
   const currentMode = useStore((state) => state.currentMode);
+  const currentPageId = useStore((state) => state.currentPageId);
+  const currentPageHandle = useStore((state) => state.currentPageHandle);
+
+  useEffect(() => {
+    if (currentPageId && currentPageHandle) {
+      setPageStateOnLoad(currentPageId, currentPageHandle);
+    }
+  }, [currentPageId, currentPageHandle]);
 
   const updateIsTJDarkMode = useStore((state) => state.updateIsTJDarkMode);
 
