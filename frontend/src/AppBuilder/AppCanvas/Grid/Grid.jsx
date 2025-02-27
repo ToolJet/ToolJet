@@ -430,9 +430,6 @@ export default function Grid({ gridWidth, currentLayout }) {
           const maxLeft = containerWidth - e.target.clientWidth;
           const maxWidthHit = transformX < 0 || transformX >= maxLeft;
           const maxHeightHit = transformY < 0 || transformY >= maxY;
-          transformY = transformY < 0 ? 0 : transformY > maxY ? maxY : transformY;
-          transformX = transformX < 0 ? 0 : transformX > maxLeft ? maxLeft : transformX;
-
           if (!maxWidthHit || e.width < e.target.clientWidth) {
             e.target.style.width = `${e.width}px`;
           }
@@ -500,8 +497,6 @@ export default function Grid({ gridWidth, currentLayout }) {
             const maxLeft = containerWidth - e.target.clientWidth;
             const maxWidthHit = transformX < 0 || transformX >= maxLeft;
             const maxHeightHit = transformY < 0 || transformY >= maxY;
-            transformY = transformY < 0 ? 0 : transformY > maxY ? maxY : transformY;
-            transformX = transformX < 0 ? 0 : transformX > maxLeft ? maxLeft : transformX;
 
             const roundedTransformY = Math.round(transformY / 10) * 10;
             transformY = transformY % 10 === 5 ? roundedTransformY - 10 : roundedTransformY;
