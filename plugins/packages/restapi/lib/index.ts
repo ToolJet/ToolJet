@@ -340,17 +340,31 @@ export default class RestapiQueryService implements QueryService {
   }
 
   private getResponse(response) {
+    const contentType: string = response.headers?.['content-type'] ?? '';
     try {
       if (this.isJson(response.body)) {
         return JSON.parse(response.body);
       }
-      if (response.rawBody && response.headers?.['content-type']?.startsWith('image/')) {
+      if (response.rawBody && this.isBinary(contentType)) {
         return Buffer.from(response.rawBody, 'binary').toString('base64');
       }
     } catch (error) {
       console.error('Error while parsing response', error);
     }
     return response.body;
+  }
+
+  private isBinary(contentType: string) {
+    const binaryPrefixes = ['application/', 'image/'];
+    const binaryApplicationTypes = ['application/pdf', 'application/zip'];
+
+    for (const binaryPrefix of binaryPrefixes) {
+      if (contentType?.startsWith(binaryPrefix)) {
+        if (binaryPrefix === 'application/') return binaryApplicationTypes.includes(contentType);
+        return true;
+      }
+    }
+    return false;
   }
 
   authUrl(sourceOptions: SourceOptions): string {
