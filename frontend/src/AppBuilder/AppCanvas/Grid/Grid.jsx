@@ -431,7 +431,6 @@ export default function Grid({ gridWidth, currentLayout }) {
   }, [draggingComponentId, resizingComponentId, isGroupDragging, selectedComponents]);
 
   if (mode !== 'edit') return null;
-
   return (
     <>
       <Moveable
@@ -511,7 +510,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             // When clicked on widget boundary/resizer, select the component
             setSelectedComponents([e.target.id]);
           }
-
+          showGridLines();
           if (!isComponentVisible(e.target.id)) {
             return false;
           }
@@ -524,8 +523,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             const currentWidget = boxList.find(({ id }) => {
               return id === e.target.id;
             });
-            document.getElementById('real-canvas')?.classList.remove('show-grid');
-            document.getElementById('canvas-' + currentWidget.component?.parent)?.classList.remove('show-grid');
+            hideGridLines();
             let _gridWidth = useGridStore.getState().subContainerWidths[currentWidget.component?.parent] || gridWidth;
             let width = Math.round(e?.lastEvent?.width / _gridWidth) * _gridWidth;
             const height = Math.round(e?.lastEvent?.height / GRID_HEIGHT) * GRID_HEIGHT;
@@ -585,8 +583,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           toggleCanvasUpdater();
         }}
         onResizeGroupStart={({ events }) => {
-          const parentElm = events[0].target.closest('.real-canvas');
-          parentElm.classList.add('show-grid');
+          showGridLines();
         }}
         onResizeGroup={({ events }) => {
           const parentElm = events[0].target.closest('.real-canvas');
@@ -609,8 +606,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             const { events } = e;
             const newBoxs = [];
 
-            const parentElm = events[0].target.closest('.real-canvas');
-            parentElm.classList.remove('show-grid');
+            hideGridLines();
 
             // TODO: Logic needs to be relooked post go live P2
             groupResizeDataRef.current.forEach((ev) => {
@@ -677,7 +673,6 @@ export default function Grid({ gridWidth, currentLayout }) {
           if (SUBCONTAINER_WIDGETS.includes(box?.component?.component) && e.inputEvent.shiftKey) {
             return false;
           }
-          showGridLines();
           //  This flag indicates whether the drag event originated on a child element within a component
           //  (e.g., inside a Table's columns, Calendar's dates, or Kanban's cards).
           //  When true, it prevents the parent component from being dragged, allowing the inner elements
@@ -837,6 +832,7 @@ export default function Grid({ gridWidth, currentLayout }) {
         onDrag={(e) => {
           if (!isDraggingRef.current) {
             useGridStore.getState().actions.setDraggingComponentId(e.target.id);
+            showGridLines();
             isDraggingRef.current = true;
           }
 
@@ -844,20 +840,20 @@ export default function Grid({ gridWidth, currentLayout }) {
           const currentParentId =
             currentWidget?.component?.parent === null ? 'canvas' : currentWidget?.component?.parent;
           const _gridWidth = useGridStore.getState().subContainerWidths[dragParentId] || gridWidth;
-          const parentComponent = boxList.find((box) => box.id === dragParentId);
           const _dragParentId = newDragParentId.current === null ? 'canvas' : newDragParentId.current;
 
+          // Snap to grid
           let left = Math.round(e.translate[0] / _gridWidth) * _gridWidth;
           let top = Math.round(e.translate[1] / GRID_HEIGHT) * GRID_HEIGHT;
+
           // This logic is to handle the case when the dragged element is over a new canvas
           if (_dragParentId !== currentParentId) {
             left = e.translate[0];
             top = e.translate[1];
           }
 
-          // Snap to grid
-
           // Special case for Modal
+          const parentComponent = boxList.find((box) => box.id === boxList.find((b) => b.id === e.target.id)?.parent);
           if (parentComponent?.component?.component === 'Modal') {
             const elemContainer = e.target.closest('.real-canvas');
             const containerHeight = elemContainer.clientHeight;
@@ -881,17 +877,20 @@ export default function Grid({ gridWidth, currentLayout }) {
             const draggedOverElem = draggedOverElements.find((ele) => ele.classList.contains('target'));
             const draggedOverContainer = draggedOverElements.find((ele) => ele.classList.contains('real-canvas'));
 
-            // Determine the current parent and potential new parent
-            let parentId = draggedOverContainer?.getAttribute('data-parentId') || draggedOverElem?.id;
+            // Determine potential new parent
+            let newParentId = draggedOverContainer?.getAttribute('data-parentId') || draggedOverElem?.id;
 
-            if (parentId === e.target.id) {
-              parentId = boxList.find((box) => box.id === e.target.id)?.component?.parent;
+            if (newParentId === e.target.id) {
+              newParentId = boxList.find((box) => box.id === e.target.id)?.component?.parent;
+            } else if (parentComponent?.component?.component === 'Modal') {
+              // Never update parentId for Modal
+              newParentId = parentComponent?.id;
             }
 
-            if (parentId !== prevDragParentId.current) {
-              setDragParentId(parentId === 'canvas' ? null : parentId);
-              newDragParentId.current = parentId === 'canvas' ? null : parentId;
-              prevDragParentId.current = parentId;
+            if (newParentId !== prevDragParentId.current) {
+              setDragParentId(newParentId === 'canvas' ? null : newParentId);
+              newDragParentId.current = newParentId === 'canvas' ? null : newParentId;
+              prevDragParentId.current = newParentId;
             }
           }
           // Postion ghost element exactly as same at dragged element
@@ -920,12 +919,12 @@ export default function Grid({ gridWidth, currentLayout }) {
           updateNewPosition(events);
         }}
         onDragGroupStart={({ events }) => {
+          showGridLines();
           setIsGroupDragging(true);
-          const parentElm = events[0]?.target?.closest('.real-canvas');
-          parentElm?.classList?.add('show-grid');
         }}
         onDragGroupEnd={(e) => {
           try {
+            hideGridLines();
             setIsGroupDragging(false);
             const { events } = e;
             const parentId = boxList.find((box) => box.id === events[0]?.target?.id)?.component?.parent;
