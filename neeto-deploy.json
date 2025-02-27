@@ -1,0 +1,23 @@
+{
+    "name": "tooljet-adish",
+    "scripts": {
+        "prestart": "./neeto-deploy-prestart.sh"
+    },
+    "stack": "heroku-24",
+    "env": {},
+    "formation": {},
+    "addons": [
+      {
+        "plan": "neetodeploy-postgresql:basic",
+        "postgrestServer": true,
+        "options": {
+          "version": "13"
+        }
+      }
+    ],
+    "buildpacks": [
+      {
+        "url": "heroku/nodejs"
+      }
+    ]
+  }
