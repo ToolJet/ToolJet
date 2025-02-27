@@ -29,13 +29,13 @@ export default ({
           <div style={{ display: 'flex' }}>
             <div
               style={{ width: '300px', color: '#687076', fontSize: '12px', paddingLeft: '5px' }}
-              data-cy="label-key-header"
+              data-cy={`${dataCy}-key-label`}
             >
               KEY
             </div>
             <div
               style={{ width: '316px', color: '#687076', fontSize: '12px', paddingLeft: '5px' }}
-              data-cy="label-value-header"
+              data-cy={`${dataCy}-value-label`}
             >
               VALUE
             </div>

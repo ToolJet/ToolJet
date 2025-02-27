@@ -71,4 +71,14 @@ export const dataSourceText = {
   labelNoEventhandler: "No event handlers",
   toastDSSaved: "Data Source Saved",
   unSavedModalTitle: "Unsaved Changes",
+
+  keylabel: "KEY",
+  valueLabel: "VALUE",
+
+  sslCertificateLabel: "SSL Certificate",
+  caCertificateOption: "CA certificate",
+  clientCertificateOption: "Client certificate",
+  clientKeyLabel: "Client Key",
+  clientCertLabel: "Client Cert",
+  caCertLabel: "CA Cert",
 };
