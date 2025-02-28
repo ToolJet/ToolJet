@@ -55,8 +55,8 @@ jobs:
       - name: Checking out the correct branch for submodules
         if: matrix.edition == 'ee'
         run: |
-          git submodule foreach --recursive 'git checkout ${{ env.BRANCH_NAME }}'
-          git submodule foreach --recursive 'git pull origin ${{ env.BRANCH_NAME }}'
+          git submodule foreach --recursive 'git checkout ${{ env.BRANCH_NAME }} || true'
+          git submodule foreach --recursive 'git pull origin ${{ env.BRANCH_NAME }} || true'
 
 
       - name: Set up Docker
