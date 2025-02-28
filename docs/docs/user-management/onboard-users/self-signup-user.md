@@ -54,11 +54,11 @@ If you don't enter allowed domain then anyone with the login URL can sign-up to 
     <img className="screenshot-full" src="/img/user-management/onboard-user/self-signup/allowed-domain.png" alt="Workspace Level Permissions" />
 
 3. Click on the toggle button for the enable signup, by default enable signup is disabled.
+    <img className="screenshot-full" src="/img/user-management/onboard-user/self-signup/login-url.png" alt="Workspace Level Permissions" />
 
 4. Click on the **Save changes** button at the bottom of the page.
 
 5. Copy the Login URL and share it with the users.
-    <img className="screenshot-full" src="/img/user-management/onboard-user/self-signup/login-url.png" alt="Workspace Level Permissions" />
 
     Now users will be able to see a sign-up option on the login page. <br/>
     (Example URL: `https://app.corp.com/login/nexus`)
