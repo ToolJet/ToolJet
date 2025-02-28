@@ -22,7 +22,8 @@ export interface IOrganizationConstantsService {
   update(
     constantId: string,
     organizationId: string,
-    params: UpdateOrganizationConstantDto
+    params: UpdateOrganizationConstantDto,
+    isMultiEnvEnabled?: boolean
   ): Promise<OrganizationConstant>;
   delete(constantId: string, organizationId: string, environmentId?: string): Promise<DeleteResult>;
 }

@@ -140,7 +140,8 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
   async update(
     constantId: string,
     organizationId: string,
-    params: UpdateOrganizationConstantDto
+    params: UpdateOrganizationConstantDto,
+    isMultiEnvironmentEnabled = false
   ): Promise<OrganizationConstant> {
     const { constant_name, environment_id, value } = params;
 
@@ -162,16 +163,27 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
       }
 
       await manager.save(constantToUpdate);
+      let environmentsToUpdate = [];
+      if (!isMultiEnvironmentEnabled) {
+        environmentsToUpdate = await this.appEnvironmentUtilService.getAll(organizationId);
+      } else {
+        const environment = await this.appEnvironmentUtilService.get(organizationId, environment_id, false);
+        environmentsToUpdate.push(environment);
+      }
 
-      const environmentToUpdate = await this.appEnvironmentUtilService.get(organizationId, environment_id, false);
-      const encryptedValue = await this.organizationConstantsUtilService.encryptSecret(organizationId, value);
-
-      await this.organizationConstantsUtilService.updateOrgEnvironmentConstant(
-        encryptedValue,
-        environmentToUpdate.id,
-        constantToUpdate.id,
-        manager
-      );
+      if (value) {
+        await Promise.all(
+          environmentsToUpdate.map(async (environment) => {
+            const encryptedValue = await this.organizationConstantsUtilService.encryptSecret(organizationId, value);
+            await this.organizationConstantsUtilService.updateOrgEnvironmentConstant(
+              encryptedValue,
+              environment.id,
+              constantToUpdate.id,
+              manager
+            );
+          })
+        );
+      }
 
       return constantToUpdate;
     });
