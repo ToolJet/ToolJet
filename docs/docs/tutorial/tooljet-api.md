@@ -402,6 +402,8 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
 
 ### Export Application
 
+From version **`v3.5.7-ee-lts`**, you can use ToolJet API to export application.
+
     - **Description:** Export a ToolJet Application from a specified workspace.
     - **URL:** `/api/ext/export/workspace/:workspace_id/apps/:app_id`
     - **Method:** POST
@@ -849,6 +851,8 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
 </details>
 
 ### Import Application
+
+From version **`v3.5.7-ee-lts`**, you can use ToolJet API to import application.
 
     - **Description:** Import a Application in ToolJet Workspace.
     - **URL:** `/api/ext/import/workspace/:workspace_id/apps`
