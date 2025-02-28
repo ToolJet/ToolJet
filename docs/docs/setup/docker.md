@@ -14,8 +14,6 @@ Follow the steps below to deploy ToolJet on a server using Docker Compose. ToolJ
 If you rather want to try out ToolJet on your local machine with Docker, you can follow the steps [here](/docs/setup/try-tooljet/).
 :::
 
-*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
-
 ### Installing Docker and Docker Compose
 Install docker and docker-compose on the server.
    - Docs for [Docker Installation](https://docs.docker.com/engine/install/)
@@ -35,16 +33,16 @@ Confused about which setup to select? Feel free to ask the community via Slack: 
 
   1. Download our production docker-compose file into the server.
   ```bash
-  curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/docker-compose-db.yaml
+  curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/pre-release/docker/docker-compose-db.yaml
   mv docker-compose-db.yaml docker-compose.yaml
   mkdir postgres_data
   ```
 
   2. Create `.env` file in the current directory (where the docker-compose.yaml file is downloaded as in step 1):
 
-   ```bash
-  curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/.env.internal.example
-  curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/internal.sh && chmod +x internal.sh
+  ```bash
+  curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/pre-release/docker/.env.internal.example
+  curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/pre-release/docker/internal.sh && chmod +x internal.sh
   mv .env.internal.example .env && ./internal.sh
   ```
 
@@ -102,7 +100,7 @@ curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/backup-re
 
   2. Download our production docker-compose file into the server.
   ```bash
-  curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/docker-compose.yaml
+  curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/pre-release/docker/docker-compose.yml
   ```
 
   3. Create `.env` file in the current directory (where the docker-compose.yaml file is downloaded as in step 1):
@@ -116,8 +114,8 @@ curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/backup-re
   </div> 
 
   ```bash
-  curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/.env.external.example
-  curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/external.sh && chmod +x external.sh
+  curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/pre-release/docker/external.sh
+  curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/pre-release/docker/.env.external.example && chmod +x external.sh
   mv .env.external.example .env && ./external.sh
   ```
 
@@ -154,7 +152,7 @@ curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/backup-re
 
 ## Upgrading to the Latest LTS Version
 
-New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:EE-LTS-latest`.
+New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
 
 If this is a new installation of the application, you may start directly with the latest version. This guide is not required for new installations.
 
@@ -164,9 +162,4 @@ If this is a new installation of the application, you may start directly with th
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
-For specific issues or questions, refer to our **[Slack](https://tooljet.slack.com/join/shared_invite/zt-25438diev-mJ6LIZpJevG0LXCEcL0NhQ#)**.
-
-
-
-
-
+*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*

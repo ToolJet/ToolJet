@@ -24,7 +24,8 @@
       "label": "API Key",
       "key": "apiKey",
       "type": "password",
-      "description": "Enter your Pinecone API Key"
+      "description": "Enter your Pinecone API Key",
+      "helpText": "For generating API Key, visit: <a href='https://app.pinecone.io/organizations/-/projects/-/keys' target='_blank' rel='noreferrer'>Pinecone Console</a>"
     }
   },
   "required": [
