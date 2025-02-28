@@ -45,16 +45,10 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
-      - name: Checkout with Submodules
-        if: matrix.edition == 'ee'
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          submodules: recursive
-
-      - name: Checking out the correct branch for submodules
+      - name: Checking out the correct branch for submodules EE
         if: matrix.edition == 'ee'
         run: |
+          git submodule update --init --recursive
           git submodule foreach --recursive 'git checkout ${{ env.BRANCH_NAME }} || true'
           git submodule foreach --recursive 'git pull origin ${{ env.BRANCH_NAME }} || true'
 
