@@ -16,6 +16,8 @@ ToolJet API allows you to interact with the ToolJet platform programmatically. Y
 - [Replace User Workspace](#replace-user-workspace)
 - [Replace User Workspaces Relations](#replace-user-workspaces-relations)
 - [Get All Workspaces](#get-all-workspaces)
+- [Export Application](#export-application)
+- [Import Application](#import-application)
 
 :::info BETA
 ToolJet API is currently in beta and not recommended for production use.
