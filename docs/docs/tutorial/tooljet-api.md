@@ -413,7 +413,7 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
     - **Query Params:**
       - **exportTJDB** (boolean): Specifies whether to export TJDB data or not. By default **true**.
       - **appVersion** (string): Accepts a specific version of the application that is to be exported.
-      - **exportAllVersions** (boolean): Defines whether to export all the available versions.By default **false**.
+      - **exportAllVersions** (boolean): Defines whether to export all the available versions. By default it exports the latest version of the app.
     - **Response:** Exported application json.
 
 <details>
@@ -859,8 +859,14 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
       - **workspace_id**: The ID of the workspace.
     - **Body:** The body object will contain following fields:
       - Application JSON
-      - `appName` (string, optional): Defines the application name.
-    <details>
+      - `appName` (string, optional): Defines the application name. If not defined then the app will be imported with the existing app name.
+
+:::info
+By default, server accepts maximum JSON size as 50 MB. To increase this limit, use the following environment variable:
+`MAX_JSON_SIZE`
+:::
+
+<details>
 
 <summary>Request Body Example</summary>
 
