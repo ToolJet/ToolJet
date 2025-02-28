@@ -24,7 +24,7 @@ Go to **Settings > Instance login**. <br/>
     (Example URL - `https://app.corp.com/nexus/workspace-settings/workspace-login`)
 
 3. On the right, you'll see toggles to enable SSO via different clients. All the client toggles are disabled by default. Turn on the toggle in front of Google.
-    <img className="screenshot-full" src="/img/user-management/sso/github/sso-menu.png" alt="Add user button" />
+    <img className="screenshot-full" src="/img/user-management/sso/google/sso-menu.png" alt="Add user button" />
 
 4. After turning it on, a modal will appear with input fields for parameters such as Host name, Client ID, and Client secret. At the top left of the modal, there is a toggle to enable this modal. Turn it on, and then, without entering any parameters, click on the Save changes button. This will generate a Redirect URL that you will need to utilize in the Google Cloud Console.
     <img className="screenshot-full img-m" src="/img/user-management/sso/google/google-modal.png" alt="Add user button" />

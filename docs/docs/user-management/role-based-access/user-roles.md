@@ -41,7 +41,7 @@ Role Required: **Admin** <br/>
 4. Click on **Edit user details**, a right panel will appear.
 
 5. Update the role from the User groups dropdown.
-    <img className="screenshot-full" src="/img/user-management/rbac/user-roles/update-user-role.png" alt="Workspace Level Permissions" />
+    <img className="screenshot-full img-m" src="/img/user-management/rbac/user-roles/update-user-role.png" alt="Workspace Level Permissions" />
 
 6. Click on **Update** button present at the bottom of the panel.
 
@@ -49,4 +49,3 @@ Role Required: **Admin** <br/>
     <img className="screenshot-full img-s" src="/img/user-management/rbac/user-roles/warning.png" alt="Workspace Level Permissions" />
 
 8. The user role will be updated for that user.
-    <img className="screenshot-full" src="/img/user-management/rbac/user-roles/updated-role.png" alt="Workspace Level Permissions" />
