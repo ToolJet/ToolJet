@@ -1,10 +1,12 @@
 
 .config-handle {
-    // top: -20px;
     position: fixed;
     max-height: 10px;
     z-index: 100;
     min-width: 108px;
+    display: block;
+    visibility: hidden;
+    transition: all .15s ease-in-out;
 }
 
 .multiple-components-config-handle {
@@ -68,20 +70,4 @@
       background: #c6cad0;
     }
   }
-}
-
-.config-handle {
-  display: block;
-}
-
-.main-editor-canvas .widget-target:hover > .config-handle {
-  visibility: visible !important;
-}
-
-.main-editor-canvas .widget-target:hover .widget-target:hover > .config-handle {
-  visibility: visible !important;
-}
-
-.main-editor-canvas .widget-target:hover .widget-target:hover > .widget-target > .config-handle {
-  visibility: hidden !important;
 }

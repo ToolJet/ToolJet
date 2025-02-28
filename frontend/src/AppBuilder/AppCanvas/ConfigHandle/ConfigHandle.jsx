@@ -24,13 +24,27 @@ export const ConfigHandle = ({
     shallow
   );
   const deleteComponents = useStore((state) => state.deleteComponents, shallow);
+
+  const _showHandle = useStore((state) => {
+    const isWidgetHovered = state.getHoveredComponentForGrid() === id;
+    const anyComponentHovered = state.getHoveredComponentForGrid() !== '';
+    // If one component is hovered and one is selected, show the handle for the hovered component
+    return (
+      isWidgetHovered ||
+      (showHandle &&
+        (!isMultipleComponentsSelected || (componentType === 'Modal' && isModalOpen)) &&
+        !anyComponentHovered)
+    );
+  }, shallow);
+
   let height = visibility === false ? 10 : widgetHeight;
+
   return (
     <div
       className={`config-handle ${customClassName}`}
       style={{
         top: position === 'top' ? '-20px' : widgetTop + height - (widgetTop < 10 ? 15 : 10),
-        visibility: showHandle && !isMultipleComponentsSelected ? 'visible' : 'hidden',
+        visibility: _showHandle ? 'visible' : 'hidden',
         left: '-1px',
       }}
     >
