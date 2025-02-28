@@ -37,4 +37,47 @@ export const createLeftSideBarSlice = (set, get) => ({
       toggleLeftSidebar(true);
     }
   },
+  getComponentIdToAutoScroll: (componentId) => {
+    const { getCurrentPageComponents, getAllExposedValues } = get();
+    const currentPageComponents = getCurrentPageComponents();
+    const component = currentPageComponents?.[componentId];
+    let parentId = component?.component?.parent;
+
+    if (!parentId) {
+      return componentId;
+    }
+
+    // If the component exists inside a tab component
+    const regForTabs = /-(?!\d{12}$)\d+$/; // Parent id for tabs follow the format 'id-index' and index is not UUIDv4 id segment
+    if (regForTabs.test(parentId)) {
+      const reg = /-(\d+)$/;
+      const tabIndex = Number(parentId.match(reg)[1]); // Tab index inside which the component exists
+
+      parentId = parentId.replace(regForTabs, ''); // Extract tab id from parent id
+      const { currentTab } = getAllExposedValues().components[parentId];
+      const activeTabIndex = Number(currentTab);
+
+      if (tabIndex !== activeTabIndex) {
+        return parentId;
+      } else return componentId;
+    }
+
+    const parentExposedValues = getAllExposedValues().components[parentId];
+    const parentComponent = currentPageComponents?.[parentId];
+
+    // If the component exists inside a modal component
+    if (parentComponent?.component?.component === 'Modal') {
+      if (parentExposedValues?.show) {
+        return componentId;
+      } else return parentId;
+    }
+
+    // If the component exists inside the kanban component's modal
+    if (parentId.endsWith('-modal')) {
+      return parentId.replace(/-modal$/, ''); // Extract kanban id from parent id
+    }
+
+    // If the component exists inside any other component
+    return componentId;
+  },
 });
