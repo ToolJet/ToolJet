@@ -36,16 +36,25 @@ jobs:
         with:
           node-version: 18.18.2
 
+      - name: Set up Git authentication for private submodules
+        run: |
+          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+
       - name: Checkout with Submodules
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Checkout with Submodules
+        if: matrix.edition == 'ee'
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           submodules: recursive
 
-      - name: Checkout EE Submodules
+      - name: Checking out the correct branch for submodules
         if: matrix.edition == 'ee'
         run: |
-          git submodule update --init --recursive
           git submodule foreach --recursive 'git checkout ${{ env.BRANCH_NAME }}'
           git submodule foreach --recursive 'git pull origin ${{ env.BRANCH_NAME }}'
 
