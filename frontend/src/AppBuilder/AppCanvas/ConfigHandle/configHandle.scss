@@ -8,10 +8,6 @@
     transition: all .15s ease-in-out;
 }
 
-.config-handle-visible {
-  visibility: visible !important;
-}
-
 .multiple-components-config-handle {
   position: absolute;
   left: 54px;
@@ -64,10 +60,6 @@
       background: #c6cad0;
     }
   }
-}
-
-.main-editor-canvas .widget-target:hover > .config-handle {
-  visibility: visible !important;
 }
 
 

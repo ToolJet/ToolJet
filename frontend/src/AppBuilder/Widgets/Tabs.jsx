@@ -127,6 +127,7 @@ export const Tabs = function Tabs({
           allowContainerSelect={true}
           styles={{ backgroundColor: bgColor }}
           darkMode={darkMode}
+          componentType="Tabs"
         />
       </div>
     );
