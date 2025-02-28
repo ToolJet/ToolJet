@@ -8,14 +8,14 @@ title: ToolJet API
 
 ToolJet API allows you to interact with the ToolJet platform programmatically. You can use the APIs to manage users and their workspaces relations. The API endpoints are secured with an access token. You can perform various operations using the API such as:
 
- - [Get All Users](#get-all-users)
- - [Get User by ID](#get-user-by-id)
- - [Create User](#create-user)
- - [Update User](#update-user)
- - [Update User Role](#update-user-role)
- - [Replace User Workspace](#replace-user-workspace)
- - [Replace User Workspaces Relations](#replace-user-workspaces-relations)
- - [Get All Workspaces](#get-all-workspaces)
+- [Get All Users](#get-all-users)
+- [Get User by ID](#get-user-by-id)
+- [Create User](#create-user)
+- [Update User](#update-user)
+- [Update User Role](#update-user-role)
+- [Replace User Workspace](#replace-user-workspace)
+- [Replace User Workspaces Relations](#replace-user-workspaces-relations)
+- [Get All Workspaces](#get-all-workspaces)
 
 :::info BETA
 ToolJet API is currently in beta and not recommended for production use.
@@ -25,11 +25,10 @@ ToolJet API is currently in beta and not recommended for production use.
 
 By default, the ToolJet API is disabled. To enable the API, add these variables to your `.env` file:
 
-| variable                | description                                         |
-| :-----------------------: | :------------------------------------------------:|
-| ENABLE_EXTERNAL_API | `true` or `false`                                       |
-| EXTERNAL_API_ACCESS_TOKEN |  `<access_token>` (To authenticate API requests) |
-
+|         variable          |                   description                   |
+| :-----------------------: | :---------------------------------------------: |
+|    ENABLE_EXTERNAL_API    |                `true` or `false`                |
+| EXTERNAL_API_ACCESS_TOKEN | `<access_token>` (To authenticate API requests) |
 
 ## Security
 
@@ -52,12 +51,14 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
 ## API Endpoints
 
 ### Get All Users
+
     - **Description:** Retrieves a list of all the users.
     - **URL:** `/api/ext/users`
     - **Method:** GET
     - **Authorization:** `Basic <access_token>`
     - **Content-Type:** `application/json`
     - **Response:** Array of User objects.
+
   <details>
   <summary>**Response Example**</summary>
 ```json
@@ -128,6 +129,7 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
 </details>
 
 ### Get User by ID
+
     - **Description:** Returns a user by their ID.
     - **URL:** `/api/ext/user/:id`
     - **Method:** GET
@@ -136,6 +138,7 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
     - **Params:**
         - id (string): The ID of the user.
     - **Response:** User object.
+
   <details>
   <summary>**Response Example**</summary>
 ```json
@@ -180,8 +183,8 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
 ```
 </details>
 
-
 ### Create User
+
     - **Description:** Creates a new user.
     - **URL:** `/api/ext/users`
     - **Method:** POST
@@ -200,6 +203,7 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
             - `id` (string, optional): The unique identifier of the group.
             - `name` (string, optional): The name of the group.
             - `status` (string, optional): The status of the group. Can be either `active` or `archived`.
+
   <details>
   <summary>**Request Body Example**</summary>
 ```json
@@ -225,6 +229,7 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
     - **Response:** `201 Created`
 
 ### Update User
+
     - **Description:** Finds and updates a user by their ID.
     - **URL:** `/api/ext/user/:id`
     - **Method:** PATCH
@@ -237,28 +242,27 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
         - `email` (string, optional): The updated email address of the user.
         - `password` (string, optional): The updated password for the user. Must be between 5 and 100 characters.
         - `status` (string, optional): The updated status of the user. Can be either `active` or `archived`.
-        
+
+
 <details>
 
 <summary>Request Body Example</summary>
 
 ```json
-
 {
   "name": "Jane Doe",
   "email": "jane.doe@example.com",
   "password": "newsecurepassword",
   "status": "active"
 }
-
 ```
 
 </details>
 
     - **Response:** `200 OK`
 
-
 ### Update User Role
+
     - **Description:** Updates the user role for a particular workspace.
     - **URL:** `/api/ext/update-user-role/workspace/workspaceId`
     - **Method:** PUT
@@ -269,18 +273,17 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
     - **Body:** The body object can contain the following fields:
         - `newRole` (string, required): The updated user role of the user.
         - `userId` (string, required): The unique identifier of the user.
-        
+
+
 <details>
 
 <summary>Request Body Example</summary>
 
 ```json
-
 {
-  "newRole":"end-user",
-  "userId":"f2065dd1-e5ea-4793-af91-4a8831de68e6"
+  "newRole": "end-user",
+  "userId": "f2065dd1-e5ea-4793-af91-4a8831de68e6"
 }
-
 ```
 
 </details>
@@ -306,7 +309,8 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
           - `status` (string, optional): The status of the group. Can be either `active` or `archived`.
     - **Note:** If the array is empty, it will remove all existing workspace relations.
     - **Response:** `200 OK`
- 
+
+
 
 ### Replace User Workspace
 
@@ -325,12 +329,12 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
         - `groups` (array, optional): An array of group objects associated with the workspace. Each group object can contain:
           - `id` (string, optional): The ID of the group.
           - `name` (string, optional): The name of the group.
+
 <details>
 
 <summary>Request Body Example</summary>
 
 ```json
-
 {
   "status": "archived",
   "groups": [
@@ -339,7 +343,6 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
     }
   ]
 }
-
 ```
 
 </details>
@@ -360,53 +363,56 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
 
 ```json
 [
-    {
-        "id": "a831db72-c3d2-4b36-a98e-0023ffb15e66",
-        "name": "demo-workspace",
-        "status": "active",
-        "groups": [
-            {
-                "id": "b3ae95dd-b1ca-4a21-abac-b321ee76698e",
-                "name": "all_users"
-            },
-            {
-                "id": "1830a113-24e5-4e33-8af2-e6502d477239",
-                "name": "admin"
-            }
-        ]
-    },
-    {
-        "id": "b8a0c07d-2430-46fd-ba71-2a71e48fde30",
-        "name": "team-spac",
-        "status": "active",
-        "groups": [
-            {
-                "id": "7f7af977-a7e7-49e3-a08a-2dffce6f5942",
-                "name": "all_users"
-            },
-            {
-                "id": "eda68cf3-b70d-455f-8a2a-8cd4bbff77a6",
-                "name": "admin"
-            }
-        ]
-    }
+  {
+    "id": "a831db72-c3d2-4b36-a98e-0023ffb15e66",
+    "name": "demo-workspace",
+    "status": "active",
+    "groups": [
+      {
+        "id": "b3ae95dd-b1ca-4a21-abac-b321ee76698e",
+        "name": "all_users"
+      },
+      {
+        "id": "1830a113-24e5-4e33-8af2-e6502d477239",
+        "name": "admin"
+      }
+    ]
+  },
+  {
+    "id": "b8a0c07d-2430-46fd-ba71-2a71e48fde30",
+    "name": "team-spac",
+    "status": "active",
+    "groups": [
+      {
+        "id": "7f7af977-a7e7-49e3-a08a-2dffce6f5942",
+        "name": "all_users"
+      },
+      {
+        "id": "eda68cf3-b70d-455f-8a2a-8cd4bbff77a6",
+        "name": "admin"
+      }
+    ]
+  }
 ]
 ```
+
 </details>
 
 ### Export Application
 
-    - **Description:** Export a ToolJet Application.
-    - **URL:** `/api/ext/export/workspace/{workspace_id}/apps/{app_id}`
+    - **Description:** Export a ToolJet Application from a specified workspace.
+    - **URL:** `/api/ext/export/workspace/:workspace_id/apps/:app_id`
     - **Method:** POST
     - **Authorization:** `Basic <access_token>`
     - **Content-Type:** `application/json`
     - **Params:**
-      - **exportTjdb** (boolean): Specifies whether to export TJDB data or not. By default **true**.
+      - **workspace_id**: The ID of the workspace.
+      - **app_id**: The ID of the application.
+    - **Query Params:**
+      - **exportTJDB** (boolean): Specifies whether to export TJDB data or not. By default **true**.
       - **appVersion** (string): Accepts a specific version of the application that is to be exported.
       - **exportAllVersions** (boolean): Defines whether to export all the available versions.By default **false**.
     - **Response:** Exported application json.
-
 
 <details>
 <summary>Response Example</summary>
@@ -837,16 +843,18 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
   "tooljet_version": "3.5.11-cloud-lts"
 }
 ```
-</details>
 
+</details>
 
 ### Import Application
 
     - **Description:** Import a Application in ToolJet Workspace.
-    - **URL:** `/api/ext/import/workspace/{workspace_id}/apps`
+    - **URL:** `/api/ext/import/workspace/:workspace_id/apps`
     - **Method:** POST
     - **Authorization:** `Basic <access_token>`
     - **Content-Type:** `application/json`
+    - **Params:**
+      - **workspace_id**: The ID of the workspace.
     - **Body:** The body object will contain following fields:
       - Application JSON
       - `appName` (string, optional): Defines the application name.
@@ -1281,8 +1289,7 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
   "appName": "ToolJet API Application"
 }
 ```
+
 </details>
 
     - **Response:** `201 Created`
-
-
