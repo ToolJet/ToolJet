@@ -31,13 +31,21 @@ export const ConfigHandle = ({
     (state) => componentType === 'Tabs' && state.getExposedValueOfComponent(id)?.currentTab,
     shallow
   );
+
+  const _showHandle = useStore((state) => {
+    const isWidgetHovered = state.getHoveredComponentForGrid() === id;
+    const anyComponentHovered = state.getHoveredComponentForGrid() !== '';
+    // If one component is hovered and one is selected, show the handle for the hovered component
+    return (
+      visibility === false ||
+      isWidgetHovered ||
+      (showHandle &&
+        (!isMultipleComponentsSelected || (componentType === 'Modal' && isModalOpen)) &&
+        !anyComponentHovered)
+    );
+  }, shallow);
   const position = widgetTop < 15 ? 'bottom' : 'top';
-
   let height = visibility === false ? 10 : widgetHeight;
-
-  const _showHandle =
-    visibility === false ||
-    (showHandle && (!isMultipleComponentsSelected || (componentType === 'Modal' && isModalOpen)));
 
   return (
     <div

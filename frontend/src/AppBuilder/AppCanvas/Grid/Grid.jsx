@@ -944,7 +944,6 @@ export default function Grid({ gridWidth, currentLayout }) {
         bounds={CANVAS_BOUNDS}
         displayAroundControls={true}
         controlPadding={20}
-        stopPropagation={true}
       />
     </>
   );
