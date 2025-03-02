@@ -1,5 +1,5 @@
 /* eslint-disable import/no-unresolved */
-import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { PreviewBox } from './PreviewBox';
 import { ToolTip } from '@/Editor/Inspector/Elements/Components/ToolTip';
 import { useTranslation } from 'react-i18next';
@@ -31,12 +31,37 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
   const [currentValue, setCurrentValue] = useState('');
   const [errorStateActive, setErrorStateActive] = useState(false);
   const [cursorInsidePreview, setCursorInsidePreview] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(true);
   const validationFn = restProps?.validationFn;
   const componentDefinition = useStore((state) => state.getComponentDefinition(componentId), shallow);
   const parentId = componentDefinition?.component?.parent;
   const customResolvables = useStore((state) => state.resolvedStore.modules.canvas?.customResolvables, shallow);
 
   const customVariables = customResolvables?.[parentId]?.[0] || {};
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.intersectionRatio < 1) {
+          setShowPreview(false);
+          setShowSuggestions(false);
+        } else {
+          setShowSuggestions(true);
+        }
+      },
+      { root: null, threshold: [1] } // Fires when any part of the element is out of view
+    );
+
+    if (wrapperRef.current) {
+      observer.observe(wrapperRef.current);
+    }
+
+    return () => {
+      if (wrapperRef.current) {
+        observer.unobserve(wrapperRef.current);
+      }
+    };
+  }, []);
 
   const isPreviewFocused = useRef(false);
   const wrapperRef = useRef(null);
@@ -136,6 +161,7 @@ const SingleLineCodeEditor = ({ componentName, fieldMeta = {}, componentId, ...r
               componentName={componentName}
               setShowPreview={setShowPreview}
               showPreview={showPreview}
+              showSuggestions={showSuggestions}
               {...restProps}
             />
           </div>
@@ -168,6 +194,7 @@ const EditorInput = ({
   previewRef,
   setShowPreview,
   onInputChange,
+  showSuggestions,
 }) => {
   const getSuggestions = useStore((state) => state.getSuggestions, shallow);
   function autoCompleteExtensionConfig(context) {
@@ -223,7 +250,7 @@ const EditorInput = ({
     defaultKeymap: true,
     positionInfo: () => {
       return {
-        class: 'cm-completionInfo-top cm-custom-completion-info',
+        class: 'cm-completionInfo-top cm-custom-completion-info cm-custom-singleline-completion-info',
       };
     },
     maxRenderedOptions: 10,
@@ -339,15 +366,6 @@ const EditorInput = ({
       data-cy={`${cyLabel}-input-field`}
     >
       {/* sticky element to position the preview box correctly on top without flowing out of container */}
-      <div
-        style={{
-          position: 'sticky',
-          top: 0,
-          left: 0,
-          zIndex: 1000,
-        }}
-        ref={previewRef}
-      ></div>
       {usePortalEditor && (
         <CodeHinter.PopupIcon
           callback={handleTogglePopupExapand}
@@ -372,39 +390,55 @@ const EditorInput = ({
         callgpt={null}
       >
         <ErrorBoundary>
-          <CodeMirror
-            value={currentValue}
-            placeholder={placeholder}
-            height={isInsideQueryPane ? '100%' : showLineNumbers ? '400px' : '100%'}
-            width="100%"
-            extensions={[
-              javascript({ jsx: lang === 'jsx' }),
-              autoCompleteConfig,
-              keymap.of([...customKeyMaps]),
-              customTabKeymap,
-            ]}
-            onChange={(val) => {
-              setFirstTimeFocus(false);
-              handleOnChange(val);
-              onInputChange && onInputChange(val);
+          <div
+            style={{
+              position: 'relative',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
             }}
-            basicSetup={{
-              lineNumbers: showLineNumbers,
-              syntaxHighlighting: true,
-              bracketMatching: true,
-              foldGutter: false,
-              highlightActiveLine: false,
-              autocompletion: true,
-              completionKeymap: true,
-              searchKeymap: false,
-            }}
-            onMouseDown={() => handleFocus()}
-            onBlur={() => handleOnBlur()}
-            className={customClassNames}
-            theme={theme}
-            indentWithTab={false}
-            readOnly={disabled}
-          />
+            className="check-here"
+            ref={previewRef}
+          >
+            <CodeMirror
+              value={currentValue}
+              placeholder={placeholder}
+              height={isInsideQueryPane ? '100%' : showLineNumbers ? '400px' : '100%'}
+              width="100%"
+              extensions={
+                showSuggestions
+                  ? [
+                      javascript({ jsx: lang === 'jsx' }),
+                      autoCompleteConfig,
+                      keymap.of([...customKeyMaps]),
+                      customTabKeymap,
+                    ]
+                  : [javascript({ jsx: lang === 'jsx' })]
+              }
+              onChange={(val) => {
+                setFirstTimeFocus(false);
+                handleOnChange(val);
+                onInputChange && onInputChange(val);
+              }}
+              basicSetup={{
+                lineNumbers: showLineNumbers,
+                syntaxHighlighting: true,
+                bracketMatching: true,
+                foldGutter: false,
+                highlightActiveLine: false,
+                autocompletion: showSuggestions,
+                completionKeymap: true,
+                searchKeymap: false,
+              }}
+              onMouseDown={() => handleFocus()}
+              onBlur={() => handleOnBlur()}
+              className={customClassNames}
+              theme={theme}
+              indentWithTab={false}
+              readOnly={disabled}
+            />
+          </div>
         </ErrorBoundary>
       </CodeHinter.Portal>
     </div>
