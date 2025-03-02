@@ -386,6 +386,11 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
                             placement="left"
                             rootClose
                             overlay={_renderOverlay(item, index)}
+                            onToggle={(isOpen) => {
+                              if (!isOpen) {
+                                document.activeElement?.blur(); // Manually trigger blur when popover closes
+                              }
+                            }}
                           >
                             <div key={item.value}>
                               <ListGroup.Item
