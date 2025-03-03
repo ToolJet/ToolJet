@@ -35,7 +35,7 @@ then
     fi
 fi
 
-npm --prefix server run db:setup:prod
+TOOLJET_EDTION=ce npm --prefix server run db:setup:prod
 
 if sudo systemctl start nest
 then
