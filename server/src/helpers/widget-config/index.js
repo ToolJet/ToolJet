@@ -53,7 +53,7 @@ import { linkConfig } from './link';
 import { iconConfig } from './icon';
 import { boundedBoxConfig } from './boundedBox';
 import { kanbanBoardConfig } from './kanbanBoard';
-
+import { chatConfig } from './chat';
 const widgets = {
   buttonConfig,
   tableConfig,
@@ -110,6 +110,7 @@ const widgets = {
   linkConfig,
   iconConfig,
   boundedBoxConfig,
+  chatConfig
 };
 
 const universalProps = {

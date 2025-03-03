@@ -64,6 +64,7 @@ import { Kanban } from '@/AppBuilder/Widgets/Kanban/Kanban';
 import { Form } from '@/AppBuilder/Widgets/Form/Form';
 import { Modal } from '@/AppBuilder/Widgets/Modal';
 import { Calendar } from '@/AppBuilder/Widgets/Calendar/Calendar';
+import { Chat } from '@/AppBuilder/Widgets/Chat';
 // import './requestIdleCallbackPolyfill';
 
 export function memoizeFunction(func) {
@@ -137,6 +138,7 @@ export const AllComponents = {
   Form,
   BoundedBox,
   ToggleSwitchV2,
+  Chat,
 };
 if (isPDFSupported()) {
   AllComponents.PDF = await import('@/Editor/Components/PDF').then((module) => module.PDF);
