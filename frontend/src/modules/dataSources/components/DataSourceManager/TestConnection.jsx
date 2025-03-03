@@ -41,6 +41,7 @@ export const TestConnection = ({
       options,
       plugin_id: pluginId,
       environment_id: environmentId,
+      dataSourceId: dataSourceId,
     };
     const sampleDbTestConnection = {
       kind,
