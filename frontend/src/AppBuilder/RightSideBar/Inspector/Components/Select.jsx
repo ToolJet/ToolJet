@@ -295,7 +295,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
           </div>
           <div className="field mb-2" data-cy={`input-and-label-column-name`}>
             <CodeHinter
-              initialValue={isMultiSelect ? `{{${markedAsDefault.includes(item.value)}}}` : item?.default?.value}
+              initialValue={isMultiSelect ? `{{${markedAsDefault.includes(item?.value)}}}` : item?.default?.value}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
@@ -372,7 +372,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               <div className="w-100" {...droppableProps} ref={innerRef}>
                 {options?.map((item, index) => {
                   return (
-                    <Draggable key={item.value} draggableId={item.value} index={index}>
+                    <Draggable key={item?.value} draggableId={item?.value} index={index}>
                       {(provided, snapshot) => (
                         <div
                           key={index}
@@ -387,7 +387,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
                             rootClose
                             overlay={_renderOverlay(item, index)}
                           >
-                            <div key={item.value}>
+                            <div key={item?.value}>
                               <ListGroup.Item
                                 style={{ marginBottom: '8px', backgroundColor: 'var(--slate3)' }}
                                 onMouseEnter={() => setHoveredOptionIndex(index)}
@@ -399,7 +399,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
                                     <SortableList.DragHandle show />
                                   </div>
                                   <div className="col text-truncate cursor-pointer" style={{ padding: '0px' }}>
-                                    {getResolvedValue(item.label)}
+                                    {getResolvedValue(item?.label)}
                                   </div>
                                   <div className="col-auto">
                                     {index === hoveredOptionIndex && (
