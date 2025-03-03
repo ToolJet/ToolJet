@@ -13,14 +13,14 @@ Okta can be configured as the Identity Provider for OIDC, which is an authentica
     <img className="screenshot-full" src="/img/user-management/sso/oidc/okta/create-app.png" alt="Okta: SSO"/>
 
 3. Select **OIDC - OpenID Connect** as the **Sign-in method** and **Web Application** as the **Application type**. Click on the **Next** button.
-    <img className="screenshot-full" src="/img/user-management/sso/oidc/okta/app-type.png" alt="Okta: SSO" />
+    <img className="screenshot-full img-l" src="/img/user-management/sso/oidc/okta/app-type.png" alt="Okta: SSO" />
 
 4. Enter an **App integration name** and set the **Sign-in redirect URIs** to Redirect URL from ToolJet.
-    <img className="screenshot-full" src="/img/user-management/sso/oidc/okta/redirect.png" alt="Okta: SSO" />
+    <img className="screenshot-full img-l" src="/img/user-management/sso/oidc/okta/redirect.png" alt="Okta: SSO" />
 
 5. Create the application. 
 
 6. Copy the Client Credential and configure them in ToolJet.
-    <img className="screenshot-full" src="/img/user-management/sso/oidc/okta/client-cred.png" alt="Okta: SSO" />
+    <img className="screenshot-full img-l" src="/img/user-management/sso/oidc/okta/client-cred.png" alt="Okta: SSO" />
 
 7. Follow [Okta Auth Servers Documentation](https://developer.okta.com/docs/concepts/auth-servers/#org-authorization-server) to find the well known URL.

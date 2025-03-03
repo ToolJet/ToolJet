@@ -62,4 +62,4 @@ Okta can be configured as the Identity Provider for SAML, which is an authentica
 11. Ensure that Audience URI (SP Entity ID) from the XML file is added to the Configure SAML tab in the Okta application configuration.
 
 12. Test the SAML configuration by logging in to ToolJet using the Login URL.
-    <img className="screenshot-full img-m" src="/img/user-management/sso/saml/okta-tj-login.png" alt="Okta SAML ToolJet Login" />
+    <img className="screenshot-full" src="/img/sso/saml/login-v2.png" alt="SSO :SAMP" />

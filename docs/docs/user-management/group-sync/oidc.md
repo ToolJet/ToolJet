@@ -53,4 +53,4 @@ To set up OIDC group synchronization in ToolJet follow these steps:
    Marketing Team -> marketing, Sales Team -> sales
    ```
 
-   <img className="screenshot-full" src="/img/sso/group-sync-oidc.png" alt="OIDC Group Sync Config" />
+   <img className="screenshot-full" src="/img/user-management/group-sync/oidc/mapping.png" alt="OIDC Group Sync Config" />

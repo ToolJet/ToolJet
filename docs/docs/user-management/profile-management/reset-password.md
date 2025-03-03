@@ -8,10 +8,16 @@ When password login is enabled then there are two ways through which a user can 
 ## Forgot Password
 
 1. On the login page, click on the **Forgot Password**.
+
 2. Enter the registered email address associated with the account and then click on the **Send a reset link** button.
+
+    <img className="screenshot-full" src="/img/user-management/profile-management/reset-password/forget-password.png" alt="General Settings: Reset Password" />
+
 3. Receive a password reset link via email.
-4. Click on the link to be directed to the password reset page.
-<img className="screenshot-full" src="/img/sso/general/forgot-password.png" alt="General Settings: Reset Password" />
+
+4. Click on the link to be directed to the password reset page. 
+
+    <img className="screenshot-full" src="/img/user-management/profile-management/reset-password/mail.png" alt="General Settings: Reset Password" />
 
 ## Super Admin Reset Password
 
@@ -26,10 +32,12 @@ If a user forgets their password or it needs to be updated, the super admin can 
 
 4. Click on the kebab icon (three dots) on the right side of the user's name and select **Reset Password**.
 
+    <img className="screenshot-full" src="/img/user-management/profile-management/reset-password/super-admin-reset.png" alt="General Settings: Reset Password" />
+
 5. A modal will appear with two options to reset the password:
 
     a. **Automatically Generate Password**: Selecting this option will automatically generate a new password for the user. <br/>
     b. **Create Password**: Selecting this option will allow the Super Admin to create a new password for the user.
 
-<img className="screenshot-full" src="/img/sso/general/auto-password.png" alt="General Settings: Reset Password" />
+    <img className="screenshot-full img-s" src="/img/user-management/profile-management/reset-password/auto-password.png" alt="General Settings: Reset Password" />
 

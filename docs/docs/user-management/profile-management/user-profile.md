@@ -21,5 +21,5 @@ Using **Profile Settings**, a user can update their name, upload a profile avata
         - Enter and confirm your new password.
         - Click on **Change password** button at the bottom of the section.
 
-<img className="screenshot-full" src="/img/user-management/profile-management/profile-settings/settings.png" alt="Edit User Details Menu" />
-
+<br/>
+    <img className="screenshot-full" src="/img/user-management/profile-management/profile-settings/settings.png" alt="Edit User Details Menu" />

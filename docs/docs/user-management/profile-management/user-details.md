@@ -22,4 +22,3 @@ Role Required: **Super Admin** <br/>
 5. Update the user's name or enable the toggle in front of 'Super Admin' to promote the user to a Super Admin.
 
 6. Click on **Update** at the bottom of the drawer.
-    <img className="screenshot-full" src="/img/user-management/profile-management/user-details/update-details.png" alt="Edit User Details Menu" />

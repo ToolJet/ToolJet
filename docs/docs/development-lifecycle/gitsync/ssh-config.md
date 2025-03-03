@@ -11,11 +11,16 @@ To configure a Git Manager with ToolJet using GitSync, you need the SSH URL from
 
 1. **Create a New Repository** <br/>
     Create a new repository on your GitHub. The repository can be public or private. You can also use an existing repository. Make sure that the repository is empty and the default branch name should be **master**.
-    <img className="screenshot-full" src="/img/gitsync/github1.png" alt="GitSync" />
+    <img className="screenshot-full img-l" src="/img/development-lifecycle/gitsync/config/new-repo.png" alt="GitSync" />
 
 2. **Obtain the SSH URL** <br/>
-    When a repository is created, GitHub shows a screen with the SSH URL. If the repository is already created, you can obtain the URL by clicking on the **Clone or download** button.
-    <img className="screenshot-full" src="/img/gitsync/github2.png" alt="GitSync" />
+    When a repository is created, GitHub shows a screen with the SSH URL.
+    <img className="screenshot-full" src="/img/development-lifecycle/gitsync/config/ssh.png" alt="GitSync" />
+
+    OR
+    
+    If you are using an existing repository, then you can obtain the URL by clicking on the **Code** button.
+    <img className="screenshot-full" src="/img/development-lifecycle/gitsync/config/ssh-code.png" alt="GitSync" />
 
 ### GitLab
 
@@ -43,7 +48,7 @@ To configure a Git Manager with ToolJet using GitSync, you need the SSH URL from
 ### GitHub
 
 1. Go to the **Settings** tab of the GitHub repository, and click on the **Deploy keys** tab. Click on the **Add deploy key** button. 
-    <img className="screenshot-full" src="/img/gitsync/github3.png" alt="GitSync" />
+    <img className="screenshot-full" src="/img/development-lifecycle/gitsync/config/deploy-ssh.png" alt="GitSync" />
 
 2. Enter a title for the SSH key in the **Title** field. 
         
@@ -52,7 +57,7 @@ To configure a Git Manager with ToolJet using GitSync, you need the SSH URL from
 4. Make sure that the **Allow write access** checkbox is checked, especially when configuring the GitSync feature to [push changes to Git](#pushing-changes-to-git-repo). However, it is not mandatory to check this option when setting up the GitSync feature for [pulling changes from Git](#pulling-changes-from-git-repo).
         
 5. Finally, click on the **Add key** button.
-    <img className="screenshot-full" src="/img/gitsync/github4.png" alt="GitSync" />
+    <img className="screenshot-full" src="/img/development-lifecycle/gitsync/config/add-key.png" alt="GitSync" />
 
 ### GitLab
 

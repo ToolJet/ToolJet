@@ -13,11 +13,12 @@ Role Required: **Admin** <br/>
 
 1. Click on the settings icon (⚙️) on the bottom left of your dashboard.
 
-2. Go to **Workspace settings > Workspace login**. <br/> 
-    <img className="screenshot-full" src="/img/sso/saml/workspaceset-v2.png" alt="SSO :SAMP" />
+2. Go to **Workspace settings > Workspace login**. <br/>
+    (Example URL - `https://app.corp.com/nexus/workspace-settings/workspace-login`)
+    <img className="screenshot-full" src="/img/sso/saml/workspaceset-v3.png" alt="SSO :SAMP" />
 
 2. By default, SAML is disabled. Toggle it on to enable SAML authentication.
-    <img className="screenshot-full" src="/img/sso/saml/enable-v2.png" alt="SSO :SAMP" />
+    <img className="screenshot-full img-l" src="/img/sso/saml/enable-v2.png" alt="SSO :SAMP" />
 
 3. Enter the following configuration details:
     - **SAML Provider Name**: Enter the name of your SAML provider. This name will be displayed on the login page.
@@ -35,20 +36,16 @@ Role Required: **Admin** <br/>
      Additionally, you can often find this data by navigating to `https://your-identity-provider/federationmetadata/2007-06/federationmetadata.xml`
     :::
 
-    <img className="screenshot-full" src="/img/sso/saml/config-new-v3.png" alt="SSO :SAMP" />
-
 4. Once configured, click **Save Changes**.
 
 ## Logging in with SAML
 
 1. Go to the **Workspace login** tab and copy the **Login URL** provided. Through SSO authentication, we check if the user already exists; if so, they can sign in seamlessly. Otherwise, an error will be displayed. 
-    <img className="screenshot-full" src="/img/sso/saml/url-v3.png" alt="SSO :SAML"/>
 
 2. The **Login URL** obtained can be used to access the workspace. Please note that ToolJet supports SAML login at the workspace level, ensuring users are logged in specifically to the selected workspace. <br/>
     As a result, users can now log in to your workspace using the provided Login URL. The login page will prominently feature the name of the SAML provider configured in your workspace settings.
-    <img className="screenshot-full" src="/img/sso/saml/login.png" alt="SSO :SAMP" />
+    <img className="screenshot-full" src="/img/sso/saml/login-v2.png" alt="SSO :SAMP" />
 
 3. Click on **Sign in with `SAML Name`** button and you will be redirected to the SAML provider's login page.
-    <img className="screenshot-full" src="/img/sso/saml/auth.png" alt="SSO :SAMP" />
 
 4. Enter your credentials and click **Login**. If the user is signing in for the first time, they will be redirected to the ToolJet's onboarding page.
