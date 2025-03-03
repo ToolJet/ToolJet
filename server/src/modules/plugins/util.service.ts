@@ -11,9 +11,10 @@ import * as jszip from 'jszip';
 import * as fs from 'fs';
 import { CreateFileDto, UpdateFileDto } from '@modules/files/dto';
 import { IPluginsUtilService } from './interfaces/IUtilService';
+import { Injectable } from '@nestjs/common';
 
 const jszipInstance = new jszip();
-
+@Injectable()
 export class PluginsUtilService implements IPluginsUtilService {
   constructor(protected readonly filesRepository: FilesRepository, protected readonly configService: ConfigService) {}
   async create(

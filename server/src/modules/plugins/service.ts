@@ -9,8 +9,10 @@ import { encode } from 'js-base64';
 import { FilesRepository } from '@modules/files/repository';
 import { IPluginsService } from './interfaces/IService';
 import * as path from 'path';
+import { Injectable } from '@nestjs/common';
 const fs = require('fs');
 
+@Injectable()
 export class PluginsService implements IPluginsService {
   constructor(
     protected readonly pluginsUtilService: PluginsUtilService,
