@@ -41,24 +41,22 @@ export const createLeftSideBarSlice = (set, get) => ({
     const { getCurrentPageComponents, getAllExposedValues, modalsOpenOnCanvas } = get();
     const currentPageComponents = getCurrentPageComponents();
 
-    let candidate = componentId;
+    let targetComponentId = componentId;
     let current = componentId;
     const visited = new Set();
-    let closedUnusedModals = false; // Flag to check if we have closed all unused modals on the canvas
+    let isInsideOpenModal = false;
 
+    // Bubble up to the outermost parent to find the target component
     // eslint-disable-next-line no-constant-condition
     while (true) {
       if (visited.has(current)) break;
       visited.add(current);
 
-      const component = currentPageComponents?.[current];
-      if (!component) break;
-
-      const parentId = component?.component?.parent;
+      const parentId = currentPageComponents?.[current]?.component?.parent;
       if (!parentId) break;
 
-      let isParentInactive = false;
-      let newCandidate = candidate;
+      let isComponentVisibleInParent = true;
+      let nextPossibleCandidate = parentId;
 
       // If the component exists inside a tab component
       const regForTabs = /-(?!\d{12}$)\d+$/; // Parent id for tabs follow the format 'id-index' and index is not UUIDv4 id segment
@@ -67,55 +65,46 @@ export const createLeftSideBarSlice = (set, get) => ({
         const tabIndex = Number(parentId.match(reg)[1]); // Tab index inside which the component exists
 
         const tabId = parentId.replace(regForTabs, ''); // Extract tab id from parent id
-        const { currentTab } = getAllExposedValues().components[tabId];
+
+        const { currentTab } = getAllExposedValues().components?.[tabId] || {};
         const activeTabIndex = Number(currentTab);
 
+        nextPossibleCandidate = tabId;
         if (tabIndex !== activeTabIndex) {
-          isParentInactive = true;
-          newCandidate = tabId;
+          isComponentVisibleInParent = false;
         }
       }
 
-      const parentExposedValues = getAllExposedValues().components[parentId];
-
       // If the component exists inside a modal component
       if (currentPageComponents?.[parentId]?.component?.component === 'Modal') {
-        // Close all modals that are open on the canvas until we get to the parent modal
-        if (modalsOpenOnCanvas.length > 0 && !closedUnusedModals) {
-          if (!modalsOpenOnCanvas.includes(parentId)) {
-            modalsOpenOnCanvas.map((modalId) => getAllExposedValues().components[modalId]?.close());
-          } else {
-            const idx = modalsOpenOnCanvas.indexOf(parentId);
-            modalsOpenOnCanvas.slice(idx + 1).map((modalId) => getAllExposedValues().components[modalId]?.close());
-          }
-          closedUnusedModals = true;
-        }
-
-        if (!parentExposedValues?.show) {
-          isParentInactive = true;
-          newCandidate = parentId;
+        nextPossibleCandidate = parentId;
+        if (!modalsOpenOnCanvas.includes(parentId)) {
+          isComponentVisibleInParent = false;
         }
       }
 
       // If the component exists inside the kanban component's modal
       if (parentId.endsWith('-modal')) {
-        isParentInactive = true;
-        newCandidate = parentId.replace(/-modal$/, ''); // Extract kanban id from parent id
+        nextPossibleCandidate = parentId.replace(/-modal$/, ''); // Extract kanban id from parent id
+        if (!modalsOpenOnCanvas.includes(parentId)) {
+          isComponentVisibleInParent = false;
+        }
       }
 
-      if (isParentInactive) {
-        candidate = newCandidate;
-        current = newCandidate;
-      } else {
-        current = parentId;
+      // If the open modal contains the component
+      if (modalsOpenOnCanvas[modalsOpenOnCanvas.length - 1] === parentId) {
+        isInsideOpenModal = true;
       }
+
+      if (!isComponentVisibleInParent) {
+        targetComponentId = nextPossibleCandidate;
+      }
+      current = nextPossibleCandidate;
     }
 
-    // Close all modals that are open on the canvas if the component is not inside any of the modals
-    if (modalsOpenOnCanvas.length > 0 && !closedUnusedModals) {
-      modalsOpenOnCanvas.map((modalId) => getAllExposedValues().components[modalId]?.close());
+    if (modalsOpenOnCanvas.length > 0 && !isInsideOpenModal) {
+      return undefined;
     }
-
-    return candidate;
+    return targetComponentId;
   },
 });

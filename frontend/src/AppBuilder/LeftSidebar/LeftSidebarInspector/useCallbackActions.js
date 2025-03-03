@@ -9,6 +9,7 @@ const useCallbackActions = () => {
   const currentPageComponents = useStore((state) => state?.getCurrentPageComponents(), shallow);
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
   const runQuery = useStore((state) => state.queryPanel.runQuery);
+  const getComponentIdToAutoScroll = useStore((state) => state.getComponentIdToAutoScroll);
 
   const handleRemoveComponent = (component) => {
     deleteComponents([component.id]);
@@ -31,7 +32,8 @@ const useCallbackActions = () => {
   };
 
   const handleAutoScrollToComponent = (data) => {
-    const computedComponentId = useStore.getState().getComponentIdToAutoScroll(data.id);
+    const computedComponentId = getComponentIdToAutoScroll(data.id);
+    if (!computedComponentId) return;
     setSelectedComponents([computedComponentId]);
     const target = document.getElementById(computedComponentId);
     target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
