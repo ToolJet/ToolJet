@@ -12,10 +12,11 @@ export const generateActionColumns = ({ actions, fireEvent, setExposedVariables,
     meta: { columnType: 'action', position, skipFilter: true },
     size: 90,
     header: 'Actions',
-    cell: ({ row }) => (
+    cell: ({ row, cell }) => (
       <ActionButtons
         actions={position === 'left' ? leftActions : rightActions}
         row={row}
+        cell={cell}
         fireEvent={fireEvent}
         setExposedVariables={setExposedVariables}
         id={id}

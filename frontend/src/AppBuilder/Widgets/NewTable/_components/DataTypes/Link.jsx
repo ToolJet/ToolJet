@@ -11,11 +11,11 @@ export const LinkColumn = ({ cellValue, linkTarget, underline, underlineColor, l
       <a
         className={underline === 'hover' ? 'table-link-hover' : 'table-link'}
         href={cellValue}
-        target={linkTarget === '_self' || !linkTarget ? '_self' : '_blank'}
+        target={linkTarget === '_self' || linkTarget == false ? '_self' : '_blank'}
         onClick={(e) => e.stopPropagation()}
         style={{
           color: linkTextColor,
-          textDecoration: underline === 'always' ? 'underline' : 'none',
+          textDecoration: underline === 'always' && 'underline',
           textDecorationColor: underlineColor,
         }}
         rel="noopener noreferrer"

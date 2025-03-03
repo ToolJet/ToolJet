@@ -1,10 +1,11 @@
 import React, { useCallback } from 'react';
 import useTableStore from '../../_stores/tableStore';
 import { shallow } from 'zustand/shallow';
-
-export const ActionButtons = ({ actions, row, fireEvent, setExposedVariables, id }) => {
+import useStore from '@/AppBuilder/_stores/store';
+export const ActionButtons = ({ actions, row, cell, fireEvent, setExposedVariables, id }) => {
   const { getTableActionEvents } = useTableStore();
   const actionButtonRadius = useTableStore((state) => state.getTableStyles(id)?.actionButtonRadius, shallow);
+  const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
 
   const handleActionClick = useCallback(
     (action) => {
@@ -33,7 +34,7 @@ export const ActionButtons = ({ actions, row, fireEvent, setExposedVariables, id
             borderRadius: actionButtonRadius,
           }}
           onClick={() => handleActionClick(action, id)}
-          disabled={action.isDisabled}
+          disabled={getResolvedValue(action.disableActionButton, { rowData: row.original, cellValue: cell.getValue() })}
         >
           {action.buttonText}
         </button>

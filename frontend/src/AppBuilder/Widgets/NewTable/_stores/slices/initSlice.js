@@ -6,7 +6,6 @@ export const createInitSlice = (set, get) => ({
   initializeComponent: (id) =>
     set(
       (state) => {
-        console.log('here--- state--- init');
         if (!state.components[id]) {
           state.components[id] = {
             properties: {},

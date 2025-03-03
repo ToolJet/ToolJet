@@ -8,7 +8,6 @@ import useStore from '@/AppBuilder/_stores/store';
 import useTableStore from './_stores/tableStore';
 import TableContainer from './_components/TableContainer';
 import { transformTableData } from './_utils/transformTableData';
-import './_styles/table_component.scss';
 
 export const Table = memo(
   ({ id, componentName, width, height, properties, styles, darkMode, fireEvent, setExposedVariables }) => {

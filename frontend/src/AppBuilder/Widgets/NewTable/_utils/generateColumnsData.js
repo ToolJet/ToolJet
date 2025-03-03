@@ -48,15 +48,6 @@ export default function generateColumnsData({
       if (!column) return null;
 
       const columnSize = columnSizes[column?.id] || columnSizes[column?.name] || column.columnSize;
-      console.log(
-        'columnSize--- ',
-        columnProperties,
-        columnSizes,
-        column?.id,
-        column?.name,
-        column.columnSize,
-        columnSize
-      );
       const columnType = column?.columnType;
 
       // Process column options for select types
@@ -220,9 +211,15 @@ export default function generateColumnsData({
                   options={columnOptions.selectOptions}
                   value={cellValue}
                   onChange={(value) => handleCellValueChange(row.index, column.key || column.name, value, row.original)}
-                  readOnly={!isEditable}
+                  disabled={!isEditable}
                   darkMode={darkMode}
                   containerWidth={columnSize}
+                  defaultOptionsList={column?.defaultOptionsList || []}
+                  optionsLoadingState={
+                    getResolvedValue(column?.useDynamicOptions) && getResolvedValue(column?.optionsLoadingState)
+                      ? true
+                      : false
+                  }
                   isEditable={isEditable}
                   isMulti={columnType === 'newMultiSelect'}
                   className="select-search table-select-search"

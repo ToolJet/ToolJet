@@ -63,7 +63,6 @@ export function useTable({
     manualPagination: serverSidePagination,
     manualSorting: serverSideSort,
     manualFiltering: serverSideFilter,
-    pageCount: Math.ceil(data.length / pagination.pageSize),
   });
 
   return {

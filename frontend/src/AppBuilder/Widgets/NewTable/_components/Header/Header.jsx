@@ -43,6 +43,7 @@ export const Header = memo(
           <ButtonSolid
             variant="tertiary"
             customStyles={{ minWidth: '32px' }}
+            className={`tj-text-xsm ${showFilter && 'always-active-btn'}`}
             leftIcon="filter"
             fill={`var(--icons-default)`}
             iconWidth="16"

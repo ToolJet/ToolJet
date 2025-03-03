@@ -5,7 +5,8 @@ import useStore from '@/AppBuilder/_stores/store';
 import { exportToCSV, exportToExcel, exportToPDF } from '@/AppBuilder/Widgets/NewTable/_utils/exportData';
 import { filterFunctions } from '../Header/_components/Filter/filterUtils';
 import { isArray, debounce } from 'lodash';
-
+import { useMounted } from '@/_hooks/use-mount';
+import { usePrevious } from '@dnd-kit/utilities';
 // Component to expose variables & fire events from the table
 // It might miss some variables which are tightly coupled with the component state
 export const TableExposedVariables = ({
@@ -28,6 +29,9 @@ export const TableExposedVariables = ({
   const columnSizes = useTableStore((state) => state.getTableProperties(id)?.columnSizes, shallow);
 
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
+
+  const mounted = useMounted();
+  const previousLastClickedRow = usePrevious(lastClickedRow);
 
   const {
     selectedRows,
@@ -115,7 +119,6 @@ export const TableExposedVariables = ({
         selectedRow: lastClickedRow,
         selectedRowId: isNaN(lastClickedRow?.id) ? String(lastClickedRow?.id) : lastClickedRow?.id,
       });
-      fireEvent('onRowClicked');
     } else {
       setExposedVariables({
         selectedRows: [],
@@ -124,13 +127,23 @@ export const TableExposedVariables = ({
         selectedRowId: null,
       });
     }
-  }, [selectedRows, allowSelection, setExposedVariables, fireEvent, lastClickedRow]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedRows, allowSelection, setExposedVariables, fireEvent, lastClickedRow]); // Didn't add mounted as it's not a dependency
+
+  useEffect(() => {
+    if (allowSelection) {
+      if (previousLastClickedRow?.id !== lastClickedRow?.id) {
+        fireEvent('onRowClicked');
+      }
+    }
+  }, [previousLastClickedRow, lastClickedRow, fireEvent, allowSelection]);
 
   // Expose page index
   useEffect(() => {
     setExposedVariables({ pageIndex });
-    fireEvent('onPageChanged');
-  }, [pageIndex, setExposedVariables, fireEvent]);
+    mounted && fireEvent('onPageChanged');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pageIndex, setExposedVariables, fireEvent]); // Didn't add mounted as it's not a dependency
 
   // Expose sort applied
   useEffect(() => {
@@ -156,15 +169,16 @@ export const TableExposedVariables = ({
   // Expose search text
   useEffect(() => {
     setExposedVariables({ searchText });
-    fireEvent('onSearch');
+    mounted && fireEvent('onSearch');
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchText, setExposedVariables, fireEvent]);
+  }, [searchText, setExposedVariables, fireEvent]); // Didn't add mounted as it's not a dependency
 
   // Expose applied filters
   useEffect(() => {
     setExposedVariables({ filters: appliedFilters.map((filter) => filter.value) });
-    fireEvent('onFilterChanged');
-  }, [appliedFilters, setExposedVariables, fireEvent]);
+    mounted && fireEvent('onFilterChanged');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [appliedFilters, setExposedVariables, fireEvent]); // Didn't add mounted as it's not a dependency
 
   // CSA for select & deselect all rows in table
   useEffect(() => {
@@ -195,6 +209,22 @@ export const TableExposedVariables = ({
 
   useEffect(() => {
     function selectRow(key, value) {
+      const item = data.find((item) => item[key] == value);
+      if (item) {
+        setRowSelection({ [item.id - 1]: true });
+      }
+    }
+    if (defaultSelectedRow) {
+      const key = Object?.keys(defaultSelectedRow)[0] ?? '';
+      const value = defaultSelectedRow?.[key] ?? undefined;
+      if (key && value) {
+        selectRow(key, value);
+      }
+    }
+  }, [data, defaultSelectedRow, setRowSelection]);
+
+  useEffect(() => {
+    function selectRow(key, value) {
       const item = tableData.find((item) => item[key] == value);
       if (item) {
         setRowSelection({ [item.id - 1]: true });
@@ -207,16 +237,8 @@ export const TableExposedVariables = ({
         setRowSelection({ [item.id - 1]: false });
       }
     }
-
-    if (defaultSelectedRow) {
-      const key = Object?.keys(defaultSelectedRow)[0] ?? '';
-      const value = defaultSelectedRow?.[key] ?? undefined;
-      if (key && value) {
-        selectRow(key, value);
-      }
-    }
     setExposedVariables({ selectRow, deselectRow });
-  }, [tableData, setExposedVariables, setRowSelection, defaultSelectedRow]);
+  }, [tableData, setExposedVariables, setRowSelection]);
 
   // CSA to set & clear filters
   useEffect(() => {

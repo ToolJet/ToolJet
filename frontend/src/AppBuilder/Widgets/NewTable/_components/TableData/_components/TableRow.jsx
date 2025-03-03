@@ -21,7 +21,7 @@ export const TableRow = ({
   measureElement,
 }) => {
   const selectRowOnCellEdit = useTableStore((state) => state.getTableProperties(id)?.selectRowOnCellEdit, shallow);
-  const hasHoveredEvent = useTableStore((state) => state.getTableProperties(id)?.hasHoveredEvent, shallow);
+  const hasHoveredEvent = useTableStore((state) => state.getHasHoveredEvent(id), shallow);
 
   if (!row) return null;
 
@@ -58,7 +58,10 @@ export const TableRow = ({
       {row.getVisibleCells().map((cell) => {
         const cellStyles = {
           width: cell.column.getSize(),
-          backgroundColor: getResolvedValue(cell.column.columnDef?.meta?.cellBackgroundColor) ?? 'inherit',
+          backgroundColor: getResolvedValue(cell.column.columnDef?.meta?.cellBackgroundColor ?? 'inherit', {
+            rowData: row.original,
+            cellValue: cell.getValue(),
+          }),
           justifyContent: determineJustifyContentValue(cell.column.columnDef?.meta?.horizontalAlignment),
           display: 'flex',
           alignItems: 'center',
