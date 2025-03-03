@@ -40,10 +40,15 @@ Use this operation to generate creative text content by selecting the desired mo
 
 - **Advanced parameters**: Additional parameters to configure the model response. Refer [Advanced Parameters](#advanced-parameters) for more information.
 
-Example Parameters:
+<img className="screenshot-full" src="/img/marketplace/plugins/cohere/text-generation.png" alt="Cohere Text generation" />
 
-```js 
-{
+<details>
+<summary>**Example Value**</summary>
+```yaml
+    "Model":"command-r-plus"
+    "Message":"explain about ToolJet"
+    "Advanced parameters":" 
+    {
     "response_format": {"type": "text"},
     "temperature": 0.3,
     "max_tokens": 512,
@@ -55,10 +60,9 @@ Example Parameters:
     "citation_options": {"mode": "fast"},
     "safety_mode": "off",
     "stop_sequences": ["spam", "fraud"]
-}
+    }"
 ```
-
-<img className="screenshot-full" src="/img/marketplace/plugins/cohere/text-generation.png" alt="Cohere Text generation" />
+</details>
 
 <details>
 <summary>**Response Example**</summary>
@@ -120,10 +124,30 @@ Use this operation for a chat-like conversation, where the model responds based 
 
 - **Advanced parameters**: Additional parameters to configure the model response. Refer [Advanced Parameters](#advanced-parameters) for more information.
 
-Example Parameters:
+<img className="screenshot-full" src="/img/marketplace/plugins/cohere/chat.png" alt="Cohere Chat" />
 
-```js 
-{
+<details>
+<summary>**Example Value**</summary>
+```yaml
+    "Model":"command"
+    "History":"
+    [
+        {
+            "role":"system",
+            "content":"You are an advanced AI support chatbot for ToolJet."
+        },
+        {
+            "role":"user",
+            "content":"Hello! I need help with Cohere and ToolJet."
+        },
+        {
+            "role":"assistant",
+            "content":"Hey! Can you please elaborate about your query?"
+        }
+    ]"
+    "Message":"Tell me how to integrate cohere and ToolJet"
+    "Advanced parameters":" 
+  {
     "response_format": {"type": "text"},
     "temperature": 0.3,
     "max_tokens": 512,
@@ -135,10 +159,9 @@ Example Parameters:
     "citation_options": {"mode": "fast"},
     "safety_mode": "off",
     "stop_sequences": ["spam", "fraud"]
-}
+    }
 ```
-
-<img className="screenshot-full" src="/img/marketplace/plugins/cohere/chat.png" alt="Cohere Chat" />
+</details>
 
 <details>
 <summary>**Response Example**</summary>
