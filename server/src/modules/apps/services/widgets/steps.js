@@ -46,7 +46,7 @@ export const stepsConfig = {
   styles: {
     color: {
       type: 'colorSwatches',
-      displayName: 'colorSwatches',
+      displayName: 'Color',
       validation: {
         schema: { type: 'string' },
         defaultValue: 'var(--primary-brand)',

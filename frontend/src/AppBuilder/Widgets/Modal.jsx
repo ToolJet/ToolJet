@@ -178,6 +178,7 @@ export const Modal = function Modal({
       display: visibility ? '' : 'none',
       '--tblr-btn-color-darker': tinycolor(triggerButtonBackgroundColor).darken(8).toString(),
       boxShadow,
+      borderColor: 'var(--primary-brand)',
     },
   };
 

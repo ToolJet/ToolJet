@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef } from 'react';
+// eslint-disable-next-line import/no-unresolved
 import { useDropzone } from 'react-dropzone';
 import { toast } from 'react-hot-toast';
 // eslint-disable-next-line import/no-unresolved
@@ -311,7 +312,11 @@ export const FilePicker = ({
     <section>
       <div className="container" {...getRootProps({ style, className: 'dropzone' })} data-cy={dataCy}>
         <input {...getInputProps()} />
-        <FilePicker.Signifiers signifier={accepted} feedback={null} cls="spinner-border text-azure p-0" />
+        <FilePicker.Signifiers
+          signifier={accepted}
+          feedback={null}
+          cls="spinner-border text-azure p-0 spinner-border-filepicker"
+        />
 
         {showSelectedFiles && !accepted ? (
           <FilePicker.AcceptedFiles width={width - 10} height={height}>
