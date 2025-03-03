@@ -605,7 +605,9 @@ const sidebars = {
             'security/constants/variables'
           ]
         },
-        'security/audit-logs'
+        'security/audit-logs',
+        'security/soc-2-compliance'
+
       ]
     },
     'tutorial/tooljet-api',
