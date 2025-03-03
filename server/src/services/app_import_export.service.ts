@@ -1977,7 +1977,7 @@ const hasSlottedChildren = (
     const parentComponent = allComponents.find((comp) => comp.id === parentId);
 
     const hasSlotedHeaderOrFooter = componentParentId.includes('-header') || componentParentId.includes('-footer');
-    const isParentModal = parentComponent.type === 'Modal';
+    const isParentModal = parentComponent.type === 'Modal' || parentComponent.type === 'ModalV2';
 
     if (isParentModal && hasSlotedHeaderOrFooter) return true;
     if (parentComponent) {
