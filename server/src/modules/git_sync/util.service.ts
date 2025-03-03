@@ -16,7 +16,7 @@ export class GitSyncUtilService implements IGitSyncUtilService {
   }
 
   // Test Git connection
-  async testGitConnection(orgGit: OrganizationGitSync, initPath: string) {
+  async testGitConnection(orgGit: OrganizationGitSync, initPath: string): Promise<any> {
     throw new Error('Method not implemented.');
   }
 

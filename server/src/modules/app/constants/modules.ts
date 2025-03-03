@@ -23,6 +23,7 @@ export enum MODULES {
   SMTP = 'SMTP',
   ONBOARDING = 'Onboarding',
   APP_GIT = 'App-Git',
+  GIT_SYNC = 'Git-Sync',
   INSTANCE_SETTINGS = 'instanceSettings',
   LICENSING = 'Licensing',
   FILE = 'file',
