@@ -552,8 +552,7 @@ const sidebars = {
           'type': 'category',
           'label': 'Backup',
           'items': [
-            'development-lifecycle/backup/gitsync-backup',
-            'development-lifecycle/backup/sql-backup'
+            'development-lifecycle/backup/gitsync-backup'
           ]
         },
       ]
