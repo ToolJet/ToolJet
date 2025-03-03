@@ -49,7 +49,7 @@ You can configure data sources and constants for each environment, and ToolJet w
     
 -   **Production** – After thorough testing in staging, the application is promoted to production. This can serve as a pre-release environment where you test with production data and constants before releasing the application to end users. Refer to [Release](http://s) documentation to learn more.
 
-<img className="screenshot-full img-l" src="/img/development-lifecycle/environments/self-hosted-concept.png" alt="self-hosted-env-concept" />
+<img className="screenshot-full img-l" src="/img/development-lifecycle/environments/Built-in-env.png" alt="self-hosted-env-concept" />
 
     
 ### Impacted behavior with environment permission 

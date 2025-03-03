@@ -1,6 +1,6 @@
 ---
 id: concept
-title: Multi-instance as Enviroment
+title: Multi-Instance as Enviroment
 ---
 
 
@@ -24,6 +24,6 @@ GitSync enables users to commit and push updates from your instance to your Git 
 
 GitSync allows you to pull updates from a Git repository into your instance. You can import apps from Git through the ToolJet dashboard. Once pulled, the app will be in view-only mode. You can also check for updates, which fetches the latest commits with details like author and date. If updates are available, you can pull changes and sync them. Refer to [Push-Gitsync](/docs) doc to learn more.Here is the diagram showing how you can use gitsync to migrate your apps across instances.
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/development-lifecycle/environments/multi-instance-concept.png" alt="self-hosted-env-concept" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/development-lifecycle/environments/multi-instance.png" alt="self-hosted-env-concept" />
 
 Checkout the [Multi-Instance-Example](/docs) guide to learn how to use GitSync for multi-instance setup in ToolJet with a practical example.
