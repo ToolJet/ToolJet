@@ -291,6 +291,7 @@ export function getMouseDistanceFromParentDiv(event, id, parentWidgetType) {
       ? document.getElementById(id)
       : id
     : document.getElementsByClassName('real-canvas')[0];
+  parentDiv = id === 'real-canvas' ? document.getElementById('real-canvas') : document.getElementById('canvas-' + id);
   if (parentWidgetType === 'Container' || parentWidgetType === 'Modal') {
     parentDiv = document.getElementById('canvas-' + id);
   }

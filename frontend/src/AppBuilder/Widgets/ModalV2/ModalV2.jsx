@@ -117,6 +117,20 @@ export const ModalV2 = function Modal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showModal]);
 
+  useEffect(() => {
+    // When modal is active, prevent drop event on backdrop (else widgets droppped will get added to canvas)
+    const preventBackdropDrop = (e) => {
+      if (e.target.className === 'fade modal show') {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+    document.addEventListener('drop', preventBackdropDrop);
+    return () => {
+      document.removeEventListener('drop', preventBackdropDrop);
+    };
+  }, []);
+
   const { controlBoxRef } = useResetZIndex({ showModal, id, mode });
   const { isDisabledTrigger, isDisabledModal, isVisible, isLoading } = useExposeState({
     loadingState: properties.loadingState,

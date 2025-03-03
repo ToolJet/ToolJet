@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 export const useExposeState = ({
   loadingState,
@@ -10,12 +10,15 @@ export const useExposeState = ({
   onHideModal,
   onShowModal,
 }) => {
-  const [isVisible, setVisibility] = useState(visibleState || true);
-  const [isLoading, setLoading] = useState(loadingState || false);
-  const [isDisabledModal, setDisabledModal] = useState(disabledModalState || false);
-  const [isDisabledTrigger, setDisabledTrigger] = useState(disabledTriggerState || false);
+  const [isVisible, setVisibility] = useState(visibleState ?? true);
+  const [isLoading, setLoading] = useState(loadingState ?? false);
+  const [isDisabledModal, setDisabledModal] = useState(disabledModalState ?? false);
+  const [isDisabledTrigger, setDisabledTrigger] = useState(disabledTriggerState ?? false);
 
-  // Effect to conditionally update state from properties passed to widget
+  // Track previous values to prevent redundant updates
+  const prevValues = useRef({});
+
+  // Effect to sync state with props (only when props change)
   useEffect(() => {
     setDisabledModal(disabledModalState);
   }, [disabledModalState]);
@@ -32,7 +35,7 @@ export const useExposeState = ({
     setLoading(loadingState);
   }, [loadingState]);
 
-  // exposed variables with state and async setters, happens on first time load
+  // Expose state-modifying functions only once
   useEffect(() => {
     setExposedVariables({
       setDisableTrigger: async (value) => setDisabledTrigger(value),
@@ -42,24 +45,31 @@ export const useExposeState = ({
       open: async () => onShowModal(),
       close: async () => onHideModal(),
     });
-  }, [setExposedVariables]);
+  }, []);
 
-  //Side effect to state variables, these will run after the state is set and the values will be exposed
-  useEffect(() => {
-    setExposedVariable('isDisabledModal', isDisabledModal);
-  }, [isDisabledModal, setExposedVariable]);
-
-  useEffect(() => {
-    setExposedVariable('isDisabledTrigger', isDisabledTrigger);
-  }, [isDisabledTrigger, setExposedVariable]);
-
-  useEffect(() => {
-    setExposedVariable('isVisible', isVisible);
-  }, [isVisible, setExposedVariable]);
+  // Prevent redundant updates to `setExposedVariable`
+  const updateExposedVariable = (key, value) => {
+    if (prevValues.current[key] !== value) {
+      prevValues.current[key] = value;
+      setExposedVariable(key, value);
+    }
+  };
 
   useEffect(() => {
-    setExposedVariable('isLoading', isLoading);
-  }, [isLoading, setExposedVariable]);
+    updateExposedVariable('isDisabledModal', isDisabledModal);
+  }, [isDisabledModal]);
+
+  useEffect(() => {
+    updateExposedVariable('isDisabledTrigger', isDisabledTrigger);
+  }, [isDisabledTrigger]);
+
+  useEffect(() => {
+    updateExposedVariable('isVisible', isVisible);
+  }, [isVisible]);
+
+  useEffect(() => {
+    updateExposedVariable('isLoading', isLoading);
+  }, [isLoading]);
 
   return {
     isDisabledTrigger,

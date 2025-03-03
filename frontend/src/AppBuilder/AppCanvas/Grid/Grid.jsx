@@ -21,6 +21,7 @@ import {
 } from './gridUtils';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
+import { dragContextBuilder, getAdjustedDropPosition, getDroppableSlotIdOnScreen } from './helpers/dragEnd';
 import useStore from '@/AppBuilder/_stores/store';
 import './Grid.css';
 import { NO_OF_GRIDS, SUBCONTAINER_WIDGETS } from '../appCanvasConstants';
@@ -52,6 +53,7 @@ export default function Grid({ gridWidth, currentLayout }) {
   const canvasWidth = NO_OF_GRIDS * gridWidth;
   const getHoveredComponentForGrid = useStore((state) => state.getHoveredComponentForGrid, shallow);
   const getResolvedComponent = useStore((state) => state.getResolvedComponent, shallow);
+  const [canvasBounds, setCanvasBounds] = useState(CANVAS_BOUNDS);
 
   useEffect(() => {
     setBoxList(
@@ -671,154 +673,56 @@ export default function Grid({ gridWidth, currentLayout }) {
               isDraggingRef.current = false;
             }
 
-            if (!e.lastEvent) {
-              return;
+            if (!e.lastEvent) return;
+
+            // Build the drag context from the event
+            const dragContext = dragContextBuilder({ event: e, widgets: boxList });
+            const { target, source, dragged } = dragContext;
+
+            const targetSlotId = target?.slotId;
+            const targetGridWidth = useGridStore.getState().subContainerWidths[targetSlotId] || gridWidth;
+
+            const restrictedWidgets = restrictedWidgetsObj?.[source.widgetType] || [];
+            const draggedWidgetType = dragged.widgetType;
+            const isParentChangeAllowed = !restrictedWidgets.includes(draggedWidgetType);
+
+            // Compute new position
+            let { left, top } = getAdjustedDropPosition(e, target, isParentChangeAllowed, targetGridWidth, dragged);
+
+            const isModalToCanvas = source.isModal && target.slotId === 'real-canvas';
+
+            if (isParentChangeAllowed && !isModalToCanvas) {
+              const parent = target.slotId === 'real-canvas' ? null : target.slotId;
+              // Special case for Modal; If source widget is modal, prevent drops to canvas
+              handleDragEnd([{ id: e.target.id, x: left, y: top, parent }]);
+            } else {
+              const sourcegridWidth = useGridStore.getState().subContainerWidths[source.slotId] || gridWidth;
+
+              left = dragged.left * sourcegridWidth;
+              top = dragged.top;
+
+              !isModalToCanvas ??
+                toast.error(`${draggedWidgetType} is not compatible as a child component of ${target.widgetType}`);
             }
 
-            let draggedOverParent = boxList.find((box) => box.id === e.target.id)?.parent;
-            // If dragged Inside modal slots, parent id's would be like
-            // 'xxxxx-header' or 'xxxxx-footer'. So we need to get the actual parent id,
-            // which is the first 36 characters of the parent id.
-            const isOnHeaderOrFooter = draggedOverParent
-              ? draggedOverParent.includes('-header') || draggedOverParent.includes('-footer')
-              : false;
-            // Resolved draggedOverId; if dragged within `xxxx-header` or `xxxxxx` the
-            // draggedOverId would come as `xxxxxx`
-            let draggedOverElemId = isOnHeaderOrFooter ? draggedOverParent.slice(0, 36) : draggedOverParent;
+            // Apply transform for smooth transition
+            e.target.style.transform = `translate(${left}px, ${top}px)`;
 
-            let draggedOverElemIdType;
-            const parentComponent = boxList.find((box) => box.id === draggedOverElemId);
-            let draggedOverElem;
-
-            const isParentNewModal = parentComponent?.component?.component === 'ModalV2';
-            const isParentLegacyModal = parentComponent?.component?.component === 'Modal';
-            const isDraggingInModalSlots = isParentNewModal && isOnHeaderOrFooter;
-            const isParentModal = isParentNewModal || isParentLegacyModal || isDraggingInModalSlots;
-
-            if (document.elementFromPoint(e.clientX, e.clientY) && !isParentModal) {
-              const targetElems = document.elementsFromPoint(e.clientX, e.clientY);
-              draggedOverElem = targetElems.find((ele) => {
-                const isOwnChild = e.target.contains(ele); // if the hovered element is a child of actual draged element its not considered
-                if (isOwnChild) return false;
-
-                let isDroppable = ele.id !== e.target.id && ele.classList.contains('drag-container-parent');
-                if (isDroppable) {
-                  let widgetId = ele?.getAttribute('component-id') || ele.id;
-                  let widgetType = boxList.find(({ id }) => id === widgetId)?.component?.component;
-                  if (!widgetType) {
-                    widgetId = widgetId.split('-').slice(0, -1).join('-');
-                    widgetType = boxList.find(({ id }) => id === widgetId)?.component?.component;
-                  }
-                  if (
-                    ![
-                      'Calendar',
-                      'Kanban',
-                      'Form',
-                      'Tabs',
-                      'Modal',
-                      'ModalV2',
-                      'Listview',
-                      'Container',
-                      'Table',
-                    ].includes(widgetType)
-                  ) {
-                    isDroppable = false;
-                  }
-                }
-                return isDroppable;
-              });
-              draggedOverElemId = draggedOverElem?.getAttribute('component-id') || draggedOverElem?.id;
-              draggedOverElemIdType = draggedOverElem?.getAttribute('data-parent-type');
-            }
-
-            const _gridWidth = useGridStore.getState().subContainerWidths[draggedOverElemId] || gridWidth;
-            const currentParentId = boxList.find(({ id: widgetId }) => e.target.id === widgetId)?.component?.parent;
-            let left = e.lastEvent?.translate[0];
-            let top = e.lastEvent?.translate[1];
-            if (
-              ['Listview', 'Kanban', 'Container', 'ModalV2'].includes(
-                boxList.find((box) => box.id === draggedOverElemId)?.component?.component
-              )
-            ) {
-              const elemContainer = e.target.closest('.real-canvas');
-              const containerHeight = elemContainer.clientHeight;
-              const maxY = containerHeight - e.target.clientHeight;
-              top = top > maxY ? maxY : top;
-            }
-
-            const currentWidget = boxList.find(({ id }) => id === e.target.id)?.component?.component;
-            const parentId = draggedOverElemId?.length > 36 ? draggedOverElemId.slice(0, 36) : draggedOverElemId;
-            draggedOverElemIdType = getComponentTypeFromId(parentId);
-            const parentWidget = getParentWidgetFromId(draggedOverElemIdType, parentId);
-            const restrictedWidgets = restrictedWidgetsObj?.[parentWidget] || [];
-            // Restrict parent change if done between modal slots to main body
-            const isParentChangeAllowed = !restrictedWidgets.includes(currentWidget) && !isDraggingInModalSlots;
-
-            // Restrict parent change if done between modal slots to main body
-            const isValidParentChange = isOnHeaderOrFooter
-              ? draggedOverParent !== currentParentId
-              : draggedOverElemId !== currentParentId;
-
-            if (isValidParentChange) {
-              if (isParentChangeAllowed) {
-                const draggedOverWidget = boxList.find((box) => box.id === draggedOverElemId);
-
-                let parentWidgetType = boxList.find((box) => box.id === draggedOverElemId)?.component?.component;
-                // @TODO - When dropping back to container from canvas, the boxList doesn't have canvas header,
-                // boxList will return null. But we need to tell getMouseDistanceFromParentDiv parentWidgetType is container
-                // As container id is like 'canvas-2375e23765e-123234'
-                const isOnHeaderOrFooter = draggedOverParent
-                  ? draggedOverParent.includes('-header') || draggedOverParent.includes('-footer')
-                  : false;
-                if (parentId && !parentWidgetType && isOnHeaderOrFooter) {
-                  parentWidgetType = 'Container';
-                }
-
-                let { left: _left, top: _top } = getMouseDistanceFromParentDiv(
-                  e,
-                  draggedOverWidget?.component?.component === 'Kanban' ? draggedOverElem : draggedOverElemId,
-                  parentWidgetType
-                );
-                left = _left;
-                top = _top;
-              } else {
-                const currBox = boxList.find((l) => l.id === e.target.id);
-                left = currBox.left * gridWidth;
-                top = currBox.top;
-                toast.error(`${currentWidget} is not compatible as a child component of ${parentWidget}`);
-                e.target.style.transform = `translate(${left}px, ${top}px)`;
-              }
-            }
-
-            e.target.style.transform = `translate(${Math.round(left / _gridWidth) * _gridWidth}px, ${
-              Math.round(top / 10) * 10
-            }px)`;
-
-            if (
-              draggedOverElemId === currentParentId ||
-              draggedOverParent === currentParentId ||
-              isParentChangeAllowed
-            ) {
-              // If moving within modals, prevent it from going beyond the boundary
-              const computedX =
-                isDraggingInModalSlots || isParentNewModal
-                  ? Math.min(Math.max(0, left), _gridWidth * 43)
-                  : Math.round(left / _gridWidth) * _gridWidth;
-              handleDragEnd([
-                {
-                  id: e.target.id,
-                  x: computedX,
-                  y: Math.round(top / 10) * 10,
-                  parent: isParentChangeAllowed ? draggedOverParent : currentParentId,
-                },
-              ]);
-            }
-            const box = boxList.find((box) => box.id === e.target.id);
-            //
-            setTimeout(() => setSelectedComponents([box.id]));
+            // Select the dragged component after drop
+            setTimeout(() => setSelectedComponents([dragged.id]));
           } catch (error) {
-            console.log('draggedOverElemId->error', error);
+            console.error('Error in onDragEnd:', error);
           }
+
+          // Hide all sub-canvases after dragging
+          document.querySelectorAll('.sub-canvas').forEach((element) => {
+            element.classList.remove('show-grid');
+            element.classList.add('hide-grid');
+          });
+          document.getElementById('real-canvas')?.classList.remove('show-grid');
+          setCanvasBounds({ ...CANVAS_BOUNDS });
+          toggleCanvasUpdater();
+
           // Hide all sub-canvases
           var canvasElms = document.getElementsByClassName('sub-canvas');
           var elementsArray = Array.from(canvasElms);
@@ -853,14 +757,19 @@ export default function Grid({ gridWidth, currentLayout }) {
           const isParentModal = isParentNewModal || isParentLegacyModal || isParentModalSlot;
 
           if (isParentModal) {
-            const elemContainer = e.target.closest('.real-canvas');
-            const containerHeight = elemContainer.clientHeight;
-            const containerWidth = elemContainer.clientWidth;
-            const maxY = containerHeight - e.target.clientHeight;
-            const maxLeft = containerWidth - e.target.clientWidth;
+            const modalContainer = e.target.closest('.tj-modal-widget-content');
+            const mainCanvas = document.getElementById('real-canvas');
 
-            top = top < 0 ? 0 : top > maxY ? maxY : top;
-            left = left < 0 ? 0 : left > maxLeft ? maxLeft : left;
+            const mainRect = mainCanvas.getBoundingClientRect();
+            const modalRect = modalContainer.getBoundingClientRect();
+            const relativePosition = {
+              top: modalRect.top - mainRect.top,
+              right: mainRect.right - modalRect.right + modalContainer.offsetWidth,
+              bottom: modalRect.height + (modalRect.top - mainRect.top),
+              left: modalRect.left - mainRect.left,
+            };
+
+            setCanvasBounds({ ...relativePosition });
           }
 
           e.target.style.transform = `translate(${left}px, ${top}px)`;
@@ -983,7 +892,7 @@ export default function Grid({ gridWidth, currentLayout }) {
         snappable={true}
         snapThreshold={10}
         isDisplaySnapDigit={false}
-        bounds={CANVAS_BOUNDS}
+        bounds={canvasBounds}
         displayAroundControls={true}
         controlPadding={20}
       />
