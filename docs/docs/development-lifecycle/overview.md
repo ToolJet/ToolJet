@@ -10,19 +10,25 @@ A development life cycle (also known as the software development life cycle or S
 ## Development Life Cycle in ToolJet
 
 ToolJet enables teams to manage application changes and deployments effectively through its Environment and Version Management system. Key aspects of managing the development life cycle in ToolJet include:
-
+<!-- 
 ### Version Control
     
 - Use the [**Version Control**](http://s) feature in the App Builder to track and manage changes.
         
 - Use [**GitSync**](http://s) to integrate with your Git repository and maintain application versions
-        
+         -->
 
 ### Release Management 
 
+Using ToolJet's release management, you can create multiple **[versions](#)** of your application and easily **[release](#)** the latest version with new features, fixes, and enhancements. ToolJet also enables you to **[roll back](#)** to a previous stable version if needed. Additionally, ToolJet lets you **[share your application](#)** in multiple ways.
+
+### GitSync
+
+In ToolJet, you can use **[GitSync](#)** to maintain a history and **[backup](#)** of your application. By integrating with Git repositories, you can ensure that your application remains secure, organized, and easily manageable over time.
+
 ### Environment Management
-ToolJet comes with three predefined environments: **development, staging, and production**. These environments apply to applications, data sources, and constants, ensuring controlled testing before deployment.For more details, refer to the [Environments Documentation](http://s)
+ToolJet comes with three predefined environments: **development, staging, and production**. These environments apply to applications, data sources, and constants, ensuring controlled testing before deployment.For more details, refer to the [Environments Documentation](#)
     
 
 ### Multi-Instance Environments
-You can deploy multiple ToolJet instances where each acts as a different environment. This setup isolates all resources as well as users across the instances. For more details, refer to the [Multi-Instance Environments](http://h) Documentation.
+You can deploy multiple ToolJet instances where each acts as a different environment. This setup isolates all resources as well as users across the instances. For more details, refer to the [Multi-Instance Environments](#) Documentation.
