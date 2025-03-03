@@ -24,7 +24,7 @@ import { fetchAndSetWindowTitle, pageTitles, defaultWhiteLabellingSettings } fro
 import { initEditorWalkThrough } from '@/AppBuilder/_helpers/createWalkThrough';
 import queryString from 'query-string';
 import { distinctUntilChanged } from 'rxjs';
-import { convertAllKeysToSnakeCase } from '../_stores/utils';
+import { baseTheme, convertAllKeysToSnakeCase } from '../_stores/utils';
 import { getPreviewQueryParams } from '@/_helpers/routes';
 import { useLocation, useMatch, useParams } from 'react-router-dom';
 import useThemeAccess from './useThemeAccess';
@@ -300,10 +300,14 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
         creationMode: appData.creation_mode,
       });
       setIsEditorFreezed(appData.should_freeze_editor);
-      setGlobalSettings(
-        mapKeys(appData.editing_version?.global_settings || appData.global_settings, (value, key) => camelCase(key))
+      const global_settings = mapKeys(
+        appData.editing_version?.global_settings || appData.global_settings,
+        (value, key) => camelCase(key)
       );
-
+      if (!global_settings?.theme) {
+        global_settings.theme = baseTheme;
+      }
+      setGlobalSettings(global_settings);
       setPages(pages, moduleId);
       setPageSettings(
         computePageSettings(deepCamelCase(appData?.editing_version?.page_settings ?? appData?.page_settings))
@@ -437,7 +441,7 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
     const brandColors = selectedTheme?.definition?.brand?.colors || {};
     Object.keys(brandColors).forEach((colorType) => {
       const color = brandColors[colorType][darkMode ? 'dark' : 'light'];
-      root.style.setProperty(`--${colorType}-brand`, color);
+      root.style.setProperty(`--${colorType}-brand`, `${color}`);
     });
   }, [darkMode, selectedTheme, themeAccess]);
 

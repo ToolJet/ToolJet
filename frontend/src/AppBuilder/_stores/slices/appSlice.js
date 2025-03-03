@@ -6,13 +6,15 @@ import DependencyGraph from './DependencyClass';
 import { getWorkspaceId } from '@/_helpers/utils';
 import { navigate } from '@/AppBuilder/_utils/misc';
 import queryString from 'query-string';
-import { replaceEntityReferencesWithIds } from '../utils';
+import { replaceEntityReferencesWithIds, baseTheme } from '../utils';
 
 const initialState = {
   app: {},
   canvasHeight: null,
   isSaving: false,
-  globalSettings: {},
+  globalSettings: {
+    theme: baseTheme,
+  },
   pageSwitchInProgress: false,
   isTJDarkMode: localStorage.getItem('darkMode') === 'true',
   isViewer: false,

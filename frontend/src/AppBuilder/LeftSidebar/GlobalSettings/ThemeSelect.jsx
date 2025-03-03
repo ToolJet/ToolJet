@@ -27,7 +27,7 @@ const ThemeSelect = ({ darkMode }) => {
       value: theme.id,
       name: theme.name,
       label: theme.name,
-      color: theme?.definition?.brand?.colors?.primary?.[darkMode ? 'dark' : 'light'],
+      color: theme?.definition?.brand?.colors?.primary,
       isDefault: theme?.isDefault,
       theme: theme,
     }));
@@ -57,11 +57,17 @@ const ThemeSelect = ({ darkMode }) => {
       width: '150px',
       height: 'auto',
       padding: '0px',
+      color: darkMode ? '#fff' : '#000',
+    }),
+    singleValue: (provided) => ({
+      ...provided,
+      color: darkMode ? '#fff' : '#000', // Set selected value color based on darkMode
     }),
     valueContainer: (provided, _state) => ({
       ...provided,
       fontSize: '12px',
       height: '100%',
+      color: darkMode ? '#fff' : '#000',
     }),
     menu: (provided) => ({
       ...provided,
@@ -110,16 +116,14 @@ const ThemeSelect = ({ darkMode }) => {
           }}
         >
           {isSelected && (
-            <CheckMark
-              width="20px"
-              fill="transparent"
-              fillIcon={'var(--primary-brand)'}
-              className="datepicker-select-check"
-            />
+            <CheckMark width="20px" fill="transparent" fillIcon={'#3e63dd'} className="datepicker-select-check" />
           )}
           <div
             className="color-icon"
-            style={{ backgroundColor: data?.color, marginLeft: isSelected ? '0px' : '22px' }}
+            style={{
+              backgroundColor: data?.color?.[darkMode ? 'dark' : 'light'],
+              marginLeft: isSelected ? '0px' : '22px',
+            }}
           />
           <span style={{ fontSize: '12px', marginLeft: '2px', color: darkMode ? '#fff' : '#000' }}>{data.label}</span>
           {data?.isDefault && (
@@ -130,6 +134,7 @@ const ThemeSelect = ({ darkMode }) => {
                 display: 'inline-flex', // Enables flexbox on the span
                 alignItems: 'center', // Vertically centers the text
                 justifyContent: 'center',
+                color: darkMode ? '#fff' : '#000',
               }}
               className="theme-default-pill"
             >
@@ -141,11 +146,30 @@ const ThemeSelect = ({ darkMode }) => {
     );
   };
 
+  const CustomValueContainer = ({ children, ...props }) => {
+    return (
+      <components.ValueContainer {...props}>
+        <div className="d-flex align-items-center">
+          <div
+            className="color-icon"
+            style={{
+              backgroundColor: selectedTheme?.definition?.brand?.colors?.primary?.[darkMode ? 'dark' : 'light'],
+              marginRight: '5px',
+            }}
+          />
+          {children}
+        </div>
+      </components.ValueContainer>
+    );
+  };
+
   const CustomMenuList = (props) => {
     return (
       <components.MenuList {...props}>
         <div style={{ marginTop: '14px', marginBottom: '8px' }}>
-          <span className="theme-custom-menu-list-header">On your workspace</span>
+          <span className="theme-custom-menu-list-header" style={{ color: darkMode ? '#fff' : '#000' }}>
+            On your workspace
+          </span>
         </div>
         {props.children}
         <div
@@ -167,7 +191,7 @@ const ThemeSelect = ({ darkMode }) => {
             iconWidth="16"
             className="tj-text-xsm theme-create-btn"
           >
-            Create a new theme
+            <span style={{ color: darkMode ? '#fff' : '#000' }}>Create a new theme</span>
           </ButtonSolid>
         </div>
       </components.MenuList>
@@ -191,7 +215,7 @@ const ThemeSelect = ({ darkMode }) => {
         useMenuPortal={true}
         styles={customSelectStyles}
         useCustomStyles={true}
-        components={{ Option: CustomOption, MenuList: CustomMenuList }}
+        components={{ Option: CustomOption, MenuList: CustomMenuList, ValueContainer: CustomValueContainer }}
       />
     </div>
   );
