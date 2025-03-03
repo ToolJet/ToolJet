@@ -7,6 +7,7 @@ import AppExport from './AppExport';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import AppModeToggle from './AppModeToggle';
+import ThemeSelect from './ThemeSelect';
 
 const GlobalSettings = ({ darkMode }) => {
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
@@ -25,6 +26,7 @@ const GlobalSettings = ({ darkMode }) => {
             <div className="tj-text-xsm color-slate12 ">
               <CanvasSettings darkMode={darkMode} />
               <AppModeToggle darkMode={darkMode} />
+              <ThemeSelect darkMode={darkMode} />
               <AppExport darkMode={darkMode} />
             </div>
           </div>

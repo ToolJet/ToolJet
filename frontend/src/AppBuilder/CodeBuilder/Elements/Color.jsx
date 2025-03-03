@@ -15,6 +15,9 @@ export const Color = ({
   outerWidth = '142px',
   component,
   styleDefinition,
+  componentType = 'color',
+  CustomOptionList = () => {},
+  SwatchesToggle = () => {},
 }) => {
   value = component == 'Button' ? computeColor(styleDefinition, value, meta) : value;
   const [showPicker, setShowPicker] = useState(false);
@@ -68,9 +71,11 @@ export const Color = ({
   const ColorPicker = () => {
     return (
       <>
-        {showPicker && (
+        {SwatchesToggle()}
+        {showPicker && componentType === 'swatches' && CustomOptionList()}
+        {showPicker && componentType === 'color' && (
           <div>
-            <div style={coverStyles} onClick={() => setShowPicker(false)} />
+            {/* <div style={coverStyles} onClick={() => setShowPicker(false)} /> */}
             <div style={pickerStyle}>
               <SketchPicker
                 onFocus={() => setShowPicker(true)}
