@@ -204,7 +204,7 @@ When Server-side pagination is enabled, you'll be able to set three other Table 
 Check this how-to guide to learn more about **[server-side pagination](/docs/how-to/use-server-side-pagination)**.
 :::
 
-## Addional actions
+## Additional actions
 
 ### Show add new row button
 

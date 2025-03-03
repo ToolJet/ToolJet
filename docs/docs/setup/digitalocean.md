@@ -7,8 +7,6 @@ title: DigitalOcean
 
 Now you can quickly deploy ToolJet using the Deploy to DigitalOcean button.
 
-If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.
-
 ### Redis setup
 
 :::info
@@ -37,7 +35,7 @@ Follow the steps below to configure Redis database:
 
 ## Deploying
 
-#### Follow the steps below to deploy ToolJet on DigitalOcean:
+#### Follow the Steps Below to Deploy ToolJet on DigitalOcean:
 
 1. Click on the button below to start one click deployment
 
@@ -89,28 +87,31 @@ ToolJet server and client can be deployed as standalone applications. If you do 
 
 ## Deploying ToolJet Database
 
-If you intend to use this feature, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database.
-You can learn more about this feature [here](/docs/tooljet-database).
+To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database.
+You can learn more about this feature [here](/docs/tooljet-db/tooljet-database).
+
+Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration might break, checkout the following docs to know more about new major version, including breaking changes that require you to adjust your applications accordingly:
+- [Self Hosted](./upgrade-to-v3.md)
 
 Follow the steps below to deploy ToolJet Database on DigitalOcean:
 
-1. If you are using dev database within ToolJet deployment, upgrade it to managed database. You could also add a separate database, if you intent use a different database, please refer the [environment variables](/docs/setup/env-vars#enable-tooljet-database--optional-) for additional env variables. 
+1. If you are using dev database within ToolJet deployment, upgrade it to managed database. You could also add a separate database, if you intent use a different database, please refer the [environment variables](/docs/setup/env-vars#enable-tooljet-database-required) for additional env variables. 
 
 2. Create a new app for PostgREST server. You can opt for docker hub to deploy PostgREST image of version `10.1.x`.
 
   <img className="screenshot-full" src="/img/setup/digitalocean/postgrest-build.png" alt="ToolJet - Deploy on DigitalOcean - PostgREST resource" />
 
-3. Update the [environment variables](/docs/setup/env-vars#postgrest-server-optional) for PostgREST and expose the HTTP port `3000`.
+3. Update the [environment variables](/docs/setup/env-vars#postgrest-server-required) for PostgREST and expose the HTTP port `3000`.
 
   <img className="screenshot-full" src="/img/setup/digitalocean/postgrest-env.png" alt="ToolJet - Deploy on DigitalOcean - PostgREST environment variables" />
 
 4. Add your newly created PostgREST app to the trusted sources of your managed or separate database.
 
-5. Update your existing ToolJet application deployment with [environment variables](/docs/setup/env-vars#enable-tooljet-database--optional-) required for PostgREST. 
+5. Update your existing ToolJet application deployment with [environment variables](/docs/setup/env-vars#enable-tooljet-database-required) required for PostgREST. 
 
 ## Upgrading to the Latest LTS Version
 
-New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:EE-LTS-latest`.
+New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
 
 If this is a new installation of the application, you may start directly with the latest version. This guide is not required for new installations.
 
@@ -120,4 +121,4 @@ If this is a new installation of the application, you may start directly with th
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
-For specific issues or questions, refer to our **[Slack](https://tooljet.slack.com/join/shared_invite/zt-25438diev-mJ6LIZpJevG0LXCEcL0NhQ#)**.
+If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.

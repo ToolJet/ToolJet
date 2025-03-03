@@ -3,19 +3,20 @@ id: versions
 title: ToolJet Documentation Versions
 ---
 
-**Current LTS Version (Stable)**
+## Current LTS Versions (Stable)
 
-| Version     | Documentation                             |
-|-------------|-------------------------------------------|
-| 2.50.0-LTS  | [Documentation](https://docs.tooljet.com/docs/) |
+| Version    | Documentation                                   |
+|------------|-------------------------------------------------|
+| 3.0.0-LTS  | [Documentation](https://docs.tooljet.com/docs/) |
+| 2.50.0-LTS | [Documentation](https://docs.tooljet.com/docs/2.50.0-LTS/)  |
 
-**Beta Version (Pre-Release)**
+## Beta Version (Pre-Release)
 
 | Version     | Documentation                             | 
 |-------------|-------------------------------------------|
-| 2.68.0-Beta 🚧   | [Documentation](https://docs.tooljet.com/docs/2.68.0) |
+| 3.1.0-Beta 🚧   | [Documentation](https://docs.tooljet.com/docs/beta/) |
 
-**Past Versions (Not Maintained Anymore)**
+## Past Versions (Not Maintained Anymore)
 
 | Version     | Documentation                             |
 |-------------|-------------------------------------------|

@@ -92,10 +92,10 @@ ToolJet offers support for parameterized SQL queries, which enhance security by 
 4. The values can be static values or dynamic values using the `{{ }}` notation.
 
 <div style={{textAlign: 'center'}}>
-<img className="screenshot-full" src="/img/datasource-reference/mysql/parameterized-query.png" alt="mysql"/>
+<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/mysql/parameterized-query.png" alt="mysql"/>
 </div>
 
-**Example:**
+##### Example:
 ```yaml
 Query: SELECT * FROM users WHERE username = :username
 SQL Parameters:
@@ -103,6 +103,9 @@ SQL Parameters:
   Value: oliver // or {{ components.username.value }}
 ```
 
+#### Query Timeout
+
+You can set the timeout duration for SQL queries by adding the `PLUGINS_SQL_DB_STATEMENT_TIMEOUT` variable to the environment configuration file. By default, it is set to 120,000 ms.
 
 ### GUI Mode
 

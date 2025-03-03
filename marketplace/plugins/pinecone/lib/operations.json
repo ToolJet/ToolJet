@@ -5,6 +5,14 @@
   "type": "database",
   "defaults": {},
   "properties": {
+    "index": {
+      "label": "Index",
+      "key": "index",
+      "type": "text",
+      "description": "Enter the index name (e.g., example-index)",
+      "placeholder": "example-index",
+      "height": "36px"
+    },
     "operation": {
       "label": "Operation",
       "key": "operation",

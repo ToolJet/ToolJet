@@ -63,7 +63,7 @@ Checkout **[this](/docs/how-to/loading-image-pdf-from-db)** guide to learn how t
 
 | Actions | Description | How To Access |
 |:--------|:-----------|:------------|
-| <div style={{ width:"100px"}}> clearFiles() </div> | You can clear the selected files on the filepicker component via a component-specific action within any event handler. | Employ a RunJS query to execute component-specific actions such as `await components.filepicker1.clearFiles()`. |
+| <div style={{ width:"100px"}}> clearFiles() </div> | Clears the selected files from the file picker component. | Employ a RunJS query (for e.g., `await components.filepicker1.clearFiles()`) or trigger it using an event. |
 
 </div>
 
@@ -73,7 +73,7 @@ Checkout **[this](/docs/how-to/loading-image-pdf-from-db)** guide to learn how t
 
 | <div style={{ width:"100px"}}> Variables </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{ width:"200px"}}> How To Access </div> |
 |:----------- |:----------- |:-------- |
-| file | This variable holds the array of objects where each object represents the file loaded on the file picker component. Each object has the following keys: **name**, **type**, **content**, **dataURL**, **base64Data**, **parsedData**, **filePath**. | The values can be accesed using `{{components.filepicker1.file[0].base64Data}}`. |
+| file | Holds an array of file objects loaded in the file picker, each with properties: **name**, **type**, **content**, **dataURL**, **base64Data**, **parsedData**, **filePath**. | Accessible dynamically with JS (for e.g., `{{components.filepicker1.file[0].base64Data}}`). |
 
 </div>
 
@@ -106,12 +106,12 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 <div style={{paddingTop:'24px'}}>
 
-## Layout
+## Devices
 
-| <div style={{ width:"100px"}}> Layout </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
+| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
 |:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
-| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on **fx** to set the value `{{true}}` or `{{false}}`. |
-| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on **fx** to set the value `{{true}}` or `{{false}}`. |
+| Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Show on mobile  | Makes the component visible in mobile view.  | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 </div>
 

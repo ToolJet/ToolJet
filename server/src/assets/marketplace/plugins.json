@@ -21,8 +21,12 @@
     "version": "1.0.0",
     "id": "openai",
     "author": "Tooljet",
+<<<<<<< HEAD
     "timestamp": "Mon, 10 Apr 2023 06:33:21 GMT",
     "tags": ["AI"]
+=======
+    "timestamp": "Mon, 10 Apr 2023 06:33:21 GMT"
+>>>>>>> apyhub-plugin
   },
   {
     "name": "AWS Textract",
@@ -50,8 +54,13 @@
     "timestamp": "Wed, 17 Jan 2024 20:05:16 GMT"
   },
   {
+<<<<<<< HEAD
     "name": "AWS Lambda",
     "description": "Plugin for AWS Lambda",
+=======
+    "name": "aws-lambda",
+    "description": "Plugin for aws-lambda",
+>>>>>>> apyhub-plugin
     "version": "1.0.0",
     "id": "aws-lambda",
     "author": "Tooljet",
@@ -119,16 +128,22 @@
     "version": "1.0.0",
     "id": "portkey",
     "author": "Portkey",
-    "timestamp": "Sat, 29 Jun 2024 09:40:13 GMT",
-    "tags": ["AI"]
+    "timestamp": "Sat, 29 Jun 2024 09:40:13 GMT"
   },
   {
-    "name": "Pinecone",
-    "description": "Plugin for Pinecone Vector DB",
+    "name": "pinecone",
+    "description": "api plugin from pinecone",
     "version": "1.0.0",
     "id": "pinecone",
     "author": "Tooljet",
-    "timestamp": "Mon, 28 Oct 2024 08:08:28 GMT",
-    "tags": ["AI"]
+    "timestamp": "Mon, 28 Oct 2024 08:08:28 GMT"
+  },
+  {
+    "name": "ApyHub",
+    "description": "Plugin for ApyHub APIs",
+    "version": "1.0.0",
+    "id": "apyhub",
+    "author": "Tooljet",
+    "timestamp": "Mon, 23 Dec 2024 09:47:57 GMT"
   }
 ]

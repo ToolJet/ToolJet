@@ -35,3 +35,28 @@
       }
     }
 }
+
+@mixin scrollable($max-height: 50vh) {
+  display: block;
+  max-height: $max-height;
+  overflow-y: scroll;
+  scrollbar-width: thin;
+  scrollbar-color: #888 #f1f1f1;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #888;
+    border-radius: 4px;
+    &:hover {
+      background-color: #555;
+    }
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+}
