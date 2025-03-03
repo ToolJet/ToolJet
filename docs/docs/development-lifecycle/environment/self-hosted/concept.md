@@ -1,6 +1,6 @@
 ---
 id: concept
-title: Environment - Concept
+title: Environment 
 ---
 
 

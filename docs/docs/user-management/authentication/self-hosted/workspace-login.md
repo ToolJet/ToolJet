@@ -26,15 +26,16 @@ To configure the workspace-level authentication configuration
         
     *   You can also configure the Google or Github as your default SSOs. To set Google as default SSO use the following environment variable.
 
-    *   | Variable | Description | 
-        | --------- |:-----:|
-        | SSO_GOOGLE_OAUTH2_CLIENT_ID | Google OAuth client id |
+            | Variable | Description | 
+            | --------- |:-----:|
+            | SSO_GOOGLE_OAUTH2_CLIENT_ID | Google OAuth client id |
     *    To set GitHub as the default SSO use the following environment variables:
-    *   | Variable | Description | 
-        | --------- |:-----:|
-        | SSO_GIT_OAUTH2_CLIENT_ID | GitHub OAuth client ID |
-        | SSO_GIT_OAUTH2_CLIENT_SECRET | GitHub OAuth client secret |
-        | SSO_GIT_OAUTH2_HOST | GitHub OAuth host name if GitHub is self-hosted |
+
+            | Variable | Description | 
+            | --------- |:-----:|
+            | SSO_GIT_OAUTH2_CLIENT_ID | GitHub OAuth client ID |
+            | SSO_GIT_OAUTH2_CLIENT_SECRET | GitHub OAuth client secret |
+            | SSO_GIT_OAUTH2_HOST | GitHub OAuth host name if GitHub is self-hosted |
 
     
 ###  Allowed Domains
@@ -60,10 +61,10 @@ To configure the workspace-level authentication configuration
 
     * User password authentication will be disabled after a predefined number of failed login attempts to enhance security. By default, users are allowed **5 retries**, but this can be adjusted using the `PASSWORD_RETRY_LIMIT` environment variable. To disable this feature, set `DISABLE_PASSWORD_RETRY_LIMIT` to `true`.
 
-*   | Variable | Description | Default Value |
-    | --------- |-------------|---------------|
-    | `DISABLE_PASSWORD_RETRY_LIMIT` | Set to `true` to disable the password retry limit feature. | `false` |
-    | `PASSWORD_RETRY_LIMIT` | Specifies the maximum number of allowed retries before disabling authentication. | `5` |
+        | Variable | Description | Default Value |
+        | --------- |-------------|---------------|
+        | `DISABLE_PASSWORD_RETRY_LIMIT` | Set to `true` to disable the password retry limit feature. | `false` |
+        | `PASSWORD_RETRY_LIMIT` | Specifies the maximum number of allowed retries before disabling authentication. | `5` |
 
         
 ###  Automatic SSO Login

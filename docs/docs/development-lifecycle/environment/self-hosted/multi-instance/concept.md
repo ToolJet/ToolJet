@@ -1,6 +1,6 @@
 ---
 id: concept
-title: Multi-instance - Concept
+title: Multi-instance as Enviroment
 ---
 
 
