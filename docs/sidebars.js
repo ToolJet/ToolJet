@@ -371,6 +371,10 @@ const sidebars = {
     {
       'type': 'category',
       'label': 'Setup ToolJet',
+      'link': {
+        'type': 'doc',
+        'id': 'tj-setup/overview',
+      },
       'items': [
         'tj-setup/overview',
         'tj-setup/tj-deployment',
@@ -395,6 +399,10 @@ const sidebars = {
         {
           'type': 'category',
           'label': 'Setup SMTP Server',
+          'link': {
+            'type': 'doc',
+            'id': 'tj-setup/smtp-setup/configuration',
+          },
           'items': [
             'tj-setup/smtp-setup/configuration',
             'tj-setup/smtp-setup/email-providers'
@@ -405,11 +413,19 @@ const sidebars = {
     {
       'type': 'category',
       'label': 'User Management and Access Control',
+      'link': {
+        'type': 'doc',
+        'id': 'user-management/overview',
+      },
       'items': [
         'user-management/overview',
         {
           'type': 'category',
           'label': 'Onboarding and Offboarding Users',
+          'link': {
+            'type': 'doc',
+            'id': 'user-management/onboard-users/overview',
+          },
           'items': [
             'user-management/onboard-users/overview',
             'user-management/onboard-users/invite-user',
@@ -448,6 +464,10 @@ const sidebars = {
         {
           'type': 'category',
           'label': 'Single Sign-On (SSO)',
+          'link': {
+            'type': 'doc',
+            'id': 'user-management/sso/overview',
+          },
           'items': [
             'user-management/sso/overview',
             'user-management/sso/github',
@@ -455,6 +475,10 @@ const sidebars = {
             {
               'type': 'category',
               'label': 'OpenID Connect',
+              'link': {
+                'type': 'doc',
+                'id': 'user-management/sso/oidc/setup',
+              },
               'items': [
                 'user-management/sso/oidc/setup',
                 'user-management/sso/oidc/azuread',
@@ -466,6 +490,10 @@ const sidebars = {
             {
               'type': 'category',
               'label': 'SAML',
+              'link': {
+                'type': 'doc',
+                'id': 'user-management/sso/saml/setup',
+              },
               'items': [
                 'user-management/sso/saml/setup',
                 'user-management/sso/saml/okta'
@@ -494,6 +522,10 @@ const sidebars = {
     {
       'type': 'category',
       'label': 'Development Lifecycle',
+      'link': {
+        'type': 'doc',
+        'id': 'development-lifecycle/overview',
+      },
       'items': [
         'development-lifecycle/overview',
         {
@@ -508,6 +540,10 @@ const sidebars = {
         {
           'type': 'category',
           'label': 'GitSync',
+          'link': {
+            'type': 'doc',
+            'id': 'development-lifecycle/gitsync/overview',
+          },
           'items': [
             'development-lifecycle/gitsync/overview',
             'development-lifecycle/gitsync/gitsync-config',
