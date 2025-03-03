@@ -6110,11 +6110,22 @@ fieldset:disabled .btn {
     vertical-align: text-bottom;
     border: 2px solid currentColor;
     border-right-color: transparent;
-    border-radius: 50%;
+    border-radius: 50%; 
     -webkit-animation: .75s linear infinite spinner-border;
     animation: .75s linear infinite spinner-border
 }
 
+.spinner-border-filepicker {
+    display: inline-block;
+    width: 1.5rem;
+    height: 1.5rem;
+    vertical-align: text-bottom;
+    border: 2px solid var(--primary-brand);
+    border-right-color: transparent;
+    border-radius: 50%; 
+    -webkit-animation: .75s linear infinite spinner-border;
+    animation: .75s linear infinite spinner-border
+}
 .spinner-light {
     color: var(--indigo9) !important;
 }

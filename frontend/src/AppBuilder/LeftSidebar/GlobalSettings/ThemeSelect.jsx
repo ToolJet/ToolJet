@@ -1,16 +1,56 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Select from '@/_ui/Select';
 import CheckMark from '@/_ui/Icon/bulkIcons/CheckMark';
 import { components } from 'react-select';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import useStore from '@/AppBuilder/_stores/store';
+import { shallow } from 'zustand/shallow';
+import { useNavigate } from 'react-router-dom';
+import { getWorkspaceId } from '@/_helpers/utils';
+import { appThemesService } from '../../../../ee/modules/WorkspaceSettings/pages/ManageThemes/service/app_themes.service';
 
 const ThemeSelect = ({ darkMode }) => {
+  const [themesList, setThemesList] = useState([]);
+  const selectedTheme = useStore((state) => state.globalSettings.theme, shallow);
+  const featureAccess = useStore((state) => state?.license?.featureAccess, shallow);
+  const licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
+  const globalSettingsChanged = useStore((state) => state.globalSettingsChanged, shallow);
+  const workspaceId = getWorkspaceId();
+  const appId = useStore((state) => state.app.appId, shallow);
+  const versionId = useStore((state) => state.currentVersionId, shallow);
+  const navigate = useNavigate();
+
+  const fetchAllThemes = async () => {
+    const themes = await appThemesService.fetchAllThemes();
+
+    const options = themes.map((theme) => ({
+      value: theme.id,
+      name: theme.name,
+      label: theme.name,
+      color: theme?.definition?.brand?.colors?.primary?.[darkMode ? 'dark' : 'light'],
+      isDefault: theme?.isDefault,
+      theme: theme,
+    }));
+
+    setThemesList(options);
+  };
+
+  const setTheme = async (themeId) => {
+    await appThemesService.updateAppTheme(appId, versionId, themeId);
+  };
+
+  useEffect(() => {
+    fetchAllThemes();
+  }, []);
+
   const customSelectStyles = {
     control: (provided) => ({
       ...provided,
       width: '158px',
       height: '32px',
       minHeight: '32px',
+      flexWrap: 'nowrap',
+      overflow: 'hidden',
     }),
     input: (provided) => ({
       ...provided,
@@ -37,6 +77,10 @@ const ThemeSelect = ({ darkMode }) => {
       scrollbarWidth: 'none', // Hide scrollbar for Firefox
       borderRadius: '8px',
     }),
+    menuPortal: (base) => ({
+      ...base,
+      top: base.top + 2, // Adjust the top position
+    }),
     option: (provided, state) => ({
       ...provided,
       backgroundColor: state.isFocused
@@ -54,22 +98,44 @@ const ThemeSelect = ({ darkMode }) => {
 
   const CustomOption = (props) => {
     const { data, isSelected } = props;
-
     return (
       <components.Option {...props}>
         <div
           style={{
             display: 'flex',
-            alignItems: 'center', // Ensures vertical alignment
-            gap: '10px', // Space between icon and text
+            alignItems: 'center',
+            justifyContent: 'flex-start',
+            gap: '2px',
             height: '30px',
           }}
         >
           {isSelected && (
-            <CheckMark fill="transparent" fillIcon={'var(--primary-brand)'} className="datepicker-select-check" />
+            <CheckMark
+              width="20px"
+              fill="transparent"
+              fillIcon={'var(--primary-brand)'}
+              className="datepicker-select-check"
+            />
           )}
-          <div className="color-icon" />
-          <span style={{ fontSize: '12px', marginLeft: '5px', color: darkMode ? '#fff' : '#000' }}>{data.label}</span>
+          <div
+            className="color-icon"
+            style={{ backgroundColor: data?.color, marginLeft: isSelected ? '0px' : '22px' }}
+          />
+          <span style={{ fontSize: '12px', marginLeft: '2px', color: darkMode ? '#fff' : '#000' }}>{data.label}</span>
+          {data?.isDefault && (
+            <span
+              style={{
+                marginLeft: 'auto',
+                marginRight: '10px',
+                display: 'inline-flex', // Enables flexbox on the span
+                alignItems: 'center', // Vertically centers the text
+                justifyContent: 'center',
+              }}
+              className="theme-default-pill"
+            >
+              Default
+            </span>
+          )}
         </div>
       </components.Option>
     );
@@ -92,10 +158,12 @@ const ThemeSelect = ({ darkMode }) => {
           }}
         >
           <ButtonSolid
-            onClick={() => {}}
+            onClick={() => {
+              navigate(`/${workspaceId}/workspace-settings/themes`);
+            }}
             variant="tertiary"
             leftIcon="addrectangle"
-            fill="var(--primary-brand)"
+            fill="#3e63dd"
             iconWidth="16"
             className="tj-text-xsm theme-create-btn"
           >
@@ -112,13 +180,14 @@ const ThemeSelect = ({ darkMode }) => {
         <p className="tj-text-xsm color-slate12 w-full m-auto">Theme</p>
       </div>
       <Select
-        options={[
-          { name: 'Authorization code', value: 'authorization_code' },
-          { name: 'Client credentials', value: 'client_credentials' },
-        ]}
-        value={'authorization_code'}
-        onChange={(value) => {}}
+        options={themesList}
+        value={selectedTheme?.id}
+        onChange={(themeId) => {
+          setTheme(themeId);
+          globalSettingsChanged({ theme: themesList.find((theme) => theme.value === themeId)?.theme });
+        }}
         width={'100%'}
+        isDisabled={!licenseValid || !featureAccess?.customThemes}
         useMenuPortal={true}
         styles={customSelectStyles}
         useCustomStyles={true}

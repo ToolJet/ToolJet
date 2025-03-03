@@ -1655,7 +1655,7 @@ button {
 .pagination {
   .page-item.active {
     a.page-link {
-      background-color: $primary-light;
+      background-color: var(--primary-brand);
     }
   }
 }
@@ -2475,32 +2475,32 @@ body {
 .CalendarDay__selected,
 .CalendarDay__selected:active,
 .CalendarDay__selected:hover {
-  background: $primary;
-  border: 1px double $primary;
+  background: var(--primary-brand);
+  border: 1px double var(--primary-brand);
 }
 
 .CalendarDay__selected_span {
-  background: $primary;
-  border: $primary;
+  background: var(--primary-brand);
+  border: var(--primary-brand);
 }
 
 .CalendarDay__selected_span:active,
 .CalendarDay__selected_span:hover {
-  background: $primary;
-  border: 1px double $primary;
+  background: var(--primary-brand);
+  border: 1px double var(--primary-brand);
   color: #ffffff;
 }
 
 .CalendarDay__hovered_span:active,
 .CalendarDay__hovered_span:hover {
-  background: $primary;
-  border: 1px double $primary;
+  background: var(--primary-brand);
+  border: 1px double var(--primary-brand);
   color: #ffffff;
 }
 
 .CalendarDay__hovered_span {
-  background: #83b8e7;
-  border: 1px double #83b8e7;
+  background: var(--primary-brand);
+  border: 1px double var(--primary-brand);
   color: #ffffff;
 }
 
@@ -3858,7 +3858,7 @@ input[type="text"] {
   }
 
   .react-datepicker__day--selected {
-    background-color: $primary-light;
+    background-color: var(--primary-brand);
   }
 }
 
@@ -4111,6 +4111,8 @@ input[type="text"] {
     .rbc-event-label {
       display: none;
     }
+    background-color: var(--primary-brand) !important;
+    border: transparent
   }
 
   .rbc-off-range-bg {
@@ -4400,6 +4402,14 @@ input[type="text"] {
   .dynamic-variable-preview {
     padding: 4px !important;
   }
+}
+
+.color-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1.5px solid #CCD1D5;
+  background-color: #0091FF;
 }
 
 .portal-header {
@@ -18625,4 +18635,48 @@ section.ai-message-prompt-input-wrapper {
   height:32px;
   color:#000;
   border: 1px solid var(--Border-brand-weak, #97AEFC);
+}
+
+
+.theme-default-pill {
+  font-size: 11px;
+  background-color: #CCD1D54D;
+  color: #6A727C;
+  width: 49px;
+  height: 18px;
+  border-radius: 20px
+}
+
+.no-scroll {
+  overflow: hidden;
+}
+
+
+.textarea-widget:focus {
+  border-color: var(--primary-brand);
+}
+
+.multiselct-widget-option{
+  input:checked {
+    background-color: var(--primary-brand);
+  }
+}
+
+.multiselect-box {
+  .options{
+    input:checked {
+      background-color: var(--primary-brand);
+    }
+  }
+}
+
+.timer-btn {
+  background-color: var(--primary-brand);
+  &:hover {
+    background-color: var(--primary-brand);
+  }
+}
+
+.timer-btn-hover:hover {
+  background-color: var(--primary-brand);
 }

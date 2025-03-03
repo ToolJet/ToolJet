@@ -27,6 +27,7 @@ import { distinctUntilChanged } from 'rxjs';
 import { convertAllKeysToSnakeCase } from '../_stores/utils';
 import { getPreviewQueryParams } from '@/_helpers/routes';
 import { useLocation, useMatch, useParams } from 'react-router-dom';
+import useThemeAccess from './useThemeAccess';
 
 /**
  * this is to normalize the query transformation options to match the expected schema. Takes care of corrupted data.
@@ -101,12 +102,14 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
   const selectedEnvironment = useStore((state) => state.selectedEnvironment);
   const setIsEditorFreezed = useStore((state) => state.setIsEditorFreezed);
   const appMode = useStore((state) => state.globalSettings.appMode);
+  const selectedTheme = useStore((state) => state.globalSettings.theme);
   const previousEnvironmentId = usePrevious(selectedEnvironment?.id);
   const isComponentLayoutReady = useStore((state) => state.isComponentLayoutReady, shallow);
   const pageSwitchInProgress = useStore((state) => state.pageSwitchInProgress);
   const setPageSwitchInProgress = useStore((state) => state.setPageSwitchInProgress);
   const selectedVersion = useStore((state) => state.selectedVersion);
   const setIsPublicAccess = useStore((state) => state.setIsPublicAccess);
+  const themeAccess = useThemeAccess();
 
   const setConversation = useStore((state) => state.ai?.setConversation);
   const setDocsConversation = useStore((state) => state.ai?.setDocsConversation);
@@ -427,6 +430,16 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
   useEffect(() => {
     fetchAndSetWindowTitle({ page: pageTitles.EDITOR, appName: app.appName });
   }, [app.appName]);
+
+  useEffect(() => {
+    if (!themeAccess) return;
+    const root = document.documentElement;
+    const brandColors = selectedTheme?.definition?.brand?.colors || {};
+    Object.keys(brandColors).forEach((colorType) => {
+      const color = brandColors[colorType][darkMode ? 'dark' : 'light'];
+      root.style.setProperty(`--${colorType}-brand`, color);
+    });
+  }, [darkMode, selectedTheme, themeAccess]);
 
   useEffect(() => {
     const exposedTheme =
