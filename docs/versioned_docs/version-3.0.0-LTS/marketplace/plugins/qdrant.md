@@ -26,6 +26,13 @@ Use this operation to retrieve metadata and configuration details about a specif
 <img className="screenshot-full" src="/img/marketplace/plugins/qdrant/get-collection-info.png" alt="Get Collection Info" />
 
 <details>
+<summary>**Example Value**</summary>
+```yaml
+    "Collection Name":"user_logs"
+```
+</details>
+
+<details>
 <summary>**Example Response**</summary>
 ```yaml
 {
@@ -88,6 +95,14 @@ Use this operation to retrieve specific data points from a collection using thei
 <img className="screenshot-full" src="/img/marketplace/plugins/qdrant/get-points.png" alt="Get Points" />
 
 <details>
+<summary>**Example Value**</summary>
+```yaml
+    "Collection Name":"user_logs"
+    "IDs":[1]
+```
+</details>
+
+<details>
 <summary>**Example Response**</summary>
 
 ```yaml
@@ -119,6 +134,22 @@ Use this operation to remove specific data points from a collection using their 
 
 <img className="screenshot-full" src="/img/marketplace/plugins/qdrant/delete-points.png" alt="Delete Points" />
 
+<details>
+<summary>**Example Value**</summary>
+```yaml
+    "Collection Name":"user_logs"
+    "IDs":[0]
+    "Filter": // {"must":[{"key":"color","match":{"value":"red"}}]}
+```
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+```yaml
+    completed
+```
+</details>
+
 ### Query Points
 
 Use this operation to search data points in a collection using a query, typically based on vector similarity or filtering conditions.
@@ -136,6 +167,23 @@ Use this operation to search data points in a collection using a query, typicall
 - **Filter:** Defines conditions to narrow down the search.
 
 <img className="screenshot-full" src="/img/marketplace/plugins/qdrant/query-points.png" alt="Query Points" />
+
+<details>
+<summary>**Example Value**</summary>
+```yaml
+    "Collection Name":"user_logs"
+    "Limit":1
+    "Filter": // {"must":[{"key":"color","match":{"value":"red"}}]}
+    "With Vectors": "true (false by default)"
+    "Include Metadata": "true (false by default)"
+    "Query": "[
+        "0.021397589",
+        "-0.10142871",
+        "0.022269623"
+        "..."
+    ]"
+```
+</details>
 
 <details>
 <summary>**Example Response**</summary>
@@ -167,3 +215,19 @@ Use this operation to add new data points or update existing ones in a collectio
 - **Points:** The actual data being added or updated. Each point contains a unique identifier and optional attributes.
 
 <img className="screenshot-full" src="/img/marketplace/plugins/qdrant/upsert-points.png" alt="Upsert Points" />
+
+<details>
+<summary>**Example Value**</summary>
+```yaml
+    "Collection Name":"user_logs"
+    "Points": "
+       [{"id":0, "payload":{"name":"..."}}]"
+```
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+```
+    conpleted
+```
+</details>
