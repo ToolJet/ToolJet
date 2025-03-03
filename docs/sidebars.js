@@ -572,6 +572,7 @@ const sidebars = {
         'security/audit-logs'
       ]
     },
+    'tutorial/tooljet-api',
     {
       'type': 'category',
       'label': 'Workflows',
