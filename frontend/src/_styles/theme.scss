@@ -12092,6 +12092,12 @@ tbody {
     letter-spacing: -0.02em;
   }
 }
+.sidebar-list-wrap.sidebar-list-wrap-with-banner.isAdmin {
+  height: calc(100vh - 371px);
+  &.resource-limit-reached {
+    height: calc(100vh - 371px);
+  }
+}
 
 .drawer-footer-btn-wrap,
 .variable-form-footer {
