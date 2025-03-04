@@ -79,7 +79,6 @@ export const ButtonGroup = function Button({
     } else {
       if (Array.isArray(selected)) {
         const filteredItems = selected.filter((item) => values.includes(item));
-        console.log('filterdItems', filteredItems);
         if (filteredItems?.length >= 1) {
           setDefaultActive([filteredItems[0]]);
           setExposedVariable('selected', String(filteredItems[0]));
@@ -93,7 +92,7 @@ export const ButtonGroup = function Button({
 
   useEffect(() => {
     setExposedVariable('setSelected', setSelected);
-  }, [multiSelection]);
+  }, [multiSelection, values]);
 
   const buttonClick = (index) => {
     if (defaultActive?.includes(values[index]) && multiSelection) {
