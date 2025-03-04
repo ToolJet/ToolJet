@@ -18615,8 +18615,6 @@ section.ai-message-prompt-input-wrapper {
 }
 
 
-
-
 .theme-dropdown-wrapper {
   gap: 75px;
   height: 32px;
@@ -18679,4 +18677,39 @@ section.ai-message-prompt-input-wrapper {
 
 .timer-btn-hover:hover {
   background-color: var(--primary-brand);
+}
+
+.canvas-styles-header {
+  display: flex;
+  width: 100%;
+  padding: 6px 16px;
+  font-family: IBM Plex Sans;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 20px;
+  text-align: left;
+  text-underline-position: from-font;
+  text-decoration-skip-ink: none;
+  background: var(--Background-surface-layer-02, #F6F8FA);
+  color: #6A727C;
+
+
+}
+
+.app-export-btn {
+  background-color: #FFFFFF;
+  border: 1px solid var(--Border-default, #CCD1D5);
+  box-shadow: 0px 1px 0px 0px var(--Dropshadow000);
+}
+
+.dark-theme {
+  .app-export-btn {
+    background-color: #313b46;
+    color: #ffffff;
+    border: 1px solid transparent;
+  }
+  .canvas-styles-header {
+    background-color: #212325;
+    color: #ffffff;
+  }
 }
