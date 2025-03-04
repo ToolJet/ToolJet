@@ -7,11 +7,11 @@ In a self-hosted deployment of ToolJet, you can configure a custom domain by set
 
 ## Prerequisites
 
-- A running self-hosted instance of ToolJet
+- A running self-hosted instance of ToolJet.
 
-- A registered domain name
+- A registered domain name.
 
-- A configured DNS record pointing your domain to the ToolJet server
+- A configured DNS record pointing your domain to the ToolJet server.
 
 
 ## Configuration Steps
@@ -22,20 +22,14 @@ The TOOLJET_HOST variable defines the public URL where ToolJet will be accessibl
 
 | variable     | description                                                      |
 | ------------ | ---------------------------------------------------------------- |
-| TOOLJET_HOST | the public URL of ToolJet client ( eg: https://app.corp.ai ) |
+| TOOLJET_HOST | the public URL of ToolJet client ( eg: `https://app.corp.ai`,`https://corp.ai`,`https://corp.ai/app` ) |
 
-### 2. Configure DNS
 
-Ensure that your domain name is correctly pointing to the ToolJet server by updating the DNS records:
-
-- For a domain (e.g., `your-custom-domain.com`):
-
-    - Create an A record pointing to your server's IP address.
-
-- For a subdomain (e.g., `app.your-domain.com`):
-
-    - Create a CNAME record pointing to your server's hostname.
-
-### 3. Restart Services
+### 2. Restart Services
 
 After setting the environment variable and DNS configurations, restart your ToolJet deployment to apply the changes.
+
+
+:::info
+Custom domains will soon be supported in ToolJet Cloud.
+:::

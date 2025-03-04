@@ -17,9 +17,22 @@ To configure the instance-level authentication configuration
 
 ###   SSO (Single Sign-On)
     
-    *   SSO makes it easier for organizations to manage user access. Users can use one login for different tools, and admins can quickly add or remove access when needed. Thus, it improves an organization's onboarding and offboarding experience.
+    -   SSO makes it easier for organizations to manage user access. Users can use one login for different tools, and admins can quickly add or remove access when needed. Thus, it improves an organization's onboarding and offboarding experience.
         
-    *   At the instance level you can configure SSO with Google, GitHub, and OpenID Connect. Please check the [SSO docs](/docs/user-management/sso/overview)  for a detailed guide on SSO configuration.
+    -   At the instance level you can configure SSO with Google, GitHub, and OpenID Connect. Please check the [SSO docs](/docs/user-management/sso/overview)  for a detailed guide on SSO configuration.
+
+    -   You can also configure the Google or Github with Environment Varibales. To set Google as default SSO use the following environment variable.
+
+            | Variable | Description | 
+            | --------- |:-----:|
+            | SSO_GOOGLE_OAUTH2_CLIENT_ID | Google OAuth client id |
+    -    To set GitHub as the default SSO use the following environment variables:
+
+            | Variable | Description | 
+            | --------- |:-----:|
+            | SSO_GIT_OAUTH2_CLIENT_ID | GitHub OAuth client ID |
+            | SSO_GIT_OAUTH2_CLIENT_SECRET | GitHub OAuth client secret |
+            | SSO_GIT_OAUTH2_HOST | GitHub OAuth host name if GitHub is self-hosted |
         
 
 ###   Allowed Domains
@@ -35,7 +48,7 @@ To configure the instance-level authentication configuration
         
     *   The **Enable Signup** feature lets users create accounts without being invited.
         
-    *   This feature is available only when the Personal Workspace option is enabled in the Manage Instance settings. When users sign up with this feature enabled, a new personal workspace is automatically created for them, and they are assigned as the admin of that workspace. 
+    *   This feature is available only when the Personal Workspace option is enabled in the Manage Instance settings. When users sign up with this feature enabled, a new personal workspace is automatically created for them, and they are assigned as the admin of that workspace. Refer to [Sign-Up Documentation](docs/user-management/onboard-users/self-signup-user#enable-sign-up-at-instance-level) to learn more.
         
 ###   Password Login
     

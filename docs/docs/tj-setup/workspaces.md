@@ -84,10 +84,10 @@ Admin user has access to all the permission at workspace level, while an end use
 
 |          Permission           | Admin | Builder | End User |
 |:------------------------------|:-----:|:-------:|:--------:|
-| App                           |  ✅   | Allowed |    ❌    | 
-| Data sources                  |  ✅   | Allowed |    ❌    |
-| Folder                        |  ✅   | Allowed |    ❌    |
-| Workspace constants/variables |  ✅   | Allowed |    ❌    |
+| App                           |  ✅   | Configurable |    ❌    | 
+| Data sources                  |  ✅   | Configurable |    ❌    |
+| Folder                        |  ✅   | Configurable |    ❌    |
+| Workspace constants/variables |  ✅   | Configurable |    ❌    |
 
 
 ## FAQ

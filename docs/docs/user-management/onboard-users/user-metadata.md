@@ -28,7 +28,7 @@ Role Required: **Admin** <br/>
 
 5. Click on **Update** button at the bottom.
 
-## Using User Metadata in Applications
+## Using User Metadata in App Builder
 
 User metadata can be accessed within any application in the workspace through the global variable using the following syntax:
 

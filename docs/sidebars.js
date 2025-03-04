@@ -430,8 +430,8 @@ const sidebars = {
             'user-management/onboard-users/overview',
             'user-management/onboard-users/invite-user',
             'user-management/onboard-users/bulk-invite-users',
-            'user-management/onboard-users/user-metadata',
             'user-management/onboard-users/self-signup-user',
+            'user-management/onboard-users/user-metadata',
             'user-management/onboard-users/archive-user',
           ]
         },

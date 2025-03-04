@@ -23,19 +23,6 @@ To configure the workspace-level authentication configuration
     *   SSO makes it easier for organizations to manage user access. Users can use one login for different tools, and admins can quickly add or remove access when needed. Thus, it improves an organization's onboarding and offboarding experience.
         
     *   At the workspace level, you can enable the **Instance SSO** toggle to inherit instance-level configured SSO, or you can also configure the workspace-level SSO with Google, GitHub, OpenID Connect, LDAP, and SAML. Please check the [SSO docs](http://j) for a detailed guide on SSO configuration.
-        
-    *   You can also configure the Google or Github as your default SSOs. To set Google as default SSO use the following environment variable.
-
-            | Variable | Description | 
-            | --------- |:-----:|
-            | SSO_GOOGLE_OAUTH2_CLIENT_ID | Google OAuth client id |
-    *    To set GitHub as the default SSO use the following environment variables:
-
-            | Variable | Description | 
-            | --------- |:-----:|
-            | SSO_GIT_OAUTH2_CLIENT_ID | GitHub OAuth client ID |
-            | SSO_GIT_OAUTH2_CLIENT_SECRET | GitHub OAuth client secret |
-            | SSO_GIT_OAUTH2_HOST | GitHub OAuth host name if GitHub is self-hosted |
 
     
 ###  Allowed Domains
@@ -51,7 +38,8 @@ To configure the workspace-level authentication configuration
         
     *   The **Enable Signup** feature lets users create accounts without being invited.
         
-    *   When users sign up with this feature enabled, they are assigned to the end user of that workspace. Workspace admin can later change the [role](/docs/user-management/role-based-access/user-roles) of the user once the user is on-boarded to the workspace.
+    *   When users sign up with this feature enabled, they are assigned to the end user of that workspace. Workspace admin can later change the [role](/docs/user-management/role-based-access/user-roles) of the user once the user is on-boarded to the workspace. Refer to [Sign-Up Documentation](docs/user-management/onboard-users/self-signup-user#enable-sign-up-at-workspace-level) to learn more.
+        
         
 ###   Password Login
     
