@@ -1,6 +1,6 @@
 ---
-id: concept
-title: Multi-Instance as Enviroment
+id: instance-as-environment
+title: Instance as Enviroment
 ---
 
 

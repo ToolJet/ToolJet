@@ -1,6 +1,6 @@
 ---
 id: bulk-invite-users
-title: Bulk Inviting Users
+title: Bulk Invite
 ---
 
 Admin users can bulk invite users to a workspace using a CSV file containing user email address, **[roles](#)**, **[groups](#)** and other details. The invited users receive an email with instructions to join the workspace, ensuring a seamless onboarding process.

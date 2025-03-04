@@ -43,7 +43,7 @@ const sidebars = {
     },
     {
       'type': 'category',
-      'label': 'Setup',
+      'label': 'Deployment',
       'link': {
         'type': 'doc',
         'id': 'setup/index',
@@ -390,7 +390,7 @@ const sidebars = {
         'tj-setup/workspaces',
         {
           'type': 'category',
-          'label': 'Organization Branding',
+          'label': 'Branding',
           'items': [
             'tj-setup/org-branding/white-labeling',
             'tj-setup/org-branding/custom-domain'
@@ -421,7 +421,7 @@ const sidebars = {
         'user-management/overview',
         {
           'type': 'category',
-          'label': 'Onboarding and Offboarding Users',
+          'label': 'Onboard and Offboard Users',
           'link': {
             'type': 'doc',
             'id': 'user-management/onboard-users/overview',
@@ -561,14 +561,14 @@ const sidebars = {
               'type': 'category',
               'label': 'Self-Hosted',
               'items': [
-                'development-lifecycle/environment/self-hosted/concept',
-                'development-lifecycle/environment/self-hosted/example',
+                'development-lifecycle/environment/self-hosted/multi-environment',
+                'development-lifecycle/environment/self-hosted/example-configuration',
                 {
                   'type': 'category',
                   'label': 'Multi-Instance',
                   'items': [
-                    'development-lifecycle/environment/self-hosted/multi-instance/concept',
-                    'development-lifecycle/environment/self-hosted/multi-instance/example'
+                    'development-lifecycle/environment/self-hosted/multi-instance/instance-as-environment',
+                    'development-lifecycle/environment/self-hosted/multi-instance/example-configuration'
                   ]
                 },
 
@@ -578,8 +578,8 @@ const sidebars = {
               'type': 'category',
               'label': 'Cloud',
               'items': [
-                'development-lifecycle/environment/cloud/concept',
-                'development-lifecycle/environment/cloud/example'
+                'development-lifecycle/environment/cloud/multi-environment',
+                'development-lifecycle/environment/cloud/example-configuration'
               ]
             }
           ]
@@ -606,11 +606,11 @@ const sidebars = {
           ]
         },
         'security/audit-logs',
-        'security/soc-2-compliance'
+        'security/compliance'
 
       ]
     },
-    'tutorial/tooljet-api',
+    'tooljet-api',
     {
       'type': 'category',
       'label': 'Workflows',

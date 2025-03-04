@@ -1,6 +1,6 @@
 ---
-id: example
-title: Setting Up Mutli-Instance Environment
+id: example-configuration
+title: Example Configuration
 ---
 
 

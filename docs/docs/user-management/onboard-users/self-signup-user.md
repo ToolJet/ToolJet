@@ -1,6 +1,6 @@
 ---
 id: self-signup-user
-title: Sign-Up User
+title: Sign-Up
 ---
 
 In ToolJet, the sign-up feature lets admins enable direct user registration via a sign-up URL, eliminating the need for invitations. For Self-Hosted version, the enable sign-up can be done at both instance level and workspace level. 

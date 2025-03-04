@@ -1,13 +1,11 @@
 ---
-id: soc-2-compliance
-title: SOC II compliance
+id: compliance
+title: Compliance
 ---
 
+## Uncompromised Data Security with SOC 2 Type II Compliance
 
-
-## Uncompromised Data Security with SOC 2 Compliance
-
-With SOC 2 compliance, ToolJet ensures the highest level of data security. The adherence to SOC 2 standards mirrors the rigorous data protection measures in place, covering everything from encryption to robust access controls. It also guarantees a consistent level of service availability and process integrity, instilling confidence in our customers and stakeholders about the safe handling of their sensitive information.
+With SOC 2  Type II compliance, ToolJet ensures the highest level of data security. The adherence to SOC 2  Type II standards mirrors the rigorous data protection measures in place, covering everything from encryption to robust access controls. It also guarantees a consistent level of service availability and process integrity, instilling confidence in our customers and stakeholders about the safe handling of their sensitive information.
 
 ## Data Protection
 We take extensive measures to protect your data. All data transmitted between users and our servers is encrypted using TLS to prevent unauthorized access during transit. Sensitive data stored on our servers is encrypted at rest, following industry-standard protocols. Access to this data is tightly controlled through role-based permissions, ensuring only authorized personnel can access sensitive information.
@@ -53,5 +51,5 @@ ToolJet takes privacy seriously. Our transparent privacy policies ensure custome
 - **Whitelisted IPs**: If you are using ToolJet cloud, you can whitelist our IP address (34.86.81.252) so that your datasources are not exposed to the public.
 - **Backups**: ToolJet cloud is hosted on AWS using EKS with autoscaling and regular backups.
 
-If you notice a security vulnerability, please let the team know by sending an email to `security@tooljet.com`. 
+If you notice a security vulnerability, please let the team know by sending an email to [security@tooljet.com](mailto:security@tooljet.com). 
 

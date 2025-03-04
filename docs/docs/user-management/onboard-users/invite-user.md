@@ -1,6 +1,6 @@
 ---
 id: invite-user
-title: Inviting User
+title: Invite
 ---
 
 Admin users can invite users to a workspace using their email addresses and assign them specific **[roles](#)** and **[groups](#)** to manage permissions. The invited users receive an email with instructions to join the workspace, ensuring a seamless onboarding process.

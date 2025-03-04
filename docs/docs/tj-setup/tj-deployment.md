@@ -1,6 +1,6 @@
 ---
 id: tj-deployment
-title: Choose Your ToolJet Deployment
+title: Choose Your ToolJet
 ---
 
 ToolJet offers two deployment options — **Self-Hosted** and **Cloud** — enabling users to select the model that best suits their requirements. Choosing the right deployment method is crucial as it impacts various factors such as data control, scalability, and operational efficiency. This guide explains these options and helps you decide which one best suits your specific requirements.

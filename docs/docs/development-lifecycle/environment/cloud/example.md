@@ -1,9 +1,9 @@
 ---
-id: example
-title: Setting Up Environment
+id: example-configuration
+title: Example Configuraiton
 ---
 
-This guide will walk you through setting up a multi-environment workflow in ToolJet with a practical example. Imagine **Nexora Enterprises**, a company building an internal application using ToolJet.
+This guide will walk you through setting up a multi-environment in ToolJet with a practical example. Imagine **Nexora Enterprises**, a company building an internal application using ToolJet.
 
 **Configuring Data source**
 
