@@ -7,7 +7,7 @@ import AppExport from './AppExport';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import AppModeToggle from './AppModeToggle';
-import ThemeSelect from './ThemeSelect';
+import { ThemeSelect } from '@/modules/Appbuilder/components';
 import MaintenanceMode from './MaintenanceMode';
 import HideHeaderToggle from './HideHeaderToggle';
 

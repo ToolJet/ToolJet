@@ -18,7 +18,7 @@ import { NumberInput } from '../CodeBuilder/Elements/NumberInput';
 import { Datepicker } from '../CodeBuilder/Elements/Datepicker';
 import TableRowHeightInput from '../CodeBuilder/Elements/TableRowHeightInput';
 import { TimePicker } from '../CodeBuilder/Elements/TimePicker';
-import { ColorSwatches } from '../CodeBuilder/Elements/ColorSwatches';
+import { ColorSwatches } from '@/modules/Appbuilder/components';
 
 const AllElements = {
   Color,

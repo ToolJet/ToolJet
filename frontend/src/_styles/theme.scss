@@ -4407,9 +4407,10 @@ input[type="text"] {
 .color-icon {
   width: 18px;
   height: 18px;
-  border-radius: 4px;
-  border: 1.5px solid #CCD1D5;
+  border-radius: 6px;
   background-color: #0091FF;
+  border: 1px solid var(--Border-default, #CCD1D5);
+  box-shadow: 0px 1px 0px 0px #e5e5e5;
 }
 
 .portal-header {
@@ -18717,5 +18718,11 @@ section.ai-message-prompt-input-wrapper {
 .dark-theme {
   .codebuilder-color-swatches-options:hover {
     background-color: #313b46 !important;
+  }
+}
+
+.codebuilder-color-picker {
+  .sketch-picker {
+    border: none !important;
   }
 }
