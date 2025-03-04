@@ -198,7 +198,7 @@
     .message-wrapper {
         display: flex;
         flex-direction: column;
-        margin-left: 10px;
+        margin-left: 5px;
 
         .heading {
             display: unset !important;
@@ -246,9 +246,9 @@
 
     .upgrade-btn-new{
         white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: auto;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: auto;
         margin-left: auto;
         border: 1px solid var(--border-default, #CCD1D5);
         background: var(--background-surface-layer-01);
@@ -262,7 +262,9 @@
         padding: 8px 16px 8px 16px;
 
     }
-
+    .demo-btn-bg{
+        border: 1px solid var(--border-accent-weak, #97AEFC);
+    }
     .start-trial-btn {
         min-width: 131px;
     }

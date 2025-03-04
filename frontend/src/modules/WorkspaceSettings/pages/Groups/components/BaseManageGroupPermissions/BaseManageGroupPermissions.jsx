@@ -549,10 +549,7 @@ class BaseManageGroupPermissions extends React.Component {
                     fill={'#FDFDFE'}
                     disabled={!isFeatureEnabled}
                   >
-                    {this.props.t(
-                      'header.organization.menus.manageGroups.permissions.createNewGroup',
-                      'Create new group'
-                    )}
+                    {this.props.t('header.organization.menus.manageGroups.permissions.addNewGroup', 'Add new group')}
                   </ButtonSolid>
                 </LicenseTooltip>
               )}
@@ -805,6 +802,7 @@ class BaseManageGroupPermissions extends React.Component {
                     size="xsmall"
                     type={featureAccess?.licenseStatus?.licenseType}
                     customMessage={'Custom groups & permissions are available in our paid plans.'}
+                    showCustomGroupBanner={true}
                   />
                 )}
               </div>
