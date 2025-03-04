@@ -1,5 +1,5 @@
 name: CI
-# Controls when the workflow will run
+# Controls when the workflow will runs
 on:
   push:
     branches: [develop, main]
