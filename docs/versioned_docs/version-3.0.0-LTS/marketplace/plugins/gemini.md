@@ -35,36 +35,54 @@ Use this operation to generate text based on the prompt, system instructions, an
 
 - **Temperature**: Defines the randomness of the response. It takes a value between 0 and 1, with a default of 1.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/gemini/query.png" alt="Gemini Query" />
+<img className="screenshot-full" src="/img/marketplace/plugins/gemini/query-v2.png" alt="Gemini Query" />
+
+<details>
+<summary>**Example Values**</summary>
+
+```yaml
+Model: Gemini 1.5 Flash
+System Prompt: You are an assistant specialised in technical documentation 
+Prompt: Explain how to connect ToolJet with a database 
+Max Tokens: 500
+Temperature: 0.7
+```
+
+</details>
 
 <details>
 <summary>**Response Example**</summary>
 
-Connecting ToolJet to a database involves several steps, and the specific method depends on the type of database you're using.  ToolJet primarily uses database connections through its built-in features, avoiding the need for complex configuration files or external tools.  Here's a general guide, focusing on common scenarios:
+Connecting ToolJet to a database involves several steps, depending on the database system you're using. ToolJet supports various databases through its built-in connectors. Here’s a general outline, followed by specifics for popular database types.
 
-**1. Choose Your Database and Connection Method:**
+**General Steps**
 
-ToolJet supports various database systems, including:
+**1. Create a Database**  
+Ensure you have a database instance set up and running. This might involve:
 
-* **PostgreSQL:** A powerful, open-source relational database management system.
-* **MySQL:** Another popular open-source relational database system.
-* **SQLite:** A lightweight, file-based database system, often suitable for smaller projects.
-* **MongoDB:** A NoSQL database system, ideal for handling unstructured or semi-structured data.
+- **PostgreSQL:** A powerful, open-source relational database management system.
+- **MySQL:** Another popular open-source relational database system.
+- **SQLite:** A lightweight, file-based database system, often suitable for smaller projects.
+- **MongoDB:** A NoSQL database system, ideal for handling unstructured or semi-structured data.
 
-**2. Setting Up the Database:**
+**2. Setting Up the Database:**  
+- **Ensure the database server is running and accessible.** This includes having the database software installed and configured.  
+- **Create a database:** Within the database server, you'll need to create a new database.  
+- **Create a user account with appropriate privileges:** This user account needs permissions to connect to the database and perform read/write operations.  
+  - Ensure the user has the necessary permissions for your application's needs.  
+  - For example, you will need `SELECT`, `INSERT`, `UPDATE`, and `DELETE` permissions if you're performing CRUD operations.  
+- **Determine the database credentials:** You'll need the database server's hostname/IP address, the database name, the username, and the password for the user account.  
 
-* **Ensure the database server is running and accessible.**  This includes having the database software installed and configured.
-* **Create a database:**  Within the database server, you'll need to create a new database.
-* **Create a user account with appropriate privileges:** This user account needs permissions to connect to the database and perform read/write operations.  Crucially, ensure the user has the necessary permissions for your application's needs.  For example, you will need `SELECT`, `INSERT`, `UPDATE`, and `DELETE` permissions if you're performing CRUD operations.
-* **Determine the database credentials:** You'll need the database server's hostname/IP address, the database name, the username, and the password for the user account.
-
-**3. Connecting in ToolJet:**
-
-* **Navigate to the relevant ToolJet app/page where database interaction is needed.**
-* **Utilize ToolJet's database connectors:**  Look for sections or widgets in ToolJet that allow you to interact with databases.  This is typically integrated into the data sources, data manipulation features, or custom functions.
-* **Provide the database connection details:** Input the database server details (hostname/IP, port, database name, username, password).  ToolJet will validate the connection.
-* **Choose the database type:** Select the correct database type (e.g., PostgreSQL, MySQL, SQLite, MongoDB).
-* **Test the connection:** ToolJet will attempt to connect to the database. Verify the success of the connection.  If successful, you should be able to query the database within ToolJet's
+**3. Connecting in ToolJet:**  
+- **Navigate to the relevant ToolJet app/page where database interaction is needed.**  
+- **Utilize ToolJet's database connectors:** Look for sections or widgets in ToolJet that allow you to interact with databases.  
+  - This is typically integrated into the data sources, data manipulation features, or custom functions.  
+- **Provide the database connection details:** Input the database server details (hostname/IP, port, database name, username, password).  
+  - ToolJet will validate the connection.  
+- **Choose the database type:** Select the correct database type (e.g., PostgreSQL, MySQL, SQLite, MongoDB).  
+- **Test the connection:** ToolJet will attempt to connect to the database.  
+  - Verify the success of the connection.  
+  - If successful, you should be able to query the database within ToolJet.  
 
 </details>
 
@@ -92,7 +110,20 @@ Use this operation for a chat-like conversation, where the model responds based 
 
 - **Temperature**: Defines the randomness of the response. It takes a value between 0 and 1, with a default of 1.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/gemini/chat-query.png" alt="Gemini Query" />
+<img className="screenshot-full" src="/img/marketplace/plugins/gemini/chat-query-v2.png" alt="Gemini Query" />
+
+<details>
+<summary>**Example Values**</summary>
+
+```yaml
+Model: Gemini 1.5 Flash
+System Prompt: You are an assistant that helps with technical documentation.
+User Prompt: How do I integrate an API in ToolJet?
+Max Tokens: 200
+Temperature: 0.6
+```
+
+</details>
 
 <details>
 <summary>**Response Example**</summary>
@@ -107,9 +138,3 @@ Integrating an API into ToolJet involves several steps, depending on the API's s
 * **Response Format:**  Determine the format of the API's response (usually JSON or XML).  ToolJet primarily works with JSON.
 
 </details>
-
-
-
-
-
-
