@@ -346,9 +346,9 @@ button {
 }
 
 .accordion-item-trigger {
-  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="13" height="12" viewBox="0 0 13 12" fill="none"><path d="M8.83684 3L4.4484 3C3.86955 3 3.5089 3.62791 3.80056 4.1279L5.99478 7.88943C6.28419 8.38556 7.00104 8.38556 7.29045 7.88943L9.48467 4.1279C9.77634 3.62791 9.41568 3 8.83684 3Z" fill="%2311181C"/></svg>') !important;
-  height: 16px !important;
-  width: 16px !important;
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="13" height="12" viewBox="0 0 13 12" fill="none"><path d="M8.83684 3L4.4484 3C3.86955 3 3.5089 3.62791 3.80056 4.1279L5.99478 7.88943C6.28419 8.38556 7.00104 8.38556 7.29045 7.88943L9.48467 4.1279C9.77634 3.62791 9.41568 3 8.83684 3Z" fill="%23ACB2B9"/></svg>') !important;
+  height: 12px !important;
+  width: 12px !important;
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -18725,4 +18725,34 @@ section.ai-message-prompt-input-wrapper {
   .sketch-picker {
     border: none !important;
   }
+}
+
+.accordion-button.inspector {
+  width: 300;
+  height: 32px;
+  justify-content: space-between;
+  padding-top: 6px;
+  padding-right: 16px;
+  padding-bottom: 6px;
+  padding-left: 16px;
+  border-bottom-width: 1px;
+  font-family: IBM Plex Sans;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 20px;
+  letter-spacing: 0%;
+  background: var(--Background-surface-layer-02, #F6F8FA);
+  color: var(--Text-placeholder, #6A727C) !important;
+
+}
+
+.dark-theme {
+  .accordion-button.inspector {
+    background: var(--slate3);
+    color: var(--slate12);
+  }
+}
+
+#inspector-tabpane-properties .accordion-header {
+  height:32px;
 }
