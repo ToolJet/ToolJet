@@ -148,7 +148,7 @@ Secrets cannot be used within the App Builder or workflows.
 
 </div>
 
-## Mapping Workspace Contstants from Environment Variables
+## Mapping Workspace Constants from Environment Variables
 
 From version **`v3.5`**, you can use environment variables to set global and secret constants. Workspace constants set using environment variables will have a `.env` tag in front of them. If there are two constants with the same name, the one set through the environment variable will be used in the app builder, while the constant set through the UI will have a `duplicate` tag in front of it.
 
@@ -160,30 +160,30 @@ Users cannot edit or delete constants created from environment variables through
 
 **Setting Individual Global Constant**
 
-Syntax - `TOOLJET_GLOBAL_CONSTANTS.<environment>.constant_name`
+Syntax - `TOOLJET_GLOBAL_CONSTANTS__<environment>__constant_name`
 
-Example - TOOLJET_GLOBAL_CONSTANTS.development.companyName = "Corp Pvt. Ltd."
+Example - TOOLJET_GLOBAL_CONSTANTS__development__companyName = "Corp Pvt. Ltd."
 
 **Setting Multiple Global Constants**
 
-Syntax - `TOOLJET_GLOBAL_CONSTANTS.<environment> = {“name1”: “value1", “name2”: “value2"}`
+Syntax - `TOOLJET_GLOBAL_CONSTANTS__<environment> = {“name1”: “value1", “name2”: “value2"}`
 
-Example - TOOLJET_GLOBAL_CONSTANTS.development = `{"company1": "corp.com", "company2": "example.com"}`
+Example - TOOLJET_GLOBAL_CONSTANTS__development = `{"company1": "corp.com", "company2": "example.com"}`
 
 
 ### Setting Secret Constants
 
 **Setting Individual Global Constant**
 
-Syntax - `TOOLJET_SECRET_CONSTANTS.<environment>.constant_name`
+Syntax - `TOOLJET_SECRET_CONSTANTS__<environment>__constant_name`
 
-Example - TOOLJET_SECRET_CONSTANTS.development.apiKey = "agdagdagdg"
+Example - TOOLJET_SECRET_CONSTANTS__development__apiKey = "agdagdagdg"
 
 **Setting Multiple Global Constants**
 
-Syntax - `TOOLJET_SECRET_CONSTANTS.<environment> = {“name1”: “value1", “name2”: “value2"}`
+Syntax - `TOOLJET_SECRET_CONSTANTS__<environment> = {“name1”: “value1", “name2”: “value2"}`
 
-Example - TOOLJET_SECRET_CONSTANTS.development = `{"api_url": "https://api.example.com", "password" : "12345", "key" : "agdagdagdg"}`
+Example - TOOLJET_SECRET_CONSTANTS__development = `{"api_url": "https://api.example.com", "password" : "12345", "key" : "agdagdagdg"}`
 
 <div style={{paddingBottom:'24px'}}>
 
