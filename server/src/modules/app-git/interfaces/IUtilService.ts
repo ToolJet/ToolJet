@@ -23,10 +23,10 @@ export interface IAppGitUtilService {
   renameAppOrVersion(
     user: User,
     appId: string,
-    prevName?: string,
-    renameVersionFlag?: boolean,
-    branchName?: string,
-    remoteName?: string
+    prevName: string,
+    updatedName: string,
+    renameVersionFlag: boolean,
+    remoteName: string
   ): Promise<any>;
 
   UpdateGitApp(schemaUnifiedAppParam: any, app: App, user: User): Promise<any>;

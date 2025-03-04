@@ -24,7 +24,8 @@ import {
 } from '@modules/group-permissions/types/granular_permissions';
 import { AppModule } from '@modules/app/module';
 import { LicenseInitService } from '@modules/licensing/interfaces/IService';
-import { EDITIONS } from '@modules/app/constants';
+import { TOOLJET_EDITIONS } from '@modules/app/constants';
+import { getTooljetEdition } from '@helpers/utils.helper';
 
 export class CreateDefaultGroupInExistingWorkspace1720352990850 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -33,9 +34,7 @@ export class CreateDefaultGroupInExistingWorkspace1720352990850 implements Migra
 
     const licenseService = nestApp.get<LicenseInitService>(LicenseInitService);
     const licenseValid =
-      !process.env.EDITION || process.env.EDITION === EDITIONS.CE
-        ? true
-        : await licenseService.initForMigration(manager);
+      getTooljetEdition() === TOOLJET_EDITIONS.CE ? true : await licenseService.initForMigration(manager);
 
     const organizationIds = (
       await manager.find(Organization, {

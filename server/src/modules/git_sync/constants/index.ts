@@ -7,3 +7,9 @@ export enum FEATURE_KEY {
   GIT_SYNC_CHANGE_STATUS = 'git_sync_change_status', // Corresponds to changeStatus (PUT 'git-sync/status/:id')
   GIT_SYNC_DELETE_ORG_GIT = 'git_sync_delete_org_git', // Corresponds to deleteConfig (DELETE 'git-sync/:id')
 }
+
+export enum GitErrorMessages {
+  BRANCH_NOT_FOUND = 'Specified branch from env variable is \n missing in Github repository',
+  BRANCH_NAME_MISMATCH = 'Could not push commit to the repository. Please ensure your default branch name is master and try again.',
+  GENERIC_CLONE_ERROR = 'Issue while cloning',
+}

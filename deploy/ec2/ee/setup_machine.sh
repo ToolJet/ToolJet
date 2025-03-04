@@ -11,6 +11,8 @@ nvm install 18.18.2
 sudo ln -s "$(which node)" /usr/bin/node
 sudo ln -s "$(which npm)" /usr/bin/npm
 
+sudo npm i -g npm@9.8.1
+
 # Setup openresty
 wget -O - https://openresty.org/package/pubkey.gpg | sudo apt-key add -
 echo "deb http://openresty.org/package/ubuntu bionic main" > openresty.list
@@ -56,19 +58,35 @@ envsubst "${VARS_TO_SUBSTITUTE}" < /tmp/nginx.conf > /tmp/nginx-substituted.conf
 sudo cp /tmp/nginx-substituted.conf /usr/local/openresty/nginx/conf/nginx.conf
 
 # Download and setup postgrest binary
-curl -OL https://github.com/PostgREST/postgrest/releases/download/v10.1.1/postgrest-v10.1.1-linux-static-x64.tar.xz
-tar xJf postgrest-v10.1.1-linux-static-x64.tar.xz
+curl -OL https://github.com/PostgREST/postgrest/releases/download/v12.0.2/postgrest-v12.0.2-linux-static-x64.tar.xz
+tar xJf postgrest-v12.0.2-linux-static-x64.tar.xz
 sudo mv ./postgrest /bin/postgrest
-sudo rm postgrest-v10.1.1-linux-static-x64.tar.xz
+sudo rm postgrest-v12.0.2-linux-static-x64.tar.xz
 
-# Setup app and postgrest as systemd service
+# Add the Redis APT repository
+sudo add-apt-repository ppa:redislabs/redis -y
+
+# Install redis
+sudo apt-get update
+sudo apt-get install redis-server -y
+
+# Setup app, postgrest and redis as systemd service
 sudo cp /tmp/nest.service /lib/systemd/system/nest.service
 sudo cp /tmp/postgrest.service /lib/systemd/system/postgrest.service
+sudo cp /tmp/redis-server.service /lib/systemd/system/redis-server.service
+
+# Start and enable Redis service
+sudo systemctl daemon-reload
 
 # Setup app directory
 mkdir -p ~/app
-git clone -b main https://github.com/ToolJet/ToolJet.git ~/app && cd ~/app
 
+git config --global url."https://x-access-token:CUSTOM_GITHUB_TOKEN@github.com/".insteadOf "https://github.com/"
+
+#The below url will be edited dynamically when actions is triggered
+git clone -b main https://github.com/ToolJet/ToolJet.git ~/app && cd ~/app
+git submodule update --init --recursive
+git submodule foreach 'git checkout main || true'
 
 mv /tmp/.env ~/app/.env
 mv /tmp/setup_app ~/app/setup_app
@@ -78,4 +96,4 @@ npm install -g npm@9.8.1
 
 # Building ToolJet app
 npm install -g @nestjs/cli
-npm run build
+TOOLJET_EDTION=ee npm run build

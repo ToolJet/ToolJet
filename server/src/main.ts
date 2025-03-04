@@ -22,10 +22,12 @@ import * as express from 'express';
 import * as fs from 'fs';
 import { LicenseInitService } from '@modules/licensing/interfaces/IService';
 import { AppModule } from '@modules/app/module';
-import { EDITIONS, getImportPath } from '@modules/app/constants';
+import { TOOLJET_EDITIONS, getImportPath } from '@modules/app/constants';
 import { GuardValidator } from '@modules/app/validators/feature-guard.validator';
 import { ILicenseUtilService } from '@modules/licensing/interfaces/IUtilService';
 import { ITemporalService } from '@modules/workflows/interfaces/ITemporalService';
+import { getTooljetEdition } from '@helpers/utils.helper';
+import { validateEdition } from '@helpers/edition.helper';
 
 let appContext: INestApplicationContext = undefined;
 
@@ -37,7 +39,7 @@ async function handleLicensingInit(app: NestExpressApplication) {
   const licenseUtilService = app.get<ILicenseUtilService>(LicenseUtilService);
   await licenseInitService.init();
 
-  if (process.env.EDITION !== EDITIONS.EE) {
+  if (getTooljetEdition() !== TOOLJET_EDITIONS.EE) {
     return;
   }
   const LicenseModule = await import(`${importPath}/licensing/configs/License`);
@@ -147,7 +149,10 @@ async function bootstrap() {
     abortOnError: false,
   });
 
-  globalThis.TOOLJET_VERSION = `${fs.readFileSync('./.version', 'utf8').trim()}-${process.env.EDITION || EDITIONS.CE}`;
+  // Get DataSource from the app
+  await validateEdition(app);
+
+  globalThis.TOOLJET_VERSION = `${fs.readFileSync('./.version', 'utf8').trim()}-${getTooljetEdition()}`;
   process.env['RELEASE_VERSION'] = globalThis.TOOLJET_VERSION;
 
   process.on('SIGINT', async () => {
@@ -253,7 +258,7 @@ async function bootstrapWorker() {
 export function getAppContext(): INestApplicationContext {
   return appContext;
 }
-if (process.env.EDITION === EDITIONS.EE) {
+if (getTooljetEdition() === TOOLJET_EDITIONS.EE) {
   process.env.WORKER ? bootstrapWorker() : bootstrap();
 } else {
   bootstrap();

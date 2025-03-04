@@ -1,7 +1,7 @@
 FROM node:18.18.2-buster AS builder
 
 # Fix for JS heap limit allocation issue
-ENV NODE_OPTIONS="--max-old-space-size=9096"
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 RUN npm i -g npm@9.8.1
 RUN mkdir -p /app
@@ -38,7 +38,7 @@ COPY ./plugins/ ./plugins/
 RUN NODE_ENV=production npm --prefix plugins run build
 RUN npm --prefix plugins prune --production
 
-ENV EDITION=ee
+ENV TOOLJET_EDITION=ee
 
 # Build frontend
 COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
@@ -48,7 +48,7 @@ RUN npm --prefix frontend run build --production
 RUN npm --prefix frontend prune --production
 
 ENV NODE_ENV=production
-ENV EDITION=ee
+ENV TOOLJET_EDITION=ee
 
 # Build server
 COPY ./server/package.json ./server/package-lock.json ./server/
@@ -74,7 +74,7 @@ RUN curl -O https://nodejs.org/dist/v18.18.2/node-v18.18.2-linux-x64.tar.xz \
 ENV PATH=/usr/local/lib/nodejs/bin:$PATH
 
 ENV NODE_ENV=production
-ENV EDITION=ee
+ENV TOOLJET_EDITION=ee
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN apt-get update && \
     apt-get install -y postgresql-client freetds-dev libaio1 wget && \

@@ -11,7 +11,7 @@ const versionPath = path.resolve(__dirname, '.version');
 const version = fs.readFileSync(versionPath, 'utf-8').trim();
 
 const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
-const edition = process.env.EDITION;
+const edition = process.env.TOOLJET_EDITION;
 
 // Create path to empty module
 const emptyModulePath = path.resolve(__dirname, 'src/modules/emptyModule');
@@ -45,11 +45,11 @@ const plugins = [
   new webpack.DefinePlugin({
     'process.env.ASSET_PATH': JSON.stringify(ASSET_PATH),
     'process.env.SERVE_CLIENT': JSON.stringify(process.env.SERVE_CLIENT),
-    'process.env.EDITION': JSON.stringify(edition || 'ce'),
+    'process.env.TOOLJET_EDITION': JSON.stringify(edition || 'ce'),
   }),
   // Module replacement for restricted imports
   new webpack.NormalModuleReplacementPlugin(/^(@ee\/|@cloud\/)/, (resource) => {
-    const edition = process.env.EDITION || 'ce';
+    const edition = process.env.TOOLJET_EDITION || 'ce';
 
     // Only replace if the current edition shouldn't have access
     if (edition === 'ce' && resource.request.startsWith('@ee/')) {
@@ -233,7 +233,7 @@ module.exports = {
       TOOLJET_DB_BULK_UPLOAD_MAX_CSV_FILE_SIZE_MB: process.env.TOOLJET_DB_BULK_UPLOAD_MAX_CSV_FILE_SIZE_MB || 5,
       TOOLJET_MARKETPLACE_URL:
         process.env.TOOLJET_MARKETPLACE_URL || 'https://tooljet-plugins-production.s3.us-east-2.amazonaws.com',
-      EDITION: process.env.EDITION,
+      TOOLJET_EDITION: process.env.TOOLJET_EDITION,
       ENABLE_WORKFLOW_SCHEDULING: process.env.ENABLE_WORKFLOW_SCHEDULING,
     }),
   },

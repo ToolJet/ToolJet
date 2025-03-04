@@ -50,18 +50,15 @@ export class AppGitUtilService implements IAppGitUtilService {
     throw new Error('Method not implemented.');
   }
 
-  //Create a listener for this. If called from app service async
   async renameAppOrVersion(
     user: User,
     appId: string,
     prevName = '',
+    updatedName = '',
     renameVersionFlag = false,
-    branchName = 'master',
     remoteName = 'origin'
   ): Promise<any> {
     throw new Error('Method not implemented.');
-    // This one to be moved to gitsync service,
-    // Should pass appGit instead of appGit.id
   }
 
   protected async pushRepo(
