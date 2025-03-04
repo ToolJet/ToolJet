@@ -150,11 +150,11 @@ Secrets cannot be used within the App Builder or workflows.
 
 ## Mapping Workspace Constants from Environment Variables
 
-From version **`v3.5`**, you can use environment variables to set global and secret constants. Workspace constants set using environment variables will have a `.env` tag in front of them. If there are two constants with the same name, the one set through the environment variable will be used in the app builder, while the constant set through the UI will have a `duplicate` tag in front of it.
+From version **`v3.5.8-ee-lts`**, you can use environment variables to set global and secret constants. Workspace constants set using environment variables will have a `.env` tag in front of them. If there are two constants with the same name, the one set through the environment variable will be used in the app builder, while the constant set through the UI will have a `duplicate` tag in front of it.
 
 Users cannot edit or delete constants created from environment variables through the UI. To add, update, or delete any values from an environment variable, the container must be restarted.
 
-<img className="screenshot-full" src="/img/workspace-const/global-constants-queries.png" alt="Use Global Constants Inside Queries in Query Manager"/>
+<img className="screenshot-full" src="/img/workspace-const/const-mapping.png" alt="Mapping Workspace Constants from Environment Variables"/>
 
 ### Setting Global Constants
 
