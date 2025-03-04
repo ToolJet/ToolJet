@@ -83,6 +83,11 @@ If you've decided to move forward with Pro or customized Enterprise plan, please
 
 ## FAQs
 
-#### Q. What Happens if My Subscription Expires?
+<details>
+    <summary>
+     **Q. What happens if my subscription expires?**
+    </summary>
 
 If your paid or trial subscription expires, your instance will revert to operating as a basic plan. Upon expiration, access to premium features like OpenID SSO login and Audit logs will be restricted, ensuring no data loss occurs. However, don't worry! You can still renew to any of the paid plans and enjoy the premium features again.
+
+</details>

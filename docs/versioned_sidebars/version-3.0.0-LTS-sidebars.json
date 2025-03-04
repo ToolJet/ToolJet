@@ -32,7 +32,7 @@
     },
     {
       "type": "category",
-      "label": "Setup",
+      "label": "Deployment",
       "link": {
         "type": "doc",
         "id": "setup/index"

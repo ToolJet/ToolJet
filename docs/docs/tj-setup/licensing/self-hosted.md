@@ -72,9 +72,14 @@ Role Required: **Super Admin**
 
 ## FAQs
 
-#### Q. What Happens if My License Expires?
+<details>
+    <summary>
+     **Q. What happens if my subscription expires?**
+    </summary>
 
 If your paid or trial license key expires, your instance will revert to operating as a basic plan. Upon expiration, access to premium features like OpenID SSO login and Audit logs will be restricted, ensuring no data loss occurs. However, don't worry! You can still renew to any of the paid plans and enjoy the premium features again.
+
+</details>
 
 :::caution
 **Please keep in mind that your license key is private and strictly prohibited from being shared with any third parties.**

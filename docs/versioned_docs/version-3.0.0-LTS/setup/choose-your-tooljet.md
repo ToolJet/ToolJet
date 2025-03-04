@@ -1,6 +1,6 @@
 ---
 id: choose-your-tooljet
-title: Choose Your ToolJet
+title: Deployment Version
 ---
 
 ToolJet versions are categorized into three main types: **Long-Term Support (LTS)**,  **Pre-Release**, and **Past versions**. Understanding these categories helps users choose the most suitable version for their needs.
