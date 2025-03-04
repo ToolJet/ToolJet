@@ -9,6 +9,7 @@ title: ToolJet API
 ToolJet API allows you to interact with the ToolJet platform programmatically. You can use the APIs to manage users and their workspaces relations. The API endpoints are secured with an access token. You can perform various operations using the API such as:
 
 - [Get All Users](#get-all-users)
+- [Get All App ID](#get-all-app-id)
 - [Get User by ID](#get-user-by-id)
 - [Create User](#create-user)
 - [Update User](#update-user)
@@ -128,6 +129,63 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
       }
   ]
 ```
+</details>
+
+### Get All App ID
+
+    - **Description:** Get the app ID for all the applications in the workspace.
+    - **URL:** `/api/ext/workspace/:workspace_id/apps`
+    - **Method:** GET
+    - **Authorization:** `Basic <access_token>`
+    - **Content-Type:** `application/json`
+    - **Params:**
+      - **workspace_id**: The ID of the workspace.
+    - **Response:** Array of app ID.
+
+  <details>
+  <summary>**Response Example**</summary>
+    ```json
+      [
+        {
+            "id": "ae06cc7a-2922-4fe7-9064-462741558813",
+            "name": "Applicant tracking system",
+            "slug": "ae06cc7a-2922-4fe7-9064-462741558813",
+            "versions": [
+                {
+                    "id": "37be6442-ca1b-4a5a-a6f4-f929e00a0ac1",
+                    "name": "v1"
+                },
+                {
+                    "id": "be8a96c3-f7a4-4f82-b282-23678c52c973",
+                    "name": "v3"
+                },
+                {
+                    "id": "19405d8c-be75-47ad-aa96-36f2b1728e77",
+                    "name": "v2"
+                },
+                {
+                    "id": "15bd421d-54ce-44d5-8eef-39911fc2d4cb",
+                    "name": "v4"
+                }
+            ]
+        },
+        {
+            "id": "b68f87ca-6620-4cbf-83d6-becf073d8e96",
+            "name": "Aws Tracker",
+            "slug": "b68f87ca-6620-4cbf-83d6-becf073d8e96",
+            "versions": [
+                {
+                    "id": "466a1cc4-62cf-4b46-b71d-114af61c04ca",
+                    "name": "v1"
+                },
+                {
+                    "id": "b65f1ae2-3702-4cba-91f3-3e5bddd55dbc",
+                    "name": "v2"
+                }
+            ]
+        }
+      ]
+    ```
 </details>
 
 ### Get User by ID
