@@ -320,16 +320,14 @@
     max-width: fit-content;
 
     .upgrade-link {
-        background: var(--upgrade-default);
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
+        margin-left: 2px;
+        color: var(--text-default, #1B1F24);
+        font-family: "IBM Plex Sans";
         font-size: 12px;
         font-style: normal;
-        line-height: 20px;
         font-weight: 500;
-        width: 67px;
-        height: 20px;
+        line-height: 20px;
+        /* 166.667% */
     }
 }
 
@@ -347,16 +345,13 @@
     max-width: fit-content;
 
     .upgrade-link {
-        background: linear-gradient(to right, #ff5f6d, #ffc371);
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: var(--text-default, #1B1F24);
+        font-family: "IBM Plex Sans";
         font-size: 12px;
         font-style: normal;
-        line-height: 20px;
         font-weight: 500;
-        width: 67px;
-        height: 20px;
+        line-height: 20px;
+        /* 166.667% */
     }
 }
 
@@ -374,16 +369,13 @@
     max-width: fit-content;
 
     .upgrade-link {
-        background: linear-gradient(to right, #ff5f6d, #ffc371);
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: var(--text-default, #1B1F24);
+        font-family: "IBM Plex Sans";
         font-size: 12px;
         font-style: normal;
-        line-height: 20px;
         font-weight: 500;
-        width: 67px;
-        height: 20px;
+        line-height: 20px;
+        /* 166.667% */
     }
 }
 
@@ -401,16 +393,13 @@
     max-width: fit-content;
 
     .upgrade-link {
-        background: var(--upgrade-default);
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: var(--text-default, #1B1F24);
+        font-family: "IBM Plex Sans";
         font-size: 12px;
         font-style: normal;
-        line-height: 20px;
         font-weight: 500;
-        width: 67px;
-        height: 20px;
+        line-height: 20px;
+        /* 166.667% */
     }
 }
 
