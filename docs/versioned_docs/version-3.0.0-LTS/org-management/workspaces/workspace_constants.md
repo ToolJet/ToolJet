@@ -148,7 +148,7 @@ Secrets cannot be used within the App Builder or workflows.
 
 </div>
 
-## Mapping Workspace Contstants to Environment Variables
+## Mapping Workspace Contstants from Environment Variables
 
 From version **`v3.5`**, you can use environment variables to set global and secret constants. Workspace constants set using environment variables will have a `.env` tag in front of them. If there are two constants with the same name, the one set through the environment variable will be used in the app builder, while the constant set through the UI will have a `duplicate` tag in front of it.
 
