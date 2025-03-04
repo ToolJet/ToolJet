@@ -40,7 +40,6 @@ const GlobalSettings = ({ darkMode }) => {
               <CanvasSettings darkMode={darkMode} />
               <AppModeToggle darkMode={darkMode} />
               <ThemeSelect darkMode={darkMode} />
-              <AppExport darkMode={darkMode} />
             </div>
           </div>
         </div>
