@@ -22,7 +22,7 @@ export const ColorSwatches = ({
   const selectedTheme = useStore((state) => state.globalSettings.theme, shallow);
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const brandColors = selectedTheme?.definition?.brand?.colors || {};
-
+  //Todo: Remove all hardcoded brand once all theme values are added.
   return (
     <Color
       value={value}
@@ -53,6 +53,7 @@ export const ColorSwatches = ({
               key={index}
               onChange={onChange}
               value={value}
+              darkMode={darkMode}
             />
           ))}
         </div>
@@ -83,19 +84,21 @@ const SwatchesToggle = ({ value, onChange }) => {
   );
 };
 
-const CustomOption = ({ onChange, colorType, color, value }) => {
+const CustomOption = ({ darkMode, onChange, colorType, color, value }) => {
   const isSelected = `var(--${colorType}-brand)` === value;
   return (
-    <div
-      className="codebuilder-color-swatches-options"
-      onClick={() => {
-        onChange(`var(--${colorType}-brand)`);
-      }}
-    >
-      <div className="d-flex align-items-center">
-        {isSelected && <CheckIcon size="large" fill="#4368E3" />}
-        <div className="color-icon" style={{ backgroundColor: color, marginLeft: !isSelected && '20px' }} />
-        <span style={{ marginLeft: '5px' }}>{colorType.charAt(0).toUpperCase() + colorType.slice(1)}</span>
+    <div className={cx({ 'dark-theme': darkMode })}>
+      <div
+        className="codebuilder-color-swatches-options"
+        onClick={() => {
+          onChange(`var(--${colorType}-brand)`);
+        }}
+      >
+        <div className="d-flex align-items-center">
+          {isSelected && <CheckIcon size="large" fill="#4368E3" />}
+          <div className="color-icon" style={{ backgroundColor: color, marginLeft: !isSelected && '20px' }} />
+          <span style={{ marginLeft: '5px' }}>Brand/{colorType.charAt(0).toUpperCase() + colorType.slice(1)}</span>
+        </div>
       </div>
     </div>
   );

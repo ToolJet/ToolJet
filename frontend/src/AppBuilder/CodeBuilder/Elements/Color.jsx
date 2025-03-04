@@ -113,7 +113,9 @@ export const Color = ({
         ></div>
 
         <div className="col tj-text-xsm p-0 color-slate12" data-cy={`${String(cyLabel)}-value`}>
-          {colorMap?.[value] ? colorMap?.[value]?.charAt(0).toUpperCase() + colorMap?.[value]?.slice(1) : value}
+          {colorMap?.[value]
+            ? 'Brand/' + colorMap?.[value]?.charAt(0).toUpperCase() + colorMap?.[value]?.slice(1)
+            : value}
         </div>
       </div>
     );
