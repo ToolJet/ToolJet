@@ -13,6 +13,7 @@ function Label({ label, width, labelRef, color, defaultAlignment, direction, aut
             justifyContent: direction == 'right' ? 'flex-end' : 'flex-start',
             fontSize: '12px',
             height: defaultAlignment === 'top' && '20px',
+            overflow: 'hidden',
           }}
         >
           <p
