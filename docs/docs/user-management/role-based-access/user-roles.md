@@ -17,12 +17,13 @@ ToolJet has three default user roles at the workspace level, each with different
 
 Admin user has access to all the permission at workspace level, while an end user can only view and use the released apps they are given access to and permissions can be configured for a builder.
 
-|          Permission           | Admin | Builder | End User |
-|:------------------------------|:-----:|:-------:|:--------:|
-| App                           |  ✅   | Allowed |    ❌    | 
-| Data sources                  |  ✅   | Allowed |    ❌    |
-| Folder                        |  ✅   | Allowed |    ❌    |
-| Workspace constants/variables |  ✅   | Allowed |    ❌    |
+| Resource  | Permission | Admin | Builder | End User |
+|:----------|:-----------|:-----------:|:---:|:---:|
+| **Apps**  | Create/Update/Delete     | ✅ | Configurable | ❌ |
+|           | View     | ✅ | Configurable | Configurable |
+| **Data sources**  | Create/Update/Delete  | ✅ | Configurable | ❌ |
+| **Folder**        | Create/Update/Delete  | ✅ | Configurable | ❌ |
+| **Workspace constants/variables** | Create/Update/Delete | ✅ | Configurable | ❌ |
 
 ## Manage User Roles
 

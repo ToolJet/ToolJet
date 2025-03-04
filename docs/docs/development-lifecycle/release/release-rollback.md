@@ -5,9 +5,9 @@ title: Release and Rollback
 
 ToolJet allows you to **[release and share](#release-and-share)** your application and **[rollback](#rollback)** to a stable version whenever needed. 
 
-## Release and Share
+## Release
 
-Releasing an app in ToolJet makes the selected version available to end users, allowing them to access and use the application for their tasks. This ensures a controlled rollout of features and bug fixes while ensuring that users have access to the latest version of the app. After an application is released, it can be accessed in multiple ways, such as via a URL, the dashboard, or by embedding it into another application. Refer to **[Share an Application](#)** guide for more information.
+Releasing an app in ToolJet makes the selected version available to end users, allowing them to access and use the application for their tasks. This ensures a controlled rollout of features and bug fixes while ensuring that users have access to the latest version of the app. After an application is released it can be accessed in multiple ways, refer to **[Share an Application](#)** guide for more information.
 
 ### Steps to Release an App
 
