@@ -10,28 +10,37 @@ import { User as UserEntity } from 'src/entities/user.entity';
 import { CheckPolicies } from '@modules/casl/check_policies.decorator';
 import { AppAbility } from '@modules/casl/casl-ability.factory';
 import { IGitSyncController } from './Interfaces/IController';
+import { MODULES } from '@modules/app/constants/modules';
+import { InitModule } from '@modules/app/decorators/init-module';
+import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
+import { FEATURE_KEY } from './constants';
 
 @Controller('git-sync')
+@InitModule(MODULES.GIT_SYNC)
 export class GitSyncController implements IGitSyncController {
   constructor() {}
 
+  @InitFeature(FEATURE_KEY.GIT_SYNC_GET_ORG_GIT)
   @Get(':id')
   @CheckPolicies((ability: AppAbility) => ability.can(ORGANIZATION_RESOURCE_ACTIONS.CONFIGURE_GIT_SYNC, UserEntity))
-  async getOrgGitByOrgId(@User() user: UserEntity, @Param('id') organizationId: string) {
+  async getOrgGitByOrgId(@User() user: UserEntity, @Param('id') organizationId: string): Promise<any> {
     throw new NotFoundException();
   }
 
+  @InitFeature(FEATURE_KEY.GIT_SYNC_GET_ORG_GIT_STATUS)
   @Get(':id/status')
-  async getOrgGitStatusByOrgId(@User() user: UserEntity, @Param('id') organizationId: string) {
+  async getOrgGitStatusByOrgId(@User() user: UserEntity, @Param('id') organizationId: string): Promise<any> {
     throw new NotFoundException();
   }
 
+  @InitFeature(FEATURE_KEY.GIT_SYNC_CREATE_ORG_GIT)
   @Post()
   @CheckPolicies((ability: AppAbility) => ability.can(ORGANIZATION_RESOURCE_ACTIONS.CONFIGURE_GIT_SYNC, UserEntity))
-  async create(@User() user: UserEntity, @Body() orgGitCreateDto: OrganizationGitCreateDto) {
+  async create(@User() user: UserEntity, @Body() orgGitCreateDto: OrganizationGitCreateDto): Promise<any> {
     throw new NotFoundException();
   }
 
+  @InitFeature(FEATURE_KEY.GIT_SYNC_UPDATE_ORG_GIT)
   @Put(':id')
   @CheckPolicies((ability: AppAbility) => ability.can(ORGANIZATION_RESOURCE_ACTIONS.CONFIGURE_GIT_SYNC, UserEntity))
   async update(
@@ -42,12 +51,14 @@ export class GitSyncController implements IGitSyncController {
     throw new NotFoundException();
   }
 
+  @InitFeature(FEATURE_KEY.GIT_SYNC_FINALIZE_ORG_GIT)
   @Put('finalize/:id')
   @CheckPolicies((ability: AppAbility) => ability.can(ORGANIZATION_RESOURCE_ACTIONS.CONFIGURE_GIT_SYNC, UserEntity))
   async setFinalizeConfig(@User() user: UserEntity, @Param('id') organizationGitId: string) {
     throw new NotFoundException();
   }
 
+  @InitFeature(FEATURE_KEY.GIT_SYNC_CHANGE_STATUS)
   @Put('status/:id')
   @CheckPolicies((ability: AppAbility) => ability.can(ORGANIZATION_RESOURCE_ACTIONS.CONFIGURE_GIT_SYNC, UserEntity))
   async changeStatus(
@@ -58,6 +69,7 @@ export class GitSyncController implements IGitSyncController {
     throw new NotFoundException();
   }
 
+  @InitFeature(FEATURE_KEY.GIT_SYNC_DELETE_ORG_GIT)
   @Delete(':id')
   @CheckPolicies((ability: AppAbility) => ability.can(ORGANIZATION_RESOURCE_ACTIONS.CONFIGURE_GIT_SYNC, UserEntity))
   async deleteConfig(@User() user: UserEntity, @Param('id') organizationGitId: string) {

@@ -36,11 +36,11 @@ export class GitSyncService implements IGitSyncService {
     throw new Error('Method not implemented.');
   }
 
-  async getOrganizationById(userOrganizationId: string, organizationId: string) {
+  async getOrganizationById(userOrganizationId: string, organizationId: string): Promise<any> {
     throw new Error('Method not implemented.');
   }
 
-  async getOrgGitStatusById(userOrganizationId: string, organizationId: string) {
+  async getOrgGitStatusById(userOrganizationId: string, organizationId: string): Promise<any> {
     throw new Error('Method not implemented.');
   }
 }

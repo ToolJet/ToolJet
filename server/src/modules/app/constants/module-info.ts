@@ -31,6 +31,8 @@ import { FEATURES as TOOLJET_DATABASE_FEATURES } from '@modules/tooljet-db/const
 import { FEATURES as IMPORT_EXPORT_RESOURCES_FEATURES } from '@modules/import-export-resources/constants/feature';
 import { FEATURES as TEMPLATES_FEATURES } from '@modules/templates/constants/features';
 import { FEATURES as AI_FEATURES } from '@modules/ai/constants/feature';
+import { FEATURES as GIT_SYNC_FEATURES } from '@modules/git_sync/constants/feature';
+import { FEATURES as APP_GIT_FEATURES } from '@modules/app-git/constants/feature';
 import { getTooljetEdition } from '@helpers/utils.helper';
 import { TOOLJET_EDITIONS } from '.';
 
@@ -71,4 +73,6 @@ export const MODULE_INFO: { [key: string]: any } = {
   ...TEMPLATES_FEATURES,
   ...ORGANIZATION_CONSTANT,
   ...AI_FEATURES,
+  ...GIT_SYNC_FEATURES,
+  ...APP_GIT_FEATURES,
 };

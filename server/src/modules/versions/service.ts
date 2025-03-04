@@ -111,6 +111,25 @@ export class VersionService implements IVersionService {
     }, manager);
   }
 
+  async deleteGivenVersion(app: App, version: AppVersion, manager?: EntityManager): Promise<void> {
+    const numVersions = await this.versionRepository.getCount(app.id);
+
+    if (numVersions <= 1) {
+      throw new ForbiddenException('Cannot delete only version of app');
+    }
+
+    if (app.currentVersionId === version.id) {
+      throw new BadRequestException('You cannot delete a released version');
+    }
+
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      await manager.delete(AppVersion, {
+        id: version.id,
+        appId: app.id,
+      });
+    }, manager);
+  }
+
   async getVersion(app: App, user: User): Promise<any> {
     const versionId = app.appVersions[0].id;
     const appVersion = await this.versionRepository.findVersion(versionId);
