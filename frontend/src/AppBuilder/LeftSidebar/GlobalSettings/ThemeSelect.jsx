@@ -8,6 +8,7 @@ import { shallow } from 'zustand/shallow';
 import { useNavigate } from 'react-router-dom';
 import { getWorkspaceId } from '@/_helpers/utils';
 import { appThemesService } from '../../../../ee/modules/WorkspaceSettings/pages/ManageThemes/service/app_themes.service';
+import { LicenseTooltip } from '@/LicenseTooltip';
 
 const ThemeSelect = ({ darkMode }) => {
   const [themesList, setThemesList] = useState([]);
@@ -18,6 +19,7 @@ const ThemeSelect = ({ darkMode }) => {
   const workspaceId = getWorkspaceId();
   const appId = useStore((state) => state.app.appId, shallow);
   const versionId = useStore((state) => state.currentVersionId, shallow);
+  const isDisabled = !licenseValid || !featureAccess?.customThemes;
   const navigate = useNavigate();
 
   const fetchAllThemes = async () => {
@@ -203,20 +205,27 @@ const ThemeSelect = ({ darkMode }) => {
       <div className="d-flex align-items-center ">
         <p className="tj-text-xsm color-slate12 w-full m-auto">Theme</p>
       </div>
-      <Select
-        options={themesList}
-        value={selectedTheme?.id}
-        onChange={(themeId) => {
-          setTheme(themeId);
-          globalSettingsChanged({ theme: themesList.find((theme) => theme.value === themeId)?.theme });
-        }}
-        width={'100%'}
-        isDisabled={!licenseValid || !featureAccess?.customThemes}
-        useMenuPortal={true}
-        styles={customSelectStyles}
-        useCustomStyles={true}
-        components={{ Option: CustomOption, MenuList: CustomMenuList, ValueContainer: CustomValueContainer }}
-      />
+      <LicenseTooltip
+        feature={'Custom themes'}
+        isAvailable={!isDisabled}
+        noTooltipIfValid={true}
+        customMessage={"You don't have access to custom themes. Upgrade your plan to access this feature."}
+      >
+        <Select
+          options={themesList}
+          value={selectedTheme?.id}
+          onChange={(themeId) => {
+            setTheme(themeId);
+            globalSettingsChanged({ theme: themesList.find((theme) => theme.value === themeId)?.theme });
+          }}
+          width={'100%'}
+          isDisabled={isDisabled}
+          useMenuPortal={true}
+          styles={customSelectStyles}
+          useCustomStyles={true}
+          components={{ Option: CustomOption, MenuList: CustomMenuList, ValueContainer: CustomValueContainer }}
+        />
+      </LicenseTooltip>
     </div>
   );
 };
