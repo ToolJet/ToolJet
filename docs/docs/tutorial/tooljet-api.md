@@ -9,6 +9,7 @@ title: ToolJet API
 ToolJet API allows you to interact with the ToolJet platform programmatically. You can use the APIs to manage users and their workspaces relations. The API endpoints are secured with an access token. You can perform various operations using the API such as:
 
 - [Get All Users](#get-all-users)
+- [Get All Workspaces](#get-all-workspaces)
 - [Get All App ID](#get-all-app-id)
 - [Get User by ID](#get-user-by-id)
 - [Create User](#create-user)
@@ -16,7 +17,6 @@ ToolJet API allows you to interact with the ToolJet platform programmatically. Y
 - [Update User Role](#update-user-role)
 - [Replace User Workspace](#replace-user-workspace)
 - [Replace User Workspaces Relations](#replace-user-workspaces-relations)
-- [Get All Workspaces](#get-all-workspaces)
 - [Export Application](#export-application)
 - [Import Application](#import-application)
 
@@ -131,16 +131,65 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
 ```
 </details>
 
-### Get All App ID
+### Get All Workspaces
 
-    - **Description:** Get the app ID for all the applications in the workspace.
+    - **Description:** Retrieves a list of all workspaces.
+    - **URL:** `/api/ext/workspaces`
+    - **Method:** GET
+    - **Authorization:** `Basic <access_token>`
+    - **Content-Type:** `application/json`
+    - **Response:** Array of Workspace objects.
+
+<details>
+<summary>Response Example</summary>
+
+```json
+[
+  {
+    "id": "a831db72-c3d2-4b36-a98e-0023ffb15e66",
+    "name": "demo-workspace",
+    "status": "active",
+    "groups": [
+      {
+        "id": "b3ae95dd-b1ca-4a21-abac-b321ee76698e",
+        "name": "all_users"
+      },
+      {
+        "id": "1830a113-24e5-4e33-8af2-e6502d477239",
+        "name": "admin"
+      }
+    ]
+  },
+  {
+    "id": "b8a0c07d-2430-46fd-ba71-2a71e48fde30",
+    "name": "team-spac",
+    "status": "active",
+    "groups": [
+      {
+        "id": "7f7af977-a7e7-49e3-a08a-2dffce6f5942",
+        "name": "all_users"
+      },
+      {
+        "id": "eda68cf3-b70d-455f-8a2a-8cd4bbff77a6",
+        "name": "admin"
+      }
+    ]
+  }
+]
+```
+
+</details>
+
+### Get All App Details
+
+    - **Description:** Get the app details for all the applications in the workspace.
     - **URL:** `/api/ext/workspace/:workspace_id/apps`
     - **Method:** GET
     - **Authorization:** `Basic <access_token>`
     - **Content-Type:** `application/json`
     - **Params:**
       - **workspace_id**: The ID of the workspace.
-    - **Response:** Array of app ID.
+    - **Response:** Array of app details for all the applications in the workspace.
 
   <details>
   <summary>**Response Example**</summary>
@@ -408,55 +457,6 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
 </details>
     - **Note:** If no body is given or body is an empty object, it will not do anything.
     - **Response:** `200 OK`
-
-### Get All Workspaces
-
-    - **Description:** Retrieves a list of all workspaces.
-    - **URL:** `/api/ext/workspaces`
-    - **Method:** GET
-    - **Authorization:** `Basic <access_token>`
-    - **Content-Type:** `application/json`
-    - **Response:** Array of Workspace objects.
-
-<details>
-<summary>Response Example</summary>
-
-```json
-[
-  {
-    "id": "a831db72-c3d2-4b36-a98e-0023ffb15e66",
-    "name": "demo-workspace",
-    "status": "active",
-    "groups": [
-      {
-        "id": "b3ae95dd-b1ca-4a21-abac-b321ee76698e",
-        "name": "all_users"
-      },
-      {
-        "id": "1830a113-24e5-4e33-8af2-e6502d477239",
-        "name": "admin"
-      }
-    ]
-  },
-  {
-    "id": "b8a0c07d-2430-46fd-ba71-2a71e48fde30",
-    "name": "team-spac",
-    "status": "active",
-    "groups": [
-      {
-        "id": "7f7af977-a7e7-49e3-a08a-2dffce6f5942",
-        "name": "all_users"
-      },
-      {
-        "id": "eda68cf3-b70d-455f-8a2a-8cd4bbff77a6",
-        "name": "admin"
-      }
-    ]
-  }
-]
-```
-
-</details>
 
 ### Export Application
 
