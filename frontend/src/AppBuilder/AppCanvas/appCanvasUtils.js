@@ -86,7 +86,8 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
     const defaultChildren = deepClone(parentMeta)['defaultChildren'];
 
     defaultChildren.forEach((child) => {
-      const { componentName, layout, incrementWidth, properties, accessorKey, tab, defaultValue, styles } = child;
+      const { componentName, layout, incrementWidth, properties, accessorKey, tab, defaultValue, styles, slotName } =
+        child;
 
       const componentMeta = deepClone(componentTypes.find((component) => component.component === componentName));
       const componentData = JSON.parse(JSON.stringify(componentMeta));
@@ -136,14 +137,19 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
       }
 
       const nonActiveLayout = currentLayout === 'desktop' ? 'mobile' : 'desktop';
-      const _parent = getParentComponentIdByType(child, parentMeta.component, parentId);
+      const _parent = getParentComponentIdByType({
+        child,
+        parentComponent: parentMeta.component,
+        parentId,
+        slotName,
+      });
 
       const newChildComponent = {
         id: uuidv4(),
         name: widgetName,
         component: {
           ...componentData,
-          parent: getParentComponentIdByType(child, parentMeta.component, parentId),
+          parent: _parent,
         },
         layouts: {
           [currentLayout]: {
@@ -195,7 +201,8 @@ export const getAllChildComponents = (allComponents, parentId) => {
       allComponents[parentId]?.component?.component === 'Tabs' ||
       allComponents[parentId]?.component?.component === 'Calendar' ||
       allComponents[parentId]?.component?.component === 'Kanban' ||
-      allComponents[parentId]?.component?.component === 'Container';
+      allComponents[parentId]?.component?.component === 'Container' ||
+      allComponents[parentId]?.component?.component === 'ModalV2';
 
     if (componentParentId && isParentTabORCalendar) {
       let childComponent = deepClone(allComponents[componentId]);
@@ -317,7 +324,8 @@ const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentI
     return (
       parentComponent.component.component === 'Tabs' ||
       parentComponent.component.component === 'Calendar' ||
-      parentComponent.component.component === 'Container'
+      parentComponent.component.component === 'Container' ||
+      parentComponent.component.component === 'ModalV2'
     );
   }
 
@@ -641,10 +649,23 @@ export const computeViewerBackgroundColor = (isAppDarkMode, canvasBgColor) => {
   return canvasBgColor;
 };
 
-export const getParentComponentIdByType = (child, parentComponent, parentId) => {
+export const getParentComponentIdByType = ({ child, parentComponent, parentId, slotName = 'header' }) => {
   const { tab } = child;
 
   if (parentComponent === 'Tabs') return `${parentId}-${tab}`;
-  else if (parentComponent === 'Container') return `${parentId}-header`;
+  else if (parentComponent === 'Container' || parentComponent === 'ModalV2') {
+    return `${parentId}-${slotName}`;
+  }
   return parentId;
+};
+
+export const getParentWidgetFromId = (parentType, parentId) => {
+  const isAddingToSlot = parentId?.includes('-header') || parentId?.includes('-footer');
+
+  if (parentType === 'ModalV2' && isAddingToSlot) {
+    return 'ModalSlot';
+  } else if (parentType === 'Kanban') {
+    return 'Kanban_card';
+  }
+  return parentType;
 };
