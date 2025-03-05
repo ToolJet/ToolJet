@@ -487,7 +487,15 @@ const sidebars = {
       'items': [
         'workflows/overview',
         'workflows/nodes',
-        'workflows/workflow-triggers',
+        {
+          'type': 'category',
+          'label': 'Workflow Triggers',
+          'items': [
+            'workflows/workflow-triggers',
+            'workflows/workflow-scheduler',
+            'workflows/workflow-manual',
+          ]
+        },
         'workflows/results',
         'workflows/permissions',
         {
