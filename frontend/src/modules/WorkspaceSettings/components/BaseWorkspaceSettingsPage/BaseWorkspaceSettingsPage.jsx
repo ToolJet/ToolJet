@@ -107,8 +107,8 @@ export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
                   </Wrapper>
                 );
               })}
-              <OrganizationList />
             </div>
+            <OrganizationList />
           </div>
 
           <div className={cx('col workspace-content-wrapper')} style={{ paddingTop: '40px' }}>
