@@ -38,7 +38,7 @@ Data Source page is available only on **ToolJet version 2.3.0 and above**.
 
 3. Once the data source is added, you'll be required to input the configuration details for establishing a connection.
 
-  ***Note: For paid plans, configuration entry and saving are necessary to enable availability across [multiple environments](/docs/release-management/multi-environment/).***
+  ***Note: For paid plans, configuration entry and saving are necessary to enable availability across [multiple environments](/docs/development-lifecycle/environment/self-hosted/multi-environment).***
 
   <div style={{textAlign: 'center'}}>
   

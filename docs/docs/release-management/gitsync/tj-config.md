@@ -16,7 +16,7 @@ Role Required: **Admin**
 
 ### 1. Get SSH URL from Git Repo Manager
 
-Follow the **[SSH Configuration](/docs/release-management/gitsync/ssh-config#generating-ssh-url)** guide to generate the SSH URL from the Git Repo Manager.
+Follow the **[SSH Configuration](/development-lifecycle/gitsync/ssh-config#generating-ssh-url)** guide to generate the SSH URL from the Git Repo Manager.
 
 ### 2. Configure the GitSync Feature on ToolJet
 
@@ -38,7 +38,7 @@ Follow the **[SSH Configuration](/docs/release-management/gitsync/ssh-config#gen
 
 ### 3. Deploy the SSH Key
 
-Once the SSH key is generated, follow the **[SSH Configuration](/docs/release-management/gitsync/ssh-config#deploy-the-ssh-key)** guide to deploy the SSH key using the Git Repo Manager.
+Once the SSH key is generated, follow the **[SSH Configuration](/docs/development-lifecycle/gitsync/ssh-config#deploy-the-ssh-key)** guide to deploy the SSH key using the Git Repo Manager.
 
 ### 4. Finish the GitSync Configuration on ToolJet
 

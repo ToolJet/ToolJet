@@ -24,7 +24,7 @@ Role Required: **Admin**
     If you are using an existing repository, then you can obtain the URL by clicking on the **Code** button.
     <img className="screenshot-full" src="/img/development-lifecycle/gitsync/config/ssh-code.png" alt="GitSync" />
 
-    To generate the SSH URL for other git repository manager, such as GitLab and Gitea, follow the **[SSH Configuration](/docs/release-management/gitsync/ssh-config#generating-ssh-url)** guide.
+    To generate the SSH URL for other git repository manager, such as GitLab and Gitea, follow the **[SSH Configuration](/docs/development-lifecycle/gitsync/ssh-config#generating-ssh-url)** guide.
 
 3. Go to the **Workspace settings**, and click on the **Configure git** tab. <br/>
     (Example URL - `https://app.corp.com/nexus/workspace-settings/configure-git`)
@@ -55,7 +55,7 @@ Role Required: **Admin**
 10. Finally, click on the **Add key** button.
     <img className="screenshot-full" src="/img/development-lifecycle/gitsync/config/add-key.png" alt="GitSync" />
 
-    To deploy the SSH key for other git repository manager, such as GitLab and Gitea, follow the **[SSH Configuration](/docs/release-management/gitsync/ssh-config#deploy-the-ssh-key)** guide.
+    To deploy the SSH key for other git repository manager, such as GitLab and Gitea, follow the **[SSH Configuration](/docs/development-lifecycle/gitsync/ssh-config#deploy-the-ssh-key)** guide.
 
 11. After deploying the SSH Key, go to the **Configure git** tab on ToolJet, and click on the **Finalize setup** button. If the SSH key is configured correctly, you will see a success message.
     <img className="screenshot-full" src="/img/development-lifecycle/gitsync/config/save-config.png" alt="GitSync" />

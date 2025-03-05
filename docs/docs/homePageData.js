@@ -170,7 +170,7 @@ export const resourceCards = [
         title: "Security",
         color: "text-blue-500",
         content: "ToolJet ensures data security with SOC 2 compliance, encryption, and secure credential handling, never storing your data.",
-        href: "/docs/beta/security"
+        href: "/docs/beta/security/compliance"
     }
 ];
 

@@ -140,7 +140,7 @@ export const releaseCards = [
         title: "Multi-Environment",
         color: "text-blue-500",
         content: "Easily manage and deploy applications across multiple environments, ensuring smooth transitions between development, staging, and production.",
-        href: "/docs/release-management/multi-environment"
+        href: "/docs/development-lifecycle/environment/self-hosted/multi-environment"
     },
     {
         icon: GitMerge,
