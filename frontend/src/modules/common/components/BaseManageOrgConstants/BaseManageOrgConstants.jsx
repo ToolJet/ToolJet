@@ -120,20 +120,26 @@ const BaseManageOrgConstants = ({
     // Calculate counts for Global and Secret constants
     const globalCount =
       allConstants.length > 0
-        ? allConstants.filter(
-            (constant) =>
-              constant.type === Constants.Global &&
-              constant.values.find((env) => env.environmentName === envName)?.value !== ''
-          ).length
+        ? allConstants.filter((constant) => {
+            if (constant.type === Constants.Global) {
+              const foundConstant = constant.values.find((env) => env.environmentName === envName);
+              if (!foundConstant || foundConstant.value === '') return false;
+              return true;
+            }
+            return false;
+          }).length
         : 0;
 
     const secretCount =
       allConstants.length > 0
-        ? allConstants.filter(
-            (constant) =>
-              constant.type === Constants.Secret &&
-              constant.values.find((env) => env.environmentName === envName)?.value !== ''
-          ).length
+        ? allConstants.filter((constant) => {
+            if (constant.type === Constants.Secret) {
+              const foundConstant = constant.values.find((env) => env.environmentName === envName);
+              if (!foundConstant || foundConstant.value === '') return false;
+              return true;
+            }
+            return false;
+          }).length
         : 0;
 
     setGlobalCount(globalCount);
@@ -165,7 +171,13 @@ const BaseManageOrgConstants = ({
         name: constant.name,
         type: constant.type,
         value: findValueForEnvironment(constant.values, envName),
-      }));
+        fromEnv: !!constant.fromEnv,
+      }))
+      // if constant is from env, sort it to the top
+      .sort((a) => {
+        return a.fromEnv ? -1 : 1;
+      });
+    flagDuplicateConstants(filteredConstants);
 
     let globalTabCount = 0;
     let secretTabCount = 0;
@@ -393,6 +405,16 @@ const BaseManageOrgConstants = ({
     const value = constantValues?.find((value) => value.environmentName === environmentName);
     return value?.value;
   };
+
+  // this function marks the constant as duplicate if same constant name is present in env
+  function flagDuplicateConstants(constants) {
+    const envConstants = constants.filter((constant) => constant.fromEnv).map((constant) => constant.name);
+    constants.forEach((constant) => {
+      if (!constant.fromEnv && envConstants.includes(constant.name)) {
+        constant.isDuplicate = true;
+      }
+    });
+  }
 
   useEffect(() => {
     fetchConstantsAndEnvironments(true);
