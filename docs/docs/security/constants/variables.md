@@ -12,11 +12,11 @@ Please use **[Workspace Constants](#)** instead. This guide will help you migrat
 
 ## Workspace Constants
 
-Workspace Constants are predefined values that enhance consistency, simplify updates, and securely store sensitive information across applications within a workspace. Unlike other variables, they are resolved exclusively on the server side, ensuring a high level of security by preventing client-side exposure. Refer to **[Workspace Constants](#)** guide for more information.
+Workspace Constants are predefined values that enhance consistency, simplify updates, and securely store sensitive information across applications within a workspace. Unlike other variables, they are resolved exclusively on the server side, ensuring a high level of security by preventing client-side exposure. Refer to **[Workspace Constants](/docs/security/constants/)** guide for more information.
 
 ## Migrating from Workspace Variables to Workspace Constants
 
-To migrate from Workspace Variables to Workspace Constants, you need to create new constants and store each value, follow the steps in **[Creating Workspace Constants](#)** guide.
+To migrate from Workspace Variables to Workspace Constants, you need to create new constants and store each value, follow the steps in **[Creating Workspace Constants](/docs/security/constants/#creating-workspace-constants)** guide.
 
 Once you have migrated all the Workspace Variables to Workspace Constants, you can replace the Workspace Variables in your apps with their corresponding Workspace Constants.
 

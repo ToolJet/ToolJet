@@ -3,7 +3,7 @@ id: user-roles
 title: User Roles
 ---
 
-ToolJet enables you to use Role-Based Access Control (RBAC) system to manage security and access to your resources such as apps, data sources and workspace variables, etc. ToolJet provides a set of pre-defined user roles and the ability to create **[custom groups](#)** for more granular access control. User roles are taken into account for licensing and billing purposes, refer **[ToolJet Pricing](https://www.tooljet.com/pricing)** for more information.
+ToolJet enables you to use Role-Based Access Control (RBAC) system to manage security and access to your resources such as apps, data sources and workspace variables, etc. ToolJet provides a set of pre-defined user roles and the ability to create **[custom groups](/docs/user-management/role-based-access/custom-groups)** for more granular access control. User roles are taken into account for licensing and billing purposes, refer **[ToolJet Pricing](https://www.tooljet.com/pricing)** for more information.
 
 ## Default User Roles
 

@@ -11,21 +11,21 @@ On a self-hosted ToolJet, a Super Admin is the user who has full access to all t
 
 | Privilege | Admin | Super Admin | 
 | --------- |:-----:|:-----------:|
-| Manage Users in their workspace ([Invite](#)/[Archive](#)/[Unarchive](#)) | ✅ | ✅ |
-| [Archive](#)/[Unarchive](#) any user from all the workspaces in the instance | ❌ | ✅ |
-| [Reset password of any user](#) | ❌ | ✅ |
-| [Edit name of any user](#) | ❌ | ✅ |
-| [Make any user Super Admin](#) | ❌ | ✅ |
+| Manage Users in their workspace ([Invite](/docs/user-management/onboard-users/invite-user)/[Archive](/docs/user-management/onboard-users/archive-user#steps-to-archive-user)/[Unarchive](/docs/user-management/onboard-users/archive-user#steps-to-unarchive-user)) | ✅ | ✅ |
+| [Archive](/docs/user-management/onboard-users/archive-user#steps-to-archive-user)/[Unarchive](/docs/beta/user-management/onboard-users/archive-user#steps-to-unarchive-user) any user from all the workspaces in the instance | ❌ | ✅ |
+| [Reset password of any user](/docs/user-management/profile-management/reset-password#super-admin-reset-password) | ❌ | ✅ |
+| [Edit name of any user](/docs/user-management/profile-management/user-details) | ❌ | ✅ |
+| [Make any user Super Admin](#promote-a-user-to-super-admin) | ❌ | ✅ |
 
 ### Workspace Management
 
 | Privilege | Admin | Super Admin | 
 | --------- |:-----:|:-----------:|
-| Manage Groups in their workspace ([Create Group](#)/ Add or Delete Users from groups/ Modify Group Permissions) | ✅ | ✅ |
-| [Manage SSO](#) in their workspace | ✅ | ✅ |
-| [Manage Workspace Variables](#) in their workspace | ✅ | ✅ |
-| [Manage Workspace Constants](#) in their workspace | ✅ | ✅ |
-| [Manage Data Sources](#) for the user group in their workspace | ✅ | ✅ |
+| Manage Groups in their workspace ([Create Group](/docs/user-management/role-based-access/custom-groups#creating-custom-groups)/ Add or Delete Users from groups/ Modify Group Permissions) | ✅ | ✅ |
+| [Manage SSO](/docs/user-management/sso/overview) in their workspace | ✅ | ✅ |
+| [Manage Workspace Variables](/docs/security/constants/variables) in their workspace | ✅ | ✅ |
+| [Manage Workspace Constants](/docs/security/constants/) in their workspace | ✅ | ✅ |
+| [Manage Data Sources](/docs/data-sources/overview) for the user group in their workspace | ✅ | ✅ |
 | Access any user's personal workspace (Create/Edit/Delete Apps) | ❌ | ✅ |
 | Archive Admin or any user of any workspace | ❌ | ✅ |
 | Access any user's ToolJet Database (Create/Edit/Delete Database)) | ❌ | ✅ |

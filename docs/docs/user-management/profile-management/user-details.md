@@ -3,7 +3,7 @@ id: user-details
 title: Edit User Details
 ---
 
-At the instance level, Super Admins can edit a user's name or promote them to the Super Admin role. A Super Admin has access to all workspaces and inherits all the permissions of a Workspace Admin. At the workspace level, admins can update **[user roles](#)**, **[groups](#)** or **[user metadata](#)**.
+At the instance level, Super Admins can edit a user's name or promote them to the Super Admin role. A Super Admin has access to all workspaces and inherits all the permissions of a Workspace Admin. At the workspace level, admins can update **[user roles](/docs/user-management/role-based-access/user-roles)**, **[groups](/docs/user-management/role-based-access/custom-groups)** or **[user metadata](/docs/user-management/onboard-users/user-metadata)**.
 
 ## Update User's Name
 

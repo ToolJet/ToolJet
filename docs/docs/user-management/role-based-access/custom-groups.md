@@ -17,7 +17,7 @@ Role Required: **Admin** <br/>
 3. Click **+ Create new group**.
 4. Enter a name for the group and click **Create Group**.
 
-Refer to the **[Access Control](#)** guide to configure permissions.
+Refer to the **[Access Control](/docs/user-management/role-based-access/access-control)** guide to configure permissions.
 
 <img className="screenshot-full" src="/img/user-management/rbac/custom-group/new-group.png" alt="Create Custom Group" />
 
@@ -31,7 +31,7 @@ Role Required: **Admin** <br/>
 3. Click on the kebab menu next to the group you want to delete.
 4. Select **Delete** from the dropdown and confirm the action in the pop-up dialog.
 
-<img className="screenshot-full" src="/img/tutorial/manage-users-groups/deleting-custom-group.png" alt="Deleting Custom Group" />
+    <img className="screenshot-full" src="/img/tutorial/manage-users-groups/deleting-custom-group.png" alt="Deleting Custom Group" />
 
 ## Duplicate Group
 
@@ -44,7 +44,7 @@ Role Required: **Admin** <br/>
 4. Select **Duplicate** from the dropdown and select the parts of the group you want to duplicate.
 5. Click **Duplicate** to create a new group with the selected permissions.
 
-<img className="screenshot-full" src="/img/tutorial/manage-users-groups/duplicate-group.png" alt="Duplicate Group" />
+    <img className="screenshot-full img-s" src="/img/tutorial/manage-users-groups/duplicate-group.png" alt="Duplicate Group" />
 
 ## Inheritance and Overrides
 - Users inherit permissions from their assigned role and any custom groups they belong to.

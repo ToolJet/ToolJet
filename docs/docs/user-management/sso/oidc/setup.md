@@ -5,7 +5,7 @@ title: OpenID Connect Setup
 
 <div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
 
-OpenID Connect (OIDC) is an authentication protocol that helps applications verify users' identities using an identity provider. By configuring OIDC with identity providers like **[Azure AD](#)**, **[Google](#)** or **[Okta](#)**, you can set up easy and safe authentication for your users in ToolJet. 
+OpenID Connect (OIDC) is an authentication protocol that helps applications verify users' identities using an identity provider. By configuring OIDC with identity providers like **[Azure AD](/docs/user-management/sso/oidc/azuread)**, **[Google](/docs/user-management/sso/oidc/google)** or **[Okta](/docs/user-management/sso/oidc/okta)**, you can set up easy and safe authentication for your users in ToolJet. 
 
 ## Configuring OIDC
 

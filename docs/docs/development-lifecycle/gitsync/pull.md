@@ -3,7 +3,7 @@ id: pull
 title: Pull Changes from Git Repo
 ---
 
-Once the GitSync is configured and the changes are committed to the git reposistory, after that the changes can be pulled from the git repository to restore the application or to use multi instance as multi environment.
+Once the GitSync is configured and the changes are committed to the git repository, after that the changes can be pulled from the git repository to restore the application or to use multi instance as multi environment.
 
 ## Restore Application
 

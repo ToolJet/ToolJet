@@ -55,7 +55,7 @@ Whenever a user makes a change in an app, they can make a commit to the git repo
 
 3. Enter the commit message and click on the **Commit changes** button to commit the changes to the git repository. 
 
-Along with the commit message, the user can also see the connnected **Git repo URL** and the last commit details. **Last commit details** helps the user to know the last commit message, author, date, and time. This helps the user to know the last commit details and make the commit message accordingly.
+Along with the commit message, the user can also see the connected **Git repo URL** and the last commit details. **Last commit details** helps the user to know the last commit message, author, date, and time. This helps the user to know the last commit details and make the commit message accordingly.
 
 Once the changes are committed, the user can see the commit message, author, and date in the git repository.
 
@@ -121,7 +121,7 @@ The **JSON** file in the app folder will be replaced with the new version of the
 
 ## Auto Commit on Promoting Environment
 
-When you promote an environment, from **Developement to Staging**, the changes will be automatically committed to the git repository. The commit message will be `<version_number> Version of <app_name> promoted from <source_environment> to <destination_environment>`. The author will be the user who promoted the environment. When you promote an environment, from **Staging to Production**, no changes will be committed to the git repository.
+When you promote an environment, from **Development to Staging**, the changes will be automatically committed to the git repository. The commit message will be `<version_number> Version of <app_name> promoted from <source_environment> to <destination_environment>`. The author will be the user who promoted the environment. When you promote an environment, from **Staging to Production**, no changes will be committed to the git repository.
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/gitsync/promoted.png" alt="GitSync" />
 

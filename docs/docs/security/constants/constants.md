@@ -38,7 +38,7 @@ For example, you can configure unique API keys for each environment to ensure se
 
 ## Creating Workspace Constants
 
-Workspace constants/variables permissions is needed to Create, Update or Delete workspace constants, refer to **[Access Control](#)** guide for more information. After having the required permission, follow these steps to create a workspace constant:
+Workspace constants/variables permissions is needed to Create, Update or Delete workspace constants, refer to **[Access Control](/docs/user-management/role-based-access/access-control)** guide for more information. After having the required permission, follow these steps to create a workspace constant:
 
 1. Navigate to the Workspace Constants tab from the left sidebar in ToolJet dashboard. <br/>
     (Example URL - `https://app.corp.com/nexus/workspace-constants`)

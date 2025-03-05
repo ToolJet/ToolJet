@@ -3,7 +3,7 @@ id: okta
 title: Okta
 ---
 
-Okta can be configured as the Identity Provider for SAML, which is an authentication protocol that securely verifies user identities through a trusted provider. This document explains how to obtain the required credentials from the Okta Developer Console. Refer to the **[SAML Setup](#)** guide to configure SAML in your application.
+Okta can be configured as the Identity Provider for SAML, which is an authentication protocol that securely verifies user identities through a trusted provider. This document explains how to obtain the required credentials from the Okta Developer Console. Refer to the **[SAML Setup](/docs/user-management/sso/saml/setup)** guide to configure SAML in your application.
 
 ## Generating Metadata
 

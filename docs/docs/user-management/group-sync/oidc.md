@@ -40,7 +40,7 @@ To set up OIDC group synchronization in ToolJet follow these steps:
 1. Navigate to the **Workspace Settings** > **Workspace Login** Tab. <br/>
    (Example URL: )
 2. Click on the OpenID Connect under the SSO section.
-3. Setup the OpenID Connect SSO by following this [guide](#).
+3. Setup the OpenID Connect SSO by following this [guide](/docs/user-management/sso/oidc/setup).
 4. Enable the **Group Sync** toggle and provide the following information:
 
 - **Claim name**: Enter the name of the claim in the OIDC token that contains group information (e.g., groups).

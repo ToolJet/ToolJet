@@ -18,7 +18,7 @@ The latest released version of the application is always accessible through the 
 
 ## Access Application via Dashboard
 
-Users can launch the released version of the application from the dashboard. The application can also be hidden from the dashboard for end users. Refer to the **[Access Control](#)** guide for more details.
+Users can launch the released version of the application from the dashboard. The application can also be hidden from the dashboard for end users. Refer to the **[Access Control](/docs/user-management/role-based-access/access-control)** guide for more details.
 
 <img className="screenshot-full" src="/img/development-lifecycle/release/share/dashboard.png" alt="Access Application via Dashboard"/>
 

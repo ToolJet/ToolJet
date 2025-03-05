@@ -3,7 +3,7 @@ id: google
 title: Google (OIDC)
 ---
 
-Google can be configured as the Identity Provider for OIDC, which is an authentication protocol that securely verifies user identities through a trusted provider. This document explains how to obtain the required credentials from the Google console. Refer to the **[OIDC Setup](#)** Guide to configure OIDC in your application.
+Google can be configured as the Identity Provider for OIDC, which is an authentication protocol that securely verifies user identities through a trusted provider. This document explains how to obtain the required credentials from the Google console. Refer to the **[OIDC Setup](/docs/user-management/sso/oidc/setup)** Guide to configure OIDC in your application.
 
 ## Generating Client ID and Client Secret on GCS
 

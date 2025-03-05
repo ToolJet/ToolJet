@@ -42,7 +42,7 @@ Role Required: **Admin** <br/>
 ## Granular Access Control
 
 In ToolJet, you can set granular level access control for apps and data sources, by configuring permissions like view access or edit access, to manage who can interact with the resources in your workspace. You can apply permissions either to all resources (e.g., all apps or all data sources) or to specific, selected resources, offering flexibility and precision in managing access. <br/>
-To configure Granular Access Control, you need to create custom groups. Refer to **[custom gropus](#)** guide for more information.
+To configure Granular Access Control, you need to create custom groups. Refer to **[custom groups](/docs/user-management/role-based-access/custom-groups)** guide for more information.
 
 ### Apps
 
