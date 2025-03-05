@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import cx from 'classnames';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-
+import { OrganizationList } from '@/modules/dashboard/components';
 import Layout from '@/_ui/Layout';
 import { authenticationService } from '@/_services';
 import FolderList from '@/_ui/FolderList/FolderList';
@@ -107,8 +107,8 @@ export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
                 );
               })}
             </div>
+            <OrganizationList />
           </div>
-
           <div className={cx('col workspace-content-wrapper')} style={{ paddingTop: '40px' }}>
             <div className="w-100">
               <Outlet />
