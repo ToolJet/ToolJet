@@ -219,6 +219,16 @@ import Replace from './Replace.jsx';
 import ReplaceAll from './ReplaceAll.jsx';
 import Remove02 from './Remove02.jsx';
 import TooljetAi from './TooljetAI.jsx';
+import AICrown from './AICrown.jsx';
+import BookDemo from './BookDemo.jsx';
+import Contactv3 from './Contactv3.jsx';
+import PremiumLogo from './PremiumLogo.jsx';
+import StudentIcon from './StudentIcon.jsx';
+import CalendarIcon from './CalendarIcon.jsx';
+import CalendarSmall from './CalendarSmall.jsx';
+import UserGroupsGrey from './UserGroupsGrey.jsx';
+import AppLimitSvg from './AppLimitSvg.jsx';
+import NewTabSmall from './NewTabSmall.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -662,6 +672,26 @@ const Icon = (props) => {
       return <ReplaceAll {...props} />;
     case 'remove02':
       return <Remove02 {...props} />;
+    case 'bookdemo':
+      return <BookDemo {...props} />;
+    case 'contactv3':
+      return <Contactv3 {...props} />;
+    case 'premium-logo':
+      return <PremiumLogo {...props} />;
+    case 'calendar-icon':
+      return <CalendarIcon {...props} />;
+    case 'calendar-small':
+      return <CalendarSmall {...props} />;
+    case 'user-groups-grey':
+      return <UserGroupsGrey {...props} />;
+    case 'app-limit':
+      return <AppLimitSvg {...props} />;
+    case 'new-tab-small':
+      return <NewTabSmall {...props} />;
+    case 'student-icon':
+      return <StudentIcon {...props} />;
+    case 'ai-crown':
+      return <AICrown {...props} />;
     default:
       return <Apps {...props} />;
   }
