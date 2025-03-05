@@ -2,7 +2,8 @@ import { Button } from '@/Editor/Components/Button';
 import { Image } from '@/Editor/Components/Image/Image';
 import { Text } from '@/Editor/Components/Text';
 // import { Table } from '@/Editor/Components/Table/Table';
-import { Table } from '@/AppBuilder/Widgets/Table/Table';
+// import { Table } from '@/AppBuilder/Widgets/Table/Table';
+import { Table } from '@/AppBuilder/Widgets/NewTable/Table';
 
 import { TextInput } from '@/Editor/Components/TextInput';
 import { NumberInput } from '@/Editor/Components/NumberInput';
