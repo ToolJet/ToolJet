@@ -42,7 +42,7 @@ To switch between the workspaces,
 ## Archiving Workspaces
 **Role required** - Super Admin
 
--   This feature is available only for self-hosted users, and only [Super admins](https://docs.tooljet.com/docs/enterprise/superadmin/#archive-workspaces) can archive workspaces. A Super Admin is the user who has full access to all the Workspaces, Users, and Groups of an instance
+-   This feature is available only for self-hosted users, and only [Super admins](/docs/user-management/role-based-access/super-admin) can archive workspaces. A Super Admin is the user who has full access to all the Workspaces, Users, and Groups of an instance
 -   To archive a workspace, at least one active workspace must exist in the instance.
 
 -   **Impact**
@@ -58,10 +58,6 @@ To switch between the workspaces,
 
 <img className="screenshot-full img-l" src="/img/tooljet-setup/workspace/archive-workspace.png" alt="Archive workspace" />
 
-
-
-For more details on archiving workspaces, refer to the [Super Admin](https://docs.tooljet.com/docs/enterprise/superadmin/#archive-workspaces) documentation.
-
 ## Unarchive Workspace
 
 **Role required** - Super Admin
@@ -74,7 +70,7 @@ For more details on archiving workspaces, refer to the [Super Admin](https://doc
 
 ## Workspace Admin
 
--   A Workspace has a three predefined roles, Admins, Builders and Endusers with predefined permissions. Checkout the [users and groups](/docs/tutorial/manage-users-groups/#managing-groups) docs for more details.
+-   A Workspace has a three predefined roles, Admins, Builders and Endusers with predefined permissions. Checkout the [users and groups](/docs/user-management/role-based-access/user-roles) docs for more details.
 -   The user who creates a workspace is automatically assigned as its **Admin**.
 -   An **Admin** can:
     -   Manage users, groups, data and apps within each workspace.
@@ -104,7 +100,7 @@ Admin user has access to all the permission at workspace level, while an end use
     <summary>
      **Q. Do users have access to all workspaces by default?**
     </summary>
-**No**, users need to be **invited** to a specific workspace to access the apps and data within that workspace. Refer to [invite users](/docs/tutorial/manage-users-groups/#inviting-users) documentation for more details
+**No**, users need to be **invited** to a specific workspace to access the apps and data within that workspace. Refer to [invite users](/docs/user-management/role-based-access/user-roles) documentation for more details
 
 </details>
 

@@ -30,7 +30,7 @@ The user who creates the workspace will automatically be assigned as its adminis
 ## Permissions
 
 :::tip
-Please check the detailed doc on **[Permissions](/docs/org-management/permissions)**.
+Please check the detailed doc on **[Permissions](/docs/user-management/role-based-access/access-control)**.
 :::
 
 - Administrators can manage [users and groups](/docs/tutorial/manage-users-groups) of each workspace.

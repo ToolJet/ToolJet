@@ -31,7 +31,7 @@ ToolJet offers various subscription plans for paid license visit **[ToolJet Pric
 
 Once you have received the license key from the ToolJet Team, after that you can update the license key by following steps:
 
-1. Log in as a **[Super Admin](/docs/Enterprise/superadmin)**, ensuring that you are on the correct instance URL.
+1. Log in as a **[Super Admin](/docs/user-management/role-based-access/super-admin)**, ensuring that you are on the correct instance URL.
 2. Go to the Settings page.
 3. In the license key tab, update the provided license key.
 4. Within the license tab of the Settings page, you can access the limit tab, which provides details about available total users, builders, and end users. You can also see the expiry date of your license key.

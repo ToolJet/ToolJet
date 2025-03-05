@@ -95,7 +95,7 @@ There are two ways through which a user can reset their password. The first meth
 
 #### 2. **Super Admin**
 
-- Reach out to the **[Super Admin](/docs/Enterprise/superadmin)** of the workspace.
+- Reach out to the **[Super Admin](/docs/user-management/role-based-access/super-admin)** of the workspace.
 - The **Super Admin** can reset the password for the user from the **Settings** > **All Users** section.
 - Select the user for whom the password needs to be reset.
 - Click on the kebab icon(three dots) on the right side of the user's name and select **Reset Password**.

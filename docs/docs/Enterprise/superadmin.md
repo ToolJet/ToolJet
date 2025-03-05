@@ -315,6 +315,6 @@ Turning off this option restricts workspace admins from configuring the login me
 
 Manage the instance license via the **Settings** page. Super Admins have the capability to update the instance's license key from this page.
 
-Check out the [License](/docs/org-management/licensing/self-hosted) page for more details.
+Check out the [License](/docs/tj-setup/licensing/self-hosted) page for more details.
 
 </div>

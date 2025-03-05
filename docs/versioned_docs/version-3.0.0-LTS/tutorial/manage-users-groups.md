@@ -5,7 +5,7 @@ title: Managing Users and Groups
 
 # Managing Users and Groups
 
-This guide explains how to manage users and groups in ToolJet. For an overview of the permission system, please refer to the [Permissions](/docs/org-management/permissions) documentation.
+This guide explains how to manage users and groups in ToolJet. For an overview of the permission system, please refer to the [Permissions](/docs/user-management/role-based-access/access-control) documentation.
 
 ## Managing Users Across Workspaces
 
@@ -160,7 +160,7 @@ Admins of a workspace can create custom groups to manage permissions. To create 
 ### Modifying Group Permissions
 
 :::info
-For detailed information on permissions, refer to the [Permissions](/docs/org-management/permissions) documentation.
+For detailed information on permissions, refer to the [Permissions](/docs/user-management/role-based-access/access-control) documentation.
 :::
 
 When changing permissions for a custom group:

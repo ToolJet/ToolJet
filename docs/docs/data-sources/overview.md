@@ -78,7 +78,7 @@ By default, 4 data sources will be available on every app on ToolJet:
 
 ## User Permissions
 
-Changing the **Permissions** for Data Sources is a privilege reserved for **Admins** and **[Super Admins](/docs/Enterprise/superadmin)** within the workspace.
+Changing the **Permissions** for Data Sources is a privilege reserved for **Admins** and **[Super Admins](/docs/user-management/role-based-access/access-control#data-sources)** within the workspace.
 
 To configure these permissions, navigate to **Workspace Settings** -> **Groups Settings**. Admins and Super Admins have the authority to assign the following permissions to user groups:
 

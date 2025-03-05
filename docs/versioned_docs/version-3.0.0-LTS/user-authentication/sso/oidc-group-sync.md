@@ -104,4 +104,4 @@ Group mapping in ToolJet follows these principles:
 - Users will need to log in via alternative SSO methods or email/password.
 - If the license limit is reached, new users will not be allowed to log in.
 
-For more information on managing users and groups in ToolJet, please refer to our [Managing Users and Groups](/docs/tutorial/manage-users-groups/) documentation.
+For more information on managing users and groups in ToolJet, please refer to our [Managing Users and Groups](/docs/user-management/role-based-access/user-roles) documentation.

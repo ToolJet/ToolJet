@@ -7,7 +7,7 @@ title: ToolJet Cloud
 
 ## Choosing Your ToolJet Cloud Subscription
 
-This comprehensive guide aims to assist you in the process of configuring paid plans for ToolJet Cloud. If you are looking for self-hosted/on-premises plans, please navigate to **[Self Hosted](/docs/org-management/licensing/self-hosted)** . For ToolJet Cloud, we offer three different types of subscriptions tailored to your specific requirements. Let's explore how to get the most out of ToolJet's powerful features! 🚀
+This comprehensive guide aims to assist you in the process of configuring paid plans for ToolJet Cloud. If you are looking for self-hosted/on-premises plans, please navigate to **[Self Hosted](/docs/tj-setup/licensing/self-hosted)** . For ToolJet Cloud, we offer three different types of subscriptions tailored to your specific requirements. Let's explore how to get the most out of ToolJet's powerful features! 🚀
 
 Let's look into three types of subscriptions:
 
