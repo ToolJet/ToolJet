@@ -129,6 +129,7 @@ export const DATA_SOURCE_TYPE = {
   LOCAL: 'local',
   GLOBAL: 'global',
   STATIC: 'static',
+  DEFAULT: 'default',
 };
 
 export const SAMPLE_DB_KIND = {

@@ -1,6 +1,7 @@
 import { sanitizeInput } from '@helpers/utils.helper';
-import { IsString, IsOptional, IsNotEmpty, MaxLength, IsBoolean, IsUUID } from 'class-validator';
+import { IsString, IsOptional, IsNotEmpty, MaxLength, IsBoolean, IsUUID, IsEnum } from 'class-validator';
 import { Exclude, Expose, Transform } from 'class-transformer';
+import { APP_TYPES } from '../constants';
 
 export class AppCreateDto {
   @IsNotEmpty()
@@ -12,6 +13,11 @@ export class AppCreateDto {
   @IsString()
   @MaxLength(200, { message: 'Maximum length has been reached.' })
   icon?: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @IsEnum(APP_TYPES, { message: 'Invalid app type.' })
+  type: string;
 }
 
 export class AppUpdateDto {
