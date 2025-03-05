@@ -33,7 +33,7 @@ export const BulkUploadPrimaryKey = () => {
         >
           <input
             type="text"
-            value={bulkUpdatePrimaryKey?.primary_key?.join() || ''}
+            value={bulkUpdatePrimaryKey?.primary_key?.join(', ') || ''}
             style={{
               width: '100%',
               height: '100%',
