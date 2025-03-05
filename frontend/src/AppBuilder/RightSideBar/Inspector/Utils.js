@@ -50,7 +50,8 @@ export function renderCustomStyles(
     componentConfig.component == 'MultiselectV2' ||
     componentConfig.component == 'RadioButtonV2' ||
     componentConfig.component == 'Button' ||
-    componentConfig.component == 'Image'
+    componentConfig.component == 'Image' ||
+    componentConfig.component == 'ModalV2'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
@@ -131,6 +132,7 @@ export function renderElement(
   const paramTypeDefinition = componentDefinition[paramType] || {};
   const definition = paramTypeDefinition[param] || {};
   const meta = componentMeta[paramType][param];
+  const isHidden = component.component.properties[param]?.isHidden ?? false;
 
   if (
     componentConfig.component == 'DropDown' ||
@@ -170,6 +172,7 @@ export function renderElement(
       component={component}
       placeholder={placeholder}
       validationFn={validationFn}
+      isHidden={isHidden}
     />
   );
 }

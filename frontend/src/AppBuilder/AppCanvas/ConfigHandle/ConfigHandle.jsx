@@ -28,16 +28,15 @@ export const ConfigHandle = ({
   );
 
   const setComponentToInspect = useStore((state) => state.setComponentToInspect);
+  const isModal = componentType === 'Modal' || componentType === 'ModalV2';
+
   return (
     <div
       className={`config-handle ${customClassName}`}
       widget-id={id}
       style={{
         top: position === 'top' ? '-20px' : widgetTop + widgetHeight - (widgetTop < 10 ? 15 : 10),
-        visibility:
-          showHandle && (!isMultipleComponentsSelected || (componentType === 'Modal' && isModalOpen))
-            ? 'visible'
-            : 'hidden',
+        visibility: showHandle && (!isMultipleComponentsSelected || (isModal && isModalOpen)) ? 'visible' : 'hidden',
         left: '-1px',
       }}
       onClick={(e) => {
@@ -51,7 +50,7 @@ export const ConfigHandle = ({
     >
       <span
         style={{
-          background: componentType === 'Modal' && isModalOpen ? '#c6cad0' : '#4D72FA',
+          background: isModal && isModalOpen ? '#c6cad0' : '#4D72FA',
         }}
         className="badge handle-content"
       >
