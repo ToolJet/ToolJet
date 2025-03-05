@@ -82,7 +82,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
         currentNumber += 1;
       }
       return {
-        id,
+        'id': id,
         title,
         visible: { value: '{{true}}' },
         disable: { value: '{{false}}' },
@@ -143,9 +143,11 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
   const onChangeVisibility = (item, value, property, index) => {
     const updatedTabItems = tabItems.map((tabItem) => {
       if (tabItem.id === item.id) {
+        let newVisibilityValue = resolveReferences(tabItem[property]);
+        newVisibilityValue = typeof newVisibilityValue === 'boolean' ? newVisibilityValue : newVisibilityValue['value'];
         return {
           ...tabItem,
-          [property]: !tabItem[property],
+          [property]: !newVisibilityValue,
         };
       }
       return tabItem;
@@ -221,9 +223,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
               onChange={(value) => {
                 onChangeIcon(item, { value }, 'icon', index);
               }}
-              onVisibilityChange={(value) =>
-                onChangeVisibility(item, { value: resolveReferences(value) }, 'iconVisibility', index)
-              }
+              onVisibilityChange={(value) => onChangeVisibility(item, { value: true }, 'iconVisibility', index)}
               fieldMeta={{ type: 'icon', displayName: 'Icon' }}
               paramType={'icon'}
             />
