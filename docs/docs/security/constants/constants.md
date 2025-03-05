@@ -3,35 +3,38 @@ id: constants
 title: Workspace Constants
 ---
 
-ToolJet allows you to set workspace constants to store pre-defined values that can be used across your application to maintain consistency, facilitate easy updates, and securely store sensitive information. Workspace constants are specific to the workspace where they are created and cannot be accessed in other workspaces.
+ToolJet allows you to set workspace constants to store pre-defined values that can be used across your application to maintain consistency, facilitate easy updates, and securely store sensitive information. Workspace constants are specific to the workspace where they are created and cannot be accessed in other workspaces. To enhance security, all constants and secrets are encrypted before being stored in the database, providing an additional layer of protection for sensitive data.
 
 There are two types of constants:
-1. **Global Constants:** These are predefined values that can be used across your applications within a workspace. They allow you to store frequently used values, such as API URLs, configuration settings, etc. and access them within the workspace.
-2. **Secrets:** These are a specific type of workspace constants designed for securely storing sensitive information like API keys and database credentials. Secrets are masked and stored in encrypted format to prevent exposure to unauthorized users. <br/>
-        **Note**: Secrets cannot be used in RunJS or RunPy queries.
+1. **Global Constants:** These are predefined values that can be used across your applications within a workspace. They allow you to store frequently used values, such as API URLs, configuration settings, etc. and access them within the workspace. Global Constants are resolved on the client side.
+2. **Secret Constants:** These are a specific type of workspace constants designed for securely storing sensitive information like API keys and database credentials. Secrets are masked and stored in encrypted format to prevent exposure to unauthorized users. Secret Constants are resolved on the server side, preventing exposure to the client. <br/>
+        **Note**: Secret Constants cannot be used in RunJS or RunPy queries.
 
-## Usage of Workspace Constants
+## Characteristics and Usage
 
-Workspace constants can be used for following:
-- [Store Pre-Defined Values](#store-pre-defined-values)
-- [Environment Specific Configurations](#environment-specific-configurations)
-- [Server-Side Resolution and Security](#server-side-resolution-and-security)
+|   Characteristic        |       Global Constants        |         Secrets           |
+|-------------------------|:-----------------------------:|:-------------------------:|
+| Components              |             ✅                |           ❌              |
+| Data Queries *          |             ✅                |           ✅              |
+| Data Sources            |             ✅                |           ✅              |
+| Workflows               |             ✅                |       Coming Soon         |
+| Encrypted in DB         |             ✅                |           ✅              |
+| Masked in Frontend      |             ❌                |           ✅              |
+| Resolved on Client Side |             ✅                |           ❌              |
+| Resolved on Server Side |             ❌                |           ✅              |
+| Naming Convention       | `{{constants.constant_name}}` | `{{secrets.secret_name}}` |
+        
+***Note**: 
+1. Secret Constants cannot be used in RunJS or RunPy queries.
+2. Secret Constants can only be used as a singular key and can't be used in a composite key manner.
 
-### Store Pre-Defined Values
-
-Workspace constants can be used to store predefined values that need to be used across the application or values that might need to be updated throughout the application. Sensitive informations can be stored as a secret which is a masked value and prevent exposure to unauthorized users.
-
-### Environment Specific Configurations
+## Environment Specific Configurations
 
 ToolJet allows users to define environment-specific configurations by assigning different values to constants and secrets across various environments. This approach is essential for managing sensitive information, such as API keys, database credentials, and external service endpoints, which may differ between development, staging, and production environments. 
 
 For example, you can configure unique API keys for each environment to ensure seamless integration and security.
 
 <img className="screenshot-full" src="/img/security/constants/constants-secret/env-specific-const-v2.png" alt="Environment-Specific Constants"/>
-
-### Server-Side Resolution and Security
-
-Both workspace constants and secrets are resolved exclusively on the server side, preventing exposure to the client. To enhance security, all constants and secrets are encrypted before being stored in the database, providing an additional layer of protection for sensitive data.
 
 ## Creating Workspace Constants
 
@@ -92,24 +95,39 @@ In Data Sources and Queries, secret values are masked in the frontend and can on
 - Inside Queries in Query Manager:
     <img className="screenshot-full" src="/img/security/constants/constants-secret/secrets-queries.png" alt="Use Secrets Inside Queries in Query Manager"/>
 
-:::info
-Secrets cannot be used within the App Builder or workflows.
-:::
+## Mapping Workspace Constants from Environment Variables
 
-## Best Practices
+From version **`v3.5.8-ee-lts`**, you can use environment variables to set global and secret constants. Workspace constants set using environment variables will have a `.env` tag in front of them. If there are two constants with the same name, the one set through the environment variable will be used in the app builder, while the constant set through the UI will have a `duplicate` tag in front of it.
 
-- Utilize global constants to maintain consistency by storing frequently used values across the application.
-- Securely store secrets to prevent unauthorized access and exposure in the codebase or frontend.
-- Regularly audit and update constants and secrets to ensure security, compliance, and relevance.
+Users cannot edit or delete constants created from environment variables through the UI. To add, update, or delete any values from an environment variable, the container must be restarted.
 
-## Characteristics and Usage
+<img className="screenshot-full" src="/img/security/constants/constants-secret/const-mapping.png" alt="Mapping Workspace Constants from Environment Variables"/>
 
-|   Characteristic   |       Global Constants        |         Secrets           |
-|--------------------|:-----------------------------:|:-------------------------:|
-| App Builder        |             ✅                |           ❌              |
-| Data Sources       |             ✅                |           ✅              |
-| Data Queries       |             ✅                |           ✅              |
-| Workflows          |             ✅                |           ❌              |
-| Encrypted in DB    |             ✅                |           ✅              |
-| Masked in Frontend |             ❌                |           ✅              |
-| Naming Convention  | `{{constants.constant_name}}` | `{{secrets.secret_name}}` |
+### Setting Global Constants
+
+**Setting Individual Global Constant**
+
+Syntax - `TOOLJET_GLOBAL_CONSTANTS__<environment>__constant_name`
+
+Example - TOOLJET_GLOBAL_CONSTANTS__development__companyName = "Corp Pvt. Ltd."
+
+**Setting Multiple Global Constants**
+
+Syntax - `TOOLJET_GLOBAL_CONSTANTS__<environment> = {“name1”: “value1", “name2”: “value2"}`
+
+Example - TOOLJET_GLOBAL_CONSTANTS__development = `{"company1": "corp.com", "company2": "example.com"}`
+
+
+### Setting Secret Constants
+
+**Setting Individual Global Constant**
+
+Syntax - `TOOLJET_SECRET_CONSTANTS__<environment>__constant_name`
+
+Example - TOOLJET_SECRET_CONSTANTS__development__apiKey = "agdagdagdg"
+
+**Setting Multiple Global Constants**
+
+Syntax - `TOOLJET_SECRET_CONSTANTS__<environment> = {“name1”: “value1", “name2”: “value2"}`
+
+Example - TOOLJET_SECRET_CONSTANTS__development = `{"api_url": "https://api.example.com", "password" : "12345", "key" : "agdagdagdg"}`

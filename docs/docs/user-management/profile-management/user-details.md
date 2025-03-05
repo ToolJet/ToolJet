@@ -3,9 +3,9 @@ id: user-details
 title: Edit User Details
 ---
 
-Super Admins can edit user details, such as updating names or promoting users to the Super Admin role. While workspace admins can update **[user roles](#)**, **[groups](#)** or **[user metadata](#)**.
+At the instance level, Super Admins can edit a user's name or promote them to the Super Admin role. A Super Admin has access to all workspaces and inherits all the permissions of a Workspace Admin. At the workspace level, admins can update **[user roles](#)**, **[groups](#)** or **[user metadata](#)**.
 
-## Update User Details
+## Update User's Name
 
 Role Required: **Super Admin** <br/>
 
@@ -19,6 +19,7 @@ Role Required: **Super Admin** <br/>
 
 4. Select **Edit user details**.
 
-5. Update the user's name or enable the toggle in front of 'Super Admin' to promote the user to a Super Admin.
+5. Update the user's name.
+    <img className="screenshot-full img-s" src="/img/user-management/profile-management/user-details/edit-name.png" alt="Edit User's Name'" />
 
 6. Click on **Update** at the bottom of the drawer.
