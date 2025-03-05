@@ -231,6 +231,13 @@ img {
   background-color: #ffffff
 }
 
+.img-full {
+  box-shadow: none !important;
+  border-radius: 6px !important;
+  border: 1px solid #E4E7EB !important;
+  background-color: #ffffff
+}
+
 .card-icon img {
   box-shadow: none;
   border-radius: 0;
