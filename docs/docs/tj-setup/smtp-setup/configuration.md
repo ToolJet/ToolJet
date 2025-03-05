@@ -3,7 +3,7 @@ id: configuration
 title: Configuration
 ---
 
-This feature is only available on the self-hosted ToolJet, where you can configure your own SMTP email server. This feature allows you to choose your own email server, which helps to seamlessly send emails for various purposes, including invitations, password reset requests, and notifications. 
+This feature is exclusive to self-hosted ToolJet, allowing you to configure a custom SMTP email server. This feature allows you to choose your own email server, which helps to seamlessly send emails for various purposes, including invitations, password reset requests, and notifications. 
 
 There are two ways to setup your email server in ToolJet:
 1. **[Using the GUI](#configuration-using-gui)**: This method involves directly entering SMTP settings into the ToolJet interface, which is suitable for simpler setups.
@@ -52,19 +52,19 @@ If you have upgraded from a version prior to v2.62.0, the SMTP variables in your
 
 ToolJet allows you to configure SMTP settings using environment variables. You can enable a toggle in the Email protocol (SMTP) settings to apply or fetch the configuration directly from your .env file.
 
-<img className="screenshot-full img-l" src="/img/enterprise/smtp/configuration-v2-env.png" alt="SMTP Configuration Without Environment Variables" />
+<img className="screenshot-full img-l" style={{ marginBottom:'15px' }} src="/img/enterprise/smtp/configuration-v2-env.png" alt="SMTP Configuration Without Environment Variables" />
 
 **Example Environment Variables**:<br/>
 
-```javascript
-DEFAULT_FROM_EMAIL=hello@tooljet.io
-SMTP_USERNAME=your-username
-SMTP_PASSWORD=your-password
-SMTP_DOMAIN=smtp.mailgun.org 
-SMTP_PORT=587
-SMTP_SSL=false
-SMTP_DISABLED=false
-```
+    ```javascript
+    DEFAULT_FROM_EMAIL=hello@tooljet.io
+    SMTP_USERNAME=your-username
+    SMTP_PASSWORD=your-password
+    SMTP_DOMAIN=smtp.mailgun.org 
+    SMTP_PORT=587
+    SMTP_SSL=false
+    SMTP_DISABLED=false
+    ```
 
 - For new installations, if SMTP is configured in the .env file, the **Apply configuration from environment variables** toggle will be turned on by default.
 - When the toggle is enabled, the SMTP settings fields in the UI will be populated with values from the environment variables and will be read-only.

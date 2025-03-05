@@ -9,7 +9,7 @@ This guide explains the different types of licenses present and provides instruc
 
 ## Types of Licenses
 
-ToolJet provides three types of licenses - **Basic**, **Trial**, and **Paid**. Which can be further categorized into different subscription plans. Visit **[ToolJet Pricing](https://www.tooljet.ai/pricing)** page for more details on different subscription plans.
+ToolJet provides three types of licenses - **Basic**, **Trial**, and **Paid**. These can be further categorized into different subscription plans. Visit **[ToolJet Pricing](https://www.tooljet.ai/pricing)** page for more details on different subscription plans.
 
 ### Basic License
 
@@ -17,19 +17,19 @@ This is a free license where a user can access basic offerings such as creating 
 
 ### Trial License
 
-ToolJet offers a trial license which is valid for 14 days, where user can access all premium features and evaluate ToolJet according to their needs. You can contact  **[ToolJet Team](mailto:hello@tooljet.com)** to generate a trial license key.
+ToolJet offers a trial license which is valid for 14 days, where users can access all premium features and evaluate ToolJet according to their needs. You can contact  **[ToolJet Team](mailto:hello@tooljet.com)** to generate a trial license key.
 
 ### Paid License
 
-ToolJet offers various subscription plans for paid licenses visit **[ToolJet Pricing](https://www.tooljet.ai/pricing)** page for more details on different subscription plans. Once you have decided on a suitable plan for your needs then you can contact **[ToolJet Team](mailto:hello@tooljet.com)** to complete the onboarding process.
+ToolJet offers various subscription plans for paid licenses. Visit the **[ToolJet Pricing](https://www.tooljet.ai/pricing)** page for more details on different subscription plans. Once you have decided on a suitable plan for your needs you can then contact the **[ToolJet Team](mailto:hello@tooljet.com)** to complete the onboarding process.
 
 </div>
 
 ## AI Credit System 
 
-Starting from **`v3.5.0-ee-lts`** ToolJet supports **Build with AI** allowing you to build applications effortlessly using natural language. Refer to [Build with AI](/docs/build-with-ai/overview) guide for more information. 
+Starting from **`v3.5.0-ee-lts`** ToolJet supports **Build with AI** allowing you to build applications effortlessly using natural language. Refer to **[Build with AI](/docs/build-with-ai/overview)** guide for more information. 
 
-The AI credits are consumed on every AI operation performed in ToolJet. Credits operates at an instance level and are allocated based on the pricing plan and are replenished monthly. Unused credits do not carry over to the next month. AI-powered operations consume credits depending on their complexity. Visit **[ToolJet Pricing](https://www.tooljet.ai/pricing)** page for more details.
+The AI credits are consumed on every AI operation performed in ToolJet. Credits operate at an instance level and are allocated based on the pricing plan and are replenished monthly. Unused credits do not carry over to the next month, they expire at the end of each billing cycle. AI-powered operations consume credits depending on their complexity. Visit **[ToolJet Pricing](https://www.tooljet.ai/pricing)** page for more details.
 
 ### Credit Usage
 
@@ -51,7 +51,7 @@ AI-powered assistance for the following actions consumes **3 credits**:
 The entire app UI generation consumes **10 credits**.
 
 
-### Credit calculation
+### Credit Calculation
 
 AI credits are calculated based on the pricing plan and are assigned per builder in an instance. These credits are then available for use by all users in the instance across all workspaces.
 
@@ -77,7 +77,7 @@ Role Required: **Super Admin**
      **Q. What happens if my subscription expires?**
     </summary>
 
-If your paid or trial license key expires, your instance will revert to operating as a basic plan. Upon expiration, access to premium features like OpenID SSO login and Audit logs will be restricted, ensuring no data loss occurs. However, don't worry! You can still renew to any of the paid plans and enjoy the premium features again.
+If your paid or trial license key expires, your instance will revert to the Basic plan. You will lose access to premium features such as OpenID SSO login and Audit logs, but no data will be lost. You can renew anytime to regain access to premium features.
 
 </details>
 

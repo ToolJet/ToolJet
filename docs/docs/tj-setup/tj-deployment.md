@@ -3,13 +3,13 @@ id: tj-deployment
 title: Choose Your ToolJet
 ---
 
-ToolJet offers two deployment options — **Self-Hosted** and **Cloud** — enabling users to select the model that best suits their requirements. Choosing the right deployment method is crucial as it impacts various factors such as data control, scalability, and operational efficiency. This guide explains these options and helps you decide which one best suits your specific requirements.
+ToolJet offers two deployment options — **Self-Hosted** and **Cloud** — enabling users to select the model that best suits their requirements. Choosing the right deployment method is crucial since it affects data control, scalability, and operational efficiency. This guide explains these options and helps you decide which one best suits your specific requirements.
 
 <div style={{paddingTop:'24px'}}>
 
 ## Self-Hosted ToolJet
 
-With the self-hosted option, ToolJet can be deployed on your own infrastructure (on-premises or private cloud). This provides more control over data, customization, and integrations, making it a ideal choice for organizations seeking full control over their application development environment to meet compliance, security, and operational requirements.
+With the self-hosted option, ToolJet can be deployed on your own infrastructure (on-premises or private cloud). This provides more control over data, customization, and integrations, making it an ideal choice for organizations seeking full control over their application development environment to meet compliance, security, and operational requirements.
 
 #### Why Choose Self-Hosted ToolJet?
 
@@ -35,8 +35,8 @@ ToolJet Cloud is a managed service hosted by the ToolJet team. It eliminates the
 
 <div style={{paddingTop:'24px'}}>
 
-## ToolJet Subscription Plan
+## ToolJet Subscription Plans
 
-ToolJet provides a range of subscription plans tailored to both deployment models. Refer to the **[ToolJet Pricing](https://www.tooljet.com/pricing)** page for detailed information on features and costs.
+ToolJet offers various subscription plans for both deployment models. Refer to the **[ToolJet Pricing](https://www.tooljet.com/pricing)** page for detailed information on features and costs.
 
 </div>

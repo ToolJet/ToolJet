@@ -3,7 +3,7 @@ id: archive-user
 title: Archive and Unarchive
 ---
 
-Admin users can archive users in a workspace which will remove the access to the workspace for the user but will preserve all the apps and changes done by the user and the user can be re-invited to the workspace by unarchiving the user if needed.
+Admins can archive users in a workspace which will remove the access to the workspace for the user but will preserve all the apps and changes done by the user and the user can be re-invited to the workspace by unarchiving the user if needed.
 
 :::info
 1. Archived users will not be counted for billing/licensing.

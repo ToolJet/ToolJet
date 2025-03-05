@@ -3,7 +3,7 @@ id: bulk-invite-users
 title: Bulk Invite
 ---
 
-Admin users can bulk invite users to a workspace using a CSV file containing user email address, **[roles](#)**, **[groups](#)** and other details. The invited users receive an email with instructions to join the workspace, ensuring a seamless onboarding process.
+Admins can bulk invite users to a workspace using a CSV file containing user email addresses, **[roles](/docs/user-management/role-based-access/user-roles)**, **[groups](/docs/user-management/role-based-access/custom-groups)**, and other details. The invited users receive an email with instructions to join the workspace, ensuring a seamless onboarding process.
 
 ## Steps to Bulk Invite Users
 
@@ -14,11 +14,12 @@ Role Required: **Admin**
 2. Go to **Workspace settings > Users**. <br/> 
     (Example URL - `https://app.corp.com/nexus/workspace-settings/users`)
 
-3. Click on **Add users** button.
+3. Click on the **Add users** button.
     <img className="screenshot-full" src="/img/user-management/onboard-user/invite-user/add-user.png" alt="Add user button" />
 
 4. Switch to **Upload CSV file** tab.
-5. Upload a CSV file consiting following fields:
+
+5. Upload a CSV file consisting following fields:
 
     | Field | Required/Optional | Example |
     |:-----|:---------|:-------|

@@ -3,7 +3,7 @@ id: invite-user
 title: Invite
 ---
 
-Admin users can invite users to a workspace using their email addresses and assign them specific **[roles](#)** and **[groups](#)** to manage permissions. The invited users receive an email with instructions to join the workspace, ensuring a seamless onboarding process.
+Admins can invite users to a workspace using their email addresses and assign them specific **[roles](/docs/user-management/role-based-access/user-roles)** and **[groups](/docs/user-management/role-based-access/custom-groups)** to manage permissions. The invited users receive an email with instructions to join the workspace, ensuring a seamless onboarding process.
 
 ## Steps to Invite a User
 
@@ -14,7 +14,7 @@ Role Required: **Admin** <br/>
 2. Go to **Workspace settings > Users**. <br/> 
     (Example URL - `https://app.corp.com/nexus/workspace-settings/users`)
 
-3. Click on **Add users** button.
+3. Click on the **Add users** button.
     <img className="screenshot-full" src="/img/user-management/onboard-user/invite-user/add-user.png" alt="Add user button" />
 
 4. Fill out the following details:
@@ -24,11 +24,11 @@ Role Required: **Admin** <br/>
     | Email address | Required | john@corp.com |
     | Select groups | Required | USER ROLE: **Admin** |
     | | Optional | CUSTOM GROUPS: **Manager** |
-    | [User metadata](#) | Optional | `{"apiKey": "abc123"}` |
+    | [User metadata](/docs/user-management/onboard-users/user-metadata) | Optional | `{"apiKey": "abc123"}` |
 
     <img className="screenshot-full img-m" src="/img/user-management/onboard-user/invite-user/user-details.png" alt="Invite User" />
 
-5. Click on **Invite users** button to send the invitation.
+5. Click on the **Invite users** button to send the invitation.
     
 
 ## Email Invitation
@@ -41,7 +41,7 @@ Once a user is invited to the workspace, they will receive an email containing a
 
 ## Invitation URL 
 
-On Self-Hosted ToolJet, admin users can copy unique invitation URL and share with the user.
+On Self-Hosted ToolJet, admins can copy unique invitation URL and share with the user.
 
 <img className="screenshot-full" src="/img/user-management/onboard-user/invite-user/copy-link.png" alt="Workspace Level Permissions" />
 
