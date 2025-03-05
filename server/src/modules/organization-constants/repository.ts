@@ -31,14 +31,23 @@ export class OrganizationConstantRepository extends Repository<OrganizationConst
     });
   }
 
-  async findByEnvironment(organizationId: string, environmentId: string) {
-    return this.find({
-      where: {
-        organizationId,
-        orgEnvironmentConstantValues: {
-          environmentId,
-        },
+  // ... existing code ...
+
+  async findByEnvironment(organizationId: string, environmentId: string, type?: OrganizationConstantType) {
+    const whereCondition: any = {
+      organizationId,
+      orgEnvironmentConstantValues: {
+        environmentId,
       },
+    };
+
+    // Add type filter if provided
+    if (type) {
+      whereCondition.type = type;
+    }
+
+    return this.find({
+      where: whereCondition,
       relations: ['orgEnvironmentConstantValues'],
     });
   }
