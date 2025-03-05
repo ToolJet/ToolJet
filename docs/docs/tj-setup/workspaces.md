@@ -6,7 +6,7 @@ title: Workspaces
 
 Workspaces are collaborative environments that enable teams to build, customize, and deploy applications, as well as manage data, workflows, and permissions. It helps you organize your organization's apps based on hierarchy or departments, making them easier to manage. For example, if your organization has departments, you can create separate workspaces for each to isolate apps or limit access to particular set of users or developers.
 
-Workspace contains applications, data sources, users (admins, developers, or builders, end users), [access and permission ](/docs)settings, and more. You can also set different [login configurations](docs/user-authentication/workspace-login) for each workspace. You can have multiple workspaces within an instance.
+Workspace contains applications, data sources, users (admins, developers, or builders, end users), [access and permission ](/docs/user-management/role-based-access/access-control)settings, and more. You can also set different [login configurations](/docs/user-management/authentication/self-hosted/overview) for each workspace. You can have multiple workspaces within an instance.
 
 ## Workspace Creation
 
@@ -42,7 +42,7 @@ To switch between the workspaces,
 ## Archiving Workspaces
 **Role required** - Super Admin
 
--   This feature is available only for self-hosted users, and only [Super admins](/docs/user-management/role-based-access/super-admin) can archive workspaces. A Super Admin is the user who has full access to all the Workspaces, Users, and Groups of an instance
+-   This feature is available only for self-hosted users, and only [Super Admin](/docs/user-management/role-based-access/super-admin) can archive workspaces. A Super Admin is the user who has full access to all the Workspaces, Users, and Groups of an instance
 -   To archive a workspace, at least one active workspace must exist in the instance.
 
 -   **Impact**

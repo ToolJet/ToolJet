@@ -47,7 +47,7 @@ You can configure data sources and constants for each environment, and ToolJet w
     
 -   **Staging** – The testing or product team validates requirements and tests the application using staging data. Apps and queries cannot be edited in this environment.
     
--   **Production** – After thorough testing in staging, the application is promoted to production. This can serve as a pre-release environment where you test with production data and constants before releasing the application to end users. Refer to [Release](http://s) documentation to learn more.
+-   **Production** – After thorough testing in staging, the application is promoted to production. This can serve as a pre-release environment where you test with production data and constants before releasing the application to end users. Refer to [Release](/docs/development-lifecycle/release/release-rollback) documentation to learn more.
 
 <img className="screenshot-full img-l" src="/img/development-lifecycle/environments/Built-in-env.png" alt="self-hosted-env-concept" />
 
@@ -65,4 +65,4 @@ Each environment has a different impact on your application. Please refer the fo
 | Promote           | ✅         | ✅      | -          |
 
 
-Checkout the [Environment-Example](http://f) guide to learn about multi-environment in ToolJet with a practical example.
+Checkout the [Environment-Example](/docs/development-lifecycle/environment/self-hosted/example-configuration) guide to learn about multi-environment in ToolJet with a practical example.

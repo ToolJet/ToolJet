@@ -1,5 +1,5 @@
 ---
-id: workspace-level-login
+id: workspace-login
 title: Workspace Login
 ---
 
@@ -22,7 +22,7 @@ To configure the workspace-level authentication configuration
     
     *   SSO makes it easier for organizations to manage user access. Users can use one login for different tools, and admins can quickly add or remove access when needed. Thus, it improves an organization's onboarding and offboarding experience.
         
-    *   At the workspace level, you can enable the **Instance SSO** toggle to inherit instance-level configured SSO, or you can also configure the workspace-level SSO with Google, GitHub, OpenID Connect, LDAP, and SAML. Please check the [SSO docs](http://j) for a detailed guide on SSO configuration.
+    *   At the workspace level, you can enable the **Instance SSO** toggle to inherit instance-level configured SSO, or you can also configure the workspace-level SSO with Google, GitHub, OpenID Connect, LDAP, and SAML. Please check the [SSO docs](/docs/user-management/sso/overview) for a detailed guide on SSO configuration.
 
     
 ###  Allowed Domains

@@ -6,7 +6,7 @@ title: Example Configuration
 
 In this guide, you'll learn how to migrate applications using GitSync in a multi-instance ToolJet setup through a practical example.
 
-Vertex Solutions, a company building internal applications with ToolJet, has three ToolJet instances for **development, staging, and production** environments. They have configured Gitsync in all the three instances with GitHub by following the setup instructions given in the [GitSync](/docs) documentation.
+Vertex Solutions, a company building internal applications with ToolJet, has three ToolJet instances for **development, staging, and production** environments. They have configured Gitsync in all the three instances with GitHub by following the setup instructions given in the [GitSync](/docs/development-lifecycle/gitsync/overview) documentation.
 
 ## Creating the App
 

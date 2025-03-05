@@ -5,7 +5,7 @@ title: White Labeling
 
 <div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
 
-The White Label feature in ToolJet lets you customize the look and feel of your ToolJet deployment to match your branding guidelines, including your logo, favicon, and page title, making ToolJet appear like your own product. This guide will help you understand the configuration of White labelling for your organization. For **self-hosted** instances, the white labelling is set at the **instance level** and for the **cloud**, it is applied at the **workspace level**.
+The White Label feature in ToolJet lets you customize the look and feel of your ToolJet deployment to match your branding guidelines, including your logo, favicon, and page title, making ToolJet appear like your own product. This guide will help you understand the configuration of White labelling for your organization. For **self-hosted** instances, the white labelling is set at the [instance level](/docs/user-management/authentication/self-hosted/instance-login) and for the **cloud**, it is applied at the [workspace level](/docs/user-management/authentication/self-hosted/workspace-login).
 
 
 <img className="screenshot-full img-m" src="/img/tooljet-setup/whitelabelling/intro.png" alt="whitelable your brand" />

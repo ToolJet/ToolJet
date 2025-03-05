@@ -1,5 +1,5 @@
 ---
-id: instance-level-login
+id: instance-login
 title: Instance Login
 ---
 

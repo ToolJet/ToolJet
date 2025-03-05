@@ -464,8 +464,8 @@ const sidebars = {
               'label': 'Self-hosted',
               'items': [
                 'user-management/authentication/self-hosted/overview',
-                'user-management/authentication/self-hosted/instance-level-login',
-                'user-management/authentication/self-hosted/workspace-level-login'
+                'user-management/authentication/self-hosted/instance-login',
+                'user-management/authentication/self-hosted/workspace-login'
               ]
             },
             'user-management/authentication/cloud-login',

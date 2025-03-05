@@ -21,7 +21,7 @@ To configure the authentication:
     
     *   SSO makes it easier for organizations to manage user access. Users can use one login for different tools, and admins can quickly add or remove access when needed. Thus, it improves an organization's onboarding and offboarding experience.
         
-    *   You can configure SSO with Google, GitHub, OpenID Connect, LDAP, and SAML. Please check the [SSO docs](http://j) for a detailed guide on SSO configuration.
+    *   You can configure SSO with Google, GitHub, OpenID Connect, LDAP, and SAML. Please check the [SSO docs](/docs/user-management/sso/overview) for a detailed guide on SSO configuration.
 
 
 ###   Default SSO (Single Sign-On)   

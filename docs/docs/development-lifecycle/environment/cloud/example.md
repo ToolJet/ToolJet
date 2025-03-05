@@ -9,13 +9,13 @@ This guide will walk you through setting up a multi-environment in ToolJet with 
 
 In ToolJet, you can configure data sources for each environment, allowing your application to connect to different databases or APIs based on the environment. 
 
-In this case, the company uses data from a Postgres data source for their ToolJet apps, with separate databases for development, staging, and production environments. They need to configure the Postgres data source for each environment in the Data Sources section. For more details, refer to the [Data Source Documentation](http://d).
+In this case, the company uses data from a Postgres data source for their ToolJet apps, with separate databases for development, staging, and production environments. They need to configure the Postgres data source for each environment in the Data Sources section. For more details, refer to the [Data Source](/docs/data-sources/overview) Documentation.
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/development-lifecycle/environments/selfhosted-datasource.png" alt="self-hosted-env-concept" />
 
 ## Configuring Constants
 
-The company also uses different global and secret constants for each environment. Global Constants are reusable values that can be applied consistently across the product, while Secrets are used for securely storing sensitive data. These can be configured in the Workspace Constants section. For more details, check the [Workspace Constants and Secrets](http://s) Documentation.
+The company also uses different global and secret constants for each environment. Global Constants are reusable values that can be applied consistently across the product, while Secrets are used for securely storing sensitive data. These can be configured in the Workspace Constants section. For more details, check the [Workspace Constants and Secrets](/docs/security/constants/) Documentation.
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/development-lifecycle/environments/cloud-constants.png" alt="self-hosted-env-concept" />
 
