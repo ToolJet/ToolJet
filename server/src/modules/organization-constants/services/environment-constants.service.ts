@@ -22,4 +22,8 @@ export class EnvironmentConstantsService implements IEnvironmentConstantsService
   ): Promise<any> {
     throw new Error('Method not implemented.');
   }
+
+  escapeRegExp(string: string): string {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
 }

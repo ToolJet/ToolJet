@@ -60,4 +60,6 @@ export interface IEnvironmentConstantsService {
     type: 'Global' | 'Secret',
     resolveSecrets?: boolean
   ): Promise<EnvironmentConstantWithValue | undefined>;
+
+  escapeRegExp(string: string): string;
 }

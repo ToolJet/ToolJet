@@ -122,8 +122,4 @@ export class OrganizationConstantsUtilService implements IOrganizationConstantsU
       }
     });
   }
-
-  escapeRegExp(string: string): string {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  }
 }
