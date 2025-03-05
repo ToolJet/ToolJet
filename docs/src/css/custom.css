@@ -424,7 +424,7 @@ img {
   margin: 0px;
 }
 
-.docs-doc-id-doc-home-page header {
+.docs-doc-id-doc-home-page .theme-doc-markdown header {
   display: none;
 }
 

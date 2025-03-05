@@ -82,7 +82,7 @@ Follow the steps below to deploy ToolJet on a ECS cluster.
         - **PG_USER**
         - **PG_PASS**
         - **SECRET_KEY_BASE** 
-        - **LOCKBOX_KEY**
+        - **LOCKBOX_MASTER_KEY**
         </ul>
         <br/>
         Read **[environment variables reference](/docs/setup/env-vars)**
@@ -95,7 +95,7 @@ Follow the steps below to deploy ToolJet on a ECS cluster.
         REDIS_USER=default
         REDIS_PASSWORD=
         ```
-    5. Make sure `Use log collection checked` and `Docker configuration` with the command `npm run start:dev`
+    5. Make sure `Use log collection checked` and `Docker configuration` with the command `npm run start:prod`
         <img className="screenshot-full" src="/img/setup/ecs/ecs-8.png" alt="ECS Setup" />
 
 4. Create a service to run your task definition within your cluster.
@@ -125,9 +125,7 @@ The setup above is just a template. Feel free to update the task definition and 
 To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. You can learn more about this feature [here](/docs/tooljet-db/tooljet-database).
 
 Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration might break, checkout the following docs to know more about new major version, including breaking changes that require you to adjust your applications accordingly:
-- [Self Hosted](./upgrade-to-v3.md)
-- [Cloud](./cloud-v3-migration.md)
-
+- [ToolJet 3.0 Migration Guide for Self-Hosted Versions](./upgrade-to-v3.md)
 Follow the steps below to deploy PostgREST on a ECS cluster. 
 
 1. Create a new take definition
@@ -139,6 +137,10 @@ Follow the steps below to deploy PostgREST on a ECS cluster.
   </div>
   
   Add the container details and image tag as shown below:
+  
+  For the Postgrest container image use `postgrest/postgrest:v12.2.0`.
+
+  **Note:** v12.2.0 is recommended for Postgrest.
 
   <div style={{textAlign: 'center'}}>
 
@@ -184,6 +186,11 @@ Update ToolJet deployment with the appropriate env variables [here](/docs/setup/
 
 </div>
 
+:::warning
+To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
+:::
+
+
 ## Upgrading to the Latest LTS Version
 
 New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
@@ -195,5 +202,6 @@ If this is a new installation of the application, you may start directly with th
 - It is crucial to perform a **comprehensive backup of your database** before starting the upgrade process to prevent data loss.
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
+
 
 *If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*

@@ -54,7 +54,11 @@ Please note that you need to set up a PostgreSQL database manually to be used by
 
    If using Azure Database for Postgresql-Flexible server, add:
    - **PGSSLMODE = require**
-  
+
+:::warning
+To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`.
+:::
+
    <div style={{textAlign: 'center'}}>
  
    <img className="screenshot-full" src="/img/setup/azure-container/step4-v2.png" alt="Deploying ToolJet on Azure container apps" />

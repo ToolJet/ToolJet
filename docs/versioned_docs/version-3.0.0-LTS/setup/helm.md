@@ -23,6 +23,10 @@ helm install tooljet tooljet/tooljet
 
 Remember to replace the variables with your specific configuration values.
 
+:::warning
+To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
+:::
+
 ## ToolJet Database
 
 ToolJet offers a hosted database solution that allows you to build applications quickly and manage your data effortlessly. The ToolJet database requires no setup and provides a user-friendly interface for data management.

@@ -80,7 +80,7 @@ SELECT * FROM users
 
 <img className="screenshot-full" src="/img/datasource-reference/mssql/sql mode.png" alt="ToolJet mssql sql mode" style={{marginBottom:'15px'}}/>
 
-#### **Parameterized queries**:
+#### Parameterized queries:
 
 ToolJet offers support for parameterized SQL queries, which enhance security by preventing SQL injection and allow for dynamic query construction. To implement parameterized queries:
 
@@ -90,16 +90,20 @@ ToolJet offers support for parameterized SQL queries, which enhance security by 
 4. The values can be static values or dynamic values using the `{{ }}` notation.
 
 <div style={{textAlign: 'center'}}>
-<img className="screenshot-full" src="/img/datasource-reference/mssql/parameterized-query.png" alt="Postgresql parameterized SQL queries"/>
+<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/mssql/parameterized-query.png" alt="Postgresql parameterized SQL queries"/>
 </div>
 
-**Example:**
+##### Example:
 ```yaml
 Query: SELECT * FROM users WHERE username = :username
 SQL Parameters:
   Key: username
   Value: oliver // or {{ components.username.value }}
 ```
+
+#### Query Timeout
+
+You can set the timeout duration for SQL queries by adding the `PLUGINS_SQL_DB_STATEMENT_TIMEOUT` variable to the environment configuration file. By default, it is set to 120,000 ms.
 
 ### GUI Mode
 

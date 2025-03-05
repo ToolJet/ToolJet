@@ -28,6 +28,11 @@ Follow the steps below to deploy ToolJet on a Kubernetes cluster.
    - **LOCKBOX_KEY**
 
    Read **[environment variables reference](/docs/setup/env-vars)**
+
+:::warning
+To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
+:::
+
 3. Create a Kubernetes deployment
 
    ```bash
@@ -59,6 +64,22 @@ If there are self signed HTTPS endpoints that ToolJet needs to connect to, pleas
 If you want to serve ToolJet client from services such as Firebase or Netlify, please read the client Setup documentation **[here](/docs/setup/client)**.
 :::
 
+## ToolJet Database
+
+To use the ToolJet Database, you need to set up and deploy a PostgREST server, which facilitates querying the database. Detailed setup instructions are available [here](/docs/tooljet-db/tooljet-database).
+
+Starting with ToolJet 3.0, deploying the ToolJet Database is mandatory to avoid migration issues. Refer to the documentation below for details on the new major version, including breaking changes and required adjustments for your applications.
+
+- [ToolJet 3.0 Migration Guide for Self-Hosted Versions](./upgrade-to-v3.md)
+
+1. Setup PostgREST server
+
+   ```bash
+   kubectl apply -f https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/GKE/postgrest.yaml
+   ```
+
+2. Update ToolJet deployment with the appropriate env variables [here](https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/GKE/deployment.yaml) and apply the changes.
+
 ## Upgrading to the Latest LTS Version
 
 New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
@@ -70,5 +91,6 @@ If this is a new installation of the application, you may start directly with th
 - It is crucial to perform a **comprehensive backup of your database** before starting the upgrade process to prevent data loss.
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
+
 
 *If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*

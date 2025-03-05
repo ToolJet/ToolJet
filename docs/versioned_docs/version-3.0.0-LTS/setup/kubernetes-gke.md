@@ -54,6 +54,10 @@ Make sure to edit the environment variables in the `deployment.yaml`. You can ch
 If there are self signed HTTPS endpoints that Tooljet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates. You can make use of kubernetes secrets to mount the certificate file onto the containers.
 :::
 
+:::warning
+To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
+:::
+
 4. Create k8s service
 
 ```bash
@@ -82,7 +86,11 @@ You will be able to access your ToolJet installation once the pods, service and 
 
 ## ToolJet Database
 
-To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. Please [follow the instructions here](/docs/setup/env-vars/#enable-tooljet-database-required).
+To use the ToolJet Database, you need to set up and deploy a PostgREST server, which facilitates querying the database. Detailed setup instructions are available [here](/docs/tooljet-db/tooljet-database).
+
+Starting with ToolJet 3.0, deploying the ToolJet Database is mandatory to avoid migration issues. Refer to the documentation below for details on the new major version, including breaking changes and required adjustments for your applications.
+
+- [ToolJet 3.0 Migration Guide for Self-Hosted Versions](./upgrade-to-v3.md)
 
 1. Setup PostgREST server
 
@@ -103,5 +111,6 @@ If this is a new installation of the application, you may start directly with th
 - It is crucial to perform a **comprehensive backup of your database** before starting the upgrade process to prevent data loss.
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
+
 
 *If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*

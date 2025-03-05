@@ -21,7 +21,7 @@ Follow the steps below to deploy ToolJet on AWS EC2 instances.
 1. Setup a PostgreSQL database and make sure that the database is accessible from the EC2 instance.
 2. Login to your AWS management console and go to the EC2 management page.
 3. Under the **Images** section, click on the **AMIs** button.
-4. Find the [ToolJet version](https://github.com/ToolJet/ToolJet/releases) you want to deploy. Now, from the AMI search page, select the search type as "Public Images" and input the version you'd want `AMI Name : tooljet_vX.X.X.ubuntu_bionic` in the search bar.
+4. Find the [ToolJet version](/docs/setup/choose-your-tooljet) you want to deploy. Now, from the AMI search page, select the search type as "Public Images" and input the version you'd want `AMI Name : tooljet_vX.X.X.ubuntu_bionic` in the search bar.
 5. Select ToolJet's AMI and bootup an EC2 instance. <br/>
   Creating a new security group is recommended. For example, if the installation should receive traffic from the internet, the inbound rules of the security group should look like this:
 
@@ -80,6 +80,11 @@ ToolJet AMI comes inbuilt with PostgREST. If you intend to use this feature, you
 
 You can learn more about this feature [here](/docs/tooljet-db/tooljet-database).
 
+:::warning
+To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
+:::
+
+
 ## Upgrading to the Latest LTS Version
 
 New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
@@ -91,5 +96,6 @@ If this is a new installation of the application, you may start directly with th
 - It is crucial to perform a **comprehensive backup of your database** before starting the upgrade process to prevent data loss.
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
+
 
 *If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*

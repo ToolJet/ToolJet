@@ -25,20 +25,40 @@ To enable SAML authentication, you need to configure the following workspace set
 
     <br/>
 
-    :::tip Downloading the metadata from your identity provider
+:::tip Downloading the metadata from your identity provider
      Generally, the metadata is available in the form of an XML file which can be downloaded from your identity provider's dashboard.
 
      Copy the metadata from the XML file and paste it into the ToolJet's SAML SSO configuration settings. Please ensure that the metadata is pasted in the correct format, as it contains essential configuration details from the identity provider necessary for authentication.
 
      Additionally, you can often find this data by navigating to https://&ltyour-identity-provider&gt/federationmetadata/2007-06/federationmetadata.xml
-    :::
+:::
 
     <img className="screenshot-full" src="/img/sso/saml/config-new-v3.png" alt="SSO :SAMP" />
 
 4. Once configured, click **Save Changes**.
 
 </div>
+   :::tip SAML for multiple workspaces
 
+-  The multiple workspaces feature is available only in versions **v2.50.9.46-lts** and later.
+-  Configure the required environment variables as below:
+
+| variable               | value             |
+| ---------------------- | ----------------- |
+| SAML_SET_ENTITY_ID_REDIRECT_URL | `true` |
+| TOOLJET_SERVER_URL | `<URL must be the same as the ToolJet host>` |
+       :::
+
+   :::tip SAML for Google and Azure
+Configure the required environment variable as follows:
+
+| variable               | value             |
+| ---------------------- | ----------------- |
+| SAML_SET_ENTITY_ID_SERVER_URL | `true` |
+| TOOLJET_SERVER_URL | `<URL must be the same as the ToolJet host>` |
+
+Note: If you are using the multiple workspaces setting, you do not need to configure the `SAML_SET_ENTITY_ID_SERVER_URL` variable.
+       :::
 <div style={{paddingTop:'24px'}}>
 
 ## Logging in with SAML
