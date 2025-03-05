@@ -215,3 +215,10 @@
   box-sizing: border-box;
   padding-right: 30px !important;
 }
+
+.datepicker-widget.theme-tjdb{
+  .react-datepicker__navigation{
+    overflow: visible !important;
+    height: inherit !important;
+  }
+}
