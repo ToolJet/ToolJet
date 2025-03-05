@@ -211,21 +211,24 @@ img {
   max-width: 360px !important;
   box-shadow: none !important;
   border-radius: 6px !important;
-  border: 1px solid #E4E7EB !important
+  border: 1px solid #E4E7EB !important;
+  background-color: #ffffff
 }
 
 .img-m {
   max-width: 480px !important;
   box-shadow: none !important;
   border-radius: 6px !important;
-  border: 1px solid #E4E7EB !important
+  border: 1px solid #E4E7EB !important;
+  background-color: #ffffff
 }
 
 .img-l {
   max-width: 640px !important;
   box-shadow: none !important;
   border-radius: 6px !important;
-  border: 1px solid #E4E7EB !important
+  border: 1px solid #E4E7EB !important;
+  background-color: #ffffff
 }
 
 .card-icon img {

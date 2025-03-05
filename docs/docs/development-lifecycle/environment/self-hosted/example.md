@@ -24,7 +24,7 @@ The company also uses different global and secret constants for each environment
 - Now developers can start building applications in the **development environment**, where they create and iterate on new features. In this environment, they have access to the development database, which is configured during data source setup.
 - Once the application is ready, it moves to the **staging environment**, where the QA team tests it thoroughly. If any bugs or feedback arise, developers create a new version, implement the necessary changes, and promote the updated application back to staging for further testing.
 - The data sources for each environment will be connected based on the configuration set in the previous step.
-- For details on managing versions, check the **Version Control Documentation**.
+- For details on managing versions, check the [Version Control Documentation](/docs).
 - After successful testing, the application is promoted to **production** and released, making it available to end users. This environment uses the production database set up during data source configuration.
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full img-l" src="/img/development-lifecycle/environments/appbuilder.png" alt="self-hosted-env-concept" />

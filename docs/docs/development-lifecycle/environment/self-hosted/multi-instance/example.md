@@ -34,7 +34,7 @@ After configuring GitSync for the staging instance with the same Git repository 
     
 -   Click on the **three dots** next to the **Create New App** button.
 -   Select **Import from Git Repository** to pull the app.
- <img style={{ marginBottom:'15px' }} className="screenshot-full img-m" src="/img/development-lifecycle/environments/import-1.png" alt="self-hosted-env-concept" />   
+ <img  className="screenshot-full img-m" src="/img/development-lifecycle/environments/import-1.png" alt="self-hosted-env-concept" />   
 -   Choose the app from the dropdown list. The app name and last commit details appear.
     
 -   Click **Import App** to import it into the staging instance.
@@ -66,7 +66,7 @@ Testers in the **staging instance** update the app by:
 -   Clicking the **GitSync** button in the top bar.
     
 -   A modal appears with an option to **Check for Updates**.
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-m" src="/img/development-lifecycle/environments/check-updates.png" alt="self-hosted-env-concept" />
+<img  className="screenshot-full img-m" src="/img/development-lifecycle/environments/check-updates.png" alt="self-hosted-env-concept" />
     
 -   Clicking **Check for Updates** fetches the latest changes from the Git repository.
     
@@ -74,7 +74,7 @@ Testers in the **staging instance** update the app by:
     
 -   Clicking **Pull Changes** syncs the latest updates into the staging instance.
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full img-m" src="/img/development-lifecycle/environments/update-app.png" alt="self-hosted-env-concept" />
+<img className="screenshot-full img-m" src="/img/development-lifecycle/environments/update-app.png" alt="self-hosted-env-concept" />
 
 ### Deploying to Production
 

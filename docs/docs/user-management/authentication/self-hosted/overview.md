@@ -10,8 +10,7 @@ Authentication in ToolJet ensures secure access to your applications and data.In
 -   **Workspace Level:** Overrides instance-level configuration for workspaces where it is applied. Both super admins and workspace admins can configure it.
     
 
-Scenarios for Authentication Configuration
-------------------------------------------
+## Scenarios for Authentication Configuration
 
 ToolJet supports flexible authentication setups, allowing instance-level, workspace-level, or a mix of both configurations. You can configure [SSO](/docs/user-management/sso/overview) or email-password login at both the levels. Below are common scenarios to guide your setup.
 

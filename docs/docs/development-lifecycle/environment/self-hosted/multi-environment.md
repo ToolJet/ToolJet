@@ -58,11 +58,11 @@ Each environment has a different impact on your application. Please refer the fo
 
 | Action             | Development | Staging | Production |
 |--------------------|------------|---------|------------|
-| Edit versions     | ✔️         | ❌      | ❌         |
-| Rename versions   | ✔️         | ❌      | ❌         |
-| Delete versions   | ✔️         | ❌      | ❌         |
-| Create new versions | ✔️      | ❌      | ❌         |
-| Promote           | ✔️         | ✔️      | -          |
+| Edit versions     | ✅         | ❌      | ❌         |
+| Rename versions   | ✅         | ❌      | ❌         |
+| Delete versions   | ✅         | ❌      | ❌         |
+| Create new versions | ✅      | ❌      | ❌         |
+| Promote           | ✅         | ✅      | -          |
 
 
 Checkout the [Environment-Example](http://f) guide to learn about multi-environment in ToolJet with a practical example.
