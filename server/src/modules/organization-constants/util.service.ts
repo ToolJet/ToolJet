@@ -112,4 +112,18 @@ export class OrganizationConstantsUtilService implements IOrganizationConstantsU
       }
     });
   }
+
+  removeSecretValues(constants = []) {
+    constants.forEach((constant) => {
+      if (constant.type === 'Secret') {
+        constant.values = constant.values.map((value) => {
+          return { ...value, value: '*'.repeat(8) };
+        });
+      }
+    });
+  }
+
+  escapeRegExp(string: string): string {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
 }

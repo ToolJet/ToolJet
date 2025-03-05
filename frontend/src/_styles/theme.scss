@@ -18563,3 +18563,51 @@ section.ai-message-prompt-input-wrapper {
     flex-grow: 1;
   }
 }
+.workspace-constant-value {
+  position: relative;
+
+  .fromEnv {
+    content: '.env';
+    border-radius: 6px;
+    background: var(--Indigo-50, #EEF4FF);
+    padding: 0px 8px;
+    width: 40px;
+    align-items: center;
+    position: absolute;
+    color: var(--Indigo-700, #3538CD);
+    text-align: center;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 20px;
+    margin-left: 24px;
+  }
+
+  .isDuplicate {
+    padding: 0px 8px;
+    border-radius: 6px;
+    background: var(--Error-50, #FEF3F2);
+    color: var(--Error-700, #B42318);
+    text-align: center;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 20px;
+    /* 166.667% */
+    margin-left: 24px;
+  }
+
+  .env-secret-hidden-message {
+    border-radius: 16px;
+    background: var(--Warning-50, #FFFAEB);
+    padding: 4px 12px;
+    color: var(--Warning-700, #B54708);
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 18px;
+    &.dark {
+      background: #FFFAEB !important;
+    }
+  }
+}
