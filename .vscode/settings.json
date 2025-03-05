@@ -8,8 +8,8 @@
         "typescript",
         "typescriptreact"
     ],
-    "eslint.format.enable": false,
-    "editor.formatOnSave": false,
+    "eslint.format.enable": true,
+    "editor.formatOnSave": true,
     "json.schemas": [
         {
             "fileMatch": [
