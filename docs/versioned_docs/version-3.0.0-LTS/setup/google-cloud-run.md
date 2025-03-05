@@ -5,6 +5,10 @@ title: Google Cloud Run
 
 # Deploying ToolJet on Google Cloud Run
 
+:::warning
+To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
+:::
+
 :::info
 You should manually set up a PostgreSQL database to be used by ToolJet. We recommend using **Cloud SQL** for this purpose.
 Also for deploying ToolJet 3.0, Redis, Postgrest along with PostgreSQL are required.
@@ -12,17 +16,18 @@ Also for deploying ToolJet 3.0, Redis, Postgrest along with PostgreSQL are requi
 
 <!-- Follow the steps below to deploy ToolJet on Cloud run with `gcloud` CLI. -->
 
-## Deploying ToolJet application
-1. Create a new Google Cloud Run Service:
-        
-We are using a multi-container setup
+### Multi-Container Setup on Google Cloud Run  
 
-- **Google Cloud Run service**
-  - **tooljet-app (container - 1)**
-  - **postgrest (container - 2)**
-  - **redis (container - 3)**
-- **Cloud SQL (for PostgreSQL)**
-  - **for both (TOOLJET_DB and PG_DB)** 
+1. Create a new Google Cloud Run Service: 
+
+   | Container #  | Name          | Description                                      |
+   |-------------|--------------|--------------------------------------------------|
+   | 1           | **ToolJet App** (`tooljet-app`) | Core application handling UI and backend. |
+   | 2           | **PostgREST** (`postgrest`)   | API layer for PostgreSQL.                  |
+   | 3           | **Redis** (`redis`)           | Caching and session management.            |
+
+
+All containers run within a single Cloud Run service, ensuring efficient and hassle-free deployment. 
 
 <div style={{textAlign: 'left'}}>
   <img className="screenshot-full" src="/img/cloud-run/google-cloud-run-setup-V3.png" alt="Google Cloud Run New Setup" />
@@ -140,10 +145,6 @@ For the Redis container we recommend using image `redis:6.2`
     :::info
     Once the Service is created and live, to make the  Cloud Service URL public. Please follow the steps [**here**](https://cloud.google.com/run/docs/securing/managing-access) to make the service public.
     :::
-
-:::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
-:::
 
 
 ## Upgrading to the Latest LTS Version
