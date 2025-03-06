@@ -23,7 +23,7 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
     type?: OrganizationConstantType
   ): Promise<OrganizationConstant[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const result = await this.organizationConstantRepository.findAllByOrganizationId(organizationId);
+      const result = await this.organizationConstantRepository.findAllByOrganizationId(organizationId, type);
       const appEnvironments = await this.appEnvironmentUtilService.getAll(organizationId);
 
       const constantsWithValues = await Promise.all(
