@@ -89,6 +89,7 @@ const WidgetWrapper = memo(
               widgetHeight={layoutData.height}
               showHandle={isWidgetActive}
               componentType={componentType}
+              visibility={visibility}
             />
           )}
           <RenderWidget

@@ -49,7 +49,7 @@ export const listviewConfig = {
       type: 'code',
       displayName: 'List data',
       validation: {
-        schema: { type: 'array', element: { type: 'object' } },
+        schema: { type: 'union', schemas: [{ type: 'array', element: { type: 'object' } },{ type: 'array', element: { type: 'string' } }] },
         defaultValue: "[{text: 'Sample text 1'}]",
       },
     },
