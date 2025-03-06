@@ -8,12 +8,12 @@ import TabItem from '@theme/TabItem';
 
 Once the GitSync feature is configured, you can start pushing changes to the git repository on following points:
 
-- [App Creation](#)
-- [Manual Commit Using GitSync Button](#)
-- [Auto Commit on App Rename](#)
-- [App Version Update](#)
-- [Auto Commit on Promoting Environment](#)
-- [App Deletion](#)
+- [App Creation](#app-creation)
+- [Manual Commit Using GitSync Button](#manual-commit-using-gitsync-button)
+- [Auto Commit on App Rename](#auto-commit-on-app-rename)
+- [App Version Update](#app-version-update)
+- [Auto Commit on Promoting Environment](#auto-commit-on-promoting-environment)
+- [App Deletion](#app-deletion)
 
 ## App Creation
 

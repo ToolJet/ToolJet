@@ -8,7 +8,7 @@ title: Workspace Variables Migration
 
 Workspace variables were used in ToolJet to store values such as tokens, secret keys, API keys, etc. But currently **Workspace variables are marked as deprecated, indicating that it will be removed in future releases**. In the current version, you are still able to delete existing variables and use it through out any ToolJet apps, but creating and updating variables are no longer supported. 
 
-Please use **[Workspace Constants](#)** instead. This guide will help you migrate from **Workspace Variables** to **Workspace Constants**.
+Please use **[Workspace Constants](/docs/security/constants/)** instead. This guide will help you migrate from **Workspace Variables** to **Workspace Constants**.
 
 ## Workspace Constants
 

@@ -10,7 +10,7 @@ Once the application is released, it can be shared with the end users in multipl
 Once the application is released, it can be accessed via a URL, and the URL slug can be customized. ToolJet also provides an option to make the application public or private.
 
 - **Public Application**: Allows anyone on the internet to access the application without signing up for ToolJet. 
-- **Private Application**: Private applications are restricted to workspace users with the necessary **[access permissions](#)**.
+- **Private Application**: Private applications are restricted to workspace users with the necessary **[access permissions](/docs/user-management/role-based-access/access-control)**.
 
 The latest released version of the application is always accessible through the same URL, ensuring a consistent access point across updates.
 
