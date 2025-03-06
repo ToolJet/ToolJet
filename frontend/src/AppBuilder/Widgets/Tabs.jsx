@@ -353,7 +353,7 @@ export const Tabs = function Tabs({
       data-disabled={isDisabled}
       className="card tabs-component"
       style={{
-        height,
+        height: height + 4,
         display: isVisible ? 'flex' : 'none',
         backgroundColor: darkMode ? '#324156' : '#fff',
         boxShadow,
