@@ -32,7 +32,7 @@ export const AppsRoute = ({ children, componentType }) => {
       onValidSession();
     }
 
-    return () => window.removeEventListener('popstate');
+    return () => window.removeEventListener('popstate', handleBrowserNavigation);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isValidSession]);
 
@@ -73,10 +73,12 @@ export const AppsRoute = ({ children, componentType }) => {
     }
 
     // handle back and forward navigation
-    window.addEventListener('popstate', (e) => {
-      const { id, handle } = e.state;
-      switchPage(id, handle, [], true);
-    });
+    window.addEventListener('popstate', handleBrowserNavigation);
+  };
+
+  const handleBrowserNavigation = (e) => {
+    const { id, handle } = e.state;
+    switchPage(id, handle, [], true);
   };
 
   return <RouteLoader isLoading={isLoading}>{clonedElement}</RouteLoader>;

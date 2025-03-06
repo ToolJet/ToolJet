@@ -15,7 +15,6 @@ import ViewerSidebarNavigation from './ViewerSidebarNavigation';
 import { shallow } from 'zustand/shallow';
 import Popups from '../Popups';
 import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
-import { setPageStateOnLoad } from '@/AppBuilder/_utils/misc';
 
 export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMode, environmentId, versionId } = {}) => {
   const DEFAULT_CANVAS_WIDTH = 1292;
@@ -31,7 +30,6 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
     selectedVersion,
     currentCanvasWidth,
     currentPageId,
-    currentPageHandle,
     globalSettings,
     pages,
     pageSettings,
@@ -52,7 +50,6 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
       appName: state.app.appName,
       homePageId: state?.app.homepageId,
       currentPageId: state.currentPageId,
-      currentPageHandle: state.currentPageHandle,
       globalSettings: state.globalSettings,
       pages: state.modules.canvas.pages,
       modules: state.modules,
@@ -113,13 +110,6 @@ export const Viewer = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
   const changeToDarkMode = (newMode) => {
     switchDarkMode(newMode);
   };
-
-  useEffect(() => {
-    if (currentPageId && currentPageHandle) {
-      setPageStateOnLoad(currentPageId, currentPageHandle);
-    }
-  }, [currentPageId, currentPageHandle]);
-
   useEffect(() => {
     const isMobileDevice = deviceWindowWidth < 600;
     toggleCurrentLayout(isMobileDevice ? 'mobile' : 'desktop');

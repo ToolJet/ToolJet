@@ -15,15 +15,6 @@ export const navigate = (url, options = {}) => {
   );
 };
 
-export const setPageStateOnLoad = (pageId, pageHandle) => {
-  // function to set page id and handle in the url state on first load
-  const currentState = history.state || {};
-  if (currentState.isSwitchingPage) return;
-
-  const newState = { ...currentState, id: pageId, handle: pageHandle };
-  history.replaceState(newState, '', window.location.href);
-};
-
 export async function copyToClipboard(text) {
   try {
     await navigator.clipboard.writeText(text);
