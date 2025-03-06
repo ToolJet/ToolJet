@@ -1,5 +1,3 @@
-// import { INSTANCE_SYSTEM_SETTINGS } from '@modules/instance-settings/constants';
-// import { InstanceSettingsUtilService } from '@modules/instance-settings/util.service';
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Observable } from 'rxjs';
