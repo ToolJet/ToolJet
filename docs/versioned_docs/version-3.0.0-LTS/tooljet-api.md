@@ -4,7 +4,6 @@ title: ToolJet API
 ---
 
 <div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
-<div className='badge badge--warning heading-badge'>Beta</div>
 
 ToolJet API allows you to interact with the ToolJet platform programmatically. You can use the APIs to manage users and their workspaces relations. The API endpoints are secured with an access token. You can perform various operations using the API such as:
 
@@ -19,10 +18,6 @@ ToolJet API allows you to interact with the ToolJet platform programmatically. Y
 - [Replace User Workspaces Relations](#replace-user-workspaces-relations)
 - [Export Application](#export-application)
 - [Import Application](#import-application)
-
-:::info BETA
-ToolJet API is currently in beta and not recommended for production use.
-:::
 
 ## Enabling ToolJet API
 

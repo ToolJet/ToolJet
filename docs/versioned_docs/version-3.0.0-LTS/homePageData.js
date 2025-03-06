@@ -116,7 +116,6 @@ export const dataCards = [
 ];
 
 export const organizationCards = [
-    { icon: LayoutDashboard, title: "Dashboard", href: "/docs/dashboard" },
     { icon: Users, title: "Workspaces", href: "/docs/org-management/workspaces/workspace_overview" },
     { icon: UserCheck, title: "User authentication", href: "/docs/user-authentication/workspace-login" },
     { icon: Lock, title: "Permissions", href: "/docs/org-management/permissions" },

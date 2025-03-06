@@ -18,7 +18,8 @@ const sidebars = {
         'getting-started/platform-overview',
         'getting-started/quickstart-guide',
       ],
-    }, {
+    }, 
+    {
       "type": "category",
       "label": "Build with AI",
       "items": [
@@ -591,7 +592,6 @@ const sidebars = {
                     'development-lifecycle/environment/self-hosted/multi-instance/example-configuration'
                   ]
                 },
-
               ]
             },
             {

@@ -26,8 +26,8 @@ To configure the instance-level authentication configuration
     | Variable | Description | 
     | --------- |:-----:|
     | SSO_GOOGLE_OAUTH2_CLIENT_ID | Google OAuth client id |
-
--  To set GitHub as the default SSO use the following environment variables:
+    
+- To set GitHub as the default SSO use the following environment variables:
 
     | Variable | Description | 
     | --------- |:-----:|
