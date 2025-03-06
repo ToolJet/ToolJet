@@ -639,8 +639,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             const currentWidget = boxList.find(({ id }) => {
               return id === e.target.id;
             });
-            document.getElementById('real-canvas')?.classList.remove('show-grid');
-            document.getElementById('canvas-' + currentWidget.component?.parent)?.classList.remove('show-grid');
+            hideGridLines();
             let _gridWidth = useGridStore.getState().subContainerWidths[currentWidget.component?.parent] || gridWidth;
             let width = Math.round(e?.lastEvent?.width / _gridWidth) * _gridWidth;
             const height = Math.round(e?.lastEvent?.height / GRID_HEIGHT) * GRID_HEIGHT;
