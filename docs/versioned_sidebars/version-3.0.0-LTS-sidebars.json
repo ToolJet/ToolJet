@@ -380,40 +380,6 @@
     },
     {
       "type": "category",
-      "label": "Setup ToolJet",
-      "items": [
-        "tj-setup/overview",
-        "tj-setup/tj-deployment",
-        {
-          "type": "category",
-          "label": "Licensing",
-          "items": [
-            "tj-setup/licensing/self-hosted",
-            "tj-setup/licensing/cloud"
-          ]
-        },
-        "tj-setup/instances",
-        "tj-setup/workspaces",
-        {
-          "type": "category",
-          "label": "Organization Branding",
-          "items": [
-            "tj-setup/org-branding/white-labeling",
-            "tj-setup/org-branding/custom-domain"
-          ]
-        },
-        {
-          "type": "category",
-          "label": "Setup SMTP Server",
-          "items": [
-            "tj-setup/smtp-setup/configuration",
-            "tj-setup/smtp-setup/email-providers"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "category",
       "label": "Workflows",
       "items": [
         "workflows/overview",
@@ -469,7 +435,6 @@
       ]
     },
     "tooljet-copilot",
-    "security",
     "tracking",
     {
       "type": "category",

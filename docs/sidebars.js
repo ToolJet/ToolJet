@@ -688,7 +688,6 @@ const sidebars = {
       ],
     },
     'tooljet-copilot',
-    'security',
     'tracking',
     {
       'type': 'category',
