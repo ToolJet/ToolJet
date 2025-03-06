@@ -1,23 +1,21 @@
 ---
 id: env-vars
-title: Environment variables
+title: Environment Variables
 ---
-
-# Environment variables
 
 Both the ToolJet server and client requires some environment variables to start running.
 
-*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
+*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at [hello@tooljet.com](mailto:hello@tooljet.com).*
 
-## ToolJet server
+## ToolJet Server
 
-### ToolJet host ( required )
+### ToolJet Host ( required )
 
 | variable     | description                                                      |
 | ------------ | ---------------------------------------------------------------- |
-| TOOLJET_HOST | the public URL of ToolJet client ( eg: https://app.tooljet.com ) |
+| TOOLJET_HOST | the public URL of ToolJet client ( eg: https://app.tooljet.ai ) |
 
-### Lockbox configuration ( required )
+### Lockbox Configuration ( required )
 
 ToolJet server uses lockbox to encrypt datasource credentials. You should set the environment variable `LOCKBOX_MASTER_KEY` with a 32 byte hexadecimal string.
 
@@ -38,10 +36,10 @@ ToolJet server uses PostgreSQL as the database.
 
 ### Variables
 
-|Variable|Description|
-|---|---|
+|Variable |Description|
+|---------|-----------|
 |`PG_HOST`|PostgreSQL database host|
-|`PG_DB`|Name of the database|
+|`PG_DB`  |Name of the database|
 |`PG_USER`|Database username|
 |`PG_PASS`|Database password|
 |`PG_PORT`|Database port|
@@ -197,7 +195,7 @@ This is used to set up for CSP headers and put trace info to be used with APM ve
 
 | variable           | description                                                  |
 | ------------------ | ------------------------------------------------------------ |
-| TOOLJET_SERVER_URL | the URL of ToolJet server ( eg: `https://server.tooljet.com` ) |
+| TOOLJET_SERVER_URL | the URL of ToolJet server ( eg: `https://server.tooljet.ai` ) |
 
 ### RELEASE VERSION ( optional)
 
@@ -253,7 +251,7 @@ This is required when client is built separately.
 
 | variable           | description                                                  |
 | ------------------ | ------------------------------------------------------------ |
-| TOOLJET_SERVER_URL | the URL of ToolJet server ( eg: `https://server.tooljet.com` ) |
+| TOOLJET_SERVER_URL | the URL of ToolJet server ( eg: `https://server.tooljet.ai` ) |
 
 ### Server Port ( optional)
 
