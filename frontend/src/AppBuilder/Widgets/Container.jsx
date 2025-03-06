@@ -58,7 +58,6 @@ export const Container = ({
     border: `1px solid ${borderColor}`,
     height: dynamicHeight ? '100%' : height,
     display: isVisible ? 'flex' : 'none',
-    overflow: 'hidden auto',
     position: 'relative',
     boxShadow,
   };
@@ -79,9 +78,9 @@ export const Container = ({
 
   return (
     <div
-      className={`${properties.dynamicHeight && `dynamic-${id}`} jet-container tw-flex tw-flex-col ${
-        isLoading && 'jet-container-loading'
-      } ${properties.showHeader && 'jet-container--with-header'}`}
+      className={`${properties.dynamicHeight && `dynamic-${id}`} jet-container widget-type-container ${
+        properties.loadingState && 'jet-container-loading'
+      }`}
       id={id}
       data-disabled={isDisabled}
       style={computedStyles}

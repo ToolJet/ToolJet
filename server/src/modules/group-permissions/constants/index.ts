@@ -38,8 +38,8 @@ export const DEFAULT_GROUP_PERMISSIONS = {
     appDelete: true,
     folderCRUD: true,
     orgConstantCRUD: true,
-    dataSourceCreate: true,
-    dataSourceDelete: true,
+    dataSourceCreate: false,
+    dataSourceDelete: false,
     isBuilderLevel: true,
   },
   END_USER: {
