@@ -38,8 +38,6 @@ export class OrganizationConstantRepository extends Repository<OrganizationConst
     });
   }
 
-  // ... existing code ...
-
   async findByEnvironment(organizationId: string, environmentId: string, type?: OrganizationConstantType) {
     const whereCondition: any = {
       organizationId,
