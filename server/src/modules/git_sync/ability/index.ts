@@ -9,7 +9,7 @@ type Subjects = InferSubjects<typeof User> | 'all';
 export type GitSyncAbility = Ability<[FEATURE_KEY, Subjects]>;
 
 @Injectable()
-export class GitSyncAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects> {
+export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects> {
   protected getSubjectType() {
     return User;
   }

@@ -7,6 +7,7 @@ import { InitModule } from '@modules/app/decorators/init-module';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { FEATURE_KEY } from './constants';
 import { IAppGitController } from './interfaces/IController';
+import { FeatureAbilityGuard } from './ability/guard';
 
 @InitModule(MODULES.APP_GIT)
 @Controller('app-git')
@@ -14,28 +15,28 @@ export class AppGitController implements IAppGitController {
   constructor() {}
 
   @InitFeature(FEATURE_KEY.GIT_GET_APPS)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(FeatureAbilityGuard)
   @Get('gitpull')
   async getAppsMetaFile(@User() user): Promise<any> {
     throw new NotFoundException();
   }
 
   @InitFeature(FEATURE_KEY.GIT_SYNC_APP)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Post('gitpush/:appGitId/:versionId')
   async gitSyncApp(@User() user, @Param('appGitId') appGitId: string, @Body() appGitPushBody: AppGitPushDto) {
     throw new NotFoundException();
   }
 
   @InitFeature(FEATURE_KEY.GIT_GET_APP)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Get('gitpull/app/:appId')
   async getAppMetaFile(@User() user, @Param('appId') appId: string): Promise<any> {
     throw new NotFoundException();
   }
 
   @InitFeature(FEATURE_KEY.GIT_GET_APP_CONFIG)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Get(':workspaceId/app/:versionId')
   async getAppConfig(
     @User() user,
@@ -46,14 +47,14 @@ export class AppGitController implements IAppGitController {
   }
 
   @InitFeature(FEATURE_KEY.GIT_CREATE_APP)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Post('gitpull/app')
   async createGitApp(@User() user, @Body() appData: AppGitPullDto): Promise<any> {
     throw new NotFoundException();
   }
 
   @InitFeature(FEATURE_KEY.GIT_UPDATE_APP)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(FeatureAbilityGuard)
   @Post('gitpull/app/:appId')
   async pullGitAppChanges(@User() user, @Param('appId') appId, @Body() appData: AppGitPullUpdateDto): Promise<any> {
     throw new NotFoundException();
