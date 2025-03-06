@@ -13,7 +13,7 @@ import CustomMenuList from './CustomMenuList';
 import CustomOption from './CustomOption';
 import Label from '@/_ui/Label';
 import cx from 'classnames';
-import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor } from './utils';
+import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray } from './utils';
 import { isMobileDevice } from '@/_helpers/appUtils';
 
 const { DropdownIndicator, ClearIndicator } = components;
@@ -114,15 +114,6 @@ export const DropdownV2 = ({
     return !hasVisibleFalse(foundItem?.value) ? foundItem?.value : undefined;
   }
 
-  const sortArray = (arr) => {
-    if (sort === 'asc') {
-      return arr.sort((a, b) => a.label?.localeCompare(b.label));
-    } else if (sort === 'desc') {
-      return arr.sort((a, b) => b.label?.localeCompare(a.label));
-    }
-    return arr;
-  };
-
   const selectOptions = useMemo(() => {
     let _options = advanced ? schema : options;
     if (Array.isArray(_options)) {
@@ -135,7 +126,7 @@ export const DropdownV2 = ({
           isDisabled: data?.disable ?? false,
         }));
 
-      return sortArray(_selectOptions);
+      return sortArray(_selectOptions, sort);
     } else {
       return [];
     }

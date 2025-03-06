@@ -14,6 +14,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SortableList from '@/_components/SortableList';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import { shallow } from 'zustand/shallow';
+import { sortArray } from '@/Editor/Components/DropdownV2/utils';
 
 export function Select({ componentMeta, darkMode, ...restProps }) {
   const {
@@ -84,15 +85,6 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     }
   }
 
-  const sortArray = (arr) => {
-    if (sort === 'asc') {
-      return arr.sort((a, b) => a.label?.localeCompare(b.label));
-    } else if (sort === 'desc') {
-      return arr.sort((a, b) => b.label?.localeCompare(a.label));
-    }
-    return arr;
-  };
-
   const getItemStyle = (isDragging, draggableStyle) => ({
     userSelect: 'none',
     ...draggableStyle,
@@ -136,7 +128,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   const handleAddOption = () => {
     let _option = generateNewOptions();
     const _items = [...options, _option];
-    const sortedItems = sortArray(_items);
+    const sortedItems = sortArray(_items, sort);
     updateOptions(sortedItems);
   };
 
@@ -278,13 +270,13 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
 
   useEffect(() => {
     if (!isInitialRender.current && isSortingEnabled) {
-      const sortedOptions = sortArray([...options]);
+      const sortedOptions = sortArray([...options], sort);
       updateOptions(sortedOptions);
     }
   }, [sort]);
 
   useEffect(() => {
-    const sortedOptions = sortArray(constructOptions());
+    const sortedOptions = sortArray(constructOptions(), sort);
     updateOptions(sortedOptions);
     isInitialRender.current = false;
   }, [isMultiSelect, component?.id]);
@@ -415,7 +407,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
                             rootClose
                             onExited={() => {
                               if (isSortingEnabled && sort !== 'none') {
-                                const sortedOptions = sortArray([...options]);
+                                const sortedOptions = sortArray([...options], sort);
                                 updateOptions(sortedOptions);
                               }
                             }}
