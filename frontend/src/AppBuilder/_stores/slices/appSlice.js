@@ -112,7 +112,7 @@ export const createAppSlice = (set, get) => ({
       setResolvedPageConstants,
       setPageSwitchInProgress,
       currentMode,
-      isLicenseValid,
+      license,
       modules: {
         canvas: { pages },
       },
@@ -127,7 +127,7 @@ export const createAppSlice = (set, get) => ({
     const appId = get().app.appId;
     const filteredQueryParams = queryParams.filter(([key, value]) => {
       if (!value) return false;
-      if (key === 'env' && !isLicenseValid()) return false;
+      if (key === 'env' && !license.isLicenseValid()) return false;
       return true;
     });
 

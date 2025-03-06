@@ -9,6 +9,7 @@ import { redirectToErrorPage } from '@/_helpers/routes';
 import { ERROR_TYPES } from '@/_helpers/constants';
 import { BreadCrumbContext } from '@/App/App';
 import { checkConditionsForRoute } from '@/_helpers/utils';
+import { OrganizationList } from '@/modules/dashboard/components';
 export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
   const workspaceSettingsLinks = constructWorkspaceSettingsLinks(extraLinks);
   const admin = authenticationService.currentSessionValue?.admin;
@@ -107,6 +108,7 @@ export default function WorkspaceSettingsPage({ extraLinks, ...props }) {
                 );
               })}
             </div>
+            <OrganizationList />
           </div>
 
           <div className={cx('col workspace-content-wrapper')} style={{ paddingTop: '40px' }}>

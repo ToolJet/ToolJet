@@ -13,9 +13,22 @@ jobs:
   Cypress-Platform:
     runs-on: ubuntu-22.04
     if: |
-      github.event.action == 'labeled' && 
-      (github.event.label.name == 'run-cypress-platform' || 
-       github.event.label.name == 'run-cypress')
+      github.event.action == 'labeled' &&
+      (
+        github.event.label.name == 'run-cypress' || 
+        github.event.label.name == 'run-ce-cypress-platform' || 
+        github.event.label.name == 'run-ee-cypress-platform'
+      )
+
+    strategy:
+      matrix:
+        edition: >-
+          ${{ 
+            contains(github.event.pull_request.labels.*.name, 'run-cypress') && fromJson('["ce", "ee"]') ||
+            contains(github.event.pull_request.labels.*.name, 'run-ce-cypress-platform') && fromJson('["ce"]') ||
+            contains(github.event.pull_request.labels.*.name, 'run-ee-cypress-platform') && fromJson('["ee"]') ||
+            fromJson('[]')
+          }}
 
     steps:
       - name: Setup Node.js
@@ -23,10 +36,21 @@ jobs:
         with:
           node-version: 18.18.2
 
-      - name: Checkout
+      - name: Set up Git authentication for private submodules
+        run: |
+          git config --global url."https://x-access-token:${{ secrets.CUSTOM_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+
+      - name: Checkout with Submodules
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Checking out the correct branch for submodules EE
+        if: matrix.edition == 'ee'
+        run: |
+          git submodule update --init --recursive
+          git submodule foreach --recursive '
+            git checkout ${{ env.BRANCH_NAME }} 2>/dev/null || git checkout modularisation/v3'
 
       - name: Set up Docker
         uses: docker-practice/actions-setup-docker@master
@@ -55,9 +79,10 @@ jobs:
 
       - name: Set up environment variables
         run: |
+          echo "TOOLJET_EDITION=${{ matrix.edition == 'ee' && 'EE' || 'CE' }}" >> .env
           echo "TOOLJET_HOST=http://localhost:8082" >> .env
           echo "LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2" >> .env
-          echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env
+          echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env          
           echo "PG_DB=tooljet_development" >> .env
           echo "PG_USER=postgres" >> .env
           echo "PG_HOST=localhost" >> .env
@@ -69,7 +94,7 @@ jobs:
           echo "TOOLJET_DB_HOST=localhost" >> .env
           echo "TOOLJET_DB_PASS=postgres" >> .env
           echo "TOOLJET_DB_STATEMENT_TIMEOUT=60000" >> .env
-          echo "TOOLJET_DB_RECONFIG=true" >> .env          
+          echo "TOOLJET_DB_RECONFIG=true" >> .env
           echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
           echo "PGRST_HOST=localhost:3001" >> .env
           echo "PGRST_DB_PRE_CONFIG=postgrest.pre_config" >> .env
@@ -77,10 +102,6 @@ jobs:
           echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
           echo "ENABLE_MARKETPLACE_DEV_MODE=true" >> .env
           echo "ENABLE_PRIVATE_APP_EMBED=true" >> .env
-          echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=123456789.apps.googleusercontent.com" >> .env
-          echo "SSO_GOOGLE_OAUTH2_CLIENT_SECRET=ABCGFDNF-FHSDVFY-bskfh6234" >> .env
-          echo "SSO_GIT_OAUTH2_CLIENT_ID=1234567890" >> .env
-          echo "SSO_GIT_OAUTH2_CLIENT_SECRET=3346shfvkdjjsfkvxce32854e026a4531ed" >> .env
 
       - name: Set up database
         run: |
@@ -123,8 +144,9 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: screenshots
+          name: screenshots-${{ matrix.edition }}
           path: cypress-tests/cypress/screenshots
+
 
   Cypress-Platform-Subpath:
     runs-on: ubuntu-22.04

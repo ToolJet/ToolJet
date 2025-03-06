@@ -8,7 +8,7 @@ import { IOrganizationConstantsService } from './interfaces/IService';
 import { OrganizationConstantsUtilService } from './util.service';
 import { OrganizationConstantType } from './constants';
 import { OrganizationConstantRepository } from './repository';
-
+const secretValue = '**********';
 @Injectable()
 export class OrganizationConstantsService implements IOrganizationConstantsService {
   constructor(
@@ -23,22 +23,37 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
     type?: OrganizationConstantType
   ): Promise<OrganizationConstant[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const result = await this.organizationConstantRepository.findAllByOrganizationId(organizationId);
+      const result = await this.organizationConstantRepository.findAllByOrganizationId(organizationId, type);
       const appEnvironments = await this.appEnvironmentUtilService.getAll(organizationId);
 
       const constantsWithValues = await Promise.all(
         result.map(async (constant) => {
+          // Skip processing values if type is SECRET and decryptSecretValue is false
+          if (constant.type === OrganizationConstantType.SECRET && !decryptSecretValue) {
+            return {
+              name: constant.constantName,
+            };
+          }
           const values = await Promise.all(
             appEnvironments.map(async (env) => {
               const value = constant.orgEnvironmentConstantValues.find((value) => value.environmentId === env.id);
+              let resolvedValue = '';
+              if (value) {
+                if (constant.type === OrganizationConstantType.SECRET) {
+                  resolvedValue = decryptSecretValue
+                    ? await this.organizationConstantsUtilService.decryptSecret(organizationId, value.value)
+                    : secretValue;
+                } else {
+                  resolvedValue = await this.organizationConstantsUtilService.decryptSecret(
+                    organizationId,
+                    value.value
+                  ); // Constant type values are always decrypted
+                }
+              }
 
               return {
                 environmentName: env.name,
-                value:
-                  value && value.value.length > 0
-                    ? await this.organizationConstantsUtilService.decryptSecret(organizationId, value.value)
-                    : '',
-                id: value.environmentId,
+                value: resolvedValue,
               };
             })
           );
@@ -62,28 +77,33 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
     environmentId: string,
     type?: OrganizationConstantType
   ): Promise<any[]> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const result = await this.organizationConstantRepository.findByEnvironment(organizationId, environmentId);
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const result = await this.organizationConstantRepository.findByEnvironment(organizationId, environmentId, type);
 
-      const constantsWithValues = result.map(async (constant) => {
-        const decryptedValue = await this.organizationConstantsUtilService.decryptSecret(
-          organizationId,
-          constant.orgEnvironmentConstantValues[0].value
-        );
-        return {
-          id: constant.id,
-          name: constant.constantName,
-          value: decryptedValue,
-        };
-      });
+      return await Promise.all(
+        result.map(async (constant) => {
+          const resolvedValue = !(constant.type === OrganizationConstantType.SECRET)
+            ? await this.organizationConstantsUtilService.decryptSecret(
+                organizationId,
+                constant.orgEnvironmentConstantValues[0].value
+              )
+            : secretValue;
 
-      return Promise.all(constantsWithValues);
+          return {
+            id: constant.id,
+            name: constant.constantName,
+            type: constant.type,
+            value: resolvedValue,
+          };
+        })
+      );
     });
   }
 
   async create(
     organizationConstant: CreateOrganizationConstantDto,
-    organizationId: string
+    organizationId: string,
+    isMultiEnvEnabled?: boolean
   ): Promise<OrganizationConstant | []> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const newOrganizationConstant = this.organizationConstantRepository.create({
@@ -101,14 +121,22 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
         manager
       );
 
-      const environmentsIds = organizationConstant.environments;
-
-      const environmentToUpdate = environmentsIds.map(async (environmentId) => {
-        return await this.appEnvironmentUtilService.get(organizationId, environmentId, false);
-      });
+      let environmentsToUpdate = [];
+      if (isMultiEnvEnabled) {
+        const environmentsIds = organizationConstant.environments;
+        environmentsToUpdate = environmentsIds.map(async (environmentId) => {
+          return await this.appEnvironmentUtilService.get(organizationId, environmentId, false);
+        });
+      } else {
+        /* 
+          Basic plan customer. lets update all environment constant values. 
+          this will help us to run the apps successfully when the user buys enterprise plan 
+        */
+        environmentsToUpdate = await this.appEnvironmentUtilService.getAll(organizationId);
+      }
 
       await Promise.all(
-        environmentToUpdate.map(async (environment) => {
+        environmentsToUpdate.map(async (environment) => {
           const encryptedValue = await this.organizationConstantsUtilService.encryptSecret(
             organizationId,
             organizationConstant.value
@@ -131,7 +159,8 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
   async update(
     constantId: string,
     organizationId: string,
-    params: UpdateOrganizationConstantDto
+    params: UpdateOrganizationConstantDto,
+    isMultiEnvironmentEnabled = false
   ): Promise<OrganizationConstant> {
     const { constant_name, environment_id, value } = params;
 
@@ -153,16 +182,27 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
       }
 
       await manager.save(constantToUpdate);
+      let environmentsToUpdate = [];
+      if (!isMultiEnvironmentEnabled) {
+        environmentsToUpdate = await this.appEnvironmentUtilService.getAll(organizationId);
+      } else {
+        const environment = await this.appEnvironmentUtilService.get(organizationId, environment_id, false);
+        environmentsToUpdate.push(environment);
+      }
 
-      const environmentToUpdate = await this.appEnvironmentUtilService.get(organizationId, environment_id, false);
-      const encryptedValue = await this.organizationConstantsUtilService.encryptSecret(organizationId, value);
-
-      await this.organizationConstantsUtilService.updateOrgEnvironmentConstant(
-        encryptedValue,
-        environmentToUpdate.id,
-        constantToUpdate.id,
-        manager
-      );
+      if (value) {
+        await Promise.all(
+          environmentsToUpdate.map(async (environment) => {
+            const encryptedValue = await this.organizationConstantsUtilService.encryptSecret(organizationId, value);
+            await this.organizationConstantsUtilService.updateOrgEnvironmentConstant(
+              encryptedValue,
+              environment.id,
+              constantToUpdate.id,
+              manager
+            );
+          })
+        );
+      }
 
       return constantToUpdate;
     });

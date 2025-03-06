@@ -131,9 +131,13 @@ class AppComponent extends React.Component {
     }
     return '';
   };
-
   render() {
     const { updateAvailable, darkMode, isEditorOrViewer } = this.state;
+    const mergedProps = {
+      ...this.props,
+      switchDarkMode: this.switchDarkMode,
+      darkMode: darkMode,
+    };
     let toastOptions = {
       style: {
         wordBreak: 'break-all',
@@ -256,7 +260,7 @@ class AppComponent extends React.Component {
                   }
                 />
               )}
-              <Route path="/:workspaceId/workspace-settings/*" element={<WorkspaceSettings {...this.props} />}></Route>
+              <Route path="/:workspaceId/workspace-settings/*" element={<WorkspaceSettings {...mergedProps} />}></Route>
               <Route path="settings/*" element={<InstanceSettings {...this.props} />}></Route>
               <Route path="/:workspaceId/settings/*" element={<Settings {...this.props} />}></Route>
 
@@ -270,7 +274,7 @@ class AppComponent extends React.Component {
                   </PrivateRoute>
                 }
               />
-              {getDataSourcesRoutes(this.props)}
+              {getDataSourcesRoutes(mergedProps)}
               <Route
                 exact
                 path="/applications/:id/versions/:versionId/:pageHandle?"

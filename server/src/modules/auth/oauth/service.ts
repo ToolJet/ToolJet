@@ -320,6 +320,11 @@ export class OauthService implements IOAuthService {
         organizationDetails = await this.organizationRepository.fetchOrganization(userDetails.defaultOrganizationId);
       }
 
+      // Clear forgot password token
+      if (userDetails.forgotPasswordToken) {
+        await this.userRepository.updateOne(userDetails.id, { forgotPasswordToken: null }, manager);
+      }
+
       return await this.sessionUtilService.generateLoginResultPayload(
         response,
         userDetails,
