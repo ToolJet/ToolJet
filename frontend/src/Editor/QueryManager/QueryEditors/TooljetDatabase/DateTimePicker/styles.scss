@@ -229,7 +229,9 @@
 }
 
 .tjdb-td-wrapper{
-  input{
-    line-height: normal !important;
+  .react-datepicker-time__input{
+    input{
+      line-height: normal !important;
+    }
   }
 }
