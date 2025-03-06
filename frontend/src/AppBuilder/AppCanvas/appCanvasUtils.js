@@ -249,7 +249,6 @@ export const copyComponents = ({ isCut = false, isCloning = false }) => {
     const parentComponentId = isChildOfTabsOrCalendar(selectedComponent, allComponents)
       ? selectedComponent.component.parent.split('-').slice(0, -1).join('-')
       : selectedComponent?.component?.parent;
-
     if (parentComponentId) {
       // Check if the parent component is also selected
       const isParentSelected = selectedComponents.some((comp) => comp.id === parentComponentId);
@@ -483,11 +482,14 @@ export function pasteComponents(targetParentId, copiedComponentObj) {
   // Prevent pasting if the parent subcontainer was deleted during a cut operation
   if (
     targetParentId &&
+    // Check if targetParentId is deleted from the components
     !Object.keys(components).find(
       (key) =>
         targetParentId === key ||
         (components?.[key]?.component.component === 'Tabs' &&
-          targetParentId?.split('-')?.slice(0, -1)?.join('-') === key)
+          targetParentId?.split('-')?.slice(0, -1)?.join('-') === key) ||
+        (['Container', 'Form', 'Modal'].includes(components?.[key]?.component.component) &&
+          ['header', 'footer'].some((section) => targetParentId.includes(section)))
     )
   ) {
     return;
