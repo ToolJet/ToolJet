@@ -109,6 +109,7 @@ export class AuthService implements IAuthService {
       const updateData = {
         ...(shouldUpdateDefaultOrgId && { defaultOrganizationId: organization?.id }),
         passwordRetryCount: 0,
+        forgotPasswordToken: null,
       };
 
       await this.userRepository.updateOne(user.id, updateData, manager);

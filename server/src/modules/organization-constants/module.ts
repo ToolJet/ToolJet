@@ -14,20 +14,24 @@ export class OrganizationConstantModule {
     const { OrganizationConstantController } = await import(`${importPath}/organization-constants/controller`);
     const { OrganizationConstantsService } = await import(`${importPath}/organization-constants/service`);
     const { OrganizationConstantsUtilService } = await import(`${importPath}/organization-constants/util.service`);
+    const { EnvironmentConstantsService } = await import(
+      `${importPath}/organization-constants/services/environment-constants.service`
+    );
 
     return {
       module: OrganizationConstantModule,
       imports: [await AppEnvironmentsModule.register(configs), await EncryptionModule.register(configs)],
       controllers: [OrganizationConstantController],
       providers: [
+        EnvironmentConstantsService,
         OrganizationConstantsUtilService,
-        OrganizationConstantsService,
         OrganizationConstantRepository,
         OrganizationRepository,
         AppsRepository,
+        OrganizationConstantsService,
         FeatureAbilityFactory,
       ],
-      exports: [OrganizationConstantsUtilService],
+      exports: [EnvironmentConstantsService, OrganizationConstantsUtilService],
     };
   }
 }

@@ -27,6 +27,7 @@ import { GuardValidator } from '@modules/app/validators/feature-guard.validator'
 import { ILicenseUtilService } from '@modules/licensing/interfaces/IUtilService';
 import { ITemporalService } from '@modules/workflows/interfaces/ITemporalService';
 import { getTooljetEdition } from '@helpers/utils.helper';
+import { validateEdition } from '@helpers/edition.helper';
 
 let appContext: INestApplicationContext = undefined;
 
@@ -147,6 +148,9 @@ async function bootstrap() {
     bufferLogs: true,
     abortOnError: false,
   });
+
+  // Get DataSource from the app
+  await validateEdition(app);
 
   globalThis.TOOLJET_VERSION = `${fs.readFileSync('./.version', 'utf8').trim()}-${getTooljetEdition()}`;
   process.env['RELEASE_VERSION'] = globalThis.TOOLJET_VERSION;

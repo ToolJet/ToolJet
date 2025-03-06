@@ -29,7 +29,7 @@ export class OnboardingController implements IOnboardingController {
   constructor(protected onboardingService: OnboardingService) {}
 
   @InitFeature(FEATURE_KEY.ACTIVATE_ACCOUNT)
-  @UseGuards(SignupDisableGuard, FirstUserSignupDisableGuard, FeatureAbilityGuard)
+  @UseGuards(FirstUserSignupDisableGuard, FeatureAbilityGuard)
   @Post('activate-account-with-token')
   async activateAccountWithToken(
     @Body() activateAccountDto: ActivateAccountWithTokenDto,

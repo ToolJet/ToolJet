@@ -14,7 +14,6 @@ import { FeatureAbilityGuard } from '@modules/organizations/ability/guard';
 
 @InitModule(MODULES.ORGANIZATIONS)
 @Controller('organizations')
-@UseGuards(JwtAuthGuard, FeatureAbilityGuard)
 export class SetupOrganizationsController implements ISetupOrganizationsController {
   constructor(
     protected setupOrganizationsService: SetupOrganizationsService,
@@ -22,6 +21,7 @@ export class SetupOrganizationsController implements ISetupOrganizationsControll
   ) {}
 
   @InitFeature(FEATURE_KEY.CREATE)
+  @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
   @Post()
   async create(
     @User() user: UserEntity,

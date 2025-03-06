@@ -186,5 +186,28 @@
     display: none;
 }
 
+.moveable-guideline {
+    background: #97AEFC !important;
+    opacity: 0.8;
+    z-index: 9999;
+}
 
-/*  */
+.moveable-guideline.moveable-horizontal {
+    height: 1px !important;
+    width: 100% !important;
+    background: #97AEFC !important;
+    left: 0 !important;
+
+}
+
+.moveable-guideline.moveable-vertical {
+    width: 1px !important;
+    height: 100% !important;
+    background: #97AEFC !important;
+    top: 0 !important;
+
+}
+
+.moveable-guideline-group {
+    z-index: 9999;
+}

@@ -382,7 +382,7 @@ export class AppsService implements IAppsService {
   async release(app: App, user: User, versionReleaseDto: VersionReleaseDto) {
     await dbTransactionWrap(async (manager: EntityManager) => {
       const { versionToBeReleased } = versionReleaseDto;
-      const { id: appId, currentVersionId: lastReleasedVersion, organizationId } = app;
+      const { id: appId } = app;
       //check if the app version is eligible for release
       const currentEnvironment: AppEnvironment = await manager
         .createQueryBuilder(AppEnvironment, 'app_environments')
@@ -402,39 +402,6 @@ export class AppsService implements IAppsService {
 
       if (isMultiEnvironmentEnabled && !currentEnvironment?.isDefault) {
         throw new BadRequestException('You can only release when the version is promoted to production');
-      }
-
-      let promotedFromQuery: string;
-      if (!isMultiEnvironmentEnabled) {
-        if (!currentEnvironment.isDefault) {
-          /* For basic plan users, Promote to the production environment first then release it */
-          const productionEnv = await this.appEnvironmentUtilService.get(organizationId, null, false, manager);
-          await manager.update(AppVersion, versionToBeReleased, {
-            currentEnvironmentId: productionEnv.id,
-            promotedFrom: currentEnvironment.id,
-          });
-        }
-
-        /* demote the last released environment back to the promoted_from (if not null) */
-        if (lastReleasedVersion) {
-          promotedFromQuery = `
-              UPDATE app_versions
-              SET current_environment_id = promoted_from
-              WHERE promoted_from IS NOT NULL
-              AND id = $1;`;
-        }
-      } else {
-        if (lastReleasedVersion) {
-          promotedFromQuery = `
-              UPDATE app_versions
-              SET promoted_from = NULL
-              WHERE promoted_from IS NOT NULL
-              AND id = $1;`;
-        }
-      }
-
-      if (promotedFromQuery) {
-        await manager.query(promotedFromQuery, [lastReleasedVersion]);
       }
 
       await manager.update(App, appId, { currentVersionId: versionToBeReleased });
