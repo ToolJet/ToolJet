@@ -142,7 +142,7 @@ Please note the subpath is to be set with trailing `/` and is applicable only wh
 
 ToolJet uses SMTP services to send emails (e.g., invitation emails when you add new users to your workspace).
 
-For Enterprise Edition, you must configure SMTP settings through the user interface (UI) in the ToolJet Settings. For more information, see [SMTP Configuration](/docs/org-management/smtp-configuration).
+For Enterprise Edition, you must configure SMTP settings through the user interface (UI) in the ToolJet Settings. For more information, see [SMTP Configuration](/docs/org-setup/smtp-config).
 
 :::info
 If you have upgraded from a version prior to v2.62.0, the SMTP variables in your .env file will automatically be mapped to the UI.
