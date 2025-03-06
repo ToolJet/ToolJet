@@ -283,7 +283,7 @@ export const tabsConfig = {
       params: [
         {
           handle: 'tabId',
-          displayName: 'Id',
+          displayName: 'Tab',
           type: 'select',
           isDynamicOpiton: true,
           optionsGetter: 'component.definition.properties.tabItems.value',
@@ -302,7 +302,7 @@ export const tabsConfig = {
       params: [
         {
           handle: 'tabId',
-          displayName: 'Id',
+          displayName: 'Tab',
           type: 'select',
           isDynamicOpiton: true,
           optionsGetter: 'component.definition.properties.tabItems.value',
@@ -321,7 +321,7 @@ export const tabsConfig = {
       params: [
         {
           handle: 'tabId',
-          displayName: 'Id',
+          displayName: 'Tab',
           type: 'select',
           isDynamicOpiton: true,
           optionsGetter: 'component.definition.properties.tabItems.value',
