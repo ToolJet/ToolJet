@@ -6,6 +6,7 @@ import { MODULES } from '@modules/app/constants/modules';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { DataSourceScopes, DataSourceTypes } from './constants';
 import { GetQueryVariables } from './types';
+import { decode } from 'js-base64';
 
 @Injectable()
 export class DataSourcesRepository extends Repository<DataSource> {
@@ -70,6 +71,23 @@ export class DataSourcesRepository extends Repository<DataSource> {
         query.andWhere('data_source_options.environmentId = :environmentId', { environmentId });
       }
       const result = await query.getMany();
+      result.forEach((dataSource) => {
+        if (dataSource.plugin) {
+          if (dataSource.plugin.iconFile) {
+            dataSource.plugin.iconFile.data = dataSource.plugin.iconFile.data.toString('utf8');
+          }
+          if (dataSource.plugin.manifestFile) {
+            dataSource.plugin.manifestFile.data = JSON.parse(
+              decode(dataSource.plugin.manifestFile.data.toString('utf8'))
+            );
+          }
+          if (dataSource.plugin.operationsFile) {
+            dataSource.plugin.operationsFile.data = JSON.parse(
+              decode(dataSource.plugin.operationsFile.data.toString('utf8'))
+            );
+          }
+        }
+      });
 
       const sampleDataSourceQuery = await manager
         .createQueryBuilder(DataSource, 'data_source')
