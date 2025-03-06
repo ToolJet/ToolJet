@@ -15,7 +15,7 @@ export const orgEnvironmentConstantService = {
 function getAll(type = null) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   const queryParams = type ? `?type=${type}` : '';
-  return fetch(`${config.apiUrl}/organization-constants${queryParams}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/organization-constants/decrypted${queryParams}`, requestOptions).then(handleResponse);
 }
 
 function create(name, value, type, environments) {
