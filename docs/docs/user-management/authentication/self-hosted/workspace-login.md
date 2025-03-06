@@ -20,34 +20,34 @@ To configure the workspace-level authentication configuration
 
 ###   SSO (Single Sign-On)
     
-    *   SSO makes it easier for organizations to manage user access. Users can use one login for different tools, and admins can quickly add or remove access when needed. Thus, it improves an organization's onboarding and offboarding experience.
+- SSO makes it easier for organizations to manage user access. Users can use one login for different tools, and admins can quickly add or remove access when needed. Thus, it improves an organization's onboarding and offboarding experience.
         
-    *   At the workspace level, you can enable the **Instance SSO** toggle to inherit instance-level configured SSO, or you can also configure the workspace-level SSO with Google, GitHub, OpenID Connect, LDAP, and SAML. Please check the [SSO docs](/docs/user-management/sso/overview) for a detailed guide on SSO configuration.
+- At the workspace level, you can enable the **Instance SSO** toggle to inherit instance-level configured SSO, or you can also configure the workspace-level SSO with Google, GitHub, OpenID Connect, LDAP, and SAML. Please check the [SSO docs](/docs/user-management/sso/overview) for a detailed guide on SSO configuration.
 
     
 ###  Allowed Domains
     
-    *   This feature helps restrict login access to specific email domains, ensuring that only authorized users from your organization can sign up or log in.
+- This feature helps restrict login access to specific email domains, ensuring that only authorized users from your organization can sign up or log in.
         
-    *   You can add multiple domains for login by specifying allowed domain names, separated by commas. **Example:** `corp.com`, `corp.io`, `corp.ai`
+- You can add multiple domains for login by specifying allowed domain names, separated by commas. **Example:** `corp.com`, `corp.io`, `corp.ai`
         
 
 ###   Sign-Up Without Invitations
     
-    *   This feature allows organizations to simplify onboarding by letting users sign up without needing an invitation.
+- This feature allows organizations to simplify onboarding by letting users sign up without needing an invitation.
         
-    *   The **Enable Signup** feature lets users create accounts without being invited.
+- The **Enable Signup** feature lets users create accounts without being invited.
         
-    *   When users sign up with this feature enabled, they are assigned to the end user of that workspace. Workspace admin can later change the [role](/docs/user-management/role-based-access/user-roles) of the user once the user is on-boarded to the workspace. Refer to [Sign-Up Documentation](docs/user-management/onboard-users/self-signup-user#enable-sign-up-at-workspace-level) to learn more.
+- When users sign up with this feature enabled, they are assigned to the end user of that workspace. Workspace admin can later change the [role](/docs/user-management/role-based-access/user-roles) of the user once the user is on-boarded to the workspace. Refer to [Sign-Up Documentation](/docs/user-management/onboard-users/self-signup-user#enable-sign-up-at-workspace-level) to learn more.
         
         
 ###   Password Login
     
-    *   Password login allows users to log in using their email and password. However, organizations can also use SSO for better security and control.
+- Password login allows users to log in using their email and password. However, organizations can also use SSO for better security and control.
         
-    *   Toggle this setting to **enable** or **disable** password login on the login page. Make sure to disable password login only when your SSO is configured otherwise, you will get locked out.
+- Toggle this setting to **enable** or **disable** password login on the login page. Make sure to disable password login only when your SSO is configured otherwise, you will get locked out.
 
-    * User password authentication will be disabled after a predefined number of failed login attempts to enhance security. By default, users are allowed **5 retries**, but this can be adjusted using the `PASSWORD_RETRY_LIMIT` environment variable. To disable this feature, set `DISABLE_PASSWORD_RETRY_LIMIT` to `true`.
+- User password authentication will be disabled after a predefined number of failed login attempts to enhance security. By default, users are allowed **5 retries**, but this can be adjusted using the `PASSWORD_RETRY_LIMIT` environment variable. To disable this feature, set `DISABLE_PASSWORD_RETRY_LIMIT` to `true`.
 
         | Variable | Description | Default Value |
         | --------- |-------------|---------------|
@@ -57,6 +57,6 @@ To configure the workspace-level authentication configuration
         
 ###  Automatic SSO Login
     
-    *   This feature eliminates the need for users to interact with the login page by directly authenticating them via the configured SSO provider.
+- This feature eliminates the need for users to interact with the login page by directly authenticating them via the configured SSO provider.
         
-    *   To Enable the Automatic SSO Login, ensure the password login is disabled and only one SSO provider is configured.
+- To Enable the Automatic SSO Login, ensure the password login is disabled and only one SSO provider is configured.
