@@ -256,7 +256,10 @@ class AppComponent extends React.Component {
                   }
                 />
               )}
-              <Route path="/:workspaceId/workspace-settings/*" element={<WorkspaceSettings {...this.props} />}></Route>
+              <Route
+                path="/:workspaceId/workspace-settings/*"
+                element={<WorkspaceSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} {...this.props} />}
+              ></Route>
               <Route path="settings/*" element={<InstanceSettings {...this.props} />}></Route>
               <Route path="/:workspaceId/settings/*" element={<Settings {...this.props} />}></Route>
 
