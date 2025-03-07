@@ -61,11 +61,24 @@ export class DataSourcesService implements IDataSourcesService {
       environmentId: selectedEnvironmentId,
     });
     for (const dataSource of dataSources) {
-      if (dataSource.pluginId) {
-        dataSource.plugin.iconFile.data = dataSource.plugin.iconFile.data.toString('utf8');
-        dataSource.plugin.manifestFile.data = JSON.parse(decode(dataSource.plugin.manifestFile.data.toString('utf8')));
-        dataSource.plugin.operationsFile.data = JSON.parse(
-          decode(dataSource.plugin.operationsFile.data.toString('utf8'))
+      const parseIfNeeded = (data: any) => {
+        if (typeof data === 'object' && data !== null) return data;
+        if (Buffer.isBuffer(data) || typeof data === 'string') {
+          return JSON.parse(decode(data.toString('utf8')));
+        }
+        return data;
+      };
+      try {
+        if (dataSource.pluginId) {
+          if (Buffer.isBuffer(dataSource.plugin.iconFile.data)) {
+            dataSource.plugin.iconFile.data = dataSource.plugin.iconFile.data.toString('utf8');
+          }
+          dataSource.plugin.manifestFile.data = parseIfNeeded(dataSource.plugin.manifestFile.data);
+          dataSource.plugin.operationsFile.data = parseIfNeeded(dataSource.plugin.operationsFile.data);
+        }
+      } catch (error) {
+        throw new BadRequestException(
+          `Error parsing plugin data for dataSourceId: ${dataSource.id}. Details: ${error.message}`
         );
       }
     }
