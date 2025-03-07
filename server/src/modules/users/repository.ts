@@ -65,6 +65,7 @@ export class UserRepository extends Repository<User> {
           organizationId: true,
           organization: {
             name: true,
+            status: true,
           },
         },
       },
