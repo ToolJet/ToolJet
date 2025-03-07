@@ -272,6 +272,10 @@ describe("Self host onboarding", () => {
       cy.get(".btn-close").click();
     }
 
+    if (envVar === "Enterprise") {
+      cy.get(".btn-close").click();
+    }
+
     logout();
     cy.appUILogin();
 
