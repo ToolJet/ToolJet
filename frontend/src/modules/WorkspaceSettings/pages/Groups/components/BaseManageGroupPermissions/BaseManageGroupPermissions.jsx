@@ -50,6 +50,7 @@ class BaseManageGroupPermissions extends React.Component {
   }
 
   componentDidMount() {
+    console.log('testing');
     this.fetchGroups();
   }
 
