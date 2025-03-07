@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
-import { EntityManager, In } from 'typeorm';
+import { EntityManager, FindOneOptions, In } from 'typeorm';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { AppEnvironmentActions } from './constants';
 import { IAppEnvironmentService } from './interfaces/IService';
@@ -8,38 +8,22 @@ import { AppEnvironmentActionParametersDto } from './dto';
 import { dbTransactionWrap } from '@helpers/database.helper';
 import { IAppEnvironmentResponse } from './interfaces/IAppEnvironmentResponse';
 import { AppEnvironmentUtilService } from './util.service';
+import { LicenseTermsService } from '@modules/licensing/interfaces/IService';
+import { LICENSE_FIELD } from '@modules/licensing/constants';
 
 @Injectable()
 export class AppEnvironmentService implements IAppEnvironmentService {
-  constructor(protected readonly appEnvironmentUtilService: AppEnvironmentUtilService) {}
+  constructor(
+    protected readonly appEnvironmentUtilService: AppEnvironmentUtilService,
+    protected readonly licenseTermsService: LicenseTermsService
+  ) {}
   async init(editingVersionId: string, organizationId: string): Promise<IAppEnvironmentResponse> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const editorVersion = await manager.findOne(AppVersion, {
-        select: ['id', 'name', 'currentEnvironmentId', 'appId'],
+        select: ['id', 'name', 'appId'],
         where: { id: editingVersionId },
       });
-      const environments: AppEnvironment[] = await this.appEnvironmentUtilService.getAll(
-        organizationId,
-        editorVersion.appId,
-        manager
-      );
-      const editorEnvironment = environments.find((env) => env.id === editorVersion.currentEnvironmentId);
-      const { shouldRenderPromoteButton, shouldRenderReleaseButton } =
-        await this.appEnvironmentUtilService.calculateButtonVisibility(
-          false,
-          editorEnvironment as AppEnvironment,
-          editorVersion.appId,
-          editorVersion.id
-        );
-      const response: IAppEnvironmentResponse = {
-        editorVersion,
-        editorEnvironment: editorEnvironment as AppEnvironment,
-        appVersionEnvironment: editorEnvironment as AppEnvironment,
-        shouldRenderPromoteButton,
-        shouldRenderReleaseButton,
-        environments,
-      };
-      return response;
+      return await this.appEnvironmentUtilService.init(editorVersion, organizationId, false, manager);
     });
   }
 
@@ -154,10 +138,27 @@ export class AppEnvironmentService implements IAppEnvironmentService {
     });
   }
 
-  async get(organizationId: string, id?: string, priorityCheck = false): Promise<AppEnvironment> {
+  async get(
+    organizationId: string,
+    id?: string,
+    priorityCheck = false,
+    licenseCheck = false,
+    manager?: EntityManager
+  ): Promise<AppEnvironment> {
+    const isMultiEnvironmentEnabled = licenseCheck
+      ? await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT)
+      : false;
+
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      return await this.appEnvironmentUtilService.get(organizationId, id, priorityCheck, manager);
-    });
+      const condition: FindOneOptions<AppEnvironment> = {
+        where: {
+          organizationId,
+          ...(id ? { id } : !isMultiEnvironmentEnabled ? { priority: 1 } : !priorityCheck ? { isDefault: true } : {}),
+        },
+        ...(priorityCheck && { order: { priority: 'ASC' } }),
+      };
+      return await manager.findOneOrFail(AppEnvironment, condition);
+    }, manager);
   }
 
   async create(organizationId: string, name: string, isDefault = false, priority: number): Promise<AppEnvironment> {

@@ -2665,10 +2665,18 @@ hr {
     overflow-y: initial !important
   }
 
-  .modal-dialog-scrollable .modal-content {
+  .modal-dialog-scrollable:not(.modal-fullscreen) .modal-content {
     max-height: 88% !important;
   }
 
+  .modal-dialog-scrollable.modal-fullscreen .modal-content {
+    max-height: 100% !important;
+  }
+
+  .modal-dialog-scrollable.modal-fullscreen .modal-content.modal-component {
+    // Modal header height
+    padding-bottom: 0;
+  }
 }
 
 
@@ -7924,7 +7932,7 @@ tbody {
   }
 
   .sidebar-container-with-banner {
-    height: 140px !important;
+    height: 40px !important;
     padding-top: 1px !important;
     margin: 0 auto;
     display: flex;
@@ -12085,11 +12093,17 @@ tbody {
 .sidebar-list-wrap-with-banner {
   margin-top: 24px;
   padding: 0px 20px 20px 20px;
-  height: calc(100vh - 280px);
+  height: calc(100vh - 408px);
   overflow: auto;
 
   span {
     letter-spacing: -0.02em;
+  }
+}
+.sidebar-list-wrap.sidebar-list-wrap-with-banner.isAdmin {
+  height: calc(100vh - 371px);
+  &.resource-limit-reached {
+    height: calc(100vh - 371px);
   }
 }
 
@@ -14016,8 +14030,8 @@ tbody {
 }
 
 /*
-* remove this once whole app is migrated to new styles. use only `theme-dark` class everywhere. 
-* This is added since some of the pages are in old theme and making changes to `theme-dark` styles can break UI style somewhere else 
+* remove this once whole app is migrated to new styles. use only `theme-dark` class everywhere.
+* This is added since some of the pages are in old theme and making changes to `theme-dark` styles can break UI style somewhere else
 */
 .tj-dark-mode {
   background-color: var(--base) !important;
@@ -18561,5 +18575,53 @@ section.ai-message-prompt-input-wrapper {
     /* 145.455% */
     margin-left: 8px;
     flex-grow: 1;
+  }
+}
+.workspace-constant-value {
+  position: relative;
+
+  .fromEnv {
+    content: '.env';
+    border-radius: 6px;
+    background: var(--Indigo-50, #EEF4FF);
+    padding: 0px 8px;
+    width: 40px;
+    align-items: center;
+    position: absolute;
+    color: var(--Indigo-700, #3538CD);
+    text-align: center;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 20px;
+    margin-left: 24px;
+  }
+
+  .isDuplicate {
+    padding: 0px 8px;
+    border-radius: 6px;
+    background: var(--Error-50, #FEF3F2);
+    color: var(--Error-700, #B42318);
+    text-align: center;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 20px;
+    /* 166.667% */
+    margin-left: 24px;
+  }
+
+  .env-secret-hidden-message {
+    border-radius: 16px;
+    background: var(--Warning-50, #FFFAEB);
+    padding: 4px 12px;
+    color: var(--Warning-700, #B54708);
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 18px;
+    &.dark {
+      background: #FFFAEB !important;
+    }
   }
 }

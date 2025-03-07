@@ -94,26 +94,11 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
 
     if (isAllAppsViewable) {
       // add view permissions for all apps
-      can(
-        [
-          FEATURE_KEY.GET_ONE,
-          FEATURE_KEY.GET_BY_SLUG,
-          FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS,
-          FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS,
-        ],
-        App
-      );
+      can([FEATURE_KEY.GET_ONE, FEATURE_KEY.GET_BY_SLUG, FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS], App);
     } else if (userAppPermissions?.viewableAppsId?.length) {
-      can(
-        [
-          FEATURE_KEY.GET_ONE,
-          FEATURE_KEY.GET_BY_SLUG,
-          FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS,
-          FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS,
-        ],
-        App,
-        { id: { $in: userAppPermissions.viewableAppsId } }
-      );
+      can([FEATURE_KEY.GET_ONE, FEATURE_KEY.GET_BY_SLUG, FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS], App, {
+        id: { $in: userAppPermissions.viewableAppsId },
+      });
     }
   }
 }

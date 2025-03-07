@@ -28,6 +28,7 @@ import { AppsAbilityFactory } from '@modules/casl/abilities/apps-ability.factory
 import { WorkflowSchedule } from '@entities/workflow_schedule.entity';
 import { App } from '@entities/app.entity';
 import { AiModule } from '@modules/ai/module';
+import { DataSourcesRepository } from '@modules/data-sources/repository';
 export class WorkflowsModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
@@ -95,6 +96,7 @@ export class WorkflowsModule {
         AppsAbilityFactory,
         AppsRepository,
         UserRepository,
+        DataSourcesRepository,
         DataQueryRepository,
         OrganizationConstantRepository,
         VersionRepository,

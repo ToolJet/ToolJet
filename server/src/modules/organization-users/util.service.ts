@@ -252,7 +252,6 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
 
     const role = orgUser.user.userPermissions.filter((group) => group.type === GROUP_PERMISSIONS_TYPE.DEFAULT);
     const groups = orgUser.user.userPermissions.filter((group) => group.type === GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP);
-
     return {
       email: orgUser.user.email,
       firstName: orgUser.user.firstName ?? '',
@@ -263,9 +262,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
       role: orgUser.role,
       status: orgUser.status,
       avatarId: orgUser.user.avatarId,
-      groups: isBasicPlan
-        ? []
-        : groups.map((groupPermission) => ({ name: groupPermission.name, id: groupPermission.id })),
+      groups: groups.map((groupPermission) => ({ name: groupPermission.name, id: groupPermission.id })),
       roleGroup: role.map((groupPermission) => ({ name: groupPermission.name, id: groupPermission.id })),
       ...(orgUser.invitationToken ? { invitationToken: orgUser.invitationToken } : {}),
       ...(this.configService.get<string>('HIDE_ACCOUNT_SETUP_LINK') !== 'true' && orgUser.user.invitationToken

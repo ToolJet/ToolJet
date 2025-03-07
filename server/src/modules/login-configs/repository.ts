@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, IsNull, Repository } from 'typeorm';
 import { SSOConfigs, SSOType } from '@entities/sso_config.entity';
 
 @Injectable()
@@ -12,7 +12,7 @@ export class SSOConfigsRepository extends Repository<SSOConfigs> {
   }
 
   async findInstanceConfigs(): Promise<SSOConfigs[]> {
-    return this.find({ where: { organizationId: null } });
+    return this.find({ where: { organizationId: IsNull() } });
   }
 
   async createOrUpdateSSOConfig(configData: Partial<SSOConfigs>): Promise<SSOConfigs> {

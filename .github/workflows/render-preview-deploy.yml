@@ -493,10 +493,6 @@ jobs:
                 "value": "${{ secrets.RENDER_REDIS_PORT }}"
               },
               {
-                "key": "LICENSE_KEY",
-                "value": "${{ secrets.RENDER_LICENSE_KEY }}"
-              },
-              {
                 "key": "TEMPORAL_SERVER_ADDRESS",
                 "value": "https://auto-setup-1-25-1.onrender.com"
               },
@@ -864,10 +860,6 @@ jobs:
   #             {
   #               "key": "REDIS_PORT",
   #               "value": "${{ secrets.RENDER_REDIS_PORT }}"
-  #             },
-  #             {
-  #               "key": "LICENSE_KEY",
-  #               "value": "${{ secrets.RENDER_LICENSE_KEY }}"
   #             },
   #             {
   #               "key": "TEMPORAL_SERVER_ADDRESS",

@@ -299,7 +299,6 @@ export const dropdownV2Config = {
         ],
       },
       label: { value: 'Select' },
-      value: { value: '{{"2"}}' },
       optionsLoadingState: { value: '{{false}}' },
       placeholder: { value: 'Select an option' },
       visibility: { value: '{{true}}' },

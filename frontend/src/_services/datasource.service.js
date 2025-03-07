@@ -56,8 +56,9 @@ function deleteDataSource(id) {
 }
 
 function test(body) {
+  const id = body.dataSourceId;
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/data-sources/test-connection`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/data-sources/${id}/test-connection`, requestOptions).then(handleResponse);
 }
 
 function testSampleDb(body) {

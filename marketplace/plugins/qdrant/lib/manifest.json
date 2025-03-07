@@ -1,0 +1,47 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Qdrant datasource",
+  "description": "A schema defining Qdrant datasource",
+  "type": "api",
+  "source": {
+    "name": "Qdrant",
+    "kind": "qdrant",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "url": {
+        "type": "string",
+        "encrypted": false
+      },
+      "apiKey": {
+        "type": "string",
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {},
+  "properties": {
+    "url": {
+      "label": "Qdrant URL",
+      "key": "url",
+      "type": "text",
+      "description": "Enter your Qdrant URL.",
+      "helpText": "<a href='https://qdrant.tech/documentation/quickstart-cloud/#authenticate-via-sdks' target='_blank' rel='noreferrer'>REST URL</a> to authenticate the requests of the Qdrant instance.",
+      "encrypted": true
+    },
+    "apiKey": {
+      "label": "API Key",
+      "key": "apiKey",
+      "type": "password",
+      "description": "Enter your Qdrant API key",
+      "helpText": "An <a href='https://qdrant.tech/documentation/quickstart-cloud/#setup-a-qdrant-cloud-cluster' target='_blank' rel='noreferrer'>API key</a> to authenticate the requests.",
+      "encrypted": true
+    }
+  },
+  "required": [
+    "url"
+  ]
+}
