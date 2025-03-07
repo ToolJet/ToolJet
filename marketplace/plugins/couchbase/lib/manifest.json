@@ -1,0 +1,90 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Couchbase datasource",
+  "description": "A schema defining Couchbase datasource",
+  "type": "database",
+  "source": {
+    "name": "Couchbase",
+    "kind": "couchbase",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "connectionString": {
+        "type": "string"
+      },
+      "username": {
+        "type": "string"
+      },
+      "password": {
+        "type": "string",
+        "encrypted": true
+      },
+      "bucket": {
+        "type": "string"
+      },
+      "scope": {
+        "type": "string"
+      },
+      "collection": {
+        "type": "string"
+      }
+    }
+  },
+  "defaults": {
+    "connectionString": "",
+    "username": "",
+    "password": "",
+    "bucket": "",
+    "scope": "_default",
+    "collection": "_default"
+  },
+  "properties": {
+    "connectionString": {
+      "label": "Connection String",
+      "key": "connectionString",
+      "type": "text",
+      "description": "Enter connection string (e.g., couchbase://localhost)"
+    },
+    "username": {
+      "label": "Username",
+      "key": "username",
+      "type": "text",
+      "description": "Enter username"
+    },
+    "password": {
+      "label": "Password",
+      "key": "password",
+      "type": "password",
+      "description": "Enter password"
+    },
+    "bucket": {
+      "label": "Bucket",
+      "key": "bucket",
+      "type": "text",
+      "description": "Enter bucket name"
+    },
+    "scope": {
+      "label": "Scope",
+      "key": "scope",
+      "type": "text",
+      "description": "Enter scope name"
+    },
+    "collection": {
+      "label": "Collection",
+      "key": "collection",
+      "type": "text",
+      "description": "Enter collection name"
+    }
+  },
+  "required": [
+    "connectionString",
+    "username",
+    "password",
+    "bucket",
+    "scope",
+    "collection"
+  ]
+}

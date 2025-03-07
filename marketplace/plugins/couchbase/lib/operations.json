@@ -1,0 +1,125 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Couchbase datasource",
+  "description": "A schema defining Couchbase datasource",
+  "type": "database",
+  "defaults": {
+    "document": "{ }"
+  },
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "name": "Get Document",
+          "value": "get_document"
+        },
+        {
+          "name": "Query",
+          "value": "query"
+        },
+        {
+          "name": "Insert Document",
+          "value": "insert_document"
+        },
+        {
+          "name": "Upsert Document",
+          "value": "upsert_document"
+        },
+        {
+          "name": "Delete Document",
+          "value": "delete_document"
+        }
+      ]
+    },
+    "get_document": {
+      "document_id": {
+        "label": "Document ID",
+        "key": "document_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter document ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      }
+    },
+    "query": {
+      "query": {
+        "label": "Query",
+        "key": "query",
+        "type": "codehinter",
+        "mode": "sql",
+        "description": "Enter N1QL query",
+        "height": "150px",
+        "className": "codehinter-plugins",
+        "placeholder": "SELECT * FROM `bucket` WHERE type = 'user'"
+      },
+      "parameters": {
+        "label": "Parameters",
+        "key": "parameters",
+        "type": "codehinter",
+        "description": "Query parameters",
+        "height": "150px",
+        "className": "codehinter-plugins"
+      }
+    },
+    "insert_document": {
+      "document_id": {
+        "label": "Document ID",
+        "key": "document_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter document ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "document": {
+        "label": "Document",
+        "key": "document",
+        "type": "codehinter",
+        "mode": "javascript",
+        "description": "Enter document content",
+        "height": "150px",
+        "className": "codehinter-plugins"
+      }
+    },
+    "upsert_document": {
+      "document_id": {
+        "label": "Document ID",
+        "key": "document_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter document ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "document": {
+        "label": "Document",
+        "key": "document",
+        "type": "codehinter",
+        "mode": "javascript",
+        "description": "Enter document content",
+        "height": "150px",
+        "className": "codehinter-plugins"
+      }
+    },
+    "delete_document": {
+      "document_id": {
+        "label": "Document ID",
+        "key": "document_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter document ID",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      }
+    }
+  }
+}
