@@ -103,6 +103,13 @@ export const TableRow = ({
                 // to avoid on click event getting propagating to row when td is editable or has action button and allowSelection is true and selectRowOnCellEdit is false
                 e.stopPropagation();
               }
+              setExposedVariables({
+                selectedCell: {
+                  columnName: cell.column.columnDef?.header,
+                  columnKey: cell.column.columnDef?.accessorKey,
+                  value: cell.getValue(),
+                },
+              });
             }}
           >
             <div

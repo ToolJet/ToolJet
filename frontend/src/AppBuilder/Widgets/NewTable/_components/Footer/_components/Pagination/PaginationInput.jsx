@@ -26,12 +26,14 @@ export const PaginationInput = memo(({ pageIndex, serverSidePagination, pageCoun
             value={inputValue}
             onChange={(event) => {
               const value = event.target.value;
-              setInputValue(value);
 
               // Only update page if value is a valid number and within range
               const pageNumber = parseInt(value, 10);
-              if (!isNaN(pageNumber) || pageNumber < 1 || pageNumber > pageCount) {
+              if (!isNaN(pageNumber) && pageNumber >= 1 && pageNumber <= pageCount) {
+                setInputValue(pageNumber);
                 gotoPage(pageNumber);
+              } else if (value === '') {
+                setInputValue('');
               }
             }}
           />

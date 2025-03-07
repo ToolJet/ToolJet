@@ -112,23 +112,19 @@ export const TableExposedVariables = ({
 
   // Expose selected rows
   useEffect(() => {
-    if (allowSelection) {
+    if (allowSelection && showBulkSelector) {
       setExposedVariables({
         selectedRows: selectedRows.map((row) => row.original),
         selectedRowsId: selectedRows.map((row) => row.id),
-        selectedRow: lastClickedRow,
-        selectedRowId: isNaN(lastClickedRow?.id) ? String(lastClickedRow?.id) : lastClickedRow?.id,
       });
     } else {
       setExposedVariables({
         selectedRows: [],
         selectedRowsId: [],
-        selectedRow: {},
-        selectedRowId: null,
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedRows, allowSelection, setExposedVariables, fireEvent, lastClickedRow]); // Didn't add mounted as it's not a dependency
+  }, [selectedRows, allowSelection, setExposedVariables, fireEvent, lastClickedRow, showBulkSelector]); // Didn't add mounted as it's not a dependency
 
   useEffect(() => {
     if (allowSelection) {
@@ -213,6 +209,10 @@ export const TableExposedVariables = ({
       if (item) {
         setRowSelection({ [item.id - 1]: true });
       }
+      setExposedVariables({
+        selectedRow: item,
+        selectedRowId: isNaN(item?.id) ? String(item?.id) : item?.id,
+      });
     }
     if (defaultSelectedRow) {
       const key = Object?.keys(defaultSelectedRow)[0] ?? '';
@@ -220,8 +220,22 @@ export const TableExposedVariables = ({
       if (key && value) {
         selectRow(key, value);
       }
+    } else {
+      setExposedVariables({
+        selectedRow: {},
+        selectedRowId: null,
+      });
     }
-  }, [data, defaultSelectedRow, setRowSelection]);
+  }, [data, defaultSelectedRow, setExposedVariables, setRowSelection]);
+
+  useEffect(() => {
+    if (lastClickedRow) {
+      setExposedVariables({
+        selectedRow: lastClickedRow,
+        selectedRowId: isNaN(lastClickedRow?.id) ? String(lastClickedRow?.id) : lastClickedRow?.id,
+      });
+    }
+  }, [lastClickedRow, setExposedVariables]);
 
   useEffect(() => {
     function selectRow(key, value) {
