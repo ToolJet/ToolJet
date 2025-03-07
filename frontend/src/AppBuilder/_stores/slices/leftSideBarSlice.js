@@ -103,8 +103,19 @@ export const createLeftSideBarSlice = (set, get) => ({
     }
 
     if (modalsOpenOnCanvas.length > 0 && !isInsideOpenModal) {
-      return undefined;
+      const targetId = visited.size === 1 ? modalsOpenOnCanvas[modalsOpenOnCanvas.length - 1] : current;
+      const componentName = currentPageComponents?.[targetId]?.component?.name;
+
+      return {
+        isAccessible: false,
+        computedComponentId: componentName,
+        isOnCanvas: visited.size === 1,
+      };
     }
-    return targetComponentId;
+
+    return {
+      isAccessible: true,
+      computedComponentId: targetComponentId,
+    };
   },
 });

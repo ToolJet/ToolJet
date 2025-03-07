@@ -32,8 +32,18 @@ const useCallbackActions = () => {
   };
 
   const handleAutoScrollToComponent = (data) => {
-    const computedComponentId = getComponentIdToAutoScroll(data.id);
-    if (!computedComponentId) return;
+    const { isAccessible, computedComponentId, isOnCanvas } = getComponentIdToAutoScroll(data.id);
+    if (!isAccessible) {
+      if (isOnCanvas) {
+        toast.success(
+          `This component can't be opened because it's on the main canvas. Close ${computedComponentId} and click "Go to component" to view it there`
+        );
+      } else
+        toast.success(
+          `This component can't be opened because it's inside ${computedComponentId}. Open ${computedComponentId} and click "Go to component"to view it.`
+        );
+      return;
+    }
     setSelectedComponents([computedComponentId]);
     const target = document.getElementById(computedComponentId);
     target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
