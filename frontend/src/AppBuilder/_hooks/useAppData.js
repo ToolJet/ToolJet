@@ -329,6 +329,11 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
       setCurrentPageHandle(startingPage.handle);
       updateFeatureAccess();
       setCurrentPageId(startingPage.id, moduleId);
+      setResolvedPageConstants({
+        id: startingPage?.id,
+        handle: startingPage?.handle,
+        name: startingPage?.name,
+      });
       setComponentNameIdMapping(moduleId);
       updateEventsField('events', appData.events);
       setCurrentVersionId(appData.editing_version?.id || appData.current_version_id);

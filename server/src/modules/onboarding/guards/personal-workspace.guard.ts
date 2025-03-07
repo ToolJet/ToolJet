@@ -10,10 +10,11 @@ export class AllowPersonalWorkspaceGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
+    const organizationId = request.body.organizationId;
 
     const isPersonalWorkspaceEnabled =
       (await this.instanceSettingsUtilService.getSettings(INSTANCE_USER_SETTINGS.ALLOW_PERSONAL_WORKSPACE)) === 'true';
 
-    return isSuperAdmin(user) || isPersonalWorkspaceEnabled;
+    return isSuperAdmin(user) || isPersonalWorkspaceEnabled || !!organizationId;
   }
 }

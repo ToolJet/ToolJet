@@ -45,15 +45,15 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
   const queryName = selectedQuery?.name ?? '';
   const sourcecomponentName = selectedDataSource?.kind?.charAt(0).toUpperCase() + selectedDataSource?.kind?.slice(1);
 
-  const ElementToRender = selectedDataSource?.pluginId ? source : allSources[sourcecomponentName];
+  const ElementToRender = selectedDataSource?.plugin_id ? source : allSources[sourcecomponentName];
   const defaultOptions = useRef({});
 
   const isFreezed = useStore((state) => state.getShouldFreeze());
 
   useEffect(() => {
     setDataSourceMeta(
-      selectedQuery?.pluginId
-        ? selectedQuery?.manifestFile?.data?.source
+      selectedQuery?.plugin_id
+        ? selectedQuery?.manifest_file?.data?.source
         : DataSourceTypes.find((source) => source.kind === selectedQuery?.kind)
     );
     setSelectedQueryId(selectedQuery?.id);
@@ -188,7 +188,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
         <ElementToRender
           renderCopilot={renderCopilot}
           key={selectedQuery?.id}
-          pluginSchema={selectedDataSource?.plugin?.operationsFile?.data}
+          pluginSchema={selectedDataSource?.plugin?.operations_file?.data}
           selectedDataSource={selectedDataSource}
           options={selectedQuery?.options}
           optionsChanged={optionsChanged}
@@ -281,7 +281,7 @@ export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () =
     const isSampleDb = selectedDataSource?.type === DATA_SOURCE_TYPE.SAMPLE;
     const docLink = isSampleDb
       ? 'https://docs.tooljet.com/docs/data-sources/sample-data-sources'
-      : selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
+      : selectedDataSource?.plugin_id && selectedDataSource.plugin_id.trim() !== ''
       ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource?.kind}/`
       : `https://docs.tooljet.com/docs/data-sources/${selectedDataSource?.kind}`;
     return (
