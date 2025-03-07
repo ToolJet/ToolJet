@@ -1,3 +1,5 @@
+const envVar = Cypress.env("environment");
+
 Cypress.Commands.add(
   "apiLogin",
   (
@@ -190,7 +192,23 @@ Cypress.Commands.add("apiLogout", () => {
 
 Cypress.Commands.add(
   "apiUserInvite",
-  (userName, userEmail, userRole = "end-user") => {
+  (userName, userEmail, userRole = "end-user", metaData = {}) => {
+
+    const requestBody = envVar === "Enterprise"
+      ? {
+        firstName: userName,
+        email: userEmail,
+        groups: [],
+        role: userRole,
+        userMetadata: metaData,
+      }
+      : {
+        first_name: userName,
+        email: userEmail,
+        groups: [],
+        role: userRole,
+      };
+
     cy.getCookie("tj_auth_token").then((cookie) => {
       cy.request(
         {
@@ -200,12 +218,7 @@ Cypress.Commands.add(
             "Tj-Workspace-Id": Cypress.env("workspaceId"),
             Cookie: `tj_auth_token=${cookie.value}`,
           },
-          body: {
-            first_name: userName,
-            email: userEmail,
-            groups: [],
-            role: userRole,
-          },
+          body: requestBody,
         },
         { log: false }
       ).then((response) => {

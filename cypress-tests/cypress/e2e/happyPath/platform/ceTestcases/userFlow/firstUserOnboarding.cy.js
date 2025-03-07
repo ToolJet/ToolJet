@@ -3,7 +3,7 @@ import { commonText } from "Texts/common";
 import { onboardingSelectors } from "Selectors/onboarding";
 import { onboardingText } from "Texts/onboarding";
 import { logout } from "Support/utils/common";
-import { bannerElementsVerification } from "Support/utils/onboarding";
+import { bannerElementsVerification, onboardingStepOne, onboardingStepTwo, onboardingStepThree } from "Support/utils/onboarding";
 
 describe("Self host onboarding", () => {
   const envVar = Cypress.env("environment");
@@ -110,68 +110,13 @@ describe("Self host onboarding", () => {
 
     if (envVar === "Enterprise") {
       bannerElementsVerification();
-
-      const companyPageTexts = [
-        {
-          selector: onboardingSelectors.tellUsAbit,
-          text: "Tell us a bit about yourself",
-        },
-        {
-          selector: onboardingSelectors.pageDescription,
-          text: "This information will help us improve ToolJet",
-        },
-        {
-          selector: '[data-cy="onboarding-company-name-label"]',
-          text: "Company name *",
-        },
-        {
-          selector: '[data-cy="onboarding-build-purpose-label"]',
-          text: "What would you like to build on ToolJet? *",
-        },
-      ];
-
-      companyPageTexts.forEach((item) => {
-        cy.get(item.selector).should("be.visible").and("have.text", item.text);
-      });
-
-      cy.get(onboardingSelectors.companyNameInput).should("be.visible");
-      cy.get(onboardingSelectors.buildPurposeInput).should("be.visible");
-      cy.get(onboardingSelectors.onboardingSubmitButton).verifyVisibleElement(
-        "have.attr",
-        "disabled"
-      );
-
-      cy.get(onboardingSelectors.companyNameInput).type("Tooljet");
-      cy.get(onboardingSelectors.onboardingSubmitButton).should(
-        "have.attr",
-        "disabled"
-      );
-      cy.get(onboardingSelectors.buildPurposeInput).type("Exploring");
-      cy.get(onboardingSelectors.onboardingSubmitButton).verifyVisibleElement(
-        "have.text",
-        "Continue"
-      );
-      cy.get(onboardingSelectors.onboardingSubmitButton)
-        .should("be.enabled")
-        .click();
+      onboardingStepOne()
     }
 
-    bannerElementsVerification();
-    cy.get(commonSelectors.setUpworkspaceCheckPoint)
-      .should("be.visible")
-      .and("have.text", "Set up your workspace!");
-
-    cy.get(onboardingSelectors.pageDescription).verifyVisibleElement(
-      "have.text",
-      "Set up workspaces to manage users, applications & resources across various teams"
-    );
-    cy.get(commonSelectors.workspaceNameInputLabel)
-      .should("be.visible")
-      .and("have.text", commonText.workspaceNameInputLabel);
-    cy.clearAndType(commonSelectors.workspaceNameInputField, "My workspace");
-    cy.get(commonSelectors.OnbordingContinue)
-      .verifyVisibleElement("have.text", "Continue")
-      .click();
+    if (envVar === "Enterprise") {
+      bannerElementsVerification();
+      onboardingStepTwo();
+    }
 
     if (envVar === "Enterprise") {
       bannerElementsVerification();
@@ -317,25 +262,11 @@ describe("Self host onboarding", () => {
       cy.get(onboardingSelectors.declineButton).click();
 
       bannerElementsVerification();
-      cy.get(
-        `[data-cy="we've-created-a-sample-application-for-you!-header"]`
-      ).verifyVisibleElement(
-        "have.text",
-        "We've created a sample application for you!"
-      );
-      cy.get(onboardingSelectors.pageDescription).verifyVisibleElement(
-        "have.text",
-        "The sample application comes with a sample PostgreSQL database for you to play around with. You can also get started quickly with pre-built applications from our template collection!"
-      );
-
-      cy.get(onboardingSelectors.onboardingSubmitButton)
-        .verifyVisibleElement("have.text", "Continue")
-        .click();
+      onboardingStepThree();
     }
 
     cy.get(commonSelectors.skipbutton).click();
-    cy.get(commonSelectors.backLogo).click();
-    cy.get(commonSelectors.backtoapps).click();
+    cy.backToApps();
 
     if (envVar === "Enterprise") {
       cy.get(".btn-close").click();

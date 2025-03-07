@@ -173,7 +173,7 @@ export const commonText = {
     // iframeLinkLabel: "Get embeddable link for this application",
     // ifameLinkCopyButton: "copy",
   },
-  groupInputFieldLabel: "Select Group",
+  groupInputFieldLabel: "Select groups",
   documentationLink: "Read Documentation",
   constantsNameError:
     "Constant name should start with a letter or underscore and can only contain letters, numbers and underscores",
