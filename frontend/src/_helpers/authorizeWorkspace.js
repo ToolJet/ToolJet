@@ -226,7 +226,7 @@ export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug, callb
           const unauthorized_organization_slug = workspace_slug;
 
           /* get current session's workspace id */
-          authenticationService
+          sessionService
             .validateSession()
             .then(({ current_organization_id, ...restSessionData }) => {
               /* change current organization id to valid one [current logged in organization] */
