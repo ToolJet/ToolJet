@@ -29,7 +29,7 @@ export const ConfigHandle = ({
   );
 
   const setComponentToInspect = useStore((state) => state.setComponentToInspect);
-
+  const isModal = componentType === 'Modal' || componentType === 'ModalV2';
   const _showHandle = useStore((state) => {
     const isWidgetHovered = state.getHoveredComponentForGrid() === id || state.hoveredComponentBoundaryId === id;
     const anyComponentHovered = state.getHoveredComponentForGrid() !== '' || state.hoveredComponentBoundaryId !== '';
@@ -37,7 +37,7 @@ export const ConfigHandle = ({
     return (
       isWidgetHovered ||
       (showHandle &&
-        (!isMultipleComponentsSelected || (componentType === 'Modal' && isModalOpen)) &&
+        (!isMultipleComponentsSelected || (isModal && isModalOpen)) &&
         !anyComponentHovered)
     );
   }, shallow);
@@ -63,7 +63,7 @@ export const ConfigHandle = ({
     >
       <span
         style={{
-          background: componentType === 'Modal' && isModalOpen ? '#c6cad0' : '#4D72FA',
+          background: isModal && isModalOpen ? '#c6cad0' : '#4D72FA',
         }}
         className="badge handle-content"
       >
