@@ -877,24 +877,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           } catch (error) {
             console.error('Error in onDragEnd:', error);
           }
-
-          // Hide all sub-canvases after dragging
-          document.querySelectorAll('.sub-canvas').forEach((element) => {
-            element.classList.remove('show-grid');
-            element.classList.add('hide-grid');
-          });
-          document.getElementById('real-canvas')?.classList.remove('show-grid');
           setCanvasBounds({ ...CANVAS_BOUNDS });
-          toggleCanvasUpdater();
-
-          // Hide all sub-canvases
-          var canvasElms = document.getElementsByClassName('sub-canvas');
-          var elementsArray = Array.from(canvasElms);
-          elementsArray.forEach(function (element) {
-            element.classList.remove('show-grid');
-            element.classList.add('hide-grid');
-          });
-          document.getElementById('real-canvas')?.classList.remove('show-grid');
           hideGridLines();
           toggleCanvasUpdater();
         }}
@@ -920,7 +903,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             left = e.translate[0];
             top = e.translate[1];
           }
-          
+
           // Special case for Modal
           const oldParentId = boxList.find((b) => b.id === e.target.id)?.parent;
           const parentId = oldParentId?.length > 36 ? oldParentId.slice(0, 36) : oldParentId;
@@ -1035,6 +1018,7 @@ export default function Grid({ gridWidth, currentLayout }) {
         snapGap={false}
         isDisplaySnapDigit={false}
         snapThreshold={GRID_HEIGHT}
+        bounds={canvasBounds}
         // Guidelines configuration
         elementGuidelines={elementGuidelines}
         snapDirections={{

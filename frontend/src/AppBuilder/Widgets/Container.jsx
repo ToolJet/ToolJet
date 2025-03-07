@@ -45,6 +45,7 @@ export const Container = ({
     border: `1px solid ${borderColor}`,
     height,
     display: isVisible ? 'flex' : 'none',
+    flexDirection: 'column',
     position: 'relative',
     boxShadow,
   };
