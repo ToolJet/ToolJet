@@ -11,15 +11,12 @@ export const dividerConfig = {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
     showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
   },
-  properties: {},
-  events: {},
-  styles: {
-    dividerColor: {
-      type: 'color',
-      displayName: 'Divider color',
+  properties: {
+    label: {
+      type: 'code',
+      displayName: 'Label',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#000000',
       },
     },
     visibility: {
@@ -29,6 +26,77 @@ export const dividerConfig = {
         schema: { type: 'boolean' },
         defaultValue: true,
       },
+      section: 'additionalActions',
+    },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' }, defaultValue: 'Tooltip text' },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+    },
+  },
+  events: {},
+  styles: {
+    dividerColor: {
+      type: 'color',
+      displayName: 'Divider color',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#000000',
+      },
+      accordian: 'Divider',
+    },
+    labelAlignment: {
+      type: 'code',
+      displayName: 'Label Alignment',
+      validation: {
+        schema: { type: 'string' },
+      },
+      accordian: 'Divider',
+    },
+    dividerStyle: {
+      type: 'switch',
+      displayName: 'Style',
+      validation: {
+        schema: { type: 'string' },
+      },
+      options: [
+        { displayName: 'Solid', value: 'solid' },
+        { displayName: 'Dashed', value: 'dashed' },
+      ],
+      accordian: 'Divider',
+    },
+    labelColor: {
+      type: 'color',
+      displayName: 'Label Color',
+      validation: {
+        schema: { type: 'string' },
+      },
+      accordian: 'Divider',
+    },
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box Shadow',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: '0px 0px 0px 0px #00000040',
+      },
+      accordian: 'Divider',
+    },
+    padding: {
+      type: 'switch',
+      displayName: 'Padding',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: 'default',
+      },
+      isFxNotRequired: true,
+      options: [
+        { displayName: 'Default', value: 'default' },
+        { displayName: 'None', value: 'none' },
+      ],
+      accordian: 'container',
     },
   },
   exposedVariables: {
@@ -39,11 +107,19 @@ export const dividerConfig = {
       showOnDesktop: { value: '{{true}}' },
       showOnMobile: { value: '{{false}}' },
     },
-    properties: {},
+    properties: {
+      label: { value: '' },
+      visibility: { value: '{{true}}' },
+      tooltip: { value: '' },
+    },
     events: [],
     styles: {
-      visibility: { value: '{{true}}' },
-      dividerColor: { value: '#000000' },
+      dividerColor: { value: '#CCD1D5' },
+      labelAlignment: { value: 'center' },
+      dividerStyle: { value: 'solid' },
+      labelColor: { value: '#6A727C' },
+      padding: { value: 'default' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },
 };

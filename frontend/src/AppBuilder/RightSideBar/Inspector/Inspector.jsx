@@ -78,6 +78,8 @@ const NEW_REVAMPED_COMPONENTS = [
   'Icon',
   'Image',
   'Container',
+  'Divider',
+  'VerticalDivider',
 ];
 
 export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selectedComponentId }) => {
