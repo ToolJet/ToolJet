@@ -113,7 +113,7 @@ export class OrganizationConstantController implements IOrganizationConstantCont
   async delete(@User() user, @Param('id') constantId, @Query('environmentId') environmentId) {
     const { organizationId } = user;
 
-    await this.organizationConstantsService.delete(constantId, organizationId, environmentId);
+    await this.organizationConstantsService.delete(constantId, organizationId);
 
     return { statusCode: 204 };
   }
