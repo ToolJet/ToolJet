@@ -176,7 +176,14 @@ const Text = ({
           >
             {!isEditable ? _renderNonEditableData() : _renderTextArea()}
           </div>
-          {isEditable && <div className={isValid ? '' : 'invalid-feedback text-truncate'}>{validationError}</div>}
+          {isEditable && (
+            <div
+              onClick={() => editableCellValueRef.current?.focus()}
+              className={isValid ? '' : 'invalid-feedback text-truncate'}
+            >
+              {validationError}
+            </div>
+          )}
         </div>
       </OverlayTrigger>
     </>

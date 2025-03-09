@@ -117,6 +117,9 @@ export function AddNewRowComponent({
                   {row.cells.map((cell, index) => {
                     let cellProps = cell.getCellProps();
                     const isEditable = true;
+                    if (['select', 'newMultiSelect'].includes(cell.column.columnType)) {
+                      cell.isNewRow = true;
+                    }
                     return (
                       <td
                         key={index}

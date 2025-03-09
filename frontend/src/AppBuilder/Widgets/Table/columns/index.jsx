@@ -343,7 +343,12 @@ export default function generateColumnsData({
                       ></SolidIcon>
                     </div>
                   </div>
-                  <div className={isValid ? '' : 'invalid-feedback  text-truncate'}>{validationError}</div>
+                  <div
+                    onClick={() => document.getElementById(`table-input-${column.id}-${cell.row.id}`)?.focus()}
+                    className={isValid ? '' : 'invalid-feedback  text-truncate'}
+                  >
+                    {validationError}
+                  </div>
                 </div>
               );
             }
@@ -466,9 +471,11 @@ export default function generateColumnsData({
                     horizontalAlignment={determineJustifyContentValue(horizontalAlignment)}
                     isEditable={isEditable}
                     isMaxRowHeightAuto={contentWrap && isMaxRowHeightAuto}
+                    isNewRow={cell?.isNewRow}
+                    isValid={isValid}
+                    validationError={validationError}
                   />
                 )}
-                <div className={` ${isValid ? 'd-none' : 'invalid-feedback d-block'}`}>{validationError}</div>
               </div>
             );
           }
@@ -657,10 +664,10 @@ export default function generateColumnsData({
                   unixTimestamp={column.unixTimestamp}
                   cellStyles={cellStyles}
                   darkMode={darkMode}
+                  isEditable={isEditable}
+                  isValid={isValid}
+                  validationError={validationError}
                 />
-                {isEditable && (
-                  <div className={isValid ? '' : 'invalid-feedback d-block  text-truncate'}>{validationError}</div>
-                )}
               </div>
             );
           }
