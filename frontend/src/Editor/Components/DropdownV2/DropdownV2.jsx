@@ -23,16 +23,30 @@ const ICON_WIDTH = 18; // includes flex gap 2px
 export const CustomDropdownIndicator = (props) => {
   const {
     selectProps: { menuIsOpen },
+    setIsMenuOpen,
   } = props;
 
   return (
-    <DropdownIndicator {...props} className={cx({ 'pointer-events-none': isMobileDevice() })}>
-      {menuIsOpen ? (
-        <TriangleUpArrow width={'18'} className="cursor-pointer" fill={'var(--borders-strong)'} />
-      ) : (
-        <TriangleDownArrow width={'18'} className="cursor-pointer" fill={'var(--borders-strong)'} />
-      )}
-    </DropdownIndicator>
+    <div
+      onMouseDown={(e) => {
+        e.stopPropagation();
+        e.preventDefault();
+      }}
+      onTouchEnd={(e) => {
+        e.stopPropagation();
+        e.preventDefault();
+      }}
+    >
+      <div>
+        <DropdownIndicator {...props} className={cx({ 'pointer-events-none': isMobileDevice() })}>
+          {menuIsOpen ? (
+            <TriangleUpArrow width={'18'} className="cursor-pointer" fill={'var(--borders-strong)'} />
+          ) : (
+            <TriangleDownArrow width={'18'} className="cursor-pointer" fill={'var(--borders-strong)'} />
+          )}
+        </DropdownIndicator>
+      </div>
+    </div>
   );
 };
 
@@ -93,6 +107,7 @@ export const DropdownV2 = ({
   const options = properties?.options;
   const [validationStatus, setValidationStatus] = useState(validate(currentValue));
   const { isValid, validationError } = validationStatus;
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const ref = React.useRef(null);
   const dropdownRef = React.useRef(null);
   const [visibility, setVisibility] = useState(properties.visibility);
@@ -146,6 +161,13 @@ export const DropdownV2 = ({
     return false;
   }
 
+  const handleClick = (event) => {
+    const menu = document.querySelector(`._tooljet-${componentName}`);
+    if (menu && dropdownRef.current && !dropdownRef.current.contains(event.target) && !menu.contains(event.target)) {
+      setIsMenuOpen(false);
+    }
+  };
+
   const onSearchTextChange = (searchText, actionProps) => {
     if (actionProps.action === 'input-change') {
       setSearchInputValue(searchText);
@@ -195,6 +217,13 @@ export const DropdownV2 = ({
   }, [currentValue, JSON.stringify(selectOptions)]);
 
   useEffect(() => {
+    document.addEventListener('mousedown', handleClick);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+    };
+  }, [isMenuOpen, componentName]);
+
+  useEffect(() => {
     if (isInitialRender.current) return;
     setExposedVariable('label', label);
   }, [label]);
@@ -223,6 +252,11 @@ export const DropdownV2 = ({
     if (isInitialRender.current) return;
     setExposedVariable('isMandatory', isMandatory);
   }, [isMandatory]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('value', currentValue);
+  }, [currentValue]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
@@ -372,7 +406,7 @@ export const DropdownV2 = ({
     }),
     menuList: (provided) => ({
       ...provided,
-      padding: '8px',
+      padding: '1px 8px',
       borderRadius: '8px',
       // this is needed otherwise :active state doesn't look nice, gap is required
       display: 'flex',
@@ -429,7 +463,13 @@ export const DropdownV2 = ({
           _width={_width}
           top={'1px'}
         />
-        <div className="w-100 px-0 h-100 dropdownV2-widget" ref={ref}>
+        <div
+          className="w-100 px-0 h-100 dropdownV2-widget"
+          onClick={() => {
+            setIsMenuOpen((prev) => !prev);
+          }}
+          ref={ref}
+        >
           <Select
             isDisabled={isDropdownDisabled}
             value={selectOptions.filter((option) => option.value === currentValue)[0] ?? null}
@@ -442,6 +482,7 @@ export const DropdownV2 = ({
                 setInputValue(selectedOption.value);
                 fireEvent('onSelect');
               }
+              setIsMenuOpen(false);
               setUserInteracted(true);
             }}
             options={selectOptions}
@@ -456,7 +497,9 @@ export const DropdownV2 = ({
               ValueContainer: CustomValueContainer,
               Option: CustomOption,
               LoadingIndicator: () => <Loader style={{ right: '11px', zIndex: 3, position: 'absolute' }} width="16" />,
-              DropdownIndicator: isDropdownLoading ? () => null : CustomDropdownIndicator,
+              DropdownIndicator: isDropdownLoading
+                ? () => null
+                : (props) => <CustomDropdownIndicator {...props} setIsMenuOpen={setIsMenuOpen} />,
               ClearIndicator: CustomClearIndicator,
             }}
             isClearable
@@ -465,10 +508,15 @@ export const DropdownV2 = ({
             iconColor={iconColor}
             isSearchable={false}
             darkMode={darkMode}
+            menuIsOpen={isMenuOpen}
             optionsLoadingState={optionsLoadingState && advanced}
             menuPlacement="auto"
-            onMenuOpen={() => fireEvent('onFocus')}
-            onMenuClose={() => fireEvent('onBlur')}
+            onMenuOpen={() => {
+              fireEvent('onFocus');
+            }}
+            onMenuClose={() => {
+              fireEvent('onBlur');
+            }}
           />
         </div>
       </div>
