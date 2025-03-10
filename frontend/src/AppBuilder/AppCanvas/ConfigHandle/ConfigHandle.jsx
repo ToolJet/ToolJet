@@ -111,19 +111,33 @@ export const ConfigHandle = ({
         </div>
         {/* Delete Button */}
         {!isMultipleComponentsSelected && !shouldFreeze && (
-          <span
-            style={{ cursor: 'pointer', marginLeft: '5px' }}
-            onClick={() => {
-              deleteComponents([id]);
-            }}
-          >
-            <SolidIcon
-              name="trash"
+          <div>
+            <img
+              style={{ cursor: 'pointer', marginLeft: '5px' }}
+              src="assets/images/icons/inspect.svg"
               width="12"
+              role="button"
               height="12"
-              fill={visibility === false ? 'var(--text-placeholder)' : '#fff'}
+              draggable="false"
+              onClick={() => setComponentToInspect(componentName)}
+              data-cy={`${componentName.toLowerCase()}-inspect-button`}
+              className="config-handle-inspect"
             />
-          </span>
+            <span
+              style={{ cursor: 'pointer', marginLeft: '5px' }}
+              onClick={() => {
+                deleteComponents([id]);
+              }}
+              data-cy={`${componentName.toLowerCase()}-delete-button`}
+            >
+              <SolidIcon
+                name="trash"
+                width="12"
+                height="12"
+                fill={visibility === false ? 'var(--text-placeholder)' : '#fff'}
+              />
+            </span>
+          </div>
         )}
       </span>
     </div>
