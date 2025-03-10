@@ -58,6 +58,7 @@ import {
   linkConfig,
   iconConfig,
   boundedBoxConfig,
+  emailinputConfig,
 } from '../widgets';
 
 export const widgets = [
@@ -70,6 +71,7 @@ export const widgets = [
   textinputConfig,
   numberinputConfig,
   passinputConfig,
+  emailinputConfig,
   datepickerConfig,
   datetimePickerV2Config,
   datePickerV2Config,

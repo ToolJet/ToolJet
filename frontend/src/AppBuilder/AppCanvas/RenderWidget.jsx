@@ -12,6 +12,7 @@ const shouldAddBoxShadowAndVisibility = [
   'TextInput',
   'TextArea',
   'PasswordInput',
+  'EmailInput',
   'NumberInput',
   'Text',
   'Checkbox',
@@ -87,6 +88,7 @@ const RenderWidget = ({
         ...{ widgetValue: value },
         ...{ validationObject: unResolvedValidation },
         customResolveObjects: customResolvables,
+        componentType,
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [validateWidget, customResolvables, unResolvedValidation, resolvedValidation]

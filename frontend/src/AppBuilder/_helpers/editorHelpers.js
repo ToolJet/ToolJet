@@ -30,6 +30,7 @@ import { StarRating } from '@/Editor/Components/StarRating';
 import { Divider } from '@/Editor/Components/Divider';
 import { FilePicker } from '@/Editor/Components/FilePicker';
 import { PasswordInput } from '@/AppBuilder/Widgets/PasswordInput';
+import { EmailInput } from '@/Editor/Components/EmailInput';
 // import { Calendar } from '@/Editor/Components/Calendar';
 // import { Listview } from '@/Editor/Components/Listview';
 import { IFrame } from '@/Editor/Components/IFrame';
@@ -118,6 +119,7 @@ export const AllComponents = {
   Divider,
   FilePicker,
   PasswordInput,
+  EmailInput,
   Calendar,
   IFrame,
   CodeEditor,
