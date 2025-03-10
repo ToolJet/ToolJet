@@ -8,6 +8,7 @@ import { onComponentClick, removeFunctionObjects } from '@/_helpers/appUtils';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import RenderSchema from './RenderSchema';
 import useStore from '@/AppBuilder/_stores/store';
+import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import { shallow } from 'zustand/shallow';
 import {
   CONTAINER_FORM_CANVAS_PADDING,
@@ -55,6 +56,13 @@ export const Form = function Form(props) {
     visibility,
     disabledState,
   } = properties;
+  const { isDisabled, isVisible, isLoading } = useExposeState(
+    properties.loadingState,
+    properties.visibility,
+    properties.disabledState,
+    setExposedVariables,
+    setExposedVariable
+  );
   const backgroundColor =
     ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
   const computedStyles = {
@@ -62,7 +70,7 @@ export const Form = function Form(props) {
     borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
     border: `${SUBCONTAINER_CANVAS_BORDER_WIDTH}px solid ${borderColor}`,
     height,
-    display: visibility ? 'flex' : 'none',
+    display: isVisible ? 'flex' : 'none',
     position: 'relative',
     boxShadow,
     flexDirection: 'column',
@@ -305,17 +313,24 @@ export const Form = function Form(props) {
             }}
             componentType="Form"
           />
+          {isDisabled && (
+            <div
+              id={`${id}-header-disabled`}
+              className="tj-form-disabled-overlay"
+              style={{ height: headerHeight || '100%' }}
+              onClick={() => {}}
+              onDrop={(e) => e.stopPropagation()}
+            />
+          )}
         </div>
       )}
       <div className="jet-form-body" style={formContent}>
-        {loadingState ? (
-          <div className="p-2" style={{ margin: '0px auto' }}>
-            <center>
-              <div className="spinner-border mt-5" role="status"></div>
-            </center>
+        {isLoading ? (
+          <div className="p-2 tw-flex tw-items-center tw-justify-center" style={{ margin: '0px auto' }}>
+            <div className="spinner-border" role="status"></div>
           </div>
         ) : (
-          <fieldset disabled={disabledState} style={{ width: '100%' }}>
+          <fieldset disabled={isDisabled} style={{ width: '100%' }}>
             {!advanced && (
               <div className={'json-form-wrapper-disabled'} style={{ width: '100%', height: '100%' }}>
                 <SubContainer
@@ -381,6 +396,15 @@ export const Form = function Form(props) {
             }}
             componentType="Form"
           />
+          {isDisabled && (
+            <div
+              id={`${id}-footer-disabled`}
+              className="tj-form-disabled-overlay"
+              style={{ height: footerHeight || '100%' }}
+              onClick={() => {}}
+              onDrop={(e) => e.stopPropagation()}
+            />
+          )}
         </div>
       )}
     </form>
