@@ -400,7 +400,7 @@ export const createEventsSlice = (set, get) => ({
         await get().eventsSlice.executeAction(event, mode, customVariables);
       }
     },
-    logError(errorType, errorKind, error, eventObj = '', options = {}, logLevel) {
+    logError(errorType, errorKind, error, eventObj = '', options = {}, logLevel = 'error') {
       const { event = eventObj } = eventObj;
       const pages = get().modules.canvas.pages;
       const currentPageId = get().currentPageId;
@@ -438,6 +438,7 @@ export const createEventsSlice = (set, get) => ({
           component: `[Page ${pageName}] [Component ${componentName}] [Event ${event?.eventId}] [Action ${event.actionId}]`,
           page: `[Page ${pageName}] [Event ${event.eventId}] [Action ${event.actionId}]`,
           query: `[Query ${getQueryName()}] [Event ${event.eventId}] [Action ${event.actionId}]`,
+          customLog: `${event.description}`,
         };
 
         return headerMap[source] || '';
@@ -450,6 +451,7 @@ export const createEventsSlice = (set, get) => ({
           page: 'Event Errors with page',
           component: 'Component Event',
           query: 'Event Errors with query',
+          customLog: 'Custom Log',
         };
 
         return errorTargetMap[source];
@@ -503,6 +505,38 @@ export const createEventsSlice = (set, get) => ({
                 break;
             }
             return Promise.resolve();
+          }
+          case 'log-info': {
+            get().eventsSlice.logError(
+              'Custom Log',
+              'Custom-log',
+              '',
+              eventObj,
+              {
+                eventId: event.eventId,
+              },
+              'success'
+            );
+            break;
+          }
+          case 'log': {
+            get().eventsSlice.logError(
+              'Custom Log',
+              'Custom-log',
+              '',
+              eventObj,
+              {
+                eventId: event.eventId,
+              },
+              'success'
+            );
+            break;
+          }
+          case 'log-error': {
+            get().eventsSlice.logError('Custom Log', 'Custom-log', '', eventObj, {
+              eventId: event.eventId,
+            });
+            break;
           }
           case 'run-query': {
             try {
@@ -1062,6 +1096,33 @@ export const createEventsSlice = (set, get) => ({
         return executeAction(event, mode, {});
       };
 
+      const logInfo = (log) => {
+        const error = new Error();
+        const stackLine = error.stack.split('\n')[2];
+        const lineNumberMatch = stackLine.match(/:(\d+):\d+\)$/);
+        const lineNumber = lineNumberMatch ? lineNumberMatch[1] : 'unknown';
+        const event = { actionId: 'log-info', description: `${log}, Line ${lineNumber - 2}`, eventType: 'customLog' };
+        return executeAction(event, mode, {});
+      };
+
+      const logError = (log) => {
+        const error = new Error();
+        const stackLine = error.stack.split('\n')[2];
+        const lineNumberMatch = stackLine.match(/:(\d+):\d+\)$/);
+        const lineNumber = lineNumberMatch ? lineNumberMatch[1] : 'unknown';
+        const event = { actionId: 'log-error', description: `${log}, Line ${lineNumber - 2}`, eventType: 'customLog' };
+        return executeAction(event, mode, {});
+      };
+
+      const log = (log) => {
+        const error = new Error();
+        const stackLine = error.stack.split('\n')[2];
+        const lineNumberMatch = stackLine.match(/:(\d+):\d+\)$/);
+        const lineNumber = lineNumberMatch ? lineNumberMatch[1] : 'unknown';
+        const event = { actionId: 'log', description: `${log}, Line ${lineNumber - 2}`, eventType: 'customLog' };
+        return executeAction(event, mode, {});
+      };
+
       return {
         runQuery,
         setVariable,
@@ -1079,6 +1140,9 @@ export const createEventsSlice = (set, get) => ({
         getPageVariable,
         unsetPageVariable,
         switchPage,
+        logInfo,
+        log,
+        logError,
       };
     },
     // Selectors
