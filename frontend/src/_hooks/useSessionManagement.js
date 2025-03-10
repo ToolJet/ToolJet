@@ -27,8 +27,6 @@ export const useSessionManagement = (initialState = defaultState) => {
   const navigate = useNavigate();
   const { pathname, search, state } = location;
   const { disableValidSessionCallback, disableInValidSessionCallback } = initialState;
-  const whiteLabelFavicon = retrieveWhiteLabelFavicon();
-  const whiteLabelText = retrieveWhiteLabelText();
 
   useEffect(() => {
     /* replacing the state. otherwise the route will keep isSwitchingPage value `true` */
@@ -44,7 +42,9 @@ export const useSessionManagement = (initialState = defaultState) => {
   }, []);
 
   useEffect(() => {
-    setFaviconAndTitle(whiteLabelFavicon, whiteLabelText, location);
+    Promise.all([retrieveWhiteLabelFavicon(), retrieveWhiteLabelText()]).then(([whiteLabelFavicon, whiteLabelText]) => {
+      setFaviconAndTitle(whiteLabelFavicon, whiteLabelText, location);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 

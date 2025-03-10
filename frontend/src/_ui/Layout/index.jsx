@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import useRouter from '@/_hooks/use-router';
-import Logo from '@assets/images/rocket.svg';
+import Logo from '@assets/images/tj-logo.svg';
 import Header from '../Header';
 import { authenticationService } from '@/_services';
 import { getPrivateRoute } from '@/_helpers/routes';

@@ -90,7 +90,6 @@ class AppComponent extends React.Component {
   };
 
   componentDidMount() {
-    setFaviconAndTitle();
     authorizeWorkspace();
     this.fetchMetadata();
     setFaviconAndTitle(null, null, this.props.location);

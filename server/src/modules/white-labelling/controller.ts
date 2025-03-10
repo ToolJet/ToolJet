@@ -5,7 +5,7 @@ import { NotFoundException } from '@nestjs/common';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { MODULES } from '@modules/app/constants/modules';
-import { FEATURE_KEY } from './constant';
+import { FEATURE_KEY } from './constants';
 
 @Controller('white-labelling')
 @InitModule(MODULES.WHITE_LABELLING)

@@ -3,7 +3,7 @@ import { Ability, AbilityBuilder, InferSubjects } from '@casl/ability';
 import { AbilityFactory } from '@modules/app/ability-factory';
 import { UserAllPermissions } from '@modules/app/types';
 import { WhiteLabelling } from '@entities/white_labelling.entity';
-import { FEATURE_KEY } from '../constant';
+import { FEATURE_KEY } from '../constants';
 
 type Subjects = InferSubjects<typeof WhiteLabelling> | 'all';
 export type WhiteLabellingAbility = Ability<[FEATURE_KEY, Subjects]>;

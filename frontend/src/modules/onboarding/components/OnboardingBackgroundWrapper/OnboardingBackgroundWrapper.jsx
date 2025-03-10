@@ -9,10 +9,18 @@ const OnboardingBackgroundWrapper = ({
   rightSize = 7,
   leftSize = 5,
 }) => {
-  const whiteLabelLogo = retrieveWhiteLabelFavicon();
-  const defaultWhiteLabelLogo = defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON;
-  const isWhiteLabelLogoApplied = !(whiteLabelLogo === defaultWhiteLabelLogo);
-  if (window.location.pathname != '/setup' && isWhiteLabelLogoApplied) {
+  const [whiteLabelFavicon, setWhiteLabelFavicon] = React.useState('');
+
+  React.useEffect(() => {
+    const fetchLogo = async () => {
+      const logo = await retrieveWhiteLabelFavicon();
+      setWhiteLabelFavicon(logo);
+    };
+    fetchLogo();
+  }, []);
+  const defaultWhiteLabelFavicon = defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON;
+  const isWhiteLabelFaviconApplied = !(whiteLabelFavicon === defaultWhiteLabelFavicon);
+  if (window.location.pathname != '/setup' && isWhiteLabelFaviconApplied) {
     const ContentComponent = MiddleComponent ? MiddleComponent : LeftSideComponent;
     return <WhiteLabellingBackgroundWrapper MiddleComponent={() => <ContentComponent />} />;
   }

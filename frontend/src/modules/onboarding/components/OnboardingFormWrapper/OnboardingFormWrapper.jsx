@@ -5,16 +5,23 @@ import { getSubpath } from '@/_helpers/routes';
 import WhiteLabellingFormWrapper from '@/modules/onboarding/components/WhiteLabellingFormWrapper';
 import { defaultWhiteLabellingSettings, retrieveWhiteLabelFavicon } from '@white-label/whiteLabelling';
 const OnboardingFormWrapper = ({ children: components }) => {
-  const whiteLabelLogoTest = retrieveWhiteLabelFavicon();
-  const defaultWhiteLabelLogoTest = defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON;
-  const isWhiteLabelApplied = !(whiteLabelLogoTest === defaultWhiteLabelLogoTest);
+  const [isWhiteLabelFaviconApplied, setIsWhiteLabelFaviconApplied] = useState(false);
+  const defaultWhiteLabelFavicon = defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON;
   const redirectToLoginPage = () => {
     window.location.href = getSubpath() ? `${getSubpath()}` : '/';
   };
-  if (window.location.pathname != '/setup' && isWhiteLabelApplied == null) {
+  useEffect(() => {
+    const fetchLogo = async () => {
+      const logo = await retrieveWhiteLabelFavicon();
+      setIsWhiteLabelFaviconApplied(logo !== defaultWhiteLabelFavicon);
+    };
+    fetchLogo();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  if (window.location.pathname != '/setup' && isWhiteLabelFaviconApplied == null) {
     return <div></div>;
   }
-  if (window.location.pathname != '/setup' && isWhiteLabelApplied) {
+  if (window.location.pathname != '/setup' && isWhiteLabelFaviconApplied) {
     return <WhiteLabellingFormWrapper>{components}</WhiteLabellingFormWrapper>;
   }
   return (

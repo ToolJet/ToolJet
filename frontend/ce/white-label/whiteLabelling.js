@@ -108,7 +108,7 @@ export async function setFaviconAndTitle(whiteLabelFavicon, whiteLabelText, loca
 }
 
 export async function fetchAndSetWindowTitle(pageDetails) {
-  const whiteLabelText = retrieveWhiteLabelText();
+  const whiteLabelText = await retrieveWhiteLabelText();
   let pageTitleKey = pageDetails?.page || '';
   let pageTitle = '';
   switch (pageTitleKey) {

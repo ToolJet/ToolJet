@@ -2,7 +2,7 @@ import { Module, DynamicModule } from '@nestjs/common';
 import { getImportPath } from '@modules/app/constants';
 import { WhiteLabellingRepository } from './repository';
 import { OrganizationRepository } from '../organizations/repository';
-
+import { FeatureAbilityFactory } from '@modules/white-labelling/ability';
 @Module({})
 export class WhiteLabellingModule {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -15,7 +15,13 @@ export class WhiteLabellingModule {
       module: WhiteLabellingModule,
       imports: [],
       controllers: [WhiteLabellingController],
-      providers: [WhiteLabellingService, OrganizationRepository, WhiteLabellingRepository, WhiteLabellingUtilService],
+      providers: [
+        WhiteLabellingService,
+        OrganizationRepository,
+        WhiteLabellingRepository,
+        WhiteLabellingUtilService,
+        FeatureAbilityFactory,
+      ],
       exports: [WhiteLabellingUtilService],
     };
   }

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DEFAULT_WHITE_LABELLING_SETTINGS } from '@modules/white-labelling/constant';
+import { DEFAULT_WHITE_LABELLING_SETTINGS } from '@modules/white-labelling/constants';
 import { IWhiteLabellingUtilService } from './Interfaces/IUtilService';
 
 @Injectable()

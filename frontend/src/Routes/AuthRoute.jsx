@@ -55,7 +55,7 @@ export const AuthRoute = ({ children }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isInvalidSession, isGettingConfigs]);
 
-  const initialize = () => {
+  const initialize = async () => {
     const isSuperAdminLogin = location.pathname.startsWith('/login/super-admin');
     const shouldGetConfigs = !isSuperAdminLogin;
     authenticationService.deleteAllAuthCookies();
@@ -68,14 +68,14 @@ export const AuthRoute = ({ children }) => {
     verifyWhiteLabeling(pathname);
   };
 
-  const verifyWhiteLabeling = (pathname) => {
+  const verifyWhiteLabeling = async (pathname) => {
     const signupRegex = /^\/signup\/[^/]+$/;
     const loginRegex = /^\/login\/[^/]+$/;
     if (!signupRegex.test(pathname) && !loginRegex.test(pathname)) {
       resetToDefaultWhiteLabels();
     }
-    const whiteLabelText = retrieveWhiteLabelText();
-    const whiteLabelFavicon = retrieveWhiteLabelFavicon();
+    const whiteLabelText = await retrieveWhiteLabelText();
+    const whiteLabelFavicon = await retrieveWhiteLabelFavicon();
     setFaviconAndTitle(whiteLabelFavicon, whiteLabelText, location);
   };
 
