@@ -1,0 +1,19 @@
+{
+  "name": "Underwriting portal - admin",
+  "description": "Efficiently evaluate and approve financial applications with our robust underwriting admin platform.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "underwriting-portal-admin",
+  "category": "financial-services"
+}
