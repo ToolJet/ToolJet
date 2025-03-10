@@ -410,6 +410,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id }) {
                   width: `${(Number(cardWidth) || 300) + 48}px`,
                 }}
                 kanbanProps={kanbanProps}
+                componentType="Kanban"
               >
                 {items[columnId] && (
                   <SortableContext items={items[columnId]} strategy={verticalListSortingStrategy}>
