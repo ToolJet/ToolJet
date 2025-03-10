@@ -8,7 +8,6 @@ import { InternalTable } from '@entities/internal_table.entity';
 import { ImportResourcesDto } from '@dto/import-resources.dto';
 import { ExportResourcesDto } from '@dto/export-resources.dto';
 import { CloneAppDto, CloneResourcesDto, CloneTooljetDatabaseDto } from '@dto/clone-resources.dto';
-import { TooljetDbService } from '@services/tooljet_db.service';
 import { ValidateTooljetDatabaseConstraint } from '@dto/validators/tooljet-database.validator';
 import { authenticateUser, logoutUser, createNestAppInstanceWithServiceMocks } from '../test.helper';
 import * as path from 'path';
@@ -21,10 +20,10 @@ import {
   createUser,
   createAndAddUserToOrganization,
 } from '../common.helper';
-import { LICENSE_FIELD, LICENSE_LIMIT } from '@ee/licensing/helper';
-import { USER_ROLE } from '@modules/user_resource_permissions/constants/group-permissions.constant';
 import { camelizeKeys } from 'humps';
-import { APP_TYPES } from '@ee/apps/constants';
+import { APP_TYPES } from '@modules/apps/constants';
+import { LICENSE_FIELD, LICENSE_LIMIT } from '@modules/licensing/constants';
+import { USER_ROLE } from '@modules/group-permissions/constants';
 
 /**
  * Tests ImportExportResourcesController
@@ -38,8 +37,6 @@ describe('ImportExportResourcesController', () => {
   let loggedInUser: User;
   let organization: Organization;
   let loggedInUserData: { tokenCookie: string; user: any };
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  let tooljetDbService: TooljetDbService;
   let licenseServiceMock;
 
   beforeAll(async () => {

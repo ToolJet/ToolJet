@@ -1,11 +1,7 @@
 import { EntityManager } from 'typeorm';
-import { TooljetDbService } from '@services/tooljet_db.service';
+import { TooljetDbTableOperationsService } from '@modules/tooljet-db/services/tooljet-db-table-operations.service';
 import { InternalTable } from '@entities/internal_table.entity';
-import {
-  TooljetDatabaseColumn,
-  TooljetDatabaseForeignKey,
-  TooljetDatabaseTable,
-} from 'src/modules/tooljet_db/tooljet-db.types';
+import { TooljetDatabaseColumn, TooljetDatabaseForeignKey, TooljetDatabaseTable } from '@modules/tooljet-db/types';
 
 const mockTableSchemas: Array<TooljetDatabaseTable> = [
   {
@@ -119,7 +115,7 @@ const mockTableSchemas: Array<TooljetDatabaseTable> = [
 export async function setupTestTables(
   appManager: EntityManager,
   tjdbManager: EntityManager,
-  tooljetDbService: TooljetDbService,
+  tooljetDbService: TooljetDbTableOperationsService,
   organizationId: string,
   tableSchemas: Array<TooljetDatabaseTable> = mockTableSchemas
 ): Promise<void> {
@@ -139,7 +135,7 @@ export async function setupTestTables(
 async function createTable(
   appManager: EntityManager,
   tjdbManager: EntityManager,
-  tooljetDbService: TooljetDbService,
+  tooljetDbService: TooljetDbTableOperationsService,
   organizationId: string,
   params: { table_name: string; columns: TooljetDatabaseColumn[]; foreign_keys: TooljetDatabaseForeignKey[] }
 ) {
@@ -149,7 +145,7 @@ async function createTable(
 export async function dropTable(
   appManager: EntityManager,
   tjdbManager: EntityManager,
-  tooljetDbService: TooljetDbService,
+  tooljetDbService: TooljetDbTableOperationsService,
   organizationId: string,
   tableName: string
 ) {

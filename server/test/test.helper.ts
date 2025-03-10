@@ -10,27 +10,27 @@ import { File } from 'src/entities/file.entity';
 import { Plugin } from 'src/entities/plugin.entity';
 import { INestApplication, ValidationPipe, VersioningType, VERSION_NEUTRAL } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { AppModule } from 'src/app.module';
+import { AppModule } from '@modules/app/module';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
 import { DataSource } from 'src/entities/data_source.entity';
-import { PluginsService } from 'src/services/plugins.service';
-import { DataSourcesService } from 'src/services/data_sources.service';
-import { PluginsModule } from 'src/modules/plugins/plugins.module';
-import { DataSourcesModule } from 'src/modules/data_sources/data_sources.module';
+import { PluginsService } from '@modules/plugins/service';
+import { DataSourcesService } from '@modules/data-sources/service';
+import { PluginsModule } from '@modules/plugins/module';
+import { DataSourcesModule } from '@modules/data-sources/module';
 // import { ThreadRepository } from 'src/repositories/thread.repository';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
-import { AllExceptionsFilter } from 'src/filters/all-exceptions-filter';
+import { AllExceptionsFilter } from '@modules/app/filters/all-exceptions-filter';
 import { Logger } from 'nestjs-pino';
 import { WsAdapter } from '@nestjs/platform-ws';
-import { AppsModule } from 'src/modules/apps/apps.module';
-import { LibraryAppCreationService } from '@services/library_app_creation.service';
+import { AppsModule } from '@modules/apps/module';
+import { TemplatesService } from '@modules/templates/service';
 import { createMock, DeepMocked } from '@golevelup/ts-jest';
 import { v4 as uuidv4 } from 'uuid';
-import { CreateFileDto } from '@dto/create-file.dto';
-import { CreatePluginDto } from '@dto/create-plugin.dto';
+import { CreateFileDto } from '@modules/files/dto';
+import { CreatePluginDto } from '@modules/plugins/dto';
 import * as request from 'supertest';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { defaultAppEnvironments } from 'src/helpers/utils.helper';
@@ -178,10 +178,16 @@ export async function createApplication(
   return newApp;
 }
 
-export async function importAppFromTemplates(nestApp, user, identifier) {
-  const service = nestApp.select(AppsModule).get(LibraryAppCreationService);
-
-  return service.perform(user, identifier);
+export async function importAppFromTemplates(
+  nestApp,
+  user,
+  identifier,
+  appName,
+  dependentPluginsForTemplate,
+  shouldAutoImportPlugin
+) {
+  const service = nestApp.select(AppsModule).get(TemplatesService);
+  return service.perform(user, identifier, appName, dependentPluginsForTemplate, shouldAutoImportPlugin);
 }
 
 export async function createApplicationVersion(

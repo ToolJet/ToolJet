@@ -2,8 +2,8 @@
 
 import { INestApplication } from '@nestjs/common';
 import { DataSource as TypeOrmDataSource, EntityManager } from 'typeorm';
-import { TooljetDbOperationsService } from '../../src/services/tooljet_db_operations.service';
-import { TooljetDbService } from '../../src/services/tooljet_db.service';
+import { TooljetDbDataOperationsService } from '@modules/tooljet-db/services/tooljet-db-data-operations.service';
+import { TooljetDbTableOperationsService } from '@modules/tooljet-db/services/tooljet-db-table-operations.service';
 import { setupPolly } from 'setup-polly-jest';
 import * as NodeHttpAdapter from '@pollyjs/adapter-node-http';
 import * as FSPersister from '@pollyjs/persister-fs';
@@ -14,8 +14,8 @@ import { InternalTable } from '@entities/internal_table.entity';
 import { getDataSourceToken } from '@nestjs/typeorm';
 import { Organization } from '@entities/organization.entity';
 import { createOrganization, createUser, clearDB } from '../common.helper';
-import { USER_ROLE } from '@modules/user_resource_permissions/constants/group-permissions.constant';
-import { LICENSE_FIELD, LICENSE_LIMIT } from '@ee/licensing/helper';
+import { LICENSE_FIELD, LICENSE_LIMIT } from '@modules/licensing/constants';
+import { USER_ROLE } from '@modules/group-permissions/constants';
 
 /**
  * Tests TooljetDbOperationsService
@@ -26,8 +26,8 @@ describe('TooljetDbOperationsService', () => {
   let app: INestApplication;
   let appManager: EntityManager;
   let tjDbManager: EntityManager;
-  let service: TooljetDbOperationsService;
-  let tooljetDbService: TooljetDbService;
+  let tooljetDbDataOperationService: TooljetDbDataOperationsService;
+  let tooljetDbTableOperationsService: TooljetDbTableOperationsService;
   let organization: Organization;
   let organizationId: string;
   let usersTableId: string;
@@ -83,8 +83,8 @@ describe('TooljetDbOperationsService', () => {
     appManager = defaultDataSource.manager;
     tjDbManager = tooljetDbDataSource.manager;
 
-    service = app.get<TooljetDbOperationsService>(TooljetDbOperationsService);
-    tooljetDbService = app.get<TooljetDbService>(TooljetDbService);
+    tooljetDbDataOperationService = app.get<TooljetDbDataOperationsService>(TooljetDbDataOperationsService);
+    tooljetDbTableOperationsService = app.get<TooljetDbTableOperationsService>(TooljetDbTableOperationsService);
   });
 
   beforeEach(async () => {
@@ -104,7 +104,7 @@ describe('TooljetDbOperationsService', () => {
     organizationId = organization.id;
 
     // Setup test tables within this organization
-    await setupTestTables(appManager, tjDbManager, tooljetDbService, organizationId);
+    await setupTestTables(appManager, tjDbManager, tooljetDbTableOperationsService, organizationId);
 
     // Retrieve the users table ID for convenience
     const usersTable = await appManager.findOneOrFail(InternalTable, {
@@ -134,7 +134,7 @@ describe('TooljetDbOperationsService', () => {
         organization_id: organizationId,
       };
 
-      const result = await service.createRow(queryOptions, {
+      const result = await tooljetDbDataOperationService.createRow(queryOptions, {
         app: { organization_id: organizationId },
       });
 
@@ -158,7 +158,7 @@ describe('TooljetDbOperationsService', () => {
   describe('.listRows', () => {
     it('should list rows correctly', async () => {
       // Create a test row
-      await service.createRow(
+      await tooljetDbDataOperationService.createRow(
         {
           table_id: usersTableId,
           create_row: {
@@ -181,7 +181,7 @@ describe('TooljetDbOperationsService', () => {
         organization_id: organizationId,
       };
 
-      const result = await service.listRows(queryOptions, {
+      const result = await tooljetDbDataOperationService.listRows(queryOptions, {
         app: { organization_id: organizationId },
       });
 
@@ -204,7 +204,7 @@ describe('TooljetDbOperationsService', () => {
   describe('.updateRows', () => {
     it('should update rows and verify the changes', async () => {
       // Create a test row
-      await service.createRow(
+      await tooljetDbDataOperationService.createRow(
         {
           table_id: usersTableId,
           create_row: {
@@ -231,7 +231,7 @@ describe('TooljetDbOperationsService', () => {
         organization_id: organizationId,
       };
 
-      const result = await service.updateRows(queryOptions, {
+      const result = await tooljetDbDataOperationService.updateRows(queryOptions, {
         app: { organization_id: organizationId },
       });
 
@@ -239,7 +239,7 @@ describe('TooljetDbOperationsService', () => {
       expect(result.status).toBe('ok');
 
       // Verify the update
-      const listResult = await service.listRows(
+      const listResult = await tooljetDbDataOperationService.listRows(
         {
           table_id: usersTableId,
           list_rows: { limit: 1 },
@@ -264,7 +264,7 @@ describe('TooljetDbOperationsService', () => {
 
   describe('.deleteRows', () => {
     it('should delete rows and verify the deletion', async () => {
-      await service.createRow(
+      await tooljetDbDataOperationService.createRow(
         {
           table_id: usersTableId,
           create_row: {
@@ -288,13 +288,15 @@ describe('TooljetDbOperationsService', () => {
         organization_id: organizationId,
       };
 
-      const result = await service.deleteRows(queryOptions, { app: { organization_id: organizationId } });
+      const result = await tooljetDbDataOperationService.deleteRows(queryOptions, {
+        app: { organization_id: organizationId },
+      });
 
       expect(result).toBeDefined();
       expect(result.status).toBe('ok');
 
       // Verify that the row was actually deleted
-      const listResult = await service.listRows(
+      const listResult = await tooljetDbDataOperationService.listRows(
         {
           table_id: usersTableId,
           list_rows: { limit: 10 },
@@ -390,7 +392,7 @@ describe('TooljetDbOperationsService', () => {
         organization_id: organizationId,
       };
 
-      const joinResult = await service.joinTables(queryOptions, {
+      const joinResult = await tooljetDbDataOperationService.joinTables(queryOptions, {
         app: { organization_id: organizationId },
       });
 

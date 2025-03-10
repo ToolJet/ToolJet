@@ -2,19 +2,17 @@ import { DataSource as TypeOrmDataSource } from 'typeorm';
 import { InstanceSettings } from '@entities/instance_settings.entity';
 import { Organization } from '@entities/organization.entity';
 import { User } from '@entities/user.entity';
-import { USER_ROLE } from '@modules/user_resource_permissions/constants/group-permissions.constant';
+import { USER_ROLE } from '@modules/group-permissions/constants';
 import { INestApplication } from '@nestjs/common';
 import { getDataSourceToken, getRepositoryToken } from '@nestjs/typeorm';
-import { AuthService } from '@services/auth.service';
-import { OrganizationsService } from '@services/organizations.service';
-import { UsersService } from '@services/users.service';
-import { INSTANCE_USER_SETTINGS } from '@instance-settings/constants';
+import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
+import { OnboardingUtilService } from '@modules/onboarding/util.service';
+import { INSTANCE_USER_SETTINGS } from '@modules/instance-settings/constants';
 import { Repository } from 'typeorm';
 import { App } from '@entities/app.entity';
-import { OrganizationUsersService } from '@services/organization_users.service';
+import { OrganizationUsersRepository } from '@modules/organization-users/repository';
 import { OrganizationUser } from '@entities/organization_user.entity';
-import { AppsService } from '@services/apps.service';
-import { APP_TYPES } from '@ee/apps/constants';
+import { AppsService } from '@modules/apps/service';
 import { InternalTable } from '@entities/internal_table.entity';
 
 export const createOrganization = async (
@@ -23,8 +21,8 @@ export const createOrganization = async (
   user?: User
 ): Promise<Organization> => {
   const { name, slug } = orgParams;
-  const organizationsService = nestApp.get(OrganizationsService);
-  const organization = await organizationsService.create(name, slug, user);
+  const setupOrganizationsUtilService = nestApp.get(SetupOrganizationsUtilService);
+  const organization = await setupOrganizationsUtilService.create(name, slug, user);
   return organization;
 };
 
@@ -34,8 +32,8 @@ export const createUser = async (
   organizationId: string,
   role: USER_ROLE
 ): Promise<User> => {
-  const usersService = nestApp.get(UsersService);
-  const user = await usersService.create(userParams, organizationId, role);
+  const onboardingUtilService = nestApp.get(OnboardingUtilService);
+  const user = await onboardingUtilService.create(userParams, organizationId, role);
   return user;
 };
 
@@ -44,8 +42,8 @@ export const addUserToOrganization = async (
   user: User,
   organization: Organization
 ): Promise<OrganizationUser> => {
-  const organizationUsersService = nestApp.get(OrganizationUsersService);
-  return await organizationUsersService.create(user, organization, false);
+  const organizationUsersRepository = nestApp.get(OrganizationUsersRepository);
+  return await organizationUsersRepository.createOne(user, organization, false);
 };
 
 export const createAndAddUserToOrganization = async (
@@ -68,7 +66,7 @@ export const createApplicationForUser = async (
   if (!user.organizationId) user.organizationId = user.defaultOrganizationId;
   const appsService = nestApp.get(AppsService);
 
-  return appsService.create(appName, user, APP_TYPES.FRONT_END);
+  return appsService.create(user, { name: appName });
 };
 
 export const setupOrganizationAndUser = async (
@@ -87,7 +85,7 @@ export const setupOrganizationAndUser = async (
     { value: allowPersonalWorkspace.toString() }
   );
 
-  await nestApp.get(AuthService).createUserOrPersonalWorkspace(userParams, null);
+  await nestApp.get(OnboardingUtilService).createUserOrPersonalWorkspace(userParams, null, null);
   const user = await userRepository.findOneOrFail({ where: { email: userParams.email } });
   const organization = await organizationRepository.findOneOrFail({ where: { id: user.organizationId } });
 

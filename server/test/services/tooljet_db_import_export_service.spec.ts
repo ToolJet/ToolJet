@@ -1,7 +1,7 @@
 import { BadRequestException, ConflictException, INestApplication, NotFoundException } from '@nestjs/common';
 import { EntityManager, DataSource } from 'typeorm';
-import { TooljetDbImportExportService } from '@services/tooljet_db_import_export_service';
-import { TooljetDbService } from '@services/tooljet_db.service';
+import { TooljetDbImportExportService } from '@modules/tooljet-db/services/tooljet-db-import-export.service';
+import { TooljetDbTableOperationsService } from '@modules/tooljet-db/services/tooljet-db-table-operations.service';
 import { setupTestTables } from '../tooljet-db-test.helper';
 import { InternalTable } from '@entities/internal_table.entity';
 import { getDataSourceToken } from '@nestjs/typeorm';
@@ -10,8 +10,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { ImportResourcesDto } from '@dto/import-resources.dto';
 import { createNestAppInstanceWithServiceMocks } from '../test.helper';
 import { createOrganization, createUser, clearDB } from '../common.helper';
-import { LICENSE_FIELD, LICENSE_LIMIT } from '@ee/licensing/helper';
-import { USER_ROLE } from '@modules/user_resource_permissions/constants/group-permissions.constant';
+import { LICENSE_FIELD, LICENSE_LIMIT } from '@modules/licensing/constants';
+import { USER_ROLE } from '@modules/group-permissions/constants';
 import { Organization } from '@entities/organization.entity';
 
 describe('TooljetDbImportExportService', () => {
@@ -19,7 +19,7 @@ describe('TooljetDbImportExportService', () => {
   let appManager: EntityManager;
   let tjDbManager: EntityManager;
   let service: TooljetDbImportExportService;
-  let tooljetDbService: TooljetDbService;
+  let tooljetDbTableOperationsService: TooljetDbTableOperationsService;
   let organization: Organization;
   let organizationId: string;
   let usersTableId: string;
@@ -53,7 +53,7 @@ describe('TooljetDbImportExportService', () => {
     tjDbManager = tooljetDbDataSource.manager;
 
     service = app.get<TooljetDbImportExportService>(TooljetDbImportExportService);
-    tooljetDbService = app.get<TooljetDbService>(TooljetDbService);
+    tooljetDbTableOperationsService = app.get<TooljetDbTableOperationsService>(TooljetDbTableOperationsService);
   });
 
   beforeEach(async () => {
@@ -70,7 +70,7 @@ describe('TooljetDbImportExportService', () => {
     await createUser(app, adminUserParams, organization.id, USER_ROLE.ADMIN);
     organizationId = organization.id;
 
-    await setupTestTables(appManager, tjDbManager, tooljetDbService, organizationId);
+    await setupTestTables(appManager, tjDbManager, tooljetDbTableOperationsService, organizationId);
     const usersTable = await appManager.findOneOrFail(InternalTable, {
       where: { organizationId, tableName: 'users' },
     });
