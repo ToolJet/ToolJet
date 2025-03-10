@@ -3,9 +3,14 @@ id: workflow-manual
 title: Manual
 ---
 
-Manual triggers can be used to run a workflow manually from the ToolJet apps. Manual triggers work similar to the queries of a data source. You can add a trigger to an application from the query panel. 
+Manual triggers can be used to run a workflow manually from the ToolJet apps. Manual triggers work similar to the queries of a data source. You can add a trigger to an application from the query panel. Follow the steps below:
 
-In the application, simply click on the ` + ` button in the query panel and select **Run Workflow**. Then select the desired workflow from the dropdown. Rename the query if required and click on the **Run** button to trigger the workflow or add this query to a event handler to trigger the workflow on a specific event.
+1. Click on the **+** button in the query panel.
+2. Select **Run Workflow** from the dropdown menu.
+3. Choose the desired workflow from the dropdown list.
+4. Rename the query if needed.
+5. Click on the **Run** button to trigger the workflow.
+6. Add the query to an event handler if you want to trigger it on a specific event.
 
 <div style={{textAlign: 'center'}}>
   <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/workflows/triggers/workflowdrop-v2.png" alt="Manual" />
