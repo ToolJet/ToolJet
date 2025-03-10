@@ -175,6 +175,10 @@ export class VersionService implements IVersionService {
 
     await this.versionsUtilService.updateVersion(appVersion, appVersionUpdateDto);
 
+    if (app.type === 'workflow') {
+      await this.appUtilService.updateWorflowVersion(appVersion, appVersionUpdateDto, app);
+    }
+
     this.eventEmitter.emit('auditLogEntry', {
       userId: user.id,
       organizationId: user.organizationId,
