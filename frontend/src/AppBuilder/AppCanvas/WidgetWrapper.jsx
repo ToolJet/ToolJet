@@ -69,6 +69,7 @@ const WidgetWrapper = memo(
           data-id={`${id}`}
           id={id}
           widgetid={id}
+          component-type={componentType}
           style={{
             // zIndex: mode === 'view' && widget.component.component == 'Datepicker' ? 2 : null,
             ...styles,
