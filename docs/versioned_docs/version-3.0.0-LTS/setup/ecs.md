@@ -9,6 +9,10 @@ title: AWS ECS
 You should setup a PostgreSQL database manually to be used by ToolJet.
 :::
 
+:::warning
+To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
+:::
+
 You can effortlessly deploy Amazon Elastic Container Service (ECS) by utilizing a [CloudFormation template](https://aws.amazon.com/cloudformation/):
 
 To deploy all the services at once, simply employ the following template:
@@ -28,7 +32,7 @@ curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/cloudformation/C
 ## Redis
 
 :::info
-ToolJet requires configuring Redis which is used for enabling multiplayer editing and for background jobs.
+ToolJet includes an in-built Redis by default, but for multiplayer editing and background jobs in multi-service setups, use an external Redis instance.
 :::
 
 To deploy Redis on an ECS cluster, please follow the steps outlined below.
@@ -72,11 +76,7 @@ Follow the steps below to deploy ToolJet on a ECS cluster.
 
         :::info
         For the setup, ToolJet requires:
-        <ul> 
-        - **TOOLJET_DB** 
-        - **TOOLJET_DB_HOST**
-        - **TOOLJET_DB_USER**
-        - **TOOLJET_DB_PASS**
+        <ul>
         - **PG_HOST**
         - **PG_DB**
         - **PG_USER**
@@ -88,7 +88,7 @@ Follow the steps below to deploy ToolJet on a ECS cluster.
         Read **[environment variables reference](/docs/setup/env-vars)**
         :::
 
-        Additionally, include the Redis environment variables within the ToolJet container mentioned above if you have followed the previous steps to create Redis.
+        Additionally, include the Redis environment variables within the ToolJet container mentioned above **only if you are connecting to an external Redis instance for a multi-service setup** and have followed the previous steps to create Redis.
         ```
         REDIS_HOST=<public ip of redis task>
         REDIS_PORT=6379
@@ -118,77 +118,51 @@ The setup above is just a template. Feel free to update the task definition and 
 
 </div>
 
-<div style={{paddingTop:'24px'}}>
-
 ## ToolJet Database
 
-To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database. You can learn more about this feature [here](/docs/tooljet-db/tooljet-database).
+Use the ToolJet-hosted database to build apps faster, and manage your data with ease. You can learn more about this feature [here](/docs/tooljet-db/tooljet-database).
 
-Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration might break, checkout the following docs to know more about new major version, including breaking changes that require you to adjust your applications accordingly:
+Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration might break. Checkout the following docs to know more about new major version, including breaking changes that require you to adjust your applications accordingly:
+
 - [ToolJet 3.0 Migration Guide for Self-Hosted Versions](./upgrade-to-v3.md)
-Follow the steps below to deploy PostgREST on a ECS cluster. 
 
-1. Create a new take definition
+#### Setting Up ToolJet Database
 
-  <div style={{textAlign: 'center'}}>
+To set up ToolJet Database, the following **environment variables are mandatory** and must be configured:
 
-  <img className="screenshot-full" src="/img/setup/ecs/ecs-12.png" alt="ECS Setup" />
+```env
+TOOLJET_DB=
+TOOLJET_DB_HOST=
+TOOLJET_DB_USER=
+TOOLJET_DB_PASS=
+```
 
-  </div>
-  
-  Add the container details and image tag as shown below:
-  
-  For the Postgrest container image use `postgrest/postgrest:v12.2.0`.
+Additionally, for **PostgREST**, the following **mandatory** environment variables must be set:
 
-  **Note:** v12.2.0 is recommended for Postgrest.
+:::tip
+If you have openssl installed, you can run the following command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
 
-  <div style={{textAlign: 'center'}}>
-
-  <img className="screenshot-full" src="/img/setup/ecs/ecs-13.png" alt="ECS Setup" />
-
-  </div>
-  
-  Under environmental variable please add corresponding PostgREST env variables. You can also refer [env variable](/docs/setup/env-vars/#postgrest-server-required).
-
-  <div style={{textAlign: 'center'}}>
-
-  <img className="screenshot-full" src="/img/setup/ecs/ecs-14.png" alt="ECS Setup" />
-
-  </div>
-
-
-2. Create service and make sure the postgrest is within the same cluster as ToolJet app. 
-
-  <div style={{textAlign: 'center'}}>
-
-  <img className="screenshot-full" src="/img/setup/ecs/ecs-15.png" alt="ECS Setup" />
-
-  </div>
-
-
-3. Specify a service name and leave the remaining settings at their default configurations.
-
-  <div style={{textAlign: 'center'}}>
-
-  <img className="screenshot-full" src="/img/setup/ecs/ecs-16.png" alt="ECS Setup" />
-
-  </div>
-
-4. Ensure that the PostgREST service resides within the same Virtual Private Cloud (VPC), and confirm that port 3001 is included in the security group used by the ToolJet app. **Note: Please enable public IP**
-
-  <div style={{textAlign: 'center'}}>
-
-  <img className="screenshot-full" src="/img/setup/ecs/ecs-17.png" alt="ECS Setup" />
-
-  </div>
-
-Update ToolJet deployment with the appropriate env variables [here](/docs/setup/env-vars/#enable-tooljet-database-required) and apply the changes.
-
-</div>
-
-:::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
+If this parameter is not specified then PostgREST refuses authentication requests.
 :::
+
+```env
+PGRST_HOST=localhost:3001
+PGRST_LOG_LEVEL=info
+PGRST_DB_PRE_CONFIG=postgrest.pre_config
+PGRST_SERVER_PORT=3001
+PGRST_DB_URI=
+PGRST_JWT_SECRET=
+```
+
+The **`PGRST_DB_URI`** variable is **required** for PostgREST, which exposes the database as a REST API. This must be explicitly set for proper functionality.
+
+#### Format:
+
+```env
+PGRST_DB_URI=postgres://TOOLJET_DB_USER:TOOLJET_DB_PASS@TOOLJET_DB_HOST:5432/TOOLJET_DB
+```
+
+**Ensure these configurations are correctly set up before proceeding with deployment. Please make sure these environment variables are set in the same ToolJet task definition's environment variables.**
 
 
 ## Upgrading to the Latest LTS Version

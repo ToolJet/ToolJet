@@ -15,11 +15,7 @@ Follow the steps below to deploy ToolJet on a Kubernetes cluster.
    ToolJet uses a postgres database as the persistent storage for storing data related to users and apps. We do not have plans to support other databases such as MySQL.
 2. **Create a Kubernetes secret with name `server`.** <br/>
    For the setup, ToolJet requires:
-  
-   - **TOOLJET_DB** 
-   - **TOOLJET_DB_HOST**
-   - **TOOLJET_DB_USER**
-   - **TOOLJET_DB_PASS**
+   
    - **PG_HOST**
    - **PG_DB**
    - **PG_USER**
@@ -66,19 +62,50 @@ If you want to serve ToolJet client from services such as Firebase or Netlify, p
 
 ## ToolJet Database
 
-To use the ToolJet Database, you need to set up and deploy a PostgREST server, which facilitates querying the database. Detailed setup instructions are available [here](/docs/tooljet-db/tooljet-database).
+Use the ToolJet-hosted database to build apps faster, and manage your data with ease. You can learn more about this feature [here](/docs/tooljet-db/tooljet-database).
 
-Starting with ToolJet 3.0, deploying the ToolJet Database is mandatory to avoid migration issues. Refer to the documentation below for details on the new major version, including breaking changes and required adjustments for your applications.
+Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration might break. Checkout the following docs to know more about new major version, including breaking changes that require you to adjust your applications accordingly:
 
 - [ToolJet 3.0 Migration Guide for Self-Hosted Versions](./upgrade-to-v3.md)
 
-1. Setup PostgREST server
+#### Setting Up ToolJet Database
 
-   ```bash
-   kubectl apply -f https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/GKE/postgrest.yaml
-   ```
+To set up ToolJet Database, the following **environment variables are mandatory** and must be configured:
 
-2. Update ToolJet deployment with the appropriate env variables [here](https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/GKE/deployment.yaml) and apply the changes.
+```env
+TOOLJET_DB=
+TOOLJET_DB_HOST=
+TOOLJET_DB_USER=
+TOOLJET_DB_PASS=
+```
+
+Additionally, for **PostgREST**, the following **mandatory** environment variables must be set:
+
+:::tip
+If you have openssl installed, you can run the following command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
+
+If this parameter is not specified then PostgREST refuses authentication requests.
+:::
+
+```env
+PGRST_HOST=localhost:3001
+PGRST_LOG_LEVEL=info
+PGRST_DB_PRE_CONFIG=postgrest.pre_config
+PGRST_SERVER_PORT=3001
+PGRST_DB_URI=
+PGRST_JWT_SECRET=
+```
+
+The **`PGRST_DB_URI`** variable is **required** for PostgREST, which exposes the database as a REST API. This must be explicitly set for proper functionality.
+
+#### Format:
+
+```env
+PGRST_DB_URI=postgres://TOOLJET_DB_USER:TOOLJET_DB_PASS@TOOLJET_DB_HOST:5432/TOOLJET_DB
+```
+
+**Ensure these configurations are correctly set up before proceeding with tooljet deployment. Please make sure these environment variables are set in the same ToolJet task definition's environment variables.**
+
 
 ## Upgrading to the Latest LTS Version
 
