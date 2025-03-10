@@ -33,7 +33,7 @@ export const BulkUploadPrimaryKey = () => {
         >
           <input
             type="text"
-            value={bulkUpdatePrimaryKey?.primary_key?.join() || ''}
+            value={bulkUpdatePrimaryKey?.primary_key?.join(', ') || ''}
             style={{
               width: '100%',
               height: '100%',
@@ -53,7 +53,7 @@ export const BulkUploadPrimaryKey = () => {
         <div className="field flex-grow-1 minw-400-w-400">
           <CodeHinter
             type="basic"
-            initialValue={bulkUpdatePrimaryKey?.rows_update ?? {}}
+            initialValue={`{{${JSON.stringify(bulkUpdatePrimaryKey?.rows_update ?? [])}}}`}
             className="codehinter-plugins"
             placeholder="{{ [ { 'column1': 'value', ... } ] }}"
             onChange={(newValue) => {

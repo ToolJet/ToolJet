@@ -3,13 +3,13 @@ import { authHeader, handleResponse, handleResponseWithoutValidation } from '@/_
 
 function save(body) {
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/custom-styles/`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/custom-styles`, requestOptions).then(handleResponse);
 }
 
 function get(validateResponse = true) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   const handleOutput = validateResponse ? handleResponse : handleResponseWithoutValidation;
-  return fetch(`${config.apiUrl}/custom-styles/`, requestOptions).then(handleOutput);
+  return fetch(`${config.apiUrl}/custom-styles`, requestOptions).then(handleOutput);
 }
 
 function getForAppViewerEditor(validateResponse = true) {

@@ -53,7 +53,7 @@ export const JSONNode = ({ data, ...restProps }) => {
 
   React.useEffect(() => {
     if (typeof shouldExpandNode === 'function') {
-      set(shouldExpandNode(path, data));
+      set(shouldExpandNode(path, data, currentNode));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathToBeInspected]);
@@ -268,7 +268,15 @@ export const JSONNode = ({ data, ...restProps }) => {
     };
 
     return (
-      <div style={{ fontSize: '9px', marginTop: '0px', right: '10px' }} className="d-flex position-absolute">
+      <div
+        style={{
+          paddingLeft: !enableCopyToClipboard ? '13px' : '0px', // Temporary fix for hover issue for copy value button. Need to remove this once inspector gets revamped.
+          fontSize: '9px',
+          marginTop: '0px',
+          right: '10px',
+        }}
+        className="d-flex position-absolute"
+      >
         {enableCopyToClipboard && (
           <ToolTip message={'Copy to clipboard'}>
             <span
@@ -337,6 +345,7 @@ export const JSONNode = ({ data, ...restProps }) => {
             'group-object-container': shouldDisplayIntendedBlock,
             'mx-2': typeofCurrentNode !== 'Object' && typeofCurrentNode !== 'Array',
           })}
+          id={`inspector-node-${String(currentNode).toLowerCase()}`}
           data-cy={`inspector-node-${String(currentNode).toLowerCase()}`}
         >
           {$NODEIcon && <div className="json-tree-icon-container">{$NODEIcon}</div>}

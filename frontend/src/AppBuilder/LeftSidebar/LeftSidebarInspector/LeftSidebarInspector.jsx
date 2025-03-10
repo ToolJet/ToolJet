@@ -88,9 +88,19 @@ const LeftSidebarInspector = ({ darkMode, pinned, setPinned }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortedComponents, sortedQueries, sortedVariables, sortedConstants, sortedPageVariables, sortedGlobalVariables]);
 
-  const handleNodeExpansion = (path) => {
+  const handleNodeExpansion = (path, data, currentNode) => {
     if (pathToBeInspected && path?.length > 0) {
-      return pathToBeInspected.includes(path[path.length - 1]);
+      const shouldExpand = pathToBeInspected.includes(path[path.length - 1]);
+
+      // Scroll to the component in the inspector
+      if (path?.length === 2 && path?.[0] === 'components' && shouldExpand) {
+        const target = document.getElementById(`inspector-node-${String(currentNode).toLowerCase()}`);
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+
+      return shouldExpand;
     } else return false;
   };
 

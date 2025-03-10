@@ -215,3 +215,23 @@
   box-sizing: border-box;
   padding-right: 30px !important;
 }
+
+.datepicker-widget.theme-tjdb{
+  .react-datepicker__navigation{
+    overflow: visible !important;
+    height: inherit !important;
+  }
+}
+
+.esc-btn-datepicker{
+  height: 18px ;
+  align-items: center;
+}
+
+.tjdb-td-wrapper{
+  .react-datepicker-time__input{
+    input{
+      line-height: normal !important;
+    }
+  }
+}
