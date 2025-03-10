@@ -103,7 +103,7 @@
   }
 
   &::-webkit-scrollbar-thumb {
-    background-color: var(--slate4) !important;
+    // background-color: var(--slate4) !important;
     /* Color of the scrollbar thumb */
     border-radius: 8px;
     /* Rounded corners of the thumb */
@@ -311,13 +311,13 @@
 // .jet-data-table>thead+div::-webkit-scrollbar,
 .jet-data-table tbody::-webkit-scrollbar,
 .jet-data-table::-webkit-scrollbar {
-  background: transparent;
+  // background: transparent;
 }
 
 // .jet-data-table>thead+div::-webkit-scrollbar-track,
 .jet-data-table tbody::-webkit-scrollbar-track,
 .jet-data-table::-webkit-scrollbar-track {
-  background: transparent;
+  // background: transparent;
 }
 
 .jet-data-table tbody:hover,
