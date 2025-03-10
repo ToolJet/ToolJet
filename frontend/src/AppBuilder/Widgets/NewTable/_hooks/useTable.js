@@ -6,7 +6,7 @@ import {
   getPaginationRowModel,
   getFilteredRowModel,
 } from '@tanstack/react-table';
-import { filterFunctions } from '../_components/Header/_components/Filter/filterUtils';
+import { applyFilters } from '../_components/Header/_components/Filter/filterUtils';
 
 export function useTable({
   data,
@@ -55,7 +55,13 @@ export function useTable({
     onColumnOrderChange: setColumnOrder,
     onGlobalFilterChange: setGlobalFilter,
     onColumnFiltersChange: setColumnFilters,
-    filterFns: filterFunctions,
+    filterFns: {
+      applyFilters: (row, columnId) => {
+        const filters = columnFilters.filter((f) => f.id === columnId);
+        if (filters.length === 0) return true;
+        return applyFilters(row, columnId, filters);
+      },
+    },
     globalFilterFn: (row, columnId, filterValue) => {
       const value = String(row.getValue(columnId) || '').toLowerCase();
       return value.includes(String(filterValue).toLowerCase());

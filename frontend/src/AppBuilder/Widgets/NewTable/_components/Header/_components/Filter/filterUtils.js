@@ -100,3 +100,11 @@ const shouldFireEvent = (diff, filter) => {
       return false;
   }
 };
+
+export const applyFilters = (row, columnId, columnFilters) =>
+  columnFilters.every((filter) => {
+    const { value, condition } = filter.value;
+    const filterFn = filterFunctions[condition];
+    const result = filterFn(row, columnId, { value });
+    return result;
+  });

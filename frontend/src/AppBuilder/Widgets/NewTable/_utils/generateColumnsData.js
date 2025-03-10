@@ -3,7 +3,6 @@ import _ from 'lodash';
 import moment from 'moment';
 import { v4 as uuidv4 } from 'uuid';
 import useStore from '@/AppBuilder/_stores/store';
-import { filterFunctions } from '../_components/Header/_components/Filter/filterUtils';
 import {
   StringColumn,
   NumberColumn,
@@ -89,12 +88,9 @@ export default function generateColumnsData({
         enableResizing: true,
         enableHiding: true,
         enableColumnFilter: true,
-        filterFn: (row, columnId, filterValue) => {
-          const { condition, value } = filterValue;
-          return filterFunctions[condition](row, columnId, { value });
-        },
+        filterFn: 'applyFilters',
         size: columnSize || defaultColumn.width,
-        minSize: 30,
+        minSize: 60,
         show: column?.columnVisibility ?? true,
         meta: {
           columnType,
