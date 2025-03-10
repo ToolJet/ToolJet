@@ -1,18 +1,21 @@
 import React from 'react';
 import FeatImage from './resources/images/FeatImage';
-import Slogan from './resources/images/slogan.svg';
 import './resources/styles/general-feature-image.styles.scss';
+import GradientTopImage from './resources/images/GradientTop';
+import GradientBottomImage from './resources/images/GradientBottom';
 
 const GeneralFeatureImage = () => {
+  const darkMode = localStorage.getItem('darkMode') === 'true';
   return (
-    <div className="general-feature-image">
-      <div className="content-wrapper">
-        <div className="image-wrapper">
-          <FeatImage />
-        </div>
-        <div className="slogan-wrapper">
-          <Slogan />
-        </div>
+    <div className={`general-feature-image ${darkMode ? 'dark-theme' : ''}`}>
+      <div className="gradient-top">
+        <GradientTopImage />
+      </div>
+      <div className="main-image-container">
+        <FeatImage />
+      </div>
+      <div className="gradient-bottom">
+        <GradientBottomImage />
       </div>
     </div>
   );

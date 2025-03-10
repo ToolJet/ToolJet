@@ -10,9 +10,16 @@ export class OrganizationConstantRepository extends Repository<OrganizationConst
   }
 
   // Updated function to find all organization constants by organizationId
-  async findAllByOrganizationId(organizationId: string) {
+  async findAllByOrganizationId(organizationId: string, type?: OrganizationConstantType) {
+    const whereCondition: any = {
+      organizationId,
+    };
+    // Add type filter if provided
+    if (type) {
+      whereCondition.type = type;
+    }
     return this.find({
-      where: { organizationId },
+      where: whereCondition,
       relations: ['orgEnvironmentConstantValues'],
     });
   }
@@ -31,14 +38,21 @@ export class OrganizationConstantRepository extends Repository<OrganizationConst
     });
   }
 
-  async findByEnvironment(organizationId: string, environmentId: string) {
-    return this.find({
-      where: {
-        organizationId,
-        orgEnvironmentConstantValues: {
-          environmentId,
-        },
+  async findByEnvironment(organizationId: string, environmentId: string, type?: OrganizationConstantType) {
+    const whereCondition: any = {
+      organizationId,
+      orgEnvironmentConstantValues: {
+        environmentId,
       },
+    };
+
+    // Add type filter if provided
+    if (type) {
+      whereCondition.type = type;
+    }
+
+    return this.find({
+      where: whereCondition,
       relations: ['orgEnvironmentConstantValues'],
     });
   }

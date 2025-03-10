@@ -150,7 +150,7 @@ const TJDBCodeEditor = (props) => {
       className="cm-codehinter position-relative"
       style={{
         width: '100%',
-        height: isOpen ? '350p' : 'auto',
+        height: isOpen ? '350px' : 'auto',
       }}
     >
       <div className={`cm-codehinter  ${darkMode && 'cm-codehinter-dark-themed'}`}>
@@ -167,14 +167,14 @@ const TJDBCodeEditor = (props) => {
           componentName={componentName}
           key={componentName}
           forceUpdate={forceUpdate}
-          optionalProps={{ styles: { height: 300 }, cls: '' }}
+          optionalProps={{ styles: { height: 300 }, cls: 'tjdb-hinter-portal' }}
           darkMode={darkMode}
           selectors={{ className: 'preview-block-portal tjdb-portal-codehinter' }}
           dragResizePortal={true}
           callgpt={null}
         >
           <ErrorBoundary>
-            <div className={`${errorState && 'tjdb-hinter-error'}`} data-cy={`${cyLabel}-input-field`}>
+            <div className={`${errorState && 'tjdb-hinter-error'} h-100`} data-cy={`${cyLabel}-input-field`}>
               <CodeMirror
                 value={currentValue}
                 placeholder={placeholder}

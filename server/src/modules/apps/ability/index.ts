@@ -15,7 +15,13 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     return App;
   }
 
-  protected defineAbilityFor(can: AbilityBuilder<FeatureAbility>['can'], UserAllPermissions: UserAllPermissions): void {
+  protected defineAbilityFor(
+    can: AbilityBuilder<FeatureAbility>['can'],
+    UserAllPermissions: UserAllPermissions,
+    extractedMetadata: { moduleName: string; features: string[] },
+    request?: any
+  ): void {
+    const appId = request?.tj_resource_id;
     const { superAdmin, isAdmin, userPermission } = UserAllPermissions;
 
     const userAppPermissions = userPermission?.[MODULES.APP];
@@ -51,7 +57,10 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       can(FEATURE_KEY.CREATE, App);
     }
 
-    if (isAllAppsEditable) {
+    if (
+      isAllAppsEditable ||
+      (userAppPermissions?.editableAppsId?.length && appId && userAppPermissions.editableAppsId.includes(appId))
+    ) {
       can(
         [
           FEATURE_KEY.UPDATE,
@@ -70,50 +79,14 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
         can(FEATURE_KEY.DELETE, App);
       }
       return;
-    } else if (userAppPermissions?.editableAppsId?.length) {
-      can(
-        [
-          FEATURE_KEY.DELETE,
-          FEATURE_KEY.UPDATE_ICON,
-          FEATURE_KEY.GET_ONE,
-          FEATURE_KEY.GET_BY_SLUG,
-          FEATURE_KEY.RELEASE,
-          FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS,
-          FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS,
-          FEATURE_KEY.UPDATE,
-          FEATURE_KEY.GET_ASSOCIATED_TABLES,
-        ],
-        App,
-        { id: { $in: userAppPermissions.editableAppsId } }
-      );
-      if (isAllAppsDeletable) {
-        // Gives delete permission only for editable apps
-        can(FEATURE_KEY.DELETE, App, { id: { $in: userAppPermissions.editableAppsId } });
-      }
     }
 
-    if (isAllAppsViewable) {
-      // add view permissions for all apps
-      can(
-        [
-          FEATURE_KEY.GET_ONE,
-          FEATURE_KEY.GET_BY_SLUG,
-          FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS,
-          FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS,
-        ],
-        App
-      );
-    } else if (userAppPermissions?.viewableAppsId?.length) {
-      can(
-        [
-          FEATURE_KEY.GET_ONE,
-          FEATURE_KEY.GET_BY_SLUG,
-          FEATURE_KEY.VALIDATE_PRIVATE_APP_ACCESS,
-          FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS,
-        ],
-        App,
-        { id: { $in: userAppPermissions.viewableAppsId } }
-      );
+    if (
+      isAllAppsViewable ||
+      (userAppPermissions?.viewableAppsId?.length && appId && userAppPermissions.viewableAppsId.includes(appId))
+    ) {
+      // add view permissions for all apps or specific app
+      can([FEATURE_KEY.GET_ONE, FEATURE_KEY.GET_BY_SLUG, FEATURE_KEY.VALIDATE_RELEASED_APP_ACCESS], App);
     }
   }
 }

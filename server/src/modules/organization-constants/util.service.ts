@@ -84,7 +84,7 @@ export class OrganizationConstantsUtilService implements IOrganizationConstantsU
   async deleteOrgEnvironmentConstant(
     constantId: string,
     organizationId: string,
-    environmentId: string
+    environmentId?: string
   ): Promise<DeleteResult> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const constantToDelete = await this.organizationConstantRepository.findOneByIdAndOrganizationId(
@@ -93,6 +93,11 @@ export class OrganizationConstantsUtilService implements IOrganizationConstantsU
       );
       if (!constantToDelete) {
         throw new Error('Constant not found');
+      }
+
+      // If no environmentId is provided, delete the constant from all environments
+      if (!environmentId) {
+        return this.organizationConstantRepository.deleteOneById(constantId);
       }
 
       if (constantToDelete.orgEnvironmentConstantValues.length === 1) {
@@ -109,6 +114,16 @@ export class OrganizationConstantsUtilService implements IOrganizationConstantsU
           { id: environmentValueToDelete.id },
           { value: '', updatedAt: new Date() }
         );
+      }
+    });
+  }
+
+  removeSecretValues(constants = []) {
+    constants.forEach((constant) => {
+      if (constant.type === 'Secret') {
+        constant.values = constant.values.map((value) => {
+          return { ...value, value: '*'.repeat(8) };
+        });
       }
     });
   }
