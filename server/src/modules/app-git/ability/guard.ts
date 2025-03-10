@@ -20,8 +20,4 @@ export class AppGitAbilityGuard extends AbilityGuard {
   protected getSubjectType() {
     return App;
   }
-
-  protected forwardAbility(): boolean {
-    return true;
-  }
 }

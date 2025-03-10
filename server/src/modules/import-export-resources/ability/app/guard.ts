@@ -15,10 +15,6 @@ export class FeatureAbilityGuard extends AbilityGuard {
     return App;
   }
 
-  protected forwardAbility(): boolean {
-    return true;
-  }
-
   protected getResource(): ResourceDetails | ResourceDetails[] {
     return [
       {
