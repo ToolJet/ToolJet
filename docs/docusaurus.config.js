@@ -193,6 +193,10 @@ module.exports = {
           {
             to: '/docs/tj-setup/smtp-setup/configuration',
             from: '/docs/org-management/smtp-configuration/',
+          },
+          {
+            to: '/docs/user-management/authentication/self-hosted/instance-login/',
+            from: '/docs/enterprise/superadmin/#instance-login',
           }
         ],
       },
