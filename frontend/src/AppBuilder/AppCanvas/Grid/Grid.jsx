@@ -884,7 +884,7 @@ export default function Grid({ gridWidth, currentLayout }) {
         onDrag={(e) => {
           // Since onDrag is called multiple times when dragging, hence we are using isDraggingRef to prevent setting state again and again
           if (!isDraggingRef.current) {
-            useGridStore.getState().actions.setDraggingComponentId(e.target.id);
+            useStore.getState().setDraggingComponentId(e.target.id);
             showGridLines();
             isDraggingRef.current = true;
           }
