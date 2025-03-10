@@ -157,7 +157,7 @@
         "placeholder": "Enter spreadsheet_id"
       },
       "sheet": {
-        "label": "GID",
+        "label": "Sheet",
         "key": "sheet",
         "type": "codehinter",
         "lineNumbers": false,
