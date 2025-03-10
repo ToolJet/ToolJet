@@ -1,5 +1,5 @@
 ---
-id: datepicker-v2
+id: date-picker-v2
 title: Date Picker
 ---
 
