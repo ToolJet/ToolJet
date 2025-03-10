@@ -41,6 +41,8 @@ import { TooljetDbModule } from '@modules/tooljet-db/module';
 import { WorkflowsModule } from '@modules/workflows/module';
 import { AiModule } from '@modules/ai/module';
 import { GitSyncModule } from '@modules/git-sync/module';
+import { AppGitModule } from '@modules/app-git/module';
+
 export class AppModule implements OnModuleInit {
   static async register(configs: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     // Load static and dynamic modules
@@ -93,6 +95,7 @@ export class AppModule implements OnModuleInit {
       await WorkflowsModule.register(configs),
       await AiModule.register(configs),
       await GitSyncModule.register(configs),
+      await AppGitModule.register(configs),
     ];
 
     return {
