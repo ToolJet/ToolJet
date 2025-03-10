@@ -23,7 +23,7 @@ Whenever you create a new app, you will see an option to select the **Commit cha
 
 <img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/gitsync/commitchanges.png" alt="GitLab SSH Key" />
 
-Selecting the **Commit changes** option will create a new commit in the git repository. The commit message will be `App creation` and the author will be the user who created the app.
+Selecting the **Commit changes** option will create a new commit in the git repository. The commit message will be `App <app_name> created` and the author will be the user who created the app.
 
 During app creation, a **.meta** folder is generated, containing a **meta.json** file with details of the last commit. Then, an app folder is also created, storing **v1.json**, which holds app-specific details of v1 version.
 
@@ -31,13 +31,13 @@ During app creation, a **.meta** folder is generated, containing a **meta.json**
 
     <TabItem value="GitHub" label="GitHub"> 
 
-        <img className="screenshot-full" src="/img/gitsync/firstcommit.png" alt="GitSync" />
+        <img className="screenshot-full" src="/img/gitsync/firstcommit-v2.png" alt="GitSync" />
 
     </TabItem>
 
     <TabItem value="GitLab" label="GitLab"> 
 
-        <img className="screenshot-full" src="/img/gitsync/gitlab/author.png" alt="GitSync" />
+        <img className="screenshot-full" src="/img/gitsync/gitlab/author-v2.png" alt="GitSync" />
 
     </TabItem>
 
@@ -48,10 +48,10 @@ During app creation, a **.meta** folder is generated, containing a **meta.json**
 Whenever a user makes a change in an app, they can make a commit to the git repository by following these steps:
 
 1. After making the changes, click on the **GitSync** button on the topbar. 
-    <img className="screenshot-full" src="/img/development-lifecycle/backup/gitsync/gitsync-button.png" alt="GitSync Button" />
+    <img className="screenshot-full" src="/img/development-lifecycle/backup/gitsync/gitsync-button-v2.png" alt="GitSync Button" />
 
 2. On clicking the **GitSync** button, a modal will open with the option to enter the commit message. 
-    <img className="screenshot-full" src="/img/development-lifecycle/backup/gitsync/commit-message.png" alt="GitSync Commit Message" />
+    <img className="screenshot-full" src="/img/development-lifecycle/backup/gitsync/commit-message-v2.png" alt="GitSync Commit Message" />
 
 3. Enter the commit message and click on the **Commit changes** button to commit the changes to the git repository. 
 
@@ -63,13 +63,13 @@ Once the changes are committed, the user can see the commit message, author, and
 
     <TabItem value="GitHub" label="GitHub"> 
 
-        <img className="screenshot-full" src="/img/development-lifecycle/backup/gitsync/github-commit.png" alt="GitSync" />
+        <img className="screenshot-full" src="/img/development-lifecycle/backup/gitsync/github-commit-v2.png" alt="GitSync" />
 
     </TabItem>
 
     <TabItem value="GitLab" label="GitLab"> 
 
-        <img className="screenshot-full" src="/img/gitsync/gitlab/lastcommitmsg.png" alt="GitSync" />
+        <img className="screenshot-full" src="/img/gitsync/gitlab/lastcommitmsg-v2.png" alt="GitSync" />
 
     </TabItem>
 
@@ -77,19 +77,19 @@ Once the changes are committed, the user can see the commit message, author, and
 
 ## Auto Commit on App Rename
 
-Whenever an app is renamed, the changes will be automatically committed to the git repository. The commit message will be `App is renamed` and the author will be the user who renamed the app. Similarly an auto commit is generated whenever the version is renamed.
+Whenever an app is renamed, the changes will be automatically committed to the git repository. The commit message will be `Version <version> of <updated app name>: App <old app name>  is renamed to <new app name>` and the author will be the user who renamed the app. Similarly an auto commit is generated whenever the version is renamed.
 
 <Tabs>
 
     <TabItem value="GitHub" label="GitHub"> 
 
-        <img className="screenshot-full" src="/img/gitsync/rename.png" alt="GitSync" />
+        <img className="screenshot-full" src="/img/gitsync/rename-v2.png" alt="GitSync" />
 
     </TabItem>
 
     <TabItem value="GitLab" label="GitLab"> 
 
-        <img className="screenshot-full" src="/img/gitsync/gitlab/apprename.png" alt="GitSync" />
+        <img className="screenshot-full" src="/img/gitsync/gitlab/apprename-v2.png" alt="GitSync" />
 
     </TabItem>
 
@@ -99,7 +99,7 @@ Whenever an app is renamed, the changes will be automatically committed to the g
 
 Whenever a user creates a new version of an app, there will be an option to select **Commit changes**. If the user selects **commit changes** option, the new version of the app will be committed to the git repository and the old version will be overridden.
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/gitsync/gitlab/newversion.png" alt="GitLab SSH Key" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/gitsync/gitlab/newversion-v2.png" alt="GitLab SSH Key" />
 
 The **JSON** file in the app folder will be replaced with the new version of the app, the **meta.json** file in the **.meta** folder gets updated with the new version id and version name. The commit message will be **Version creation** and the author will be the user who created the new version of the app. 
 
@@ -107,13 +107,13 @@ The **JSON** file in the app folder will be replaced with the new version of the
 
     <TabItem value="GitHub" label="GitHub"> 
 
-        <img className="screenshot-full" src="/img/gitsync/replace.png" alt="GitSync" />
+        <img className="screenshot-full" src="/img/gitsync/replace-v2.png" alt="GitSync" />
 
     </TabItem>
 
     <TabItem value="GitLab" label="GitLab"> 
 
-        <img className="screenshot-full" src="/img/gitsync/gitlab/newversion1.png" alt="GitSync" />
+        <img className="screenshot-full" src="/img/gitsync/gitlab/newversion1-v2.png" alt="GitSync" />
 
     </TabItem>
 
@@ -123,9 +123,22 @@ The **JSON** file in the app folder will be replaced with the new version of the
 
 When you promote an environment, from **Development to Staging**, the changes will be automatically committed to the git repository. The commit message will be `<version_number> Version of <app_name> promoted from <source_environment> to <destination_environment>`. The author will be the user who promoted the environment. When you promote an environment, from **Staging to Production**, no changes will be committed to the git repository.
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/gitsync/promoted.png" alt="GitSync" />
 
-This option can be enabled or disabled from the **Configure git** tab on the **Workspace settings** page. By default, this option is disabled.
+<Tabs>
+
+    <TabItem value="GitHub" label="GitHub"> 
+
+        <img className="screenshot-full" src="/img/gitsync/promoted-v2.png" alt="GitSync" />
+
+    </TabItem>
+
+    <TabItem value="GitLab" label="GitLab"> 
+
+        <img className="screenshot-full" src="/img/gitsync/gitlab/gitlab-promoted.png" alt="GitSync" />
+
+    </TabItem>
+
+</Tabs>
 
 <img className="screenshot-full" src="/img/gitsync/autocommit-v2.png" alt="GitSync" />
 
