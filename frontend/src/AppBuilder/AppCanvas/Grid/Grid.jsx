@@ -56,7 +56,7 @@ export default function Grid({ gridWidth, currentLayout }) {
   const getHoveredComponentForGrid = useStore((state) => state.getHoveredComponentForGrid, shallow);
   const getResolvedComponent = useStore((state) => state.getResolvedComponent, shallow);
   const [canvasBounds, setCanvasBounds] = useState(CANVAS_BOUNDS);
-  const draggingComponentId = useGridStore((state) => state.draggingComponentId, shallow);
+  const draggingComponentId = useStore((state) => state.draggingComponentId, shallow);
   const resizingComponentId = useGridStore((state) => state.resizingComponentId, shallow);
   const [dragParentId, setDragParentId] = useState(null);
   const [elementGuidelines, setElementGuidelines] = useState([]);
@@ -641,8 +641,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             const currentWidget = boxList.find(({ id }) => {
               return id === e.target.id;
             });
-            document.getElementById('real-canvas')?.classList.remove('show-grid');
-            document.getElementById('canvas-' + currentWidget.component?.parent)?.classList.remove('show-grid');
+            hideGridLines();
             let _gridWidth = useGridStore.getState().subContainerWidths[currentWidget.component?.parent] || gridWidth;
             let width = Math.round(e?.lastEvent?.width / _gridWidth) * _gridWidth;
             const height = Math.round(e?.lastEvent?.height / GRID_HEIGHT) * GRID_HEIGHT;
