@@ -23,7 +23,7 @@ The **Date Picker** component can be used for selecting dates without time input
 
 ## Component Specific Actions (CSA)
 
-Following actions of component can be controlled using the Component Specific Actions(CSA), which can be triggered using an event or by using the given RunJS query:
+Following actions of component can be controlled using the Component Specific Actions(CSA), which can be triggered by an event or by the given RunJS query:
 
 |  Action  |  <div style={{ width:"150px"}}> Description </div>  |  How To Access |
 |:----------- |:----------- | :------------ |
@@ -31,7 +31,7 @@ Following actions of component can be controlled using the Component Specific Ac
 | setValue( ) | Sets the date in the component.| `components.datepicker1.setValue(date)` |
 | setDate( ) | Sets the date value. | `components.datepicker1.setDate(date)` |
 | setDisabledDates( ) | Disables specific dates.| `components.datepicker1.setDisabledDates([date1, date2])` |
-| clearDisabledDates()| Clears all disabled date.|`components.datepicker1.clearDisabledDates()` |
+| clearDisabledDates()| Clears all disabled dates.|`components.datepicker1.clearDisabledDates()` |
 | setMinDate( )| Sets the minimum selectable date.| `components.datepicker1.setMinDate(date)` |
 | setMaxDate( )| Sets the maximum selectable date.   | `components.datepicker1.setMaxDate(date)` |
 | setFocus( )  | Sets the focus on the component. | `components.datepicker1.setFocus()` |
@@ -46,7 +46,7 @@ Following exposed variables can be dynamically accessed using the given JS query
 |  value  | Holds the date in the component. | `{{components.datepicker1.value}}` |
 |  label  | Holds the value of the component's label. | `{{components.datepicker1.label}}` |
 |  unixTimestamp | Holds the value in UNIX format. | `{{components.datepicker1.unixTimestamp}}` |
-|  selectedDate  | Holds the value of the selcted date. | `{{components.datepicker1.selectedDate}}` | 
+|  selectedDate  | Holds the value of the selected date. | `{{components.datepicker1.selectedDate}}` | 
 |  dateFormat    | Holds the date format. | `{{components.datepicker1.dateFormat}}` |
 |  isValid  | Indicates if the input meets validation criteria. | `{{components.datepicker1.isValid}}` |
 |  isMandatory  | Indicates if the field is required. | `{{components.datepicker1.isMandatory}}` |
