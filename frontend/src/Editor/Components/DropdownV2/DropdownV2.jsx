@@ -61,7 +61,6 @@ export const DropdownV2 = ({
 }) => {
   const {
     label,
-    value,
     advanced,
     schema,
     placeholder,
@@ -89,7 +88,7 @@ export const DropdownV2 = ({
     padding,
   } = styles;
   const isInitialRender = useRef(true);
-  const [currentValue, setCurrentValue] = useState(() => (advanced ? findDefaultItem(schema) : value));
+  const [currentValue, setCurrentValue] = useState(() => findDefaultItem(schema));
   const isMandatory = validation?.mandatory ?? false;
   const options = properties?.options;
   const [validationStatus, setValidationStatus] = useState(validate(currentValue));
@@ -168,18 +167,9 @@ export const DropdownV2 = ({
   };
 
   useEffect(() => {
-    if (advanced) {
-      setInputValue(findDefaultItem(schema));
-    }
+    setInputValue(findDefaultItem(advanced ? schema : options));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [advanced, JSON.stringify(schema)]);
-
-  useEffect(() => {
-    if (!advanced) {
-      setInputValue(value);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [advanced, value]);
+  }, [advanced, JSON.stringify(schema), JSON.stringify(options)]);
 
   useEffect(() => {
     if (visibility !== properties.visibility) setVisibility(properties.visibility);
@@ -446,6 +436,7 @@ export const DropdownV2 = ({
             onChange={(selectedOption, actionProps) => {
               if (actionProps.action === 'clear') {
                 setInputValue(null);
+                fireEvent('onSelect');
               }
               if (actionProps.action === 'select-option') {
                 setInputValue(selectedOption.value);

@@ -49,6 +49,7 @@ export const Modal = function Modal({
   const size = properties.size ?? 'lg';
   const [modalWidth, setModalWidth] = useState();
   const mode = useStore((state) => state.currentMode, shallow);
+  const setModalOpenOnCanvas = useStore((state) => state.setModalOpenOnCanvas);
 
   /**** Start - Logic to reset the zIndex of modal control box ****/
   useEffect(() => {
@@ -63,6 +64,7 @@ export const Modal = function Modal({
         useGridStore.getState().actions.setOpenModalWidgetId(null);
       }
     }
+    setModalOpenOnCanvas(id, showModal);
   }, [showModal, id, mode]);
   /**** End - Logic to reset the zIndex of modal control box ****/
 

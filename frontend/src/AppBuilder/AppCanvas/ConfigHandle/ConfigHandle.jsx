@@ -13,6 +13,7 @@ export const ConfigHandle = ({
   customClassName = '',
   showHandle,
   componentType,
+  visibility,
 }) => {
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
   const componentName = useStore((state) => state.getComponentDefinition(id)?.component?.name || '', shallow);
@@ -28,16 +29,27 @@ export const ConfigHandle = ({
   );
 
   const setComponentToInspect = useStore((state) => state.setComponentToInspect);
+  const isModal = componentType === 'Modal' || componentType === 'ModalV2';
+  const _showHandle = useStore((state) => {
+    const isWidgetHovered = state.getHoveredComponentForGrid() === id || state.hoveredComponentBoundaryId === id;
+    const anyComponentHovered = state.getHoveredComponentForGrid() !== '' || state.hoveredComponentBoundaryId !== '';
+    // If one component is hovered and one is selected, show the handle for the hovered component
+    return (
+      isWidgetHovered ||
+      (showHandle &&
+        (!isMultipleComponentsSelected || (isModal && isModalOpen)) &&
+        !anyComponentHovered)
+    );
+  }, shallow);
+  let height = visibility === false ? 10 : widgetHeight;
+
   return (
     <div
       className={`config-handle ${customClassName}`}
       widget-id={id}
       style={{
-        top: position === 'top' ? '-20px' : widgetTop + widgetHeight - (widgetTop < 10 ? 15 : 10),
-        visibility:
-          showHandle && (!isMultipleComponentsSelected || (componentType === 'Modal' && isModalOpen))
-            ? 'visible'
-            : 'hidden',
+        top: position === 'top' ? '-20px' : widgetTop + height - (widgetTop < 10 ? 15 : 10),
+        visibility: _showHandle ? 'visible' : 'hidden',
         left: '-1px',
       }}
       onClick={(e) => {
@@ -51,7 +63,7 @@ export const ConfigHandle = ({
     >
       <span
         style={{
-          background: componentType === 'Modal' && isModalOpen ? '#c6cad0' : '#4D72FA',
+          background: isModal && isModalOpen ? '#c6cad0' : '#4D72FA',
         }}
         className="badge handle-content"
       >

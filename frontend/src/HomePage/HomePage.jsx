@@ -38,7 +38,6 @@ import { useLicenseStore } from '@/_stores/licenseStore';
 import { shallow } from 'zustand/shallow';
 import { fetchAndSetWindowTitle, pageTitles } from '@white-label/whiteLabelling';
 import HeaderSkeleton from '@/_ui/FolderSkeleton/HeaderSkeleton';
-import { UserGroupMigrationModal } from './MigrationModal/UserGroupMigrationModal';
 import {
   ImportAppMenu,
   AppActionModal,
@@ -136,13 +135,7 @@ class HomePageComponent extends React.Component {
     this.fetchWorkflowsWorkspaceLimit();
     this.fetchOrgGit();
     this.setQueryParameter();
-    const hasShownModal = localStorage.getItem('hasShownUserGroupMigrationModal');
     const hasClosedBanner = localStorage.getItem('hasClosedGroupMigrationBanner');
-    //Only show the modal once
-    if (!hasShownModal) {
-      this.setState({ showUserGroupMigrationModal: true });
-      localStorage.setItem('hasShownUserGroupMigrationModal', 'true');
-    }
 
     //Only show the banner once
     if (hasClosedBanner) {
@@ -790,6 +783,16 @@ class HomePageComponent extends React.Component {
   handleCommitChange = (commitEnabled) => {
     this.setState({ commitEnabled: commitEnabled });
   };
+  shouldShowMigrationBanner = () => {
+    const { currentSessionValue } = authenticationService;
+    const { appType } = this.props;
+    return (
+      currentSessionValue?.admin &&
+      this.state.showGroupMigrationBanner &&
+      new Date(currentSessionValue?.current_user?.created_at) < new Date('2025-02-01') &&
+      appType !== 'workflow'
+    );
+  };
   render() {
     const {
       apps,
@@ -885,15 +888,6 @@ class HomePageComponent extends React.Component {
     return (
       <Layout switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode}>
         <div className="wrapper home-page">
-          {authenticationService.currentSessionValue?.admin &&
-            showUserGroupMigrationModal &&
-            this.props.appType !== 'workflow' && (
-              <UserGroupMigrationModal
-                show={showUserGroupMigrationModal}
-                onHide={() => this.setShowUserGroupMigrationModal()}
-                darkMode={this.props.darkMode}
-              />
-            )}
           <AppActionModal
             modalStates={{
               showCreateAppModal,
@@ -1240,14 +1234,12 @@ class HomePageComponent extends React.Component {
                     classes={`${this.props.darkMode ? 'theme-dark dark-theme m-3 trial-banner' : 'm-3 trial-banner'}`}
                   />
                 )}
-              {authenticationService.currentSessionValue?.admin &&
-                showGroupMigrationBanner &&
-                this.props.appType !== 'workflow' && (
-                  <UserGroupMigrationBanner
-                    classes={`${this.props.darkMode ? 'theme-dark dark-theme m-3 trial-banner' : 'm-3 trial-banner'}`}
-                    closeBanner={this.setShowGroupMigrationBanner}
-                  />
-                )}
+              {this.shouldShowMigrationBanner() && (
+                <UserGroupMigrationBanner
+                  classes={`${this.props.darkMode ? 'theme-dark dark-theme m-3 trial-banner' : 'm-3 trial-banner'}`}
+                  closeBanner={this.setShowGroupMigrationBanner}
+                />
+              )}
 
               <OrganizationList />
             </div>

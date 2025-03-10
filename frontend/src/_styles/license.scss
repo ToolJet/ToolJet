@@ -198,7 +198,7 @@
     .message-wrapper {
         display: flex;
         flex-direction: column;
-        margin-left: 10px;
+        margin-left: 5px;
 
         .heading {
             display: unset !important;
@@ -246,9 +246,9 @@
 
     .upgrade-btn-new{
         white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: auto;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: auto;
         margin-left: auto;
         border: 1px solid var(--border-default, #CCD1D5);
         background: var(--background-surface-layer-01);
@@ -262,7 +262,9 @@
         padding: 8px 16px 8px 16px;
 
     }
-
+    .demo-btn-bg{
+        border: 1px solid var(--border-accent-weak, #97AEFC);
+    }
     .start-trial-btn {
         min-width: 131px;
     }
@@ -318,16 +320,14 @@
     max-width: fit-content;
 
     .upgrade-link {
-        background: var(--upgrade-default);
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
+        margin-left: 2px;
+        color: var(--text-default, #1B1F24);
+        font-family: "IBM Plex Sans";
         font-size: 12px;
         font-style: normal;
-        line-height: 20px;
         font-weight: 500;
-        width: 67px;
-        height: 20px;
+        line-height: 20px;
+        /* 166.667% */
     }
 }
 
@@ -345,16 +345,13 @@
     max-width: fit-content;
 
     .upgrade-link {
-        background: linear-gradient(to right, #ff5f6d, #ffc371);
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: var(--text-default, #1B1F24);
+        font-family: "IBM Plex Sans";
         font-size: 12px;
         font-style: normal;
-        line-height: 20px;
         font-weight: 500;
-        width: 67px;
-        height: 20px;
+        line-height: 20px;
+        /* 166.667% */
     }
 }
 
@@ -372,16 +369,13 @@
     max-width: fit-content;
 
     .upgrade-link {
-        background: linear-gradient(to right, #ff5f6d, #ffc371);
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: var(--text-default, #1B1F24);
+        font-family: "IBM Plex Sans";
         font-size: 12px;
         font-style: normal;
-        line-height: 20px;
         font-weight: 500;
-        width: 67px;
-        height: 20px;
+        line-height: 20px;
+        /* 166.667% */
     }
 }
 
@@ -399,16 +393,13 @@
     max-width: fit-content;
 
     .upgrade-link {
-        background: var(--upgrade-default);
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: var(--text-default, #1B1F24);
+        font-family: "IBM Plex Sans";
         font-size: 12px;
         font-style: normal;
-        line-height: 20px;
         font-weight: 500;
-        width: 67px;
-        height: 20px;
+        line-height: 20px;
+        /* 166.667% */
     }
 }
 

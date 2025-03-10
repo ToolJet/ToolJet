@@ -8,7 +8,7 @@ import { IOrganizationConstantsService } from './interfaces/IService';
 import { OrganizationConstantsUtilService } from './util.service';
 import { OrganizationConstantType } from './constants';
 import { OrganizationConstantRepository } from './repository';
-
+const secretValue = '**********';
 @Injectable()
 export class OrganizationConstantsService implements IOrganizationConstantsService {
   constructor(
@@ -23,22 +23,37 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
     type?: OrganizationConstantType
   ): Promise<OrganizationConstant[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const result = await this.organizationConstantRepository.findAllByOrganizationId(organizationId);
+      const result = await this.organizationConstantRepository.findAllByOrganizationId(organizationId, type);
       const appEnvironments = await this.appEnvironmentUtilService.getAll(organizationId);
 
       const constantsWithValues = await Promise.all(
         result.map(async (constant) => {
+          // Skip processing values if type is SECRET and decryptSecretValue is false
+          if (constant.type === OrganizationConstantType.SECRET && !decryptSecretValue) {
+            return {
+              name: constant.constantName,
+            };
+          }
           const values = await Promise.all(
             appEnvironments.map(async (env) => {
               const value = constant.orgEnvironmentConstantValues.find((value) => value.environmentId === env.id);
+              let resolvedValue = '';
+              if (value) {
+                if (constant.type === OrganizationConstantType.SECRET) {
+                  resolvedValue = decryptSecretValue
+                    ? await this.organizationConstantsUtilService.decryptSecret(organizationId, value.value)
+                    : secretValue;
+                } else {
+                  resolvedValue = await this.organizationConstantsUtilService.decryptSecret(
+                    organizationId,
+                    value.value
+                  ); // Constant type values are always decrypted
+                }
+              }
 
               return {
                 environmentName: env.name,
-                value:
-                  value && value.value.length > 0
-                    ? await this.organizationConstantsUtilService.decryptSecret(organizationId, value.value)
-                    : '',
-                id: value.environmentId,
+                value: resolvedValue,
               };
             })
           );
@@ -62,22 +77,26 @@ export class OrganizationConstantsService implements IOrganizationConstantsServi
     environmentId: string,
     type?: OrganizationConstantType
   ): Promise<any[]> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const result = await this.organizationConstantRepository.findByEnvironment(organizationId, environmentId);
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const result = await this.organizationConstantRepository.findByEnvironment(organizationId, environmentId, type);
 
-      const constantsWithValues = result.map(async (constant) => {
-        const decryptedValue = await this.organizationConstantsUtilService.decryptSecret(
-          organizationId,
-          constant.orgEnvironmentConstantValues[0].value
-        );
-        return {
-          id: constant.id,
-          name: constant.constantName,
-          value: decryptedValue,
-        };
-      });
+      return await Promise.all(
+        result.map(async (constant) => {
+          const resolvedValue = !(constant.type === OrganizationConstantType.SECRET)
+            ? await this.organizationConstantsUtilService.decryptSecret(
+                organizationId,
+                constant.orgEnvironmentConstantValues[0].value
+              )
+            : secretValue;
 
-      return Promise.all(constantsWithValues);
+          return {
+            id: constant.id,
+            name: constant.constantName,
+            type: constant.type,
+            value: resolvedValue,
+          };
+        })
+      );
     });
   }
 

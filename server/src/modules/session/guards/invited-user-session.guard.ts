@@ -96,7 +96,7 @@ export class InvitedUserSessionAuthGuard extends AuthGuard('jwt') {
     } catch (error) {
       if (error instanceof UnauthorizedException) {
         /* No valid session / Expired token */
-        return this.onInvalidSession(invitedUser);
+        return this.onInvalidSession(invitedUser, request.body.accountToken);
       }
       throw new BadRequestException(
         'Invalid or expired invitation session. Please check your invitation and try again.'
@@ -139,20 +139,18 @@ export class InvitedUserSessionAuthGuard extends AuthGuard('jwt') {
     return isValidUser;
   }
 
-  async onInvalidSession(invitedUser: any) {
-    const { invitationToken, status, organizationUserSource } = invitedUser;
-    if (invitationToken && [USER_STATUS.INVITED, USER_STATUS.VERIFIED].includes(status as USER_STATUS)) {
+  async onInvalidSession(invitedUser: any, accountToken: string) {
+    const { status, source: organizationUserSource } = invitedUser;
+    if (accountToken && [USER_STATUS.INVITED, USER_STATUS.VERIFIED].includes(status as USER_STATUS)) {
       /* User doesn't have a valid session & User didn't activate account yet */
       return invitedUser;
     } else {
       //by-pass 401 check for organization invite url / organization and account url + source from workspace signup
-      if (
-        organizationUserSource === WORKSPACE_USER_SOURCE.SIGNUP ||
-        (status === SOURCE.WORKSPACE_SIGNUP && organizationUserSource === WORKSPACE_USER_SOURCE.SIGNUP)
-      )
+      if (organizationUserSource === WORKSPACE_USER_SOURCE.SIGNUP) {
         return invitedUser;
+      }
       /* User doesn't have a session. Next?: login again and accept invite */
-      const organization = await this.organizationRepository.fetchOrganization(invitedUser.invitedOrganizationId);
+      const organization = await this.organizationRepository.fetchOrganization(invitedUser.organizationId);
 
       if (!organization || organization.status !== WORKSPACE_STATUS.ACTIVE) {
         throw new BadRequestException('Organization is Archived');
