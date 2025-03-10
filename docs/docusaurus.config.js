@@ -196,7 +196,7 @@ module.exports = {
           },
           {
             to: '/docs/user-management/authentication/self-hosted/instance-login/',
-            from: '/docs/enterprise/superadmin/#instance-login',
+            from: '/docs/enterprise/superadmin',
           }
         ],
       },
