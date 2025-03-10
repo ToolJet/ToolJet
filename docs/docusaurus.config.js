@@ -174,6 +174,30 @@ module.exports = {
             to: '/docs/',
             from: '/',
           },
+          {
+            to: '/docs/security/constants/',
+            from: '/docs/org-management/workspaces/workspace_constants/',
+          },
+          {
+            to: '/docs/development-lifecycle/gitsync/overview',
+            from: '/docs/gitsync',
+          },
+          {
+            to: '/docs/user-management/role-based-access/access-control',
+            from: '/docs/tutorial/manage-users-groups',
+          },
+          {
+            to: '/docs/security/constants/variables/',
+            from: '/docs/org-management/workspaces/workspace-variables-migration',
+          },
+          {
+            to: '/docs/tj-setup/smtp-setup/configuration',
+            from: '/docs/org-management/smtp-configuration/',
+          },
+          {
+            to: '/docs/user-management/authentication/self-hosted/instance-login/',
+            from: '/docs/enterprise/superadmin/#instance-login',
+          }
         ],
       },
     ],
