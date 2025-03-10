@@ -5,11 +5,6 @@ title: Code Editor
 
 **Code Editor** component is a versatile text editor for editing code and supports several languages. 
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/code-editor/editor.png" alt="ToolJet - Component Reference - Code editor" />
-
-</div>
 
 <div style={{paddingTop:'24px'}}>
 
@@ -169,7 +164,13 @@ Any property having **fx** button next to its field can be **programmatically co
 
 ## Component Specific Actions (CSA)
 
-There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.
+Following actions of Code Editor component can be controlled using the component specific actions(CSA):
+
+| <div style={{ width:"100px"}}> Action  </div>  | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
+|:----------- |:----------- |:---------|
+| setValue      | Sets the value of the code editor.                                                                      | Employ a RunJS query (e.g., `components.codeeditor1.setValue('const getRandomNumber = () => Math.floor(Math.random() * 100) + 1')`) or trigger it using an event. |
+
+**Note:** If the setValue component specific action is executed using a JavaScript query, you will have to pass the code inside backticks. 
 
 </div>
 
