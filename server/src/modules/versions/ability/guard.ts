@@ -20,8 +20,4 @@ export class FeatureAbilityGuard extends AbilityGuard {
       resourceType: MODULES.APP,
     };
   }
-
-  protected forwardAbility(): boolean {
-    return true;
-  }
 }

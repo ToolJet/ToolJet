@@ -19,7 +19,4 @@ export class FeatureAbilityGuard extends AbilityGuard {
       resourceType: MODULES.GLOBAL_DATA_SOURCE,
     };
   }
-  protected forwardAbility(): boolean {
-    return true;
-  }
 }
