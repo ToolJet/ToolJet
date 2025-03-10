@@ -432,7 +432,7 @@ export const createComponentsSlice = (set, get) => ({
     }
   },
 
-  validateWidget: ({ validationObject, widgetValue, customResolveObjects }) => {
+  validateWidget: ({ validationObject, widgetValue, customResolveObjects, componentType }) => {
     const { getResolvedValue } = get();
     let isValid = true;
     let validationError = null;
@@ -447,6 +447,17 @@ export const createComponentsSlice = (set, get) => ({
     let validationRegex = getResolvedValue(regex, customResolveObjects) ?? '';
     validationRegex = typeof validationRegex === 'string' ? validationRegex : '';
     const re = new RegExp(validationRegex, 'g');
+
+    if (componentType === 'EmailInput' && widgetValue) {
+      const validationRegex = '^(?!.*\\.\\.)([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})$';
+      const emailRegex = new RegExp(validationRegex, 'g');
+      if (!emailRegex.test(widgetValue)) {
+        return {
+          isValid: false,
+          validationError: 'Input should be a valid email',
+        };
+      }
+    }
 
     if (!re.test(widgetValue)) {
       return {
@@ -1823,7 +1834,9 @@ export const createComponentsSlice = (set, get) => ({
     const getAllExposedValues = get().getAllExposedValues;
     // Early return for non input components
     if (
-      !['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2', 'MultiselectV2', 'TextArea'].includes(componentType)
+      !['TextInput', 'PasswordInput', 'EmailInput', 'NumberInput', 'DropdownV2', 'MultiselectV2', 'TextArea'].includes(
+        componentType
+      )
     ) {
       return layoutData?.height;
     }

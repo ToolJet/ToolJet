@@ -53,6 +53,7 @@ import { linkConfig } from './link';
 import { iconConfig } from './icon';
 import { boundedBoxConfig } from './boundedBox';
 import { kanbanBoardConfig } from './kanbanBoard';
+import { emailinputConfig } from './emailinput';
 
 const widgets = {
   buttonConfig,
@@ -63,6 +64,7 @@ const widgets = {
   textinputConfig,
   numberinputConfig,
   passinputConfig,
+  emailinputConfig,
   datepickerConfig,
   checkboxConfig,
   radiobuttonConfig,
