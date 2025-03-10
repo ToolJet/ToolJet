@@ -35,7 +35,8 @@ import { EMPTY_ARRAY } from '@/_stores/editorStore';
 import { Select } from './Components/Select';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
-import { componentTypes } from '@/Editor/WidgetManager/components';
+// import { componentTypes } from '@/Editor/WidgetManager/components';
+import { componentTypes } from '@/AppBuilder/WidgetManager/componentTypes';
 import { copyComponents } from '@/AppBuilder/AppCanvas/appCanvasUtils.js';
 
 const INSPECTOR_HEADER_OPTIONS = [
@@ -61,6 +62,7 @@ const NEW_REVAMPED_COMPONENTS = [
   'TextInput',
   'TextArea',
   'PasswordInput',
+  'EmailInput',
   'NumberInput',
   'Table',
   'ToggleSwitchV2',
