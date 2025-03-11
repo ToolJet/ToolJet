@@ -200,7 +200,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
           <div className="datasource-search-holder">
             <SearchBox
               dataCy={`home-page`}
-              className="border-0 homepage-search"
+              className="border-0 homepage-search datasources-search-box"
               darkMode={darkMode}
               placeholder={`Search data sources`}
               initialValue={queryString}
