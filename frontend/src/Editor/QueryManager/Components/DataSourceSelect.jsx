@@ -7,7 +7,6 @@ import { getWorkspaceId, decodeEntities } from '@/_helpers/utils';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { useDataSources, useGlobalDataSources, useSampleDataSource } from '@/_stores/dataSourcesStore';
 import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
-import { staticDataSources as staticDatasources } from '../constants';
 import { useQueryPanelActions } from '@/_stores/queryPanelStore';
 import Search from '@/_ui/Icon/solidIcons/Search';
 import { Tooltip } from 'react-tooltip';
@@ -16,7 +15,7 @@ import { canCreateDataSource } from '@/_helpers';
 import './../queryManager.theme.scss';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 
-function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSources, onNewNode, defaultDataSources }) {
+function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSources, onNewNode, staticDataSources }) {
   const dataSources = useDataSources();
   const globalDataSources = useGlobalDataSources();
   const sampleDataSource = useSampleDataSource();
@@ -32,11 +31,6 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSourc
     setPreviewData(null);
     closePopup();
   };
-
-  const workflowsEnabled = window.public_config?.ENABLE_WORKFLOWS_FEATURE == 'true';
-  const staticDataSources = workflowsEnabled
-    ? staticDatasources
-    : staticDatasources.filter((ds) => ds?.kind !== 'workflows');
 
   useEffect(() => {
     const shouldAddSampleDataSource = !!sampleDataSource;
@@ -148,7 +142,7 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSourc
         </div>
       ),
       isDisabled: true,
-      options: defaultDataSources?.map((source) => ({
+      options: staticDataSources?.map((source) => ({
         label: (
           <div>
             <DataSourceIcon source={source} height={16} />{' '}

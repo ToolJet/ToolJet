@@ -66,7 +66,8 @@ export class LoginConfigsUtilService implements ILoginConfigsUtilService {
       return result;
     }
 
-    return this.hideSSOSensitiveData(result?.ssoConfigs, result?.name, result.id);
+    const filteredConfigs = this.hideSSOSensitiveData(result?.ssoConfigs, result?.name, result.id);
+    return { ...filteredConfigs, enableSignUp: result.enableSignUp, automaticSsoLogin: result.automaticSsoLogin };
   }
 
   async addInstanceLevelSSOConfigs(result: DeepPartial<Organization>) {

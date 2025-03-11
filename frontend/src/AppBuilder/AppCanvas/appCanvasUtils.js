@@ -89,7 +89,8 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
     const defaultChildren = deepClone(parentMeta)['defaultChildren'];
 
     defaultChildren.forEach((child) => {
-      const { componentName, layout, incrementWidth, properties, accessorKey, tab, defaultValue, styles } = child;
+      const { componentName, layout, incrementWidth, properties, accessorKey, tab, defaultValue, styles, slotName } =
+        child;
 
       const componentMeta = deepClone(componentTypes.find((component) => component.component === componentName));
       const componentData = JSON.parse(JSON.stringify(componentMeta));
@@ -139,7 +140,12 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
       }
 
       const nonActiveLayout = currentLayout === 'desktop' ? 'mobile' : 'desktop';
-      const _parent = getParentComponentIdByType(child, parentMeta.component, parentId);
+      const _parent = getParentComponentIdByType({
+        child,
+        parentComponent: parentMeta.component,
+        parentId,
+        slotName,
+      });
 
       const newChildComponent = {
         id: uuidv4(),
@@ -199,7 +205,9 @@ export const getAllChildComponents = (allComponents, parentId) => {
       allComponents[parentId]?.component?.component === 'Tabs' ||
       allComponents[parentId]?.component?.component === 'Calendar' ||
       allComponents[parentId]?.component?.component === 'Kanban' ||
-      allComponents[parentId]?.component?.component === 'Container';
+      allComponents[parentId]?.component?.component === 'Container' ||
+      allComponents[parentId]?.component?.component === 'Form' ||
+      allComponents[parentId]?.component?.component === 'ModalV2';
 
     if (componentParentId && isParentTabORCalendar) {
       let childComponent = deepClone(allComponents[componentId]);
@@ -249,7 +257,6 @@ export const copyComponents = ({ isCut = false, isCloning = false }) => {
     const parentComponentId = isChildOfTabsOrCalendar(selectedComponent, allComponents)
       ? selectedComponent.component.parent.split('-').slice(0, -1).join('-')
       : selectedComponent?.component?.parent;
-
     if (parentComponentId) {
       // Check if the parent component is also selected
       const isParentSelected = selectedComponents.some((comp) => comp.id === parentComponentId);
@@ -320,7 +327,9 @@ const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentI
     return (
       parentComponent.component.component === 'Tabs' ||
       parentComponent.component.component === 'Calendar' ||
-      parentComponent.component.component === 'Container'
+      parentComponent.component.component === 'Container' ||
+      parentComponent.component.component === 'Form' ||
+      parentComponent.component.component === 'ModalV2'
     );
   }
 
@@ -483,11 +492,14 @@ export function pasteComponents(targetParentId, copiedComponentObj) {
   // Prevent pasting if the parent subcontainer was deleted during a cut operation
   if (
     targetParentId &&
+    // Check if targetParentId is deleted from the components
     !Object.keys(components).find(
       (key) =>
         targetParentId === key ||
         (components?.[key]?.component.component === 'Tabs' &&
-          targetParentId?.split('-')?.slice(0, -1)?.join('-') === key)
+          targetParentId?.split('-')?.slice(0, -1)?.join('-') === key) ||
+        (['Container', 'Form', 'Modal'].includes(components?.[key]?.component.component) &&
+          ['header', 'footer'].some((section) => targetParentId.includes(section)))
     )
   ) {
     return;
@@ -655,10 +667,42 @@ export const computeViewerBackgroundColor = (isAppDarkMode, canvasBgColor) => {
   return canvasBgColor;
 };
 
-export const getParentComponentIdByType = (child, parentComponent, parentId) => {
+export const getParentComponentIdByType = ({ child, parentComponent, parentId, slotName }) => {
   const { tab } = child;
 
   if (parentComponent === 'Tabs') return `${parentId}-${tab}`;
-  else if (parentComponent === 'Container') return `${parentId}-header`;
+  else if (
+    slotName &&
+    (parentComponent === 'Form' || parentComponent === 'Container' || parentComponent === 'ModalV2')
+  ) {
+    return `${parentId}-${slotName}`;
+  }
   return parentId;
+};
+
+export const getParentWidgetFromId = (parentType, parentId) => {
+  const isAddingToSlot = parentId?.includes('-header') || parentId?.includes('-footer');
+
+  if (parentType === 'ModalV2' && isAddingToSlot) {
+    return 'ModalSlot';
+  } else if (parentType === 'Kanban') {
+    return 'Kanban_card';
+  }
+  return parentType;
+};
+
+export const getTabId = (parentId) => {
+  return parentId.split('-').slice(0, -1).join('-');
+};
+
+export const getSubContainerIdWithSlots = (parentId) => {
+  let cleanParentId = parentId;
+  if (parentId) {
+    if (parentId.includes('header')) {
+      cleanParentId = parentId.replace('-header', '');
+    } else if (parentId.includes('footer')) {
+      cleanParentId = parentId.replace('-footer', '');
+    }
+  }
+  return cleanParentId;
 };

@@ -815,7 +815,7 @@ export class AppImportExportService {
             if (newButtonToSubmitValue) set(component, 'properties.buttonToSubmit.value', newButtonToSubmitValue);
           }
 
-          const isParentTabOrCalendar = isChildOfTabsOrCalendar(component, pageComponents, parentId, true);
+          const isParentTabOrCalendar = hasSlottedChildren(component, pageComponents, parentId, true);
 
           if (isParentTabOrCalendar) {
             const childTabId = component?.parent ? component.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[2] : null;
@@ -1926,7 +1926,7 @@ function transformComponentData(
 
     let parentId = component.parent ? component.parent : null;
 
-    const isParentTabOrCalendar = isChildOfTabsOrCalendar(
+    const isParentTabOrCalendar = hasSlottedChildren(
       component,
       allComponents,
       parentId,
@@ -1982,7 +1982,7 @@ function transformComponentData(
   return transformedComponents;
 }
 
-const isChildOfTabsOrCalendar = (
+const hasSlottedChildren = (
   component,
   allComponents = [],
   componentParentId = undefined,
@@ -1993,6 +1993,10 @@ const isChildOfTabsOrCalendar = (
 
     const parentComponent = allComponents.find((comp) => comp.id === parentId);
 
+    const hasSlotedHeaderOrFooter = componentParentId.includes('-header') || componentParentId.includes('-footer');
+    const isParentModal = parentComponent.type === 'Modal' || parentComponent.type === 'ModalV2';
+
+    if (isParentModal && hasSlotedHeaderOrFooter) return true;
     if (parentComponent) {
       if (!isNormalizedAppDefinitionSchema) {
         return parentComponent.component.component === 'Tabs' || parentComponent.component.component === 'Calendar';

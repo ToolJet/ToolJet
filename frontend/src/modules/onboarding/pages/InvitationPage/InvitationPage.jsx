@@ -9,6 +9,7 @@ import { utils } from '@/modules/common/helpers';
 import { getSubpath } from '@/_helpers/routes';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import useOnboardingStore from '@/modules/common/helpers/onboardingStoreHelper';
+import useInvitationsStore from '@/modules/common/helpers/invitationStoreHelper';
 
 const PostOnboardingComponent = () => <TJLoader />;
 export const InvitationPage = (darkMode = false) => {
@@ -24,7 +25,7 @@ export const InvitationPage = (darkMode = false) => {
   const source = searchParams.get('source');
   const redirectTo = searchParams.get('redirectTo');
 
-  const { initiateInvitedUserOnboarding } = invitationsStore();
+  const { initiateInvitedUserOnboarding } = useInvitationsStore();
   const { resumeSignupOnboarding, isOnboardingStepsCompleted } = useOnboardingStore();
   useEffect(() => {
     // getUserDetails();

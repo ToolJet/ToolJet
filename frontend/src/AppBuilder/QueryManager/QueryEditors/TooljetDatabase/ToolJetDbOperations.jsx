@@ -677,6 +677,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
             }}
             componentName="TooljetDatabase"
             delayOnChange={false}
+            className="w-100"
           />
         </div>
       )}
