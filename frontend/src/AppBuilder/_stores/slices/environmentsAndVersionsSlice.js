@@ -136,7 +136,6 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
   updateVersionNameAction: async (appId, versionId, versionName, onSuccess, onFailure) => {
     try {
       await appVersionService.save(appId, versionId, { name: versionName });
-      console.log('happening');
 
       set((state) => {
         if (state.selectedVersion && state.selectedVersion.id === versionId) {
@@ -177,7 +176,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
           appVersionsLazyLoaded: false,
           selectedEnvironment: response.editorEnvironment,
           appVersionEnvironment: response.appVersionEnvironment,
-          environments: response.environments,
+          environments: response?.environments?.length ? response.environments : get().environments,
         };
 
         if (state.selectedVersion?.id === versionId) {
@@ -241,7 +240,6 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
             useStore.getState()?.license?.featureAccess
           ),
         };
-        console.log({ environment, get: get().appVersionEnvironment });
 
         const versionIsAvailableInEnvironment = environment?.priority <= get().currentAppVersionEnvironment?.priority;
         if (!versionIsAvailableInEnvironment) {
