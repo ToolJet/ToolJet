@@ -3,8 +3,6 @@ id: env-vars
 title: Environment Variables
 ---
 
-# Environment Variables
-
 ToolJet requires several environment variables to function properly. Below is a simplified guide to setting them up.
 
 ## ToolJet Server
@@ -12,7 +10,8 @@ ToolJet requires several environment variables to function properly. Below is a 
 ### Required Variables
 
 #### ToolJet Host
-- `TOOLJET_HOST`: Public URL of ToolJet (e.g., `https://app.tooljet.com`)
+
+- `TOOLJET_HOST`: Public URL of ToolJet (e.g., `https://app.tooljet.ai`)
 
 #### Lockbox Configuration
 - `LOCKBOX_MASTER_KEY`: 32-byte hex string for encrypting datasource credentials
@@ -80,6 +79,7 @@ Ensure that:
 ### Optional Configurations
 
 #### Comments Feature
+
 - `COMMENT_FEATURE_ENABLE=true/false`: Use this environment variable to enable/disable the feature that allows you to add comments on the canvas. To configure this environment variable, ensure that multiplayer editing is enabled in the Settings.
 
 #### User Session Expiry
@@ -87,7 +87,7 @@ Ensure that:
 
 Note: The variable expects the value in minutes. ex: USER_SESSION_EXPIRY = 120 which is 2 hours
 
-#### Password Retry Limit (Optional)  
+#### Password Retry Limit
 By default, an account is locked after 5 failed login attempts. You can control this with:  
 
 - `DISABLE_PASSWORD_RETRY_LIMIT=true`: Disables the retry limit.  
@@ -204,16 +204,34 @@ Note: Available in ToolJet Enterprise 2.8.0+ and Community/Cloud 2.10.0+.
 #### Default Language
 Set the default language using the `LANGUAGE` variable. Supported options:
 
-| Language    | Code |
-|------------|------|
-| English    | en   |
-| French     | fr   |
-| Spanish    | es   |
-| Italian    | it   |
-| Indonesian | id   |
-| Ukrainian  | uk   |
-| Russian    | ru   |
-| German     | de   |
+
+<div style={{ display: 'flex' }} >
+
+<div style = {{ width:'40%' }} >
+
+| Language    | Code | Native Name       |
+|-------------|------|-------------------|
+| English     | en   | English           |
+| French      | fr   | Français          |
+| Spanish     | es   | Español           |
+| Italian     | it   | Italiano          |
+
+</div>
+
+<div style = {{ width:'5%' }} > </div>
+
+<div style = {{ width:'50%' }} >
+
+| Language    | Code | Native Name       |
+|-------------|------|-------------------|
+| Indonesian  | id   | Bahasa Indonesia  |
+| Ukrainian   | uk   | Українська        |
+| Russian     | ru   | Русский           |
+| German      | de   | Deutsch           |
+
+</div>
+
+</div>
 
 Example: `LANGUAGE=fr` (for French).
 
