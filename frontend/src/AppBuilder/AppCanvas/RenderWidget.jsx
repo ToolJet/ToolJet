@@ -25,6 +25,7 @@ const shouldAddBoxShadowAndVisibility = [
   'DaterangePicker',
   'DatePickerV2',
   'TimePicker',
+  'Tabs',
 ];
 
 const RenderWidget = ({
@@ -126,6 +127,7 @@ const RenderWidget = ({
     },
     [fireEvent, id, customResolvables, subContainerIndex]
   );
+  debugger
 
   const onComponentClick = useStore((state) => state.eventsSlice.onComponentClickEvent);
   setDefaultExposedValues(id, parentId, componentType);
