@@ -1,7 +1,5 @@
 import React, { useState, forwardRef, useRef, useEffect } from 'react';
 import RenameIcon from '../Icons/RenameIcon';
-import Eye1 from '@/_ui/Icon/solidIcons/Eye1';
-import Play from '@/_ui/Icon/solidIcons/Play';
 import cx from 'classnames';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
@@ -13,6 +11,7 @@ import { decodeEntities } from '@/_helpers/utils';
 import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { Button as ButtonComponent } from '@/components/ui/Button/Button';
 
 export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTab }, ref) => {
   const moduleId = useModuleId();
@@ -250,29 +249,22 @@ const RunButton = ({ buttonLoadingState }) => {
         'data-tooltip-content': 'Connect a data source to run',
       })}
     >
-      <button
+      <ButtonComponent
+        size="medium"
+        variant="secondary"
         onClick={() => runQuery(selectedQuery?.id, selectedQuery?.name, undefined, 'edit', {}, true)}
-        className={`border-0 default-secondary-button  ${buttonLoadingState(isLoading)} !tw-w-max`}
-        data-cy="query-run-button"
+        leadingIcon="play01"
         disabled={isInDraft}
+        isLoading={isLoading}
+        className="!tw-w-[88px]"
+        data-cy="query-run-button"
         {...(isInDraft && {
           'data-tooltip-id': 'query-header-btn-run',
           'data-tooltip-content': 'Publish the query to run',
         })}
       >
-        <span
-          className={cx(
-            {
-              invisible: isLoading,
-            },
-            'tw-flex tw-items-center'
-          )}
-        >
-          <Play width={14} fill="var(--indigo9)" viewBox="0 0 14 14" />
-        </span>
-        <span className="query-manager-btn-name">{isLoading ? ' ' : 'Run'}</span>
-        <span>⌘↩</span>
-      </button>
+        Run <span className="query-manager-btn-shortcut">⌘↩</span>
+      </ButtonComponent>
       {isInDraft && <Tooltip id="query-header-btn-run" className="tooltip" />}
     </span>
   );
@@ -291,19 +283,16 @@ const PreviewButton = ({ buttonLoadingState, onClick }) => {
   const { t } = useTranslation();
 
   return (
-    <button
-      disabled={!hasPermissions}
+    <ButtonComponent
+      size="medium"
+      variant="outline"
       onClick={onClick}
-      className={cx(`default-tertiary-button ${buttonLoadingState(isPreviewQueryLoading)} `, {
-        disabled: !hasPermissions,
-      })}
+      className="!tw-w-[100px]"
+      disabled={!hasPermissions}
+      isLoading={isPreviewQueryLoading}
       data-cy={'query-preview-button'}
     >
-      <span className="query-preview-svg d-flex align-items-center query-icon-wrapper">
-        <Eye1 width={14} fill="var(--slate9)" />
-      </span>
-      <span>{t('editor.queryManager.preview', 'Preview')}</span>
-      <span className="query-manager-btn-shortcut">⌘↑↩</span>
-    </button>
+      Preview <span className="query-manager-btn-shortcut">⌘↑↩</span>
+    </ButtonComponent>
   );
 };

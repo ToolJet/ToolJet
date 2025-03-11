@@ -8054,10 +8054,6 @@ tbody {
     min-width: 22px;
   }
 
-  .query-manager-btn-shortcut {
-    color: var(--text-disabled) !important;
-  }
-
   &:hover {
     background-color: $color-light-indigo-04;
     color: $color-light-indigo-10;
@@ -8144,10 +8140,6 @@ tbody {
   .query-btn-name {
     min-width: 22px;
 
-  }
-
-  .query-manager-btn-shortcut {
-    color: var(--text-disabled) !important;
   }
 
   &:hover {
@@ -8255,6 +8247,10 @@ tbody {
       fill: $color-dark-slate-08;
     }
   }
+}
+
+.query-manager-btn-shortcut {
+  color: var(--text-disabled) !important;
 }
 
 .font-weight-500 {
