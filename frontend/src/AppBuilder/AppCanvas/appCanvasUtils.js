@@ -206,6 +206,7 @@ export const getAllChildComponents = (allComponents, parentId) => {
       allComponents[parentId]?.component?.component === 'Calendar' ||
       allComponents[parentId]?.component?.component === 'Kanban' ||
       allComponents[parentId]?.component?.component === 'Container' ||
+      allComponents[parentId]?.component?.component === 'Form' ||
       allComponents[parentId]?.component?.component === 'ModalV2';
 
     if (componentParentId && isParentTabORCalendar) {
@@ -327,6 +328,7 @@ const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentI
       parentComponent.component.component === 'Tabs' ||
       parentComponent.component.component === 'Calendar' ||
       parentComponent.component.component === 'Container' ||
+      parentComponent.component.component === 'Form' ||
       parentComponent.component.component === 'ModalV2'
     );
   }
@@ -665,11 +667,14 @@ export const computeViewerBackgroundColor = (isAppDarkMode, canvasBgColor) => {
   return canvasBgColor;
 };
 
-export const getParentComponentIdByType = ({ child, parentComponent, parentId, slotName = 'header' }) => {
+export const getParentComponentIdByType = ({ child, parentComponent, parentId, slotName }) => {
   const { tab } = child;
 
   if (parentComponent === 'Tabs') return `${parentId}-${tab}`;
-  else if (parentComponent === 'Container' || parentComponent === 'ModalV2') {
+  else if (
+    slotName &&
+    (parentComponent === 'Form' || parentComponent === 'Container' || parentComponent === 'ModalV2')
+  ) {
     return `${parentId}-${slotName}`;
   }
   return parentId;
@@ -684,4 +689,20 @@ export const getParentWidgetFromId = (parentType, parentId) => {
     return 'Kanban_card';
   }
   return parentType;
+};
+
+export const getTabId = (parentId) => {
+  return parentId.split('-').slice(0, -1).join('-');
+};
+
+export const getSubContainerIdWithSlots = (parentId) => {
+  let cleanParentId = parentId;
+  if (parentId) {
+    if (parentId.includes('header')) {
+      cleanParentId = parentId.replace('-header', '');
+    } else if (parentId.includes('footer')) {
+      cleanParentId = parentId.replace('-footer', '');
+    }
+  }
+  return cleanParentId;
 };
