@@ -37,24 +37,15 @@ export const Form = function Form(props) {
     dataCy,
   } = props;
   const childComponents = useStore((state) => state.getChildComponents(id), shallow);
-  const {
-    borderRadius,
-    borderColor,
-    boxShadow,
-    headerHeight,
-    footerHeight,
-    footerBackgroundColor,
-    headerBackgroundColor,
-  } = styles;
+  const { borderRadius, borderColor, boxShadow, footerBackgroundColor, headerBackgroundColor } = styles;
   const {
     buttonToSubmit,
-    loadingState,
     advanced,
     JSONSchema,
     showHeader = false,
     showFooter = false,
-    visibility,
-    disabledState,
+    headerHeight = 80,
+    footerHeight = 80,
   } = properties;
   const { isDisabled, isVisible, isLoading } = useExposeState(
     properties.loadingState,
@@ -110,8 +101,8 @@ export const Form = function Form(props) {
   const [isValid, setValidation] = useState(true);
   const [uiComponents, setUIComponents] = useState([]);
   const mounted = useMounted();
-  const canvasHeaderHeight = getCanvasHeight(headerHeight) / 10;
-  const canvasFooterHeight = getCanvasHeight(footerHeight) / 10;
+  const canvasHeaderHeight = headerHeight / 10;
+  const canvasFooterHeight = footerHeight / 10;
 
   useEffect(() => {
     const exposedVariables = {
@@ -309,7 +300,7 @@ export const Form = function Form(props) {
             darkMode={darkMode}
             styles={{
               backgroundColor: 'transparent',
-              height: headerHeight,
+              height: `${headerHeight}px`,
             }}
             componentType="Form"
           />
@@ -317,7 +308,7 @@ export const Form = function Form(props) {
             <div
               id={`${id}-header-disabled`}
               className="tj-form-disabled-overlay"
-              style={{ height: headerHeight || '100%' }}
+              style={{ height: `${headerHeight}px` || '100%' }}
               onClick={() => {}}
               onDrop={(e) => e.stopPropagation()}
             />
@@ -392,7 +383,7 @@ export const Form = function Form(props) {
             styles={{
               margin: 0,
               backgroundColor: 'transparent',
-              height: footerHeight,
+              height: `${footerHeight}px`,
             }}
             componentType="Form"
           />
@@ -400,7 +391,7 @@ export const Form = function Form(props) {
             <div
               id={`${id}-footer-disabled`}
               className="tj-form-disabled-overlay"
-              style={{ height: footerHeight || '100%' }}
+              style={{ height: `${footerHeight}px` || '100%' }}
               onClick={() => {}}
               onDrop={(e) => e.stopPropagation()}
             />
