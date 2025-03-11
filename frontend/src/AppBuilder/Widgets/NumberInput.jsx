@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BaseInput } from './BaseComponents/BaseInput';
 import { useInput } from './BaseComponents/hooks/useInput';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -144,6 +144,12 @@ export const NumberInput = (props) => {
       </div>
     </div>
   );
+
+  useEffect(() => {
+    if (isNaN(inputLogic.value) || inputLogic.value === '') {
+      props.setExposedVariable('value', null);
+    }
+  }, [inputLogic.value]);
 
   return (
     <BaseInput
