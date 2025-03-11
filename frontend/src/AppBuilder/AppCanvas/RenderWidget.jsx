@@ -127,7 +127,6 @@ const RenderWidget = ({
     },
     [fireEvent, id, customResolvables, subContainerIndex]
   );
-  debugger
 
   const onComponentClick = useStore((state) => state.eventsSlice.onComponentClickEvent);
   setDefaultExposedValues(id, parentId, componentType);
