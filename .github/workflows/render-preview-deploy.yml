@@ -215,7 +215,7 @@ jobs:
       - name: Delete service
         run: |
           export SERVICE_ID=$(curl --request GET \
-          --url 'https://api.render.com/v1/services?name=ToolJet%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+          --url 'https://api.render.com/v1/services?name=ToolJet%20CE%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
           --header 'accept: application/json' \
           --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | \
            jq -r '.[0].service.id')
@@ -583,7 +583,7 @@ jobs:
       - name: Delete service
         run: |
           export SERVICE_ID=$(curl --request GET \
-          --url 'https://api.render.com/v1/services?name=ToolJet%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+          --url 'https://api.render.com/v1/services?name=ToolJet%20EE%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
           --header 'accept: application/json' \
           --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | \
            jq -r '.[0].service.id')
