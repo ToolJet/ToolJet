@@ -218,14 +218,13 @@ export const Table = React.memo(
 
       let obj = changeSet ? changeSet[index] || {} : {};
       obj = { ...obj, [key]: value };
-
       let newChangeset = {
         ...changeSet,
         [index]: {
           ...obj,
         },
       };
-      obj = set({ ...rowData }, key, value);
+      obj = set({ ...rowData, ...changeSet?.[index] }, key, value);
 
       let newDataUpdates = {
         ...dataUpdates,
