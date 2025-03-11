@@ -13,7 +13,7 @@ import { FEATURE_KEY } from './constants';
 import { AbilityDecorator as Ability, AppAbility } from '@modules/app/decorators/ability.decorator';
 import { AppDecorator as App } from '@modules/app/decorators/app.decorator';
 import { App as AppEntity } from '@entities/app.entity';
-import { AppAuthGuard } from './guards/app-auth.guard';
+import { AppAuthGuard } from '@ee/apps/guards/app-auth.guard';
 import { ValidSlugGuard } from './guards/valid-slug.guard';
 import { ValidAppGuard } from './guards/valid-app.guard';
 import { IAppsController } from './interfaces/IController';
