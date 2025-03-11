@@ -56,8 +56,8 @@ const TJDBCodeEditor = (props) => {
 
   const handleOnChange = (value) => {
     if (value === '') {
-      setErrorState(true);
-      setError('JSON cannot be empty');
+      setErrorState(false);
+      setError(null);
       setCurrentValue(value);
       return;
     }
@@ -150,7 +150,7 @@ const TJDBCodeEditor = (props) => {
       className="cm-codehinter position-relative"
       style={{
         width: '100%',
-        height: isOpen ? '350px' : 'auto',
+        height: isOpen ? '350p' : 'auto',
       }}
     >
       <div className={`cm-codehinter  ${darkMode && 'cm-codehinter-dark-themed'}`}>
@@ -178,7 +178,7 @@ const TJDBCodeEditor = (props) => {
               <CodeMirror
                 value={currentValue}
                 placeholder={placeholder}
-                height={isOpen ? '350px' : '32px'}
+                height={isOpen ? '32px' : '32px'}
                 maxHeight={'350px'}
                 width="100%"
                 theme={theme}
