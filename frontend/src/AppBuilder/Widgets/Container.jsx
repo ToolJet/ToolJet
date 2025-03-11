@@ -13,6 +13,8 @@ export const Container = ({
   setExposedVariables,
   setExposedVariable,
 }) => {
+  const { borderRadius, borderColor, boxShadow, headerHeight = 80 } = styles;
+
   const { isDisabled, isVisible, isLoading } = useExposeState(
     properties.loadingState,
     properties.visibility,
@@ -21,7 +23,6 @@ export const Container = ({
     setExposedVariable
   );
 
-  const { borderRadius, borderColor, boxShadow, headerHeight = 80 } = styles;
   const contentBgColor = useMemo(() => {
     return {
       backgroundColor:
@@ -65,35 +66,35 @@ export const Container = ({
 
   return (
     <div
-      className={`jet-container tw-flex tw-flex-col ${isLoading ? 'jet-container-loading' : ''} ${
+      className={`jet-container tw-flex tw-flex-col ${isLoading && 'jet-container-loading'} ${
         properties.showHeader && 'jet-container--with-header'
       }`}
       id={id}
       data-disabled={isDisabled}
       style={computedStyles}
     >
+      {properties.showHeader && (
+        <ContainerComponent
+          id={`${id}-header`}
+          styles={computedHeaderStyles}
+          canvasHeight={headerHeight / 10}
+          canvasWidth={width}
+          allowContainerSelect={true}
+          darkMode={darkMode}
+        />
+      )}
       {isLoading ? (
-        <Spinner />
+        <div className="h-100 d-flex align-items-center">
+          <Spinner />
+        </div>
       ) : (
-        <>
-          {properties.showHeader && (
-            <ContainerComponent
-              id={`${id}-header`}
-              styles={computedHeaderStyles}
-              canvasHeight={headerHeight / 10}
-              canvasWidth={width}
-              allowContainerSelect={true}
-              darkMode={darkMode}
-            />
-          )}
-          <ContainerComponent
-            id={id}
-            styles={computedContentStyles}
-            canvasHeight={height}
-            canvasWidth={width}
-            darkMode={darkMode}
-          />
-        </>
+        <ContainerComponent
+          id={id}
+          styles={computedContentStyles}
+          canvasHeight={height}
+          canvasWidth={width}
+          darkMode={darkMode}
+        />
       )}
     </div>
   );

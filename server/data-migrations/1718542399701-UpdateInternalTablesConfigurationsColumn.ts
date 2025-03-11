@@ -1,7 +1,7 @@
 import { tooljetDbOrmconfig } from 'ormconfig';
 import { MigrationInterface, QueryRunner, EntityManager, DataSource } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
-import { MigrationProgress, processDataInBatches } from 'src/helpers/utils.helper';
+import { MigrationProgress, processDataInBatches } from '@helpers/migration.helper';
 
 export class UpdateInternalTablesConfigurationsColumn1718542399701 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {

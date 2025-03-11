@@ -6,6 +6,9 @@ import _ from 'lodash';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
 import { Button } from '@/_ui/LeftSidebar';
 import Information from '@/_ui/Icon/solidIcons/Information';
+import { Tooltip as ReactTooltip } from 'react-tooltip';
+import { authenticationService } from '@/_services';
+import { useCurrentState } from '@/_stores/currentStateStore';
 import CodeHinter from '@/Editor/CodeEditor';
 const noop = () => {};
 
@@ -101,6 +104,10 @@ export const Transformation = ({ changeOption, options, darkMode, queryId }) => 
   const [state, setState] = useLocalStorageState('transformation', defaultValue);
   const { t } = useTranslation();
 
+  const { current_organization_name } = authenticationService.currentSessionValue;
+  const currentOrgName = current_organization_name.replace(/\s/g, '').toLowerCase();
+  const isCopilotEnabled = localStorage.getItem(`copilotEnabled-${currentOrgName}`) === 'true';
+
   useEffect(() => {
     if (lang !== (options.transformationLanguage ?? 'javascript')) {
       changeOption('transformationLanguage', lang);
@@ -113,7 +120,7 @@ export const Transformation = ({ changeOption, options, darkMode, queryId }) => 
     lang !== (options.transformationLanguage ?? 'javascript') && changeOption('transformationLanguage', lang);
     setState({ ...state, [lang]: options.transformation ?? state[lang] ?? defaultValue[lang] });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(options.transformation)]);
+  }, [JSON.stringify(options.transformation), options.transformationLanguage]);
 
   useEffect(() => {
     const selectedQueryId = localStorage.getItem('selectedQuery') ?? null;
@@ -234,8 +241,8 @@ export const Transformation = ({ changeOption, options, darkMode, queryId }) => 
               }}
               componentName={`transformation`}
               cyLabel={'transformation-input'}
-              callgpt={noop}
-              isCopilotEnabled={false}
+              // callgpt={handleCallToGPT}
+              isCopilotEnabled={isCopilotEnabled}
               delayOnChange={false}
               readOnly={!enableTransformation}
               editable={enableTransformation}

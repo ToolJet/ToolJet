@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import Accordion from '@/_ui/Accordion';
 import { resolveReferences } from '@/_helpers/utils';
 import styles from '@/_ui/Select/styles';
-import FxButton from '../../../../CodeBuilder/Elements/FxButton';
+import FxButton from '@/Editor/CodeBuilder/Elements/FxButton';
 import CodeHinter from '@/Editor/CodeEditor';
 
 const TIMEZONE_OPTIONS = [

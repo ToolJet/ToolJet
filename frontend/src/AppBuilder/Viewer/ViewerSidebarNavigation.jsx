@@ -8,6 +8,7 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import useStore from '@/AppBuilder/_stores/store';
 import { APP_HEADER_HEIGHT } from '../AppCanvas/appCanvasConstants';
 import OverflowTooltip from '@/_components/OverflowTooltip';
+import { RenderPageAndPageGroup } from './PageGroup';
 
 export const ViewerSidebarNavigation = ({
   isMobileDevice,
@@ -23,6 +24,7 @@ export const ViewerSidebarNavigation = ({
   const selectedVersionName = useStore((state) => state.selectedVersion?.name);
   const selectedEnvironmentName = useStore((state) => state.selectedEnvironment?.name);
   const homePageId = useStore((state) => state.app.homePageId);
+  const license = useStore((state) => state.license);
 
   if (isMobileDevice) {
     return null;
@@ -96,6 +98,10 @@ export const ViewerSidebarNavigation = ({
     switchPage(pageId, pages.find((page) => page.id === pageId)?.handle, Object.entries(queryParams), true);
   };
 
+  const isLicensed =
+    !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
+    _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
+
   return (
     <div
       className={cx('navigation-area', {
@@ -127,32 +133,43 @@ export const ViewerSidebarNavigation = ({
           leftIcon={isSidebarPinned ? 'unpin01' : 'pin'}
           iconWidth="18"
         ></ButtonSolid>
-        <div className={cx('page-handler-wrapper', { 'dark-theme': darkMode })}>
-          {pages.map((page) => {
-            const isHomePage = page.id === homePageId;
-            const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
-            // eslint-disable-next-line import/namespace
-            const IconElement = Icons?.[iconName] ?? Icons?.['IconFileDescription'];
-            return page.hidden || page.disabled ? null : (
-              <FolderList
-                key={page.handle}
-                onClick={() => switchPageWrapper(page?.id)}
-                selectedItem={page?.id === currentPageId}
-                CustomIcon={!labelStyle?.icon?.hidden && IconElement}
-                customStyles={computeStyles}
-                darkMode={darkMode}
-              >
-                {!labelStyle?.label?.hidden && (
-                  <span data-cy={`pages-name-${String(page?.name).toLowerCase()}`}>
-                    <OverflowTooltip style={{ width: '110px' }} childrenClassName={'mx-2 page-name'}>
-                      {page.name}
-                    </OverflowTooltip>
-                  </span>
-                )}
-              </FolderList>
-            );
-          })}
-        </div>
+        {isLicensed ? (
+          <RenderPageAndPageGroup
+            switchPageWrapper={switchPageWrapper}
+            pages={pages}
+            labelStyle={labelStyle}
+            computeStyles={computeStyles}
+            darkMode={darkMode}
+            switchPage={switchPage}
+          />
+        ) : (
+          <div className={cx('page-handler-wrapper', { 'dark-theme': darkMode })}>
+            {pages.map((page) => {
+              const isHomePage = page.id === homePageId;
+              const iconName = isHomePage && !page.icon ? 'IconHome2' : page.icon;
+              // eslint-disable-next-line import/namespace
+              const IconElement = Icons?.[iconName] ?? Icons?.['IconFileDescription'];
+              return page.hidden || page.disabled ? null : (
+                <FolderList
+                  key={page.handle}
+                  onClick={() => switchPageWrapper(page?.id)}
+                  selectedItem={page?.id === currentPageId}
+                  CustomIcon={!labelStyle?.icon?.hidden && IconElement}
+                  customStyles={computeStyles}
+                  darkMode={darkMode}
+                >
+                  {!labelStyle?.label?.hidden && (
+                    <span data-cy={`pages-name-${String(page?.name).toLowerCase()}`}>
+                      <OverflowTooltip style={{ width: '110px' }} childrenClassName={'mx-2 page-name'}>
+                        {page.name}
+                      </OverflowTooltip>
+                    </span>
+                  )}
+                </FolderList>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

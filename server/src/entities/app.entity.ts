@@ -1,5 +1,6 @@
 import {
   Entity,
+  OneToOne,
   Column,
   CreateDateColumn,
   JoinColumn,
@@ -12,20 +13,23 @@ import {
   BaseEntity,
 } from 'typeorm';
 import { AppVersion } from './app_version.entity';
+import { AppGitSync } from './app_git_sync.entity';
 import { GroupPermission } from './group_permission.entity';
 import { User } from './user.entity';
 import { GroupApps } from './group_apps.entity';
 import { AppGroupPermission } from './app_group_permission.entity';
+import { AiConversation } from './ai_conversation.entity';
 
 @Entity({ name: 'apps' })
 export class App extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ name: 'type' })
+  type: string = 'front-end';
+
   @Column({ name: 'name' })
   name: string;
-
-  type: string = 'front-end';
 
   @Column({ name: 'slug', unique: true })
   slug: string;
@@ -48,8 +52,23 @@ export class App extends BaseEntity {
   @Column({ name: 'user_id' })
   userId: string;
 
+  @Column({ name: 'workflow_api_token' })
+  workflowApiToken: string;
+
+  @Column({ name: 'workflow_enabled', default: false })
+  workflowEnabled: boolean;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
+
+  @Column({
+    type: 'enum',
+    enumName: 'app_creation_mode',
+    name: 'creation_mode',
+    enum: ['GIT', 'DEFAULT'],
+    default: 'DEFAULT',
+  })
+  creationMode: string;
 
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
@@ -76,12 +95,18 @@ export class App extends BaseEntity {
   })
   groupPermissions: GroupPermission[];
 
+  @OneToOne(() => AppGitSync, (appGitSync) => appGitSync.app, { onDelete: 'CASCADE' })
+  appGitSync: AppGitSync;
+
   @OneToMany(() => GroupApps, (groupApps) => groupApps.app, { onDelete: 'CASCADE' })
   appGroups: GroupApps[];
 
   //Depreciated
   @OneToMany(() => AppGroupPermission, (appGroupPermission) => appGroupPermission.app, { onDelete: 'CASCADE' })
   appGroupPermissions: AppGroupPermission[];
+
+  @OneToMany(() => AiConversation, (aiConversation) => aiConversation.app, { onDelete: 'CASCADE' })
+  aiConversations: AiConversation[];
 
   public editingVersion;
 }

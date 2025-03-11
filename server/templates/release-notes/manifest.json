@@ -1,0 +1,19 @@
+{
+  "name": "Release notes",
+  "description": "Stay informed about new features and bug fixes with clear and concise release notes.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "release-notes",
+  "category": "product-management"
+}

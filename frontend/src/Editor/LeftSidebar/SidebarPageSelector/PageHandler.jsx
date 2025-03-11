@@ -43,9 +43,10 @@ export const PageHandler = ({
   const [showPagehandlerMenu, setShowPagehandlerMenu] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const { isVersionReleased } = useAppVersionStore(
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );
@@ -173,7 +174,7 @@ export const PageHandler = ({
             )}
           </div>
           <div className="col-auto" data-cy="page-menu-option-icon">
-            {(isHovered || isSelected) && !isVersionReleased && (
+            {(isHovered || isSelected) && !(isVersionReleased || isEditorFreezed) && (
               <PagehandlerMenu
                 page={page}
                 darkMode={darkMode}

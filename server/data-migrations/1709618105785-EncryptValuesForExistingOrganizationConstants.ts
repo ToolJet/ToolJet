@@ -1,6 +1,6 @@
-import { EncryptionService } from '@services/encryption.service';
-import { OrgEnvironmentConstantValue } from 'src/entities/org_environment_constant_values.entity';
-import { dbTransactionWrap } from 'src/helpers/database.helper';
+import { EncryptionService } from '@modules/encryption/service';
+import { OrgEnvironmentConstantValue } from '@entities/org_environment_constant_values.entity';
+import { dbTransactionWrap } from '@helpers/database.helper';
 import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
 
 export class EncryptValuesForExistingOrganizationConstants1709618105790 implements MigrationInterface {

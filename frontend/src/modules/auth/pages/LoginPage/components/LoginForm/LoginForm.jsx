@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { validateEmail, validatePassword } from '@/_helpers/utils';
-import { OnboardingUIWrapper, OnboardingFormInsideWrapper } from '@/modules/onboarding/components';
+import { OnboardingFormInsideWrapper, OnboardingUIWrapper } from '@/modules/onboarding/components';
 import { FormTextInput, PasswordInput, SubmitButton, FormHeader, SSOAuthModule } from '@/modules/common/components';
 import { redirectToDashboard } from '@/_helpers/routes';
 import './resources/styles/login-form.styles.scss';
@@ -24,8 +24,18 @@ const LoginForm = ({
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
   const [isFormValid, setIsFormValid] = useState(false);
-
-  const isAnySSOEnabled = configs?.google?.enabled || configs?.git?.enabled;
+  const [isDefaultFormEmail, setisDefaultFormEmail] = useState(true);
+  const [isDefaultFormPassword, setisDefaultFormPassword] = useState(true);
+  const defaultfieldStateSetters = {
+    email: setisDefaultFormEmail,
+    password: setisDefaultFormPassword,
+  };
+  const isAnySSOEnabled =
+    configs?.google?.enabled ||
+    configs?.git?.enabled ||
+    configs?.ldap?.enabled ||
+    configs?.saml?.enabled ||
+    configs?.openid?.enabled;
 
   const noLoginMethodsEnabled = !configs?.form?.enabled && !isAnySSOEnabled;
   const workspaceSignUpEnabled = organizationId && configs?.enable_sign_up;
@@ -38,13 +48,11 @@ const LoginForm = ({
   const signUpUrl = `/signup${paramOrganizationSlug ? `/${paramOrganizationSlug}` : ''}${
     redirectTo ? `?redirectTo=${redirectTo}` : ''
   }`;
-  const [isDefaultFormEmail, setisDefaultFormEmail] = useState(true);
-  const [isDefaultFormPassword, setisDefaultFormPassword] = useState(true);
-  const defaultfieldStateSetters = {
-    email: setisDefaultFormEmail,
-    password: setisDefaultFormPassword,
-  };
 
+  const checkFormValidity = () => {
+    const isValid = email.trim() !== '' && validateEmail(email) && password.trim() !== '' && password.length >= 5;
+    setIsFormValid(isValid);
+  };
   useEffect(() => {
     checkFormValidity();
     const newErrors = {};
@@ -58,10 +66,6 @@ const LoginForm = ({
     setIsFormValid(isValid && email != '' && password != '');
   }, [email, password]);
 
-  const checkFormValidity = () => {
-    const isValid = validateEmail(email) && password.trim() !== '';
-    setIsFormValid(isValid);
-  };
   const validateField = (name, value) => {
     switch (name) {
       case 'email':
@@ -122,18 +126,14 @@ const LoginForm = ({
                 <p className="signup-info" data-cy="signup-info">
                   {organizationId && (
                     <>
-                      Sign in to the workspace -{' '}
-                      <span className="workspace-name" data-cy="workspace-name">
-                        {configs?.name}
-                      </span>
-                      .
+                      Sign in to the workspace - <span className="workspace-name">{configs?.name}</span>.
                     </>
                   )}{' '}
                   {isSignUpCTAEnabled && (
                     <>
                       {' '}
                       {signupText}{' '}
-                      <Link to={signUpUrl} className="signin-link" tabIndex="-1" data-cy="create-an-account-link">
+                      <Link to={signUpUrl} className="signin-link" tabIndex="-1" data-cy="signin-link">
                         {t('createToolJetAccount', signUpCTA)}
                       </Link>
                     </>

@@ -5,7 +5,11 @@ const initialState = {
   isUserEditingTheVersion: false,
   releasedVersionId: null,
   isVersionReleased: false,
+  isEditorFreezed: false,
+  isBannerMandatory: false,
   appVersions: [],
+  isAppVersionPromoted: false,
+  currentAppVersionEnvironment: null,
 };
 
 export const useAppVersionStore = create(
@@ -22,7 +26,10 @@ export const useAppVersionStore = create(
             releasedVersionId: versionId,
             isVersionReleased: get().editingVersion?.id ? get().editingVersion?.id === versionId : false,
           }),
+        onEditorFreeze: (value = false, isBannerMandatory = true) => set({ isEditorFreezed: value, isBannerMandatory }),
         setAppVersions: (versions) => set({ appVersions: versions }),
+        setAppVersionCurrentEnvironment: (environment) => set({ currentAppVersionEnvironment: environment }),
+        setAppVersionPromoted: (value) => set({ isAppVersionPromoted: value }),
       },
     }),
     { name: 'App Version Manager Store' }

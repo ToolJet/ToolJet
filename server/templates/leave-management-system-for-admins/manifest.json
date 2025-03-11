@@ -1,0 +1,19 @@
+{
+  "name": "Leave management system for admins",
+  "description": "Manage employee leave requests and approvals efficiently with a centralized admin panel.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "leave-management-system-for-admins",
+  "category": "human-resources"
+}

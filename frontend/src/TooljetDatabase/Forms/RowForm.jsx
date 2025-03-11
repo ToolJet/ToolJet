@@ -323,7 +323,7 @@ const RowForm = ({
     setFetching(true);
     let flag = 0;
     rowColumns.forEach(({ accessor, dataType }) => {
-      if (['double precision', 'bigint', 'integer'].includes(dataType) && data[accessor] === '') {
+      if (['double precision', 'bigint', 'integer', 'jsonb'].includes(dataType) && data[accessor] === '') {
         flag = 1;
         setErrorMap((prev) => {
           return { ...prev, [accessor]: 'Cannot be empty' };
@@ -616,6 +616,7 @@ const RowForm = ({
                   placeholder="{}"
                   columnName={columnName}
                   showErrorMessage={true}
+                  className={cx(errorMap[columnName] ? 'has-empty-error' : '')}
                 />
               </div>
             )}

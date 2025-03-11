@@ -56,7 +56,7 @@ export const PageHandlerMenu = ({ darkMode }) => {
 
   return (
     <Overlay
-      placement="right"
+      placement="auto"
       target={targetContainer}
       show={showMenu}
       rootClose

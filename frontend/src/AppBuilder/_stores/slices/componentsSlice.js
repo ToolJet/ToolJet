@@ -16,9 +16,10 @@ import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConsta
 import { DEFAULT_COMPONENT_STRUCTURE } from './resolvedSlice';
 import { savePageChanges } from './pageMenuSlice';
 import { toast } from 'react-hot-toast';
-import { restrictedWidgetsObj } from '@/AppBuilder/WidgetManager/configs/restrictedWidgetsConfig';
+import { RESTRICTED_WIDGETS_CONFIG } from '@/AppBuilder/WidgetManager/configs/restrictedWidgetsConfig';
 import moment from 'moment';
 import { getDateTimeFormat } from '@/AppBuilder/Widgets/Table/Datepicker';
+import { findHighestLevelofSelection } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
 
 // TODO: page id to index mapping to be created and used across the state for current page access
 const initialState = {
@@ -38,6 +39,7 @@ const initialState = {
   selectedComponents: [],
   currentPageHandle: null,
   showWidgetDeleteConfirmation: false,
+  focusedParentId: null,
 };
 
 export const createComponentsSlice = (set, get) => ({
@@ -726,7 +728,7 @@ export const createComponentsSlice = (set, get) => ({
   getOtherFieldsToBeResolved: (moduleId) => {
     return {
       canvasBackgroundColor: get().globalSettings.backgroundFxQuery,
-      isPagesSidebarHidden: get().pageSettings?.properties?.disableMenu?.value,
+      isPagesSidebarHidden: get().pageSettings?.definition?.properties?.disableMenu?.value,
     };
   },
 
@@ -760,7 +762,7 @@ export const createComponentsSlice = (set, get) => ({
     const transformedParentId = parentId?.length > 36 ? parentId.slice(0, 36) : parentId;
     let parentType = getComponentTypeFromId(transformedParentId, moduleId);
     const parentWidget = parentType === 'Kanban' ? 'Kanban_card' : parentType;
-    const restrictedWidgets = restrictedWidgetsObj?.[parentWidget] || [];
+    const restrictedWidgets = RESTRICTED_WIDGETS_CONFIG?.[parentWidget] || [];
     const isParentChangeAllowed = !restrictedWidgets.includes(currentWidget);
     if (!isParentChangeAllowed)
       toast.error(`${currentWidget} is not compatible as a child component of ${parentWidget}`);
@@ -847,17 +849,15 @@ export const createComponentsSlice = (set, get) => ({
             if (!state.containerChildrenMapping[parentId].includes(newComponent.id)) {
               state.containerChildrenMapping[parentId].push(newComponent.id);
             }
-            const page = state.modules[moduleId].pages[state.currentPageIndex];
+            const page = state.modules[moduleId].pages.find((page) => page.id === state.currentPageId);
             page.components[newComponent.id] = newComponent;
           }, skipUndoRedo),
           false,
           'addComponentToCurrentPage'
         );
-        if (index === 0) {
-          //incase of multiple components, only first one will be selected since it will be the parent component
-          get().setSelectedComponents([newComponent.id]);
-        }
       });
+      const selectedComponents = findHighestLevelofSelection(newComponents);
+      get().setSelectedComponents(selectedComponents.map((component) => component.id));
 
       if (saveAfterAction) {
         saveComponentChanges(diff, 'components', 'create')
@@ -915,7 +915,7 @@ export const createComponentsSlice = (set, get) => ({
           findAllChildComponents(componentId);
         });
 
-        const page = state.modules.canvas.pages[state.currentPageIndex];
+        const page = state.modules?.canvas?.pages.find((page) => page.id === state.currentPageId);
         const resolvedComponents = state.resolvedStore.modules?.[moduleId]?.components;
         const componentsExposedValues = state.resolvedStore.modules?.[moduleId]?.exposedValues.components;
 
@@ -1392,6 +1392,11 @@ export const createComponentsSlice = (set, get) => ({
       { type: 'setSelectedComponentAsModal', payload: { componentId } }
     );
   },
+  setFocusedParentId: (parentId) => {
+    set((state) => {
+      state.focusedParentId = parentId;
+    });
+  },
   saveComponentChanges: (diff, type, operation) => {
     set(
       (state) => {
@@ -1651,22 +1656,16 @@ export const createComponentsSlice = (set, get) => ({
       });
     }
   },
-  computePageSettings: (moduleId, cb) => {
+  computePageSettings: (currentPageSettings) => {
     try {
-      const { pageSettings: currentPageSettings } = get();
       const pageSettingMeta = cloneDeep(pageConfig);
       const mergedSettings = merge({}, pageSettingMeta.definition, currentPageSettings);
-      set((state) => {
-        state.pageSettings = {
-          ...pageConfig,
-          definition: {
-            ...mergedSettings,
-          },
-        };
-      });
-      if (cb) {
-        cb(mergedSettings.properties.disableMenu.value);
-      }
+      return {
+        ...pageConfig,
+        definition: {
+          ...mergedSettings,
+        },
+      };
     } catch (error) {
       console.log(error);
       return Promise.reject(error);
@@ -1772,7 +1771,7 @@ export const createComponentsSlice = (set, get) => ({
     };
 
     const regex =
-      /(components|queries)(\??\.|\??\.?\[['"]?)([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(['"]?\])?(\??\.|\[['"]?)([^\s:?[\]'"+\-&|]+)/g;
+      /(components|queries)(\??\.|\??\.?\[['"]?)([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(['"]?\])?(\??\.|\[['"]?)([^\s:?[\]'"+\-&|}}]+)/g;
 
     return input.replace(regex, (match, category, prefix, id, suffix, optionalChaining, property) => {
       if (mappings[category] && mappings[category][id]) {
@@ -1823,9 +1822,18 @@ export const createComponentsSlice = (set, get) => ({
     const getAllExposedValues = get().getAllExposedValues;
     // Early return for non input components
     if (
-      !['TextInput', 'PasswordInput', 'NumberInput', 'DropdownV2', 'MultiselectV2', 'RadioButtonV2'].includes(
-        componentType
-      )
+      ![
+        'TextInput',
+        'PasswordInput',
+        'NumberInput',
+        'DropdownV2',
+        'MultiselectV2',
+        'RadioButtonV2',
+        'DatetimePickerV2',
+        'DaterangePicker',
+        'DatePickerV2',
+        'TimePicker',
+      ].includes(componentType)
     ) {
       return layoutData?.height;
     }

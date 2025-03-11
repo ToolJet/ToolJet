@@ -15,6 +15,7 @@ const initialState = {
   apps: [],
   appName: null,
   slug: null,
+  creationMode: 'DEFAULT',
   isPublic: null,
   isMaintenanceOn: null,
   organizationId: null,

@@ -3,8 +3,10 @@ import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { componentTypes } from '../WidgetManager';
 import useStore from '@/AppBuilder/_stores/store';
 import { toast } from 'react-hot-toast';
+import _, { debounce } from 'lodash';
+import { useGridStore } from '@/_stores/gridStore';
+import { findHighestLevelofSelection } from './Grid/gridUtils';
 import { CANVAS_WIDTHS, NO_OF_GRIDS, WIDGETS_WITH_DEFAULT_CHILDREN } from './appCanvasConstants';
-import _ from 'lodash';
 
 export function snapToGrid(canvasWidth, x, y) {
   const gridX = canvasWidth / 43;
@@ -36,6 +38,9 @@ export const addNewWidgetToTheEditor = (componentType, eventMonitorObject, curre
 
   const gridWidth = subContainerWidth / NO_OF_GRIDS;
   left = Math.round(left / gridWidth);
+  // Adjust widget width based on the dropping canvas width
+  const mainCanvasWidth = useGridStore.getState().subContainerWidths['canvas'];
+  const width = Math.round((defaultWidth * mainCanvasWidth) / gridWidth);
 
   if (currentLayout === 'mobile') {
     componentData.definition.others.showOnDesktop.value = `{{false}}`;
@@ -54,13 +59,13 @@ export const addNewWidgetToTheEditor = (componentType, eventMonitorObject, curre
       [currentLayout]: {
         top: top,
         left: left,
-        width: defaultWidth,
+        width,
         height: defaultHeight,
       },
       [nonActiveLayout]: {
         top: top,
         left: left,
-        width: defaultWidth,
+        width,
         height: defaultHeight,
       },
     },
@@ -141,7 +146,7 @@ export function addChildrenWidgetsToParent(componentType, parentId, currentLayou
         name: widgetName,
         component: {
           ...componentData,
-          parent: getParentComponentIdByType(child, parentMeta.component, parentId),
+          parent: _parent,
         },
         layouts: {
           [currentLayout]: {
@@ -186,6 +191,7 @@ export function computeComponentName(componentType, currentComponents) {
 
 export const getAllChildComponents = (allComponents, parentId) => {
   const childComponents = [];
+
   Object.keys(allComponents).forEach((componentId) => {
     const componentParentId = allComponents[componentId].component?.parent;
 
@@ -287,9 +293,10 @@ export const copyComponents = ({ isCut = false, isCloning = false }) => {
       pageId: currentPageId,
     };
   }
+  useStore.getState().setLastCanvasClickPosition(null);
   if (isCloning) {
     const parentId = allComponents[selectedComponents[0]?.id]?.parent ?? undefined;
-    pasteComponents(parentId, newComponentObj);
+    debouncedPasteComponents(parentId, newComponentObj);
     toast.success('Component cloned succesfully');
   } else if (isCut) {
     navigator.clipboard.writeText(JSON.stringify(newComponentObj));
@@ -306,35 +313,9 @@ export const copyComponents = ({ isCut = false, isCloning = false }) => {
   }
 };
 
-const updateComponentLayout = (components, parentId, isCut = false) => {
-  let prevComponent;
-  let _components = deepClone(components);
-  _components.forEach((component, index) => {
-    Object.keys(component.layouts).map((layout) => {
-      if (
-        (parentId !== undefined && !component?.component?.parent) ||
-        (component?.component?.parent === parentId && !isCut)
-      ) {
-        if (index > 0) {
-          component.layouts[layout].top = prevComponent.layouts[layout].top + prevComponent.layouts[layout].height;
-          component.layouts[layout].left = 0;
-        } else {
-          component.layouts[layout].top = 0;
-          component.layouts[layout].left = 0;
-        }
-        prevComponent = component;
-      } else if (!isCut && !component.component.parent) {
-        component.layouts[layout].top = component.layouts[layout].top + component.layouts[layout].height;
-      }
-    });
-  });
-  return _components;
-};
-
 const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentId = undefined) => {
-  const parentId = componentParentId ?? component.component?.parent?.match(/([a-fA-F0-9-]{36})-(.+)/)?.[1];
+  const parentId = componentParentId ?? component.component?.parent?.split('-').slice(0, -1).join('-');
   const parentComponent = allComponents?.[parentId];
-
   if (parentComponent) {
     return (
       parentComponent.component.component === 'Tabs' ||
@@ -346,28 +327,176 @@ const isChildOfTabsOrCalendar = (component, allComponents = [], componentParentI
   return false;
 };
 
-export function pasteComponents(parentId, copiedComponentObj) {
+function calculateComponentPosition(component, existingComponents, layout, targetParentId) {
+  const MAX_ITERATIONS = 1000;
+  let safetyCounter = 0;
+
+  const parentId = component.component?.parent ? component.component.parent : 'canvas';
+  const gridWidth = useGridStore.getState().subContainerWidths[parentId];
+  const lastCanvasClickPosition = useStore.getState().lastCanvasClickPosition;
+
+  // Initialize position either from click or component layout
+  let newLeft = component.layouts[layout].left;
+  let newTop = component.layouts[layout].top;
+
+  if (lastCanvasClickPosition && (!component.component?.parent || component.component?.parent === targetParentId)) {
+    newLeft = Math.round(lastCanvasClickPosition.x / gridWidth);
+    newTop = Math.round(lastCanvasClickPosition.y / 10) * 10;
+  }
+  // Ensure component stays within bounds
+  if (newLeft + component.layouts[layout].width > NO_OF_GRIDS) {
+    newLeft = NO_OF_GRIDS - component.layouts[layout].width;
+  }
+  newLeft = Math.max(0, newLeft);
+  newTop = Math.max(0, newTop);
+
+  // Sort components once for efficient overlap checking
+  const sortedComponents = existingComponents.sort((a, b) => {
+    return a.layouts[layout].top - b.layouts[layout].top;
+  });
+
+  let foundSpace = false;
+  while (!foundSpace && safetyCounter < MAX_ITERATIONS) {
+    foundSpace = true;
+    safetyCounter++;
+
+    const hasOverlap = sortedComponents.some((existing) => {
+      // Skip distant components
+      if (Math.abs(existing.layouts[layout].top - newTop) > 1000) {
+        return false;
+      }
+
+      const existingTop = existing.layouts[layout].top;
+      const existingBottom = existingTop + existing.layouts[layout].height;
+      const existingLeft = existing.layouts[layout].left;
+      const existingRight = existingLeft + existing.layouts[layout].width;
+      const newBottom = newTop + component.layouts[layout].height;
+      const newRight = newLeft + component.layouts[layout].width;
+
+      return newTop < existingBottom && newBottom > existingTop && newLeft < existingRight && newRight > existingLeft;
+    });
+
+    if (hasOverlap) {
+      foundSpace = false;
+      newTop += 10;
+    }
+  }
+
+  // Safety fallback
+  if (safetyCounter >= MAX_ITERATIONS) {
+    console.warn('Position calculation safety limit reached');
+    newTop = 0;
+    newLeft = 0;
+  }
+
+  return { newTop, newLeft };
+}
+
+function calculateGroupPosition(components, existingComponents, layout, targetParentId) {
+  // Filter top-level components
+  const parentComponents = components.filter(
+    (c) => !c.component?.parent || c.component?.component?.parent !== targetParentId
+  );
+
+  if (parentComponents.length === 0) {
+    return components.map((component) => ({
+      id: component.id,
+      top: component.layouts[layout].top,
+      left: component.layouts[layout].left,
+    }));
+  }
+  // Calculate group dimensions
+  const bounds = parentComponents.reduce(
+    (bounds, component) => {
+      const compLayout = component.layouts[layout];
+      return {
+        minTop: Math.min(bounds.minTop, compLayout.top),
+        minLeft: Math.min(bounds.minLeft, compLayout.left),
+        maxRight: Math.max(bounds.maxRight, compLayout.left + compLayout.width),
+        maxBottom: Math.max(bounds.maxBottom, compLayout.top + compLayout.height),
+      };
+    },
+    { minTop: Infinity, minLeft: Infinity, maxRight: -Infinity, maxBottom: -Infinity }
+  );
+  const groupDimensions = {
+    width: bounds.maxRight - bounds.minLeft,
+    height: bounds.maxBottom - bounds.minTop,
+  };
+
+  // Create a virtual component representing the entire group
+  const virtualGroupComponent = {
+    layouts: {
+      [layout]: {
+        top: bounds.minTop,
+        left: bounds.minLeft,
+        width: groupDimensions.width,
+        height: groupDimensions.height,
+      },
+    },
+  };
+
+  // Use calculateComponentPosition to find a suitable position for the group
+  const { newTop, newLeft } = calculateComponentPosition(
+    virtualGroupComponent,
+    existingComponents,
+    layout,
+    targetParentId
+  );
+
+  // Calculate position deltas
+  const deltaTop = newTop - bounds.minTop;
+  const deltaLeft = newLeft - bounds.minLeft;
+
+  // Return updated positions
+  return components.map((component) => {
+    const compLayout = component.layouts[layout];
+    const isPasteTargetParent = component.component?.component?.parent === targetParentId;
+    // Only update position for top-level components
+    if (!component.component?.parent || !isPasteTargetParent) {
+      return {
+        id: component.id,
+        top: compLayout.top + deltaTop,
+        left: compLayout.left + deltaLeft,
+      };
+    }
+
+    // Keep child components in their relative positions
+    return {
+      id: component.id,
+      top: compLayout.top,
+      left: compLayout.left,
+    };
+  });
+}
+
+export const debouncedPasteComponents = debounce(pasteComponents, 300);
+
+export function pasteComponents(targetParentId, copiedComponentObj) {
   const finalComponents = [];
   const componentMap = {};
   let parentComponent = undefined;
   const components = useStore.getState().getCurrentPageComponents();
   const currentPageId = useStore.getState().getCurrentPageId();
-  const { isCut = false, newComponents: pastedComponents = [], pageId, isCloning = false } = copiedComponentObj;
+  const { isCut = false, pageId, isCloning = false, newComponents: pastedComponents = [] } = copiedComponentObj;
+  const isGroup = findHighestLevelofSelection(pastedComponents).length > 1;
+
   // Prevent pasting if the parent subcontainer was deleted during a cut operation
   if (
-    parentId &&
+    targetParentId &&
     !Object.keys(components).find(
       (key) =>
-        parentId === key ||
-        (components?.[key]?.component.component === 'Tabs' && parentId?.split('-')?.slice(0, -1)?.join('-') === key)
+        targetParentId === key ||
+        (components?.[key]?.component.component === 'Tabs' &&
+          targetParentId?.split('-')?.slice(0, -1)?.join('-') === key)
     )
   ) {
     return;
   }
-  if (parentId) {
-    const id = Object.keys(components).filter((key) => parentId.startsWith(key));
+  if (targetParentId) {
+    const id = Object.keys(components).filter((key) => targetParentId.startsWith(key));
     parentComponent = components[id];
   }
+
   pastedComponents.forEach((component) => {
     const newComponentId = isCut ? component.id : uuidv4();
     const componentName = computeComponentName(component.component.component, {
@@ -380,11 +509,11 @@ export function pasteComponents(parentId, copiedComponentObj) {
     const isParentAlsoCopied = parentRef && componentMap[parentRef];
 
     componentMap[component.id] = newComponentId;
-    let isChild = isParentAlsoCopied ? component.component.parent : parentId;
+    let isChild = isParentAlsoCopied ? component.component.parent : targetParentId;
 
     const componentMeta = componentTypes.find((comp) => comp.component === component?.component?.component);
     const componentData = _.merge({}, componentMeta, component.component);
-    if (parentId && !componentData.parent) {
+    if (targetParentId && !componentData.parent) {
       isChild = component.component.parent;
     }
 
@@ -393,14 +522,13 @@ export function pasteComponents(parentId, copiedComponentObj) {
       componentData.parent = null;
     }
     if (parentComponent && !component.isParentTabORCalendar) {
-      componentData.parent = isParentAlsoCopied ?? parentId;
+      componentData.parent = isParentAlsoCopied ?? targetParentId;
     } else if (isChild && component.isParentTabORCalendar) {
       const parentId = component.component.parent.split('-').slice(0, -1).join('-');
       const childTabId = component.component.parent.split('-').at(-1);
       componentData.parent = `${componentMap[parentId]}-${childTabId}`;
     } else if (isChild) {
       const isParentInMap = componentMap[isChild] !== null;
-
       componentData.parent = isParentInMap ? componentMap[isChild] : isChild;
     }
 
@@ -409,6 +537,16 @@ export function pasteComponents(parentId, copiedComponentObj) {
     componentData.definition.others.showOnDesktop.value = currentLayout === 'desktop' ? `{{true}}` : `{{false}}`;
     componentData.definition.others.showOnMobile.value = currentLayout === 'mobile' ? `{{true}}` : `{{false}}`;
 
+    // Adjust width if parent changed
+    let width = component.layouts.desktop.width;
+
+    if (targetParentId !== component.component?.parent) {
+      const containerWidth = useGridStore.getState().subContainerWidths[targetParentId || 'canvas'];
+      const oldContainerWidth = useGridStore.getState().subContainerWidths[component?.component?.parent || 'canvas'];
+      width = Math.round((width * oldContainerWidth) / containerWidth);
+    }
+
+    component.layouts[currentLayout].width = width;
     const newComponent = {
       component: {
         ...componentData,
@@ -426,13 +564,68 @@ export function pasteComponents(parentId, copiedComponentObj) {
   const filteredFinalComponents = finalComponents.filter((component) => {
     return canAddToParent(component?.component.parent, component?.component.component);
   });
+
   const filteredComponentsCount = filteredFinalComponents.length;
+
   if (currentPageId === pageId) {
-    const finalComponentWithUpdatedLayout = updateComponentLayout(filteredFinalComponents, parentId, isCut);
+    const components = useStore.getState().getCurrentPageComponents();
+    const finalComponentWithUpdatedLayout = filteredFinalComponents.map((component) => {
+      const layout = useStore.getState().currentLayout;
+      let existingComponents = [];
+
+      // Include all components for position calculation
+      if (component.component.parent) {
+        existingComponents = Object.values(components).filter((c) => c.component.parent === component.component.parent);
+      } else {
+        existingComponents = Object.values(components);
+      }
+
+      // Add already processed components to existingComponents
+      const processedComponents = finalComponentWithUpdatedLayout || [];
+      existingComponents = [...existingComponents, ...processedComponents];
+      if (isGroup) {
+        // Handle group positioning
+        const groupPositions = calculateGroupPosition(
+          filteredFinalComponents,
+          existingComponents,
+          layout,
+          targetParentId
+        );
+        const position = groupPositions.find((pos) => pos.id === component.id);
+
+        return {
+          ...component,
+          layouts: {
+            ...component.layouts,
+            [layout]: {
+              ...component.layouts[layout],
+              top: position.top,
+              left: position.left,
+            },
+          },
+        };
+      } else {
+        // Handle single component positioning
+        const { newTop, newLeft } = calculateComponentPosition(component, existingComponents, layout, targetParentId);
+        return {
+          ...component,
+          layouts: {
+            ...component.layouts,
+            [layout]: {
+              ...component.layouts[layout],
+              top: newTop,
+              left: newLeft,
+            },
+          },
+        };
+      }
+    });
+
     useStore.getState().pasteComponents(finalComponentWithUpdatedLayout);
   } else {
     useStore.getState().pasteComponents(filteredFinalComponents);
   }
+
   filteredComponentsCount > 0 &&
     !isCloning &&
     toast.success(`Component${filteredComponentsCount > 1 ? 's' : ''} pasted successfully`);

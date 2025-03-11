@@ -23,7 +23,7 @@ import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
 
 // TODO: split Loader into separate component and remove editor loading state from Editor
 export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMode }) => {
-  useAppData(appId, moduleId);
+  useAppData(appId, moduleId, darkMode);
   const isEditorLoading = useStore((state) => state.isEditorLoading);
   const currentMode = useStore((state) => state.currentMode);
 

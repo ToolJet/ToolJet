@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
 import { debuggerActions } from '@/_helpers/appUtils';
-import { flow } from 'lodash';
+import { flow, cloneDeepWith } from 'lodash';
 import moment from 'moment';
 import { reservedKeywordReplacer } from '@/_lib/reserved-keyword-replacer';
 
@@ -48,14 +48,14 @@ const useDebugger = ({ currentPageId, isDebuggerOpen }) => {
     const newAppLevelErrorLogs = newErrorLogs.filter((error) => error.strace === 'app_level');
     if (newErrorLogs) {
       setErrorLogs((prevErrors) => {
-        const copy = JSON.parse(JSON.stringify(prevErrors, reservedKeywordReplacer));
+        const copy = cloneDeepWith(prevErrors, (val, key) => reservedKeywordReplacer(key, val));
         return [...newAppLevelErrorLogs, ...newPageLevelErrorLogs, ...copy];
       });
 
       setAllLog((prevLog) => [...newErrorLogs, ...prevLog]);
 
       setErrorHistory((prevErrors) => {
-        const copy = JSON.parse(JSON.stringify(prevErrors, reservedKeywordReplacer));
+        const copy = cloneDeepWith(prevErrors, (val, key) => reservedKeywordReplacer(key, val));
         return {
           appLevel: [...newAppLevelErrorLogs, ...copy.appLevel],
           pageLevel: {

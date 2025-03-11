@@ -8,7 +8,8 @@ export const getAutocompletion = (input, fieldType, hints, totalReferences = 1, 
 
   let JSLangHints = [];
 
-  if (fieldType) {
+  if (fieldType && fieldType !== 'union') {
+    //Update here to show better hints for union type
     JSLangHints = hints['jsHints'][fieldType]['methods'].map((hint) => ({
       hint: hint,
       type: 'js_method',

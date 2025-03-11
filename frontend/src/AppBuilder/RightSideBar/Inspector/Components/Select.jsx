@@ -6,13 +6,14 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import List from '@/ToolJetUI/List/List';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import useStore from '@/AppBuilder/_stores/store';
 import CodeHinter from '@/AppBuilder/CodeEditor';
-import { resolveReferences } from '@/_helpers/utils';
 import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
 import ListGroup from 'react-bootstrap/ListGroup';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SortableList from '@/_components/SortableList';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
+import { shallow } from 'zustand/shallow';
 
 export function Select({ componentMeta, darkMode, ...restProps }) {
   const {
@@ -26,21 +27,21 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     allComponents,
     pages,
   } = restProps;
-
+  const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const isMultiSelect = component?.component?.component === 'MultiselectV2';
 
-  const isDynamicOptionsEnabled = resolveReferences(
-    component?.component?.definition?.properties?.advanced?.value,
-    currentState
-  );
+  const isDynamicOptionsEnabled = getResolvedValue(component?.component?.definition?.properties?.advanced?.value);
 
   const constructOptions = () => {
-    const optionsValue = component?.component?.definition?.properties?.options?.value;
+    let optionsValue = component?.component?.definition?.properties?.options?.value;
+    if (!Array.isArray(optionsValue)) {
+      optionsValue = Object.values(optionsValue);
+    }
     const valuesToResolve = ['label', 'value'];
     let options = [];
 
     if (isDynamicOptionsEnabled || typeof optionsValue === 'string') {
-      options = resolveReferences(optionsValue, currentState);
+      options = getResolvedValue(optionsValue);
     } else {
       options = optionsValue?.map((option) => option);
     }
@@ -58,9 +59,8 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
     });
   };
 
-  const _markedAsDefault = resolveReferences(
-    component?.component?.definition?.properties[isMultiSelect ? 'values' : 'value']?.value,
-    currentState
+  const _markedAsDefault = getResolvedValue(
+    component?.component?.definition?.properties[isMultiSelect ? 'values' : 'value']?.value
   );
 
   const [options, setOptions] = useState([]);
@@ -169,7 +169,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
   };
 
   const handleMarkedAsDefaultChange = (value, index) => {
-    const isMarkedAsDefault = resolveReferences(value, currentState);
+    const isMarkedAsDefault = getResolvedValue(value);
     if (isMultiSelect) {
       const _value = options[index]?.value;
       let _markedAsDefault = [];
@@ -272,7 +272,6 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               {'Option label'}
             </label>
             <CodeHinter
-              currentState={currentState}
               type={'basic'}
               initialValue={item?.label}
               theme={darkMode ? 'monokai' : 'default'}
@@ -287,7 +286,6 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
               {'Option value'}
             </label>
             <CodeHinter
-              currentState={currentState}
               type={'basic'}
               initialValue={item?.value}
               theme={darkMode ? 'monokai' : 'default'}
@@ -299,7 +297,6 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
           </div>
           <div className="field mb-2" data-cy={`input-and-label-column-name`}>
             <CodeHinter
-              currentState={currentState}
               initialValue={isMultiSelect ? `{{${markedAsDefault.includes(item.value)}}}` : item?.default?.value}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
@@ -321,7 +318,6 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
           </div>
           <div className="field mb-2" data-cy={`input-and-label-column-name`}>
             <CodeHinter
-              currentState={currentState}
               initialValue={item?.visible?.value}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
@@ -342,7 +338,6 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
           </div>
           <div className="field" data-cy={`input-and-label-column-name`}>
             <CodeHinter
-              currentState={currentState}
               initialValue={item?.disable?.value}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
@@ -406,7 +401,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
                                     <SortableList.DragHandle show />
                                   </div>
                                   <div className="col text-truncate cursor-pointer" style={{ padding: '0px' }}>
-                                    {resolveReferences(item.label, currentState)}
+                                    {getResolvedValue(item.label)}
                                   </div>
                                   <div className="col-auto">
                                     {index === hoveredOptionIndex && (
@@ -529,7 +524,6 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
         sourceId={component?.id}
         eventSourceType="component"
         eventMetaDefinition={componentMeta}
-        currentState={currentState}
         dataQueries={dataQueries}
         components={allComponents}
         eventsChanged={eventsChanged}

@@ -12,6 +12,29 @@
   color: #11181C;
 }
 
+.page-group-wrapper.active::after{
+  content:'';
+  height: 32px;
+  position: absolute;
+  width: 4px;
+  left: -16px;
+  top:1px;
+  background-color: #4368E3;
+  
+}
+// for mobile view
+.page-group-active{
+  ::after{
+    content:'';
+    height: 32px;
+    position: absolute;
+    width: 4px;
+    left: -31px;
+    top:1px;
+    background-color: #4368E3;
+  }
+}
+
 .released-version-no-header-dark-mode-icon {
   position: fixed;
   top: 1rem;
@@ -150,5 +173,35 @@
     .canvas-container {
       scrollbar-width: none;
     }
+  }
+}
+
+#page-settings-tabpane-styles {
+  .accordion-item {
+    margin-bottom: 10px;
+    border-radius: 5px;
+    overflow: hidden;
+  }
+
+  .accordion-header {
+    width: 100%;
+    text-align: left;
+    border: none;
+    padding: 10px 15px;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.page-group-collapse{
+  bottom: 7px;
+  right: 12px;
+  position: absolute;
+  display: block !important;
+  &.expanded{
+    transform: rotate(60deg);
   }
 }

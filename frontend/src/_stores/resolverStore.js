@@ -114,8 +114,8 @@ export const useResolveStore = create(
       },
 
       pageSwitched: (bool) => set(() => ({ isPageSwitched: bool })),
-      updateAppSuggestions: (refState) => {
-        const { suggestionList, hintsMap, resolvedRefs } = createReferencesLookup(refState, false, true);
+      updateAppSuggestions: (refState, initialLoad = true) => {
+        const { suggestionList, hintsMap, resolvedRefs } = createReferencesLookup(refState, false, initialLoad);
 
         const suggestions = get().suggestions;
         suggestions.appHints = suggestionList;
@@ -414,7 +414,7 @@ useResolveStore.subscribe(
  * @returns {Promise<void>} A promise that resolves once all batches have been processed and flushed.
  */
 
-async function batchUpdateComponents(componentIds) {
+export async function batchUpdateComponents(componentIds) {
   if (componentIds.length === 0) return;
 
   let updatedComponentIds = [];

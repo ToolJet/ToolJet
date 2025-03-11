@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import './FolderList.scss';
 import SolidIcon from '../Icon/solidIcons/index';
 import Skeleton from 'react-loading-skeleton';
@@ -28,12 +28,21 @@ function FolderList({
   customStyles,
   CustomIcon,
   toolTipDisabled = false,
+  hovered = false,
   ...restProps
 }) {
   const [isHovered, setIsHovered] = useState(false);
   const [isHoveredInside, setIsHoveredInside] = useState(false);
   const [showGroupOptions, setShowGroupOptions] = useState(false);
   const target = useRef(null);
+
+  useEffect(() => {
+    if (hovered) {
+      setIsHovered(true);
+    } else {
+      setIsHovered(false);
+    }
+  }, [hovered]);
 
   const handleMouseEnter = () => {
     setIsHovered(true);

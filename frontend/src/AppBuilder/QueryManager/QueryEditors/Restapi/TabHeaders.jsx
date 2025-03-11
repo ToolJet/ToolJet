@@ -1,7 +1,15 @@
 import React from 'react';
 import TabContent from './TabContent';
 
-export default ({ options = [], theme, removeKeyValuePair, addNewKeyValuePair, onChange, componentName }) => {
+export default ({
+  options = [],
+  theme,
+  removeKeyValuePair,
+  addNewKeyValuePair,
+  onChange,
+  componentName,
+  onInputChange,
+}) => {
   return (
     <>
       <TabContent
@@ -9,6 +17,7 @@ export default ({ options = [], theme, removeKeyValuePair, addNewKeyValuePair, o
         theme={theme}
         removeKeyValuePair={removeKeyValuePair}
         onChange={onChange}
+        onInputChange={onInputChange}
         componentName={componentName}
         tabType={'headers'}
         paramType={'headers'}

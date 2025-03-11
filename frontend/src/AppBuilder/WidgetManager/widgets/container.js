@@ -47,12 +47,6 @@ export const containerConfig = {
         defaultValue: true,
       },
     },
-    headerHeight: {
-      type: 'numberInput',
-      displayName: 'Header height',
-      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 80 },
-      accordian: 'field',
-    },
   },
   defaultChildren: [
     {
@@ -83,34 +77,16 @@ export const containerConfig = {
         schema: { type: 'string' },
         defaultValue: '#fff',
       },
+      accordian: 'container',
     },
     headerBackgroundColor: {
       type: 'color',
-      displayName: 'Header',
+      displayName: 'Background',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#fff',
+        defaultValue: '#ddd',
       },
-    },
-    headerHeight: {
-      type: 'numberInput',
-      displayName: 'Header height',
-      validation: {
-        schema: { type: 'number' },
-        defaultValue: 80,
-      },
-      accordian: 'field',
-    },
-    borderRadius: {
-      type: 'code',
-      displayName: 'Border radius',
-      validation: {
-        schema: {
-          type: 'union',
-          schemas: [{ type: 'string' }, { type: 'number' }],
-        },
-        defaultValue: 4,
-      },
+      accordian: 'header',
     },
     borderColor: {
       type: 'color',
@@ -119,6 +95,34 @@ export const containerConfig = {
         schema: { type: 'string' },
         defaultValue: '#fff',
       },
+      accordian: 'container',
+    },
+    headerHeight: {
+      type: 'numberInput',
+      displayName: 'Height',
+      validation: {
+        schema: { type: 'number' },
+        defaultValue: 80,
+      },
+      accordian: 'header',
+    },
+    borderRadius: {
+      type: 'numberInput',
+      displayName: 'Border',
+      validation: {
+        schema: {
+          type: 'union',
+          schemas: [{ type: 'string' }, { type: 'number' }],
+        },
+        defaultValue: 4,
+      },
+      accordian: 'container',
+    },
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
+      accordian: 'container',
     },
   },
   exposedVariables: {
@@ -149,6 +153,7 @@ export const containerConfig = {
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
+      showHeader: { value: `{{true}}` },
       loadingState: { value: `{{false}}` },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
@@ -159,7 +164,7 @@ export const containerConfig = {
       headerBackgroundColor: { value: '#fff' },
       borderRadius: { value: '4' },
       borderColor: { value: '#fff' },
-      headerHeight: { value: '80' },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
     },
   },
 };

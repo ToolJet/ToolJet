@@ -8,10 +8,11 @@ import {
   computeComponentName,
   generateAppActions,
   loadPyodide,
+  executeWorkflow,
   isQueryRunnable,
   resolveWidgetFieldValue,
 } from '@/_helpers/utils';
-import { dataqueryService } from '@/_services';
+import { dataqueryService, sessionService } from '@/_services';
 import _, { isArray, isEmpty } from 'lodash';
 import moment from 'moment';
 import Tooltip from 'react-bootstrap/Tooltip';
@@ -27,11 +28,12 @@ import { allSvgs } from '@tooljet/plugins/client';
 import urlJoin from 'url-join';
 import { authenticationService } from '@/_services/authentication.service';
 import { setCookie } from '@/_helpers/cookie';
-import { DataSourceTypes } from '@/Editor/DataSourceManager/SourceComponents';
+import { DataSourceTypes } from '@/modules/common/components/DataSourceComponents';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useCurrentStateStore, getCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
+import SolidIcon from '../_ui/Icon/SolidIcons';
 import { camelizeKeys } from 'humps';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { useEditorStore } from '@/_stores/editorStore';
@@ -58,6 +60,22 @@ export function setStateAsync(_ref, state) {
     _ref.setState(state, resolve);
   });
 }
+
+export const removeSuggestions = (component) => {
+  const deletedComponentNames = [component?.component?.name];
+  const allAppHints = useResolveStore.getState().suggestions.appHints ?? [];
+  const allHintsAssociatedWithQuery = [];
+  if (allAppHints.length > 0) {
+    deletedComponentNames.forEach((componentName) => {
+      return allAppHints.forEach((suggestion) => {
+        if (suggestion?.hint.includes(componentName)) {
+          allHintsAssociatedWithQuery.push(suggestion.hint);
+        }
+      });
+    });
+  }
+  useResolveStore.getState().actions.removeAppSuggestions(allHintsAssociatedWithQuery);
+};
 
 export function setCurrentStateAsync(_ref, changes) {
   return new Promise((resolve) => {
@@ -121,6 +139,13 @@ export function onComponentOptionsChanged(component, options, id) {
       let path = null;
       if (isListviewOrKanbaComponent) {
         path = `components.${componentName}`;
+        if (component.component === 'Listview') {
+          // add suggestions for listview
+          const basePath = `components.${componentName}.${option[0]}`;
+          useResolveStore.getState().actions.addAppSuggestions({
+            [basePath]: option[1],
+          });
+        }
       } else if (isFromComponent) {
         const basePath = `components.${componentName}.${option[0]}`;
 
@@ -382,7 +407,6 @@ export async function runTransformation(
   const data = rawData;
 
   let result = [];
-
   const currentState = getCurrentState() || {};
 
   if (transformationLanguage === 'python') {
@@ -394,7 +418,7 @@ export async function runTransformation(
   if (transformationLanguage === 'javascript') {
     try {
       const evalFunction = Function(
-        ['data', 'moment', '_', 'components', 'queries', 'globals', 'variables', 'page'],
+        ['data', 'moment', '_', 'components', 'queries', 'globals', 'variables', 'page', 'constants'],
         transformation
       );
 
@@ -406,7 +430,8 @@ export async function runTransformation(
         currentState.queries,
         currentState.globals,
         currentState.variables,
-        currentState.page
+        currentState.page,
+        currentState.constants
       );
     } catch (err) {
       result = {
@@ -484,7 +509,7 @@ function showModal(_ref, modal, show) {
 
 function logoutAction() {
   localStorage.clear();
-  authenticationService.logout(true);
+  sessionService.logout(true);
 
   return Promise.resolve();
 }
@@ -644,12 +669,21 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         //   variables: customAppVariables,
         // });
 
+        return useStore.getState().setVariable(key, value);
+        // console.log("useStore.getState->", useStore.getState());
+
+        // useResolveStore.getState().actions.addAppSuggestions({
+        //   variables: customAppVariables,
+        // });
+
+        // useResolveStore.getState().actions.resetHintsByKey(`variables.${key}`);
+
+        // return resp;
         // return useStore.getState().setVariable(key, value);
 
         // useResolveStore.getState().actions.resetHintsByKey(`variables.${key}`);
 
         // return resp;
-        break;
       }
 
       case 'get-custom-variable': {
@@ -660,41 +694,44 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
 
       case 'unset-custom-variable': {
         const key = resolveReferences(event.key, undefined, customVariables);
-        const customAppVariables = { ...getCurrentState().variables };
-        delete customAppVariables[key];
-        useResolveStore.getState().actions.removeAppSuggestions([`variables.${key}`]);
-        useResolveStore
-          .getState()
-          .actions.updateResolvedRefsOfHints([{ hint: 'variables', newRef: customAppVariables }]);
+        // const customAppVariables = { ...getCurrentState().variables };
+        // delete customAppVariables[key];
+        // useResolveStore.getState().actions.removeAppSuggestions([`variables.${key}`]);
+        // useResolveStore
+        //   .getState()
+        //   .actions.updateResolvedRefsOfHints([{ hint: 'variables', newRef: customAppVariables }]);
 
-        return useCurrentStateStore.getState().actions.setCurrentState({
-          variables: customAppVariables,
-        });
+        // return useCurrentStateStore.getState().actions.setCurrentState({
+        //   variables: customAppVariables,
+        // });
+        return useStore.getState().unsetVariable(key);
       }
 
       case 'set-page-variable': {
         const key = resolveReferences(event.key, undefined, customVariables);
         const value = resolveReferences(event.value, undefined, customVariables);
-        const customPageVariables = {
-          ...getCurrentState().page.variables,
-          [key]: value,
-        };
+        // const customPageVariables = {
+        //   ...getCurrentState().page.variables,
+        //   [key]: value,
+        // };
 
-        useResolveStore.getState().actions.addAppSuggestions({
-          page: {
-            ...getCurrentState().page,
-            variables: customPageVariables,
-          },
-        });
+        // useResolveStore.getState().actions.addAppSuggestions({
+        //   page: {
+        //     ...getCurrentState().page,
+        //     variables: customPageVariables,
+        //   },
+        // });
 
-        const resp = useCurrentStateStore.getState().actions.setCurrentState({
-          page: {
-            ...getCurrentState().page,
-            variables: customPageVariables,
-          },
-        });
+        // const resp = useCurrentStateStore.getState().actions.setCurrentState({
+        //   page: {
+        //     ...getCurrentState().page,
+        //     variables: customPageVariables,
+        //   },
+        // });
 
-        useResolveStore.getState().actions.resetHintsByKey(`page.variables.${key}`);
+        // useResolveStore.getState().actions.resetHintsByKey(`page.variables.${key}`);
+
+        const resp = useStore.getState().setPageVariable(key, value);
 
         return resp;
       }
@@ -709,30 +746,33 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
 
       case 'unset-page-variable': {
         const key = resolveReferences(event.key, undefined, customVariables);
-        const customPageVariables = _.omit(getCurrentState().page.variables, key);
 
-        useResolveStore.getState().actions.removeAppSuggestions([`page.variables.${key}`]);
+        useStore.getState().unsetPageVariable(key);
+        // const customPageVariables = _.omit(getCurrentState().page.variables, key);
 
-        const pageRef = {
-          page: {
-            ...getCurrentState().page,
-            variables: customPageVariables,
-          },
-        };
+        // useResolveStore.getState().actions.removeAppSuggestions([`page.variables.${key}`]);
 
-        const toUpdateRefs = [
-          { hint: 'page', newRef: pageRef },
-          { hint: 'page.variables', newRef: customPageVariables },
-        ];
+        // const pageRef = {
+        //   page: {
+        //     ...getCurrentState().page,
+        //     variables: customPageVariables,
+        //   },
+        // };
 
-        useResolveStore.getState().actions.updateResolvedRefsOfHints(toUpdateRefs);
+        // const toUpdateRefs = [
+        //   { hint: 'page', newRef: pageRef },
+        //   { hint: 'page.variables', newRef: customPageVariables },
+        // ];
 
-        return useCurrentStateStore.getState().actions.setCurrentState({
-          page: {
-            ...getCurrentState().page,
-            variables: customPageVariables,
-          },
-        });
+        // useResolveStore.getState().actions.updateResolvedRefsOfHints(toUpdateRefs);
+
+        // return useCurrentStateStore.getState().actions.setCurrentState({
+        //   page: {
+        //     ...getCurrentState().page,
+        //     variables: customPageVariables,
+        //   },
+        // });
+        return;
       }
 
       case 'control-component': {
@@ -948,7 +988,7 @@ export function getQueryVariables(options, state) {
   switch (optionsType) {
     case 'string': {
       options = options.replace(/\n/g, ' ');
-      if (options.match(/\{\{(.*?)\}\}/g)?.length > 1 && options.includes('{{constants.')) {
+      if (options.match(/\{\{(.*?)\}\}/g)?.length >= 1 && options.includes('{{constants.')) {
         const constantVariables = options.match(/\{\{(constants.*?)\}\}/g);
 
         constantVariables.forEach((constant) => {
@@ -994,9 +1034,16 @@ export function getQueryVariables(options, state) {
 
 export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedParameters = {}) {
   let parameters = userSuppliedParameters;
-  const queryPanelState = useQueryPanelStore.getState();
-  const { queryPreviewData } = queryPanelState;
-  const { setPreviewLoading, setPreviewData, setPreviewPanelExpanded } = queryPanelState.actions;
+
+  // passing current env through props only for querymanager
+  const currentAppEnvironmentId = _ref.currentAppEnvironmentId;
+  // const queryPanelState = useQueryPanelStore.getState();
+  // const { queryPreviewData } = queryPanelState;
+  const queryPreviewData = useStore.getState().queryPanel.queryPreviewData;
+  const setPreviewLoading = useStore.getState().queryPanel.setPreviewLoading;
+  const setPreviewData = useStore.getState().queryPanel.setPreviewData;
+  const setPreviewPanelExpanded = useStore.getState().queryPanel.setPreviewPanelExpanded;
+
   const queryEvents = useAppDataStore
     .getState()
     .events.filter((event) => event.target === 'data_query' && event.sourceId === query.id);
@@ -1025,20 +1072,31 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
       queryExecutionPromise = executeMultilineJS(_ref, query.options.code, query?.id, true, '', parameters);
     } else if (query.kind === 'runpy') {
       queryExecutionPromise = executeRunPycode(_ref, query.options.code, query, true, 'edit', queryState);
+    } else if (query.kind === 'workflows') {
+      queryExecutionPromise = executeWorkflow(
+        _ref,
+        query.options.workflowId,
+        query.options.blocking,
+        query.options?.params,
+        _ref?.currentAppEnvironmentId
+      );
     } else {
       queryExecutionPromise = dataqueryService.preview(
         query,
         options,
-        useAppVersionStore.getState().editingVersion?.id
+        useAppVersionStore.getState().editingVersion?.id,
+        currentAppEnvironmentId
       );
     }
 
     queryExecutionPromise
       .then(async (data) => {
         let finalData = data.data;
+        // console.log(finalData);
 
         let queryStatusCode = data?.status ?? null;
         const queryStatus = query.kind === 'runpy' ? data?.data?.status ?? 'ok' : data.status;
+        // console.log(queryStatusCode, queryStatus);
         switch (true) {
           // Note: Need to move away from statusText -> statusCode
           case queryStatus === 'Bad Request' ||
@@ -1086,6 +1144,12 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
           }
           case queryStatus === 'needs_oauth': {
             const url = data.data.auth_url; // Backend generates and return sthe auth url
+            const kind = data.data?.kind;
+            localStorage.setItem('currentAppEnvironmentIdForOauth', currentAppEnvironmentId);
+            if (['slack', 'googlesheets', 'zendesk'].includes(kind)) {
+              fetchOauthTokenForSlackAndGSheet(query.data_source_id, data.data);
+              break;
+            }
             fetchOAuthToken(url, query.data_source_id);
             break;
           }
@@ -1103,7 +1167,7 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
                 query,
                 'edit'
               );
-              if (finalData.status === 'failed') {
+              if (finalData?.status === 'failed') {
                 useCurrentStateStore.getState().actions.setErrors({
                   [query.name]: {
                     type: 'transformations',
@@ -1114,6 +1178,7 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
                 onEvent(_ref, 'onDataQueryFailure', queryEvents);
                 setPreviewLoading(false);
                 resolve({ status: data.status, data: finalData });
+                // console.log('Test', finalData);
                 if (!calledFromQuery) setPreviewData(finalData);
                 return;
               }
@@ -1134,10 +1199,11 @@ export function previewQuery(_ref, query, calledFromQuery = false, userSuppliedP
         }
         setPreviewLoading(false);
 
-        resolve({ status: data.status, data: finalData });
+        resolve({ status: data?.status, data: finalData });
       })
       .catch((err) => {
         const { error, data } = err;
+        console.log(err, error, data);
         setPreviewLoading(false);
         setPreviewData(data);
         toast.error(error);
@@ -1161,17 +1227,23 @@ export function runQuery(
   resolveStoreActions.resetHintsByKey(`queries.${queryName}`);
 
   let parameters = userSuppliedParameters;
-  const query = useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId);
+
+  const query = useStore.getState().dataQuery.queries.modules.canvas.find((query) => query.id === queryId);
+
   const queryEvents = useAppDataStore
     .getState()
     .events.filter((event) => event.target === 'data_query' && event.sourceId === queryId);
 
   let dataQuery = {};
 
+  //for viewer we will only get the environment id from the url
+  const { currentAppEnvironmentId, environmentId } = _ref;
   // const { setPreviewLoading, setPreviewData } = useQueryPanelStore.getState().actions;
-  const queryPanelState = useQueryPanelStore.getState();
-  const { queryPreviewData } = queryPanelState;
-  const { setPreviewLoading, setPreviewData, setPreviewPanelExpanded } = queryPanelState.actions;
+
+  const queryPreviewData = useStore.getState().queryPanel.queryPreviewData;
+  const setPreviewLoading = useStore.getState().queryPanel.setPreviewLoading;
+  const setPreviewData = useStore.getState().queryPanel.setPreviewData;
+  const setPreviewPanelExpanded = useStore.getState().queryPanel.setPreviewPanelExpanded;
 
   if (shouldSetPreviewData) {
     setPreviewPanelExpanded(true);
@@ -1255,13 +1327,28 @@ export function runQuery(
         queryExecutionPromise = executeMultilineJS(_self, query.options.code, query?.id, false, mode, parameters);
       } else if (query.kind === 'runpy') {
         queryExecutionPromise = executeRunPycode(_self, query.options.code, query, false, mode, queryState);
+      } else if (query.kind === 'workflows') {
+        console.log({ _ref });
+        queryExecutionPromise = executeWorkflow(
+          _self,
+          query.options.workflowId,
+          query.options.blocking,
+          query.options?.params,
+          _ref?.currentAppEnvironmentId ?? _ref?.environmentId
+        );
       } else {
-        queryExecutionPromise = dataqueryService.run(queryId, options, query?.options);
+        queryExecutionPromise = dataqueryService.run(
+          queryId,
+          options,
+          query?.options,
+          currentAppEnvironmentId ?? environmentId
+        );
       }
 
       queryExecutionPromise
         .then(async (data) => {
           if (data.status === 'needs_oauth') {
+            localStorage.setItem('currentAppEnvironmentIdForOauth', currentAppEnvironmentId);
             const url = data.data.auth_url; // Backend generates and return sthe auth url
             fetchOAuthToken(url, dataQuery['data_source_id'] || dataQuery['dataSourceId']);
           }
@@ -1368,7 +1455,7 @@ export function runQuery(
                 query,
                 'edit'
               );
-              if (finalData.status === 'failed') {
+              if (finalData?.status === 'failed') {
                 useCurrentStateStore.getState().actions.setCurrentState({
                   queries: {
                     ...getCurrentState().queries,
@@ -1408,21 +1495,13 @@ export function runQuery(
             useCurrentStateStore.getState().actions.setCurrentState({
               queries: {
                 ...getCurrentState().queries,
-                [queryName]: _.assign(
-                  {
-                    ...getCurrentState().queries[queryName],
-                    isLoading: false,
-                    data: finalData,
-                    rawData,
-                  },
-                  query.kind === 'restapi'
-                    ? {
-                        request: data.request,
-                        response: data.response,
-                        responseHeaders: data.responseHeaders,
-                      }
-                    : {}
-                ),
+                [queryName]: _.assign({
+                  ...getCurrentState().queries[queryName],
+                  isLoading: false,
+                  data: finalData,
+                  rawData,
+                  metadata: data.metadata,
+                }),
               },
               // Used to generate logs
               succededQuery: {
@@ -1438,6 +1517,7 @@ export function runQuery(
                 [queryName]: {
                   data: finalData,
                   isLoading: false,
+                  ...(mode === 'edit' ? { metadata: data.metadata } : {}),
                 },
               },
             });
@@ -1445,23 +1525,34 @@ export function runQuery(
             const basePath = `queries.${queryName}`;
 
             useResolveStore.getState().actions.updateLastUpdatedRefs([`${basePath}.data`, `${basePath}.isLoading`]);
-
+            // console.log('finalData', finalData);
             resolve({ status: 'ok', data: finalData });
             onEvent(_self, 'onDataQuerySuccess', queryEvents, mode);
           }
         })
-        .catch(({ error }) => {
-          if (mode !== 'view') toast.error(error ?? 'Unknown error');
+        .catch((error) => {
+          if (shouldSetPreviewData) {
+            setPreviewLoading(false);
+            setPreviewData({ error: 'An error occurred during query execution' });
+          }
+          let errorMessage = 'Unknown error occurred while running the query';
+          if (error && typeof error === 'object') {
+            errorMessage = error?.message || JSON.stringify(error);
+          } else if (typeof error === 'string') {
+            errorMessage = error;
+          }
+          if (mode !== 'view') toast.error(errorMessage);
           useCurrentStateStore.getState().actions.setCurrentState({
             queries: {
               ...getCurrentState().queries,
               [queryName]: {
                 isLoading: false,
+                error: errorMessage,
               },
             },
           });
 
-          resolve({ status: 'failed', message: error });
+          resolve({ status: 'failed', message: errorMessage });
         });
     }, 10);
   });
@@ -1498,6 +1589,7 @@ conditional checks for better performance and error handling.*/
 export function computeComponentState(components = {}) {
   try {
     let componentState = {};
+
     const currentComponents = getCurrentState().components;
 
     // Precompute parent component types
@@ -1539,7 +1631,6 @@ export function computeComponentState(components = {}) {
         ...componentState,
       },
     });
-
     return new Promise((resolve) => {
       useEditorStore.getState().actions.updateEditorState({
         defaultComponentStateComputed: true,
@@ -1557,6 +1648,7 @@ export const getSvgIcon = (key, height = 50, width = 50, iconFile = undefined, s
   if (key === 'runjs') return <RunjsIcon style={{ height, width }} />;
   if (key === 'tooljetdb') return <RunTooljetDbIcon style={{ height, width }} />;
   if (key === 'runpy') return <RunPyIcon style={{ height, width }} />;
+  if (key === 'workflows') return <SolidIcon name="workflows" fill="#3D63DC" />;
 
   if (typeof localStorage !== 'undefined') {
     const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -1702,7 +1794,6 @@ const updateNewComponents = (pageId, appDefinition, newComponents, updateAppDefi
     ...newAppDefinition.pages[pageId].components,
     ...newComponents,
   };
-
   const opts = {
     componentAdded: true,
     containerChanges: true,
@@ -1723,8 +1814,15 @@ export const cloneComponents = (
   isCloning = true,
   isCut = false
 ) => {
+  const selectedText = getSelectedText();
+  if (selectedText) {
+    navigator.clipboard.writeText(selectedText);
+    toast.success('Text copied to clipboard');
+    return;
+  }
   let addedComponent = {};
-  if (selectedComponents.length < 1) return getSelectedText();
+
+  if (selectedComponents.length < 1) return;
 
   const { components: allComponents } = appDefinition.pages[currentPageId];
 
@@ -2073,7 +2171,6 @@ export const removeSelectedComponent = (pageId, newDefinition, selectedComponent
   toDeleteComponents.forEach((componentId) => {
     delete newDefinition.pages[pageId].components[componentId];
   });
-
   const appDefinition = useEditorStore.getState().appDefinition;
 
   const deleteFromMap = [...toDeleteComponents];
@@ -2096,9 +2193,8 @@ export const removeSelectedComponent = (pageId, newDefinition, selectedComponent
 
   useResolveStore.getState().actions.removeEntitiesFromMap(deleteFromMap);
   useResolveStore.getState().actions.removeAppSuggestions(allHintsAssociatedWithQuery);
-
+  // console.log(toDeleteComponents, newDefinition, 'toDeleteComponents', selectedComponents);
   updateAppDefinition(newDefinition, { componentDefinitionChanged: true, componentDeleted: true, componentCut: true });
-  return toDeleteComponents;
 };
 
 const getSelectedText = () => {
@@ -2111,6 +2207,40 @@ const getSelectedText = () => {
   return selectedText || null;
 };
 
+export function fetchOauthTokenForSlackAndGSheet(dataSourceId, data) {
+  const provider = data?.kind;
+  let scope = '';
+  let authUrl = data.auth_url;
+
+  switch (provider) {
+    case 'slack': {
+      scope =
+        data?.options?.access_type === 'chat:write'
+          ? 'chat:write,users:read,chat:write:bot,chat:write:user'
+          : 'chat:write,users:read';
+      authUrl = `${authUrl}&scope=${scope}&access_type=offline&prompt=select_account`;
+      break;
+    }
+    case 'googlesheets': {
+      scope =
+        data?.options?.access_type === 'read'
+          ? 'https://www.googleapis.com/auth/spreadsheets.readonly'
+          : 'https://www.googleapis.com/auth/spreadsheets';
+      authUrl = `${authUrl}&scope=${scope}&access_type=offline&prompt=consent`;
+      break;
+    }
+    case 'zendesk': {
+      scope = data?.options?.access_type === 'read' ? 'read' : 'read%20write';
+      authUrl = `${authUrl}&scope=${scope}`;
+      break;
+    }
+    default:
+      break;
+  }
+
+  localStorage.setItem('sourceWaitingForOAuth', dataSourceId);
+  window.open(authUrl);
+}
 function convertMapSet(obj) {
   if (obj instanceof Map) {
     return Object.fromEntries(Array.from(obj, ([key, value]) => [key, convertMapSet(value)]));
@@ -2243,8 +2373,18 @@ export const buildAppDefinition = (data) => {
     return acc;
   }, {});
 
+  const defaultGlobalSettings = {
+    hideHeader: false,
+    appInMaintenance: false,
+    canvasMaxWidth: 100,
+    canvasMaxWidthType: '%',
+    canvasMaxHeight: 2400,
+    canvasBackgroundColor: '#edeff5',
+    backgroundFxQuery: '',
+  };
+
   const appJSON = {
-    globalSettings: editingVersion.globalSettings,
+    globalSettings: editingVersion.globalSettings ?? defaultGlobalSettings,
     homePageId: editingVersion.homePageId,
     showViewerNavigation: editingVersion.showViewerNavigation ?? true,
     pages: pages,
@@ -2264,6 +2404,16 @@ export const removeFunctionObjects = (obj) => {
   return obj;
 };
 
+export const checkIfLicenseNotValid = () => {
+  const licenseStatus = useEditorStore.getState().featureAccess?.licenseStatus;
+  // When purchased, then isExpired key is also avialale else its not available
+  if (licenseStatus) {
+    if (_.has(licenseStatus, 'isExpired')) {
+      return licenseStatus?.isExpired && !licenseStatus?.isLicenseValid;
+    }
+    return !licenseStatus?.isLicenseValid;
+  }
+};
 export function isPDFSupported() {
   const browser = getBrowserUserAgent();
 
@@ -2276,7 +2426,7 @@ export function isPDFSupported() {
   const isSafari = browser.name === 'Safari' && browser.major >= 15 && browser.minor >= 4; // Handle minor version check for Safari
   const isFirefox = browser.name === 'Firefox' && browser.major >= 90;
 
-  console.log('browser--', browser, isChrome || isEdge || isSafari || isFirefox);
+  // console.log('browser--', browser, isChrome || isEdge || isSafari || isFirefox);
 
   return isChrome || isEdge || isSafari || isFirefox;
 }
@@ -2403,4 +2553,9 @@ export const deepCamelCase = (obj) => {
     }, {});
   }
   return obj;
+};
+
+export const isMobileDevice = () => {
+  const userAgent = window.navigator.userAgent;
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
 };

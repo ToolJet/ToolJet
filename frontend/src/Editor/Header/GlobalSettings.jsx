@@ -48,9 +48,10 @@ export const GlobalSettings = ({
   const [slugProgress, setSlugProgress] = useState(false);
   const [isSlugUpdated, setSlugUpdatedState] = useState(false);
   const { updateState } = useAppDataActions();
-  const { isVersionReleased } = useAppVersionStore(
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );
@@ -94,8 +95,11 @@ export const GlobalSettings = ({
           setSlugProgress(false);
           setSlugUpdatedState(true);
           replaceEditorURL(value, realState?.page?.handle);
+          //   Updating slug value for existing app data which is not called again
+          app.slug = value;
           updateState({
             slug: value,
+            app: app,
           });
         })
         .catch(({ error }) => {
@@ -132,7 +136,6 @@ export const GlobalSettings = ({
     outline: showPicker && '1px solid var(--indigo9)',
     boxShadow: showPicker && '0px 0px 0px 1px #C6D4F9',
   };
-
   return (
     <>
       <Confirm
@@ -216,7 +219,7 @@ export const GlobalSettings = ({
               </div>
             </div>
           </div>
-          <div style={{ padding: '12px 16px' }} className={cx({ disabled: isVersionReleased })}>
+          <div style={{ padding: '12px 16px' }} className={cx({ disabled: isVersionReleased || isEditorFreezed })}>
             <div className="tj-text-xsm color-slate12 ">
               <div className="tw-flex tw-mb-3">
                 <SwitchComponent

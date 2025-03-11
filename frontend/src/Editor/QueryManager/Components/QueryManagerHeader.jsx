@@ -5,6 +5,7 @@ import Play from '@/_ui/Icon/solidIcons/Play';
 import cx from 'classnames';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import { previewQuery, checkExistingQueryName, runQuery, updateQuerySuggestions } from '@/_helpers/appUtils';
 import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
 import {
@@ -20,6 +21,7 @@ import { shallow } from 'zustand/shallow';
 import { Tooltip } from 'react-tooltip';
 import { Button } from 'react-bootstrap';
 import { decodeEntities } from '@/_helpers/utils';
+import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
 
 export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, setActiveTab, activeTab }, ref) => {
   const { renameQuery } = useDataQueriesActions();
@@ -28,10 +30,10 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
   const [showCreateQuery, setShowCreateQuery] = useShowCreateQuery();
   const queryName = selectedQuery?.name ?? '';
   const isLoading = useSelectedQueryLoadingState();
-  const { isVersionReleased } = useAppVersionStore(
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
-      editingVersionId: state.editingVersion?.id,
+      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );
@@ -94,7 +96,8 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
     {
       id: 2,
       label: 'Transformation',
-      condition: selectedQuery?.kind !== 'runpy' && selectedQuery?.kind !== 'runjs',
+      condition:
+        selectedQuery?.kind !== 'runpy' && selectedQuery?.kind !== 'runjs' && selectedQuery?.kind !== 'workflows',
     },
     { id: 3, label: 'Settings' },
   ];
@@ -137,6 +140,8 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
       <>
         {renderRunButton()}
         <PreviewButton
+          selectedQuery={selectedQuery}
+          disabled={isVersionReleased || isEditorFreezed}
           onClick={previewButtonOnClick}
           buttonLoadingState={buttonLoadingState}
           isRunButtonLoading={isLoading}
@@ -151,9 +156,10 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
         {selectedQuery && (
           <NameInput
             onInput={executeQueryNameUpdation}
+            selectedQuery={selectedQuery}
             value={queryName}
             darkMode={darkMode}
-            isDiabled={isVersionReleased}
+            isDiabled={isVersionReleased || isEditorFreezed}
           />
         )}
         {selectedQuery && (
@@ -184,14 +190,24 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
   );
 });
 
-const PreviewButton = ({ buttonLoadingState, onClick, isRunButtonLoading }) => {
+const PreviewButton = ({ buttonLoadingState, onClick, selectedQuery, isRunButtonLoading }) => {
   const previewLoading = usePreviewLoading();
+  const selectedDataSource = useSelectedDataSource();
+  const hasPermissions =
+    selectedDataSource?.scope === 'global' && selectedDataSource?.type !== DATA_SOURCE_TYPE.SAMPLE
+      ? canUpdateDataSource(selectedQuery?.data_source_id) ||
+        canReadDataSource(selectedQuery?.data_source_id) ||
+        canDeleteDataSource()
+      : true;
   const { t } = useTranslation();
 
   return (
     <button
+      disabled={!hasPermissions}
       onClick={onClick}
-      className={`default-tertiary-button  ${buttonLoadingState(previewLoading && !isRunButtonLoading)}`}
+      className={cx(`default-tertiary-button ${buttonLoadingState(previewLoading && !isRunButtonLoading)}`, {
+        disabled: !hasPermissions,
+      })}
       data-cy={'query-preview-button'}
     >
       <span className="query-preview-svg d-flex align-items-center query-icon-wrapper">
@@ -202,10 +218,23 @@ const PreviewButton = ({ buttonLoadingState, onClick, isRunButtonLoading }) => {
   );
 };
 
-const NameInput = ({ onInput, value, darkMode, isDiabled }) => {
+const NameInput = ({ onInput, value, darkMode, isDiabled, selectedQuery }) => {
   const [isFocussed, setIsFocussed] = useNameInputFocussed(false);
   const [name, setName] = useState(value);
-  const isVersionReleased = useAppVersionStore((state) => state.isVersionReleased);
+  const selectedDataSource = useSelectedDataSource();
+  const hasPermissions =
+    selectedDataSource?.scope === 'global'
+      ? canUpdateDataSource(selectedQuery?.data_source_id) ||
+        canReadDataSource(selectedQuery?.data_source_id) ||
+        canDeleteDataSource()
+      : true;
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
+    }),
+    shallow
+  );
   const inputRef = useRef();
 
   useEffect(() => {
@@ -266,14 +295,19 @@ const NameInput = ({ onInput, value, darkMode, isDiabled }) => {
             size="sm"
             onClick={isDiabled ? null : () => setIsFocussed(true)}
             disabled={isDiabled}
-            className={'bg-transparent justify-content-between color-slate12 w-100 px-2 py-1 rounded font-weight-500'}
+            className={cx(
+              'bg-transparent justify-content-between color-slate12 w-100 px-2 py-1 rounded font-weight-500',
+              {
+                disabled: isVersionReleased || isEditorFreezed || !hasPermissions,
+              }
+            )}
           >
             <span className="text-truncate">{decodeEntities(name)} </span>
             <span
               className={cx('breadcrum-rename-query-icon', { 'd-none': isFocussed && isVersionReleased })}
               style={{ minWidth: 14 }}
             >
-              {!isDiabled && <RenameIcon />}
+              {(!isDiabled || !hasPermissions) && <RenameIcon />}
             </span>
           </Button>
         )}

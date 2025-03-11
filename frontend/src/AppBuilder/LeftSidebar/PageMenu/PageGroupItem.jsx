@@ -1,4 +1,4 @@
-import React, { memo, useState, useMemo } from 'react';
+import React, { memo, useState, useMemo, useCallback } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { RenameInput } from './RenameInput';
 import IconSelector from './IconSelector';
@@ -54,47 +54,123 @@ const PageGroupActions = memo(({ onRename, onDelete }) => (
   </div>
 ));
 
-export const PageGroupItem = memo(({ page, index, collapsed, onCollapse }) => {
+export const PageGroupItem = memo(({ page, index, collapsed, onCollapse, highlight, darkMode }) => {
+  const [isHovered, setIsHovered] = useState(false);
   const [renamingPageGroup, setRenamingPageGroup] = useState(false);
+  const {
+    definition: { styles },
+  } = useStore((state) => state.pageSettings);
+
   const { openPageEditPopover, toggleDeleteConfirmationModal } = useStore();
+  const computeStyles = useCallback(() => {
+    const baseStyles = {
+      pill: {
+        borderRadius: `${styles.pillRadius.value}px`,
+      },
+      icon: {
+        color: !styles.iconColor.isDefault && styles.iconColor.value,
+        fill: !styles.iconColor.isDefault && styles.iconColor.value,
+      },
+    };
+
+    switch (true) {
+      case isHovered: {
+        return {
+          ...baseStyles,
+          pill: {
+            background: !styles.pillHoverBackgroundColor.isDefault && styles.pillHoverBackgroundColor.value,
+            ...baseStyles.pill,
+          },
+        };
+      }
+      default: {
+        return {
+          text: {
+            color: !styles.textColor.isDefault && styles.textColor.value,
+          },
+          icon: {
+            color: !styles.iconColor.isDefault && styles.iconColor.value,
+            fill: !styles.iconColor.isDefault && styles.iconColor.value,
+          },
+        };
+      }
+    }
+  }, [styles, isHovered, page.id]);
+
+  const computedStyles = computeStyles();
 
   const memoizedContent = useMemo(() => {
     const childrenCount = page?.children?.length;
     return (
-      <div style={{ position: 'relative', width: '100%' }}>
-        {renamingPageGroup ? (
-          <RenameInput page={page} updaterCallback={() => setRenamingPageGroup(false)} />
-        ) : (
-          <div className="page-menu-item">
-            <div className="left">
-              {childrenCount > 0 && (
-                <Caret
-                  style={{
-                    transform: collapsed ? 'rotate(0deg)' : 'rotate(180deg)',
-                  }}
-                  onClick={() => onCollapse(page.id)}
-                />
-              )}
-              <IconSelector iconColor={'var(--slate11)'} iconName={page.icon} pageId={page.id} />
-              <div className="page-name">
-                <OverflowTooltip>{page.name}</OverflowTooltip>
+      <div
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        style={{ position: 'relative', width: '100%' }}
+      >
+        <div
+          className={`page-menu-item ${highlight ? 'highlight' : ''} ${darkMode ? 'dark-theme' : ''}`}
+          style={{ ...computedStyles?.pill }}
+        >
+          {renamingPageGroup ? (
+            <>
+              <div className="left">
+                {childrenCount > 0 && (
+                  <Caret
+                    style={{
+                      transform: collapsed ? 'rotate(0deg)' : 'rotate(180deg)',
+                    }}
+                    onClick={() => onCollapse(page.id)}
+                  />
+                )}
+                <IconSelector iconColor={computedStyles?.icon?.color} iconName={page.icon} pageId={page.id} />
               </div>
-            </div>
-            <PageGroupActions
-              onRename={() => {
-                setRenamingPageGroup(true);
-                openPageEditPopover(page);
-              }}
-              onDelete={() => {
-                openPageEditPopover(page);
-                toggleDeleteConfirmationModal(true);
-              }}
-            />
-          </div>
-        )}
+              <RenameInput page={page} updaterCallback={() => setRenamingPageGroup(false)} />
+            </>
+          ) : (
+            <>
+              {' '}
+              <div className="left">
+                {childrenCount > 0 && (
+                  <Caret
+                    style={{
+                      transform: collapsed ? 'rotate(0deg)' : 'rotate(180deg)',
+                    }}
+                    onClick={() => onCollapse(page.id)}
+                  />
+                )}
+                <IconSelector iconColor={computedStyles?.icon?.color} iconName={page.icon} pageId={page.id} />
+                <div className="page-name">
+                  <OverflowTooltip childrenClassName="page-name" style={{ ...computedStyles?.text }}>
+                    {page.name}
+                  </OverflowTooltip>
+                </div>
+              </div>
+              <PageGroupActions
+                onRename={() => {
+                  setRenamingPageGroup(true);
+                  openPageEditPopover(page);
+                }}
+                onDelete={() => {
+                  openPageEditPopover(page);
+                  toggleDeleteConfirmationModal(true);
+                }}
+              />
+            </>
+          )}
+        </div>
       </div>
     );
-  }, [page.name, (page.children || []).length, page.collapsed, index, renamingPageGroup, page.icon]);
+  }, [
+    page.name,
+    (page.children || []).length,
+    page.collapsed,
+    index,
+    renamingPageGroup,
+    page.icon,
+    highlight,
+    darkMode,
+    computeStyles,
+  ]);
 
   return memoizedContent;
 });

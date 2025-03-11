@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import cx from 'classnames';
 import { isEmpty } from 'lodash';
@@ -11,7 +11,7 @@ import Preview from './Preview';
 import { ChangeDataSource } from './ChangeDataSource';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
 import { customToggles, mockDataQueryAsComponent, RestAPIToggles } from '../constants';
-import { DataSourceTypes } from '../../DataSourceManager/SourceComponents';
+import { DataSourceTypes } from '@/modules/common/components/DataSourceComponents';
 import SuccessNotificationInputs from './SuccessNotificationInputs';
 import ParameterList from './ParameterList';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
@@ -20,8 +20,9 @@ import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_
 import useStore from '@/AppBuilder/_stores/store';
 import { EventManager } from '@/AppBuilder/RightSideBar/Inspector/EventManager';
 import NotificationBanner from '@/_components/NotificationBanner';
+import { withEditionSpecificComponent } from '@/modules/common/helpers/withEditionSpecificComponent';
 
-export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) => {
+export const BaseQueryManagerBody = ({ darkMode, activeTab, renderCopilot = () => null }) => {
   const { t } = useTranslation();
   const dataSources = useStore((state) => state.dataSources);
   const globalDataSources = useStore((state) => state.globalDataSources);
@@ -32,7 +33,7 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
   const changeDataQuery = useStore((state) => state.dataQuery.changeDataQuery);
   const updateDataQuery = useStore((state) => state.dataQuery.updateDataQuery);
   const [showLocalDataSourceDeprecationBanner, setshowLocalDataSourceDeprecationBanner] = useState(false);
-
+  const options = useMemo(() => selectedQuery?.options, [selectedQuery]);
   const [dataSourceMeta, setDataSourceMeta] = useState(null);
   /* - Added the below line to cause re-rendering when the query is switched
        - QueryEditors are not updating when the query is switched
@@ -45,7 +46,6 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
   const sourcecomponentName = selectedDataSource?.kind?.charAt(0).toUpperCase() + selectedDataSource?.kind?.slice(1);
 
   const ElementToRender = selectedDataSource?.pluginId ? source : allSources[sourcecomponentName];
-
   const defaultOptions = useRef({});
 
   const isFreezed = useStore((state) => state.getShouldFreeze());
@@ -75,8 +75,6 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
 
   const validateNewOptions = (newOptions) => {
     const updatedOptions = cleanFocusedFields(newOptions);
-    setOptions((options) => ({ ...options, ...updatedOptions }));
-
     updateDataQuery(deepClone({ ...options, ...updatedOptions }));
   };
 
@@ -94,7 +92,6 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
     optionchanged(option, !currentValue);
   };
   const optionsChangedforParams = (newOptions) => {
-    setOptions(newOptions);
     updateDataQuery(deepClone(newOptions));
   };
 
@@ -152,6 +149,7 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
       return;
     return (
       <Transformation
+        renderCopilot={renderCopilot}
         changeOption={optionchanged}
         options={options ?? {}}
         darkMode={darkMode}
@@ -188,6 +186,7 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
             )}
         </div>
         <ElementToRender
+          renderCopilot={renderCopilot}
           key={selectedQuery?.id}
           pluginSchema={selectedDataSource?.plugin?.operationsFile?.data}
           selectedDataSource={selectedDataSource}
@@ -345,7 +344,6 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
       setshowLocalDataSourceDeprecationBanner(false);
     }
   }, [selectedDataSource, selectedQuery]);
-
   // if (selectedQueryId !== selectedQuery?.id) return;
   const hasPermissions =
     selectedDataSource?.scope === 'global' && selectedDataSource?.type !== DATA_SOURCE_TYPE.SAMPLE
@@ -353,6 +351,7 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
         canReadDataSource(selectedQuery?.data_source_id) ||
         canDeleteDataSource()
       : true;
+
   return (
     <div
       className={`query-details ${selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''} ${
@@ -375,7 +374,10 @@ export const QueryManagerBody = ({ darkMode, options, setOptions, activeTab }) =
         )
       ) : (
         <>
-          {selectedQuery?.data_source_id && activeTab === 1 && renderChangeDataSource()}
+          {selectedQuery?.data_source_id &&
+            selectedDataSource?.type !== DATA_SOURCE_TYPE.STATIC &&
+            activeTab === 1 &&
+            renderChangeDataSource()}
           {activeTab === 1 && renderQueryElement()}
           {activeTab === 2 && renderTransformation()}
           {activeTab === 3 && renderQueryOptions()}
@@ -413,3 +415,7 @@ const CustomToggleFlag = ({ dataCy, action, translatedLabel, label, subLabel, va
     </div>
   );
 };
+
+const QueryManagerBody = withEditionSpecificComponent(BaseQueryManagerBody, 'Appbuilder');
+
+export default QueryManagerBody;

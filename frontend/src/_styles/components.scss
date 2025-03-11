@@ -123,7 +123,7 @@ $btn-dark-color: #FFFFFF;
 
 
 .page-selector-panel-body {
-  padding: 12px 16px;
+  padding: 4px;
   border-right: 1px solid #DFE3E6;
 
   &.dark-theme {
@@ -131,19 +131,28 @@ $btn-dark-color: #FFFFFF;
   }
 
   .page-handler {
-    height: 32px !important;
+    width: 100% !important;
     padding: 0;
-    margin-bottom: 2px;
+    // margin-bottom: 9px;
     font-weight: 500;
 
     .card {
-      background: var(--base);
-      padding: 8px;
+      background: none;
+    }
+
+    .option-icon {
+      width: 25px;
+      background: var(--slate1);
+      height: 25px;
+      border-radius: 6px;
+      border: 1px solid var(--slate7);
+      padding: 0px;
+      visibility: unset !important;
+      margin-left: auto !important;
     }
 
     .card,
     .card-body {
-      height: 32px;
 
       .page-name {
         color: var(--slate12);
@@ -175,6 +184,7 @@ $btn-dark-color: #FFFFFF;
 
     .page-name-input {
       height: 32px;
+      margin-bottom: 0px !important;
     }
   }
 }
@@ -250,6 +260,90 @@ $btn-dark-color: #FFFFFF;
 
   img {
     margin-top: 3px;
+  }
+}
+
+.delete-folder-modal{
+  &.dark-theme{
+    .delete-all-button{
+      &:hover{
+        background: #fff;
+        box-shadow: none;
+        border: 1px solid rgb(77, 114, 250);
+      }
+    }
+  }
+  .delete-all-button{
+    margin: 0;
+    border-radius: 6px;
+    border: 1px solid#CCD1D5;
+    background:#FFF;
+    box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.10);
+    padding: 5px 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    &:hover{
+      background: rgba(172, 178, 185, 0.30);
+      box-shadow: none;
+
+    }
+    span{
+      font-size: 12px;
+      font-style: normal;
+      font-weight: 500;
+      line-height: 18px; /* 150% */
+    }
+    &.danger{
+      border-radius: 6px;
+      background: #D72D39;
+      border:none;
+
+      box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.10);
+      span{
+        color: #fff;
+      }
+      &:hover{
+        border: none;
+        background: #B5121D;
+        box-shadow: none;
+      }
+    }
+  }
+  .modal-title{
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+  }
+  .modal-dialog{
+    width: 408px;
+  }
+  .modal-body{
+    padding: 16px 0;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 18px;
+  }
+  .modal-content{
+    border-radius: 12px;
+    padding: 16px;
+
+  }
+  .modal-header{
+    padding: 0;
+    min-height: unset;
+    border: none;
+    background-color: transparent;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+  }
+  .modal-footer{
+    margin: 0;
+    padding: 0;
+    justify-content: unset;
+    gap: 8px;
   }
 }
 

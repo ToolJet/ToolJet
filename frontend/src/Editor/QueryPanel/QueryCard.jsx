@@ -4,23 +4,32 @@ import { checkExistingQueryName, updateQuerySuggestions } from '@/_helpers/appUt
 import { Confirm } from '../Viewer/Confirm';
 import { toast } from 'react-hot-toast';
 import { useDataQueriesActions, useDataQueriesStore } from '@/_stores/dataQueriesStore';
-import { useQueryPanelActions, useSelectedQuery } from '@/_stores/queryPanelStore';
+import { useQueryPanelActions, useSelectedDataSource, useSelectedQuery } from '@/_stores/queryPanelStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import Copy from '@/_ui/Icon/solidIcons/Copy';
 import DataSourceIcon from '../QueryManager/Components/DataSourceIcon';
 import { isQueryRunnable, decodeEntities } from '@/_helpers/utils';
+import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
 
 export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId, localDs }) => {
   const selectedQuery = useSelectedQuery();
+  const selectedDataSource = useSelectedDataSource();
   const { isDeletingQueryInProcess } = useDataQueriesStore();
   const { deleteDataQueries, renameQuery, duplicateQuery } = useDataQueriesActions();
   const { setSelectedQuery, setPreviewData } = useQueryPanelActions();
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const hasPermissions =
+    selectedDataSource?.scope === 'global'
+      ? canUpdateDataSource(selectedQuery?.data_source_id) ||
+        canReadDataSource(selectedQuery?.data_source_id) ||
+        canDeleteDataSource()
+      : true;
 
-  const { isVersionReleased } = useAppVersionStore(
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );
@@ -58,6 +67,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId, local
   const executeDataQueryDeletion = () => {
     setShowDeleteConfirmation(false);
     deleteDataQueries(dataQuery?.id, editorRef);
+    setPreviewData(null);
   };
 
   return (
@@ -125,11 +135,10 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId, local
             </div>
           )}
         </div>
-
-        {!isVersionReleased && (
+        {!(isVersionReleased || isEditorFreezed) && selectedQuery?.id === dataQuery.id && (
           <div className="col-auto query-rename-delete-btn">
             <div
-              className={`col-auto ${renamingQuery && 'display-none'} rename-query`}
+              className={`col-auto ${(renamingQuery || !hasPermissions) && 'd-none'} rename-query`}
               onClick={() => setRenamingQuery(true)}
             >
               <span className="d-flex" data-tooltip-id="query-card-btn-tooltip" data-tooltip-content="Rename query">
@@ -150,7 +159,10 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId, local
                 </svg>
               </span>
             </div>
-            <div className={`col-auto rename-query`} onClick={() => duplicateQuery(dataQuery?.id, appId)}>
+            <div
+              className={`col-auto rename-query ${!hasPermissions && 'd-none'}`}
+              onClick={() => duplicateQuery(dataQuery?.id, appId)}
+            >
               <span className="d-flex" data-tooltip-id="query-card-btn-tooltip" data-tooltip-content="Duplicate query">
                 <Copy height={16} width={16} viewBox="0 5 20 20" />
               </span>
@@ -162,7 +174,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId, local
                 </div>
               ) : (
                 <span
-                  className="delete-query"
+                  className={`delete-query ${!hasPermissions && 'd-none'}`}
                   onClick={deleteDataQuery}
                   data-tooltip-id="query-card-btn-tooltip"
                   data-tooltip-content="Delete query"
@@ -187,7 +199,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId, local
                 </span>
               )}
             </div>
-            <Tooltip id="query-card-btn-tooltip" className="tooltip" />
+            {/* <Tooltip id="query-card-btn-tooltip" className="tooltip" /> */}
           </div>
         )}
       </div>

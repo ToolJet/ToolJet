@@ -13,15 +13,18 @@ function MultiSelectUser({
   isLoading,
   className,
   searchLabel,
+  options,
+  allowCustomRender = true,
 }) {
   const [searchText, setSearchText] = useState('');
   const [filteredOptions, setOptions] = useState([]);
   const listOfOptions = useRef([]);
 
   useEffect(() => {
-    setOptions(listOfOptions.current);
+    // setOptions(filterOptions(listOfOptions.current));
+    options ? setOptions(filterOptions(options)) : setOptions(filterOptions(listOfOptions.current));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(selectedValues), listOfOptions.current]);
+  }, [JSON.stringify(selectedValues), listOfOptions.current, options?.length]);
 
   const searchFunction = useCallback(
     async (query) => {
@@ -97,7 +100,8 @@ function MultiSelectUser({
         }
         disabled={isLoading}
         fuzzySearch
-        renderOption={renderCustom}
+        renderOption={allowCustomRender && renderCustom}
+        customWrap={true}
       />
     </div>
   );

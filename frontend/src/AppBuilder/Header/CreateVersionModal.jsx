@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { appVersionService, authenticationService } from '@/_services';
+import { appVersionService, authenticationService, gitSyncService } from '@/_services';
 import AlertDialog from '@/_ui/AlertDialog';
 import { Alert } from '@/_ui/Alert';
 import { toast } from 'react-hot-toast';
@@ -8,40 +8,37 @@ import Select from '@/_ui/Select';
 import { shallow } from 'zustand/shallow';
 import useStore from '@/AppBuilder/_stores/store';
 
-export const CreateVersion = ({ showCreateAppVersion, setShowCreateAppVersion }) => {
-  const { current_organization_id } = authenticationService.currentSessionValue;
-
+const CreateVersionModal = ({
+  showCreateAppVersion,
+  setShowCreateAppVersion,
+  handleCommitEnableChange,
+  canCommit,
+  orgGit,
+  fetchingOrgGit,
+  handleCommitOnVersionCreation = () => {},
+}) => {
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');
-  const [fetchingOrgGit, setFetchingOrgGit] = useState(false);
-  const [cancommit, setCommitEnabled] = useState(false);
-  const [orgGit, setOrgGit] = useState(null);
 
   const {
     createNewVersionAction,
-    versionsPromotedToEnvironment,
+    fetchDevelopmentVersions,
     developmentVersions,
-    featureAccess,
-    editingVersion,
     appId,
     setCurrentVersionId,
     selectedVersion,
-    fetchDevelopmentVersions,
   } = useStore(
     (state) => ({
       createNewVersionAction: state.createNewVersionAction,
       selectedEnvironment: state.selectedEnvironment,
-      versionsPromotedToEnvironment: state.versionsPromotedToEnvironment,
+      fetchDevelopmentVersions: state.fetchDevelopmentVersions,
       developmentVersions: state.developmentVersions,
-      featureAccess: state.license?.featureAccess,
+      featureAccess: state.license.featureAccess,
       editingVersion: state.currentVersionId,
       appId: state.app.appId,
-      showCreateAppVersion: state.showCreateAppVersion,
-      setShowCreateAppVersion: state.setShowCreateAppVersion,
       currentVersionId: state.currentVersionId,
       setCurrentVersionId: state.setCurrentVersionId,
       selectedVersion: state.selectedVersion,
-      fetchDevelopmentVersions: state.fetchDevelopmentVersions,
     }),
     shallow
   );
@@ -59,8 +56,6 @@ export const CreateVersion = ({ showCreateAppVersion, setShowCreateAppVersion })
   }, [developmentVersions, selectedVersion]);
 
   const { t } = useTranslation();
-  console.log({ developmentVersions });
-
   const options = developmentVersions.map((version) => {
     return { label: version.name, value: version };
   });
@@ -96,8 +91,10 @@ export const CreateVersion = ({ showCreateAppVersion, setShowCreateAppVersion })
           .getAppVersionData(appId, newVersion.id)
           .then((data) => {
             setCurrentVersionId(newVersion.id);
+            handleCommitOnVersionCreation(data);
           })
           .catch((error) => {
+            console.log({ error });
             toast.error(error);
           });
       },
@@ -107,8 +104,6 @@ export const CreateVersion = ({ showCreateAppVersion, setShowCreateAppVersion })
       }
     );
   };
-
-  const handleCommitEnableChange = (e) => setCommitEnabled(e.target.checked);
 
   return (
     <AlertDialog
@@ -175,7 +170,7 @@ export const CreateVersion = ({ showCreateAppVersion, setShowCreateAppVersion })
               <div>
                 <input
                   className="form-check-input"
-                  checked={cancommit}
+                  checked={canCommit}
                   type="checkbox"
                   onChange={handleCommitEnableChange}
                   data-cy="git-commit-input"
@@ -201,9 +196,8 @@ export const CreateVersion = ({ showCreateAppVersion, setShowCreateAppVersion })
                 width: '100%',
               }}
             >
-              {/* EE - change to development */}
               <div className="" data-cy="workspace-constant-helper-text">
-                The new version will be created in production environment
+                The new version will be created in development environment
               </div>
             </div>
           </Alert>
@@ -251,3 +245,5 @@ export const CreateVersion = ({ showCreateAppVersion, setShowCreateAppVersion })
     </AlertDialog>
   );
 };
+
+export default CreateVersionModal;

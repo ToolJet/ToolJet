@@ -406,7 +406,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
                                     <SortableList.DragHandle show />
                                   </div>
                                   <div className="col text-truncate cursor-pointer" style={{ padding: '0px' }}>
-                                    {resolveReferences(item.label, currentState)}
+                                    {String(resolveReferences(item?.label, currentState))}
                                   </div>
                                   <div className="col-auto">
                                     {index === hoveredOptionIndex && (

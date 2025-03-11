@@ -6115,6 +6115,10 @@ fieldset:disabled .btn {
     animation: .75s linear infinite spinner-border
 }
 
+.spinner-light {
+    color: var(--indigo9) !important;
+}
+
 .spinner-border-sm {
     width: 1rem;
     height: 1rem;

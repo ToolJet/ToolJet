@@ -9,7 +9,7 @@ import { isVersionGreaterThanOrEqual } from 'src/helpers/utils.helper';
 //
 // dto.schema here is the result of export from the view table API
 // and the transformations done here is to make the creation work
-// with create table API within TooljetDbService
+// with create table API within TooljetDbTableOperationsService
 const transformationsByVersion = {
   '2.30.0': (dto: ImportTooljetDatabaseDto) => {
     const transformedColumns = dto.schema.columns.map((col) => {

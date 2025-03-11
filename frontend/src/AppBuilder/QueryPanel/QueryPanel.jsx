@@ -173,7 +173,7 @@ export const QueryPanel = ({ darkMode }) => {
               onClick={toggleQueryEditor}
             >
               <span>{isExpanded ? <SectionCollapse width="13.33" /> : <SectionExpand width="13.33" />}</span>
-              <span data-cy="query-manager-collapse-button">Queries</span>
+              <span>Queries</span>
             </button>
           </div>
         </div>

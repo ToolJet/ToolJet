@@ -21,9 +21,9 @@ class OrganizationInvitationPageComponent extends React.Component {
 
     this.state = {
       isLoading: false,
+      defaultState: false,
     };
     this.formRef = React.createRef(null);
-    this.single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
     this.organizationId = new URLSearchParams(props?.location?.search).get('oid');
     this.organizationToken = new URLSearchParams(props?.location?.search).get('organizationToken');
     this.source = new URLSearchParams(props?.location?.search).get('source');
@@ -40,6 +40,7 @@ class OrganizationInvitationPageComponent extends React.Component {
       this.whiteLabelFavicon = retrieveWhiteLabelFavicon();
     });
     document.addEventListener('keydown', this.handleEnterKey);
+    this.setState({ defaultState: checkWhiteLabelsDefaultState() });
   }
 
   handleEnterKey = (e) => {
@@ -76,7 +77,7 @@ class OrganizationInvitationPageComponent extends React.Component {
   };
 
   render() {
-    const { isLoading } = this.state;
+    const { isLoading, defaultState } = this.state;
     const { name, email, invitedOrganizationName: organizationName } = this.props;
     return (
       <div className="page" ref={this.formRef}>
@@ -135,14 +136,22 @@ class OrganizationInvitationPageComponent extends React.Component {
                         )}
                       </ButtonSolid>
                     </div>
-                    <p className="text-center-onboard d-block">
-                      By signing up you are agreeing to the
-                      <br />
-                      <span>
-                        <a href="https://www.tooljet.com/terms">Terms of Service </a>&
-                        <a href="https://www.tooljet.com/privacy"> Privacy Policy</a>
-                      </span>
-                    </p>
+                    {defaultState && (
+                      <p className="text-center-onboard d-block" data-cy="signup-terms-helper">
+                        By signing up you are agreeing to the
+                        <br />
+                        <span>
+                          <a href="https://www.tooljet.com/terms" data-cy="terms-of-service-link">
+                            Terms of Service{' '}
+                          </a>
+                          &
+                          <a href="https://www.tooljet.com/privacy" data-cy="privacy-policy-link">
+                            {' '}
+                            Privacy Policy
+                          </a>
+                        </span>
+                      </p>
+                    )}
                   </div>
                 </form>
               </div>
