@@ -48,7 +48,7 @@ export const BASIC_PLAN_TERMS: Partial<Terms> = {
 
 export const BASIC_PLAN_SETTINGS = {
   ALLOW_PERSONAL_WORKSPACE: {
-    value: 'true',
+    value: 'false',
   },
   WHITE_LABEL_LOGO: {
     value: '',

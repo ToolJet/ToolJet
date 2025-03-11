@@ -300,10 +300,10 @@ const MultiLineCodeEditor = (props) => {
                 editable={editable} //for transformations in query manager
                 onCreateEditor={(view) => setEditorView(view)}
                 onUpdate={(view) => {
-                  const icon = document.querySelector('.codehinter-search-btn-wrapper');
+                  const icon = document.querySelector('.codehinter-search-btn');
                   if (searchPanelOpen(view.state)) {
-                    icon.style.top = '44px';
-                  } else icon.style.top = '0px';
+                    icon.style.display = 'none';
+                  } else icon.style.display = 'block';
                 }}
               />
             </div>

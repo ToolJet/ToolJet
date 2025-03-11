@@ -1127,10 +1127,9 @@ export const Table = React.memo(
                 <div
                   style={{
                     position: 'absolute',
-                    top: 0,
+                    top: `${items[0]?.start ?? 0}px`,
                     left: 0,
                     width: '100%',
-                    transform: `translateY(${items[0]?.start ?? 0}px)`,
                   }}
                 >
                   {items.map((virtualRow) => {

@@ -436,6 +436,7 @@ export const DropdownV2 = ({
             onChange={(selectedOption, actionProps) => {
               if (actionProps.action === 'clear') {
                 setInputValue(null);
+                fireEvent('onSelect');
               }
               if (actionProps.action === 'select-option') {
                 setInputValue(selectedOption.value);

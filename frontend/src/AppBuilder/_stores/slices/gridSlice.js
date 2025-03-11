@@ -8,6 +8,7 @@ const initialState = {
   lastCanvasIdClick: '',
   lastCanvasClickPosition: null,
   temporaryLayouts: {},
+  draggingComponentId: null,
 };
 
 export const createGridSlice = (set, get) => ({
@@ -22,6 +23,7 @@ export const createGridSlice = (set, get) => ({
   debouncedToggleCanvasUpdater: debounce(() => {
     get().toggleCanvasUpdater();
   }, 200),
+  setDraggingComponentId: (id) => set(() => ({ draggingComponentId: id })),
   moveComponentPosition: (direction) => {
     const { setComponentLayout, currentLayout, getSelectedComponentsDefinition, debouncedToggleCanvasUpdater } = get();
     let layouts = {};

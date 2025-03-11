@@ -644,17 +644,26 @@
 }
 
 .cm-searchMatch {
+    background-color: #F9E71A !important;
+    
     .cm-selectionMatch {
         background-color: #F9E71A !important;
     }
 }
 
-.cm-searchMatch.cm-searchMatch-selected {
-    background-color: #F28F2D;
-}
 
 .code-editor-component {
     .cm-editor {
         min-height: 0 !important;
+    }
+}
+
+.cm-searchMatch.cm-searchMatch-selected {
+    background-color: #F28F2D !important;
+}
+
+.tjdb-hinter-portal{
+    .cm-theme{
+        height: 100% ;
     }
 }

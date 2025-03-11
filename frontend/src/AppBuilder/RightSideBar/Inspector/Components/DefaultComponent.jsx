@@ -27,6 +27,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'TextArea',
   'Container',
   'Form',
+  'ModalV2',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -38,6 +39,7 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   Button: 'Data',
   Image: 'Data',
   Container: 'Data',
+  ModalV2: 'Data',
 };
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
@@ -155,7 +157,8 @@ export const baseComponentProperties = (
           'properties',
           currentState,
           allComponents,
-          darkMode
+          darkMode,
+          ''
         )
       ),
     });

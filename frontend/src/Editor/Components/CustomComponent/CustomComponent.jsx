@@ -42,7 +42,7 @@ export const CustomComponent = (props) => {
             setCustomProps({ ...customPropRef.current, ...e.data.updatedObj });
           } else if (e.data.message === 'RUN_QUERY') {
             const options = {
-              parameters: e.data.parameters,
+              parameters: JSON.parse(e.data.parameters),
               queryName: e.data.queryName,
             };
             onEvent('onTrigger', [], options);

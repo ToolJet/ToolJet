@@ -5,6 +5,7 @@ import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import cx from 'classnames';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import useStore from '@/AppBuilder/_stores/store';
+import { toast } from 'react-hot-toast';
 
 function Logs({ logProps, idx }) {
   const [open, setOpen] = React.useState(false);
@@ -52,10 +53,19 @@ function Logs({ logProps, idx }) {
     }
   };
 
+  const copyToClipboard = (data) => {
+    const stringified = JSON.stringify(data, null, 2).replace(/\\/g, '');
+    navigator.clipboard.writeText(stringified);
+    return toast.success('Value copied to clipboard', { position: 'top-center' });
+  };
+
   const callbackActions = [
     {
       for: 'all',
-      actions: [{ name: 'Select Widget', dispatchAction: handleSelectComponentOnEditor, icon: false, onSelect: true }],
+      actions: [
+        { name: 'Copy value', dispatchAction: copyToClipboard, icon: false },
+        { name: 'Select Widget', dispatchAction: handleSelectComponentOnEditor, icon: false, onSelect: true },
+      ],
       enableForAllChildren: true,
       enableFor1stLevelChildren: true,
     },

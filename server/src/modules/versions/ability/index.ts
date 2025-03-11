@@ -15,7 +15,13 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     return App;
   }
 
-  protected defineAbilityFor(can: AbilityBuilder<FeatureAbility>['can'], UserAllPermissions: UserAllPermissions): void {
+  protected defineAbilityFor(
+    can: AbilityBuilder<FeatureAbility>['can'],
+    UserAllPermissions: UserAllPermissions,
+    extractedMetadata: { moduleName: string; features: string[] },
+    request?: any
+  ): void {
+    const appId = request?.tj_resource_id;
     const { superAdmin, isAdmin, userPermission } = UserAllPermissions;
 
     const userAppPermissions = userPermission?.[MODULES.APP];
@@ -52,7 +58,7 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       return;
     }
 
-    if (userAppPermissions?.editableAppsId?.length) {
+    if (userAppPermissions?.editableAppsId?.length && appId && userAppPermissions.editableAppsId.includes(appId)) {
       can(
         [
           FEATURE_KEY.GET,
@@ -76,16 +82,19 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
           FEATURE_KEY.UPDATE_EVENT,
           FEATURE_KEY.DELETE_EVENT,
         ],
-        App,
-        { id: { $in: userAppPermissions.editableAppsId } }
+        App
       );
     }
 
     if (isAllAppsViewable) {
       // add view permissions for all apps
       can([FEATURE_KEY.GET_EVENTS], App);
-    } else if (userAppPermissions?.viewableAppsId?.length) {
-      can([FEATURE_KEY.GET_EVENTS], App, { id: { $in: userAppPermissions.viewableAppsId } });
+    } else if (
+      userAppPermissions?.viewableAppsId?.length &&
+      appId &&
+      userAppPermissions.viewableAppsId.includes(appId)
+    ) {
+      can([FEATURE_KEY.GET_EVENTS], App);
     }
   }
 }
