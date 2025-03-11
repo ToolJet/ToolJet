@@ -9,7 +9,7 @@ import { RolesModule } from '@modules/roles/module';
 import { ThemesModule } from '@modules/organization-themes/module';
 import { SessionModule } from '@modules/session/module';
 import { InstanceSettingsModule } from '@modules/instance-settings/module';
-import { TooljetDbTableOperationsService } from '@modules/tooljet-db/services/tooljet-db-table-operations.service';
+import { TooljetDbModule } from '@modules/tooljet-db/module';
 
 export class SetupOrganizationsModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
@@ -29,6 +29,7 @@ export class SetupOrganizationsModule {
         await ThemesModule.register(configs),
         await SessionModule.register(configs),
         await InstanceSettingsModule.register(configs),
+        await TooljetDbModule.register(configs),
       ],
       controllers: [SetupOrganizationsController],
       providers: [
@@ -37,7 +38,7 @@ export class SetupOrganizationsModule {
         OrganizationRepository,
         OrganizationUsersRepository,
         FeatureAbilityFactory,
-        TooljetDbTableOperationsService,
+        TooljetDbModule,
       ],
       exports: [SetupOrganizationsUtilService],
     };

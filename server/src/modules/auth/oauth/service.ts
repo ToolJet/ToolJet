@@ -36,7 +36,7 @@ import { OrganizationUsersRepository } from '@modules/organization-users/reposit
 import { LicenseUserService } from '@modules/licensing/services/user.service';
 import { OnboardingUtilService } from '@modules/onboarding/util.service';
 import { SessionUtilService } from '@modules/session/util.service';
-import { OrganizationsUtilService } from '@modules/organizations/util.service';
+import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
 const uuid = require('uuid');
 
 @Injectable()
@@ -58,7 +58,7 @@ export class OauthService implements IOAuthService {
     protected readonly licenseUserService: LicenseUserService,
     protected readonly onboardingUtilService: OnboardingUtilService,
     protected readonly sessionUtilService: SessionUtilService,
-    protected readonly organizationUtilService: OrganizationsUtilService
+    protected readonly setupOrganizationsUtilService: SetupOrganizationsUtilService
   ) {}
 
   async signIn(
@@ -174,11 +174,7 @@ export class OauthService implements IOAuthService {
 
           // Not logging in to specific organization, creating new
           const { name, slug } = generateNextNameAndSlug('My workspace');
-          defaultOrganization = await this.organizationUtilService.createOrganizationWithDefaultSettings(
-            name,
-            slug,
-            manager
-          );
+          defaultOrganization = await this.setupOrganizationsUtilService.create(name, slug, null, manager);
 
           userDetails = await this.userRepository.createOne(
             {
@@ -186,11 +182,11 @@ export class OauthService implements IOAuthService {
               lastName: userResponse.lastName,
               email: userResponse.email,
               defaultOrganizationId: defaultOrganization.id,
-              ...getUserStatusAndSource(lifecycleEvents.USER_SSO_VERIFY, sso),
+              ...getUserStatusAndSource(lifecycleEvents.USER_SSO_ACTIVATE, sso),
             },
             manager
           );
-          await this.organizationUsersRepository.createOne(userDetails, defaultOrganization, true, manager);
+          await this.organizationUsersRepository.createOne(userDetails, defaultOrganization, false, manager);
           await this.organizationUsersUtilService.attachUserGroup(
             [USER_ROLE.ADMIN],
             defaultOrganization.id,
@@ -224,7 +220,7 @@ export class OauthService implements IOAuthService {
             if (!isInviteRedirect) {
               // no SSO login enabled organization available for user - creating new one
               const { name, slug } = generateNextNameAndSlug('My workspace');
-              organizationDetails = await this.organizationRepository.createOne(name, slug, manager);
+              organizationDetails = await this.setupOrganizationsUtilService.create(name, slug, null, manager);
               await this.userRepository.updateOne(
                 userDetails.id,
                 { defaultOrganizationId: organizationDetails.id },
@@ -342,7 +338,7 @@ export class OauthService implements IOAuthService {
         organizationDetails,
         isInstanceSSOLogin || isInstanceSSOOrganizationLogin,
         false,
-        userDetails,
+        user,
         manager,
         isInviteRedirect ? loginOrganiaztionId : null
       );
