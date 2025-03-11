@@ -83,7 +83,7 @@ export abstract class AbilityGuard implements CanActivate {
         user,
         { moduleName: module, features },
         resourceArray,
-        this.forwardAbility() ? request : undefined
+        request
       );
 
       if (this.forwardAbility()) {
