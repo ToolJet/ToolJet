@@ -102,7 +102,7 @@ export const IconCard = ({ icon: Icon, title, content, color, href }) => (
                 <CardTitle>{title}</CardTitle>
             </CardHeader>
             <CardContent className="flex-grow">
-                <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-5">{content}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-5">{content}</p>
             </CardContent>
         </div>
     </Card>
@@ -196,13 +196,13 @@ style={{
                         }}
                     />
                 </div>
-                                {/* ToolJet Documentation Section */}
+{/* ToolJet Documentation Section */}
                 <div className="relative display-block">
                     <div className='pb-14'>
                         <h1 className="text-4xl font-bold flex flex-col md:flex-row">
                             {textLabels.title.prefix}&nbsp;<span className="text-blue-600">{textLabels.title.highlight}</span>
                         </h1>
-                        <p className="text-xl text-gray-600">
+                        <p className="text-xl text-gray-600 dark:text-gray-400 ">
                             {textLabels.subtitle}
                         </p>
                     </div>
