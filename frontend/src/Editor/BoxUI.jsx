@@ -21,6 +21,7 @@ const shouldAddBoxShadowAndVisibility = [
   'ToggleSwitchV2',
   'DropdownV2',
   'MultiselectV2',
+  'Tabs',
 ];
 
 const BoxUI = (props) => {

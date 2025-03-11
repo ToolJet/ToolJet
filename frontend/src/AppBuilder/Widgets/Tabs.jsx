@@ -452,9 +452,6 @@ export const Tabs = function Tabs({
                       width: '100%',
                       padding: '.25rem .25rem',
                       ...(currentTab == tab.id ? { color: selectedText } : { color: unselectedText }),
-                      ...(tabWidth == 'split' && {
-                        width: `${tabsRef.current?.clientWidth / (tabItems?.length || 1)}px`,
-                      }),
                     }}
                   >
                     <a style={{ paddingBottom: '16px' }}>{getTabIcon(tab)}</a>
