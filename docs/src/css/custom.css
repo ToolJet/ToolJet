@@ -62,8 +62,27 @@ h3 {
   background: var(--ifm-menu-link-sublist-icon) 50% / 1rem 1rem !important;
 }
 
+.badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: none;
+  width: max-content;
+}
+
 .badge--primary {
   margin-bottom: 1rem;
+  background: #FAEFE7;
+  color: #BF4F03;
+}
+
+.badge--primary img {
+  box-shadow: none;
+}
+
+.badge--secondary {
+  background-color: #88909914;
 }
 
 article {
