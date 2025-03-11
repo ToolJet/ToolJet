@@ -53,7 +53,7 @@ Replace `username`, `password`, `hostname`, `port`, and `database_name` with you
 #### PostgREST
 ToolJet uses PostgREST for API access. 
 
-- `PGRST_JWT_SECRET`: JWT secret (Generate using `openssl rand -hex 32`). If this parameter is not specified then PostgREST refuses authentication requests.
+- `PGRST_JWT_SECRET`: JWT secret (Generate using `openssl rand -hex 32`). If this parameter is not specified, PostgREST will refuse authentication requests.
 - `PGRST_DB_URI`: Database connection string
 - `PGRST_LOG_LEVEL=info`
 
