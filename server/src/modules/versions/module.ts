@@ -51,6 +51,7 @@ export class VersionModule {
         VersionUtilService,
         FeatureAbilityFactory,
       ],
+      exports: [VersionUtilService],
     };
   }
 }
