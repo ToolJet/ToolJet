@@ -191,7 +191,7 @@ export const TextInput = function TextInput({
   }, [visibility]);
 
   useEffect(() => {
-    if (isInitialRender.current) return;
+    // if (isInitialRender.current) return;
     setExposedVariable('isDisabled', disable);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disable]);
@@ -235,7 +235,6 @@ export const TextInput = function TextInput({
       value: properties.value,
       isMandatory: isMandatory,
       isLoading: loading,
-      isDisabled: disable,
     };
     console.log(exposedVariables, visibility, 'exposedVariables');
     setExposedVariables(exposedVariables);
