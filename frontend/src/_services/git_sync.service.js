@@ -18,6 +18,7 @@ export const gitSyncService = {
   getGitStatus,
 };
 
+// need to separate app-git and git-sync api calls from the frontend
 function create(organizationId, gitUrl) {
   const body = {
     organizationId,
@@ -123,7 +124,7 @@ function gitPush(body, appGitId, versionId) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/git-sync/gitpush/${appGitId}/${versionId}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/app-git/gitpush/${appGitId}/${versionId}`, requestOptions).then(handleResponse);
 }
 
 function getAppConfig(organizationId, versionId) {
@@ -136,7 +137,7 @@ function getAppConfig(organizationId, versionId) {
     credentials: 'include',
     signal: controller.signal,
   };
-  const response = fetch(`${config.apiUrl}/git-sync/${organizationId}/app/${versionId}`, requestOptions).then(
+  const response = fetch(`${config.apiUrl}/app-git/${organizationId}/app/${versionId}`, requestOptions).then(
     handleResponse
   );
   clearTimeout(id);
