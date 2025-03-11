@@ -1,4 +1,4 @@
-import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
+import { QueryError, QueryResult, QueryService } from '@tooljet-marketplace/common';
 import { SourceOptions, QueryOptions } from './types';
 import got, { Headers } from 'got';
 const JSON5 = require('json5');
@@ -22,9 +22,9 @@ export default class Nocodb implements QueryService {
     const host = sourceOptions.nocodb_host;
     const baseURL = host === 'nocodb_cloud' ? 'https://app.nocodb.com' : sourceOptions.base_url;
 
-    let query_string = queryOptions.query_string || ''
+    let query_string = queryOptions.query_string || '';
     if (query_string[0] === '?') {
-      query_string = query_string.slice(1)
+      query_string = query_string.slice(1);
     }
     try {
       switch (operation) {

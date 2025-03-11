@@ -12,14 +12,17 @@
   ],
   "scripts": {
     "test": "echo \"Error: run tests from root\" && exit 1",
-    "build": "tsc -b",
-    "clean": "rimraf ./dist && rimraf tsconfig.tsbuildinfo"
+    "build": "ncc build lib/index.ts -o dist",
+    "watch": "ncc build lib/index.ts -o dist --watch"
   },
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
-    "@tooljet-plugins/common": "file:../common",
+    "@tooljet-marketplace/common": "^1.0.0",
     "got": "^12.0.3",
-    "json5": "^2.2.3",
-    "react": "^17.0.2"
+    "json5": "^2.2.3"
+  },
+  "devDependencies": {
+    "@vercel/ncc": "^0.34.0",
+    "typescript": "^4.7.4"
   }
 }

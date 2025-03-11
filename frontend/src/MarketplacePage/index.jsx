@@ -20,11 +20,11 @@ const MarketplacePage = ({ darkMode, switchDarkMode }) => {
 
   const marketplaceNavItemList = [
     {
-      lable: 'Installed',
+      label: 'Installed',
       value: 'installed',
     },
     {
-      lable: 'Marketplace',
+      label: 'Marketplace',
       value: 'marketplace',
     },
   ];
@@ -57,7 +57,7 @@ const MarketplacePage = ({ darkMode, switchDarkMode }) => {
                       selectedItem={active === item.value}
                       onClick={() => navigate(item.value)}
                     >
-                      {item.lable}
+                      {item.label}
                     </FolderList>
                   ))}
                 </div>

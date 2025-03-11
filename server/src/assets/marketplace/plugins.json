@@ -201,5 +201,13 @@
     "id": "azurerepos",
     "author": "Tooljet",
     "timestamp": "Mon, 23 Dec 2024 11:57:30 GMT"
+  },
+  {
+    "name": "NocoDB",
+    "description": "API plugin for NocoDB",
+    "version": "1.0.0",
+    "id": "nocodb",
+    "author": "Tooljet",
+    "timestamp": "Mon, 23 Dec 2024 11:57:30 GMT"
   }
 ]
