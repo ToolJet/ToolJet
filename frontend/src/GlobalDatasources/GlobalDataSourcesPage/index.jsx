@@ -27,7 +27,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
   const [plugins, setPlugins] = useState([]);
   const [filteredDataSources, setFilteredDataSources] = useState([]);
   const [queryString, setQueryString] = useState('');
-  const [addingDataSource, setAddingDataSource] = useState(false);
+  const [addingDataSource, setAddingDataSource] = useState({});
   const [suggestingDataSource, setSuggestingDataSource] = useState(false);
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -69,7 +69,9 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
   }, []);
 
   useEffect(() => {
-    fetchAndSetWindowTitle({ page: `${selectedDataSource?.name || pageTitles.DATA_SOURCES}` });
+    fetchAndSetWindowTitle({
+      page: `${selectedDataSource?.name || pageTitles.DATA_SOURCES}`,
+    });
     if (selectedDataSource) {
       setModalProps({ ...modalProps, backdrop: false });
     }
@@ -153,11 +155,16 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
         key: key,
         value: options[key].value,
         encrypted: keyMeta ? keyMeta.encrypted : false,
-        ...(!options[key]?.value && { credential_id: options[key]?.credential_id }),
+        ...(!options[key]?.value && {
+          credential_id: options[key]?.credential_id,
+        }),
       };
     });
     if (name.trim() !== '') {
-      setAddingDataSource(true);
+      setAddingDataSource((prevAddingState) => ({
+        ...prevAddingState,
+        [dataSource.name]: true,
+      }));
       globalDatasourceService
         .create({
           plugin_id: pluginId,
@@ -168,16 +175,25 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
         })
         .then((data) => {
           setActiveDatasourceList('');
-          setAddingDataSource(false);
+          setAddingDataSource((prevAddingState) => ({
+            ...prevAddingState,
+            [dataSource.name]: false,
+          }));
           toast.success(t('editor.queryManager.dataSourceManager.toast.success.dataSourceAdded', 'Data Source Added'), {
             position: 'top-center',
           });
 
           dataSourcesChanged(false, data);
-          setAddingDataSource(false);
+          setAddingDataSource((prevAddingState) => ({
+            ...prevAddingState,
+            [dataSource.name]: false,
+          }));
         })
         .catch(({ error }) => {
-          setAddingDataSource(false);
+          setAddingDataSource((prevAddingState) => ({
+            ...prevAddingState,
+            [dataSource.name]: false,
+          }));
           error && toast.error(error, { position: 'top-center' });
         });
     } else {
@@ -299,8 +315,8 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
     }
     const addDataSourceBtn = (item) => (
       <ButtonSolid
-        disabled={addingDataSource}
-        isLoading={addingDataSource}
+        disabled={addingDataSource[item.name] || false}
+        isLoading={addingDataSource[item.name] || false}
         variant="secondary"
         onClick={() => createDataSource(item)}
         data-cy={`${item.title.toLowerCase().replace(/\s+/g, '-')}-add-button`}
