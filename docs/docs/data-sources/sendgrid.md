@@ -50,16 +50,50 @@ The SendGrid API Datasource supports for interaction with the mail endpoint of t
 #### Optional Parameter
 - **Body as HTML**
 
-<img class="screenshot-full" src="/img/datasource-reference/sendgrid/sendgrid-query-v2.png" alt="ToolJet - Query SendGrid"/>
+<img class="screenshot-full" src="/img/datasource-reference/sendgrid/sendgrid-query-v3.png" alt="ToolJet - Query SendGrid"/>
 
-:::info
-**Send mail to** - accepts an array/list of emails separated by comma.
-For example:
-`{{["dev@tooljet.io", "admin@tooljet.io"]}}`.
+<details>
+<summary>**Example Values**</summary>
 
-**Send mail from** - accepts a string.
-For example: `admin@tooljet.io`
-:::
+```yaml
+Send mail to: {{["dev@tooljet.io", "admin@tooljet.io"]}} 
+Send mail from: admin@tooljet.io
+Subject: Hello from ToolJet 👋
+Body as text: Hello User!
+Body as HTML: <h2> Hello User! </h2>
+```
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+
+```json
+[
+  {
+    "statusCode": 202,
+    "body": "",
+    "headers": {
+      "server": "nginx",
+      "date": "Tue, 11 Mar 2025 03:22:39 GMT",
+      "content-length": "0",
+      "connection": "close",
+      "x-message-id": "Ch7SJ6iLSxGz7aaABeSiSw",
+      "access-control-allow-origin": "https://sendgrid.api-docs.io",
+      "access-control-allow-methods": "POST",
+      "access-control-allow-headers": "Authorization, Content-Type, On-behalf-of, x-sg-elas-acl",
+      "access-control-max-age": "600",
+      "x-no-cors-reason": "https://sendgrid.com/docs/Classroom/Basics/API/cors.html",
+      "strict-transport-security": "max-age=31536000; includeSubDomains",
+      "content-security-policy": "frame-ancestors 'none'",
+      "cache-control": "no-cache",
+      "x-content-type-options": "no-sniff",
+      "referrer-policy": "strict-origin-when-cross-origin"
+    }
+  },
+  ""
+]
+```
+</details>
 
 :::tip
 **Send a single email to multiple recipients** - The `Send mail to` field can contain an array of recipients, which will send a single email with all of the recipients in the field. 
