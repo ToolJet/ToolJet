@@ -186,7 +186,6 @@ export const TextInput = function TextInput({
   }, [loading]);
 
   useEffect(() => {
-    if (isInitialRender.current) return;
     setExposedVariable('isVisible', visibility);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visibility]);
@@ -236,10 +235,9 @@ export const TextInput = function TextInput({
       value: properties.value,
       isMandatory: isMandatory,
       isLoading: loading,
-      isVisible: visibility,
       isDisabled: disable,
     };
-
+    console.log(exposedVariables, visibility, 'exposedVariables');
     setExposedVariables(exposedVariables);
     isInitialRender.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
