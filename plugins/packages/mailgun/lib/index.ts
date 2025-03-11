@@ -6,32 +6,44 @@ export default class Mailgun implements QueryService {
     let result: any = {};
     let response = null;
     let BASE_URL = '';
-    const { operation } = queryOptions;
+    const { operation, send_mail_to, send_mail_from, subject, text, html } = queryOptions;
+    const { domain, api_key, eu_hosted } = sourceOptions;
 
-    if (sourceOptions.eu_hosted) {
+    if (eu_hosted) {
       BASE_URL = 'https://api.eu.mailgun.net';
     } else BASE_URL = 'https://api.mailgun.net';
 
     const form = new FormData();
-    queryOptions.send_mail_to.forEach((item) => form.append('to[]', item));
-    form.append('from', queryOptions.send_mail_from);
-    form.append('subject', queryOptions.subject);
-    form.append('text', queryOptions.text);
-    if (queryOptions.html && queryOptions.html.length > 0) {
-      form.append('html', queryOptions.html);
+    send_mail_to.forEach((item) => form.append('to[]', item));
+    form.append('from', send_mail_from);
+    form.append('subject', subject);
+    form.append('text', text);
+    if (html && html.length > 0) {
+      form.append('html', html);
     }
 
     try {
+      if (!domain) {
+        throw new Error('Missing required domain');
+      }
+      if (!api_key) {
+        throw new Error('Missing required api key');
+      }
       switch (operation) {
         case 'mail_service': {
-          response = await fetch(`${BASE_URL}/v3/${sourceOptions.domain}/messages`, {
+          response = await fetch(`${BASE_URL}/v3/${domain}/messages`, {
             method: 'POST',
             headers: {
-              Authorization: 'Basic ' + Buffer.from(`api:${sourceOptions.api_key}`).toString('base64'),
+              Authorization: 'Basic ' + Buffer.from(`api:${api_key}`).toString('base64'),
             },
             body: form,
           });
-          result = await response.json();
+          const textResponse = await response.text();
+          try {
+            result = JSON.parse(textResponse);
+          } catch (error) {
+            result = textResponse;
+          }
 
           if (response.status !== 200) {
             throw new Error(`${result?.message}`);
