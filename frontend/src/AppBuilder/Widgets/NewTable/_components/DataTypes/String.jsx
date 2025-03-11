@@ -70,6 +70,12 @@ export const StringColumn = ({
     (ref?.current?.clientWidth < ref?.current?.children[0]?.offsetWidth ||
       ref?.current?.clientHeight < ref?.current?.children[0]?.offsetHeight);
 
+  const focusInput = () => {
+    if (ref.current) {
+      ref.current.focus();
+    }
+  };
+
   const renderEditableContent = () => (
     <div className="h-100 d-flex flex-column justify-content-center position-relative">
       <div
@@ -106,11 +112,16 @@ export const StringColumn = ({
             setIsEditing(true);
             e.stopPropagation();
           }}
+          suppressContentEditableWarning={true}
         >
           <HighLightSearch text={String(cellValue)} searchTerm={searchText} />
         </div>
       </div>
-      {!isValid && <div className="invalid-feedback text-truncate">{validationError}</div>}
+      {!isValid && (
+        <div className="invalid-feedback text-truncate" onClick={focusInput}>
+          {validationError}
+        </div>
+      )}
     </div>
   );
 

@@ -219,6 +219,8 @@ export default function generateColumnsData({
                   isEditable={isEditable}
                   isMulti={columnType === 'newMultiSelect'}
                   className="select-search table-select-search"
+                  column={column}
+                  isNewRow={columnForAddNewRow}
                 />
               );
 

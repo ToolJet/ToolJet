@@ -116,7 +116,6 @@ export const TableRow = ({
               className={`td-container ${
                 cell.column.columnDef?.meta?.columnType === 'image' && 'jet-table-image-column h-100'
               } ${cell.column.columnDef?.meta?.columnType !== 'image' && `w-100 h-100`}`}
-              style={{ display: 'flex', alignItems: 'center' }}
             >
               {flexRender(cell.column?.columnDef?.cell, cell.getContext())}
             </div>

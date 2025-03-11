@@ -72,6 +72,12 @@ export const TextColumn = ({
     [cellTextColor, isMaxRowHeightAuto, maxRowHeightValue, cellHeight]
   );
 
+  const focusInput = () => {
+    if (cellRef.current) {
+      cellRef.current.focus();
+    }
+  };
+
   const renderContent = useCallback(() => {
     if (!isEditable) {
       return (
@@ -95,7 +101,7 @@ export const TextColumn = ({
           darkMode ? 'textarea-dark-theme' : ''
         }`}
         style={{
-          ...cellStyle,
+          color: cellTextColor || 'inherit',
           maxWidth: containerWidth,
           outline: 'none',
           border: 'none',
@@ -112,22 +118,25 @@ export const TextColumn = ({
             handleContentChange(e.target.innerHTML);
           }
         }}
-        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(cellValue) }}
         onKeyDown={handleKeyDown}
         onFocus={() => setIsEditing(true)}
-      />
+        suppressContentEditableWarning={true}
+      >
+        <HighLightSearch text={String(cellValue)} searchTerm={searchText} />
+      </div>
     );
   }, [
     isEditable,
     isValid,
     darkMode,
-    cellStyle,
+    cellTextColor,
     containerWidth,
-    cellValue,
     handleKeyDown,
-    handleContentChange,
-    horizontalAlignment,
+    cellValue,
     searchText,
+    horizontalAlignment,
+    cellStyle,
+    handleContentChange,
   ]);
 
   return (
@@ -166,7 +175,11 @@ export const TextColumn = ({
         >
           {renderContent()}
         </div>
-        {isEditable && !isValid && <div className="invalid-feedback text-truncate">{validationError}</div>}
+        {isEditable && !isValid && (
+          <div className="invalid-feedback text-truncate" onClick={focusInput}>
+            {validationError}
+          </div>
+        )}
       </div>
     </OverlayTrigger>
   );

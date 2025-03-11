@@ -1,11 +1,13 @@
-import React, { useState, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import Select from '@/_ui/Select';
 import { components } from 'react-select';
 import defaultStyles from '@/_ui/Select/styles';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { Checkbox } from '@/_ui/CheckBox/CheckBox';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import { isArray, isString } from 'lodash';
+import { isArray } from 'lodash';
+import useStore from '@/AppBuilder/_stores/store';
+import { shallow } from 'zustand/shallow';
 
 const { MenuList } = components;
 
@@ -132,10 +134,31 @@ export const CustomSelectColumn = ({
   optionsLoadingState = false,
   horizontalAlignment = 'left',
   isEditable,
+  column,
+  isNewRow,
 }) => {
+  const validateWidget = useStore((state) => state.validateWidget, shallow);
+
   const [isFocused, setIsFocused] = useState(false);
   const containerRef = useRef(null);
   const inputRef = useRef(null);
+
+  const validationData = validateWidget({
+    validationObject: {
+      customRule: { value: column.customRule },
+    },
+    widgetValue: value,
+    customResolveObjects: { value },
+  });
+  const { isValid, validationError } = validationData;
+
+  useEffect(() => {
+    const handleDocumentClick = (event) => {
+      if ((isMulti || isNewRow) && !containerRef.current?.contains(event.target)) setIsFocused(false);
+    };
+    document.addEventListener('mousedown', handleDocumentClick);
+    return () => document.removeEventListener('mousedown', handleDocumentClick);
+  }, [isMulti, isNewRow]);
 
   const customComponents = {
     MenuList: (props) => <CustomMenuList {...props} optionsLoadingState={optionsLoadingState} inputRef={inputRef} />,
@@ -250,30 +273,52 @@ export const CustomSelectColumn = ({
       trigger={isMulti && !isFocused && isOverflowing() && ['hover', 'focus']}
       rootClose={true}
     >
-      <div className="w-100 h-100 d-flex align-items-center" ref={containerRef}>
-        <Select
-          options={options}
-          hasSearch={false}
-          fuzzySearch={fuzzySearch}
-          isDisabled={disabled}
-          className={className}
-          components={customComponents}
-          value={selectedValue}
-          onMenuInputFocus={() => setIsFocused(true)}
-          onChange={handleChange}
-          useCustomStyles={true}
-          styles={customStyles}
-          defaultValue={defaultValue}
-          placeholder={placeholder}
-          isMulti={isMulti}
-          hideSelectedOptions={false}
-          isClearable={false}
-          clearIndicator={false}
-          darkMode={darkMode}
-          menuIsOpen={isFocused || undefined}
-          isFocused={isFocused || undefined}
-        />
-      </div>
+      <>
+        <div
+          className="w-100 h-100 d-flex align-items-center"
+          ref={containerRef}
+          onClick={() => {
+            if (isNewRow && isEditable) {
+              setIsFocused((prev) => !prev);
+            }
+          }}
+        >
+          <Select
+            options={options}
+            hasSearch={false}
+            fuzzySearch={fuzzySearch}
+            isDisabled={disabled}
+            className={className}
+            components={customComponents}
+            value={selectedValue}
+            onMenuInputFocus={() => {
+              setIsFocused(true);
+            }}
+            onChange={handleChange}
+            useCustomStyles={true}
+            styles={customStyles}
+            defaultValue={defaultValue}
+            placeholder={placeholder}
+            isMulti={isMulti}
+            hideSelectedOptions={false}
+            isClearable={false}
+            clearIndicator={false}
+            darkMode={darkMode}
+            menuIsOpen={isFocused || undefined}
+            isFocused={isFocused || undefined}
+          />
+        </div>
+        <div
+          onClick={() => {
+            if (!isValid) {
+              setIsFocused(true); // Open the dropdown
+            }
+          }}
+          className={` ${isValid ? 'd-none' : 'invalid-feedback d-block'}`}
+        >
+          {validationError}
+        </div>
+      </>
     </OverlayTrigger>
   );
 };
