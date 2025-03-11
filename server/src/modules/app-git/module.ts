@@ -19,7 +19,6 @@ import { DataQueryRepository } from '@modules/data-queries/repository';
 import { AiConversationRepository } from '@modules/ai/repositories/ai-conversation.repository';
 import { AiConversationMessageRepository } from '@modules/ai/repositories/ai-conversation-message.repository';
 import { AiResponseVoteRepository } from '@modules/ai/repositories/ai-response-vote.repository';
-
 export class AppGitModule {
   static async register(configs?: { IS_GET_CONTEXT: boolean }): Promise<DynamicModule> {
     const importPath = await getImportPath(configs?.IS_GET_CONTEXT);
@@ -44,6 +43,7 @@ export class AppGitModule {
     const { PageHelperService } = await import(`${importPath}/apps/services/page.util.service`);
     const { VersionsCreateService } = await import(`${importPath}/versions/services/create.service`);
     const { AiUtilService } = await import(`${importPath}/ai/util.service`);
+    const { AppGitListener } = await import(`${importPath}/app-git/listener`);
 
     return {
       module: AppGitModule,
@@ -85,6 +85,7 @@ export class AppGitModule {
         AiConversationRepository,
         AiConversationMessageRepository,
         AiResponseVoteRepository,
+        AppGitListener,
       ],
       controllers: [AppGitController],
       exports: [AppGitUtilService],

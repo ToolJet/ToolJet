@@ -150,13 +150,19 @@ export class AppsService implements IAppsService {
 
   async update(app: App, appUpdateDto: AppUpdateDto, user: User) {
     const { id: userId, organizationId } = user;
-    // const prevName = app.name;
+    const prevName = app.name;
     const { name } = appUpdateDto;
 
     const result = await this.appsUtilService.update(app, appUpdateDto, organizationId);
     if (name && app.creationMode != 'GIT' && name != app.name) {
       // Can use event emitter
-      //this.appGitUtilService.renameAppOrVersion(user, app.id, prevName);
+      // this.appGitUtilService.renameAppOrVersion(user, app.id, prevName);
+      this.eventEmitter.emit('renameApp', {
+        user: user,
+        appId: app.id,
+        prevName: prevName,
+        updatedName: name,
+      });
     }
 
     this.eventEmitter.emit('auditLogEntry', {
