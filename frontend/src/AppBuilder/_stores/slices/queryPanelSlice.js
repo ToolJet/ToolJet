@@ -26,7 +26,10 @@ const initialState = {
   loadingDataQueries: false,
   isPreviewQueryLoading: false,
   queryPanelSearchTem: '',
+  activeControllers: {},
 };
+
+const USER_ABORT_MESSAGE = 'Query aborted';
 
 export const createQueryPanelSlice = (set, get) => ({
   queryPanel: {
@@ -193,7 +196,25 @@ export const createQueryPanelSlice = (set, get) => ({
           isLoading: false,
         });
     },
-
+    abortQuery: (queryName) => {
+      const { activeControllers } = get().queryPanel;
+      if (activeControllers[queryName]) {
+        activeControllers[queryName].abort(USER_ABORT_MESSAGE);
+        const { dataQuery } = get();
+        const queries = dataQuery.queries.modules.canvas;
+        const query = queries.find((query) => query.name === queryName);
+        get().debugger.log({
+          logLevel: 'error',
+          type: 'query',
+          kind: query.kind,
+          key: query.name,
+          message: 'Query execution aborted by user',
+          errorTarget: 'Queries',
+          error: 'Query aborted by user',
+          isQuerySuccessLog: false,
+        });
+      }
+    },
     runQuery: (
       queryId,
       queryName,
@@ -297,6 +318,11 @@ export const createQueryPanelSlice = (set, get) => ({
           return;
         }
       }
+      const controller = new AbortController();
+      const { signal } = controller;
+      set((state) => {
+        state.queryPanel.activeControllers[queryName] = controller;
+      });
 
       // eslint-disable-next-line no-unused-vars
       return new Promise(function (resolve, reject) {
@@ -314,16 +340,25 @@ export const createQueryPanelSlice = (set, get) => ({
 
         let queryExecutionPromise = null;
         if (query.kind === 'runjs') {
-          queryExecutionPromise = executeMultilineJS(query.options.code, query?.id, false, mode, parameters);
+          queryExecutionPromise = executeMultilineJS(
+            query.options.code,
+            query?.id,
+            false,
+            mode,
+            parameters,
+            undefined,
+            signal
+          );
         } else if (query.kind === 'runpy') {
-          queryExecutionPromise = executeRunPycode(query.options.code, query, false, mode, queryState);
+          queryExecutionPromise = executeRunPycode(query.options.code, query, false, mode, queryState, signal);
         } else if (query.kind === 'workflows') {
           queryExecutionPromise = executeWorkflow(
             moduleId,
             query.options.workflowId,
             query.options.blocking,
             query.options?.params,
-            (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id //TODO: currentAppEnvironmentId may no longer required. Need to check
+            (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id, //TODO: currentAppEnvironmentId may no longer required. Need to check
+            signal
           );
         } else {
           queryExecutionPromise = dataqueryService.run(
@@ -331,7 +366,8 @@ export const createQueryPanelSlice = (set, get) => ({
             options,
             query?.options,
             currentVersionId,
-            !isPublicAccess ? (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id : undefined //TODO: currentAppEnvironmentId may no longer required. Need to check
+            !isPublicAccess ? (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id : undefined, //TODO: currentAppEnvironmentId may no longer required. Need to check
+            signal
           );
         }
 
@@ -474,9 +510,21 @@ export const createQueryPanelSlice = (set, get) => ({
             }
           })
           .catch((e) => {
-            const { error } = e;
-            if (mode !== 'view') toast.error(error ?? 'Unknown error');
-            resolve({ status: 'failed', message: error });
+            setResolvedQuery(queryId, {
+              isLoading: false,
+            });
+            if (mode !== 'view') {
+              if (e === USER_ABORT_MESSAGE || e?.message === USER_ABORT_MESSAGE) {
+                return;
+              }
+              toast.error(e?.error ?? 'Unknown error');
+            }
+            resolve({ status: 'failed', message: e?.error });
+          })
+          .finally(() => {
+            set((state) => {
+              delete state.queryPanel.activeControllers[queryName];
+            });
           });
       });
     },
@@ -532,23 +580,43 @@ export const createQueryPanelSlice = (set, get) => ({
         components: get().getComponentNameIdMapping(),
         queries: get().getQueryNameIdMapping(),
       });
+      const controller = new AbortController();
+      const { signal } = controller;
+      set((state) => {
+        state.queryPanel.activeControllers[query.name] = controller;
+      });
 
       return new Promise(function (resolve, reject) {
         let queryExecutionPromise = null;
         if (query.kind === 'runjs') {
-          queryExecutionPromise = executeMultilineJS(query.options.code, query?.id, true, '', parameters);
+          queryExecutionPromise = executeMultilineJS(
+            query.options.code,
+            query?.id,
+            true,
+            '',
+            parameters,
+            undefined,
+            signal
+          );
         } else if (query.kind === 'runpy') {
-          queryExecutionPromise = executeRunPycode(query.options.code, query, true, 'edit', queryState);
+          queryExecutionPromise = executeRunPycode(query.options.code, query, true, 'edit', queryState, signal);
         } else if (query.kind === 'workflows') {
           queryExecutionPromise = executeWorkflow(
             moduleId,
             query.options.workflowId,
             query.options.blocking,
             query.options?.params,
-            (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id //TODO: currentAppEnvironmentId may no longer required. Need to check
+            (currentAppEnvironmentId ?? environmentId) || selectedEnvironment?.id, //TODO: currentAppEnvironmentId may no longer required. Need to check
+            signal
           );
         } else {
-          queryExecutionPromise = dataqueryService.preview(query, options, currentVersionId, currentAppEnvironmentId);
+          queryExecutionPromise = dataqueryService.preview(
+            query,
+            options,
+            currentVersionId,
+            currentAppEnvironmentId,
+            signal
+          );
         }
 
         queryExecutionPromise
@@ -642,6 +710,12 @@ export const createQueryPanelSlice = (set, get) => ({
             resolve({ status: data.status, data: finalData });
           })
           .catch((err) => {
+            if (err === USER_ABORT_MESSAGE || err?.message === USER_ABORT_MESSAGE) {
+              setPreviewLoading(false);
+              setIsPreviewQueryLoading(false);
+              setPreviewData(data);
+              return;
+            }
             const { error, data } = err;
             console.log(err, error, data);
             setPreviewLoading(false);
@@ -649,18 +723,23 @@ export const createQueryPanelSlice = (set, get) => ({
             setPreviewData(data);
             toast.error(error);
             reject({ error, data });
+          })
+          .finally(() => {
+            set((state) => {
+              delete state.queryPanel.activeControllers[query.name];
+            });
           });
       });
     },
 
-    executeRunPycode: async (code, query, isPreview, mode, currentState) => {
+    executeRunPycode: async (code, query, isPreview, mode, currentState, signal) => {
       const {
         queryPanel: { evaluatePythonCode },
       } = get();
-      return { data: await evaluatePythonCode({ code, query, isPreview, mode, currentState }) };
+      return { data: await evaluatePythonCode({ code, query, isPreview, mode, currentState }, undefined, signal) };
     },
 
-    evaluatePythonCode: async (options, moduleId = 'canvas') => {
+    evaluatePythonCode: async (options, moduleId = 'canvas', signal) => {
       const { eventsSlice, dataQuery } = get();
       const { generateAppActions } = eventsSlice;
       const { query, mode, isPreview, code, currentState, queryResult } = options;
@@ -692,7 +771,9 @@ export const createQueryPanelSlice = (set, get) => ({
                 const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
                 return actions.runQuery(query.name);
               },
-
+              abort: () => {
+                get().queryPanel.abortQuery(key);
+              },
               getData: () => {
                 const resolvedState = get().getResolvedState();
                 return resolvedState.queries[key].data;
@@ -723,11 +804,18 @@ export const createQueryPanelSlice = (set, get) => ({
 
         await pyodide.loadPackagesFromImports(code);
         await pyodide.loadPackage('micropip', log);
+        if (signal?.aborted) {
+          throw new Error('Query aborted');
+        }
 
+        // Attach abort event listener
+        signal?.addEventListener('abort', () => {
+          pyodide.interruptBuffer(); // Interrupt Pyodide execution
+        });
         let pyresult = await pyodide.runPythonAsync(code);
         result = await pyresult;
       } catch (err) {
-        console.error(err);
+        if (err.message === 'Query aborted') throw err;
 
         const errorType = err.message.includes('SyntaxError') ? 'SyntaxError' : 'NameError';
         const error = err.message.split(errorType + ': ')[1];
@@ -842,7 +930,7 @@ export const createQueryPanelSlice = (set, get) => ({
       //   queries: updatedQueries,
       // });
     },
-    executeWorkflow: async (moduleId, workflowId, _blocking = false, params = {}, appEnvId) => {
+    executeWorkflow: async (moduleId, workflowId, _blocking = false, params = {}, appEnvId, signal) => {
       const {
         app: { appId },
         getAllExposedValues,
@@ -851,7 +939,7 @@ export const createQueryPanelSlice = (set, get) => ({
       const resolvedParams = get().resolveReferences(moduleId, params, currentState, {}, {});
 
       try {
-        const response = await workflowExecutionsService.execute(workflowId, resolvedParams, appId, appEnvId);
+        const response = await workflowExecutionsService.execute(workflowId, resolvedParams, appId, appEnvId, signal);
         return { data: response.result, status: 'ok' };
       } catch (e) {
         return { data: undefined, status: 'failed' };
@@ -875,7 +963,7 @@ export const createQueryPanelSlice = (set, get) => ({
       });
     },
 
-    executeMultilineJS: async (code, queryId, isPreview, mode = '', parameters = {}, moduleId = 'canvas') => {
+    executeMultilineJS: async (code, queryId, isPreview, mode = '', parameters = {}, moduleId = 'canvas', signal) => {
       const { queryPanel, dataQuery, getAllExposedValues, eventsSlice } = get();
       const { createProxy } = queryPanel;
       const { generateAppActions } = eventsSlice;
@@ -931,6 +1019,9 @@ export const createQueryPanelSlice = (set, get) => ({
             const query = dataQuery.queries.modules?.[moduleId].find((q) => q.name === key);
             query.options.parameters?.forEach((arg) => (processedParams[arg.name] = params[arg.name]));
             return actions.runQuery(query.name, processedParams);
+          },
+          abort: () => {
+            get().queryPanel.abortQuery(key);
           },
 
           getData: () => {
@@ -992,12 +1083,18 @@ export const createQueryPanelSlice = (set, get) => ({
           proxiedConstants,
           ...proxiedFormattedParams,
         ];
-
+        const data = await Promise.race([
+          evalFn(...fnArgs),
+          new Promise((_, reject) => signal?.addEventListener('abort', () => reject(new Error('Query aborted')))),
+        ]);
         result = {
           status: 'ok',
-          data: await evalFn(...fnArgs),
+          data,
         };
       } catch (err) {
+        if (err.message === 'Query aborted') {
+          throw err;
+        }
         const stackLines = err.stack.split('\n');
         const errorLocation =
           stackLines[2]?.match(/<anonymous>:(\d+):(\d+)/) ?? stackLines[1]?.match(/<anonymous>:(\d+):(\d+)/);

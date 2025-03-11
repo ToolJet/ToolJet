@@ -14,7 +14,7 @@ function Logs({ logProps, idx }) {
     titleLogType = 'Transformation';
   }
   const title = logProps?.key;
-  const message =
+  let message =
     logProps?.type === 'navToDisablePage'
       ? logProps?.message
       : logProps?.isQuerySuccessLog
@@ -29,6 +29,9 @@ function Logs({ logProps, idx }) {
           (isString(logProps?.error?.description) && logProps?.error?.description) || //added string check since description can be an object. eg: runpy
           logProps?.error?.message.trim()
         }`;
+  if (logProps.error === 'Query aborted by user') {
+    message = 'Query aborted';
+  }
 
   const defaultStyles = {
     transform: open ? 'rotate(0deg)' : 'rotate(-90deg)',
