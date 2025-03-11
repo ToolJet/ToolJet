@@ -51,10 +51,10 @@ export function getDefaultInstanceSettings() {
     [INSTANCE_USER_SETTINGS.ENABLE_MULTIPLAYER_EDITING]:
       process.env.ENABLE_MULTIPLAYER_EDITING === 'true' ? 'true' : 'false',
     [INSTANCE_USER_SETTINGS.ENABLE_COMMENTS]: process.env.COMMENT_FEATURE_ENABLE === 'true' ? 'true' : 'false',
-    [INSTANCE_SYSTEM_SETTINGS.SMTP_PORT]: process.env.SMTP_PORT === 'true' ? 'false' : 'true',
-    [INSTANCE_SYSTEM_SETTINGS.SMTP_DOMAIN]: process.env.SMTP_DOMAIN === 'true' ? 'false' : 'true',
-    [INSTANCE_SYSTEM_SETTINGS.SMTP_USERNAME]: process.env.SMTP_USERNAME === 'true' ? 'false' : 'true',
-    [INSTANCE_SYSTEM_SETTINGS.SMTP_PASSWORD]: process.env.SMTP_PASSWORD === 'true' ? 'false' : 'true',
+    [INSTANCE_SYSTEM_SETTINGS.SMTP_PORT]: process.env.SMTP_PORT,
+    [INSTANCE_SYSTEM_SETTINGS.SMTP_DOMAIN]: process.env.SMTP_DOMAIN,
+    [INSTANCE_SYSTEM_SETTINGS.SMTP_USERNAME]: process.env.SMTP_USERNAME,
+    [INSTANCE_SYSTEM_SETTINGS.SMTP_PASSWORD]: process.env.SMTP_PASSWORD,
     [INSTANCE_SYSTEM_SETTINGS.SMTP_ENABLED]: process.env.SMTP_DISABLED === 'true' ? 'false' : 'true',
     [INSTANCE_SYSTEM_SETTINGS.SMTP_ENV_CONFIGURED]: 'true',
   };
