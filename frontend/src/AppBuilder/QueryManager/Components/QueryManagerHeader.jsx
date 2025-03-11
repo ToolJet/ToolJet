@@ -252,7 +252,7 @@ const RunButton = ({ buttonLoadingState }) => {
     >
       <button
         onClick={() => runQuery(selectedQuery?.id, selectedQuery?.name, undefined, 'edit', {}, true)}
-        className={`border-0 default-secondary-button  ${buttonLoadingState(isLoading)}`}
+        className={`border-0 default-secondary-button  ${buttonLoadingState(isLoading)} !tw-w-max`}
         data-cy="query-run-button"
         disabled={isInDraft}
         {...(isInDraft && {
@@ -261,13 +261,17 @@ const RunButton = ({ buttonLoadingState }) => {
         })}
       >
         <span
-          className={cx({
-            invisible: isLoading,
-          })}
+          className={cx(
+            {
+              invisible: isLoading,
+            },
+            'tw-flex tw-items-center'
+          )}
         >
           <Play width={14} fill="var(--indigo9)" viewBox="0 0 14 14" />
         </span>
         <span className="query-manager-btn-name">{isLoading ? ' ' : 'Run'}</span>
+        <span>⌘↩</span>
       </button>
       {isInDraft && <Tooltip id="query-header-btn-run" className="tooltip" />}
     </span>
@@ -299,6 +303,7 @@ const PreviewButton = ({ buttonLoadingState, onClick }) => {
         <Eye1 width={14} fill="var(--slate9)" />
       </span>
       <span>{t('editor.queryManager.preview', 'Preview')}</span>
+      <span className="query-manager-btn-shortcut">⌘↑↩</span>
     </button>
   );
 };
