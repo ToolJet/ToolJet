@@ -362,6 +362,9 @@ export const formConfig = {
   exposedVariables: {
     data: {},
     isValid: true,
+    isVisible: true,
+    isDisabled: false,
+    isLoading: false,
   },
   actions: [
     {
@@ -371,6 +374,21 @@ export const formConfig = {
     {
       handle: 'resetForm',
       displayName: 'Reset Form',
+    },
+    {
+      handle: 'setVisibility',
+      displayName: 'Set visibility',
+      params: [{ handle: 'setVisibility', displayName: 'Set Visibility', defaultValue: '{{true}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setDisable',
+      displayName: 'Set Disable',
+      params: [{ handle: 'setDisable', displayName: 'Set Disable', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setLoading',
+      displayName: 'Set Loading',
+      params: [{ handle: 'setLoading', displayName: 'Set Loading', defaultValue: '{{false}}', type: 'toggle' }],
     },
   ],
   definition: {

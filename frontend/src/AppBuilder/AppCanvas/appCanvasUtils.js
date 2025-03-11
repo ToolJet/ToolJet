@@ -690,3 +690,19 @@ export const getParentWidgetFromId = (parentType, parentId) => {
   }
   return parentType;
 };
+
+export const getTabId = (parentId) => {
+  return parentId.split('-').slice(0, -1).join('-');
+};
+
+export const getSubContainerIdWithSlots = (parentId) => {
+  let cleanParentId = parentId;
+  if (parentId) {
+    if (parentId.includes('header')) {
+      cleanParentId = parentId.replace('-header', '');
+    } else if (parentId.includes('footer')) {
+      cleanParentId = parentId.replace('-footer', '');
+    }
+  }
+  return cleanParentId;
+};
