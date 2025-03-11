@@ -73,17 +73,25 @@ h3 {
 
 .badge--primary {
   margin-bottom: 1rem;
-  background: #FAEFE7;
+  background-color: #FAEFE7;
   color: #BF4F03;
 }
 
-.badge--primary img {
+.badge img {
   box-shadow: none;
 }
 
-.badge--secondary {
-  background-color: #88909914;
+
+.badge--warning {
+  background-color: #FCEEEF;
+  color: #D72D39;
 }
+
+/* .badge--secondary {
+  background-color: #dfdfdf;
+} */
+
+
 
 article {
   padding-left: 7%;
