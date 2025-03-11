@@ -35,16 +35,35 @@ You can also configure for **[additional optional parameters](https://docs.snowf
 
 ## Querying Snowflake
 
-1. Click on **+ Add** button of the query manager at the bottom panel of the editor.
+1. Click on **+** button of the query manager at the bottom panel of the editor.
 2. Select the **Snowflake** datasource added in previous step.
 3. Select the **SQL Mode** form the dropdown and enter the query.
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
-<img className="screenshot-full" src="/img/datasource-reference/snowflake/snowflake-query-v2.png" alt="ToolJet - Snowflake query" />
+<img className="screenshot-full" src="/img/datasource-reference/snowflake/snowflake-query-v3.png" alt="ToolJet - Snowflake query" />
 
+<details>
+<summary>**Example Value**</summary>
 ```sql
-select * from "SNOWFLAKE_SAMPLE_DATA"."WEATHER"."DAILY_14_TOTAL" limit 10;
+      SHOW TABLES;
 ```
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+```json
+    0: {} 25 keys
+        created_on:"2024-10-30 11:05:37.610 -0700"
+        name:"CATALOG_PAGE"
+        database_name:"SNOWFLAKE_SAMPLE_DATA"
+        schema_name:"TPCDS_SF100TCL"
+        kind:"TABLE"
+        comment:""
+        cluster_by:"LINEAR( cp_catalog_page_sk )"
+        rows:50000
+        "..."
+```
+</details>
 
 :::tip
 Query results can be transformed using transformations. Read our [transformations](/docs/tutorial/transformations) documentation to learn more.
