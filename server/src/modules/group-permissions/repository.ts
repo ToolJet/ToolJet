@@ -20,7 +20,6 @@ import { GroupUsers } from '@entities/group_users.entity';
 import { USER_STATUS, WORKSPACE_USER_STATUS } from '@modules/users/constants/lifecycle';
 import { User } from '@entities/user.entity';
 import { DATA_BASE_CONSTRAINTS } from './constants/error';
-import { Organization } from '@entities/organization.entity';
 @Injectable()
 export class GroupPermissionsRepository extends Repository<GroupPermissions> {
   constructor(private dataSource: DataSource) {
@@ -65,34 +64,6 @@ export class GroupPermissionsRepository extends Repository<GroupPermissions> {
         return await manager.save(group);
       }, [DATA_BASE_CONSTRAINTS.GROUP_NAME_UNIQUE]);
     }, manager || this.manager);
-  }
-
-  async createDefaultGroupPermissionsForOrganization(organization: Organization, manager?: EntityManager) {
-    const defaultGroups = ['end-user', 'admin', 'builder'];
-
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const createdGroupPermissions: GroupPermissions[] = [];
-      for (const group of defaultGroups) {
-        const isAdmin = group === 'admin';
-        const groupPermission = manager.create(GroupPermissions, {
-          organizationId: organization.id,
-          name: group,
-          appCreate: isAdmin,
-          appDelete: isAdmin,
-          folderCreate: isAdmin,
-          orgEnvironmentVariableCreate: isAdmin,
-          orgEnvironmentVariableUpdate: isAdmin,
-          orgEnvironmentVariableDelete: isAdmin,
-          orgEnvironmentConstantCreate: isAdmin,
-          orgEnvironmentConstantDelete: isAdmin,
-          folderUpdate: isAdmin,
-          folderDelete: isAdmin,
-        });
-        await manager.save(groupPermission);
-        createdGroupPermissions.push(groupPermission);
-      }
-      return createdGroupPermissions;
-    }, manager);
   }
 
   async getAllGranularPermissions(
