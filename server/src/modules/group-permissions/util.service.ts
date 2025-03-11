@@ -217,7 +217,7 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
       }
 
       // Validation - Group exist and Group is not default group
-      //this.validateAddGroupUserOperation(group);
+      this.validateAddGroupUserOperation(group);
 
       // Get end users
       const endUserRoleUsers = endUsers?.length

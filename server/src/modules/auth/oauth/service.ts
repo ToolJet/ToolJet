@@ -187,12 +187,6 @@ export class OauthService implements IOAuthService {
             manager
           );
           await this.organizationUsersRepository.createOne(userDetails, defaultOrganization, false, manager);
-          await this.organizationUsersUtilService.attachUserGroup(
-            [USER_ROLE.ADMIN],
-            defaultOrganization.id,
-            userDetails.id,
-            manager
-          );
 
           organizationDetails = defaultOrganization;
         } else if (userDetails) {
