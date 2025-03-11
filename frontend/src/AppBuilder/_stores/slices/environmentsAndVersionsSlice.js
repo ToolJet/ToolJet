@@ -252,7 +252,7 @@ export const createEnvironmentsAndVersionsSlice = (set, get) => ({
           });
           selectedVersion = response.editorVersion;
           const appVersionEnvironment = get().environments.find(
-            (environment) => environment.id === selectedVersion.current_environment_id
+            (environment) => environment.id === selectedVersion.currentEnvironmentId
           );
 
           //TODO: need to check if this is needed
