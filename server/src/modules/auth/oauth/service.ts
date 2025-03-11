@@ -36,6 +36,7 @@ import { OrganizationUsersRepository } from '@modules/organization-users/reposit
 import { LicenseUserService } from '@modules/licensing/services/user.service';
 import { OnboardingUtilService } from '@modules/onboarding/util.service';
 import { SessionUtilService } from '@modules/session/util.service';
+import { OrganizationsUtilService } from '@modules/organizations/util.service';
 const uuid = require('uuid');
 
 @Injectable()
@@ -56,7 +57,8 @@ export class OauthService implements IOAuthService {
     protected readonly organizationUsersRepository: OrganizationUsersRepository,
     protected readonly licenseUserService: LicenseUserService,
     protected readonly onboardingUtilService: OnboardingUtilService,
-    protected readonly sessionUtilService: SessionUtilService
+    protected readonly sessionUtilService: SessionUtilService,
+    protected readonly organizationUtilService: OrganizationsUtilService
   ) {}
 
   async signIn(
@@ -172,21 +174,30 @@ export class OauthService implements IOAuthService {
 
           // Not logging in to specific organization, creating new
           const { name, slug } = generateNextNameAndSlug('My workspace');
-          defaultOrganization = await this.organizationRepository.createOne(name, slug, manager);
+          defaultOrganization = await this.organizationUtilService.createOrganizationWithDefaultSettings(
+            name,
+            slug,
+            manager
+          );
 
           userDetails = await this.userRepository.createOne(
             {
               firstName: userResponse.firstName,
               lastName: userResponse.lastName,
               email: userResponse.email,
-              userType: USER_ROLE.ADMIN,
               defaultOrganizationId: defaultOrganization.id,
               ...getUserStatusAndSource(lifecycleEvents.USER_SSO_VERIFY, sso),
             },
             manager
           );
-
           await this.organizationUsersRepository.createOne(userDetails, defaultOrganization, true, manager);
+          await this.organizationUsersUtilService.attachUserGroup(
+            [USER_ROLE.ADMIN],
+            defaultOrganization.id,
+            userDetails.id,
+            manager
+          );
+
           organizationDetails = defaultOrganization;
         } else if (userDetails) {
           // Finding organization to be loaded
@@ -331,7 +342,7 @@ export class OauthService implements IOAuthService {
         organizationDetails,
         isInstanceSSOLogin || isInstanceSSOOrganizationLogin,
         false,
-        user,
+        userDetails,
         manager,
         isInviteRedirect ? loginOrganiaztionId : null
       );
