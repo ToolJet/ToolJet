@@ -25,7 +25,6 @@ import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { DeepPartial } from 'typeorm';
 import { SSOType } from '../../entities/sso_config.entity';
 import { LicenseTermsService } from '../licensing/interfaces/IService';
-import { LICENSE_FIELD } from '../licensing/constants';
 import { GroupPermissionsUtilService } from '../group-permissions/util.service';
 import { App } from '../../entities/app.entity';
 import { In } from 'typeorm';
@@ -38,7 +37,6 @@ import { RolesRepository } from '@modules/roles/repository';
 import { GroupPermissions } from '@entities/group_permissions.entity';
 import { ProfileUtilService } from '@modules/profile/util.service';
 import { OrganizationUsersRepository } from '@modules/organization-users/repository';
-import { InstanceSSOConfigMap } from '@modules/login-configs/types';
 import { SessionUtilService } from '@modules/session/util.service';
 import { OnboardingStatus } from '@modules/onboarding/constants';
 import { IAuthUtilService } from './interfaces/IUtilService';
@@ -196,42 +194,28 @@ export class AuthUtilService implements IAuthUtilService {
     return user;
   }
 
-  async getSSOConfigs(ssoType: SSOType.GOOGLE | SSOType.GIT | SSOType.OPENID): Promise<Partial<SSOConfigs>> {
-    const ssoConfigs = await this.getInstanceSSOConfigsOfType(ssoType);
-    const oidcEnabled = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.OIDC);
-
-    // Create a map from the ssoConfig object
-    const ssoConfigMap: InstanceSSOConfigMap = {
-      [ssoConfigs.sso]: {
-        enabled: ssoConfigs.enabled,
-        configs: ssoConfigs.configs,
-      },
-    };
-
+  async getSSOConfigs(ssoType: SSOType.GOOGLE | SSOType.GIT): Promise<Partial<SSOConfigs>> {
     switch (ssoType) {
       case SSOType.GOOGLE:
         return {
-          enabled: ssoConfigMap.google.enabled || false,
-          configs: ssoConfigMap.google.configs || {},
+          enabled: !!this.configService.get<string>('SSO_GOOGLE_OAUTH2_CLIENT_ID'),
+          configs: { clientId: this.configService.get<string>('SSO_GOOGLE_OAUTH2_CLIENT_ID') },
         };
       case SSOType.GIT:
         return {
-          enabled: ssoConfigMap.git.enabled || false,
-          configs: ssoConfigMap.git.configs || {},
-        };
-      case SSOType.OPENID:
-        return {
-          enabled: ssoConfigMap.openid.enabled && oidcEnabled,
-          configs: ssoConfigMap.openid.configs || {},
+          enabled: !!this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_ID'),
+          configs: {
+            clientId: this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_ID'),
+            clientSecret: this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_SECRET'),
+            hostName: this.configService.get<string>('SSO_GIT_OAUTH2_HOST'),
+          },
         };
       default:
         return;
     }
   }
 
-  async getInstanceSSOConfigsOfType(
-    ssoType: SSOType.GOOGLE | SSOType.GIT | SSOType.OPENID
-  ): Promise<DeepPartial<SSOConfigs>> {
+  async getInstanceSSOConfigsOfType(ssoType: SSOType.GOOGLE | SSOType.GIT): Promise<DeepPartial<SSOConfigs>> {
     const instanceSettings = await this.instanceSettingsUtilService.getSettings([
       INSTANCE_SYSTEM_SETTINGS.ALLOWED_DOMAINS,
       INSTANCE_SYSTEM_SETTINGS.ENABLE_SIGNUP,

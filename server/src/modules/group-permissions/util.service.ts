@@ -94,11 +94,14 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
     return await dbTransactionWrap(async (manager: EntityManager) => {
       // Get Group details
 
-      const group = await this.groupPermissionsRepository.getGroup({
-        id,
-        organizationId,
-        ...(!isLicenseValid ? noLicenseFilter : {}),
-      });
+      const group = await this.groupPermissionsRepository.getGroup(
+        {
+          id,
+          organizationId,
+          ...(!isLicenseValid ? noLicenseFilter : {}),
+        },
+        manager
+      );
 
       if (!isLicenseValid) {
         if (group.name !== USER_ROLE.END_USER) {
