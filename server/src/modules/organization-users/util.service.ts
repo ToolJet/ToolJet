@@ -40,8 +40,6 @@ import { SessionUtilService } from '@modules/session/util.service';
 import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
 import { IOrganizationUsersUtilService } from './interfaces/IUtilService';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { GroupPermissions } from '@entities/group_permissions.entity';
-import { GroupUsers } from '@entities/group_users.entity';
 @Injectable()
 export class OrganizationUsersUtilService implements IOrganizationUsersUtilService {
   constructor(
@@ -234,7 +232,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const userType = (await manager.count(User)) === 0 ? USER_TYPE.INSTANCE : USER_TYPE.WORKSPACE;
 
-      return await this.userRepository.createOne(
+      return await this.userRepository.createOrUpdate(
         {
           email,
           firstName,
