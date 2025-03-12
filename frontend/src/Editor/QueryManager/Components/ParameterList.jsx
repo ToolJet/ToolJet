@@ -53,8 +53,13 @@ const ParameterList = ({
   }, [showMore]);
 
   return (
-    <div className="card-header">
-      <p style={{ marginRight: '4px', margin: '0px' }}>Parameters</p>
+    <div className="d-flex">
+      <p
+        className="text-placeholder font-weight-medium"
+        style={{ marginRight: '16px', marginBottom: '0px', width: '140px' }}
+      >
+        Parameters
+      </p>
       {formattedParameters
         .filter((param) => param.isVisible)
         .map((parameter) => {

@@ -2,6 +2,7 @@ import React from 'react';
 import Headers from './TabHeaders';
 import Params from './TabParams';
 import Body from './TabBody';
+import Cookies from './TabCookies';
 import { Tab, ListGroup, Row } from 'react-bootstrap';
 import { CustomToggleSwitch } from '@/Editor/QueryManager/Components/CustomToggleSwitch';
 
@@ -9,7 +10,7 @@ function ControlledTabs({
   options,
   theme,
   onChange,
-  onJsonBodyChange,
+  onRawBodyChange,
   removeKeyValuePair,
   addNewKeyValuePair,
   darkMode,
@@ -18,7 +19,7 @@ function ControlledTabs({
   bodyToggle,
 }) {
   const [key, setKey] = React.useState('headers');
-  const tabs = ['Headers', 'Params', 'Body'];
+  const tabs = ['Headers', 'Params', 'Body', 'Cookies'];
 
   return (
     <Tab.Container activeKey={key} onSelect={(k) => setKey(k)} defaultActiveKey="headers">
@@ -33,7 +34,7 @@ function ControlledTabs({
           </ListGroup>
           {key === 'body' && (
             <div className="text-nowrap d-flex align-items-center">
-              Raw JSON&nbsp;&nbsp;
+              Raw &nbsp;&nbsp;
               <CustomToggleSwitch
                 toggleSwitchFunction={setBodyToggle}
                 action="bodyToggle"
@@ -77,11 +78,23 @@ function ControlledTabs({
                 removeKeyValuePair={removeKeyValuePair}
                 addNewKeyValuePair={addNewKeyValuePair}
                 onChange={onChange}
-                onJsonBodyChange={onJsonBodyChange}
+                onRawBodyChange={onRawBodyChange}
                 options={options['body']}
-                jsonBody={options['json_body']}
+                jsonBody={options['json_body']} // FIXME: Remove this once data migration to raw_body is complete
+                rawBody={options['raw_body']}
                 theme={theme}
                 bodyToggle={bodyToggle}
+                darkMode={darkMode}
+                componentName={componentName}
+              />
+            </Tab.Pane>
+            <Tab.Pane eventKey="cookies" bsPrefix="rest-api-tabpanes" transition={false}>
+              <Cookies
+                removeKeyValuePair={removeKeyValuePair}
+                addNewKeyValuePair={addNewKeyValuePair}
+                onChange={onChange}
+                options={options['cookies']}
+                theme={theme}
                 darkMode={darkMode}
                 componentName={componentName}
               />

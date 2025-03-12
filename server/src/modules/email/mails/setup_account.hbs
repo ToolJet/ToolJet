@@ -1,0 +1,42 @@
+<table align="center" class="content-body">
+  <tr>
+    <td class="content-body_wrap padding-x-40">
+      <table>
+        <tr>
+          <td>
+            <p> Hi {{name}},</p>
+          </td>
+        </tr>
+        <tr>
+          <td class="padding-y-20">
+            <p>
+              Thank you for signing up to {{whiteLabelText}}. We’re excited to have you
+              onboard! Please confirm your email address by clicking the button
+              below to get started.
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <a href={{inviteUrl}} target="_blank" class="padding-r-40" href="#">
+              <button class="primary-btn">
+                Confirm email address
+              </button>
+            </a>
+          </td>
+        </tr>
+        <tr>
+          <td class="padding-y-20 footer-note">
+            {{#if (eq whiteLabelText "ToolJet")}}
+              <span>Welcome aboard,</span>
+              <br />
+              <span>The ToolJet Team</span>
+            {{else}}
+              <span>Welcome aboard!</span>
+            {{/if}}
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>

@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useMemo, memo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, memo, useCallback, useRef } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import Plotly from 'plotly.js-dist-min';
 import createPlotlyComponent from 'react-plotly.js/factory';
-import { isJson } from '@/_helpers/utils';
+import { isStringValidJson } from '@/_helpers/utils';
 const Plot = createPlotlyComponent(Plotly);
 import { isEqual } from 'lodash';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+
 var tinycolor = require('tinycolor2');
 
 export const Chart = function Chart({
@@ -19,6 +20,7 @@ export const Chart = function Chart({
   setExposedVariables,
   dataCy,
 }) {
+  const isInitialRender = useRef(true);
   const [loadingState, setLoadingState] = useState(false);
 
   const getColor = (color) => {
@@ -51,7 +53,13 @@ export const Chart = function Chart({
 
   const jsonData = typeof jsonDescription === 'object' ? JSON.stringify(jsonDescription) : jsonDescription;
 
-  const isDescriptionJson = plotFromJson ? isJson(jsonData) : false;
+  let isDescriptionJson = false;
+  if (plotFromJson) {
+    isDescriptionJson = isStringValidJson(jsonData);
+    if (!isDescriptionJson) {
+      console.log('Throw error');
+    }
+  }
 
   const jsonChartData = isDescriptionJson ? JSON.parse(jsonData).data : [];
 
@@ -67,6 +75,7 @@ export const Chart = function Chart({
   const chartTitle = plotFromJson ? chartLayout?.title ?? title : title;
 
   useEffect(() => {
+    if (isInitialRender.current) return;
     const { xaxis, yaxis } = chartLayout;
     let xAxisTitle, yAxisTitle;
     if (xaxis) {
@@ -94,11 +103,13 @@ export const Chart = function Chart({
         color: fontColor,
       },
     },
+    showlegend: chartLayout.showlegend ?? false,
     legend: {
       text: chartTitle,
       font: {
         color: fontColor,
       },
+      ...chartLayout.legend,
     },
     xaxis: {
       showgrid: showGridLines,
@@ -172,7 +183,7 @@ export const Chart = function Chart({
   );
 
   const handleClick = useCallback((data) => {
-    if (data.length > 0) {
+    if (!disabledState && data.length > 0) {
       const {
         x: xAxisLabel,
         y: yAxisLabel,
@@ -194,13 +205,32 @@ export const Chart = function Chart({
   }, []);
 
   const handleDoubleClick = useCallback(() => {
-    fireEvent('onDoubleClick');
+    if (!disabledState) {
+      fireEvent('onDoubleClick');
+    }
   }, []);
 
   useEffect(() => {
-    setExposedVariable('clearClickedPoint', () => {
-      setExposedVariable('clickedDataPoint', {});
-    });
+    const { xaxis, yaxis } = chartLayout;
+    let xAxisTitle, yAxisTitle;
+    if (xaxis) {
+      xAxisTitle = xaxis?.title?.text;
+    }
+    if (yaxis) {
+      yAxisTitle = yaxis?.title?.text;
+    }
+    const exposedVariables = {
+      chartTitle: chartTitle,
+      xAxisTitle: xAxisTitle,
+      yAxisTitle: yAxisTitle,
+      clearClickedPoint: () => {
+        setExposedVariable('clickedDataPoint', {});
+      },
+    };
+
+    setExposedVariables(exposedVariables);
+    isInitialRender.current = false;
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -221,6 +251,7 @@ export const Chart = function Chart({
           }}
           onClick={handleClick}
           onDoubleClick={handleDoubleClick}
+          disabledState={disabledState}
         />
       )}
     </div>
@@ -229,17 +260,17 @@ export const Chart = function Chart({
 
 // onClick event was not working when the component is re-rendered for every click. Hance, memoization is used
 const PlotComponent = memo(
-  ({ data, layout, config, onClick, onDoubleClick }) => {
+  ({ data, layout, config, onClick, onDoubleClick, disabledState }) => {
     return (
       <Plot
         data={data}
         layout={deepClone(layout)} // Cloning the layout since the object is getting mutated inside the package
         config={config}
         onClick={(e) => {
-          onClick(e.points);
+          if (!disabledState) onClick(e.points);
         }}
         onDoubleClick={() => {
-          onDoubleClick();
+          if (!disabledState) onDoubleClick();
         }}
       />
     );

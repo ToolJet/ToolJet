@@ -1,0 +1,20 @@
+{
+  "name": "Library management system",
+  "description": "This template offers a complete solution for managing library resources efficiently, with streamlined cataloging and search.",
+  "widgets": [
+    "Table",
+    "Container"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "library-management-system",
+  "category": "operations"
+}

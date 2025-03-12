@@ -1,4 +1,4 @@
-import { AppVersion } from '../src/entities/app_version.entity';
+import { AppVersion } from '@entities/app_version.entity';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class SetLoadingStateToFalseForExistingTables1638255797809 implements MigrationInterface {

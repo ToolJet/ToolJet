@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { isEmpty, isEqual, get } from 'lodash';
 import React from 'react';
 import { JSONNode } from './JSONNode';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
@@ -23,7 +23,7 @@ export class JSONTreeViewer extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (!_.isEqual(prevProps, this.props)) {
+    if (!isEqual(prevProps, this.props)) {
       this.setState({
         data: this.props.data,
         shouldExpandNode: this.props.shouldExpandNode,
@@ -187,41 +187,41 @@ export class JSONTreeViewer extends React.Component {
   };
 
   getAbsoluteNodePath = (path) => {
-    const data = this.state.data;
-    if (!data || _.isEmpty(data)) return null;
-    const map = new Map();
+    // const data = this.state.data;
+    if (!this.state.data || isEmpty(this.state.data)) return null;
+    // const map = new Map();
 
-    // loop through the data and build the map
-    const buildMap = (data, path = '') => {
-      const keys = Object.keys(data);
-      keys.forEach((key) => {
-        const value = data[key];
-        const _type = Object.prototype.toString.call(value).slice(8, -1);
-        let newPath = '';
-        if (path === '') {
-          newPath = key;
-        } else {
-          newPath = `${path}.${key}`;
-        }
+    // // loop through the data and build the map
+    // const buildMap = (data, path = '') => {
+    //   const keys = Object.keys(data);
+    //   keys.forEach((key) => {
+    //     const value = data[key];
+    //     const _type = Object.prototype.toString.call(value).slice(8, -1);
+    //     let newPath = '';
+    //     if (path === '') {
+    //       newPath = key;
+    //     } else {
+    //       newPath = `${path}.${key}`;
+    //     }
 
-        if (_.isObject(value)) {
-          map.set(newPath, { type: _type });
-          buildMap(value, newPath);
-        } else {
-          map.set(newPath, { type: _type });
-        }
-      });
-    };
+    //     if (isObject(value) && ![window, window.app, document].includes(value)) {
+    //       map.set(newPath, { type: _type });
+    //       buildMap(value, newPath);
+    //     } else {
+    //       map.set(newPath, { type: _type });
+    //     }
+    //   });
+    // };
 
     const computeAbsolutePath = (path) => {
       let prevPath, prevType, prevRelPath, currentPath, abs;
 
       for (let i = 0; i < path.length; i++) {
-        prevType = map.get(prevRelPath)?.type;
         const node = path[i];
 
         currentPath = prevRelPath ? `${prevRelPath}.${node}` : node;
 
+        prevType = this.getCurrentNodeType(get(this.state.data, abs));
         if (prevType === 'Object') {
           //use bracket notation if the node starts with a numeric digit
           if (node.match(/^\d/)) {
@@ -237,11 +237,10 @@ export class JSONTreeViewer extends React.Component {
         prevPath = abs;
         prevRelPath = currentPath;
       }
-
       return abs;
     };
 
-    buildMap(data);
+    // buildMap(data);
 
     return `{{${computeAbsolutePath(path)}}}`;
   };
@@ -252,7 +251,7 @@ export class JSONTreeViewer extends React.Component {
         <ErrorBoundary showFallback={true}>
           <JSONNode
             data={this.state.data}
-            shouldExpandNode={false}
+            shouldExpandNode={this.props.shouldExpandNode ?? false}
             getCurrentPath={this.getCurrentNodePath}
             getCurrentNodeType={this.getCurrentNodeType}
             toUseNodeIcons={this.props.useIcons ?? false}

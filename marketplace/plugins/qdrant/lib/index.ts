@@ -1,7 +1,14 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-marketplace/common';
 import { SourceOptions, QueryOptions, Operation } from './types';
 import { QdrantClient } from '@qdrant/js-client-rest';
-import { deletePoints, getCollectionInfo, getPoints, listCollections, queryPoints, upsertPoints } from './operations';
+import {
+  deletePoints,
+  getCollectionInfo,
+  getPoints,
+  listCollections,
+  queryPoints,
+  upsertPoints,
+} from './query_operations';
 
 export default class Qdrant implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
@@ -30,7 +37,7 @@ export default class Qdrant implements QueryService {
           result = await queryPoints(qdrant, queryOptions);
           break;
         default:
-          throw new QueryError('Unsupported Operation', operation + " is not supported.", {});
+          throw new QueryError('Unsupported Operation', operation + ' is not supported.', {});
       }
     } catch (error) {
       let errorMessage = 'An unknown error occurred';

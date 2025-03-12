@@ -1,5 +1,10 @@
 import got from 'got';
 
+type SpreadsheetResponseBody = {
+  spreadsheetId?: string;
+  sheets?: Array<any>;
+};
+
 async function makeRequestToReadValues(spreadSheetId: string, sheet: string, range: string, authHeader: any) {
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadSheetId}/values/${sheet || ''}!${range}`;
 
@@ -33,6 +38,45 @@ async function makeRequestToLookUpCellValues(spreadSheetId: string, range: strin
   return await got.get(url, { headers: authHeader }).json();
 }
 
+async function makeRequestToCreateSpreadsheet(requestBody: any, authHeader: any): Promise<SpreadsheetResponseBody> {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets`;
+
+  return await got.post(url, { headers: authHeader, json: requestBody }).json();
+}
+
+async function makeRequestToListAllSheets(spreadsheet_id: string, authHeader: any): Promise<SpreadsheetResponseBody> {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheet_id}`;
+
+  return await got.get(url, { headers: authHeader }).json();
+}
+
+export async function listAllSheets(spreadsheet_id: string, authHeader: any): Promise<SpreadsheetResponseBody> {
+  try {
+    const response = await makeRequestToListAllSheets(spreadsheet_id, authHeader);
+    return { sheets: response.sheets };
+  } catch (error) {
+    throw new Error(`Error fetching all sheets: ${error.response?.statusCode || ''} ${error.message}`);
+  }
+}
+
+export async function createSpreadSheet(title: string, authHeader: any) {
+  if (!title) {
+    throw new Error('Spreadsheet title is required');
+  }
+  const requestBody = {
+    properties: {
+      title: title,
+    },
+  };
+
+  try {
+    const response = await makeRequestToCreateSpreadsheet(requestBody, authHeader);
+    return { spreadsheetId: response.spreadsheetId };
+  } catch (error) {
+    throw new Error(`Error creating spreadsheet: ${error.response?.statusCode || ''} ${error.message}`);
+  }
+}
+
 export async function batchUpdateToSheet(
   spreadSheetId: string,
   spreadsheetRange = 'A1:Z500',
@@ -42,8 +86,11 @@ export async function batchUpdateToSheet(
   filterOperator: string,
   authHeader: any
 ) {
+  if (!spreadSheetId) {
+    throw new Error('SpreadSheetId is required');
+  }
   if (!filterOperator) {
-    return new Error('filterOperator is required');
+    throw new Error('filterOperator is required');
   }
 
   const lookUpData = await lookUpSheetData(spreadSheetId, spreadsheetRange, sheet, authHeader);
@@ -117,13 +164,26 @@ async function appendDataToSheet(spreadSheetId: string, sheet: string, rows: any
   return response;
 }
 
+async function getSheetId(spreadSheetId: string, sheetName: string, authHeader: any): Promise<number> {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadSheetId}`;
+  const response = (await got.get(url, { headers: authHeader }).json()) as SpreadsheetResponseBody;
+
+  const sheet = sheetName ? response.sheets.find((s) => s.properties.title === sheetName) : response.sheets[0];
+
+  if (!sheet) {
+    throw new Error(`Sheet ${sheetName} not found.`);
+  }
+  return sheet.properties.sheetId;
+}
+
 async function deleteDataFromSheet(spreadSheetId: string, sheet: string, rowIndex: any, authHeader: any) {
+  const sheetId = await getSheetId(spreadSheetId, sheet, authHeader);
   const requestBody = {
     requests: [
       {
         deleteDimension: {
           range: {
-            sheetId: sheet,
+            sheetId: sheetId,
             dimension: 'ROWS',
             startIndex: rowIndex - 1,
             endIndex: rowIndex,
@@ -170,9 +230,10 @@ async function lookUpSheetData(spreadSheetId: string, spreadsheetRange: string, 
 
 //* utils
 const getInputKeys = (inputBody, data) => {
-  const keys = Object.keys(inputBody);
+  const parsedInput = typeof inputBody === 'string' ? JSON.parse(inputBody) : inputBody;
+  const keys = Object.keys(parsedInput);
   const arr = [];
-  keys.map((key) =>
+  keys.forEach((key) =>
     data.forEach((val, index) => {
       if (val[0] === key) {
         let keyIndex = '';
@@ -243,13 +304,13 @@ export const makeRequestBodyToBatchUpdate = (requestBody, filterCondition, filte
   });
 
   const body = [];
-  Object.entries(requestBody).map((item) => {
+  const parsedbody = typeof requestBody === 'string' ? JSON.parse(requestBody) : requestBody;
+  Object.entries(parsedbody).forEach(([key, value]) => {
     updateCellIndexes.map((cell) => {
-      if (item[0] === cell.col) {
-        body.push({ cellValue: item[1], cellIndex: cell.cellIndex });
+      if (key === cell.col) {
+        body.push({ cellValue: value, cellIndex: cell.cellIndex });
       }
     });
   });
-
   return body;
 };

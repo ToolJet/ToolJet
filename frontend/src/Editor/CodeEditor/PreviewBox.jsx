@@ -4,12 +4,82 @@ import CodeHinter from '.';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import { Alert } from '@/_ui/Alert/Alert';
 import _, { isEmpty } from 'lodash';
-import { handleCircularStructureToJSON, hasCircularDependency } from '@/_helpers/utils';
+import { handleCircularStructureToJSON, hasCircularDependency, verifyConstant } from '@/_helpers/utils';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import Card from 'react-bootstrap/Card';
 // eslint-disable-next-line import/no-unresolved
 import { JsonViewer } from '@textea/json-viewer';
+import { useCurrentStateStore } from '@/_stores/currentStateStore';
+import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
+import { reservedKeywordReplacer } from '@/_lib/reserved-keyword-replacer';
+
+const sanitizeLargeDataset = (data, callback) => {
+  const SIZE_LIMIT_KB = 5 * 1024; // 5 KB in bytes
+
+  const estimateSizeOfObject = (object) => {
+    let bytes = 0;
+
+    function getSizeOfPrimitive(value) {
+      switch (typeof value) {
+        case 'boolean':
+          return 4;
+        case 'number':
+          return 8;
+        case 'string':
+          return value.length * 2;
+        case 'object':
+          if (value === null) {
+            return 0;
+          } else if (Array.isArray(value)) {
+            return value.length * getSizeOfPrimitive(value[0]);
+          } else {
+            return estimateSizeOfObject(value);
+          }
+        default:
+          return 0;
+      }
+    }
+
+    for (let key in object) {
+      if (object.hasOwnProperty(key)) {
+        bytes += key.length * 2; // key size
+        bytes += getSizeOfPrimitive(object[key]);
+      }
+    }
+
+    return bytes;
+  };
+
+  const sanitize = (input) => {
+    if (typeof input !== 'object' || input === null) return input;
+
+    if (Array.isArray(input)) {
+      const size = estimateSizeOfObject(input);
+      callback(size > SIZE_LIMIT_KB);
+
+      return data.length > 10 && size > SIZE_LIMIT_KB
+        ? [input[0], `Too large to display: ${input.length - 1} more items`]
+        : input;
+    } else {
+      const sanitizedData = Object.entries(input).reduce((acc, [key, value]) => {
+        const sizeOfEachElement = estimateSizeOfObject(value);
+
+        if (Array.isArray(value) && (data.length > 10 || sizeOfEachElement > SIZE_LIMIT_KB)) {
+          acc[key] = [value[0], `Too large to display: ${value.length - 1} more items`];
+        } else {
+          acc[key] = sanitize(value);
+        }
+
+        return acc;
+      }, {});
+
+      return sanitizedData;
+    }
+  };
+
+  return sanitize(data);
+};
 
 export const PreviewBox = ({
   currentValue,
@@ -22,6 +92,8 @@ export const PreviewBox = ({
   const [resolvedValue, setResolvedValue] = useState('');
   const [error, setError] = useState(null);
   const [coersionData, setCoersionData] = useState(null);
+  const [largeDataset, setLargeDataset] = useState(false);
+
   const getPreviewContent = (content, type) => {
     if (content === undefined || content === null) return currentValue;
     try {
@@ -41,10 +113,18 @@ export const PreviewBox = ({
 
   let previewType = getCurrentNodeType(resolvedValue);
   let previewContent = resolvedValue;
+  let isGlobalConstant = currentValue && currentValue.includes('{{constants.');
+  let isSecretConstant = currentValue && currentValue.includes('{{secrets.');
+  let invalidConstants = null;
+  let undefinedError = null;
+  if (isGlobalConstant || isSecretConstant) {
+    const secrets = useDataQueriesStore.getState().secrets;
+    const globals = useCurrentStateStore.getState().constants;
 
-  if (hasCircularDependency(resolvedValue)) {
-    previewContent = JSON.stringify(resolvedValue, handleCircularStructureToJSON());
-    previewType = typeof previewContent;
+    invalidConstants = verifyConstant(currentValue, globals, secrets);
+  }
+  if (invalidConstants?.length) {
+    undefinedError = { type: 'Invalid constants' };
   }
 
   const ifCoersionErrorHasCircularDependency = (value) => {
@@ -68,15 +148,29 @@ export const PreviewBox = ({
   }, [error]);
 
   useEffect(() => {
-    const [valid, _error, newValue, resolvedValue] = resolveReferences(currentValue, validationSchema, customVariables);
+    const [valid, _error, rawNewValue, rawResolvedValue] = resolveReferences(
+      currentValue,
+      validationSchema,
+      customVariables
+    );
+
+    const resolvedValue = typeof rawResolvedValue === 'function' ? undefined : rawResolvedValue;
+
+    const newValue = typeof rawNewValue === 'function' ? undefined : rawNewValue;
+    const isSecretError =
+      currentValue?.includes('secrets.') || _error?.includes('ReferenceError: secrets is not defined');
 
     if (isWorkspaceVariable || !validationSchema || isEmpty(validationSchema)) {
       return setResolvedValue(newValue);
     }
 
-    if (valid) {
+    // we dont need to add or update the resolved value if the value has deep children
+    const _resolveValue = sanitizeLargeDataset(resolvedValue, setLargeDataset);
+
+    if (valid && !isSecretError) {
       const [coercionPreview, typeAfterCoercion, typeBeforeCoercion] = computeCoercion(resolvedValue, newValue);
-      setResolvedValue(resolvedValue);
+
+      setResolvedValue(_resolveValue);
 
       setCoersionData({
         coercionPreview,
@@ -84,11 +178,13 @@ export const PreviewBox = ({
         typeBeforeCoercion,
       });
       setError(null);
-    } else if (!valid && !newValue && !resolvedValue) {
+    } else if (!valid && !newValue && !resolvedValue && !isSecretError) {
       const err = !error ? `Invalid value for ${validationSchema?.schema?.type}` : `${_error}`;
       setError({ message: err, value: resolvedValue, type: 'Invalid' });
     } else {
-      const jsErrorType = _error?.includes('ReferenceError')
+      const jsErrorType = isSecretError
+        ? 'Error'
+        : _error?.includes('ReferenceError')
         ? 'ReferenceError'
         : _error?.includes('TypeError')
         ? 'TypeError'
@@ -96,12 +192,12 @@ export const PreviewBox = ({
         ? 'SyntaxError'
         : 'Invalid';
 
-      const errValue = ifCoersionErrorHasCircularDependency(resolvedValue);
+      const errValue = ifCoersionErrorHasCircularDependency(_resolveValue);
 
       setError({
-        message: _error,
-        value: jsErrorType === 'Invalid' ? JSON.stringify(errValue) : resolvedValue,
-        type: jsErrorType,
+        message: isSecretError ? 'secrets cannot be used in apps' : _error,
+        value: isSecretError ? 'Undefined' : jsErrorType === 'Invalid' ? JSON.stringify(errValue) : resolvedValue,
+        type: isSecretError ? 'Error' : jsErrorType,
       });
       setCoersionData(null);
     }
@@ -111,13 +207,15 @@ export const PreviewBox = ({
   return (
     <>
       <PreviewBox.RenderResolvedValue
-        error={error}
+        error={error || undefinedError}
         currentValue={currentValue}
         previewType={previewType}
         resolvedValue={content}
         coersionData={coersionData}
         withValidation={!isEmpty(validationSchema)}
         isWorkspaceVariable={isWorkspaceVariable}
+        isSecretConstant={isSecretConstant || false}
+        isLargeDataset={largeDataset}
       />
       <CodeHinter.PopupIcon
         callback={() => copyToClipboard(error ? error?.value : content)}
@@ -135,6 +233,8 @@ const RenderResolvedValue = ({
   coersionData,
   withValidation,
   isWorkspaceVariable,
+  isSecretConstant = false,
+  isLargeDataset,
 }) => {
   const computeCoersionPreview = (resolvedValue, coersionData) => {
     if (coersionData?.typeBeforeCoercion === coersionData?.typeAfterCoercion) return resolvedValue;
@@ -158,7 +258,11 @@ const RenderResolvedValue = ({
       }`
     : previewType;
 
-  const previewContent = !withValidation ? resolvedValue : computeCoersionPreview(resolvedValue, coersionData);
+  const previewContent = isSecretConstant
+    ? 'Values of secret constants are hidden'
+    : !withValidation
+    ? resolvedValue
+    : computeCoersionPreview(resolvedValue, coersionData);
 
   const cls = error ? 'codehinter-error-banner' : 'codehinter-success-banner';
 
@@ -168,7 +272,7 @@ const RenderResolvedValue = ({
         <span className={`badge text-capitalize font-500 ${cls}`}> {error ? error.type : previewValueType}</span>
       </div>
 
-      <PreviewBox.CodeBlock code={error ? error.value : previewContent} />
+      <PreviewBox.CodeBlock code={error ? error.value : previewContent} isLargeDataset={isLargeDataset} />
     </div>
   );
 };
@@ -321,7 +425,7 @@ const PreviewContainer = ({
   );
 };
 
-const PreviewCodeBlock = ({ code, isExpectValue = false }) => {
+const PreviewCodeBlock = ({ code, isExpectValue = false, isLargeDataset }) => {
   let preview = code && code.trim ? code?.trim() : `${code}`;
 
   const shouldTrim = preview.length > 35;
@@ -360,7 +464,6 @@ const PreviewCodeBlock = ({ code, isExpectValue = false }) => {
           value={prettyPrintedJson}
           displayDataTypes={false}
           displaySize={false}
-          displayObjectSize={false}
           enableClipboard={false}
           rootName={false}
           theme={darkMode ? 'dark' : 'light'}

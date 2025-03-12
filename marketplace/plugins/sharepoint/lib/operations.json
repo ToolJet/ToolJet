@@ -1,0 +1,377 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Sharepoint datasource",
+  "description": "A schema defining Sharepoint datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "sp_operation",
+      "type": "dropdown-component-flip",
+      "description": "Select operation",
+      "list": [
+        {
+          "name": "Get all sites",
+          "value": "get_sites"
+        },
+        {
+          "name": "Get site",
+          "value": "get_site"
+        },
+        {
+          "name": "Get analytics",
+          "value": "get_analytics"
+        },
+        {
+          "name": "Get pages of a site",
+          "value": "get_pages"
+        },
+        {
+          "name": "Get all lists",
+          "value": "get_lists"
+        },
+        {
+          "name": "Get metadata of a list",
+          "value": "get_metadata"
+        },
+        {
+          "name": "Create a list",
+          "value": "create_list"
+        },
+        {
+          "name": "Get items of a list",
+          "value": "get_items"
+        },
+        {
+          "name": "Update item of a list",
+          "value": "update_item"
+        },
+        {
+          "name": "Delete item of a list",
+          "value": "delete_item"
+        },
+        {
+          "name": "Add item to a list",
+          "value": "add_item"
+        }
+      ]
+    },
+    "get_sites": {
+      "top": {
+        "label": "Top",
+        "key": "sp_top",
+        "description": "Enter the number of items a response page should contain",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "className": "codehinter-plugins",
+        "placeholder": "Enter the number of items a response page should contain",
+        "height": "36px"
+      },
+      "page": {
+        "label": "Page",
+        "key": "sp_page",
+        "description": "Enter the page number",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "className": "codehinter-plugins",
+        "placeholder": "Enter the page number",
+        "height": "36px"
+      }
+    },
+    "get_site": {
+      "site_id": {
+        "label": "Site id",
+        "key": "sp_site_id",
+        "description": "Enter site id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "className": "codehinter-plugins",
+        "placeholder": "Enter site id",
+        "height": "36px"
+      }
+    },
+    "get_analytics": {
+      "site_id": {
+        "label": "Site id",
+        "key": "sp_site_id",
+        "description": "Enter site id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "className": "codehinter-plugins",
+        "placeholder": "Enter site id",
+        "height": "36px"
+      },
+      "time_interval": {
+        "label": "Time interval",
+        "key": "sp_time_interval",
+        "description": "Select time interval",
+        "type": "dropdown",
+        "list": [
+          {
+            "name": "Last 7 days",
+            "value": "lastSevenDays"
+          },
+          {
+            "name": "All time",
+            "value": "allTime"
+          }
+        ]
+      }
+    },
+    "get_pages": {
+      "site_id": {
+        "label": "Site id",
+        "key": "sp_site_id",
+        "description": "Enter site id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "className": "codehinter-plugins",
+        "placeholder": "Enter site id",
+        "height": "36px"
+      },
+      "top": {
+        "label": "Top",
+        "key": "sp_top",
+        "description": "Enter the number of items a response page should contain",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "className": "codehinter-plugins",
+        "placeholder": "Enter the number of items a response page should contain",
+        "height": "36px"
+      },
+      "page": {
+        "label": "Page",
+        "key": "sp_page",
+        "description": "Enter the page number",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "className": "codehinter-plugins",
+        "placeholder": "Enter the page number",
+        "height": "36px"
+      }
+    },
+    "get_lists": {
+      "site_id": {
+        "label": "Site id",
+        "key": "sp_site_id",
+        "description": "Enter site id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "className": "codehinter-plugins",
+        "placeholder": "Enter site id",
+        "height": "36px"
+      },
+      "page": {
+        "label": "Page",
+        "key": "sp_page",
+        "description": "Enter the page number",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "className": "codehinter-plugins",
+        "placeholder": "Enter the page number",
+        "height": "36px"
+      }
+    },
+    "get_metadata": {
+      "site_id": {
+        "label": "Site id",
+        "key": "sp_site_id",
+        "description": "Enter site id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "className": "codehinter-plugins",
+        "placeholder": "Enter site id",
+        "height": "36px"
+      },
+      "list_name": {
+        "label": "List Name",
+        "key": "sp_list_name",
+        "description": "Enter list name",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "className": "codehinter-plugins",
+        "placeholder": "Enter list name",
+        "height": "36px"
+      },
+      "list_id": {
+        "label": "List id",
+        "key": "sp_list_id",
+        "description": "Enter list id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "className": "codehinter-plugins",
+        "placeholder": "Enter list id",
+        "height": "36px"
+      }
+    },
+    "create_list": {
+      "site_id": {
+        "label": "Site id",
+        "key": "sp_site_id",
+        "description": "Enter site id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "className": "codehinter-plugins",
+        "placeholder": "Enter site id",
+        "height": "36px"
+      },
+      "list_object": {
+        "label": "Body",
+        "key": "sp_list_object",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{\n \"displayName\": \"Books\",\n \"columns\": [\n   {\n    \"name\": \"Author\",\n    \"text\": { }\n   },\n   {\n    \"name\": \"PageCount\",\n    \"number\": { }\n   }\n ],\n \"list\": {\n   \"template\": \"genericList\"\n }\n}",
+        "description": "Enter list object",
+        "height": "200px"
+      }
+    },
+    "get_items": {
+      "site_id": {
+        "label": "Site id",
+        "key": "sp_site_id",
+        "description": "Enter site id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "className": "codehinter-plugins",
+        "placeholder": "Enter site id",
+        "height": "36px"
+      },
+      "list_id": {
+        "label": "List id",
+        "key": "sp_list_id",
+        "description": "Enter list id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "className": "codehinter-plugins",
+        "placeholder": "Enter list id",
+        "height": "36px"
+      },
+      "top": {
+        "label": "Top",
+        "key": "sp_top",
+        "description": "Enter the number of items a response page should contain",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "className": "codehinter-plugins",
+        "placeholder": "Enter the number of items a response page should contain",
+        "height": "36px"
+      },
+      "page": {
+        "label": "Page",
+        "key": "sp_page",
+        "description": "Enter the page number",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "className": "codehinter-plugins",
+        "placeholder": "Enter the page number",
+        "height": "36px"
+      }
+    },
+    "update_item": {
+      "site_id": {
+        "label": "Site id",
+        "key": "sp_site_id",
+        "description": "Enter site id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "className": "codehinter-plugins",
+        "placeholder": "Enter site id",
+        "height": "36px"
+      },
+      "list_id": {
+        "label": "List id",
+        "key": "sp_list_id",
+        "description": "Enter list id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "className": "codehinter-plugins",
+        "placeholder": "Enter list id",
+        "height": "36px"
+      },
+      "item_id": {
+        "label": "Item id",
+        "key": "sp_item_id",
+        "description": "Enter item id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "className": "codehinter-plugins",
+        "placeholder": "Enter item id",
+        "height": "36px"
+      },
+      "item_object": {
+        "label": "Body",
+        "key": "sp_item_object",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{\n \"Color\": \"Fuchsia\",\n \"Quantity\": 934\n}",
+        "description": "Enter item object",
+        "height": "200px"
+      }
+    },
+    "delete_item": {
+      "site_id": {
+        "label": "Site id",
+        "key": "sp_site_id",
+        "description": "Enter site id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "className": "codehinter-plugins",
+        "placeholder": "Enter site id",
+        "height": "36px"
+      },
+      "list_id": {
+        "label": "List id",
+        "key": "sp_list_id",
+        "description": "Enter list id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "className": "codehinter-plugins",
+        "placeholder": "Enter list id",
+        "height": "36px"
+      },
+      "item_id": {
+        "label": "Item id",
+        "key": "sp_item_id",
+        "description": "Enter item id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "className": "codehinter-plugins",
+        "placeholder": "Enter item id",
+        "height": "36px"
+      }
+    },
+    "add_item": {
+      "site_id": {
+        "label": "Site id",
+        "key": "sp_site_id",
+        "description": "Enter site id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "className": "codehinter-plugins",
+        "placeholder": "Enter site id",
+        "height": "36px"
+      },
+      "list_id": {
+        "label": "List id",
+        "key": "sp_list_id",
+        "description": "Enter list id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "className": "codehinter-plugins",
+        "placeholder": "Enter list id",
+        "height": "36px"
+      },
+      "item_object": {
+        "label": "Body",
+        "key": "sp_item_object",
+        "type": "codehinter",
+        "mode": "javascript",
+        "placeholder": "{\n \"fields\": {\n   \"Title\": \"Widget\",\n   \"Color\": \"Purple\",\n   \"Weight\": 32\n }\n}",
+        "description": "Enter item object",
+        "height": "200px"
+      }
+    }
+  }
+}

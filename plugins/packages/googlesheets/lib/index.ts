@@ -1,5 +1,5 @@
 import { QueryError, QueryResult, QueryService, OAuthUnauthorizedClientError } from '@tooljet-plugins/common';
-import { readData, appendData, deleteData, batchUpdateToSheet } from './operations';
+import { readData, appendData, deleteData, batchUpdateToSheet, createSpreadSheet, listAllSheets } from './operations';
 import got, { Headers } from 'got';
 import { SourceOptions, QueryOptions } from './types';
 
@@ -22,7 +22,14 @@ export default class GooglesheetsQueryService implements QueryService {
     );
   }
 
-  async accessDetailsFrom(authCode: string): Promise<object> {
+  async accessDetailsFrom(authCode: string, options: any, resetSecureData = false): Promise<object> {
+    if (resetSecureData) {
+      return [
+        ['access_token', ''],
+        ['refresh_token', ''],
+      ];
+    }
+
     const accessTokenUrl = 'https://oauth2.googleapis.com/token';
     const clientId = process.env.GOOGLE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
@@ -106,6 +113,14 @@ export default class GooglesheetsQueryService implements QueryService {
           result = await readData(spreadsheetId, spreadsheetRange, queryOptions.sheet, this.authHeader(accessToken));
           break;
 
+        case 'create':
+          result = await createSpreadSheet(queryOptions.title, this.authHeader(accessToken));
+          break;
+
+        case 'list_all':
+          result = await listAllSheets(queryOptions.spreadsheet_id, this.authHeader(accessToken));
+          break;
+
         case 'append':
           result = await appendData(spreadsheetId, queryOptions.sheet, queryOptions.rows, this.authHeader(accessToken));
           break;
@@ -133,11 +148,28 @@ export default class GooglesheetsQueryService implements QueryService {
       }
     } catch (error) {
       console.error({ statusCode: error?.response?.statusCode, message: error?.response?.body });
-
-      if (error?.response?.statusCode === 401) {
-        throw new OAuthUnauthorizedClientError('Query could not be completed', error.message, { ...error });
+      let errorDetails = {};
+      if (error.response) {
+        const errorRespose = JSON.parse(error.response.body);
+        errorDetails = {
+          message: errorRespose?.error?.message,
+          status: errorRespose?.error?.status,
+        };
       }
-      throw new QueryError('Query could not be completed', error.message, {});
+
+      if (error.message.replace(/\s+/g, ' ').trim().includes('Unexpected token in JSON')) {
+        errorDetails = {
+          message: 'Invalid JSON',
+        };
+      }
+
+      if (error?.response?.statusCode === 401 || error?.response?.statusCode === 403) {
+        throw new OAuthUnauthorizedClientError('Query could not be completed', error.message, {
+          ...error,
+          ...errorDetails,
+        });
+      }
+      throw new QueryError('Query could not be completed', error.message, errorDetails);
     }
 
     return {

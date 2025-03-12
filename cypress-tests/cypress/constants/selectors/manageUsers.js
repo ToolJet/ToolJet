@@ -5,7 +5,8 @@ export const usersSelector = {
   buttonAddUsers: "[data-cy=button-invite-new-user]",
   usersElements: {
     usersTableNameColumnHeader: '[data-cy="users-table-name-column-header"]',
-    usersTableEmailColumnHeader: '[data-cy="users-table-email-column-header"]',
+    usersTableRolesColumnHeader: '[data-cy="users-table-roles-column-header"]',
+    usersTableGroupsColumnHeader: '[data-cy="users-table-groups-column-header"]',
     usersTableStatusColumnHeader:
       '[data-cy="users-table-status-column-header"]',
     usersFilterLabel: '[data-cy="users-filter-label"]',
@@ -16,7 +17,7 @@ export const usersSelector = {
   adminUserEmail: "[data-cy=user-email]",
   userState: "[data-cy=user-state]:eq(0)",
   addUsersCardTitle: '[data-cy="add-users-card-title"]',
-
+  userNameInput: '[data-cy="name-input"]',
   inputFieldName: "[data-cy=first-name-input]",
   lastNameInput: "[data-cy=last-name-input]",
   emailLabel: "[data-cy=email-label]",
@@ -61,10 +62,8 @@ export const usersSelector = {
   inputFieldBulkUpload: '[data-cy="input-field-bulk-upload"]',
   copyInvitationLink: '[data-cy="copy-invitation-link"]',
   uploadedFileData: '[data-cy="uploaded-file-data"]',
-  toastCloseButton:
-    '.drawer-container > [style="position: fixed; z-index: 9999; inset: 16px; pointer-events: none;"] > .go4109123758 > .go2072408551 > [data-cy="toast-close-button"]',
-
-
+  modalClose: '.tj-base-btn.tj-large-btn.tj-primary-btn.close-btn',
+  toastCloseButton: '.drawer-container > [style="position: fixed; z-index: 9999; inset: 16px; pointer-events: none;"] > .go4109123758 > .go2072408551 > [data-cy="toast-close-button"]',
   userName: (userName) => {
     return `[data-cy="${cyParamName(userName)}-user-name"]`;
   },

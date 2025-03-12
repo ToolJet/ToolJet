@@ -1,0 +1,21 @@
+id,product_name,quantity,status,price,description,category,is_active
+1,ComfortBlend Coffee Maker,85,in_stock,79.99,10-cup programmable coffee maker with thermal carafe,appliances,TRUE
+2,EcoChic Organic Cotton T-shirt,250,in_stock,24.99,"Soft, breathable organic cotton t-shirt in various colors",apparel,TRUE
+3,SmartHome Hub 2000,0,yet_to_receive,149.99,Central control unit for smart home devices,electronics,TRUE
+4,Gourmet Truffle Infused Olive Oil,30,in_stock,19.99,250ml bottle of premium olive oil infused with black truffles,food,TRUE
+5,ErgoMax Office Chair,15,in_stock,199.99,Ergonomic office chair with lumbar support and adjustable armrests,furniture,TRUE
+6,CloudSync Enterprise Suite,500,in_stock,499.99,Comprehensive cloud-based business management software,software,TRUE
+7,FreshSqueeze Citrus Juicer,0,out_of_stock,39.99,Electric citrus juicer with two cone sizes for various fruits,appliances,FALSE
+8,ActiveFlex Running Shoes,175,in_stock,89.99,"Lightweight, breathable running shoes with responsive cushioning",apparel,TRUE
+9,UltraView 4K Smart TV,5,in_stock,799.99,55-inch 4K HDR smart TV with AI-enhanced picture quality,electronics,TRUE
+10,Artisan Sourdough Bread Mix,100,in_stock,9.99,Premium mix for easy homemade sourdough bread,food,TRUE
+11,ModularPlus Bookshelf System,0,out_of_stock,299.99,Customizable modular bookshelf with expandable units,furniture,FALSE
+12,CyberShield Antivirus Pro,1000,in_stock,59.99,Advanced antivirus software with real-time threat detection,software,TRUE
+13,ZenBrew Matcha Green Tea,50,in_stock,14.99,"Organic ceremonial grade matcha green tea powder, 30g tin",beverage,TRUE
+14,TechSport Smartwatch,8,in_stock,179.99,Fitness-focused smartwatch with heart rate monitor and GPS,electronics,TRUE
+15,CozyHome Throw Blanket,200,in_stock,34.99,Soft microfiber throw blanket in various patterns,furniture,TRUE
+16,NutriBlend Pro Smoothie Maker,0,out_of_stock,69.99,High-powered blender for smoothies and protein shakes,appliances,TRUE
+17,EcoWear Recycled Fleece Jacket,80,in_stock,79.99,Warm fleece jacket made from recycled plastic bottles,apparel,TRUE
+18,Gourmet Artisan Chocolate Selection,150,in_stock,24.99,"Assorted box of handcrafted chocolates, 12 pieces",food,TRUE
+19,ProductivityPro Task Manager,750,in_stock,9.99,Intuitive project and task management software,software,TRUE
+20,VintageVibe Record Player,10,in_stock,129.99,Retro-style turntable with built-in speakers and Bluetooth,electronics,TRUE

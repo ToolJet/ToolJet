@@ -9,6 +9,12 @@
   padding: 20px;
 }
 
+.header-label-timestamp {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .drawer-card-wrapper {
 
   .tj-base-btn {
@@ -177,7 +183,7 @@
 
   input.form-control:disabled {
     gap: 16px !important;
-    background: #f4f6fa;
+    background: var(--base) !important;
     border: 1px solid var(--slate7) !important;
     border-radius: 6px !important;
     margin-bottom: 4px !important;
@@ -766,4 +772,147 @@
 .tj-select-text {
   font-size: 12px;
   line-height: 20px;
+}
+
+.tooltip-inner {
+  max-width: 100%;
+}
+
+.tjdb-codehinter-wrapper-drawer{
+  .cm-editor{
+    max-height: 36px !important;
+    height: 36px !important;
+    &.cm-focused{
+      outline: none !important;
+      background: var(--indigo2) !important;
+      border: 1px solid var(--indigo9) !important;
+    }
+    .cm-content{
+      display: flex;
+      align-items: center;
+      font-size: 12px;
+    }
+  }
+  .tjdb-hinter-error{
+    .cm-editor{
+      outline: none !important;
+      border:1px solid red !important;
+    }
+  }
+}
+// added this to border when codehinter is open in the portal, if any error is there
+.tjdb-hinter-error{
+  .cm-focused{
+    outline: none !important;
+    border:1px solid red !important;
+  }
+}
+.tjdb-codehinter-wrapper-drawer-tableSchema{
+  .cm-editor{
+    max-height: 36px !important;
+    min-height: 36px !important;
+    &.cm-focused{
+      outline: none !important;
+      border: 1px solid !important;
+      border-color: #90b5e2 !important;
+    }
+    .cm-content{
+      display: flex;
+      align-items: center;
+      font-size: 12px;
+    }
+  }
+  .tjdb-hinter-error{
+    .cm-editor{
+      outline: none !important;
+      border:1px solid red !important;
+    }
+  }
+}
+.width-lg{
+  width: 181.5px;
+}
+
+.width-sm{
+  width: 120px;
+}
+
+.input-element{
+  width: 181.5px !important;
+  background-color: transparent !important;
+  color: var(--text-default) !important;
+  border-radius: 0px;
+  border: 1px solid var(--border-default) !important;
+}
+
+.delete-icon-wrapper{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  width: 32px;
+  border: 1px solid var(--border-default);
+  border-radius: 0px 8px 8px 0px;
+  cursor: pointer;
+  border-left: none;
+}
+
+.select-operation-field{
+  .react-select__control{
+    .react-select__value-container{
+      position: relative;
+      .react-select__input-container{
+        position: absolute;
+        right: 0;
+      }
+    }
+  }
+}
+
+.select-operation-field,
+.select-column-field{
+    position: static;
+    .react-select__control {
+      position: relative;
+      z-index: 2;
+      border-right: none !important;
+    }
+    .react-select__menu {
+      position: fixed;
+      z-index: 9999;
+      left: var(--select-left);
+      top: var(--select-top);
+    }
+}
+
+.select-column-field .react-select__menu {
+  width: 181.5px;
+}
+
+.select-operation-field .react-select__menu {
+  width: 120px;
+}
+
+body.react-select-open .filter-body {
+  pointer-events: none;
+}
+
+body.react-select-open .select-operation-field {
+  pointer-events: auto;
+}
+body.react-select-open .select-column-field {
+  pointer-events: auto;
+}
+
+.select-operation-field,
+.select-column-field{
+  .react-select__menu{
+    .react-select__menu-list{
+      overflow-y: hidden;
+
+      &:hover {
+        overflow-y: auto;
+      }
+    }
+  }
 }

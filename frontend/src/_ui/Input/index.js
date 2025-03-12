@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
-import OrgConstantVariablesPreviewBox from '@/_components/OrgConstantsVariablesResolver';
+import OrgConstantVariablesPreviewBox from '../../_components/OrgConstantsVariablesResolver';
 import SolidIcon from '../Icon/SolidIcons';
 import { toast } from 'react-hot-toast';
 
-const Input = ({ helpText, ...props }) => {
+const Input = ({ helpText, onBlur, ...props }) => {
   const { workspaceVariables, workspaceConstants, value, type, disabled, encrypted } = props;
   const [isFocused, setIsFocused] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
@@ -47,7 +47,15 @@ const Input = ({ helpText, ...props }) => {
       <div
         className={cx('', { 'tj-app-input-wrapper': type === 'password' || type === 'copyToClipboard' || encrypted })}
       >
-        <input {...props} type={inputType} onFocus={() => setIsFocused(true)} onBlur={() => setIsFocused(false)} />
+        <input
+          {...props}
+          type={inputType}
+          onFocus={() => setIsFocused(true)}
+          onBlur={(event) => {
+            setIsFocused(false);
+            onBlur(event);
+          }}
+        />
         {(type === 'password' || encrypted) && (
           <div onClick={!disabled && toggleShowPassword}>
             {' '}

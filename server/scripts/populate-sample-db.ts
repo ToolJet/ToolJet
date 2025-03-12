@@ -3,15 +3,35 @@ import * as path from 'path';
 import { Client } from 'pg';
 import { buildAndValidateDatabaseConfig } from './database-config-utils';
 
+interface Config {
+  user: any;
+  host: any;
+  database: any;
+  password: any;
+  port: any;
+  ssl?: {
+    rejectUnauthorized: boolean;
+    ca?: any;
+  };
+}
+
 // PostgreSQL connection configuration
 function createPGconnection(envVars): Client {
-  return new Client({
+  let config: Config = {
     user: envVars.SAMPLE_PG_DB_USER,
     host: envVars.SAMPLE_PG_DB_HOST,
     database: envVars.SAMPLE_DB,
     password: envVars.SAMPLE_PG_DB_PASS,
     port: envVars.SAMPLE_PG_DB_PORT,
-  });
+  };
+  if (envVars?.CA_CERT) {
+    config = {
+      ...config,
+      ssl: { rejectUnauthorized: false, ca: envVars.CA_CERT },
+    };
+  }
+
+  return new Client(config);
 }
 
 const folderPath = path.join(__dirname, '../src/assets/sample-data-json-files');
@@ -99,9 +119,12 @@ async function createTable(client, tableName, parsedData) {
       dataType = 'NUMERIC';
     } else if (columnValues.every((value) => value instanceof Date || value === null || !isNaN(Date.parse(value)))) {
       dataType = 'DATE';
+    } else if (columnValues.every((value) => typeof value === 'boolean' || value === null)) {
+      dataType = 'BOOLEAN';
     } else {
       dataType = 'VARCHAR(255)'; // Default to VARCHAR if data type is uncertain
     }
+
     createTableQuery += `${columnName
       .trim()
       .replace(/[^\w]/g, '_')

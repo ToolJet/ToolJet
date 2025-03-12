@@ -2,6 +2,7 @@ import React from 'react';
 import Modal from '@/HomePage/Modal';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
+/*Used in CE organization login page*/
 function DisablePasswordLoginModal({ show, disablePasswordLogin, setShowModal, reset }) {
   const handleDisable = () => {
     disablePasswordLogin();

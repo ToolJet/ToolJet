@@ -30,7 +30,7 @@
   },
   "properties": {
     "auth_type": {
-      "label": "Authentication Type",
+      "label": "Authentication type",
       "key": "auth_type",
       "type": "dropdown-component-flip",
       "description": "Select auth type",

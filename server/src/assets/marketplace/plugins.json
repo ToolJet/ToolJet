@@ -21,7 +21,8 @@
     "version": "1.0.0",
     "id": "openai",
     "author": "Tooljet",
-    "timestamp": "Mon, 10 Apr 2023 06:33:21 GMT"
+    "timestamp": "Mon, 10 Apr 2023 06:33:21 GMT",
+    "tags": ["AI"]
   },
   {
     "name": "AWS Textract",
@@ -49,8 +50,8 @@
     "timestamp": "Wed, 17 Jan 2024 20:05:16 GMT"
   },
   {
-    "name": "aws-lambda",
-    "description": "Plugin for aws-lambda",
+    "name": "AWS Lambda",
+    "description": "Plugin for AWS Lambda",
     "version": "1.0.0",
     "id": "aws-lambda",
     "author": "Tooljet",
@@ -89,20 +90,91 @@
     "timestamp": "Wed, 06 Mar 2024 11:34:26 GMT"
   },
   {
-    "name": "portkey",
+    "name": "Presto",
+    "description": "Plugin for PrestoDB data source",
+    "version": "1.0.0",
+    "id": "presto",
+    "author": "Tooljet",
+    "timestamp": "Thu, 08 Aug 2024 11:04:36 GMT"
+  },
+  {
+    "name": "Sharepoint",
+    "description": "Plugin for Sharepoint API",
+    "version": "1.0.0",
+    "id": "sharepoint",
+    "author": "Tooljet",
+    "timestamp": "Wed, 04 Sep 2024 20:18:30 GMT"
+  },
+  {
+    "name": "Jira",
+    "description": "Plugin for Jira data source",
+    "version": "1.0.0",
+    "id": "jira",
+    "author": "Tooljet",
+    "timestamp": "Thu, 08 Aug 2024 11:04:36 GMT"
+  },
+  {
+    "name": "Portkey",
     "description": "Plugin for Portkey APIs",
     "version": "1.0.0",
     "id": "portkey",
     "author": "Portkey",
-    "timestamp": "Sat, 29 Jun 2024 09:40:13 GMT"
+    "timestamp": "Sat, 29 Jun 2024 09:40:13 GMT",
+    "tags": ["AI"]
   },
   {
-    "name": "pinecone",
-    "description": "api plugin from pinecone",
+    "name": "Pinecone",
+    "description": "Plugin for Pinecone Vector DB",
     "version": "1.0.0",
     "id": "pinecone",
     "author": "Tooljet",
-    "timestamp": "Mon, 28 Oct 2024 08:08:28 GMT"
+    "timestamp": "Mon, 28 Oct 2024 08:08:28 GMT",
+    "tags": ["AI"]
+  },
+  {
+    "name": "Cohere",
+    "description": "Integrate with Cohere API to use its AI models for chat and text generation.",
+    "version": "1.0.0",
+    "id": "cohere",
+    "author": "Tooljet",
+    "timestamp": "Tue, 21 Jan 2025 05:09:30 GMT",
+    "tags": ["AI"]
+  },
+  {
+    "name": "Mistral",
+    "description": "Integrate with Mistral API to use its AI models for chat completion capabilities",
+    "version": "1.0.0",
+    "id": "mistral_ai",
+    "author": "Tooljet",
+    "timestamp": "Tue, 21 Jan 2025 06:35:01 GMT",
+    "tags": ["AI"]
+  },
+  {
+    "name": "Hugging Face",
+    "description": "Plugin for Hugging Face's Inference API to use listed AI models for text capabilities",
+    "version": "1.0.0",
+    "id": "hugging_face",
+    "author": "Tooljet",
+    "timestamp": "Thu, 23 Jan 2025 06:44:25 GMT",
+    "tags": ["AI"]
+  },
+  {
+    "name": "Gemini",
+    "description": "Integrate with Gemini AI models for text generation.",
+    "version": "1.0.0",
+    "id": "gemini",
+    "author": "Tooljet",
+    "timestamp": "Fri, 17 Jan 2025 18:04:48 GMT",
+    "tags": ["AI"]
+  },
+  {
+    "name": "Anthropic",
+    "description": "Integrate with Anthropic API to use Claude AI models.",
+    "version": "1.0.0",
+    "id": "anthropic",
+    "author": "Tooljet",
+    "timestamp": "Mon, 20 Jan 2025 08:04:46 GMT",
+    "tags": ["AI"]
   },
   {
     "name": "Qdrant",
@@ -110,14 +182,16 @@
     "version": "1.0.0",
     "id": "qdrant",
     "author": "Tooljet",
-    "timestamp": "Tue, 10 Dec 2024 02:11:32 GMT"
+    "timestamp": "Tue, 10 Dec 2024 02:11:32 GMT",
+    "tags": ["AI"]
   },
   {
-    "name": "azurerepos",
-    "description": "api plugin from azurerepos",
+    "name": "Weaviate DB",
+    "description": "Integrate with Weaviate DB to store and query vectors.",
     "version": "1.0.0",
-    "id": "azurerepos",
+    "id": "weaviate",
     "author": "Tooljet",
-    "timestamp": "Mon, 23 Dec 2024 11:57:30 GMT"
+    "timestamp": "Tue, 21 Jan 2025 16:55:28 GMT",
+    "tags": ["AI"]
   }
 ]

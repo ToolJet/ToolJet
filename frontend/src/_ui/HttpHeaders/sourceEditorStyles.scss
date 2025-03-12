@@ -1,4 +1,6 @@
-input.form-control,
+.query-manager-border-color {
+
+  input.form-control,
   textarea,
   .input-control {
     gap: 16px !important;
@@ -51,26 +53,46 @@ input.form-control,
     }
 
   }
+}
 
-  .empty-key-value {
-    border: 2px dashed #ccc;
-    border-radius: 6px;
-    padding: 10px;
-    text-align: center;
-    color: #ccc;
-    width: 625px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    margin-bottom: 10px;
-  }
+.empty-key-value {
+  border-radius: 6px;
+  padding: 10px;
+  text-align: center;
+  color: #687076;
+  width: inherit !important;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  color: #687076;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 20px;
+  border: 1px dashed #E6E8EB;
+}
 
-  .trash {
-    height: 32px;
-    display: flex;
-    justify-content: 'center';
-    align-items: 'center';
-  }
-  
+.trash {
+  height: 32px;
+  display: flex;
+  justify-content: 'center';
+  align-items: 'center';
+}
+
+.empty-version {
+  border-radius: 6px;
+  padding: 10px;
+  text-align: center;
+  width: auto;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  color: #687076;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 20px;
+  border: 1px dashed #E6E8EB;
+}

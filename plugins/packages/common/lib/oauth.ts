@@ -6,20 +6,27 @@ import { QueryResult } from './query_result.type';
 import { App } from './app.type';
 import { User } from './user.type';
 import { CookieJar } from 'tough-cookie';
+import { isEmpty } from 'lodash';
 
-export function checkIfContentTypeIsURLenc(headers: [] = []) {
-  const objectHeaders = Object.fromEntries(headers);
-  const contentType = objectHeaders['content-type'] ?? objectHeaders['Content-Type'];
-  return contentType === 'application/x-www-form-urlencoded';
+export function checkIfContentTypeIsURLenc(headers: [string, string][] = []): boolean {
+  const contentType = headers.find(([key, _]) => key.toLowerCase() === 'content-type')?.[1];
+  return contentType?.toLowerCase() === 'application/x-www-form-urlencoded';
 }
 
-export function checkIfContentTypeIsMultipartFormData(headers: [] = []) {
-  const objectHeaders = Object.fromEntries(headers);
-  const contentType = objectHeaders['content-type'] ?? objectHeaders['Content-Type'];
-  return contentType === 'multipart/form-data';
+export function checkIfContentTypeIsMultipartFormData(headers: [string, string][] = []): boolean {
+  const contentType = headers.find(([key, _]) => key.toLowerCase() === 'content-type')?.[1];
+  return contentType?.toLowerCase().startsWith('multipart/form-data') ?? false;
 }
 
-export function sanitizeCustomParams(customArray: any) {
+export function checkIfContentTypeIsJson(headers: [string, string][] = []): boolean {
+  const contentType = headers.find(([key, _]) => key.toLowerCase() === 'content-type')?.[1];
+  return (
+    (contentType?.toLowerCase().startsWith('application/json') || contentType?.toLowerCase().startsWith('text/json')) ??
+    false
+  );
+}
+
+export function sanitizeParams(customArray: any) {
   const params = Object.fromEntries(customArray ?? []);
   Object.keys(params).forEach((key) => (params[key] === '' ? delete params[key] : {}));
   return params;
@@ -30,7 +37,7 @@ export function validateAndSetRequestOptionsBasedOnAuthType(
   context: { user?: User; app?: App },
   requestOptions: OptionsOfTextResponseBody,
   additionalOptions?: any
-): QueryResult {
+): QueryResult | Promise<QueryResult> {
   switch (sourceOptions['auth_type']) {
     case 'oauth2':
     case 'oauth':
@@ -46,13 +53,13 @@ export function validateAndSetRequestOptionsBasedOnAuthType(
   }
 }
 
-function handleOAuthAuthentication(
+async function handleOAuthAuthentication(
   sourceOptions: any,
   context: { user?: User; app?: App },
   requestOptions: any
-): QueryResult {
+): Promise<QueryResult> {
   const headers = { ...requestOptions.headers };
-  const oAuthValidatedResult = validateAndMaybeSetOAuthHeaders(sourceOptions, context, headers);
+  const oAuthValidatedResult = await validateAndMaybeSetOAuthHeaders(sourceOptions, context, headers);
   if (oAuthValidatedResult.status !== 'ok') {
     return oAuthValidatedResult;
   }
@@ -96,12 +103,13 @@ function handleBasicAuthentication(sourceOptions: any, requestOptions: any): Que
   };
 }
 
-function validateAndMaybeSetOAuthHeaders(sourceOptions, context, headers): QueryResult {
+async function validateAndMaybeSetOAuthHeaders(sourceOptions, context, headers): Promise<QueryResult> {
   const authType = sourceOptions['auth_type'];
   const requiresOauth = authType === 'oauth2' || authType === 'oauth';
 
   if (requiresOauth) {
     const isMultiAuthEnabled = sourceOptions['multiple_auth_enabled'];
+    const grantType = sourceOptions['grant_type'];
     const tokenData = sourceOptions['tokenData'];
     const isAppPublic = context?.app.isPublic;
     const userData = context?.user;
@@ -112,10 +120,11 @@ function validateAndMaybeSetOAuthHeaders(sourceOptions, context, headers): Query
     }
 
     if (!currentToken) {
-      return {
-        status: 'needs_oauth',
-        data: { auth_url: getAuthUrl(sourceOptions) },
-      };
+      if (grantType === 'client_credentials') {
+        return handleClientCredentialsGrant(sourceOptions, headers);
+      } else {
+        return handleAuthorizationCodeGrant(sourceOptions);
+      }
     } else {
       const accessToken = currentToken['access_token'];
       if (sourceOptions['add_token_to'] === 'header') {
@@ -128,8 +137,63 @@ function validateAndMaybeSetOAuthHeaders(sourceOptions, context, headers): Query
   return { status: 'ok', data: headers };
 }
 
+async function handleClientCredentialsGrant(sourceOptions: any, headers: any): Promise<QueryResult> {
+  try {
+    const data = await getTokenForClientCredentialsGrant(sourceOptions);
+    const accessToken = data['access_token'];
+    if (sourceOptions['add_token_to'] === 'header') {
+      headers['Authorization'] = `Bearer ${accessToken}`;
+    }
+    return { status: 'ok', data: headers };
+  } catch (error) {
+    throw new QueryError('Failed to fetch access token', {}, {});
+  }
+}
+
+function handleAuthorizationCodeGrant(sourceOptions: any): QueryResult {
+  return {
+    status: 'needs_oauth',
+    data: { auth_url: getAuthUrl(sourceOptions) },
+  };
+}
+
+async function getTokenForClientCredentialsGrant(sourceOptions: any) {
+  if (
+    isEmpty(sourceOptions.access_token_url) ||
+    isEmpty(sourceOptions.client_id) ||
+    isEmpty(sourceOptions.client_secret)
+  ) {
+    throw new Error('Missing required fields in sourceOptions');
+  }
+
+  const headersObject = sanitizeParams(sourceOptions.access_token_custom_headers);
+
+  try {
+    const requestBody = new URLSearchParams({
+      grant_type: sourceOptions.grant_type || 'client_credentials',
+      client_id: sourceOptions.client_id,
+      client_secret: sourceOptions.client_secret,
+      ...(sourceOptions.audience ? { audience: sourceOptions.audience } : {}),
+      ...(sourceOptions.scopes ? { scope: sourceOptions.scopes } : {}),
+    });
+
+    const response = await got.post(sourceOptions.access_token_url, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        ...(Object.keys(headersObject).length > 0 && headersObject),
+      },
+      body: requestBody.toString(),
+      responseType: 'json',
+    });
+
+    return response.body;
+  } catch (error) {
+    throw new Error(`Failed to fetch token: ${error.message}`);
+  }
+}
+
 export function getAuthUrl(sourceOptions: any): string {
-  const customQueryParams = sanitizeCustomParams(sourceOptions['custom_query_params']);
+  const customQueryParams = sanitizeParams(sourceOptions['custom_query_params']);
   const host = process.env.TOOLJET_HOST;
   const subpath = process.env.SUB_PATH;
   const fullUrl = `${host}${subpath ? subpath : '/'}`;
@@ -186,7 +250,7 @@ export const getRefreshedToken = async (sourceOptions: any, error: any, userId: 
   const clientSecret = sourceOptions['client_secret'];
   const grantType = 'refresh_token';
   const isUrlEncoded = checkIfContentTypeIsURLenc(sourceOptions['access_token_custom_headers']);
-  const customAccessTokenHeaders = sanitizeCustomParams(sourceOptions['access_token_custom_headers']);
+  const customAccessTokenHeaders = sanitizeParams(sourceOptions['access_token_custom_headers']);
 
   const data = {
     client_id: clientId,

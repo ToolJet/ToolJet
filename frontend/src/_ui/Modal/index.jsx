@@ -2,6 +2,7 @@ import React from 'react';
 import Modal from 'react-bootstrap/Modal';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { ToolTip } from '@/_components/ToolTip';
 
 export default function ModalBase({
   show,
@@ -14,14 +15,16 @@ export default function ModalBase({
   isLoading,
   children,
   cancelDisabled,
+  className = '',
+  size = 'sm',
 }) {
   return (
     <Modal
       show={show}
       onHide={handleClose}
-      size="sm"
+      size={size}
       centered={true}
-      contentClassName={`${darkMode ? 'theme-dark dark-theme modal-base' : 'modal-base'}`}
+      contentClassName={`${className} ${darkMode ? 'theme-dark dark-theme modal-base' : 'modal-base'}`}
     >
       <Modal.Header>
         <Modal.Title className="font-weight-500" data-cy="modal-title">
@@ -31,7 +34,7 @@ export default function ModalBase({
           <SolidIcon name="remove" width="20" />
         </div>
       </Modal.Header>
-      <Modal.Body>
+      <Modal.Body data-cy="modal-body">
         {children ? (
           children
         ) : (
@@ -44,16 +47,23 @@ export default function ModalBase({
         <ButtonSolid disabled={cancelDisabled} variant={'tertiary'} onClick={handleClose} data-cy="cancel-button">
           Cancel
         </ButtonSolid>
-        <ButtonSolid
-          disabled={isLoading || confirmBtnProps?.disabled}
-          isLoading={isLoading}
-          variant={confirmBtnProps?.variant || 'primary'}
-          onClick={handleConfirm}
-          {...confirmBtnProps}
-          data-cy="confim-button"
+        <ToolTip
+          show={confirmBtnProps?.tooltipMessage && confirmBtnProps?.disabled}
+          message={confirmBtnProps?.tooltipMessage}
         >
-          {confirmBtnProps?.title || 'Continue'}
-        </ButtonSolid>
+          <div>
+            <ButtonSolid
+              disabled={isLoading || confirmBtnProps?.disabled}
+              isLoading={isLoading}
+              variant={confirmBtnProps?.variant || 'primary'}
+              onClick={handleConfirm}
+              {...confirmBtnProps}
+              data-cy="confim-button"
+            >
+              {confirmBtnProps?.title || 'Continue'}
+            </ButtonSolid>
+          </div>
+        </ToolTip>
       </Modal.Footer>
     </Modal>
   );

@@ -19,14 +19,26 @@ export const appsService = {
   changeIcon,
   deleteApp,
   getApp,
-  getAppBySlug,
   getAppByVersion,
   saveApp,
   getAppUsers,
   getVersions,
   getTables,
+  getWorkflows,
+  getAppsLimit,
+  getWorkflowLimit,
   releaseVersion,
 };
+
+function getWorkflows(id) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/apps/${id}/workflows`, requestOptions).then(handleResponse);
+}
+
+function getAppsLimit() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/license/apps/limits`, requestOptions).then(handleResponse);
+}
 
 function validateReleasedApp(slug) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
@@ -40,22 +52,31 @@ function validatePrivateApp(slug, queryParams) {
   return fetch(
     `${config.apiUrl}/apps/validate-private-app-access/${slug}${query ? `?${query}` : ''}`,
     requestOptions
-  ).then(handleResponse);
+  ).then((response) => handleResponse(response, false, { param: 'version', value: 'versionName' }));
 }
 
-function getAll(page, folder, searchKey) {
+//use default value for type of apps i.e.'front-end'
+function getAll(page, folder, searchKey, type = 'front-end') {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  if (page === 0) return fetch(`${config.apiUrl}/apps`, requestOptions).then(handleResponse);
+  if (page === 0) return fetch(`${config.apiUrl}/apps?type=${type}`, requestOptions).then(handleResponse);
   else
     return fetch(
-      `${config.apiUrl}/apps?page=${page}&folder=${folder || ''}&searchKey=${searchKey}`,
+      `${config.apiUrl}/apps?page=${page}&folder=${folder || ''}&searchKey=${searchKey}&type=${type}`,
       requestOptions
     ).then(handleResponse);
 }
 
 function createApp(body = {}) {
+  if (body.type === 'workflow') {
+    return createWorkflow(body);
+  }
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/apps`, requestOptions).then(handleResponse);
+}
+
+function createWorkflow(body = {}) {
+  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/workflows`, requestOptions).then(handleResponse);
 }
 
 function cloneApp(id, name) {
@@ -112,16 +133,9 @@ function deleteApp(id) {
   return fetch(`${config.apiUrl}/apps/${id}`, requestOptions).then(handleResponse);
 }
 
-function getAppBySlug(slug) {
-  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/apps/slugs/${slug}`, requestOptions).then((response) =>
-    handleResponse(response, true)
-  );
-}
-
 function getAppByVersion(appId, versionId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/apps/${appId}/versions/${versionId}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}`, requestOptions).then(handleResponse);
 }
 
 function saveApp(id, attributes) {
@@ -206,6 +220,11 @@ function getTables(id) {
   return fetch(`${config.apiUrl}/apps/${id}/tables`, requestOptions).then(handleResponse);
 }
 
+function getWorkflowLimit(type) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/license/workflows/limits/${type}`, requestOptions).then(handleResponse);
+}
+
 function releaseVersion(appId, versionToBeReleased) {
   const requestOptions = {
     method: 'PUT',
@@ -214,5 +233,5 @@ function releaseVersion(appId, versionToBeReleased) {
     credentials: 'include',
   };
 
-  return fetch(`${config.apiUrl}/v2/apps/${appId}/release`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/apps/${appId}/release`, requestOptions).then(handleResponse);
 }

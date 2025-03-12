@@ -4,6 +4,8 @@ import _, { omit } from 'lodash';
 import { useResolveStore } from './resolverStore';
 import { handleLowPriorityWork, updateCanvasBackground } from '@/_helpers/editorHelpers';
 import { useEditorStore } from '@/_stores/editorStore';
+import { useAppDataStore } from './appDataStore';
+import { authenticationService } from '@/_services';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import update from 'immutability-helper';
 const { diff } = require('deep-object-diff');
@@ -14,6 +16,12 @@ const initialState = {
   globals: {
     theme: { name: 'light' },
     urlparams: null,
+    environment: {
+      id: null,
+      name: null,
+    },
+    mode: {},
+    currentUser: {},
   },
   errors: {},
   variables: {},
@@ -24,8 +32,8 @@ const initialState = {
     variables: {},
   },
   succededQuery: {},
-  isEditorReady: false,
   constants: {},
+  isEditorReady: false,
 };
 
 export const useCurrentStateStore = create(
@@ -53,9 +61,27 @@ export const useCurrentStateStore = create(
         },
         setEditorReady: (isEditorReady) => set({ isEditorReady }),
         initializeCurrentStateOnVersionSwitch: () => {
+          //fetch user for current app
+          const currentUser = useAppDataStore.getState().currentUser;
+          const currentSession = authenticationService.currentSessionValue;
+          const userVars = {
+            email: currentUser?.email,
+            firstName: currentUser?.first_name,
+            lastName: currentUser?.last_name,
+            groups: currentSession?.group_permissions
+              ? ['all_users', ...currentSession.group_permissions.map((group) => group.name)]
+              : ['all_users'],
+            role: currentSession?.role?.name,
+            ssoUserInfo: currentUser?.sso_user_info,
+            ...(currentUser?.metadata && !_.isEmpty(currentUser.metadata) ? { metadata: currentUser.metadata } : {}),
+          };
           const newInitialState = {
             ...initialState,
             constants: get().constants,
+            globals: {
+              ...get().globals,
+              currentUser: userVars,
+            },
           };
           set({ ...newInitialState }, false, {
             type: 'INITIALIZE_CURRENT_STATE_ON_VERSION_SWITCH',
@@ -106,16 +132,21 @@ useCurrentStateStore.subscribe((state) => {
 
     handleLowPriorityWork(
       () => {
-        useResolveStore.getState().actions.updateAppSuggestions({
-          queries: state.queries,
-          components: !isPageSwitched ? state.components : {},
-          globals: state.globals,
-          page: state.page,
-          variables: state.variables,
-          client: state.client,
-          server: state.server,
-          constants: state.constants,
-        });
+        const currentState = useCurrentStateStore.getState();
+        useResolveStore.getState().actions.addAppSuggestions(
+          {
+            // get state directly to prevent consuming stale data
+            queries: currentState.queries,
+            components: !isPageSwitched ? currentState.components : {},
+            globals: currentState.globals,
+            page: currentState.page,
+            variables: currentState.variables,
+            client: currentState.client,
+            server: currentState.server,
+            constants: currentState.constants,
+          },
+          true
+        );
       },
       null,
       isPageSwitched

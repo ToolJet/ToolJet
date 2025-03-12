@@ -2294,6 +2294,24 @@ progress {
     transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out
 }
 
+
+.form-control-org-login {
+    display: block;
+    width: 100%;
+    padding: .4375rem .75rem;
+    font-size: .875rem;
+    font-weight: 400;
+    line-height: 1.4285714;
+    background: var(--base);
+    background-clip: padding-box;
+    border: 1px solid var(--slate7);
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border-radius: 4px;
+    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out
+}
+
 @media (prefers-reduced-motion:reduce) {
     .form-control {
         transition: none
@@ -3291,7 +3309,7 @@ fieldset:disabled .btn {
 .dropdown-menu {
     position: absolute;
     top: 100%;
-    z-index: 9999;
+    z-index: 1000;
     display: none;
     min-width: 11rem;
     padding: .25rem 0;
@@ -3547,7 +3565,8 @@ fieldset:disabled .btn {
 }
 
 .dropdown-menu.show {
-    display: block
+    display: block;
+    z-index: 9999;
 }
 
 .dropdown-header {
@@ -5263,7 +5282,8 @@ fieldset:disabled .btn {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    outline: 0
+    outline: 0;
+    padding-left: 0 !important;
 }
 
 .modal-dialog {
@@ -5297,7 +5317,7 @@ fieldset:disabled .btn {
 }
 
 .modal-dialog-scrollable .modal-content {
-    max-height: 100%;
+    max-height: 88%;
     overflow: hidden
 }
 
@@ -5433,6 +5453,10 @@ fieldset:disabled .btn {
     margin: 0
 }
 
+.real-canvas .modal-dialog.modal-fullscreen {
+    width: 100%;
+}
+
 .modal-fullscreen .modal-content {
     height: 100%;
     border: 0;
@@ -5449,6 +5473,12 @@ fieldset:disabled .btn {
 
 .modal-fullscreen .modal-footer {
     border-radius: 0
+}
+
+.modal-dialog-scrollable.modal-fullscreen .modal-content.modal-component {
+    // Modal header height
+    padding-bottom: 56px;
+    max-height: 100%;
 }
 
 @media (max-width:575.98px) {
@@ -6099,6 +6129,10 @@ fieldset:disabled .btn {
     border-radius: 50%;
     -webkit-animation: .75s linear infinite spinner-border;
     animation: .75s linear infinite spinner-border
+}
+
+.spinner-light {
+    color: var(--indigo9) !important;
 }
 
 .spinner-border-sm {
@@ -7630,13 +7664,29 @@ fieldset:disabled .btn {
 }
 
 .rounded {
-    border-radius: 4px !important
+    border-radius: 4px ;
 }
 
 .rounded-0 {
     border-radius: 0 !important
 }
 
+.rounded-top-left{
+    border-top-left-radius: 4px;
+}
+
+.rounded-top-left-0{
+    border-top-left-radius: 0 !important;
+}
+.rounded-top-right-0{
+    border-top-right-radius: 0 !important;
+}
+.rounded-bottom-left-0{
+    border-bottom-left-radius: 0 !important;
+}
+.rounded-bottom-right-0{
+    border-bottom-right-radius: 0 !important;
+}
 .rounded-1 {
     border-radius: 2px !important
 }

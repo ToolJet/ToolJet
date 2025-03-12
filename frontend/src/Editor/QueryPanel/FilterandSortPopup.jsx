@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { OverlayTrigger, Popover, Form } from 'react-bootstrap';
 import cx from 'classnames';
 import { Button } from '@/_ui/LeftSidebar';
-import { useDataSources, useGlobalDataSources } from '@/_stores/dataSourcesStore';
+import { useDataSources, useGlobalDataSources, useSampleDataSource } from '@/_stores/dataSourcesStore';
 import Filter from '@/_ui/Icon/solidIcons/Filter';
 import Arrowleft from '@/_ui/Icon/bulkIcons/Arrowleft';
 import { useDataQueriesActions, useDataQueriesStore } from '@/_stores/dataQueriesStore';
@@ -21,6 +21,7 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
   const { sortDataQueries } = useDataQueriesActions();
   const dataSources = useDataSources();
   const globalDataSources = useGlobalDataSources();
+  const sampleDataSources = useSampleDataSource();
   const [sources, setSources] = useState();
 
   const searchBoxRef = useRef(null);
@@ -37,7 +38,9 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
     if (showMenu) {
       const seen = new Set();
       const createdSources = dataQueries.map((query) => {
-        const globalDS = [...dataSources, ...globalDataSources].find((source) => source.id === query.data_source_id);
+        const globalDS = [...dataSources, ...globalDataSources, ...(sampleDataSources ? [sampleDataSources] : [])].find(
+          (source) => source.id === query.data_source_id
+        );
         if (globalDS) {
           return globalDS;
         }
@@ -72,7 +75,7 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
     } else {
       setAction();
     }
-  }, [dataQueries, dataSources, globalDataSources, showMenu]);
+  }, [dataQueries, dataSources, globalDataSources, showMenu, sampleDataSources]);
 
   const handlePageCallback = (action) => {
     setAction(action);
@@ -209,7 +212,7 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
           data-tooltip-content="Show sort/filter"
           data-cy={`query-filter-button`}
         >
-          <Filter width="13" height="13" fill="var(--slate12)" />
+          <Filter width="14" height="14" fill="var(--icons-default)" />
           {selectedDataSources.length > 0 && <div className="notification-dot"></div>}
         </button>
         <Tooltip id="tooltip-for-open-filter" className="tooltip" />
@@ -239,7 +242,7 @@ const DataSourceSelector = ({
         if (!search || !source?.name) {
           return true;
         }
-        return source.name.toLowerCase().includes(search.toLowerCase());
+        return source?.name?.toLowerCase().includes(search?.toLowerCase());
       })
     );
   }, [_sources, search]);
@@ -281,7 +284,7 @@ const DataSourceSelector = ({
                 <div className="d-flex align-items-center">
                   <DataSourceIcon source={source} height={12} styles={{ minWidth: 12 }} />
                   &nbsp;
-                  <span className="ms-1 text-truncate" data-cy={`ds-filter-${source.name.toLowerCase()}`}>
+                  <span className="ms-1 text-truncate" data-cy={`ds-filter-${source?.name?.toLowerCase()}`}>
                     {source.name}
                   </span>
                 </div>
@@ -311,7 +314,11 @@ const MenuButton = ({
 
   return (
     <div className={`field ${noMargin ? '' : 'mx-1'} tj-list-btn`}>
-      <Button.UnstyledButton onClick={handleOnClick} disabled={disabled} classNames="d-flex justify-content-between p-2">
+      <Button.UnstyledButton
+        onClick={handleOnClick}
+        disabled={disabled}
+        classNames="d-flex justify-content-between p-2"
+      >
         <Button.Content title={text} iconSrc={iconSrc} direction="left" />
         {active && <Tick width="20" height="20" viewBox="0 0 22 22" fill="var(--indigo9)" />}
       </Button.UnstyledButton>

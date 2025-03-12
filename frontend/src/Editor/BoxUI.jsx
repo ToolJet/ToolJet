@@ -6,11 +6,12 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
 import { EditorContext } from './Context/EditorContextWrapper';
 import { validateWidget } from '@/_helpers/utils';
-import { useCurrentState } from '@/_stores/currentStateStore';
+import { useCurrentState, useCurrentStateStore } from '@/_stores/currentStateStore';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import _ from 'lodash';
 
 const shouldAddBoxShadowAndVisibility = [
+  'Table',
   'TextInput',
   'PasswordInput',
   'NumberInput',
@@ -18,6 +19,8 @@ const shouldAddBoxShadowAndVisibility = [
   'Checkbox',
   'Button',
   'ToggleSwitchV2',
+  'DropdownV2',
+  'MultiselectV2',
 ];
 
 const BoxUI = (props) => {
@@ -75,6 +78,7 @@ const BoxUI = (props) => {
 
   let exposedVariables = !_.isEmpty(currentState?.components) ? currentState?.components[component.name] ?? {} : {};
   const fireEvent = (eventName, options) => {
+    if (!useCurrentStateStore.getState().isEditorReady) return;
     if (mode === 'edit' && eventName === 'onClick') {
       onComponentClick(id, component);
     }
@@ -127,6 +131,7 @@ const BoxUI = (props) => {
           padding: styles?.padding == 'none' ? '0px' : '2px', //chart and image has a padding property other than container padding
         }}
         role={'Box'}
+        className={inCanvas ? `_tooljet-${component.component} _tooljet-${component.name}` : ''} //required for custom CSS
       >
         <ControlledComponentToRender
           componentName={component.component}

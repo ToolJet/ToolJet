@@ -3,6 +3,7 @@ import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 
 export const RangeSlider = function RangeSlider({ height, properties, styles, setExposedVariable, fireEvent, dataCy }) {
+  const isInitialRender = useRef(true);
   const { value, min, max, enableTwoHandle } = properties;
   const { trackColor, handleColor, lineColor, visibility, boxShadow } = styles;
   const sliderRef = useRef(null);
@@ -23,19 +24,25 @@ export const RangeSlider = function RangeSlider({ height, properties, styles, se
   };
 
   useEffect(() => {
+    if (isInitialRender.current) return;
     setSliderValue(singleHandleValue);
     setExposedVariable('value', singleHandleValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [singleHandleValue]);
 
   useEffect(() => {
+    if (isInitialRender.current) return;
     setRangeValue(twoHandlesArray);
     setExposedVariable('value', twoHandlesArray);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [...twoHandlesArray]);
+  }, [JSON.stringify(twoHandlesArray)]);
 
   useEffect(() => {
     setExposedVariable('value', enableTwoHandle ? twoHandlesArray : singleHandleValue);
+    if (isInitialRender.current) {
+      enableTwoHandle ? setRangeValue(twoHandlesArray) : setSliderValue(singleHandleValue);
+    }
+    isInitialRender.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enableTwoHandle]);
 

@@ -62,4 +62,34 @@ describe('comment controller', () => {
   afterAll(async () => {
     await app.close();
   });
+
+  it('super admin should be able to see any comments in any apps', async () => {
+    const superAdminUserData = await createUser(app, { email: 'superadmin@tooljet.io', userType: 'instance' });
+    const adminUserData = await createUser(app, { email: 'admin@tooljet.io' });
+
+    const application = await createApplication(app, {
+      name: 'App to clone',
+      user: adminUserData.user,
+    });
+
+    const version = await createApplicationVersion(app, application);
+
+    const thread = await createThread(app, {
+      appId: application.id,
+      x: 100,
+      y: 200,
+      userId: adminUserData.user.id,
+      organizationId: adminUserData.organization.id,
+      appVersionsId: version.id,
+    });
+
+    const loggedUser = await authenticateUser(app, superAdminUserData.user.email);
+
+    const response = await request(app.getHttpServer())
+      .get(`/api/comments/${thread.id}/all`)
+      .set('tj-workspace-id', superAdminUserData.user.defaultOrganizationId)
+      .set('Cookie', loggedUser.tokenCookie);
+
+    expect(response.statusCode).toBe(200);
+  });
 });

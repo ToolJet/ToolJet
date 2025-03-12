@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ToolTip } from '@/_components';
 
-export default function OverflowTooltip({ children, className, whiteSpace = 'nowrap', ...rest }) {
+export default function OverflowTooltip({ children, className, whiteSpace = 'nowrap', placement = 'bottom', ...rest }) {
   const [isOverflowed, setIsOverflow] = useState(false);
   const textElementRef = useRef();
 
@@ -17,13 +17,14 @@ export default function OverflowTooltip({ children, className, whiteSpace = 'now
       className={className}
       delay={{ show: '0', hide: '0' }}
       tooltipClassName="overflow-tooltip"
-      placement="bottom"
+      placement={placement}
       message={children}
       show={isOverflowed}
       width={rest?.width}
     >
       <div
         ref={textElementRef}
+        className={rest.childrenClassName}
         style={{
           whiteSpace,
           overflow: 'hidden',
