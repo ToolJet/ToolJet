@@ -288,7 +288,7 @@ export const tabsConfig = {
     },
     {
       handle: 'setTabDisable',
-      displayName: 'Set Tab Disable',
+      displayName: 'Set Tab Disabled',
       params: [
         {
           handle: 'tabId',
@@ -407,7 +407,7 @@ export const tabsConfig = {
       selectedText: { value: '#1B1F24' },
       highlightColor: { value: '#375FCF' },
       hoverBackground: { value: '#E4E6E8' },
-      background: { value: '#E4E6E8' },
+      background: { value: '#FFFFFF' },
       unselectedIcon: { value: '#CCD1D5' },
       selectedIcon: { value: '#CCD1D5' },
       accent: { value: '#4368E3' },

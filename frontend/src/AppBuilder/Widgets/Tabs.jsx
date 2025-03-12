@@ -338,9 +338,9 @@ export const Tabs = function Tabs({
     return tab?.iconVisibility ? (
       <IconElement
         color={`${currentTab == tab?.id ? selectedIcon : unselectedIcon}`}
+        size={16}
         style={{
-          width: '16px',
-          height: '16px',
+          marginBottom: '2px',
           ...(currentTab == tab.id ? { color: selectedIcon } : { color: unselectedIcon }),
         }}
         stroke={1.5}
@@ -369,107 +369,132 @@ export const Tabs = function Tabs({
       {isLoading ? (
         <TabsNavShimmer divider={divider} />
       ) : (
-        <div
-          style={{
-            borderBottom: `0.5px solid ${divider}`,
-            display: 'flex',
-            alignItems: 'center',
-            width: '100%',
-            backgroundColor: headerBackground,
-          }}
-        >
-          {canScroll && (
-            <div
-              className="px-2"
-              onClick={() => scrollTabs('left')}
-              style={{ cursor: canScrollLeft ? 'pointer' : 'default' }}
-            >
-              <SolidIcon fill={canScrollLeft ? '#6A727C' : '#C1C8CD'} name={'cheveronleft'} />
-            </div>
-          )}
-
-          <ul
-            ref={tabsRef}
-            className="nav"
-            data-bs-toggle="tabs"
+        <div style={{ position: 'relative' }}>
+          <div
             style={{
-              zIndex: 1,
-              display: parsedHideTabs ? 'none' : 'flex',
+              display: 'flex',
+              alignItems: 'center',
+              width: '100%',
               backgroundColor: headerBackground,
-              overflowX: 'auto',
-              whiteSpace: 'nowrap',
-              flexWrap: 'nowrap',
-              scrollbarWidth: 'none',
-              msOverflowStyle: 'none',
-              scrollBehavior: 'smooth',
-              flexGrow: 1,
-              paddingLeft: '4px',
-              paddingRight: '4px',
             }}
           >
-            {tabItems
-              ?.filter((tab) => tab?.visible !== false)
-              ?.map((tab) => (
-                <li
-                  className={`nav-item ${currentTab == tab.id ? 'active' : ''}`}
-                  style={{
-                    opacity: tab?.disabled && '0.5',
-                    width: tabWidth == 'split' && equalSplitWidth + '%',
-                    borderBottom: currentTab === tab.id ? `1.5px solid ${accent}` : '#CCD1D5',
-                    overflow: 'hidden',
-                    backgroundColor: headerBackground,
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    fontWeight: 'bold',
-                    padding: '.25rem .5rem',
-                    cursor: 'pointer',
-                    ...(tabWidth == 'split' ? { minWidth: 'auto' } : { minWidth: '100px' }),
-                  }}
-                  onClick={() => {
-                    if (currentTab == tab.id) return;
+            {canScroll && (
+              <div
+                className="px-2"
+                onClick={() => scrollTabs('left')}
+                style={{ cursor: canScrollLeft ? 'pointer' : 'default' }}
+              >
+                <SolidIcon fill={canScrollLeft ? '#6A727C' : '#C1C8CD'} name={'cheveronleft'} />
+              </div>
+            )}
 
-                    !tab?.disabled && setCurrentTab(tab.id);
-                    !tab?.disabled && setExposedVariable('currentTab', tab.id);
-                    fireEvent('onTabSwitch');
-                  }}
-                  onMouseEnter={() => handleMouseEnter(tab?.id)}
-                  onMouseLeave={handleMouseLeave}
-                  ref={(el) => {
-                    if (el && currentTab == tab.id) {
-                      el.style.setProperty('color', parsedHighlightColor, 'important');
-                    }
-                  }}
-                  key={tab.id}
-                >
-                  <div
-                    data-disabled={tab?.disable}
-                    style={{
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      textAlign: 'center',
-                      fontWeight: '500',
-                      background: isHovered && hoveredTabId === tab.id ? hoverBackground : 'transparent',
-                      borderRadius: '6px',
-                      width: '100%',
-                      padding: '.25rem .25rem',
-                      ...(currentTab == tab.id ? { color: selectedText } : { color: unselectedText }),
-                    }}
-                  >
-                    <a style={{ paddingBottom: '16px' }}>{getTabIcon(tab)}</a>
-                    {tab.title}
-                  </div>
-                </li>
-              ))}
-          </ul>
-          {canScroll && (
-            <div
-              className="px-2"
-              onClick={() => scrollTabs('right')}
-              style={{ cursor: canScrollRight ? 'pointer' : 'default' }}
+            <ul
+              ref={tabsRef}
+              className="nav"
+              data-bs-toggle="tabs"
+              style={{
+                zIndex: 1,
+                display: parsedHideTabs ? 'none' : 'flex',
+                backgroundColor: headerBackground,
+                overflowX: 'auto',
+                whiteSpace: 'nowrap',
+                flexWrap: 'nowrap',
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+                scrollBehavior: 'smooth',
+                flexGrow: 1,
+                paddingLeft: '4px',
+                paddingRight: '4px',
+              }}
             >
-              <SolidIcon fill={canScrollRight ? '#6A727C' : '#C1C8CD'} name="cheveronright" width="25" height="25" />
-            </div>
-          )}
+              {tabItems
+                ?.filter((tab) => tab?.visible !== false)
+                ?.map((tab) => (
+                  <div key={tab.id} style={{ ...(tabWidth == 'split' ? { minWidth: 'auto' } : { minWidth: '91px' }) }}>
+                    <li
+                      className={`nav-item ${currentTab == tab.id ? 'active' : ''}`}
+                      style={{
+                        opacity: tab?.disabled && '0.5',
+                        width: tabWidth == 'split' && equalSplitWidth + '%',
+                        overflow: 'hidden',
+                        backgroundColor: headerBackground,
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        fontWeight: 'bold',
+                        padding: '0.25rem 0rem',
+                        marginBottom: '4px',
+                        marginTop: '4px',
+                        cursor: 'pointer',
+                        ...(tabWidth == 'split' ? { minWidth: 'auto' } : { minWidth: '91px' }),
+                      }}
+                      onClick={() => {
+                        if (currentTab == tab.id) return;
+
+                        !tab?.disabled && setCurrentTab(tab.id);
+                        !tab?.disabled && setExposedVariable('currentTab', tab.id);
+                        fireEvent('onTabSwitch');
+                      }}
+                      onMouseEnter={() => handleMouseEnter(tab?.id)}
+                      onMouseLeave={handleMouseLeave}
+                      ref={(el) => {
+                        if (el && currentTab == tab.id) {
+                          el.style.setProperty('color', parsedHighlightColor, 'important');
+                        }
+                      }}
+                      key={tab.id}
+                    >
+                      <div
+                        data-disabled={tab?.disable}
+                        style={{
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          textAlign: 'center',
+                          fontWeight: '500',
+                          background: isHovered && hoveredTabId === tab.id ? hoverBackground : 'transparent',
+                          borderRadius: '6px',
+                          width: '100%',
+                          padding: '.25rem 1rem',
+                          ...(currentTab == tab.id ? { color: selectedText } : { color: unselectedText }),
+                        }}
+                      >
+                        <span>{getTabIcon(tab)}</span>
+                        {tab.title}
+                      </div>
+                    </li>
+                    {currentTab === tab.id ? (
+                      <div
+                        style={{
+                          position: 'relative',
+                          height: '4px',
+                          width: '100%',
+                          background: accent,
+                          zIndex: 2,
+                        }}
+                      ></div>
+                    ) : null}
+                  </div>
+                ))}
+            </ul>
+            {canScroll && (
+              <div
+                className="px-2"
+                onClick={() => scrollTabs('right')}
+                style={{ cursor: canScrollRight ? 'pointer' : 'default' }}
+              >
+                <SolidIcon fill={canScrollRight ? '#6A727C' : '#C1C8CD'} name="cheveronright" width="25" height="25" />
+              </div>
+            )}
+          </div>
+          <div
+            style={{
+              position: 'absolute',
+              height: '1px',
+              width: '100%',
+              opacity: 0.5,
+              zIndex: 1,
+              background: divider,
+            }}
+          ></div>
         </div>
       )}
       {isLoading ? (
