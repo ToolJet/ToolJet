@@ -28,7 +28,7 @@ Following actions of component can be controlled using the Component Specific Ac
 |  Action  |  <div style={{ width:"150px"}}> Description </div>  |  How To Access |
 |:----------- |:----------- | :------------ |
 | clearValue( ) | Clears the date value.| `components.datepicker1.clearValue()` |
-| setValue( ) | Sets the date in the component.| `components.datepicker1.setValue(date)` |
+| setValue( ) | Sets both the date and time value. | `components.datepicker1.setValue(value)` |
 | setDate( ) | Sets the date value. | `components.datepicker1.setDate(date)` |
 | setDisabledDates( ) | Disables specific dates.| `components.datepicker1.setDisabledDates([date1, date2])` |
 | clearDisabledDates()| Clears all disabled dates.|`components.datepicker1.clearDisabledDates()` |
