@@ -7,22 +7,21 @@ title: Google Cloud Run
 
 :::info
 You should manually set up a PostgreSQL database to be used by ToolJet. We recommend using **Cloud SQL** for this purpose.
-Also for deploying ToolJet 3.0, Redis, Postgrest along with PostgreSQL are required.
 :::
 
 <!-- Follow the steps below to deploy ToolJet on Cloud run with `gcloud` CLI. -->
 
 ## Deploying ToolJet application
-1. Create a new Google Cloud Run Service:
-        
-We are using a multi-container setup
 
-- **Google Cloud Run service**
-  - **tooljet-app (container - 1)**
-  - **postgrest (container - 2)**
-  - **redis (container - 3)**
-- **Cloud SQL (for PostgreSQL)**
-  - **for both (TOOLJET_DB and PG_DB)** 
+### Services and Components
+
+| Service         | Component        | Description |
+|----------------|-----------------|-------------|
+| **Cloud Run**  | `tooljet-app`    | Runs the main ToolJet application. |
+| **Cloud SQL**  | `TOOLJET_DB`     | Stores ToolJet-created tables and app data. |
+| **Cloud SQL**  | `PG_DB`          | Database used to store application data |
+
+
 
 <div style={{textAlign: 'left'}}>
   <img className="screenshot-full" src="/img/cloud-run/google-cloud-run-setup-V3.png" alt="Google Cloud Run New Setup" />
@@ -55,7 +54,7 @@ We are using a multi-container setup
 
 4. Under environmental variables, please add the below ToolJet application variables. 
   
-  You can use these variables in the container 1: tooljet-app
+  You can use these variables for: tooljet-app
 | **Environment Variable**   | **Value**                     |
 |-----------------------------|-------------------------------|
 | `LOCKBOX_MASTER_KEY`       | `<generate using open ssl>`   |
@@ -68,11 +67,6 @@ We are using a multi-container setup
 | `TOOLJET_DB_USER`          | `postgres`                   |
 | `TOOLJET_DB_HOST`          | `<postgresql-instance-ip>`    |
 | `TOOLJET_DB_PASS`          | `<password>`                 |
-| `PGRST_HOST`               | `localhost:3001`             |
-| `PGRST_JWT_SECRET`         | `<generate using open ssl>`   |
-| `REDIS_HOST`               | `localhost`                  |
-| `REDIS_PORT`               | `6379`                       |
-| `REDIS_USER`               | `default`                    |
 | `TOOLJET_HOST`             | `<Endpoint url>`             |
 
 **Note:** These environment variables are in general and might change in the future. You can also refer env variable [**here**](/docs/setup/env-vars). 
@@ -91,47 +85,6 @@ If you are using [Public IP](https://cloud.google.com/sql/docs/postgres/connect-
 
   <div style={{textAlign: 'center'}}>
   <img className="screenshot-full" src="/img/cloud-run/cloud-SQL-tooljet.png" alt="cloud-SQL-tooljet" />
-  </div>
-
-## Deploy 2nd container: Postgrest
-
-Check for the option **ADD-CONTAINER**.
-
-<div style={{textAlign: 'center'}}>
-  <img className="screenshot-full" src="/img/cloud-run/add-container.png" alt="add-container" />
-  </div>
-
-1. For the Postgrest container image `postgrest/postgrest:v12.2.0`.
-
-  **Note:** v12.2.0 is recommended for Postgrest.
-
-
-<div style={{textAlign: 'center'}}>
-  <img className="screenshot-full" src="/img/cloud-run/postgrest-container.png" alt="postgrest-container" />
-  </div>
-
-2. You can add the following environment variables in the **variables and secrets of postgrest container**, for the postgrest container to communicate to the **tooljet-app**.
-
-| **Environment Variable**   | **Value**                                                   |
-|-----------------------------|------------------------------------------------------------|
-| `PGRST_DB_PRE_CONFIG`      | `postgrest.pre_config`                                      |
-| `PGRST_JWT_SECRET`         | `<generate using openssl>`                                  |
-| `PGRST_DB_URI`             | `postgres://<user>:password@<tooljet_db_host>/<tooljet_db>` |
-| `PGRST_SERVER_PORT`        | `3001`                                                      |
-
-<div style={{textAlign: 'center'}}>
-  <img className="screenshot-full" src="/img/cloud-run/postgrest-environment-variables.png" alt="postgrest-environment-variables" />
-  </div>
-
-
-## Deploy 3rd container: Redis
-
-Check for the option **ADD-CONTAINER** and create another container for Redis.
-
-For the Redis container we recommend using image `redis:6.2`
-
-<div style={{textAlign: 'center'}}>
-  <img className="screenshot-full" src="/img/cloud-run/redis-container.png" alt="redis-container" />
   </div>
 
 
