@@ -1,9 +1,8 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import cx from 'classnames';
 import { AppMenu } from './AppMenu';
 import moment from 'moment';
 import { ToolTip } from '@/_components/index';
-import OverflowTooltip from '@/_components/OverflowTooltip';
 import useHover from '@/_hooks/useHover';
 import configs from './Configs/AppIcon.json';
 import { Link, useNavigate } from 'react-router-dom';
@@ -25,27 +24,15 @@ export default function AppCard({
   appActionModal,
   canUpdateApp,
   currentFolder,
+  appType,
 }) {
   const canUpdate = canUpdateApp(app);
   const [hoverRef, isHovered] = useHover();
   const [focused, setFocused] = useState(false);
   const [isMenuOpen, setMenuOpen] = useState(false);
-  const [isOverflowing, setIsOverflowing] = useState(false);
-  const h3Ref = useRef(null);
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const cardRef = useRef();
-  const [popoverVisible, setPopoverVisible] = useState(true)
-  const options = {
-    root: null,
-    rootMargin: '0px',
-    threshold: 1.0
-  }
-  const callBackFunction = (entries) => {
-    const [entry] = entries;
-    setPopoverVisible(isMenuOpen && entry.isIntersecting)
-  }
   const onMenuToggle = useCallback(
     (status) => {
       setMenuOpen(!!status);
@@ -68,34 +55,12 @@ export default function AppCard({
 
   useEffect(() => {
     !isMenuOpen && setFocused(!!isHovered);
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    const observer = new IntersectionObserver(callBackFunction, options)
-    if (cardRef.current) observer.observe(cardRef.current)
-
-    return () => {
-      if (cardRef.current) {
-        observer.unobserve(cardRef.current)
-      }
-    }
-  }, [isHovered, cardRef, options]);
-
-  useEffect(() => {
-    const checkOverflow = () => {
-      if (h3Ref.current) {
-        setIsOverflowing(h3Ref.current.scrollWidth > h3Ref.current.clientWidth);
-      }
-    };
-
-    checkOverflow();
-    window.addEventListener('resize', checkOverflow);
-    return () => window.removeEventListener('resize', checkOverflow);
-  }, []);
+  }, [isHovered]);
 
   const updated_at = app?.editing_version?.updated_at || app?.updated_at;
   const updated = moment(updated_at).fromNow(true);
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const TooltipComponent = isOverflowing ? ToolTip : OverflowTooltip;
 
   let AppIcon;
   try {
@@ -104,8 +69,75 @@ export default function AppCard({
     console.error('App icon not found', app.icon);
   }
 
+  const LaunchButton =
+    appType === 'workflow' ? (
+      <div>
+        <ToolTip
+          message={t(
+            'homePage.appCard.launchingWorkflowNotAvailable',
+            'Launching workflows is not currently available'
+          )}
+        >
+          <button
+            type="button"
+            className={cx(`launch-button tj-text-xsm tj-disabled-btn`)}
+            disabled
+            data-cy="launch-button"
+          >
+            <SolidIcon name="rightarrrow" width="14" fill="#4C5155" />
+            {t('homePage.appCard.launch', 'Launch')}
+          </button>
+        </ToolTip>
+      </div>
+    ) : (
+      <div>
+        <ToolTip
+          message={
+            app?.current_version_id === null
+              ? t('homePage.appCard.noDeployedVersion', 'App does not have a deployed version')
+              : t('homePage.appCard.openInAppViewer', 'Open in app viewer')
+          }
+        >
+          <button
+            type="button"
+            className={cx(
+              ` launch-button tj-text-xsm ${
+                app?.current_version_id === null || app?.is_maintenance_on ? 'tj-disabled-btn ' : 'tj-tertiary-btn'
+              }`
+            )}
+            onClick={() => {
+              if (app?.current_version_id) {
+                window.open(
+                  urlJoin(window.public_config?.TOOLJET_HOST, getSubpath() ?? '', `/applications/${app.slug}`)
+                );
+              } else {
+                navigate(app?.current_version_id ? `/applications/${app.slug}` : '');
+              }
+            }}
+            data-cy="launch-button"
+          >
+            <SolidIcon
+              name="rightarrrow"
+              width="14"
+              fill={
+                app?.current_version_id === null || app?.is_maintenance_on
+                  ? '#4C5155'
+                  : darkMode
+                  ? '#FDFDFE'
+                  : '#11181C'
+              }
+            />
+
+            {app?.is_maintenance_on
+              ? t('homePage.appCard.maintenance', 'Maintenance')
+              : t('homePage.appCard.launch', 'Launch')}
+          </button>
+        </ToolTip>
+      </div>
+    );
+
   return (
-    <div className="card homepage-app-card" ref={cardRef}>
+    <div className="card homepage-app-card">
       <div key={app?.id} ref={hoverRef} data-cy={`${app?.name.toLowerCase().replace(/\s+/g, '-')}-card`}>
         <div className="row home-app-card-header">
           <div className="col-12 d-flex justify-content-between">
@@ -126,26 +158,25 @@ export default function AppCard({
                   canUpdateApp={canUpdateApp(app)}
                   deleteApp={() => deleteApp(app)}
                   exportApp={() => exportApp(app)}
-                  isMenuOpen={setMenuOpen}
-                  popoverVisible={popoverVisible}
-                  setMenuOpen={setMenuOpen}
+                  isMenuOpen={isMenuOpen}
                   darkMode={darkMode}
                   currentFolder={currentFolder}
+                  appType={appType}
+                  appCreationMode={app?.creation_mode || app?.creationMode}
                 />
               )}
             </div>
           </div>
         </div>
         <div>
-          <TooltipComponent trigger={['hover']} message={app.name}>
+          <ToolTip trigger={['hover']} message={app.name}>
             <h3
-              ref={h3Ref}
               className="app-card-name font-weight-500 tj-text-md"
               data-cy={`${app.name.toLowerCase().replace(/\s+/g, '-')}-title`}
             >
               {decodeEntities(app.name)}
             </h3>
-          </TooltipComponent>
+          </ToolTip>
         </div>
         <div className="app-creation-time-container" style={{ marginBottom: '12px' }}>
           {canUpdate && (
@@ -159,64 +190,27 @@ export default function AppCard({
         <div className="appcard-buttons-wrap">
           {canUpdate && (
             <div>
-              <ToolTip message="Open in app builder">
+              <ToolTip message={`Open in ${appType !== 'workflow' ? 'app builder' : 'workflow editor'}`}>
                 <Link
                   to={getPrivateRoute('editor', {
                     slug: isValidSlug(app.slug) ? app.slug : app.id,
                   })}
                   reloadDocument
                 >
-                  <button type="button" className="tj-primary-btn edit-button tj-text-xsm" data-cy="edit-button">
-                    <SolidIcon name="editrectangle" width="14" fill={darkMode ? '#FFFFFF' : '#FDFDFE'} />
+                  <button
+                    type="button"
+                    className="tj-primary-btn tj-text-xsm edit-button"
+                    style={{ color: darkMode ? '#11181C' : '#FDFDFE' }}
+                    data-cy="edit-button"
+                  >
+                    <SolidIcon name="editrectangle" width="14" fill={darkMode ? '#11181C' : '#FDFDFE'} />
                     &nbsp;{t('globals.edit', 'Edit')}
                   </button>
                 </Link>
               </ToolTip>
             </div>
           )}
-          <div>
-            <ToolTip
-              message={
-                app?.current_version_id === null
-                  ? t('homePage.appCard.noDeployedVersion', 'App does not have a deployed version')
-                  : t('homePage.appCard.openInAppViewer', 'Open in app viewer')
-              }
-            >
-              <button
-                type="button"
-                className={cx(
-                  ` launch-button tj-text-xsm ${app?.current_version_id === null || app?.is_maintenance_on ? 'tj-disabled-btn ' : 'tj-tertiary-btn'
-                  }`
-                )}
-                onClick={() => {
-                  if (app?.current_version_id) {
-                    window.open(
-                      urlJoin(window.public_config?.TOOLJET_HOST, getSubpath() ?? '', `/applications/${app.slug}`)
-                    );
-                  } else {
-                    navigate(app?.current_version_id ? `/applications/${app.slug}` : '');
-                  }
-                }}
-                data-cy="launch-button"
-              >
-                <SolidIcon
-                  name="rightarrrow"
-                  width="14"
-                  fill={
-                    app?.current_version_id === null || app?.is_maintenance_on
-                      ? '#4C5155'
-                      : darkMode
-                        ? '#FDFDFE'
-                        : '#11181C'
-                  }
-                />
-
-                {app?.is_maintenance_on
-                  ? t('homePage.appCard.maintenance', 'Maintenance')
-                  : t('homePage.appCard.launch', 'Launch')}
-              </button>
-            </ToolTip>
-          </div>
+          {LaunchButton}
         </div>
       </div>
     </div>

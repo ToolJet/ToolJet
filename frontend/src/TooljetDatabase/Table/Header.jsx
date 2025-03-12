@@ -14,6 +14,7 @@ import { toast } from 'react-hot-toast';
 import { tooljetDatabaseService } from '@/_services';
 import { isEmpty } from 'lodash';
 import DeleteIcon from '../Icons/DeleteIcon.svg';
+import config from 'config';
 
 const Header = ({
   isCreateColumnDrawerOpen,
@@ -29,12 +30,14 @@ const Header = ({
   setIsEditRowDrawerOpen,
   setFilterEnable,
   filterEnable,
+  isDirectRowExpand,
   referencedColumnDetails,
   setReferencedColumnDetails,
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const [isAddNewDataMenuOpen, setIsAddNewDataMenuOpen] = useState(false);
   const [bulkUploadFile, setBulkUploadFile] = useState(null);
+  const [activeFilters, setActiveFilters] = useState(0);
   const [isBulkUploading, setIsBulkUploading] = useState(false);
   const [errors, setErrors] = useState({ client: [], server: [] });
   const [uploadResult, setUploadResult] = useState(null);
@@ -122,8 +125,9 @@ const Header = ({
   const handleFileValidation = () => {
     const fileValidationErrors = [];
 
-    if (bulkUploadFile && bulkUploadFile.size / 1024 > 2 * 1024) {
-      fileValidationErrors.push('File size cannot exceed 2mb');
+    const maxFileSizeInMB = config.TOOLJET_DB_BULK_UPLOAD_MAX_CSV_FILE_SIZE_MB || 5;
+    if (bulkUploadFile && bulkUploadFile.size / 1024 > maxFileSizeInMB * 1024) {
+      fileValidationErrors.push(`File size cannot exceed ${maxFileSizeInMB}mb`);
     }
 
     setErrors({ server: [], client: fileValidationErrors });
@@ -147,9 +151,9 @@ const Header = ({
         <div className="card border-0">
           <div className="card-body  tj-db-operations-header">
             <div className="row align-items-center">
-              <div className="col-8 align-items-center p-3 gap-1">
+              <div className="col-8 align-items-center  gap-1" style={{ padding: '0 16px' }}>
                 <>
-                  {Object.keys(selectedRowIds).length === 0 && (
+                  {(isDirectRowExpand || Object.keys(selectedRowIds).length === 0) && (
                     <>
                       <AddNewDataPopOver
                         disabled={false}
@@ -165,14 +169,14 @@ const Header = ({
                             disabled={false}
                             onClick={() => toggleAddNewDataMenu(true)}
                             size="sm"
-                            className="px-1 pe-3 ps-2 gap-0"
+                            className="px-1 pe-3 ps-2 gap-1"
                           >
                             <Plus fill="#697177" style={{ height: '16px' }} />
                             Add new data
                           </ButtonSolid>
                         </span>
                       </AddNewDataPopOver>
-                      <div style={{ width: '70px' }}>
+                      <div style={{ width: '83px', marginRight: activeFilters > 0 ? '20px' : '0px' }}>
                         <Filter
                           filters={queryFilters}
                           setFilters={setQueryFilters}
@@ -180,6 +184,7 @@ const Header = ({
                           resetFilterQuery={resetFilterQuery}
                           setFilterEnable={setFilterEnable}
                           filterEnable={filterEnable}
+                          setActiveFilters={setActiveFilters}
                         />
                       </div>
                       <div style={{ width: '70px' }}>
@@ -199,11 +204,12 @@ const Header = ({
                       setIsEditRowDrawerOpen={setIsEditRowDrawerOpen}
                       selectedRowIds={selectedRowIds}
                       rows={rows}
+                      isDirectRowExpand={isDirectRowExpand}
                       referencedColumnDetails={referencedColumnDetails}
                       setReferencedColumnDetails={setReferencedColumnDetails}
                     />
                   ) : null}
-                  {Object.keys(selectedRowIds).length > 0 && (
+                  {!isDirectRowExpand && Object.keys(selectedRowIds).length > 0 && (
                     <div>
                       <ButtonSolid
                         variant="dangerTertiary"

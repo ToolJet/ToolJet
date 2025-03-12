@@ -8,6 +8,7 @@ import CheveronDown from '@/_ui/Icon/bulkIcons/CheveronDown';
 import Remove from '@/_ui/Icon/bulkIcons/Remove';
 import { v4 as uuidv4 } from 'uuid';
 import { isEmpty } from 'lodash';
+import { ToolTip } from '@/_components/ToolTip';
 
 const DropDownSelect = ({
   darkMode,
@@ -63,6 +64,8 @@ const DropDownSelect = ({
   isLoading = false,
   columnDefaultValue = '',
   setColumnDefaultValue = () => {},
+  showControlComponent = false,
+  placeholder = '',
 }) => {
   const popoverId = useRef(`dd-select-${uuidv4()}`);
   const popoverBtnId = useRef(`dd-select-btn-${uuidv4()}`);
@@ -77,6 +80,9 @@ const DropDownSelect = ({
   const [isInitialForeignKeyDataLoaded, setIsInitialForeignKeyDataLoaded] = useState(false);
   const [totalRecords, setTotalRecords] = useState(0);
   const [pageNumber, setPageNumber] = useState(1);
+  //following two states are to determine whether the value is truncated or not to show tooltip
+  const valueRef = useRef(null);
+  const [isTruncated, setIsTruncated] = useState(false);
 
   useEffect(() => {
     if (shouldCloseFkMenu) {
@@ -93,6 +99,12 @@ const DropDownSelect = ({
   useEffect(() => {
     if (Array.isArray(value) || selected?.value !== value?.value || selected?.label !== value?.label) {
       setSelected(value);
+    }
+    const element = valueRef.current;
+    if (element) {
+      // Check if the text is truncated
+      const truncated = element.scrollWidth > element.clientWidth;
+      setIsTruncated(truncated);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
@@ -114,6 +126,7 @@ const DropDownSelect = ({
     if (isNewOverFlown !== isOverflown) {
       setIsOverflown(isNewOverFlown);
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected]);
 
@@ -145,6 +158,24 @@ const DropDownSelect = ({
     }
     return true;
   }
+
+  const fetchTooltipMessageForDropdownSelected = (selected) => {
+    let message = '';
+    if (Array.isArray(selected)) {
+      message = selected.reduce((accumulator, value) => {
+        if (accumulator) {
+          accumulator = `${accumulator}, ${value?.label || ''}`;
+        } else {
+          accumulator = value?.label || '';
+        }
+        return accumulator;
+      }, '');
+      console.log('manish --->', { selected, message });
+      return message;
+    }
+    message = selected?.label || '';
+    return message;
+  };
 
   return (
     <OverlayTrigger
@@ -190,7 +221,7 @@ const DropDownSelect = ({
             closePopup={() => setShowMenu(isForeignKeyInEditCell ? true : false)}
             onAdd={onAdd}
             addBtnLabel={addBtnLabel}
-            // loader={loader}
+            loader={loader}
             isLoading={isLoading}
             emptyError={emptyError}
             highlightSelected={highlightSelected}
@@ -232,6 +263,7 @@ const DropDownSelect = ({
             saveFKValue={saveFKValue}
             columnDefaultValue={columnDefaultValue}
             setColumnDefaultValue={setColumnDefaultValue}
+            showControlComponent={showControlComponent}
           />
         </Popover>
       }
@@ -263,7 +295,7 @@ const DropDownSelect = ({
               background: (selected.label === null || selected.label === undefined) && 'var(--slate3)',
             }}
           >
-            {selected.label === null || selected.label === undefined ? 'Null' : selected.label}
+            {selected?.label ?? 'Null'}
           </p>
         </div>
       ) : (
@@ -298,47 +330,56 @@ const DropDownSelect = ({
             )}
             data-cy={`show-ds-popover-button`}
           >
-            <div className={`text-truncate`}>
-              {renderSelected && renderSelected(selected)}
-              <>
-                {!renderSelected && isValidInput(selected) ? (
-                  Array.isArray(selected) ? (
-                    !isOverflown && (
-                      <MultiSelectValueBadge
-                        options={options}
-                        selected={selected}
-                        setSelected={setSelected}
-                        onChange={onChange}
-                      />
+            <ToolTip
+              message={fetchTooltipMessageForDropdownSelected(selected)}
+              show={!!fetchTooltipMessageForDropdownSelected(selected) && isTruncated}
+            >
+              <div className={`text-truncate`} ref={valueRef}>
+                {renderSelected && renderSelected(selected)}
+                <>
+                  {!renderSelected && isValidInput(selected) ? (
+                    Array.isArray(selected) ? (
+                      !isOverflown && (
+                        <MultiSelectValueBadge
+                          options={options}
+                          selected={selected}
+                          setSelected={setSelected}
+                          onChange={onChange}
+                        />
+                      )
+                    ) : (
+                      selected?.label
                     )
-                  ) : (
-                    selected?.label
-                  )
-                ) : showPlaceHolder ? (
-                  <span style={{ color: '#9e9e9e', fontSize: '12px', fontWeight: '400', lineHeight: '20px' }}>
-                    {foreignKeyAccessInRowForm || showPlaceHolderInForeignKeyDrawer ? topPlaceHolder : 'Select...'}
-                  </span>
-                ) : (
-                  ''
-                )}
-                {!renderSelected && isOverflown && !Array.isArray(selected) && (
-                  <Badge className="me-1 dd-select-value-badge" bg="secondary">
-                    {selected?.length} selected
-                    <span
-                      role="button"
-                      onClick={(e) => {
-                        setSelected([]);
-                        onChange && onChange([]);
-                        e.preventDefault();
-                        e.stopPropagation();
-                      }}
-                    >
-                      <Remove fill="var(--slate12)" width="12px" />
+                  ) : showPlaceHolder ? (
+                    <span style={{ color: '#9e9e9e', fontSize: '12px', fontWeight: '400', lineHeight: '20px' }}>
+                      {foreignKeyAccessInRowForm || showPlaceHolderInForeignKeyDrawer
+                        ? topPlaceHolder
+                        : placeholder
+                        ? placeholder
+                        : 'Select...'}
                     </span>
-                  </Badge>
-                )}
-              </>
-            </div>
+                  ) : (
+                    ''
+                  )}
+                  {!renderSelected && isOverflown && !Array.isArray(selected) && (
+                    <Badge className="me-1 dd-select-value-badge" bg="secondary">
+                      {selected?.length} selected
+                      <span
+                        role="button"
+                        onClick={(e) => {
+                          setSelected([]);
+                          onChange && onChange([]);
+                          e.preventDefault();
+                          e.stopPropagation();
+                        }}
+                      >
+                        <Remove fill="var(--slate12)" width="12px" />
+                      </span>
+                    </Badge>
+                  )}
+                </>
+              </div>
+            </ToolTip>
             <div className="dd-select-control-chevron">
               <CheveronDown width="15" height="15" />
             </div>
@@ -352,7 +393,7 @@ const DropDownSelect = ({
 function MultiSelectValueBadge({ options, selected, setSelected, onChange }) {
   if (options?.length === selected?.length && selected?.length !== 0) {
     // Filter Options without 'Select All'
-    const optionsWithoutSelectAll = options.filter((option) => option.value !== 'SELECT ALL');
+    const optionsWithoutSelectAll = options?.filter((option) => option?.value !== 'SELECT ALL');
     return (
       <Badge className={`me-1 dd-select-value-badge`} bg="secondary">
         All {optionsWithoutSelectAll?.length} selected
@@ -371,15 +412,15 @@ function MultiSelectValueBadge({ options, selected, setSelected, onChange }) {
     );
   }
 
-  return selected.map((option) => (
-    <Badge key={option.value} className="me-1 dd-select-value-badge" bg="secondary">
-      {option.label}
+  return selected?.map((option) => (
+    <Badge key={option?.value} className="me-1 dd-select-value-badge" bg="secondary">
+      {option?.label}
       <span
         role="button"
         onClick={(e) => {
           setSelected((selected) => {
-            onChange && onChange(selected.filter((opt) => opt.value !== option.value));
-            return selected.filter((opt) => opt.value !== option.value);
+            onChange && onChange(selected.filter((opt) => opt?.value !== option?.value));
+            return selected?.filter((opt) => opt?.value !== option?.value);
           });
           e.preventDefault();
           e.stopPropagation();

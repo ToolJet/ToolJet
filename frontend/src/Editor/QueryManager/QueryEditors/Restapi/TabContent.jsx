@@ -10,8 +10,9 @@ export default ({
   options = [],
   theme,
   onChange,
-  jsonBody,
-  onJsonBodyChange,
+  jsonBody, // FIXME: Remove this once data migration to raw_body is complete
+  rawBody,
+  onRawBodyChange,
   componentName,
   removeKeyValuePair,
   paramType,
@@ -35,7 +36,7 @@ export default ({
           return (
             <>
               <div className="row-container query-manager-border-color" key={index}>
-                <div className="fields-container mb-2">
+                <div className="fields-container mb-1">
                   <div className="field col-4 rounded-start rest-api-codehinter-key-field">
                     <CodeHinter
                       type="basic"
@@ -74,19 +75,23 @@ export default ({
         <div>
           <CodeHinter
             type="extendedSingleLine"
-            initialValue={jsonBody ?? ''}
-            lang="javascript"
+            initialValue={(rawBody || jsonBody) ?? ''} // If raw_body is not set, set initial value to legacy json_body if present
             height={'300px'}
             className="query-hinter"
-            onChange={(value) => onJsonBodyChange(value)}
+            onChange={(value) => onRawBodyChange(value)}
             componentName={`${componentName}/${tabType}`}
           />
         </div>
       ) : (
-        <div className="d-flex mb-2" style={{ maxHeight: '32px', marginLeft: '5px' }}>
-          <ButtonSolid variant="ghostBlue" size="sm" onClick={() => addNewKeyValuePair(paramType)}>
+        <div className="d-flex mb-2" style={{ maxHeight: '32px', marginTop: '4px' }}>
+          <ButtonSolid
+            variant="ghostBlue"
+            size="sm"
+            onClick={() => addNewKeyValuePair(paramType)}
+            style={{ gap: '0px', fontSize: '12px', fontWeight: '500', padding: '0px 9px' }}
+          >
             <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
-            &nbsp;&nbsp;{t('editor.inspector.eventManager.addKeyValueParam', 'Add more')}
+            {t('editor.inspector.eventManager.addKeyValueParam', 'Add more')}
           </ButtonSolid>
         </div>
       )}

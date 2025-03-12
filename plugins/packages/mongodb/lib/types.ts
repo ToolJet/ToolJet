@@ -5,6 +5,10 @@ export type SourceOptions = {
   port: string;
   username: string;
   password: string;
+  ca_cert: string;
+  client_cert: string;
+  client_key: string;
+  tls_certificate: string;
 };
 export type QueryOptions = {
   operation: string;

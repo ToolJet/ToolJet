@@ -60,6 +60,7 @@ export class AppBase extends BaseEntity {
   })
   appVersions: AppVersion[];
 
+  //Depreciated
   @ManyToMany(() => GroupPermission)
   @JoinTable({
     name: 'app_group_permissions',
@@ -72,6 +73,7 @@ export class AppBase extends BaseEntity {
   })
   groupPermissions: GroupPermission[];
 
+  //Depreciated
   @OneToMany(() => AppGroupPermission, (appGroupPermission) => appGroupPermission.app, { onDelete: 'CASCADE' })
   appGroupPermissions: AppGroupPermission[];
 }

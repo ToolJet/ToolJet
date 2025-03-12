@@ -13,6 +13,7 @@ export const RadioButton = function RadioButton({
   dataCy,
 }) {
   const { label, value, values, display_values } = properties;
+
   const { visibility, disabledState, activeColor, boxShadow } = styles;
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
   const [checkedValue, setValue] = useState(() => value);
@@ -45,7 +46,7 @@ export const RadioButton = function RadioButton({
     };
     setExposedVariables(exposedVariables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, setValue]);
+  }, [value]);
 
   return (
     <div

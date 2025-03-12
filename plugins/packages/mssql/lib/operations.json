@@ -3,7 +3,9 @@
   "title": "Mysql data query schema",
   "description": "A schema defining mysql data query",
   "type": "database",
-  "defaults": {},
+  "defaults": {
+    "mode": "sql"
+  },
   "properties": {
     "mode": {
       "label": "",
@@ -27,7 +29,16 @@
         "type": "codehinter",
         "description": "Enter query",
         "height": "150px",
-        "editorType": "multiline"
+        "editorType": "multiline",
+        "placeholder": "SELECT * FROM users"
+      },
+      "query_params": {
+        "key": "query_params",
+        "label": "SQL Parameters",
+        "type": "react-component-headers",
+        "description": "Parameters for the SQL query",
+        "buttonText": "Add SQL parameter",
+        "tooltip": "Use these parameters in the SQL query using named notation < :parameter_name >"
       }
     },
     "gui": {

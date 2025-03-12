@@ -3,7 +3,9 @@
   "title": "Airtable datasource",
   "description": "A schema defining Airtable datasource",
   "type": "api",
-  "defaults": {},
+  "defaults": {
+    "cell_format": "json"
+  },
   "properties": {
     "operation": {
       "label": "Operation",
@@ -77,6 +79,79 @@
         "height": "36px",
         "className": "codehinter-plugins",
         "placeholder": "recAOzdIHaRpvRaGE"
+      },
+      "fields": {
+        "label": "Fields",
+        "key": "fields",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter fields name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "[\"column1\",\"column2\",\"column3\"]"
+      },
+      "filter_by_formula": {
+        "label": "Filter by formula",
+        "key": "filter_by_formula",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter formula",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "column1 * column2 > 100"
+      },
+      "timezone": {
+        "label": "Timezone",
+        "key": "timezone",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter timezone",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "America/Chicago"
+      },
+      "user_locale": {
+        "label": "User locale",
+        "key": "user_locale",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter user locale",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "en-gb"
+      },
+      "cell_format": {
+        "label": "Cell format",
+        "key": "cell_format",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter cell format",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "string"
+      },
+      "view": {
+        "label": "View",
+        "key": "view",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter view",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "GridView"
+      },
+      "sort": {
+        "label": "Sort",
+        "key": "sort",
+        "type": "react-component-sort",
+        "description": "Enter sort values",
+        "buttonText": "Add"
       }
     },
     "retrieve_record": {
@@ -143,7 +218,6 @@
         "type": "codehinter",
         "description": "Enter list of records",
         "height": "150px",
-        "editorType": "extendedSingleLine",
         "placeholder": "[{ \"fields\": {} }]"
       }
     },
@@ -186,8 +260,7 @@
         "key": "body",
         "type": "codehinter",
         "description": "Enter body",
-        "height": "150px",
-        "editorType": "extendedSingleLine"
+        "height": "150px"
       }
     },
     "delete_record": {

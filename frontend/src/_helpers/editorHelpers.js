@@ -1,5 +1,5 @@
 import { Button } from '@/Editor/Components/Button';
-import { Image } from '@/Editor/Components/Image';
+import { Image } from '@/Editor/Components/Image/Image';
 import { Text } from '@/Editor/Components/Text';
 import { Table } from '@/Editor/Components/Table/Table';
 import { TextInput } from '@/Editor/Components/TextInput';
@@ -9,10 +9,12 @@ import { Container } from '@/Editor/Components/Container';
 import { Tabs } from '@/Editor/Components/Tabs';
 import { RichTextEditor } from '@/Editor/Components/RichTextEditor';
 import { DropDown } from '@/Editor/Components/DropDown';
+import { DropdownV2 } from '@/Editor/Components/DropdownV2/DropdownV2';
 import { Checkbox } from '@/Editor/Components/Checkbox';
 import { Datepicker } from '@/Editor/Components/Datepicker';
 import { DaterangePicker } from '@/Editor/Components/DaterangePicker';
 import { Multiselect } from '@/Editor/Components/Multiselect';
+import { MultiselectV2 } from '@/Editor/Components/MultiselectV2/MultiselectV2';
 import { Modal } from '@/Editor/Components/Modal';
 import { Chart } from '@/Editor/Components/Chart';
 import { Map as MapComponent } from '@/Editor/Components/Map/Map';
@@ -84,10 +86,12 @@ export const AllComponents = {
   Tabs,
   RichTextEditor,
   DropDown,
+  DropdownV2,
   Checkbox,
   Datepicker,
   DaterangePicker,
   Multiselect,
+  MultiselectV2,
   Modal,
   Chart,
   Map: MapComponent,
@@ -142,6 +146,53 @@ export function isOnlyLayoutUpdate(diffState) {
   return componentDiff.length > 0;
 }
 
+function findNotations(jsString) {
+  const dotNotationRegex = /(\w+)\.(\w+(\.\w+)*)/g;
+  const matches = [];
+  let match;
+
+  while ((match = dotNotationRegex.exec(jsString)) !== null) {
+    matches.push({
+      base: match[1],
+      accessors: match[2].split('.'),
+    });
+  }
+
+  return matches;
+}
+
+function convertToBracketNotation(base, accessors) {
+  return `${base}${accessors.map((accessor) => `['${accessor}']`).join('')}`;
+}
+
+function verifyDotAndBracketNotations(jsString) {
+  if (
+    !(
+      jsString.includes('components.') ||
+      jsString.includes('globals.') ||
+      jsString.includes('queries.') ||
+      jsString.includes('page.') ||
+      jsString.includes('variables.') ||
+      jsString.includes('constants.')
+    )
+  ) {
+    return false;
+  }
+
+  const notations = findNotations(jsString);
+
+  for (const { base, accessors } of notations) {
+    const dotNotation = `${base}.${accessors.join('.')}`;
+    const bracketNotation = convertToBracketNotation(base, accessors);
+
+    if (jsString.includes(dotNotation) && !jsString.includes(bracketNotation)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 function findReferenceInComponent(node, changedCurrentState) {
   if (!node) return false;
 
@@ -154,7 +205,8 @@ function findReferenceInComponent(node, changedCurrentState) {
           ((value.includes('{{') && value.includes('}}')) || value.includes('%%client'))
         ) {
           // Check if the referenced entity is in the state
-          if (changedCurrentState.some((state) => value.includes(state))) {
+
+          if (changedCurrentState.some((state) => value.includes(state) || verifyDotAndBracketNotations(value))) {
             return true;
           }
         } else if (typeof value === 'object') {
@@ -297,3 +349,18 @@ export const updateCanvasBackground = ({ canvasBackgroundColor, backgroundFxQuer
     }
   }
 };
+
+export function checkAndExtractEntityId(errorString) {
+  const regex = /"([a-f0-9-]+)"/;
+  const match = errorString.match(regex);
+  if (match && match[1]) {
+    return {
+      entityId: match[1],
+      message: 'The last component is not saved, so the last action is also not saved.',
+    };
+  }
+  return {
+    entityId: null,
+    message: 'No entity ID found in the error message.',
+  };
+}

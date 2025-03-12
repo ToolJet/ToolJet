@@ -1,5 +1,5 @@
-import { Component } from 'src/entities/component.entity';
-import { processDataInBatches } from 'src/helpers/utils.helper';
+import { Component } from '@entities/component.entity';
+import { processDataInBatches } from '@helpers/migration.helper';
 import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
 
 const componentTypes = ['Checkbox', 'Button'];

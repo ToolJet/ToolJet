@@ -14,6 +14,14 @@
       "description": "Single select dropdown for operation",
       "list": [
         {
+          "value": "create",
+          "name": "Create a spreadsheet"
+        },
+        {
+          "value": "list_all",
+          "name": "List all sheets of a spreadsheet"
+        },
+        {
           "value": "read",
           "name": "Read data from a spreadsheet"
         },
@@ -67,6 +75,30 @@
         "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins"
+      }
+    },
+    "create": {
+      "title": {
+        "label": "Title",
+        "key": "title",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter name of new spreadsheet",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter name of new spreadsheet"
+      }
+    },
+    "list_all": {
+      "spreadsheet_id": {
+        "label": "Spreadsheet ID",
+        "key": "spreadsheet_id",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter spreadsheet_id",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter spreadsheet_id"
       }
     },
     "append": {

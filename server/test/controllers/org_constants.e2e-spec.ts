@@ -314,7 +314,7 @@ describe('organization environment constants controller', () => {
         const response = await createConstant(app, adminUserData, {
           constant_name: 'user_name',
           value: 'The Dev',
-          environments: appEnvironments.map((env) => env.id),
+          environments: [appEnvironments[0]?.id],
         });
 
         const preCount = await getManager().count(OrgEnvironmentConstantValue);
@@ -327,13 +327,13 @@ describe('organization environment constants controller', () => {
           .expect(200);
 
         const postCount = await getManager().count(OrgEnvironmentConstantValue);
-        expect(postCount).toEqual(preCount - 1);
+        expect(postCount).toEqual(0);
       }
 
       const response = await createConstant(app, adminUserData, {
         constant_name: 'email',
         value: 'dev@tooljet.io',
-        environments: appEnvironments.map((env) => env.id),
+        environments: [appEnvironments[0]?.id],
       });
 
       await request(app.getHttpServer())

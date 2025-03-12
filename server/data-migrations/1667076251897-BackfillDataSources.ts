@@ -1,4 +1,4 @@
-import { DataQuery } from 'src/entities/data_query.entity';
+import { DataQuery } from '@entities/data_query.entity';
 import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
 
 export class BackfillDataSources1667076251897 implements MigrationInterface {

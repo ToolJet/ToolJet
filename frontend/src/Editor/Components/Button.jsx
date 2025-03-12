@@ -95,7 +95,7 @@ export const Button = function Button(props) {
   useEffect(() => {
     const exposedVariables = {
       click: async function () {
-        if (!disable) {
+        if (!disable && !loading) {
           fireEvent('onClick');
         }
       },
@@ -170,9 +170,11 @@ export const Button = function Button(props) {
     computedStyles['--tblr-btn-color-clicked'] = tinycolor(computedBgColor).darken(15).toString();
   }
   const handleClick = () => {
-    const event1 = new CustomEvent('submitForm', { detail: { buttonComponentId: id } });
-    document.dispatchEvent(event1);
-    fireEvent('onClick');
+    if (!disable && !loading) {
+      const event1 = new CustomEvent('submitForm', { detail: { buttonComponentId: id } });
+      document.dispatchEvent(event1);
+      fireEvent('onClick');
+    }
   };
   const renderButton = () => (
     <div

@@ -77,7 +77,6 @@ export const Form = function Form(props) {
         fireEvent('onInvalid');
       }
     });
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -112,7 +111,7 @@ export const Form = function Form(props) {
   }, [advanced]);
 
   useEffect(() => {
-    setUIComponents(generateUIComponents(JSONSchema, advanced));
+    setUIComponents(generateUIComponents(JSONSchema, advanced, component.name));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(JSONSchema), advanced]);
 
@@ -142,7 +141,8 @@ export const Form = function Form(props) {
     } else {
       Object.keys(childComponents ?? {}).forEach((childId) => {
         if (childrenData[childId]?.name) {
-          formattedChildData[childrenData[childId].name] = { ...omit(childrenData[childId], 'name'), id: childId };
+          const componentName = childComponents?.[childId]?.component?.name;
+          formattedChildData[componentName] = { ...omit(childrenData[childId], 'name'), id: childId };
           childValidation = childValidation && (childrenData[childId]?.isValid ?? true);
         }
       });
@@ -247,7 +247,7 @@ export const Form = function Form(props) {
       ) : (
         <fieldset disabled={disabledState}>
           {!advanced && (
-            <>
+            <div className={'json-form-wrapper-disabled'}>
               <SubContainer
                 parentComponent={component}
                 containerCanvasWidth={width}
@@ -262,6 +262,7 @@ export const Form = function Form(props) {
                 currentPageId={props.currentPageId}
                 {...props}
                 {...containerProps}
+                height={'100%'} // This height is required since Subcontainer has a issue if height is provided, it stores it in the ref and never updates that ref
               />
               <SubCustomDragLayer
                 containerCanvasWidth={width}
@@ -269,7 +270,7 @@ export const Form = function Form(props) {
                 parentRef={parentRef}
                 currentLayout={currentLayout}
               />
-            </>
+            </div>
           )}
           {advanced &&
             uiComponents?.map((item, index) => {
@@ -286,8 +287,8 @@ export const Form = function Form(props) {
                       'ToggleSwitch',
                       'ToggleSwitchV2',
                     ].includes(uiComponents?.[index + 1]?.component)
-                      ? `json-form-wrapper`
-                      : `json-form-wrapper  form-label-restricted`
+                      ? `json-form-wrapper json-form-wrapper-disabled`
+                      : `json-form-wrapper  json-form-wrapper-disabled form-label-restricted`
                   }
                   key={index}
                 >

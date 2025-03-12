@@ -1,0 +1,104 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "PrestoDB data source",
+  "description": "A schema defining PrestoDB data source",
+  "type": "database",
+  "source": {
+    "name": "PrestoDB",
+    "kind": "Presto",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "username": {
+        "type": "string"
+      },
+      "password": {
+        "type": "password",
+        "encrypted": true
+      },
+      "catalog": {
+        "type": "string"
+      },
+      "host": {
+        "type": "string"
+      },
+      "port": {
+        "type": "number"
+      },
+      "schema": {
+        "type": "string"
+      },
+      "user": {
+        "type": "string"
+      },
+      "timezone": {
+        "type": "string"
+      },
+      "extra_headers": {
+        "type": "array"
+      }
+    }
+  },
+  "defaults": {},
+  "properties": {
+    "username": {
+      "label": "Username",
+      "key": "db_auth_username",
+      "type": "text",
+      "description": "my-user"
+    },
+    "password": {
+      "label": "Password",
+      "key": "db_auth_password",
+      "type": "password",
+      "decription": "Password for PrestoDB Database"
+    },
+    "catalog": {
+      "label": "Catalog",
+      "key": "db_config_catalog",
+      "type": "text",
+      "description": "system"
+    },
+    "host": {
+      "label": "Host",
+      "key": "db_config_host",
+      "type": "text",
+      "description": "http://localhost"
+    },
+    "port": {
+      "label": "Port",
+      "key": "db_config_port",
+      "type": "text",
+      "description": "8080"
+    },
+    "schema": {
+      "label": "Schema",
+      "key": "db_config_schema",
+      "type": "text",
+      "description": "information_schema"
+    },
+    "user": {
+      "label": "User",
+      "key": "db_config_user",
+      "type": "text",
+      "description": "root"
+    },
+    "timezone": {
+      "label": "Timezone",
+      "key": "db_config_timezone",
+      "type": "text",
+      "description": "Enter timezone"
+    },
+    "extra_headers": {
+      "label": "Extra headers",
+      "key": "db_config_extra_headers",
+      "type": "react-component-headers",
+      "description": "Extra headers for Presto Client"
+    }
+  },
+  "required": []
+}

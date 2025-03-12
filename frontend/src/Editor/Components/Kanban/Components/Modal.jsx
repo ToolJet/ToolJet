@@ -1,11 +1,14 @@
 import React, { useRef } from 'react';
 import { default as BootstrapModal } from 'react-bootstrap/Modal';
 import { SubContainer } from '@/Editor/SubContainer';
+import useStore from '@/AppBuilder/_stores/store';
+import { shallow } from 'zustand/shallow';
 import '@/_styles/widgets/kanban.scss';
 
 export const Modal = function Modal({ showModal, setShowModal, kanbanProps }) {
   const parentRef = useRef(null);
-  const { id, containerProps, exposedVariables, component } = kanbanProps;
+  const exposedVariables = useStore((state) => state.getExposedValueOfComponent(kanbanProps.id), shallow);
+  const { id, containerProps, component } = kanbanProps;
 
   const renderCloseButton = () => {
     return (

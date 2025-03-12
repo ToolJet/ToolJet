@@ -1,0 +1,20 @@
+.white-labelling-background-wrapper {
+    margin-top: 0px !important;
+    height: 100vh;
+    overflow: hidden;
+    background-size: cover;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    .container-fluid {
+        height: 100%;
+        padding: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .row {
+        height: 100%;
+    }
+}

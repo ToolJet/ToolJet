@@ -8,6 +8,7 @@ export const appVersionService = {
   create,
   del,
   save,
+  promoteEnvironment,
   autoSaveApp,
   saveAppVersionEventHandlers,
   createAppVersionEventHandler,
@@ -25,15 +26,26 @@ function getOne(appId, versionId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/apps/${appId}/versions/${versionId}`, requestOptions).then(handleResponse);
 }
+
+function promoteEnvironment(appId, versionId, currentEnvironmentId) {
+  const requestOptions = {
+    method: 'PUT',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify({ currentEnvironmentId }),
+  };
+  return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/promote`, requestOptions).then(handleResponse);
+}
 function getAppVersionData(appId, versionId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}`, requestOptions).then(handleResponse);
 }
 
-function create(appId, versionName, versionFromId) {
+function create(appId, versionName, versionFromId, currentEnvironmentId) {
   const body = {
     versionName,
     versionFromId,
+    environmentId: currentEnvironmentId,
   };
 
   const requestOptions = {
@@ -66,7 +78,7 @@ function save(appId, versionId, values, isUserSwitchedVersion = false) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/apps/${appId}/versions/${versionId}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}`, requestOptions).then(handleResponse);
 }
 
 function autoSaveApp(
@@ -79,6 +91,17 @@ function autoSaveApp(
   isUserSwitchedVersion = false,
   isComponentCutProcess = false
 ) {
+  // console.log('autoSaveApp-->', {
+  //   appId,
+  //   versionId,
+  //   diff,
+  //   type,
+  //   pageId,
+  //   operation,
+  //   isUserSwitchedVersion,
+  //   isComponentCutProcess,
+  // });
+
   const OPERATION = {
     create: 'POST',
     update: 'PUT',
@@ -91,6 +114,9 @@ function autoSaveApp(
       delete: { ...diff },
     },
     global_settings: {
+      update: { ...diff },
+    },
+    page_settings: {
       update: { ...diff },
     },
   };

@@ -5,11 +5,19 @@ import { diff } from 'deep-object-diff';
 import { componentTypes } from '@/Editor/WidgetManager/components';
 import _ from 'lodash';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
+import { v4 as uuid } from 'uuid';
 
 export const zustandDevTools = (fn, options = {}) =>
-  devtools(fn, { ...options, enabled: process.env.NODE_ENV === 'production' ? false : true });
+  devtools(fn, { ...options, enabled: process.env.NODE_ENV === 'production' ? false : false });
 
 const resetters = [];
+
+export const defaultWhiteLabellingSettings = {
+  WHITE_LABEL_LOGO: 'https://app.tooljet.com/logo.svg',
+  WHITE_LABEL_TEXT: 'ToolJet',
+  WHITE_LABEL_FAVICON: 'assets/images/logo.svg',
+};
 
 export const create = (fn) => {
   if (fn === undefined) return create;
@@ -48,9 +56,13 @@ const updateType = Object.freeze({
 });
 
 export const computeAppDiff = (appDiff, currentPageId, opts, currentLayout) => {
-  const { updateDiff, type, operation, error } = updateFor(appDiff, currentPageId, opts, currentLayout);
+  try {
+    const { updateDiff, type, operation, error } = updateFor(appDiff, currentPageId, opts, currentLayout);
 
-  return { updateDiff, type, operation, error };
+    return { updateDiff, type, operation, error };
+  } catch (error) {
+    return { error, updateDiff: {}, type: null, operation: null };
+  }
 };
 
 // for table column diffs, we need to compute the diff for each column separately and send the the entire column data
@@ -111,12 +123,13 @@ export function isParamFromTableColumn(appDiff, definition) {
 }
 
 export const computeComponentPropertyDiff = (appDiff, definition, opts) => {
-  if (!opts?.isParamFromTableColumn) {
+  if (!opts?.isParamFromTableColumn && !opts?.isParamFromDropdownOptions) {
     return appDiff;
   }
   const columnsPath = generatePath(appDiff, 'columns');
   const actionsPath = generatePath(appDiff, 'actions');
   const deletionHistoryPath = generatePath(appDiff, 'columnDeletionHistory');
+  const optionsPath = generatePath(appDiff, 'options');
 
   let _diff = deepClone(appDiff);
 
@@ -135,6 +148,10 @@ export const computeComponentPropertyDiff = (appDiff, definition, opts) => {
     _diff = updateValueInJson(_diff, deletionHistoryPath, deletionHistoryValue);
   }
 
+  if (optionsPath) {
+    const optionsValue = getValueFromJson(definition, optionsPath);
+    _diff = updateValueInJson(_diff, optionsPath, optionsValue);
+  }
   return _diff;
 };
 
@@ -175,6 +192,7 @@ const updateFor = (appDiff, currentPageId, opts, currentLayout) => {
       try {
         return processingFunction(appDiff, currentPageId, optionsTypes, currentLayout);
       } catch (error) {
+        console.error('Error processing diff for update type: ', updateTypes, appDiff, error);
         return { error, updateDiff: {}, type: null, operation: null };
       }
     }
@@ -188,37 +206,41 @@ const computePageUpdate = (appDiff, currentPageId, opts) => {
   let updateDiff;
   let operation = 'update';
 
-  if (opts.includes('deletePageRequest')) {
-    const deletePageId = _.keys(appDiff?.pages).map((pageId) => {
-      if (appDiff?.pages[pageId]?.pageId === undefined) {
-        return pageId;
+  try {
+    if (opts.includes('deletePageRequest')) {
+      const deletePageId = _.keys(appDiff?.pages).map((pageId) => {
+        if (appDiff?.pages[pageId]?.pageId === undefined) {
+          return pageId;
+        }
+      })[0];
+
+      updateDiff = {
+        pageId: deletePageId,
+      };
+
+      type = updateType.pageDefinitionChanged;
+      operation = 'delete';
+    } else if (opts.includes('pageSortingChanged')) {
+      updateDiff = appDiff?.pages;
+
+      type = updateType.pageDefinitionChanged;
+    } else if (opts.includes('pageDefinitionChanged')) {
+      updateDiff = appDiff?.pages[currentPageId];
+
+      //remove invalid diffs that are added to pageDiff
+      delete updateDiff.components;
+
+      type = updateType.pageDefinitionChanged;
+
+      if (opts.includes('addNewPage')) {
+        operation = 'create';
       }
-    })[0];
-
-    updateDiff = {
-      pageId: deletePageId,
-    };
-
-    type = updateType.pageDefinitionChanged;
-    operation = 'delete';
-  } else if (opts.includes('pageSortingChanged')) {
-    updateDiff = appDiff?.pages;
-
-    type = updateType.pageDefinitionChanged;
-  } else if (opts.includes('pageDefinitionChanged')) {
-    updateDiff = appDiff?.pages[currentPageId];
-
-    //remove invalid diffs that are added to pageDiff
-    delete updateDiff.components;
-
-    type = updateType.pageDefinitionChanged;
-
-    if (opts.includes('addNewPage')) {
-      operation = 'create';
     }
-  }
 
-  return { updateDiff, type, operation };
+    return { updateDiff, type, operation };
+  } catch (error) {
+    return { error, updateDiff: {}, type: null, operation: null };
+  }
 };
 
 const computeComponentDiff = (appDiff, currentPageId, opts, currentLayout) => {
@@ -226,95 +248,101 @@ const computeComponentDiff = (appDiff, currentPageId, opts, currentLayout) => {
   let updateDiff;
   let operation = 'update';
 
-  if (opts.includes('componentDeleted')) {
-    const currentPageComponents = appDiff?.pages[currentPageId]?.components;
+  try {
+    if (opts.includes('componentDeleted')) {
+      const currentPageComponents = appDiff?.pages[currentPageId]?.components;
 
-    updateDiff = _.keys(currentPageComponents);
+      updateDiff = _.keys(currentPageComponents);
 
-    type = updateType.componentDeleted;
+      type = updateType.componentDeleted;
 
-    operation = 'delete';
-  } else if (opts.includes('componentAdded')) {
-    const currentPageComponents = appDiff?.pages[currentPageId]?.components;
+      operation = 'delete';
+    } else if (opts.includes('componentAdded')) {
+      const currentPageComponents = appDiff?.pages[currentPageId]?.components;
 
-    updateDiff = _.toPairs(currentPageComponents ?? []).reduce((result, [id, component]) => {
-      if (_.keys(component).length === 1 && component.withDefaultChildren !== undefined) {
-        return result;
-      }
+      updateDiff = _.toPairs(currentPageComponents ?? []).reduce((result, [id, component]) => {
+        if (_.keys(component).length === 1 && component.withDefaultChildren !== undefined) {
+          return result;
+        }
 
-      const componentMeta = deepClone(componentTypes.find((comp) => comp.component === component.component.component));
+        const componentMeta = deepClone(
+          componentTypes.find((comp) => comp.component === component.component.component)
+        );
 
-      if (!componentMeta) {
-        return result;
-      }
+        if (!componentMeta) {
+          return result;
+        }
 
-      const metaDiff = diff(componentMeta, component.component);
+        const metaDiff = diff(componentMeta, component.component);
 
-      result[id] = _.defaultsDeep(metaDiff, defaultComponent);
+        result[id] = _.defaultsDeep(metaDiff, defaultComponent);
 
-      if (metaDiff.definition && !_.isEmpty(metaDiff.definition)) {
-        const metaAttributes = _.keys(metaDiff.definition);
+        if (metaDiff.definition && !_.isEmpty(metaDiff.definition)) {
+          const metaAttributes = _.keys(metaDiff.definition);
 
-        metaAttributes.forEach((attribute) => {
-          const doesActionsExist =
-            metaDiff.definition[attribute]?.actions && !_.isEmpty(metaDiff.definition[attribute]?.actions?.value);
-          const doesColumnsExist =
-            metaDiff.definition[attribute]?.columns && !_.isEmpty(metaDiff.definition[attribute]?.columns?.value);
+          metaAttributes.forEach((attribute) => {
+            const doesActionsExist =
+              metaDiff.definition[attribute]?.actions && !_.isEmpty(metaDiff.definition[attribute]?.actions?.value);
+            const doesColumnsExist =
+              metaDiff.definition[attribute]?.columns && !_.isEmpty(metaDiff.definition[attribute]?.columns?.value);
 
-          if (doesActionsExist || doesColumnsExist) {
-            const actions = _.toArray(metaDiff.definition[attribute]?.actions?.value) || [];
-            // const columns = _.toArray(metaDiff.definition[attribute]?.columns?.value) || [];
+            if (doesActionsExist || doesColumnsExist) {
+              const actions = _.toArray(metaDiff.definition[attribute]?.actions?.value) || [];
+              // const columns = _.toArray(metaDiff.definition[attribute]?.columns?.value) || [];
 
-            metaDiff.definition = {
-              ...metaDiff.definition,
-              [attribute]: {
-                ...metaDiff.definition[attribute],
-                actions: {
-                  value: actions,
+              metaDiff.definition = {
+                ...metaDiff.definition,
+                [attribute]: {
+                  ...metaDiff.definition[attribute],
+                  actions: {
+                    value: actions,
+                  },
+                  columns: {
+                    value: component.component?.definition?.properties?.columns?.value,
+                  },
                 },
-                columns: {
-                  value: component.component?.definition?.properties?.columns?.value,
-                },
-              },
-            };
-          }
-          result[id][attribute] = metaDiff.definition[attribute];
-        });
-      }
+              };
+            }
+            result[id][attribute] = metaDiff.definition[attribute];
+          });
+        }
 
-      const currentDisplayPreference = currentLayout;
+        const currentDisplayPreference = currentLayout;
 
-      if (currentDisplayPreference === 'mobile') {
-        result[id].others.showOnMobile = { value: '{{true}}' };
-        result[id].others.showOnDesktop = { value: '{{false}}' };
-      }
+        if (currentDisplayPreference === 'mobile') {
+          result[id].others.showOnMobile = { value: '{{true}}' };
+          result[id].others.showOnDesktop = { value: '{{false}}' };
+        }
 
-      if (result[id]?.definition) {
-        delete result[id].definition;
-      }
+        if (result[id]?.definition) {
+          delete result[id].definition;
+        }
 
-      result[id].type = componentMeta.component;
-      result[id].parent = component.component.parent ?? null;
-      result[id].layouts = appDiff.pages[currentPageId].components[id].layouts;
+        result[id].type = componentMeta.component;
+        result[id].parent = component.component.parent ?? null;
+        result[id].layouts = appDiff.pages[currentPageId].components[id].layouts;
 
-      operation = 'create';
+        operation = 'create';
 
-      return result;
-    }, {});
+        return result;
+      }, {});
 
-    type = updateType.componentDefinitionChanged;
-  } else if (
-    (opts.includes('containerChanges') || opts.includes('componentDefinitionChanged')) &&
-    !opts.includes('componentAdded')
-  ) {
-    const currentPageComponents = appDiff?.pages[currentPageId]?.components;
+      type = updateType.componentDefinitionChanged;
+    } else if (
+      (opts.includes('containerChanges') || opts.includes('componentDefinitionChanged')) &&
+      !opts.includes('componentAdded')
+    ) {
+      const currentPageComponents = appDiff?.pages[currentPageId]?.components;
 
-    updateDiff = toRemoveExposedvariablesFromComponentDiff(currentPageComponents);
+      updateDiff = toRemoveExposedvariablesFromComponentDiff(currentPageComponents);
 
-    type = opts.includes('containerChanges') ? updateType.containerChanges : updateType.componentDefinitionChanged;
+      type = opts.includes('containerChanges') ? updateType.containerChanges : updateType.componentDefinitionChanged;
+    }
+
+    return { updateDiff, type, operation };
+  } catch (error) {
+    return { error, updateDiff: {}, type: null, operation: null };
   }
-
-  return { updateDiff, type, operation };
 };
 
 function toRemoveExposedvariablesFromComponentDiff(object) {
@@ -380,7 +408,7 @@ export function createReferencesLookup(refState, forQueryParams = false, initalL
   const buildMap = (data, path = '') => {
     const keys = Object.keys(data);
     keys.forEach((key, index) => {
-      const uniqueId = _.uniqueId();
+      const uniqueId = uuid();
       const value = data[key];
       const _type = Object.prototype.toString.call(value).slice(8, -1);
       const prevType = map.get(path)?.type;
@@ -436,24 +464,43 @@ export function createReferencesLookup(refState, forQueryParams = false, initalL
   return { suggestionList, hintsMap, resolvedRefs };
 }
 
+function containsBracketNotation(queryString) {
+  const bracketNotationRegex = /\[\s*['"][^'"]+['"]\s*\]/;
+  return bracketNotationRegex.test(queryString);
+}
+
 export function findAllEntityReferences(node, allRefs) {
+  const extractReferencesFromString = (str) => {
+    const regex = /{{(components|queries)\.[^{}]*}}/g;
+    const matches = str.match(regex);
+    if (matches) {
+      matches.forEach((match) => {
+        const ref = match.replace('{{', '').replace('}}', '');
+        const entityName = ref.split('.')[1];
+        allRefs.push(entityName);
+      });
+    }
+  };
+
   if (typeof node === 'object') {
     for (let key in node) {
       const value = node[key];
-      if (
-        typeof value === 'string' &&
-        value.includes('{{') &&
-        value.includes('}}') &&
-        (value.startsWith('{{components') || value.startsWith('{{queries'))
-      ) {
-        const referenceExists = value;
 
-        if (referenceExists) {
-          const ref = value.replace('{{', '').replace('}}', '');
+      if (typeof value === 'string') {
+        if (containsBracketNotation(value)) {
+          // Skip if the value is a bracket notation
+          break;
+        }
 
-          const entityName = ref.split('.')[1];
-
-          allRefs.push(entityName);
+        if (
+          value.includes('{{') &&
+          value.includes('}}') &&
+          (value.startsWith('{{components') || value.startsWith('{{queries'))
+        ) {
+          extractReferencesFromString(value);
+        } else {
+          // Handle cases where references are embedded within strings
+          extractReferencesFromString(value);
         }
       } else if (typeof value === 'object') {
         findAllEntityReferences(value, allRefs);

@@ -11,6 +11,7 @@ import {
   createApplicationVersion,
   generateAppDefaults,
   authenticateUser,
+  createDatasourceGroupPermission,
 } from '../test.helper';
 import { Credential } from 'src/entities/credential.entity';
 import { getManager, getRepository } from 'typeorm';
@@ -28,10 +29,15 @@ describe('data sources controller', () => {
     app = await createNestAppInstance();
   });
 
-  it('should be able to create data sources only if user has admin group or app update permission in same organization', async () => {
+  it('should be able to create data sources only if user has admin group or app update permission in same organization or has instance user type', async () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
+    });
+    const superAdminUserData = await createUser(app, {
+      email: 'superadmin@tooljet.io',
+      groups: ['all_users', 'admin'],
+      userType: 'instance',
     });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
@@ -56,6 +62,13 @@ describe('data sources controller', () => {
     viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
     loggedUser = await authenticateUser(app, anotherOrgAdminUserData.user.email);
     anotherOrgAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+    loggedUser = await authenticateUser(
+      app,
+      superAdminUserData.user.email,
+      'password',
+      adminUserData.user.defaultOrganizationId
+    );
+    superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
     const { application, appVersion: applicationVersion } = await generateAppDefaults(app, adminUserData.user, {
       isDataSourceNeeded: false,
@@ -80,10 +93,10 @@ describe('data sources controller', () => {
       app_version_id: applicationVersion.id,
     };
 
-    for (const userData of [adminUserData, developerUserData]) {
+    for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
       const response = await request(app.getHttpServer())
         .post(`/api/data_sources`)
-        .set('tj-workspace-id', userData.user.defaultOrganizationId)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', userData['tokenCookie'])
         .send(dataSourceParams);
 
@@ -97,7 +110,7 @@ describe('data sources controller', () => {
     }
 
     // encrypted data source options will create credentials
-    expect(await Credential.count()).toBe(2);
+    expect(await Credential.count()).toBe(9);
 
     // Should not update if viewer or if user of another org
     for (const userData of [anotherOrgAdminUserData, viewerUserData]) {
@@ -111,10 +124,15 @@ describe('data sources controller', () => {
     }
   });
 
-  it('should be able to update data sources only if user has group admin or app update permission in same organization', async () => {
+  it('should be able to update data sources only if user has group admin or app update permission in same organization or has instance user type', async () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
+    });
+    const superAdminUserData = await createUser(app, {
+      email: 'superadmin@tooljet.io',
+      groups: ['all_users', 'admin'],
+      userType: 'instance',
     });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
@@ -139,8 +157,15 @@ describe('data sources controller', () => {
     viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
     loggedUser = await authenticateUser(app, anotherOrgAdminUserData.user.email);
     anotherOrgAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+    loggedUser = await authenticateUser(
+      app,
+      superAdminUserData.user.email,
+      'password',
+      adminUserData.user.defaultOrganizationId
+    );
+    superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-    const { application, dataSource } = await generateAppDefaults(app, adminUserData.user, {
+    const { application, dataSource, appEnvironments } = await generateAppDefaults(app, adminUserData.user, {
       isQueryNeeded: false,
       dsOptions: [{ key: 'foo', value: 'bar', encrypted: 'true' }],
       dsKind: 'postgres',
@@ -157,16 +182,16 @@ describe('data sources controller', () => {
     });
 
     // encrypted data source options will create credentials
-    expect(await Credential.count()).toBe(1);
+    expect(await Credential.count()).toBe(3);
 
-    for (const userData of [adminUserData, developerUserData]) {
+    for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
       const newOptions = [
         { key: 'email', value: userData.user.email },
         { key: 'foo', value: 'baz', encrypted: 'true' },
       ];
       const response = await request(app.getHttpServer())
         .put(`/api/data_sources/${dataSource.id}`)
-        .set('tj-workspace-id', userData.user.defaultOrganizationId)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', userData['tokenCookie'])
         .send({
           options: newOptions,
@@ -178,12 +203,16 @@ describe('data sources controller', () => {
         .where('data_source.id = :dataSourceId', { dataSourceId: dataSource.id })
         .getOneOrFail();
 
+      const updatedOptions = updatedDs.dataSourceOptions.find(
+        (option) => option.environmentId === appEnvironments.find((env) => env.isDefault).id
+      );
+
       expect(response.statusCode).toBe(200);
-      expect(updatedDs.dataSourceOptions[0].options['email']['value']).toBe(userData.user.email);
+      expect(updatedOptions.options['email']['value']).toBe(userData.user.email);
     }
 
     // new credentials will not be created upon data source update
-    expect(await Credential.count()).toBe(1);
+    expect(await Credential.count()).toBe(3);
 
     // Should not update if viewer or if user of another org
     for (const userData of [anotherOrgAdminUserData, viewerUserData]) {
@@ -203,10 +232,16 @@ describe('data sources controller', () => {
     }
   });
 
-  it('should be able to list (get) datasources for an app by all users of same organization', async () => {
+  it('should be able to list (get) datasources for an app by all users of same organization or has instance user type', async () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
+    });
+    const superAdminUserData = await createUser(app, {
+      email: 'superadmin@tooljet.io',
+      groups: ['all_users', 'admin'],
+      userType: 'instance',
+      organization: adminUserData.organization,
     });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
@@ -231,8 +266,10 @@ describe('data sources controller', () => {
     viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
     loggedUser = await authenticateUser(app, anotherOrgAdminUserData.user.email);
     anotherOrgAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+    loggedUser = await authenticateUser(app, superAdminUserData.user.email, 'password', adminUserData.organization.id);
+    superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-    const { application, appVersion } = await generateAppDefaults(app, adminUserData.user, {
+    const { application, appVersion, dataSource } = await generateAppDefaults(app, adminUserData.user, {
       isQueryNeeded: false,
     });
 
@@ -245,6 +282,12 @@ describe('data sources controller', () => {
     await createAppGroupPermission(app, application, allUserGroup.id, {
       read: true,
       update: true,
+      delete: false,
+    });
+
+    await createDatasourceGroupPermission(app, dataSource.id, allUserGroup.id, {
+      read: true,
+      update: false,
       delete: false,
     });
 
@@ -267,10 +310,16 @@ describe('data sources controller', () => {
     expect(response.statusCode).toBe(403);
   });
 
-  it('should be able to delete data sources of an app only if admin/developer of same organization', async () => {
+  it('should be able to delete data sources of an app only if admin/developer of same organization or the user is a super admin', async () => {
     const adminUserData = await createUser(app, {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
+    });
+    const superAdminUserData = await createUser(app, {
+      email: 'superadmin@tooljet.io',
+      groups: ['all_users', 'admin'],
+      userType: 'instance',
+      organization: adminUserData.organization,
     });
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
@@ -295,6 +344,13 @@ describe('data sources controller', () => {
     viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
     loggedUser = await authenticateUser(app, anotherOrgAdminUserData.user.email);
     anotherOrgAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+    loggedUser = await authenticateUser(
+      app,
+      superAdminUserData.user.email,
+      'password',
+      adminUserData.user.defaultOrganizationId
+    );
+    superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
     const { application, appVersion } = await generateAppDefaults(app, adminUserData.user, {
       isQueryNeeded: false,
@@ -313,7 +369,7 @@ describe('data sources controller', () => {
       delete: false,
     });
 
-    for (const userData of [adminUserData, developerUserData]) {
+    for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
       const dataSource = await createDataSource(app, {
         name: 'name',
         options: [{ key: 'foo', value: 'bar', encrypted: 'true' }],

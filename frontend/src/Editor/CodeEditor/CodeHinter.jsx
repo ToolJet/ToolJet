@@ -19,7 +19,7 @@ const CODE_EDITOR_TYPE = {
 };
 
 const CodeHinter = ({ type = 'basic', initialValue, componentName, disabled, ...restProps }) => {
-  const { suggestions } = useResolveStore(
+  const { suggestions = [] } = useResolveStore(
     (state) => ({
       suggestions: state.suggestions,
     }),

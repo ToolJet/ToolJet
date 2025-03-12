@@ -1,5 +1,5 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
-import { AppVersion } from '../src/entities/app_version.entity';
+import { AppVersion } from '@entities/app_version.entity';
 
 export class SetFxActiveToTrueForFxFieldsConvertedToUI1644229722021 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {

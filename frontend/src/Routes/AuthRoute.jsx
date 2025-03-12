@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { RouteLoader } from './RouteLoader';
 import { useSessionManagement } from '@/_hooks/useSessionManagement';
-import { getRedirectURL, pathnameToArray } from '@/_helpers/routes';
-import { authenticationService } from '@/_services';
-import { useLocation, useParams } from 'react-router-dom';
+import { getPathname, getRedirectURL } from '@/_helpers/routes';
+import { authenticationService, loginConfigsService, sessionService } from '@/_services';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   resetToDefaultWhiteLabels,
   retrieveWhiteLabelFavicon,
@@ -11,7 +11,7 @@ import {
   setFaviconAndTitle,
 } from '@white-label/whiteLabelling';
 
-export const AuthRoute = ({ children, navigate }) => {
+export const AuthRoute = ({ children }) => {
   const { isLoading, session, isValidSession, isInvalidSession, setLoading } = useSessionManagement({
     disableInValidSessionCallback: true,
     disableValidSessionCallback: true,
@@ -32,6 +32,7 @@ export const AuthRoute = ({ children, navigate }) => {
   const { organizationId: organizationSlug } = params;
   const location = useLocation();
   const isSignUpRoute = location.pathname.startsWith('/signup');
+  const navigate = useNavigate();
 
   useEffect(
     () => {
@@ -55,9 +56,15 @@ export const AuthRoute = ({ children, navigate }) => {
   }, [isInvalidSession, isGettingConfigs]);
 
   const initialize = () => {
-    const pathname = location.pathname;
+    const isSuperAdminLogin = location.pathname.startsWith('/login/super-admin');
+    const shouldGetConfigs = !isSuperAdminLogin;
     authenticationService.deleteAllAuthCookies();
-    fetchOrganizationDetails();
+    if (shouldGetConfigs) {
+      fetchOrganizationDetails();
+    } else {
+      setGettingConfig(false);
+    }
+    const pathname = location.pathname;
     verifyWhiteLabeling(pathname);
   };
 
@@ -73,7 +80,7 @@ export const AuthRoute = ({ children, navigate }) => {
   };
 
   const fetchOrganizationDetails = () => {
-    authenticationService.getOrganizationConfigs(organizationSlug).then(
+    loginConfigsService.getOrganizationConfigs(organizationSlug).then(
       (configs) => {
         setOrganizationId(configs.id);
         setConfigs(configs);
@@ -97,14 +104,17 @@ export const AuthRoute = ({ children, navigate }) => {
         if (!isSignUpRoute) {
           if (response.data.statusCode === 422 || (response.data.statusCode === 404 && organizationSlug)) {
             try {
-              const session = await authenticationService.validateSession();
+              const session = await sessionService.validateSession();
               const { current_organization_id } = session;
               authenticationService.updateCurrentSession({
                 current_organization_id,
               });
               navigate('/switch-workspace');
             } catch (error) {
-              if (pathnameToArray()[0] !== 'login') navigate('/login');
+              const pathname = getPathname();
+              if (!pathname.startsWith('/login/')) {
+                navigate('/login');
+              }
             }
           }
         }

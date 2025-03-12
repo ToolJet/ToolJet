@@ -36,7 +36,12 @@ import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { defaultAppEnvironments } from 'src/helpers/utils.helper';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 import * as cookieParser from 'cookie-parser';
+import { DataSourceGroupPermission } from 'src/entities/data_source_group_permission.entity';
+import { LicenseService } from '@modules/licensing/service';
 import { InternalTable } from '@entities/internal_table.entity';
+import * as fs from 'fs';
+
+globalThis.TOOLJET_VERSION = fs.readFileSync('./.version', 'utf8').trim();
 
 export async function createNestAppInstance(): Promise<INestApplication> {
   let app: INestApplication;
@@ -105,12 +110,16 @@ export function authHeaderForUser(user: User, organizationId?: string, isPasswor
 
 export async function clearDB() {
   if (process.env.NODE_ENV !== 'test') return;
-  if (process.env.ENABLE_TOOLJET_DB === 'true') await dropTooljetDbTables();
+  await dropTooljetDbTables();
 
-  const connection = getConnection();
-  for (const entity of connection.entityMetadatas) {
-    const repository = connection.getRepository(entity.name);
-    await repository.query(`TRUNCATE ${entity.tableName} RESTART IDENTITY CASCADE;`);
+  const entities = getConnection().entityMetadatas;
+  for (const entity of entities) {
+    const repository = getConnection().getRepository(entity.name);
+    if (entity.tableName !== 'instance_settings') {
+      await repository.query(`TRUNCATE ${entity.tableName} RESTART IDENTITY CASCADE;`);
+    } else {
+      await repository.query(`UPDATE ${entity.tableName} SET value='true' WHERE key='ALLOW_PERSONAL_WORKSPACE';`);
+    }
   }
 }
 
@@ -125,7 +134,11 @@ async function dropTooljetDbTables() {
   }
 }
 
-export async function createApplication(nestApp, { name, user, isPublic, slug }: any, shouldCreateEnvs = true) {
+export async function createApplication(
+  nestApp,
+  { name, user, isPublic, slug, type = 'front-end' }: any,
+  shouldCreateEnvs = true
+) {
   let appRepository: Repository<App>;
   appRepository = nestApp.get('AppRepository');
 
@@ -140,6 +153,7 @@ export async function createApplication(nestApp, { name, user, isPublic, slug }:
       name,
       user,
       slug,
+      type,
       isPublic: isPublic || false,
       organizationId: user.organizationId,
       createdAt: new Date(),
@@ -183,8 +197,8 @@ export async function createApplicationVersion(
 
   return await appVersionsRepository.save(
     appVersionsRepository.create({
-      app: application,
-      name,
+      appId: application.id,
+      name: name + Date.now(),
       currentEnvironmentId: envId,
       definition,
     })
@@ -230,12 +244,14 @@ export async function createUser(
     email,
     groups,
     organization,
+    userType = 'workspace',
     status,
     invitationToken,
     formLoginStatus = true,
     organizationName = `${email}'s workspace`,
     ssoConfigs = [],
     enableSignUp = false,
+    userStatus = 'active',
   }: {
     firstName?: string;
     lastName?: string;
@@ -243,11 +259,13 @@ export async function createUser(
     groups?: Array<string>;
     organization?: Organization;
     status?: string;
+    userType?: string;
     invitationToken?: string;
     formLoginStatus?: boolean;
     organizationName?: string;
     ssoConfigs?: Array<any>;
     enableSignUp?: boolean;
+    userStatus?: string;
   },
   existingUser?: User
 ) {
@@ -271,6 +289,7 @@ export async function createUser(
           {
             sso: 'form',
             enabled: formLoginStatus,
+            configScope: 'organization',
           },
           ...ssoConfigs,
         ],
@@ -286,11 +305,12 @@ export async function createUser(
         lastName: lastName || 'test',
         email: email || 'dev@tooljet.io',
         password: 'password',
+        userType,
+        status: invitationToken ? 'invited' : userStatus,
         invitationToken,
         defaultOrganizationId: organization.id,
         createdAt: new Date(),
         updatedAt: new Date(),
-        status: invitationToken ? 'invited' : 'active',
       })
     );
   } else {
@@ -376,6 +396,21 @@ export async function createAppGroupPermission(nestApp, app, groupId, permission
   return appGroupPermission;
 }
 
+export async function createDatasourceGroupPermission(nestApp, dataSourceId, groupId, permissions) {
+  const dsGroupPermissionRepository: Repository<DataSourceGroupPermission> = nestApp.get(
+    'DataSourceGroupPermissionRepository'
+  );
+
+  const dsGroupPermission = dsGroupPermissionRepository.create({
+    groupPermissionId: groupId,
+    dataSourceId: dataSourceId,
+    ...permissions,
+  });
+  await dsGroupPermissionRepository.save(dsGroupPermission);
+
+  return dsGroupPermission;
+}
+
 export async function createGroupPermission(nestApp, params) {
   const groupPermissionRepository: Repository<GroupPermission> = nestApp.get('GroupPermissionRepository');
   let groupPermission = groupPermissionRepository.create({
@@ -409,6 +444,8 @@ export async function maybeCreateDefaultGroupPermissions(nestApp, organizationId
         orgEnvironmentVariableCreate: group == 'admin',
         orgEnvironmentVariableUpdate: group == 'admin',
         orgEnvironmentVariableDelete: group == 'admin',
+        dataSourceCreate: group === 'admin',
+        dataSourceDelete: group === 'admin',
         orgEnvironmentConstantCreate: group == 'admin',
         orgEnvironmentConstantDelete: group == 'admin',
         folderUpdate: group == 'admin',
@@ -530,8 +567,8 @@ export async function createDataQuery(nestApp, { name = 'defaultquery', dataSour
 
   return await dataQueryRepository.save(
     dataQueryRepository.create({
-      options,
       name,
+      options,
       dataSource,
       appVersion,
       createdAt: new Date(),
@@ -669,7 +706,7 @@ export const verifyInviteToken = async (app: INestApplication, user: User, verif
     where: { userId: user.id },
   });
   const response = await request(app.getHttpServer()).get(
-    `/api/verify-invite-token?token=${invitationToken}${
+    `/api/onboarding/verify-invite-token?token=${invitationToken}${
       !verifyForSignup && orgInviteToken ? `&organizationToken=${orgInviteToken}` : ''
     }`
   );
@@ -721,12 +758,19 @@ export const createFirstUser = async (app: INestApplication) => {
 export const generateAppDefaults = async (
   app: INestApplication,
   user: any,
-  { isQueryNeeded = true, isDataSourceNeeded = true, isAppPublic = false, dsKind = 'restapi', dsOptions = [{}] }
+  {
+    isQueryNeeded = true,
+    isDataSourceNeeded = true,
+    isAppPublic = false,
+    dsKind = 'restapi',
+    dsOptions = [{}],
+    name = 'name',
+  }
 ) => {
   const application = await createApplication(
     app,
     {
-      name: 'name',
+      name,
       user: user,
       isPublic: isAppPublic,
     },
@@ -744,7 +788,12 @@ export const generateAppDefaults = async (
       kind: dsKind,
       appVersion,
     });
-    await createDataSourceOption(app, { dataSource, environmentId: appEnvironments[0].id, options: dsOptions });
+
+    await Promise.all(
+      appEnvironments.map(async (env) => {
+        await createDataSourceOption(app, { dataSource, environmentId: env.id, options: dsOptions });
+      })
+    );
 
     if (isQueryNeeded) {
       dataQuery = await createDataQuery(app, {
@@ -761,7 +810,7 @@ export const generateAppDefaults = async (
     }
   }
 
-  return { application, appVersion, dataSource, dataQuery };
+  return { application, appVersion, dataSource, dataQuery, appEnvironments };
 };
 
 export const getAppWithAllDetails = async (id: string) => {
@@ -788,10 +837,15 @@ export const getAppWithAllDetails = async (id: string) => {
   return app;
 };
 
-export const authenticateUser = async (app: INestApplication, email = 'admin@tooljet.io', password = 'password') => {
+export const authenticateUser = async (
+  app: INestApplication,
+  email = 'admin@tooljet.io',
+  password = 'password',
+  organization_id = null
+) => {
   const sessionResponse = await request
     .agent(app.getHttpServer())
-    .post('/api/authenticate')
+    .post(`/api/authenticate${organization_id ? `/${organization_id}` : ''}`)
     .send({ email, password })
     .expect(201);
 
@@ -806,3 +860,92 @@ export const logoutUser = async (app: INestApplication, tokenCookie: any, organi
     .set('Cookie', tokenCookie)
     .expect(200);
 };
+
+export const getAppEnvironment = async (id: string, priority: number) => {
+  return await getManager().findOneOrFail(AppEnvironment, {
+    where: { ...(id && { id }), ...(priority && { priority }) },
+  });
+};
+
+export const getWorkflowWebhookApiToken = async (appId: string) => {
+  const app = await getManager().createQueryBuilder(App, 'app').where('app.id = :id', { id: appId }).getOneOrFail();
+  return app?.workflowApiToken ?? '';
+};
+
+export const enableWebhookForWorkflows = async (workflowId: string, status = true) => {
+  await getManager()
+    .createQueryBuilder()
+    .update(App)
+    .set({ workflowEnabled: status, workflowApiToken: uuidv4() })
+    .where('id = :id', { id: workflowId })
+    .execute();
+};
+
+export const triggerWorkflowViaWebhook = async (
+  app: INestApplication,
+  apiToken: string,
+  workflowId: string,
+  environment = 'development',
+  bodyJson: any = {}
+) => {
+  return await request(app.getHttpServer())
+    .post(`/api/v2/webhooks/workflows/${workflowId}/trigger?environment=${environment}`)
+    .set('Authorization', `Bearer ${apiToken}`)
+    .set('Content-Type', 'application/json')
+    .send(bodyJson);
+};
+
+export const enableWorkflowStatus = async (
+  app: INestApplication,
+  workflowId: string,
+  orgId: string,
+  tokenCookie: any,
+  isMaintenanceOn = true
+) => {
+  return await request(app.getHttpServer())
+    .put(`/api/apps/${workflowId}`)
+    .set('tj-workspace-id', orgId)
+    .set('Cookie', tokenCookie)
+    .send({
+      app: {
+        is_maintenance_on: isMaintenanceOn,
+      },
+    });
+};
+
+export async function createNestAppInstanceWithServiceMocks({ shouldMockLicenseService = false }): Promise<{
+  app: INestApplication;
+  licenseServiceMock?: DeepMocked<LicenseService>;
+  configServiceMock?: DeepMocked<ConfigService>;
+}> {
+  let app: INestApplication;
+
+  const moduleRef = await Test.createTestingModule({
+    imports: [AppModule],
+    providers: [
+      {
+        ...(shouldMockLicenseService && {
+          provide: LicenseService,
+          useValue: createMock<LicenseService>(),
+        }),
+      },
+    ],
+  }).compile();
+
+  app = moduleRef.createNestApplication();
+  app.setGlobalPrefix('api');
+  app.use(cookieParser());
+  app.useGlobalFilters(new AllExceptionsFilter(moduleRef.get(Logger)));
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  app.useWebSocketAdapter(new WsAdapter(app));
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: VERSION_NEUTRAL,
+  });
+  await app.init();
+
+  return {
+    app,
+    ...(shouldMockLicenseService && { licenseServiceMock: moduleRef.get(LicenseService) }),
+  };
+}

@@ -26,7 +26,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
 
   useEffect(() => {
     const handleImageLoad = () => {
-      const wrapperElement = document.querySelector(`.widget-${id} .lmGPCf`);
+      const wrapperElement = document.querySelector(`[widgetid="${id}"] .lmGPCf`);
       if (wrapperElement) {
         const { width, height } = wrapperElement.getBoundingClientRect();
         // Use the width and height of bounding image for further calculations
@@ -35,7 +35,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
       }
     };
 
-    const imageElement = document.querySelector(`.widget-${id} .gVmiLs`);
+    const imageElement = document.querySelector(`[widgetid="${id}"] .gVmiLs`);
     if (imageElement) {
       imageElement.addEventListener('load', handleImageLoad);
     }

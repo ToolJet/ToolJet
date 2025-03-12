@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import Popover from 'react-bootstrap/Popover';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import DropDownSelect from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/DropDownSelect';
@@ -11,6 +11,10 @@ import cx from 'classnames';
 import './styles.scss';
 import styles from './styles.module.scss';
 import Skeleton from 'react-loading-skeleton';
+import DateTimePicker from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/DateTimePicker';
+import { TooljetDatabaseContext } from '@/TooljetDatabase';
+import { getLocalTimeZone } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/util';
+import { CellHinterWrapper } from './CellHinterWrapper';
 
 export const CellEditMenu = ({
   darkMode = false,
@@ -27,6 +31,7 @@ export const CellEditMenu = ({
   setNullValue,
   nullValue,
   isBoolean,
+  isTimestamp,
   referencedColumnDetails = [],
   referenceColumnName = '',
   isForeignKey = false,
@@ -45,6 +50,8 @@ export const CellEditMenu = ({
     value: previousCellValue === 'Null' ? null : previousCellValue?.toString(),
     label: previousCellValue === 'Null' ? null : previousCellValue?.toString(),
   });
+
+  const { getConfigurationProperty } = useContext(TooljetDatabaseContext);
 
   const handleDefaultChange = (defaultColumnValue, defaultBooleanValue) => {
     if (defaultBooleanValue === true) {
@@ -329,9 +336,7 @@ export const CellEditMenu = ({
               )}
             </div>
           )}
-
           {!isBoolean && <SaveChangesSection />}
-
           {/* Footer */}
           <SaveChangesFooter />
         </div>
@@ -340,17 +345,24 @@ export const CellEditMenu = ({
   );
 
   return (
-    <OverlayTrigger show={show} trigger="click" placement="bottom-start" rootclose overlay={popover} defaultShow>
+    <OverlayTrigger
+      show={dataType === 'jsonb' ? false : show}
+      trigger="click"
+      placement="bottom-start"
+      rootclose
+      overlay={popover}
+      defaultShow
+    >
       {isForeignKey ? (
         <DropDownSelect
           buttonClasses="border border-end-1 foreignKeyAcces-container"
           showPlaceHolder={true}
           loader={
-            <div className="tjdb-cellmenu-loader mx-2">
+            <>
               <Skeleton height={18} width={176} className="skeleton" style={{ margin: '15px 50px 7px 7px' }} />
               <Skeleton height={18} width={212} className="skeleton" style={{ margin: '7px 14px 7px 7px' }} />
               <Skeleton height={18} width={176} className="skeleton" style={{ margin: '7px 50px 15px 7px' }} />
-            </div>
+            </>
           }
           isLoading={true}
           options={referencedFKDataList}
@@ -395,7 +407,35 @@ export const CellEditMenu = ({
           columnDefaultValue={columnDetails?.column_default}
           setColumnDefaultValue={setDefaultValue}
         />
+      ) : isTimestamp ? (
+        <DateTimePicker
+          isNotNull={columnDetails?.constraints_type.is_not_null}
+          defaultValue={columnDetails?.column_default}
+          isOpenOnStart={true}
+          timestamp={selectedValue}
+          setTimestamp={setSelectedValue}
+          saveFunction={saveFunction}
+          isEditCell={true}
+          timezone={getConfigurationProperty(columnDetails?.Header, 'timezone', getLocalTimeZone())}
+        />
+      ) : dataType === 'jsonb' ? (
+        <div>
+          <CellHinterWrapper
+            isNotNull={columnDetails?.constraints_type.is_not_null}
+            defaultValue={columnDetails?.column_default}
+            selectedValue={selectedValue}
+            setSelectedValue={setSelectedValue}
+            saveFunction={saveFunction}
+            isEditCell={true}
+            columnDetails={columnDetails}
+            close={close}
+            closePopover={closePopover}
+            show={show}
+            previousCellValue={previousCellValue}
+          />
+        </div>
       ) : (
+        // </div>
         children
       )}
     </OverlayTrigger>

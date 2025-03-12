@@ -21,4 +21,7 @@ export class UserSessions extends BaseEntity {
 
   @Column({ name: 'expiry' })
   expiry: Date;
+
+  @Column({ name: 'last_logged_in' })
+  lastLoggedIn: Date;
 }

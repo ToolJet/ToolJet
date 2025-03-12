@@ -11,7 +11,7 @@ const APP_MODES = [
   { label: 'Dark', value: 'dark' },
 ];
 
-const AppModeToggle = ({ globalSettingsChanged }) => {
+const AppModeToggle = () => {
   const { onAppModeChange, appMode } = useAppDarkMode();
   const { t } = useTranslation();
 
@@ -21,7 +21,6 @@ const AppModeToggle = ({ globalSettingsChanged }) => {
       <div className="ms-auto position-relative app-mode-switch" style={{ paddingLeft: '0px', width: '158px' }}>
         <ToggleGroup
           onValueChange={(value) => {
-            onAppModeChange(value);
             let exposedTheme = value;
             if (value === 'auto') {
               exposedTheme = localStorage.getItem('darkMode') === 'true' ? 'dark' : 'light';
@@ -32,7 +31,7 @@ const AppModeToggle = ({ globalSettingsChanged }) => {
                 theme: { name: exposedTheme },
               },
             });
-            globalSettingsChanged({ appMode: value });
+            onAppModeChange({ appMode: value });
           }}
           defaultValue={appMode}
         >

@@ -22,7 +22,6 @@ export const Modal = function Modal({
   mode,
 }) {
   const [showModal, setShowModal] = useState(false);
-
   const {
     closeOnClickingOutside = false,
     hideOnEsc,
@@ -46,8 +45,8 @@ export const Modal = function Modal({
   const parentRef = useRef(null);
   const controlBoxRef = useRef(null);
   const isInitialRender = useRef(true);
-
   const title = properties.title ?? '';
+  const titleAlignment = properties.titleAlignment ?? 'left';
   const size = properties.size ?? 'lg';
 
   /**** Start - Logic to reset the zIndex of modal control box ****/
@@ -92,7 +91,7 @@ export const Modal = function Modal({
     const inputRef = document?.getElementsByClassName('tj-text-input-widget')?.[0];
     inputRef?.blur();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [exposedVariables.show]);
+  }, [exposedVariables]);
 
   function hideModal() {
     setShowModal(false);
@@ -100,8 +99,14 @@ export const Modal = function Modal({
     fireEvent('onClose');
   }
 
+  function openModal() {
+    setExposedVariable('show', true);
+    fireEvent('onOpen');
+  }
+
   useEffect(() => {
     const handleModalOpen = () => {
+      openModal();
       const canvasElement = document.getElementsByClassName('canvas-area')[0];
       const modalBackdropEl = document.getElementsByClassName('modal-backdrop')[0];
       const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
@@ -222,8 +227,6 @@ export const Modal = function Modal({
 
             event.stopPropagation();
             setShowModal(true);
-            setExposedVariable('show', true);
-            fireEvent('onOpen');
           }}
           data-cy={`${dataCy}-launch-button`}
         >
@@ -248,6 +251,7 @@ export const Modal = function Modal({
           parentRef,
           id,
           title,
+          titleAlignment,
           hideTitleBar,
           hideCloseButton,
           hideModal,
@@ -285,6 +289,7 @@ const Component = ({ children, ...restProps }) => {
     parentRef,
     id,
     title,
+    titleAlignment,
     hideTitleBar,
     hideCloseButton,
     hideModal,
@@ -307,7 +312,14 @@ const Component = ({ children, ...restProps }) => {
       )}
       {!hideTitleBar && (
         <BootstrapModal.Header style={{ ...customStyles.modalHeader }} data-cy={`modal-header`}>
-          <BootstrapModal.Title id="contained-modal-title-vcenter" data-cy={`modal-title`}>
+          <BootstrapModal.Title
+            style={{
+              textAlign: titleAlignment,
+              width: '100%',
+            }}
+            id="contained-modal-title-vcenter"
+            data-cy={`modal-title`}
+          >
             {title}
           </BootstrapModal.Title>
           {!hideCloseButton && (

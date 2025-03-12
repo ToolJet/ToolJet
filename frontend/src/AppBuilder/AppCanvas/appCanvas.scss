@@ -1,0 +1,67 @@
+.canvas-container{
+    &:focus-visible{
+        outline: none;
+    }
+}
+
+.modal-backdrop {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+// used for Modal
+// .freeze-scroll {
+//     #real-canvas {
+//       overflow: hidden;
+//       height: 100vh !important
+//     }
+//   }
+
+.empty-box-cont{
+    display: flex;
+    justify-content: center;
+
+    .dotted-cont{
+        border: 1px dashed var(--indigo8);
+        border-radius: 6px;
+        margin: 0 10px 0 10px;
+        padding: 20px;
+        height: 192px;
+        width: 300px;
+        margin-bottom: 10px;
+    }
+
+    .title-text{
+        margin-top: 10px;
+        font-size: 16px;
+        font-weight: 600px;
+        
+    }
+
+    .title-desc{
+        font-size: 14px;
+        margin-top: 5px;
+        font-weight: 400;
+    }
+
+    .box-link{
+        display: flex;
+        margin-top: 10px;
+
+        .chile {
+            margin-right: 10px;
+            width: auto;
+        }
+
+        .link-but{
+            
+            font-weight: 500;
+            font-size: 14px;
+            color: #3E63DD;
+        }
+    }
+}
+
+*:focus-visible {
+    outline: none;  // Rewriting it to replace outline coming from browser styles
+  }

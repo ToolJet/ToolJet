@@ -1,0 +1,168 @@
+@import "./typography.scss";
+@import "./designtheme.scss";
+
+
+
+    .manage-granular-permissions-info {
+        display: flex;
+        height: 48px;
+        width: 612px;
+        border-radius: 6px;
+        padding: 12px 24px 12px 24px;
+        background: var(--slate3);
+        border: 1px solid var(--slate5);
+        border-radius: 6px;
+        margin-bottom: 16px;
+
+        p {
+            color: var(--slate12);
+            // gap: 14px;
+            display: flex;
+            align-items: center;
+
+        }
+    }
+  
+
+    .manage-granular-permission-header {
+        border-bottom: 1px solid var(--slate5);
+        display: flex;
+        p {
+            padding: 8px 12px;
+            // gap: 10px;
+            width: 230px;
+            height: 36px;
+            font-weight: 500;
+            color: var(--slate11) !important;
+        }
+        div{
+            padding-top: 5px;
+            padding-right: 3px;
+        }
+    }
+
+    .empty-container {
+        flex-shrink: 0; /* Prevent shrinking */
+        min-height: calc(100vh - 300px - 100px);
+        display: flex;
+        align-items: center; /* Center items vertically */
+        justify-content: center; /* Center items horizontally */
+        text-align: center;
+        flex-direction: column;
+        width: 100%;
+
+        .menu{
+            width: 100%;
+            display: flex;
+        align-items: center; /* Center items vertically */
+        justify-content: center; /* Center items horizontally */
+        }
+
+        .icon-container {
+            width: 55px;
+            height: 55px;
+            background: var(--indigo4);
+            border-radius: 6px;
+
+            svg {
+                width: 45px;
+                height: 45px;
+                path {
+                    fill: var(--indigo9);
+                }
+            }
+        }
+
+        .add-permission-btn {
+            width: 190px;
+        }
+        .add-icon {
+            width: 135px;
+            height: 30px;
+        }
+    }
+
+    .permission-body-one {
+        flex-grow: 1; /* Allow this to grow and fill available space */
+        overflow-y: auto;
+        border-bottom: 1px solid var(--slate5);
+        margin: 0; /* Ensure no margin */
+        padding: 0; /* Ensure no padding */
+        max-height: calc(100vh - 370px - 100px);
+        min-height: calc(100vh - 370px - 100px);
+    }
+
+    .permission-body-two {
+        flex-grow: 1; /* Allow this to grow and fill available space */
+        overflow-y: auto;
+        border-bottom: 1px solid var(--slate5);
+        margin: 0; /* Ensure no margin */
+        padding: 0; /* Ensure no padding */
+        max-height: calc(100vh - 300px - 100px);
+        min-height: calc(100vh - 300px - 100px);
+    }
+
+
+.side-button-cont {
+        justify-self: flex-end;
+        display: flex;
+        align-items: center; /* Ensure the content is centered vertically */
+        height: 50px;
+        flex-shrink: 0; /* Prevent shrinking */
+        margin: 0; /* Ensure no margin */
+        padding: 12px; /* Ensure no padding */
+        justify-content: flex-end;
+        // margin-bottom: 20px;
+        // margin-top: auto;
+
+        .add-icon {
+            width: 135px;
+            height: 30px;
+        }
+    }
+
+
+.permission-type {
+    border: 0px !important;
+    width: 100% !important;
+    justify-content: flex-start;
+    padding-left: 1rem;
+}
+
+.permission-manager-modal {
+    color: none;
+    .permission-manager-title {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+
+        .modal-name {
+            width: 250px;
+        }
+    }
+
+    .type-container {
+        display: flex;
+        justify-content: space-between;
+
+        .right-container {
+            display: flex;
+            flex-direction: column;
+        }
+    }
+
+    .tj-text-xsm{
+        color: var(--slate11);
+    }
+}
+
+
+.delete-icon-cont {
+    margin-left: 130px;
+
+    .icon-class{
+        border: none !important;
+        background-color: none !important;
+
+    }
+}

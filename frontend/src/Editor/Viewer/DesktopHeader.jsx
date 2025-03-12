@@ -1,7 +1,6 @@
 import React from 'react';
 import _, { isEmpty } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
-import LogoIcon from '@assets/images/rocket.svg';
 import { Link } from 'react-router-dom';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import Header from './Header';
@@ -10,9 +9,18 @@ import { redirectToDashboard } from '@/_helpers/routes';
 import classNames from 'classnames';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import PreviewSettings from './PreviewSettings';
+import AppLogo from '@/_components/AppLogo';
 import { useEditorStore } from '@/_stores/editorStore';
 
-const DesktopHeader = ({ showHeader, appName, changeDarkMode, darkMode, setAppDefinitionFromVersion, isAppLoaded }) => {
+const DesktopHeader = ({
+  showHeader,
+  appName,
+  changeDarkMode,
+  darkMode,
+  setAppDefinitionFromVersion,
+  handleAppEnvironmentChanged,
+  isAppLoaded,
+}) => {
   const { isVersionReleased, editingVersion } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
@@ -39,7 +47,7 @@ const DesktopHeader = ({ showHeader, appName, changeDarkMode, darkMode, setAppDe
             redirectToDashboard();
           }}
         >
-          <LogoIcon />
+          <AppLogo isLoadingFromHeader={false} />
         </Link>
       </h1>
       <div className="navbar-seperator" style={{ margin: '0px 1.375rem' }}></div>
@@ -51,6 +59,16 @@ const DesktopHeader = ({ showHeader, appName, changeDarkMode, darkMode, setAppDe
     </div>
   );
 
+  const _renderPreviewSettings = () => (
+    <PreviewSettings
+      isMobileLayout={false}
+      showHeader={showHeader}
+      setAppDefinitionFromVersion={setAppDefinitionFromVersion}
+      darkMode={darkMode}
+      onAppEnvironmentChanged={handleAppEnvironmentChanged}
+    />
+  );
+
   if (!showHeader) {
     return (
       <>
@@ -60,6 +78,7 @@ const DesktopHeader = ({ showHeader, appName, changeDarkMode, darkMode, setAppDe
             showHeader={showHeader}
             setAppDefinitionFromVersion={setAppDefinitionFromVersion}
             darkMode={darkMode}
+            onAppEnvironmentChanged={handleAppEnvironmentChanged}
           />
         )}
         {showDarkModeToggle && isAppLoaded && (
@@ -78,14 +97,7 @@ const DesktopHeader = ({ showHeader, appName, changeDarkMode, darkMode, setAppDe
       }}
     >
       {_renderAppNameAndLogo()}
-      {!isVersionReleased && !isEmpty(editingVersion) && (
-        <PreviewSettings
-          isMobileLayout={false}
-          showHeader={showHeader}
-          setAppDefinitionFromVersion={setAppDefinitionFromVersion}
-          darkMode={darkMode}
-        />
-      )}
+      {!isVersionReleased && !isEmpty(editingVersion) && _renderPreviewSettings()}
       {showDarkModeToggle && (
         <div className="d-flex align-items-center">
           <DarkModeToggle switchDarkMode={changeDarkMode} darkMode={darkMode} />

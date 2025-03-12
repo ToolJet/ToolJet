@@ -1,45 +1,39 @@
-import {
-  MigrationInterface,
-  QueryRunner,
-  Table,
-  TableForeignKey,
-  TableUnique,
-} from "typeorm";
+import { MigrationInterface, QueryRunner, Table, TableForeignKey, TableUnique } from 'typeorm';
 
 export class CreateGroupPermissions1632382322381 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
-        name: "group_permissions",
+        name: 'group_permissions',
         columns: [
           {
-            name: "id",
-            type: "uuid",
+            name: 'id',
+            type: 'uuid',
             isGenerated: true,
-            default: "gen_random_uuid()",
+            default: 'gen_random_uuid()',
             isPrimary: true,
           },
           {
-            name: "organization_id",
-            type: "uuid",
+            name: 'organization_id',
+            type: 'uuid',
             isNullable: false,
           },
           {
-            name: "group",
-            type: "varchar",
+            name: 'group',
+            type: 'varchar',
             isNullable: false,
           },
           {
-            name: "created_at",
-            type: "timestamp",
+            name: 'created_at',
+            type: 'timestamp',
             isNullable: false,
-            default: "now()",
+            default: 'now()',
           },
           {
-            name: "updated_at",
-            type: "timestamp",
+            name: 'updated_at',
+            type: 'timestamp',
             isNullable: false,
-            default: "now()",
+            default: 'now()',
           },
         ],
       }),
@@ -47,24 +41,24 @@ export class CreateGroupPermissions1632382322381 implements MigrationInterface {
     );
 
     await queryRunner.createForeignKey(
-      "group_permissions",
+      'group_permissions',
       new TableForeignKey({
-        columnNames: ["organization_id"],
-        referencedColumnNames: ["id"],
-        referencedTableName: "organizations",
-        onDelete: "CASCADE",
+        columnNames: ['organization_id'],
+        referencedColumnNames: ['id'],
+        referencedTableName: 'organizations',
+        onDelete: 'CASCADE',
       })
     );
 
     await queryRunner.createUniqueConstraint(
-      "group_permissions",
+      'group_permissions',
       new TableUnique({
-        columnNames: ["organization_id", "group"],
+        columnNames: ['organization_id', 'group'],
       })
     );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropTable("group_permissions");
+    await queryRunner.dropTable('group_permissions');
   }
 }

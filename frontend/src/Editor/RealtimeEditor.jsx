@@ -3,7 +3,9 @@ import React from 'react';
 import config from 'config';
 import { RoomProvider } from '@y-presence/react';
 import Spinner from '@/_ui/Spinner';
-import { Editor } from '@/Editor';
+// import { Editor } from '@/Editor';
+import { Editor } from '@/AppBuilder';
+import useStore from '@/AppBuilder/_stores/store';
 const Y = require('yjs');
 const psl = require('psl');
 const { WebsocketProvider } = require('y-websocket');
@@ -28,6 +30,9 @@ const getWebsocketUrl = () => {
 export const RealtimeEditor = (props) => {
   const appId = props.id;
   const [provider, setProvider] = React.useState();
+  const multiPlayerEdit = window?.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true';
+  const setYMap = useStore((state) => state.multiplayer.setYMap);
+  const processUpdate = useStore((state) => state.multiplayer.processUpdate);
 
   React.useEffect(() => {
     /* TODO: when we convert the editor.jsx to fn component. please try to avoid this extra call */
@@ -35,7 +40,19 @@ export const RealtimeEditor = (props) => {
     document.cookie = domain ? `domain=.${domain}; path=/` : `path=/`;
     document.cookie = domain ? `app_id=${appId}; domain=.${domain}; path=/` : `app_id=${appId}; path=/`;
     document.cookie = `app_id=${appId}; domain=.${domain}; path=/`;
-    setProvider(new WebsocketProvider(getWebsocketUrl(), 'yjs', ydoc));
+    if (multiPlayerEdit) {
+      setProvider(new WebsocketProvider(getWebsocketUrl(), 'yjs', ydoc));
+
+      const ymap = ydoc.getMap('updates');
+      setYMap(ymap);
+
+      ymap.observeDeep((event, transaction) => {
+        const update = ymap.get('updates');
+        if (transaction.local != true) {
+          processUpdate(update);
+        }
+      });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appId]);
 
@@ -50,8 +67,6 @@ export const RealtimeEditor = (props) => {
     () => provider.disconnect();
   }, [provider]);
 
-  if (!provider) return <Spinner />;
-
   const initialPresence = {
     firstName: '',
     lastName: '',
@@ -63,9 +78,15 @@ export const RealtimeEditor = (props) => {
     color: '',
   };
 
+  if (multiPlayerEdit) {
+    if (!provider) return <Spinner />;
+  } else {
+    return <Editor {...props} />;
+  }
+
   return (
     <RoomProvider awareness={provider.awareness} initialPresence={initialPresence}>
-      <Editor provider={provider} ymap={ydoc.getMap('appDef')} {...props} />
+      <Editor provider={provider} {...props} />
     </RoomProvider>
   );
 };

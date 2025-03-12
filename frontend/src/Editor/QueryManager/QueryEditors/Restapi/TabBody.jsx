@@ -3,12 +3,13 @@ import TabContent from './TabContent';
 
 export default ({
   options = [],
-  jsonBody,
+  jsonBody, // FIXME: Remove this once data migration to raw_body is complete
+  rawBody,
   theme,
   removeKeyValuePair,
   addNewKeyValuePair,
   onChange,
-  onJsonBodyChange,
+  onRawBodyChange,
   componentName,
   bodyToggle,
 }) => {
@@ -19,10 +20,11 @@ export default ({
         theme={theme}
         removeKeyValuePair={removeKeyValuePair}
         onChange={onChange}
-        onJsonBodyChange={onJsonBodyChange}
+        onRawBodyChange={onRawBodyChange}
         componentName={componentName}
         tabType={'body'}
-        jsonBody={jsonBody}
+        jsonBody={jsonBody} // FIXME: Remove this once data migration to raw_body is complete
+        rawBody={rawBody}
         paramType={'body'}
         bodyToggle={bodyToggle}
         addNewKeyValuePair={addNewKeyValuePair}

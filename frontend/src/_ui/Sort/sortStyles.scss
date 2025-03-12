@@ -1,0 +1,96 @@
+.query-manager-border-color {
+
+  input.form-control,
+  textarea,
+  .input-control {
+    gap: 16px !important;
+    background: var(--base) !important;
+    border: 1px solid var(--slate7) !important;
+    border-radius: 6px;
+    margin-bottom: 4px !important;
+    color: var(--slate12) !important;
+    transition: none;
+    height: 35px;
+    padding-left: 0.4375rem;
+    padding-right: 0.4375rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    overflow-x: 'auto';
+    white-space: 'nowrap';
+
+
+    &:hover {
+      background: var(--slate1) !important;
+      border: 1px solid var(--slate8) !important;
+      -webkit-box-shadow: none !important;
+      box-shadow: none !important;
+      outline: none;
+    }
+
+    &:focus-visible {
+      background: var(--indigo2) !important;
+      border: 1px solid var(--indigo9) !important;
+      box-shadow: none !important;
+    }
+
+    &.input-error-border {
+      border-color: #DB4324 !important;
+    }
+
+    &:-webkit-autofill {
+      box-shadow: 0 0 0 1000px var(--base) inset !important;
+      -webkit-text-fill-color: var(--slate12) !important;
+
+      &:hover {
+        box-shadow: 0 0 0 1000px var(--slate1) inset !important;
+        -webkit-text-fill-color: var(--slate12) !important;
+      }
+
+      &:focus-visible {
+        box-shadow: 0 0 0 1000px var(--indigo2) inset !important;
+        -webkit-text-fill-color: var(--slate12) !important;
+      }
+    }
+
+  }
+}
+.empty-key-value {
+  border-radius: 6px;
+  padding: 10px;
+  text-align: center;
+  width: 625px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  color: #687076;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 20px;
+  border: 1px dashed #E6E8EB;
+}
+
+.trash {
+  height: 32px;
+  display: flex;
+  justify-content: 'center';
+  align-items: 'center';
+}
+
+.sort-input,
+.table-content-wrapper{
+  .tj-app-input{
+    .form-control{
+      border-radius: 6px 0px 0px 6px !important;
+    }
+  }
+}
+
+.sort-input,
+.table-content-wrapper{
+  .dark-theme.react-select__control{
+    border-radius: 0px 6px 6px 0px !important;
+  }
+}
+
