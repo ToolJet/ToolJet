@@ -312,6 +312,7 @@ export const Form = function Form(props) {
                     onOptionChanged={onComponentOptionChangedForSubcontainer}
                     onOptionsChanged={onComponentOptionsChanged}
                     isFromSubContainer={true}
+                    disabled={item?.styles?.disabledState?.value} // P387c
                   />
                 </div>
               );
