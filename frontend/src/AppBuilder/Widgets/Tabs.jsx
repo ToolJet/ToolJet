@@ -361,7 +361,7 @@ export const Tabs = function Tabs({
         boxShadow,
         borderRadius: `${borderRadius}px`,
         overflow: 'hidden',
-        ...(padding === 'default' ? { padding: '2px', height: height } : { padding: '0px' }),
+        ...(padding === 'default' ? { padding: '1px', height: height } : { padding: '0px' }),
         ...(border ? { border: `1px solid ${border}` } : { border: 'none' }),
       }}
       data-cy={dataCy}
@@ -376,6 +376,8 @@ export const Tabs = function Tabs({
               display: 'flex',
               alignItems: 'center',
               width: '100%',
+              marginLeft: '4px',
+              marginRight: '4px',
               backgroundColor: headerBackground,
             }}
           >
@@ -394,7 +396,8 @@ export const Tabs = function Tabs({
               className="nav"
               data-bs-toggle="tabs"
               style={{
-                zIndex: 1,
+                position: 'relative',
+                zIndex: 2,
                 display: parsedHideTabs ? 'none' : 'flex',
                 backgroundColor: headerBackground,
                 overflowX: 'auto',
@@ -404,14 +407,15 @@ export const Tabs = function Tabs({
                 msOverflowStyle: 'none',
                 scrollBehavior: 'smooth',
                 flexGrow: 1,
-                paddingLeft: '4px',
-                paddingRight: '4px',
               }}
             >
               {tabItems
                 ?.filter((tab) => tab?.visible !== false)
                 ?.map((tab) => (
-                  <div key={tab.id} style={{ ...(tabWidth == 'split' ? { minWidth: 'auto' } : { minWidth: '91px' }) }}>
+                  <div
+                    key={tab.id}
+                    style={{ zIndex: 3, ...(tabWidth == 'split' ? { minWidth: 'auto' } : { minWidth: '91px' }) }}
+                  >
                     <li
                       className={`nav-item ${currentTab == tab.id ? 'active' : ''}`}
                       style={{
@@ -426,7 +430,7 @@ export const Tabs = function Tabs({
                         marginBottom: '4px',
                         marginTop: '4px',
                         cursor: 'pointer',
-                        ...(tabWidth == 'split' ? { minWidth: 'auto' } : { minWidth: '91px' }),
+                        ...(tabWidth == 'split' ? { minWidth: 'auto' } : { minWidth: '56px' }),
                       }}
                       onClick={() => {
                         if (currentTab == tab.id) return;
@@ -462,19 +466,47 @@ export const Tabs = function Tabs({
                         {tab.title}
                       </div>
                     </li>
-                    {currentTab === tab.id ? (
-                      <div
-                        style={{
-                          position: 'relative',
-                          height: '4px',
-                          width: '100%',
-                          background: accent,
-                          zIndex: 2,
-                        }}
-                      ></div>
-                    ) : null}
+                    <div
+                      style={{
+                        position: 'relative',
+                      }}
+                    >
+                      {currentTab === tab.id ? (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            bottom: '0px',
+                            height: '0.25rem',
+                            width: '100%',
+                            background: accent,
+                            zIndex: 2,
+                          }}
+                        ></div>
+                      ) : (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            bottom: '0px',
+                            height: '0.1rem',
+                            width: '100%',
+                            background: divider,
+                            zIndex: 2,
+                          }}
+                        ></div>
+                      )}
+                    </div>
                   </div>
                 ))}
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: '0px',
+                  height: '0.1rem',
+                  width: '100%',
+                  background: divider,
+                  zIndex: 2,
+                }}
+              ></div>
             </ul>
             {canScroll && (
               <div
@@ -489,10 +521,10 @@ export const Tabs = function Tabs({
           <div
             style={{
               position: 'absolute',
-              height: '1px',
+              height: '0.1rem',
               bottom: '0px',
               width: '100%',
-              opacity: 0.5,
+              opacity: 1,
               zIndex: 1,
               background: divider,
             }}

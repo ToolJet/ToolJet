@@ -277,9 +277,9 @@ export const tabsConfig = {
       params: [{ handle: 'setVisibility', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
     },
     {
-      handle: 'setLoading',
+      handle: 'setDisable',
       displayName: 'Set disable',
-      params: [{ handle: 'setLoading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      params: [{ handle: 'setDisable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
     },
     {
       handle: 'setLoading',
