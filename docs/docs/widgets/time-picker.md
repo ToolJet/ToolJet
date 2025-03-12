@@ -2,103 +2,95 @@
 id: timepicker
 title: Time Picker
 ---
-# Time Picker
 
-The **Time Picker** widget allows users to select a single value for time from a pre-determined set.
-
-<div style={{paddingTop:'24px'}}>
+The **Time Picker** component can be used for selecting time without date input. It offers customizable formats, validation, and styling.
 
 ## Properties
 
-| <div style={{ width:"100px"}}> Property  </div>    | <div style={{ width:"100px"}}> Description </div> |
-|:----------- |:----------- |
-| Label | The text to be used as the label for the Time Picker. |
-| Default value | This value acts as placeholder for the time picker component, if any value is not provided then the default value will be used from the picker. |
-| Time Format | This value acts as placeholder for the time picker component, if any value is not provided then the default value will be used from the picker. |
-| Manage time zones | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
+|   Property    | Description | Expected Value |
+|:--------------|:------------|----------------|
+| Label         | The text to be used as the label for the Time Picker. | String (e.g., `Time of Arrival`). |
+| Default value | The default value that the component will hold when the app is loaded. | String (e.g., `11:00`). |
+| Time Format   | Select the time format from the dropdown. Default time format is **HH:mm**. | Select from dropdown (e.g. `hh:mm A`). |
+| Manage time zones | Use the toggle to manage the time zone. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 ## Events
 
-To add an event to a time picker component, click on the component handle to open the component properties on the right sidebar. Go to the **Events** section and click on **+ Add handler**.
-
-| <div style={{ width:"100px"}}> Event  </div>    | <div style={{ width:"100px"}}> Description </div> |
+|    Event    | Description |
 |:----------- |:----------- |
-| OnSelect | Triggers whenever the user selects a time. |
-| OnFocus | Triggers whenever the user clicks inside the time picker. |
-| OnBlur | Triggers whenever the user clicks outside the time picker. |
+| On select | Triggers whenever the user selects a time. |
+| On focus | Triggers whenever the user clicks inside the time picker. |
+| On blur | Triggers whenever the user clicks outside the time picker. |
+
+## Component Specific Actions (CSA)
+
+Following actions of component can be controlled using the Component Specific Actions(CSA), which can be triggered by an event or by the given RunJS query:
+
+|  Action |  <div style={{ width:"200px"}}> Description </div> | How To Access |
+| :-------------- | :---------- | :------------ |
+| clearValue( )     | Clears the value of the time picker.    |  `components.timepicker1.clearValue()` |
+| setValue( )     | Sets both the date and time value.   |  `components.timepicker1.setValue(value)` |
+| setTime( )      | Sets time in the time picker component. |  `components.timepicker1.setTime(time)` |
+| setValueinTimeStamp() | Sets the date and time value in the Unix format. | `components.timepicker1.setValueinTimeStamp(value)` |
+| setMinTime( )   | Sets the minimum time that can be selected in the time picker.	| `components.timepicker1.setMinTime(value)` |
+| setMaxTime( )   | Sets the maximum time that can be selected in the time picker.	 | `components.timepicker1.setMaxTime(value)` |
+| setTimezone( )   | Sets the Timezone of the time picker.	 | `components.timepicker1.setTimezone()` |
+| setLoading( )   | Sets the loading state of the time picker.	 | `components.timepicker1.setLoading()` |
+| setVisibility( )   | Sets the visibility state of the time picker.	 | `components.timepicker1.setVisibility()` |
+| setDisable( )   | Disables the time picker.	 | `components.timepicker1.setDisable()` |
+| setFocus( )   | Sets the focus of the cursor on the time picker. | `components.timepicker1.setLoading()` |
+| setBlur( )   | Removes the focus of the cursor from the time picker. | `components.timepicker1.setBlur()` |
+
+## Exposed Variables
+
+Following exposed variables can be dynamically accessed using the given JS query:
+
+| Variables | <div style={{ width:"200px"}}> Description </div>  | How To Access |
+|:---------|:-----------|:-------------|
+|  value | This component holds the value entered in the time picker. | `{{components.timepicker1.value}}` |
+|  label  | Holds the value of the component's label. | `{{components.timepicker1.label}}` |
+|  valueUnix | Holds the value in UNIX format. | `{{components.timepicker1.valueUnix}}` |
+|  selectedTime  | Pass the selected time. |  `{{components.timepicker1.selectedTime}}` |
+|  timeFormat  | Returns the time format property as a string. |  `{{components.timepicker1.timeFormat}}` |
+|  selectedTimeZone | Returns the selected time zone. | `{{components.timepicker1.selectedTimeZone}}` |
+|  isValid  | Indicates if the input meets validation criteria. |  `{{components.timepicker1.isValid}})` |
+|  isMandatory  | Indicates if the feild is Mandatory. |  `{{components.timepicker1.isMandatory}}` |
+|  isLoading  | Indicates if the component is loading. | `{{components.timepicker1.isLoading}}` |
+|  isVisible  | Indicates if the component is visible. | `{{components.timepicker1.isVisible}}` |
+|  isDisabled  | Indicates if the component is disabled. | `{{components.timepicker1.isDisabled}}` |
 
 ## Validation
 
-| <div style={{ width:"100px"}}> Validation Option </div> | <div style={{ width:"200px"}}> Description </div> | <div style={{width: "200px"}}> Expected Value </div>|
-|:---------------|:-------------------------------------------------|:-----------------------------|
-| Min Time |  Specifies the earliest selectable time. Any time before the Min Time will be disabled. | (for e.g., `05:35`) |
-| Max Time  | Specifies the latest selectable time. Any time after the Max Time will be disabled.  | (for e.g., `15:45`) |
-| Custom validation | Add a validation for the time input in the component using the ternary operator. |(for e.g., `{{moment(components.time_picker.value, '18:35').isAfter(moment()) ? true : 'We are late!'}}`) |
-| Make as mandatory | Displays a 'Field cannot be empty' message if no value is entered. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Validation Option | <div style={{ width:"200px"}}> Description </div> |  Expected Value |
+|:---------------|:---------------|:----------------|
+| Min Time |  Specifies the earliest selectable time. Any time before the Min Time will be disabled. | String (for e.g., `05:35`) |
+| Max Time  | Specifies the latest selectable time. Any time after the Max Time will be disabled.  | String (for e.g., `15:45`) |
+| Custom validation | Add a custom validation for the time input using the ternary operator. | Custom Validation Statement (for e.g., `{{moment(components.timepicker1.value, '18:35').isAfter(moment()) ? true : 'You are late!'}}`) |
+| Make as mandatory | Makes the field mandatory. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 
 :::info
 Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
 :::
 
-</div>
-
-## Additional Actions
-
-| <div style={{ width:"100px"}}> Action </div>    | <div style={{ width:"100px"}}> Description  </div> | <div style={{ width:"135px"}}> Configuration Options </div> |
-|:-------------|:------------------------------------------------------------|:------------|
-| Loading State | Enables a loading spinner, often used with `isLoading` to indicate progress. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Visibility  | Controls component visibility. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Disable  | Enables or disables the component. Toggle or set dynamically. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.|
+## General
 
 ### Tooltip
 
-A **Tooltip** is commonly used to provide additional information about an element. This information becomes visible when the user hovers the mouse pointer over the respective component.
+A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the component.
 
-In the Time Picker under **Tooltip**, you can enter some value  and the component will show the specified value as a tooltip when it is hovered over.
+Under the **General** accordion, you can set the value in the string format. Now hovering over the component will display the string as the tooltip.
+
+## Additional Actions
+
+|  Action    |  Description  |  Configuration Options |
+|:-----------|:--------------|:------------|
+| Loading State | Enables a loading spinner, often used with `isLoading` to indicate progress. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Visibility  | Controls component visibility. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Disable  | Enables or disables the component. | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression.|
 
 ## Devices
 
-| <div style={{ width:"100px"}}> Property </div> | <div style={{ width:"100px"}}> Description </div> | <div style={{ width:"135px"}}> Expected Value </div> |
-|:--------------- |:----------------------------------------- | :------------------------------------------------------------------------------------------------------------- |
+|  Property |  Description |  Expected Value |
+|:----------|:-------------|:----------------|
 | Show on desktop | Makes the component visible in desktop view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Show on mobile  | Makes the component visible in mobile view. | You can set it with the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-
-<div style={{paddingTop:'24px'}}>
-
-## Exposed Variables
-
-| Variables | Description | How To Access |
-|:---------|:-----------|:-------------|
-| <div style={{ width:"100px"}}> value </div> | This component holds the value entered in the time picker. | Access the value dynamically using JS. (for e.g., `{{components.time_picker.value}}`) |
-| isValid  | Indicates if the input meets validation criteria. | Accessible dynamically with JS (for e.g., `{{components.time_picker.isValid}}).` |
-| isMandatory  | Indicates if the component is Mandatory. | Accessible dynamically with JS (for e.g., `{{components.time_picker.isMandatory}}`). |
-| selectedTime  | Pass the selected time. | Accessible dynamically with JS (for e.g., `{{components.time_picker.selectedTime}}`).
-| timeFormat  | Returns the time format property as a string. | Accessible dynamically with JS (for e.g., `{{components.time_picker.timeFormat}}`).
-
-
-</div>
-
-## Component Specific Actions (CSA)
-
-Following actions of the **Time Picker** component can be controlled using Component-Specific Actions(CSA):
-
-| <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"135px"}}> Description </div> | <div style={{width: "200px"}}> How To Access </div>|
-| :-------------- | :---------- | :------------ |
-| clearValue( )     | Clears the value of the time picker.    | Employ a RunJS query (for e.g.,  <br/> `await components.time_picker.setText('this is input text')`) or trigger it using an event. |
-| clear( )        | Clears the entered value in the time picker.      | Employ a RunJS query (for e.g.,  <br/> `await components.time_picker.clear()`) or trigger it using an event. |
-| setValue( )     | Sets the value on the time picker.   | Employ a RunJS query (for e.g.,  <br/> `await components.time_picker.setValue()`) or trigger it using an event. |
-| setTime( )      | Sets time in the time picker component. | Employ a RunJS query (for e.g.,  <br/> `await components.time_picker.setTime()`) or trigger it using an event. |
-| setValueinTimeStamp() | Sets the value in timestamp of the time picker. | Employ a RunJS query (for e.g.,`await components.time_picker.setValueinTimeStamp()`) or trigger it using an event. |
-| setMinTime( )   | Set the minimum time in the time picker.	| Employ a RunJS query (for e.g.,`await components.time_picker.setMinTime()`) or trigger it using an event. |
-| setMaxTime( )   | Set the maximum time in the time picker.	 | Employ a RunJS query (for e.g.,`await components.time_picker.setMaxTime()`) or trigger it using an event. |
-| setTimezone( )   | Sets the setTimezone of the time picker.	 | Employ a RunJS query (for e.g.,`await components.time_picker.setTimezone( )`) or trigger it using an event. |
-| setLoading( )   | Sets the loading state of the time picker.	 | Employ a RunJS query (for e.g.,`await components.time_picker.setLoading(true)`) or trigger it using an event. |
-| setVisibility( )   | Sets the visibility state of the time picker.	 | Employ a RunJS query (for e.g.,`await components.time_picker.setVisibility(true)`) or trigger it using an event. |
-| setDisable( )   | Disables the time picker.	 | Employ a RunJS query (for e.g.,`await components.time_picker.setDisable(true)`) or trigger it using an event. |
-| setFocus( )   | Sets the focus of the cursor on the time picker. | Employ a RunJS query (for e.g.,`await components.time_picker.setLoading(true)`) or trigger it using an event. |
-| setBlur( )   | Removes the focus of the cursor from the time picker. | Employ a RunJS query (for e.g.,`await components.time_picker.setBlur(true)`) or trigger it using an event. |
