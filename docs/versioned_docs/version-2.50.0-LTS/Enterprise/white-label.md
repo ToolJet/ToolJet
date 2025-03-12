@@ -3,7 +3,15 @@ id: white-label
 title: White Label
 ---
 
-<div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
+<div className="badge badge--primary heading-badge">   
+  <img 
+    src="/img/badge-icons/premium.svg" 
+    alt="Icon" 
+    width="16" 
+    height="16" 
+  />
+ <span>Paid feature</span>
+</div>
 
 The White Label feature allows you to completely remove ToolJet's branding from the ToolJet platform, allowing you to replace it with your own customized logo, favicon and page title. This feature grants you full control over the visual identity of your ToolJet-powered application, ensuring a seamless and personalized user experience.
 

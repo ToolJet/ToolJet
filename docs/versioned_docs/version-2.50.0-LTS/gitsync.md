@@ -6,7 +6,15 @@ title: GitSync
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-<div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
+<div className="badge badge--primary heading-badge">   
+  <img 
+    src="/img/badge-icons/premium.svg" 
+    alt="Icon" 
+    width="16" 
+    height="16" 
+  />
+ <span>Paid feature</span>
+</div>
 
 
 The GitSync feature enables synchronization of workspace applications with a git repository, streamlining application management and version control on ToolJet.
