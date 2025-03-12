@@ -68,7 +68,12 @@ docker-compose --version
 
 `TOOLJET_HOST=http://<public_ip>:80`
 
-**7. Use the [Docker Documentation](https://docs.tooljet.com/docs/setup/docker) to deploy ToolJet.**
+**7. Use the [Docker Documentation](https://docs.tooljet.ai/docs/setup/docker) to deploy ToolJet.**
+
+:::warning
+To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
+:::
+
 
 ## Upgrading to the Latest LTS Version
 
@@ -81,5 +86,6 @@ If this is a new installation of the application, you may start directly with th
 - It is crucial to perform a **comprehensive backup of your database** before starting the upgrade process to prevent data loss.
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
+
 
 If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.

@@ -28,6 +28,11 @@ Follow the steps below to deploy ToolJet on a Kubernetes cluster.
    - **LOCKBOX_KEY**
 
    Read **[environment variables reference](/docs/setup/env-vars)**
+
+:::warning
+To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
+:::
+
 3. Create a Kubernetes deployment
 
    ```bash
@@ -86,5 +91,6 @@ If this is a new installation of the application, you may start directly with th
 - It is crucial to perform a **comprehensive backup of your database** before starting the upgrade process to prevent data loss.
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
+
 
 *If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*

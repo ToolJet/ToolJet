@@ -76,7 +76,7 @@ Google Cloud Platform provides access to more than 350 APIs and Services that ca
 3. Enter the Application details and select the appropriate scopes for your application. We will select the profile and the email scopes. 
 4. Once you have created the OAuth consent screen, Create new credentials for the **OAuth client ID** from the **Credentials** section in the left sidebar.
 5. Select the application type, enter the application name, and then add the following URIs under Authorized Redirect URIs(Callback URL):
-    1. `https://app.tooljet.com/oauth2/authorize` (if you’re using ToolJet cloud)
+    1. `https://app.tooljet.ai/oauth2/authorize` (if you’re using ToolJet cloud)
     2. `http://localhost:8082/oauth2/authorize` (if you’re using ToolJet locally)
 
 <img class="screenshot-full" src="/img/how-to/oauth2-authorization/callback-URL.png" alt="ToolJet - How To - REST API CallBack URL in OAuth 2.0" style={{marginBottom:'15px'}}/>
@@ -100,7 +100,7 @@ Let's follow the steps to authorize ToolJet to access your Google profile data:
 9. Create three **Custom Authentication Parameters:**
     1. **response_type**: code ( `code` refers to the Authorization Code)
     2. **client_id**: Client ID
-    3. **redirect_url**: `http://localhost:8082/oauth2/authorize` if using ToolJet locally or enter this `https://app.tooljet.com/oauth2/authorize` if using ToolJet Cloud.
+    3. **redirect_url**: `http://localhost:8082/oauth2/authorize` if using ToolJet locally or enter this `https://app.tooljet.ai/oauth2/authorize` if using ToolJet Cloud.
 10. Keep the default selection for **Client Authentication** and **Save** the data source.
 
 <img class="screenshot-full" src="/img/how-to/oauth2-authorization/restapi-v2.png" alt="ToolJet - How To - REST API authentication using OAuth 2.0" style={{marginBottom:'15px'}}/>

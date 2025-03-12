@@ -1,11 +1,18 @@
 import {
-    Grid3x3, Database, Workflow, Cog, Target, Scale,
+    BrainCircuit, Grid3x3, Database, Workflow, Cog, Target, Scale,
     Layers, FileSpreadsheet, Folder, Wand2, LayoutDashboard, Users, UserCheck,
     Lock, UserPlus, ScrollText, Megaphone, Gem, Mail, GitBranch,
     Box, GitMerge, ShoppingBag, Wand, Flag, ShieldCheck, Cloud, Container, Boxes, Server, Telescope, Globe
 } from 'lucide-react';
 
 export const featureCards = [
+    {
+        icon: BrainCircuit,
+        title: "Build with AI",
+        color: "text-blue-500",
+        content: "Build applications effortlessly using natural language to generate and customize apps.",
+        href: "/docs/build-with-ai/overview"
+    },
     {
         icon: Grid3x3,
         title: "App Builder",
@@ -109,15 +116,14 @@ export const dataCards = [
 ];
 
 export const organizationCards = [
-    { icon: LayoutDashboard, title: "Dashboard", href: "/docs/dashboard" },
-    { icon: Users, title: "Workspaces", href: "/docs/org-management/workspaces/workspace_overview" },
-    { icon: UserCheck, title: "User authentication", href: "/docs/user-authentication/workspace-login" },
-    { icon: Lock, title: "Permissions", href: "/docs/org-management/permissions" },
-    { icon: UserPlus, title: "Users and groups", href: "/docs/tutorial/manage-users-groups" },
-    { icon: ScrollText, title: "Audit logs", href: "/docs/Enterprise/audit_logs" },
-    { icon: Megaphone, title: "White label", href: "/docs/Enterprise/white-label" },
-    { icon: Gem, title: "Super admin", href: "/docs/Enterprise/superadmin" },
-    { icon: Mail, title: "Licensing", href: "/docs/org-management/licensing/self-hosted" }
+    { icon: Users, title: "Workspaces", href: "/docs/tj-setup/workspaces" },
+    { icon: UserCheck, title: "User authentication", href: "/docs/user-management/authentication/self-hosted/overview" },
+    { icon: Lock, title: "Permissions", href: "/docs/user-management/role-based-access/access-control" },
+    { icon: UserPlus, title: "Users and groups", href: "/docs/user-management/role-based-access/user-roles" },
+    { icon: ScrollText, title: "Audit logs", href: "/docs/security/audit-logs" },
+    { icon: Megaphone, title: "White label", href: "/docs/tj-setup/org-branding/white-labeling" },
+    { icon: Gem, title: "Super admin", href: "/docs/user-management/role-based-access/super-admin" },
+    { icon: Mail, title: "Licensing", href: "/docs/tj-setup/licensing/self-hosted" }
 ];
 
 export const releaseCards = [
@@ -126,21 +132,21 @@ export const releaseCards = [
         title: "Git Sync",
         color: "text-blue-500",
         content: "Sync your ToolJet projects with Git repositories, enabling version control and collaboration across teams.",
-        href: "/docs/gitsync"
+        href: "/docs/development-lifecycle/gitsync/overview"
     },
     {
         icon: Box,
         title: "Multi-Environment",
         color: "text-blue-500",
         content: "Easily manage and deploy applications across multiple environments, ensuring smooth transitions between development, staging, and production.",
-        href: "/docs/release-management/multi-environment"
+        href: "/docs/development-lifecycle/environment/self-hosted/multi-environment"
     },
     {
         icon: GitMerge,
         title: "Versioning and Release",
         color: "text-blue-500",
         content: "Implement version control and release management to track changes, roll back updates, and maintain stable app deployments.",
-        href: "/docs/tutorial/versioning-and-release"
+        href: "/docs/development-lifecycle/release/version-control"
     }
 ];
 
@@ -151,13 +157,6 @@ export const resourceCards = [
         color: "text-blue-500",
         content: "Discover a variety of plugins, extensions and integrations in ToolJet's marketplace to enhance your app-building experience.",
         href: "/docs/marketplace/marketplace-overview"
-    },
-    {
-        icon: Wand,
-        title: "Copilot",
-        color: "text-blue-500",
-        content: "Boost productivity with ToolJet Copilot. Get AI-powered suggestions and assistance while building your applications.",
-        href: "/docs/tooljet-copilot"
     },
     {
         icon: Flag,
@@ -171,7 +170,7 @@ export const resourceCards = [
         title: "Security",
         color: "text-blue-500",
         content: "ToolJet ensures data security with SOC 2 compliance, encryption, and secure credential handling, never storing your data.",
-        href: "/docs/security"
+        href: "/docs/security/compliance"
     }
 ];
 

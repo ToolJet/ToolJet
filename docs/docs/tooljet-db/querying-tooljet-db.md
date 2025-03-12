@@ -189,7 +189,7 @@ The date with time column stores data in the ISO 8601 format. When querying a ta
 
 ## Querying JSON Data Type
 
-In ToolJet Database, a column can be set to JSON Data Type, and can be used to store the structured data like arrays or nested objects, making it useful for complex data structures such as configurations or logs. To query the JSON Data Type follow the following steps:
+In ToolJet Database, a column can be set to JSON Data Type. It can be used to store structured data like arrays or nested objects, making it useful for complex data structures such as configurations or logs. To query the JSON Data Type, follow the following steps:
 
 ### Flat JSON Object
 
@@ -204,6 +204,27 @@ A flat JSON object is a JSON structure where all key-value pairs exist at a sing
 7. In the input box below the column name, enter the desired key by adding `->>` before the key, example `->>city`.
 
 <img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/v2-beta/database/newui/flat_json.png" alt="ToolJet Database Date" />
+
+<details>
+<summary>**Response Example**</summary>
+
+```json
+[
+  {
+    "id":1,
+    "json":{
+      "id":101,
+      "age":30,
+      "city":"Los Angeles",
+      "name":"Alice Johnson",
+      "email":"alice@example.com",
+      "country":"USA"
+    }
+  }
+]
+```
+
+</details>
 
 ### Nested JSON Object
 
@@ -220,6 +241,50 @@ A nested JSON object is a JSON structure that contains key-value pairs, where so
 <img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/v2-beta/database/newui/nested_json_gui.png" alt="ToolJet Database Date" />
 
 **Note:** You can use `->` to access nested JSON fields and use `->>` to access the text.
+
+<details>
+<summary>**Response Example**</summary>
+
+```json
+[
+  {
+    "id": 102,
+    "name": "Michael Brown",
+    "age": 25,
+    "email": "michael@example.com",
+    "user": {
+      "preference": {
+        "settings": {
+          "notification": {
+            "sms": {
+              "alert": false
+            }
+          }
+        }
+     }
+    }
+  },
+  {
+    "id": 104,
+    "name": "David Miller",
+    "age": 35,
+    "email": "david@example.com",
+    "user": {
+      "preference": {
+        "settings": {
+          "notification": {
+            "sms": {
+              "alert": false
+            }
+          }
+        }
+      }
+    }
+  }
+]
+```
+
+</details>
 
 </div>
 

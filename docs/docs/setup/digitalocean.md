@@ -68,7 +68,7 @@ docker-compose --version
 
 `TOOLJET_HOST=http://<public_ip>:80`
 
-**7. Use the [Docker Documentation](https://docs.tooljet.com/docs/setup/docker) to deploy ToolJet.**
+**7. Use the [Docker Documentation](https://docs.tooljet.ai/docs/setup/docker) to deploy ToolJet.**
 
 ## Upgrading to the Latest LTS Version
 

@@ -13,7 +13,7 @@ This document outlines the key improvements introduced in ToolJet 3.0, a major u
 2. Smooth app development even with 1000s of components and 100s of queries
 2. More intuitive experience in designing applications on the canvas with the new grid system
 4. Highly configurable **[page management system](/docs/tutorial/pages)**
-5. Revamped **[components](/docs/widgets/table/table-properties/)** with more styling and functionality customizations
+5. Revamped **[components](/docs/widgets/table/)** with more styling and functionality customizations
 6. Enhanced developer experience in managing queries with the **[new query manager UI](/docs/app-builder/query-panel)**
 7. Improved coding experience with better code suggestions, linting, and type-casting
 8. Better debugging with easy-to-understand error messages
@@ -21,11 +21,11 @@ This document outlines the key improvements introduced in ToolJet 3.0, a major u
 
 ## Platform Enhancements
 
-1. **[Group Sync OIDC](/docs/user-authentication/sso/oidc/)**: Easily manage user access to ToolJet applications from your Identity Provider (IDP) directly
-2. **[Secrets constants](/docs/org-management/workspaces/workspace_constants/#using-secrets)**: Ability to store encrypted credentials 
-3. **[User metadata](/docs/tutorial/manage-users-groups/#user-metadata)**: Store custom metadata with user details & access them while building applications
+1. **[Group Sync OIDC](/docs/user-management/sso/oidc/setup)**: Easily manage user access to ToolJet applications from your Identity Provider (IDP) directly
+2. **[Secrets constants](/docs/security/constants/#using-secrets)**: Ability to store encrypted credentials 
+3. **[User metadata](/docs/user-management/onboard-users/user-metadata)**: Store custom metadata with user details & access them while building applications
 4. User roles: Revamped user groups with granular access control
-5. **[User APIs](/docs/tutorial/tooljet-api/#get-all-users)**: External API for creating and managing users
+5. **[User APIs](/docs/tooljet-api#get-all-users)**: External API for creating and managing users
 6. Security fixes: Various improvements to enhance platform security
 
 ## ToolJet Database (TJ DB)

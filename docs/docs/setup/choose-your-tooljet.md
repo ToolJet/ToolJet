@@ -1,6 +1,6 @@
 ---
 id: choose-your-tooljet
-title: Choose Your ToolJet
+title: Deployment Version  
 ---
 
 ToolJet versions are categorized into three main types: **Long-Term Support (LTS)**,  **Pre-Release**, and **Past versions**. Understanding these categories helps users choose the most suitable version for their needs.
@@ -12,9 +12,14 @@ We highly recommend using LTS versions for most users. These versions are priori
 Please find the latest LTS version here: <br/>
 [Docker Hub - LTS Versions](https://hub.docker.com/r/tooljet/tooljet/tags?page_size=&ordering=&name=ee-lts) 
 
+:::info
+Starting from **`v3.5.0-ee-lts`** all releases are AI releases. Checkout the **[Build with AI](/docs/build-with-ai/overview)** section for more information. If you have any questions feel free to join our [Slack Community](https://tooljet.ai/slack) or send us an email at hello@tooljet.com.
+:::
+
 | Version | Release Date | Docker Pull Command |
 |---------|--------------|----------------------|
 | Latest EE-LTS | N/A | `docker pull tooljet/tooljet:ee-lts-latest` |
+| [v3.5.0-ee-lts](https://hub.docker.com/layers/tooljet/tooljet/v3.5.0-ee-lts/images/sha256-9580d2377d17ce0c26fca0535eca51bce899015f26bfc81769d032b4b15a5da5) | February 12, 2025 | `docker pull tooljet/tooljet:v3.5.0-ee-lts` |
 | [v3.0.24-ee-lts](https://hub.docker.com/layers/tooljet/tooljet/v3.0.24-ee-lts/images/sha256-33494c8ee72c440ce0ded925cdeb15507cd87f2b7c3fe172dd1cbee790e3b96f?context=explore) | January 3, 2025 | `docker pull tooljet/tooljet:v3.0.24-ee-lts` |
 | [v3.0.23-ee-lts](https://hub.docker.com/layers/tooljet/tooljet/v3.0.23-ee-lts/images/sha256-1ca2bcb5dac66b1d3d089bd8300b7077c0dcd27bb2cfe6665bf388b680294467?context=explore) | January 2, 2025 | `docker pull tooljet/tooljet:v3.0.23-ee-lts` |
 | [v3.0.22-ee-lts](https://hub.docker.com/layers/tooljet/tooljet/v3.0.22-ee-lts/images/sha256-fc2bca053802e06a09858b65c2a5f47f1cb0ece2d156ca9b0dd1c37c60d5d2b8?context=explore) | December 30, 2024 | `docker pull tooljet/tooljet:v3.0.22-ee-lts` |
