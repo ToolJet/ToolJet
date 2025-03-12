@@ -291,7 +291,7 @@ export const Tabs = function Tabs({
         currentTabsRef.removeEventListener('scroll', onScroll);
       }
     };
-  }, [tabsRef.current, tabWidth]);
+  }, [tabsRef.current, tabWidth, tabItems]);
 
   useEffect(() => {
     checkScroll();
@@ -340,6 +340,7 @@ export const Tabs = function Tabs({
         color={`${currentTab == tab?.id ? selectedIcon : unselectedIcon}`}
         size={16}
         style={{
+          marginRight: '4px',
           marginBottom: '2px',
           ...(currentTab == tab.id ? { color: selectedIcon } : { color: unselectedIcon }),
         }}
@@ -360,7 +361,7 @@ export const Tabs = function Tabs({
         boxShadow,
         borderRadius: `${borderRadius}px`,
         overflow: 'hidden',
-        ...(padding === 'default' ? { padding: '4px' } : { padding: '0px' }),
+        ...(padding === 'default' ? { padding: '2px', height: height } : { padding: '0px' }),
         ...(border ? { border: `1px solid ${border}` } : { border: 'none' }),
       }}
       data-cy={dataCy}
@@ -421,7 +422,7 @@ export const Tabs = function Tabs({
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
                         fontWeight: 'bold',
-                        padding: '0.25rem 0rem',
+                        padding: '0.2rem 0rem',
                         marginBottom: '4px',
                         marginTop: '4px',
                         cursor: 'pointer',
@@ -489,6 +490,7 @@ export const Tabs = function Tabs({
             style={{
               position: 'absolute',
               height: '1px',
+              bottom: '0px',
               width: '100%',
               opacity: 0.5,
               zIndex: 1,
