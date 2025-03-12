@@ -236,7 +236,6 @@ export const TextInput = function TextInput({
       isMandatory: isMandatory,
       isLoading: loading,
     };
-    console.log(exposedVariables, visibility, 'exposedVariables');
     setExposedVariables(exposedVariables);
     isInitialRender.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
