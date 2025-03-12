@@ -124,7 +124,7 @@ export const tabsConfig = {
     },
     unselectedText: {
       type: 'color',
-      displayName: 'Unselected text',
+      displayName: 'Unselected Tab Label',
       validation: {
         schema: { type: 'string' },
         defaultValue: '#375FCF',
@@ -133,7 +133,7 @@ export const tabsConfig = {
     },
     selectedText: {
       type: 'color',
-      displayName: 'Selected text',
+      displayName: 'Selected Tab Label',
       validation: {
         schema: { type: 'string' },
         defaultValue: '#375FCF',
@@ -148,6 +148,15 @@ export const tabsConfig = {
         defaultValue: '#375FCF',
       },
       accordian: 'Tabs',
+    },
+    background: {
+      type: 'color',
+      displayName: 'Background',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#375FCF',
+      },
+      accordian: 'Container',
     },
     unselectedIcon: {
       type: 'color',
@@ -279,11 +288,11 @@ export const tabsConfig = {
     },
     {
       handle: 'setTabDisable',
-      displayName: 'Set Tab disable',
+      displayName: 'Set Tab Disable',
       params: [
         {
           handle: 'tabId',
-          displayName: 'Id',
+          displayName: 'Tab',
           type: 'select',
           isDynamicOpiton: true,
           optionsGetter: 'component.definition.properties.tabItems.value',
@@ -302,7 +311,7 @@ export const tabsConfig = {
       params: [
         {
           handle: 'tabId',
-          displayName: 'Id',
+          displayName: 'Tab',
           type: 'select',
           isDynamicOpiton: true,
           optionsGetter: 'component.definition.properties.tabItems.value',
@@ -317,11 +326,11 @@ export const tabsConfig = {
     },
     {
       handle: 'setTabVisibility',
-      displayName: 'Set Tab visibility',
+      displayName: 'Set Tab Visibility',
       params: [
         {
           handle: 'tabId',
-          displayName: 'Id',
+          displayName: 'Tab',
           type: 'select',
           isDynamicOpiton: true,
           optionsGetter: 'component.definition.properties.tabItems.value',
@@ -398,6 +407,7 @@ export const tabsConfig = {
       selectedText: { value: '#1B1F24' },
       highlightColor: { value: '#375FCF' },
       hoverBackground: { value: '#E4E6E8' },
+      background: { value: '#E4E6E8' },
       unselectedIcon: { value: '#CCD1D5' },
       selectedIcon: { value: '#CCD1D5' },
       accent: { value: '#4368E3' },

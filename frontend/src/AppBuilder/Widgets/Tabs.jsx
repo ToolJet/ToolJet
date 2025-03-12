@@ -92,6 +92,7 @@ export const Tabs = function Tabs({
   const border = styles?.border ?? '#CCD1D5';
   const padding = styles?.padding ?? 'none';
   const transition = styles?.transition ?? 'none';
+  const background = styles?.background ?? '#FFFFFF';
   // options: [
   //   { name: 'Slide', value: 'slide' },
   //   { name: 'None', value: 'none' },
@@ -212,7 +213,7 @@ export const Tabs = function Tabs({
     const disable = tab?.disable;
     const visible = tab?.visible;
 
-    const fieldBackgroundColor = tab?.fieldBackgroundColor;
+    const fieldBackgroundColor = tab?.fieldBackgroundColor || background;
     if (visible === false) return null;
 
     return (
@@ -221,7 +222,7 @@ export const Tabs = function Tabs({
         className={`tab-pane active`}
         style={{
           display: computeTabDisplay(id, tab.id),
-          height: parsedHideTabs ? height : height - 41,
+          height: parsedHideTabs ? height + 4 : height + 4 - 41,
           position: 'absolute',
           top: parsedHideTabs ? '0px' : '41px',
           width: '100%',
