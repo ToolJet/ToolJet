@@ -213,7 +213,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
   };
 
   removeAppFromGroup = (groupPermissionId, appId, appName) => {
-    if (window.confirm(`Are you sure you want to delete this app - ${appName}?`) === false) return;
+    if (window.confirm(`Are you sure you want to revoke the group's access to this data source - ${appName}?`) === false) return;
     const updateParams = {
       remove_apps: [appId],
     };
