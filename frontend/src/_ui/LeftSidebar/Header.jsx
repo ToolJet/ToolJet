@@ -1,8 +1,23 @@
 import React from 'react';
 import { SearchBoxComponent } from '@/_ui/Search';
 
-const Header = ({ children, darkMode }) => {
-  return <div className={`${darkMode && 'dark-theme'} leftsidebar-panel-header overflow-hidden`}>{children}</div>;
+const Header = ({ children, darkMode, title }) => {
+  return (
+    <div
+      style={
+        title === 'Pages'
+          ? {
+              position: 'sticky',
+              top: '0',
+              zIndex: '99',
+            }
+          : {}
+      }
+      className={`${darkMode && 'dark-theme'} leftsidebar-panel-header overflow-hidden`}
+    >
+      {children}
+    </div>
+  );
 };
 
 const PanelHeader = ({ children, settings, title, darkMode }) => {

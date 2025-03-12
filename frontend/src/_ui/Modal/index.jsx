@@ -48,8 +48,8 @@ export default function ModalBase({
           Cancel
         </ButtonSolid>
         <ToolTip
-          show={confirmBtnProps.tooltipMessage && confirmBtnProps?.disabled}
-          message={confirmBtnProps.tooltipMessage}
+          show={confirmBtnProps?.tooltipMessage && confirmBtnProps?.disabled}
+          message={confirmBtnProps?.tooltipMessage}
         >
           <div>
             <ButtonSolid

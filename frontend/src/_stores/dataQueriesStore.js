@@ -289,7 +289,7 @@ export const useDataQueriesStore = create(
                 dataQueries: state.dataQueries.filter((query) => query.id !== tempId),
               }));
               actions.setSelectedQuery(null);
-              toast.error(`Failed to create query: ${error.message}`);
+              toast.error(`Failed to create query: ${error.message ?? error.error}`);
             })
             .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
         },
@@ -336,6 +336,9 @@ export const useDataQueriesStore = create(
                   },
                 },
               });
+            })
+            .catch((error) => {
+              toast.error(`Failed to rename query: ${error.message ?? error.error}`);
             })
             .finally(() => {
               useAppDataStore.getState().actions.setIsSaving(false);
@@ -385,8 +388,9 @@ export const useDataQueriesStore = create(
             isUpdatingQueryInProcess: true,
           });
           useAppDataStore.getState().actions.setIsSaving(true);
+          const appVersionId = useAppVersionStore.getState().editingVersion?.id;
           dataqueryService
-            .changeQueryDataSource(selectedQuery?.id, newDataSource.id)
+            .changeQueryDataSource(selectedQuery?.id, newDataSource.id, appVersionId)
             .then(() => {
               set((state) => ({
                 isUpdatingQueryInProcess: false,
@@ -400,7 +404,8 @@ export const useDataQueriesStore = create(
               useQueryPanelStore.getState().actions.setSelectedQuery(selectedQuery.id);
               useQueryPanelStore.getState().actions.setSelectedDataSource(newDataSource);
             })
-            .catch(() => {
+            .catch((error) => {
+              toast.error(`Failed to change data query: ${error.message ?? error.error}`);
               set({
                 isUpdatingQueryInProcess: false,
               });
@@ -471,9 +476,14 @@ export const useDataQueriesStore = create(
                 })
               );
             })
-            .finally(() => {
-              useAppDataStore.getState().actions.setIsSaving(false);
-            });
+            .catch((error) => {
+              console.error('error', error);
+              toast.error(`Failed to duplicate query: ${error.message ?? error.error}`);
+              set({
+                creatingQueryInProcessId: null,
+              });
+            })
+            .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
         },
 
         // createDataQuery: (appId, appVersionId, options, kind, name, selectedDataSource, shouldRunQuery) => {

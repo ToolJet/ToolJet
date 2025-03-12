@@ -19,6 +19,8 @@ import { PreviewBox } from './PreviewBox';
 import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import { search, searchKeymap, searchPanelOpen } from '@codemirror/search';
+import { handleSearchPanel, SearchBtn } from './SearchBox';
 
 const langSupport = Object.freeze({
   javascript: javascript(),
@@ -46,9 +48,11 @@ const MultiLineCodeEditor = (props) => {
     delayOnChange = true, // Added this prop to immediately update the onBlurUpdate callback
     readOnly = false,
     editable = true,
+    renderCopilot,
   } = props;
   const replaceIdsWithName = useStore((state) => state.replaceIdsWithName, shallow);
   const getSuggestions = useStore((state) => state.getSuggestions, shallow);
+  const isInsideQueryPane = !!document.querySelector('.code-hinter-wrapper')?.closest('.query-details');
 
   const context = useContext(CodeHinterContext);
 
@@ -57,6 +61,8 @@ const MultiLineCodeEditor = (props) => {
   const currentValueRef = useRef(initialValue);
 
   const handleChange = (val) => (currentValueRef.current = val);
+
+  const [editorView, setEditorView] = React.useState(null);
 
   const handleOnBlur = () => {
     if (!delayOnChange) return onChange(currentValueRef.current);
@@ -181,7 +187,7 @@ const MultiLineCodeEditor = (props) => {
     };
   }
 
-  const customKeyMaps = [...defaultKeymap, ...completionKeymap];
+  const customKeyMaps = [...defaultKeymap, ...completionKeymap, ...searchKeymap];
   const customTabKeymap = keymap.of([
     {
       key: 'Tab',
@@ -220,14 +226,21 @@ const MultiLineCodeEditor = (props) => {
   }, [initialValue, replaceIdsWithName]);
 
   return (
-    <div className="code-hinter-wrapper position-relative" style={{ width: '100%' }}>
+    <div
+      className={`code-hinter-wrapper position-relative ${isInsideQueryPane ? 'code-editor-query-panel' : ''}`}
+      style={{ width: '100%' }}
+    >
       <div className={`${className} ${darkMode && 'cm-codehinter-dark-themed'}`}>
+        <SearchBtn view={editorView} />
         <CodeHinter.PopupIcon
           callback={handleTogglePopupExapand}
           icon="portal-open"
           tip="Pop out code editor into a new window"
           isMultiEditor={true}
+          isQueryManager={isInsideQueryPane}
         />
+        {renderCopilot && renderCopilot()}
+
         <CodeHinter.Portal
           isCopilotEnabled={false}
           isOpen={isOpen}
@@ -248,11 +261,14 @@ const MultiLineCodeEditor = (props) => {
                 placeholder={placeholder}
                 height={'100%'}
                 minHeight={heightInPx}
-                maxHeight={heightInPx}
+                {...(isInsideQueryPane ? { maxHeight: '100%' } : {})}
                 width="100%"
                 theme={theme}
                 extensions={[
                   langExtention,
+                  search({
+                    createPanel: handleSearchPanel,
+                  }),
                   javascriptLanguage.data.of({
                     autocomplete: overRideFunction,
                   }),
@@ -278,10 +294,17 @@ const MultiLineCodeEditor = (props) => {
                 style={{
                   overflowY: 'auto',
                 }}
-                className={`codehinter-multi-line-input`}
+                className={`codehinter-multi-line-input ${isInsideQueryPane ? 'code-editor-query-panel' : ''}`}
                 indentWithTab={false}
                 readOnly={readOnly}
                 editable={editable} //for transformations in query manager
+                onCreateEditor={(view) => setEditorView(view)}
+                onUpdate={(view) => {
+                  const icon = document.querySelector('.codehinter-search-btn');
+                  if (searchPanelOpen(view.state)) {
+                    icon.style.display = 'none';
+                  } else icon.style.display = 'block';
+                }}
               />
             </div>
             {showPreview && (

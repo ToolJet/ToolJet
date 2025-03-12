@@ -17,6 +17,13 @@
       background: var(--slate5);
       border-radius: 6px;
     }
+
+    &.tooljetai-icon {
+      &:hover {
+        border-radius: 6px;
+        background: linear-gradient(315deg, rgba(252, 95, 112, 0.12) 0%, rgba(142, 78, 198, 0.12) 100%);
+      }
+    }
   }
 
   .left-sidebar-item {
@@ -582,11 +589,18 @@
   }
 }
 
+.accordion-item{
+  overflow: visible;
+}
+
 .page-handler-wrapper {
   background: transparent;
   height: 100%;
   scrollbar-width: none;
   overflow: auto;
+  &.viewer{
+    overflow: visible !important;
+  }
 
   &::-webkit-scrollbar {
       display: none;
@@ -628,6 +642,13 @@
     background: none;
     border: none;
     box-shadow: none;
+    display: flex;
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
   }
 
   .card,
@@ -657,7 +678,7 @@
 
 .bm-item .pages-container {
   width: 100% !important;
-  padding: 6px 1rem;
+  padding: 6px 0.3rem;
 
   .card.active {
     width: inherit;
@@ -811,6 +832,11 @@
   justify-content: center;
   align-items: center;
   background-color: var(--indigo4);
+
+  &.tooljetai-icon {
+    border-radius: 6px;
+    background: linear-gradient(315deg, rgba(252, 95, 112, 0.12) 0%, rgba(142, 78, 198, 0.12) 100%);
+  }
 }
 
 .left-sidebar-local-datasources-wrapper {

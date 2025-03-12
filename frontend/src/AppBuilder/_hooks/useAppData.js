@@ -8,6 +8,7 @@ import {
   orgEnvironmentConstantService,
   authenticationService,
   orgEnvironmentVariableService,
+  customStylesService,
 } from '@/_services';
 import useStore from '@/AppBuilder/_stores/store';
 import { useEnvironmentsAndVersionsStore } from '@/_stores/environmentsAndVersionsStore';
@@ -25,9 +26,35 @@ import queryString from 'query-string';
 import { distinctUntilChanged } from 'rxjs';
 import { convertAllKeysToSnakeCase } from '../_stores/utils';
 import { getPreviewQueryParams } from '@/_helpers/routes';
-import { useMatch, useParams } from 'react-router-dom';
+import { useLocation, useMatch, useParams } from 'react-router-dom';
 
-const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId } = {}) => {
+/**
+ * this is to normalize the query transformation options to match the expected schema. Takes care of corrupted data.
+ * This will get redundanted once api response for appdata is made uniform across all the endpoints.
+ **/
+const normalizeQueryTransformationOptions = (query) => {
+  if (query?.options) {
+    if (query.options.enable_transformation) {
+      const enableTransformation = query.options.enable_transformation;
+      delete query.options.enable_transformation;
+      if (!query.options.enableTransformation) {
+        query.options.enableTransformation = enableTransformation;
+      }
+    }
+
+    if (query.options.transformation_language) {
+      const transformationLanguage = query.options.transformation_language;
+      delete query.options.transformation_language;
+      if (!query.options.transformationLanguage) {
+        query.options.transformationLanguage = transformationLanguage;
+      }
+    }
+  }
+  return query;
+};
+
+const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, versionId } = {}) => {
+  const { state } = useLocation();
   const [currentSession, setCurrentSession] = useState();
   const setEditorLoading = useStore((state) => state.setEditorLoading);
   const setApp = useStore((state) => state.setApp);
@@ -57,7 +84,7 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
   const setQueryMapping = useStore((state) => state.setQueryMapping);
   const setResolvedGlobals = useStore((state) => state.setResolvedGlobals);
   const setResolvedPageConstants = useStore((state) => state.setResolvedPageConstants);
-  // const updateFeatureAccess = useStore((state) => state.updateFeatureAccess);
+  const updateFeatureAccess = useStore((state) => state.updateFeatureAccess);
   const computePageSettings = useStore((state) => state.computePageSettings);
   const setGlobalSettings = useStore((state) => state.setGlobalSettings);
   const runOnLoadQueries = useStore((state) => state.dataQuery.runOnLoadQueries);
@@ -79,7 +106,15 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
   const pageSwitchInProgress = useStore((state) => state.pageSwitchInProgress);
   const setPageSwitchInProgress = useStore((state) => state.setPageSwitchInProgress);
   const selectedVersion = useStore((state) => state.selectedVersion);
+  const setIsPublicAccess = useStore((state) => state.setIsPublicAccess);
 
+  const setConversation = useStore((state) => state.ai?.setConversation);
+  const setDocsConversation = useStore((state) => state.ai?.setDocsConversation);
+  const setConversationZeroState = useStore((state) => state.ai?.setConversationZeroState);
+  const sendMessage = useStore((state) => state.ai?.sendMessage);
+  const getCreditBalance = useStore((state) => state.ai?.getCreditBalance);
+  const setSelectedSidebarItem = useStore((state) => state.setSelectedSidebarItem);
+  const toggleLeftSidebar = useStore((state) => state.toggleLeftSidebar);
   const pathParams = useParams();
   const slug = pathParams?.slug;
 
@@ -88,6 +123,29 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
   const location = useRouter().location;
 
   const initialLoadRef = useRef(true);
+
+  const fetchAndInjectCustomStyles = async (isPublicAccess = false) => {
+    try {
+      const head = document.head || document.getElementsByTagName('head')[0];
+      let styleTag = document.getElementById('workspace-custom-css');
+      if (!styleTag) {
+        // If it doesn't exist, create a new style tag and append it to the head
+        styleTag = document.createElement('style');
+        styleTag.type = 'text/css';
+        styleTag.id = 'workspace-custom-css';
+        head.appendChild(styleTag);
+      }
+      let data;
+      if (!isPublicAccess) {
+        data = await customStylesService.getForAppViewerEditor(false);
+      } else {
+        data = await customStylesService.getForPublicApp(slug);
+      }
+      styleTag.innerHTML = data?.css || null;
+    } catch (error) {
+      console.log('Failed to fetch custom styles:', error);
+    }
+  };
 
   useEffect(() => {
     if (pageSwitchInProgress) {
@@ -133,7 +191,7 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
     const exposedTheme =
       appMode && appMode !== 'auto' ? appMode : localStorage.getItem('darkMode') === 'true' ? 'dark' : 'light';
     setResolvedGlobals('theme', { name: exposedTheme });
-  }, [appMode]);
+  }, [appMode, darkMode]);
 
   useEffect(() => {
     if (!currentSession) {
@@ -156,7 +214,6 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
     appDataPromise.then(async (result) => {
       let appData = { ...result };
       let editorEnvironment = result.editorEnvironment;
-      const editorEnvironmentId = result.editing_version?.current_environment_id;
       if (isPreviewForVersion) {
         const rawDataQueries = appData?.data_queries;
         const rawEditingVersionDataQueries = appData?.editing_version?.data_queries;
@@ -174,28 +231,50 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
       }
 
       let constantsResp;
-      if (mode === 'edit') {
-        let defaultEnvId = null;
-        if (editorEnvironment?.id == null) {
-          const envs = await appEnvironmentService.getAllEnvironments(appId);
-          const defaultEnv = envs.environments.find((env) => env?.is_default === true);
-          defaultEnvId = defaultEnv ? defaultEnv.id : null;
+      if (mode !== 'edit') {
+        try {
+          const queryParams = { slug: slug };
+          const viewerEnvironment = await appEnvironmentService.getEnvironment(environmentId, queryParams);
+          editorEnvironment = {
+            id: viewerEnvironment?.environment?.id,
+            name: viewerEnvironment?.environment?.name,
+          };
+          constantsResp =
+            isPublicAccess && appData.is_public
+              ? await orgEnvironmentConstantService.getConstantsFromPublicApp(slug, viewerEnvironment?.environment?.id)
+              : await orgEnvironmentConstantService.getConstantsFromApp(slug, viewerEnvironment?.environment?.id);
+        } catch (error) {
+          console.error('Error fetching viewer environment:', error);
         }
-        constantsResp = await orgEnvironmentConstantService.getConstantsFromEnvironment(
-          editorEnvironment?.id || defaultEnvId
-        );
-      } else {
-        constantsResp =
-          isPublicAccess && appData.is_public
-            ? await orgEnvironmentConstantService.getConstantsFromPublicApp(slug)
-            : await orgEnvironmentConstantService.getConstantsFromApp(slug);
       }
 
-      constantsResp.constants = extractEnvironmentConstantsFromConstantsList(constantsResp?.constants, 'production');
+      if (mode === 'edit') {
+        constantsResp = await orgEnvironmentConstantService.getConstantsFromEnvironment(editorEnvironment?.id);
+      }
+      // get the constants for specific environment
+      constantsResp.constants = extractEnvironmentConstantsFromConstantsList(
+        constantsResp?.constants,
+        editorEnvironment?.name
+      );
+
+      setIsPublicAccess(isPublicAccess && mode !== 'edit' && appData.is_public);
+
+      fetchAndInjectCustomStyles(isPublicAccess && mode !== 'edit' && appData.is_public);
 
       const pages = appData.pages.map((page) => {
         return page;
       });
+      const conversation = appData.ai_conversation;
+      const docsConversation = appData.ai_conversation_learn;
+      if (setConversation && setDocsConversation) {
+        setConversation(conversation);
+        setDocsConversation(docsConversation);
+        // important to control ai inputs
+        getCreditBalance();
+      }
+
+      let showWalkthrough = true;
+      // if app was created from propmt, and no earlier messages are present in the conversation, send the prompt message
 
       // handles the getappdataby slug api call. Gets the homePageId from the appData.
       const homePageId =
@@ -205,7 +284,7 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
         appName: appData.name,
         appId: appData.id,
         slug: appData.slug,
-        currentAppEnvironmentId: editorEnvironmentId,
+        currentAppEnvironmentId: editorEnvironment.id,
         isMaintenanceOn:
           'is_maintenance_on' in result
             ? result.is_maintenance_on
@@ -223,14 +302,17 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
       );
 
       setPages(pages, moduleId);
-      setPageSettings(deepCamelCase(appData?.editing_version?.page_settings ?? appData?.page_settings));
+      setPageSettings(
+        computePageSettings(deepCamelCase(appData?.editing_version?.page_settings ?? appData?.page_settings))
+      );
+
       // set starting page as homepage initially
       let startingPage = appData.pages.find((page) => page.id === homePageId);
 
       if (initialLoadRef.current) {
         // if initial load, check if the path has a page handle and set that as the starting page
         const initialLoadPath = location.pathname.split('/').pop();
-        const page = appData.pages.find((page) => page.handle === initialLoadPath);
+        const page = appData.pages.find((page) => page.handle === initialLoadPath && !page.isPageGroup);
         if (page) {
           // if page is disabled, and not editing redirect to home page
           if (mode !== 'edit' && page?.disabled) {
@@ -245,8 +327,13 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
         // navigate(`/${getWorkspaceId()}/apps/${slug ?? appId}/${startingPage.handle}`);
       }
       setCurrentPageHandle(startingPage.handle);
-      // updateFeatureAccess();
+      updateFeatureAccess();
       setCurrentPageId(startingPage.id, moduleId);
+      setResolvedPageConstants({
+        id: startingPage?.id,
+        handle: startingPage?.handle,
+        name: startingPage?.name,
+      });
       setComponentNameIdMapping(moduleId);
       updateEventsField('events', appData.events);
       setCurrentVersionId(appData.editing_version?.id || appData.current_version_id);
@@ -256,10 +343,12 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
         isPublicAccess || (mode !== 'edit' && appData.is_public)
           ? appData
           : await dataqueryService.getAll(appData.editing_version?.id || appData.current_version_id);
-      setQueries(queryData.data_queries || queryData?.editing_version?.data_queries);
-      if (queryData.data_queries?.length > 0) {
-        setSelectedQuery(queryData.data_queries[0]?.id);
-        initialiseResolvedQuery(queryData.data_queries.map((query) => query.id));
+      const dataQueries = queryData.data_queries || queryData?.editing_version?.data_queries;
+      dataQueries.forEach((query) => normalizeQueryTransformationOptions(query));
+      setQueries(dataQueries);
+      if (dataQueries?.length > 0) {
+        setSelectedQuery(dataQueries[0]?.id);
+        initialiseResolvedQuery(dataQueries.map((query) => query.id));
       }
       const constants = constantsResp?.constants;
 
@@ -268,13 +357,11 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
         const orgSecrets = {};
         constants.map((constant) => {
           if (constant.type !== 'Secret') {
-            orgConstants[constant.name] =
-              constant.value || constant.values?.find((v) => v.environmentName === 'production').value;
+            orgConstants[constant.name] = constant.value;
           } else {
             orgSecrets[constant.name] = constant.value;
           }
         });
-
         setResolvedConstants(orgConstants);
         setSecrets(orgSecrets);
       }
@@ -292,32 +379,38 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
           : {}),
       });
       setResolvedGlobals('urlparams', JSON.parse(JSON.stringify(queryString.parse(location?.search))));
-      setResolvedPageConstants({
-        id: appData.pages[0].id,
-        handle: appData.pages[0].handle,
-        name: appData.pages[0].name,
-      });
       initDependencyGraph(moduleId);
       setCurrentMode(mode); // TODO: set mode based on the slug/appDef
+      if (
+        state.ai &&
+        state?.prompt &&
+        initialLoadRef.current &&
+        (conversation?.aiConversationMessages || []).length === 0
+      ) {
+        setSelectedSidebarItem('tooljetai');
+        toggleLeftSidebar('true');
+        sendMessage(state.prompt);
+        setConversationZeroState(true);
+        showWalkthrough = false;
+      }
       // fetchDataSources(appData.editing_version.id, editorEnvironment.id);
       if (!isPublicAccess) {
-        useStore.getState().init(appData.editing_version?.id || appData.current_version_id);
+        const envFromQueryParams = mode === 'view' && new URLSearchParams(location?.search)?.get('env');
+        useStore.getState().init(appData.editing_version?.id || appData.current_version_id, envFromQueryParams);
         fetchGlobalDataSources(
           appData.organization_id,
           appData.editing_version?.id || appData.current_version_id,
-          editorEnvironmentId
+          editorEnvironment.id
         );
       }
-      computePageSettings();
       useStore.getState().updateEditingVersion(appData.editing_version?.id || appData.current_version_id); //check if this is needed
       updateReleasedVersionId(appData.current_version_id);
 
       setEditorLoading(false);
       initialLoadRef.current = false;
-
-      initEditorWalkThrough();
+      // only show if app is not created from prompt
+      if (showWalkthrough) initEditorWalkThrough();
       checkAndSetTrueBuildSuggestionsFlag();
-
       return () => {
         document.title = defaultWhiteLabellingSettings.WHITE_LABEL_TEXT;
       };
@@ -413,10 +506,12 @@ const useAppData = (appId, moduleId, mode = 'edit', { environmentId, versionId }
         }
 
         const queryData = await dataqueryService.getAll(currentVersionId);
-        setQueries(queryData.data_queries);
-        if (queryData.data_queries?.length > 0) {
-          setSelectedQuery(queryData.data_queries[0]?.id);
-          initialiseResolvedQuery(queryData.data_queries.map((query) => query.id));
+        const dataQueries = queryData.data_queries;
+        dataQueries.forEach((query) => normalizeQueryTransformationOptions(query));
+        setQueries(dataQueries);
+        if (dataQueries?.length > 0) {
+          setSelectedQuery(dataQueries[0]?.id);
+          initialiseResolvedQuery(dataQueries.map((query) => query.id));
         }
 
         try {

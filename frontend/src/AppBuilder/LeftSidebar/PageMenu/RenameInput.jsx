@@ -20,9 +20,19 @@ export const RenameInput = ({ page, updaterCallback }) => {
   };
 
   return (
-    <div className="row" role="button">
+    <div
+      style={{
+        width: '100%',
+      }}
+      className="row"
+      role="button"
+    >
       <div className="col-12 tj-app-input">
         <input
+          style={{
+            height: '28px',
+            width: '100%',
+          }}
           data-cy={`page-rename-input`}
           type="text"
           className="form-control page-name-input"

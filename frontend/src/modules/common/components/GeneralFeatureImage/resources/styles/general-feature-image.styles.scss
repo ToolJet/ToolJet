@@ -1,44 +1,49 @@
 .general-feature-image {
+    width: calc(100% - 72px);
+    height: calc(100vh - 72px);
+    margin: 36px !important;
+    border-radius: 10px;
+    background: var(--page-page-default, #F6F8FA);
+    position: relative;
+    overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 100%;
+}
+
+.dark-theme {
+    .general-feature-image {
+        background: var(--page-page-default, #181B1F);
+    }
+}
+
+.main-image-container {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 33vh;
+}
+
+.gradient-top {
+    position: absolute;
+    left: 0;
     width: 100%;
-    overflow: hidden;
+    height: 33vh;
+    z-index: 1;
+    bottom: 90%;
+    right: 100%;
+    filter: blur(120px);
+}
 
-    .content-wrapper {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        max-height: 90vh;
-        width: 100%;
-        padding: 2rem;
-    }
-
-    .image-wrapper {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        max-height: 70vh; // Adjust this value as needed
-
-        svg {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-        }
-    }
-
-    .slogan-wrapper {
-        margin-top: 2rem;
-        max-height: 20vh; // Adjust this value as needed
-
-        svg {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-        }
-    }
+.gradient-bottom {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 33vh;
+    z-index: 1;
+    top: 70%;
+    left: 20%;
+    filter: blur(140px);
 }

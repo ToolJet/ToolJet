@@ -1,13 +1,13 @@
 import { useHotkeys } from 'react-hotkeys-hook';
 
-const useKeyHooks = (hotkeys = [], callback) =>
+const useKeyHooks = (hotkeys = [], callback, enabled = true) =>
   useHotkeys(
     hotkeys.toString(),
     (e) => {
       e.preventDefault();
       callback(e.code);
     },
-    { scopes: 'editor' }
+    { enabled }
   );
 
 export default useKeyHooks;

@@ -10,6 +10,7 @@ import classNames from 'classnames';
 import PreviewSettings from './PreviewSettings';
 import MobileNavigationMenu from './MobileNavigationMenu';
 import useStore from '@/AppBuilder/_stores/store';
+import AppLogo from '@/_components/AppLogo';
 
 const MobileHeader = ({
   showHeader,
@@ -47,7 +48,7 @@ const MobileHeader = ({
             redirectToDashboard();
           }}
         >
-          <LogoIcon />
+          <AppLogo isLoadingFromHeader={false} viewer={true} />
         </Link>
       </h1>
       <div className="navbar-seperator" style={{ margin: '0px 1.375rem' }}></div>

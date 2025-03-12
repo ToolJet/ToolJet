@@ -23,7 +23,7 @@ import { useEditorStore } from '@/_stores/editorStore';
 
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
-import { useGridStore, useResizingComponentId } from '@/_stores/gridStore';
+import { useGridStore } from '@/_stores/gridStore';
 import GhostWidget from './GhostWidget';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
@@ -59,6 +59,7 @@ export const SubContainer = ({
   parentWidgetId,
 }) => {
   const appDefinition = useEditorStore((state) => state.appDefinition, shallow);
+  const [isParentVisible, setIsParentVisible] = useState(false);
 
   const { selectedComponents } = useEditorStore(
     (state) => ({
@@ -67,13 +68,13 @@ export const SubContainer = ({
     shallow
   );
 
-  const resizingComponentId = useResizingComponentId();
+  const resizingComponentId = useGridStore((state) => state.resizingComponentId, shallow);
 
   const noOfGrids = 43;
   const { isGridActive } = useGridStore((state) => ({ isGridActive: state.activeGrid === parent }), shallow);
 
   const gridWidth = getContainerCanvasWidth() / noOfGrids;
-
+  // console.log(gridWidth, 'gridWidth');
   const [_containerCanvasWidth, setContainerCanvasWidth] = useState(0);
   useEffect(() => {
     if (parentRef.current) {
@@ -82,6 +83,12 @@ export const SubContainer = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [parentRef, getContainerCanvasWidth(), listmode, parentComponent?.definition?.properties?.size?.value]); // Listen for changes to the modal size and update the subcontainer state with the new grid width.
+
+  useEffect(() => {
+    if (parentRef.current) {
+      checkParentVisibility();
+    }
+  }, [parentRef, checkParentVisibility]);
 
   zoomLevel = zoomLevel || 1;
 
@@ -523,13 +530,17 @@ export const SubContainer = ({
     removeComponent(component);
   }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   function checkParentVisibility() {
     let elem = parentRef.current;
     if (elem?.className === 'tab-content') {
       elem = parentRef.current?.parentElement;
     }
-    if (elem?.style?.display !== 'none') return true;
-    return false;
+    if (elem?.style?.display !== 'none') {
+      setIsParentVisible(true);
+    } else {
+      setIsParentVisible(false);
+    }
   }
 
   const getContainerProps = (componentId) => {
@@ -575,7 +586,7 @@ export const SubContainer = ({
           component-id={parent}
           data-parent-type={parentComponent?.component}
         >
-          {checkParentVisibility() &&
+          {isParentVisible &&
             Object.entries({
               ...childWidgets,
             }).map(([key, box]) => {

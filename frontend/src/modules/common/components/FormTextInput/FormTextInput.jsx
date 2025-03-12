@@ -10,7 +10,7 @@ const FormTextInput = ({
   error,
   disabled,
   name,
-  dataCy = label ? label.toLowerCase().replace(/\s+/g, '-') : value ? value.toLowerCase().replace(/\s+/g, '-') : '',
+  dataCy,
   maxLength,
   disableStartAdornment = false,
 }) => {
@@ -33,7 +33,7 @@ const FormTextInput = ({
       )}
 
       {disabled ? (
-        <p className="form-input__field form-input__field--disabled" data-cy={`${dataCy}-input-value`}>
+        <p className="form-input__field form-input__field--disabled" data-cy={dataCy}>
           {value}
         </p>
       ) : (
@@ -47,19 +47,15 @@ const FormTextInput = ({
             value={value}
             onChange={handleChange}
             required
-            data-cy={`${dataCy}-input`}
+            data-cy={dataCy}
             autoComplete="off"
             {...(maxLength ? { maxLength } : {})}
           />
-          <span
-            className={`tj-input-error form-input__error${error ? '__error-enabled' : ''}`}
-            data-cy={`${dataCy}-error-message`}
-          >
-            {error}
-          </span>
+          <span className={`tj-input-error form-input__error${error ? '__error-enabled' : ''}`}>{error}</span>
         </>
       )}
     </div>
   );
 };
+
 export default FormTextInput;

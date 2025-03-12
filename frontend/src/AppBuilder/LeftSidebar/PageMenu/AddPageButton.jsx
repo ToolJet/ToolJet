@@ -4,8 +4,9 @@ import AddPage from '@/_ui/Icon/solidIcons/AddPage';
 import AddPageGroup from '@/_ui/Icon/solidIcons/AddPageGroup';
 import PlusWithBackground from '@/_ui/Icon/solidIcons/PlusWithBackground';
 import useStore from '@/AppBuilder/_stores/store';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
-export const PageGroupMenu = ({ darkMode }) => {
+export const PageGroupMenu = ({ darkMode, isLicensed, disabled }) => {
   const [showMenu, setShowMenu] = useState(false);
   const closeMenu = () => {
     setShowMenu(false);
@@ -26,6 +27,26 @@ export const PageGroupMenu = ({ darkMode }) => {
   }, [showMenu]);
 
   const toggleShowAddNewPageInput = useStore((state) => state.toggleShowAddNewPageInput);
+
+  if (!isLicensed) {
+    return (
+      <button
+        disabled={disabled}
+        onClick={(event) => {
+          if (disabled) return;
+          event.stopPropagation();
+          toggleShowAddNewPageInput(true);
+        }}
+        className="left-sidebar-header-btn trigger page-group-trigger-button"
+        style={{
+          outline: 'none',
+        }}
+      >
+        <PlusWithBackground height={15} width={14} />
+        <span className="text">Add</span>
+      </button>
+    );
+  }
   return (
     <OverlayTrigger
       trigger={'click'}
@@ -43,7 +64,6 @@ export const PageGroupMenu = ({ darkMode }) => {
                 }}
                 className="option"
               >
-                {/* <img src="/assets/images/icons/editor/left-sidebar/add-page.svg" /> */}
                 <AddPage height={15} width={14} />
                 Page
               </div>
@@ -54,7 +74,7 @@ export const PageGroupMenu = ({ darkMode }) => {
                 }}
                 className="option"
               >
-                <AddPageGroup height={15} width={14} />
+                <SolidIcon name="addpagegroup" width="14" />
                 Group
               </div>
             </div>
@@ -62,22 +82,21 @@ export const PageGroupMenu = ({ darkMode }) => {
         </Popover>
       }
     >
-      <span>
-        <button
-          onClick={(event) => {
-            event.stopPropagation();
-            setShowMenu(true);
-          }}
-          className="left-sidebar-header-btn trigger page-group-trigger-button"
-          style={{
-            border: '1px solid red',
-            outline: 'none',
-          }}
-        >
-          <PlusWithBackground height={15} width={14} />
-          <span className="text">Add</span>
-        </button>
-      </span>
+      <button
+        onClick={(event) => {
+          if (disabled) return;
+          event.stopPropagation();
+          setShowMenu(true);
+        }}
+        disabled={disabled}
+        className="left-sidebar-header-btn trigger page-group-trigger-button"
+        style={{
+          outline: 'none',
+        }}
+      >
+        <PlusWithBackground height={15} width={14} />
+        <span className="text">Add</span>
+      </button>
     </OverlayTrigger>
   );
 };

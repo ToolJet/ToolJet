@@ -1,5 +1,5 @@
 import { Button } from '@/Editor/Components/Button';
-import { Image } from '@/Editor/Components/Image';
+import { Image } from '@/Editor/Components/Image/Image';
 import { Text } from '@/Editor/Components/Text';
 // import { Table } from '@/Editor/Components/Table/Table';
 import { Table } from '@/AppBuilder/Widgets/Table/Table';
@@ -12,7 +12,10 @@ import { DropDown } from '@/Editor/Components/DropDown';
 import { DropdownV2 } from '@/Editor/Components/DropdownV2/DropdownV2';
 import { Checkbox } from '@/Editor/Components/Checkbox';
 import { Datepicker } from '@/Editor/Components/Datepicker';
-import { DaterangePicker } from '@/Editor/Components/DaterangePicker';
+import { DatetimePickerV2 } from '@/AppBuilder/Widgets/Date/DatetimePickerV2';
+import { DatePickerV2 } from '@/AppBuilder/Widgets/Date/DatePickerV2';
+import { TimePicker } from '@/AppBuilder/Widgets/Date/TimePicker';
+import { DaterangePicker } from '@/AppBuilder/Widgets/Date/DaterangePicker';
 import { Multiselect } from '@/Editor/Components/Multiselect';
 import { MultiselectV2 } from '@/Editor/Components/MultiselectV2/MultiselectV2';
 // import { Modal } from '@/Editor/Components/Modal';
@@ -56,13 +59,13 @@ import { BoundedBox } from '@/Editor/Components/BoundedBox/BoundedBox';
 import { isPDFSupported } from '@/_helpers/appUtils';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { useEditorStore } from '@/_stores/editorStore';
-
-import { Container } from '@/AppBuilder/Widgets/Container';
+import { Container } from '@/AppBuilder/Widgets/Container/Container';
 import { Listview } from '@/AppBuilder/Widgets/Listview';
 import { Tabs } from '@/AppBuilder/Widgets/Tabs';
 import { Kanban } from '@/AppBuilder/Widgets/Kanban/Kanban';
 import { Form } from '@/AppBuilder/Widgets/Form/Form';
 import { Modal } from '@/AppBuilder/Widgets/Modal';
+import { ModalV2 } from '@/AppBuilder/Widgets/ModalV2/ModalV2';
 import { Calendar } from '@/AppBuilder/Widgets/Calendar/Calendar';
 // import './requestIdleCallbackPolyfill';
 
@@ -97,10 +100,14 @@ export const AllComponents = {
   DropdownV2,
   Checkbox,
   Datepicker,
+  DatetimePickerV2,
   DaterangePicker,
+  DatePickerV2,
+  TimePicker,
   Multiselect,
   MultiselectV2,
   Modal,
+  ModalV2,
   Chart,
   Map: MapComponent,
   QrScanner,

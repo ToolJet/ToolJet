@@ -45,7 +45,7 @@ export const CodeEditor = ({ id, height, darkMode, properties, styles, setExpose
   };
 
   const theme = darkMode ? okaidia : githubLight;
-  const langExtention = langSupport[mode?.toLowerCase()] ?? null;
+  const langExtention = langSupport?.[mode?.toLowerCase()];
 
   const editorHeight = React.useMemo(() => {
     return height || 'auto';
@@ -82,7 +82,7 @@ export const CodeEditor = ({ id, height, darkMode, properties, styles, setExpose
           maxHeight="100%"
           width="100%"
           theme={theme}
-          extensions={[langExtention]}
+          extensions={langExtention ? [langExtention] : undefined}
           onChange={codeChanged}
           basicSetup={setupConfig}
           style={{

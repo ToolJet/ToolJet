@@ -9,7 +9,6 @@ const Textarea = React.forwardRef(({ className, width = '300px', onValueChange, 
 
   const handleChange = (e) => {
     setHeight(`${Math.min(Math.max(textareaRef.current.scrollHeight + 1, 34), 88)}px`);
-    console.log('textareaRef.current:', textareaRef.current.scrollHeight);
     onValueChange(e);
   };
 

@@ -49,7 +49,9 @@ export function renderCustomStyles(
     componentConfig.component == 'DropdownV2' ||
     componentConfig.component == 'MultiselectV2' ||
     componentConfig.component == 'RadioButtonV2' ||
-    componentConfig.component == 'Button'
+    componentConfig.component == 'Button' ||
+    componentConfig.component == 'Image' ||
+    componentConfig.component == 'ModalV2'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
@@ -122,18 +124,21 @@ export function renderElement(
   currentState,
   components = {},
   darkMode = false,
-  placeholder = ''
+  placeholder = '',
+  validationFn
 ) {
   const componentConfig = component.component;
   const componentDefinition = componentConfig.definition;
   const paramTypeDefinition = componentDefinition[paramType] || {};
   const definition = paramTypeDefinition[param] || {};
   const meta = componentMeta[paramType][param];
+  const isHidden = component.component.properties[param]?.isHidden ?? false;
 
   if (
     componentConfig.component == 'DropDown' ||
     componentConfig.component == 'Form' ||
-    componentConfig.component == 'Listview'
+    componentConfig.component == 'Listview' ||
+    componentConfig.component == 'Image'
   ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
@@ -166,6 +171,8 @@ export function renderElement(
       }}
       component={component}
       placeholder={placeholder}
+      validationFn={validationFn}
+      isHidden={isHidden}
     />
   );
 }

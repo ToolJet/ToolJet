@@ -18,6 +18,8 @@ export const Code = ({
   component,
   accordian,
   placeholder,
+  validationFn,
+  isHidden = false,
 }) => {
   const currentState = useCurrentState();
 
@@ -42,6 +44,7 @@ export const Code = ({
     onChange({ name: 'iconVisibility' }, 'value', value, 'styles');
   }
 
+  if (isHidden) return null;
   return (
     <div className={`field ${options.className}`} style={{ marginBottom: '8px' }}>
       <CodeEditor
@@ -61,6 +64,7 @@ export const Code = ({
         component={component?.component?.component}
         onVisibilityChange={onVisibilityChange}
         placeholder={placeholder}
+        validationFn={validationFn}
         cyLabel=""
       />
     </div>

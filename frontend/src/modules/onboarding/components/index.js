@@ -4,6 +4,7 @@ import OnboardingFormInsideWrapper from './OnboardingFormInsideWrapper';
 import OnboardingQuestions from './OnboardingQuestions';
 import OnboardingForm from './OnboardingForm';
 import OnboardingUIWrapper from './OnboardingUIWrapper';
+import SetupAdminComponent from './SetupAdminComponent';
 
 export {
   OnboardingBackgroundWrapper,
@@ -12,4 +13,5 @@ export {
   OnboardingQuestions,
   OnboardingForm,
   OnboardingUIWrapper,
+  SetupAdminComponent,
 };

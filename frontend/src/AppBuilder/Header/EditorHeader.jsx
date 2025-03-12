@@ -2,7 +2,7 @@ import React from 'react';
 import EditAppName from './EditAppName';
 import cx from 'classnames';
 import { shallow } from 'zustand/shallow';
-import LogoNavDropdown from '@/_components/LogoNavDropdown';
+import { LogoNavDropdown, AppEnvironments } from '@/modules/Appbuilder/components';
 import HeaderActions from './HeaderActions';
 import { AppVersionsManager } from './AppVersionsManager';
 import RealtimeAvatars from '@/Editor/RealtimeAvatars';
@@ -10,6 +10,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import useStore from '@/AppBuilder/_stores/store';
 import RightTopHeaderButtons from './RightTopHeaderButtons/RightTopHeaderButtons';
 import BuildSuggestions from './BuildSuggestions';
+import GitSyncManager from './GitSyncManager';
 import UpdatePresenceMultiPlayer from './UpdatePresenceMultiPlayer';
 
 export const EditorHeader = ({ darkMode }) => {
@@ -22,6 +23,7 @@ export const EditorHeader = ({ darkMode }) => {
     shallow
   );
   const shouldEnableMultiplayer = window.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true';
+
   const getSaveIndicator = () => {
     if (isSaving) {
       return 'Saving...';
@@ -98,8 +100,12 @@ export const EditorHeader = ({ darkMode }) => {
                 {/* <div className="d-flex align-items-center p-0" style={{ marginRight: '12px' }}></div> */}
               </div>
               <div className="d-flex align-items-center p-0">
-                <div className="d-flex p-0 mx-2  align-items-center ">
+                <div className="d-flex version-manager-container p-0 mx-2  align-items-center ">
+                  {/* {editingVersion && ( */}
+                  <AppEnvironments darkMode={darkMode} />
+                  {/* )} */}
                   <AppVersionsManager darkMode={darkMode} />
+                  <GitSyncManager />
                 </div>
               </div>
             </div>

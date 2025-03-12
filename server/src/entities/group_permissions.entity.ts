@@ -11,8 +11,8 @@ import {
 } from 'typeorm';
 import { Organization } from './organization.entity';
 import { GroupUsers } from './group_users.entity';
-import { GROUP_PERMISSIONS_TYPE } from '@modules/user_resource_permissions/constants/group-permissions.constant';
 import { GranularPermissions } from './granular_permissions.entity';
+import { GROUP_PERMISSIONS_TYPE } from '@modules/group-permissions/constants';
 
 @Entity({ name: 'permission_groups' })
 export class GroupPermissions extends BaseEntity {
@@ -40,7 +40,6 @@ export class GroupPermissions extends BaseEntity {
   @Column({ name: 'org_constant_crud', default: false })
   orgConstantCRUD: boolean;
 
-  //This should not be part of CE
   @Column({ name: 'data_source_create', default: false })
   dataSourceCreate: boolean;
 
@@ -62,4 +61,6 @@ export class GroupPermissions extends BaseEntity {
 
   @OneToMany(() => GranularPermissions, (granularPermissions) => granularPermissions.group, { onDelete: 'CASCADE' })
   groupGranularPermissions: GranularPermissions[];
+
+  disabled?: boolean;
 }

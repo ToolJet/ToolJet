@@ -23,7 +23,11 @@ import { shallow } from 'zustand/shallow';
 
 export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, toggleQueryEditor }) => {
   const { t } = useTranslation();
-  const { loadingDataQueries } = useDataQueriesStore();
+
+  // TODO: move loadingDataQueries to queryPanelSlice
+  // const { loadingDataQueries } = useDataQueriesStore();
+  const loadingDataQueries = false;
+
   const dataQueries = useDataQueries();
   const dataSources = useDataSources();
   const [filteredQueries, setFilteredQueries] = useState(dataQueries);
@@ -208,20 +212,22 @@ const EmptyDataSource = () => (
 const AddDataSourceButton = ({ darkMode, disabled: _disabled }) => {
   const [showMenu, setShowMenu] = useShowPopover(false, '#query-add-ds-popover', '#query-add-ds-popover-btn');
   const selectRef = useRef();
-  const { isVersionReleased } = useAppVersionStore(
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
       editingVersionId: state.editingVersion?.id,
     }),
     shallow
   );
-  const disabled = isVersionReleased || _disabled;
 
   useEffect(() => {
     if (showMenu) {
       selectRef.current.focus();
     }
   }, [showMenu]);
+
+  const disabled = _disabled || isVersionReleased || isEditorFreezed;
 
   return (
     <OverlayTrigger

@@ -2,15 +2,28 @@ import React from 'react';
 import cx from 'classnames';
 import { Breadcrumbs } from '../Breadcrumbs';
 import { useLocation } from 'react-router-dom';
+import LicenseBanner from '@/modules/common/components/LicenseBanner';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { ToolTip } from '@/_components';
 
-function Header({ enableCollapsibleSidebar = false, collapseSidebar = false, toggleCollapsibleSidebar = () => {} }) {
+function Header({
+  featureAccess,
+  enableCollapsibleSidebar = false,
+  collapseSidebar = false,
+  toggleCollapsibleSidebar = () => {},
+}) {
   const currentVersion = localStorage.getItem('currentVersion');
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
-  const routes = (path) => {
-    switch (path) {
+  const routes = (pathEnd, path) => {
+    const pathParts = path.split('/');
+    if (pathParts.length > 1) {
+      const parentPath = pathParts[pathParts.length - 2];
+      if (['workspace-settings', 'settings'].includes(parentPath)) {
+        return parentPath === 'workspace-settings' ? 'Workspace settings' : 'Settings';
+      }
+    }
+    switch (pathEnd) {
       case 'workspaceId':
         return 'Applications';
       case 'database':
@@ -23,18 +36,35 @@ function Header({ enableCollapsibleSidebar = false, collapseSidebar = false, tog
         return 'Workspace settings';
       case 'data-sources':
         return 'Data sources';
-      case 'settings':
+      case 'profile-settings':
         return 'Profile settings';
-      case 'integrations':
+      case 'installed':
+      case 'marketplace':
         return 'Integrations';
+      case 'settings':
+        return 'Settings';
+      case 'audit-logs':
+        return 'Audit logs';
+      case 'workflows':
+        return 'Workflows';
       case 'workspace-constants':
         return 'Workspace constants';
       default:
         return 'Applications';
     }
   };
+
+  const routesWithTags = (pathEnd) => {
+    switch (pathEnd) {
+      case 'Audit logs':
+        return 'auditLogs';
+      default:
+        return null;
+    }
+  };
+
   const location = useLocation();
-  const pathname = routes(location?.pathname.split('/').pop());
+  const pathname = routes(location?.pathname.split('/').pop(), location?.pathname);
 
   return (
     <header className="layout-header">
@@ -42,10 +72,20 @@ function Header({ enableCollapsibleSidebar = false, collapseSidebar = false, tog
         {!collapseSidebar && (
           <div className="tj-dashboard-section-header" data-name={pathname}>
             <div className="row">
-              <div className="col-9">
+              <div className="col-9 d-flex">
                 <p className="tj-text-md font-weight-500" data-cy="dashboard-section-header">
                   {pathname}
                 </p>
+                {routesWithTags(pathname) && (
+                  <LicenseBanner
+                    classes="mb-3 small"
+                    isAvailable={false}
+                    showPaidFeatureBanner={
+                      !featureAccess[routesWithTags(pathname)] || featureAccess?.licenseStatus?.licenseType === 'trial'
+                    }
+                    size="small"
+                  />
+                )}
               </div>
               {enableCollapsibleSidebar && !collapseSidebar && (
                 <ToolTip message="Collapse sidebar" placement="bottom" delay={{ show: 0, hide: 100 }}>

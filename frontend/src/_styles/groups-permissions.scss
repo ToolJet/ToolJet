@@ -35,6 +35,10 @@
             font-weight: 500;
             color: var(--slate11) !important;
         }
+        div{
+            padding-top: 5px;
+            padding-right: 3px;
+        }
     }
 
     .empty-container {
@@ -126,10 +130,15 @@
 }
 
 .permission-manager-modal {
+    color: none;
     .permission-manager-title {
         display: flex;
         align-items: center;
         gap: 5px;
+
+        .modal-name {
+            width: 250px;
+        }
     }
 
     .type-container {
@@ -149,7 +158,7 @@
 
 
 .delete-icon-cont {
-    margin-left: 200px;
+    margin-left: 130px;
 
     .icon-class{
         border: none !important;

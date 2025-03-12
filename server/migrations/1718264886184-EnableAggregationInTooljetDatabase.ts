@@ -1,4 +1,4 @@
-import { getEnvVars } from 'scripts/database-config-utils';
+import { getEnvVars } from '../scripts/database-config-utils';
 import { createMigrationConnectionForToolJetDatabase } from 'src/helpers/tjdb.migration.helper';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 

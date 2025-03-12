@@ -1,0 +1,19 @@
+{
+  "name": "Employee feedback",
+  "description": "Collect valuable insights and foster a positive work environment with anonymous employee feedback tools.",
+  "widgets": [
+    "Table"
+  ],
+  "sources": [
+    {
+      "name": "ToolJet Database",
+      "id": "tooljetdb"
+    },
+    {
+      "name": "Run JavaScript",
+      "id": "runjs"
+    }
+  ],
+  "id": "employee-feedback",
+  "category": "human-resources"
+}

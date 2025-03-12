@@ -6,14 +6,12 @@ import { TooljetDatabaseContext } from '../../index';
 import { tooljetDatabaseService } from '@/_services';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { BreadCrumbContext } from '@/App/App';
-// FIXME: Conditionally render LicenseBanner on repo restructure
-// import { LicenseBanner } from '@/LicenseBanner';
+import LicenseBanner from '@/modules/common/components/LicenseBanner';
 
-export default function CreateTableDrawer({ bannerVisible, setBannerVisible }) {
+export default function CreateTableDrawer({ bannerVisible, setBannerVisible, tablesLimit, setTablesLimit }) {
   const { organizationId, setSelectedTable, setTables, tables } = useContext(TooljetDatabaseContext);
   const [isCreateTableDrawerOpen, setIsCreateTableDrawerOpen] = useState(false);
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
-  const [tablesLimit, setTablesLimit] = useState({});
   setBannerVisible(tablesLimit?.current >= tablesLimit?.total - 1 || false);
 
   useEffect(() => {
@@ -43,15 +41,6 @@ export default function CreateTableDrawer({ bannerVisible, setBannerVisible }) {
           Create new table
         </ButtonSolid>
       </div>
-      {/* <LicenseBanner
-        classes="mb-3 small"
-        limits={tablesLimit}
-        type="tables"
-        size="small"
-        style={{ marginTop: '20px' }}
-        z-index="10000"
-      /> */}
-
       <Drawer
         isOpen={isCreateTableDrawerOpen}
         onClose={() => setIsCreateTableDrawerOpen(false)}

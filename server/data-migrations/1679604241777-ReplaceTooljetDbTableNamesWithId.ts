@@ -1,9 +1,9 @@
-import { DataSource } from 'src/entities/data_source.entity';
+import { DataSource } from '@entities/data_source.entity';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import { isEmpty } from 'lodash';
-import { InternalTable } from 'src/entities/internal_table.entity';
-import { Organization } from 'src/entities/organization.entity';
-import { DataQuery } from 'src/entities/data_query.entity';
+import { InternalTable } from '@entities/internal_table.entity';
+import { Organization } from '@entities/organization.entity';
+import { DataQuery } from '@entities/data_query.entity';
 
 export class ReplaceTooljetDbTableNamesWithId1679604241777 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {

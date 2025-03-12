@@ -6,7 +6,15 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { useDrop } from 'react-dnd';
 import { addChildrenWidgetsToParent, addNewWidgetToTheEditor, computeViewerBackgroundColor } from './appCanvasUtils';
-import { CANVAS_WIDTHS, NO_OF_GRIDS, WIDGETS_WITH_DEFAULT_CHILDREN } from './appCanvasConstants';
+import {
+  CANVAS_WIDTHS,
+  NO_OF_GRIDS,
+  WIDGETS_WITH_DEFAULT_CHILDREN,
+  GRID_HEIGHT,
+  CONTAINER_FORM_CANVAS_PADDING,
+  SUBCONTAINER_CANVAS_BORDER_WIDTH,
+  BOX_PADDING,
+} from './appCanvasConstants';
 import { useGridStore } from '@/_stores/gridStore';
 import NoComponentCanvasContainer from './NoComponentCanvasContainer';
 import { RIGHT_SIDE_BAR_TAB } from '../RightSideBar/rightSidebarConstants';
@@ -35,12 +43,13 @@ export const Container = React.memo(
     canvasMaxWidth,
     isViewerSidebarPinned,
     pageSidebarStyle,
+    componentType,
   }) => {
     const realCanvasRef = useRef(null);
     const components = useStore((state) => state.getContainerChildrenMapping(id), shallow);
-    const componentType = useStore((state) => state.getComponentTypeFromId(id), shallow);
     const addComponentToCurrentPage = useStore((state) => state.addComponentToCurrentPage, shallow);
     const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab, shallow);
+    const setLastCanvasClickPosition = useStore((state) => state.setLastCanvasClickPosition, shallow);
     const canvasBgColor = useStore(
       (state) => (id === 'canvas' ? state.getCanvasBackgroundColor('canvas', darkMode) : ''),
       shallow
@@ -48,13 +57,18 @@ export const Container = React.memo(
     const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
     const currentMode = useStore((state) => state.currentMode, shallow);
     const currentLayout = useStore((state) => state.currentLayout, shallow);
-
+    const setFocusedParentId = useStore((state) => state.setFocusedParentId, shallow);
     const isContainerReadOnly = useMemo(() => {
       return (index !== 0 && (componentType === 'Listview' || componentType === 'Kanban')) || currentMode === 'view';
     }, [componentType, index, currentMode]);
 
     const [{ isOverCurrent }, drop] = useDrop({
       accept: 'box',
+      hover: (item) => {
+        item.canvasRef = realCanvasRef?.current;
+        item.canvasId = id;
+        item.canvasWidth = getContainerCanvasWidth();
+      },
       drop: async ({ componentType }, monitor) => {
         const didDrop = monitor.didDrop();
         if (didDrop) return;
@@ -88,14 +102,19 @@ export const Container = React.memo(
     function getContainerCanvasWidth() {
       if (canvasWidth !== undefined) {
         if (componentType === 'Listview' && listViewMode == 'grid') return canvasWidth / columns - 2;
-        return canvasWidth;
+        if (id === 'canvas') return canvasWidth;
+        if (componentType === 'Container' || componentType === 'Form') {
+          return (
+            canvasWidth - (2 * CONTAINER_FORM_CANVAS_PADDING + 2 * SUBCONTAINER_CANVAS_BORDER_WIDTH + 2 * BOX_PADDING)
+          );
+        }
+        return canvasWidth - 2; // Need to update this 2 to correct value for other subcontainers
       }
       return realCanvasRef?.current?.offsetWidth;
     }
     const gridWidth = getContainerCanvasWidth() / NO_OF_GRIDS;
-
     useEffect(() => {
-      useGridStore.getState().actions.setSubContainerWidths(id, (getContainerCanvasWidth() - 2) / NO_OF_GRIDS);
+      useGridStore.getState().actions.setSubContainerWidths(id, getContainerCanvasWidth() / NO_OF_GRIDS);
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [canvasWidth, listViewMode, columns]);
 
@@ -112,6 +131,21 @@ export const Container = React.memo(
       return '100%';
     }, [isViewerSidebarPinned, currentLayout, id, currentMode, pageSidebarStyle]);
 
+    const handleCanvasClick = useCallback(
+      (e) => {
+        const realCanvas = e.target.closest('.real-canvas');
+        const canvasId = realCanvas?.getAttribute('id')?.split('canvas-')[1];
+        setFocusedParentId(canvasId);
+        if (realCanvas) {
+          const rect = realCanvas.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          setLastCanvasClickPosition({ x, y });
+        }
+      },
+      [setLastCanvasClickPosition]
+    );
+
     return (
       <div
         // {...(config.COMMENT_FEATURE_ENABLE && showComments && { onClick: handleAddThread })}
@@ -121,8 +155,7 @@ export const Container = React.memo(
         }}
         style={{
           height: id === 'canvas' ? `${canvasHeight}` : '100%',
-          // backgroundSize: '25.3953px 10px',
-          backgroundSize: `${gridWidth}px 10px`,
+          backgroundSize: `${gridWidth}px ${GRID_HEIGHT}px`,
           backgroundColor:
             currentMode === 'view'
               ? computeViewerBackgroundColor(darkMode, canvasBgColor)
@@ -152,6 +185,8 @@ export const Container = React.memo(
         data-cy="real-canvas"
         data-parentId={id}
         canvas-height={canvasHeight}
+        onClick={handleCanvasClick}
+        component-type={componentType}
       >
         <div
           className={cx('container-fluid rm-container p-0', {

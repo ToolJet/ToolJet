@@ -3,11 +3,11 @@ import cx from 'classnames';
 import Select from '@/_ui/Select';
 import { components } from 'react-select';
 import { EditVersionModal } from './EditVersionModal';
-import { CreateVersion } from './CreateVersionModal';
 import { ConfirmDialog } from '@/_components';
 import { ToolTip } from '@/_components/ToolTip';
 import EditWhite from '@assets/images/icons/edit-white.svg';
 import { defaultAppEnvironments, decodeEntities } from '@/_helpers/utils';
+import { CreateVersionModal } from '@/modules/Appbuilder/components';
 
 // TODO: edit version modal and add version modal
 const Menu = (props) => {
@@ -130,7 +130,7 @@ export const CustomSelect = ({ currentEnvironment, onSelectVersion, ...props }) 
   return (
     <>
       {isEditable && showCreateAppVersion && (
-        <CreateVersion
+        <CreateVersionModal
           {...props}
           showCreateAppVersion={showCreateAppVersion}
           setShowCreateAppVersion={setShowCreateAppVersion}

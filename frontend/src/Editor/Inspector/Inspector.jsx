@@ -35,6 +35,7 @@ import classNames from 'classnames';
 import { useEditorStore, EMPTY_ARRAY } from '@/_stores/editorStore';
 import { Select } from './Components/Select';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
+import { removeSuggestions } from '@/_helpers/appUtils.js';
 
 const INSPECTOR_HEADER_OPTIONS = [
   {
@@ -100,9 +101,10 @@ export const Inspector = ({
   const [showHeaderActionsMenu, setShowHeaderActionsMenu] = useState(false);
   const isRevampedComponent = NEW_REVAMPED_COMPONENTS.includes(component.component.component);
 
-  const { isVersionReleased } = useAppVersionStore(
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );
@@ -110,7 +112,7 @@ export const Inspector = ({
   useHotkeys(
     'backspace',
     () => {
-      if (isVersionReleased) return;
+      if (isVersionReleased || isEditorFreezed) return;
       setWidgetDeleteConfirmation(true);
     },
     { scopes: 'editor' }
@@ -154,6 +156,8 @@ export const Inspector = ({
       let newComponent = JSON.parse(JSON.stringify(component));
       newComponent.component.name = newName;
       componentDefinitionChanged(newComponent, { componentNameUpdated: true });
+      // remove suggestions logic
+      removeSuggestions(component);
     } else {
       toast.error(
         t(
@@ -431,8 +435,6 @@ export const Inspector = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ showHeaderActionsMenu })]);
 
-  console.log('componentMeta', componentMeta);
-
   return (
     <div className="inspector">
       <ConfirmDialog
@@ -446,7 +448,11 @@ export const Inspector = ({
         darkMode={darkMode}
       />
       <div>
-        <div className="row inspector-component-title-input-holder">
+        <div
+          className={`row inspector-component-title-input-holder ${
+            (isVersionReleased || isEditorFreezed) && 'disabled'
+          }`}
+        >
           <div className="col-1" onClick={() => setSelectedComponents(EMPTY_ARRAY)}>
             <span
               data-cy={`inspector-close-icon`}
@@ -508,7 +514,7 @@ export const Inspector = ({
             </OverlayTrigger>
           </div>
         </div>
-        <div>
+        <div className={`${(isVersionReleased || isEditorFreezed) && 'disabled'}`}>
           <Tabs defaultActiveKey={'properties'} id="inspector">
             <Tab eventKey="properties" title="Properties">
               {propertiesTab}
@@ -529,8 +535,8 @@ export const Inspector = ({
                   componentMeta.displayName === 'Toggle Switch (Legacy)'
                     ? 'Toggle (Legacy)'
                     : componentMeta.displayName === 'Toggle Switch'
-                      ? 'Toggle Switch'
-                      : componentMeta.component,
+                    ? 'Toggle Switch'
+                    : componentMeta.component,
               })}
             </small>
           </span>
@@ -542,6 +548,7 @@ export const Inspector = ({
     </div>
   );
 };
+
 const getDocsLink = (componentMeta) => {
   const component = componentMeta?.component ?? '';
   switch (component) {

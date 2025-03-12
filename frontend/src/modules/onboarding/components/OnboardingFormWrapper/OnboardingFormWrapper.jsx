@@ -19,7 +19,7 @@ const OnboardingFormWrapper = ({ children: components }) => {
   }
   return (
     <div>
-      <div className="tooljet-header cursor-pointer" onClick={redirectToLoginPage} data-cy="page-logo">
+      <div className="tooljet-header cursor-pointer" onClick={redirectToLoginPage}>
         <Logo />
       </div>
       {components}

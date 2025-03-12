@@ -1,5 +1,5 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
-import { GroupPermission } from '../src/entities/group_permission.entity';
+import { GroupPermission } from '@entities/group_permission.entity';
 
 export class BackfillFolderCreatePermissionsAsTruthyForMissedAdminGroup1638796825499 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {

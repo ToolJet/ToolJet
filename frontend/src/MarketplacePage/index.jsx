@@ -1,67 +1,45 @@
 import React, { useContext } from 'react';
 import Layout from '@/_ui/Layout';
-import { InstalledPlugins } from './InstalledPlugins';
-import { MarketplacePlugins } from './MarketplacePlugins';
-import { marketplaceService, pluginsService, authenticationService } from '@/_services';
-import { toast } from 'react-hot-toast';
-import config from 'config';
+import { authenticationService } from '@/_services';
 import { BreadCrumbContext } from '@/App/App';
 import FolderList from '@/_ui/FolderList/FolderList';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 
 const MarketplacePage = ({ darkMode, switchDarkMode }) => {
-  const [active, setActive] = React.useState('installed');
-  const [marketplacePlugins, setMarketplacePlugins] = React.useState([]);
-  const [installedPlugins, setInstalledPlugins] = React.useState([]);
-  const [fetchingInstalledPlugins, setFetching] = React.useState(false);
+  const [active, setActive] = React.useState('');
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const { admin } = authenticationService.currentSessionValue;
-  const ENABLE_MARKETPLACE_DEV_MODE = config.ENABLE_MARKETPLACE_DEV_MODE == 'true';
 
   React.useEffect(() => {
     updateSidebarNAV('');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [admin]);
 
+  const marketplaceNavItemList = [
+    {
+      lable: 'Installed',
+      value: 'installed',
+    },
+    {
+      lable: 'Marketplace',
+      value: 'marketplace',
+    },
+  ];
+
   React.useEffect(() => {
-    marketplaceService
-      .findAll()
-      .then(({ data = [] }) => setMarketplacePlugins(data))
-      .catch((error) => {
-        toast.error(error?.message || 'something went wrong');
-      });
-
-    fetchPlugins();
-
-    () => {
-      setMarketplacePlugins([]);
-      setInstalledPlugins([]);
-    };
-  }, [active]);
-
-  const fetchPlugins = async () => {
-    setFetching(true);
-    const { data, error } = await pluginsService.findAll();
-    setFetching(false);
-
-    if (error) {
-      toast.error(error?.message || 'something went wrong');
-      return;
+    const currentPath = location.pathname.split('/').pop();
+    if (currentPath === 'marketplace' || currentPath === 'Marketplace') {
+      setActive('marketplace');
+      updateSidebarNAV('Marketplace');
     }
-
-    setInstalledPlugins(data);
-  };
-
-  const itemRender = (key) => {
-    switch (key) {
-      case 'Marketplace':
-        return 'marketplace';
-      case 'Installed':
-        return 'installed';
-      default:
-        break;
+    if (currentPath === 'installed' || currentPath === 'Installed') {
+      setActive('installed');
+      updateSidebarNAV('Installed');
     }
-  };
+  }, [location.pathname, setActive, updateSidebarNAV]);
 
   return (
     <Layout switchDarkMode={switchDarkMode} darkMode={darkMode}>
@@ -72,29 +50,19 @@ const MarketplacePage = ({ darkMode, switchDarkMode }) => {
               <div className="marketplace-page-sidebar  mt-3 mx-3">
                 <div className="subheader mb-2">Plugins</div>
                 <div className="list-group mb-3">
-                  {['Installed', 'Marketplace'].map((item, index) => (
+                  {marketplaceNavItemList.map((item, index) => (
                     <FolderList
                       key={index}
                       action
-                      selectedItem={active === itemRender(item)}
-                      onClick={() => setActive(itemRender(item))}
+                      selectedItem={active === item.value}
+                      onClick={() => navigate(item.value)}
                     >
-                      {item}
+                      {item.lable}
                     </FolderList>
                   ))}
                 </div>
               </div>
-              {active === 'installed' ? (
-                <InstalledPlugins
-                  allPlugins={marketplacePlugins}
-                  installedPlugins={installedPlugins}
-                  fetching={fetchingInstalledPlugins}
-                  fetchPlugins={fetchPlugins}
-                  ENABLE_MARKETPLACE_DEV_MODE={ENABLE_MARKETPLACE_DEV_MODE}
-                />
-              ) : (
-                <MarketplacePlugins allPlugins={marketplacePlugins} />
-              )}
+              <Outlet />
             </div>
           </div>
         </div>

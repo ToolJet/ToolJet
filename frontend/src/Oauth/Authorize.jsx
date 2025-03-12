@@ -3,8 +3,8 @@ import useRouter from '@/_hooks/use-router';
 import { appService, authenticationService } from '@/_services';
 import { Navigate } from 'react-router-dom';
 import Configs from './Configs/Config.json';
-import { RedirectLoader } from '../_components';
 import { getCookie } from '@/_helpers';
+import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import { onInvitedUserSignUpSuccess, onLoginSuccess } from '@/_helpers/platform/utils/auth.utils';
 import { updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 
@@ -45,6 +45,12 @@ export function Authorize({ navigate }) {
     } else {
       authParams.token = router.query[configs.params.token];
       authParams.state = router.query[configs.params.state];
+      authParams.iss = router.query[configs.params.iss];
+    }
+
+    /* If the params has SAMLResponse the SAML auth is success */
+    if (router.query.saml_response_id) {
+      authParams.samlResponseId = router.query.saml_response_id;
     }
 
     let subsciption;
@@ -84,7 +90,11 @@ export function Authorize({ navigate }) {
         const details = err?.data?.message;
         const inviteeEmail = details?.inviteeEmail;
         if (inviteeEmail) setInviteeEmail(inviteeEmail);
-        const errMessage = details?.message || err?.error || 'something went wrong';
+        let errorMessage = '';
+        if (details?.error && details?.data) {
+          errorMessage = `${details.error} ${details.data.join(', ')}`;
+        }
+        const errMessage = errorMessage || details?.error || details?.message || err?.error || 'something went wrong';
         if (!inviteeEmail && inviteFlowIdentifier) {
           /* Some unexpected error happened from the provider side. Need to retreive email to continue */
           appService
@@ -111,7 +121,7 @@ export function Authorize({ navigate }) {
   }`;
   return (
     <div>
-      <RedirectLoader origin={Configs[router.query.origin] ? router.query.origin : 'unknown'} />
+      <TJLoader />
       {error && (
         <Navigate
           replace

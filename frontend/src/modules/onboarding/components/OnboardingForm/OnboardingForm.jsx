@@ -1,7 +1,7 @@
 import React from 'react';
 import { FormHeader, FormDescription, SubmitButton } from '@/modules/common/components';
 import { OnboardingUIWrapper, OnboardingFormInsideWrapper } from '@/modules/onboarding/components';
-import useOnboardingStore from '@/modules/onboarding/stores/onboardingStore';
+import useOnboardingStore from '@/modules/common/helpers/onboardingStoreHelper';
 import useInvitationsStore from '@/modules/onboarding/stores/invitationsStore';
 import { shallow } from 'zustand/shallow';
 import './resources/styles/onboarding-form.styles.scss';
@@ -42,23 +42,17 @@ const OnboardingForm = ({
   const iconClasses = cx('steps__back', {
     disabled: disabledCondition,
   });
-  const shouldShowSteps = totalSteps > 1;
-  const formClasses = cx('onboarding-questions-form', {
-    __ce: !shouldShowSteps,
-  });
 
   return (
     <OnboardingUIWrapper>
       <OnboardingFormInsideWrapper>
-        <div className={formClasses}>
-          {shouldShowSteps && (
-            <div className="steps">
-              <div className={iconClasses} onClick={handleBackClick} data-cy="back-button">
-                <LeftArow />
-              </div>
-              <span>Step {currentStep}</span> of {totalSteps}
+        <div className="onboarding-questions-form">
+          <div className="steps">
+            <div className={iconClasses} onClick={handleBackClick} data-cy="back-button">
+              <LeftArow />
             </div>
-          )}
+            <span>Step {currentStep}</span> of {totalSteps}
+          </div>
           <FormHeader>{title}</FormHeader>
           {description && <FormDescription>{description}</FormDescription>}
           <form onSubmit={onSubmit} className="">
