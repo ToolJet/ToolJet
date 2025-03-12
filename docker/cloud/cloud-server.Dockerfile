@@ -10,7 +10,7 @@ RUN mkdir -p /app
 WORKDIR /app
 
 ARG CUSTOM_GITHUB_TOKEN
-ARG BRANCH_NAME=modularisation/v3
+ARG BRANCH_NAME=main
 
 # Clone and checkout the frontend repository
 RUN git config --global url."https://x-access-token:${CUSTOM_GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
