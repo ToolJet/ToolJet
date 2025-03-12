@@ -56,7 +56,26 @@ Choose the GET Method from the dropdown.
 #### Optional Parameter:
   - **URL parameters** 
 
-<img className="screenshot-full" src="/img/datasource-reference/n8n/get.png" alt="n8n query" style={{marginBottom:'15px'}} />
+<img className="screenshot-full" src="/img/datasource-reference/n8n/get-v2.png" alt="n8n query" />
+
+<details>
+<summary>**Example Values**</summary>
+
+```yaml
+Webhook URL: https://tooljetdocs.app.n8n.cloud/webhook-test/c56cfc81-02a3-44ee-8103-a70ab7a0df98
+URL parameters: {"name": "Bob"}
+```
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+
+```json
+{
+  "message": "Workflow was started"
+}
+```
+</details>
 
 ### POST Method
 
@@ -68,6 +87,31 @@ Choose the POST Method from the dropdown.
 #### Optional Parameter:
   - **URL parameters** 
 
-<img className="screenshot-full" src="/img/datasource-reference/n8n/POST.png" alt="n8n query" />
+<img className="screenshot-full" src="/img/datasource-reference/n8n/post-v2.png" alt="n8n query" />
+
+<details>
+<summary>**Example Values**</summary>
+
+```yaml
+Webhook URL: https://tooljetdocs.app.n8n.cloud/webhook-test/c56cfc81-02a3-44ee-8103-a70ab7a0df98
+URL parameters: {"name": "Bob"}
+Body: {
+  "name": "Bob",
+  "email": "bob@example.com",
+  "age": 30
+}
+
+```
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+
+```json
+{
+  "message": "Workflow was started"
+}
+```
+</details>
 
 </div>
