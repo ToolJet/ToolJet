@@ -11,7 +11,7 @@ import {
   NotAcceptableException,
   NotFoundException,
 } from '@nestjs/common';
-import { EntityManager, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, MoreThan, SelectQueryBuilder } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { AppsRepository } from './repository';
 import { AppVersion } from '@entities/app_version.entity';
@@ -36,6 +36,7 @@ import { AbilityService } from '@modules/ability/interfaces/IService';
 import { DataSourcesRepository } from '@modules/data-sources/repository';
 import { IAppsUtilService } from './interfaces/IUtilService';
 import { DataSourcesUtilService } from '@modules/data-sources/util.service';
+import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 
 @Injectable()
 export class AppsUtilService implements IAppsUtilService {
@@ -279,6 +280,70 @@ export class AppsUtilService implements IAppsUtilService {
         { dbConstraint: DataBaseConstraints.APP_SLUG_UNIQUE, message: 'This app slug is already taken.' },
       ]);
     }, manager);
+  }
+
+  async updateWorflowVersion(version: AppVersion, body: AppVersionUpdateDto, app: App) {
+    const { name, currentEnvironmentId, definition } = body;
+    const { currentVersionId, organizationId } = app;
+    let currentEnvironment: AppEnvironment;
+
+    if (version.id === currentVersionId && !body?.is_user_switched_version)
+      throw new BadRequestException('You cannot update a released version');
+
+    if (currentEnvironmentId || definition) {
+      currentEnvironment = await AppEnvironment.findOne({
+        where: { id: version.currentEnvironmentId },
+      });
+    }
+
+    const editableParams = {};
+    if (name) {
+      //means user is trying to update the name
+      const versionNameExists = await this.versionRepository.findOne({
+        where: { name, appId: version.appId },
+      });
+
+      if (versionNameExists) {
+        throw new BadRequestException('Version name already exists.');
+      }
+      editableParams['name'] = name;
+    }
+
+    //check if the user is trying to promote the environment & raise an error if the currentEnvironmentId is not correct
+    if (currentEnvironmentId) {
+      if (!(await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT))) {
+        throw new BadRequestException('You do not have permissions to perform this action');
+      }
+
+      if (version.currentEnvironmentId !== currentEnvironmentId) {
+        throw new NotAcceptableException();
+      }
+      const nextEnvironment = await AppEnvironment.findOne({
+        select: ['id'],
+        where: {
+          priority: MoreThan(currentEnvironment.priority),
+          organizationId,
+        },
+        order: { priority: 'ASC' },
+      });
+      editableParams['currentEnvironmentId'] = nextEnvironment.id;
+    }
+
+    if (definition) {
+      const environments = await AppEnvironment.count({
+        where: {
+          organizationId,
+        },
+      });
+      if (environments > 1 && currentEnvironment.priority !== 1 && !body?.is_user_switched_version) {
+        throw new BadRequestException('You cannot update a promoted version');
+      }
+      editableParams['definition'] = definition;
+    }
+
+    editableParams['updatedAt'] = new Date();
+
+    return await this.versionRepository.update(version.id, editableParams);
   }
 
   protected async getEnvironmentOfVersion(versionId: string, manager: EntityManager): Promise<AppEnvironment> {

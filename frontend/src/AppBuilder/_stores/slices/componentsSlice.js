@@ -44,6 +44,7 @@ const initialState = {
   currentPageHandle: null,
   showWidgetDeleteConfirmation: false,
   focusedParentId: null,
+  modalsOpenOnCanvas: [],
 };
 
 export const createComponentsSlice = (set, get) => ({
@@ -1866,5 +1867,18 @@ export const createComponentsSlice = (set, get) => ({
     const { getCurrentPage } = get();
     const currentPage = getCurrentPage(moduleId);
     return currentPage?.autoComputeLayout;
+  },
+  setModalOpenOnCanvas: (modalId, isOpen) => {
+    const { modalsOpenOnCanvas } = get();
+    let newModalOpenOnCanvas = [];
+
+    if (isOpen) {
+      newModalOpenOnCanvas = [...modalsOpenOnCanvas, modalId];
+    } else {
+      newModalOpenOnCanvas = modalsOpenOnCanvas.filter((id) => id !== modalId);
+    }
+    set((state) => {
+      state.modalsOpenOnCanvas = newModalOpenOnCanvas;
+    });
   },
 });

@@ -122,9 +122,18 @@ export const StylesTabElements = ({
         </div>
       )}
 
-      {['string', 'default', undefined, 'number', 'boolean', 'select', 'text', 'newMultiSelect', 'datepicker'].includes(
-        column.columnType
-      ) && (
+      {[
+        'string',
+        'default',
+        undefined,
+        'number',
+        'json',
+        'boolean',
+        'select',
+        'text',
+        'newMultiSelect',
+        'datepicker',
+      ].includes(column.columnType) && (
         <>
           {column.columnType !== 'boolean' && (
             <div data-cy={`input-and-label-text-color`} className="field px-3">
