@@ -3,6 +3,13 @@ import { Modal } from 'react-bootstrap';
 import { Button } from '@/_ui/LeftSidebar';
 import { Alert } from '@/_ui/Alert';
 import { EditInput } from './EditInput';
+import { toast } from 'react-hot-toast';
+
+const changePageURL = (slug, pageHandle) => {
+  const path = `${slug}${pageHandle}`;
+  window.history.replaceState(null, null, path);
+};
+
 
 export const EditModal = ({ slug, page, show, handleClose, updatePageHandle, darkMode }) => {
   const [pageHandle, setPageHandle] = useState(page.handle);
@@ -19,11 +26,21 @@ export const EditModal = ({ slug, page, show, handleClose, updatePageHandle, dar
     }
 
     setIsSaving(true);
-    updatePageHandle(page.id, pageHandle);
-    setTimeout(() => {
+    try {
+      updatePageHandle(page.id, pageHandle);
+
       setIsSaving(false);
-      return handleClose();
-    }, 900);
+      handleClose();
+      // console.log("slug is ",slug)
+      // console.log("pageHandle is ",pageHandle)
+
+      changePageURL(slug, pageHandle);
+      toast.success('Page handle updated successfully!');
+    } catch (error) {
+      setIsSaving(false);
+      toast.error('Failed to update page handle');
+      console.error('Failed to update page handle:', error);
+    }
   };
 
   const handleCancel = () => {
