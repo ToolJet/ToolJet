@@ -27,7 +27,7 @@ function Logs({ logProps, idx }) {
           logProps?.description ||
           (isString(logProps?.message) && logProps?.message) ||
           (isString(logProps?.error?.description) && logProps?.error?.description) || //added string check since description can be an object. eg: runpy
-          logProps?.error?.message.trim()
+          logProps?.error?.message
         }`;
 
   const defaultStyles = {
@@ -113,7 +113,7 @@ function Logs({ logProps, idx }) {
                 </span>
               </div>
               <span
-                className={cx('mx-1', {
+                className={cx({
                   'text-tomato-9': !logProps?.isQuerySuccessLog,
                   'color-light-green': logProps?.isQuerySuccessLog,
                 })}
