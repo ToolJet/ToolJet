@@ -30,51 +30,36 @@ export const useWhiteLabellingStore = create(
       ...initialState,
       actions: {
         fetchWhiteLabelDetails: (organizationId) => {
-          if (organizationId) {
-            return new Promise((resolve, reject) => {
-              const headers = authHeader();
-              const workspaceId = headers['tj-workspace-id'];
-              set({
-                loadingWhiteLabelDetails: true,
-                activeOrganizationId: organizationId || workspaceId,
-                isWhiteLabelDetailsFetched: false,
-              });
-              whiteLabellingService
-                .get(null, organizationId)
-                .then((settings) => {
-                  set({
-                    whiteLabelText:
-                      settings[WHITE_LABEL_OPTIONS.WHITE_LABEL_TEXT] || DEFAULT_WHITE_LABEL_SETTINGS.WHITE_LABEL_TEXT,
-                    whiteLabelLogo:
-                      settings[WHITE_LABEL_OPTIONS.WHITE_LABEL_LOGO] || DEFAULT_WHITE_LABEL_SETTINGS.WHITE_LABEL_LOGO,
-                    whiteLabelFavicon:
-                      settings[WHITE_LABEL_OPTIONS.WHITE_LABEL_FAVICON] ||
-                      DEFAULT_WHITE_LABEL_SETTINGS.WHITE_LABEL_FAVICON,
-                    loadingWhiteLabelDetails: false,
-                    isWhiteLabelDetailsFetched: true,
-                  });
-                  resolve();
-                })
-                .catch((error) => {
-                  console.error('Error in fetchWhiteLabelDetails:', error);
-                  set({
-                    loadingWhiteLabelDetails: false,
-                    activeOrganizationId: null,
-                    isWhiteLabelDetailsFetched: false,
-                  });
-                  reject(error);
-                });
-            });
-          } else {
+          return new Promise((resolve, reject) => {
+            const headers = authHeader();
+            const workspaceId = headers['tj-workspace-id'];
             set({
-              whiteLabelText: window.public_config?.WHITE_LABEL_TEXT || DEFAULT_WHITE_LABEL_SETTINGS.WHITE_LABEL_TEXT,
-              whiteLabelLogo: window.public_config?.WHITE_LABEL_LOGO || DEFAULT_WHITE_LABEL_SETTINGS.WHITE_LABEL_LOGO,
-              whiteLabelFavicon:
-                window.public_config?.WHITE_LABEL_FAVICON || DEFAULT_WHITE_LABEL_SETTINGS.WHITE_LABEL_FAVICON,
-              loadingWhiteLabelDetails: false,
-              isWhiteLabelDetailsFetched: true,
+              loadingWhiteLabelDetails: true,
+              activeOrganizationId: organizationId || workspaceId,
+              isWhiteLabelDetailsFetched: false,
             });
-          }
+            whiteLabellingService
+              .get(organizationId)
+              .then((settings) => {
+                set({
+                  whiteLabelText: settings[WHITE_LABEL_OPTIONS.WHITE_LABEL_TEXT],
+                  whiteLabelLogo: settings[WHITE_LABEL_OPTIONS.WHITE_LABEL_LOGO],
+                  whiteLabelFavicon: settings[WHITE_LABEL_OPTIONS.WHITE_LABEL_FAVICON],
+                  loadingWhiteLabelDetails: false,
+                  isWhiteLabelDetailsFetched: true,
+                });
+                resolve();
+              })
+              .catch((error) => {
+                console.error('Error in fetchWhiteLabelDetails:', error);
+                set({
+                  loadingWhiteLabelDetails: false,
+                  activeOrganizationId: null,
+                  isWhiteLabelDetailsFetched: false,
+                });
+                reject(error);
+              });
+          });
         },
         resetWhiteLabellingStoreBackToInitialState: () => {
           set({ ...initialState });

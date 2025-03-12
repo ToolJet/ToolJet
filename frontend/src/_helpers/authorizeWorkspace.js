@@ -10,7 +10,7 @@ import {
 import { ERROR_TYPES } from './constants';
 import useStore from '@/AppBuilder/_stores/store';
 import { safelyParseJSON } from './utils';
-
+import { fetchWhiteLabelDetails } from '@/_helpers/white-label/whiteLabelling';
 /* [* Be cautious: READ THE CASES BEFORE TOUCHING THE CODE. OTHERWISE YOU MAY SEE ENDLESS REDIRECTIONS (AKA ROUTES-BURMUDA-TRIANGLE) *]
   What is this function?
     - This function is used to authorize the workspace that the user is currently trying to open (for multi-workspace functionality across multiple tabs).
@@ -23,6 +23,9 @@ import { safelyParseJSON } from './utils';
 */
 
 export const authorizeWorkspace = () => {
+  /* Default APIs */
+  fetchWhiteLabelDetails();
+
   if (!isThisExistedRoute()) {
     updateCurrentSession({
       triggeredOnce: true,
