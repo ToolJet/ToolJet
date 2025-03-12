@@ -470,7 +470,7 @@ export const createEventsSlice = (set, get) => ({
         error: {
           message: error.message,
           description: JSON.stringify(error.message, null, 2),
-          ...(event.component && componentId && { componentId: componentId }),
+          ...(event.component === 'component' && componentId && { componentId: componentId }),
         },
         errorTarget: constructErrorTarget(),
         options: options,
