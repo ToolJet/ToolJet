@@ -498,7 +498,7 @@ export function pasteComponents(targetParentId, copiedComponentObj) {
         targetParentId === key ||
         (components?.[key]?.component.component === 'Tabs' &&
           targetParentId?.split('-')?.slice(0, -1)?.join('-') === key) ||
-        (['Container', 'Form', 'Modal'].includes(components?.[key]?.component.component) &&
+        (['Container', 'Form', 'ModalV2'].includes(components?.[key]?.component.component) &&
           ['header', 'footer'].some((section) => targetParentId.includes(section)))
     )
   ) {
