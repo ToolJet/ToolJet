@@ -47,7 +47,7 @@ Following exposed variables can be dynamically accessed using the given JS query
 
 | Variables | <div style={{ width:"200px"}}> Description </div>  | How To Access |
 |:---------|:-----------|:-------------|
-|  value | This component holds the value entered in the time picker. | `{{components.timepicker1.value}}` |
+|  value | Holds the value entered in the component. | `{{components.timepicker1.value}}` |
 |  label  | Holds the value of the component's label. | `{{components.timepicker1.label}}` |
 |  valueUnix | Holds the value in UNIX format. | `{{components.timepicker1.valueUnix}}` |
 |  selectedTime  | Pass the selected time. |  `{{components.timepicker1.selectedTime}}` |
