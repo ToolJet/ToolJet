@@ -127,7 +127,17 @@ export const Pagination = function Pagination({
               className={`form-control h-100`}
               value={pageIndex}
               onChange={(event) => {
-                if (event.target.value <= pageCount) gotoPage(event.target.value);
+                let newPageIndex = event.target.value;
+
+                // Convert newPageIndex to an integer
+                if (newPageIndex) {
+                  newPageIndex = parseInt(newPageIndex, 10);
+                }
+
+                // Check if newPageIndex is a valid number and within the valid range
+                if (!isNaN(newPageIndex) && newPageIndex >= 0 && newPageIndex <= pageCount) {
+                  gotoPage(newPageIndex);
+                }
               }}
             />
             <span
