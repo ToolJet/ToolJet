@@ -57,21 +57,52 @@ You should manually set up a PostgreSQL database to be used by ToolJet. We recom
   </div>
 
 4. Under environmental variables, please add the below ToolJet application variables. 
-  
-  You can use these variables for: tooljet-app
-| **Environment Variable**   | **Value**                     |
-|-----------------------------|-------------------------------|
-| `LOCKBOX_MASTER_KEY`       | `<generate using open ssl>`   |
-| `SECRET_KEY_BASE`          | `<generate using open ssl>`   |
-| `PG_USER`                  | `postgres`                   |
-| `PG_HOST`                  | `<postgresql-instance-ip>`    |
-| `PG_PASS`                  | `<password>`                 |
-| `PG_DB`                    | `tooljet_production`          |
-| `TOOLJET_DB`               | `tooljet_db`      |
-| `TOOLJET_DB_USER`          | `postgres`                   |
-| `TOOLJET_DB_HOST`          | `<postgresql-instance-ip>`    |
-| `TOOLJET_DB_PASS`          | `<password>`                 |
-| `TOOLJET_HOST`             | `<Endpoint url>`             |
+
+  **You can use these variables for: tooljet-app:**
+```env
+TOOLJET_HOST=<Endpoint url>
+LOCKBOX_MASTER_KEY=<generate using openssl rand -hex 32>
+SECRET_KEY_BASE=<generate using openssl rand -hex 64>
+
+PG_USER=<username>
+PG_HOST=<postgresql-instance-ip>
+PG_PASS=<password>
+PG_DB=tooljet_production
+
+TOOLJET_DB=tooljet_db
+TOOLJET_DB_USER=<username>
+TOOLJET_DB_HOST=<postgresql-instance-ip>
+TOOLJET_DB_PASS=<password>
+```
+
+Additionally, for **PostgREST**, the following **mandatory** environment variables must be set:
+
+:::tip
+If you have openssl installed, you can run the 
+command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
+
+If this parameter is not specified, PostgREST will refuse authentication requests.
+:::
+
+```env
+PGRST_HOST=localhost:3001
+PGRST_LOG_LEVEL=info
+PGRST_DB_PRE_CONFIG=postgrest.pre_config
+PGRST_SERVER_PORT=3001
+PGRST_DB_URI=
+PGRST_JWT_SECRET=
+```
+
+The **`PGRST_DB_URI`** variable is **required** for PostgREST, which exposes the database as a REST API. This must be explicitly set for proper functionality.
+
+#### Format:
+
+```env
+PGRST_DB_URI=postgres://TOOLJET_DB_USER:TOOLJET_DB_PASS@TOOLJET_DB_HOST:5432/TOOLJET_DB
+```
+
+**Ensure these configurations are correctly set up before proceeding with the ToolJet deployment. Make sure these environment variables are set in the same environment as the ToolJet container.**
+
 
 **Note:** These environment variables are in general and might change in the future. You can also refer env variable [**here**](/docs/setup/env-vars). 
 
