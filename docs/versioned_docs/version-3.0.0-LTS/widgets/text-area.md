@@ -1,6 +1,6 @@
 ---
-id: textarea
-title: Textarea
+id: text-area
+title: Text Area
 ---
 
 # Textarea
