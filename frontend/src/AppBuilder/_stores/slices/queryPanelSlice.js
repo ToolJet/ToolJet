@@ -762,7 +762,7 @@ export const createQueryPanelSlice = (set, get) => ({
           const { eventsSlice } = get();
           const { generateAppActions } = eventsSlice;
           const queriesInResolvedState = deepClone(currentState.queries);
-          const actions = generateAppActions('', mode);
+          const actions = generateAppActions(query?.id, mode);
 
           const proxiedComponents = createProxy(currentState?.components, 'components');
           const proxiedGlobals = createProxy(currentState?.globals, 'globals');

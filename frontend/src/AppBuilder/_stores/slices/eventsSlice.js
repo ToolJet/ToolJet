@@ -457,7 +457,7 @@ export const createEventsSlice = (set, get) => ({
           page: 'Event Errors with page',
           component: 'Component Event',
           query: 'Event Errors with query',
-          customLog: 'Custom Log',
+          customLog: 'Queries',
         };
 
         return errorTargetMap[source];
@@ -1103,29 +1103,47 @@ export const createEventsSlice = (set, get) => ({
       };
 
       const logInfo = (log) => {
+        const query = dataQuery.queries.modules['canvas'].find((query) => query.id == queryId);
         const error = new Error();
         const stackLine = error.stack.split('\n')[2];
         const lineNumberMatch = stackLine.match(/:(\d+):\d+\)$/);
         const lineNumber = lineNumberMatch ? lineNumberMatch[1] : 'unknown';
-        const event = { actionId: 'log-info', description: `${log}, Line ${lineNumber - 2}`, eventType: 'customLog' };
+        const event = {
+          actionId: 'log-info',
+          description: `${query.name}, ${log}, Line ${lineNumber - 2}`,
+          eventType: 'customLog',
+          query,
+        };
         return executeAction(event, mode, {});
       };
 
       const logError = (log) => {
+        const query = dataQuery.queries.modules['canvas'].find((query) => query.id == queryId);
         const error = new Error();
         const stackLine = error.stack.split('\n')[2];
         const lineNumberMatch = stackLine.match(/:(\d+):\d+\)$/);
         const lineNumber = lineNumberMatch ? lineNumberMatch[1] : 'unknown';
-        const event = { actionId: 'log-error', description: `${log}, Line ${lineNumber - 2}`, eventType: 'customLog' };
+        const event = {
+          actionId: 'log-error',
+          description: `${query.name}, ${log}, Line ${lineNumber - 2}`,
+          eventType: 'customLog',
+          query,
+        };
         return executeAction(event, mode, {});
       };
 
       const log = (log) => {
+        const query = dataQuery.queries.modules['canvas'].find((query) => query.id == queryId);
         const error = new Error();
         const stackLine = error.stack.split('\n')[2];
         const lineNumberMatch = stackLine.match(/:(\d+):\d+\)$/);
         const lineNumber = lineNumberMatch ? lineNumberMatch[1] : 'unknown';
-        const event = { actionId: 'log', description: `${log}, Line ${lineNumber - 2}`, eventType: 'customLog' };
+        const event = {
+          actionId: 'log',
+          description: `${query.name}, ${log}, Line ${lineNumber - 2}`,
+          eventType: 'customLog',
+          query,
+        };
         return executeAction(event, mode, {});
       };
 

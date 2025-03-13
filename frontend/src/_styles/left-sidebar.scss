@@ -253,11 +253,18 @@
     background-color: var(--slate3);
   }
 
-  .error-target {
+  .error-target, .error-target-custom-log {
     background-color: var(--interactive-overlays-fill-hover) !important;
     padding: 4px 7px;
     border-radius: 7px;
     color: var(--slate10)
+  }
+
+  .error-target-custom-log {
+    margin-top: 5px;
+    background: var(--purple5) !important;
+    color: var(--purple11);
+    width: fit-content;
   }
 }
 
