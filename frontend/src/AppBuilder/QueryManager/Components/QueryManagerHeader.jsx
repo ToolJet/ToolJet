@@ -1,4 +1,4 @@
-import React, { useState, forwardRef, useRef, useEffect } from 'react';
+import React, { useState, forwardRef, useRef, useEffect, useCallback } from 'react';
 import RenameIcon from '../Icons/RenameIcon';
 import Eye1 from '@/_ui/Icon/solidIcons/Eye1';
 import Play from '@/_ui/Icon/solidIcons/Play';
@@ -13,6 +13,7 @@ import { decodeEntities } from '@/_helpers/utils';
 import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
+import { debounce } from 'lodash';
 
 export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTab }, ref) => {
   const moduleId = useModuleId();
@@ -166,16 +167,17 @@ const NameInput = ({ onInput, value, darkMode, isDiabled, selectedQuery }) => {
     }
   }, [isFocused]);
 
+  const debouncedHandleInput = useCallback(
+    debounce((newName) => {
+      onInput(newName);
+    }, 300),
+    [onInput]
+  );
+
   const handleChange = (event) => {
     const sanitizedValue = event.target.value.replace(/[ \t&]/g, '');
     setName(sanitizedValue);
-  };
-
-  const handleInput = (newName) => {
-    const result = onInput(newName);
-    if (!result) {
-      setName(value);
-    }
+    debouncedHandleInput(sanitizedValue);
   };
 
   return (
@@ -200,12 +202,12 @@ const NameInput = ({ onInput, value, darkMode, isDiabled, selectedQuery }) => {
               event.persist();
               if (event.keyCode === 13) {
                 setIsFocused(false);
-                handleInput(event.target.value);
+                debouncedHandleInput(event.target.value);
               }
             }}
             onBlur={({ target }) => {
               setIsFocused(false);
-              handleInput(target.value);
+              debouncedHandleInput(target.value);
             }}
           />
         ) : (
