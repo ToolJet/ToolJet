@@ -6,24 +6,28 @@ title: Kubernetes
 # Deploying ToolJet on Kubernetes
 
 :::info
-You should setup a PostgreSQL database manually to be used by ToolJet.
+You should setup a PostgreSQL database manually to be used by ToolJet. ToolJet includes a built-in Redis setup by default, but for multiplayer editing and background jobs in multi-pod setup, use an external Redis instance.
 :::
 
 Follow the steps below to deploy ToolJet on a Kubernetes cluster.
 
-1. **Setup a PostgreSQL database** <br/>
+1. **Setup a PostgreSQL database**
    ToolJet uses a postgres database as the persistent storage for storing data related to users and apps. We do not have plans to support other databases such as MySQL.
-2. **Create a Kubernetes secret with name `server`.** <br/>
-   For the setup, ToolJet requires:
-   
-   - **PG_HOST**
-   - **PG_DB**
-   - **PG_USER**
-   - **PG_PASS**
-   - **SECRET_KEY_BASE** 
-   - **LOCKBOX_KEY**
 
-   Read **[environment variables reference](/docs/setup/env-vars)**
+2. **Create a Kubernetes secret with name `server`.**
+   For the setup, ToolJet requires:
+
+```
+TOOLJET_HOST=<Endpoint url>
+LOCKBOX_MASTER_KEY=<generate using openssl rand -hex 32>
+SECRET_KEY_BASE=<generate using openssl rand -hex 64>
+
+PG_USER=<username>
+PG_HOST=<postgresql-instance-ip>
+PG_PASS=<password>
+PG_DB=tooljet_production
+```
+Also, for setting up additional environment variables in the .env file, please check our documentation on environment variables [here](/docs/setup/env-vars).
 
 :::warning
 To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.

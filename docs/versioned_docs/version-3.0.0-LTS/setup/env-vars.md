@@ -76,6 +76,17 @@ Ensure that:
 - `port` is the PostgreSQL port (default: `5432`).
 - `database_name` is the database used for PostgREST (`tooljet_db` in this example).
 
+#### Redis Configuration
+
+Include the following Redis environment variables within the ToolJet deployment **only if you are connecting to an external Redis instance for a multi-service or multi-pod setup** and have followed the necessary steps to create Redis.
+
+```
+REDIS_HOST=
+REDIS_PORT=
+REDIS_USER=
+REDIS_PASSWORD=
+```
+
 ### Optional Configurations
 
 #### Comments Feature

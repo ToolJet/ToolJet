@@ -10,7 +10,7 @@ To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway
 :::
 
 :::info
-You should setup a PostgreSQL database manually to be used by ToolJet.
+You should setup a PostgreSQL database manually to be used by ToolJet. ToolJet includes a built-in Redis setup by default, but for multiplayer editing and background jobs in multi-service setup, use an external Redis instance.
 :::
 
 You can effortlessly deploy Amazon Elastic Container Service (ECS) by utilizing a [CloudFormation template](https://aws.amazon.com/cloudformation/):
@@ -25,34 +25,7 @@ If you already have existing services and wish to integrate ToolJet seamlessly i
 
 ```
 curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/cloudformation/Cloudformation-deploy.yml
-``` 
-
-<div style={{paddingTop:'24px'}}>
-
-## Redis
-
-:::info
-ToolJet includes a built-in Redis setup by default, but for multiplayer editing and background jobs in multi-service setups, use an external Redis instance.
-:::
-
-To deploy Redis on an ECS cluster, please follow the steps outlined below.
-
-Please note that if you already have an existing Redis setup, you can continue using it. However, if you need to create a new Redis service, you can follow the steps provided below.
-
-- Create a new take definition 
-  <img className="screenshot-full" src="/img/setup/ecs/ecs-1.png" alt="ECS Setup" />
-
-- Please add container and image tag as shown below: <br/>
-  **Make sure that you are using redis version 6.x.x**
-  <img className="screenshot-full" src="/img/setup/ecs/ecs-2.png" alt="ECS Setup" />
-
-- Ensure that when creating a service, Redis is integrated into the same cluster where your ToolJet app will be deployed. <br/>
-  **Note: Please enable public IP**
-  <img className="screenshot-full" src="/img/setup/ecs/ecs-3.png" alt="ECS Setup" />
-
-</div>
-
-<div style={{paddingTop:'24px'}}>
+```
 
 ## ToolJet
 
@@ -74,27 +47,20 @@ Follow the steps below to deploy ToolJet on a ECS cluster.
         Specify environmental values for the container. You'd want to make use of secrets to store sensitive information or credentials, kindly refer the AWS [docs](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/specifying-sensitive-data-secrets.html) to set it up. You can also store the env in S3 bucket, kindly refer the AWS [docs](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/taskdef-envfiles.html) . 
         <img className="screenshot-full" src="/img/setup/ecs/ecs-6.png" alt="ECS Setup" />
 
-        :::info
         For the setup, ToolJet requires:
-        <ul>
-        - **PG_HOST**
-        - **PG_DB**
-        - **PG_USER**
-        - **PG_PASS**
-        - **SECRET_KEY_BASE** 
-        - **LOCKBOX_MASTER_KEY**
-        </ul>
-        <br/>
-        Read **[environment variables reference](/docs/setup/env-vars)**
-        :::
 
-        Additionally, include the Redis environment variables within the ToolJet container mentioned above **only if you are connecting to an external Redis instance for a multi-service setup** and have followed the previous steps to create Redis.
         ```
-        REDIS_HOST=<public ip of redis task>
-        REDIS_PORT=6379
-        REDIS_USER=default
-        REDIS_PASSWORD=
+        TOOLJET_HOST=<Endpoint url>
+        LOCKBOX_MASTER_KEY=<generate using openssl rand -hex 32>
+        SECRET_KEY_BASE=<generate using openssl rand -hex 64>
+
+        PG_USER=<username>
+        PG_HOST=<postgresql-instance-ip>
+        PG_PASS=<password>
+        PG_DB=tooljet_production
         ```
+        Also, for setting up additional environment variables in the .env file, please check our documentation on environment variables [here](/docs/setup/env-vars).
+
     5. Make sure `Use log collection checked` and `Docker configuration` with the command `npm run start:prod`
         <img className="screenshot-full" src="/img/setup/ecs/ecs-8.png" alt="ECS Setup" />
 
@@ -115,8 +81,6 @@ Follow the steps below to deploy ToolJet on a ECS cluster.
 :::info
 The setup above is just a template. Feel free to update the task definition and configure parameters for resources and environment variables according to your needs.
 :::
-
-</div>
 
 ## ToolJet Database
 

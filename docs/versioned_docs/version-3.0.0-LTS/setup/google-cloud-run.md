@@ -25,19 +25,19 @@ You should manually set up a PostgreSQL database to be used by ToolJet. We recom
 | **Cloud SQL**  | `TOOLJET_DB`     | Stores ToolJet-created tables and app data. |
 | **Cloud SQL**  | `PG_DB`          | Database used to store application data |
 
-
+**1. Create a new Google Cloud Run Service:**
 
 <div style={{textAlign: 'left'}}>
   <img className="screenshot-full" src="/img/cloud-run/google-cloud-run-setup-V3.png" alt="Google Cloud Run New Setup" />
 </div>
 
-2. Ingress and Authentication can be set as shown below, to begin with. Feel free to change the security configurations as per your requirements.
+**2. Ingress and Authentication can be set as shown below, to begin with. Feel free to change the security configurations as per your requirements.**
 
   <div style={{textAlign: 'center'}}>
   <img className="screenshot-full" src="/img/cloud-run/ingress-auth-V3.png" alt="ingress-auth" />
   </div>
 
-3. Under the containers tab, please make sure the port is set to 3000 and command `npm, run, start:prod` is entered in container argument field with CPU capacity set to 2GiB:
+**3. Under the containers tab, please make sure the port is set to 3000 and command `npm, run, start:prod` is entered in container argument field with CPU capacity set to 2GiB:**
 
   <div style={{textAlign: 'center'}}>
   <img className="screenshot-full" src="/img/cloud-run/port-and-capacity-postgrest-v2.png" alt="port-and-capacity-tooljet" />
@@ -56,9 +56,9 @@ You should manually set up a PostgreSQL database to be used by ToolJet. We recom
   <img className="screenshot-full" src="/img/cloud-run/port-and-capacity-postgrest-migration-fix-command.png" alt="port-and-capacity-tooljet-migration-fix-command" />
   </div>
 
-4. Under environmental variables, please add the below ToolJet application variables. 
+**4. Under environmental variables, please add the below ToolJet application variables:**
 
-  **You can use these variables for: tooljet-app:**
+  You can use these variables for: tooljet-app:
 ```env
 TOOLJET_HOST=<Endpoint url>
 LOCKBOX_MASTER_KEY=<generate using openssl rand -hex 32>
@@ -68,11 +68,27 @@ PG_USER=<username>
 PG_HOST=<postgresql-instance-ip>
 PG_PASS=<password>
 PG_DB=tooljet_production
+```
 
-TOOLJET_DB=tooljet_db
-TOOLJET_DB_USER=<username>
-TOOLJET_DB_HOST=<postgresql-instance-ip>
-TOOLJET_DB_PASS=<password>
+Update `TOOLJET_HOST` environment variable if you want to use the default url assigned with Cloud run after the initial deploy.
+
+## ToolJet Database
+
+Use the ToolJet-hosted database to build apps faster, and manage your data with ease. You can learn more about this feature [here](/docs/tooljet-db/tooljet-database).
+
+Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration might break. Checkout the following docs to know more about new major version, including breaking changes that require you to adjust your applications accordingly:
+
+- [ToolJet 3.0 Migration Guide for Self-Hosted Versions](./upgrade-to-v3.md)
+
+#### Setting Up ToolJet Database
+
+To set up ToolJet Database, the following **environment variables are mandatory** and must be configured:
+
+```env
+TOOLJET_DB=
+TOOLJET_DB_HOST=
+TOOLJET_DB_USER=
+TOOLJET_DB_PASS=
 ```
 
 Additionally, for **PostgREST**, the following **mandatory** environment variables must be set:

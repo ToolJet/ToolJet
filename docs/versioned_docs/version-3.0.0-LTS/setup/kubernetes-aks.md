@@ -7,6 +7,8 @@ title: Kubernetes (AKS)
 
 :::info
 You should setup a PostgreSQL database manually to be used by ToolJet. We recommend using Azure Database for PostgreSQL since this guide is for deploying using AKS.
+
+ToolJet includes a built-in Redis setup by default, but for multiplayer editing and background jobs in multi-pod setup, use an external Redis instance.
 :::
 
 Follow the steps below to deploy ToolJet on a AKS Kubernetes cluster.
@@ -15,25 +17,23 @@ Follow the steps below to deploy ToolJet on a AKS Kubernetes cluster.
 
 2. Create k8s deployment
 
-   ```bash
-     curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/AKS/deployment.yaml
-   ```
+```bash
+curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/AKS/deployment.yaml
+```
 
-Make sure to edit the environment variables in the `deployment.yaml`. We advise to use secrets to setup sensitive information. You can check out the available options [here](/docs/setup/env-vars).
+For the setup, ToolJet requires:
 
-:::info
-        For the setup, ToolJet requires:
-        <ul>
-        - **PG_HOST**
-        - **PG_DB**
-        - **PG_USER**
-        - **PG_PASS**
-        - **SECRET_KEY_BASE** 
-        - **LOCKBOX_KEY**
-        </ul>
-        <br/>
-        Read **[environment variables reference](/docs/setup/env-vars)**
-:::
+```
+TOOLJET_HOST=<Endpoint url>
+LOCKBOX_MASTER_KEY=<generate using openssl rand -hex 32>
+SECRET_KEY_BASE=<generate using openssl rand -hex 64>
+
+PG_USER=<username>
+PG_HOST=<postgresql-instance-ip>
+PG_PASS=<password>
+PG_DB=tooljet_production
+```
+Make sure to edit the environment variables in the `deployment.yaml`. You can check out the available options [here](/docs/setup/env-vars).
 
 :::info
 If there are self signed HTTPS endpoints that Tooljet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates. You can make use of kubernetes secrets to mount the certificate file onto the containers.
