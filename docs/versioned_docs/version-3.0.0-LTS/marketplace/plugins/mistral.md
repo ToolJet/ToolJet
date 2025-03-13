@@ -51,6 +51,38 @@ Use this operation to generate text content by controlling various parameters to
 <img className="screenshot-full" src="/img/marketplace/plugins/mistral/query.png" alt="Mistral Query" />
 
 <details>
+<summary>**Example Value**</summary>
+```yaml
+    "Model":"mistral-large-latest"
+    "Messages":"
+    [
+        {
+            "role": "system",
+            "content":"You are a financial advisor of a fortune 500 company"
+        },
+        {
+            "role": "user",
+            "content":"Can you help me with tax benefits for the employee"
+        },
+        {
+            "role": "assistant",
+            "content":"Sure! Please help me with more specific details of your employment and salary structure."
+        }
+    ]"
+    "Max tokens":"256"
+    "Temperature":"0.7"
+    "Top P":"1"
+    "Stop Token(s)": []
+    "Random Seed": //42
+    "Response format":"Text"
+    "Presence penalty": 0
+    "Frequency penalty": 0
+    "Completions(N)": 1
+    "Safe prompt": // Toggle on/off
+```
+</details>
+
+<details>
 <summary>**Response Example**</summary>
 
 "While I can't provide personalized financial advice, I can certainly help you understand some common investment options that may offer tax benefits. Here are some strategies to consider:
