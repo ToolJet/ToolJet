@@ -34,7 +34,7 @@ ToolJet requires the following to connect to Baserow:
 3. Select the desired operation from the dropdown and enter the required parameters.
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
-<img className="screenshot-full" src="/img/datasource-reference/baserow/operations.png" alt="Amazon SES" />
+<img className="screenshot-full" src="/img/datasource-reference/baserow/operations-v2.png" alt="Amazon SES" />
 
 </div>
 
@@ -42,64 +42,42 @@ ToolJet requires the following to connect to Baserow:
 
 ## Supported Operations
 
-- **[List fields](#list-fields)**
-- **[List rows](#list-rows)**
-- **[Get row](#get-row)**
-- **[Create row](#create-row)**
-- **[Update row](#update-row)**
-- **[Move row](#move-row)**
-- **[Delete row](#delete-row)**
-
 ### List Fields
 
 This query lists all the fields in a table.
 
 #### Required Parameter
 
-- **Table ID**
+- **Table ID:** ID of the Table you want to do operations on.
 
-<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-list-fields-v2.png" alt="Baserow list fields" />
+<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-list-fields-v3.png" alt="Baserow list fields" />
 
 <details>
-  <summary>**Response Example**</summary>
+  <summary>**Example Value**</summary>
 
   ```yaml
-  [
-    {
-      "id": 331156,
-      "table_id": 57209,
-      "name": "Name",
-      "order": 0,
-      "type": "text",
-      "primary": true,
-      "text_default": ""
-    },
-    {
-      "id": 331157,
-      "table_id": 57209,
-      "name": "Last name",
-      "order": 1,
-      "type": "text",
-      "primary": false,
-      "text_default": ""
-    },
-    {
-      "id": 331158,
-      "table_id": 57209,
-      "name": "Notes",
-      "order": 2,
-      "type": "long_text",
-      "primary": false
-    },
-    {
-      "id": 331159,
-      "table_id": 57209,
-      "name": "Active",
-      "order": 3,
-      "type": "boolean",
-      "primary": false
-    }
-  ]
+      Table ID: 136273
+  ```
+
+</details>
+
+<details>
+  <summary>**Example Response**</summary>
+
+  ```json
+      0: {} 11 keys
+        id:884868
+        table_id:136273
+        name:"Name"
+        order:0
+        type:"text"
+        primary:true
+        read_only:false
+        immutable_type:false
+        immutable_properties:false
+        description:null
+        text_default:""
+        "..."
   ```
 
 </details>
@@ -110,104 +88,94 @@ This query lists all the rows in a table.
 
 #### Required Parameter
 
-- **Table ID**
+- **Table ID:** ID of the Table you want to do operations on.
 
-<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-list-rows-v2.png" alt="Baserow list"/>
+<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-list-rows-v3.png" alt="Baserow list"/>
 
 <details>
-  <summary>**Response Example**</summary>
-  
-  ```json
-  {
-    "count": 3,
-    "next": null,
-    "previous": null,
-    "results": [
-      {
-        "id": 2,
-        "order": "0.99999999999999999991",
-        "Name": "Bill",
-        "Last name": "Gates",
-        "Notes": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce dignissim, urna eget rutrum sollicitudin, sapien diam interdum nisi, quis malesuada nibh eros a est.",
-        "Active": false
-      },
-      {
-        "id": 3,
-        "order": "0.99999999999999999992",
-        "Name": "Mark",
-        "Last name": "Zuckerberg",
-        "Notes": null,
-        "Active": true
-      },
-      {
-        "id": 1,
-        "order": "0.99999999999999999997",
-        "Name": "Elon",
-        "Last name": "Musk",
-        "Notes": null,
-        "Active": true
-      }
-    ]
-  }
+  <summary>**Example Value**</summary>
+  ```yaml
+      Table ID: 136273
   ```
+</details>
 
+<details>
+  <summary>**Example Response**</summary>
+  ```json
+      count:3
+      next:null
+      previous:null
+      results:[] 3 items
+        0:{} 5 keys
+        id:1
+        order:"1.00000000000000000000"
+        Name:"Tool"
+        Last Name:"Jet"
+        Notes:"Welcome to ToolJet"
+      '...'
+  ```
 </details>
 
 ### Get Row
 
 #### Required Parameters
 
-- **Table ID**
-- **Row ID**
+- **Table ID:** ID of the Table you want to do operations on.
+- **Row ID:** Enter the Row ID you want to do operations on.
 
-<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-get-row-v2.png" alt="Baserow get" />
+<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-get-row-v3.png" alt="Baserow get" />
 
 <details>
-  <summary>**Response Example**</summary>
-  
-  ```json
-  {
-    "id": 1,
-    "order": "0.99999999999999999997",
-    "Name": "Elon",
-    "Last name": "Musk",
-    "Notes": null,
-    "Active": true
-  }
+  <summary>**Example Value**</summary>
+  ```yaml
+      Table ID: 136273
+      Row ID: 1
   ```
+</details>
 
+<details>
+  <summary>**Example Response**</summary>
+  ```json
+      id:1
+      order:"1.00000000000000000000"
+      Name:"Tool"
+      Last Name:"Jet"
+      Notes:"Welcome to ToolJet"
+      '...'
+  ```
 </details>
 
 ### Create Row
 
 #### Required Parameters
-- **Table ID**
-- **Records**
+- **Table ID:** ID of the Table you want to do operations on.
+- **Records:** Enter the values to do the corresponding operations on.
 
-<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-create-row-v2.png"  alt="Bserow create"/>
+<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-create-row-v3.png"  alt="Bserow create"/>
 
-#### Example
-
-```json
-{
-  "Name": "Test",
-  "Last name": "Test Name",
-  "Notes": "Test Note",
-  "Active": true
-}
-```
+<details>
+  <summary>**Example Value**</summary>
+  ```yaml
+      Table ID: 136273
+      Records: {
+          "Name": "Test - ToolJet",
+          "Last name": "ToolJet Name",
+          "Notes": "ToolJet Note",
+          }
+  ```
+</details>
 
 <details>
   <summary>**Response Example**</summary>
   
   ```json
   {
-    "id": 19,
-    "order": "0.99999999999999999996",
-    "Name": "Test",
-    "Last name": "Test Name",
-    "Notes": "Test Note",
-    "Active": true
+    "id":4,
+    "order":"4.00000000000000000000",
+    "Name":"Test",
+    "Last Name":null,
+    "Notes":"Test Note",
+    "..."
   }
   ```
 
@@ -217,34 +185,35 @@ This query lists all the rows in a table.
 
 #### Required Parameters
 
-- **Table ID**
-- **Row ID**
-- **Records**
+- **Table ID:** ID of the Table you want to do operations on.
+- **Row ID** Enter the Row ID you want to do operations on.
+- **Records:** Enter the values to do the corresponding operations on.
 
-<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-update-row-v2.png" alt="Baserow update" />
-
-#### Example
-
-```json
-{
-  "Name": "Test",
-  "Last name": "Test Name",
-  "Notes": "Test Note",
-  "Active": true
-}
-```
+<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-update-row-v3.png" alt="Baserow update" />
 
 <details>
-  <summary>**Response Example**</summary>
+  <summary>**Example Value**</summary>
+  ```yaml
+      Table ID: 136273
+      Row ID: 1
+      Records: {
+        "Name": "Test - ToolJet",
+        "Last name": "ToolJet Name",
+        "Notes": "ToolJet Note",
+        }
+  ```
+</details>
+
+<details>
+  <summary>**Example Response**</summary>
   
   ```json
   {
-    "id": 19,
-    "order": "0.99999999999999999996",
-    "Name": "Test",
-    "Last name": "Test Name",
-    "Notes": "Test Note",
-    "Active": true
+    "id":4,
+    "order":"4.00000000000000000000",
+    "Name":"Test - ToolJet",
+    "Last Name":null,
+    "Notes":"ToolJet Note"
   }
   ```
 
@@ -254,26 +223,34 @@ This query lists all the rows in a table.
 
 #### Required Parameters
 
-- **Table ID**
-- **Row ID**
+- **Table ID:** ID of the Table you want to do operations on.
+- **Row ID** Enter the Row ID you want to do operations on.
 
 #### Optional Parameters
 
-- **Before ID** (The row will be moved before the entered ID. If not provided, then the row will be moved to the end )
+- **Before ID** (The row will be moved before the entered ID. If not provided, then the row will be moved to the end)
 
-<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-move-row-v2.png" alt="Baserow move row" />
+<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-move-row-v3.png" alt="Baserow move row" />
 
 <details>
-  <summary>**Response Example**</summary>
-    
+  <summary>**Example Value**</summary>
+  ```yaml
+      Table ID: 136273
+      Row ID: 1
+      Before ID: 1
+  ```
+</details>
+
+<details>
+  <summary>**Example Response**</summary>
+  
   ```json
   {
-    "id": 3,
-    "order": "2.00000000000000000000",
-    "Name": "Mark",
-    "Last name": "Zuckerburg",
-    "Notes": null,
-    "Active": true
+    "id":4,
+    "order":"4.00000000000000000000",
+    "Name":"Test - ToolJet",
+    "Last Name":null,
+    "Notes":"ToolJet Note"
   }
   ```
 
@@ -282,10 +259,10 @@ This query lists all the rows in a table.
 ### Delete Row
 
 #### Required Parameters
-- **Table ID**
-- **Row ID**
+- **Table ID:** ID of the Table you want to do operations on.
+- **Row ID:** Enter the Row ID you want to do operations on.
 
-<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-delete-row-v2.png" alt="Baserow delete" />
+<img className="screenshot-full" src="/img/datasource-reference/baserow/baserow-delete-row-v3.png" alt="Baserow delete" />
 
 While deleting a row, the response will be either success or failure from Baserow.
 

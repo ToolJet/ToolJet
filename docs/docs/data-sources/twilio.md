@@ -24,7 +24,9 @@ For **Messaging Service SID**, you'll need to create a messaging service first f
 
 <img className="screenshot-full" src="/img/datasource-reference/twilio/sid.png" alt="ToolJet - Data source - Twilio" />
 
-<img className="screenshot-full" src="/img/datasource-reference/twilio/connect-v2.png" alt="ToolJet - Data source - Twilio" />
+Provide the **Auth Token**, **Account SID**, and **Messaging Service SID** in the Twilio datasource configuration.
+
+<img className="screenshot-full" src="/img/datasource-reference/twilio/connect-v3.png" alt="ToolJet - Data source - Twilio" />
 
 </div>
 
@@ -48,10 +50,31 @@ For **Messaging Service SID**, you'll need to create a messaging service first f
 This operation will send the specified message to specified mobile number.
 
 #### Required Parameters
-- **To Number**
-- **Body**
+- **To Number:** The recipient's phone number.
+- **Body:** The message you want to send to the recipient.
 
-<img className="screenshot-full" src="/img/datasource-reference/twilio/sms-v2.png" alt="ToolJet - Data source - Twilio" />
+<img className="screenshot-full" src="/img/datasource-reference/twilio/sms-v3.png" alt="ToolJet - Data source - Twilio" />
 
 </div>
 
+<details>
+<summary>**Example Value**</summary>
+```yaml
+    "To Number": "+156..."
+    "Body": "Hello Welcome, ToolJet is at your service!"
+```
+</details>
+<details>
+<summary>**Example Response**</summary>
+```json
+    body:"Hello Welcome, ToolJet is at your service!"
+    numSegments:"0"
+    direction:"outbound-api"
+    from:null
+    to:"+156..."
+    dateUpdated:"2025-03-06T06:31:14.000Z"
+    price:null
+    errorMessage:null
+    "..."
+```
+</details>
