@@ -137,12 +137,19 @@ module.exports = {
           includeCurrentVersion: true,
           lastVersion: '3.0.0-LTS',
           versions: {
-            current : {
+            current: {
               label: '3.1.0-Beta 🚧',
               path: 'beta',
+              banner: 'none',
+              badge: false
             },
             "2.50.0-LTS": {
               banner: 'none',
+              badge: false
+            },
+            "3.0.0-LTS": {
+              banner: 'none',
+              badge: false
             }
           }
         },

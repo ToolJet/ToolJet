@@ -47,6 +47,7 @@
   --ifm-link-color: #3e63dd;
   --ifm-menu-color-background-active: #f0f4ff;
   --ifm-link-menu-color-background-hover: #f0f4ff;
+  --ifm-breadcrumb-item-background-active: transparent;
 }
 
 
