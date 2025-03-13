@@ -103,17 +103,20 @@ function Logs({ logProps, idx }) {
                 <div className="error-target cursor-pointer">{logProps?.errorTarget}</div>
                 <small className="text-slate-10 text-right ">{moment(logProps?.timestamp).fromNow()}</small>
               </div>
+              {logProps?.type === 'Custom Log' && (
+                <div className="error-target-custom-log cursor-pointer">Custom Log</div>
+              )}
               <div className={`d-flex justify-content-between align-items-center ${!open && 'text-truncate'}`}>
                 <span
-                  className={` cursor-pointer debugger-error-title ${!open && 'text-truncate'} ${
-                    logProps?.errorTarget == 'Custom Log' && logProps?.logLevel == 'error' && 'text-tomato-9'
+                  className={` cursor-pointer debugger-error-title font-weight-500 ${!open && 'text-truncate'} ${
+                    logProps?.type == 'Custom Log' && logProps?.logLevel == 'error' && 'text-tomato-9'
                   }`}
                 >
                   <HighlightSecondWord text={title} />
                 </span>
               </div>
               <span
-                className={cx({
+                className={cx('font-weight-500', {
                   'text-tomato-9': !logProps?.isQuerySuccessLog,
                   'color-light-green': logProps?.isQuerySuccessLog,
                 })}
