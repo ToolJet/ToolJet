@@ -462,3 +462,75 @@ img {
 }
 
 /* HOMEPAGE STYLES END*/
+
+/* Side bar Styles */
+.category-as-header>.menu__list-item-collapsible:first-child {
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 20px;
+  margin-top: 20px;
+}
+
+.category-as-header>.menu__list-item-collapsible:first-child:hover {
+  background-color: transparent;
+}
+
+.category-as-header>.menu__list-item-collapsible:first-child a:first-of-type::before {
+  content: "";
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+
+.getting-started-header .menu__list-item-collapsible:first-child a:first-of-type::before {
+  background-image: url('../../static/img/sidebar-icons/getting-started.svg');
+}
+
+.build-with-ai-header .menu__list-item-collapsible:first-child a:first-of-type::before {
+  background-image: url('../../static/img/sidebar-icons/build-with-ai.svg');
+}
+
+.app-builder-header .menu__list-item-collapsible:first-child a:first-of-type::before {
+  background-image: url('../../static/img/sidebar-icons/app-builder.svg');
+}
+
+.data-sources-header .menu__list-item-collapsible:first-child a:first-of-type::before {
+  background-image: url('../../static/img/sidebar-icons/data-source.svg');
+}
+
+.tjdb-header .menu__list-item-collapsible:first-child a:first-of-type::before {
+  background-image: url('../../static/img/sidebar-icons/tjdb.svg');
+}
+
+.workflows-header .menu__list-item-collapsible:first-child a:first-of-type::before {
+  background-image: url('../../static/img/sidebar-icons/workflows.svg');
+}
+
+.setup-tj-header .menu__list-item-collapsible:first-child a:first-of-type::before {
+  background-image: url('../../static/img/sidebar-icons/setup-tj.svg');
+}
+
+.user-management-header .menu__list-item-collapsible:first-child a:first-of-type::before {
+  background-image: url('../../static/img/sidebar-icons/user-management.svg');
+}
+
+.dev-cycle-header .menu__list-item-collapsible:first-child a:first-of-type::before {
+  background-image: url('../../static/img/sidebar-icons/dev-cycle.svg');
+}
+
+.security-header .menu__list-item-collapsible:first-child a:first-of-type::before {
+  background-image: url('../../static/img/sidebar-icons/security.svg');
+}
+
+.tj-api-header .menu__list-item-collapsible:first-child a:first-of-type::before {
+  background-image: url('../../static/img/sidebar-icons/tj-api.svg');
+}
+
+.resources-header .menu__list-item-collapsible:first-child a:first-of-type::before {
+  background-image: url('../../static/img/sidebar-icons/resources.svg');
+}
