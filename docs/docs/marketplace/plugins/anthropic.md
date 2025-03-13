@@ -39,6 +39,23 @@ This operation processes the user's input and generates appropriate, context-awa
 <img className="screenshot-full" src="/img/marketplace/plugins/anthropic/query.png" alt="Anthropic Query" />
 
 <details>
+<summary>**Example Values**</summary>
+
+```yaml
+Model: claude-3-5-sonnet-20241022
+System Prompt: You are an AI assistant that provides detailed, accurate, and polite responses.
+Message: [
+  {"role": "user", "content": "Hello!"},
+  {"role": "assistant", "content": "Hello, How can I assist you today?"},
+  {"role": "user", "content": "Can you explain the benefits of AI in healthcare?"}
+]
+Temperature: 0.7
+Max size: 512
+```
+
+</details>
+
+<details>
 <summary>**Response Example**</summary>
 
 ```json
