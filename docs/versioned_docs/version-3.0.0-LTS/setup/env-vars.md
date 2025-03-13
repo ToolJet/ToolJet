@@ -210,7 +210,7 @@ By default, only public apps can be embedded. To allow embedding of private Tool
 
 - `ENABLE_PRIVATE_APP_EMBED=true/false`: Allows embedding of private ToolJet apps.
 
-Note: Available in ToolJet Enterprise 2.8.0+ and Community/Cloud 2.10.0+.
+**Note: Available in ToolJet Enterprise 2.8.0+ and Community/Cloud 2.10.0+.**
 
 #### Default Language
 Set the default language using the `LANGUAGE` variable. Supported options:
