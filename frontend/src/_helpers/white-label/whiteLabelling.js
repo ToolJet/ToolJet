@@ -20,7 +20,6 @@ export function retrieveWhiteLabelText() {
 
 export function retrieveWhiteLabelLogo() {
   const { whiteLabelLogo } = useWhiteLabellingStore.getState();
-  console.log('whiteLabelLogo', whiteLabelLogo);
   return whiteLabelLogo;
 }
 
@@ -106,7 +105,6 @@ export async function fetchWhiteLabelDetails(organizationId = null) {
 
   if (shouldFetch) {
     try {
-      console.log('fetching white label details');
       await actions.fetchWhiteLabelDetails(organizationId);
       applyWhiteLabelling();
     } catch (error) {
