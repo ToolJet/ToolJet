@@ -25,7 +25,6 @@ import { dbTransactionWrap } from 'src/helpers/database.helper';
 import { DeepPartial } from 'typeorm';
 import { SSOType } from '../../entities/sso_config.entity';
 import { LicenseTermsService } from '../licensing/interfaces/IService';
-import { LICENSE_FIELD } from '../licensing/constants';
 import { GroupPermissionsUtilService } from '../group-permissions/util.service';
 import { App } from '../../entities/app.entity';
 import { In } from 'typeorm';
@@ -38,7 +37,6 @@ import { RolesRepository } from '@modules/roles/repository';
 import { GroupPermissions } from '@entities/group_permissions.entity';
 import { ProfileUtilService } from '@modules/profile/util.service';
 import { OrganizationUsersRepository } from '@modules/organization-users/repository';
-import { InstanceSSOConfigMap } from '@modules/login-configs/types';
 import { SessionUtilService } from '@modules/session/util.service';
 import { OnboardingStatus } from '@modules/onboarding/constants';
 import { IAuthUtilService } from './interfaces/IUtilService';
@@ -152,11 +150,11 @@ export class AuthUtilService implements IAuthUtilService {
       defaultOrganization = await this.organizationRepository.createOne(name, slug, manager);
     }
 
-    const { source, status } = getUserStatusAndSource(lifecycleEvents.USER_SSO_VERIFY, sso);
+    const { source, status } = getUserStatusAndSource(lifecycleEvents.USER_SSO_ACTIVATE, sso);
     /* Default password for sso-signed workspace user */
 
     const password = uuid.v4();
-    user = await this.userRepository.createOne(
+    user = await this.userRepository.createOrUpdate(
       {
         firstName,
         lastName,
@@ -164,9 +162,8 @@ export class AuthUtilService implements IAuthUtilService {
         source,
         status,
         password,
-        organizationId: organization.id,
         role: USER_ROLE.END_USER,
-        defaultOrganizationId: defaultOrganization?.id,
+        defaultOrganizationId: defaultOrganization?.id || organization.id,
       },
       manager
     );
@@ -193,45 +190,32 @@ export class AuthUtilService implements IAuthUtilService {
       // Setting up default organization
       await this.organizationUsersRepository.createOne(user, defaultOrganization, true, manager);
     }
+    await this.organizationUsersUtilService.attachUserGroup([USER_ROLE.END_USER], organization.id, user.id, manager); //localhost:8082/login/tooljets-workspace?redirectTo=/
     return user;
   }
 
-  async getSSOConfigs(ssoType: SSOType.GOOGLE | SSOType.GIT | SSOType.OPENID): Promise<Partial<SSOConfigs>> {
-    const ssoConfigs = await this.getInstanceSSOConfigsOfType(ssoType);
-    const oidcEnabled = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.OIDC);
-
-    // Create a map from the ssoConfig object
-    const ssoConfigMap: InstanceSSOConfigMap = {
-      [ssoConfigs.sso]: {
-        enabled: ssoConfigs.enabled,
-        configs: ssoConfigs.configs,
-      },
-    };
-
+  async getSSOConfigs(ssoType: SSOType.GOOGLE | SSOType.GIT): Promise<Partial<SSOConfigs>> {
     switch (ssoType) {
       case SSOType.GOOGLE:
         return {
-          enabled: ssoConfigMap.google.enabled || false,
-          configs: ssoConfigMap.google.configs || {},
+          enabled: !!this.configService.get<string>('SSO_GOOGLE_OAUTH2_CLIENT_ID'),
+          configs: { clientId: this.configService.get<string>('SSO_GOOGLE_OAUTH2_CLIENT_ID') },
         };
       case SSOType.GIT:
         return {
-          enabled: ssoConfigMap.git.enabled || false,
-          configs: ssoConfigMap.git.configs || {},
-        };
-      case SSOType.OPENID:
-        return {
-          enabled: ssoConfigMap.openid.enabled && oidcEnabled,
-          configs: ssoConfigMap.openid.configs || {},
+          enabled: !!this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_ID'),
+          configs: {
+            clientId: this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_ID'),
+            clientSecret: this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_SECRET'),
+            hostName: this.configService.get<string>('SSO_GIT_OAUTH2_HOST'),
+          },
         };
       default:
         return;
     }
   }
 
-  async getInstanceSSOConfigsOfType(
-    ssoType: SSOType.GOOGLE | SSOType.GIT | SSOType.OPENID
-  ): Promise<DeepPartial<SSOConfigs>> {
+  async getInstanceSSOConfigsOfType(ssoType: SSOType.GOOGLE | SSOType.GIT): Promise<DeepPartial<SSOConfigs>> {
     const instanceSettings = await this.instanceSettingsUtilService.getSettings([
       INSTANCE_SYSTEM_SETTINGS.ALLOWED_DOMAINS,
       INSTANCE_SYSTEM_SETTINGS.ENABLE_SIGNUP,
