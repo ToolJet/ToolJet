@@ -47,13 +47,14 @@ export async function createNestAppInstance(): Promise<INestApplication> {
   let app: INestApplication;
 
   const moduleRef = await Test.createTestingModule({
-    imports: [AppModule],
+    imports: [await AppModule.register({ IS_GET_CONTEXT: false })],
     providers: [],
   }).compile();
 
   app = moduleRef.createNestApplication();
   app.setGlobalPrefix('api');
   app.use(cookieParser());
+  app.useLogger(app.get(Logger));
   app.useGlobalFilters(new AllExceptionsFilter(moduleRef.get(Logger)));
   app.useWebSocketAdapter(new WsAdapter(app));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
@@ -73,7 +74,7 @@ export async function createNestAppInstanceWithEnvMock(): Promise<{
   let app: INestApplication;
 
   const moduleRef = await Test.createTestingModule({
-    imports: [AppModule],
+    imports: [await AppModule.register({ IS_GET_CONTEXT: false })],
     providers: [
       {
         provide: ConfigService,
@@ -85,6 +86,7 @@ export async function createNestAppInstanceWithEnvMock(): Promise<{
   app = moduleRef.createNestApplication();
   app.setGlobalPrefix('api');
   app.use(cookieParser());
+  app.useLogger(app.get(Logger));
   app.useGlobalFilters(new AllExceptionsFilter(moduleRef.get(Logger)));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.useWebSocketAdapter(new WsAdapter(app));
@@ -938,7 +940,7 @@ export async function createNestAppInstanceWithServiceMocks({ shouldMockLicenseS
   let app: INestApplication;
 
   const moduleRef = await Test.createTestingModule({
-    imports: [AppModule],
+    imports: [await AppModule.register({ IS_GET_CONTEXT: false })],
     providers: [
       {
         ...(shouldMockLicenseService && {
@@ -952,6 +954,7 @@ export async function createNestAppInstanceWithServiceMocks({ shouldMockLicenseS
   app = moduleRef.createNestApplication();
   app.setGlobalPrefix('api');
   app.use(cookieParser());
+  app.useLogger(app.get(Logger));
   app.useGlobalFilters(new AllExceptionsFilter(moduleRef.get(Logger)));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.useWebSocketAdapter(new WsAdapter(app));
