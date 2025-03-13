@@ -10,7 +10,6 @@
 /** @type {import('@docusaurus/plugin-content-docs').SidebarsConfig} */
 const sidebars = {
   docs: [
-    "doc-home-page",
     {
       'type': 'category',
       'label': 'Getting Started',
@@ -18,6 +17,7 @@ const sidebars = {
       'collapsed': false,
       'collapsible': false,
       'items': [
+        'doc-home-page',
         'getting-started/platform-overview',
         'getting-started/quickstart-guide',
         {
@@ -470,10 +470,6 @@ const sidebars = {
       'className': 'category-as-header setup-tj-header',
       'collapsible': false,
       'collapsed': false,
-      'link': {
-        'type': 'doc',
-        'id': 'tj-setup/overview',
-      },
       'items': [
         'tj-setup/overview',
         'tj-setup/tj-deployment',
@@ -515,10 +511,6 @@ const sidebars = {
       'collapsible': false,
       'className': 'category-as-header user-management-header',
       'label': 'User Management and Access Control',
-      'link': {
-        'type': 'doc',
-        'id': 'user-management/overview',
-      },
       'items': [
         'user-management/overview',
         {
@@ -627,10 +619,6 @@ const sidebars = {
       'collapsible': false,
       'className': 'category-as-header dev-cycle-header',
       'label': 'Development Lifecycle',
-      'link': {
-        'type': 'doc',
-        'id': 'development-lifecycle/overview',
-      },
       'items': [
         'development-lifecycle/overview',
         {
