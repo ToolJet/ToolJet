@@ -24,12 +24,12 @@ import { fetchWhiteLabelDetails } from '@/_helpers/white-label/whiteLabelling';
 
 export const authorizeWorkspace = () => {
   /* Default APIs */
-  fetchWhiteLabelDetails().finally(() => {
+  const workspaceIdOrSlug = getWorkspaceIdOrSlugFromURL();
+  fetchWhiteLabelDetails(workspaceIdOrSlug).finally(() => {
     if (!isThisExistedRoute()) {
       updateCurrentSession({
         triggeredOnce: true,
       });
-      const workspaceIdOrSlug = getWorkspaceIdOrSlugFromURL();
       const isApplicationsPath = getPathname(null, true).startsWith('/applications/');
       const appId = isApplicationsPath ? getPathname().split('/')[2] : null;
       /* CASE-1 */
