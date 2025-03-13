@@ -1,13 +1,6 @@
 import { useWhiteLabellingStore } from '@/_stores/whiteLabellingStore';
 import { decodeEntities } from '@/_helpers/utils';
 
-// Default white-label settings
-export const defaultWhiteLabellingSettings = {
-  WHITE_LABEL_TEXT: 'ToolJet',
-  WHITE_LABEL_LOGO: 'assets/images/tj-logo.svg',
-  WHITE_LABEL_FAVICON: 'assets/images/logo.svg',
-};
-
 // White-label options mapping
 export const whiteLabellingOptions = {
   WHITE_LABEL_TEXT: 'white_label_text',
@@ -47,7 +40,7 @@ export async function setFaviconAndTitle(location) {
     links = [link];
   }
   links.forEach((link) => {
-    link.href = whiteLabelFavicon || defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON;
+    link.href = whiteLabelFavicon;
   });
 
   // Set page title based on route
@@ -78,9 +71,7 @@ export async function setFaviconAndTitle(location) {
   const pageTitleKey = Object.keys(pageTitles).find((path) => location?.pathname.includes(path));
   const pageTitle = pageTitles[pageTitleKey] || '';
 
-  document.title = pageTitle
-    ? `${decodeEntities(pageTitle)} | ${whiteLabelText || defaultWhiteLabellingSettings.WHITE_LABEL_TEXT}`
-    : `${decodeEntities(whiteLabelText) || defaultWhiteLabellingSettings.WHITE_LABEL_TEXT}`;
+  document.title = pageTitle ? `${decodeEntities(pageTitle)} | ${whiteLabelText}` : `${decodeEntities(whiteLabelText)}`;
 }
 
 export async function fetchAndSetWindowTitle(pageDetails) {
@@ -132,16 +123,9 @@ export async function resetToDefaultWhiteLabels() {
 }
 
 // Check if current settings match the default values
-export async function checkWhiteLabelsDefaultState(organizationId = null) {
-  // TODO:Uncomment-if-needed
-  // await fetchWhiteLabelDetails(organizationId);
-  const { whiteLabelText, whiteLabelFavicon, whiteLabelLogo } = useWhiteLabellingStore.getState();
-
-  return (
-    (!whiteLabelText || whiteLabelText === defaultWhiteLabellingSettings.WHITE_LABEL_TEXT) &&
-    (!whiteLabelLogo || whiteLabelLogo === defaultWhiteLabellingSettings.WHITE_LABEL_LOGO) &&
-    (!whiteLabelFavicon || whiteLabelFavicon === defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON)
-  );
+export function checkWhiteLabelsDefaultState() {
+  const { isDefaultWhiteLabel } = useWhiteLabellingStore.getState();
+  return isDefaultWhiteLabel;
 }
 
 export const pageTitles = {
@@ -165,7 +149,7 @@ export const pageTitles = {
 function applyWhiteLabelling() {
   const { whiteLabelText, whiteLabelFavicon } = useWhiteLabellingStore.getState();
 
-  document.title = whiteLabelText || defaultWhiteLabellingSettings.WHITE_LABEL_TEXT;
+  document.title = whiteLabelText;
 
   let links = document.querySelectorAll("link[rel='icon']");
   if (links.length === 0) {
@@ -176,6 +160,6 @@ function applyWhiteLabelling() {
     links = [link];
   }
   links.forEach((link) => {
-    link.href = whiteLabelFavicon || defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON;
+    link.href = whiteLabelFavicon;
   });
 }

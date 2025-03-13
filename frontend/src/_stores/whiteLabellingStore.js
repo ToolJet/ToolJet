@@ -45,22 +45,17 @@ export const useWhiteLabellingStore = create(
             whiteLabellingService
               .get(organizationId)
               .then((settings) => {
-                set({
+                const updatedSettings = {
                   whiteLabelText: settings[WHITE_LABEL_OPTIONS.WHITE_LABEL_TEXT],
                   whiteLabelLogo: settings[WHITE_LABEL_OPTIONS.WHITE_LABEL_LOGO],
                   whiteLabelFavicon: settings[WHITE_LABEL_OPTIONS.WHITE_LABEL_FAVICON],
                   loadingWhiteLabelDetails: false,
                   isWhiteLabelDetailsFetched: true,
-                });
-
+                  isDefaultWhiteLabel: settings.is_default,
+                };
+                set(updatedSettings);
                 //update the white-label slice from here. somehow when we open the builder the actual store values goes back to default state. need to investigte more
-                useStore.getState().updateWhiteLabelDetails({
-                  whiteLabelText: settings[WHITE_LABEL_OPTIONS.WHITE_LABEL_TEXT],
-                  whiteLabelLogo: settings[WHITE_LABEL_OPTIONS.WHITE_LABEL_LOGO],
-                  whiteLabelFavicon: settings[WHITE_LABEL_OPTIONS.WHITE_LABEL_FAVICON],
-                  loadingWhiteLabelDetails: false,
-                  isWhiteLabelDetailsFetched: true,
-                });
+                useStore.getState().updateWhiteLabelDetails(updatedSettings);
                 resolve();
               })
               .catch((error) => {

@@ -28,7 +28,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   const [showPassword, setShowPassword] = useState(false);
   const [fallBack, setFallBack] = useState(false);
   const { t } = useTranslation();
-  const [defaultState, setDefaultState] = useState(false);
+  const defaultState = checkWhiteLabelsDefaultState();
 
   const location = useLocation();
   const params = useParams();
@@ -92,9 +92,6 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
     } else {
       setIsGettingConfigs(false);
     }
-    checkWhiteLabelsDefaultState(organizationId).then((res) => {
-      setDefaultState(res);
-    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

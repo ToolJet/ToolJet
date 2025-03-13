@@ -21,7 +21,7 @@ class OrganizationInvitationPageComponent extends React.Component {
 
     this.state = {
       isLoading: false,
-      defaultState: false,
+      defaultState: checkWhiteLabelsDefaultState(),
     };
     this.formRef = React.createRef(null);
     this.organizationId = new URLSearchParams(props?.location?.search).get('oid');
@@ -34,13 +34,7 @@ class OrganizationInvitationPageComponent extends React.Component {
   componentDidMount() {
     authenticationService.deleteLoginOrganizationId();
     setFaviconAndTitle(this.props?.location);
-    checkWhiteLabelsDefaultState(this.organizationId).then((res) => {
-      this.setState({ defaultState: res });
-      this.whiteLabelText = retrieveWhiteLabelText();
-      this.whiteLabelFavicon = retrieveWhiteLabelFavicon();
-    });
     document.addEventListener('keydown', this.handleEnterKey);
-    this.setState({ defaultState: checkWhiteLabelsDefaultState() });
   }
 
   handleEnterKey = (e) => {

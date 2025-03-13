@@ -10,7 +10,7 @@ import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsav
 import './styles.scss';
 import { useLicenseStore } from '@/_stores/licenseStore';
 import { shallow } from 'zustand/shallow';
-import { retrieveWhiteLabelLogo, fetchWhiteLabelDetails } from '@white-label/whiteLabelling';
+import { retrieveWhiteLabelLogo } from '@white-label/whiteLabelling';
 import '../../_styles/left-sidebar.scss';
 import { hasBuilderRole } from '@/_helpers/utils';
 import { LeftNavSideBar } from '@/modules/common/components';
@@ -97,22 +97,6 @@ function Layout({
     admin ||
     super_admin;
   const isAuthorizedForGDS = hasCommonPermissions || admin || super_admin;
-  // TODO: uncomment-if-needed
-  // fetchWhiteLabelDetails();
-
-  useEffect(() => {
-    // const fetchLogo = async () => {
-    //   try {
-    //     const whiteLabelLogo = retrieveWhiteLabelLogo();
-    //     console.log('whiteLabelLogo', whiteLabelLogo);
-    //     setLogo(whiteLabelLogo);
-    //   } catch (error) {
-    //     console.error('Error fetching logo:', error);
-    //     setLogo(null);
-    //   }
-    // };
-    // fetchLogo();
-  }, []);
 
   const isBuilder = hasBuilderRole(authenticationService?.currentSessionValue?.role ?? {});
 
