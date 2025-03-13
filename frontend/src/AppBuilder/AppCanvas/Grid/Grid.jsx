@@ -646,10 +646,12 @@ export default function Grid({ gridWidth, currentLayout }) {
               return id === e.target.id;
             });
             hideGridLines();
+            if (!e.lastEvent) {
+              return;
+            }
             let _gridWidth = useGridStore.getState().subContainerWidths[currentWidget.component?.parent] || gridWidth;
             let width = Math.round(e?.lastEvent?.width / _gridWidth) * _gridWidth;
             const height = Math.round(e?.lastEvent?.height / GRID_HEIGHT) * GRID_HEIGHT;
-
             const currentWidth = currentWidget.width * _gridWidth;
             const diffWidth = e.lastEvent?.width - currentWidth;
             const diffHeight = e.lastEvent?.height - currentWidget?.height;
@@ -872,7 +874,6 @@ export default function Grid({ gridWidth, currentLayout }) {
 
               left = dragged.left * sourcegridWidth;
               top = dragged.top;
-
               !isModalToCanvas ??
                 toast.error(`${dragged.widgetType} is not compatible as a child component of ${target.widgetType}`);
             }

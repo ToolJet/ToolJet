@@ -1,6 +1,7 @@
 import React from 'react';
 
 export const DragGhostWidget = ({ isDragging }) => {
+  console.log('frog');
   if (!isDragging) return '';
   return (
     <div

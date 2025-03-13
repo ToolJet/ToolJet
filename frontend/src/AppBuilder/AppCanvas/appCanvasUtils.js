@@ -40,8 +40,16 @@ export const addNewWidgetToTheEditor = (componentType, eventMonitorObject, curre
   left = Math.round(left / gridWidth);
   // Adjust widget width based on the dropping canvas width
   const mainCanvasWidth = useGridStore.getState().subContainerWidths['canvas'];
-  const width = Math.round((defaultWidth * mainCanvasWidth) / gridWidth);
+  let width = Math.round((defaultWidth * mainCanvasWidth) / gridWidth);
+  console.log(width, gridWidth, 'width');
+  // Ensure minimum width
+  width = Math.max(width, 1);
 
+  // Adjust position and width if exceeding grid bounds
+  if (width + left > NO_OF_GRIDS) {
+    left = Math.max(0, NO_OF_GRIDS - width);
+    width = Math.min(width, NO_OF_GRIDS);
+  }
   if (currentLayout === 'mobile') {
     componentData.definition.others.showOnDesktop.value = `{{false}}`;
     componentData.definition.others.showOnMobile.value = `{{true}}`;
@@ -550,12 +558,21 @@ export function pasteComponents(targetParentId, copiedComponentObj) {
     componentData.definition.others.showOnMobile.value = currentLayout === 'mobile' ? `{{true}}` : `{{false}}`;
 
     // Adjust width if parent changed
-    let width = component.layouts.desktop.width;
+    let width = component.layouts[currentLayout].width;
 
     if (targetParentId !== component.component?.parent) {
       const containerWidth = useGridStore.getState().subContainerWidths[targetParentId || 'canvas'];
       const oldContainerWidth = useGridStore.getState().subContainerWidths[component?.component?.parent || 'canvas'];
       width = Math.round((width * oldContainerWidth) / containerWidth);
+
+      // Ensure minimum width
+      width = Math.max(width, 1);
+
+      // Adjust position and width if exceeding grid bounds
+      if (width + component.layouts[currentLayout].left > NO_OF_GRIDS) {
+        component.layouts[currentLayout].left = Math.max(0, NO_OF_GRIDS - width);
+        width = Math.min(width, NO_OF_GRIDS);
+      }
     }
 
     component.layouts[currentLayout].width = width;

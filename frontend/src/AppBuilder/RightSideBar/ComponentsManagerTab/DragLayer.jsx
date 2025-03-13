@@ -42,8 +42,9 @@ const CustomDragLayer = ({ size }) => {
   const canvasBounds = item?.canvasRef?.getBoundingClientRect();
   const height = size.height;
 
-  const width = (canvasWidth * size.width) / NO_OF_GRIDS;
+  const mainCanvasWidth = document.getElementById('real-canvas')?.offsetWidth || 0;
 
+  const width = (mainCanvasWidth * size.width) / NO_OF_GRIDS;
   // Calculate position relative to the current canvas (parent or child)
   const left = currentOffset.x - (canvasBounds?.left || 0);
   const top = currentOffset.y - (canvasBounds?.top || 0);
