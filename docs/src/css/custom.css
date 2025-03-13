@@ -271,14 +271,13 @@ img {
   color: #1B1F24;
 }
 
-
 /* Note Alert box*/
 
-.alert.alert--note {
+.alert.alert--secondary {
   background-color: #F6F8FA !important;
 }
 
-.alert.alert--note svg {
+.alert.alert--secondary svg {
   fill: #4368E3
 }
 
