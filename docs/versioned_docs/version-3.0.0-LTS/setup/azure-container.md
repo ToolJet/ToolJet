@@ -9,6 +9,10 @@ title: Azure container apps
 Please note that you need to set up a PostgreSQL database manually to be used by ToolJet.
 :::
 
+:::warning
+To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`.
+:::
+
 ## Deploying ToolJet application
 
 1. Open the Azure dashboard at https://portal.azure.com, navigate to Container Apps, and click on "Create container app".
@@ -49,10 +53,6 @@ Please note that you need to set up a PostgreSQL database manually to be used by
 
    If using Azure Database for Postgresql-Flexible server, add:
    - **PGSSLMODE = require**
-
-:::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`.
-:::
 
    <div style={{textAlign: 'center'}}>
  

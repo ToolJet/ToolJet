@@ -89,7 +89,7 @@ The **`PGRST_DB_URI`** variable is **required** for PostgREST, which exposes the
 PGRST_DB_URI=postgres://TOOLJET_DB_USER:TOOLJET_DB_PASS@TOOLJET_DB_HOST:5432/TOOLJET_DB
 ```
 
-**Ensure these configurations are correctly set up before proceeding with tooljet deployment. Please make sure these environment variables are set in the same ToolJet task definition's environment variables.**
+**Ensure these configurations are correctly set up before proceeding with the ToolJet deployment. Make sure these environment variables are set in the same environment as the ToolJet deployment.**
 
 ## Upgrading to the Latest LTS Version
 

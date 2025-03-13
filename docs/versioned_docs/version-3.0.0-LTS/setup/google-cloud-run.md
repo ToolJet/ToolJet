@@ -5,6 +5,10 @@ title: Google Cloud Run
 
 # Deploying ToolJet on Google Cloud Run
 
+:::warning
+To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`.
+:::
+
 :::info
 You should manually set up a PostgreSQL database to be used by ToolJet. We recommend using **Cloud SQL** for this purpose.
 :::
@@ -93,10 +97,6 @@ If you are using [Public IP](https://cloud.google.com/sql/docs/postgres/connect-
     :::info
     Once the Service is created and live, to make the  Cloud Service URL public. Please follow the steps [**here**](https://cloud.google.com/run/docs/securing/managing-access) to make the service public.
     :::
-
-:::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
-:::
 
 
 ## Upgrading to the Latest LTS Version
