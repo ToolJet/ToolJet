@@ -12,6 +12,7 @@ export default ({
   onRawBodyChange,
   componentName,
   bodyToggle,
+  onInputChange,
 }) => {
   return (
     <>
@@ -20,6 +21,7 @@ export default ({
         theme={theme}
         removeKeyValuePair={removeKeyValuePair}
         onChange={onChange}
+        onInputChange={onInputChange}
         onRawBodyChange={onRawBodyChange}
         componentName={componentName}
         tabType={'body'}

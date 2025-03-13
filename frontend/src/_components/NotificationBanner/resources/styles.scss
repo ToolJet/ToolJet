@@ -10,7 +10,6 @@
     background: var(--background-warning-weak, #FAEFE7);
     border: none !important;
     outline: none !important;
-    opacity: 1;
 
     img {
         margin-top: -5px !important;
@@ -21,10 +20,12 @@
     .notification-banner {
         justify-content: center !important;
         align-items: center !important;
-    }
 
-    &>div {
-        justify-content: center !important;
+
+    /* Webpack is showing error for this: please fix it */
+        &>div {
+            justify-content: center !important;
+        }
     }
 
 }

@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
-import { Thread } from '../src/entities/thread.entity';
-import { AppVersion } from '../src/entities/app_version.entity';
+import { Thread } from '@entities/thread.entity';
+import { AppVersion } from '@entities/app_version.entity';
 
 export class ConnectExistingCommentThreadsToPageIds1669293520796 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {

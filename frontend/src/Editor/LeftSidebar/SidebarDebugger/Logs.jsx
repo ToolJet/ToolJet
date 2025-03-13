@@ -4,13 +4,14 @@ import moment from 'moment';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import cx from 'classnames';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import { useEditorActions, useEditorStore } from '@/_stores/editorStore';
+import useStore from '@/AppBuilder/_stores/store';
+import { toast } from 'react-hot-toast';
 
 function Logs({ logProps, idx }) {
   const [open, setOpen] = React.useState(false);
   let titleLogType = logProps?.type !== 'event' ? logProps?.type : '';
   if (titleLogType === 'transformations') {
-    titleLogType = 'query';
+    titleLogType = 'Transformation';
   }
   const title = logProps?.key;
   const message =
@@ -38,41 +39,43 @@ function Logs({ logProps, idx }) {
     pointerEvents: logProps?.isQuerySuccessLog || logProps.type === 'navToDisablePage' ? 'none' : 'default',
   };
 
-  const { setSelectedComponents } = useEditorActions();
+  const setSelectedComponents = useStore.getState().setSelectedComponents;
 
   const handleSelectComponentOnEditor = (componentId) => {
-    const isAlreadySelected = useEditorStore
-      .getState()
-      ?.selectedComponents.find((component) => component.id === componentId);
+    const selectedComponents = useStore.getState()?.selectedComponents;
+    const isAlreadySelected = selectedComponents.find((component) => component.id === componentId);
 
     if (!isAlreadySelected) {
-      const currentPageId = useEditorStore.getState()?.currentPageId;
-      const currentPageComponents = useEditorStore.getState()?.appDefinition[currentPageId]?.components;
-      const component = currentPageComponents?.find((comp) => comp.id === componentId);
+      const currentPageComponents = useStore.getState()?.getCurrentPageComponents();
+      const component = currentPageComponents[componentId];
 
-      setSelectedComponents([{ id: componentId, component }], false);
+      component && setSelectedComponents([{ id: componentId, component }], false);
     }
+  };
+
+  const copyToClipboard = (data) => {
+    const stringified = JSON.stringify(data, null, 2).replace(/\\/g, '');
+    navigator.clipboard.writeText(stringified);
+    return toast.success('Value copied to clipboard', { position: 'top-center' });
   };
 
   const callbackActions = [
     {
       for: 'all',
-      actions: [{ name: 'Select Widget', dispatchAction: handleSelectComponentOnEditor, icon: false, onSelect: true }],
+      actions: [
+        { name: 'Copy value', dispatchAction: copyToClipboard, icon: false },
+        { name: 'Select Widget', dispatchAction: handleSelectComponentOnEditor, icon: false, onSelect: true },
+      ],
       enableForAllChildren: true,
       enableFor1stLevelChildren: true,
     },
   ];
 
   const renderNavToDisabledPageMessage = () => {
-    const text = message.split(logProps.page);
     return (
       <div className="d-flex">
-        <span className={cx('mx-1 text-tomato-9')}>
-          {text[0]}
-          <small className="text-slate-12" style={{ fontSize: '14px' }}>{`'${logProps.page}'`}</small>
-          {text[1]}
-        </span>
-        <small className="text-slate-10 text-right px-1 " style={{ width: '115px' }}>
+        <span className={cx('text-tomato-9')}>{message}</span>
+        <small className="text-slate-10 text-right  " style={{ width: '115px' }}>
           {moment(logProps?.timestamp).fromNow()}
         </small>
       </div>
@@ -101,7 +104,11 @@ function Logs({ logProps, idx }) {
                 <small className="text-slate-10 text-right ">{moment(logProps?.timestamp).fromNow()}</small>
               </div>
               <div className={`d-flex justify-content-between align-items-center ${!open && 'text-truncate'}`}>
-                <span className={` cursor-pointer debugger-error-title ${!open && 'text-truncate'}`}>
+                <span
+                  className={` cursor-pointer debugger-error-title ${!open && 'text-truncate'} ${
+                    logProps?.errorTarget == 'Custom Log' && logProps?.logLevel == 'error' && 'text-tomato-9'
+                  }`}
+                >
                   <HighlightSecondWord text={title} />
                 </span>
               </div>
@@ -112,6 +119,7 @@ function Logs({ logProps, idx }) {
                 })}
               >
                 {message}
+                {logProps?.error?.lineNumber ? `, Line ${logProps.error.lineNumber}` : ''}
               </span>
             </>
           )}

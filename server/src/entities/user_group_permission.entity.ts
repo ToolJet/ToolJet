@@ -11,6 +11,18 @@ import {
 import { GroupPermission } from './group_permission.entity';
 import { User } from './user.entity';
 
+/**
+ * ███████████████████████████████████████████████████████████████████████████████
+ * █                                                                             █
+ * █                               DEPRECATED                                    █
+ * █                                                                             █
+ * █  This file is deprecated and will be removed in a future version.           █
+ * █  Please use the new implementation in `group_users.entity.ts` instead.      █
+ * █                                                                             █
+ * █                                                                             █
+ * ███████████████████████████████████████████████████████████████████████████████
+ */
+
 @Entity({ name: 'user_group_permissions' })
 export class UserGroupPermission extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -36,3 +48,15 @@ export class UserGroupPermission extends BaseEntity {
   @JoinColumn({ name: 'group_permission_id' })
   groupPermission: GroupPermission;
 }
+
+/**
+ * ███████████████████████████████████████████████████████████████████████████████
+ * █                                                                             █
+ * █                               DEPRECATED                                    █
+ * █                                                                             █
+ * █  This file is deprecated and will be removed in a future version.           █
+ * █  Please use the new implementation in `group_users.entity.ts` instead.      █
+ * █                                                                             █
+ * █                                                                             █
+ * ███████████████████████████████████████████████████████████████████████████████
+ */

@@ -15,6 +15,7 @@ const Runjs = (props) => {
   return (
     <Card className="runjs-editor mb-3">
       <CodeHinter
+        renderCopilot={props.renderCopilot}
         type="multiline"
         initialValue={props.options.code}
         lang="javascript"

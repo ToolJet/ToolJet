@@ -48,6 +48,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
     updateOnSortingPages,
     apps,
     clonePage,
+    currentAppEnvironmentId,
     setEditorMarginLeft,
     globalSettingsChanged,
     toggleAppMaintenance,
@@ -65,9 +66,10 @@ export const LeftSidebar = forwardRef((props, ref) => {
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
   const [popoverContentHeight, setPopoverContentHeight] = useState(queryPanelHeight);
-  const { isVersionReleased } = useAppVersionStore(
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );
@@ -125,7 +127,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
 
   const handleInteractOutside = (ev) => {
     const isBtnClicked = Object.values(sideBarBtnRefs.current).some((btnRef) => {
-      return btnRef.contains(ev.target);
+      if (!btnRef) return false;
+      return btnRef.contains(ev?.target) || false;
     });
 
     if (!isBtnClicked && !pinned) {
@@ -219,13 +222,13 @@ export const LeftSidebar = forwardRef((props, ref) => {
       case 'settings':
         return (
           <GlobalSettings
-            globalSettingsChanged={globalSettingsChanged}
-            globalSettings={appDefinition.globalSettings}
-            darkMode={darkMode}
-            toggleAppMaintenance={toggleAppMaintenance}
-            isMaintenanceOn={isMaintenanceOn}
-            app={app}
-            backgroundFxQuery={backgroundFxQuery}
+          // globalSettingsChanged={globalSettingsChanged}
+          // globalSettings={appDefinition.globalSettings}
+          // darkMode={darkMode} later
+          // toggleAppMaintenance={toggleAppMaintenance} reused
+          // isMaintenanceOn={isMaintenanceOn} reused
+          // app={app}
+          // backgroundFxQuery={backgroundFxQuery} decide
           />
         );
     }
@@ -292,7 +295,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
         popoverContent={renderPopoverContent()}
         popoverContentHeight={popoverContentHeight}
       />
-
       <ConfirmDialog
         show={showLeaveDialog}
         message={'The unsaved changes will be lost if you leave the editor, do you want to leave'}
@@ -302,19 +304,15 @@ export const LeftSidebar = forwardRef((props, ref) => {
       />
       <div className="left-sidebar-stack-bottom">
         <div className="">
-          {config.COMMENT_FEATURE_ENABLE && (
-            <div
-              className={`${isVersionReleased && 'disabled'}`}
-              style={{ maxHeight: '32px', maxWidth: '32px', marginBottom: '16px' }}
-            >
-              <LeftSidebarComment
-                selectedSidebarItem={showComments ? 'comments' : ''}
-                currentPageId={currentPageId}
-                ref={setSideBarBtnRefs('comments')}
-              />
-            </div>
-          )}
-
+          <div style={{ maxHeight: '32px', maxWidth: '32px', marginBottom: '16px' }}>
+            <LeftSidebarComment
+              selectedSidebarItem={showComments ? 'comments' : ''}
+              currentPageId={currentPageId}
+              isVersionReleased={isVersionReleased}
+              isEditorFreezed={isEditorFreezed}
+              ref={setSideBarBtnRefs('comments')}
+            />
+          </div>
           <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
         </div>
       </div>

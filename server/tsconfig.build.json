@@ -5,6 +5,11 @@
     "test",
     "dist",
     "**/*spec.ts",
-    "**/jest.config.ts"
+    "**/jest.config.ts",
+    "src/services/ignored",
+    "src/temporal",
+    "src/modules/ignored",
+    "src/modules/feature",
+    "ee/ignored"
   ]
 }

@@ -11,8 +11,8 @@ export default function UpdatePresenceMultiPlayer() {
     }),
     shallow
   );
-  const updatePresence = useUpdatePresence();
 
+  const updatePresence = useUpdatePresence();
   useEffect(() => {
     if (user) {
       const initialPresence = {

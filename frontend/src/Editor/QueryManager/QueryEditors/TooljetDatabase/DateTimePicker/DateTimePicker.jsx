@@ -163,7 +163,7 @@ export const DateTimePicker = ({
             <div className={`fw-400 tjdbCellMenuShortcutsText`}>Save Changes</div>
           </div>
           <div className="d-flex align-items-center gap-1">
-            <div className={`fw-500 tjdbCellMenuShortcutsInfo`} id="escbutton">
+            <div className={`fw-500 tjdbCellMenuShortcutsInfo esc-btn-datepicker`} id="escbutton">
               Esc
             </div>
             <div className={`fw-400 tjdbCellMenuShortcutsText`}>Discard Changes</div>

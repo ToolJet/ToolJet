@@ -1,0 +1,76 @@
+import { FEATURE_KEY } from './index';
+import { MODULES } from '@modules/app/constants/modules';
+import { FeaturesConfig } from '../types';
+import { LICENSE_FIELD } from '@modules/licensing/constants';
+
+export const FEATURES_EE: FeaturesConfig = {
+  [MODULES.GROUP_PERMISSIONS]: {
+    [FEATURE_KEY.ADD_GROUP_USER]: {
+      license: LICENSE_FIELD.VALID,
+    },
+    [FEATURE_KEY.CREATE]: {
+      license: LICENSE_FIELD.VALID,
+    },
+    [FEATURE_KEY.DELETE]: {
+      license: LICENSE_FIELD.VALID,
+    },
+    [FEATURE_KEY.DELETE_GROUP_USER]: {
+      license: LICENSE_FIELD.VALID,
+    },
+    [FEATURE_KEY.DUPLICATE]: {
+      license: LICENSE_FIELD.VALID,
+    },
+    [FEATURE_KEY.GET_ADDABLE_USERS]: {
+      license: LICENSE_FIELD.VALID,
+    },
+    [FEATURE_KEY.GET_ONE]: {},
+    [FEATURE_KEY.GET_ALL]: {},
+    [FEATURE_KEY.UPDATE]: {
+      license: LICENSE_FIELD.VALID,
+    },
+    [FEATURE_KEY.GET_ALL_GROUP_USER]: {},
+    [FEATURE_KEY.DELETE_GRANULAR_PERMISSIONS]: {
+      license: LICENSE_FIELD.VALID,
+    },
+    [FEATURE_KEY.CREATE_GRANULAR_PERMISSIONS]: {
+      license: LICENSE_FIELD.VALID,
+    },
+    [FEATURE_KEY.GET_ALL_GRANULAR_PERMISSIONS]: {
+      license: LICENSE_FIELD.VALID,
+    },
+    [FEATURE_KEY.GET_ADDABLE_APPS]: {
+      license: LICENSE_FIELD.VALID,
+    },
+    [FEATURE_KEY.UPDATE_GRANULAR_PERMISSIONS]: {
+      license: LICENSE_FIELD.VALID,
+    },
+    [FEATURE_KEY.GET_ADDABLE_DS]: {
+      license: LICENSE_FIELD.VALID,
+    },
+    [FEATURE_KEY.USER_ROLE_CHANGE]: {},
+  },
+};
+
+export const FEATURES: FeaturesConfig = {
+  [MODULES.GROUP_PERMISSIONS]: {
+    [FEATURE_KEY.ADD_GROUP_USER]: {},
+    [FEATURE_KEY.CREATE]: {},
+    [FEATURE_KEY.DELETE]: {},
+    [FEATURE_KEY.DELETE_GROUP_USER]: {},
+    [FEATURE_KEY.DUPLICATE]: {},
+    [FEATURE_KEY.GET_ADDABLE_USERS]: {},
+    [FEATURE_KEY.GET_ONE]: {},
+    [FEATURE_KEY.GET_ALL]: {},
+    [FEATURE_KEY.UPDATE]: {},
+    [FEATURE_KEY.GET_ALL_GROUP_USER]: {},
+    [FEATURE_KEY.DELETE_GRANULAR_PERMISSIONS]: {},
+    [FEATURE_KEY.CREATE_GRANULAR_PERMISSIONS]: {},
+    [FEATURE_KEY.GET_ALL_GRANULAR_PERMISSIONS]: {},
+    [FEATURE_KEY.GET_ADDABLE_APPS]: {},
+    [FEATURE_KEY.UPDATE_GRANULAR_PERMISSIONS]: {},
+    [FEATURE_KEY.GET_ADDABLE_DS]: {
+      license: LICENSE_FIELD.VALID,
+    },
+    [FEATURE_KEY.USER_ROLE_CHANGE]: {},
+  },
+};

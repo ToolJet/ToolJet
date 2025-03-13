@@ -12,5 +12,19 @@
     "params": {
       "token": "id_token"
     }
+  },
+  "openid": {
+    "name": "Open ID",
+    "params": {
+      "token": "code",
+      "iss": "iss"
+    }
+  },
+  "saml": {
+    "name": "SAML",
+    "responseType": "query",
+    "params": {
+      "token": "code"
+    }
   }
 }

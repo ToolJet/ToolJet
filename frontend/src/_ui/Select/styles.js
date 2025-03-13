@@ -33,6 +33,7 @@ export default function styles(darkMode, width = 224, height = 32, styles = {}, 
       display: 'flex',
       height: height,
       marginBottom: '4px',
+      ...(styles.fontSize ? { fontSize: styles.fontSize } : {}),
     }),
     indicatorsContainer: (provided, state) => ({
       ...provided,
@@ -57,6 +58,7 @@ export default function styles(darkMode, width = 224, height = 32, styles = {}, 
       ':hover': {
         backgroundColor: darkMode ? '#323C4B' : '#d8dce9',
       },
+      ...(styles.fontSize ? { fontSize: styles.fontSize } : {}),
     }),
     placeholder: (provided) => ({
       ...provided,

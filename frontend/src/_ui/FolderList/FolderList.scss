@@ -36,9 +36,23 @@
 
 }
 
+.page-group-collapse:hover{
+    cursor: pointer;
+}
+
+.page-group-collapse:hover + .tj-list-item {
+    background: var(--slate4);
+}
+
 .tj-list-item-disabled {
     color: var(--slate8);
 }
+
+.tj-list-item-option-opened {
+    background-color: var(--indigo4);
+}
+
+
 
 .tj-list-item-icon {
     display: flex;
@@ -46,7 +60,7 @@
 }
 
 .user-group-actions {
-    width: 231px;
+    width: 100px;
 
     a {
         display: flex;

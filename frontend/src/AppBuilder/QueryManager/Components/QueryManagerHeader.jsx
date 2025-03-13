@@ -14,7 +14,7 @@ import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_
 import useStore from '@/AppBuilder/_stores/store';
 import { useModuleId } from '@/AppBuilder/_contexts/ModuleContext';
 
-export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, setActiveTab, activeTab }, ref) => {
+export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTab }, ref) => {
   const moduleId = useModuleId();
   const updateQuerySuggestions = useStore((state) => state.queryPanel.updateQuerySuggestions);
   const previewQuery = useStore((state) => state.queryPanel.previewQuery);
@@ -63,13 +63,14 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
   };
 
   const previewButtonOnClick = () => {
-    const _options = { ...options };
+    const _options = { ...selectedQuery.options };
     const query = {
       data_source_id: selectedDataSource.id === 'null' ? null : selectedDataSource.id,
       pluginId: selectedDataSource.pluginId,
       options: _options,
       kind: selectedDataSource.kind,
       name: queryName,
+      id: selectedQuery?.id,
     };
     previewQuery(query, false, undefined, moduleId)
       .then(() => {
@@ -109,7 +110,6 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, se
                   <p
                     key={tab.id}
                     className="m-0 d-flex align-items-center h-100"
-                    data-cy={`query-tab-${tab.label ?? 'unknown'}`}
                     onClick={() => setActiveTab(tab.id)}
                     style={{
                       borderBottom: activeTab === tab.id ? '2px solid #3E63DD' : '',

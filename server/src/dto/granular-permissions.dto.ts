@@ -1,58 +1,54 @@
-import { Transform } from 'class-transformer';
-import { IsString, IsNotEmpty, IsBoolean, IsOptional, IsEnum } from 'class-validator';
-import { ResourceType } from '@modules/user_resource_permissions/constants/granular-permissions.constant';
-import {
-  ResourceGroupActions,
-  GranularPermissionAddResourceItems,
-  GranularPermissionDeleteResourceItems,
-  CreateAppsPermissionsObject,
-} from '@modules/user_resource_permissions/interface/granular-permissions.interface';
+// import { Transform } from 'class-transformer';
+// import { IsString, IsNotEmpty, IsBoolean, IsOptional, IsEnum } from 'class-validator';
+// import { ResourceType } from '@modules/user_resource_permissions/constants/granular-permissions.constant';
+// import {
+//   ResourceGroupActions,
+//   GranularPermissionAddResourceItems,
+//   GranularPermissionDeleteResourceItems,
+//   CreateResourcePermissionObject,
+// } from '@modules/user_resource_permissions/interface/granular-permissions.interface';
 
-export class CreateGranularPermissionDto {
-  @IsString()
-  @Transform(({ value }) => value.trim())
-  @IsNotEmpty()
-  name: string;
+// export class CreateGranularPermissionDto {
+//   @IsString()
+//   @Transform(({ value }) => value.trim())
+//   @IsNotEmpty()
+//   name: string;
 
-  @IsString()
-  @IsNotEmpty()
-  groupId: string;
+//   @IsString()
+//   @IsNotEmpty()
+//   groupId: string;
 
-  @IsBoolean()
-  @IsNotEmpty()
-  isAll: boolean;
+//   @IsBoolean()
+//   @IsNotEmpty()
+//   isAll: boolean;
 
-  @IsEnum(ResourceType)
-  @IsNotEmpty()
-  type: ResourceType;
+//   @IsEnum(ResourceType)
+//   @IsNotEmpty()
+//   type: ResourceType;
 
-  @IsOptional()
-  createAppsPermissionsObject: CreateAppsPermissionsObject;
+//   @IsOptional()
+//   createResourcePermissionObject: CreateResourcePermissionObject<any>;
+// }
 
-  // @IsBoolean()
-  // @IsOptional()
-  // allowRoleChange: boolean;
-}
+// export class UpdateGranularPermissionDto<T extends ResourceType.APP | ResourceType.DATA_SOURCE> {
+//   @IsString()
+//   @IsOptional()
+//   name: string;
 
-export class UpdateGranularPermissionDto {
-  @IsString()
-  @IsOptional()
-  name: string;
+//   @IsBoolean()
+//   @IsOptional()
+//   isAll: boolean;
 
-  @IsBoolean()
-  @IsOptional()
-  isAll: boolean;
+//   @IsOptional()
+//   actions: ResourceGroupActions<T>;
 
-  @IsOptional()
-  actions: ResourceGroupActions;
+//   @IsOptional()
+//   resourcesToAdd: GranularPermissionAddResourceItems<T>;
 
-  @IsOptional()
-  resourcesToAdd: GranularPermissionAddResourceItems;
+//   @IsOptional()
+//   resourcesToDelete: GranularPermissionDeleteResourceItems;
 
-  @IsOptional()
-  resourcesToDelete: GranularPermissionDeleteResourceItems;
-
-  @IsBoolean()
-  @IsOptional()
-  allowRoleChange: boolean;
-}
+//   @IsBoolean()
+//   @IsOptional()
+//   allowRoleChange: boolean;
+// }

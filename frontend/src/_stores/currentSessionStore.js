@@ -23,6 +23,7 @@ export const useCurrentSessionStore = create(
             console.error('Error while fetching organizations', error);
           }
         },
+        setOrganizations: (organizations) => set({ organizations }),
       },
     }),
     { name: 'Current Session Store' }

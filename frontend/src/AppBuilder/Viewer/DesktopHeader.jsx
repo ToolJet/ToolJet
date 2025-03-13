@@ -10,6 +10,7 @@ import { redirectToDashboard } from '@/_helpers/routes';
 import classNames from 'classnames';
 import PreviewSettings from './PreviewSettings';
 import useStore from '@/AppBuilder/_stores/store';
+import AppLogo from '@/_components/AppLogo';
 
 const DesktopHeader = ({
   showHeader,
@@ -39,7 +40,7 @@ const DesktopHeader = ({
             redirectToDashboard();
           }}
         >
-          <LogoIcon />
+          <AppLogo isLoadingFromHeader={false} viewer={true} />
         </Link>
       </h1>
       <div className="navbar-seperator" style={{ margin: '0px 1.375rem' }}></div>
@@ -70,7 +71,6 @@ const DesktopHeader = ({
       </>
     );
   }
-
   return (
     <Header
       styles={{

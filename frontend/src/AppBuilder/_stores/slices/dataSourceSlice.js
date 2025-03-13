@@ -30,7 +30,7 @@ export const createDataSourceSlice = (set) => ({
 
   fetchGlobalDataSources: (organizationId, appVersionId, environmentId) => {
     set({ loadingDataSources: true });
-    globalDatasourceService.getAll(organizationId, appVersionId, environmentId).then((data) => {
+    globalDatasourceService.getForApp(organizationId, appVersionId, environmentId).then((data) => {
       set({
         globalDataSources: data.data_sources?.filter((source) => source?.type != DATA_SOURCE_TYPE.SAMPLE),
         sampleDataSource: data.data_sources?.filter((source) => source?.type == DATA_SOURCE_TYPE.SAMPLE)[0],

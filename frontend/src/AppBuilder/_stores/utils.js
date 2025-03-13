@@ -248,7 +248,7 @@ export const removeNestedDoubleCurlyBraces = (str) => {
   iter = 0;
   let shouldRemoveSpace = true;
   while (iter < str.length) {
-    if (transformedInput[iter] === ' ' && shouldRemoveSpace) {
+    if (shouldRemoveSpace && [' ', '\n', '\t'].includes(transformedInput[iter])) {
       transformedInput[iter] = '';
     } else if (transformedInput[iter] === 'le') {
       shouldRemoveSpace = true;
@@ -262,7 +262,7 @@ export const removeNestedDoubleCurlyBraces = (str) => {
   iter = str.length - 1;
   shouldRemoveSpace = true;
   while (iter >= 0) {
-    if (transformedInput[iter] === ' ' && shouldRemoveSpace) {
+    if (shouldRemoveSpace && [' ', '\n', '\t'].includes(transformedInput[iter])) {
       transformedInput[iter] = '';
     } else if (transformedInput[iter] === 'ri') {
       shouldRemoveSpace = true;
@@ -366,12 +366,14 @@ export const normalizePattern = (pattern) => {
 
 export function findAllEntityReferences(node, allRefs) {
   const extractReferencesFromString = (str) => {
-    const regex = /{{(components|queries)\.[^{}]*}}/g;
+    const regex = /{{.*?(components|queries)\.[^{}]*}}/g;
     const matches = str.match(regex);
     if (matches) {
       matches.forEach((match) => {
         const ref = match.replace('{{', '').replace('}}', '');
-        const entityName = ref.split('.')[1];
+        const extractionRegex = /(components|queries)\.[^{}]*/g;
+        const extractedRef = ref.match(extractionRegex)?.[0] || ref;
+        const entityName = extractedRef.split('.')[1];
         allRefs.push(entityName);
       });
     }
@@ -483,6 +485,9 @@ export function createReferencesLookup(currentState, forQueryParams = false, ini
     'setPageVariable',
     'unsetPageVariable',
     'switchPage',
+    'logInfo',
+    'log',
+    'logError',
   ];
 
   const suggestionList = [];

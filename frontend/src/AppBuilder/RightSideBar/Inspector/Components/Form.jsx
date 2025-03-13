@@ -19,16 +19,34 @@ export const Form = ({
   allComponents,
   pages,
 }) => {
-  const properties = Object.keys(componentMeta.properties);
+  const tempComponentMeta = deepClone(componentMeta);
+
+  let properties = [];
+  let additionalActions = [];
+  let dataProperties = [];
+
   const events = Object.keys(componentMeta.events);
   const validations = Object.keys(componentMeta.validation || {});
-  const tempComponentMeta = deepClone(componentMeta);
+
+  for (const [key] of Object.entries(componentMeta?.properties)) {
+    if (componentMeta?.properties[key]?.section === 'additionalActions') {
+      additionalActions.push(key);
+    } else if (componentMeta?.properties[key]?.accordian === 'Data') {
+      dataProperties.push(key);
+    } else {
+      properties.push(key);
+    }
+  }
 
   const { id } = component;
   const newOptions = [{ name: 'None', value: 'none' }];
-  Object.entries(allComponents).forEach(([componentId, component]) => {
-    if (component.component.parent === id && component?.component?.component === 'Button') {
-      newOptions.push({ name: component.component.name, value: componentId });
+  Object.entries(allComponents).forEach(([componentId, _component]) => {
+    const validParent =
+      _component.component.parent === id ||
+      _component.component.parent === `${id}-footer` ||
+      _component.component.parent === `${id}-header`;
+    if (validParent && _component?.component?.component === 'Button') {
+      newOptions.push({ name: _component.component.name, value: componentId });
     }
   });
 
@@ -48,7 +66,8 @@ export const Form = ({
     allComponents,
     validations,
     darkMode,
-    pages
+    pages,
+    additionalActions
   );
 
   return <Accordion items={accordionItems} />;
@@ -68,7 +87,8 @@ export const baseComponentProperties = (
   allComponents,
   validations,
   darkMode,
-  pages
+  pages,
+  additionalActions
 ) => {
   let items = [];
   if (properties.length > 0) {
@@ -89,6 +109,24 @@ export const baseComponentProperties = (
       ),
     });
   }
+
+  items.push({
+    title: 'Additional actions',
+    isOpen: true,
+    children: additionalActions?.map((property) =>
+      renderElement(
+        component,
+        componentMeta,
+        paramUpdated,
+        dataQueries,
+        property,
+        'properties',
+        currentState,
+        allComponents,
+        darkMode
+      )
+    ),
+  });
 
   if (events.length > 0) {
     items.push({

@@ -1,4 +1,4 @@
-import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
+import { DataBaseConstraints } from '@helpers/db_constraints.constants';
 import { MigrationInterface, QueryRunner, TableUnique } from 'typeorm';
 
 export class addUniqueKeyConstrainForOrganizationUsers1693309526388 implements MigrationInterface {

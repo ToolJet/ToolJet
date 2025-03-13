@@ -6,7 +6,7 @@ export class AddAppsGroupPermissionsTable1714015596201 implements MigrationInter
       `
         CREATE TABLE IF NOT EXISTS apps_group_permissions (
             id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            granular_permission_id UUID,
+            granular_permission_id UUID UNIQUE NOT NULL,
             can_edit BOOLEAN DEFAULT false,
             can_view BOOLEAN DEFAULT false,
             hide_from_dashboard BOOLEAN DEFAULT false,

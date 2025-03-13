@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { OnboardingUIWrapper } from '@/modules/onboarding/components';
 import {
   FormTextInput,
@@ -7,6 +8,7 @@ import {
   FormDescription,
   EmailComponent,
   GeneralFeatureImage,
+  TermsAndPrivacyInfo,
 } from '@/modules/common/components';
 import { appService, authenticationService } from '@/_services';
 import OnboardingBackgroundWrapper from '@/modules/onboarding/components/OnboardingBackgroundWrapper';
@@ -32,8 +34,6 @@ const WorkspaceInvitationPage = (props) => {
   const invitedOrganizationName = props.invitedOrganizationName || `Tooljet's workspace`;
 
   const organizationId = new URLSearchParams(props?.location?.search).get('oid');
-  const organizationToken = new URLSearchParams(props?.location?.search).get('organizationToken');
-  const source = new URLSearchParams(props?.location?.search).get('source');
   useEnterKeyPress(() => acceptInvite());
 
   useEffect(() => {
@@ -89,7 +89,6 @@ const WorkspaceInvitationPage = (props) => {
               name="name"
               dataCy="name-input"
               readOnly="true"
-              disableStartAdornment={true}
             />
             <FormTextInput
               label="Email"
@@ -103,24 +102,10 @@ const WorkspaceInvitationPage = (props) => {
               onClick={(e) => acceptInvite(e)}
               className="accept-invite-button"
               buttonText="Accept Invite"
+              isLoading={isLoading}
             />
           </form>
-          {defaultState && (
-            <p className="onboard d-block" data-cy="signup-terms-helper">
-              By signing up you are agreeing to the
-              <br />
-              <span>
-                <a href="https://www.tooljet.com/terms" data-cy="terms-of-service-link">
-                  Terms of Service{' '}
-                </a>
-                &
-                <a href="https://www.tooljet.com/privacy" data-cy="privacy-policy-link">
-                  {' '}
-                  Privacy Policy
-                </a>
-              </span>
-            </p>
-          )}
+          {defaultState && <TermsAndPrivacyInfo />}
         </div>
       </OnboardingUIWrapper>
     );

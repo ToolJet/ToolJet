@@ -18,6 +18,7 @@ export const groupPermissionV2Service = {
   deleteGranularPermission,
   updateGranularPermission,
   duplicate,
+  fetchAddableDs,
 };
 
 function create(name) {
@@ -31,7 +32,7 @@ function create(name) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/v2/group_permissions`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/v2/group-permissions`, requestOptions).then(handleResponse);
 }
 
 function update(groupPermissionId, body) {
@@ -41,7 +42,7 @@ function update(groupPermissionId, body) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/v2/group_permissions/${groupPermissionId}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/v2/group-permissions/${groupPermissionId}`, requestOptions).then(handleResponse);
 }
 
 function del(groupPermissionId) {
@@ -50,7 +51,7 @@ function del(groupPermissionId) {
     headers: authHeader(),
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/v2/group_permissions/${groupPermissionId}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/v2/group-permissions/${groupPermissionId}`, requestOptions).then(handleResponse);
 }
 
 function getGroup(groupPermissionId) {
@@ -59,7 +60,7 @@ function getGroup(groupPermissionId) {
     headers: authHeader(),
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/v2/group_permissions/${groupPermissionId}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/v2/group-permissions/${groupPermissionId}`, requestOptions).then(handleResponse);
 }
 
 function fetchAddableApps() {
@@ -68,7 +69,18 @@ function fetchAddableApps() {
     headers: authHeader(),
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/v2/group_permissions/granular-permissions/addable-apps`, requestOptions).then(
+  return fetch(`${config.apiUrl}/v2/group-permissions/granular-permissions/addable-apps`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function fetchAddableDs() {
+  const requestOptions = {
+    method: 'GET',
+    headers: authHeader(),
+    credentials: 'include',
+  };
+  return fetch(`${config.apiUrl}/v2/group-permissions/granular-permissions/addable-data-sources`, requestOptions).then(
     handleResponse
   );
 }
@@ -79,17 +91,17 @@ function getGroups() {
     headers: authHeader(),
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/v2/group_permissions`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/v2/group-permissions`, requestOptions).then(handleResponse);
 }
 
-function addUsersInGroups(body) {
+function addUsersInGroups(groupId, body) {
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/v2/group_permissions/group-user`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/v2/group-permissions/${groupId}/users`, requestOptions).then(handleResponse);
 }
 
 function deleteUserFromGroup(id) {
@@ -98,17 +110,17 @@ function deleteUserFromGroup(id) {
     headers: authHeader(),
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/v2/group_permissions/group-user/${id}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/v2/group-permissions/users/${id}`, requestOptions).then(handleResponse);
 }
 
-function createGranularPermission(body) {
+function createGranularPermission(id, body) {
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/v2/group_permissions/granular-permissions`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/v2/group-permissions/${id}/granular-permissions`, requestOptions).then(handleResponse);
 }
 
 function updateGranularPermission(id, body) {
@@ -118,9 +130,7 @@ function updateGranularPermission(id, body) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/v2/group_permissions/granular-permissions/update/${id}`, requestOptions).then(
-    handleResponse
-  );
+  return fetch(`${config.apiUrl}/v2/group-permissions/granular-permissions/${id}`, requestOptions).then(handleResponse);
 }
 
 function deleteGranularPermission(id) {
@@ -129,7 +139,7 @@ function deleteGranularPermission(id) {
     headers: authHeader(),
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/v2/group_permissions/granular-permissions/${id}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/v2/group-permissions/granular-permissions/${id}`, requestOptions).then(handleResponse);
 }
 
 function fetchGranularPermissions(groupPermissionId) {
@@ -138,7 +148,7 @@ function fetchGranularPermissions(groupPermissionId) {
     headers: authHeader(),
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/v2/group_permissions/${groupPermissionId}/granular-permissions`, requestOptions).then(
+  return fetch(`${config.apiUrl}/v2/group-permissions/${groupPermissionId}/granular-permissions`, requestOptions).then(
     handleResponse
   );
 }
@@ -150,7 +160,7 @@ function updateUserRole(body) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/v2/group_permissions/user-role/edit`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/v2/group-permissions/role/user`, requestOptions).then(handleResponse);
 }
 
 function getUsersInGroup(groupPermissionId, searchInput = '') {
@@ -160,7 +170,7 @@ function getUsersInGroup(groupPermissionId, searchInput = '') {
     credentials: 'include',
   };
   return fetch(
-    `${config.apiUrl}/v2/group_permissions/${groupPermissionId}/group-user?input=${searchInput && searchInput?.trim()}`,
+    `${config.apiUrl}/v2/group-permissions/${groupPermissionId}/users?input=${searchInput && searchInput?.trim()}`,
     requestOptions
   ).then(handleResponse);
 }
@@ -172,7 +182,7 @@ function getUsersNotInGroup(searchInput, groupPermissionId) {
     credentials: 'include',
   };
   return fetch(
-    `${config.apiUrl}/v2/group_permissions/${groupPermissionId}/group-user/addable-users?input=${searchInput.trim()}`,
+    `${config.apiUrl}/v2/group-permissions/${groupPermissionId}/users/addable-users?input=${searchInput.trim()}`,
     requestOptions
   ).then(handleResponse);
 }
@@ -184,7 +194,7 @@ function duplicate(groupPermissionId, body) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/v2/group_permissions/${groupPermissionId}/duplicate`, requestOptions).then(
+  return fetch(`${config.apiUrl}/v2/group-permissions/${groupPermissionId}/duplicate`, requestOptions).then(
     handleResponse
   );
 }

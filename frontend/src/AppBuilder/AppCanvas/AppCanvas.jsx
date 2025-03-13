@@ -1,12 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Container } from './Container';
 import Grid from './Grid';
 import { EditorSelecto } from './Selecto';
+import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
 import { HotkeyProvider } from './HotkeyProvider';
 import './appCanvas.scss';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
-import { getCanvasWidth, computeViewerBackgroundColor } from './appCanvasUtils';
+import { computeViewerBackgroundColor, getCanvasWidth } from './appCanvasUtils';
 import { NO_OF_GRIDS } from './appCanvasConstants';
 import cx from 'classnames';
 import FreezeVersionInfo from '@/AppBuilder/Header/FreezeVersionInfo';
@@ -37,8 +38,9 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
   const setIsComponentLayoutReady = useStore((state) => state.setIsComponentLayoutReady, shallow);
   const canvasMaxWidth = useAppCanvasMaxWidth({ mode: currentMode });
   const editorMarginLeft = useSidebarMargin(canvasContainerRef);
-  const isSidebarOpen = useStore((state) => state.isSidebarOpen, shallow);
   const isPagesSidebarHidden = useStore((state) => state.getPagesSidebarVisibility('canvas'), shallow);
+  const isSidebarOpen = useStore((state) => state.isSidebarOpen, shallow);
+  const getPageId = useStore((state) => state.getCurrentPageId, shallow);
 
   useEffect(() => {
     // Need to remove this if we shift setExposedVariable Logic outside of components
@@ -59,7 +61,11 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
   }, [currentLayout, canvasMaxWidth, isViewerSidebarPinned]);
 
   return (
-    <div className={cx(`main main-editor-canvas`, {})} id="main-editor-canvas" onMouseUp={handleCanvasContainerMouseUp}>
+    <div
+      className={cx(`main main-editor-canvas position-relative`, {})}
+      id="main-editor-canvas"
+      onMouseUp={handleCanvasContainerMouseUp}
+    >
       {creationMode === 'GIT' && <FreezeVersionInfo info={'Apps imported from git repository cannot be edited'} />}
       {creationMode !== 'GIT' && <FreezeVersionInfo hide={currentMode !== 'edit'} />}
       <div
@@ -91,7 +97,7 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
           style={{
             minWidth: `calc((100vw - 300px) - 48px)`,
           }}
-          className={`app-${appId}`}
+          className={`app-${appId} _tooljet-page-${getPageId()}`}
         >
           {currentMode === 'edit' && (
             <AutoComputeMobileLayoutAlert currentLayout={currentLayout} darkMode={isAppDarkMode} />
@@ -110,6 +116,7 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
                   isViewerSidebarPinned={isViewerSidebarPinned}
                   pageSidebarStyle={pageSidebarStyle}
                 />
+                <div id="component-portal" />
               </div>
             )}
 

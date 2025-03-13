@@ -251,11 +251,7 @@ const Filter = ({
               }
             />
             <div className="tw-flex items-center tw-ml-[3px]">
-              {filterCount > 0 ? (
-                <span>{pluralize(validFilterCountRef.current, 'filter')}</span>
-              ) : (
-                <div>&nbsp;&nbsp;Filter</div>
-              )}
+              {filterCount > 0 ? <span>{pluralize(filterCount, 'filter')}</span> : <div>&nbsp;&nbsp;Filter</div>}
             </div>
             {/* {areFiltersApplied && (
               <span>ed by {pluralize(Object.values(filters).filter(checkIsFilterObjectEmpty).length, 'column')}</span>

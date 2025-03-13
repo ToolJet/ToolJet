@@ -26,19 +26,29 @@
       position: relative;
       z-index: 1;
       margin-bottom: -1px;
+      &.removeBorder{
+        .TreeItem::before {
+          height: 0px !important;
+        }
+      }
 
       .TreeItem {
         position: relative;
         padding: 0;
-        height: 2px;
-        border-color: #3D63DC;
-        background-color: #3D63DC;
-
+        height: 0px;
         > * {
-          /* Items are hidden using height and opacity to retain focus */
           opacity: 0;
           height: 0;
         }
+      }
+      .TreeItem::before {
+        content: '';
+        position: absolute;
+        top: 3px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background-color: #3D63DC;
       }
     }
 

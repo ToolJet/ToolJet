@@ -22,6 +22,8 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'MultiselectV2',
   'Button',
   'RichTextEditor',
+  'Image',
+  'ModalV2',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -31,6 +33,9 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   ToggleSwitchV2: 'Data',
   Checkbox: 'Data',
   Button: 'Data',
+  Image: 'Data',
+  Container: 'Data',
+  ModalV2: 'Data',
 };
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
@@ -123,6 +128,7 @@ export const baseComponentProperties = (
       'Checkbox',
       'DropdownV2',
       'MultiselectV2',
+      'Image',
     ],
     Layout: [],
   };
@@ -147,7 +153,8 @@ export const baseComponentProperties = (
           'properties',
           currentState,
           allComponents,
-          darkMode
+          darkMode,
+          ''
         )
       ),
     });

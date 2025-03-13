@@ -9,7 +9,6 @@ module.exports = {
     'plugin:@typescript-eslint/recommended',
     'plugin:prettier/recommended',
     'plugin:cypress/recommended',
-    "plugin:deprecation/recommended",
   ],
   ignorePatterns: ['.eslintrc.js'],
   parser: '@typescript-eslint/parser',
@@ -56,6 +55,5 @@ module.exports = {
         extendDefaults: true,
       },
     ],
-    "deprecation/deprecation": "error",
   },
 };

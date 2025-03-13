@@ -93,9 +93,14 @@
 } */
 
 .active-target, .resizing-target {
-    outline: 1px solid #4af;
+    outline: 1px solid #4af !important;
     /* z-index: 1000000 !important; */
 } 
+
+.main-editor-canvas .widget-target:not(:has(.widget-target:hover)):hover {  
+    /* z-index: 1000000 !important; */
+    z-index: 4 !important;
+}
 
 .main-editor-canvas .hovered-target {
     outline: 1px solid #4af;
