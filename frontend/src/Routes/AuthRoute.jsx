@@ -74,9 +74,7 @@ export const AuthRoute = ({ children }) => {
     if (!signupRegex.test(pathname) && !loginRegex.test(pathname)) {
       resetToDefaultWhiteLabels();
     }
-    const whiteLabelText = retrieveWhiteLabelText();
-    const whiteLabelFavicon = retrieveWhiteLabelFavicon();
-    setFaviconAndTitle(whiteLabelFavicon, whiteLabelText, location);
+    setFaviconAndTitle(location);
   };
 
   const fetchOrganizationDetails = () => {

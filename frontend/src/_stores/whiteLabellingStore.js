@@ -24,12 +24,15 @@ const initialState = {
   isWhiteLabelDetailsFetched: false,
 };
 
+console.log('🟢 Zustand Store Initialized'); // Log store creation
+
 export const useWhiteLabellingStore = create(
   zustandDevTools(
     (set) => ({
       ...initialState,
       actions: {
         fetchWhiteLabelDetails: (organizationId) => {
+          console.log(`🟢 Store updated times`);
           return new Promise((resolve, reject) => {
             const headers = authHeader();
             const workspaceId = headers['tj-workspace-id'];
@@ -75,3 +78,8 @@ export const useWhiteLabelText = () => useWhiteLabellingStore((state) => state.w
 export const useWhiteLabelLogo = () => useWhiteLabellingStore((state) => state.whiteLabelLogo);
 export const useWhiteLabelFavicon = () => useWhiteLabellingStore((state) => state.whiteLabelFavicon);
 export const useWhiteLabellingActions = () => useWhiteLabellingStore((state) => state.actions);
+
+//add listener for values change
+useWhiteLabellingStore.subscribe((state) => {
+  console.log('state', state);
+});

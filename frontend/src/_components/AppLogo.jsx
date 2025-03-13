@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Logo from '@assets/images/tj-logo.svg';
 import { retrieveWhiteLabelLogo } from '@white-label/whiteLabelling';
 
@@ -10,13 +10,7 @@ export default function AppLogo({ isLoadingFromHeader, className }) {
       {url ? (
         <img src={url} height={26} data-cy="page-logo" />
       ) : (
-        <>
-          {isLoadingFromHeader ? (
-            <Logo height={26} data-cy="page-logo" />
-          ) : (
-                <img src="assets/images/tj-logo.svg" className={className} />
-          )}
-        </>
+          <>{isLoadingFromHeader ? <Logo height={26} data-cy="page-logo" /> : <img src={url} className={className} />}</>
       )}
     </>
   );

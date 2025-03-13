@@ -38,7 +38,7 @@ const WorkspaceInvitationPage = (props) => {
 
   useEffect(() => {
     authenticationService.deleteLoginOrganizationId();
-    setFaviconAndTitle(whiteLabelFavicon, whiteLabelText, props?.location);
+    setFaviconAndTitle(props?.location);
     checkWhiteLabelsDefaultState(organizationId).then((res) => {
       setdefaultState(res);
       setWhiteLabelText(retrieveWhiteLabelText());

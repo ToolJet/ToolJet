@@ -4,8 +4,8 @@ import { decodeEntities } from '@/_helpers/utils';
 // Default white-label settings
 export const defaultWhiteLabellingSettings = {
   WHITE_LABEL_TEXT: 'ToolJet',
-  WHITE_LABEL_LOGO: null,
-  WHITE_LABEL_FAVICON: null,
+  WHITE_LABEL_LOGO: 'assets/images/tj-logo.svg',
+  WHITE_LABEL_FAVICON: 'assets/images/logo.svg',
 };
 
 // White-label options mapping
@@ -27,11 +27,12 @@ export function retrieveWhiteLabelText() {
 
 export function retrieveWhiteLabelLogo() {
   const { whiteLabelLogo } = useWhiteLabellingStore.getState();
+  console.log('whiteLabelLogo', whiteLabelLogo);
   return whiteLabelLogo;
 }
 
 // Set favicon and title dynamically
-export async function setFaviconAndTitle(location, organizationId = null) {
+export async function setFaviconAndTitle(location) {
   // TODO:Uncomment-if-needed
   // await fetchWhiteLabelDetails(organizationId);
   const { whiteLabelFavicon, whiteLabelText } = useWhiteLabellingStore.getState();
@@ -108,13 +109,13 @@ export async function fetchAndSetWindowTitle(pageDetails) {
 // Fetch and update white label settings
 export async function fetchWhiteLabelDetails(organizationId = null) {
   const { isWhiteLabelDetailsFetched, actions, activeOrganizationId } = useWhiteLabellingStore.getState();
-
   // Check if data should be fetched
   const shouldFetch =
     !isWhiteLabelDetailsFetched || !activeOrganizationId || (organizationId && activeOrganizationId !== organizationId);
 
   if (shouldFetch) {
     try {
+      console.log('fetching white label details');
       await actions.fetchWhiteLabelDetails(organizationId);
       applyWhiteLabelling();
     } catch (error) {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Logo from '@/modules/common/resources/images/Logo';
 import './resources/styles/onboarding-form-wrapper.styles.scss';
 import { getSubpath } from '@/_helpers/routes';

@@ -33,7 +33,7 @@ class OrganizationInvitationPageComponent extends React.Component {
 
   componentDidMount() {
     authenticationService.deleteLoginOrganizationId();
-    setFaviconAndTitle(this.whiteLabelText, this.whiteLabelFavicon, this.props?.location);
+    setFaviconAndTitle(this.props?.location);
     checkWhiteLabelsDefaultState(this.organizationId).then((res) => {
       this.setState({ defaultState: res });
       this.whiteLabelText = retrieveWhiteLabelText();

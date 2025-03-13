@@ -83,7 +83,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
           (configs) => {
             setIsGettingConfigs(false);
             setConfigs(configs);
-            setFaviconAndTitle(null, null, location);
+            setFaviconAndTitle(location);
           },
           () => {
             setIsGettingConfigs(false);

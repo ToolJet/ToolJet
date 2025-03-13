@@ -12,7 +12,7 @@ import { useAppDataStore } from '@/_stores/appDataStore';
 import { getCurrentState, useCurrentStateStore } from '@/_stores/currentStateStore';
 import { getWorkspaceIdOrSlugFromURL, getSubpath, returnWorkspaceIdIfNeed, eraseRedirectUrl } from './routes';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
-import { defaultWhiteLabellingSettings } from '@/_stores/utils';
+import { defaultWhiteLabellingSettings } from '@/_helpers/white-label/whiteLabelling';
 import { getDateTimeFormat } from '@/Editor/Components/Table/Datepicker';
 import { useKeyboardShortcutStore } from '@/_stores/keyboardShortcutStore';
 import { validateMultilineCode } from './utility';

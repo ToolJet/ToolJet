@@ -24,7 +24,7 @@ function Layout({
   toggleCollapsibleSidebar = () => {},
 }) {
   const [licenseValid, setLicenseValid] = useState(false);
-  const [logo, setLogo] = useState(null);
+  const logo = retrieveWhiteLabelLogo();
   const router = useRouter();
   const { featureAccess } = useLicenseStore(
     (state) => ({
@@ -101,17 +101,17 @@ function Layout({
   // fetchWhiteLabelDetails();
 
   useEffect(() => {
-    const fetchLogo = async () => {
-      try {
-        const whiteLabelLogo = await retrieveWhiteLabelLogo();
-        setLogo(whiteLabelLogo);
-      } catch (error) {
-        console.error('Error fetching logo:', error);
-        setLogo(null);
-      }
-    };
-
-    fetchLogo();
+    // const fetchLogo = async () => {
+    //   try {
+    //     const whiteLabelLogo = retrieveWhiteLabelLogo();
+    //     console.log('whiteLabelLogo', whiteLabelLogo);
+    //     setLogo(whiteLabelLogo);
+    //   } catch (error) {
+    //     console.error('Error fetching logo:', error);
+    //     setLogo(null);
+    //   }
+    // };
+    // fetchLogo();
   }, []);
 
   const isBuilder = hasBuilderRole(authenticationService?.currentSessionValue?.role ?? {});
