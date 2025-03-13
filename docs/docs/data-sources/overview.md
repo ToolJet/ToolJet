@@ -38,7 +38,7 @@ Data Source page is available only on **ToolJet version 2.3.0 and above**.
 
 3. Once the data source is added, you'll be required to input the configuration details for establishing a connection.
 
-  ***Note: For paid plans, configuration entry and saving are necessary to enable availability across [multiple environments](/docs/release-management/multi-environment/).***
+  ***Note: For paid plans, configuration entry and saving are necessary to enable availability across [multiple environments](/docs/development-lifecycle/environment/self-hosted/multi-environment).***
 
   <div style={{textAlign: 'center'}}>
   
@@ -78,7 +78,7 @@ By default, 4 data sources will be available on every app on ToolJet:
 
 ## User Permissions
 
-Changing the **Permissions** for Data Sources is a privilege reserved for **Admins** and **[Super Admins](/docs/Enterprise/superadmin)** within the workspace.
+Changing the **Permissions** for Data Sources is a privilege reserved for **Admins** and **[Super Admins](/docs/user-management/role-based-access/access-control#data-sources)** within the workspace.
 
 To configure these permissions, navigate to **Workspace Settings** -> **Groups Settings**. Admins and Super Admins have the authority to assign the following permissions to user groups:
 

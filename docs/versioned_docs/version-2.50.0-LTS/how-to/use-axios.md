@@ -62,7 +62,7 @@ This POST request sends user details to the server. The server's response, as sh
 </div>
 
 To see Axios in action in a project, check out this tutorial:
-**[Build GitHub star history tracker](https://blog.tooljet.com/build-github-stars-history-app-in-5-minutes-using-low-code/)**.
+**[Build GitHub star history tracker](https://blog.tooljet.ai/build-github-stars-history-app-in-5-minutes-using-low-code/)**.
 
 
 </div>
