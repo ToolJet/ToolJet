@@ -5,6 +5,10 @@ title: Kubernetes (EKS)
 
 Follow the steps below to deploy ToolJet on an EKS Kubernetes cluster.
 
+:::warning
+To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
+:::
+
 :::info
 You should set up a PostgreSQL database manually to be used by ToolJet. We recommend using an RDS PostgreSQL database. You can find the system requirements [here](/docs/setup/system-requirements#database-software)
 :::
@@ -39,9 +43,7 @@ Make sure to edit the environment variables in the `deployment.yaml`. We advise 
         Read **[environment variables reference](/docs/setup/env-vars)**
 :::
 
-:::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
-:::
+
 
 3. Create a Kubernetes service to publish the Kubernetes deployment that you have created. We have a [template](https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/service.yaml) for exposing the ToolJet server as a service using an AWS Load Balancer.
 

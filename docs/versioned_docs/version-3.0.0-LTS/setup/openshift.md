@@ -5,6 +5,10 @@ title: Openshift
 
 # Deploying ToolJet on Openshift
 
+:::warning
+To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
+:::
+
 :::info 
 You should setup a PostgreSQL database manually to be used by ToolJet.
 :::
@@ -27,9 +31,7 @@ Follow the steps below to deploy ToolJet on Openshift.
 
 Read **[environment variables reference](/docs/setup/env-vars)**
 
-:::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
-:::
+
 
 3. Once you have logged into the Openshift developer dashboard click on `+Add` tab. Select import YAML from the local machine.
 

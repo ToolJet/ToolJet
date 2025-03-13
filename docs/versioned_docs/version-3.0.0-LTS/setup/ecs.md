@@ -5,6 +5,10 @@ title: AWS ECS
 
 # Deploying ToolJet on Amazon ECS
 
+:::warning
+To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
+:::
+
 :::info
 You should setup a PostgreSQL database manually to be used by ToolJet.
 :::
@@ -39,7 +43,7 @@ Please note that if you already have an existing Redis setup, you can continue u
   <img className="screenshot-full" src="/img/setup/ecs/ecs-1.png" alt="ECS Setup" />
 
 - Please add container and image tag as shown below: <br/>
-  **Make sure that you are using redis version 6.x.x**
+  **Make sure that you are using redis version 6.2**
   <img className="screenshot-full" src="/img/setup/ecs/ecs-2.png" alt="ECS Setup" />
 
 - Ensure that when creating a service, Redis is integrated into the same cluster where your ToolJet app will be deployed. <br/>
@@ -89,12 +93,16 @@ Follow the steps below to deploy ToolJet on a ECS cluster.
         :::
 
         Additionally, include the Redis environment variables within the ToolJet container mentioned above if you have followed the previous steps to create Redis.
-        ```
-        REDIS_HOST=<public ip of redis task>
-        REDIS_PORT=6379
-        REDIS_USER=default
-        REDIS_PASSWORD=
-        ```
+
+        #### Redis Variables
+
+            | Variable        | Description                          |
+            |---------------|----------------------------------|
+            | `REDIS_HOST`   | Public IP of the Redis task    |
+            | `REDIS_PORT`   | Redis service port (default: 6379) |
+            | `REDIS_USER`   | Redis username (default: `default`) |
+            | `REDIS_PASSWORD` | Redis authentication password (if required) |
+
     5. Make sure `Use log collection checked` and `Docker configuration` with the command `npm run start:prod`
         <img className="screenshot-full" src="/img/setup/ecs/ecs-8.png" alt="ECS Setup" />
 
@@ -150,11 +158,14 @@ Follow the steps below to deploy PostgREST on a ECS cluster.
   
   Under environmental variable please add corresponding PostgREST env variables. You can also refer [env variable](/docs/setup/env-vars/#postgrest-server-required).
 
-  <div style={{textAlign: 'center'}}>
+  ### PostgREST Environment Variables  
 
-  <img className="screenshot-full" src="/img/setup/ecs/ecs-14.png" alt="ECS Setup" />
-
-  </div>
+    | Variable            | Description                                        |
+    |---------------------|----------------------------------------------------|
+    | `PGRST_JWT_SECRET`  | JWT token client provided for authentication.     |
+    | `PGRST_DB_URI`      | Database connection string for ToolJet database.  |
+    | `PGRST_SERVER_PORT` | Port on which PostgREST runs (default: `3001`).   |
+    | `PGRST_DB_PRE_CONFIG` | Pre-configuration setting for PostgREST.        |
 
 
 2. Create service and make sure the postgrest is within the same cluster as ToolJet app. 
@@ -185,11 +196,6 @@ Follow the steps below to deploy PostgREST on a ECS cluster.
 Update ToolJet deployment with the appropriate env variables [here](/docs/setup/env-vars/#enable-tooljet-database-required) and apply the changes.
 
 </div>
-
-:::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
-:::
-
 
 ## Upgrading to the Latest LTS Version
 
