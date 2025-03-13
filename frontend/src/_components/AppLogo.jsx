@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import Logo from '@assets/images/tj-logo.svg';
 import { retrieveWhiteLabelLogo } from '@white-label/whiteLabelling';
-
+import useStore from '@/AppBuilder/_stores/store';
 export default function AppLogo({ isLoadingFromHeader, className }) {
-  const url = retrieveWhiteLabelLogo();
+  const url = useStore((store) => store.whiteLabelLogo);
 
   return (
     <>

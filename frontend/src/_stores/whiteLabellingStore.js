@@ -2,6 +2,7 @@ import { create, zustandDevTools } from './utils';
 import { whiteLabellingService } from '@/_services';
 import { authHeader } from '@/_helpers';
 
+import useStore from '@/AppBuilder/_stores/store';
 // Define constants locally to avoid import issues
 const DEFAULT_WHITE_LABEL_SETTINGS = {
   WHITE_LABEL_TEXT: 'ToolJet',
@@ -45,6 +46,15 @@ export const useWhiteLabellingStore = create(
               .get(organizationId)
               .then((settings) => {
                 set({
+                  whiteLabelText: settings[WHITE_LABEL_OPTIONS.WHITE_LABEL_TEXT],
+                  whiteLabelLogo: settings[WHITE_LABEL_OPTIONS.WHITE_LABEL_LOGO],
+                  whiteLabelFavicon: settings[WHITE_LABEL_OPTIONS.WHITE_LABEL_FAVICON],
+                  loadingWhiteLabelDetails: false,
+                  isWhiteLabelDetailsFetched: true,
+                });
+
+                //update the white-label slice from here. somehow when we open the builder the actual store values goes back to default state. need to investigte more
+                useStore.getState().updateWhiteLabelDetails({
                   whiteLabelText: settings[WHITE_LABEL_OPTIONS.WHITE_LABEL_TEXT],
                   whiteLabelLogo: settings[WHITE_LABEL_OPTIONS.WHITE_LABEL_LOGO],
                   whiteLabelFavicon: settings[WHITE_LABEL_OPTIONS.WHITE_LABEL_FAVICON],

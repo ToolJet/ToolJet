@@ -69,11 +69,12 @@ export const AuthRoute = ({ children }) => {
   };
 
   const verifyWhiteLabeling = (pathname) => {
-    const signupRegex = /^\/signup\/[^/]+$/;
-    const loginRegex = /^\/login\/[^/]+$/;
-    if (!signupRegex.test(pathname) && !loginRegex.test(pathname)) {
-      resetToDefaultWhiteLabels();
-    }
+    // TODO: assume this code only needs for cloud.
+    // const signupRegex = /^\/signup\/[^/]+$/;
+    // const loginRegex = /^\/login\/[^/]+$/;
+    // if (!signupRegex.test(pathname) && !loginRegex.test(pathname)) {
+    //   resetToDefaultWhiteLabels();
+    // }
     setFaviconAndTitle(location);
   };
 
