@@ -83,11 +83,18 @@ export const linkConfig = {
       },
     },
   },
-  exposedVariables: {},
+  exposedVariables: {
+    linkText: 'Click here',
+  },
   actions: [
     {
       handle: 'click',
       displayName: 'Click',
+    },
+    {
+      handle: 'setLinkText',
+      displayName: 'Set link text',
+      params: [{ handle: 'setLinkText', displayName: 'Link text', defaultValue: 'New link text' }],
     },
   ],
   definition: {

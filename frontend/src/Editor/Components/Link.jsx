@@ -1,8 +1,10 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import cx from 'classnames';
 
 export const Link = ({ height, properties, styles, fireEvent, setExposedVariable, dataCy }) => {
-  const { linkTarget, linkText, targetType } = properties;
+  const { linkTarget, targetType } = properties;
+  const [linkText, setLinkText] = useState(properties.linkText);
+  console.log({ linkText });
   const { textColor, textSize, underline, visibility, boxShadow } = styles;
   const clickRef = useRef();
 
@@ -16,8 +18,19 @@ export const Link = ({ height, properties, styles, fireEvent, setExposedVariable
     setExposedVariable('click', async function () {
       clickRef.current.click();
     });
+
+    setExposedVariable('setLinkText', async function (text) {
+      setExposedVariable('linkText', text);
+      setLinkText(text);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    console.log({ linkText });
+    setExposedVariable('linkText', linkText);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [linkText]);
 
   return (
     <div
