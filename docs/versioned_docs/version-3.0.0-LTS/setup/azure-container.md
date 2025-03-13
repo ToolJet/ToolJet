@@ -6,7 +6,9 @@ title: Azure container apps
 # Deploying ToolJet on Azure container apps
 
 :::info
-Please note that you need to set up a PostgreSQL database manually to be used by ToolJet.
+Please note that you need to set up a PostgreSQL database manually to be used by ToolJet. 
+
+ToolJet comes with a built-in Redis setup, which is used for multiplayer editing and background jobs. However, for multi-service setup, it's recommended to use an external Redis instance.
 :::
 
 :::warning

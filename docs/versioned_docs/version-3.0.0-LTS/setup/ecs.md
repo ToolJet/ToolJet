@@ -10,7 +10,9 @@ To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway
 :::
 
 :::info
-You should setup a PostgreSQL database manually to be used by ToolJet. ToolJet comes with a built-in Redis setup, which is used for multiplayer editing and background jobs. However, for multi-service setups, it's recommended to use an external Redis instance.
+You should setup a PostgreSQL database manually to be used by ToolJet. 
+
+ToolJet comes with a built-in Redis setup, which is used for multiplayer editing and background jobs. However, for multi-service setups, it's recommended to use an external Redis instance.
 :::
 
 You can effortlessly deploy Amazon Elastic Container Service (ECS) by utilizing a [CloudFormation template](https://aws.amazon.com/cloudformation/):

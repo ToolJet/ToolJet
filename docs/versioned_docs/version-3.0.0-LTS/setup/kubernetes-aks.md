@@ -8,7 +8,7 @@ title: Kubernetes (AKS)
 :::info
 You should setup a PostgreSQL database manually to be used by ToolJet. We recommend using Azure Database for PostgreSQL since this guide is for deploying using AKS.
 
-ToolJet comes with a built-in Redis setup, which is used for multiplayer editing and background jobs. However, for multi-pod setups, it's recommended to use an external Redis instance.
+ToolJet comes with a built-in Redis setup, which is used for multiplayer editing and background jobs. However, for multi-pod setup, it's recommended to use an external Redis instance.
 :::
 
 Follow the steps below to deploy ToolJet on a AKS Kubernetes cluster.
