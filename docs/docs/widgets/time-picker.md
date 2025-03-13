@@ -1,5 +1,5 @@
 ---
-id: timepicker
+id: time-picker
 title: Time Picker
 ---
 

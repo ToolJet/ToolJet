@@ -201,6 +201,14 @@ module.exports = {
           {
             to: '/docs/beta/widgets/datetime-picker-v2',
             from: '/docs/widgets/datetime-picker-v2',
+          },
+          {
+            to: '/docs/beta/widgets/date-picker-v2',
+            from: '/docs/widgets/date-picker-v2',
+          },
+          {
+            to: '/docs/beta/widgets/time-picker',
+            from: '/docs/widgets/time-picker',
           }
         ],
       },
