@@ -23,8 +23,6 @@ import {
   handleDeactivateTargets,
   handleActivateNonDraggingComponents,
 } from './gridUtils';
-import { useAppVersionStore } from '@/_stores/appVersionStore';
-import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { dragContextBuilder, getAdjustedDropPosition } from './helpers/dragEnd';
 import useStore from '@/AppBuilder/_stores/store';
 import './Grid.css';
