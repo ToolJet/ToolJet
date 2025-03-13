@@ -10,7 +10,7 @@ To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway
 :::
 
 :::info
-You should setup a PostgreSQL database manually to be used by ToolJet. ToolJet includes a built-in Redis setup by default, but for multiplayer editing and background jobs in multi-service setup, use an external Redis instance.
+You should setup a PostgreSQL database manually to be used by ToolJet. ToolJet comes with a built-in Redis setup, which is used for multiplayer editing and background jobs. However, for multi-service setups, it's recommended to use an external Redis instance.
 :::
 
 You can effortlessly deploy Amazon Elastic Container Service (ECS) by utilizing a [CloudFormation template](https://aws.amazon.com/cloudformation/):
@@ -83,7 +83,7 @@ Follow the steps below to deploy ToolJet on a ECS cluster.
   - Select your designated VPC, Subnets and Security groups. Kindly ensure that the security group allows for inbound traffic to http port 3000 for the task.
 
     <img className="screenshot-full" src="/img/setup/ecs/ecs-11.png" alt="ECS Setup" />
-    
+
   - Since migrations are run as a part of container boot, please specify health check grace period for 900 seconds. Select the application loadbalancer option and set the target group name to the one we had created earlier. This will auto populate the health check endpoints.
 
 :::info

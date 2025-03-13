@@ -6,7 +6,7 @@ title: Kubernetes (GKE)
 # Deploying ToolJet on Kubernetes (GKE)
 
 :::info
-You should setup a PostgreSQL database manually to be used by ToolJet. ToolJet includes a built-in Redis setup by default, but for multiplayer editing and background jobs in multi-pod setup, use an external Redis instance.
+You should setup a PostgreSQL database manually to be used by ToolJet. ToolJet comes with a built-in Redis setup, which is used for multiplayer editing and background jobs. However, for multi-pods setup, it's recommended to use an external Redis instance.
 :::
 
 Follow the steps below to deploy ToolJet on a GKE Kubernetes cluster.

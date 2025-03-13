@@ -12,7 +12,7 @@ To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api
 :::info
 You should set up a PostgreSQL database manually to be used by ToolJet. We recommend using an RDS PostgreSQL database. You can find the system requirements [here](/docs/setup/system-requirements#database-software).
 
-ToolJet comes with a built-in Redis setup by default. However, for multiplayer editing and background jobs in a multi-pod deployment, we recommend using an external Redis instance for better performance.
+ToolJet comes with a built-in Redis setup, which is used for multiplayer editing and background jobs. However, for multi-pod setup, it's recommended to use an external Redis instance.
 :::
 
 1. Create an EKS cluster and connect to it to start with the deployment. You can follow the steps as mentioned in the [AWS documentation](https://docs.aws.amazon.com/eks/latest/userguide/create-cluster.html).
