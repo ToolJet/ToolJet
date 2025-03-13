@@ -197,6 +197,10 @@ module.exports = {
           {
             to: '/docs/user-management/authentication/self-hosted/instance-login/',
             from: '/docs/enterprise/superadmin',
+          },
+          {
+            to: '/docs/beta/widgets/datetime-picker-v2',
+            from: '/docs/widgets/datetime-picker-v2',
           }
         ],
       },
