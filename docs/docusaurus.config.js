@@ -197,6 +197,10 @@ module.exports = {
           {
             to: '/docs/user-management/authentication/self-hosted/instance-login/',
             from: '/docs/enterprise/superadmin',
+          },
+          {
+            to: '/docs/beta/widgets/test-doc',
+            from: '/docs/widgets/test-doc',
           }
         ],
       },
