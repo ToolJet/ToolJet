@@ -37,7 +37,9 @@ Follow the steps below to deploy ToolJet on a ECS cluster.
     1. Select Fargate as launch type compatibility
     2. Configure IAM roles and set operating system family as Linux. 
     3. Select task size to have 3GB of memory and 1vCpu
+
         <img className="screenshot-full" src="/img/setup/ecs/ecs-4.png" alt="ECS Setup" />
+
     4. Add container details that is shown: <br/>
        Specify your container name ex: `ToolJet` <br/>
        Set the image you intend to deploy. ex: `tooljet/tooljet:ee-lts-latest` <br/>
@@ -68,14 +70,20 @@ Follow the steps below to deploy ToolJet on a ECS cluster.
 
   - Select the cluster which you have created
   - Select launch type as Fargate 
+
     <img className="screenshot-full" src="/img/setup/ecs/ecs-9.png" alt="ECS Setup" />
+
   - Select the cluster and set the service name
   - You can set the number of tasks to start with as two
   - Rest of the values can be kept as default
+
     <img className="screenshot-full" src="/img/setup/ecs/ecs-10.png" alt="ECS Setup" />
+
   - Click on next step to configure networking options
   - Select your designated VPC, Subnets and Security groups. Kindly ensure that the security group allows for inbound traffic to http port 3000 for the task.
+
     <img className="screenshot-full" src="/img/setup/ecs/ecs-11.png" alt="ECS Setup" />
+    
   - Since migrations are run as a part of container boot, please specify health check grace period for 900 seconds. Select the application loadbalancer option and set the target group name to the one we had created earlier. This will auto populate the health check endpoints.
 
 :::info
