@@ -462,3 +462,75 @@ img {
 }
 
 /* HOMEPAGE STYLES END*/
+
+#faq-dropdown {
+  border: none !important;
+  background-color: #F6F8FA;
+}
+
+#faq-dropdown div div {
+  border: none;
+  padding-top: 0;
+  margin-top: 6px;
+}
+
+#faq-dropdown div div a {
+  text-decoration-color: #6A727C !important;
+}
+
+
+/* Remove the default left-side arrow */
+#faq-dropdown>summary::before {
+  content: none !important;
+  /* Hides the default arrow */
+}
+
+
+/* Target the FAQ dropdown summary */
+#faq-dropdown>summary {
+  position: relative;
+  padding-left: 0;
+  cursor: pointer;
+}
+
+
+
+/* Add the "+" icon on the right */
+#faq-dropdown>summary::after {
+  content: "+";
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #6A727C;
+  transition: transform 0.2s ease-in-out;
+}
+
+/* Change "+" to "-" when opened */
+#faq-dropdown[open]>summary::after {
+  content: "−";
+}
+
+
+/* Dropdownns */
+
+#tj-dropdown {
+  border: none !important;
+  background-color: #F6F8FA;
+}
+
+#tj-dropdown div div {
+  border: none;
+  padding-top: 0;
+  margin-top: 6px;
+}
+
+#tj-dropdown div div a {
+  text-decoration-color: #6A727C !important;
+}
+
+#tj-dropdown>summary::before {
+  border-color: transparent transparent transparent #6A727C !important;
+}

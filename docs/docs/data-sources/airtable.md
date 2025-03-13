@@ -82,7 +82,7 @@ Timezone and User locale are mutually dependent. If you provide a timezone, you 
 <img className="screenshot-full" src="/img/datasource-reference/airtable/list-records-v3.png" alt="Airtable List Records Query" />
 
 
-<details>
+<details id="tj-dropdown">
 <summary>**Example Values**</summary>
 
 ```json
