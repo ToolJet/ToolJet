@@ -128,6 +128,7 @@ const sidebars = {
                   'type': 'category',
                   'label': 'Components',
                   'items': [
+                    'widgets/test-doc',
                     'widgets/bounded-box',
                     'widgets/button',
                     'widgets/button-group',
