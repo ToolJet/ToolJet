@@ -16,7 +16,7 @@ ToolJet requires the following to connect to your BigQuery:
 
 For generating a private key check out **[Firestore's official documentation](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#iam-service-account-keys-create-console)**.
 
-<img className="screenshot-full" src="/img/datasource-reference/firestore/add-ds-firestore-v2.png"  alt="firestore add ds"/>
+<img className="screenshot-full" src="/img/datasource-reference/firestore/add-ds-firestore-v3.png"  alt="firestore add ds"/>
 
 </div>
 
@@ -29,7 +29,7 @@ For generating a private key check out **[Firestore's official documentation](ht
 3. Select the desired operation from the dropdown and enter the required parameters.
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
-<img className="screenshot-full" src="/img/datasource-reference/firestore/firestore-query-v2.png" alt="firestore QUERY" />
+<img className="screenshot-full" src="/img/datasource-reference/firestore/firestore-query-v3.png" alt="firestore QUERY" />
 
 :::tip
 Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/tutorial/transformations)**
@@ -56,7 +56,25 @@ Use this operation to get the data in a document.
 
 - **Path**
 
-<img className="screenshot-full" src="/img/datasource-reference/firestore/get-v2.png" alt="firestore get" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full" src="/img/datasource-reference/firestore/get-v3.png" alt="firestore get" />
+
+<details>
+<summary>**Example Values**</summary>
+
+```yaml
+Path: /your-path-here
+```
+
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+
+```yaml
+hello:24
+```
+</details>
+
 
 ### Query Collection
 
@@ -74,7 +92,32 @@ Use this operation to query all the documents in a collection. Check firestore d
 - **Operator**
 - **Value**
 
-<img className="screenshot-full" src="/img/datasource-reference/firestore/query-collection-v2.png" alt="firestore collection" style={{marginBottom:'15px'}}/>
+<img className="screenshot-full" src="/img/datasource-reference/firestore/query-collection-v3.png" alt="firestore collection"/>
+
+<details>
+<summary>**Example Values**</summary>
+
+```yaml
+path: /your-path-here
+```
+
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+
+```json
+[
+  {
+    "document_id": "NHSt1ZQCac0K1YV51t3N",
+    "data": {
+      "Author": "Shubh",
+      "id": 5
+    }
+  }
+]
+```
+</details>
 
 ### Add Document to Collection
 
@@ -85,7 +128,11 @@ Use this operation for creating a new document in a collection.
 - **Collection**
 - **Body**. 
 
-#### Example
+<img className="screenshot-full" src="/img/datasource-reference/firestore/add-document-v3.png" alt="firestore document" />
+
+<details>
+<summary>**Example Values**</summary>
+
 ```json
 {
 "Author": "Shubh",
@@ -93,7 +140,20 @@ Use this operation for creating a new document in a collection.
 }
 ```
 
-<img style={{marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/firestore/add-document-v2.png" alt="firestore document" />
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+
+```json
+{
+  "_writeTime": {
+    "_seconds": 1741173502,
+    "_nanoseconds": 958221000
+  }
+}
+```
+</details>
 
 ### Update Document
 
@@ -104,7 +164,11 @@ Use this operation for updating the existing document in a collection. Also, it 
 - **Path**
 - **Body**
 
-#### Example
+<img className="screenshot-full" src="/img/datasource-reference/firestore/update-v3.png" alt="firestore update" />
+
+<details>
+<summary>**Example Values**</summary>
+
 ```json
 {
 "Author": "Shubhendra",
@@ -112,7 +176,20 @@ Use this operation for updating the existing document in a collection. Also, it 
 }
 ```
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/firestore/update-v2.png" alt="firestore update" />
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+
+```json
+{
+  "_writeTime": {
+    "_seconds": 1741173133,
+    "_nanoseconds": 874981000
+  }
+}
+```
+</details>
 
 ### Set Document
 
@@ -123,7 +200,11 @@ This operation replaces your chosen object with the value that you provide. So i
 - **Path**
 - **Body** 
 
-#### Example
+<img className="screenshot-full" src="/img/datasource-reference/firestore/set-v3.png" alt="firestore set" />
+
+<details>
+<summary>**Example Values**</summary>
+
 ```json
 {
 "Author": "Shefewfbh",
@@ -131,7 +212,20 @@ This operation replaces your chosen object with the value that you provide. So i
 }
 ```
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/firestore/set-v2.png" alt="firestore set" />
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+
+```json
+{
+  "_writeTime": {
+    "_seconds": 1741173740,
+    "_nanoseconds": 801134000
+  }
+}
+```
+</details>
 
 ### Bulk Update Using Document ID
 
@@ -143,7 +237,7 @@ Use this operation for bulk updating documents.
 - **Key for document ID**
 - **Records**
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/firestore/bulk-v2.png" alt="firestore bulk" />
+<img className="screenshot-full" src="/img/datasource-reference/firestore/bulk-v2.png" alt="firestore bulk" />
 
 ### Delete Document
 
@@ -153,11 +247,33 @@ Use this operation for deleting a document in a collection.
 
 - **Path**
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/datasource-reference/firestore/delete-v2.png" alt="firestore delete"/>
+<img className="screenshot-full" src="/img/datasource-reference/firestore/delete-v3.png" alt="firestore delete"/>
+
+<details>
+<summary>**Example Values**</summary>
+
+```yaml
+path: /your-path-here
+```
+
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+
+```json
+{
+  "_writeTime": {
+    "_seconds": 1741174305,
+    "_nanoseconds": 703549000
+  }
+}
+```
+</details>
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Transforming Firestore Query Result for Table Widget
 

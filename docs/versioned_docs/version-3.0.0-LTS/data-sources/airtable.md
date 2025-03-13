@@ -36,7 +36,7 @@ Airtable API has a rate limit, and at the time of writing this documentation, th
 3. Select the desired operation from the dropdown and enter the required parameters.
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
-<img className="screenshot-full" src="/img/datasource-reference/airtable/operations.png" alt="Airtable Data Source Operations" />
+<img className="screenshot-full" src="/img/datasource-reference/airtable/operations-v2.png" alt="Airtable Data Source Operations" />
 
 </div>
 
@@ -79,24 +79,15 @@ This operation retrieves a list of records from the specified table.
 Timezone and User locale are mutually dependent. If you provide a timezone, you must also provide a user locale and vice versa. These properties are only applied when cell format is set to string. To correctly format date and time fields, make sure the coloumn type is set to Date or Date Time in Airtable.
 :::
 
-<img className="screenshot-full" src="/img/datasource-reference/airtable/list-records-v3.png" alt="Airtable List Records Query" />
+<img className="screenshot-full" src="/img/datasource-reference/airtable/list-records-v4.png" alt="Airtable List Records Query" />
 
 
 <details>
 <summary>**Example Values**</summary>
 
 ```json
-Base ID: appO4WnRU3eTWnrDB
-Table name: tblAPbj6KMjS8pxhH // Can be Table name or Table ID
-Page size: 100
-Offset: itrU18e2y6ITuMs1n/recjR8UdOZKjZ7aK3
-Fields: ["Date", "Email", "Usage (# Weeks)"]
-Filter by formula: IF({Usage (# Weeks)} < 10, 1, 0) // Only records with Usage (# Weeks) less than 10
-Timezone: America/Chicago
-User locale: en-gb
-Cell format: string // Cell format needs to be string for Timezone and User locale to work
-View: All Responses
-Sort: createdTime // Select direction: Ascending or Descending
+Base ID: app6mDmBQLjJNp8vO
+Table name: tbltnWU08SBzmAWd5 // Can be Table name or Table ID
 ```
 
 </details>
@@ -106,37 +97,26 @@ Sort: createdTime // Select direction: Ascending or Descending
   <summary>**Response Example**</summary>
   
   ```json
-  {
-    "records": [
-      {
-        "id": "recToGRP6bWUG6djd",
-        "createdTime": "2016-11-21T20:21:40.000Z",
-        "fields": {
-          "Usage (# Weeks)": "3",
-          "Email": "Edith Lindon",
-          "Date": "11-21-2016"
-        }
-      },
-      {
-        "id": "recnUVJ8wwZbdECLk",
-        "createdTime": "2016-11-21T20:21:40.000Z",
-        "fields": {
-          "Usage (# Weeks)": "3",
-          "Email": "Marcellus Wong",
-          "Date": "11-21-2016"
-        }
-      },
-      {
-        "id": "recStKhQYw4Fn2qpj",
-        "createdTime": "2016-11-21T20:21:40.000Z",
-        "fields": {
-          "Usage (# Weeks)": "2",
-          "Email": "Lorraine Ljuba",
-          "Date": "11-21-2016"
-        }
+{
+  "records": [
+    {
+      "id": "rec2Nix9XrfzsGXfs",
+      "createdTime": "2025-03-04T12:22:09.000Z",
+      "fields": {
+        "Name": "Katrina Petersons",
+        "Email": "katrina.petersons@example.com"
       }
-    ]
-  }
+    },
+    {
+      "id": "recK62zueMpI3PErc",
+      "createdTime": "2025-03-04T12:25:23.000Z",
+      "fields": {
+        "Name": "John Doe",
+        "Email": "john.doe@example.com"
+      }
+    }
+  ]
+}
   ```
 </details>
 
@@ -150,19 +130,30 @@ This operation fetches a specific record from the specified table.
 - **Table name**
 - **Record ID**
 
-<img className="screenshot-full" src="/img/datasource-reference/airtable/retrieve-record-v2.png" alt="Airtable Retrieve Record Query" />
+<img className="screenshot-full" src="/img/datasource-reference/airtable/retrieve-record-v3.png" alt="Airtable Retrieve Record Query" />
+
+<details>
+<summary>**Example Values**</summary>
+
+```json
+Base ID: app6mDmBQLjJNp8vO
+Table name: Teams 
+Record ID: rec2Nix9XrfzsGXfs
+```
+
+</details>
 
 <details>
   <summary>**Response Example**</summary>
   ```json
-  {
-    "id": "recu9xMnUdr2n2cw8",
-    "fields": {
-      "Notes": "Discuss project timeline",
-      "Name": "Michael Scott"
-    },
-    "createdTime": "2021-05-12T14:30:33.000Z"
+{
+  "id": "rec2Nix9XrfzsGXfs",
+  "createdTime": "2025-03-04T12:22:09.000Z",
+  "fields": {
+    "Name": "Katrina Petersons",
+    "Email": "katrina.petersions@example.com"
   }
+}
   ```
 </details>
 
@@ -176,34 +167,37 @@ This operation creates a new record in the specified table.
 - **Table name**
 - **Records**
 
-<img className="screenshot-full" src="/img/datasource-reference/airtable/create-record-v2.png" alt="Airtable Create Record Query" />
+<img className="screenshot-full" src="/img/datasource-reference/airtable/create-record-v3.png" alt="Airtable Create Record Query" />
 
-#### Example
+<details>
+<summary>**Example Values**</summary>
 
-```json title="Records"
-[{
+```json
+Body:[{
     "fields": {
       "Name": "Katrina Petersons",
       "Email": "katrina.petersions@example.com"
     }
 }]
 ```
+
+</details>
+
 <details>
   <summary>**Response Example**</summary>
   ```json
-  {
-    "records": [
-      {
-        "id": "recu6jhA7tzv4K66s",
-        "createdTime": "2024-06-11T06:01:44.000Z",
-        "fields": {
-          "Name": "Katrina Petersons",
-          "Email": "katrina.petersions@example.com",
-          "Date": "06-11-2024",
-        }
+ {
+  "records": [
+    {
+      "id": "rece9HUnz6gulQ6QV",
+      "createdTime": "2025-03-06T08:07:55.000Z",
+      "fields": {
+        "Name": "Katrina Petersons",
+        "Email": "katrina.petersions@example.com"
       }
-    ]
-  }
+    }
+  ]
+}
   ```
 </details>
 
@@ -218,34 +212,37 @@ Update a specific record by providing new data.
 - **Record ID**
 - **Body**
 
-<img className="screenshot-full" src="/img/datasource-reference/airtable/update-record-v2.png" alt="Airtable Update Record Query" />
+<img className="screenshot-full" src="/img/datasource-reference/airtable/update-record-v3.png" alt="Airtable Update Record Query" />
 
-#### Example
+<details>
+<summary>**Example Values**</summary>
 
 ```json
-{
+Body:
+   {
   "Email": "katrina.petersions2@example.com"
 }
 ```
+
+</details>
+
 <details>
   <summary>**Response Example**</summary>
   ```json
-  {
-    "records": [
-      {
-        "id": "recu6jhA7tzv4K66s",
-        "createdTime": "2024-06-11T07:01:44.000Z",
-        "fields": {
-          "Name": "Katrina Petersons",
-          "Email": "katrina.petersions2@example.com",
-          "Date": "06-11-2024",
-        }
+{
+  "records": [
+    {
+      "id": "rec2Nix9XrfzsGXfs",
+      "createdTime": "2025-03-04T12:22:09.000Z",
+      "fields": {
+        "Name": "Katrina Petersons",
+        "Email": "katrina.petersions2@example.com"
       }
-    ]
-  }
+    }
+  ]
+}
   ```
 </details>
-
 ### Delete record
 
 This operation removes a record from the specified table.
@@ -256,14 +253,25 @@ This operation removes a record from the specified table.
 - **Table name**
 - **Record ID**
 
-<img className="screenshot-full" src="/img/datasource-reference/airtable/delete-record-v2.png" alt="Airtable Delete Record Query" />
+<img className="screenshot-full" src="/img/datasource-reference/airtable/delete-record-v3.png" alt="Airtable Delete Record Query" />
+
+<details>
+<summary>**Example Values**</summary>
+
+```json
+Base ID: app6mDmBQLjJNp8vO
+Table name: Teams 
+Record ID: rec2Nix9XrfzsGXfs
+```
+
+</details>
 
 <details>
   <summary>**Response Example**</summary>
-  ```json
-  {
-      deleted: true
-      id: "recIKsyZgqI4zoqS7"
-  }
+  ```yaml
+ {
+  "deleted": true
+  "id": "rec2Nix9XrfzsGXfs"
+}
   ```
 </details>

@@ -14,6 +14,7 @@ To establish a connection with the Appwrite data source, you can either click on
 ToolJet requires the following to connect to your Appwrite:
 - **Host (API endpoint)**
 - **Project ID**
+- **Database ID**
 - **Secret Key**
 
 You'll find the Secret Key and other credentials on your Appwrite's project settings page. You may need to create a new key if you don't have one already.
@@ -22,11 +23,7 @@ You'll find the Secret Key and other credentials on your Appwrite's project sett
 You should also set the scope for access to a particular resource. Learn more about the **API keys and scopes** [here](https://appwrite.io/docs/keys).
 :::
 
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0'}} className="screenshot-full" src="/img/datasource-reference/appwrite/connect-v3.png" alt="Appwrite intro"/>
-
-</div>
+<img className="screenshot-full" src="/img/datasource-reference/appwrite/connect-v4.png" alt="Appwrite intro"/>
 
 </div>
 
@@ -39,11 +36,7 @@ You should also set the scope for access to a particular resource. Learn more ab
 3. Select the operation you want to perform.
 4. Click on the **Preview** button to preview the output or Click on the **Run** button to trigger the query.
 
-<div style={{textAlign: 'center'}}>
-
-<img style={{ border:'0'}} className="screenshot-full" src="/img/datasource-reference/appwrite/querying-v3.png" alt="Appwrite intro"/>
-
-</div> 
+<img className="screenshot-full" src="/img/datasource-reference/appwrite/querying-v4.png" alt="Appwrite intro"/>
 
 :::tip
 Query results can be transformed using Transformations. Read our **Transformation Documentation** [here](/docs/tutorial/transformations).
@@ -78,11 +71,38 @@ This operation is used to get a list of all the user documents.
 - **Operator**
 - **Value**
 
-<div style={{textAlign: 'center'}}>
+<img className="screenshot-full" src="/img/datasource-reference/appwrite/list-v4.png" alt="Appwrite List" />
 
-<img style={{ border:'0', marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/appwrite/list-v3.png" alt="Appwrite List" />
+<details>
+<summary>**Example Values**</summary>
 
-</div>
+```yaml
+Collection ID: your collection id
+```
+
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+
+```json
+{
+  "total": 1,
+  "documents": [
+    {
+      "Name": "johnson",
+      "Age": 30,
+      "$id": "67c80db91abc900bd9cf",
+      "$createdAt": "2025-03-05T08:39:21.113+00:00",
+      "$updatedAt": "2025-03-05T08:40:05.294+00:00",
+      "$permissions": [],
+      "$databaseId": "67c80c91000d003d6ce5",
+      "$collectionId": "67c80d190032ba8ae4fa"
+    }
+  ]
+}
+```
+</details>
 
 ### Get Document
 
@@ -93,11 +113,34 @@ Use this operation to get a document from a collection by its unique ID.
 - **Collection ID**
 - **Document ID**
 
-<div style={{textAlign: 'center'}}>
+<img className="screenshot-full" src="/img/datasource-reference/appwrite/get-v4.png" alt="Appwrite get" />
 
-<img style={{ border:'0', marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/appwrite/get-v3.png" alt="Appwrite get" />
+<details>
+<summary>**Example Values**</summary>
 
-</div>
+```yaml
+Collection ID: your collection id
+Document ID: your documnet id
+```
+
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+
+```json
+{
+  "Name": "johnson",
+  "Age": 30,
+  "$id": "67c80db91abc900bd9cf",
+  "$createdAt": "2025-03-05T08:39:21.113+00:00",
+  "$updatedAt": "2025-03-05T08:40:05.294+00:00",
+  "$permissions": [],
+  "$databaseId": "67c80c91000d003d6ce5",
+  "$collectionId": "67c80d190032ba8ae4fa"
+}
+```
+</details>
 
 ### Add Document to Collection
 
@@ -108,11 +151,34 @@ Use this operation to create a new document in a collection.
 - **Collection ID**
 - **Body**
 
-<div style={{textAlign: 'center'}}>
+<img className="screenshot-full" src="/img/datasource-reference/appwrite/add-v4.png" alt="Appwrite add" />
 
-<img style={{ border:'0', marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/appwrite/add-v3.png" alt="Appwrite add" />
+<details>
+<summary>**Example Values**</summary>
 
-</div>
+```yaml
+Collection ID: your collection id
+Body: {'Name': 'John Doe', 'Age': 25}
+```
+
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+
+```json
+{
+  "Name": "John Doe",
+  "Age": 25,
+  "$id": "67c93e1809fc85c4dca5",
+  "$permissions": [],
+  "$createdAt": "2025-03-06T06:18:00.042+00:00",
+  "$updatedAt": "2025-03-06T06:18:00.042+00:00",
+  "$databaseId": "67c80c91000d003d6ce5",
+  "$collectionId": "67c80d190032ba8ae4fa"
+}
+```
+</details>
 
 ### Update Document
 
@@ -124,11 +190,35 @@ Use this operation to update a document.
 - **Document ID**
 - **Body**
 
-<div style={{textAlign: 'center'}}>
+<img style={{ border:'0', marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/appwrite/upd-v4.png" alt="Appwrite update" />
 
-<img style={{ border:'0', marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/appwrite/upd-v3.png" alt="Appwrite update" />
+<details>
+<summary>**Example Values**</summary>
 
-</div>
+```yaml
+Collection ID: your collection id
+Document ID: your document id
+Body: {'Name': 'Jane Doe'}
+```
+
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+
+```json
+{
+  "Name": "Jane Doe",
+  "Age": 25,
+  "$id": "67c93e1809fc85c4dca5",
+  "$createdAt": "2025-03-06T06:18:00.042+00:00",
+  "$updatedAt": "2025-03-06T06:21:37.801+00:00",
+  "$permissions": [],
+  "$databaseId": "67c80c91000d003d6ce5",
+  "$collectionId": "67c80d190032ba8ae4fa"
+}
+```
+</details>
 
 ### Delete Document
 
@@ -139,10 +229,24 @@ Use this operation for deleting a document in the collection.
 - **Collection ID** 
 - **Document ID**
 
-<div style={{textAlign: 'center'}}>
+<img className="screenshot-full" src="/img/datasource-reference/appwrite/del-v4.png" alt="Appwrite delete"/>
 
-<img style={{ border:'0', marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/appwrite/del-v3.png" alt="Appwrite delete"/>
+<details>
+<summary>**Example Values**</summary>
 
-</div>
+```yaml
+Collection ID: your collection id
+Document ID: your document id
+```
+
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+
+```yaml
+deleted: true
+```
+</details>
 
 </div>
