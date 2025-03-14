@@ -1,13 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Logo from '@/modules/common/resources/images/Logo';
 import './resources/styles/onboarding-form-wrapper.styles.scss';
 import { getSubpath } from '@/_helpers/routes';
 import WhiteLabellingFormWrapper from '@/modules/onboarding/components/WhiteLabellingFormWrapper';
-import { defaultWhiteLabellingSettings, retrieveWhiteLabelFavicon } from '@white-label/whiteLabelling';
+import { checkWhiteLabelsDefaultState } from '@white-label/whiteLabelling';
 const OnboardingFormWrapper = ({ children: components }) => {
-  const whiteLabelLogoTest = retrieveWhiteLabelFavicon();
-  const defaultWhiteLabelLogoTest = defaultWhiteLabellingSettings.WHITE_LABEL_FAVICON;
-  const isWhiteLabelApplied = !(whiteLabelLogoTest === defaultWhiteLabelLogoTest);
+  const isWhiteLabelApplied = !checkWhiteLabelsDefaultState();
   const redirectToLoginPage = () => {
     window.location.href = getSubpath() ? `${getSubpath()}` : '/';
   };

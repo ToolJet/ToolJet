@@ -33,6 +33,7 @@ import { FEATURES as TEMPLATES_FEATURES } from '@modules/templates/constants/fea
 import { FEATURES as AI_FEATURES } from '@modules/ai/constants/feature';
 import { getTooljetEdition } from '@helpers/utils.helper';
 import { TOOLJET_EDITIONS } from '.';
+import { FEATURES as WHITE_LABELLING_FEATURES } from '@modules/white-labelling/constant/feature';
 
 const GROUP_PERMISSIONS_FEATURES =
   getTooljetEdition() === TOOLJET_EDITIONS.EE ? GROUP_PERMISSIONS_FEATURES_EE : GROUP_PERMISSIONS_FEATURES_CE;
@@ -71,4 +72,5 @@ export const MODULE_INFO: { [key: string]: any } = {
   ...TEMPLATES_FEATURES,
   ...ORGANIZATION_CONSTANT,
   ...AI_FEATURES,
+  ...WHITE_LABELLING_FEATURES,
 };

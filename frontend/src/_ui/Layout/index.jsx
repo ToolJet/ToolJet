@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import useRouter from '@/_hooks/use-router';
-import Logo from '@assets/images/rocket.svg';
+import Logo from '@assets/images/tj-logo.svg';
 import Header from '../Header';
 import { authenticationService } from '@/_services';
 import { getPrivateRoute } from '@/_helpers/routes';
@@ -10,7 +10,7 @@ import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsav
 import './styles.scss';
 import { useLicenseStore } from '@/_stores/licenseStore';
 import { shallow } from 'zustand/shallow';
-import { retrieveWhiteLabelLogo, fetchWhiteLabelDetails } from '@white-label/whiteLabelling';
+import { retrieveWhiteLabelLogo } from '@white-label/whiteLabelling';
 import '../../_styles/left-sidebar.scss';
 import { hasBuilderRole } from '@/_helpers/utils';
 import { LeftNavSideBar } from '@/modules/common/components';
@@ -24,7 +24,7 @@ function Layout({
   toggleCollapsibleSidebar = () => {},
 }) {
   const [licenseValid, setLicenseValid] = useState(false);
-  const [logo, setLogo] = useState(null);
+  const logo = retrieveWhiteLabelLogo();
   const router = useRouter();
   const { featureAccess } = useLicenseStore(
     (state) => ({
@@ -97,21 +97,6 @@ function Layout({
     admin ||
     super_admin;
   const isAuthorizedForGDS = hasCommonPermissions || admin || super_admin;
-  fetchWhiteLabelDetails();
-
-  useEffect(() => {
-    const fetchLogo = async () => {
-      try {
-        const whiteLabelLogo = await retrieveWhiteLabelLogo();
-        setLogo(whiteLabelLogo);
-      } catch (error) {
-        console.error('Error fetching logo:', error);
-        setLogo(null);
-      }
-    };
-
-    fetchLogo();
-  }, []);
 
   const isBuilder = hasBuilderRole(authenticationService?.currentSessionValue?.role ?? {});
 
