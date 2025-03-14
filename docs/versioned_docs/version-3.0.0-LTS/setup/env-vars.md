@@ -185,15 +185,6 @@ By default, ToolJet does not forward cookies with REST API requests. To enable t
 
 - `FORWARD_RESTAPI_COOKIES=true`: Allows forwarding cookies with REST API requests.
 
-## ToolJet Client
-
-#### Server URL
-
-This is used to set up for CSP headers and put trace info to be used with APM vendors.
-
-- `TOOLJET_SERVER_URL`: URL of ToolJet server (e.g., `https://server.tooljet.com`)
-- `TOOLJET_SERVER_PORT`: This could be used to for local development (e.g., `3000`)
-
 #### Asset Path
 
 This is required when the assets for the client are to be loaded from elsewhere (eg: CDN). This can be an absolute path, or relative to main HTML file.
