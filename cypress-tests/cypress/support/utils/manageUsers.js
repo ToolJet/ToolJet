@@ -6,6 +6,7 @@ import { ssoText } from "Texts/manageSSO";
 import * as common from "Support/utils/common";
 import { commonText } from "Texts/common";
 import { onboardingSelectors } from "Selectors/onboarding";
+const envVar = Cypress.env("environment");
 
 export const manageUsersElements = () => {
   cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
@@ -114,10 +115,17 @@ export const manageUsersElements = () => {
   );
   cy.get(usersSelector.buttonUploadCsvFile).click();
 
-  cy.get(usersSelector.helperTextBulkUpload).verifyVisibleElement(
-    "have.text",
-    usersText.helperTextBulkUpload
-  );
+  if (envVar === "Enterprise") {
+    cy.get(usersSelector.helperTextBulkUpload).verifyVisibleElement(
+      "have.text",
+      "Download the template to add user details or format your file in the same way as the template. Files in any other format may not be recognized. "
+    );
+  } else {
+    cy.get(usersSelector.helperTextBulkUpload).verifyVisibleElement(
+      "have.text",
+      usersText.helperTextBulkUpload
+    );
+  }
   cy.get(usersSelector.buttonDownloadTemplate).verifyVisibleElement(
     "have.text",
     usersText.buttonDownloadTemplate
@@ -320,43 +328,41 @@ export const inviteUserWithUserGroups = (
 };
 
 export const fetchAndVisitInviteLink = (email) => {
-  let invitationToken,
-    organizationToken,
-    workspaceId,
-    userId,
-    url = "";
+  let invitationToken, organizationToken, workspaceId, userId;
 
   cy.task("updateId", {
     dbconfig: Cypress.env("app_db"),
     sql: `select invitation_token from users where email='${email}';`,
   }).then((resp) => {
-    invitationToken = resp.rows[0].invitation_token;
+    invitationToken = resp.rows[0]?.invitation_token;
 
     cy.task("updateId", {
       dbconfig: Cypress.env("app_db"),
       sql: "select id from organizations where name='My workspace';",
-    }).then((resp) => {
-      workspaceId = resp.rows[0].id;
-
-      cy.task("updateId", {
-        dbconfig: Cypress.env("app_db"),
-        sql: `select id from users where email='${email}';`,
-      }).then((resp) => {
-        userId = resp.rows[0].id;
-
-        cy.task("updateId", {
-          dbconfig: Cypress.env("app_db"),
-          sql: `select invitation_token from organization_users where user_id='${userId}';`,
-        }).then((resp) => {
-          organizationToken = resp.rows[1].invitation_token;
-
-          url = `/invitations/${invitationToken}/workspaces/${organizationToken}?oid=${workspaceId}`;
-          cy.apiLogout();
-          cy.wait(1000);
-          cy.visit(url);
-        });
-      });
     });
+  }).then((resp) => {
+    workspaceId = resp.rows[0]?.id;
+
+    cy.task("updateId", {
+      dbconfig: Cypress.env("app_db"),
+      sql: `select id from users where email='${email}';`,
+    });
+  }).then((resp) => {
+    userId = resp.rows[0]?.id;
+
+    cy.task("updateId", {
+      dbconfig: Cypress.env("app_db"),
+      sql: `select invitation_token from organization_users where user_id='${userId}';`,
+    });
+  }).then((resp) => {
+    organizationToken =
+      resp.rows?.[1]?.invitation_token || resp.rows?.[0]?.invitation_token;
+
+    const url = `/invitations/${invitationToken}/workspaces/${organizationToken}?oid=${workspaceId}`;
+
+    cy.apiLogout();
+    cy.wait(1000);
+    cy.visit(url);
   });
 };
 
