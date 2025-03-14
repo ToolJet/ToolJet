@@ -293,9 +293,10 @@ If you intend to use client separately then can set `SERVE_CLIENT` to `false`.
 If you intent to make changes in the above configuration. Please refer [PostgREST configuration docs](https://postgrest.org/en/stable/configuration.html#environment-variables).
 
 :::tip
-If you have openssl installed, you can run the following command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
+If you have openssl installed, you can run the 
+command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
 
-If this parameter is not specified then PostgREST refuses authentication requests.
+If this parameter is not specified, PostgREST will refuse authentication requests.
 :::
 
 :::info

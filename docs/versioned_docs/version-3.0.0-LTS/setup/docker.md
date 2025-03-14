@@ -10,6 +10,10 @@ import TabItem from '@theme/TabItem';
 
 Follow the steps below to deploy ToolJet on a server using Docker Compose. ToolJet requires a PostgreSQL database to store applications definitions, (encrypted) credentials for datasources and user authentication data.
 
+:::warning
+To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`.
+:::
+
 :::info
 If you rather want to try out ToolJet on your local machine with Docker, you can follow the steps [here](/docs/setup/try-tooljet/).
 :::
@@ -148,12 +152,6 @@ curl -LO https://tooljet-deployments.s3.us-west-1.amazonaws.com/docker/backup-re
 
 </TabItem>
 </Tabs>
-
-:::warning
-
-To enable AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
-
-:::
 
 ## Upgrading to the Latest LTS Version
 
