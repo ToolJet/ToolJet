@@ -88,6 +88,7 @@ export const DropdownV2 = ({
     padding,
   } = styles;
   const isInitialRender = useRef(true);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [currentValue, setCurrentValue] = useState(() => findDefaultItem(schema));
   const isMandatory = validation?.mandatory ?? false;
   const options = properties?.options;
@@ -353,15 +354,16 @@ export const DropdownV2 = ({
       ...provided,
       padding: '0px',
     }),
-    option: (provided) => ({
+    option: (provided, _state) => ({
       ...provided,
-      backgroundColor: 'var(--surfaces-surface-01)',
+      backgroundColor: _state.isFocused ? 'var(--interactive-overlays-fill-hover)' : 'var(--surfaces-surface-01)',
       color:
         selectedTextColor !== '#1B1F24'
           ? selectedTextColor
           : isDropdownDisabled || isDropdownLoading
           ? 'var(--text-disabled)'
           : 'var(--text-primary)',
+      borderRadius: _state.isFocused && '8px',
       padding: '8px 6px 8px 38px',
       '&:hover': {
         backgroundColor: 'var(--interactive-overlays-fill-hover)',
@@ -431,6 +433,7 @@ export const DropdownV2 = ({
         />
         <div className="w-100 px-0 h-100 dropdownV2-widget" ref={ref}>
           <Select
+            menuIsOpen={isMenuOpen}
             isDisabled={isDropdownDisabled}
             value={selectOptions.filter((option) => option.value === currentValue)[0] ?? null}
             onChange={(selectedOption, actionProps) => {
@@ -460,6 +463,7 @@ export const DropdownV2 = ({
               ClearIndicator: CustomClearIndicator,
             }}
             isClearable
+            tabSelectsValue={false}
             icon={icon}
             doShowIcon={iconVisibility}
             iconColor={iconColor}
@@ -467,8 +471,24 @@ export const DropdownV2 = ({
             darkMode={darkMode}
             optionsLoadingState={optionsLoadingState && advanced}
             menuPlacement="auto"
-            onMenuOpen={() => fireEvent('onFocus')}
-            onMenuClose={() => fireEvent('onBlur')}
+            onMenuOpen={() => {
+              setIsMenuOpen(true);
+              fireEvent('onFocus');
+            }}
+            onMenuClose={() => {
+              setIsMenuOpen(false);
+              fireEvent('onBlur');
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !isMenuOpen) {
+                setIsMenuOpen(true);
+                e.preventDefault();
+              }
+              if (e.key === 'Escape' && isMenuOpen) {
+                setIsMenuOpen(false);
+                e.preventDefault();
+              }
+            }}
           />
         </div>
       </div>
