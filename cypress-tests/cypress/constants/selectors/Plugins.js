@@ -15,6 +15,6 @@ export const pluginSelectors = {
 export const baserowSelectors = {
     hostField: '[data-cy="host-select-dropdown"]',
     baserowApiKey: '[data-cy="api-token-text-field"]',
-    baserowTabelId: '[data-cy="table_id-input-field"]',
-    baserow_rowIdinputfield: '[data-cy="row_id-input-field"]',
+    table: '[data-cy="table-id-input-field"]',
+    rowIdinputfield: '[data-cy="row-id-input-field"]',
 };

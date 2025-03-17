@@ -65,7 +65,7 @@ describe("Data source baserow", () => {
 
     fillDataSourceTextField(
       baseRowText.lableApiToken,
-      "**************",
+      baseRowText.placeholderApiToken,
       Apikey
     );
 
@@ -91,7 +91,7 @@ describe("Data source baserow", () => {
 
     fillDataSourceTextField(
       baseRowText.lableApiToken,
-      "**************",
+      baseRowText.placeholderApiToken,
       Apikey
     );
 
@@ -109,14 +109,14 @@ describe("Data source baserow", () => {
     deleteDatasource(`cypress-${data.dsName}-baserow`);
   });
 
-  it("Should be able to run the query with a valid connection", () => {
+  it.only("Should be able to run the query with a valid connection", () => {
     const baserowTableID = Cypress.env("baserow_tableid");
     const baserowRowID = Cypress.env("baserow_rowid");
     const Apikey = Cypress.env("baserow_apikey");
 
     selectAndAddDataSource("databases", baseRowText.baserow, data.dsName);
 
-      fillDataSourceTextField(baseRowText.lableApiToken, "**************", Apikey);
+      fillDataSourceTextField(baseRowText.lableApiToken, baseRowText.placeholderApiToken, Apikey);
 
       cy.get(".react-select__control").eq(1).click();
       cy.get(".react-select__option").contains("Baserow Cloud").click();
@@ -169,7 +169,7 @@ describe("Data source baserow", () => {
     //   cy.get(".react-select__option").contains("Delete row").click();
 
     //   cy.get(baserowSelectors.baserowTabelId).clearAndTypeOnCodeMirror(baserowTableID);
-    //   cy.get(baserowSelectors.baserow_rowIdinputfield).clearAndTypeOnCodeMirror(rowId.toString());
+    //   cy.get(baserowSelectors.rowIdinputfield).clearAndTypeOnCodeMirror(rowId.toString());
 
     //   cy.get(dataSourceSelector.queryPreviewButton).click();
     //   cy.verifyToastMessage(commonSelectors.toastMessage, `Query (${data.dsName}) completed.`);
@@ -188,13 +188,14 @@ describe("Data source baserow", () => {
     operations.forEach((operation) => {
       cy.get('[data-cy="query-select-dropdown"]').click();
       cy.get(".react-select__option").contains(operation).click();
-      cy.get(baserowSelectors.baserowTabelId).clearAndTypeOnCodeMirror(baserowTableID);
+
+      cy.get(baserowSelectors.table).clearAndTypeOnCodeMirror(baserowTableID);
 
       if (operation === "Get row") {
-        cy.get(baserowSelectors.baserow_rowIdinputfield).clearAndTypeOnCodeMirror(baserowRowID);
+        cy.get(baserowSelectors.rowIdinputfield).clearAndTypeOnCodeMirror(baserowRowID);
       }
       if (operation === "Move row") {
-        cy.get('[data-cy="before_id-input-field"]').clearAndTypeOnCodeMirror("1");
+        cy.get('[data-cy="before-id-input-field"]').clearAndTypeOnCodeMirror("1");
       }
 
       cy.get(dataSourceSelector.queryPreviewButton).click();

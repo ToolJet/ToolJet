@@ -76,8 +76,8 @@ describe("Data source Airtable", () => {
     selectAndAddDataSource("databases", airtableText.airtable, data.dsName);
 
     fillDataSourceTextField(
-      airtableText.airTableApiKey,
-      airtableText.airTableapikeyPlaceholder,
+      airtableText.ApiKey,
+      airtableText.apikeyPlaceholder,
       Cypress.env("airTable_apikey")
     );
     cy.get(postgreSqlSelector.buttonSave).click();
@@ -103,8 +103,8 @@ describe("Data source Airtable", () => {
     selectAndAddDataSource("databases", airtableText.airtable, data.dsName);
 
     fillDataSourceTextField(
-      airtableText.airTableApiKey,
-      airtableText.airTableapikeyPlaceholder,
+      airtableText.ApiKey,
+      airtableText.apikeyPlaceholder,
       airTable_apiKey
     );
 
