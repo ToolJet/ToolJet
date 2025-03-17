@@ -1,8 +1,8 @@
 [submodule "frontend/ee"]
 	path = frontend/ee
-	url = git@github.com:ToolJet/ee-frontend.git
+	url = https://github.com/ToolJet/ee-frontend.git
     branch = main
 [submodule "server/ee"]
 	path = server/ee
-	url = git@github.com:ToolJet/ee-server.git
+	url = https://github.com/ToolJet/ee-server.git
     branch = main
