@@ -261,6 +261,8 @@ describe("user invite flow cases", () => {
     cy.wait(1000);
 
     cy.defaultWorkspaceLogin();
+    cy.get(commonSelectors.homePageLogo, { timeout: 10000 }).should("be.visible");
+
     navigateToManageGroups();
     cy.get(groupsSelector.groupLink(data.groupName1)).click();
     cy.get(groupsSelector.usersLink).click();
