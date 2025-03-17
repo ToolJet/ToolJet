@@ -65,6 +65,7 @@ export default function Grid({ gridWidth, currentLayout }) {
   const prevDragParentId = useRef(null);
   const newDragParentId = useRef(null);
   const [isGroupDragging, setIsGroupDragging] = useState(false);
+  const checkIfAnyWidgetVisibilityChanged = useStore((state) => state.checkIfAnyWidgetVisibilityChanged(), shallow);
 
   useEffect(() => {
     const selectedSet = new Set(selectedComponents);
@@ -316,7 +317,7 @@ export default function Grid({ gridWidth, currentLayout }) {
   useEffect(() => {
     reloadGrid();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedComponents, openModalWidgetId, boxList, currentLayout]);
+  }, [selectedComponents, openModalWidgetId, boxList, currentLayout, checkIfAnyWidgetVisibilityChanged]);
 
   const updateNewPosition = (events, parent = null) => {
     const posWithParent = {
