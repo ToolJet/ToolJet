@@ -3,6 +3,6 @@ export const amazonSesText = {
     cypressAmazonSES: "cypress-Amazon SES",
     labelAccesskey: "Access key",
     labelSecretKey: "Secret key",
-    placeholderEnteraAccessKey: "Enter access key",
-    placeholderEnteraSecretKey:"**************",
+    placeholderAccessKey: "Enter access key",
+    placeholderSecretKey:"**************",
   };

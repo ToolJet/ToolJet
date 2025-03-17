@@ -4,5 +4,5 @@ export const amazonAthenaText = {
     labelAccesskey: "Access key",
     labelSecretKey: "Secret key",
     placeholderEnteraAccessKey: "Enter access key",
-    placeholderEnteraSecretKey:"**************",
+    placeholderSecretKey:"**************",
   };
