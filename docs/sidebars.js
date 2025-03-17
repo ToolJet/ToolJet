@@ -633,10 +633,6 @@ const sidebars = {
         {
           'type': 'category',
           'label': 'GitSync',
-          'link': {
-            'type': 'doc',
-            'id': 'development-lifecycle/gitsync/overview',
-          },
           'items': [
             'development-lifecycle/gitsync/overview',
             'development-lifecycle/gitsync/gitsync-config',
