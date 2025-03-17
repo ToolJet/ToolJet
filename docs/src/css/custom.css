@@ -489,6 +489,10 @@ img {
   background-color: var(--ifm-menu-color-background-active);
 }
 
+.category-as-header .menu__link:not(.menu__link--sublist) {
+  max-width: 94%;
+}
+
 .category-as-header>.menu__list-item-collapsible:first-child:hover {
   background-color: transparent;
 }
