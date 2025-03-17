@@ -102,7 +102,7 @@ Sort: createdTime // Select direction: Ascending or Descending
 </details>
 
 
-<details>
+<details id="tj-dropdown">
   <summary>**Response Example**</summary>
   
   ```json
