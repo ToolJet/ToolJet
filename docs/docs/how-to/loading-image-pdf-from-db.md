@@ -12,7 +12,7 @@ This guide shows how to upload and view images and PDFs using the base64 string 
 
 ## 1. Start by Creating a New Table In ToolJet Database
 
-- Create a new table named *testDB*. 
+- Create a new table named *testdb*. 
 - The `id` field will be present by default to create a unique identifier for each record in our database table.
 - Click on **Add more columns** button and add two more columns: `pdf` and `image`.
 - Select `varchar` as datatype for the pdf and image columns.
@@ -20,7 +20,7 @@ This guide shows how to upload and view images and PDFs using the base64 string 
 <i>While we are using the ToolJet Database for this guide; feel free to use other databases while applying the same principles.</i>
 
 <div style={{ width: '100%', marginBottom:'15px', marginTop:'15px'}}>
-<img className="screenshot-full" src="/img/how-to/load-base64/create-new-table.png" alt="New Table"  />
+<img className="screenshot-full" src="/img/how-to/load-base64/create-new-table-v2.png" alt="New Table"  />
 </div>
 
 </div>
@@ -29,29 +29,29 @@ This guide shows how to upload and view images and PDFs using the base64 string 
 
 ## 2. Upload Files To The Database
 
-- Create a new application and name it *Load PDF And Images Example*. 
+- Create a new application and name it. In this case we have named it *file_manager*. 
 - Drag and drop two **[Filepicker](/docs/widgets/file-picker)** components on the canvas from the components library on the right. 
 - Rename the first Filepicker component to *imagePicker* and second Filepicker to *pdfPicker*.
 
 <div style={{ width: '100%', marginBottom:'15px', marginTop:'15px'}}>
-    <img className="screenshot-full" src="/img/how-to/load-base64/filepickers-rename.png" alt="Rename Filepickers"  />
+    <img className="screenshot-full" src="/img/how-to/load-base64/filepickers-rename-v2.png" alt="Rename Filepickers"  />
 </div>
 
-- For *pdfPicker*, change the **Accept file types** property to `{{"pdf/*"}}` - this ensures that the Filepicker only accepts PDF files. 
+- For *pdfPicker*, change the **Accept file types** property to `{{"application/pdf"}}` - this ensures that the Filepicker only accepts PDF files. To find more supported types, check out [File Picker Properties.](https://docs.tooljet.ai/docs/widgets/file-picker/#properties)
 
 <div style={{ width: '100%', marginBottom:'15px', marginTop:'15px'}}>
-    <img className="screenshot-full" src="/img/how-to/load-base64/pdf-accepted-file-type.png" alt="Accepted File Type Settings"  />
+    <img className="screenshot-full" src="/img/how-to/load-base64/pdf-accepted-file-type-v2.png" alt="Accepted File Type Settings"  />
 </div>
 
 - Retain the default `{{"image/*"}}` setting for the Accept file types property in the *imagePicker* component, as it's intended for image uploads.
 - Click on the *imagePicker* component and select an image to upload. Similarly, upload a PDF using the *pdfPicker* component. 
 
 <div style={{ width: '100%', marginBottom:'15px', marginTop:'15px'}}>
-    <img className="screenshot-full" src="/img/how-to/load-base64/filepickers-with-uploaded-files.png" alt="Uploaded Files"  />
+    <img className="screenshot-full" src="/img/how-to/load-base64/filepickers-with-uploaded-files-v2.png" alt="Uploaded Files"  />
 </div>
 
 - After uploading, you will see the filenames displayed on their respective Filepicker components.
-- Click on the **+ Add** button in the query panel to create a new query, choose ToolJet Database as the data source, select `testDB` as Table name, and `Create Row` as Operations. Name this query *uploadFiles*.
+- Click on the **+** button in the query panel to create a new query, choose ToolJet Database as the data source, select `testdb` as Table name, and `Create Row` as Operations. Name this query *uploadFiles*.
 - Under the Columns section, add two columns - `pdf` and `image`. 
 - Set the below value for the `pdf` column: 
 ```js
@@ -84,11 +84,11 @@ The upload process is now complete. Whenever files are selected in the Filepicke
 
 ## 3. View Image and PDF Files 
 
-- Create a query named *getFiles* to retrieve base64 strings from testDB: Click on **+ Add** button in the query panel, select ToolJet as Database, `testDB` as Table name, and `List rows` as Operations.
-- Enable **Run this query on application load?** and click on the **Run** button to run the getFiles query.
+- Create a query named *getFiles* to retrieve base64 strings from testdb: Click on **+** button in the query panel, select ToolJet as Database, `testdb` as Table name, and `List rows` as Operations.
+- Enable **Run this query on application load** under the **Settings** section and click on the **Run** button to run the getFiles query.
 
 <div style={{ width: '100%', marginBottom:'15px', marginTop:'15px'}}>
-    <img className="screenshot-full" src="/img/how-to/load-base64/fetch-files-query.png" alt="Fetch Files Query"  />
+    <img className="screenshot-full" src="/img/how-to/load-base64/fetch-files-query-v2.png" alt="Fetch Files Query"  />
 </div>
 
 - Drag an **[Image](/docs/widgets/image)** and a **[PDF](/docs/widgets/pdf)** component on the canvas from the components library. Rename the **Image** component to *displayImage* and the **PDF** component to *displayPDF*.
