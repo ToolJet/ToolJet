@@ -206,7 +206,6 @@ export const createQueryPanelSlice = (set, get) => ({
       isOnLoad = false,
       moduleId = 'canvas'
     ) => {
-      //! TODO get this using get() when migrated into slice
       const {
         eventsSlice,
         dataQuery: dataQuerySlice,
@@ -227,6 +226,28 @@ export const createQueryPanelSlice = (set, get) => ({
         executeWorkflow,
         executeMultilineJS,
       } = queryPanel;
+      const queryUpdatePromise = dataQuerySlice.queryUpdates[queryId];
+      if (queryUpdatePromise) {
+        setResolvedQuery(queryId, {
+          isLoading: true,
+        });
+        return queryUpdatePromise.then(() =>
+          get().queryPanel.runQuery(
+            queryId,
+            queryName,
+            confirmed,
+            mode,
+            userSuppliedParameters,
+            component,
+            eventId,
+            shouldSetPreviewData,
+            isOnLoad,
+            moduleId
+          )
+        );
+      }
+      //! TODO get this using get() when migrated into slice
+
       const { onEvent } = eventsSlice;
       const { queryConfirmationList } = dataQuerySlice;
 
@@ -494,6 +515,14 @@ export const createQueryPanelSlice = (set, get) => ({
         executeMultilineJS,
         setIsPreviewQueryLoading,
       } = queryPanel;
+      const queryUpdatePromise = get().dataQuery.queryUpdates[query?.id];
+      if (queryUpdatePromise) {
+        setPreviewLoading(true);
+        setIsPreviewQueryLoading(true);
+        return queryUpdatePromise.then(() =>
+          get().queryPanel.previewQuery(query, calledFromQuery, userSuppliedParameters, moduleId)
+        );
+      }
       const { onEvent } = eventsSlice;
 
       let parameters = userSuppliedParameters;
