@@ -1,8 +1,8 @@
 [submodule "frontend/ee"]
 	path = frontend/ee
 	url = https://github.com/ToolJet/ee-frontend.git
-    branch = modularisation/v3
+    branch = main
 [submodule "server/ee"]
 	path = server/ee
 	url = https://github.com/ToolJet/ee-server.git
-    branch = modularisation/v3
+    branch = main

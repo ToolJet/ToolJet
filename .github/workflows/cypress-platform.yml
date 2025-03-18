@@ -50,7 +50,7 @@ jobs:
         run: |
           git submodule update --init --recursive
           git submodule foreach --recursive '
-            git checkout ${{ env.BRANCH_NAME }} 2>/dev/null || git checkout modularisation/v3'
+            git checkout ${{ env.BRANCH_NAME }} 2>/dev/null || git checkout main'
 
       - name: Set up Docker
         uses: docker-practice/actions-setup-docker@master

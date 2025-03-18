@@ -150,7 +150,7 @@ export class InvitedUserSessionAuthGuard extends AuthGuard('jwt') {
         return invitedUser;
       }
       /* User doesn't have a session. Next?: login again and accept invite */
-      const organization = await this.organizationRepository.fetchOrganization(invitedUser.invitedOrganizationId);
+      const organization = await this.organizationRepository.fetchOrganization(invitedUser.organizationId);
 
       if (!organization || organization.status !== WORKSPACE_STATUS.ACTIVE) {
         throw new BadRequestException('Organization is Archived');

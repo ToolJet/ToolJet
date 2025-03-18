@@ -26,4 +26,17 @@ export class AppVersionUpdateDto {
 
   @IsOptional()
   pageSettings: any;
+
+  // Workflow related fields
+  @IsOptional()
+  @IsString()
+  @IsUUID()
+  currentEnvironmentId: string;
+
+  @IsOptional()
+  definition: any;
+
+  @IsOptional()
+  @IsBoolean()
+  is_user_switched_version: boolean;
 }

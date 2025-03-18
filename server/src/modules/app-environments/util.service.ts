@@ -119,7 +119,7 @@ export class AppEnvironmentUtilService implements IAppEnvironmentUtilService {
     return {
       name: result.appVersion_name,
       id: result.appVersion_id,
-      currentEnvironmentId: result.appVersion_currentEnvironmentId,
+      currentEnvironmentId: result.appVersion_current_environment_id,
     };
   }
 
