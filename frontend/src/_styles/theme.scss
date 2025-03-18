@@ -18632,3 +18632,10 @@ section.ai-message-prompt-input-wrapper {
     }
   }
 }
+
+
+.single-line-codehinter-input {
+  .cm-editor {
+    max-height: 100px !important;
+  }
+}
