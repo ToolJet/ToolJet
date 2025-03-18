@@ -163,12 +163,12 @@ export const ComponentsManagerTab = ({ darkMode }) => {
       <div className="d-flex justify-content-between">
         <p className="widgets-manager-header">Components</p>
         <span
-          className="cursor-pointer"
+          className="cursor-pointer d-flex align-items-center"
           onClick={() => {
             toggleRightSidebarPin();
           }}
         >
-          <SolidIcon name={isRightSidebarPinned ? 'unpin' : 'pin'} />
+          <SolidIcon name={isRightSidebarPinned ? 'unpin' : 'pin'} width={20} />
         </span>
       </div>
       <div className="input-icon tj-app-input">

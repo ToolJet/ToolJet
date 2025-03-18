@@ -25,11 +25,18 @@ const RightSidebarToggle = ({ darkMode = false }) => {
     <div
       className={cx('right-sidebar-toggle cursor-pointer', { 'dark-theme': darkMode })}
       data-cy="right-sidebar-toggle"
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+      }}
     >
       <div
         onClick={() => {
           setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
-          handleToggle();
+          if (activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.COMPONENTS) {
+            handleToggle();
+          }
         }}
       >
         <SolidIcon
@@ -41,7 +48,9 @@ const RightSidebarToggle = ({ darkMode = false }) => {
         className="cursor-pointer"
         onClick={() => {
           setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.CONFIGURATION);
-          handleToggle();
+          if (activeRightSideBarTab === RIGHT_SIDE_BAR_TAB.CONFIGURATION) {
+            handleToggle();
+          }
         }}
       >
         <SolidIcon
