@@ -1,17 +1,20 @@
-import { IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { sanitizeInput } from '../../../helpers/utils.helper';
 
 export class UpdateWhiteLabellingDto {
   @IsString()
+  @IsOptional()
   @Transform(({ value }) => sanitizeInput(value))
-  logo: string;
+  white_label_logo: string;
 
   @IsString()
+  @IsOptional()
   @Transform(({ value }) => sanitizeInput(value))
-  text: string;
+  white_label_text: string;
 
   @IsString()
+  @IsOptional()
   @Transform(({ value }) => sanitizeInput(value))
-  favicon: string;
+  white_label_favicon: string;
 }
