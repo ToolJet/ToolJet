@@ -35,7 +35,11 @@ export const phoneinputConfig = {
         defaultValue: 'Default value',
       },
     },
-
+    isCountryChangeEnabled: {
+      type: 'toggle',
+      displayName: 'Enable country change',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
+    },
     loadingState: {
       type: 'toggle',
       displayName: 'Loading state',
@@ -162,21 +166,6 @@ export const phoneinputConfig = {
       validation: { schema: { type: 'string' }, defaultValue: '#D72D39' },
       accordian: 'field',
     },
-    icon: {
-      type: 'icon',
-      displayName: 'Icon',
-      validation: { schema: { type: 'string' }, defaultValue: 'IconHome2' },
-      accordian: 'field',
-      visibility: false,
-    },
-    iconColor: {
-      type: 'color',
-      displayName: 'Icon color',
-      validation: { schema: { type: 'string' }, defaultValue: '#CFD3D859' },
-      accordian: 'field',
-      visibility: false,
-      showLabel: false,
-    },
     borderRadius: {
       type: 'numberInput',
       displayName: 'Border radius',
@@ -279,6 +268,7 @@ export const phoneinputConfig = {
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
       tooltip: { value: '' },
+      isCountryChangeEnabled: { value: '{{true}}' },
     },
     events: [],
     styles: {
@@ -288,7 +278,6 @@ export const phoneinputConfig = {
       errTextColor: { value: '#D72D39' },
       borderRadius: { value: '{{6}}' },
       backgroundColor: { value: '#fff' },
-      iconColor: { value: '#CFD3D859' },
       direction: { value: 'left' },
       width: { value: '{{33}}' },
       alignment: { value: 'side' },
@@ -296,8 +285,6 @@ export const phoneinputConfig = {
       auto: { value: '{{true}}' },
       padding: { value: 'default' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
-      icon: { value: 'IconHome2' },
-      iconVisibility: { value: false },
     },
   },
 };

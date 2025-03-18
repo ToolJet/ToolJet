@@ -18629,3 +18629,55 @@ section.ai-message-prompt-input-wrapper {
     }
   }
 }
+
+
+.react-tel-input {
+  height:100% !important;
+  width: 100% !important;
+
+  .country-list {
+    scrollbar-width: none;
+    width: 208px;
+    height:236px;
+    border-radius: 8px;
+    margin-top: 3px !important;
+  }
+
+
+  .form-control {
+    height:100% !important;
+    width: 100% !important;
+    // border: 1px solid var(--border-weak, #E4E7EB) !important;
+  }
+
+  .flag-dropdown {
+    border-right: 1px solid #CCD1D5 !important;
+  }
+
+  .search {
+    width:100%;
+    padding: 0px !important;
+
+    .search-emoji {
+      display: none;
+    }
+
+    .search-box {
+      border: 0px;
+      border-bottom: 1px solid var(--border-weak, #ccd1d5);
+      width:100%;
+      margin-left: 0 !important;
+      height: 36px;
+    }
+  }
+
+  .country {
+    min-height:32px;
+    font-size: 14px;
+    font-family: IBM Plex Sans;
+    font-weight: 400;
+    padding: 6px 6px !important; 
+    padding-left: 22px !important;
+    color: #1B1F24;
+  }
+}

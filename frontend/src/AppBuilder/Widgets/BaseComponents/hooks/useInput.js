@@ -56,15 +56,26 @@ export const useInput = ({
 
   useEffect(() => {
     disable !== disabledState && setDisable(disabledState);
+    if (isInitialRender.current) return;
+    setExposedVariable('isDisabled', disabledState);
   }, [disabledState]);
 
   useEffect(() => {
     visibility !== properties.visibility && setVisibility(properties.visibility);
+    if (isInitialRender.current) return;
+    setExposedVariable('isVisible', properties.visibility);
   }, [properties.visibility]);
 
   useEffect(() => {
     loading !== loadingState && setLoading(loadingState);
+    if (isInitialRender.current) return;
+    setExposedVariable('isLoading', loadingState);
   }, [loadingState]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    setExposedVariable('isMandatory', isMandatory);
+  }, [isMandatory]);
 
   useEffect(() => {
     if (isInitialRender.current) return;
