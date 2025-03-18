@@ -1,6 +1,5 @@
 const devServerPlugin = require('./src/plugins/devServer/index.js');
 import versionsArchived from './versionsArchived.json';
-import { themes } from 'prism-react-renderer';
 const baseArchivedURL = "https://archived-docs.tooljet.com/docs/";
 
 const lastFiveArchivedVersions = versionsArchived
@@ -25,10 +24,6 @@ module.exports = {
   projectName: 'ToolJet', // Usually your repo name.
   themeConfig: {
     image: 'img/tooljet-ai-og-image.png',
-    prism: {
-      theme: themes.github,
-      darkTheme: themes.dracula,
-    },
     announcementBar: {
       id: 'support_us',
       content:
