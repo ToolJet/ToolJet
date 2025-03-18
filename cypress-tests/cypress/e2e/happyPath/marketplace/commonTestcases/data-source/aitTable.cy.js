@@ -76,8 +76,8 @@ describe("Data source Airtable", () => {
     selectAndAddDataSource("databases", airtableText.airtable, data.dsName);
 
     fillDataSourceTextField(
-      airtableText.airTableApiKey,
-      airtableText.airTableapikeyPlaceholder,
+      airtableText.ApiKey,
+      airtableText.apikeyPlaceholder,
       Cypress.env("airTable_apikey")
     );
     cy.get(postgreSqlSelector.buttonSave).click();
@@ -103,8 +103,8 @@ describe("Data source Airtable", () => {
     selectAndAddDataSource("databases", airtableText.airtable, data.dsName);
 
     fillDataSourceTextField(
-      airtableText.airTableApiKey,
-      airtableText.airTableapikeyPlaceholder,
+      airtableText.ApiKey,
+      airtableText.apikeyPlaceholder,
       airTable_apiKey
     );
 
@@ -248,7 +248,7 @@ describe("Data source Airtable", () => {
 
     cy.request({
       method: "POST",
-      url: `https://api.airtable.com/v0/${airTable_baseId}/${airTable_tableName}`, 
+      url: `https://api.airtable.com/v0/${airTable_baseId}/${airTable_tableName}`,
       headers: {
         Authorization: `Bearer ${Cypress.env("airTable_apikey")}`,
         "Content-Type": "application/json",
@@ -267,7 +267,7 @@ describe("Data source Airtable", () => {
         ],
       },
     }).then((createResponse) => {
-      const newRecordId = createResponse.body.records[0].id; 
+      const newRecordId = createResponse.body.records[0].id;
 
       cy.get(airTableSelector.operationSelectDropdown)
         .click()

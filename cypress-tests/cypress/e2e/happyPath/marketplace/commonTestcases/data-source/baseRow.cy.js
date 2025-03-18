@@ -65,7 +65,7 @@ describe("Data source baserow", () => {
 
     fillDataSourceTextField(
       baseRowText.lableApiToken,
-      "**************",
+      baseRowText.placeholderApiToken,
       Apikey
     );
 
@@ -91,7 +91,7 @@ describe("Data source baserow", () => {
 
     fillDataSourceTextField(
       baseRowText.lableApiToken,
-      "**************",
+      baseRowText.placeholderApiToken,
       Apikey
     );
 
@@ -116,20 +116,28 @@ describe("Data source baserow", () => {
 
     selectAndAddDataSource("databases", baseRowText.baserow, data.dsName);
 
-      fillDataSourceTextField(baseRowText.lableApiToken, "**************", Apikey);
+    fillDataSourceTextField(
+      baseRowText.lableApiToken,
+      baseRowText.placeholderApiToken,
+      Apikey
+    );
 
-      cy.get(".react-select__control").eq(1).click();
-      cy.get(".react-select__option").contains("Baserow Cloud").click();
+    cy.get(".react-select__control").eq(1).click();
+    cy.get(".react-select__option").contains("Baserow Cloud").click();
 
-      cy.get(postgreSqlSelector.buttonSave)
-        .verifyVisibleElement("have.text", postgreSqlText.buttonTextSave)
-        .click();
-      cy.verifyToastMessage(commonSelectors.toastMessage, postgreSqlText.toastDSSaved);
+    cy.get(postgreSqlSelector.buttonSave)
+      .verifyVisibleElement("have.text", postgreSqlText.buttonTextSave)
+      .click();
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      postgreSqlText.toastDSSaved
+    );
 
-      cy.get(commonSelectors.globalDataSourceIcon).click();
-      cy.get(`[data-cy="cypress-${data.dsName}-baserow-button"]`)
-        .verifyVisibleElement("have.text", `cypress-${data.dsName}-baserow`);
-      cy.wait(1000);
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    cy.get(
+      `[data-cy="cypress-${data.dsName}-baserow-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.dsName}-baserow`);
+    cy.wait(1000);
 
     cy.log("Baserow Table ID:", baserowTableID);
     cy.log("Row ID:", baserowRowID);
@@ -145,12 +153,11 @@ describe("Data source baserow", () => {
       headers: { Authorization: `Token ${Apikey}` },
       body: {
         field_1: "Sample Data",
-        field_2: "Another Value"
-      }
+        field_2: "Another Value",
+      },
     }).then((response) => {
       expect(response.status).to.eq(200);
       const rowId = response.body.id;
-
 
       cy.get(commonSelectors.dashboardIcon).click();
       cy.get(commonSelectors.appCreateButton).click();
@@ -165,14 +172,14 @@ describe("Data source baserow", () => {
 
       // Verify delete operation (Need to uncomment after bug fixes)
 
-    //   cy.get('[data-cy="operation-select-dropdown"]').click();
-    //   cy.get(".react-select__option").contains("Delete row").click();
+      //   cy.get('[data-cy="operation-select-dropdown"]').click();
+      //   cy.get(".react-select__option").contains("Delete row").click();
 
-    //   cy.get(baserowSelectors.baserowTabelId).clearAndTypeOnCodeMirror(baserowTableID);
-    //   cy.get(baserowSelectors.baserow_rowIdinputfield).clearAndTypeOnCodeMirror(rowId.toString());
+      //   cy.get(baserowSelectors.baserowTabelId).clearAndTypeOnCodeMirror(baserowTableID);
+      //   cy.get(baserowSelectors.rowIdinputfield).clearAndTypeOnCodeMirror(rowId.toString());
 
-    //   cy.get(dataSourceSelector.queryPreviewButton).click();
-    //   cy.verifyToastMessage(commonSelectors.toastMessage, `Query (${data.dsName}) completed.`);
+      //   cy.get(dataSourceSelector.queryPreviewButton).click();
+      //   cy.verifyToastMessage(commonSelectors.toastMessage, `Query (${data.dsName}) completed.`);
     });
 
     // Verify other operations
@@ -182,23 +189,31 @@ describe("Data source baserow", () => {
       "Get row",
       "Create row",
       "Update row",
-      "Move row"
+      "Move row",
     ];
 
     operations.forEach((operation) => {
       cy.get('[data-cy="query-select-dropdown"]').click();
       cy.get(".react-select__option").contains(operation).click();
-      cy.get(baserowSelectors.baserowTabelId).clearAndTypeOnCodeMirror(baserowTableID);
+
+      cy.get(baserowSelectors.table).clearAndTypeOnCodeMirror(baserowTableID);
 
       if (operation === "Get row") {
-        cy.get(baserowSelectors.baserow_rowIdinputfield).clearAndTypeOnCodeMirror(baserowRowID);
+        cy.get(baserowSelectors.rowIdinputfield).clearAndTypeOnCodeMirror(
+          baserowRowID
+        );
       }
       if (operation === "Move row") {
-        cy.get('[data-cy="before_id-input-field"]').clearAndTypeOnCodeMirror("1");
+        cy.get('[data-cy="before-id-input-field"]').clearAndTypeOnCodeMirror(
+          "1"
+        );
       }
 
       cy.get(dataSourceSelector.queryPreviewButton).click();
-      cy.verifyToastMessage(commonSelectors.toastMessage, `Query (${data.dsName}) completed.`);
+      cy.verifyToastMessage(
+        commonSelectors.toastMessage,
+        `Query (${data.dsName}) completed.`
+      );
     });
   });
 });
