@@ -56,8 +56,8 @@ const TJDBCodeEditor = (props) => {
 
   const handleOnChange = (value) => {
     if (value === '') {
-      setErrorState(true);
-      setError('JSON cannot be empty');
+      setErrorState(false);
+      setError(null);
       setCurrentValue(value);
       return;
     }
@@ -167,18 +167,18 @@ const TJDBCodeEditor = (props) => {
           componentName={componentName}
           key={componentName}
           forceUpdate={forceUpdate}
-          optionalProps={{ styles: { height: 300 }, cls: '' }}
+          optionalProps={{ styles: { height: 300 }, cls: 'tjdb-hinter-portal' }}
           darkMode={darkMode}
           selectors={{ className: 'preview-block-portal tjdb-portal-codehinter' }}
           dragResizePortal={true}
           callgpt={null}
         >
           <ErrorBoundary>
-            <div className={`${errorState && 'tjdb-hinter-error'}`} data-cy={`${cyLabel}-input-field`}>
+            <div className={`${errorState && 'tjdb-hinter-error'} h-100`} data-cy={`${cyLabel}-input-field`}>
               <CodeMirror
                 value={currentValue}
                 placeholder={placeholder}
-                height={isOpen ? '350px' : '32px'}
+                height={isOpen ? '32px' : '32px'}
                 maxHeight={'350px'}
                 width="100%"
                 theme={theme}

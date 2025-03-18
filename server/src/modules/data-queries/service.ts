@@ -191,11 +191,12 @@ export class DataQueriesService implements IDataQueriesService {
 
   async changeQueryDataSource(user: User, queryId: string, dataSource: DataSource, newDataSourceId: string) {
     return dbTransactionWrap(async (manager: EntityManager) => {
-      const newDataSource = await this.dataSourceRepository.findOne({ where: { id: newDataSourceId } });
-      if (dataSource.kind !== newDataSource.kind) {
-        throw new BadRequestException();
-      }
-      return this.dataQueryRepository.updateOne(queryId, { dataSourceId: newDataSourceId }, manager);
+      const newDataSource = await this.dataSourceRepository.findOneOrFail({ where: { id: newDataSourceId } });
+      // FIXME: Disabling this check as workflows can change data source of a query with different kind
+      // if (dataSource.kind !== newDataSource.kind && dataSource) {
+      //   throw new BadRequestException();
+      // }
+      return this.dataQueryRepository.updateOne(queryId, { dataSourceId: newDataSource.id }, manager);
 
       // TODO: Audit logs
     });

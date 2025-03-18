@@ -1,3 +1,4 @@
+/* eslint-disable import/no-unresolved */
 import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
@@ -9,12 +10,13 @@ import {
   replaceNext,
   replaceAll,
   openSearchPanel,
-  // eslint-disable-next-line import/no-unresolved
 } from '@codemirror/search';
 import './SearchBox.scss';
 import InputComponent from '@/components/ui/Input/Index.jsx';
 import { Button as ButtonComponent } from '@/components/ui/Button/Button.jsx';
 import { ToolTip } from '@/_components/ToolTip';
+import { SelectionRange } from '@codemirror/state';
+import { useHotkeys } from 'react-hotkeys-hook';
 
 export const handleSearchPanel = (view) => {
   const dom = document.createElement('div');
@@ -35,6 +37,11 @@ function SearchPanel({ view }) {
       replace: replaceTerm,
     });
     view.dispatch({ effects: setSearchQuery.of(query) });
+
+    const currentPos = view.state.selection.main.head;
+    view.dispatch({
+      selection: SelectionRange.create(currentPos, currentPos),
+    });
   };
 
   useEffect(() => {
@@ -44,12 +51,28 @@ function SearchPanel({ view }) {
     return () => clearTimeout(handler);
   }, [searchText, replaceText]);
 
+  const [shortcutEnabled, setShortcutEnabled] = useState(false);
+
+  // Shortcuts for search input field
+  useHotkeys(
+    ['shift+enter', 'enter'],
+    (event, handler) => {
+      if (handler.shift && handler.keys[0] === 'enter') findPrevious(view);
+      else if (handler.keys[0] === 'enter') findNext(view);
+    },
+    {
+      enabled: shortcutEnabled,
+      enableOnFormTags: true,
+    }
+  );
+
   const displaySearchField = () => (
     <div className="search-replace-inputs">
       <InputComponent
         leadingIcon="search01"
         onChange={(e) => setSearchText(e.target.value)}
-        onKeyDown={(e) => e.key === 'Enter' && findNext(view)}
+        onFocus={() => setShortcutEnabled(true)}
+        onBlur={() => setShortcutEnabled(false)}
         placeholder="Find"
         size="small"
         value={searchText}

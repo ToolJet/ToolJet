@@ -263,6 +263,9 @@ export const Datepicker = function Datepicker({
           }
           setIsDateInputFocussed(false);
         }}
+        closeOnScroll={(e) => {
+          return e.target.className === 'table-responsive jet-data-table false false';
+        }}
       />
     </div>
   );

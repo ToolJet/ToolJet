@@ -25,6 +25,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'Image',
   'Divider',
   'VerticalDivider',
+  'ModalV2',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -38,6 +39,7 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   Container: 'Data',
   Divider: 'Data',
   VerticalDivider: 'Data',
+  ModalV2: 'Data',
 };
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
@@ -157,7 +159,8 @@ export const baseComponentProperties = (
           'properties',
           currentState,
           allComponents,
-          darkMode
+          darkMode,
+          ''
         )
       ),
     });

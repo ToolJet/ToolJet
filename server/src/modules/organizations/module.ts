@@ -9,12 +9,13 @@ export class OrganizationsModule {
     const { OrganizationsService } = await import(`${importPath}/organizations/service`);
     const { OrganizationsController } = await import(`${importPath}/organizations/controller`);
     const { FeatureAbilityFactory } = await import(`${importPath}/organizations/ability`);
+    const { AppEnvironmentUtilService } = await import(`${importPath}/app-environments/util.service`);
 
     return {
       module: OrganizationsModule,
       imports: [await InstanceSettingsModule.register(configs)],
       controllers: [OrganizationsController],
-      providers: [OrganizationsService, OrganizationRepository, FeatureAbilityFactory],
+      providers: [OrganizationsService, OrganizationRepository, FeatureAbilityFactory, AppEnvironmentUtilService],
     };
   }
 }

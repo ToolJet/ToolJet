@@ -14,7 +14,13 @@ export class AppGitAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects> 
     return App;
   }
 
-  protected defineAbilityFor(can: AbilityBuilder<AppGitAbility>['can'], UserAllPermissions: UserAllPermissions): void {
+  protected defineAbilityFor(
+    can: AbilityBuilder<AppGitAbility>['can'],
+    UserAllPermissions: UserAllPermissions,
+    extractedMetadata: { moduleName: string; features: string[] },
+    request?: any
+  ): void {
+    const appId = request?.tj_resource_id;
     const { superAdmin, isAdmin, userPermission } = UserAllPermissions;
 
     const userAppGitPermissions = userPermission?.APP;
@@ -35,11 +41,12 @@ export class AppGitAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects> 
     }
 
     // READ-based features
-    if (isAllAppsViewable || userAppGitPermissions?.viewableAppsId?.length) {
+    if (
+      isAllAppsViewable ||
+      (userAppGitPermissions?.viewableAppsId?.length && appId && userAppGitPermissions?.viewableAppsId?.includes(appId))
+    ) {
       can(FEATURE_KEY.GIT_GET_APPS, App);
-      can(FEATURE_KEY.GIT_GET_APP, App, {
-        id: { $in: isAllAppsViewable ? undefined : userAppGitPermissions?.viewableAppsId },
-      });
+      can(FEATURE_KEY.GIT_GET_APP, App);
     }
 
     // CREATE-based features
@@ -48,20 +55,21 @@ export class AppGitAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects> 
     }
 
     // UPDATE-based features
-    if (isAllAppsEditable || userAppGitPermissions?.editableAppsId?.length) {
-      can(FEATURE_KEY.GIT_UPDATE_APP, App, {
-        id: { $in: isAllAppsEditable ? undefined : userAppGitPermissions?.editableAppsId },
-      });
-      can(FEATURE_KEY.GIT_SYNC_APP, App, {
-        id: { $in: isAllAppsEditable ? undefined : userAppGitPermissions?.editableAppsId },
-      });
+    if (
+      isAllAppsEditable ||
+      (userAppGitPermissions?.editableAppsId?.length && appId && userAppGitPermissions.editableAppsId.includes(appId))
+    ) {
+      can(FEATURE_KEY.GIT_UPDATE_APP, App);
+      can(FEATURE_KEY.GIT_SYNC_APP, App);
     }
 
     // Additional checks based on specific actions
-    if (userAppGitPermissions?.editableAppsId?.length) {
-      can(FEATURE_KEY.GIT_GET_APP_CONFIG, App, {
-        id: { $in: userAppGitPermissions.editableAppsId },
-      });
+    if (
+      userAppGitPermissions?.editableAppsId?.length &&
+      appId &&
+      userAppGitPermissions.editableAppsId.includes(appId)
+    ) {
+      can(FEATURE_KEY.GIT_GET_APP_CONFIG, App);
     }
   }
 }

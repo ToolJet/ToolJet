@@ -9,6 +9,7 @@ import { useHotkeys } from 'react-hotkeys-hook';
 import { DefaultComponent } from './Components/DefaultComponent';
 import { FilePicker } from './Components/FilePicker';
 import { Modal } from './Components/Modal';
+import { ModalV2 } from './Components/ModalV2';
 import { CustomComponent } from './Components/CustomComponent';
 import { Icon } from './Components/Icon';
 import useFocus from '@/_hooks/use-focus';
@@ -80,6 +81,7 @@ const NEW_REVAMPED_COMPONENTS = [
   'Container',
   'Divider',
   'VerticalDivider',
+  'ModalV2',
 ];
 
 export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selectedComponentId }) => {
@@ -704,6 +706,9 @@ const GetAccordion = React.memo(
 
       case 'FilePicker':
         return <FilePicker {...restProps} />;
+
+      case 'ModalV2':
+        return <ModalV2 {...restProps} />;
 
       case 'Modal':
         return <Modal {...restProps} />;
