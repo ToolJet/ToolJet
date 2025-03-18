@@ -2,4 +2,3 @@ node_modules
 lib/*.d.*
 lib/*.js
 lib/*.js.map
-lib/operations.json
