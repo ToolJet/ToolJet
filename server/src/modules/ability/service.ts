@@ -84,6 +84,9 @@ export class AbilityService extends IAbilityService {
           userPermissions[MODULES.GLOBAL_DATA_SOURCE] = await this.createUserDataSourcesPermissions(
             dsGranularPermissions
           );
+
+          /* in community edition. builder can use the datasources */
+          userPermissions[MODULES.GLOBAL_DATA_SOURCE].isAllUsable = true;
         }
       }
 
