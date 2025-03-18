@@ -1,0 +1,47 @@
+{
+  "$metadata": {
+    "httpStatusCode": 200,
+    "requestId": "4T69FPY1VFZATJP2",
+    "extendedRequestId": "qMOQYo8VHYskGOK8AYxPLKkFlBRvpw5YF4hh4SXM1D7ZKzHJENxQT8ZvRLFPnMDJSMhRLt+4V4Y=",
+    "attempts": 1,
+    "totalRetryDelay": 0
+  },
+  "Buckets": [
+    {
+      "Name": "datasource-testing",
+      "CreationDate": "2024-12-18T05:30:35.000Z"
+    },
+    {
+      "Name": "datasource-testing-001",
+      "CreationDate": "2024-11-12T17:38:06.000Z"
+    },
+    {
+      "Name": "new-test-tooljet",
+      "CreationDate": "2024-11-10T02:21:47.000Z"
+    },
+    {
+      "Name": "tooljet-deployments",
+      "CreationDate": "2024-11-10T11:38:10.000Z"
+    },
+    {
+      "Name": "tooljet-docs",
+      "CreationDate": "2025-03-12T11:16:45.000Z"
+    },
+    {
+      "Name": "tooljet-plugins-production",
+      "CreationDate": "2024-10-16T13:01:05.000Z"
+    },
+    {
+      "Name": "tooljet-test",
+      "CreationDate": "2024-12-17T19:40:38.000Z"
+    },
+    {
+      "Name": "tooljettest",
+      "CreationDate": "2025-03-11T04:00:57.000Z"
+    }
+  ],
+  "Owner": {
+    "DisplayName": "admin",
+    "ID": "cb409d9a49dc69ab2e3bea109d890375fe4755a099210b6a0689ff9e6cb0b132"
+  }
+}
