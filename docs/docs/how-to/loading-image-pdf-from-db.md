@@ -29,7 +29,7 @@ This guide shows how to upload and view images and PDFs using the base64 string 
 
 ## 2. Upload Files To The Database
 
-- Create a new application and name it. In this case we have named it *file_manager*. 
+- Create a new application and give it a name. In this case we have named it *file_manager*. 
 - Drag and drop two **[Filepicker](/docs/widgets/file-picker)** components on the canvas from the components library on the right. 
 - Rename the first Filepicker component to *imagePicker* and second Filepicker to *pdfPicker*.
 
@@ -37,7 +37,7 @@ This guide shows how to upload and view images and PDFs using the base64 string 
     <img className="screenshot-full" src="/img/how-to/load-base64/filepickers-rename-v2.png" alt="Rename Filepickers"  />
 </div>
 
-- For *pdfPicker*, change the **Accept file types** property to `{{"application/pdf"}}` - this ensures that the Filepicker only accepts PDF files. To find more supported types, check out [File Picker Properties.](https://docs.tooljet.ai/docs/widgets/file-picker/#properties)
+- For *pdfPicker*, change the **Accept file types** property to `{{"application/pdf"}}` - this ensures that the Filepicker only accepts PDF files. To find more supported types, check out [File Picker Properties.](/docs/widgets/file-picker/#properties)
 
 <div style={{ width: '100%', marginBottom:'15px', marginTop:'15px'}}>
     <img className="screenshot-full" src="/img/how-to/load-base64/pdf-accepted-file-type-v2.png" alt="Accepted File Type Settings"  />
