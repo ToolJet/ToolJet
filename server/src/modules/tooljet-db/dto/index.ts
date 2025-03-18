@@ -20,6 +20,7 @@ import {
   IsIn,
 } from 'class-validator';
 import { sanitizeInput, formatTimestamp, validateDefaultValue, formatJSONB } from 'src/helpers/utils.helper';
+import { TooljetDatabaseDataTypes, TJDB } from '../types';
 
 export function Match(property: string, validationOptions?: ValidationOptions) {
   return (object: any, propertyName: string) => {
@@ -189,11 +190,11 @@ export class PostgrestTableColumnDto {
   @Validate(SQLInjectionValidator, { message: 'Column name does not support special characters' })
   column_name: string;
 
-  @IsString()
+  @IsIn(Object.values(TJDB), { message: 'Incorrect datatype.' })
   @IsNotEmpty()
   @Transform(({ value }) => sanitizeInput(value))
   @Validate(SQLInjectionValidator)
-  data_type: string;
+  data_type: TooljetDatabaseDataTypes;
 
   @IsOptional()
   @Transform(({ value, obj }) => {
@@ -290,11 +291,11 @@ export class EditColumnTableDto {
   @Validate(SQLInjectionValidator, { message: 'Column name does not support special characters' })
   column_name: string;
 
-  @IsString()
+  @IsIn(Object.values(TJDB), { message: 'Incorrect datatype.' })
   @IsNotEmpty()
   @Transform(({ value }) => sanitizeInput(value))
   @Validate(SQLInjectionValidator)
-  data_type: string;
+  data_type: TooljetDatabaseDataTypes;
 
   @IsOptional()
   @Transform(({ value, obj }) => {

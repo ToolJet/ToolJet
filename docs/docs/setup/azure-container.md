@@ -9,8 +9,6 @@ title: Azure container apps
 Please note that you need to set up a PostgreSQL database manually to be used by ToolJet. Additionally, you must set up a Redis service through Azure Cache for Redis.
 :::
 
-*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
-
 ## Deploying ToolJet application
 
 1. Open the Azure dashboard at https://portal.azure.com, navigate to Container Apps, and click on "Create container app".
@@ -34,10 +32,28 @@ Please note that you need to set up a PostgreSQL database manually to be used by
  
  </div>
  
-  - Make sure to provide the image tag, and then enter `server/entrypoint.sh, npm, run, start:prod` in the "Command override" field.
+  - Make sure to provide the image tag, and then enter `server/entrypoint.sh, npm, run, start:prod` in the "Arguments override" field.
   - Add the following ToolJet application variables under the "Environmental variable" section. You can refer to this [**documentation**](/docs/setup/env-vars) for more information on environment variables.
 
-  **Note: For the minimal setup, ToolJet requires: `TOOLJET_HOST`, `PG_HOST`, `PG_DB`, `PG_USER`, `PG_PASSWORD`, `SECRET_KEY_BASE` & `LOCKBOX_MASTER_KEY` keys in the secret.**
+  **Note**: ToolJet requires:
+   - **TOOLJET_DB** 
+   - **TOOLJET_DB_HOST**
+   - **TOOLJET_DB_USER**
+   - **TOOLJET_DB_PASS**
+   - **PG_HOST**
+   - **PG_DB**
+   - **PG_USER**
+   - **PG_PASS**
+   - **SECRET_KEY_BASE** 
+   - **LOCKBOX_KEY**
+ 
+   For redis connection ensure below environment variables are added:
+   - **REDIS_HOST**
+   - **REDIS_PORT**
+   - **REDIS_USER**
+
+   If using Azure Database for Postgresql-Flexible server, add:
+   - **PGSSLMODE = require**
   
    <div style={{textAlign: 'center'}}>
  
@@ -109,7 +125,7 @@ If you already have Redis configured, you can use your existing setup. Otherwise
 
 ## Upgrading to the Latest LTS Version
 
-New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:EE-LTS-latest`.
+New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
 
 If this is a new installation of the application, you may start directly with the latest version. This guide is not required for new installations.
 
@@ -119,5 +135,4 @@ If this is a new installation of the application, you may start directly with th
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
-For specific issues or questions, refer to our **[Slack](https://tooljet.slack.com/join/shared_invite/zt-25438diev-mJ6LIZpJevG0LXCEcL0NhQ#)**.
-
+*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*

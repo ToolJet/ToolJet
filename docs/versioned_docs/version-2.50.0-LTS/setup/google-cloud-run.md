@@ -9,10 +9,7 @@ title: Google Cloud Run
 You should setup a PostgreSQL database manually to be used by ToolJet.
 :::
 
-*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
-
 Follow the steps below to deploy ToolJet on Cloud run with `gcloud` CLI.
-
 
 ## Deploying ToolJet application
 1. Create a new Google Cloud Run Service:
@@ -72,13 +69,9 @@ Click on deploy once the above parameters are set.
 Once the Service is created and live, to make the  Cloud Service URL public. Please follow the steps [**here**](https://cloud.google.com/run/docs/securing/managing-access) to make the service public.
 :::
 
+## Deploying ToolJet Database 
 
-
-
-
-### Deploying ToolJet Database 
-
-If you intend to use this feature, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database.
+To use ToolJet Database, you'd have to set up and deploy PostgREST server which helps querying ToolJet Database.
 
 #### PostgREST server 
 
@@ -120,7 +113,7 @@ If you intend to use this feature, you'd have to set up and deploy PostgREST ser
   <img className="screenshot-full" src="/img/cloud-run/port-and-capacity-postgrest.png" alt="port-and-capacity-postgrest" />
   </div>
   
-5. Under environmental variable please add corresponding ToolJet database env variables. You can also refer [env variable](/docs/setup/env-vars/#enable-tooljet-database--optional-).
+5. Under environmental variable please add corresponding ToolJet database env variables. You can also refer [env variable](/docs/setup/env-vars).
 
 6. Please go to connection tab. Under Cloud SQL instance please select the PostgreSQL database which you have set-up for ToolJet application or the separate PostgreSQL database created respective to ToolJet Database from the drop-down option.
 
@@ -138,7 +131,7 @@ Once the Service is created and live, to make the  Cloud Service URL public. Ple
 
 
 
-7. Additional Environmental variable to be added to ToolJet application or ToolJet Server connect to PostgREST server. You can also refer env variable [**here**](/docs/setup/env-vars/#enable-tooljet-database--optional-)
+7. Additional Environmental variable to be added to ToolJet application or ToolJet Server connect to PostgREST server. You can also refer env variable [**here**](/docs/setup/env-vars)
 
 
   <div style={{textAlign: 'center'}}>
@@ -158,4 +151,4 @@ If this is a new installation of the application, you may start directly with th
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
-For specific issues or questions, refer to our **[Slack](https://tooljet.slack.com/join/shared_invite/zt-25438diev-mJ6LIZpJevG0LXCEcL0NhQ#)**.
+*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*

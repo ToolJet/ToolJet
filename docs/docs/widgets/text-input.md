@@ -93,9 +93,9 @@ To add regex inside `Custom Validation`, you can use the below format:
 
 | <div style={{ width:"100px"}}> Action </div> | <div style={{ width:"150px"}}> Description </div> | <div style={{ width:"250px"}}> Configuration Options </div>|
 |:------------------|:------------|:------------------------------|
-| Loading state      | Enables a loading spinner, often used with `isLoading` to indicate progress. Toggle or set dynamically.   | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Visibility         | Controls component visibility. Toggle or set dynamically.                                                 | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
-| Disable            | Enables or disables the component. Toggle or set dynamically.                                             | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Loading state      | Enables a loading spinner, often used with `isLoading` to indicate progress.    | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Visibility         | Controls component visibility.                                                  | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
+| Disable            | Enables or disables the component.                                              | Enable/disable the toggle button or dynamically configure the value by clicking on **fx** and entering a logical expression. |
 | Tooltip            | Provides additional information on hover. Set a string value for display.                                 | String (e.g., `Enter your name here.` ).                       |
 
 </div>

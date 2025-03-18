@@ -51,5 +51,5 @@ In this example, simple key-value pairs are entered in the provided input fields
 
 To see REST API queries in action, check out the following tutorials: 
 
-1. **[Gemini AI Content Generator](https://blog.tooljet.com/build-an-ai-content-generator-using-gemini-api-and-tooljet-in-10-minutes/)** 
-2. **[Open AI Audio Transcriber](https://blog.tooljet.com/building-an-audio-transcriber-and-analyzer-using-tooljet-and-openai/)**
+1. **[Gemini AI Content Generator](https://blog.tooljet.ai/build-an-ai-content-generator-using-gemini-api-and-tooljet-in-10-minutes/)** 
+2. **[Open AI Audio Transcriber](https://blog.tooljet.ai/building-an-audio-transcriber-and-analyzer-using-tooljet-and-openai/)**

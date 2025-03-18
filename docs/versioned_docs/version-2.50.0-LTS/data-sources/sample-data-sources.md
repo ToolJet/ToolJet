@@ -29,7 +29,7 @@ This method allows you to add a sample data source to an existing application th
 
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/sample-data-sources/connect-via-canvas.gif" alt="Connect via Canvas" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/sample-data-sources/connect-via-canvas-v2.png" alt="Connect via Canvas" />
 </div>
 
 
@@ -44,7 +44,7 @@ This method allows you to connect the sample data source to an existing applicat
 
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/sample-data-sources/connect-via-query-manager.gif" alt="Connect via query manager" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/sample-data-sources/connect-via-query-manager-v2.png" alt="Connect via query manager" />
 </div>
 
 
@@ -59,7 +59,7 @@ This method enables the creation of a sample application with a pre-configured c
    5. By default, this application will feature a table component with tabs. These tabs will visually display the data retrieved from your sample data source.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/sample-data-sources/create-sample-app.gif" alt="Create Sample App" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/sample-data-sources/create-sample-app-v2.png" alt="Create Sample App" />
 </div>
 
  ## Sample Data Source Schema
@@ -68,8 +68,8 @@ The sample data source contains various tables with different data types.
 
 | Table Name                       | Column Names| Number of Rows |
 |:-------|:---------|:---------------|
-| `sampledataxlsx_organizations`   | `index`, `organization_id`, `name`, `website`, `country`, `description`, `founded`, `industry`, `number_of_employees`         | 100              |
-| `sampledataxlsx_countrygdp`      | `country`, `area_sq_km, population`, `exports`, `imports, gdp`, `gdp_per_capita`, `gdp_real_growth_rate`, `inflation_rate_consumer_prices`, `investment_gross_fixed_of_gdp`, `labor_force`, `unemployment_rate` | 263              |
-| `sampledataxlsx_users`           | `first_name`, `last_name`, `company_name`, `address`, `city`, `county`, `state`, `zip`, `phone1`, `phone2`, `email`, `web`     | 500              |
-| `sampledataxlsx_orders`          | `row_id`, `order_id`, `order_date`, `ship_date`, `ship_mode`, `customer_id`, `customer_name`, `segment`, `country`, `city`, `state`, `postal_code`, `region`, `product_id`, `category`, `sub_category`, `product_name`, `sales`, `quantity`, `discount`, `profit` | 500              |
-| `sampledataxlsx_productlistcars` | `car`, `mpg`, `cylinders`, `displacement`, `horsepower`, `weight`, `acceleration`, `model`, `origin`                          | 406              |
+| `public.sample_data_organizations`   | `index`, `organization_id`, `name`, `website`, `country`, `description`, `founded`, `industry`, `number_of_employees`         | 100              |
+| `public.sample_data_country_gdp`      | `country`, `area_sq_km, population`, `exports`, `imports, gdp`, `gdp_per_capita`, `gdp_real_growth_rate`, `inflation_rate_consumer_prices`, `investment_gross_fixed_of_gdp`, `labor_force`, `unemployment_rate` | 263              |
+| `public.sample_data_users`           | `first_name`, `last_name`, `company_name`, `address`, `city`, `county`, `state`, `zip`, `phone1`, `phone2`, `email`, `web`     | 499              |
+| `public.sample_data_orders`          | `row_id`, `order_id`, `order_date`, `ship_date`, `ship_mode`, `customer_id`, `customer_name`, `segment`, `country`, `city`, `state`, `postal_code`, `region`, `product_id`, `category`, `sub_category`, `product_name`, `sales`, `quantity`, `discount`, `profit` | 500              |
+| `public.sample_data_product_cars` | `car`, `mpg`, `cylinders`, `displacement`, `horsepower`, `weight`, `acceleration`, `model`, `origin`                          | 406              |
