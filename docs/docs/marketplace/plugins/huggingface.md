@@ -45,6 +45,15 @@ Use this operation to generate text based on the input and model settings. It pr
 <img className="screenshot-full" src="/img/marketplace/plugins/huggingface/text-generation-query.png" alt="Gemini Query" />
 
 <details>
+<summary>**Example Value**</summary>
+```yaml
+    "Model":"google/gemma-2-2b-it"
+    "Input":"AI integration with ToolJet"
+    "Operations Parameters":"{"max_token": 400, "temperature": 0.7}"
+```
+</details>
+
+<details>
 <summary>**Response Example**</summary>
 
 AI integration with ToolJet:
@@ -103,6 +112,22 @@ Use this operation to create a summary of the input text based on the model sett
 - **Operation Parameters**: Additional parameters to configure the model response. These parameters might change based on model being used.
 
 <img className="screenshot-full" src="/img/marketplace/plugins/huggingface/summary-query.png" alt="Gemini Query" />
+
+<details>
+<summary>**Example Value**</summary>
+```yaml
+    "Model":"facebook/bart-large-cnn"
+    "Input":"AI integration with ToolJet
+
+    **Benefits of ToolJet Integration**
+
+    * **Faster Development:** Streamline the development process with pre-built integrations and templates for common workflows.
+    * **Reduced Costs:** Automate tasks and reduce the need for custom coding, saving development time and money. 
+    * **Increases Productivity:** Empower your team to build and deploy tools faster, allowing them to focus on more strategic tasks.
+    * **Improved Collaboration:** Enable seamless collaboration between developers and business users by providing a unified platform for tool creation."
+    "Operations Parameters":"{ "clean_up_tokenization_spaces": true, "truncation": "do_not_truncate", "generate_parameters": {} }"
+```
+</details>
 
 <details>
 <summary>**Response Example**</summary>
