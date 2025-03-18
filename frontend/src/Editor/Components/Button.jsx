@@ -5,7 +5,8 @@ import * as Icons from '@tabler/icons-react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 
 export const Button = function Button(props) {
-  const { height, properties, styles, fireEvent, id, dataCy, setExposedVariable, setExposedVariables } = props;
+  const { height, properties, styles, fireEvent, id, dataCy, setExposedVariable, setExposedVariables, component } =
+    props;
   const {
     backgroundColor,
     textColor,
@@ -17,8 +18,9 @@ export const Button = function Button(props) {
     direction,
     type,
     padding,
-    iconVisibility,
   } = styles;
+
+  const { iconVisibility } = component?.definition?.styles || {};
 
   const { loadingState, disabledState } = properties;
   const [label, setLabel] = useState(typeof properties.text === 'string' ? properties.text : '');
@@ -229,7 +231,7 @@ export const Button = function Button(props) {
                 </p>
               </span>
             </div>
-            {iconVisibility && (
+            {iconVisibility.value && (
               <div className="d-flex">
                 {!props.isResizing && !loading && (
                   <IconElement
