@@ -136,12 +136,11 @@ describe("Data source Airtable", () => {
       .click()
       .type("List records{enter}");
 
-    cy.clearAndTypeOnCodeMirrorForEachField(
-      airTableSelector.baseIdInputField,
+    cy.get(airTableSelector.baseIdInputField).clearAndTypeOnCodeMirror(
       airTable_baseId
     );
-    cy.clearAndTypeOnCodeMirrorForEachField(
-      airTableSelector.tableNameInputField,
+
+    cy.get(airTableSelector.tableNameInputField).clearAndTypeOnCodeMirror(
       airTable_tableName
     );
 
@@ -157,18 +156,17 @@ describe("Data source Airtable", () => {
       .click()
       .type("Retrieve record{enter}");
 
-    cy.clearAndTypeOnCodeMirrorForEachField(
-      airTableSelector.baseIdInputField,
+    cy.get(airTableSelector.baseIdInputField).clearAndTypeOnCodeMirror(
       airTable_baseId
     );
-    cy.clearAndTypeOnCodeMirrorForEachField(
-      airTableSelector.tableNameInputField,
+    cy.get(airTableSelector.tableNameInputField).clearAndTypeOnCodeMirror(
       airTable_tableName
     );
-    cy.clearAndTypeOnCodeMirrorForEachField(
-      airTableSelector.recordIdInputField,
+
+    cy.get(airTableSelector.recordIdInputField).clearAndTypeOnCodeMirror(
       airTable_recordID
     );
+
     cy.get(dataSourceSelector.queryPreviewButton).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
@@ -181,12 +179,11 @@ describe("Data source Airtable", () => {
       .click()
       .type("Create record{enter}");
 
-    cy.clearAndTypeOnCodeMirrorForEachField(
-      airTableSelector.baseIdInputField,
+    cy.get(airTableSelector.baseIdInputField).clearAndTypeOnCodeMirror(
       airTable_baseId
     );
-    cy.clearAndTypeOnCodeMirrorForEachField(
-      airTableSelector.tableNameInputField,
+
+    cy.get(airTableSelector.tableNameInputField).clearAndTypeOnCodeMirror(
       airTable_tableName
     );
 
@@ -213,16 +210,14 @@ describe("Data source Airtable", () => {
       .click()
       .type("Update record{enter}");
 
-    cy.clearAndTypeOnCodeMirrorForEachField(
-      airTableSelector.baseIdInputField,
+    cy.get(airTableSelector.baseIdInputField).clearAndTypeOnCodeMirror(
       airTable_baseId
     );
-    cy.clearAndTypeOnCodeMirrorForEachField(
-      airTableSelector.tableNameInputField,
+    cy.get(airTableSelector.tableNameInputField).clearAndTypeOnCodeMirror(
       airTable_tableName
     );
-    cy.clearAndTypeOnCodeMirrorForEachField(
-      airTableSelector.recordIdInputField,
+
+    cy.get(airTableSelector.recordIdInputField).clearAndTypeOnCodeMirror(
       airTable_recordID
     );
 
@@ -273,18 +268,14 @@ describe("Data source Airtable", () => {
         .click()
         .type("Delete record{enter}");
 
-      cy.clearAndTypeOnCodeMirrorForEachField(
-        airTableSelector.baseIdInputField,
+      cy.get(airTableSelector.baseIdInputField).clearAndTypeOnCodeMirror(
         airTable_baseId
       );
-
-      cy.clearAndTypeOnCodeMirrorForEachField(
-        airTableSelector.tableNameInputField,
+      cy.get(airTableSelector.tableNameInputField).clearAndTypeOnCodeMirror(
         airTable_tableName
       );
 
-      cy.clearAndTypeOnCodeMirrorForEachField(
-        airTableSelector.recordIdInputField,
+      cy.get(airTableSelector.recordIdInputField).clearAndTypeOnCodeMirror(
         newRecordId
       );
 
