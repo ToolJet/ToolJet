@@ -17,7 +17,7 @@ Connections are created based on OpenAPI specifications. The available authentic
 OpenAPI datasource accepts specifications only in **JSON** and **YAML** formats.
 :::
 
-<img className="screenshot-full" src="/img/datasource-reference/openapi/openapiconnect-v2.png" alt="OpenAPI" />
+<img className="screenshot-full" src="/img/datasource-reference/openapi/openapiconnect-v3.png" alt="OpenAPI" />
 
 </div>
 
@@ -37,6 +37,22 @@ OpenAPI datasource accepts specifications only in **JSON** and **YAML** formats.
 - **Host**
 - **Operation**
 
-<img className="screenshot-full" src="/img/datasource-reference/openapi/query.png" alt="OpenAPI" />
+<img className="screenshot-full" src="/img/datasource-reference/openapi/query-v2.png" alt="OpenAPI" />
+
+<details>
+<summary>**Example Values**</summary>
+
+```yaml
+customer_id: 7777761
+```
+</details>
+
+<details>
+<summary>**Response Example**</summary>
+
+```json
+{"id":7777761,"name":"Chidambar Jha","email":"jha_chidambar@turcotte-leffler.test","gender":"female","status":"inactive"}
+```
+</details>
 
 </div>
