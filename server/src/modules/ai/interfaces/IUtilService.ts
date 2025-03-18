@@ -7,7 +7,7 @@ export interface IAiUtilService {
 
   AIGateway(provider: string, operation_id: string, prompt_body: any, organizationId: string): Promise<any>;
 
-  createComponentfromSteps(
+  createComponentFromSteps(
     steps: any,
     componentDatapath?: string
   ): Promise<{
@@ -27,11 +27,11 @@ export interface IAiUtilService {
     };
   }>;
 
-  getComponentsfromsteps(steps: any): Promise<any>;
+  getComponentsFromsteps(steps: any): Promise<any>;
 
-  createQueryfromSteps(steps: any): Promise<any>;
+  createQueryFromSteps(steps: any): Promise<any>;
 
-  getQueriesfromsteps(steps: any): Promise<any>;
+  getQueriesFromsteps(steps: any): Promise<any>;
 
   createQuerySteps(prd: string, lld: string, tableName: any, components: any, organizationId: any): Promise<any>;
 
