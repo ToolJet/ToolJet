@@ -162,6 +162,15 @@ Run this opetation to get the database schema.
 <img className="screenshot-full" src="/img/marketplace/plugins/weaviate/get-collection.png" alt="Weaviate Configuration" />
 
 <details>
+<summary>**Example Values**</summary>
+
+```yaml
+Collection Name: Createcollection
+```
+
+</details>
+
+<details>
 <summary>**Response Example**</summary>
 
 ```json
@@ -245,7 +254,7 @@ Use this operation to create a new collection.
 - **Description**: A description for your reference.
 - **Properties**: An array of the properties you are adding, same as a Property Object.
 
-**Required Parameters**
+**Optional Parameters**
 
 - **Consistency**: Ensures the request is handled by the leader node to maintain accuracy.
 - **Sharding config**: Controls behavior of the collection in a multi-node setting.
@@ -378,6 +387,23 @@ Use this operation to delete a collection.
 
 <img className="screenshot-full" src="/img/marketplace/plugins/weaviate/delete-collection.png" alt="Weaviate Configuration" />
 
+<details>
+<summary>**Example Values**</summary>
+
+```yaml
+Collection Name: Newcollection
+```
+
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+
+```yaml
+true
+```
+</details>
+
 ## Data Type - Objects
 
 ### List Objects
@@ -400,6 +426,15 @@ Use this operation to list all the objects of a collection.
 - **Tenant**: Specifies the tenant in a request targeting a multi-tenant class.
 
 <img className="screenshot-full" src="/img/marketplace/plugins/weaviate/list-object.png" alt="Weaviate Configuration" />
+
+<details>
+<summary>**Example Values**</summary>
+
+```yaml
+Collection Name: Testcollection
+```
+
+</details>
 
 <details>
 <summary>**Response Example**</summary>
@@ -463,6 +498,21 @@ Use this operation to create a new object within the selected collection.
 <img className="screenshot-full" src="/img/marketplace/plugins/weaviate/create-object.png" alt="Weaviate Configuration" />
 
 <details>
+<summary>**Example Values**</summary>
+
+```yaml
+Collection Name: Testcollection
+Properties: {
+  "title": "New Sample Document",
+  "content": "This is a test document stored in Weaviate."
+}
+Vectors: {{ Array(1536).fill(0.12345)}}
+```
+
+</details>
+
+
+<details>
 <summary>**Response Example**</summary>
 
 ```json
@@ -493,6 +543,16 @@ Use this operation to fetch an object using it's ID.
 <img className="screenshot-full" src="/img/marketplace/plugins/weaviate/get-object.png" alt="Weaviate Configuration" />
 
 <details>
+<summary>**Example Values**</summary>
+
+```yaml
+Collection Name: Testcollection
+ObjectID: 550e8400-e29b-41d4-a716-446655440000
+```
+
+</details>
+
+<details>
 <summary>**Response Example**</summary>
 
 ```json
@@ -521,3 +581,21 @@ Use this operation to delete the object using it's ID.
 - **Object ID**: Object ID of the object to be deleted.
 
 <img className="screenshot-full" src="/img/marketplace/plugins/weaviate/delete-object.png" alt="Weaviate Configuration" />
+
+<details>
+<summary>**Example Values**</summary>
+
+```yaml
+Collection Name: Testcollection
+ObjectID: 550e8400-e29b-41d4-a716-446655440000
+```
+
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+
+```yaml
+true
+```
+</details>

@@ -36,7 +36,16 @@ This operation retrieves statistics about a specific index in your Pinecone data
 
 - **Index**: The name of the index to get statistics for.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/pinecone/get-index-stats.png" alt="Get Index Stats Operation" />
+<img className="screenshot-full" src="/img/marketplace/plugins/pinecone/get-index-stats-v2.png" alt="Get Index Stats Operation" />
+
+<details>
+<summary>**Example Values**</summary>
+
+```yaml
+Index: sample-movies
+```
+
+</details>
 
 <details>
 <summary>**Example Response**</summary>
@@ -71,6 +80,15 @@ This operation retrieves a list of vector IDs from a specified index.
 - **Namespace**: Specific namespace to query within the index.
 
 <img className="screenshot-full" src="/img/marketplace/plugins/pinecone/list-vector-ids.png" alt="List Vector IDs Operation" />
+
+<details>
+<summary>**Example Values**</summary>
+
+```yaml
+Index: sample-movies
+```
+
+</details>
 
 <details>
 <summary>**Example Response**</summary>
@@ -116,6 +134,16 @@ This operation retrieves specific vectors by their IDs from an index.
 <img className="screenshot-full" src="/img/marketplace/plugins/pinecone/fetch-vectors.png" alt="Fetch Vectors Operation" />
 
 <details>
+<summary>**Example Values**</summary>
+
+```yaml
+Index: testpine
+IDs: ["id:1", "id:2"]
+```
+
+</details>
+
+<details>
 <summary>**Example Response**</summary>
 
 ```yaml
@@ -145,6 +173,16 @@ This operation inserts or updates vectors in an index.
 <img className="screenshot-full" src="/img/marketplace/plugins/pinecone/upsert-vectors.png" alt="Upsert Vectors Operation" /> 
 
 <details>
+<summary>**Example Values**</summary>
+
+```yaml
+Index: testpine
+Vectors: [{"id": "1", "values": [-0.057448626, 0.040567733, -0.057180677, 0.031162664]}]
+```
+
+</details>
+
+<details>
 <summary>**Example Response**</summary>
 
 ```yaml
@@ -171,6 +209,18 @@ This operation updates a single vector's values or metadata.
 <img className="screenshot-full" src="/img/marketplace/plugins/pinecone/update-vector.png" alt="Update Vector Operation" />
 
 <details>
+<summary>**Example Values**</summary>
+
+```yaml
+Index: testpine
+ID: id-1
+Values: [-0.057448626, 0.040567733, -0.057180677, 0.031162664]
+Sparse Vector: {"indices": [1, 2], "values": [0.5, 0.5]}
+```
+
+</details>
+
+<details>
 <summary>**Example Response**</summary>
 
 ```yaml
@@ -194,6 +244,16 @@ This operation deletes vectors from an index.
 - **Filter**: Filter condition for selective deletion.
 
 <img className="screenshot-full" src="/img/marketplace/plugins/pinecone/delete-vectors.png" alt="Delete Vectors Operation" />
+
+<details>
+<summary>**Example Values**</summary>
+
+```yaml
+Index: sample-movies
+IDs: ["id:1", "id:2"]
+```
+
+</details>
 
 <details>
 <summary>**Example Response**</summary>
@@ -222,3 +282,28 @@ This operation queries vectors in an index based on similarity.
 - **Sparse Vector**: Sparse vector for hybrid search.
 
 <img className="screenshot-full" src="/img/marketplace/plugins/pinecone/query-vectors.png" alt="Query Vectors Operation" />
+
+<details>
+<summary>**Example Values**</summary>
+
+```yaml
+Index: sample-movies
+Top K: 3
+Vector: [-0.057448626, 0.040567733, -0.057180677, 0.031162664]
+```
+
+</details>
+
+<details>
+<summary>**Example Response**</summary>
+
+```yaml
+{
+  "matches": [],
+  "namespace": "",
+  "usage": {
+    "readUnits": 1
+  }
+}
+```
+</details>
