@@ -34,11 +34,30 @@ Once you have connected to the REST API data source, you can easily write querie
 You can also transform the query results using the **[Transformations](/docs/tutorial/transformations)** feature.
 :::
 
-**API Endpoint URL Example:** `http://www.dneonline.com/calculator.asmx`
+<img className="screenshot-full" src="/img/datasource-reference/soap-api/headers-v2.png" alt="SOAP API Headers" />
 
-<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/soap-api/headers.png" alt="SOAP API Headers" />
+<details>
+<summary>**Example Values**</summary>
 
-**Request Body Example:**
+```yaml
+URL: http://www.dneonline.com/calculator.asmx
+Content-Type: text/xml
+SOAPAction: http://tempuri.org/Add
+```
+</details>
+
+<details>
+<summary>**Response Example**</summary>
+
+```json
+<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><AddResponse xmlns="http://tempuri.org/"><AddResult>105</AddResult></AddResponse></soap:Body></soap:Envelope>
+```
+</details>
+
+<img className="screenshot-full" src="/img/datasource-reference/soap-api/api-body-v2.png" alt="SOAP API Headers" />
+
+<details>
+<summary>**Example Values**</summary>
 
 ```xml
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/">
@@ -51,8 +70,15 @@ You can also transform the query results using the **[Transformations](/docs/tut
    </soapenv:Body>
 </soapenv:Envelope>
 ```
+</details>
 
-<img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/datasource-reference/soap-api/api-body.png" alt="SOAP API Headers" />
+<details>
+<summary>**Response Example**</summary>
+
+```json
+<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><AddResponse xmlns="http://tempuri.org/"><AddResult>105</AddResult></AddResponse></soap:Body></soap:Envelope>
+```
+</details>
 
 **Additional Notes:**
 - SOAP APIs typically use the POST method. Using a different method can cause errors.
