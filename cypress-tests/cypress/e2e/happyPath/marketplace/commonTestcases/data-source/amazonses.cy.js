@@ -185,13 +185,11 @@ describe("Data source amazon ses", () => {
       .realType("@", { force: true, delay: 0 })
       .realType("tooljet.com", { force: true, delay: 0 });
 
-    cy.clearAndTypeOnCodeMirrorForEachField(
-      pluginSelectors.emailSubjetInputField,
+    cy.get(pluginSelectors.emailSubjetInputField).clearAndTypeOnCodeMirror(
       "Testmail for amazon ses"
     );
 
-    cy.clearAndTypeOnCodeMirrorForEachField(
-      pluginSelectors.emailbodyInputField,
+    cy.get(pluginSelectors.emailbodyInputField).clearAndTypeOnCodeMirror(
       "Body text for amazon ses"
     );
 
