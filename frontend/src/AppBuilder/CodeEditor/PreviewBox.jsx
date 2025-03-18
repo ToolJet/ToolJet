@@ -419,7 +419,7 @@ const PreviewContainer = ({
     <>
       {!isPortalOpen && (
         <Overlay
-          placement="left"
+          placement={previewPlacement || 'left'}
           {...(previewRef?.current ? { target: previewRef.current } : {})}
           show={showPreview}
           rootClose
