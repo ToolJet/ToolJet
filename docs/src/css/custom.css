@@ -20,7 +20,7 @@
   --ifm-code-font-size: 95%;
   --ifm-menu-color: #1B1F24;
   --ifm-menu-color: #1B1F24;
-  --ifm-menu-font-size: 14px;
+  --ifm-menu-font-size: 15px;
   --ifm-font-family-base: 'IBM Plex Sans';
   --tblr-blue: #206bc4;
   --tblr-azure: #4299e1;
@@ -45,12 +45,29 @@
   --tblr-font-sans-serif: "Inter", -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif;
   --tblr-font-monospace: null, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
   --tblr-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0));
-  --doc-sidebar-width: 250px !important;
+  --doc-sidebar-width: 300px !important;
   --ifm-link-color: #3e63dd;
   --ifm-menu-color-background-active: #8890992E;
   --ifm-link-menu-color-background-hover: #8890992E;
 }
 
+.table-of-contents {
+  max-width: 280px !important;
+}
+
+.theme-doc-markdown a {
+  color: #1B1F24;
+  text-decoration: underline;
+  font-weight: 400;
+}
+
+.table-of-contents__link:hover,
+.table-of-contents__link:hover code,
+.table-of-contents__link--active,
+.table-of-contents__link--active code {
+  color: #1B1F24;
+  font-weight: 600;
+}
 
 h3 {
   font-size: 1.2rem;
@@ -472,12 +489,12 @@ img {
 
 
 .category-as-header .menu__link {
-  font-size: 14px;
+  font-size: 15px;
 }
 
 /* Side bar Styles */
 .category-as-header>.menu__list-item-collapsible:first-child a {
-  font-size: 14px;
+  font-size: 15px;
   font-style: normal;
   font-weight: 600 !important;
   line-height: 20px;
