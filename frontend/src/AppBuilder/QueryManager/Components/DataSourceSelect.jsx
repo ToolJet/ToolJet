@@ -7,7 +7,7 @@ import { getWorkspaceId, decodeEntities } from '@/_helpers/utils';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { useDataSources, useGlobalDataSources, useSampleDataSource } from '@/_stores/dataSourcesStore';
 import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
-import { staticDataSources as staticDatasources } from '../constants';
+import { defaultSources, staticDataSources as staticDatasources } from '../constants';
 import { useQueryPanelActions } from '@/_stores/queryPanelStore';
 import Search from '@/_ui/Icon/solidIcons/Search';
 import { Tooltip } from 'react-tooltip';
@@ -135,7 +135,7 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSourc
             <div>
               <DataSourceIcon source={source} height={16} />{' '}
               <span data-cy={`ds-${source.name.toLowerCase()}`} className="ms-1 small" style={{ fontSize: '13px' }}>
-                {source.name}
+                {defaultSources[cleanWord(source.name)].name}
               </span>
             </div>
           ),
@@ -177,6 +177,10 @@ function DataSourceSelect({ isDisabled, selectRef, closePopup, workflowDataSourc
       closePopup();
     }
   };
+
+  function cleanWord(word) {
+    return word.replace(/default/g, '');
+  }
 
   return (
     <div>

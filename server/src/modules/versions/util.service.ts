@@ -42,7 +42,7 @@ export class VersionUtilService implements IVersionUtilService {
   async updateVersion(appVersion: AppVersion, appVersionUpdateDto: AppVersionUpdateDto) {
     const editableParams = {};
 
-    const { globalSettings, homePageId, pageSettings } = appVersion;
+    const { globalSettings, homePageId, pageSettings, name } = appVersion;
 
     if (appVersionUpdateDto?.homePageId && homePageId !== appVersionUpdateDto.homePageId) {
       editableParams['homePageId'] = appVersionUpdateDto.homePageId;
@@ -63,6 +63,10 @@ export class VersionUtilService implements IVersionUtilService {
 
     if (typeof appVersionUpdateDto?.showViewerNavigation === 'boolean') {
       editableParams['showViewerNavigation'] = appVersionUpdateDto.showViewerNavigation;
+    }
+
+    if (appVersionUpdateDto?.name && name !== appVersionUpdateDto.name) {
+      editableParams['name'] = appVersionUpdateDto.name;
     }
 
     await this.versionRepository.update(appVersion.id, editableParams);

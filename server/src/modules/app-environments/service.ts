@@ -20,7 +20,7 @@ export class AppEnvironmentService implements IAppEnvironmentService {
   async init(editingVersionId: string, organizationId: string): Promise<IAppEnvironmentResponse> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const editorVersion = await manager.findOne(AppVersion, {
-        select: ['id', 'name', 'appId'],
+        select: ['id', 'name', 'currentEnvironmentId', 'appId'],
         where: { id: editingVersionId },
       });
       return await this.appEnvironmentUtilService.init(editorVersion, organizationId, false, manager);
