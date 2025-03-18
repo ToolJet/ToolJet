@@ -31,6 +31,7 @@ import { Divider } from '@/Editor/Components/Divider';
 import { FilePicker } from '@/Editor/Components/FilePicker';
 import { PasswordInput } from '@/AppBuilder/Widgets/PasswordInput';
 import { EmailInput } from '@/AppBuilder/Widgets/EmailInput';
+import { PhoneInput } from '@/AppBuilder/Widgets/PhoneInput';
 // import { Calendar } from '@/Editor/Components/Calendar';
 // import { Listview } from '@/Editor/Components/Listview';
 import { IFrame } from '@/Editor/Components/IFrame';
@@ -120,6 +121,7 @@ export const AllComponents = {
   FilePicker,
   PasswordInput,
   EmailInput,
+  PhoneInput,
   Calendar,
   IFrame,
   CodeEditor,

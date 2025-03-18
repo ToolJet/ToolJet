@@ -120,6 +120,7 @@ export const ComponentsManagerTab = ({ darkMode }) => {
         'PasswordInput',
         'TextArea',
         'EmailInput',
+        'PhoneInput',
         'ToggleSwitchV2',
         'DropdownV2',
         'MultiselectV2',

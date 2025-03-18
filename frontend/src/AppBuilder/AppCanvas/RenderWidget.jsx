@@ -13,6 +13,7 @@ const shouldAddBoxShadowAndVisibility = [
   'TextArea',
   'PasswordInput',
   'EmailInput',
+  'PhoneInput',
   'NumberInput',
   'Text',
   'Checkbox',

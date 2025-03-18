@@ -70,6 +70,7 @@ const NEW_REVAMPED_COMPONENTS = [
   'TextArea',
   'PasswordInput',
   'EmailInput',
+  'PhoneInput',
   'NumberInput',
   'Table',
   'ToggleSwitchV2',
