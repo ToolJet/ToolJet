@@ -7,7 +7,7 @@ import Fuse from 'fuse.js';
 import { SearchBox } from '@/_components';
 import { DragLayer } from './DragLayer';
 import useStore from '@/AppBuilder/_stores/store';
-
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 // TODO: Hardcode all the component-section mapping in a constant file and just loop over it
 // TODO: styling
 // TODO: scrolling
@@ -22,7 +22,8 @@ export const ComponentsManagerTab = ({ darkMode }) => {
   const _shouldFreeze = useStore((state) => state.getShouldFreeze());
   const isAutoMobileLayout = useStore((state) => state.currentLayout === 'mobile' && state.getIsAutoMobileLayout());
   const shouldFreeze = _shouldFreeze || isAutoMobileLayout;
-
+  const toggleRightSidebarPin = useStore((state) => state.toggleRightSidebarPin);
+  const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
   const handleSearchQueryChange = useCallback(
     debounce((e) => {
       const { value } = e.target;
@@ -159,7 +160,17 @@ export const ComponentsManagerTab = ({ darkMode }) => {
 
   return (
     <div className={`components-container ${shouldFreeze ? 'disabled' : ''}`}>
-      <p className="widgets-manager-header">Components</p>
+      <div className="d-flex justify-content-between">
+        <p className="widgets-manager-header">Components</p>
+        <span
+          className="cursor-pointer"
+          onClick={() => {
+            toggleRightSidebarPin();
+          }}
+        >
+          <SolidIcon name={isRightSidebarPinned ? 'unpin' : 'pin'} />
+        </span>
+      </div>
       <div className="input-icon tj-app-input">
         <SearchBox
           dataCy={`widget-search-box`}

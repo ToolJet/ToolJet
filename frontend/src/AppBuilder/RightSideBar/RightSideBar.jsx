@@ -8,6 +8,8 @@ import { PageSettings } from './PageSettingsTab';
 export const RightSideBar = ({ darkMode }) => {
   const activeTab = useStore((state) => state.activeRightSideBarTab);
   const pageSettingSelected = useStore((state) => state.pageSettingSelected);
+  const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen);
+  if (!isRightSidebarOpen) return null;
 
   return (
     <div className="sub-section">

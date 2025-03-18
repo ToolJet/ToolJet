@@ -7,12 +7,15 @@ import debounce from 'lodash/debounce';
 const useAppCanvasMaxWidth = ({ mode }) => {
   const canvasMaxWidth = useStore((state) => state.globalSettings.canvasMaxWidth, shallow);
   const canvasMaxWidthType = useStore((state) => state.globalSettings.canvasMaxWidthType, shallow);
+  const isRightSidebarOpen = useStore((state) => state.isRightSidebarOpen, shallow);
+  const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned, shallow);
   let [maxWidth, setMaxWidth] = useState(0);
 
   const getEditorCanvasWidth = useCallback(() => {
     let _maxWidth;
     const windowWidth = window.innerWidth;
-    const widthInPx = windowWidth - (CANVAS_WIDTHS.leftSideBarWidth + CANVAS_WIDTHS.rightSideBarWidth);
+    const widthInPx = windowWidth - (CANVAS_WIDTHS.leftSideBarWidth + (isRightSidebarPinned ? 340 : 40));
+
     if (canvasMaxWidthType === 'px') {
       _maxWidth = +canvasMaxWidth;
     }
@@ -20,7 +23,7 @@ const useAppCanvasMaxWidth = ({ mode }) => {
       _maxWidth = (widthInPx / 100) * +canvasMaxWidth;
     }
     setMaxWidth(_maxWidth);
-  }, [canvasMaxWidth, canvasMaxWidthType]);
+  }, [canvasMaxWidth, canvasMaxWidthType, isRightSidebarOpen, isRightSidebarPinned]);
 
   const getViewerWidth = useCallback(() => {
     let _maxWidth;
@@ -51,7 +54,7 @@ const useAppCanvasMaxWidth = ({ mode }) => {
         debouncedGetCanvasWidth.cancel(); // Cancel any pending debounced calls
       }
     };
-  }, [debouncedGetCanvasWidth, getEditorCanvasWidth, getViewerWidth, mode]);
+  }, [debouncedGetCanvasWidth, getEditorCanvasWidth, getViewerWidth, mode, isRightSidebarOpen, isRightSidebarPinned]);
 
   return maxWidth;
 };
