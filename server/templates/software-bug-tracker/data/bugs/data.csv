@@ -1,0 +1,21 @@
+id,name,description,severity,status,reported_by,assigned_to,created_at,updated_at
+1,Login failure,Users unable to log in with correct credentials,high,open,john.doe@example.com,john,1729826400,1729912800
+2,Slow page load,Dashboard taking >10 seconds to load,medium,progress,alice.johnson@example.com,rachel,1729999800,1730086200
+3,Broken image links,Product images not displaying on catalog page,low,resolved,charlie.brown@example.com,none,1730173200,1730259600
+4,404 error,Dead links on navigation menu,medium,open,eva.green@example.com,marry,1730346600,1730433000
+5,Data inconsistency,Order totals not matching line items,high,progress,george.black@example.com,harry,1730520000,1730606400
+6,Mobile responsiveness,Site not rendering correctly on small screens,medium,open,ian.blue@example.com,none,1730693400,1730779800
+7,Search function error,Search returning irrelevant results,high,progress,kevin.yellow@example.com,john,1732080600,1732167000
+8,Payment gateway timeout,Transactions failing during checkout,high,open,mia.purple@example.com,rachel,1732254000,1732340400
+9,Email notifications not sent,Order confirmation emails not reaching customers,medium,resolved,olivia.tan@example.com,steve,1732427400,1732513800
+10,Form validation issue,Invalid data accepted in registration form,low,progress,quinn.silver@example.com,marry,1732600800,1732687200
+11,Broken CSS on Firefox,Styling issues specific to Firefox browser,low,open,samuel.copper@example.com,harry,1732774200,1732860600
+12,API rate limiting,Third-party integrations hitting rate limits,medium,progress,uma.magenta@example.com,none,1732947600,1733034000
+13,Session timeout too short,Users logged out too quickly,low,resolved,walter.indigo@example.com,john,1733121000,1733207400
+14,Memory leak,Server resources depleting over time,high,open,yvonne.crimson@example.com,rachel,1735021000,1735021000
+15,Cross-site scripting vulnerability,XSS in comment section,high,progress,adam.maroon@example.com,steve,1736021000,1736022234
+16,Duplicate transactions,Some orders processed twice,high,open,carl.beige@example.com,marry,1737022834,1737024068
+17,Incorrect tax calculation,Sales tax applied to exempt items,medium,progress,eric.plum@example.com,harry,1736022834,1736024068
+18,Password reset link expiry,Reset links expiring too quickly,low,resolved,grace.amber@example.com,none,1736020556,1736021790
+19,Inconsistent date format,Dates displayed differently across pages,low,open,irene.teal@example.com,john,1736004854,1736006088
+20,Report generation timeout,Large reports failing to generate,medium,progress,kate.mauve@example.com,rachel,1735995731,1735996965
