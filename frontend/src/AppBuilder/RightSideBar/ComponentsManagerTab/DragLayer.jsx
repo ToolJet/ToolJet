@@ -4,8 +4,14 @@ import { useDrag, useDragLayer } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { snapToGrid } from '@/AppBuilder/AppCanvas/appCanvasUtils';
 import { NO_OF_GRIDS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
-
+import useStore from '@/AppBuilder/_stores/store';
+import { shallow } from 'zustand/shallow';
 export const DragLayer = ({ index, component }) => {
+  const [isRightSidebarOpen, toggleRightSidebar] = useStore(
+    (state) => [state.isRightSidebarOpen, state.toggleRightSidebar],
+    shallow
+  );
+  const isRightSidebarPinned = useStore((state) => state.isRightSidebarPinned);
   const [{ isDragging }, drag, preview] = useDrag(
     () => ({
       type: 'box',
@@ -18,6 +24,14 @@ export const DragLayer = ({ index, component }) => {
   useEffect(() => {
     preview(getEmptyImage(), { captureDraggingState: true });
   }, []);
+
+  useEffect(() => {
+    if (isDragging) {
+      if (!isRightSidebarPinned) {
+        toggleRightSidebar(!isRightSidebarOpen);
+      }
+    }
+  }, [isDragging]);
 
   const size = component.defaultSize || { width: 30, height: 40 };
   return (
@@ -35,7 +49,7 @@ const CustomDragLayer = ({ size }) => {
     currentOffset: monitor.getSourceClientOffset(),
     item: monitor.getItem(),
   }));
-
+  console.log(currentOffset, 'currentOffset');
   if (!currentOffset) return null;
 
   const canvasWidth = item?.canvasWidth;

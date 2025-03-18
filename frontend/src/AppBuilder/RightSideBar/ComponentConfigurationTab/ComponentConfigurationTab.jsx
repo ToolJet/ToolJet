@@ -9,7 +9,8 @@ export const ComponentConfigurationTab = ({ darkMode }) => {
   const selectedComponentId = useStore((state) => state.selectedComponents?.[0], shallow);
   const setActiveRightSideBarTab = useStore((state) => state.setActiveRightSideBarTab);
   if (!selectedComponentId) {
-    return setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
+    // return setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
+    return <div>Select a component to view its properties and styles.</div>;
   }
   return (
     <Inspector

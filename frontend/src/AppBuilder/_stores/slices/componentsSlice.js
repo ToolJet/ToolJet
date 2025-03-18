@@ -1459,7 +1459,13 @@ export const createComponentsSlice = (set, get) => ({
   },
 
   handleCanvasContainerMouseUp: (e) => {
-    const { selectedComponents, clearSelectedComponents, setActiveRightSideBarTab } = get();
+    const {
+      selectedComponents,
+      clearSelectedComponents,
+      setActiveRightSideBarTab,
+      setRightSidebarOpen,
+      isRightSidebarPinned,
+    } = get();
     const selectedText = window.getSelection().toString();
     const isClickedOnSubcontainer =
       e.target.getAttribute('component-id') !== null && e.target.getAttribute('component-id') !== 'canvas';
@@ -1471,6 +1477,9 @@ export const createComponentsSlice = (set, get) => ({
     ) {
       clearSelectedComponents();
       setActiveRightSideBarTab(RIGHT_SIDE_BAR_TAB.COMPONENTS);
+      // if (!isRightSidebarPinned) {
+      //   setRightSidebarOpen(false);
+      // }
     }
   },
 
