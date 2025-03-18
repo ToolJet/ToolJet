@@ -5,7 +5,7 @@ import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import { shallow } from 'zustand/shallow';
-import { Tooltip } from 'react-tooltip';
+import { ToolTip } from '@/_components';
 import { Button } from 'react-bootstrap';
 import { decodeEntities } from '@/_helpers/utils';
 import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
@@ -243,29 +243,21 @@ const RunButton = ({ buttonLoadingState }) => {
   );
 
   return (
-    <span
-      {...(isInDraft && {
-        'data-tooltip-id': 'query-header-btn-run',
-        'data-tooltip-content': 'Connect a data source to run',
-      })}
-    >
-      <ButtonComponent
-        size="medium"
-        variant="secondary"
-        onClick={() => runQuery(selectedQuery?.id, selectedQuery?.name, undefined, 'edit', {}, true)}
-        leadingIcon="play01"
-        disabled={isInDraft}
-        isLoading={isLoading}
-        className="!tw-w-[88px]"
-        data-cy="query-run-button"
-        {...(isInDraft && {
-          'data-tooltip-id': 'query-header-btn-run',
-          'data-tooltip-content': 'Publish the query to run',
-        })}
-      >
-        Run <span className="query-manager-btn-shortcut">⌘↩</span>
-      </ButtonComponent>
-      {isInDraft && <Tooltip id="query-header-btn-run" className="tooltip" />}
+    <span>
+      <ToolTip message="Run query ⌘↩" placement="bottom" trigger={['hover']} show={true} tooltipClassName="">
+        <ButtonComponent
+          size="medium"
+          variant="secondary"
+          onClick={() => runQuery(selectedQuery?.id, selectedQuery?.name, undefined, 'edit', {}, true)}
+          leadingIcon="play01"
+          disabled={isInDraft}
+          isLoading={isLoading}
+          className="!tw-w-[88px]"
+          data-cy="query-run-button"
+        >
+          Run <span className="query-manager-btn-shortcut">⌘↩</span>
+        </ButtonComponent>
+      </ToolTip>
     </span>
   );
 };
@@ -283,16 +275,18 @@ const PreviewButton = ({ buttonLoadingState, onClick }) => {
   const { t } = useTranslation();
 
   return (
-    <ButtonComponent
-      size="medium"
-      variant="outline"
-      onClick={onClick}
-      className="!tw-w-[100px]"
-      disabled={!hasPermissions}
-      isLoading={isPreviewQueryLoading}
-      data-cy={'query-preview-button'}
-    >
-      Preview <span className="query-manager-btn-shortcut">⌘↑↩</span>
-    </ButtonComponent>
+    <ToolTip message="Preview query ⌘↑↩" placement="bottom" trigger={['hover']} show={true} tooltipClassName="">
+      <ButtonComponent
+        size="medium"
+        variant="outline"
+        onClick={onClick}
+        // className="!tw-w-[100px]"
+        disabled={!hasPermissions}
+        isLoading={isPreviewQueryLoading}
+        data-cy={'query-preview-button'}
+      >
+        Preview
+      </ButtonComponent>
+    </ToolTip>
   );
 };
