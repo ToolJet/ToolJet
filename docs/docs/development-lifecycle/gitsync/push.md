@@ -17,7 +17,7 @@ Once the GitSync feature is configured, you can start pushing changes to the git
 
 ## App Creation
 
-Whenever you create a new app, you will see an option to select the **Commit changes**. If you select the **commit changes** option, the changes will be committed to the git repository.
+Whenever you create a new application, you will see an option to select the **Commit changes**. If you select the **commit changes** option, the changes will be committed to the git repository.
 
 **Note**: If the app name is same as the name of an existing app in the git repo, it will overwrite the existing app in the git repo.
 
