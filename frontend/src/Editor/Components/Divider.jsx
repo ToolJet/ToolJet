@@ -9,7 +9,6 @@ export const Divider = function Divider({ dataCy, height, width, darkMode, style
   const dividerLineStyle = {
     width,
     padding: '0rem',
-    boxShadow,
     ...(dividerStyle === 'dashed'
       ? {
           height: 0, // No height for dashed, use border instead
@@ -27,7 +26,14 @@ export const Divider = function Divider({ dataCy, height, width, darkMode, style
     return (
       <div
         className="row"
-        style={{ display: visibility ? 'flex' : 'none', padding: '0 8px', width, height, alignItems: 'center' }}
+        style={{
+          display: visibility ? 'flex' : 'none',
+          padding: '0 8px',
+          width,
+          height,
+          alignItems: 'center',
+          boxShadow,
+        }}
         data-cy={dataCy}
       >
         <div className="col-12" style={{ ...dividerLineStyle, marginLeft: '0.5rem' }}></div>
@@ -44,11 +50,12 @@ export const Divider = function Divider({ dataCy, height, width, darkMode, style
         width,
         height,
         alignItems: 'center',
-        justifyContent: labelAlignment === 'start' ? 'flex-start' : labelAlignment === 'end' ? 'flex-end' : 'center',
+        justifyContent: labelAlignment === 'left' ? 'flex-start' : labelAlignment === 'right' ? 'flex-end' : 'center',
+        boxShadow,
       }}
       data-cy={dataCy}
     >
-      {labelAlignment === 'start' && (
+      {labelAlignment === 'left' && (
         <>
           <span style={{ paddingLeft: '0px', paddingRight: '8px', color: labelColor }}>{label}</span>
           <div style={dividerLineStyle}></div>
@@ -70,7 +77,7 @@ export const Divider = function Divider({ dataCy, height, width, darkMode, style
         </div>
       )}
 
-      {labelAlignment === 'end' && (
+      {labelAlignment === 'right' && (
         <>
           <div style={dividerLineStyle}></div>
           <span style={{ paddingRight: '0px', paddingLeft: '8px', color: labelColor }}>{label}</span>

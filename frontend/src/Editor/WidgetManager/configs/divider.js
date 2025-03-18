@@ -48,12 +48,18 @@ export const dividerConfig = {
       accordian: 'Divider',
     },
     labelAlignment: {
-      type: 'code',
-      displayName: 'Label Alignment',
-      validation: {
-        schema: { type: 'string' },
-      },
+      type: 'switch',
+      displayName: 'Label alignment',
+      validation: { schema: { type: 'string' }, defaultValue: 'left' },
+      showLabel: true,
+      isIcon: true,
+      options: [
+        { displayName: 'alignleftinspector', value: 'left', iconName: 'alignleftinspector' },
+        { displayName: 'alignhorizontalcenter', value: 'center', iconName: 'alignhorizontalcenter' },
+        { displayName: 'alignrightinspector', value: 'right', iconName: 'alignrightinspector' },
+      ],
       accordian: 'Divider',
+      isFxNotRequired: true,
     },
     dividerStyle: {
       type: 'switch',
