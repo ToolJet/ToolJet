@@ -313,7 +313,7 @@ const EditorInput = ({
   const isInsideQueryPane = !!currentEditorHeightRef?.current?.closest('.query-details');
   const showLineNumbers = lang == 'jsx' || type === 'extendedSingleLine' || false;
 
-  const customClassNames = cx('codehinter-input', {
+  const customClassNames = cx('codehinter-input single-line-codehinter-input', {
     'border-danger': error,
     focused: isFocused,
     'focus-box-shadow-active': firstTimeFocus,
