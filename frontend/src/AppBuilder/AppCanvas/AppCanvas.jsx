@@ -74,7 +74,11 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
         className={cx(
           'canvas-container align-items-center page-container',
           { 'dark-theme theme-dark': isAppDarkMode, close: !isViewerSidebarPinned },
-          { 'overflow-x-auto': (currentMode === 'edit' && isSidebarOpen) || currentMode === 'view' }
+          {
+            'overflow-x-auto':
+              (currentMode === 'edit' && (isSidebarOpen || (isRightSidebarOpen && !isRightSidebarPinned))) ||
+              currentMode === 'view',
+          }
         )}
         style={{
           // transform: `scale(1)`,
@@ -93,6 +97,8 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
                 ? '65px'
                 : '210px'
               : 'auto',
+          // borderRight:
+          //   !isRightSidebarPinned && currentMode === 'edit' && isRightSidebarOpen ? '388px solid' : undefined,
           // right: isRightSidebarPinned ? '380px' : '40px',
         }}
       >
