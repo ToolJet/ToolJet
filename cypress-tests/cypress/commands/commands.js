@@ -317,66 +317,6 @@ Cypress.Commands.add("waitForAppLoad", () => {
   cy.wait("@appDs", { timeout: TIMEOUT });
 });
 
-Cypress.Commands.add(
-  "clearAndTypeOnCodeMirrorForEachField",
-  (selector, value) => {
-    cy.get(selector)
-      .realClick()
-      .find(".cm-line")
-      .invoke("text")
-      .then((text) => {
-        cy.get(selector)
-          .last()
-          .click()
-          .realType(createBackspaceText(text), { delay: 0, force: true });
-      });
-
-    const splitIntoFlatArray = (value) => {
-      const regex = /(\{|\}|\(|\)|\[|\]|,|:|;|=>|'[^']*'|[a-zA-Z0-9._]+|\s+)/g;
-      let prefix = "";
-      return (
-        String(value)
-          .match(regex)
-          ?.reduce((acc, part) => {
-            if (part === "{{" || part === "((") {
-              prefix = "{backspace}{backspace}";
-              acc.push(part);
-            } else if (part === "{" || part === "(" || part === "[") {
-              acc.push(prefix + part);
-              prefix = "{backspace}";
-            } else if (part === "}}") {
-              acc.push(prefix + part);
-            } else if (part === " ") {
-              acc.push(prefix + " ");
-            } else if (part === ":") {
-              acc.push(prefix + ":");
-            } else {
-              acc.push(prefix + part);
-              prefix = "";
-            }
-            return acc;
-          }, []) || []
-      );
-    };
-
-    if (Array.isArray(value)) {
-      cy.get(selector).last().realType(value, {
-        parseSpecialCharSequences: false,
-        delay: 0,
-        force: true,
-      });
-    } else {
-      splitIntoFlatArray(value).forEach((i) => {
-        cy.get(selector).last().click().realType(`{end}${i}`, {
-          parseSpecialCharSequences: false,
-          delay: 0,
-          force: true,
-        });
-      });
-    }
-  }
-);
-
 Cypress.Commands.add("visitTheWorkspace", (workspaceName) => {
   cy.task("updateId", {
     dbconfig: Cypress.env("app_db"),
