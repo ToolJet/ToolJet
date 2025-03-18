@@ -150,11 +150,11 @@ export class AuthUtilService implements IAuthUtilService {
       defaultOrganization = await this.organizationRepository.createOne(name, slug, manager);
     }
 
-    const { source, status } = getUserStatusAndSource(lifecycleEvents.USER_SSO_VERIFY, sso);
+    const { source, status } = getUserStatusAndSource(lifecycleEvents.USER_SSO_ACTIVATE, sso);
     /* Default password for sso-signed workspace user */
 
     const password = uuid.v4();
-    user = await this.userRepository.createOne(
+    user = await this.userRepository.createOrUpdate(
       {
         firstName,
         lastName,
@@ -162,9 +162,8 @@ export class AuthUtilService implements IAuthUtilService {
         source,
         status,
         password,
-        organizationId: organization.id,
         role: USER_ROLE.END_USER,
-        defaultOrganizationId: defaultOrganization?.id,
+        defaultOrganizationId: defaultOrganization?.id || organization.id,
       },
       manager
     );
@@ -191,6 +190,7 @@ export class AuthUtilService implements IAuthUtilService {
       // Setting up default organization
       await this.organizationUsersRepository.createOne(user, defaultOrganization, true, manager);
     }
+    await this.organizationUsersUtilService.attachUserGroup([USER_ROLE.END_USER], organization.id, user.id, manager); //localhost:8082/login/tooljets-workspace?redirectTo=/
     return user;
   }
 

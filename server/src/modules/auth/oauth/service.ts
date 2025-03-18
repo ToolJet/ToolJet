@@ -176,7 +176,7 @@ export class OauthService implements IOAuthService {
           const { name, slug } = generateNextNameAndSlug('My workspace');
           defaultOrganization = await this.setupOrganizationsUtilService.create(name, slug, null, manager);
 
-          userDetails = await this.userRepository.createOne(
+          userDetails = await this.userRepository.createOrUpdate(
             {
               firstName: userResponse.firstName,
               lastName: userResponse.lastName,
@@ -187,6 +187,12 @@ export class OauthService implements IOAuthService {
             manager
           );
           await this.organizationUsersRepository.createOne(userDetails, defaultOrganization, false, manager);
+          await this.organizationUsersUtilService.attachUserGroup(
+            [USER_ROLE.ADMIN],
+            defaultOrganization.id,
+            userDetails.id,
+            manager
+          );
 
           organizationDetails = defaultOrganization;
         } else if (userDetails) {

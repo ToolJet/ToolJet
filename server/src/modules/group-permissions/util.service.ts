@@ -52,8 +52,9 @@ export class GroupPermissionsUtilService implements IGroupPermissionsUtilService
 
   validateAddGroupUserOperation(group: GroupPermissions) {
     if (!group || Object.keys(group)?.length === 0) throw new BadRequestException(ERROR_HANDLER.GROUP_NOT_EXIST);
-    if (group.type == GROUP_PERMISSIONS_TYPE.DEFAULT)
-      throw new MethodNotAllowedException(ERROR_HANDLER.ADD_GROUP_USER_DEFAULT_GROUP);
+    //commented out the default group check because for enable signup cases, user is added to default admin group
+    // if (group.type == GROUP_PERMISSIONS_TYPE.DEFAULT)
+    //   throw new MethodNotAllowedException(ERROR_HANDLER.ADD_GROUP_USER_DEFAULT_GROUP);
   }
 
   validateDeleteGroupUserOperation(group: GroupPermissions, organizationId: string) {

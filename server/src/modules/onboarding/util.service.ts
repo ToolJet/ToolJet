@@ -575,7 +575,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
   ): Promise<User> {
     return dbTransactionWrap(async (manager: EntityManager) => {
       // Create the user
-      const user = await this.userRepository.createOne(userParams, manager);
+      const user = await this.userRepository.createOrUpdate(userParams, manager);
 
       // Add the role for the user in the specified organization
       await this.rolesUtilService.addUserRole(organizationId, { role, userId: user.id }, manager);
