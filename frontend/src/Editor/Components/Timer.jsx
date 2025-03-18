@@ -39,6 +39,10 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
   }, [time]);
 
   useEffect(() => {
+    setExposedVariable('value', {});
+  }, []);
+
+  useEffect(() => {
     intervalId && clearInterval(intervalId);
     setState('initial');
     setTime(getTimeObj(getDefaultValue));

@@ -11,3 +11,5 @@ export const EditorConstants = Object.freeze({
 });
 
 export const decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).toString(16));
+
+export const maskedWorkspaceConstantStr = '**************';

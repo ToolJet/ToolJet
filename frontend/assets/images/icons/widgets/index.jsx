@@ -11,6 +11,7 @@ import Colorpicker from './colorpicker.jsx';
 import Container from './container.jsx';
 import Customcomponent from './customcomponent.jsx';
 import Datepicker from './datepicker.jsx';
+import DateTimePickerV2 from './datetimepickerV2.jsx';
 import Daterangepicker from './daterangepicker.jsx';
 import Divider from './divider.jsx';
 import DividerHorizondal from './dividerhorizontal.jsx';
@@ -53,11 +54,11 @@ import Textinput from './textinput.jsx';
 import Timeline from './timeline.jsx';
 import Timer from './timer.jsx';
 import Toggleswitch from './toggleswitch.jsx';
-import ToggleSwitchV2 from './toggleswitchV2.jsx';
-
 import Treeselect from './treeselect.jsx';
 import Upstatistics from './upstatistics.jsx';
 import Verticaldivider from './verticaldivider.jsx';
+import TimePicker from './timepicker.jsx';
+import DatepickerV2 from './datepickerv2.jsx';
 
 const WidgetIcon = (props) => {
   switch (props.name) {
@@ -83,8 +84,21 @@ const WidgetIcon = (props) => {
       return <Container {...props} />;
     case 'customcomponent':
       return <Customcomponent {...props} />;
+    case 'datetimepickerlegacy':
+      return <Datepicker {...props} />;
     case 'datepicker':
       return <Datepicker {...props} />;
+    case 'datepickerv2':
+      return <DatepickerV2 {...props} />;
+    case 'timepicker':
+      return <TimePicker {...props} />;
+    case 'datetimepicker':
+      if (props?.version === 'v2') {
+        return <DateTimePickerV2 {...props} />;
+      }
+      return <Datepicker {...props} />;
+    case 'datetimepickerv2':
+      return <DateTimePickerV2 {...props} />;
     case 'daterangepicker':
       return <Daterangepicker {...props} />;
     case 'horizontaldivider':
@@ -94,6 +108,7 @@ const WidgetIcon = (props) => {
     case 'downstatistics':
       return <Downstatistics {...props} />;
     case 'dropdown':
+    case 'dropdownv2':
       return <Dropdown {...props} />;
     case 'filepicker':
       return <Filepicker {...props} />;
@@ -122,8 +137,10 @@ const WidgetIcon = (props) => {
     case 'map':
       return <Map {...props} />;
     case 'modal':
+    case 'modallegacy':
       return <Modal {...props} />;
     case 'multiselect':
+    case 'multiselectv2':
       return <Multiselect {...props} />;
     case 'numberinput':
       return <Numberinput {...props} />;
@@ -135,7 +152,8 @@ const WidgetIcon = (props) => {
       return <Pdf {...props} />;
     case 'qrscanner':
       return <Qrscanner {...props} />;
-    case 'radio-button':
+    case 'radiobutton':
+    case 'radiobuttonv2':
       return <RadioButton {...props} />;
     case 'rangeslider':
       return <Rangeslider {...props} />;
@@ -170,9 +188,9 @@ const WidgetIcon = (props) => {
     case 'timer':
       return <Timer {...props} />;
     case 'toggleswitch':
-      return <Toggleswitch {...props} />;
     case 'toggleswitchv2':
-      return <ToggleSwitchV2 {...props} />;
+      return <Toggleswitch {...props} />;
+
     case 'treeselect':
       return <Treeselect {...props} />;
     case 'upstatistics':

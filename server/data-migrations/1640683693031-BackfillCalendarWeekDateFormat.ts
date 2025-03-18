@@ -1,4 +1,4 @@
-import { AppVersion } from '../src/entities/app_version.entity';
+import { AppVersion } from '@entities/app_version.entity';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class BackfillCalendarWeekDateFormat1640683693031 implements MigrationInterface {

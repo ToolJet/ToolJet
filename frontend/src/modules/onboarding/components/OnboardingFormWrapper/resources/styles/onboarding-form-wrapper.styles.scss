@@ -1,0 +1,26 @@
+/* Default styles */
+.onboarding-form-wrapper {
+    margin-top: 95px;
+    // /* Default margin-top */
+}
+
+/* Media query for 1366x768 resolution */
+@media screen and (min-width: 1366px) and (min-height: 768px) {
+    .onboarding-form-wrapper {
+        margin-top: 95px;
+    }
+}
+
+/* Media query for 1440x900 resolution */
+@media screen and (min-width: 1440px) and (min-height: 900px) {
+    .onboarding-form-wrapper {
+        margin-top: 180px;
+    }
+}
+
+/* Media query for 1920x1080 resolution and above */
+@media screen and (min-width: 1920px) and (min-height: 1080px) {
+    .onboarding-form-wrapper {
+        margin-top: 240px;
+    }
+}

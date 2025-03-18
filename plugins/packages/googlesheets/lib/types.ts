@@ -1,6 +1,7 @@
 export type SourceOptions = { access_token: string };
 export type QueryOptions = {
   spreadsheet_id: string;
+  title: string;
   spreadsheet_range: string;
   where_operation: string;
   where_field: string;

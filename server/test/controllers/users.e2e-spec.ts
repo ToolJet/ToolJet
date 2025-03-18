@@ -21,6 +21,34 @@ describe('users controller', () => {
     jest.clearAllMocks();
   });
 
+  describe('GET /api/users/all', () => {
+    it('only superadmins can able to access all users', async () => {
+      const adminUserData = await createUser(app, { email: 'admin@tooljet.io', userType: 'instance' });
+      const developerUserData = await createUser(app, { email: 'developer@tooljet.io', userType: 'workspace' });
+
+      let loggedUser = await authenticateUser(app, adminUserData.user.email);
+      adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+      const adminRequestResponse = await request(app.getHttpServer())
+        .get('/api/users/all')
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', adminUserData['tokenCookie'])
+        .send();
+
+      expect(adminRequestResponse.statusCode).toBe(200);
+
+      loggedUser = await authenticateUser(app, developerUserData.user.email);
+      developerUserData['tokenCookie'] = loggedUser.tokenCookie;
+      const developerRequestResponse = await request(app.getHttpServer())
+        .get('/api/users/all')
+        .set('tj-workspace-id', developerUserData.user.defaultOrganizationId)
+        .set('Cookie', developerUserData['tokenCookie'])
+        .send();
+
+      expect(developerRequestResponse.statusCode).toBe(403);
+    });
+  });
+
   describe('PATCH /api/users/change_password', () => {
     it('should allow users to update their password', async () => {
       const userData = await createUser(app, { email: 'admin@tooljet.io' });

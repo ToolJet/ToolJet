@@ -6,7 +6,15 @@ import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 import '@/_ui/HttpHeaders/sourceEditorStyles.scss';
 import InfoIcon from '@assets/images/icons/info.svg';
 
-export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairValueChanged, workspaceConstants }) => {
+export default ({
+  options,
+  addNewKeyValuePair,
+  removeKeyValuePair,
+  keyValuePairValueChanged,
+  workspaceConstants,
+  isDisabled,
+  width,
+}) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   return (
@@ -18,17 +26,8 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
         </div>
       )}
 
-      {options?.length > 0 && (
-        <div>
-          <div style={{ display: 'flex' }}>
-            <div style={{ width: '300px', color: '#687076', fontSize: '12px', paddingLeft: '5px' }}>KEY</div>
-            <div style={{ width: '316px', color: '#687076', fontSize: '12px', paddingLeft: '5px' }}>VALUE</div>
-          </div>
-        </div>
-      )}
-
       {options.map((option, index) => (
-        <div className="d-flex align-items-top row-container query-manager-border-color mb-2" key={index}>
+        <div className="d-flex align-items-top row-container query-manager-border-color" key={index}>
           <Input
             type="text"
             className="input-control"
@@ -37,9 +36,10 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
             workspaceConstants={workspaceConstants}
             placeholder="Key"
             autoComplete="off"
+            disabled={isDisabled}
             style={{
               flex: 1,
-              width: '300px',
+              width: width ? width : '300px',
               borderTopRightRadius: '0',
               borderBottomRightRadius: '0',
               borderRight: 'none',
@@ -54,9 +54,10 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
             className="input-control"
             onChange={(e) => keyValuePairValueChanged(e.target.value, 1, index)}
             workspaceConstants={workspaceConstants}
+            disabled={isDisabled}
             style={{
               flex: 2,
-              width: '316px',
+              width: width ? width : '316px',
               borderTopLeftRadius: '0',
               borderBottomLeftRadius: '0',
               borderTopRightRadius: '0',
@@ -70,6 +71,7 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
             }`}
             style={{ height: '35px' }}
             role="button"
+            disabled={isDisabled}
             onClick={() => removeKeyValuePair(index)}
           >
             <Trash fill="var(--slate9)" style={{ height: '16px' }} />
@@ -78,9 +80,15 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
       ))}
 
       <div className="d-flex mb-2" style={{ height: '16px' }}>
-        <ButtonSolid variant="ghostBlue" size="sm" onClick={() => addNewKeyValuePair(options)} style={{ gap: '0px' }}>
+        <ButtonSolid
+          variant="ghostBlue"
+          size="sm"
+          onClick={() => addNewKeyValuePair(options)}
+          style={{ gap: '0px', fontSize: '12px', fontWeight: '500', padding: '0px 9px' }}
+          disabled={isDisabled}
+        >
           <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
-          &nbsp;&nbsp;Add more
+          &nbsp;&nbsp;Add
         </ButtonSolid>
       </div>
     </div>

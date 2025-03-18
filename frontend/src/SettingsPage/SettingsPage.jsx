@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { authenticationService, userService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
@@ -22,6 +22,8 @@ function SettingsPage(props) {
   const focusRef = React.useRef(null);
   const { t } = useTranslation();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
+  const [helperText, setHelperText] = useState('');
+  const [validPassword, setValidPassword] = useState(true);
 
   useEffect(() => {
     updateSidebarNAV('');
@@ -37,7 +39,7 @@ function SettingsPage(props) {
   }
 
   const handleNameSplit = (fullName) => {
-    const words = fullName.split(' ');
+    const words = fullName.trim().split(' ');
     const firstName = words.length > 1 ? words.slice(0, -1).join(' ') : words[0];
     const lastName = words.length > 1 ? words[words.length - 1] : '';
     return [firstName, lastName];
@@ -81,6 +83,20 @@ function SettingsPage(props) {
     } catch (error) {
       toast.error('Something went wrong');
       setUpdateInProgress(false);
+    }
+  };
+
+  const handlePasswordInput = (input) => {
+    setNewPassword(input);
+    if (input.length > 100) {
+      setHelperText('Password should be Max 100 characters');
+      setValidPassword(false);
+    } else if (input.length < 5 && input.length > 0) {
+      setHelperText('Password should be at least 5 characters');
+      setValidPassword(false);
+    } else {
+      setHelperText('');
+      setValidPassword(true);
     }
   };
 
@@ -255,10 +271,13 @@ function SettingsPage(props) {
                           name="last-name"
                           placeholder={t('header.profileSettingPage.enterNewPassword', 'Enter new password')}
                           value={newPassword}
-                          onChange={(event) => setNewPassword(event.target.value)}
+                          onChange={(event) => handlePasswordInput(event.target.value)}
                           onKeyPress={newPasswordKeyPressHandler}
                           data-cy="new-password-input"
                         />
+                        <small style={{ color: !validPassword ? 'red' : undefined }} data-cy="password-helper-text">
+                          {helperText}
+                        </small>
                       </div>
                     </div>
                   </div>
@@ -282,7 +301,7 @@ function SettingsPage(props) {
                   </div>
                   <ButtonSolid
                     isLoading={passwordChangeInProgress}
-                    disabled={newPassword.length < 5 || confirmPassword.length < 5}
+                    disabled={newPassword.length < 5 || confirmPassword.length < 5 || !validPassword}
                     onClick={changePassword}
                     data-cy="change-password-button"
                   >

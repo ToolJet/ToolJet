@@ -20,6 +20,9 @@ export function ConfirmDialog({
   backdropClassName,
   onCloseIconClick,
   footerStyle,
+  confirmButtonIcon,
+  confirmButtonIconWidth = '',
+  confirmButtonIconFill,
   confirmIcon,
   currentPrimaryKeyIcons = {},
   newPrimaryKeyIcons = {},
@@ -111,6 +114,9 @@ export function ConfirmDialog({
           data-cy="yes-button"
           onClick={handleConfirm}
           isLoading={confirmButtonLoading}
+          leftIcon={confirmButtonIcon}
+          iconWidth={confirmButtonIconWidth}
+          fill={confirmButtonIconFill}
         >
           {confirmIcon && confirmIcon}
           {buttonText}

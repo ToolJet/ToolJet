@@ -4,6 +4,6 @@
   command = "GTM=$GTM ALGOLIA_API_KEY=$ALGOLIA_API_KEY npm run build"
   
   [template.environment]
-  NODE_ENV = "production"  
+  NODE_ENV = "production"
   NODE_VERSION = "18.18.2"
   NPM_VERSION = "9.8.1"

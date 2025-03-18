@@ -58,10 +58,6 @@ jobs:
                 "value": "${{ env.PR_NUMBER }}"
               },
               {
-                "key": "ENABLE_TOOLJET_DB",
-                "value": "true"
-              },
-              {
                 "key": "TOOLJET_DB",
                 "value": "${{ env.PR_NUMBER }}-tjdb"
               },
@@ -80,6 +76,10 @@ jobs:
               {
                 "key": "TOOLJET_DB_PORT",
                 "value": "5432"
+              },
+              {
+                "key": "TOOLJET_DB_STATEMENT_TIMEOUT",
+                "value": "60000"
               },
               {
                 "key": "PGRST_DB_PRE_CONFIG",
@@ -144,10 +144,6 @@ jobs:
               {
                 "key": "LICENSE_KEY",
                 "value": "${{ secrets.RENDER_LICENSE_KEY }}"
-              },
-              {
-                "key": "ENABLE_MARKETPLACE_FEATURE",
-                "value": "true"
               },
               {
                 "key": "SUB_PATH",

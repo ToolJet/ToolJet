@@ -1,4 +1,4 @@
-import { SOURCE, USER_STATUS } from 'src/helpers/user_lifecycle';
+import { SOURCE, USER_STATUS } from '@modules/users/constants/lifecycle';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class updateUserStatus1666814745413 implements MigrationInterface {

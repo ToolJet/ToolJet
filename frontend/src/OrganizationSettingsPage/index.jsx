@@ -1,57 +1,66 @@
 import React, { useEffect, useState, useContext } from 'react';
 import cx from 'classnames';
-import { useParams, Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
+import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 
 import Layout from '@/_ui/Layout';
 import { authenticationService } from '@/_services';
 import { BreadCrumbContext } from '../App/App';
 import FolderList from '@/_ui/FolderList/FolderList';
-import { OrganizationList } from '../_components/OrganizationManager/List';
-import { getWorkspaceId } from '@/_helpers/utils';
-import { getSubpath } from '@/_helpers/routes';
-
+import { OrganizationList } from '@/modules/dashboard/components';
+import { workspaceSettingsLinks } from './constant';
+import { checkConditionsForRoute } from '../_helpers/utils';
+import { redirectToErrorPage } from '@/_helpers/routes';
+import { ERROR_TYPES } from '@/_helpers/constants';
 export function OrganizationSettings(props) {
-  const [admin, setAdmin] = useState(authenticationService.currentSessionValue?.admin);
-  const [selectedTab, setSelectedTab] = useState(admin ? 'Users & permissions' : 'manageEnvVars');
-  const navigate = useNavigate();
+  const admin = authenticationService.currentSessionValue?.admin;
+  const [selectedTab, setSelectedTab] = useState(admin ? workspaceSettingsLinks[0].id : 'workspacevariables');
   const location = useLocation();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
-  const { workspaceId } = useParams();
+  const navigate = useNavigate();
+  const [conditionObj, setConditionObj] = useState({
+    admin: authenticationService.currentSessionValue?.admin,
+    wsLoginEnabled: window.public_config?.ENABLE_WORKSPACE_LOGIN_CONFIGURATION === 'true',
+  });
 
-  const sideBarNavs = ['Users', 'Groups', 'Workspace login', 'Workspace variables'];
-  const defaultOrgName = (groupName) => {
-    switch (groupName) {
-      case 'users':
-        return 'Users';
-      case 'groups':
-        return 'Groups';
-      case 'workspace-login':
-        return 'Workspace login';
-      case 'workspace-variables':
-        return 'Workspace variables';
-      default:
-        return groupName;
-    }
+  //Filtered Links from the workspace settings links array
+  const filteredLinks = () =>
+    workspaceSettingsLinks.filter((item) => {
+      return checkConditionsForRoute(item.conditions, conditionObj);
+    });
+
+  const getMenuFromRoute = (route) => {
+    return workspaceSettingsLinks?.find((e) => e.route === route) || {};
   };
 
   useEffect(() => {
     const subscription = authenticationService.currentSession.subscribe((newOrd) => {
-      setAdmin(newOrd?.admin);
+      setConditionObj({
+        admin: newOrd?.admin,
+        wsLoginEnabled: window.public_config?.ENABLE_WORKSPACE_LOGIN_CONFIGURATION === 'true',
+      });
     });
-    admin ? updateSidebarNAV('Users') : updateSidebarNAV('Workspace variables');
-
-    () => subscription.unsubsciption();
     const selectedTabFromRoute = location.pathname.split('/').pop();
     if (selectedTabFromRoute === 'workspace-settings') {
-      setSelectedTab(admin ? 'Users' : 'Workspace variables');
-      const subPath = getSubpath();
-      const path = subPath ? `${subPath}/${workspaceId}/workspace-settings` : `/${workspaceId}/workspace-settings`;
-      window.location.href = admin ? `${path}/users` : `${path}/workspace-variables`;
+      // No Sub routes added loading first one
+      setSelectedTab(admin ? workspaceSettingsLinks[0].id : 'workspace-variables');
+      navigate(admin ? workspaceSettingsLinks[0].route : 'workspace-variables');
     } else {
-      setSelectedTab(defaultOrgName(selectedTabFromRoute));
+      const FieldDisabled = window.public_config?.ENABLE_WORKSPACE_LOGIN_CONFIGURATION === 'false';
+      if (FieldDisabled && selectedTabFromRoute === 'workspace-login') {
+        redirectToErrorPage(ERROR_TYPES.WORKSPACE_LOGIN_RESTRICTED);
+      }
+      const selectedWorkspaceSetting = workspaceSettingsLinks?.find((m) => m.id === selectedTabFromRoute);
+      updateSidebarNAV(selectedWorkspaceSetting?.name || '');
+      setSelectedTab(getMenuFromRoute(selectedTabFromRoute)?.id);
     }
-    updateSidebarNAV(defaultOrgName(selectedTabFromRoute));
-  }, [navigate, workspaceId, authenticationService.currentSessionValue?.admin]);
+
+    return () => subscription.unsubscribe();
+  }, [admin, location.pathname]);
+
+  const handleClick = (data) => {
+    setSelectedTab(data.id);
+    updateSidebarNAV(data?.name || '');
+  };
 
   return (
     <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
@@ -59,13 +68,13 @@ export function OrganizationSettings(props) {
         <div className="row gx-0">
           <div className="organization-page-sidebar col ">
             <div className="workspace-nav-list-wrap">
-              {sideBarNavs.map((item, index) => {
+              {filteredLinks().map((item, index) => {
                 const Wrapper = ({ children }) => <>{children}</>;
                 return (
                   <Wrapper key={index}>
                     <Link
-                      to={`/${workspaceId}/workspace-settings/${item.toLowerCase().replace(/\s+/g, '-')}`} // Update the URL path here
                       key={index}
+                      to={item.route}
                       style={{
                         textDecoration: 'none',
                         border: 'none',
@@ -74,30 +83,26 @@ export function OrganizationSettings(props) {
                         backgroundColor: 'inherit',
                       }}
                     >
-                      {admin && (
-                        <FolderList
-                          className="workspace-settings-nav-items"
-                          key={index}
-                          onClick={() => {
-                            setSelectedTab(defaultOrgName(item));
-                            if (item == 'Users') updateSidebarNAV('Users');
-                            else updateSidebarNAV(item);
-                          }}
-                          selectedItem={selectedTab == defaultOrgName(item)}
-                          renderBadgeForItems={['Workspace constants']}
-                          renderBadge={() => (
-                            <span
-                              style={{ width: '40px', textTransform: 'lowercase' }}
-                              className="badge bg-color-primary badge-pill"
-                            >
-                              new
-                            </span>
-                          )}
-                          dataCy={item.toLowerCase().replace(/\s+/g, '-')}
-                        >
-                          {item}
-                        </FolderList>
-                      )}
+                      <FolderList
+                        className="workspace-settings-nav-items"
+                        key={index}
+                        onClick={() => {
+                          handleClick(item);
+                        }}
+                        selectedItem={selectedTab == item.id}
+                        renderBadgeForItems={[]}
+                        renderBadge={() => (
+                          <span
+                            style={{ width: '40px', textTransform: 'lowercase' }}
+                            className="badge bg-color-primary badge-pill"
+                          >
+                            new
+                          </span>
+                        )}
+                        dataCy={item.name.toLowerCase().replace(/\s+/g, '-')}
+                      >
+                        {item.name}
+                      </FolderList>
                     </Link>
                   </Wrapper>
                 );

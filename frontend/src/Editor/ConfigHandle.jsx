@@ -1,7 +1,9 @@
 import { useEditorStore } from '@/_stores/editorStore';
 import React from 'react';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
-export const ConfigHandle = function ConfigHandle({
+export const ConfigHandle = ({
   id,
   component,
   dragRef,
@@ -13,10 +15,15 @@ export const ConfigHandle = function ConfigHandle({
   setSelectedComponent = () => null, //! Only Modal widget passes this uses props down. All other widgets use selecto lib
   customClassName = '',
   configWidgetHandlerForModalComponent = false,
-  isVersionReleased,
   showHandle,
-}) {
-  const shouldShowHandle = useEditorStore((state) => state.hoveredComponent === id) || showHandle;
+}) => {
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
+    }),
+    shallow
+  );
 
   return (
     <div
@@ -24,7 +31,7 @@ export const ConfigHandle = function ConfigHandle({
       ref={dragRef}
       style={{
         top: position === 'top' ? '-20px' : widgetTop + widgetHeight - (widgetTop < 10 ? 15 : 10),
-        visibility: shouldShowHandle && !isMultipleComponentsSelected ? 'visible' : 'hidden',
+        visibility: showHandle && !isMultipleComponentsSelected ? 'visible' : 'hidden',
         left: '-1px',
       }}
     >
@@ -53,7 +60,7 @@ export const ConfigHandle = function ConfigHandle({
           />
           <span>{component.name}</span>
         </div>
-        {!isMultipleComponentsSelected && !isVersionReleased && (
+        {!isMultipleComponentsSelected && !(isVersionReleased || isEditorFreezed) && (
           <div className="delete-part">
             <img
               style={{ cursor: 'pointer', marginLeft: '5px' }}

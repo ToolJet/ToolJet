@@ -1,0 +1,131 @@
+.Wrapper {
+  list-style: none;
+  box-sizing: border-box;
+  padding-left: var(--spacing) !important;
+  margin-bottom: -1px;
+
+  &.clone {
+    display: inline-block;
+    pointer-events: none;
+    padding: 0;
+    padding-left: 10px;
+    padding-top: 5px;
+
+    .TreeItem {
+      --vertical-padding: 5px;
+
+      padding-right: 24px;
+      border-radius: 4px;
+      box-shadow: 0px 15px 15px 0 rgba(34, 33, 81, 0.1);
+    }
+  }
+
+  &.ghost {
+    &.indicator {
+      opacity: 1;
+      position: relative;
+      z-index: 1;
+      margin-bottom: -1px;
+      &.removeBorder{
+        .TreeItem::before {
+          height: 0px !important;
+        }
+      }
+
+      .TreeItem {
+        position: relative;
+        padding: 0;
+        height: 0px;
+        > * {
+          opacity: 0;
+          height: 0;
+        }
+      }
+      .TreeItem::before {
+        content: '';
+        position: absolute;
+        top: 3px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background-color: #3D63DC;
+      }
+    }
+
+    &:not(.indicator) {
+      opacity: 0.5;
+    }
+
+    .TreeItem > * {
+      box-shadow: none;
+      background-color: transparent;
+    }
+  }
+}
+
+.TreeItem {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: var(--vertical-padding) 10px;
+  color: #222;
+  box-sizing: border-box;
+}
+
+
+.Text {
+  flex-grow: 1;
+  padding-left: 0.5rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.Count {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #2389ff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.disableInteraction {
+  pointer-events: none;
+}
+
+.disableSelection,
+.clone {
+  .Text,
+  .Count {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+}
+
+.Collapse {
+  svg {
+    transition: transform 250ms ease;
+  }
+
+  &.collapsed svg {
+    transform: rotate(-90deg);
+  }
+}
+
+.ChildIndentation {
+  position: absolute;
+  width: 1px;
+  height: 100%;
+  background-color: var(--slate7);
+  z-index: 1;
+  top: -4px;
+
+}

@@ -1,18 +1,19 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import useRouter from '@/_hooks/use-router';
-import { ToolTip } from '@/_components/ToolTip';
-import { Profile } from '@/_components/Profile';
-import { NotificationCenter } from '@/_components/NotificationCenter';
 import Logo from '@assets/images/rocket.svg';
 import Header from '../Header';
 import { authenticationService } from '@/_services';
-import SolidIcon from '../Icon/SolidIcons';
 import { getPrivateRoute } from '@/_helpers/routes';
 import { ConfirmDialog } from '@/_components';
 import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
-import Settings from '@/_components/Settings';
+import './styles.scss';
+import { useLicenseStore } from '@/_stores/licenseStore';
+import { shallow } from 'zustand/shallow';
 import { retrieveWhiteLabelLogo, fetchWhiteLabelDetails } from '@white-label/whiteLabelling';
+import '../../_styles/left-sidebar.scss';
+import { hasBuilderRole } from '@/_helpers/utils';
+import { LeftNavSideBar } from '@/modules/common/components';
 
 function Layout({
   children,
@@ -22,12 +23,97 @@ function Layout({
   collapseSidebar = false,
   toggleCollapsibleSidebar = () => {},
 }) {
+  const [licenseValid, setLicenseValid] = useState(false);
+  const [logo, setLogo] = useState(null);
   const router = useRouter();
+  const { featureAccess } = useLicenseStore(
+    (state) => ({
+      featureAccess: state.featureAccess,
+    }),
+    shallow
+  );
+
+  const canAnyGroupPerformAction = (action) => {
+    let { user_permissions, data_source_group_permissions, super_admin, admin } =
+      authenticationService.currentSessionValue;
+    const canCreateDataSource = super_admin || admin || user_permissions?.data_source_create;
+    const canDeleteDataSource = super_admin || admin || user_permissions?.data_source_delete;
+    const canConfigureDataSource =
+      canCreateDataSource ||
+      data_source_group_permissions?.is_all_configurable ||
+      data_source_group_permissions?.configurable_data_source_id?.length;
+    const canUseDataSource =
+      canConfigureDataSource ||
+      data_source_group_permissions?.is_all_usable ||
+      data_source_group_permissions?.usable_data_sources_id?.length;
+
+    switch (action) {
+      case 'data_source_create':
+        return canCreateDataSource;
+      case 'data_source_delete':
+        return canDeleteDataSource;
+      case 'read':
+        return canUseDataSource;
+      case 'update':
+        return canConfigureDataSource;
+      default:
+        return false;
+    }
+  };
+
+  const canCreateDataSource = () => {
+    return canAnyGroupPerformAction('data_source_create');
+  };
+
+  const canUpdateDataSource = () => {
+    return canAnyGroupPerformAction('update');
+  };
+
+  const canReadDataSource = () => {
+    return canAnyGroupPerformAction('read');
+  };
+
+  const canDeleteDataSource = () => {
+    return canAnyGroupPerformAction('data_source_delete');
+  };
+
+  useEffect(() => {
+    useLicenseStore.getState().actions.fetchFeatureAccess();
+  }, []);
+
+  useEffect(() => {
+    let licenseValid = !featureAccess?.licenseStatus?.isExpired && featureAccess?.licenseStatus?.isLicenseValid;
+    setLicenseValid(licenseValid);
+  }, [featureAccess]);
+
   const currentUserValue = authenticationService.currentSessionValue;
   const admin = currentUserValue?.admin;
-  const marketplaceEnabled = admin && window.public_config?.ENABLE_MARKETPLACE_FEATURE == 'true';
+  const super_admin = currentUserValue?.super_admin;
+  const hasCommonPermissions =
+    canReadDataSource() ||
+    canUpdateDataSource() ||
+    canCreateDataSource() ||
+    canDeleteDataSource() ||
+    admin ||
+    super_admin;
+  const isAuthorizedForGDS = hasCommonPermissions || admin || super_admin;
   fetchWhiteLabelDetails();
-  const whiteLabelLogo = retrieveWhiteLabelLogo();
+
+  useEffect(() => {
+    const fetchLogo = async () => {
+      try {
+        const whiteLabelLogo = await retrieveWhiteLabelLogo();
+        setLogo(whiteLabelLogo);
+      } catch (error) {
+        console.error('Error fetching logo:', error);
+        setLogo(null);
+      }
+    };
+
+    fetchLogo();
+  }, []);
+
+  const isBuilder = hasBuilderRole(authenticationService?.currentSessionValue?.role ?? {});
 
   const {
     checkForUnsavedChanges,
@@ -38,19 +124,8 @@ function Layout({
     nextRoute,
   } = useGlobalDatasourceUnsavedChanges();
 
-  const canAnyGroupPerformAction = (action, permissions) => {
-    if (!permissions) {
-      return false;
-    }
-
-    return permissions.some((p) => p[action]);
-  };
-
   const canCreateVariableOrConstant = () => {
-    return canAnyGroupPerformAction(
-      'org_environment_variable_create',
-      authenticationService.currentSessionValue.group_permissions
-    );
+    return authenticationService.currentSessionValue.user_permissions?.org_constant_c_r_u_d;
   };
 
   return (
@@ -63,121 +138,27 @@ function Layout({
                 to={getPrivateRoute('dashboard')}
                 onClick={(event) => checkForUnsavedChanges(getPrivateRoute('dashboard'), event)}
               >
-                {whiteLabelLogo ? <img src={whiteLabelLogo} /> : <Logo />}
+                {logo ? <img src={logo} /> : <Logo />}
               </Link>
             </div>
-            <div>
-              <ul className="sidebar-inner nav nav-vertical">
-                <li className="text-center cursor-pointer">
-                  <ToolTip message="Apps" placement="right">
-                    <Link
-                      to="/"
-                      onClick={(event) => checkForUnsavedChanges(getPrivateRoute('dashboard'), event)}
-                      className={`tj-leftsidebar-icon-items  ${
-                        (router.pathname === '/:workspaceId' || router.pathname === getPrivateRoute('dashboard')) &&
-                        `current-seleted-route`
-                      }`}
-                      data-cy="icon-dashboard"
-                    >
-                      <SolidIcon
-                        name="apps"
-                        fill={
-                          router.pathname === '/:workspaceId' || router.pathname === getPrivateRoute('dashboard')
-                            ? '#3E63DD'
-                            : 'var(--slate8)'
-                        }
-                      />
-                    </Link>
-                  </ToolTip>
-                </li>
-                {window.public_config?.ENABLE_TOOLJET_DB == 'true' && admin && (
-                  <li className="text-center  cursor-pointer" data-cy={`database-icon`}>
-                    <ToolTip message="ToolJet Database" placement="right">
-                      <Link
-                        to={getPrivateRoute('database')}
-                        onClick={(event) => checkForUnsavedChanges(getPrivateRoute('database'), event)}
-                        className={`tj-leftsidebar-icon-items  ${
-                          router.pathname === getPrivateRoute('database') && `current-seleted-route`
-                        }`}
-                        data-cy="icon-database"
-                      >
-                        <SolidIcon
-                          name="table"
-                          fill={
-                            router.pathname === getPrivateRoute('database') && `current-seleted-route`
-                              ? '#3E63DD'
-                              : 'var(--slate8)'
-                          }
-                        />
-                      </Link>
-                    </ToolTip>
-                  </li>
-                )}
-
-                {/* DATASOURCES */}
-                {admin && (
-                  <li className="text-center cursor-pointer">
-                    <ToolTip message="Data sources" placement="right">
-                      <Link
-                        to={getPrivateRoute('data_sources')}
-                        onClick={(event) => checkForUnsavedChanges(getPrivateRoute('data_sources'), event)}
-                        className={`tj-leftsidebar-icon-items  ${
-                          router.pathname === getPrivateRoute('data_sources') && `current-seleted-route`
-                        }`}
-                        data-cy="icon-global-datasources"
-                      >
-                        <SolidIcon
-                          name="datasource"
-                          fill={router.pathname === getPrivateRoute('data_sources') ? '#3E63DD' : 'var(--slate8)'}
-                        />
-                      </Link>
-                    </ToolTip>
-                  </li>
-                )}
-                {canCreateVariableOrConstant() && (
-                  <li className="text-center cursor-pointer">
-                    <ToolTip message="Workspace constants" placement="right">
-                      <Link
-                        to={getPrivateRoute('workspace_constants')}
-                        onClick={(event) => checkForUnsavedChanges(getPrivateRoute('workspace_constants'), event)}
-                        className={`tj-leftsidebar-icon-items  ${
-                          router.pathname === getPrivateRoute('workspace_constants') && `current-seleted-route`
-                        }`}
-                        data-cy="icon-workspace-constants"
-                      >
-                        <SolidIcon
-                          name="workspaceconstants"
-                          fill={
-                            router.pathname === getPrivateRoute('workspace_constants') ? '#3E63DD' : 'var(--slate8)'
-                          }
-                          width={25}
-                          viewBox={'0 0 20 20'}
-                        />
-                      </Link>
-                    </ToolTip>
-                  </li>
-                )}
-
-                <li className="tj-leftsidebar-icon-items-bottom text-center">
-                  <NotificationCenter darkMode={darkMode} />
-                  <ToolTip delay={{ show: 0, hide: 0 }} message="Mode" placement="right">
-                    <Link
-                      className="cursor-pointer tj-leftsidebar-icon-items"
-                      onClick={() => switchDarkMode(!darkMode)}
-                      data-cy="mode-switch-button"
-                    >
-                      <SolidIcon name={darkMode ? 'lightmode' : 'darkmode'} fill="var(--slate8)" />
-                    </Link>
-                  </ToolTip>
-                  <Settings darkMode={darkMode} checkForUnsavedChanges={checkForUnsavedChanges} />
-                </li>
-              </ul>
-            </div>
+            <LeftNavSideBar
+              switchDarkMode={switchDarkMode}
+              darkMode={darkMode}
+              isAuthorizedForGDS={isAuthorizedForGDS}
+              isBuilder={isBuilder}
+              workflowsEnabled={false}
+              canCreateVariableOrConstant={canCreateVariableOrConstant}
+              featureAccess={featureAccess}
+              checkForUnsavedChanges={checkForUnsavedChanges}
+              router={router}
+              admin={admin}
+            />
           </div>
         </aside>
       </div>
       <div style={{ paddingLeft: 48, paddingRight: 0 }} className="col">
         <Header
+          featureAccess={featureAccess}
           enableCollapsibleSidebar={enableCollapsibleSidebar}
           collapseSidebar={collapseSidebar}
           toggleCollapsibleSidebar={toggleCollapsibleSidebar}

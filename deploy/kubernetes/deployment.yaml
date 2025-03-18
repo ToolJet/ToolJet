@@ -79,18 +79,15 @@ spec:
                   key: tj_host
             - name: DEPLOYMENT_PLATFORM
               value: "k8s"
-            # Set the env values below for Tooljet Database
-            # - name: ENABLE_TOOLJET_DB
-            #   value: "true"
-            # - name: TOOLJET_DB
-            #   value: "tooljet_db"
-            # - name: TOOLJET_DB_USER
-            #   value: "replace_with_tooljet_db_user"
-            # - name: TOOLJET_DB_HOST
-            #   value: "replace_with_tooljet_db_host"
-            # - name: TOOLJET_DB_PASS
-            #   value: "replace_with_tooljet_db_pass"
-            # - name: PGRST_HOST
-            #   value: "replace_with_postgrest_host"
-            # - name: PGRST_JWT_SECRET
-            #   value: "replace_jwt_secret_here"
+            - name: TOOLJET_DB
+              value: "tooljet_db"
+            - name: TOOLJET_DB_USER
+              value: "replace_with_tooljet_db_user"
+            - name: TOOLJET_DB_HOST
+              value: "replace_with_tooljet_db_host"
+            - name: TOOLJET_DB_PASS
+              value: "replace_with_tooljet_db_pass"
+            - name: PGRST_HOST
+              value: "replace_with_postgrest_host"
+            - name: PGRST_JWT_SECRET
+              value: "replace_jwt_secret_here"

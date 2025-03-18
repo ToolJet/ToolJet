@@ -1,0 +1,28 @@
+.instance-logout-wrapper{
+    background: var(--base);
+    .instance-logout-header{
+      padding: 24px 24px;
+      gap: 12px;
+      height: 72px;
+      border-top-left-radius: 6px;
+      border-top-right-radius: 6px;
+      border-bottom: 1px solid rgb(230, 232, 235);  /* Light gray border */
+      padding-bottom: 1rem;
+      &.dark-mode {
+        border-bottom: 1px solid rgb(43, 47, 49) !important;
+      }
+      .instance-logout-title{
+        font-size: 18px;
+        line-height: 28px;
+        font-weight: 500;
+      }
+    }
+    .instance-logout-body{
+      padding: 24px;
+      .custom-logout-content{
+        .form-group{
+          width: 472px !important;
+        }
+      }
+    }
+  }

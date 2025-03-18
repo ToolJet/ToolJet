@@ -1,13 +1,15 @@
+import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
 import { getLastDepth, getLastSubstring } from './autocompleteUtils';
 
 export const getAutocompletion = (input, fieldType, hints, totalReferences = 1, originalQueryInput = null) => {
   if (!input.startsWith('{{') || !input.endsWith('}}')) return [];
 
-  const actualInput = input.replace(/{{|}}/g, '');
+  const actualInput = removeNestedDoubleCurlyBraces(input);
 
   let JSLangHints = [];
 
-  if (fieldType) {
+  if (fieldType && fieldType !== 'union') {
+    //Update here to show better hints for union type
     JSLangHints = hints['jsHints'][fieldType]['methods'].map((hint) => ({
       hint: hint,
       type: 'js_method',
@@ -58,7 +60,7 @@ export const getAutocompletion = (input, fieldType, hints, totalReferences = 1, 
     if (autoSuggestionList.length === 0 && !cm.hint.includes(actualInput)) return true;
   });
 
-  const searchInput = input.replace(/{{|}}/g, '');
+  const searchInput = removeNestedDoubleCurlyBraces(input);
   const suggestions = generateHints(
     [...jsHints, ...autoSuggestionList],
     totalReferences,
@@ -137,7 +139,7 @@ export const generateHints = (hints, totalReferences = 1, input, searchText) => 
           changes: pickedCompletionConfig,
         };
 
-        const actualInput = doc.toString().replace(/{{|}}/g, '');
+        const actualInput = removeNestedDoubleCurlyBraces(doc.toString());
 
         if (actualInput.length === 0) {
           dispatchConfig.selection = {

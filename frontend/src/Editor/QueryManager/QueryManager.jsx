@@ -23,6 +23,13 @@ const QueryManager = ({ mode, appId, darkMode, apps, allComponents, appDefinitio
   const selectedQuery = useSelectedQuery();
   const { setSelectedDataSource, setQueryToBeRun } = useQueryPanelActions();
   const [options, setOptions] = useState({});
+  const [activeTab, setActiveTab] = useState(1);
+
+  useEffect(() => {
+    if (selectedQuery?.kind == 'runjs' || selectedQuery?.kind == 'runpy' || selectedQuery?.kind == 'workflows') {
+      setActiveTab(1);
+    }
+  }, [selectedQuery?.id]);
 
   useEffect(() => {
     setOptions(selectedQuery?.options || {});
@@ -66,6 +73,8 @@ const QueryManager = ({ mode, appId, darkMode, apps, allComponents, appDefinitio
         editorRef={editorRef}
         appId={appId}
         setOptions={setOptions}
+        setActiveTab={setActiveTab}
+        activeTab={activeTab}
       />
       <CodeHinterContext.Provider
         value={{
@@ -86,6 +95,7 @@ const QueryManager = ({ mode, appId, darkMode, apps, allComponents, appDefinitio
           appId={appId}
           appDefinition={appDefinition}
           setOptions={setOptions}
+          activeTab={activeTab}
         />
       </CodeHinterContext.Provider>
     </div>

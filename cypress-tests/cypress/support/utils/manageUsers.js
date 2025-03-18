@@ -1,4 +1,3 @@
-import { path } from "Texts/common";
 import { commonSelectors } from "Selectors/common";
 import { usersText } from "Texts/manageUsers";
 import { usersSelector } from "Selectors/manageUsers";
@@ -6,6 +5,7 @@ import { ssoSelector } from "Selectors/manageSSO";
 import { ssoText } from "Texts/manageSSO";
 import * as common from "Support/utils/common";
 import { commonText } from "Texts/common";
+import { onboardingSelectors } from "Selectors/onboarding";
 
 export const manageUsersElements = () => {
   cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
@@ -122,10 +122,12 @@ export const manageUsersElements = () => {
     "have.text",
     usersText.buttonDownloadTemplate
   );
-  cy.wait(3000)
+  cy.exec("mkdir -p ./cypress/downloads/");
+  cy.wait(3000);
   cy.exec("cd ./cypress/downloads/ && rm -rf *");
+  cy.wait(3000);
   cy.get(usersSelector.buttonDownloadTemplate).click();
-  cy.wait(4000)
+  cy.wait(4000);
   cy.exec("ls ./cypress/downloads/").then((result) => {
     const downloadedAppExportFileName = result.stdout.split("\n")[0];
     expect(downloadedAppExportFileName).to.contain.string("sample_upload.csv");
@@ -147,24 +149,30 @@ export const manageUsersElements = () => {
   );
 };
 
-export const inviteUser = (firstName, email) => {
-  cy.userInviteApi(firstName, email);
+export const inviteUserToWorkspace = (firstName, email) => {
+  cy.apiUserInvite(firstName, email);
   fetchAndVisitInviteLink(email);
-  cy.clearAndType(commonSelectors.passwordInputField, "password");
+  cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
+  cy.get(commonSelectors.continueButton).click();
   cy.get(commonSelectors.acceptInviteButton).click();
 };
 
 export const confirmInviteElements = (email) => {
+  cy.get(commonSelectors.signUpSectionHeader).verifyVisibleElement(
+    "have.text",
+    "Sign up"
+  );
+  cy.get('[data-cy="signup-info"]').verifyVisibleElement(
+    "have.text",
+    "Sign up to the workspace - My workspace. "
+  );
 
-  cy.get(commonSelectors.SignUpSectionHeader).verifyVisibleElement(
-    "have.text", "Sign up");
-  cy.get('[data-cy="workspace-signup-header"]').verifyVisibleElement(
-    "have.text", "Sign up to the workspace - My workspace");
-
-  cy.verifyLabel("Email")
-  cy.verifyLabel("Create a password")
+  // cy.verifyLabel("Email")
+  // cy.verifyLabel("Create a password")
   cy.get(commonSelectors.invitedUserEmail).verifyVisibleElement(
-    "have.text", email);
+    "have.text",
+    email
+  );
 
   cy.get(commonSelectors.signUpTermsHelperText).should(($el) => {
     expect($el.contents().first().text().trim()).to.eq(
@@ -205,20 +213,30 @@ export const userStatus = (email) => {
     });
 };
 
-export const bulkUserUpload = (file, fileName, toastMessage) => {
+export const bulkUserUpload = (
+  file,
+  fileName,
+  toastMessage,
+  isDuplicate = false
+) => {
   cy.get(usersSelector.inputFieldBulkUpload).selectFile(file, {
     force: true,
   });
   cy.get(usersSelector.uploadedFileData).should("contain", fileName);
   cy.get(usersSelector.buttonUploadUsers).click();
-  cy.get(commonSelectors.newToastMessage)
-    .should("be.visible")
-    .and("have.text", toastMessage);
-  cy.get(usersSelector.toastCloseButton).click();
-
-  cy.wait(200);
+  if (isDuplicate) {
+    cy.get(commonSelectors.modalMessage)
+      .should("be.visible")
+      .and("have.text", toastMessage);
+    cy.get(usersSelector.modalClose).click();
+  } else {
+    cy.get(commonSelectors.newToastMessage)
+      .should("be.visible")
+      .and("have.text", toastMessage);
+    cy.get(usersSelector.toastCloseButton).click();
+  }
+  cy.wait(1500);
 };
-
 
 export const copyInvitationLink = (firstName, email) => {
   cy.window().then((win) => {
@@ -242,8 +260,8 @@ export const copyInvitationLink = (firstName, email) => {
 
 export const fillUserInviteForm = (firstName, email) => {
   cy.get(usersSelector.buttonAddUsers).click();
-  cy.clearAndType(commonSelectors.inputFieldFullName, firstName);
-  cy.clearAndType(commonSelectors.inputFieldEmailAddress, email);
+  cy.clearAndType(onboardingSelectors.nameInput, firstName);
+  cy.clearAndType(onboardingSelectors.signupEmailInput, email);
 };
 
 export const selectUserGroup = (groupName) => {
@@ -256,7 +274,7 @@ export const selectUserGroup = (groupName) => {
     }
     cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(groupName);
     cy.wait(1000);
-    cy.get('[data-cy="group-check-input"]').eq(0).check()
+    cy.get('[data-cy="group-check-input"]').eq(0).check();
   });
 };
 
@@ -278,11 +296,11 @@ export const inviteUserWithUserGroups = (
     }
     cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(groupName1);
     cy.wait(1000);
-    cy.get('[data-cy="group-check-input"]').eq(0).check()
+    cy.get('[data-cy="group-check-input"]').eq(0).check();
     cy.wait(1000);
     cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(groupName2);
     cy.wait(1000);
-    cy.get('[data-cy="group-check-input"]').eq(0).check()
+    cy.get('[data-cy="group-check-input"]').eq(0).check();
   });
 
   cy.get(usersSelector.buttonInviteUsers).click();
@@ -293,7 +311,8 @@ export const inviteUserWithUserGroups = (
 
   cy.wait(1000);
   fetchAndVisitInviteLink(email);
-  cy.clearAndType(commonSelectors.passwordInputField, "password");
+  cy.wait(2000);
+  cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
   // cy.intercept('GET', '/api/organizations').as('org')
   cy.get(commonSelectors.signUpButton).click();
   cy.wait(2000);
@@ -332,11 +351,42 @@ export const fetchAndVisitInviteLink = (email) => {
           organizationToken = resp.rows[1].invitation_token;
 
           url = `/invitations/${invitationToken}/workspaces/${organizationToken}?oid=${workspaceId}`;
-          cy.logoutApi();
+          cy.apiLogout();
           cy.wait(1000);
           cy.visit(url);
         });
       });
     });
   });
+};
+
+export const inviteUserWithUserRole = (firstName, email, role) => {
+  fillUserInviteForm(firstName, email);
+
+  cy.wait(2000);
+
+  cy.get("body").then(($body) => {
+    const selectDropdown = $body.find('[data-cy="user-group-select"]>>>>>');
+
+    if (selectDropdown.length === 0) {
+      cy.get('[data-cy="user-group-select"]>>>>>').click();
+    }
+    cy.get('[data-cy="user-group-select"]>>>>>').eq(0).type(role);
+    cy.wait(1000);
+    cy.get('[data-cy="group-check-input"]').eq(0).check();
+    cy.wait(1000);
+  });
+
+  cy.get(usersSelector.buttonInviteUsers).click();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    usersText.userCreatedToast
+  );
+
+  cy.wait(1000);
+  fetchAndVisitInviteLink(email);
+  cy.clearAndType(onboardingSelectors.loginPasswordInput, "password");
+  cy.get(commonSelectors.signUpButton).click();
+  cy.wait(2000);
+  cy.get(commonSelectors.acceptInviteButton).click();
 };

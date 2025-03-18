@@ -1,6 +1,6 @@
 import React from 'react';
 
-const ArrowDownTriangle = ({ fill = '#C1C8CD', width = '24', className = '', viewBox = '0 0 24 24' }) => (
+const ArrowDownTriangle = ({ fill = '#C1C8CD', width = '24', className = '', viewBox = '0 0 24 24', style = {} }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={width}
@@ -8,6 +8,7 @@ const ArrowDownTriangle = ({ fill = '#C1C8CD', width = '24', className = '', vie
     viewBox={viewBox}
     fill="none"
     className={className}
+    style={style}
   >
     <path
       fill-rule="evenodd"

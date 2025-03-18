@@ -11,6 +11,18 @@ import {
 import { GroupPermission } from './group_permission.entity';
 import { App } from './app.entity';
 
+/**
+ * ███████████████████████████████████████████████████████████████████████████████
+ * █                                                                             █
+ * █                               DEPRECATED                                    █
+ * █                                                                             █
+ * █  This file is deprecated and will be removed in a future version.           █
+ * █  Please use the new implementation in `group_apps.entity.ts` instead.       █
+ * █                                                                             █
+ * █                                                                             █
+ * ███████████████████████████████████████████████████████████████████████████████
+ */
+
 @Entity({ name: 'app_group_permissions' })
 export class AppGroupPermission extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -48,3 +60,15 @@ export class AppGroupPermission extends BaseEntity {
   @JoinColumn({ name: 'group_permission_id' })
   groupPermission: GroupPermission;
 }
+
+/**
+ * ███████████████████████████████████████████████████████████████████████████████
+ * █                                                                             █
+ * █                               DEPRECATED                                    █
+ * █                                                                             █
+ * █  This file is deprecated and will be removed in a future version.           █
+ * █  Please use the new implementation in `group_apps.entity.ts` instead.       █
+ * █                                                                             █
+ * █                                                                             █
+ * ███████████████████████████████████████████████████████████████████████████████
+ */

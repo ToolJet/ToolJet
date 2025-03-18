@@ -1,6 +1,8 @@
 import _ from 'lodash';
-import React, { useState, useEffect } from 'react';
-import Select from 'react-select';
+import React, { useState, useEffect, useRef } from 'react';
+import Select, { components } from 'react-select';
+import TriangleDownArrow from '@/_ui/Icon/bulkIcons/TriangleDownArrow';
+import TriangleUpArrow from '@/_ui/Icon/bulkIcons/TriangleUpArrow';
 
 export const DropDown = function DropDown({
   height,
@@ -8,22 +10,20 @@ export const DropDown = function DropDown({
   properties,
   styles,
   setExposedVariable,
+  setExposedVariables,
   fireEvent,
   darkMode,
   onComponentClick,
   id,
-  component,
-  exposedVariables,
   dataCy,
 }) {
+  const isInitialRender = useRef(true);
   let { label, value, advanced, schema, placeholder, display_values, values } = properties;
   const { selectedTextColor, borderRadius, visibility, disabledState, justifyContent, boxShadow } = styles;
   const [currentValue, setCurrentValue] = useState(() => (advanced ? findDefaultItem(schema) : value));
-  const { value: exposedValue } = exposedVariables;
   const [showValidationError, setShowValidationError] = useState(false);
-  const validationData = validate(value);
-  const { isValid, validationError } = validationData;
-
+  const [validationStatus, setValidationStatus] = useState(validate(value));
+  const { isValid, validationError } = validationStatus;
   function findDefaultItem(schema) {
     const foundItem = schema?.find((item) => item?.default === true);
     return !hasVisibleFalse(foundItem?.value) ? foundItem?.value : undefined;
@@ -59,12 +59,11 @@ export const DropDown = function DropDown({
   }
 
   const setExposedItem = (value, index, onSelectFired = false) => {
-    setCurrentValue(value);
+    const selectedOptionLabel = index === undefined ? undefined : display_values?.[index];
+    setInputValue(value, selectedOptionLabel);
     if (onSelectFired) {
-      setExposedVariable('value', value);
       fireEvent('onSelect');
-    } else setExposedVariable('value', value);
-    setExposedVariable('selectedOptionLabel', index === undefined ? undefined : display_values?.[index]);
+    }
   };
 
   function selectOption(value) {
@@ -79,16 +78,71 @@ export const DropDown = function DropDown({
   }
 
   useEffect(() => {
-    setExposedVariable('selectOption', async function (value) {
-      selectOption(value);
-    });
+    if (isInitialRender.current) return;
+    const index = values?.indexOf(currentValue);
+    setExposedVariable('selectedOptionLabel', display_values?.[index]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(values), setCurrentValue, JSON.stringify(display_values)]);
+  }, [currentValue, JSON.stringify(display_values), JSON.stringify(values)]);
 
   useEffect(() => {
-    setExposedVariable('isValid', isValid);
+    if (isInitialRender.current) return;
+    setExposedVariable('label', label);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isValid]);
+  }, [label]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    const validationStatus = validate(currentValue);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
+  }, [validate]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
+    if (advanced) {
+      setExposedVariable(
+        'optionLabels',
+        schema?.filter((item) => item?.visible)?.map((item) => item.label)
+      );
+      if (hasVisibleFalse(currentValue)) {
+        setInputValue(findDefaultItem(schema));
+      }
+    } else setExposedVariable('optionLabels', display_values);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(schema), advanced, JSON.stringify(display_values), currentValue]);
+
+  useEffect(() => {
+    const index = values?.indexOf(currentValue);
+    let optionLabels = display_values;
+    if (advanced) {
+      optionLabels = schema?.filter((item) => item?.visible)?.map((item) => item.label);
+    }
+    const exposedVariables = {
+      selectOption: async function (value) {
+        selectOption(value);
+      },
+      isValid: isValid,
+      value: currentValue,
+      selectedOptionLabel: display_values?.[index],
+      label: label,
+      optionLabels: optionLabels,
+    };
+
+    setExposedVariables(exposedVariables);
+    isInitialRender.current = false;
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const exposedVariables = {
+      selectOption: async function (value) {
+        selectOption(value);
+      },
+    };
+
+    setExposedVariables(exposedVariables);
+  }, [JSON.stringify(properties.values)]);
 
   useEffect(() => {
     let newValue = undefined;
@@ -103,16 +157,6 @@ export const DropDown = function DropDown({
   }, [JSON.stringify(value), JSON.stringify(values)]);
 
   useEffect(() => {
-    let index = null;
-    if (exposedValue !== currentValue) {
-      setExposedVariable('value', currentValue);
-    }
-    index = values?.indexOf(currentValue);
-    setExposedVariable('selectedOptionLabel', display_values?.[index]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentValue, JSON.stringify(display_values), JSON.stringify(values)]);
-
-  useEffect(() => {
     let newValue = undefined;
     let index = null;
 
@@ -122,24 +166,6 @@ export const DropDown = function DropDown({
     setExposedItem(newValue, index);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(values)]);
-
-  useEffect(() => {
-    setExposedVariable('label', label);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [label]);
-
-  useEffect(() => {
-    if (advanced) {
-      setExposedVariable(
-        'optionLabels',
-        schema?.filter((item) => item?.visible)?.map((item) => item.label)
-      );
-      if (hasVisibleFalse(currentValue)) {
-        setCurrentValue(findDefaultItem(schema));
-      }
-    } else setExposedVariable('optionLabels', display_values);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(schema), advanced, JSON.stringify(display_values), currentValue]);
 
   function hasVisibleFalse(value) {
     for (let i = 0; i < schema?.length; i++) {
@@ -155,6 +181,14 @@ export const DropDown = function DropDown({
       setExposedVariable('searchText', searchText);
       fireEvent('onSearchTextChanged');
     }
+  };
+
+  const setInputValue = (value, label) => {
+    setCurrentValue(value);
+    setExposedVariables({ value, selectedOptionLabel: label });
+    const validationStatus = validate(value);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
   };
 
   const customStyles = {
@@ -225,13 +259,15 @@ export const DropDown = function DropDown({
       backgroundColor: darkMode ? 'rgb(31,40,55)' : 'white',
     }),
   };
+
   return (
     <>
       <div
         className="dropdown-widget row g-0"
         style={{ height, display: visibility ? '' : 'none' }}
-        onMouseDown={(event) => {
-          onComponentClick(id, component, event);
+        onClick={(event) => {
+          event.stopPropagation();
+          onComponentClick(id);
         }}
         data-cy={dataCy}
       >
@@ -247,17 +283,15 @@ export const DropDown = function DropDown({
             onChange={(selectedOption, actionProps) => {
               setShowValidationError(true);
               if (actionProps.action === 'select-option') {
-                setCurrentValue(selectedOption.value);
-                setExposedVariable('value', selectedOption.value);
+                setInputValue(selectedOption.value, selectedOption.label);
                 fireEvent('onSelect');
-                setExposedVariable('selectedOptionLabel', selectedOption.label);
               }
             }}
             options={selectOptions}
             styles={customStyles}
             isLoading={properties.loadingState}
             onInputChange={onSearchTextChange}
-            onFocus={(event) => onComponentClick(event, component, id)}
+            onFocus={(event) => onComponentClick(id)}
             menuPortalTarget={document.body}
             placeholder={placeholder}
           />

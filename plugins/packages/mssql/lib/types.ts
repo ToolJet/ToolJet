@@ -5,6 +5,7 @@ export type SourceOptions = {
   port: string;
   username: string;
   password: string;
+  connection_options: string[][];
   azure: boolean;
 };
 export type QueryOptions = {
@@ -13,5 +14,6 @@ export type QueryOptions = {
   mode: string;
   table: string;
   primary_key_column: string;
-  records: any;
+  records: Record<string, unknown>[];
+  query_params: string[][];
 };

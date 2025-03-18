@@ -10,14 +10,15 @@ export const folderService = {
   updateFolder,
 };
 
-function getAll(searchKey = '') {
+function getAll(searchKey = '', type = 'front-end') {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/folders?searchKey=${searchKey}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/folder-apps?searchKey=${searchKey}&type=${type}`, requestOptions).then(handleResponse);
 }
 
-function create(name) {
+function create(name, type) {
   const body = {
     name,
+    type,
   };
 
   const requestOptions = {
@@ -64,7 +65,7 @@ function addToFolder(appId, folderId) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/folder_apps`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/folder-apps`, requestOptions).then(handleResponse);
 }
 
 function removeAppFromFolder(appId, folderId) {
@@ -78,5 +79,5 @@ function removeAppFromFolder(appId, folderId) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/folder_apps/${folderId}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/folder-apps/${folderId}`, requestOptions).then(handleResponse);
 }

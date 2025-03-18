@@ -35,7 +35,7 @@ export const addInputOnQueryField = (field, data) => {
     .click()
     .clearAndTypeOnCodeMirror(`{backSpace}`);
   cy.get(`[data-cy="${field}-input-field"]`).clearAndTypeOnCodeMirror(data);
-  cy.forceClickOnCanvas();
+  // cy.forceClickOnCanvas();
 };
 
 export const waitForQueryAction = (action) => {

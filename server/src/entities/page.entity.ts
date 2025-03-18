@@ -28,8 +28,11 @@ export class Page {
   @Column()
   disabled: boolean;
 
+  @Column('simple-json', { name: 'hidden' })
+  hidden;
+
   @Column()
-  hidden: boolean;
+  icon: string;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
@@ -42,6 +45,15 @@ export class Page {
 
   @Column({ name: 'app_version_id' })
   appVersionId: string;
+
+  @Column({ name: 'page_group_index' })
+  pageGroupIndex: number;
+
+  @Column({ name: 'page_group_id' })
+  pageGroupId: string;
+
+  @Column({ name: 'is_page_group', default: false })
+  isPageGroup: boolean;
 
   @ManyToOne(() => AppVersion, (appVersion) => appVersion.pages)
   @JoinColumn({ name: 'app_version_id' })

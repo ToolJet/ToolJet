@@ -14,7 +14,15 @@ class Restapi extends React.Component {
     super(props);
     const options = defaults(
       { ...props.options },
-      { headers: [['', '']], url_params: [], body: [], json_body: null, body_toggle: false }
+      {
+        headers: [['', '']],
+        url_params: [],
+        body: [],
+        json_body: null, // FIXME: Remove this once data migration to raw_body is complete
+        raw_body: null,
+        body_toggle: false,
+        cookies: [['', '']],
+      }
     );
     this.state = {
       options,
@@ -25,6 +33,9 @@ class Restapi extends React.Component {
     try {
       if (isEmpty(this.state.options['headers'])) {
         this.addNewKeyValuePair('headers');
+      }
+      if (isEmpty(this.state.options['cookies'])) {
+        this.addNewKeyValuePair('cookies');
       }
       if (isEmpty(this.state.options['method'])) {
         changeOption(this, 'method', 'get');
@@ -39,10 +50,28 @@ class Restapi extends React.Component {
           this.addNewKeyValuePair('body');
         }
       }, 1000);
+      setTimeout(() => {
+        this.initizalizeRetryNetworkErrorsToggle();
+      }, 1000);
     } catch (error) {
       console.log(error);
     }
   }
+
+  initizalizeRetryNetworkErrorsToggle = () => {
+    const isRetryNetworkErrorToggleUnused = this.props.options.retry_network_errors === null;
+    if (isRetryNetworkErrorToggleUnused) {
+      const isStaticRestapi = this.props.selectedDataSource.id == 'null';
+      if (!isStaticRestapi) {
+        console.log('ToggleValue', this.props.selectedDataSource.options.retry_network_errors.value);
+      }
+      const retryNetworkErrors = isStaticRestapi
+        ? true
+        : this.props.selectedDataSource.options.retry_network_errors.value;
+
+      changeOption(this, 'retry_network_errors', retryNetworkErrors);
+    }
+  };
 
   onBodyToggleChanged = (value) => {
     const { options } = this.state;
@@ -58,7 +87,7 @@ class Restapi extends React.Component {
 
     this.setState({ options: newOptions }, () => {
       //these values are set to empty array so that user can type in directly without adding new entry, hence no need to pass to parent state
-      if (!['headers', 'url_params', 'body'].includes(option)) {
+      if (!['headers', 'url_params', 'body', 'cookies'].includes(option)) {
         this.props.optionsChanged(newOptions);
       }
     });
@@ -83,9 +112,16 @@ class Restapi extends React.Component {
     });
   };
 
-  handleJsonBodyChanged = (jsonBody) => {
+  handleRawBodyChanged = (rawBody) => {
     const { options } = this.state;
-    options['json_body'] = jsonBody;
+
+    // If this is the first time raw_body is set, nullify json_body for data migration
+    // FIXME: Remove this if condition once data migration to raw_body is complete
+    if (!options['raw_body'] && options['json_body']) {
+      options['json_body'] = null;
+    }
+
+    options['raw_body'] = rawBody;
 
     this.setState({ options }, () => {
       this.props.optionsChanged(options);
@@ -140,10 +176,9 @@ class Restapi extends React.Component {
     const queryName = this.props.queryName;
 
     const currentValue = { label: options.method?.toUpperCase(), value: options.method };
-
     return (
-      <div className={`d-flex`}>
-        <div className="form-label flex-shrink-0">Request</div>
+      <div className={`${this.props?.queryName !== 'workflowNode' && 'd-flex'}`}>
+        {this.props?.queryName !== 'workflowNode' && <div className="form-label flex-shrink-0">Request</div>}
         <div className="flex-grow-1">
           <div className="rest-api-methods-select-element-container">
             <div className={`me-2`} style={{ width: '90px', height: '32px' }}>
@@ -193,13 +228,12 @@ class Restapi extends React.Component {
               </div>
             </div>
           </div>
-
           <div className={`query-pane-restapi-tabs`}>
             <Tabs
               theme={this.props.darkMode ? 'monokai' : 'default'}
               options={this.state.options}
               onChange={this.handleChange}
-              onJsonBodyChange={this.handleJsonBodyChanged}
+              onRawBodyChange={this.handleRawBodyChanged}
               removeKeyValuePair={this.removeKeyValuePair}
               addNewKeyValuePair={this.addNewKeyValuePair}
               darkMode={this.props.darkMode}

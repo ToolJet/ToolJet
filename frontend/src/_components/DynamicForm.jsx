@@ -4,20 +4,28 @@ import Input from '@/_ui/Input';
 import Textarea from '@/_ui/Textarea';
 import Select from '@/_ui/Select';
 import Headers from '@/_ui/HttpHeaders';
+import Sort from '@/_ui/Sort';
 import OAuth from '@/_ui/OAuth';
 import Toggle from '@/_ui/Toggle';
 import OpenApi from '@/_ui/OpenAPI';
 import { Checkbox, CheckboxGroup } from '@/_ui/CheckBox';
-import CodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/AppBuilder/CodeEditor';
 import GoogleSheets from '@/_components/Googlesheets';
 import Slack from '@/_components/Slack';
 import Zendesk from '@/_components/Zendesk';
+import ApiEndpointInput from '@/_components/ApiEndpointInput';
 import { ConditionFilter, CondtionSort, MultiColumn } from '@/_components/MultiConditions';
 import Salesforce from '@/_components/Salesforce';
-import ToolJetDbOperations from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/ToolJetDbOperations';
+import ToolJetDbOperations from '@/AppBuilder/QueryManager/QueryEditors/TooljetDatabase/ToolJetDbOperations';
 import { orgEnvironmentVariableService, orgEnvironmentConstantService } from '../_services';
-import { find, isEmpty } from 'lodash';
+import { filter, find, isEmpty } from 'lodash';
 import { ButtonSolid } from './AppButton';
+import { useGlobalDataSourcesStatus } from '@/_stores/dataSourcesStore';
+import { canDeleteDataSource, canUpdateDataSource } from '@/_helpers';
+import { Constants } from '@/_helpers/utils';
+import { OverlayTrigger, Tooltip } from 'react-bootstrap';
+import Sharepoint from '@/_components/Sharepoint';
+import AccordionForm from './AccordionForm';
 
 const DynamicForm = ({
   schema,
@@ -32,11 +40,17 @@ const DynamicForm = ({
   queryName,
   computeSelectStyles = false,
   currentAppEnvironmentId,
+  setDefaultOptions,
+  disableMenuPortal = false,
   onBlur,
   layout = 'vertical',
 }) => {
   const [computedProps, setComputedProps] = React.useState({});
   const isHorizontalLayout = layout === 'horizontal';
+  const prevDataSourceIdRef = React.useRef(selectedDataSource?.id);
+
+  const globalDataSourcesStatus = useGlobalDataSourcesStatus();
+  const { isEditing: isDataSourceEditing } = globalDataSourcesStatus;
 
   const [workspaceVariables, setWorkspaceVariables] = React.useState([]);
   const [currentOrgEnvironmentConstants, setCurrentOrgEnvironmentConstants] = React.useState([]);
@@ -44,6 +58,7 @@ const DynamicForm = ({
   // if(schema.properties)  todo add empty check
   React.useLayoutEffect(() => {
     if (!isEditMode || isEmpty(options)) {
+      typeof setDefaultOptions === 'function' && setDefaultOptions(schema?.defaults);
       optionsChanged(schema?.defaults ?? {});
     }
 
@@ -53,26 +68,19 @@ const DynamicForm = ({
   React.useEffect(() => {
     if (isGDS) {
       orgEnvironmentConstantService.getConstantsFromEnvironment(currentAppEnvironmentId).then((data) => {
-        const constants = {};
-        data.constants.map((constant) => {
-          constants[constant.name] = constant.value;
-        });
-
-        setCurrentOrgEnvironmentConstants(constants);
-      });
-
-      orgEnvironmentVariableService.getVariables().then((data) => {
-        const client_variables = {};
-        const server_variables = {};
-        data.variables.map((variable) => {
-          if (variable.variable_type === 'server') {
-            server_variables[variable.variable_name] = 'HiddenEnvironmentVariable';
+        const constants = {
+          globals: {},
+          secrets: {},
+        };
+        data.constants.forEach((constant) => {
+          if (constant.type === Constants.Secret) {
+            constants.secrets[constant.name] = constant.value;
           } else {
-            client_variables[variable.variable_name] = variable.value;
+            constants.globals[constant.name] = constant.value;
           }
         });
 
-        setWorkspaceVariables({ client: client_variables, server: server_variables });
+        setCurrentOrgEnvironmentConstants(constants);
       });
     }
 
@@ -84,34 +92,80 @@ const DynamicForm = ({
   }, [currentAppEnvironmentId]);
 
   React.useEffect(() => {
+    const prevDataSourceId = prevDataSourceIdRef.current;
+    prevDataSourceIdRef.current = selectedDataSource?.id;
     const { properties } = schema;
     if (!isEmpty(properties)) {
       let fields = {};
-      let encrpytedFieldsProps = {};
+      let encryptedFieldsProps = {};
       const flipComponentDropdown = find(properties, ['type', 'dropdown-component-flip']);
 
       if (flipComponentDropdown) {
         const selector = options?.[flipComponentDropdown?.key]?.value;
-        fields = { ...flipComponentDropdown?.commonFields, ...properties[selector] };
+        const commonFieldsFromSslCertificate = properties[selector]?.ssl_certificate?.commonFields;
+        fields = { ...commonFieldsFromSslCertificate, ...flipComponentDropdown?.commonFields, ...properties[selector] };
       } else {
         fields = { ...properties };
       }
 
-      Object.keys(fields).length > 0 &&
-        Object.keys(fields).map((key) => {
-          const { type, encrypted, key: propertyKey } = fields[key];
-          if ((type === 'password' || encrypted) && !(propertyKey in computedProps)) {
-            //Editable encrypted fields only if datasource doesn't exists
-            encrpytedFieldsProps[propertyKey] = {
+      const processFields = (fieldsObject) => {
+        Object.keys(fieldsObject).forEach((key) => {
+          const field = fieldsObject[key];
+          const { type, encrypted, key: propertyKey } = field;
+
+          if (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()) {
+            encryptedFieldsProps[propertyKey] = {
               disabled: !!selectedDataSource?.id,
             };
+          } else if (!isDataSourceEditing) {
+            if (type === 'password' || encrypted) {
+              encryptedFieldsProps[propertyKey] = {
+                disabled: true,
+              };
+            }
+          } else {
+            if ((type === 'password' || encrypted) && !(propertyKey in computedProps)) {
+              encryptedFieldsProps[propertyKey] = {
+                disabled: !!selectedDataSource?.id,
+              };
+            }
+          }
+
+          // To check for nested dropdown-component-flip
+          if (type === 'dropdown-component-flip') {
+            const selectedOption = options?.[field.key]?.value;
+
+            if (field.commonFields) {
+              processFields(field.commonFields);
+            }
+
+            if (selectedOption && fieldsObject[selectedOption]) {
+              processFields(fieldsObject[selectedOption]);
+            }
           }
         });
-      setComputedProps({ ...computedProps, ...encrpytedFieldsProps });
-    }
+      };
 
+      processFields(fields);
+
+      if (properties.renderForm) {
+        Object.keys(properties.renderForm).forEach((sectionKey) => {
+          const section = properties.renderForm[sectionKey];
+          const { inputs } = section;
+          if (inputs) {
+            processFields(inputs);
+          }
+        });
+      }
+
+      if (prevDataSourceId !== selectedDataSource?.id) {
+        setComputedProps({ ...encryptedFieldsProps });
+      } else {
+        setComputedProps({ ...computedProps, ...encryptedFieldsProps });
+      }
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [options]);
+  }, [selectedDataSource?.id, options, isDataSourceEditing]);
 
   const getElement = (type) => {
     switch (type) {
@@ -132,6 +186,8 @@ const DynamicForm = ({
         return ToolJetDbOperations;
       case 'react-component-headers':
         return Headers;
+      case 'react-component-sort':
+        return Sort;
       case 'react-component-oauth-authentication':
         return OAuth;
       case 'react-component-google-sheets':
@@ -150,8 +206,12 @@ const DynamicForm = ({
         return ConditionFilter;
       case 'sorts':
         return CondtionSort;
+      case 'react-component-api-endpoint':
+        return ApiEndpointInput;
       case 'react-component-salesforce':
         return Salesforce;
+      case 'react-component-sharepoint':
+        return Sharepoint;
       default:
         return <div>Type is invalid</div>;
     }
@@ -182,9 +242,13 @@ const DynamicForm = ({
     className,
     controller,
     encrypted,
-    editorType = 'basic',
     placeholders = {},
+    editorType = 'basic',
+    specUrl = '',
     disabled = false,
+    buttonText,
+    text,
+    subtext,
   }) => {
     const source = schema?.source?.kind;
     const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -200,7 +264,8 @@ const DynamicForm = ({
         return {
           type,
           placeholder: useEncrypted ? '**************' : description,
-          className: `form-control${handleToggle(controller)}`,
+          className: `form-control${handleToggle(controller)} ${useEncrypted && 'dynamic-form-encrypted-field'}`,
+          style: { marginBottom: '0px !important' },
           value: options?.[key]?.value || '',
           ...(type === 'textarea' && { rows: rows }),
           ...(helpText && { helpText }),
@@ -217,6 +282,8 @@ const DynamicForm = ({
           defaultChecked: options?.[key],
           checked: options?.[key]?.value,
           onChange: (e) => optionchanged(key, e.target.checked),
+          text,
+          subtext,
         };
       case 'dropdown':
       case 'dropdown-component-flip':
@@ -225,12 +292,12 @@ const DynamicForm = ({
           value: options?.[key]?.value || options?.[key],
           onChange: (value) => optionchanged(key, value),
           width: width || '100%',
-          useMenuPortal: queryName ? true : false,
+          useMenuPortal: disableMenuPortal ? false : queryName ? true : false,
           styles: computeSelectStyles ? computeSelectStyles('100%') : {},
           useCustomStyles: computeSelectStyles ? true : false,
+          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
           encrypted: options?.[key]?.encrypted,
         };
-
       case 'checkbox-group':
         return {
           options: list,
@@ -255,7 +322,31 @@ const DynamicForm = ({
           optionchanged,
           isRenderedAsQueryEditor,
           workspaceConstants: currentOrgEnvironmentConstants,
+          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
           encrypted: options?.[key]?.encrypted,
+          buttonText,
+          width: width,
+        };
+      }
+      case 'react-component-sort': {
+        let isRenderedAsQueryEditor;
+        if (isGDS) {
+          isRenderedAsQueryEditor = false;
+        } else {
+          isRenderedAsQueryEditor = !isGDS;
+        }
+        return {
+          getter: key,
+          options: isRenderedAsQueryEditor
+            ? options?.[key] ?? schema?.defaults?.[key]
+            : options?.[key]?.value ?? schema?.defaults?.[key]?.value,
+          optionchanged,
+          isRenderedAsQueryEditor,
+          workspaceConstants: currentOrgEnvironmentConstants,
+          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
+          encrypted: options?.[key]?.encrypted,
+          buttonText,
+          width: width,
         };
       }
       case 'react-component-oauth-authentication':
@@ -278,11 +369,13 @@ const DynamicForm = ({
           bearer_token: options?.bearer_token?.value,
           auth_url: options?.auth_url?.value,
           auth_key: options?.auth_key?.value,
+          audience: options?.audience?.value,
           custom_auth_params: options?.custom_auth_params?.value,
           custom_query_params: options?.custom_query_params?.value,
           multiple_auth_enabled: options?.multiple_auth_enabled?.value,
           optionchanged,
           workspaceConstants: currentOrgEnvironmentConstants,
+          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
           options,
           optionsChanged,
           selectedDataSource,
@@ -291,13 +384,16 @@ const DynamicForm = ({
       case 'react-component-slack':
       case 'react-component-zendesk':
       case 'react-component-salesforce':
+      case 'react-component-sharepoint':
         return {
           optionchanged,
           createDataSource,
           options,
           isSaving,
           selectedDataSource,
+          currentAppEnvironmentId,
           workspaceConstants: currentOrgEnvironmentConstants,
+          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
           optionsChanged,
         };
       case 'tooljetdb-operations':
@@ -308,8 +404,17 @@ const DynamicForm = ({
           isSaving,
           selectedDataSource,
           darkMode,
+          optionsChanged,
         };
-      case 'codehinter':
+      case 'codehinter': {
+        let theme;
+        if (darkMode) {
+          theme = 'monokai';
+        } else if (lineNumbers) {
+          theme = 'duotone-light';
+        } else {
+          theme = 'default';
+        }
         return {
           type: editorType,
           initialValue: options[key]
@@ -321,6 +426,7 @@ const DynamicForm = ({
           lineNumbers,
           className: className ? className : lineNumbers ? 'query-hinter' : 'codehinter-query-editor-input',
           onChange: (value) => optionchanged(key, value),
+          theme: theme,
           placeholder,
           height,
           width,
@@ -329,6 +435,7 @@ const DynamicForm = ({
           disabled,
           delayOnChange: false,
         };
+      }
       case 'react-component-openapi-validator':
         return {
           format: options.format?.value,
@@ -354,6 +461,7 @@ const DynamicForm = ({
           custom_query_params: options.custom_query_params?.value,
           spec: options.spec?.value,
           workspaceConstants: currentOrgEnvironmentConstants,
+          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
         };
       case 'filters':
         return {
@@ -375,6 +483,13 @@ const DynamicForm = ({
           onChange: (value) => optionchanged(key, value),
           placeholders,
         };
+      case 'react-component-api-endpoint':
+        return {
+          specUrl: specUrl,
+          optionsChanged,
+          options,
+          darkMode,
+        };
       default:
         return {};
     }
@@ -389,6 +504,9 @@ const DynamicForm = ({
     }
 
     const handleEncryptedFieldsToggle = (event, field) => {
+      if (!canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource()) {
+        return;
+      }
       const isEditing = computedProps[field]['disabled'];
       if (isEditing) {
         optionchanged(field, '');
@@ -412,12 +530,39 @@ const DynamicForm = ({
       });
     };
 
+    const renderLabel = (label, tooltip) => {
+      const labelElement = (
+        <label
+          className="form-label"
+          data-cy={`label-${String(label).toLowerCase().replace(/\s+/g, '-')}`}
+          style={{ textDecoration: tooltip ? 'underline 2px dashed' : 'none', textDecorationColor: 'var(--slate8)' }}
+        >
+          {label}
+        </label>
+      );
+
+      if (tooltip) {
+        return (
+          <OverlayTrigger
+            placement="top"
+            trigger="click"
+            rootClose
+            overlay={<Tooltip id={`tooltip-${label}`}>{tooltip}</Tooltip>}
+          >
+            {labelElement}
+          </OverlayTrigger>
+        );
+      }
+
+      return labelElement;
+    };
+
     return (
       <div className={`${isHorizontalLayout ? '' : 'row'}`}>
         {Object.keys(obj).map((key) => {
           const { label, type, encrypted, className, key: propertyKey } = obj[key];
           const Element = getElement(type);
-          const isSpecificComponent = ['tooljetdb-operations'].includes(type);
+          const isSpecificComponent = ['tooljetdb-operations', 'react-component-api-endpoint'].includes(type);
 
           return (
             <div
@@ -435,15 +580,10 @@ const DynamicForm = ({
                     'form-label': isHorizontalLayout,
                     'align-items-center': !isHorizontalLayout,
                   })}
+                  style={{ minWidth: '100px' }}
                 >
-                  {label && (
-                    <label
-                      className="form-label"
-                      data-cy={`label-${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}`}
-                    >
-                      {label}
-                    </label>
-                  )}
+                  {label && renderLabel(label, obj[key].tooltip)}
+
                   {(type === 'password' || encrypted) && selectedDataSource?.id && (
                     <div className="mx-1 col">
                       <ButtonSolid
@@ -452,6 +592,7 @@ const DynamicForm = ({
                         variant="tertiary"
                         target="_blank"
                         rel="noreferrer"
+                        disabled={!canUpdateDataSource() && !canDeleteDataSource()}
                         onClick={(event) => handleEncryptedFieldsToggle(event, propertyKey)}
                       >
                         {computedProps?.[propertyKey]?.['disabled'] ? 'Edit' : 'Cancel'}
@@ -474,10 +615,13 @@ const DynamicForm = ({
                 </div>
               )}
               <div
-                className={cx({
-                  'flex-grow-1': isHorizontalLayout && !isSpecificComponent,
-                  'w-100': isHorizontalLayout && type !== 'codehinter',
-                })}
+                className={cx(
+                  {
+                    'flex-grow-1': isHorizontalLayout && !isSpecificComponent,
+                    'w-100': isHorizontalLayout && type !== 'codehinter',
+                  },
+                  'dynamic-form-element'
+                )}
                 style={{ width: '100%' }}
               >
                 <Element
@@ -495,16 +639,17 @@ const DynamicForm = ({
     );
   };
 
-  const isFlipComponentDropdown = (obj) => {
-    const flipComponentDropdown = find(obj, ['type', 'dropdown-component-flip']);
-    if (flipComponentDropdown) {
-      // options[key].value for datasource
-      // options[key] for dataquery
+  const FlipComponentDropdown = (obj) => {
+    const flipComponentDropdowns = filter(obj, ['type', 'dropdown-component-flip']);
+
+    const dropdownComponents = flipComponentDropdowns.map((flipComponentDropdown) => {
       const selector = options?.[flipComponentDropdown?.key]?.value || options?.[flipComponentDropdown?.key];
+
       return (
-        <>
-          <div className={`${isHorizontalLayout ? '' : 'row'}`}>
+        <div key={flipComponentDropdown.key}>
+          <div className={isHorizontalLayout ? '' : 'row'}>
             {flipComponentDropdown.commonFields && getLayout(flipComponentDropdown.commonFields)}
+
             <div
               className={cx('my-2', {
                 'col-md-12': !flipComponentDropdown.className && !isHorizontalLayout,
@@ -523,6 +668,7 @@ const DynamicForm = ({
                   {flipComponentDropdown.label}
                 </label>
               )}
+
               <div data-cy={'query-select-dropdown'} className={cx({ 'flex-grow-1': isHorizontalLayout })}>
                 <Select
                   {...getElementProps(flipComponentDropdown)}
@@ -535,16 +681,54 @@ const DynamicForm = ({
               )}
             </div>
           </div>
+
           {getLayout(obj[selector])}
-        </>
+        </div>
       );
+    });
+
+    const normalComponents = Object.keys(obj).map((key) => {
+      const component = obj[key];
+
+      if (component.type && component.type !== 'dropdown-component-flip') {
+        return <div key={key}>{getLayout({ [key]: component })}</div>;
+      }
+      return null;
+    });
+
+    return (
+      <>
+        {normalComponents}
+        {dropdownComponents}
+      </>
+    );
+  };
+
+  const isFormComponent = (obj, getLayout) => {
+    const formComponent = find(obj, ['type', 'react-form-component']);
+    if (formComponent) {
+      return <AccordionForm formComponent={formComponent} getLayout={getLayout} />;
+    }
+    return null;
+  };
+
+  const isFlipComponentDropdown = (obj) => {
+    const checkFlipComponents = filter(obj, ['type', 'dropdown-component-flip']);
+    if (checkFlipComponents.length > 0) {
+      return FlipComponentDropdown(obj);
+    } else {
+      return null;
     }
   };
 
   const flipComponentDropdown = isFlipComponentDropdown(schema.properties);
+  const formComponent = isFormComponent(schema.properties, getLayout);
 
   if (flipComponentDropdown) {
     return flipComponentDropdown;
+  }
+  if (formComponent) {
+    return formComponent;
   }
 
   return getLayout(schema.properties);

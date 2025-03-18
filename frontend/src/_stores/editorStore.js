@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import { create } from './utils';
 import { v4 as uuid } from 'uuid';
+import { licenseService } from '@/_services';
 import { useResolveStore } from './resolverStore';
 const STORE_NAME = 'Editor';
 
@@ -37,6 +38,9 @@ const initialState = {
   queryConfirmationList: [],
   currentPageId: null,
   currentSessionId: uuid(),
+  currentAppEnvironment: null,
+  currentAppEnvironmentId: null,
+  featureAccess: null,
   componentsNeedsUpdateOnNextRender: [],
   appMode: 'auto',
   editorCanvasWidth: 1092,
@@ -112,6 +116,14 @@ export const useEditorStore = create(
         set({ selectedComponents: selectedComponents });
       },
       setCurrentPageId: (currentPageId) => set({ currentPageId }),
+      setCurrentAppEnvironmentId: (currentAppEnvironmentId) => set({ currentAppEnvironmentId }),
+      setCurrentAppEnvironmentDetails: (currentAppEnvironmentDetails) =>
+        set({ currentAppEnvironment: currentAppEnvironmentDetails }),
+      updateFeatureAccess: () => {
+        licenseService.getFeatureAccess().then((data) => {
+          set({ featureAccess: data });
+        });
+      },
       setAppMode: (appMode) => set({ appMode }),
       setCanvasBackground: (canvasBackground) => set({ canvasBackground }),
     },

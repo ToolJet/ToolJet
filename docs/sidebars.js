@@ -73,7 +73,6 @@ const sidebars = {
         'setup/kubernetes-eks',
         'setup/azure-container',
         'setup/google-cloud-run',
-        'setup/client',
         'setup/env-vars',
         'setup/http-proxy',
         'setup/tooljet-subpath',
@@ -644,8 +643,9 @@ const sidebars = {
           'type': 'category',
           'label': 'How-to',
           'items': [
-            'workflows/trigger-using-webhook',
-            'workflows/trigger-workflow-from-app'
+            'workflows/how-to/trigger-using-webhook',
+            'workflows/how-to/trigger-workflow-from-app',
+            'workflows/how-to/trigger-workflow-using-scheduler'
           ]
         }
       ],
@@ -687,7 +687,6 @@ const sidebars = {
         },
       ],
     },
-    'tooljet-copilot',
     'tracking',
     {
       'type': 'category',

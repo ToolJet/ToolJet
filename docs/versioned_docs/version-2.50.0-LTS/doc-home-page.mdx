@@ -25,7 +25,7 @@ import Link from '@docusaurus/Link';
 {/* // Reusable components */}
 export const Card = ({ className = '', href, children }) => {
     const cardContent = (
-        <div className={`relative rounded-lg bg-white group pt-[0.5px] pb-[3px] shadow-[inset_0_0_0_1.2px_rgba(243,244,246,1)] pb-2.25 ${className}`}>
+        <div className={`relative rounded-lg bg-white dark:bg-gray-800 group pt-[0.5px] pb-[3px] shadow-[inset_0_0_0_1.2px_rgba(243,244,246,1)] dark:shadow-[inset_0_0_0_1.2px_rgba(55,65,81,1)] pb-2.25 ${className}`}>
             <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-50"
                 style={{
                     background: 'linear-gradient(to bottom, #3B82F6, transparent) border-box',
@@ -35,7 +35,7 @@ export const Card = ({ className = '', href, children }) => {
                     pointerEvents: 'none'
                 }}>
             </div>
-            <div className="m-0.5 relative z-10 h-full rounded-lg border border-gray-300 bg-white">
+            <div className="m-0.5 relative z-10 h-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900">
                 {children}
             </div>
         </div>
@@ -61,7 +61,7 @@ export const CardContent = ({ className = '', children }) => (
 );
 
 export const CardTitle = ({ className = '', children }) => (
-    <h3 className={`text-xl font-semibold leading-none tracking-tight text-black ${className}`}>
+    <h3 className={`text-xl font-semibold leading-none tracking-tight text-black dark:text-white ${className}`}>
         {children}
     </h3>
 );
@@ -83,7 +83,7 @@ export const Button = ({
     return (
         <div className="text-center">
             <button
-                className={`${baseStyles} ${variantStyles[variant]} ${className} bg-white text-blue-600 hover:bg-blue-200 hover:text-blue-800 px-4 py-2`}
+                className={`${baseStyles} ${variantStyles[variant]} ${className} bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-gray-700 hover:text-blue-800 dark:hover:text-blue-300 px-4 py-2`}
             >
                 {children}
                 <ArrowRight className="ml-2 w-4 h-4 inline" />
@@ -96,13 +96,13 @@ export const IconCard = ({ icon: Icon, title, content, color, href }) => (
     <Card href={href} className="h-[280px] transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative">
         <div className="p-8 h-full flex flex-col">
             <CardHeader>
-                <div className="w-12 h-12 mb-5 rounded-lg shadow-md flex items-center justify-center transition-all duration-300 ease-in-out group-hover:shadow-lg">
+                <div className="w-12 h-12 mb-5 rounded-lg shadow-md flex items-center justify-center transition-all duration-300 ease-in-out group-hover:shadow-lg bg-gray-100 dark:bg-gray-700">
                     <Icon className={`w-6 h-6 ${color}`} />
                 </div>
                 <CardTitle>{title}</CardTitle>
             </CardHeader>
             <CardContent className="flex-grow">
-                <p className="text-sm text-gray-600 line-clamp-5">{content}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-5">{content}</p>
             </CardContent>
         </div>
     </Card>
@@ -112,10 +112,10 @@ export const SmallCard = ({ icon: Icon, title, href }) => (
     <Card href={href} className="h-[72px] transition-all duration-300 ease-in-out hover:shadow-lg cursor-pointer group relative">
         <div className="p-3 h-full flex items-center justify-between">
             <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-lg shadow flex items-center justify-center">
-                    <Icon className="w-5 h-5 text-blue-500" />
+                <div className="w-10 h-10 rounded-lg shadow flex items-center justify-center bg-gray-100 dark:bg-gray-700">
+                    <Icon className="w-5 h-5 text-blue-500 dark:text-blue-400" />
                 </div>
-                <span className="text-sm font-semibold text-black">{title}</span>
+                <span className="text-sm font-semibold text-black dark:text-white">{title}</span>
             </div>
         </div>
     </Card>
@@ -123,8 +123,8 @@ export const SmallCard = ({ icon: Icon, title, href }) => (
 
 export const SectionContainer = ({ title, description, children }) => (
     <section className="space-y-6">
-        <h2 className="text-2xl font-bold">{title}</h2>
-        <p className="text-sm text-gray-500">{description}</p>
+        <h2 className="text-2xl font-bold text-black dark:text-white">{title}</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-300">{description}</p>
         {children}
     </section>
 );
@@ -196,13 +196,13 @@ style={{
                         }}
                     />
                 </div>
-                                {/* ToolJet Documentation Section */}
+{/* ToolJet Documentation Section */}
                 <div className="relative display-block">
                     <div className='pb-14'>
                         <h1 className="text-4xl font-bold flex flex-col md:flex-row">
                             {textLabels.title.prefix}&nbsp;<span className="text-blue-600">{textLabels.title.highlight}</span>
                         </h1>
-                        <p className="text-xl text-gray-600">
+                        <p className="text-xl text-gray-600 dark:text-gray-400 ">
                             {textLabels.subtitle}
                         </p>
                     </div>
@@ -214,24 +214,41 @@ style={{
                     </div>
 
                     {/* Getting Started Section */}
-                    <Link to={sectionCards.gettingStarted.link} className="no-underline hover:no-underline block">
-                        <div className="w-full h-[104px] rounded-lg shadow-sm flex items-center overflow-hidden bg-white border-solid border-gray-100 mt-10">
-                        <div className="w-[380px] h-full relative overflow-hidden">
-                            <img
-                            src={gettingStartedImage}
-                            alt="Getting Started"
-                            className="absolute bottom-0 left-[-20px] w-[calc(100%+40px)] h-auto object-cover object-top pointer-events-none"
-                            style={{ maxHeight: '70px', borderRadius: '5px', transform: 'scale(1.2)', transformOrigin: 'bottom left' }}
-                            />
-                        </div>
-                        <div className="flex-1 ml-4 md:ml-20 mt-4 md:mt-6 mb-4 md:mb-6">
-                            <h3 className="text-xl md:text-2xl font-medium text-[#1b1f24] mb-1">{sectionCards.gettingStarted.title}</h3>
-                            <p className="text-sm text-[#1b1f24] opacity-80">
-                            {sectionCards.gettingStarted.description}
-                            </p>
-                        </div>
-                        </div>
-                    </Link>
+<Link
+  to={sectionCards.gettingStarted.link}
+  className="no-underline hover:no-underline block"
+>
+  <div className="w-full h-[104px] rounded-lg shadow-sm flex items-center overflow-hidden bg-white dark:bg-gray-900 border border-gray-100 dark:border-solid dark:border-gray-700 mt-10 transition-all duration-300 ease-in-out hover:shadow-lg hover:border-gray-300 dark:hover:border-gray-600 cursor-pointer group relative">
+    {/* Hover Gradient Overlay */}
+    <div
+      className="absolute top-0 left-0 w-full h-10 rounded-t-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+      style={{
+        background: "linear-gradient(to bottom, rgba(59, 130, 246, 0.3), transparent)",
+        pointerEvents: "none"
+      }}
+    ></div>
+
+    {/* Image Container */}
+    <div className="w-[380px] h-full relative overflow-hidden dark:hidden">
+      <img
+        src={gettingStartedImage}
+        alt="Getting Started"
+        className="absolute bottom-0 left-[-20px] w-[calc(100%+40px)] h-auto object-cover object-top pointer-events-none transition-transform duration-300 ease-in-out group-hover:scale-105"
+        style={{ maxHeight: "70px", borderRadius: "5px", transformOrigin: "bottom left" }}
+      />
+    </div>
+
+    {/* Text Container */}
+    <div className="flex-1 ml-4 md:ml-20 dark:ml-8 transition-transform duration-300 ease-in-out group-hover:translate-x-1">
+      <h3 className="text-xl md:text-2xl font-medium text-black dark:text-white mb-1">
+        {sectionCards.gettingStarted.title}
+      </h3>
+      <p className="text-sm text-gray-700 dark:text-gray-300 opacity-80">
+        {sectionCards.gettingStarted.description}
+      </p>
+    </div>
+  </div>
+</Link>
 
 
                     </div>
@@ -263,7 +280,7 @@ style={{
                 <div className="text-center">
                     <Link 
                         className="no-underline" 
-                        to="/docs/2.50.0-LTS/setup/"
+                         to="/docs/2.50.0-LTS/setup/"
     >
                     <Button variant="link">
                         {textLabels.exploreMore}

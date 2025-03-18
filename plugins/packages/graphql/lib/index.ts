@@ -13,6 +13,7 @@ import {
   fetchHttpsCertsForCustomCA,
   getRefreshedToken,
   getAuthUrl,
+  redactHeaders,
 } from '@tooljet-plugins/common';
 import { QueryOptions, SourceOptions } from './types';
 
@@ -55,7 +56,7 @@ export default class GraphqlQueryService implements QueryService {
       ...fetchHttpsCertsForCustomCA(),
     };
 
-    const authValidatedRequestOptions = validateAndSetRequestOptionsBasedOnAuthType(
+    const authValidatedRequestOptions = await validateAndSetRequestOptionsBasedOnAuthType(
       sourceOptions,
       context,
       _requestOptions
@@ -65,10 +66,24 @@ export default class GraphqlQueryService implements QueryService {
     const requestOptions = data as OptionsOfTextResponseBody;
 
     let result = {};
+    let requestObject = {};
+    let responseObject = {};
 
     try {
       const response = await this.sendRequest(url, requestOptions);
       result = JSON.parse(response.body);
+
+      requestObject = {
+        url: response.requestUrl,
+        method: response.request.options.method,
+        headers: redactHeaders(response.request.options.headers),
+        params: urrl.parse(response.request.requestUrl, true).query,
+      };
+
+      responseObject = {
+        statusCode: response.statusCode,
+        headers: redactHeaders(response.headers),
+      };
     } catch (error) {
       console.error(
         `Error while calling GraphQL end point. status code: ${error?.response?.statusCode} message: ${error?.response?.body}`
@@ -101,6 +116,10 @@ export default class GraphqlQueryService implements QueryService {
     return {
       status: 'ok',
       data: result,
+      metadata: {
+        request: requestObject,
+        response: responseObject,
+      },
     };
   }
 

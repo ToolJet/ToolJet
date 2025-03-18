@@ -1,13 +1,13 @@
-import { AnalyzeDocumentCommand, TextractClient } from '@aws-sdk/client-textract';
+import { AnalyzeDocumentCommand, TextractClient, FeatureType } from '@aws-sdk/client-textract';
 
-export const analyzeDocument = async (base64Data: string, featureTypes: string[], client: TextractClient) => {
-  const buffer = Buffer.from(JSON.stringify(base64Data), 'base64');
+export const analyzeDocument = async (base64Data: string, featureTypes: FeatureType[], client: TextractClient) => {
+  const buffer = Buffer.from(base64Data, 'base64');
 
   const params = {
     Document: {
       Bytes: new Uint8Array(buffer),
     },
-    FeatureTypes: featureTypes.length > 0 ? featureTypes : ['TABLES'],
+    FeatureTypes: featureTypes.length > 0 ? featureTypes : ['TABLES' as FeatureType],
   };
 
   const command = new AnalyzeDocumentCommand(params);
@@ -20,7 +20,7 @@ export const analyzeDocument = async (base64Data: string, featureTypes: string[]
 export const analyzeS3Document = async (
   bucket: string,
   fileName: string,
-  featureTypes: string[],
+  featureTypes: FeatureType[],
   client: TextractClient
 ) => {
   const params = {
@@ -30,7 +30,7 @@ export const analyzeS3Document = async (
         Name: fileName,
       },
     },
-    FeatureTypes: featureTypes.length > 0 ? featureTypes : ['TABLES'],
+    FeatureTypes: featureTypes.length > 0 ? featureTypes : ['TABLES' as FeatureType],
   };
 
   const command = new AnalyzeDocumentCommand(params);

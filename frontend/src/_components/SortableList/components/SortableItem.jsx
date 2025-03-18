@@ -29,7 +29,7 @@ export function SortableItem({ children, id, classNames }) {
 
   return (
     <SortableItemContext.Provider value={context}>
-      <div className={classNames} ref={setNodeRef} style={style}>
+      <div {...attributes} {...listeners} ref={setNodeRef} className={classNames} style={style}>
         {children}
       </div>
     </SortableItemContext.Provider>
@@ -50,4 +50,17 @@ export function DragHandle({ show = true }) {
       </svg>
     </button>
   );
+}
+
+// hoc for wrapping components that need to be draggable
+export function withDraggable(Component) {
+  return function DraggableComponent(props) {
+    const { attributes, listeners, ref } = useContext(SortableItemContext);
+
+    return (
+      <div {...attributes} {...listeners} ref={ref} className="draggable-container">
+        <Component {...props} />
+      </div>
+    );
+  };
 }

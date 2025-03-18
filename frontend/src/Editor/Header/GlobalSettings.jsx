@@ -12,12 +12,14 @@ import { replaceEditorURL, getHostURL } from '@/_helpers/routes';
 import ExportAppModal from '../../HomePage/ExportAppModal';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { useAppDataActions, useAppInfo } from '@/_stores/appDataStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import CodeHinter from '../CodeEditor';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import AppModeToggle from './AppModeToggle';
+import { Button } from '@/components/ui/Button/Button';
+import SwitchComponent from '@/components/ui/Switch/Index';
+import InputComponent from '@/components/ui/Input/Index';
 
 export const GlobalSettings = ({
   globalSettings,
@@ -46,9 +48,10 @@ export const GlobalSettings = ({
   const [slugProgress, setSlugProgress] = useState(false);
   const [isSlugUpdated, setSlugUpdatedState] = useState(false);
   const { updateState } = useAppDataActions();
-  const { isVersionReleased } = useAppVersionStore(
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );
@@ -92,8 +95,11 @@ export const GlobalSettings = ({
           setSlugProgress(false);
           setSlugUpdatedState(true);
           replaceEditorURL(value, realState?.page?.handle);
+          //   Updating slug value for existing app data which is not called again
+          app.slug = value;
           updateState({
             slug: value,
+            app: app,
           });
         })
         .catch(({ error }) => {
@@ -130,7 +136,6 @@ export const GlobalSettings = ({
     outline: showPicker && '1px solid var(--indigo9)',
     boxShadow: showPicker && '0px 0px 0px 1px #C6D4F9',
   };
-
   return (
     <>
       <Confirm
@@ -164,34 +169,23 @@ export const GlobalSettings = ({
           <div className="card-body">
             <div className="app-slug-container">
               <div className="row">
-                <div className="col tj-app-input input-with-icon">
-                  <label className="field-name" data-cy="app-slug-label">
-                    Unique app slug
-                  </label>
-                  <input
-                    type="text"
-                    className={`form-control ${slug?.error ? 'is-invalid' : 'is-valid'} slug-input`}
+                <div className="col">
+                  <InputComponent
+                    helperText={
+                      !slug?.error && !isSlugUpdated
+                        ? "URL-friendly 'slug' consists of lowercase letters, numbers, and hyphens"
+                        : undefined
+                    }
+                    label="Unique app slug"
                     placeholder={t('editor.appSlug', 'Unique app slug')}
                     maxLength={50}
-                    onChange={(e) => {
+                    onChange={(e, validateObj) => {
                       e.persist();
                       delayedSlugChange(e.target.value, 'slug');
                     }}
                     data-cy="app-slug-input-field"
-                    defaultValue={oldSlug}
+                    defaultValue={slug?.value || oldSlug || ''}
                   />
-                  {isSlugUpdated && (
-                    <div className="icon-container">
-                      <svg width="15" height="10" viewBox="0 0 15 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path
-                          fill-rule="evenodd"
-                          clip-rule="evenodd"
-                          d="M14.256 0.244078C14.5814 0.569515 14.5814 1.09715 14.256 1.42259L5.92263 9.75592C5.59719 10.0814 5.06956 10.0814 4.74412 9.75592L0.577452 5.58926C0.252015 5.26382 0.252015 4.73618 0.577452 4.41074C0.902889 4.08531 1.43053 4.08531 1.75596 4.41074L5.33337 7.98816L13.0775 0.244078C13.4029 -0.0813592 13.9305 -0.0813592 14.256 0.244078Z"
-                          fill="#46A758"
-                        />
-                      </svg>
-                    </div>
-                  )}
                   {slug?.error ? (
                     <label className="label tj-input-error" data-cy="app-slug-error-label">
                       {slug?.error || ''}
@@ -199,66 +193,55 @@ export const GlobalSettings = ({
                   ) : isSlugUpdated ? (
                     <label className="label label-success" data-cy="app-slug-accepted-label">{`Slug accepted!`}</label>
                   ) : (
-                    <label
-                      className="label label-info"
-                      data-cy="app-slug-info-label"
-                    >{`URL-friendly 'slug' consists of lowercase letters, numbers, and hyphens`}</label>
+                    <div></div>
                   )}
                 </div>
               </div>
-              <div className="row">
-                <div className="col modal-main tj-app-input">
-                  <label className="field-name" data-cy="app-link-label">
-                    App link
-                  </label>
-                  <div className={`tj-text-input break-all ${darkMode ? 'dark' : ''}`} data-cy="app-link-field">
-                    {!slugProgress ? (
-                      `${getHostURL()}/${getWorkspaceId()}/apps/${slug?.value || oldSlug || ''}`
-                    ) : (
-                      <div className="d-flex gap-2">
-                        <div class="spinner-border text-secondary workspace-spinner" role="status">
-                          <span class="visually-hidden">Loading...</span>
-                        </div>
-                        {`Updating link`}
+              <div className="col modal-main tj-app-input">
+                <label className="field-name" data-cy="app-link-label">
+                  App link
+                </label>
+                <div className={`tj-text-input break-all ${darkMode ? 'dark' : ''}`} data-cy="app-link-field">
+                  {!slugProgress ? (
+                    `${getHostURL()}/${getWorkspaceId()}/apps/${slug?.value || oldSlug || ''}`
+                  ) : (
+                    <div className="d-flex gap-2">
+                      <div class="spinner-border text-secondary workspace-spinner" role="status">
+                        <span class="visually-hidden">Loading...</span>
                       </div>
-                    )}
-                  </div>
-                  <label className="label label-success label-updated" data-cy="app-link-success-label">
-                    {isSlugUpdated ? `Link updated successfully!` : ''}
-                  </label>
+                      {`Updating link`}
+                    </div>
+                  )}
                 </div>
+                <label className="label label-success label-updated" data-cy="app-link-success-label">
+                  {isSlugUpdated ? `Link updated successfully!` : ''}
+                </label>
               </div>
             </div>
           </div>
-          <div style={{ padding: '12px 16px' }} className={cx({ disabled: isVersionReleased })}>
+          <div style={{ padding: '12px 16px' }} className={cx({ disabled: isVersionReleased || isEditorFreezed })}>
             <div className="tj-text-xsm color-slate12 ">
-              <div className="d-flex mb-3">
-                <span data-cy={`label-hide-header-for-launched-apps`}>
-                  {t('leftSidebar.Settings.hideHeader', 'Hide header for launched apps')}
-                </span>
-                <div className="ms-auto form-check form-switch position-relative">
-                  <input
-                    data-cy={`toggle-hide-header-for-launched-apps`}
-                    className="form-check-input"
-                    type="checkbox"
-                    checked={hideHeader}
-                    onChange={(e) => globalSettingsChanged({ hideHeader: e.target.checked })}
-                  />
-                </div>
+              <div className="tw-flex tw-mb-3">
+                <SwitchComponent
+                  align="right"
+                  label="Hide header for launched apps"
+                  size="default"
+                  checked={hideHeader}
+                  onCheckedChange={(e) => globalSettingsChanged({ hideHeader: e })}
+                  data-cy={`toggle-hide-header-for-launched-apps`}
+                  className="tw-w-full"
+                />
               </div>
-              <div className="d-flex mb-3">
-                <span data-cy={`label-maintenance-mode`}>
-                  {t('leftSidebar.Settings.maintenanceMode', 'Maintenance mode')}
-                </span>
-                <div className="ms-auto form-check form-switch position-relative">
-                  <input
-                    data-cy={`toggle-maintenance-mode`}
-                    className="form-check-input"
-                    type="checkbox"
-                    checked={isMaintenanceOn}
-                    onChange={() => setConfirmationShow(true)}
-                  />
-                </div>
+              <div className="tw-flex tw-mb-3">
+                <SwitchComponent
+                  align="right"
+                  label="Maintenance mode"
+                  size="default"
+                  checked={isMaintenanceOn}
+                  onCheckedChange={() => setConfirmationShow(true)}
+                  data-cy={`toggle-maintenance-mode`}
+                  className="tw-w-full"
+                />
               </div>
               <div className="d-flex mb-3">
                 <span data-cy={`label-max-canvas-width`} className="w-full m-auto">
@@ -389,21 +372,18 @@ export const GlobalSettings = ({
               <div className="d-flex align-items-center  global-popover-div-wrap mb-3">
                 <p className="tj-text-xsm color-slate12 w-full m-auto">Export app</p>
                 <div>
-                  <ButtonSolid
-                    variant="secondary"
-                    style={{ width: '158px' }}
-                    size="md"
+                  <Button
+                    fill="var(--indigo9)"
+                    leadingIcon="fileupload"
+                    className="tw-w-[158px] !tw-text-[var(--indigo9)] !tw-bg-[var(--indigo3)] hover:!tw-text-[var(--indigo10)] hover:!tw-bg-[var(--indigo4)] active:!tw-text-[var(--indigo9)] active:!tw-bg-[var(--indigo5) focus-visible:!tw-text-[var(--indigo10)] focus-visible:!tw-bg-[var(--indigo3)]"
                     onClick={() => {
                       setIsExportingApp(true);
                       document.getElementById('maintenance-app-modal').click();
                     }}
-                    fill={`var(--indigo9)`}
-                    leftIcon="fileupload"
-                    iconWidth="16"
                     data-cy="button-user-status-change"
                   >
                     Export this app
-                  </ButtonSolid>
+                  </Button>
                 </div>
               </div>
             </div>

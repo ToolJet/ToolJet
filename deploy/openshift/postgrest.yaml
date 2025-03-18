@@ -35,6 +35,8 @@ spec:
                 key: pgrst_db_uri
           - name: PGRST_LOG_LEVEL
             value: "info"
+          - name: PGRST_DB_PRE_CONFIG
+            value: postgrest.pre_config
 ---
 apiVersion: v1
 kind: Service

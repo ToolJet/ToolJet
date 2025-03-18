@@ -29,7 +29,7 @@ export default function EncryptedFieldWrapper({
   return (
     <>
       <div className="d-flex align-items-center mt-3">
-        <label className="form-label text-muted">{label}</label>
+        <label className="form-label">{label}</label>
         <div className="mx-1 col">
           <ButtonSolid
             className="datasource-edit-btn mb-2"

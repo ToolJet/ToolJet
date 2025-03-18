@@ -1,0 +1,669 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Jira datasource",
+  "description": "A schema defining Jira datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "resource": {
+      "label": "Resource",
+      "key": "resource",
+      "type": "dropdown-component-flip",
+      "description": "Resource select",
+      "list": [
+        {
+          "value": "issue",
+          "name": "Issue"
+        },
+        {
+          "value": "user",
+          "name": "User"
+        },
+        {
+          "value": "worklog",
+          "name": "Worklog"
+        },
+        {
+          "value": "board",
+          "name": "Board"
+        }
+      ]
+    },
+    "issue": {
+      "operation": {
+        "label": "Operation",
+        "key": "operation",
+        "type": "dropdown-component-flip",
+        "description": "Operation select",
+        "list": [
+          {
+            "value": "get_issue",
+            "name": "Get issue"
+          },
+          {
+            "value": "create_issue",
+            "name": "Create issue"
+          },
+          {
+            "value": "delete_issue",
+            "name": "Delete issue"
+          },
+          {
+            "value": "assign_issue",
+            "name": "Assign issue"
+          },
+          {
+            "value": "edit_issue",
+            "name": "Edit issue"
+          }
+        ]
+      },
+      "get_issue": {
+        "issue_key": {
+          "label": "Issue key",
+          "key": "issue_key",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter issue key",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "SCRUM-1"
+        },
+        "properties": {
+          "label": "Params/Body",
+          "key": "properties",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "{\n  \"fields\": \"summary, description, created, ...\"\n  \"expand\": \"renderedFields, names, schema, transitions, operations, editmeta, changelog, versionedRepresentations\"\n  \"properties\": \"...\"\n  \"updateHistory\": \"...\"\n}",
+          "description": "Enter query properties",
+          "height": "200px"
+        }
+      },
+      "create_issue": {
+        "properties": {
+          "label": "Params/Body",
+          "key": "properties",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "{\n \"fields\": {\n   \"project\":\n   { \n      \"key\": \"PROJECT_KEY\"\n   },\n   \"summary\": \"A particular bug needs to be fixed.\",\n   \"description\": \"The XYZ feature is not working as expected.\",\n   \"issuetype\": {\n    \"name\": \"Bug\"\n   },\n   \"assignee\": {\n    \"accountId\": \"712020:4581444c-054e-41d8-90ed-6d1d849557f7\"\n   },\n   \"labels\": [\n    \"bug\",\n    \"urgent\"\n   ]\n }\n}",
+          "description": "Enter properties",
+          "height": "200px"
+        }
+      },
+      "delete_issue": {
+        "issue_key": {
+          "label": "Issue key",
+          "key": "issue_key",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter issue key",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "SCRUM-1"
+        },
+        "delete_subtasks": {
+          "label": "Delete subtasks",
+          "key": "delete_subtasks",
+          "className": "col-4",
+          "type": "dropdown",
+          "description": "Single select dropdown for delete subtasks",
+          "list": [
+            {
+              "value": "Yes",
+              "name": "Yes"
+            },
+            {
+              "value": "No",
+              "name": "No"
+            }
+          ]
+        }
+      },
+      "assign_issue": {
+        "issue_key": {
+          "label": "Issue key",
+          "key": "issue_key",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter issue key",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "SCRUM-1"
+        },
+        "account_id": {
+          "label": "Account id",
+          "key": "account_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter user unique id",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "712020:4581444c-054e-41d8-90ed-6d1d849557f7"
+        }
+      },
+      "edit_issue": {
+        "issue_key": {
+          "label": "Issue key",
+          "key": "issue_key",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter issue key",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "SCRUM-1"
+        },
+        "properties": {
+          "label": "Params/Body",
+          "key": "properties",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "{\n \"fields\": {\n   \"project\":\n   { \n      \"key\": \"PROJECT_KEY\"\n   },\n   \"summary\": \"A particular bug needs to be fixed.\",\n   \"description\": \"The XYZ feature is not working as expected.\",\n   \"issuetype\": {\n    \"name\": \"Bug\"\n   },\n   \"assignee\": {\n    \"accountId\": \"712020:4581444c-054e-41d8-90ed-6d1d849557f7\"\n   },\n   \"reporter\": {\n    \"accountId\": \"712020:4581444c-054e-41d8-90ed-6d1d849557f7\"\n   },\n   \"labels\": [\n    \"bug\",\n    \"urgent\"\n   ]\n }\n}",
+          "description": "Enter properties",
+          "height": "200px"
+        }
+      }
+    },
+    "user": {
+      "operation": {
+        "label": "Operation",
+        "key": "operation",
+        "type": "dropdown-component-flip",
+        "description": "Operation select",
+        "list": [
+          {
+            "value": "get_user",
+            "name": "Get user"
+          },
+          {
+            "value": "find_users_by_query",
+            "name": "Find users by query"
+          },
+          {
+            "value": "find_assignable_users",
+            "name": "Assignable users"
+          }
+        ]
+      },
+      "get_user": {
+        "account_id": {
+          "label": "Account id",
+          "key": "account_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter user unique id",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "712020:4581444c-054e-41d8-90ed-6d1d849557f7"
+        },
+        "expand": {
+          "label": "Expand",
+          "key": "expand",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Use expand to include additional information about users in the response",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "widgets"
+        }
+      },
+      "find_users_by_query": {
+        "query": {
+          "label": "Query",
+          "key": "query",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "Enter a query, e.g., is assignee of {issue_key or project_key}",
+          "description": "Enter query",
+          "height": "200px"
+        },
+        "start_at": {
+          "label": "Start at",
+          "key": "start_at",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter index of the first item to return in a page of results (page offset)",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "0"
+        },
+        "max_results": {
+          "label": "Max results",
+          "key": "max_results",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter the maximum number of items to return per page",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "100"
+        }
+      },
+      "find_assignable_users": {
+        "query": {
+          "label": "Query",
+          "key": "query",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "Enter a query, e.g., string matched against name, email, or displayName",
+          "description": "A query string that is matched against user attributes, such as displayName, and emailAddress",
+          "height": "200px"
+        },
+        "account_id": {
+          "label": "Account id",
+          "key": "account_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter user unique id",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "712020:4581444c-054e-41d8-90ed-6d1d849557f7"
+        },
+        "project_key": {
+          "label": "Project key",
+          "key": "project_key",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter project key",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "PROJ"
+        },
+        "issue_key": {
+          "label": "Issue key",
+          "key": "issue_key",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter issue key",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "PROJ-1"
+        },
+        "start_at": {
+          "label": "Start at",
+          "key": "start_at",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter index of the first item to return in a page of results (page offset)",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "0"
+        },
+        "max_results": {
+          "label": "Max results",
+          "key": "max_results",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter the maximum number of items to return per page",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "100"
+        },
+        "action_descriptor_id": {
+          "label": "Action descriptor id",
+          "key": "action_descriptor_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "The ID of the action descriptor for filtering",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter ID of the action descriptor for filtering"
+        },
+        "recommend": {
+          "label": "Recommended",
+          "key": "recommend",
+          "className": "col-4",
+          "type": "dropdown",
+          "description": "Single select dropdown for recommend",
+          "list": [
+            {
+              "value": "Yes",
+              "name": "Recommend"
+            },
+            {
+              "value": "No",
+              "name": "Don't recommend"
+            }
+          ]
+        }
+      }
+    },
+    "worklog": {
+      "operation": {
+        "label": "Operation",
+        "key": "operation",
+        "type": "dropdown-component-flip",
+        "description": "Operation select",
+        "list": [
+          {
+            "value": "issue_worklogs",
+            "name": "Get issue worklogs"
+          },
+          {
+            "value": "add_worklog",
+            "name": "Add worklog"
+          },
+          {
+            "value": "delete_worklog",
+            "name": "Delete worklog"
+          }
+        ]
+      },
+      "issue_worklogs": {
+        "issue_key": {
+          "label": "Issue key",
+          "key": "issue_key",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter issue key",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "SCRUM-1"
+        },
+        "start_at": {
+          "label": "Start at",
+          "key": "start_at",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter index of the first item to return in a page of results (page offset)",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "0"
+        },
+        "max_results": {
+          "label": "Max results",
+          "key": "max_results",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter the maximum number of items to return per page",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "100"
+        },
+        "started_after": {
+          "label": "Started after",
+          "key": "started_after",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "The worklog start date and time, as a UNIX timestamp in milliseconds",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter worklog start date and time, as a UNIX timestamp in milliseconds"
+        },
+        "started_before": {
+          "label": "Started before",
+          "key": "started_before",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "The worklog start date and time, as a UNIX timestamp in milliseconds",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter worklog start date and time, as a UNIX timestamp in milliseconds"
+        }
+      },
+      "add_worklog": {
+        "issue_key": {
+          "label": "Issue key",
+          "key": "issue_key",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter issue key",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "SCRUM-1"
+        },
+        "properties": {
+          "label": "Params/Body",
+          "key": "properties",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "{\n  \"comment\": \"I did some work here.\",\n  \"created\": \"2017-03-14T10:35:37.097+0000\",\n  \"id\": \"100028\",\n  \"issueId\": \"SCRUM-1\",\n  \"started\": \"2017-03-14T10:35:37.097+0000\",\n  \"timeSpent\": \"3h 20m\"\n}",
+          "description": "Enter properties",
+          "height": "200px"
+        }
+      },
+      "delete_worklog": {
+        "issue_key": {
+          "label": "Issue key",
+          "key": "issue_key",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter issue key",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "SCRUM-1"
+        },
+        "worklog_id": {
+          "label": "Worklog id",
+          "key": "worklog_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter worklog id",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "10000"
+        },
+        "properties": {
+          "label": "Params/Body",
+          "key": "properties",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "{notifyUsers:true, ...}",
+          "description": "Enter properties",
+          "height": "200px"
+        }
+      }
+    },
+    "board": {
+      "operation": {
+        "label": "Operation",
+        "key": "operation",
+        "type": "dropdown-component-flip",
+        "type": "dropdown-component-flip",
+        "description": "Operation select",
+        "list": [
+          {
+            "value": "get_issues_for_backlog",
+            "name": "Get issues for backlog"
+          },
+          {
+            "value": "get_all_boards",
+            "name": "Get all boards"
+          },
+          {
+            "value": "get_issues_for_board",
+            "name": "Get issues for board"
+          }
+        ]
+      },
+      "get_issues_for_backlog": {
+        "board_id": {
+          "label": "Board id",
+          "key": "board_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter board id",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "1"
+        },
+        "start_at": {
+          "label": "Start at",
+          "key": "start_at",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter index of the first item to return in a page of results (page offset)",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "0"
+        },
+        "max_results": {
+          "label": "Max results",
+          "key": "max_results",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter the maximum number of items to return per page",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "100"
+        },
+        "expand": {
+          "label": "Expand",
+          "key": "expand",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Use expand to include additional information about users in the response",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "widgets"
+        },
+        "properties": {
+          "label": "Params/Body",
+          "key": "properties",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "{ fields: \"exampleField, ...\" }",
+          "description": "Enter properties",
+          "height": "200px"
+        }
+      },
+      "get_all_boards": {
+        "project_key": {
+          "label": "Project key",
+          "key": "project_key",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter project key",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "SCRUM"
+        },
+        "start_at": {
+          "label": "Start at",
+          "key": "start_at",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter index of the first item to return in a page of results (page offset)",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "0"
+        },
+        "board_name": {
+          "label": "Name",
+          "key": "board_name",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter the name of the board",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "Enter board name"
+        },
+        "max_results": {
+          "label": "Max results",
+          "key": "max_results",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter the maximum number of items to return per page",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "100"
+        },
+        "expand": {
+          "label": "Expand",
+          "key": "expand",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Use expand to include additional information about users in the response",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "admins, permissions, favourite"
+        }
+      },
+      "get_issues_for_board": {
+        "board_id": {
+          "label": "Board id",
+          "key": "board_id",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter board id",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "1"
+        },
+        "start_at": {
+          "label": "Start at",
+          "key": "start_at",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter index of the first item to return in a page of results (page offset)",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "0"
+        },
+        "max_results": {
+          "label": "Max results",
+          "key": "max_results",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter the maximum number of items to return per page",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "100"
+        },
+        "expand": {
+          "label": "Expand",
+          "key": "expand",
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Use expand to include additional information about users in the response",
+          "width": "320px",
+          "height": "36px",
+          "className": "codehinter-plugins",
+          "placeholder": "widgets"
+        },
+        "properties": {
+          "label": "Params/Body",
+          "key": "properties",
+          "type": "codehinter",
+          "mode": "javascript",
+          "placeholder": "{ fields: \"exampleField, ...\" }",
+          "description": "Enter properties",
+          "height": "200px"
+        }
+      }
+    }
+  }
+}

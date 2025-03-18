@@ -6,14 +6,16 @@ import { useTranslation } from 'react-i18next';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { SearchBox } from '@/_components';
+import { LEGACY_ITEMS } from './WidgetManager/constants';
 
 export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel, darkMode, disabled }) {
   const [filteredComponents, setFilteredComponents] = useState(componentTypes);
   const [searchQuery, setSearchQuery] = useState('');
   const { t } = useTranslation();
-  const { isVersionReleased } = useAppVersionStore(
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );
@@ -110,22 +112,20 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
       'Multiselect',
       'RichTextEditor',
       'Checkbox',
-      'Radio-button',
+      'RadioButton',
       'Datepicker',
-      'DateRangePicker',
+      'DaterangePicker',
       'FilePicker',
       'StarRating',
     ];
     const integrationItems = ['Map'];
     const layoutItems = ['Container', 'Listview', 'Tabs', 'Modal'];
-    const legacyItems = ['ToggleSwitchLegacy'];
-
     filteredComponents.forEach((f) => {
       if (searchQuery) allWidgets.push(f);
       if (commonItems.includes(f.name)) commonSection.items.push(f);
       if (formItems.includes(f.name)) formSection.items.push(f);
       else if (integrationItems.includes(f.name)) integrationSection.items.push(f);
-      else if (legacyItems.includes(f.name)) legacySection.items.push(f);
+      else if (LEGACY_ITEMS.includes(f.name)) legacySection.items.push(f);
       else if (layoutItems.includes(f.name)) layoutsSection.items.push(f);
       else otherSection.items.push(f);
     });
@@ -147,7 +147,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
   }
 
   return (
-    <div className={`components-container ${(isVersionReleased || disabled) && 'disabled'}`}>
+    <div className={`components-container ${(isVersionReleased || isEditorFreezed || disabled) && 'disabled'}`}>
       <p className="widgets-manager-header">Components</p>
       <div className="input-icon tj-app-input">
         <SearchBox
