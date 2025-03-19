@@ -17,7 +17,7 @@
   --ifm-color-primary-light: rgb(70, 203, 174);
   --ifm-color-primary-lighter: rgb(102, 212, 189);
   --ifm-color-primary-lightest: rgb(146, 224, 208);
-  --ifm-code-font-size: 95%;
+  --ifm-code-font-size: 90%;
   --ifm-menu-color-active: #3E63DD;
   --ifm-font-family-base: 'IBM Plex Sans';
   --tblr-blue: #206bc4;
@@ -497,3 +497,29 @@ img {
 }
 
 /* HOMEPAGE STYLES END*/
+
+
+/* Dropdownns */
+
+#tj-dropdown {
+  border: none !important;
+  background-color: #F6F8FA;
+}
+
+#tj-dropdown[data-collapsed="false"] summary {
+  font-weight: bold;
+}
+
+#tj-dropdown div div {
+  border: none;
+  padding-top: 0;
+  margin-top: 6px;
+}
+
+#tj-dropdown div div a {
+  text-decoration-color: #6A727C !important;
+}
+
+#tj-dropdown>summary::before {
+  border-color: transparent transparent transparent #6A727C !important;
+}
