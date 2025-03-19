@@ -911,7 +911,7 @@ class DataSourceManagerComponent extends React.Component {
                             className="form-control-plaintext form-control-plaintext-sm color-slate12"
                             value={decodeEntities(selectedDataSource.name)}
                             style={{ width: '160px' }}
-                            data-cy="data-source-name-input-filed"
+                            data-cy="data-source-name-input-field"
                             autoFocus
                             autoComplete="off"
                             disabled={!canUpdateDataSource(selectedDataSource.id)}
@@ -1107,6 +1107,7 @@ class DataSourceManagerComponent extends React.Component {
                       <SolidIcon name="logs" fill="#3E63DD" width="20" style={{ marginRight: '8px' }} />
                       <a
                         className="color-primary tj-docs-link tj-text-sm"
+                        data-cy="link-read-documentation"
                         href={
                           selectedDataSource?.pluginId && selectedDataSource.pluginId.trim() !== ''
                             ? `https://docs.tooljet.com/docs/marketplace/plugins/marketplace-plugin-${selectedDataSource.kind}/`
