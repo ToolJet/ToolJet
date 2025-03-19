@@ -7,13 +7,14 @@ import { importSelectors } from "Selectors/exportImport";
 import { importText } from "Texts/exportImport";
 import { onboardingSelectors } from "Selectors/onboarding";
 
+const API_ENDPOINT =
+  Cypress.env("environment") === "Community"
+    ? "/api/library_apps"
+    : "/api/library_apps/";
+
 Cypress.Commands.add(
   "appUILogin",
   (email = "dev@tooljet.io", password = "password") => {
-    const API_ENDPOINT =
-      Cypress.env("environment") === "Community"
-        ? "/api/library_apps/"
-        : "/api/library_apps";
     cy.visit("/");
     cy.wait(1000);
     cy.clearAndType(onboardingSelectors.loginEmailInput, email);
@@ -142,13 +143,11 @@ Cypress.Commands.add(
     };
 
     if (Array.isArray(value)) {
-      cy.wrap(subject)
-        .last()
-        .realType(value, {
-          parseSpecialCharSequences: false,
-          delay: 0,
-          force: true,
-        });
+      cy.wrap(subject).last().realType(value, {
+        parseSpecialCharSequences: false,
+        delay: 0,
+        force: true,
+      });
     } else {
       splitIntoFlatArray(value).forEach((i) => {
         cy.wrap(subject)
@@ -399,20 +398,20 @@ Cypress.Commands.add("getPosition", (componentName) => {
 });
 
 Cypress.Commands.add("defaultWorkspaceLogin", () => {
-  cy.task("updateId", {
-    dbconfig: Cypress.env("app_db"),
-    sql: `
-      SELECT id FROM organizations WHERE name = 'My workspace';
-    `,
-  }).then((resp) => {
-    const workspaceId = resp.rows[0].id;
-    cy.apiLogin("dev@tooljet.io", "password", workspaceId, "/my-workspace");
+  // cy.task("updateId", {
+  //   dbconfig: Cypress.env("app_db"),
+  //   sql: `
+  //     SELECT id FROM organizations WHERE name = 'My workspace';
+  //   `,
+  // }).then((resp) => {
+  //   const workspaceId = resp.rows[0].id;
+  cy.apiLogin();
 
-    cy.visit("/");
-    cy.intercept("GET", "/api/library_apps").as("library_apps");
-    cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
-    cy.wait("@library_apps");
-  });
+  cy.visit("/my-workspace");
+  cy.intercept("GET", API_ENDPOINT).as("library_apps");
+  cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
+  cy.wait("@library_apps");
+  // });
 });
 
 Cypress.Commands.add(
@@ -458,7 +457,7 @@ Cypress.Commands.add("releaseApp", () => {
 Cypress.Commands.add("backToApps", () => {
   cy.get(commonSelectors.editorPageLogo).click();
   cy.get(commonSelectors.backToAppOption).click();
-  cy.intercept("GET", "/api/library_apps/").as("library_apps");
+  cy.intercept("GET", API_ENDPOINT).as("library_apps");
   cy.get(commonSelectors.homePageLogo, { timeout: 10000 });
   cy.wait("@library_apps");
 });
