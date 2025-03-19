@@ -166,6 +166,7 @@ Cypress.Commands.add("apiCreateWorkspace", (workspaceName, workspaceSlug) => {
       { log: false }
     ).then((response) => {
       expect(response.status).to.equal(201);
+      return response;
     });
   });
 });

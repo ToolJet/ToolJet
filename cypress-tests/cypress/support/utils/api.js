@@ -29,6 +29,34 @@ export const getAllUsers = () => {
 export const updateUser = (userId, userData) => {
     return apiRequest("PATCH", `${Cypress.env('API_URL')}/ext/user/${userId}`, userData);
 };
+export const updateUserRole = (workspaceId, userData) => {
+    return apiRequest("PUT", `${Cypress.env('API_URL')}/ext/update-user-role/workspace/${workspaceId}`, userData);
+}
+
+export const replaceUserWorkspace = (userId, workspaceId, userData) => {
+    return apiRequest("PATCH", `${Cypress.env('API_URL')}/ext/user/${userId}/workspace/${workspaceId}`, userData);
+}
+
+export const replaceUserWorkspacesRelations = (userId, userData) => {
+    return apiRequest("PUT", `${Cypress.env('API_URL')}/ext/user/${userId}/workspaces`, userData);
+}
+
+export const getAllWorkspaces = () => {
+    return apiRequest("GET", `${Cypress.env('API_URL')}/ext/workspaces`);
+}
+
+export const importApp = (workspaceId, appData, headers) => {
+    return apiRequest("POST", `${Cypress.env('API_URL')}/ext/import/workspace/${workspaceId}/apps`, appData, headers);
+}
+
+export const exportApp = (workspaceId, appId, endpoint, headers) => {
+    return apiRequest("POST", `${Cypress.env('API_URL')}/ext/export/workspace/${workspaceId}/apps/${appId}${endpoint}`, headers);
+}
+
+export const allAppsDetails = (workspaceIds) => {
+    return apiRequest("GET", `${Cypress.env('API_URL')}/ext/workspace/${workspaceIds}/apps`);
+}
+
 export const createGroup = (groupName) => {
     cy.get(groupsSelector.createNewGroupButton).click();
     cy.clearAndType(groupsSelector.groupNameInput, groupName);
