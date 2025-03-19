@@ -28,9 +28,9 @@ module.exports = {
     announcementBar: {
       id: 'support_us',
       content:
-        '⭐️ If you like ToolJet, give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/ToolJet/ToolJet">GitHub</a> and follow us on <a target="_blank" rel="noopener noreferrer" href="https://twitter.com/ToolJet">Twitter</a>',
-      backgroundColor: '#4D72DA',
-      textColor: '#ffffff',
+        'Star our repository on <a target="_blank" rel="noopener noreferrer" href="https://github.com/ToolJet/ToolJet">GitHub</a> to stay updated with new features and contribute to our platform!',
+      backgroundColor: '#ECF0FE',
+      textColor: '#4368E3',
       isCloseable: true,
     },
     docs: {
@@ -76,6 +76,20 @@ module.exports = {
           position: 'right',
           className: 'navbar-social-link navbar-twitter-logo',
           'aria-label': 'Twitter account',
+        },
+        {
+          href: 'https://app.tooljet.ai',
+          position: 'right',
+          label: 'Sign in',
+          className: 'navbar-signin',
+          'aria-label': 'Signin to ToolJet',
+        },
+        {
+          href: 'https://tooljet.ai',
+          position: 'right',
+          label: 'Website',
+          className: 'navbar-website',
+          'aria-label': 'ToolJet website',
         },
       ],
     },
