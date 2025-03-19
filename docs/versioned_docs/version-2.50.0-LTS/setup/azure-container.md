@@ -9,8 +9,6 @@ title: Azure container apps
 Please note that you need to set up a PostgreSQL database manually to be used by ToolJet. Additionally, you must set up a Redis service through Azure Cache for Redis.
 :::
 
-*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
-
 ## Deploying ToolJet application
 
 1. Open the Azure dashboard at https://portal.azure.com, navigate to Container Apps, and click on "Create container app".
@@ -37,7 +35,17 @@ Please note that you need to set up a PostgreSQL database manually to be used by
   - Make sure to provide the image tag, and then enter `server/entrypoint.sh, npm, run, start:prod` in the "Command override" field.
   - Add the following ToolJet application variables under the "Environmental variable" section. You can refer to this [**documentation**](/docs/setup/env-vars) for more information on environment variables.
 
-  **Note: For the minimal setup, ToolJet requires: `TOOLJET_HOST`, `PG_HOST`, `PG_DB`, `PG_USER`, `PG_PASSWORD`, `SECRET_KEY_BASE` & `LOCKBOX_MASTER_KEY` keys in the secret.**
+  **Note**: ToolJet requires: 
+   - **TOOLJET_DB** 
+   - **TOOLJET_DB_HOST**
+   - **TOOLJET_DB_USER**
+   - **TOOLJET_DB_PASS**
+   - **PG_HOST**
+   - **PG_DB**
+   - **PG_USER**
+   - **PG_PASS**
+   - **SECRET_KEY_BASE** 
+   - **LOCKBOX_KEY**
   
    <div style={{textAlign: 'center'}}>
  
@@ -119,5 +127,4 @@ If this is a new installation of the application, you may start directly with th
 
 - Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this version before proceeding to the LTS version.
 
-For specific issues or questions, refer to our **[Slack](https://tooljet.slack.com/join/shared_invite/zt-25438diev-mJ6LIZpJevG0LXCEcL0NhQ#)**.
-
+*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*

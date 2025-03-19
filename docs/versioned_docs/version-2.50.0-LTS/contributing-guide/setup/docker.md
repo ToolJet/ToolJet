@@ -9,7 +9,7 @@ The following guide is intended for contributors to set up ToolJet locally. If y
 
 Docker Compose is the easiest way to set up the ToolJet server and client locally.
 
-*If you just want to try out ToolJet locally with docker, you can follow the steps [here](https://docs.tooljet.com/docs/setup/try-tooljet).*
+*If you just want to try out ToolJet locally with docker, you can follow the steps [here](/docs/setup/try-tooljet).*
 
 ## Prerequisites
 

@@ -17,7 +17,7 @@ Requires:
 - PostgREST server
 - Additional configuration for ToolJet server
 
-This feature is only enabled if [`ENABLE_TOOLJET_DB`](/docs/setup/env-vars#enable-tooljet-database--optional-) is set to `true`.
+This feature is only enabled if [`ENABLE_TOOLJET_DB`](/docs/setup/env-vars#enable-tooljet-database-required) is set to `true`.
 
 <div style={{paddingTop:'24px', paddingBottom:'24px'}}>
 
@@ -26,7 +26,8 @@ This feature is only enabled if [`ENABLE_TOOLJET_DB`](/docs/setup/env-vars#enabl
 PostgREST is a standalone web server that turns your PostgreSQL database directly into queryable RESTful APIs which is utilized for Tooljet Database. This server only communicates with the ToolJet server and therefore does not need to be publicly exposed.
 
 :::tip
-If you have openssl installed, you can run the following command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
+If you have openssl installed, you can run the 
+command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
 
 If this parameter is not specified, then PostgREST refuses authentication requests.
 :::
@@ -36,8 +37,7 @@ If this parameter is not specified, then PostgREST refuses authentication reques
 | PGRST_JWT_SECRET             | JWT token client provided for authentication    |
 | PGRST_DB_URI                 | database connection string for tooljet database |
 | PGRST_LOG_LEVEL              | `info`                                          |
-| TOOLJET_DB_RECONFIG          | `true` or `false`                               |
-| TOOLJET_DB_STATEMENT_TIMEOUT | statement timeout in milliseconds               |
+| PGRST_DB_PRE_CONFIG          | postgrest.pre_config                            |
 
 :::info
 Please make sure that DB_URI is given in the format `postgres://[USERNAME]:[PASSWORD]@[HOST]:[PORT]/[DATABASE]`
@@ -48,9 +48,8 @@ Please make sure that DB_URI is given in the format `postgres://[USERNAME]:[PASS
 #### Additional ToolJet server configuration
 
 
-| <div style={{ width:"100px"}}> Variable </div>           | <div style={{ width:"100px"}}> Description </div>                                  |
+| <div style={{ width:"100px"}}> Variable </div>           | <div style={{ width:"100px"}}> Description </div>   |
 | ------------------ | -------------------------------------------- |
-| ENABLE_TOOLJET_DB  | `true` or `false`                            |
 | TOOLJET_DB         | Default value is `tooljet_db`                |
 | TOOLJET_DB_HOST    | database host                                |
 | TOOLJET_DB_USER    | database username                            |
@@ -58,6 +57,8 @@ Please make sure that DB_URI is given in the format `postgres://[USERNAME]:[PASS
 | TOOLJET_DB_PORT    | database port                                |
 | PGRST_JWT_SECRET   | JWT token client provided for authentication |
 | PGRST_HOST         | postgrest database host                      |
+| TOOLJET_DB_BULK_UPLOAD_MAX_ROWS | Maximum rows allowed to bulk upload. Default value is 1000 |
+| TOOLJET_DB_BULK_UPLOAD_MAX_CSV_FILE_SIZE_MB  | Maximum file size of CSV for bulk upload. Default value is 5 MB  |
 
 
 If you intend to make changes in the above configuration. Please refer [PostgREST configuration docs](https://postgrest.org/en/stable/configuration.html#environment-variables).
@@ -91,7 +92,7 @@ ToolJet database allows you to:
 
 Once you log-in to your ToolJet account, from the left sidebar of the dashboard you can navigate to **ToolJet Database**.
 
-The ToolJet Database is available on: **[ToolJet Cloud](https://tooljet.com)**, **[Self-Host](/docs/setup/)**, and **Enterprise Edition**. You can manage your database and its data using the **Database editor UI**.
+The ToolJet Database is available on: **[ToolJet Cloud](https://tooljet.ai)**, **[Self-Host](/docs/setup/)**, and **Enterprise Edition**. You can manage your database and its data using the **Database editor UI**.
 
 <div style={{textAlign: 'center'}}>
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/v2-beta/database/ux2/tjdbside-v2.png" alt="ToolJet database" />

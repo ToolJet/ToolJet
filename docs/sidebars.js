@@ -10,6 +10,7 @@
 /** @type {import('@docusaurus/plugin-content-docs').SidebarsConfig} */
 const sidebars = {
   docs: [
+    "doc-home-page",
     {
       'type': 'category',
       'label': 'Getting Started',
@@ -17,6 +18,15 @@ const sidebars = {
         'getting-started/platform-overview',
         'getting-started/quickstart-guide',
       ],
+    }, 
+    {
+      "type": "category",
+      "label": "Build with AI",
+      "items": [
+        "build-with-ai/overview",
+        "build-with-ai/generate-applications",
+        "build-with-ai/ai-docs-assistant"
+      ]
     },
     {
       'type': 'category',
@@ -42,7 +52,7 @@ const sidebars = {
     },
     {
       'type': 'category',
-      'label': 'Setup',
+      'label': 'Deployment',
       'link': {
         'type': 'doc',
         'id': 'setup/index',
@@ -63,7 +73,6 @@ const sidebars = {
         'setup/kubernetes-eks',
         'setup/azure-container',
         'setup/google-cloud-run',
-        'setup/client',
         'setup/env-vars',
         'setup/http-proxy',
         'setup/tooljet-subpath',
@@ -89,7 +98,7 @@ const sidebars = {
             'app-builder/walkthrough/variables',
             'app-builder/importing-exporting-applications',
           ],
-        },                    
+        },
         {
           'type': 'category',
           'label': 'References',
@@ -127,7 +136,18 @@ const sidebars = {
                       'label': 'Chart',
                       'items': [
                         'widgets/chart/chart-properties',
-                        'widgets/chart/chart-examples'
+                        'widgets/chart/chart-examples',
+                        'widgets/chart/transforming-data-for-charts'
+                      ]
+                    },
+                    {
+                      'type': 'category',
+                      'label': 'Chat',
+                      'items': [
+                        'widgets/chat/overview',
+                        'widgets/chat/properties',
+                        'widgets/chat/csa',
+                        'widgets/chat/markdown'
                       ]
                     },
                     'widgets/checkbox',
@@ -171,6 +191,18 @@ const sidebars = {
                         'widgets/table/table-properties',
                         'widgets/table/table-columns',
                         'widgets/table/table-csa-and-variables',
+                        {
+                          'type': 'category',
+                          'label': 'Serverside Operations',
+                          'items': [
+                            'widgets/table/serverside-operations/overview',
+                            'widgets/table/serverside-operations/search',
+                            'widgets/table/serverside-operations/sort',
+                            'widgets/table/serverside-operations/filter',
+                            'widgets/table/serverside-operations/pagination'
+                          ]
+                        },
+                        'widgets/table/dynamic-column'
                       ]
                     },
                     'widgets/tabs',
@@ -222,6 +254,7 @@ const sidebars = {
             },
           ],
         },
+        'app-builder/anti-patterns',
         'tutorial/keyboard-shortcuts',
       ],
     },
@@ -258,7 +291,8 @@ const sidebars = {
         'how-to/upload-files-gcs',
         'how-to/loading-image-pdf-from-db',
         'how-to/use-events-on-chart',
-        'how-to/print-multi-tabs-report'
+        'how-to/print-multi-tabs-report',
+        'how-to/display-listview-record-on-new-page'
       ],
     },
     {
@@ -276,7 +310,7 @@ const sidebars = {
             'data-sources/amazonses',
             'data-sources/appwrite',
             'data-sources/athena',
-            'data-sources/azureblob',
+            'data-sources/azureblobstorage',
             'data-sources/baserow',
             'data-sources/bigquery',
             'data-sources/firestore',
@@ -287,7 +321,7 @@ const sidebars = {
             'data-sources/dynamodb',
             'data-sources/elasticsearch',
             'data-sources/gcs',
-            'data-sources/google.sheets',
+            'data-sources/googlesheets',
             'data-sources/graphql',
             'data-sources/grpc',
             'data-sources/influxdb',
@@ -306,7 +340,7 @@ const sidebars = {
             {
               'type': 'category',
               'label': 'REST API',
-              'collapsed': false,
+              'collapsed': true,
               'items': [
                 'data-sources/restapi/configuration',
                 'data-sources/restapi/authentication',
@@ -315,6 +349,7 @@ const sidebars = {
 
               ],
             },
+            'data-sources/soap-api',
             'data-sources/rethinkdb',
             'data-sources/run-js',
             'data-sources/run-py',
@@ -331,6 +366,7 @@ const sidebars = {
           ],
         },
         'tutorial/transformations',
+        'data-sources/local-data-sources-migration',
       ],
     },
     {
@@ -339,92 +375,261 @@ const sidebars = {
       'items': [
         'tooljet-db/tooljet-database',
         'tooljet-db/database-editor',
+        {
+          'type': 'category',
+          'label': 'Column Constraints',
+          'items': [
+            'tooljet-db/constraints/primary-key',
+            'tooljet-db/constraints/foreign-key'
+          ]
+        },
         'tooljet-db/data-types',
+        'tooljet-db/table-operations',
         'tooljet-db/querying-tooljet-db',
       ]
     },
     {
       'type': 'category',
-      'label': 'Org Management',
+      'label': 'Setup ToolJet',
+      'link': {
+        'type': 'doc',
+        'id': 'tj-setup/overview',
+      },
       'items': [
-        'dashboard',
+        'tj-setup/overview',
+        'tj-setup/tj-deployment',
         {
-          "type": "category",
-          "label": "Workspaces",
-          "items": [
-            "org-management/workspaces/workspace_overview",
-            "org-management/workspaces/workspace-variables",
-            "org-management/workspaces/workspace-variables-migration",
-            "org-management/workspaces/workspace_constants"
+          'type': 'category',
+          'label': 'Licensing',
+          'items': [
+            'tj-setup/licensing/self-hosted',
+            'tj-setup/licensing/cloud'
+          ]
+        },
+        'tj-setup/instances',
+        'tj-setup/workspaces',
+        {
+          'type': 'category',
+          'label': 'Branding',
+          'items': [
+            'tj-setup/org-branding/white-labeling',
+            'tj-setup/org-branding/custom-domain'
           ]
         },
         {
           'type': 'category',
-          'label': 'User Authentication',
+          'label': 'Setup SMTP Server',
+          'link': {
+            'type': 'doc',
+            'id': 'tj-setup/smtp-setup/configuration',
+          },
           'items': [
-            'user-authentication/user-lifecycle',
-            'user-authentication/workspace-login',
-            {
-              'type': 'category',
-              'label': 'SSO',
-              'items': [
-                'user-authentication/sso/github',
-                'user-authentication/sso/google',
-                {
-                  'type': 'category',
-                  'label': 'OpenId Connect',
-                  'link': {
-                    'type': 'generated-index',
-                    'title': 'OpenId Connect',
-                    'description': ' ',
-                    'keywords': [
-                      'okta',
-                      'openid',
-                      'azureAD',
-                    ],
-                  },
-                  'collapsed': true,
-                  'items': [
-                    'user-authentication/sso/openid/setup',
-                    'user-authentication/sso/openid/azuread',
-                    'user-authentication/sso/openid/okta',
-                    'user-authentication/sso/openid/google-openid',
-                  ],
-                },
-                'user-authentication/sso/oidc',
-                'user-authentication/sso/ldap',
-                'user-authentication/sso/saml',
-                'user-authentication/sso/auto-sso-login',
-              ],
-            },
-          ],
-        },
-        'org-management/permissions',
-        'tutorial/manage-users-groups',
-        'tutorial/tooljet-api',
-        'Enterprise/audit_logs',
-        'Enterprise/white-label',
-        'Enterprise/superadmin',
-        {
-          "type": "category",
-          "label": "Licensing",
-          "items": [
-            "org-management/licensing/tooljet-cloud",
-            "org-management/licensing/self-hosted"
+            'tj-setup/smtp-setup/configuration',
+            'tj-setup/smtp-setup/email-providers'
           ]
-        },
-        "org-management/smtp-configuration"
-      ],
+        }
+      ]
     },
     {
       'type': 'category',
-      'label': 'Release Management',
+      'label': 'User Management and Access Control',
+      'link': {
+        'type': 'doc',
+        'id': 'user-management/overview',
+      },
       'items': [
-        'gitsync',
-        'release-management/multi-environment',
-        'tutorial/versioning-and-release',
-      ],
+        'user-management/overview',
+        {
+          'type': 'category',
+          'label': 'Onboard and Offboard Users',
+          'link': {
+            'type': 'doc',
+            'id': 'user-management/onboard-users/overview',
+          },
+          'items': [
+            'user-management/onboard-users/overview',
+            'user-management/onboard-users/invite-user',
+            'user-management/onboard-users/bulk-invite-users',
+            'user-management/onboard-users/self-signup-user',
+            'user-management/onboard-users/user-metadata',
+            'user-management/onboard-users/archive-user',
+          ]
+        },
+        {
+          'type': 'category',
+          'label': 'Authentication',
+          'items': [
+            {
+              'type': 'category',
+              'label': 'Self-hosted',
+              'items': [
+                'user-management/authentication/self-hosted/overview',
+                'user-management/authentication/self-hosted/instance-login',
+                'user-management/authentication/self-hosted/workspace-login'
+              ]
+            },
+            'user-management/authentication/cloud-login',
+          ]
+        },
+        {
+          'type': 'category',
+          'label': 'Role Based Access Control',
+          'items': [
+            'user-management/role-based-access/super-admin',
+            'user-management/role-based-access/user-roles',
+            'user-management/role-based-access/custom-groups',
+            'user-management/role-based-access/access-control',
+          ]
+        },
+        {
+          'type': 'category',
+          'label': 'Single Sign-On (SSO)',
+          'link': {
+            'type': 'doc',
+            'id': 'user-management/sso/overview',
+          },
+          'items': [
+            'user-management/sso/overview',
+            'user-management/sso/github',
+            'user-management/sso/google',
+            {
+              'type': 'category',
+              'label': 'OpenID Connect',
+              'link': {
+                'type': 'doc',
+                'id': 'user-management/sso/oidc/setup',
+              },
+              'items': [
+                'user-management/sso/oidc/setup',
+                'user-management/sso/oidc/azuread',
+                'user-management/sso/oidc/okta',
+                'user-management/sso/oidc/google'
+              ]
+            },
+            'user-management/sso/ldap',
+            {
+              'type': 'category',
+              'label': 'SAML',
+              'link': {
+                'type': 'doc',
+                'id': 'user-management/sso/saml/setup',
+              },
+              'items': [
+                'user-management/sso/saml/setup',
+                'user-management/sso/saml/okta'
+              ]
+            },
+          ]
+        },
+        {
+          'type': 'category',
+          'label': 'Group Sync',
+          'items': [
+            'user-management/group-sync/oidc'
+          ]
+        },
+        {
+          'type': 'category',
+          'label': 'Profile Management',
+          'items': [
+            'user-management/profile-management/user-details',
+            'user-management/profile-management/reset-password',
+            'user-management/profile-management/user-profile'
+          ]
+        }
+      ]
     },
+    {
+      'type': 'category',
+      'label': 'Development Lifecycle',
+      'link': {
+        'type': 'doc',
+        'id': 'development-lifecycle/overview',
+      },
+      'items': [
+        'development-lifecycle/overview',
+        {
+          'type': 'category',
+          'label': 'Release Management',
+          'items': [
+            'development-lifecycle/release/version-control',
+            'development-lifecycle/release/release-rollback',
+            'development-lifecycle/release/share-app',
+          ]
+        },
+        {
+          'type': 'category',
+          'label': 'GitSync',
+          'link': {
+            'type': 'doc',
+            'id': 'development-lifecycle/gitsync/overview',
+          },
+          'items': [
+            'development-lifecycle/gitsync/overview',
+            'development-lifecycle/gitsync/gitsync-config',
+            'development-lifecycle/gitsync/ssh-config',
+            'development-lifecycle/gitsync/delete-gitsync',
+            'development-lifecycle/gitsync/push',
+            'development-lifecycle/gitsync/pull'
+          ]
+        },
+        {
+          'type': 'category',
+          'label': 'Environment',
+          'items': [
+            {
+              'type': 'category',
+              'label': 'Self-Hosted',
+              'items': [
+                'development-lifecycle/environment/self-hosted/multi-environment',
+                'development-lifecycle/environment/self-hosted/example-configuration',
+                {
+                  'type': 'category',
+                  'label': 'Multi-Instance',
+                  'items': [
+                    'development-lifecycle/environment/self-hosted/multi-instance/instance-as-environment',
+                    'development-lifecycle/environment/self-hosted/multi-instance/example-configuration'
+                  ]
+                },
+              ]
+            },
+            {
+              'type': 'category',
+              'label': 'Cloud',
+              'items': [
+                'development-lifecycle/environment/cloud/multi-environment',
+                'development-lifecycle/environment/cloud/example-configuration'
+              ]
+            }
+          ]
+        },
+        {
+          'type': 'category',
+          'label': 'Backup',
+          'items': [
+            'development-lifecycle/backup/gitsync-backup'
+          ]
+        },
+      ]
+    },
+    {
+      'type': 'category',
+      'label': 'Security and Monitoring',
+      'items': [
+        {
+          'type': 'category',
+          'label': 'Constants',
+          'items': [
+            'security/constants/constants',
+            'security/constants/variables'
+          ]
+        },
+        'security/audit-logs',
+        'security/compliance'
+
+      ]
+    },
+    'tooljet-api',
     {
       'type': 'category',
       'label': 'Workflows',
@@ -434,6 +639,15 @@ const sidebars = {
         'workflows/workflow-triggers',
         'workflows/results',
         'workflows/permissions',
+        {
+          'type': 'category',
+          'label': 'How-to',
+          'items': [
+            'workflows/how-to/trigger-using-webhook',
+            'workflows/how-to/trigger-workflow-from-app',
+            'workflows/how-to/trigger-workflow-using-scheduler'
+          ]
+        }
       ],
     },
     {
@@ -446,7 +660,7 @@ const sidebars = {
           'type': 'category',
           'label': 'Marketplace Plugins',
           'items': [
-            'marketplace/plugins/marketplace-plugin-redshift',
+            'marketplace/plugins/marketplace-plugin-awsredshift',
             'marketplace/plugins/marketplace-plugin-textract',
             'marketplace/plugins/marketplace-plugin-aws-lambda',
             'marketplace/plugins/marketplace-plugin-engagespot',
@@ -458,26 +672,38 @@ const sidebars = {
             'marketplace/plugins/marketplace-plugin-supabase',
             'marketplace/plugins/marketplace-plugin-pocketbase',
             'marketplace/plugins/marketplace-plugin-portkey',
-            'marketplace/plugins/marketplace-plugin-prestodb',
+            'marketplace/plugins/marketplace-plugin-Presto',
             'marketplace/plugins/marketplace-plugin-jira',
+            'marketplace/plugins/marketplace-plugin-sharepoint',
+            'marketplace/plugins/marketplace-plugin-pinecone',
+            'marketplace/plugins/marketplace-plugin-gemini',
+            'marketplace/plugins/marketplace-plugin-anthropic',
+            'marketplace/plugins/marketplace-plugin-mistral_ai',
+            'marketplace/plugins/marketplace-plugin-hugging_face',
+            'marketplace/plugins/marketplace-plugin-cohere',
+            'marketplace/plugins/marketplace-plugin-weaviate',
+            'marketplace/plugins/marketplace-plugin-qdrant'
           ],
         },
       ],
     },
-    'tooljet-copilot',
-    'security',
     'tracking',
     {
       'type': 'category',
       'label': 'Project Overview',
       'collapsed': true,
       'items': [
-        'project-overview/release-notes',
+        {
+          'type': 'link',
+          'label': 'Release Notes',
+          'href': 'https://app.tooljet.ai/applications/release-notes',
+        },
         {
           'type': 'link',
           'label': 'Roadmap',
           'href': 'https://github.com/orgs/ToolJet/projects/15',
         },
+        'versions'
       ],
     },
     {

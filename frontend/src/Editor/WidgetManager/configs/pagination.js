@@ -31,7 +31,7 @@ export const paginationConfig = {
   },
   validation: {},
   events: {
-    onPageChange: { displayName: 'On Page Change' },
+    onPageChange: { displayName: 'On page change' },
   },
   styles: {
     visibility: {

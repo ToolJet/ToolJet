@@ -215,7 +215,7 @@ ORDER BY name ASC;
 `[Postgres tables](/schema/postgres/tables.mdx)` links to the Postgres tables page.
 
 - When linking to a specific section within a page, use anchor links to direct the user precisely where needed. **Example**:  <br/>
-`ToolJet supports [multiple environments,](https://docs.tooljet.com/docs/#multiple-environments)` takes the user directly to the specific section.
+`ToolJet supports [multiple environments,](https://docs.tooljet.ai/docs/#multiple-environments)` takes the user directly to the specific section.
 
 
 ---

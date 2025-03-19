@@ -3,7 +3,7 @@ id: codespaces
 title: GitHub Codespaces
 ---
 
-Follow the steps below to set up ToolJet on GitHub Codespaces. We recommend reading our guide on [architecture](https://docs.tooljet.com/docs/contributing-guide/setup/architecture) of ToolJet before proceeding.
+Follow the steps below to set up ToolJet on GitHub Codespaces. We recommend reading our guide on [architecture](https://docs.tooljet.ai/docs/contributing-guide/setup/architecture) of ToolJet before proceeding.
 
 Open the terminal and run the commands below.
 
@@ -51,7 +51,7 @@ sudo -u postgres psql
 
 ### 2. Set up environment variables
 
-Create a `.env` file by running the command `touch .env`. More information on the variables that can be set is given in the [environment variables reference](https://docs.tooljet.com/docs/setup/env-vars)
+Create a `.env` file by running the command `touch .env`. More information on the variables that can be set is given in the [environment variables reference](https://docs.tooljet.ai/docs/setup/env-vars)
 
 **For basic set-up you add the below env variables:**
 

@@ -6,7 +6,7 @@ title: Stripe
 ToolJet can connect to your Stripe account to read or write customers' and payments' data.
 
 :::info
-Check out the **[Stripe Refund App tutorial](https://blog.tooljet.com/build-a-stripe-refund-tool-using-low-code/)**
+Check out the **[Stripe Refund App tutorial](https://blog.tooljet.ai/build-a-stripe-refund-tool-using-low-code/)**
 :::
 
 <div style={{paddingTop:'24px'}}>

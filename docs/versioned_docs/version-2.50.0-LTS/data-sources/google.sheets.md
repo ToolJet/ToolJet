@@ -1,5 +1,5 @@
 ---
-id: google.sheets
+id: googlesheets
 title: Google Sheets
 ---
 

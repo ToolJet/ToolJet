@@ -132,7 +132,7 @@ Any arbitrary JavaScript code can be written inside **`{{}}`**:
 ```
 
 :::tip
-Check out the How-to guides like **[changing color of text in table column](/docs/how-to/access-cellvalue-rowdata)**, **[Enable/Disable a component using JavaScript](/docs/how-to/access-currentuser)**, and **[more](/docs/category/how-to)**.
+Check out the How-to guides like **[changing color of text in table column](/docs/how-to/access-cellvalue-rowdata)**, **[Enable/Disable a component using JavaScript](/docs/how-to/access-currentuser)**, and more.
 :::
 
 </div>

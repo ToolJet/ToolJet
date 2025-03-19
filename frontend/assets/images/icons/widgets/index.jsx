@@ -101,7 +101,7 @@ const WidgetIcon = (props) => {
       return <DateTimePickerV2 {...props} />;
     case 'daterangepicker':
       return <Daterangepicker {...props} />;
-    case 'divider':
+    case 'horizontaldivider':
       return <Divider {...props} />;
     case 'divider-horizondal':
       return <DividerHorizondal {...props} />;
