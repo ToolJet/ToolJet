@@ -8,6 +8,7 @@ import { validateQueryName, convertToKebabCase, resolveReferences } from '@/_hel
 import { useHotkeys } from 'react-hotkeys-hook';
 import { DefaultComponent } from './Components/DefaultComponent';
 import { FilePicker } from './Components/FilePicker';
+import { PhoneInput } from './Components/PhoneInput/PhoneInput.jsx';
 import { Modal } from './Components/Modal';
 import { ModalV2 } from './Components/ModalV2';
 import { CustomComponent } from './Components/CustomComponent';
@@ -734,6 +735,8 @@ const GetAccordion = React.memo(
       case 'DatePickerV2':
       case 'TimePicker':
         return <DatetimePickerV2 {...restProps} componentName={componentName} />;
+      case 'PhoneInput':
+        return <PhoneInput {...restProps} />;
 
       default: {
         return <DefaultComponent {...restProps} />;

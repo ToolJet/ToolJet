@@ -7,7 +7,11 @@ import Label from '@/_ui/Label';
 
 export const PhoneInput = (props) => {
   const { properties, styles, componentName, darkMode } = props;
-  const inputLogic = useInput(props);
+  const transformedProps = {
+    ...props,
+    inputType: 'phone',
+  };
+  const inputLogic = useInput(transformedProps);
   const {
     inputRef,
     labelRef,
@@ -30,7 +34,7 @@ export const PhoneInput = (props) => {
     handleFocus,
     handleKeyUp,
   } = inputLogic;
-  const { label, placeholder, isCountryChangeEnabled } = properties;
+  const { label, placeholder, isCountryChangeEnabled, defaultCountry = 'us' } = properties;
   const {
     textColor,
     backgroundColor,
@@ -42,6 +46,8 @@ export const PhoneInput = (props) => {
     borderColor,
     accentColor,
     errTextColor,
+    boxShadow,
+    borderRadius,
   } = styles;
   const _width = (width / 100) * 70;
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
@@ -57,14 +63,34 @@ export const PhoneInput = (props) => {
     : 'var(--borders-default)';
 
   const inputStyle = {
-    color: textColor,
-    backgroundColor,
+    color: darkMode && textColor === '#1B1F24' ? '#FFF' : textColor,
+    backgroundColor: disable ? '#e4e7eb' : darkMode && backgroundColor === '#fff' ? '#1c2025' : backgroundColor,
     border: `${isFocused ? '1.5px' : '1px'} solid ${inputBorderColor}`,
+    boxShadow,
+    borderRadius: `${borderRadius}px`,
+  };
+
+  const dropdownStyle = {
+    backgroundColor: darkMode ? '#1B1F24' : '#fff',
+    color: darkMode ? '#fff' : '#1B1F24',
+  };
+
+  const searchStyle = {
+    backgroundColor: darkMode ? '#1B1F24' : '#fff',
+    color: darkMode ? '#fff' : '#1B1F24',
+  };
+
+  const containerStyle = {
+    backgroundColor: darkMode ? '#1B1F24' : '#fff',
+    color: darkMode ? '#fff' : '#1B1F24',
+    borderRadius: `${borderRadius}px`,
   };
 
   const buttonStyle = {
-    backgroundColor: backgroundColor,
+    backgroundColor: disable ? '#e4e7eb' : darkMode && backgroundColor === '#fff' ? '#1c2025' : backgroundColor,
     border: `${isFocused ? '1.5px' : '1px'} solid ${inputBorderColor}`,
+    borderTopLeftRadius: `${borderRadius}px`,
+    borderBottomLeftRadius: `${borderRadius}px`,
   };
 
   const loaderStyle = {
@@ -90,7 +116,7 @@ export const PhoneInput = (props) => {
     <>
       <div
         data-cy={`label-${String(componentName).toLowerCase()}`}
-        className={`text-input d-flex ${
+        className={`text-input d-flex phone-input-widget ${
           defaultAlignment === 'top' &&
           ((width != 0 && label?.length != 0) || (auto && width == 0 && label && label?.length != 0))
             ? 'flex-column'
@@ -130,8 +156,16 @@ export const PhoneInput = (props) => {
           disabled={disable || loading}
           onBlur={handleBlur}
           onFocus={handleFocus}
-          onKeyUp={handleKeyUp}
-          disableDropdown={isCountryChangeEnabled}
+          inputProps={{
+            autoFocus: true,
+          }}
+          onKeyDown={handleKeyUp}
+          disableDropdown={!isCountryChangeEnabled}
+          {...(defaultCountry !== 'none' && { country: defaultCountry })}
+          countryCodeEditable={isCountryChangeEnabled}
+          dropdownStyle={dropdownStyle}
+          searchStyle={searchStyle}
+          containerStyle={containerStyle}
         />
         {loading && <Loader style={loaderStyle} width="16" />}
       </div>

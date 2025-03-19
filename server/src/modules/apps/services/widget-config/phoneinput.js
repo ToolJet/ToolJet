@@ -205,9 +205,9 @@ export const phoneinputConfig = {
   },
   actions: [
     {
-      handle: 'setText',
-      displayName: 'Set text',
-      params: [{ handle: 'text', displayName: 'text', defaultValue: 'New text' }],
+      handle: 'setValue',
+      displayName: 'Set Value',
+      params: [{ handle: 'value', displayName: 'value', defaultValue: '00' }],
     },
     {
       handle: 'clear',
@@ -220,16 +220,6 @@ export const phoneinputConfig = {
     {
       handle: 'setBlur',
       displayName: 'Set blur',
-    },
-    {
-      handle: 'disable',
-      displayName: 'Disable(deprecated)',
-      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
-    },
-    {
-      handle: 'visibility',
-      displayName: 'Visibility(deprecated)',
-      params: [{ handle: 'visibility', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
     },
     {
       handle: 'setVisibility',

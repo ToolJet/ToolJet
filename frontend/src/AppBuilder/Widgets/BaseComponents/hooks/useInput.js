@@ -10,6 +10,7 @@ export const useInput = ({
   setExposedVariable,
   setExposedVariables,
   fireEvent,
+  inputType,
 }) => {
   const isInitialRender = useRef(true);
   const inputRef = useRef();
@@ -90,8 +91,9 @@ export const useInput = ({
   }, [properties.value]);
 
   useEffect(() => {
+    const setterName = inputType === 'phone' ? 'setValue' : 'setText';
     const exposedVariables = {
-      setText: async function (text) {
+      [setterName]: async function (text) {
         setInputValue(text);
         fireEvent('onChange');
       },
