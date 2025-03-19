@@ -17473,8 +17473,8 @@ a.step-item:hover {
 
 .step-item:not(:first-child):after {
     position: absolute;
-    left: -50%;
-    width: 100%;
+    left: calc(-50% + 8px);
+    width: calc(100% - 16px);
     content: "";
     transform: translateY(-50%)
 }
@@ -17487,9 +17487,16 @@ a.step-item:hover {
     box-sizing: content-box;
     display: block;
     content: "";
-    border: 2px solid #fff;
+    border: 2px solid transparent;
     border-radius: 50%;
     transform: translateX(-50%)
+}
+
+.steps.steps-counter {
+    .step-item:not(:first-child):after {
+        left: calc(-50% + 16px) !important;
+        width: calc(100% - 32px) !important;
+    }
 }
 
 .step-item.active {

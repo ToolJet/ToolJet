@@ -34,6 +34,7 @@ import Inspect from '@/_ui/Icon/solidIcons/Inspect';
 import classNames from 'classnames';
 import { EMPTY_ARRAY } from '@/_stores/editorStore';
 import { Select } from './Components/Select';
+import { Steps } from './Components/Steps.jsx';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { componentTypes } from '@/AppBuilder/WidgetManager/componentTypes';
@@ -81,6 +82,7 @@ const NEW_REVAMPED_COMPONENTS = [
   'Container',
   'ModalV2',
   'Link',
+  'Steps',
 ];
 
 export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selectedComponentId }) => {
@@ -731,6 +733,8 @@ const GetAccordion = React.memo(
       case 'DatePickerV2':
       case 'TimePicker':
         return <DatetimePickerV2 {...restProps} componentName={componentName} />;
+      case 'Steps':
+        return <Steps {...restProps} />;
 
       default: {
         return <DefaultComponent {...restProps} />;
