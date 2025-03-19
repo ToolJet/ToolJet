@@ -15,7 +15,6 @@ import {
   SourceComponent,
   SourceComponents,
   CloudStorageSources,
-  FetchManifest,
 } from '../../../common/components/DataSourceComponents';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import config from 'config';
