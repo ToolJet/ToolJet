@@ -345,14 +345,16 @@ img {
   align-items: center;
 }
 
-.clean-btn {
+
+
+button[title="Switch between dark and light mode (currently light mode)"] {
   box-shadow: 0px 0px 1px 0px rgba(48, 50, 51, 0.05),
     0px 1px 1px 0px rgba(48, 50, 51, 0.10);
   border: 1px solid #E4E7EB;
   border-radius: 6px !important;
 }
 
-.clean-btn svg {
+button[title="Switch between dark and light mode (currently light mode)"] svg {
   width: 20px;
 }
 
