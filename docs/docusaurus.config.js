@@ -77,6 +77,20 @@ module.exports = {
           className: 'navbar-social-link navbar-twitter-logo',
           'aria-label': 'Twitter account',
         },
+        {
+          href: 'https://app.tooljet.ai',
+          position: 'right',
+          label: 'Sign in',
+          className: 'navbar-signin',
+          'aria-label': 'Signin to ToolJet',
+        },
+        {
+          href: 'https://tooljet.ai',
+          position: 'right',
+          label: 'Website',
+          className: 'navbar-website',
+          'aria-label': 'ToolJet website',
+        },
       ],
     },
     footer: {
