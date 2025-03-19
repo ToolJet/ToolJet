@@ -13,6 +13,7 @@ title: Copilot
  <span>Paid feature</span>
 </div>
 
+
 :::info BETA
 ToolJet Copilot is currently in private beta for **Business** and **Enterprise** users only.
 :::

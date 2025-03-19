@@ -47,6 +47,7 @@
   --ifm-link-color: #3e63dd;
   --ifm-menu-color-background-active: #f0f4ff;
   --ifm-link-menu-color-background-hover: #f0f4ff;
+  --ifm-breadcrumb-item-background-active: transparent;
 }
 
 
@@ -97,9 +98,36 @@ h3 {
   background: var(--ifm-menu-link-sublist-icon) 50% / 1rem 1rem !important;
 }
 
+.badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: none;
+  width: max-content;
+}
+
 .badge--primary {
   margin-bottom: 1rem;
+  background-color: #FAEFE7;
+  color: #BF4F03;
 }
+
+.badge img {
+  box-shadow: none;
+}
+
+
+.badge--warning {
+  background-color: #FCEEEF;
+  color: #D72D39;
+}
+
+/* .badge--secondary {
+  background-color: #dfdfdf;
+} */
+
+
 
 article {
   padding-left: 7%;
