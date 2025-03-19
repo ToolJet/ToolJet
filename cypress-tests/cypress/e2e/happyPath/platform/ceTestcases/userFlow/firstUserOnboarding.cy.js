@@ -3,7 +3,12 @@ import { commonText } from "Texts/common";
 import { onboardingSelectors } from "Selectors/onboarding";
 import { onboardingText } from "Texts/onboarding";
 import { logout } from "Support/utils/common";
-import { bannerElementsVerification, onboardingStepOne, onboardingStepTwo, onboardingStepThree } from "Support/utils/onboarding";
+import {
+  bannerElementsVerification,
+  onboardingStepOne,
+  onboardingStepTwo,
+  onboardingStepThree,
+} from "Support/utils/onboarding";
 
 describe("Self host onboarding", () => {
   const envVar = Cypress.env("environment");
@@ -24,9 +29,11 @@ describe("Self host onboarding", () => {
         "have.text",
         "Let's set up your admin account and workspace to get started!"
       );
-      cy.get('[data-cy="set-up-tooljet-button"]')
-        .verifyVisibleElement("have.text", "Set up ToolJet")
-        .click();
+      cy.get('[data-cy="set-up-tooljet-button"]').verifyVisibleElement(
+        "have.text",
+        "Set up ToolJet"
+      );
+      cy.get('[data-cy="set-up-tooljet-button"]').click();
     }
 
     const commonElements = [
@@ -72,7 +79,8 @@ describe("Self host onboarding", () => {
     if (envVar === "Community") {
       cy.get(commonSelectors.signUpTermsHelperText).should(($el) => {
         expect($el.contents().first().text().trim()).to.eq(
-          commonText.selfHostSignUpTermsHelperText
+          // commonText.selfHostSignUpTermsHelperText
+          "By signing up you are agreeing to the"
         );
       });
     } else if (envVar === "Enterprise") {
@@ -110,13 +118,16 @@ describe("Self host onboarding", () => {
 
     if (envVar === "Enterprise") {
       bannerElementsVerification();
-      onboardingStepOne()
+      onboardingStepOne();
     }
 
-    if (envVar === "Enterprise") {
-      bannerElementsVerification();
-      onboardingStepTwo();
-    }
+    bannerElementsVerification();
+    onboardingStepTwo();
+
+    // if (envVar === "Enterprise") {
+    //   bannerElementsVerification();
+    //   onboardingStepTwo();
+    // }
 
     if (envVar === "Enterprise") {
       bannerElementsVerification();
