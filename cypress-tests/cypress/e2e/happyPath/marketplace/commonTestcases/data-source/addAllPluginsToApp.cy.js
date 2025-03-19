@@ -65,7 +65,7 @@ describe("Add all Data sources to app", () => {
     cy.defaultWorkspaceLogin();
   });
 
-  it.skip("Should verify global data source page", () => {
+  it("Should verify global data source page", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
 
@@ -168,10 +168,15 @@ describe("Add all Data sources to app", () => {
     cy.get(".marketplace-install").each(($el) => {
       cy.wrap($el).click();
       cy.wait(500);
+      cy.get(commonSelectors.toastMessage).should("include.text", "installed");
     });
     cy.wait(1000);
+
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    cy.wait(1000);
+    cy.get(commonSelectors.pageSectionHeader).should(
+      "have.text",
+      "Data sources"
+    );
 
     cy.wrap(dataSourcesMarketplace).each((dsName) => {
       cy.get(commonSelectors.globalDataSourceIcon).click();
