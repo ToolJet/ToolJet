@@ -301,7 +301,65 @@ img {
   color: inherit;
 }
 
-.menu {
+.alert {
+  border-left: none;
+  color: #1B1F24;
+}
+
+/* Note Alert box*/
+
+.alert.alert--secondary {
+  background-color: #F6F8FA !important;
+}
+
+.alert.alert--secondary svg {
+  fill: #4368E3
+}
+
+/* Info Alert box*/
+
+.alert.alert--info {
+  background-color: #F6F8FA !important;
+}
+
+.alert.alert--info svg {
+  fill: #4368E3
+}
+
+
+/* Warning Alert box */
+
+.alert.alert--warning {
+  background-color: #FAEFE7 !important;
+}
+
+.alert.alert--warning svg {
+  fill: #BF4F03
+}
+
+
+/* Tip Alert box */
+
+.alert.alert--success {
+  background-color: #E8F3EB;
+}
+
+.alert.alert--success svg {
+  fill: #1E823B
+}
+
+/* Danger Alert box */
+
+.alert.alert--danger {
+  background-color: #FCEEEF;
+}
+
+.alert.alert--danger svg {
+  fill: #D72D39
+}
+
+
+.admonition-heading .menu {
   overflow: hidden;
 }
 
