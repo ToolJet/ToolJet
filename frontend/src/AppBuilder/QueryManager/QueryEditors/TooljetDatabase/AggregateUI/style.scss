@@ -26,8 +26,17 @@
     width: fit-content;
 }
 
-.minw-400-w-400 {
-    width: 45% !important;
-    max-width: 45%;
-    min-width: 45%;
+.query-manager {
+    .minw-400-w-400 {
+        width: 45% !important;
+        max-width: 45%;
+        min-width: 45%;
+      }
+}
+
+.workflows-query-node {
+    .minw-400-w-400 {
+        max-width: unset;
+        min-width: 45%;
+    }
 }

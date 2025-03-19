@@ -112,7 +112,7 @@ export const ComponentsManagerTab = ({ darkMode }) => {
       const otherSection = { title: t('widgetManager.others', 'others'), items: [] };
       const legacySection = { title: 'Legacy', items: [] };
 
-      const commonItems = ['Table', 'Button', 'Text', 'TextInput', 'Datepicker', 'Form'];
+      const commonItems = ['Table', 'Button', 'Text', 'TextInput', 'DatetimePickerV2', 'Form'];
       const formItems = [
         'Form',
         'TextInput',
@@ -124,14 +124,16 @@ export const ComponentsManagerTab = ({ darkMode }) => {
         'MultiselectV2',
         'RichTextEditor',
         'Checkbox',
-        'RadioButton',
-        'Datepicker',
-        'DateRangePicker',
+        'RadioButtonV2',
+        'DatetimePickerV2',
+        'DatePickerV2',
+        'TimePicker',
+        'DaterangePicker',
         'FilePicker',
         'StarRating',
       ];
       const integrationItems = ['Map'];
-      const layoutItems = ['Container', 'Listview', 'Tabs', 'Modal'];
+      const layoutItems = ['Container', 'Listview', 'Tabs', 'ModalV2'];
 
       filteredComponents.forEach((f) => {
         if (commonItems.includes(f)) commonSection.items.push(f);

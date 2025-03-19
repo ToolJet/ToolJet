@@ -25,7 +25,13 @@ export default function AutoLayoutAlert({ show, onClick }) {
       <div style={{ fontSize: '12px', fontStyle: 'normal', fontWeight: '400', lineHeight: '20px' }}>
         You have to disable auto alignment to manually adjust mobile components. Once disabled, the mobile layout will
         not automatically align with desktop changes
-        <ButtonSolid size="sm" variant="tertiary" onClick={onClick} className="mt-2">
+        <ButtonSolid
+          size="sm"
+          variant="tertiary"
+          onClick={onClick}
+          className="mt-2"
+          data-cy="disable-auto-alignment-button"
+        >
           Disable auto alignment
         </ButtonSolid>
       </div>

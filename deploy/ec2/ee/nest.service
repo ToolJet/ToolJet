@@ -1,0 +1,17 @@
+[Unit]
+Description=Nest Server
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+
+WorkingDirectory=/home/ubuntu/app
+Environment="NODE_ENV=production"
+EnvironmentFile=/home/ubuntu/app/.env
+RestartSec=1
+ExecStart=/usr/bin/npm --prefix /home/ubuntu/app run start:prod
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

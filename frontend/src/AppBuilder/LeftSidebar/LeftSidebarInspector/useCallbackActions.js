@@ -9,6 +9,7 @@ const useCallbackActions = () => {
   const currentPageComponents = useStore((state) => state?.getCurrentPageComponents(), shallow);
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
   const runQuery = useStore((state) => state.queryPanel.runQuery);
+  const getComponentIdToAutoScroll = useStore((state) => state.getComponentIdToAutoScroll);
 
   const handleRemoveComponent = (component) => {
     deleteComponents([component.id]);
@@ -28,6 +29,24 @@ const useCallbackActions = () => {
     const stringified = JSON.stringify(data, null, 2).replace(/\\/g, '');
     navigator.clipboard.writeText(stringified);
     return toast.success('Copied to the clipboard', { position: 'top-center' });
+  };
+
+  const handleAutoScrollToComponent = (data) => {
+    const { isAccessible, computedComponentId, isOnCanvas } = getComponentIdToAutoScroll(data.id);
+    if (!isAccessible) {
+      if (isOnCanvas) {
+        toast.success(
+          `This component can't be opened because it's on the main canvas. Close ${computedComponentId} and click "Go to component" to view it there`
+        );
+      } else
+        toast.success(
+          `This component can't be opened because it's inside ${computedComponentId}. Open ${computedComponentId} and click "Go to component"to view it.`
+        );
+      return;
+    }
+    setSelectedComponents([computedComponentId]);
+    const target = document.getElementById(computedComponentId);
+    target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   };
 
   const callbackActions = [
@@ -50,6 +69,7 @@ const useCallbackActions = () => {
       for: 'components',
       actions: [
         { name: 'Select Widget', dispatchAction: handleSelectComponentOnEditor, icon: false, onSelect: true },
+        { name: 'Go to component', dispatchAction: handleAutoScrollToComponent, icon: true, iconName: 'select' },
         ...(!shouldFreeze
           ? [{ name: 'Delete Component', dispatchAction: handleRemoveComponent, icon: true, iconName: 'trash' }]
           : []),

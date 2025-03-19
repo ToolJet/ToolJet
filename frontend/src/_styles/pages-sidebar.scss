@@ -150,8 +150,16 @@
         justify-content: center;
     }
 
+    &.selector-open {
+        border: 1px solid var(--indigo9);
+        background: var(--slate1);
+        box-shadow: 0px 1px 1px 1px var(--slate6);
+        border-radius: 6px;
+    }
+
     &:hover {
-        background: var(--slate7);
+        background: var(--slate1);
+        box-shadow: 0px 1px 1px 1px var(--slate6);
         border-radius: 6px;
     }
 }
@@ -213,5 +221,19 @@
     button{
         box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.10);
         border: 1px solid #CCD1D5;
+    }
+}
+
+#page-settings-tabpane-properties {
+    .form-check-input[type=checkbox] {
+        float: right;
+    }
+}
+
+#page-settings-tabpane-styles {
+    .settings-tab {
+        .accordion-button {
+            padding: 0px !important;
+        }
     }
 }

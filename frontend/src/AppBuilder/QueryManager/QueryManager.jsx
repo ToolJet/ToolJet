@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 import { QueryManagerHeader } from './Components/QueryManagerHeader';
-import { QueryManagerBody } from './Components/QueryManagerBody';
+import QueryManagerBody from './Components/QueryManagerBody';
 import { defaultSources } from './constants';
 import { CodeHinterContext } from '@/AppBuilder/CodeBuilder/CodeHinterContext';
 import { resolveReferences } from '@/_helpers/utils';
@@ -19,18 +19,13 @@ const QueryManager = ({ mode, darkMode }) => {
   const setSelectedDataSource = useStore((state) => state.queryPanel.setSelectedDataSource);
   const setQueryToBeRun = useStore((state) => state.queryPanel.setQueryToBeRun);
 
-  const [options, setOptions] = useState({});
   const [activeTab, setActiveTab] = useState(1);
 
   useEffect(() => {
-    if (selectedQuery?.kind == 'runjs' || selectedQuery?.kind == 'runpy') {
+    if (selectedQuery?.kind == 'runjs' || selectedQuery?.kind == 'runpy' || selectedQuery?.kind == 'restapi') {
       setActiveTab(1);
     }
   }, [selectedQuery?.id]);
-
-  useEffect(() => {
-    setOptions(selectedQuery?.options || {});
-  }, [selectedQuery?.options]);
 
   useEffect(() => {
     if (queryToBeRun !== null) {
@@ -42,7 +37,7 @@ const QueryManager = ({ mode, darkMode }) => {
 
   useEffect(() => {
     if (selectedQuery) {
-      const selectedDS = [...dataSources, ...globalDataSources, !!sampleDataSource && sampleDataSource]
+      const selectedDS = [...dataSources, ...globalDataSources, ...(sampleDataSource?.length ? sampleDataSource : [])]
         .filter(Boolean)
         .find((datasource) => datasource.id === selectedQuery?.data_source_id);
       //TODO: currently type is not taken into account. May create issues in importing REST apis. to be revamped when import app is revamped
@@ -64,13 +59,7 @@ const QueryManager = ({ mode, darkMode }) => {
         'd-none': loadingDataSources,
       })}
     >
-      <QueryManagerHeader
-        darkMode={darkMode}
-        options={options}
-        setOptions={setOptions}
-        setActiveTab={setActiveTab}
-        activeTab={activeTab}
-      />
+      <QueryManagerHeader darkMode={darkMode} setActiveTab={setActiveTab} activeTab={activeTab} />
       <CodeHinterContext.Provider
         value={{
           parameters: selectedQuery?.options?.parameters?.reduce(
@@ -82,7 +71,7 @@ const QueryManager = ({ mode, darkMode }) => {
           ),
         }}
       >
-        <QueryManagerBody darkMode={darkMode} options={options} setOptions={setOptions} activeTab={activeTab} />
+        <QueryManagerBody darkMode={darkMode} activeTab={activeTab} />
       </CodeHinterContext.Provider>
     </div>
   );

@@ -1,4 +1,5 @@
 import React, { memo, useRef, useState, useCallback } from 'react';
+import cx from 'classnames';
 // import { RenameInput } from './RenameInput';
 // import { PagehandlerMenu } from './PagehandlerMenu';
 // import { EditModal } from './EditModal';
@@ -26,6 +27,7 @@ export const PageMenuItem = withRouter(
     const isDisabled = page?.disabled ?? false;
     const [isHovered, setIsHovered] = useState(false);
     const shouldFreeze = useStore((state) => state.getShouldFreeze());
+    const showEditingPopover = useStore((state) => state.showEditingPopover);
     const {
       definition: { styles, properties },
     } = useStore((state) => state.pageSettings);
@@ -147,70 +149,78 @@ export const PageMenuItem = withRouter(
 
     return (
       <div
-        ref={popoverRef}
-        id={`edit-popover-${page.id}`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
+        style={{
+          width: '100%',
+        }}
       >
-        {editingPageName && editingPage?.id === page?.id ? (
-          <>
-            <RenameInput
-              page={page}
-              updaterCallback={() => {
-                toggleEditPageNameInput(false);
-              }}
-            />
-          </>
-        ) : (
-          <>
-            <div
-              onClick={handlePageSwitch}
-              className={`page-menu-item ${isSelected && 'is-selected'} ${darkMode && 'dark-theme'}`}
-              style={{
-                position: 'relative',
-                width: '100%',
-                ...computedStyles?.pill,
-              }}
-            >
-              <div className="left">
-                {icon()}
-                <OverflowTooltip childrenClassName="page-name" style={{ ...computedStyles?.text }}>
-                  {page.name}
-                </OverflowTooltip>
-                <span
-                  style={{
-                    marginLeft: '8px',
+        <>
+          <div
+            onClick={handlePageSwitch}
+            className={`page-menu-item ${isSelected && 'is-selected'} ${darkMode && 'dark-theme'}`}
+            style={{
+              position: 'relative',
+              width: '100%',
+              ...computedStyles?.pill,
+            }}
+          >
+            {editingPageName && editingPage?.id === page?.id ? (
+              <>
+                {' '}
+                <div className="left">{icon()}</div>
+                <RenameInput
+                  page={page}
+                  updaterCallback={() => {
+                    toggleEditPageNameInput(false);
                   }}
-                  className="color-slate09 meta-text"
-                >
-                  {isHomePage && 'Home'}
-                  {isDisabled && 'Disabled'}
-                  {isHidden && !isDisabled && 'Hidden'}
-                </span>
-              </div>
-              {!shouldFreeze && (
-                <div className="right">
-                  <button
+                />
+              </>
+            ) : (
+              <>
+                {' '}
+                <div className="left">
+                  {icon()}
+                  <OverflowTooltip childrenClassName="page-name" style={{ ...computedStyles?.text }}>
+                    {page.name}
+                  </OverflowTooltip>
+                  <span
                     style={{
-                      backgroundColor: 'transparent',
-                      border: 'none',
-                      color: 'var(--color-slate12)',
-                      cursor: 'pointer',
-                      padding: '0',
-                      ...((isEditingPage || currentPageId === page?.id) && {
-                        opacity: 1,
-                      }),
+                      marginLeft: '8px',
                     }}
-                    className="edit-page-overlay-toggle"
-                    onClick={handlePageMenuSettings}
+                    className="color-slate09 meta-text"
                   >
-                    <SolidIcon width="20" dataCy={`page-menu`} name="morevertical" />
-                  </button>
+                    {isHomePage && 'Home'}
+                    {isDisabled && 'Disabled'}
+                    {isHidden && !isDisabled && 'Hidden'}
+                  </span>
                 </div>
-              )}
-            </div>
-          </>
-        )}
+                {!shouldFreeze && (
+                  <div className={cx('right', { 'handler-menu-open': showEditingPopover })}>
+                    <button
+                      style={{
+                        backgroundColor: 'transparent',
+                        border: 'none',
+                        color: 'var(--color-slate12)',
+                        cursor: 'pointer',
+                        padding: '0',
+                        ...((isEditingPage || currentPageId === page?.id) && {
+                          opacity: 1,
+                        }),
+                      }}
+                      className="edit-page-overlay-toggle"
+                      onClick={handlePageMenuSettings}
+                      ref={popoverRef}
+                      id={`edit-popover-${page.id}`}
+                    >
+                      <SolidIcon width="20" dataCy={`page-menu`} name="morevertical" />
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </>
       </div>
     );
   })
@@ -236,8 +246,8 @@ export const AddingPageHandler = ({ darkMode }) => {
   };
 
   return (
-    <div className="row" role="button" style={{ marginTop: '2px' }}>
-      <div className="col-12">
+    <div role="button" style={{ marginTop: '2px' }}>
+      <div>
         <input
           type="text"
           className={`form-control page-name-input color-slate12 ${darkMode && 'bg-transparent'}`}

@@ -1,0 +1,166 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Qdrant Datasource",
+  "description": "A schema defining Qdrant datasource",
+  "type": "api",
+  "defaults": {
+    "operation": "get_collection_info"
+  },
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Select an operation",
+      "list": [
+        {
+          "value": "get_collection_info",
+          "name": "Get Collection Info"
+        },
+        {
+          "value": "list_collections",
+          "name": "List Collections"
+        },
+        {
+          "value": "get_points",
+          "name": "Get Points"
+        },
+        {
+          "value": "upsert_points",
+          "name": "Upsert Points"
+        },
+        {
+          "value": "delete_points",
+          "name": "Delete Points"
+        },
+        {
+          "value": "query_points",
+          "name": "Query Points"
+        }
+      ]
+    },
+    "get_collection_info": {
+      "collectionName": {
+        "label": "Collection Name",
+        "key": "collectionName",
+        "type": "codehinter",
+        "description": "Enter the collection name.",
+        "placeholder": "example-collection",
+        "height": "36px"
+      }
+    },
+    "list_collections": {},
+    "get_points": {
+      "collectionName": {
+        "label": "Collection Name",
+        "key": "collectionName",
+        "type": "codehinter",
+        "description": "Enter the collection name.",
+        "placeholder": "example-collection",
+        "height": "36px"
+      },
+      "ids": {
+        "label": "IDs",
+        "key": "ids",
+        "type": "codehinter",
+        "description": "Enter point IDs as JSON array",
+        "placeholder": "[\"792defdc-e3f9-49aa-b7b2-ddebcdbdc2a6\", 23]",
+        "height": "36px"
+      }
+    },
+    "upsert_points": {
+      "collectionName": {
+        "label": "Collection Name",
+        "key": "collectionName",
+        "type": "codehinter",
+        "description": "Enter the collection name.",
+        "placeholder": "example-collection",
+        "height": "36px"
+      },
+      "points": {
+        "label": "Points",
+        "key": "points",
+        "type": "codehinter",
+        "description": "Enter points as JSON array",
+        "placeholder": "[{\"id\":1,\"payload\":{\"color\":\"red\"},\"vector\":[0.9,0.1,0.1]}]",
+        "height": "36px"
+      }
+    },
+    "delete_points": {
+      "collectionName": {
+        "label": "Collection Name",
+        "key": "collectionName",
+        "type": "codehinter",
+        "description": "Enter the collection name.",
+        "placeholder": "example-collection",
+        "height": "36px"
+      },
+      "ids": {
+        "label": "IDs",
+        "key": "id",
+        "type": "codehinter",
+        "description": "Enter point IDs as JSON array",
+        "placeholder": "[\"845d6b75-38f6-4af7-bffa-b1fd46131ab5\", 23]",
+        "height": "36px"
+      },
+      "filter": {
+        "label": "Filter",
+        "key": "filter",
+        "type": "codehinter",
+        "description": "Enter a filter query in JSON format",
+        "placeholder": "{\"must\":[{\"key\":\"color\",\"match\":{\"value\":\"red\"}}]}",
+        "height": "150px"
+      }
+    },
+    "query_points": {
+      "collectionName": {
+        "label": "Collection Name",
+        "key": "collectionName",
+        "type": "codehinter",
+        "description": "Enter the collection name.",
+        "placeholder": "example-collection",
+        "height": "36px"
+      },
+      "limit": {
+        "label": "Limit",
+        "key": "limit",
+        "type": "codehinter",
+        "description": "Enter the number of results to return.",
+        "placeholder": "3",
+        "height": "36px"
+      },
+      "filter": {
+        "label": "Filter",
+        "key": "filter",
+        "type": "codehinter",
+        "description": "Enter a filter query in JSON format.",
+        "placeholder": "{\"must\":[{\"key\":\"color\",\"match\":{\"value\":\"red\"}}]}",
+        "height": "150px"
+      },
+      "withVectors": {
+        "label": "With Vectors",
+        "key": "withVectors",
+        "type": "codehinter",
+        "description": "Whether to return vector values.",
+        "placeholder": "true (false by default)",
+        "height": "36px"
+      },
+      "withPayload": {
+        "label": "Include metadata",
+        "key": "withPayload",
+        "type": "codehinter",
+        "description": "Whether to return payload values.",
+        "placeholder": "true (false by default)",
+        "height": "36px"
+      },
+      "query": {
+        "label": "Query",
+        "key": "query",
+        "type": "codehinter",
+        "description": "Enter the query in JSON.",
+        "placeholder": "[0.2, 0.1, 0.9, 0.79]",
+        "height": "36px"
+      }
+    }
+  }
+}

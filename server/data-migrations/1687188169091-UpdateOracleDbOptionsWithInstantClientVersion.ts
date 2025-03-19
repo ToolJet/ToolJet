@@ -1,5 +1,5 @@
-import { DataSource } from 'src/entities/data_source.entity';
-import { DataSourceOptions } from 'src/entities/data_source_options.entity';
+import { DataSource } from '@entities/data_source.entity';
+import { DataSourceOptions } from '@entities/data_source_options.entity';
 import { In, MigrationInterface, QueryRunner } from 'typeorm';
 
 export class UpdateOracleDbOptionsWithInstantClientVersion1687188169091 implements MigrationInterface {

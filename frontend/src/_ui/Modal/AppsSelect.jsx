@@ -188,7 +188,7 @@ export function AppsSelect(props) {
       }}
       options={[props.allowSelectAll ? props.allOption : null, ...props.options]}
       styles={selectStyles}
-      placeholder="Select apps.."
+      placeholder={props.resourceType === 'Apps' ? 'Select apps..' : 'Select data sources..'}
       noOptionsMessage={() => 'No apps found'}
     />
     // </div>

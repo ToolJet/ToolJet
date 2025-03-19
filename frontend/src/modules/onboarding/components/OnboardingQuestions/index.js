@@ -1,1 +1,1 @@
-export { default } from './OnboardingQuestionsCE';
+export { default } from './OnboardingQuestions';

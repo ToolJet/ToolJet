@@ -17,17 +17,35 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import '../queryManager.theme.scss';
 import useStore from '@/AppBuilder/_stores/store';
 import { staticDataSources } from '../constants';
+import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 
 function DataSourcePicker({ darkMode }) {
   const dataSources = useStore((state) => state.dataSources);
   const globalDataSources = useStore((state) => state.globalDataSources);
   const sampleDataSource = useStore((state) => state.sampleDataSource);
-  const allUserDefinedSources = [...dataSources, ...globalDataSources];
+  const allUserDefinedSources = [...dataSources, ...globalDataSources].filter(
+    (ds) => ds.type !== DATA_SOURCE_TYPE.STATIC
+  );
   const [searchTerm, setSearchTerm] = useState();
   const [filteredUserDefinedDataSources, setFilteredUserDefinedDataSources] = useState(allUserDefinedSources);
   const navigate = useNavigate();
   const createDataQuery = useStore((state) => state.dataQuery.createDataQuery);
   const setPreviewData = useStore((state) => state.queryPanel.setPreviewData);
+
+  const staticDataSourcesFullObject = useStore((state) => state.globalDataSources)?.filter(
+    (gds) => gds.type === DATA_SOURCE_TYPE.STATIC
+  );
+  //StaicDataSources DIDNT HAVE ID
+  const updatedStaticDataSources = staticDataSources.map((source) => {
+    // Find a matching object from staticDataSourcesFullObject based on the 'kind' field
+    const matchingObject = staticDataSourcesFullObject?.find((gds) => gds.kind === source.kind);
+
+    // Replace the 'id' with the one from the matching object, or keep the existing one if no match
+    return {
+      ...source,
+      id: matchingObject?.id || source.id,
+    };
+  });
 
   const docLink = 'sampledb.com';
 
@@ -79,7 +97,7 @@ function DataSourcePicker({ darkMode }) {
           Default
         </label>
         <div className="query-datasource-card-container d-flex justify-content-between mb-3 mt-2">
-          {staticDataSources.map((source) => {
+          {updatedStaticDataSources.map((source) => {
             if (!workflowsEnabled && source.kind === 'workflows') return null;
 
             return (

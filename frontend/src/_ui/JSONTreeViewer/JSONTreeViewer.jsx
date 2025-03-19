@@ -251,7 +251,7 @@ export class JSONTreeViewer extends React.Component {
         <ErrorBoundary showFallback={true}>
           <JSONNode
             data={this.state.data}
-            shouldExpandNode={false}
+            shouldExpandNode={this.props.shouldExpandNode ?? false}
             getCurrentPath={this.getCurrentNodePath}
             getCurrentNodeType={this.getCurrentNodeType}
             toUseNodeIcons={this.props.useIcons ?? false}

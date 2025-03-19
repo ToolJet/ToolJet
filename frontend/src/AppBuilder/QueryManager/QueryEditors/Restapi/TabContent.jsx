@@ -1,12 +1,7 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
-import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 import CodeHinter from '@/AppBuilder/CodeEditor';
-import InfoIcon from '@assets/images/icons/info.svg';
-import PlusRectangle from '@/_ui/Icon/solidIcons/PlusRectangle';
-import Warning from '@/_ui/Icon/solidIcons/Warning';
+import EmptyTabContent from './EmptyTabContent';
 
 export default ({
   options = [],
@@ -21,27 +16,14 @@ export default ({
   tabType,
   bodyToggle,
   addNewKeyValuePair,
+  onInputChange,
 }) => {
-  const { t } = useTranslation();
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   return (
     <div className="tab-content-wrapper">
-      {options.length === 0 && (
-        <div
-          className="empty-paramlist w-100"
-          style={{
-            background: darkMode && 'var(--interactive-default)',
-            height: '69px',
-            position: 'relative',
-            top: '-8px',
-          }}
-        >
-          <span style={{ marginBottom: '3px' }}>
-            <Warning fill="#6A727C" width={'20px'} />
-          </span>
-          <span style={{ fontSize: '12px' }}>No key value pairs added</span>
-        </div>
+      {options.length === 0 && !bodyToggle && (
+        <EmptyTabContent addNewKeyValuePair={addNewKeyValuePair} paramType={paramType} />
       )}
       {!bodyToggle &&
         options.map((option, index) => {
@@ -55,6 +37,7 @@ export default ({
                       initialValue={option[0]}
                       placeholder="Key"
                       onChange={onChange(paramType, 0, index)}
+                      onInputChange={onInputChange(paramType, index)}
                       componentName={`${componentName}/${tabType}::key::${index}`}
                     />
                   </div>
@@ -64,6 +47,7 @@ export default ({
                       initialValue={option[1]}
                       placeholder="Value"
                       onChange={onChange(paramType, 1, index)}
+                      onInputChange={onInputChange(paramType, index)}
                       componentName={`${componentName}/${tabType}::value::${index}`}
                     />
                   </div>
@@ -83,7 +67,7 @@ export default ({
             </>
           );
         })}
-      {bodyToggle ? (
+      {bodyToggle && (
         <div>
           <CodeHinter
             type="extendedSingleLine"
@@ -94,19 +78,6 @@ export default ({
             componentName={`${componentName}/${tabType}`}
           />
         </div>
-      ) : (
-        <button
-          onClick={() => addNewKeyValuePair(paramType)}
-          className="add-params-btn"
-          id="runjs-param-add-btn"
-          data-cy={`runjs-add-param-button`}
-          style={{ background: 'none', border: 'none', width: '100px' }}
-        >
-          <p className="m-0 text-default">
-            <PlusRectangle fill={'var(--icons-default)'} width={15} />
-            <span style={{ marginLeft: '6px' }}>{t('editor.inspector.eventManager.addKeyValueParam', 'Add more')}</span>
-          </p>
-        </button>
       )}
     </div>
   );

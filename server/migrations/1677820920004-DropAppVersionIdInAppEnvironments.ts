@@ -1,4 +1,4 @@
-import { dropForeignKey } from 'src/helpers/utils.helper';
+import { dropForeignKey } from '@helpers/utils.helper';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class DropAppVersionIdInAppEnvironments1677820920004 implements MigrationInterface {

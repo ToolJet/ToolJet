@@ -33,7 +33,7 @@ export const PagehandlerMenu = ({
   return (
     <OverlayTrigger
       trigger={'click'}
-      placement={'bottom-end'}
+      placement={'auto'}
       rootClose={false}
       show={showMenu}
       overlay={

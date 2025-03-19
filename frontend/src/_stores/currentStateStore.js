@@ -4,17 +4,23 @@ import _, { omit } from 'lodash';
 import { useResolveStore } from './resolverStore';
 import { handleLowPriorityWork, updateCanvasBackground } from '@/_helpers/editorHelpers';
 import { useEditorStore } from '@/_stores/editorStore';
+import { useAppDataStore } from './appDataStore';
+import { authenticationService } from '@/_services';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import update from 'immutability-helper';
 const { diff } = require('deep-object-diff');
-import { useAppDataStore } from './appDataStore';
-import { authenticationService } from '@/_services';
+
 const initialState = {
   queries: {},
   components: {},
   globals: {
     theme: { name: 'light' },
     urlparams: null,
+    environment: {
+      id: null,
+      name: null,
+    },
+    mode: {},
     currentUser: {},
   },
   errors: {},
@@ -26,8 +32,8 @@ const initialState = {
     variables: {},
   },
   succededQuery: {},
-  isEditorReady: false,
   constants: {},
+  isEditorReady: false,
 };
 
 export const useCurrentStateStore = create(
@@ -56,8 +62,8 @@ export const useCurrentStateStore = create(
         setEditorReady: (isEditorReady) => set({ isEditorReady }),
         initializeCurrentStateOnVersionSwitch: () => {
           //fetch user for current app
-          const currentSession = authenticationService.currentSessionValue;
           const currentUser = useAppDataStore.getState().currentUser;
+          const currentSession = authenticationService.currentSessionValue;
           const userVars = {
             email: currentUser?.email,
             firstName: currentUser?.first_name,
@@ -66,6 +72,8 @@ export const useCurrentStateStore = create(
               ? ['all_users', ...currentSession.group_permissions.map((group) => group.name)]
               : ['all_users'],
             role: currentSession?.role?.name,
+            ssoUserInfo: currentUser?.sso_user_info,
+            ...(currentUser?.metadata && !_.isEmpty(currentUser.metadata) ? { metadata: currentUser.metadata } : {}),
           };
           const newInitialState = {
             ...initialState,

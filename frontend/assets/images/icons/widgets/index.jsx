@@ -11,12 +11,12 @@ import Colorpicker from './colorpicker.jsx';
 import Container from './container.jsx';
 import Customcomponent from './customcomponent.jsx';
 import Datepicker from './datepicker.jsx';
+import DateTimePickerV2 from './datetimepickerV2.jsx';
 import Daterangepicker from './daterangepicker.jsx';
 import Divider from './divider.jsx';
 import DividerHorizondal from './dividerhorizontal.jsx';
 import Downstatistics from './downstatistics.jsx';
 import Dropdown from './dropdown.jsx';
-import DropdownV2 from './dropdownV2.jsx';
 import Filepicker from './filepicker.jsx';
 import Form from './form.jsx';
 import Frame from './frame.jsx';
@@ -32,7 +32,6 @@ import Listview from './listview.jsx';
 import Map from './map.jsx';
 import Modal from './modal.jsx';
 import Multiselect from './multiselect.jsx';
-import MultiselectV2 from './multiselectV2.jsx';
 import Numberinput from './numberinput.jsx';
 import Pagination from './pagination.jsx';
 import Passwordinput from './passwordinput.jsx';
@@ -55,10 +54,11 @@ import Textinput from './textinput.jsx';
 import Timeline from './timeline.jsx';
 import Timer from './timer.jsx';
 import Toggleswitch from './toggleswitch.jsx';
-import ToggleSwitchV2 from './toggleswitchV2.jsx';
 import Treeselect from './treeselect.jsx';
 import Upstatistics from './upstatistics.jsx';
 import Verticaldivider from './verticaldivider.jsx';
+import TimePicker from './timepicker.jsx';
+import DatepickerV2 from './datepickerv2.jsx';
 
 const WidgetIcon = (props) => {
   switch (props.name) {
@@ -84,8 +84,21 @@ const WidgetIcon = (props) => {
       return <Container {...props} />;
     case 'customcomponent':
       return <Customcomponent {...props} />;
+    case 'datetimepickerlegacy':
+      return <Datepicker {...props} />;
     case 'datepicker':
       return <Datepicker {...props} />;
+    case 'datepickerv2':
+      return <DatepickerV2 {...props} />;
+    case 'timepicker':
+      return <TimePicker {...props} />;
+    case 'datetimepicker':
+      if (props?.version === 'v2') {
+        return <DateTimePickerV2 {...props} />;
+      }
+      return <Datepicker {...props} />;
+    case 'datetimepickerv2':
+      return <DateTimePickerV2 {...props} />;
     case 'daterangepicker':
       return <Daterangepicker {...props} />;
     case 'divider':
@@ -94,10 +107,9 @@ const WidgetIcon = (props) => {
       return <DividerHorizondal {...props} />;
     case 'downstatistics':
       return <Downstatistics {...props} />;
-    case 'dropdownlegacy':
+    case 'dropdown':
+    case 'dropdownv2':
       return <Dropdown {...props} />;
-    case 'dropdownV2':
-      return <DropdownV2 {...props} />;
     case 'filepicker':
       return <Filepicker {...props} />;
     case 'form':
@@ -125,11 +137,11 @@ const WidgetIcon = (props) => {
     case 'map':
       return <Map {...props} />;
     case 'modal':
+    case 'modallegacy':
       return <Modal {...props} />;
-    case 'multiselectlegacy':
+    case 'multiselect':
+    case 'multiselectv2':
       return <Multiselect {...props} />;
-    case 'multiselectV2':
-      return <MultiselectV2 {...props} />;
     case 'numberinput':
       return <Numberinput {...props} />;
     case 'pagination':
@@ -141,6 +153,7 @@ const WidgetIcon = (props) => {
     case 'qrscanner':
       return <Qrscanner {...props} />;
     case 'radiobutton':
+    case 'radiobuttonv2':
       return <RadioButton {...props} />;
     case 'rangeslider':
       return <Rangeslider {...props} />;
@@ -174,10 +187,10 @@ const WidgetIcon = (props) => {
       return <Timeline {...props} />;
     case 'timer':
       return <Timer {...props} />;
-    case 'toggleswitchlegacy':
-      return <Toggleswitch {...props} />;
+    case 'toggleswitch':
     case 'toggleswitchv2':
-      return <ToggleSwitchV2 {...props} />;
+      return <Toggleswitch {...props} />;
+
     case 'treeselect':
       return <Treeselect {...props} />;
     case 'upstatistics':

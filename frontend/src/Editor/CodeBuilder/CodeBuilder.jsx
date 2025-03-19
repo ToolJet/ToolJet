@@ -37,7 +37,6 @@ export function CodeBuilder({ initialValue, onChange, components }) {
 
     // Check if the user is trying to enter code or string
     if (value.startsWith('{{') && value.endsWith('}}')) isCode = true;
-    console.log('[CB]', 'isCode', isCode);
 
     if (isCode && value !== initialValue) {
       setShowDropdown(true);

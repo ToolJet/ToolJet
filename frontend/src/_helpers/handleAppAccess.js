@@ -1,19 +1,18 @@
 import { organizationService, authenticationService, appsService } from '@/_services';
 import { safelyParseJSON, getWorkspaceId } from '@/_helpers/utils';
-import { redirectToDashboard, getSubpath, getQueryParams, redirectToErrorPage } from '@/_helpers/routes';
-import { toast } from 'react-hot-toast';
+import { getSubpath, getQueryParams, redirectToErrorPage } from '@/_helpers/routes';
 import _ from 'lodash';
 import queryString from 'query-string';
 import { ERROR_TYPES } from './constants';
 
 /*  appId, versionId are only for old preview URLs */
-export const handleAppAccess = async (componentType, slug, version_id) => {
+export const handleAppAccess = async (componentType, slug, version_id, environment_id) => {
   const previewQueryParams = getPreviewQueryParams();
-  const isOldLocalPreview = version_id ? true : false;
+  const isOldLocalPreview = version_id && environment_id ? true : false;
   const isLocalPreview = !_.isEmpty(previewQueryParams);
   const queryParams = {
     ...previewQueryParams,
-    ...(isOldLocalPreview && { version_id }),
+    ...(isOldLocalPreview && { version_id, environment_id }),
     access_type: isLocalPreview ? 'view' : 'edit',
   };
   const query = queryString.stringify(previewQueryParams);
@@ -68,7 +67,8 @@ const handleError = (componentType, error, redirectPath, editPermission, appSlug
           return;
         }
         case 401: {
-          window.location = `${getSubpath() ?? ''}/login/${getWorkspaceId()}?redirectTo=${redirectPath}`;
+          const errorObj = safelyParseJSON(error.data?.message);
+          window.location = `${getSubpath() ?? ''}/login/${errorObj?.organizationId}?redirectTo=${redirectPath}`;
           return;
         }
         case 501: {
@@ -103,5 +103,6 @@ const getPreviewQueryParams = () => {
   const queryParams = getQueryParams();
   return {
     ...(queryParams['version'] && { version_name: queryParams.version }),
+    ...(queryParams['env'] && { environment_name: queryParams.env }),
   };
 };

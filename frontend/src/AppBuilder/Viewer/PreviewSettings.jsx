@@ -6,6 +6,7 @@ import classNames from 'classnames';
 import Cross from '@/_ui/Icon/solidIcons/Cross';
 import { AppVersionsManager } from '@/AppBuilder/Header/AppVersionsManager';
 import HeaderActions from '@/AppBuilder/Header/HeaderActions';
+import { AppEnvironments } from '@/modules/Appbuilder/components';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 
@@ -33,6 +34,7 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
           <>
             <AppVersionsManager darkMode={darkMode} />
             <div className="navbar-seperator"></div>
+            <AppEnvironments darkMode={darkMode} />
           </>
         )}
         <span>
@@ -77,6 +79,10 @@ const PreviewSettings = ({ isMobileLayout, showHeader, darkMode }) => {
           </Offcanvas.Header>
           {previewNavbar && (
             <Offcanvas.Body>
+              <span style={{ marginTop: '4px' }}>
+                <AppEnvironments darkMode={darkMode} />
+              </span>
+              <hr className="m-0" />
               <span>
                 <AppVersionsManager darkMode={darkMode} />
               </span>

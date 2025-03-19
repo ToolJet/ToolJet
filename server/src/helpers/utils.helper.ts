@@ -1,12 +1,20 @@
-import { QueryError } from 'src/modules/data_sources/query.errors';
+import { QueryError } from '@modules/data-sources/types';
 import * as sanitizeHtml from 'sanitize-html';
 import { EntityManager } from 'typeorm';
 import { isEmpty } from 'lodash';
+import { USER_TYPE } from '@modules/users/constants/lifecycle';
 import { ConflictException } from '@nestjs/common';
 import { DataBaseConstraints } from './db_constraints.constants';
-import { LICENSE_LIMIT } from '@licensing/helper';
-const protobuf = require('protobufjs');
+
 const semver = require('semver');
+
+export function parseJson(jsonString: string, errorMessage?: string): object {
+  try {
+    return JSON.parse(jsonString);
+  } catch (err) {
+    throw new QueryError(errorMessage, err.message, {});
+  }
+}
 
 export function maybeSetSubPath(path) {
   const hasSubPath = process.env.SUB_PATH !== undefined;
@@ -18,14 +26,6 @@ export function maybeSetSubPath(path) {
 
   const pathWithoutLeadingSlash = path.replace(/^\/+/, '');
   return urlPrefix + pathWithoutLeadingSlash;
-}
-
-export function parseJson(jsonString: string, errorMessage?: string): object {
-  try {
-    return JSON.parse(jsonString);
-  } catch (err) {
-    throw new QueryError(errorMessage, err.message, {});
-  }
 }
 
 export async function cacheConnection(dataSourceId: string, connection: any): Promise<any> {
@@ -50,14 +50,24 @@ export async function getCachedConnection(dataSourceId, dataSourceUpdatedAt): Pr
   }
 }
 
-export function cleanObject(obj: any): any {
+export function cleanObject<T extends object>(options: Partial<T>): Partial<T> {
+  if (!options || typeof options !== 'object' || Array.isArray(options)) {
+    return options; // Handle arrays and non-objects explicitly
+  }
+
+  const result: Partial<T> = { ...options };
   // This will remove undefined properties, for self and its children
-  Object.keys(obj).forEach((key) => {
-    obj[key] === undefined && delete obj[key];
-    if (obj[key] && typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
-      cleanObject(obj[key]);
+
+  Object.keys(result).forEach((key) => {
+    const value = result[key as keyof T];
+    if (value === undefined) {
+      delete result[key as keyof T];
+    } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+      result[key as keyof T] = cleanObject(value as any) as any;
     }
   });
+
+  return result;
 }
 
 export function sanitizeInput(value: string) {
@@ -128,7 +138,19 @@ export function lowercaseString(value: string) {
   return value?.toLowerCase()?.trim();
 }
 
-export const updateTimestampForAppVersion = async (manager, appVersionId) => {
+export const defaultAppEnvironments = [
+  { name: 'development', isDefault: false, priority: 1 },
+  { name: 'staging', isDefault: false, priority: 2 },
+  { name: 'production', isDefault: true, priority: 3 },
+];
+
+export const ceAppEnvironments = [{ name: 'production', isDefault: true, priority: 3 }];
+
+export const isSuperAdmin = (user) => {
+  return !!(user?.userType === USER_TYPE.INSTANCE);
+};
+
+export const updateTimestampForAppVersion = async (manager: EntityManager, appVersionId: string) => {
   const appVersion = await manager.findOne('app_versions', {
     where: { id: appVersionId },
   });
@@ -146,17 +168,15 @@ export async function catchDbException(operation: () => any, dbConstraints: DbCo
   try {
     return await operation();
   } catch (err) {
-    dbConstraints.map((dbConstraint) => {
+    for (const dbConstraint of dbConstraints) {
       if (err?.message?.includes(dbConstraint.dbConstraint)) {
         throw new ConflictException(dbConstraint.message);
       }
-    });
+    }
 
     throw err;
   }
 }
-
-export const defaultAppEnvironments = [{ name: 'production', isDefault: true, priority: 3 }];
 
 export function isPlural(data: Array<any>) {
   return data?.length > 1 ? 's' : '';
@@ -173,63 +193,6 @@ export async function dropForeignKey(tableName: string, columnName: string, quer
   const foreignKey = table.foreignKeys.find((fk) => fk.columnNames.indexOf(columnName) !== -1);
   await queryRunner.dropForeignKey(tableName, foreignKey);
 }
-
-export async function getServiceAndRpcNames(protoDefinition) {
-  const root = protobuf.parse(protoDefinition).root;
-  const serviceNamesAndMethods = root.nestedArray
-    .filter((item) => item instanceof protobuf.Service)
-    .reduce((acc, service) => {
-      const rpcMethods = service.methodsArray.map((method) => method.name);
-      acc[service.name] = rpcMethods;
-      return acc;
-    }, {});
-  return serviceNamesAndMethods;
-}
-
-export function generatePayloadForLimits(currentCount: number, totalCount: any, licenseStatus: object, label?: string) {
-  return totalCount !== LICENSE_LIMIT.UNLIMITED
-    ? {
-        percentage: (currentCount / totalCount) * 100,
-        total: totalCount,
-        current: currentCount,
-        licenseStatus,
-        label,
-        canAddUnlimited: false,
-      }
-    : {
-        canAddUnlimited: true,
-        licenseStatus,
-        label,
-      };
-}
-export class MigrationProgress {
-  private progress = 0;
-  constructor(private fileName: string, private totalCount: number) {}
-
-  show() {
-    this.progress++;
-    console.log(`${this.fileName} Progress ${Math.round((this.progress / this.totalCount) * 100)} %`);
-  }
-}
-
-export const processDataInBatches = async <T>(
-  entityManager: EntityManager,
-  getData: (entityManager: EntityManager, skip: number, take: number) => Promise<T[]>,
-  processBatch: (entityManager: EntityManager, data: T[]) => Promise<void>,
-  batchSize = 1000
-): Promise<void> => {
-  let skip = 0;
-  let data: T[];
-
-  do {
-    data = await getData(entityManager, skip, batchSize);
-    skip += batchSize;
-
-    if (data.length > 0) {
-      await processBatch(entityManager, data);
-    }
-  } while (data.length === batchSize);
-};
 
 export const generateNextNameAndSlug = (firstWord: string) => {
   firstWord = firstWord.length > 35 ? firstWord.slice(0, 35) : firstWord;
@@ -294,6 +257,29 @@ export const generateOrgInviteURL = (
   }${redirectTo ? `&redirectTo=${redirectTo}` : ''}`;
 };
 
+export function extractFirstAndLastName(fullName: string) {
+  if (fullName) {
+    const nameParts = fullName.trim().split(' ');
+    const firstName = nameParts[0];
+    const lastName = nameParts.slice(1).join(' ');
+
+    return {
+      firstName: firstName,
+      lastName: lastName,
+    };
+  }
+}
+
+export const getServerURL = () => {
+  const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
+  const API_URL = {
+    production: process.env.TOOLJET_SERVER_URL || (process.env.SERVE_CLIENT !== 'false' ? '__REPLACE_SUB_PATH__' : ''),
+    development: `http://localhost:${process.env.TOOLJET_SERVER_PORT || 3000}`,
+  };
+
+  return API_URL[environment];
+};
+
 export function extractMajorVersion(version) {
   return semver.valid(semver.coerce(version));
 }
@@ -314,6 +300,11 @@ export function checkVersionCompatibility(importingVersion) {
  */
 export function isTooljetVersionWithNormalizedAppDefinitionSchem(version) {
   return semver.satisfies(semver.coerce(version), '>= 2.24.0');
+}
+
+export function extractWorkFromUrl(url: string): string | null {
+  const match = url.match(/^([^@:/]+)@/);
+  return match ? match[1] : null;
 }
 
 function parseVersion(version: string): number[] {
@@ -441,37 +432,11 @@ export const isHttpsEnabled = () => {
   return !!process.env.TOOLJET_HOST?.startsWith('https');
 };
 
-export function isObject(obj) {
-  return obj && typeof obj === 'object';
+export function areAllUnique(array) {
+  const set = new Set(array);
+  return set.size === array.length;
 }
 
-export function mergeDeep(target, source, seen = new WeakMap()) {
-  if (!isObject(target)) {
-    target = {};
-  }
-
-  if (!isObject(source)) {
-    return target;
-  }
-
-  if (seen.has(source)) {
-    return seen.get(source);
-  }
-  seen.set(source, target);
-
-  for (const key in source) {
-    if (isObject(source[key])) {
-      if (!target[key]) {
-        Object.assign(target, { [key]: {} });
-      }
-      mergeDeep(target[key], source[key], seen);
-    } else {
-      Object.assign(target, { [key]: source[key] });
-    }
-  }
-
-  return target;
-}
 export const getSubpath = () => {
   const subpath = process.env.SUB_PATH || '';
   // Ensure subpath starts and ends with slashes
@@ -482,3 +447,7 @@ export const getSubpath = () => {
   }
   return subpath;
 };
+
+export function getTooljetEdition(): string {
+  return process.env.TOOLJET_EDITION?.toLowerCase() || 'ce';
+}

@@ -1,6 +1,6 @@
 export const radiobuttonConfig = {
-  name: 'RadioButton',
-  displayName: 'Radio Button',
+  name: 'RadioButtonLegacy',
+  displayName: 'Radio Button (Legacy)',
   description: 'Select one from multiple choices',
   component: 'RadioButton',
   defaultSize: {
@@ -97,7 +97,9 @@ export const radiobuttonConfig = {
       ],
     },
   ],
-  exposedVariables: {},
+  exposedVariables: {
+    value: true,
+  },
   definition: {
     others: {
       showOnDesktop: { value: '{{true}}' },

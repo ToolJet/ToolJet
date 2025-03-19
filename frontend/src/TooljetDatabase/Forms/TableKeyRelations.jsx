@@ -257,7 +257,7 @@ function SourceKeyRelation({
           firstColumnName={'Table'}
           secondColumnName={'Column'}
           tableList={sourceTable}
-          tableColumns={sourceColumns.filter((column) => !isEmpty(column.value.trim()))}
+          tableColumns={sourceColumns.filter((column) => !isEmpty(column?.value?.trim()))}
           source={true}
           isEditColumn={isEditColumn}
           isCreateColumn={isCreateColumn}

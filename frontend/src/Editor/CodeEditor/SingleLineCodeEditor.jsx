@@ -20,6 +20,8 @@ import ErrorBoundary from '../ErrorBoundary';
 import CodeHinter from './CodeHinter';
 import { EditorContext } from '../Context/EditorContextWrapper';
 import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
+import useStore from '@/AppBuilder/_stores/store';
+import { shallow } from 'zustand/shallow';
 
 const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, componentId, ...restProps }) => {
   const { initialValue, onChange, enablePreview = true, portalProps } = restProps;
@@ -30,26 +32,32 @@ const SingleLineCodeEditor = ({ suggestions, componentName, fieldMeta = {}, comp
   const [cursorInsidePreview, setCursorInsidePreview] = useState(false);
   const isPreviewFocused = useRef(false);
   const wrapperRef = useRef(null);
+
+  const replaceIdsWithName = useStore((state) => state.replaceIdsWithName, shallow);
+  let newInitialValue = initialValue;
+
+  if (initialValue?.includes('components') || initialValue?.includes('queries')) {
+    newInitialValue = replaceIdsWithName(initialValue);
+  }
   //! Re render the component when the componentName changes as the initialValue is not updated
 
-  const { variablesExposedForPreview } = useContext(EditorContext);
+  const { variablesExposedForPreview } = useContext(EditorContext) || {};
 
   const customVariables = variablesExposedForPreview?.[componentId] ?? {};
 
   useEffect(() => {
-    if (typeof initialValue !== 'string') return;
+    if (typeof newInitialValue !== 'string') return;
 
     const [valid, _error] = !isEmpty(validation)
-      ? resolveReferences(initialValue, validation, customVariables)
+      ? resolveReferences(newInitialValue, validation, customVariables)
       : [true, null];
 
     if (!valid) {
       setErrorStateActive(true);
     }
-
-    setCurrentValue(initialValue);
+    setCurrentValue(newInitialValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [componentName, initialValue]);
+  }, [componentName, newInitialValue]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -274,7 +282,7 @@ const EditorInput = ({
           <CodeMirror
             value={currentValue}
             placeholder={placeholder}
-            height={showLineNumbers ? '400px' : '100%'}
+            height={showLineNumbers && !isOpen ? '400px' : '100%'}
             width="100%"
             extensions={[javascript({ jsx: lang === 'jsx' }), autoCompleteConfig, keymap.of([...customKeyMaps])]}
             onChange={(val) => {
@@ -316,7 +324,6 @@ const DynamicEditorBridge = (props) => {
     darkMode,
     className,
     onFxPress = noop,
-    cyLabel = '',
     onChange,
     styleDefinition,
     component,
@@ -330,21 +337,22 @@ const DynamicEditorBridge = (props) => {
   const { isFxNotRequired } = fieldMeta;
   const { t } = useTranslation();
   const [_, error, value] = type === 'fxEditor' ? resolveReferences(initialValue) : [];
+  let cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : props.cyLabel;
 
   useEffect(() => {
     setForceCodeBox(fxActive);
-  }, [component]);
+  }, [component, fxActive]);
 
   const fxClass = isEventManagerParam ? 'justify-content-start' : 'justify-content-end';
   return (
     <div className={cx({ 'codeShow-active': codeShow }, 'wrapper-div-code-editor')}>
       <div className={cx('d-flex align-items-center justify-content-between')}>
         {paramLabel !== ' ' && !HIDDEN_CODE_HINTER_LABELS.includes(paramLabel) && (
-          <div className={`field ${className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
+          <div className={`field text-truncate d-flex ${className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
             <ToolTip
               label={t(`widget.commonProperties.${camelCase(paramLabel)}`, paramLabel)}
               meta={fieldMeta}
-              labelClass={`tj-text-xsm color-slate12 ${codeShow ? 'mb-2' : 'mb-0'} ${
+              labelClass={`tj-text-xsm color-slate12 w-100 text-truncate ${codeShow ? 'mb-2' : 'mb-0'} ${
                 darkMode && 'color-whitish-darkmode'
               }`}
             />

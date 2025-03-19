@@ -50,6 +50,8 @@ export const ProgramaticallyHandleProperties = ({
         return props?.parseInUnixTimestamp;
       case 'isDateSelectionEnabled':
         return props?.isDateSelectionEnabled;
+      case 'jsonIndentation':
+        return props?.jsonIndentation;
       default:
         return;
     }
@@ -81,6 +83,9 @@ export const ProgramaticallyHandleProperties = ({
     if (property === 'linkColor') {
       return definitionObj?.value ?? '#1B1F24';
     }
+    if (property === 'jsonIndentation') {
+      return definitionObj?.value ?? `{{true}}`;
+    }
     return definitionObj?.value ?? `{{false}}`;
   };
 
@@ -111,7 +116,9 @@ export const ProgramaticallyHandleProperties = ({
     const fxActiveFieldsPropExists = props?.hasOwnProperty('fxActiveFields') ?? false;
     //to support backward compatibility, when fxActive is true for a particular column, we are passing all possible combinations which should render codehinter
     const fxActive =
-      props?.fxActive && resolveReferences(props.fxActive) ? ['isEditable', 'columnVisibility', 'linkTarget'] : [];
+      props?.fxActive && resolveReferences(props.fxActive)
+        ? ['isEditable', 'columnVisibility', 'jsonIndentation', 'linkTarget']
+        : [];
 
     const checkFxActiveFieldIsArrray = (fxActiveFieldsProperty) => {
       // adding error handling mechanism for fxActiveFieldsProperty , if props.fxActiveFields is array , then return props.fxActiveFields or else return [], this will make sure, fxActiveFields wil always be array

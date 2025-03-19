@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { OnboardingUIWrapper } from '@/modules/onboarding/components';
-import { FormTextInput, PasswordInput, SubmitButton, FormHeader } from '@/modules/common/components';
-import useOnboardingStore from '@/modules/onboarding/stores/onboardingStore';
+import {
+  FormTextInput,
+  PasswordInput,
+  SubmitButton,
+  FormHeader,
+  EmailComponent,
+  TermsAndPrivacyInfo,
+} from '@/modules/common/components';
+import useOnboardingStore from '@/modules/common/helpers/onboardingStoreHelper';
 import { shallow } from 'zustand/shallow';
-import { validateEmail } from '@/_helpers/utils';
+import { validateEmail, validatePassword } from '@/_helpers/utils';
 import './resources/styles/setup-admin-form.styles.scss';
 import { useEnterKeyPress } from '@/modules/common/hooks';
 
@@ -17,7 +24,6 @@ const SetupAdminForm = () => {
     }),
     shallow
   );
-
   const [formData, setFormData] = useState(adminDetails);
   const [errors, setErrors] = useState({
     name: '',
@@ -45,7 +51,6 @@ const SetupAdminForm = () => {
       [name]: true,
     }));
   };
-
   const validateField = (name, value) => {
     switch (name) {
       case 'name':
@@ -53,11 +58,7 @@ const SetupAdminForm = () => {
       case 'email':
         return value.trim() ? (validateEmail(value) ? '' : 'Email is invalid') : 'Email is required';
       case 'password':
-        return value.trim()
-          ? value.length >= 5
-            ? ''
-            : 'Password must be at least 5 characters long'
-          : 'Password is required';
+        return validatePassword(value);
       default:
         return '';
     }
@@ -66,7 +67,6 @@ const SetupAdminForm = () => {
   useEffect(() => {
     const newErrors = {};
     let isValid = true;
-
     Object.keys(formData).forEach((fieldName) => {
       const fieldError = validateField(fieldName, formData[fieldName]);
       newErrors[fieldName] = fieldError;
@@ -76,7 +76,6 @@ const SetupAdminForm = () => {
     setErrors(newErrors);
     setIsFormValid(isValid && Object.values(formData).every(Boolean));
   }, [formData]);
-
   const handleSubmit = (e) => {
     e?.preventDefault();
     if (isFormValid) {
@@ -119,20 +118,7 @@ const SetupAdminForm = () => {
             disabled={accountCreated}
           />
           <SubmitButton buttonText="Sign up" disabled={!isFormValid} />
-          <p className="pt-3" data-cy="signup-terms-helper">
-            By continuing you are agreeing to the
-            <br />
-            <span>
-              <a href="https://www.tooljet.com/terms" data-cy="terms-of-service-link">
-                Terms of Service{' '}
-              </a>
-              &
-              <a href="https://www.tooljet.com/privacy" data-cy="privacy-policy-link">
-                {' '}
-                Privacy Policy
-              </a>
-            </span>
-          </p>
+          <TermsAndPrivacyInfo />
         </form>
       </div>
     </OnboardingUIWrapper>

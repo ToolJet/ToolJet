@@ -3,7 +3,11 @@ import { debounce } from 'lodash';
 
 const initialState = {
   hoveredComponentForGrid: '',
+  hoveredComponentBoundaryId: '',
   triggerCanvasUpdater: false,
+  lastCanvasIdClick: '',
+  lastCanvasClickPosition: null,
+  draggingComponentId: null,
 };
 
 export const createGridSlice = (set, get) => ({
@@ -11,11 +15,14 @@ export const createGridSlice = (set, get) => ({
   setHoveredComponentForGrid: (id) =>
     set(() => ({ hoveredComponentForGrid: id }), false, { type: 'setHoveredComponentForGrid', id }),
   getHoveredComponentForGrid: () => get().hoveredComponentForGrid,
+  setHoveredComponentBoundaryId: (id) =>
+    set(() => ({ hoveredComponentBoundaryId: id }), false, { type: 'setHoveredComponentBoundaryId', id }),
   toggleCanvasUpdater: () =>
     set((state) => ({ triggerCanvasUpdater: !state.triggerCanvasUpdater }), false, { type: 'toggleCanvasUpdater' }),
   debouncedToggleCanvasUpdater: debounce(() => {
     get().toggleCanvasUpdater();
   }, 200),
+  setDraggingComponentId: (id) => set(() => ({ draggingComponentId: id })),
   moveComponentPosition: (direction) => {
     const { setComponentLayout, currentLayout, getSelectedComponentsDefinition, debouncedToggleCanvasUpdater } = get();
     let layouts = {};
@@ -61,5 +68,9 @@ export const createGridSlice = (set, get) => ({
     });
     setComponentLayout(layouts);
     debouncedToggleCanvasUpdater();
+  },
+  setLastCanvasIdClick: (id) => set(() => ({ lastCanvasIdClick: id })),
+  setLastCanvasClickPosition: (position) => {
+    set({ lastCanvasClickPosition: position });
   },
 });

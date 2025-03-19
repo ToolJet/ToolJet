@@ -6,7 +6,15 @@ import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 import '@/_ui/HttpHeaders/sourceEditorStyles.scss';
 import InfoIcon from '@assets/images/icons/info.svg';
 
-export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairValueChanged, workspaceConstants }) => {
+export default ({
+  options,
+  addNewKeyValuePair,
+  removeKeyValuePair,
+  keyValuePairValueChanged,
+  workspaceConstants,
+  isDisabled,
+  width,
+}) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   return (
@@ -28,6 +36,7 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
             workspaceConstants={workspaceConstants}
             placeholder="Key"
             autoComplete="off"
+            disabled={isDisabled}
             style={{
               flex: 1,
               width: '316px',
@@ -45,9 +54,10 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
             className="input-control"
             onChange={(e) => keyValuePairValueChanged(e.target.value, 1, index)}
             workspaceConstants={workspaceConstants}
+            disabled={isDisabled}
             style={{
               flex: 2,
-              width: '316px',
+              width: width ? width : '316px',
               borderTopLeftRadius: '0',
               borderBottomLeftRadius: '0',
               borderTopRightRadius: '0',
@@ -61,6 +71,7 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
             }`}
             style={{ height: '35px' }}
             role="button"
+            disabled={isDisabled}
             onClick={() => removeKeyValuePair(index)}
           >
             <Trash fill="var(--slate9)" style={{ height: '16px' }} />
@@ -74,9 +85,10 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
           size="sm"
           onClick={() => addNewKeyValuePair(options)}
           style={{ gap: '0px', fontSize: '12px', fontWeight: '500', padding: '0px 9px' }}
+          disabled={isDisabled}
         >
           <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
-          &nbsp;&nbsp;Add more
+          &nbsp;&nbsp;Add
         </ButtonSolid>
       </div>
     </div>

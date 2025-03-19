@@ -82,20 +82,6 @@ const DynamicForm = ({
 
         setCurrentOrgEnvironmentConstants(constants);
       });
-
-      orgEnvironmentVariableService.getVariables().then((data) => {
-        const client_variables = {};
-        const server_variables = {};
-        data.variables.map((variable) => {
-          if (variable.variable_type === 'server') {
-            server_variables[variable.variable_name] = 'HiddenEnvironmentVariable';
-          } else {
-            client_variables[variable.variable_name] = variable.value;
-          }
-        });
-
-        setWorkspaceVariables({ client: client_variables, server: server_variables });
-      });
     }
 
     return () => {

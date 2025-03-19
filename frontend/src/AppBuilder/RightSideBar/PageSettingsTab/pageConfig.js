@@ -89,7 +89,7 @@ export const pageConfig = {
         isDefault: true,
       },
       pillRadius: {
-        value: '8',
+        value: '6',
       },
       backgroundColor: {
         value: '#FFFFFF',

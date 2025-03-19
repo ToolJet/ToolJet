@@ -2,22 +2,15 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import Layout from '@/_ui/Layout';
-import { ManageOrgConstants } from '@/ManageOrgConstants';
 import { authenticationService } from '@/_services';
+import { ManageOrgConstantsSettings } from '@/modules/WorkspaceSettings/components';
 
 export default function WorkspaceConstants({ darkMode, switchDarkMode }) {
   const navigate = useNavigate();
-
-  const canAnyGroupPerformAction = (action, permissions) => {
-    if (!permissions) {
-      return false;
-    }
-
-    return permissions.some((p) => p[action]);
-  };
+  const { super_admin } = authenticationService?.currentSessionValue ?? {};
 
   const canCreateVariableOrConstant = () => {
-    return authenticationService.currentSessionValue.user_permissions.org_constant_c_r_u_d;
+    return authenticationService.currentSessionValue.user_permissions.org_constant_c_r_u_d || super_admin;
   };
 
   useEffect(() => {
@@ -28,8 +21,8 @@ export default function WorkspaceConstants({ darkMode, switchDarkMode }) {
   }, [canCreateVariableOrConstant]);
   return (
     <Layout switchDarkMode={switchDarkMode} darkMode={darkMode}>
-      <div className="workspace-constants-wrapper">
-        <ManageOrgConstants darkMode={darkMode} />
+      <div>
+        <ManageOrgConstantsSettings darkMode={darkMode} />
       </div>
     </Layout>
   );

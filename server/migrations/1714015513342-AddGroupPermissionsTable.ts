@@ -1,5 +1,5 @@
+import { DATA_BASE_CONSTRAINTS } from '@modules/group-permissions/constants/error';
 import { MigrationInterface, QueryRunner } from 'typeorm';
-import { DATA_BASE_CONSTRAINTS } from '@modules/user_resource_permissions/constants/group-permissions.constant';
 
 export class AddGroupPermissionsTable1714015513342 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {

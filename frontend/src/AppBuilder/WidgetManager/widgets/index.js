@@ -2,6 +2,7 @@ import { buttonConfig } from './button';
 import { tableConfig } from './table';
 import { chartConfig } from './chart';
 import { modalConfig } from './modal';
+import { modalV2Config } from './modalV2';
 import { formConfig } from './form';
 import { textinputConfig } from './textinput';
 import { numberinputConfig } from './numberinput';
@@ -9,6 +10,7 @@ import { passinputConfig } from './passwordinput';
 import { datepickerConfig } from './datepicker';
 import { checkboxConfig } from './checkbox';
 import { radiobuttonConfig } from './radiobutton';
+import { radiobuttonV2Config } from './radioButtonV2';
 import { toggleswitchConfig } from './toggleswitch';
 import { toggleSwitchV2Config } from './toggleswitchv2';
 import { textareaConfig } from './textarea';
@@ -53,19 +55,27 @@ import { linkConfig } from './link';
 import { iconConfig } from './icon';
 import { boundedBoxConfig } from './boundedBox';
 import { kanbanBoardConfig } from './kanbanBoard';
+import { datetimePickerV2Config } from './datetimepickerV2';
+import { datePickerV2Config } from './datepickerV2';
+import { timePickerConfig } from './timepicker';
 
 export {
   buttonConfig,
   tableConfig,
   chartConfig,
-  modalConfig,
+  modalConfig, //Deprecated
+  modalV2Config,
   formConfig,
   textinputConfig,
   numberinputConfig,
   passinputConfig,
-  datepickerConfig,
+  datepickerConfig, //!Depreciated
+  datetimePickerV2Config,
+  datePickerV2Config,
+  timePickerConfig,
   checkboxConfig,
-  radiobuttonConfig,
+  radiobuttonConfig, //!Depreciated
+  radiobuttonV2Config,
   toggleswitchConfig, //!Depreciated
   toggleSwitchV2Config,
   textareaConfig,

@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import './static-modal.scss';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
-import { authenticationService } from '@/_services';
+import { sessionService } from '@/_services';
 
 export default function ErrorPage({ darkMode }) {
   const params = useParams();
@@ -21,7 +21,7 @@ export default function ErrorPage({ darkMode }) {
   const [isValidSession, setValidSession] = React.useState(null);
 
   useEffect(() => {
-    authenticationService
+    sessionService
       .validateSession()
       .then(() => {
         setValidSession(true);

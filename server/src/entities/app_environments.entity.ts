@@ -42,4 +42,6 @@ export class AppEnvironment extends BaseEntity {
   @ManyToOne(() => Organization, (organization) => organization.id)
   @JoinColumn({ name: 'organization_id' })
   organization: Organization;
+
+  appVersionsCount: number;
 }

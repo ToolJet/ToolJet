@@ -25,6 +25,7 @@ const Multiselect = (props) => {
   return (
     <div>
       <MultiSelect
+        disabled={props?.disabled}
         options={optionData}
         placeholder={props?.placeholder}
         value={props?.value || []}

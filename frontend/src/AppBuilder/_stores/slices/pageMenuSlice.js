@@ -34,7 +34,6 @@ export const savePageChanges = async (appId, versionId, pageId, diff, operation 
       updateObj.pageId,
       updateObj.operation
     );
-    console.log('res', res);
   } catch (error) {
     toast.error('App could not be saved.');
     console.error('Error updating page:', error);
@@ -238,6 +237,12 @@ export const createPageMenuSlice = (set, get) => {
       await savePageChanges(app.appId, currentVersionId, pageId, diff, 'delete');
       toast.success('Page deleted successfully');
     },
+    /*
+     * @param {string} pageGroupId - id of the page group to be deleted
+     * @param {boolean} deleteAssociatedPages - if true, all pages in the group will be deleted
+     *  If home page is in the group, the group cannot be deleted
+     * If current page is in the group, the page will be switched to home page
+     */
     deletePageGroup: async (pageGroupId, deleteAssociatedPages = false) => {
       const { app, currentVersionId } = get();
       const pages = get().modules.canvas.pages;
@@ -248,12 +253,15 @@ export const createPageMenuSlice = (set, get) => {
         deleteAssociatedPages,
       };
       if (deleteAssociatedPages) {
-        // check if homepage is in the group
+        // check if homepage is in the group or current page is in the group
         let isHomePageInGroup = false;
+        let isCurrentPageInGroup = false;
         for (let i = 0; i < pages.length; i++) {
           if (pages[i].id === homePageId && pages[i].pageGroupId === pageGroupId) {
             isHomePageInGroup = true;
-            break;
+          }
+          if (pages[i].id === get().currentPageId && pages[i].pageGroupId === pageGroupId) {
+            isCurrentPageInGroup = true;
           }
         }
         if (isHomePageInGroup) return toast.error('You cannot delete the page group as it contains the home page');
@@ -267,6 +275,11 @@ export const createPageMenuSlice = (set, get) => {
           state.modules.canvas.pages = newPages;
           state.showDeleteConfirmationModal = false;
         });
+        // switch page to home page if current page is in the group
+        if (isCurrentPageInGroup) {
+          const homePage = pages.find((p) => p.id === app.homePageId);
+          get().switchPage(homePage.id, homePage.handle);
+        }
         await savePageChanges(app.appId, currentVersionId, pageGroupId, diff, 'delete');
       } else {
         set((state) => {
@@ -350,13 +363,18 @@ export const createPageMenuSlice = (set, get) => {
         components: {},
         index: pages.length + 1,
         isPageGroup,
+        ...(isPageGroup
+          ? {
+              icon: `IconFolder`,
+            }
+          : {}),
       };
       set((state) => {
         state.modules.canvas.pages.push(pageObject);
       });
       const { app, currentVersionId } = get();
       await savePageChanges(app.appId, currentVersionId, '', pageObject, 'create', 'pages');
-      get().switchPage(newPageId, newHandle);
+      if (!isPageGroup) get().switchPage(newPageId, newHandle);
     },
 
     handleSearch: (value) => {

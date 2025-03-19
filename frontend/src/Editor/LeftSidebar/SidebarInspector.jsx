@@ -4,7 +4,7 @@ import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import _ from 'lodash';
 import { toast } from 'react-hot-toast';
 import Icon from '@/_ui/Icon/solidIcons/index';
-import { useGlobalDataSources } from '@/_stores/dataSourcesStore';
+import { useGlobalDataSources, useSampleDataSource } from '@/_stores/dataSourcesStore';
 import { useDataQueries } from '@/_stores/dataQueriesStore';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
@@ -19,6 +19,7 @@ const staticDataSources = [
   { kind: 'restapi', id: 'null', name: 'REST API' },
   { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' },
   { kind: 'runpy', id: 'runpy', name: 'Run Python code' },
+  { kind: 'workflows', id: 'null', name: 'Run Workflow' },
 ];
 
 export const LeftSidebarInspector = ({
@@ -31,12 +32,14 @@ export const LeftSidebarInspector = ({
   pinned,
 }) => {
   const dataSources = useGlobalDataSources();
+  const sampleDataSource = useSampleDataSource();
   const { setSelectedQuery } = useQueryPanelActions();
 
   const dataQueries = useDataQueries();
-  const { isVersionReleased } = useAppVersionStore(
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );
@@ -101,7 +104,7 @@ export const LeftSidebarInspector = ({
   }, [currentState, JSON.stringify(dataQueries)]);
 
   const queryIcons = dataQueries.map((query) => {
-    const allDs = [...staticDataSources, ...dataSources];
+    const allDs = [...staticDataSources, ...dataSources, ...(sampleDataSource ? [sampleDataSource] : [])];
     const source = allDs.find((ds) => ds.kind === query.kind);
     return { iconName: query.name, jsx: () => <DataSourceIcon source={source} height={16} /> };
   });
@@ -267,7 +270,7 @@ export const LeftSidebarInspector = ({
       for: 'components',
       actions: [
         { name: 'Select Widget', dispatchAction: handleSelectComponentOnEditor, icon: false, onSelect: true },
-        ...(!isVersionReleased
+        ...(!isVersionReleased && !isEditorFreezed
           ? [{ name: 'Delete Component', dispatchAction: handleRemoveComponent, icon: true, iconName: 'trash' }]
           : []),
       ],

@@ -6,12 +6,14 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 import { App } from './app.entity';
 import { AppsGroupPermissions } from './apps_group_permissions.entity';
 
 @Entity({ name: 'group_apps' })
+@Unique(['appId', 'appsGroupPermissionsId'])
 export class GroupApps extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;

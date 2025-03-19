@@ -6,15 +6,15 @@ import { shallow } from 'zustand/shallow';
 import queryString from 'query-string';
 import { isEmpty } from 'lodash';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
-import PromoteVersionButton from './PromoteVersionButton';
 import useStore from '@/AppBuilder/_stores/store';
+import { PromoteReleaseButton } from '@/modules/Appbuilder/components';
 
 const RightTopHeaderButtons = () => {
   return (
     <div className="d-flex justify-content-end navbar-right-section" style={{ width: '300px', paddingRight: '12px' }}>
       <div className=" release-buttons navbar-nav flex-row">
         <PreviewAndShareIcons />
-        <PromoteAndReleaseButton />
+        <PromoteReleaseButton />
       </div>
     </div>
   );
@@ -96,17 +96,6 @@ const PreviewAndShareIcons = () => {
           <SolidIcon name="eyeopen" width="14" fill="#3E63DD" />
         </Link>
       </div>
-    </div>
-  );
-};
-
-const PromoteAndReleaseButton = () => {
-  const getCanPromoteAndRelease = useStore((state) => state.getCanPromoteAndRelease);
-  const { canPromote, canRelease } = getCanPromoteAndRelease();
-  return (
-    <div className="nav-item dropdown promote-release-btn">
-      {canPromote && <PromoteVersionButton />}
-      {canRelease && <ReleaseVersionButton />}
     </div>
   );
 };

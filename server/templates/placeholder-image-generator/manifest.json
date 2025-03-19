@@ -1,0 +1,20 @@
+{
+    "name": "Placeholder image generator",
+    "description": "Create customizable placeholder images for web development, with options for size, colors, format, and text.",
+    "widgets": [
+      "Table",
+      "Container"
+    ],
+    "sources": [
+      {
+        "name": "ToolJet Database",
+        "id": "tooljetdb"
+      },
+      {
+        "name": "Run JavaScript",
+        "id": "runjs"
+      }
+    ],
+    "id": "placeholder-image-generator",
+    "category": "developer-utilities"
+}

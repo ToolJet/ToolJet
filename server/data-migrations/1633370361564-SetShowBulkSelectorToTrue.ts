@@ -1,4 +1,4 @@
-import { AppVersion } from '../src/entities/app_version.entity';
+import { AppVersion } from '@entities/app_version.entity';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class SetShowBulkSelectorToTrue1633370361564 implements MigrationInterface {

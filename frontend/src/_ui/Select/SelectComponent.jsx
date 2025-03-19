@@ -3,15 +3,7 @@ import _ from 'lodash';
 import Select from 'react-select';
 import defaultStyles from './styles';
 
-export const SelectComponent = ({
-  options = [],
-  value,
-  onChange,
-  closeMenuOnSelect,
-  classNamePrefix,
-  darkMode,
-  ...restProps
-}) => {
+export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSelect, darkMode, ...restProps }) => {
   const isDarkMode = darkMode ?? localStorage.getItem('darkMode') === 'true';
   const {
     isMulti = false,

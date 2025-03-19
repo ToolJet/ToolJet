@@ -30,6 +30,9 @@
       "password": {
         "type": "string",
         "encrypted": true
+      },
+      "connection_options": {
+        "type": "array"
       }
     }
   },
@@ -93,8 +96,13 @@
       "type": "password",
       "description": "Enter password"
     },
+    "connection_options": {
+      "label": "Connection Options",
+      "key": "connection_options",
+      "type": "react-component-headers"
+    },
     "azure": {
-      "label": "Azure",
+      "label": "Azure (encrypt connection)",
       "key": "azure",
       "type": "toggle",
       "description": "Toggle for azure"

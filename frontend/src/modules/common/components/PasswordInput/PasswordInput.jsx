@@ -61,7 +61,6 @@ const PasswordInput = ({
           required
           minLength={minLength}
           data-cy={dataCy}
-          autoComplete="off"
         />
         <button
           type="button"
@@ -69,7 +68,7 @@ const PasswordInput = ({
           onClick={togglePasswordVisibility}
           aria-label={showPassword ? 'Hide password' : 'Show password'}
         >
-          {showPassword ? <EyeOpen /> : <EyeClose />}
+          <div className="toggle-icon">{showPassword ? <EyeOpen /> : <EyeClose />}</div>
         </button>
       </div>
       {error ? (

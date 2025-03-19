@@ -1,12 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { validateEmail, validatePassword } from '@/_helpers/utils';
 import { OnboardingUIWrapper, OnboardingFormInsideWrapper } from '@/modules/onboarding/components';
-import { FormTextInput, PasswordInput, SubmitButton, FormHeader, SSOAuthModule } from '@/modules/common/components';
+import {
+  FormTextInput,
+  PasswordInput,
+  SubmitButton,
+  FormHeader,
+  SSOAuthModule,
+  TermsAndPrivacyInfo,
+} from '@/modules/common/components';
 import SignupStatusCard from './components/SignupStatusCard';
 import './resources/styles/sign-up-form.styles.scss';
 import SepratorComponent from '@/modules/common/components/SepratorComponent';
-import { validateEmail, validatePassword } from '@/_helpers/utils';
 
 const SignupForm = ({
   configs,
@@ -29,12 +36,15 @@ const SignupForm = ({
   });
   const [errors, setErrors] = useState({});
   const [isFormValid, setIsFormValid] = useState(false);
-
   const [isDefaultFormName, setisDefaultFormName] = useState(true);
   const [isDefaultFormEmail, setisDefaultFormEmail] = useState(true);
   const [isDefaultFormPassword, setisDefaultFormPassword] = useState(true);
-
-  const isAnySSOEnabled = configs?.google?.enabled || configs?.git?.enabled;
+  const isAnySSOEnabled =
+    configs?.google?.enabled ||
+    configs?.git?.enabled ||
+    configs?.ldap?.enabled ||
+    configs?.saml?.enabled ||
+    configs?.openid?.enabled;
 
   const isFormSignUpEnabled = organizationId ? configs?.form?.enabled : configs?.form?.enable_sign_up;
   const shouldShowSignInCTA = !organizationToken;
@@ -55,10 +65,6 @@ const SignupForm = ({
     }
   }, [initialData, inviteeEmail]);
 
-  useEffect(() => {
-    checkFormValidity();
-  }, [formData]);
-
   const checkFormValidity = () => {
     const isValid =
       formData.email.trim() !== '' &&
@@ -66,19 +72,18 @@ const SignupForm = ({
       formData.password.trim() !== '' &&
       formData.password.length >= 5 &&
       (comingFromInviteFlow || formData.name.trim() !== '');
-    setIsFormValid(isValid);
     return isValid;
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+
     if (defaultfieldStateSetters[name]) {
       defaultfieldStateSetters[name](false);
     }
     setErrors((prev) => ({ ...prev, [name]: '' }));
   };
-
   const validateField = (name, value) => {
     switch (name) {
       case 'name':
@@ -118,11 +123,9 @@ const SignupForm = ({
       onSubmit(
         formData,
         () => {
-          // Success callback
           setIsLoading(false);
         },
         () => {
-          // Error callback
           setIsLoading(false);
         }
       );
@@ -224,22 +227,7 @@ const SignupForm = ({
                 buttonText="Sign up with"
                 setSignupOrganizationDetails={() => setSignupOrganizationDetails()}
               />
-              {defaultState && (
-                <p className="onboard d-block pt-3" data-cy="signup-terms-helper">
-                  By signing up you are agreeing to the
-                  <br />
-                  <span>
-                    <a href="https://www.tooljet.com/terms" data-cy="terms-of-service-link">
-                      Terms of Service{' '}
-                    </a>
-                    &
-                    <a href="https://www.tooljet.com/privacy" data-cy="privacy-policy-link">
-                      {' '}
-                      Privacy Policy
-                    </a>
-                  </span>
-                </p>
-              )}
+              {defaultState && <TermsAndPrivacyInfo />}
             </>
           )}
         </OnboardingFormInsideWrapper>

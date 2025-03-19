@@ -16,19 +16,22 @@ class Restapi extends React.Component {
     const options = defaults(
       { ...props.options },
       {
-        headers: [['', '']],
+        headers: [],
         url_params: [],
         body: [],
         json_body: null, // FIXME: Remove this once data migration to raw_body is complete
         raw_body: null,
         body_toggle: false,
-        cookies: [['', '']],
+        cookies: [],
       }
     );
 
     this.state = {
       options,
+      codeHinterHeight: 32, // Default height
     };
+    this.codeHinterRef = React.createRef();
+    this.resizeObserver = null;
   }
 
   componentDidUpdate(prevProps) {
@@ -39,6 +42,10 @@ class Restapi extends React.Component {
           parameters: this.props.options.parameters,
         },
       });
+    }
+    // Setup resize observer if it's not already set up
+    if (this.codeHinterRef.current && !this.resizeObserver) {
+      this.setupResizeObserver();
     }
   }
 
@@ -66,9 +73,63 @@ class Restapi extends React.Component {
       setTimeout(() => {
         this.initizalizeRetryNetworkErrorsToggle();
       }, 1000);
+
+      this.setupResizeObserver();
     } catch (error) {
       console.log(error);
     }
+  }
+
+  componentWillUnmount() {
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+    }
+  }
+
+  setupResizeObserver() {
+    if (!this.codeHinterRef.current) return;
+
+    // Try to find the editor element, checking multiple possible selectors
+    const findEditorElement = () => {
+      const element =
+        this.codeHinterRef.current.querySelector('.cm-editor') ||
+        this.codeHinterRef.current.querySelector('.codehinter-input') ||
+        this.codeHinterRef.current.querySelector('.code-hinter-wrapper');
+      return element;
+    };
+
+    // Initial attempt to find editor
+    let editorElement = findEditorElement();
+
+    // If not found immediately, try again after a short delay
+    if (!editorElement) {
+      setTimeout(() => {
+        editorElement = findEditorElement();
+        if (editorElement) {
+          this.setupObserverForElement(editorElement);
+        }
+      }, 100);
+      return;
+    }
+
+    this.setupObserverForElement(editorElement);
+  }
+
+  setupObserverForElement(element) {
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+    }
+
+    this.resizeObserver = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        const height = Math.max(32, Math.min(entry.contentRect.height, 220));
+        if (height !== this.state.codeHinterHeight) {
+          this.setState({ codeHinterHeight: height });
+        }
+      }
+    });
+
+    this.resizeObserver.observe(element);
   }
 
   initizalizeRetryNetworkErrorsToggle = () => {
@@ -142,11 +203,13 @@ class Restapi extends React.Component {
   };
 
   handleChange = (key, keyIndex, idx) => (value) => {
-    const lastPair = this.state.options[key][idx];
-    if (this.state.options[key].length - 1 === idx && (lastPair[0] || lastPair[1])) {
+    this.keyValuePairValueChanged(value, keyIndex, key, idx);
+  };
+
+  handleInputChange = (key, idx) => (value) => {
+    if (this.state.options[key].length - 1 === idx && value) {
       this.addNewKeyValuePair(key);
     }
-    this.keyValuePairValueChanged(value, keyIndex, key, idx);
   };
 
   customSelectStyles = (darkMode, width) => {
@@ -202,64 +265,85 @@ class Restapi extends React.Component {
                 Request
               </p>
             </div>
-            <div className={`me-2`} style={{ width: '90px', height: '32px' }}>
-              <label className="font-weight-bold color-slate12">Method</label>
-              <Select
-                options={[
-                  { label: 'GET', value: 'get' },
-                  { label: 'POST', value: 'post' },
-                  { label: 'PUT', value: 'put' },
-                  { label: 'PATCH', value: 'patch' },
-                  { label: 'DELETE', value: 'delete' },
-                ]}
-                onChange={(value) => {
-                  changeOption(this, 'method', value);
-                }}
-                value={currentValue}
-                defaultValue={{ label: 'GET', value: 'get' }}
-                placeholder="Method"
-                width={100}
-                height={32}
-                styles={this.customSelectStyles(this.props.darkMode, 91)}
-                useCustomStyles={true}
-              />
-            </div>
-
-            <div className={`field w-100 rest-methods-url`}>
-              <div className="font-weight-bold color-slate12">URL</div>
-              <div className="d-flex">
-                {dataSourceURL && (
-                  <BaseUrl theme={this.props.darkMode ? 'monokai' : 'default'} dataSourceURL={dataSourceURL} />
-                )}
-                <div className={`flex-grow-1 rest-api-url-codehinter  ${dataSourceURL ? 'url-input-group' : ''}`}>
-                  <CodeHinter
-                    type="basic"
-                    initialValue={options.url}
+            <div className="d-flex flex-column w-100">
+              <div className="d-flex flex-row">
+                <div className={`me-2`} style={{ width: '90px', height: '32px' }}>
+                  <label className="font-weight-medium color-slate12">Method</label>
+                  <Select
+                    options={[
+                      { label: 'GET', value: 'get' },
+                      { label: 'POST', value: 'post' },
+                      { label: 'PUT', value: 'put' },
+                      { label: 'PATCH', value: 'patch' },
+                      { label: 'DELETE', value: 'delete' },
+                    ]}
                     onChange={(value) => {
-                      changeOption(this, 'url', value);
+                      changeOption(this, 'method', value);
                     }}
-                    placeholder={dataSourceURL ? 'Enter request endpoint' : 'Enter request URL'}
-                    componentName={`${queryName}::url`}
-                    lang="javascript"
+                    value={currentValue}
+                    defaultValue={{ label: 'GET', value: 'get' }}
+                    placeholder="Method"
+                    width={100}
+                    height={32}
+                    styles={this.customSelectStyles(this.props.darkMode, 91)}
+                    useCustomStyles={true}
                   />
                 </div>
+                <div
+                  className={`field rest-methods-url ${dataSourceURL && 'data-source-exists'}`}
+                  style={{ width: 'calc(100% - 214px)' }}
+                >
+                  <div className="font-weight-medium color-slate12">URL</div>
+                  <div className="d-flex h-100 w-100">
+                    {dataSourceURL && (
+                      <BaseUrl
+                        theme={this.props.darkMode ? 'monokai' : 'default'}
+                        dataSourceURL={dataSourceURL}
+                        style={{
+                          overflowWrap: 'anywhere',
+                          maxWidth: '40%',
+                          width: 'fit-content',
+                          height: `${this.state.codeHinterHeight}px`,
+                          minHeight: '32px',
+                          maxHeight: '220px',
+                        }}
+                      />
+                    )}
+                    <div
+                      ref={this.codeHinterRef}
+                      className={` flex-grow-1 rest-api-url-codehinter ${dataSourceURL ? 'url-input-group' : ''}`}
+                    >
+                      <CodeHinter
+                        type="basic"
+                        initialValue={options.url}
+                        onChange={(value) => {
+                          changeOption(this, 'url', value);
+                        }}
+                        placeholder={dataSourceURL ? 'Enter request endpoint' : 'Enter request URL'}
+                        componentName={`${queryName}::url`}
+                        lang="javascript"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className={`query-pane-restapi-tabs`}>
+                <Tabs
+                  theme={this.props.darkMode ? 'monokai' : 'default'}
+                  options={this.state.options}
+                  onChange={this.handleChange}
+                  onRawBodyChange={this.handleRawBodyChanged}
+                  removeKeyValuePair={this.removeKeyValuePair}
+                  addNewKeyValuePair={this.addNewKeyValuePair}
+                  darkMode={this.props.darkMode}
+                  componentName={queryName}
+                  bodyToggle={this.state.options.body_toggle}
+                  setBodyToggle={this.onBodyToggleChanged}
+                  onInputChange={this.handleInputChange}
+                />
               </div>
             </div>
           </div>
-        </div>
-        <div className={`query-pane-restapi-tabs`}>
-          <Tabs
-            theme={this.props.darkMode ? 'monokai' : 'default'}
-            options={this.state.options}
-            onChange={this.handleChange}
-            onRawBodyChange={this.handleRawBodyChanged}
-            removeKeyValuePair={this.removeKeyValuePair}
-            addNewKeyValuePair={this.addNewKeyValuePair}
-            darkMode={this.props.darkMode}
-            componentName={queryName}
-            bodyToggle={this.state.options.body_toggle}
-            setBodyToggle={this.onBodyToggleChanged}
-          />
         </div>
       </div>
     );
