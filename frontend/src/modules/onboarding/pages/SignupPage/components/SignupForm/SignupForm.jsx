@@ -161,7 +161,11 @@ const SignupForm = ({
             <p className="signup-info" data-cy="signup-info">
               {organizationId && (
                 <>
-                  Sign up to the workspace - <span className="workspace-name">{configs?.name}</span>.
+                  Sign up to the workspace -{' '}
+                  <span className="workspace-name" data-cy="workspace-name">
+                    {configs?.name}
+                  </span>
+                  .
                 </>
               )}{' '}
               {shouldShowSignInCTA && (
