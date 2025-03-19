@@ -386,7 +386,7 @@ export const MultiselectV2 = ({
     }),
     option: (provided, _state) => ({
       ...provided,
-      backgroundColor: 'var(--surfaces-surface-01)',
+      backgroundColor: _state.isFocused ? 'var(--interactive-overlays-fill-hover)' : 'var(--surfaces-surface-01)',
       color: _state.isDisabled
         ? 'var(_--text-disbled)'
         : selectedTextColor !== '#1B1F24'
@@ -394,6 +394,7 @@ export const MultiselectV2 = ({
         : isMultiSelectDisabled || isMultiSelectLoading
         ? 'var(--text-disabled)'
         : 'var(--text-primary)',
+      borderRadius: _state.isFocused && '8px',
       padding: '8px 6px 8px 12px',
       '&:hover': {
         backgroundColor: 'var(--interactive-overlays-fill-hover)',
@@ -490,9 +491,26 @@ export const MultiselectV2 = ({
             isMulti
             hideSelectedOptions={false}
             closeMenuOnSelect={false}
+            tabSelectsValue={false}
+            controlShouldRenderValue={false}
+            isSearchable={false}
             onMenuOpen={() => {
               fireEvent('onFocus');
               setIsMultiselectOpen(true);
+            }}
+            onMenuClose={() => {
+              setIsMultiselectOpen(false);
+              fireEvent('onBlur');
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !isMultiselectOpen) {
+                setIsMultiselectOpen(true);
+                e.preventDefault();
+              }
+              if (e.key === 'Escape' && isMultiselectOpen) {
+                setIsMultiselectOpen(false);
+                e.preventDefault();
+              }
             }}
             // select props
             icon={icon}
