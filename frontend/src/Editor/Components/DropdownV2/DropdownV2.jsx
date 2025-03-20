@@ -168,6 +168,13 @@ export const DropdownV2 = ({
     }
   };
 
+  const handleInsideClick = () => {
+    if (!isDropdownDisabled) {
+      fireEvent('onFocus');
+      setIsDropdownOpen((prev) => !prev);
+    }
+  };
+
   const setInputValue = (value) => {
     setCurrentValue(value);
     const _selectedOption = selectOptions.find((option) => option.value === value);
@@ -450,16 +457,7 @@ export const DropdownV2 = ({
           _width={_width}
           top={'1px'}
         />
-        <div
-          className="w-100 px-0 h-100"
-          onClick={() => {
-            if (!isDropdownDisabled) {
-              fireEvent('onFocus');
-              setIsDropdownOpen((prev) => !prev);
-            }
-          }}
-          ref={ref}
-        >
+        <div className="w-100 px-0 h-100" onClick={handleInsideClick} onTouchEnd={handleInsideClick} ref={ref}>
           <Select
             isDisabled={isDropdownDisabled}
             value={selectOptions.filter((option) => option.value === currentValue)[0] ?? null}
