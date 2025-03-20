@@ -83,6 +83,7 @@
 .pagination-nav {
   border-top: 1px solid #E4E7EB;
   margin: 0 67px;
+  margin-top: 36px !important;
 }
 
 .pagination-nav__link {
@@ -880,4 +881,9 @@ button[title="Switch between dark and light mode (currently light mode)"] svg {
 
 .breadcrumbs__item--active .breadcrumbs__link {
   font-weight: 600;
+}
+
+.container {
+  padding-top: 42px !important;
+  padding-bottom: 42px !important;
 }
