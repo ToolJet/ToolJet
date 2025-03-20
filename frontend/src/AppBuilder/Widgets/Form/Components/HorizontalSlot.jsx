@@ -1,0 +1,78 @@
+import React, { useEffect } from 'react';
+import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
+import { showGridLinesOnSlot, hideGridLinesOnSlot } from '@/AppBuilder/AppCanvas/Grid/gridUtils';
+import { useResizable } from '@/AppBuilder/_hooks/useMoveable';
+
+export const HorizontalSlot = React.memo(
+  ({
+    id,
+    height = 0,
+    width,
+    darkMode,
+    isDisabled,
+    isActive,
+    slotName = 'header', // 'header' or 'footer'
+    slotStyle = {},
+    onResize
+  }) => {
+    const parsedHeight = parseInt(height, 10);
+
+    const { getRootProps, getHandleProps, getResizeState } = useResizable({
+      initialHeight: parsedHeight,
+      initialWidth: '100%', // Now respects parent's width
+      minHeight: 40,
+      maxHeight: 400,
+      maxWidth: '100%',
+      stepHeight: 10, // Height will change in steps of 10px
+      onResize: () => {},
+      onDragEnd: (values) => {
+        onResize(values);
+      },
+      isReverseVerticalDrag: slotName === 'footer', // Reverse dragging for Footer
+    });
+
+    const { height: resizedHeight, isDragging } = getResizeState();
+
+
+
+    useEffect(() => {
+      if (isDragging) {
+        showGridLinesOnSlot(id);
+      } else {
+        hideGridLinesOnSlot(id);
+      }
+    }, [isDragging, id]);
+
+    const canvasHeight = parseInt(resizedHeight, 10) / 10;
+
+    return (
+      <div className={`jet-form-${slotName} wj-form-${slotName}`} style={slotStyle}>
+        <div className={`resizable-slot only-${slotName} ${isActive ? 'active' : ''}`} {...getRootProps()}>
+          <SubContainer
+            id={id}
+            canvasHeight={canvasHeight}
+            canvasWidth={width}
+            allowContainerSelect={false}
+            darkMode={darkMode}
+            styles={{
+              margin: 0,
+              backgroundColor: 'transparent',
+            }}
+            componentType="Form"
+          />
+          <div className="resize-handle" {...getHandleProps()} />
+        </div>
+
+        {isDisabled && (
+          <div
+            id={`${id}-disabled`}
+            className="tj-form-disabled-overlay"
+            style={{ height: resizedHeight || '100%' }}
+            onClick={() => {}}
+            onDrop={(e) => e.stopPropagation()}
+          />
+        )}
+      </div>
+    );
+  }
+);

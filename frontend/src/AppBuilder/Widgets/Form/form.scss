@@ -1,3 +1,7 @@
+.jet-form-body {
+  background-color: inherit;
+}
+
 .wj-form-header {
   position: relative;
   &::after {
@@ -37,4 +41,45 @@
 
   box-sizing: content-box;
   padding: 4px 0;
+}
+
+.resizable-slot {
+  position: relative;
+  height: auto;
+  box-shadow: 0 0 0 1px transparent; /* Acts as a border */
+  transition: box-shadow 0.15s ease-in-out;
+
+  &:hover {
+    box-shadow: 0 0 0 1px var(--border-weak);
+  }
+
+  &.active {
+    box-shadow: 0 0 0 1px var(--border-accent-strong);
+  }
+
+  .resize-handle {
+    position: absolute;
+    bottom: -4px;
+    left: 50%; /* Center horizontally */
+    transform: translateX(-50%); /* Ensure proper centering */
+    width: 24px;
+    height: 8px;
+    border-radius: 4px;
+    background-color: var(--background-accent-strong);
+    cursor: ns-resize;
+    z-index: 1;
+    visibility: hidden;
+    transition: visibility 0.15s ease-in-out;
+  }
+
+  &.active .resize-handle {
+    visibility: visible;
+  }
+}
+.only-bottom {
+}
+
+.jet-form-footer .resize-handle {
+  top: -4px;
+  bottom: unset;
 }
