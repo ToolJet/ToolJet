@@ -159,7 +159,7 @@ Here, `{process_id}` is a placeholder for the unique process identifier, and `{d
 | -------- | --------------------------------------------------------------------------- |
 | LOG_FILE_PATH | the path where the log file will be created ( eg: tooljet/log/tooljet-audit.log) |
 
-<details>
+<details id="tj-dropdown">
 <summary>Example Log file data</summary>
 
 ```bash
