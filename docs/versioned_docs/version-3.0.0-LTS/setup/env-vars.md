@@ -51,7 +51,7 @@ Replace `username`, `password`, `hostname`, `port`, and `database_name` with you
 **Automatic Database Creation:** The database name specified in `TOOLJET_DB` will be automatically created during the server boot process in all production deployment setups.
 
 #### PostgREST
-ToolJet uses PostgREST for API access. 
+ToolJet uses **PostgREST (v12.2.0)** for API access. The following environment variables are required for PostgREST:
 
 - `PGRST_JWT_SECRET`: JWT secret (Generate using `openssl rand -hex 32`). If this parameter is not specified, PostgREST will refuse authentication requests.
 - `PGRST_DB_URI`: Database connection string
@@ -78,7 +78,7 @@ Ensure that:
 
 #### Redis Configuration
 
-Include the following Redis environment variables within the ToolJet deployment **only if you are connecting to an external Redis instance for a multi-service or multi-pod setup** and have followed the necessary steps to create Redis.
+Include the following Redis environment variables within the ToolJet deployment only if you are connecting to an external **Redis instance (v6.2)** for a multi-service or multi-pod setup and have followed the necessary steps to create Redis.
 
 ```
 REDIS_HOST=
