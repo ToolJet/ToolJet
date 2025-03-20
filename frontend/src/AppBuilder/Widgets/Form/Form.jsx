@@ -14,6 +14,9 @@ import {
   CONTAINER_FORM_CANVAS_PADDING,
   SUBCONTAINER_CANVAS_BORDER_WIDTH,
 } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import { HorizontalSlot } from './Components/HorizontalSlot';
+import { useActiveSlot } from '@/AppBuilder/_hooks/useActiveSlot';
+
 import './form.scss';
 
 const getCanvasHeight = (height) => {
@@ -35,6 +38,7 @@ export const Form = function Form(props) {
     properties,
     resetComponent = () => {},
     dataCy,
+    onComponentClick,
   } = props;
   const childComponents = useStore((state) => state.getChildComponents(id), shallow);
   const {
@@ -46,16 +50,7 @@ export const Form = function Form(props) {
     footerBackgroundColor,
     headerBackgroundColor,
   } = styles;
-  const {
-    buttonToSubmit,
-    loadingState,
-    advanced,
-    JSONSchema,
-    showHeader = false,
-    showFooter = false,
-    visibility,
-    disabledState,
-  } = properties;
+  const { buttonToSubmit, advanced, JSONSchema, showHeader = false, showFooter = false } = properties;
   const { isDisabled, isVisible, isLoading } = useExposeState(
     properties.loadingState,
     properties.visibility,
@@ -76,16 +71,6 @@ export const Form = function Form(props) {
     flexDirection: 'column',
   };
 
-  const formHeader = {
-    flexShrink: 0,
-    paddingBottom: '3px',
-    paddingTop: '7px',
-    paddingLeft: `${CONTAINER_FORM_CANVAS_PADDING}px`,
-    paddingRight: `${CONTAINER_FORM_CANVAS_PADDING}px`,
-    backgroundColor:
-      ['#fff', '#ffffffff'].includes(headerBackgroundColor) && darkMode ? '#1F2837' : headerBackgroundColor,
-  };
-
   const formContent = {
     overflow: 'hidden auto',
     display: 'flex',
@@ -96,13 +81,6 @@ export const Form = function Form(props) {
     paddingRight: `${CONTAINER_FORM_CANVAS_PADDING}px`,
   };
 
-  const formFooter = {
-    flexShrink: 0,
-    padding: `${CONTAINER_FORM_CANVAS_PADDING}px`,
-    backgroundColor:
-      ['#fff', '#ffffffff'].includes(footerBackgroundColor) && darkMode ? '#1F2837' : footerBackgroundColor,
-  };
-
   const parentRef = useRef(null);
   const childDataRef = useRef({});
 
@@ -110,7 +88,6 @@ export const Form = function Form(props) {
   const [isValid, setValidation] = useState(true);
   const [uiComponents, setUIComponents] = useState([]);
   const mounted = useMounted();
-  const canvasHeaderHeight = getCanvasHeight(headerHeight) / 10;
   const canvasFooterHeight = getCanvasHeight(footerHeight) / 10;
 
   useEffect(() => {
@@ -287,6 +264,38 @@ export const Form = function Form(props) {
     setChildrenData(childDataRef.current);
   };
 
+  const activeSlot = useActiveSlot(id); // Track the active slot for this widget
+  const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
+  const updateHeaderSizeInStore = ({ newHeight }) => {
+    const heightInPx = `${parseInt(newHeight, 10)}px`;
+    console.log('newHeight', newHeight);
+    setComponentProperty(id, `headerHeight`, heightInPx, 'properties', 'value', false);
+  };
+
+  const updateFooterSizeInStore = ({ newHeight }) => {
+    const heightInPx = `${parseInt(newHeight, 10)}px`;
+    console.log('newHeight', newHeight);
+    setComponentProperty(id, `footerHeight`, heightInPx, 'properties', 'value', false);
+  };
+  const formFooter = {
+    flexShrink: 0,
+    paddingTop: '3px',
+    paddingBottom: '7px',
+    paddingLeft: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+    paddingRight: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+    backgroundColor:
+      ['#fff', '#ffffffff'].includes(footerBackgroundColor) && darkMode ? '#1F2837' : footerBackgroundColor,
+  };
+  const formHeader = {
+    flexShrink: 0,
+    paddingBottom: '3px',
+    paddingTop: '7px',
+    paddingLeft: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+    paddingRight: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+    backgroundColor:
+      ['#fff', '#ffffffff'].includes(headerBackgroundColor) && darkMode ? '#1F2837' : headerBackgroundColor,
+  };
+
   return (
     <form
       className={`jet-container ${advanced && 'jet-container-json-form'}`}
@@ -300,30 +309,20 @@ export const Form = function Form(props) {
       }} //Hack, should find a better solution - to prevent losing z index+1 when container element is clicked
     >
       {showHeader && (
-        <div style={formHeader} className="wj-form-header">
-          <SubContainer
-            id={`${id}-header`}
-            canvasHeight={canvasHeaderHeight}
-            canvasWidth={width}
-            allowContainerSelect={false}
-            darkMode={darkMode}
-            styles={{
-              backgroundColor: 'transparent',
-              height: headerHeight,
-            }}
-            componentType="Form"
-          />
-          {isDisabled && (
-            <div
-              id={`${id}-header-disabled`}
-              className="tj-form-disabled-overlay"
-              style={{ height: headerHeight || '100%' }}
-              onClick={() => {}}
-              onDrop={(e) => e.stopPropagation()}
-            />
-          )}
-        </div>
+        <HorizontalSlot
+          slotName="header"
+          slotStyle={formHeader}
+          isEditing={true}
+          id={`${id}-header`}
+          height={headerHeight}
+          width={width}
+          darkMode={darkMode}
+          isDisabled={isDisabled}
+          isActive={activeSlot === `${id}-header`}
+          onResize={updateHeaderSizeInStore}
+        />
       )}
+
       <div className="jet-form-body" style={formContent}>
         {isLoading ? (
           <div className="p-2 tw-flex tw-items-center tw-justify-center" style={{ margin: '0px auto' }}>
@@ -382,30 +381,18 @@ export const Form = function Form(props) {
         )}
       </div>
       {showFooter && (
-        <div className="jet-form-footer wj-form-footer" style={formFooter}>
-          <SubContainer
-            id={`${id}-footer`}
-            canvasHeight={canvasFooterHeight}
-            canvasWidth={width}
-            allowContainerSelect={false}
-            darkMode={darkMode}
-            styles={{
-              margin: 0,
-              backgroundColor: 'transparent',
-              height: footerHeight,
-            }}
-            componentType="Form"
-          />
-          {isDisabled && (
-            <div
-              id={`${id}-footer-disabled`}
-              className="tj-form-disabled-overlay"
-              style={{ height: footerHeight || '100%' }}
-              onClick={() => {}}
-              onDrop={(e) => e.stopPropagation()}
-            />
-          )}
-        </div>
+        <HorizontalSlot
+          slotName="footer"
+          slotStyle={formFooter}
+          isEditing={true}
+          id={`${id}-footer`}
+          height={footerHeight}
+          width={width}
+          darkMode={darkMode}
+          isDisabled={isDisabled}
+          onResize={updateFooterSizeInStore}
+          isActive={activeSlot === `${id}-footer`}
+        />
       )}
     </form>
   );
