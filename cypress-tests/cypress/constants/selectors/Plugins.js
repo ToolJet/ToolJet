@@ -25,3 +25,8 @@ export const appWriteSelectors = {
   documentId: '[data-cy="documentid-input-field"]',
   bodyInput: '[data-cy="body-input-field"]',
 };
+
+export const twilioSelectors = {
+  toNumberInputField: '[data-cy="to-number-input-field"]',
+  bodyInput: '[data-cy="body-input-field"]',
+};
