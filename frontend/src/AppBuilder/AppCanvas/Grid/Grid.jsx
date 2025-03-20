@@ -66,6 +66,7 @@ export default function Grid({ gridWidth, currentLayout }) {
   const newDragParentId = useRef(null);
   const [isGroupDragging, setIsGroupDragging] = useState(false);
   const checkIfAnyWidgetVisibilityChanged = useStore((state) => state.checkIfAnyWidgetVisibilityChanged(), shallow);
+  const getExposedValueOfComponent = useStore((state) => state.getExposedValueOfComponent, shallow);
 
   useEffect(() => {
     const selectedSet = new Set(selectedComponents);
@@ -329,6 +330,8 @@ export default function Grid({ gridWidth, currentLayout }) {
 
   const isComponentVisible = (id) => {
     const component = getResolvedComponent(id);
+    const componentExposedVisibility = getExposedValueOfComponent(id)?.isVisible;
+    if (componentExposedVisibility === false) return false;
     let visibility;
     if (isArray(component)) {
       visibility = component?.[0]?.properties?.visibility ?? component?.[0]?.styles?.visibility ?? null;
@@ -630,13 +633,13 @@ export default function Grid({ gridWidth, currentLayout }) {
             // When clicked on widget boundary/resizer, select the component
             setSelectedComponents([e.target.id]);
           }
-          showGridLines();
           if (!isComponentVisible(e.target.id)) {
             return false;
           }
           handleActivateNonDraggingComponents();
           useGridStore.getState().actions.setResizingComponentId(e.target.id);
           e.setMin([gridWidth, GRID_HEIGHT]);
+          showGridLines();
         }}
         onResizeEnd={(e) => {
           try {

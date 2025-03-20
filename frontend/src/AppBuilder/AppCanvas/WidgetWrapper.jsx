@@ -62,9 +62,9 @@ const WidgetWrapper = memo(
       <>
         <div
           className={cx(`moveable-box ele-${id}`, {
-            [`target widget-target target1  moveable-box widget-${id}`]: !readOnly && visibility !== false,
-            [`widget-${id} nested-target`]: id !== 'canvas' && !readOnly && visibility !== false,
-            'position-absolute': readOnly || visibility === false,
+            [`target widget-target target1  moveable-box widget-${id}`]: !readOnly,
+            [`widget-${id} nested-target`]: id !== 'canvas' && !readOnly,
+            'position-absolute': readOnly,
             'active-target': isWidgetActive,
             'opacity-0': isDragging || isResizing,
           })}
