@@ -26,6 +26,19 @@ export const appWriteSelectors = {
   bodyInput: '[data-cy="body-input-field"]',
 };
 
+export const twilioSelectors = {
+  toNumberInputField: '[data-cy="to-number-input-field"]',
+  bodyInput: '[data-cy="body-input-field"]',
+};
+
+export const minioSelectors = {
+  sslToggle: 'data-cy="ssl-enabled-toggle-input"',
+  bucketNameInputField: '[data-cy="bucket-input-field"]',
+  objectNameInputField: '[data-cy="objectname-input-field"]',
+  contentTypeInputField: '[data-cy="contenttype-input-field"]',
+  dataInput: '[data-cy="data-input-field"]',
+};
+
 export const graphQLSelectors = {
   urlInputField: '[data-cy="url-text-field"]',
 };
