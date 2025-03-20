@@ -3,7 +3,6 @@ import { postgreSqlSelector } from "Selectors/postgreSql";
 import { pluginSelectors } from "Selectors/plugins";
 import { postgreSqlText } from "Texts/postgreSql";
 import { GraphQLText } from "Texts/graphQL";
-import { amazonAthenaText } from "Texts/amazonAthena";
 import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
 

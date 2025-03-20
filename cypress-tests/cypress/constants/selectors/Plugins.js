@@ -28,7 +28,4 @@ export const appWriteSelectors = {
 
 export const graphQLSelectors = {
   urlInputField: '[data-cy="url-text-field"]',
-  collectionId: '[data-cy="collectionid-input-field"]',
-  documentId: '[data-cy="documentid-input-field"]',
-  bodyInput: '[data-cy="body-input-field"]',
 };
