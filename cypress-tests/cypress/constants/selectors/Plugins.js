@@ -25,3 +25,10 @@ export const appWriteSelectors = {
   documentId: '[data-cy="documentid-input-field"]',
   bodyInput: '[data-cy="body-input-field"]',
 };
+
+export const graphQLSelectors = {
+  urlInputField: '[data-cy="url-text-field"]',
+  collectionId: '[data-cy="collectionid-input-field"]',
+  documentId: '[data-cy="documentid-input-field"]',
+  bodyInput: '[data-cy="body-input-field"]',
+};
