@@ -41,7 +41,7 @@ export const addNewWidgetToTheEditor = (componentType, eventMonitorObject, curre
   // Adjust widget width based on the dropping canvas width
   const mainCanvasWidth = useGridStore.getState().subContainerWidths['canvas'];
   let width = Math.round((defaultWidth * mainCanvasWidth) / gridWidth);
-  console.log(width, gridWidth, 'width');
+
   // Ensure minimum width
   width = Math.max(width, 1);
 
@@ -518,6 +518,7 @@ export function pasteComponents(targetParentId, copiedComponentObj) {
   }
 
   pastedComponents.forEach((component) => {
+    component = deepClone(component);
     const newComponentId = isCut ? component.id : uuidv4();
     const componentName = computeComponentName(component.component.component, {
       ...components,
@@ -575,7 +576,11 @@ export function pasteComponents(targetParentId, copiedComponentObj) {
       }
     }
 
-    component.layouts[currentLayout].width = width;
+    component.layouts[currentLayout] = {
+      ...component.layouts[currentLayout],
+      width,
+    };
+
     const newComponent = {
       component: {
         ...componentData,
