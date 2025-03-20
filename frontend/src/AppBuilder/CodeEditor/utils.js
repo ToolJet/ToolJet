@@ -337,6 +337,7 @@ export const FxParamTypeMapping = Object.freeze({
   color: 'Color',
   json: 'Json',
   code: 'Code',
+  colorSwatches: 'ColorSwatches',
   toggle: 'Toggle',
   select: 'Select',
   alignButtons: 'AlignButtons',

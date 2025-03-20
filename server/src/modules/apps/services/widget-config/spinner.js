@@ -23,11 +23,11 @@ export const spinnerConfig = {
       },
     },
     colour: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Colour',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#0565ff',
+        defaultValue: 'var(--primary-brand)',
       },
     },
     size: {
@@ -54,7 +54,7 @@ export const spinnerConfig = {
     styles: {
       visibility: { value: '{{true}}' },
       size: { value: 'sm' },
-      colour: { value: '#0565ff' },
+      colour: { value: 'var(--primary-brand)' },
     },
   },
 };

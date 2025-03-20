@@ -45,15 +45,15 @@ export const stepsConfig = {
   },
   styles: {
     color: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Color',
       validation: {
         schema: { type: 'string' },
-        defaultValue: '#000000',
+        defaultValue: 'var(--primary-brand)',
       },
     },
     textColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Text color',
       validation: {
         schema: { type: 'string' },
@@ -101,7 +101,7 @@ export const stepsConfig = {
     styles: {
       visibility: { value: '{{true}}' },
       theme: { value: 'titles' },
-      color: { value: '' },
+      color: { value: 'var(--primary-brand)' },
       textColor: { value: '' },
     },
   },

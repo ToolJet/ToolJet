@@ -4,7 +4,7 @@ export const colorPickerConfig = {
   description: 'Choose colors from a palette',
   component: 'ColorPicker',
   properties: {
-    defaultColor: { type: 'color', displayName: 'Default color' },
+    defaultColor: { type: 'colorSwatches', displayName: 'Default color' },
   },
   defaultSize: {
     width: 9,
@@ -14,7 +14,9 @@ export const colorPickerConfig = {
     {
       displayName: 'Set Color',
       handle: 'setColor',
-      params: [{ handle: 'color', displayName: 'color', defaultValue: '#ffffff', type: 'color' }],
+      params: [
+        { handle: 'colorSwatches', displayName: 'colorSwatches', defaultValue: '#ffffff', type: 'colorSwatches' },
+      ],
     },
   ],
   others: {

@@ -708,3 +708,15 @@ export const parsePropertyPath = (property) => {
 
   return result;
 };
+
+export const baseTheme = {
+  definition: {
+    brand: {
+      colors: {
+        primary: { light: '#4368E3', dark: '#4A6DD9' },
+        secondary: { light: '#6A727C', dark: '#CFD3D8' },
+        tertiary: { light: '#1E823B', dark: '#318344' },
+      },
+    },
+  },
+};

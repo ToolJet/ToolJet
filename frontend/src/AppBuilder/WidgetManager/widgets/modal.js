@@ -81,7 +81,7 @@ export const modalConfig = {
   },
   styles: {
     headerBackgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Header background color',
       validation: {
         schema: { type: 'string' },
@@ -89,7 +89,7 @@ export const modalConfig = {
       },
     },
     headerTextColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Header title color',
       validation: {
         schema: { type: 'string' },
@@ -97,7 +97,7 @@ export const modalConfig = {
       },
     },
     bodyBackgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Body background color',
       validation: {
         schema: { type: 'string' },
@@ -121,7 +121,7 @@ export const modalConfig = {
       },
     },
     triggerButtonBackgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Trigger button background color',
       validation: {
         schema: { type: 'string' },
@@ -129,7 +129,7 @@ export const modalConfig = {
       },
     },
     triggerButtonTextColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Trigger button text color',
       validation: {
         schema: { type: 'string' },
@@ -175,7 +175,7 @@ export const modalConfig = {
       bodyBackgroundColor: { value: '#ffffffff' },
       disabledState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
-      triggerButtonBackgroundColor: { value: '#4D72FA' },
+      triggerButtonBackgroundColor: { value: 'var(--primary-brand)' },
       triggerButtonTextColor: { value: '#ffffffff' },
     },
   },

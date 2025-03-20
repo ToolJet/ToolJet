@@ -39,13 +39,13 @@ export const chartConfig = {
       },
     },
     markerColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Marker color',
       validation: {
         schema: {
           type: 'string',
         },
-        defaultValue: '#CDE1F8',
+        defaultValue: 'var(--primary-brand)',
       },
     },
     showAxes: {
@@ -134,7 +134,7 @@ export const chartConfig = {
   },
   styles: {
     backgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Background color',
       validation: { schema: { type: 'string' }, defaultValue: '#fff' },
     },
@@ -192,7 +192,7 @@ export const chartConfig = {
     },
     properties: {
       title: { value: 'This title can be changed' },
-      markerColor: { value: '#CDE1F8' },
+      markerColor: { value: 'var(--primary-brand)' },
       showAxes: { value: '{{true}}' },
       showGridLines: { value: '{{true}}' },
       plotFromJson: { value: '{{false}}' },

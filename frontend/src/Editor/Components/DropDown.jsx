@@ -236,7 +236,7 @@ export const DropDown = function DropDown({
             minWidth: 'max-content',
           }
         : {
-            backgroundColor: state.value === currentValue ? '#7A95FB' : 'white',
+            backgroundColor: state.value === currentValue ? 'var(--primary-brand)' : 'white',
             color: state.isDisabled ? '#88909694' : state.value === currentValue ? 'white' : 'black',
             ':hover': {
               backgroundColor: state.isDisabled ? 'transparent' : state.value === currentValue ? '#3650AF' : '#d8dce9',

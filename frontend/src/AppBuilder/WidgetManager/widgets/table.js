@@ -157,7 +157,7 @@ export const tableConfig = {
       defaultValue: 'clientSide',
     },
     actionButtonBackgroundColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Background color',
       validation: {
         schema: { type: 'string' },
@@ -165,7 +165,7 @@ export const tableConfig = {
       },
     },
     actionButtonTextColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Text color',
       validation: {
         schema: { type: 'string' },
@@ -293,7 +293,7 @@ export const tableConfig = {
   },
   styles: {
     textColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Text Color',
       validation: {
         schema: { type: 'string' },
@@ -404,7 +404,7 @@ export const tableConfig = {
       accordian: 'Container',
     },
     borderColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Border',
       validation: {
         schema: { type: 'string' },

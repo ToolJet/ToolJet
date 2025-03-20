@@ -7,6 +7,9 @@ import AppExport from './AppExport';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import AppModeToggle from './AppModeToggle';
+import { ThemeSelect } from '@/modules/Appbuilder/components';
+import MaintenanceMode from './MaintenanceMode';
+import HideHeaderToggle from './HideHeaderToggle';
 
 const GlobalSettings = ({ darkMode }) => {
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
@@ -16,16 +19,27 @@ const GlobalSettings = ({ darkMode }) => {
       <div>
         <div bsPrefix="global-settings-popover" className="global-settings-panel">
           <HeaderSection>
-            <HeaderSection.PanelHeader title="Global settings" />
+            <HeaderSection.PanelHeader title="Global settings">
+              <div className="d-flex w-100 justify-content-end">
+                <AppExport darkMode={darkMode} />
+              </div>
+            </HeaderSection.PanelHeader>
           </HeaderSection>
-          <div className="card-body">
+          <div className="card-body" style={{ paddingBottom: '0px' }}>
             <SlugInput />
+          </div>
+          <div style={{ padding: '12px 16px' }} className={cx({ disabled: shouldFreeze })}>
+            <MaintenanceMode darkMode={darkMode} />
+            <HideHeaderToggle darkMode={darkMode} />
+          </div>
+          <div className={cx({ 'dark-theme': darkMode })}>
+            <span className="canvas-styles-header">Canvas Styles</span>
           </div>
           <div style={{ padding: '12px 16px' }} className={cx({ disabled: shouldFreeze })}>
             <div className="tj-text-xsm color-slate12 ">
               <CanvasSettings darkMode={darkMode} />
               <AppModeToggle darkMode={darkMode} />
-              <AppExport darkMode={darkMode} />
+              <ThemeSelect darkMode={darkMode} />
             </div>
           </div>
         </div>

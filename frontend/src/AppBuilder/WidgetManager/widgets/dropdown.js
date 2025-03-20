@@ -128,7 +128,7 @@ export const dropdownConfig = {
       defaultValue: true,
     },
     selectedTextColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Selected text color',
       validation: {
         schema: {

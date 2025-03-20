@@ -46,7 +46,7 @@ export const TextArea = function TextArea({
         setExposedVariable('value', e.target.value);
       }}
       type="text"
-      className="form-control textarea"
+      className="form-control textarea textarea-widget"
       placeholder={properties.placeholder}
       style={{
         height,

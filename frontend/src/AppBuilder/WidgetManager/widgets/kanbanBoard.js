@@ -30,7 +30,7 @@ export const kanbanBoardConfig = {
     visibility: { type: 'toggle', displayName: 'Visibility' },
     width: { type: 'number', displayName: 'Width' },
     minWidth: { type: 'number', displayName: 'Min Width' },
-    accentColor: { type: 'color', displayName: 'Accent color' },
+    accentColor: { type: 'colorSwatches', displayName: 'Accent color' },
   },
   exposedVariables: {
     columns: {},

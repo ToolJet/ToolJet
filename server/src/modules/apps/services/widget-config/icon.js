@@ -61,7 +61,7 @@ export const iconConfig = {
   },
   styles: {
     iconColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Color',
       validation: {
         schema: { type: 'string' },

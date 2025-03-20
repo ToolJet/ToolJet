@@ -25,6 +25,7 @@ const LicenseTooltip = ({
     'Multi-environments': 'multiEnvironment',
     'Import from git': 'gitSync',
     GitSync: 'gitSync',
+    'Custom themes': 'customThemes',
   };
 
   const generateMessage = () => {

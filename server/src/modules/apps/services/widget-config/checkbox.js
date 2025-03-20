@@ -70,7 +70,7 @@ export const checkboxConfig = {
   },
   styles: {
     textColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Text color',
       validation: {
         schema: { type: 'string' },
@@ -78,7 +78,7 @@ export const checkboxConfig = {
       accordian: 'label',
     },
     borderColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Border color',
       validation: {
         schema: { type: 'string' },
@@ -86,7 +86,7 @@ export const checkboxConfig = {
       accordian: 'switch',
     },
     checkboxColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Checked color',
       validation: {
         schema: { type: 'string' },
@@ -94,7 +94,7 @@ export const checkboxConfig = {
       accordian: 'switch',
     },
     uncheckedColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Unchecked color',
       validation: {
         schema: { type: 'string' },
@@ -102,7 +102,7 @@ export const checkboxConfig = {
       accordian: 'switch',
     },
     handleColor: {
-      type: 'color',
+      type: 'colorSwatches',
       displayName: 'Handle color',
       validation: {
         schema: { type: 'string' },
@@ -183,7 +183,7 @@ export const checkboxConfig = {
     styles: {
       disabledState: { value: '{{false}}' },
       textColor: { value: '#1B1F24' },
-      checkboxColor: { value: '#4368E3' },
+      checkboxColor: { value: 'var(--primary-brand)' },
       uncheckedColor: { value: '#E4E7EB' },
       borderColor: { value: '#CCD1D5' },
       handleColor: { value: '#FFFFFF' },
