@@ -117,8 +117,9 @@ Cypress.Commands.add(
 
     const splitIntoFlatArray = (value) => {
       const regex =
-        /(\{|\}|\(|\)|\[|\]|,|:|;|=>|'[^']*'|"[^"]*"|[a-zA-Z0-9._]+|\s+)/g;
+        /(\{|\}|\(|\)|\[|\]|,|:|;|=>|'[^']*'|"[^"]*"|[a-zA-Z0-9._-]+|\s+)/g; // Included '-' explicitly
       let prefix = "";
+
       return (
         value.match(regex)?.reduce((acc, part) => {
           if (part === "{{" || part === "((") {
@@ -134,7 +135,9 @@ Cypress.Commands.add(
           } else if (part === ":") {
             acc.push(prefix + ":");
           } else if (part === '"') {
-            acc.push(prefix + ":");
+            acc.push(prefix + '"');
+          } else if (part.includes("-")) {
+            acc.push(prefix + part); // Ensure hyphen is included
           } else {
             acc.push(prefix + part);
             prefix = "";
