@@ -90,7 +90,7 @@ export const postgreSqlSelector = {
 };
 
 export const airTableSelector = {
-  operationSelectDropdown: '[data-cy="query-select-dropdown"]',
+  operationSelectDropdown: '[data-cy="operation-select-dropdown"]',
   baseIdInputField: '[data-cy="base-id-input-field"]',
   tableNameInputField: '[data-cy="table-name-input-field"]',
   recordIdInputField: '[data-cy="record-id-input-field"]',

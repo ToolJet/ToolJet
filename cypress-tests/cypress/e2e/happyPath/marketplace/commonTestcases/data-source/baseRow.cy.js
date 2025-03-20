@@ -193,7 +193,7 @@ describe("Data source baserow", () => {
     ];
 
     operations.forEach((operation) => {
-      cy.get('[data-cy="query-select-dropdown"]').click();
+      cy.get(pluginSelectors.operationDropdown).click();
       cy.get(".react-select__option").contains(operation).click();
 
       cy.get(baserowSelectors.table).clearAndTypeOnCodeMirror(baserowTableID);

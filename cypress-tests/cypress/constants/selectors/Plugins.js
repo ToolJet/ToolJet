@@ -26,6 +26,11 @@ export const appWriteSelectors = {
   bodyInput: '[data-cy="body-input-field"]',
 };
 
+export const twilioSelectors = {
+  toNumberInputField: '[data-cy="to-number-input-field"]',
+  bodyInput: '[data-cy="body-input-field"]',
+};
+
 export const minioSelectors = {
   sslToggle: 'data-cy="ssl-enabled-toggle-input"',
   bucketNameInputField: '[data-cy="bucket-input-field"]',
