@@ -5699,6 +5699,23 @@ div#driver-page-overlay {
   }
 }
 
+@media (max-width: 1248px) {
+  .workspace-settings-page {
+    width: fit-content !important;
+  
+    .card {
+      width: fit-content !important;
+  
+      .card-body {
+        flex-direction: column !important;
+        height: 350px !important;
+        overflow: scroll !important;
+        gap: 0 !important;
+      }
+    }
+  }
+}
+
 // Left Menu
 .left-menu {
   background: var(--base);
@@ -7853,6 +7870,7 @@ tbody {
 .database-page-content-wrap {
   background-color: var(--page-default);
   height: calc(100vh - 64px) !important;
+  width: 100%;
 }
 
 .instance-settings-wrapper {}
