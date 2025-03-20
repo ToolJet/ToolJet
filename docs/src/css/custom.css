@@ -450,6 +450,15 @@ img {
   font-weight: 600;
 }
 
+@media screen and (max-width: 996px) {
+
+  .navbar-signin,
+  .navbar-website,
+  .dropdown {
+    display: none !important;
+  }
+}
+
 [data-theme='dark'] .navbar-signin,
 [data-theme='dark'] .navbar-signin:hover,
 [data-theme='dark'] .navbar-website,
