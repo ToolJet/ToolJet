@@ -106,6 +106,7 @@ export const linkConfig = {
       textSize: { value: '{{14}}' },
       underline: { value: 'on-hover' },
       visibility: { value: '{{true}}' },
+      alignment: { value: 'left' },
     },
   },
 };

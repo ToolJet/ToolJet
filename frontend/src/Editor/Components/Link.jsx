@@ -3,13 +3,14 @@ import cx from 'classnames';
 
 export const Link = ({ height, properties, styles, fireEvent, setExposedVariable, dataCy }) => {
   const { linkTarget, linkText, targetType } = properties;
-  const { textColor, textSize, underline, visibility, boxShadow } = styles;
+  const { textColor, textSize, underline, visibility, boxShadow, alignment } = styles;
   const clickRef = useRef();
 
   const computedStyles = {
     fontSize: textSize,
     height,
     boxShadow,
+    justifyContent: alignment,
   };
 
   useEffect(() => {
