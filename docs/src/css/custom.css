@@ -48,6 +48,7 @@
   --ifm-link-color: #3e63dd;
   --ifm-menu-color-background-active: #8890992E;
   --ifm-link-menu-color-background-hover: #8890992E;
+  --ifm-breadcrumb-item-background-active: transparent;
 }
 
 
@@ -855,4 +856,28 @@ button[title="Switch between dark and light mode (currently light mode)"] svg {
 
 #tj-dropdown>summary::before {
   border-color: transparent transparent transparent #6A727C !important;
+}
+
+/* Bread crumbs */
+
+.breadcrumbs__item .breadcrumbs__link {
+  padding-right: 4px;
+  padding-left: 4px;
+  color: #2D343B;
+}
+
+.breadcrumbs__item:first-child .breadcrumbs__link {
+  padding-left: 0;
+}
+
+.breadcrumbs__item:not(:last-child):after {
+  content: "/" !important;
+  background: none;
+  margin: 0;
+  color: #6A727C;
+  font-weight: bold;
+}
+
+.breadcrumbs__item--active .breadcrumbs__link {
+  font-weight: 600;
 }
