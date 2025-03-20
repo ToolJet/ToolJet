@@ -38,3 +38,7 @@ export const minioSelectors = {
   contentTypeInputField: '[data-cy="contenttype-input-field"]',
   dataInput: '[data-cy="data-input-field"]',
 };
+
+export const graphQLSelectors = {
+  urlInputField: '[data-cy="url-text-field"]',
+};
