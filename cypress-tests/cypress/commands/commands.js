@@ -116,7 +116,8 @@ Cypress.Commands.add(
       });
 
     const splitIntoFlatArray = (value) => {
-      const regex = /(\{|\}|\(|\)|\[|\]|,|:|;|=>|'[^']*'|[a-zA-Z0-9._]+|\s+)/g;
+      const regex =
+        /(\{|\}|\(|\)|\[|\]|,|:|;|=>|'[^']*'|"[^"]*"|[a-zA-Z0-9._]+|\s+)/g;
       let prefix = "";
       return (
         value.match(regex)?.reduce((acc, part) => {
@@ -132,6 +133,8 @@ Cypress.Commands.add(
             acc.push(prefix + " ");
           } else if (part === ":") {
             acc.push(prefix + ":");
+          } else if (part === '"') {
+            acc.push(prefix + ":");
           } else {
             acc.push(prefix + part);
             prefix = "";
@@ -142,13 +145,11 @@ Cypress.Commands.add(
     };
 
     if (Array.isArray(value)) {
-      cy.wrap(subject)
-        .last()
-        .realType(value, {
-          parseSpecialCharSequences: false,
-          delay: 0,
-          force: true,
-        });
+      cy.wrap(subject).last().realType(value, {
+        parseSpecialCharSequences: false,
+        delay: 0,
+        force: true,
+      });
     } else {
       splitIntoFlatArray(value).forEach((i) => {
         cy.wrap(subject)
@@ -228,9 +229,9 @@ Cypress.Commands.add(
       .invoke("text")
       .then((text) => {
         cy.wrap(subject).realType(createBackspaceText(text)),
-        {
-          delay: 0,
-        };
+          {
+            delay: 0,
+          };
       });
   }
 );
