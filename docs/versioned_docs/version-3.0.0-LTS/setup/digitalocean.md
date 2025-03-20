@@ -4,7 +4,7 @@ title: DigitalOcean
 ---
 
 :::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`.
+To enable ToolJet AI features in your ToolJet deployment, whitelist https://api-gateway.tooljet.ai.
 :::
 
 Follow the steps below to deploy ToolJet on a DigitalOcean Droplet.
