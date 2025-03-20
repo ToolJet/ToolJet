@@ -125,9 +125,6 @@ PGRST_DB_URI=postgres://TOOLJET_DB_USER:TOOLJET_DB_PASS@TOOLJET_DB_HOST:5432/TOO
 **Note:** These environment variables are in general and might change in the future. You can also refer env variable [**here**](/docs/setup/env-vars). 
 
 
-  Update `TOOLJET_HOST` environment variable if you want to use the default url assigned with Cloud run after the initial deploy.
-
-
 
 :::tip
 If you are using [Public IP](https://cloud.google.com/sql/docs/postgres/connect-run) for Cloud SQL, then database host connection (value for `PG_HOST`) needs to be set using unix socket format, `/cloudsql/<CLOUD_SQL_CONNECTION_NAME>`.  
