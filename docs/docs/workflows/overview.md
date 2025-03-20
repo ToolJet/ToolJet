@@ -15,8 +15,6 @@ title: Overview
 
 <br/>
 
-## Introduction
-
 ToolJet Workflows enable users to create complex, data-centric automations using a visual, node-based interface. It extends ToolJet's capabilities beyond building user interfaces, allowing developers and business users to automate processes, integrate data from various sources, and execute custom logic without writing extensive code.
 
 <div style={{textAlign: 'center', paddingBottom: '15px'}}>

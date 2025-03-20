@@ -515,10 +515,6 @@ const sidebars = {
         {
           'type': 'category',
           'label': 'Onboard and Offboard Users',
-          'link': {
-            'type': 'doc',
-            'id': 'user-management/onboard-users/overview',
-          },
           'items': [
             'user-management/onboard-users/overview',
             'user-management/onboard-users/invite-user',

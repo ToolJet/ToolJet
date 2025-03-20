@@ -79,6 +79,15 @@
   --ifm-breadcrumb-item-background-active: transparent;
 }
 
+[data-theme='dark'] .table-of-contents__link:hover,
+[data-theme='dark'] .table-of-contents__link:hover code,
+[data-theme='dark'] .table-of-contents__link--active,
+[data-theme='dark'] .table-of-contents__link--active code {
+  color: white;
+  font-weight: 600;
+  --ifm-breadcrumb-item-background-active: transparent;
+}
+
 
 .pagination-nav {
   border-top: 1px solid #E4E7EB;
@@ -479,16 +488,19 @@ img {
 
 
 
-button[title="Switch between dark and light mode (currently light mode)"] {
+button[title="Switch between dark and light mode (currently light mode)"],
+[data-theme='dark'] button[title="Switch between dark and light mode (currently dark mode)"] {
   box-shadow: 0px 0px 1px 0px rgba(48, 50, 51, 0.05),
     0px 1px 1px 0px rgba(48, 50, 51, 0.10);
   border: 1px solid #E4E7EB;
   border-radius: 6px !important;
 }
 
-button[title="Switch between dark and light mode (currently light mode)"] svg {
+button[title="Switch between dark and light mode (currently light mode)"] svg,
+[data-theme='dark'] button[title="Switch between dark and light mode (currently dark mode)"] svg {
   width: 20px;
 }
+
 
 .navbar-website::before {
   content: '';
@@ -889,7 +901,7 @@ button[title="Switch between dark and light mode (currently light mode)"] svg {
   content: "/" !important;
   background: none;
   margin: 0;
-  color: #6A727C;
+  color: #2D343B;
   font-weight: bold;
 }
 
@@ -900,4 +912,12 @@ button[title="Switch between dark and light mode (currently light mode)"] svg {
 .container {
   padding-top: 42px !important;
   padding-bottom: 42px !important;
+}
+
+.markdown h1:first-child {
+  margin-bottom: 8px;
+}
+
+.clean-btn.close {
+  color: #4368E3;
 }
