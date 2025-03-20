@@ -382,6 +382,15 @@ img {
   fill: #4368E3
 }
 
+.alert.alert--secondary code {
+  border-radius: 4px;
+  background: #F6F8FA;
+  mix-blend-mode: multiply;
+  padding: 2px 4px;
+}
+
+
+
 /* Info Alert box*/
 
 .alert.alert--info {
@@ -392,6 +401,14 @@ img {
   fill: #4368E3
 }
 
+.alert.alert--info code {
+  border-radius: 4px;
+  background: #F6F8FA;
+  mix-blend-mode: multiply;
+  padding: 2px 4px;
+}
+
+
 
 /* Warning Alert box */
 
@@ -401,6 +418,13 @@ img {
 
 .alert.alert--warning svg {
   fill: #BF4F03
+}
+
+.alert.alert--warning code {
+  border-radius: 4px;
+  background: #FAEFE7;
+  mix-blend-mode: multiply;
+  padding: 2px 4px;
 }
 
 
@@ -414,6 +438,14 @@ img {
   fill: #1E823B
 }
 
+.alert.alert--success code {
+  border-radius: 4px;
+  background: #E8F3EB;
+  mix-blend-mode: multiply;
+  padding: 2px 4px;
+}
+
+
 /* Danger Alert box */
 
 .alert.alert--danger {
@@ -423,6 +455,14 @@ img {
 .alert.alert--danger svg {
   fill: #D72D39
 }
+
+.alert.alert--danger code {
+  border-radius: 4px;
+  background: #FCEEEF;
+  mix-blend-mode: multiply;
+  padding: 2px 4px;
+}
+
 
 
 .admonition-heading .menu {

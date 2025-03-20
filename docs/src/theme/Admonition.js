@@ -11,6 +11,7 @@ const iconMap = {
     danger: DangerIcon,
     info: NoteIcon,
     caution: CautionIcon,
+    warning: CautionIcon
 };
 
 export default function Admonition(props) {
