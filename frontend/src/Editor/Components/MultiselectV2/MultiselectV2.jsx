@@ -473,7 +473,7 @@ export const MultiselectV2 = ({
           _width={_width}
           top={'1px'}
         />
-        <div className="w-100 px-0 h-100" onClick={handleClickInsideSelect}>
+        <div className="w-100 px-0 h-100" onClick={handleClickInsideSelect} onTouchEnd={handleClickInsideSelect}>
           <Select
             ref={selectRef}
             menuId={id}
