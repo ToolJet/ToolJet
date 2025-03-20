@@ -52,6 +52,7 @@ You can deploy ToolJet on DigitalOcean using one-click-deployment.
 
 <p align="center">
   <a href="https://cloud.digitalocean.com/apps/new?repo=https://github.com/ToolJet/ToolJet/tree/main"><img src="https://www.deploytodo.com/do-btn-blue.svg" alt="Deploy to DigitalOcean" height=32></a>
+ <a href="https://railway.app/template/NLgOKC"><img src="https://railway.app/button.svg" alt="Deploy on Railway" height=32></a>
 </p>
 
 ### Try using Docker
