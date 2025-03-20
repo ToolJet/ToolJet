@@ -117,7 +117,7 @@ Cypress.Commands.add(
 
     const splitIntoFlatArray = (value) => {
       const regex =
-        /(\{|\}|\(|\)|\[|\]|,|:|;|=>|'[^']*'|"[^"]*"|[a-zA-Z0-9._-]+|\s+)/g; // Included '-' explicitly
+        /(\{|\}|\(|\)|\[|\]|,|:|;|=>|'[^']*'|"[^"]*"|[a-zA-Z0-9._-]+|\s+)/g;
       let prefix = "";
 
       return (
