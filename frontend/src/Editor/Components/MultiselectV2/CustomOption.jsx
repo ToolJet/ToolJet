@@ -7,7 +7,17 @@ import { highlightText } from '../DropdownV2/utils';
 
 const CustomOption = (props) => {
   return (
-    <Option {...props}>
+    <Option
+      {...props}
+      innerProps={{
+        ...props.innerProps,
+        onTouchEnd: (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          props.selectOption(props.data);
+        },
+      }}
+    >
       <div className="d-flex">
         <FormCheck checked={props.isSelected} disabled={props?.isDisabled} />
         <span style={{ marginLeft: '5px' }}>
