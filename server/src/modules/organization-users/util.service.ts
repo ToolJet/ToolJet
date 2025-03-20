@@ -40,7 +40,6 @@ import { SessionUtilService } from '@modules/session/util.service';
 import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
 import { IOrganizationUsersUtilService } from './interfaces/IUtilService';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-
 @Injectable()
 export class OrganizationUsersUtilService implements IOrganizationUsersUtilService {
   constructor(
@@ -147,8 +146,18 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
 
       try {
         for (const addGroup of groups) {
+          const orgGroupPermission = await this.groupPermissionsRepository.getGroup(
+            {
+              organizationId: organizationId,
+              name: addGroup,
+            },
+            manager
+          );
+          if (!orgGroupPermission) {
+            throw new BadRequestException(`${addGroup} group does not exist for current organization`);
+          }
           await this.groupPermissionsUtilService.addUsersToGroup(
-            { allowRoleChange: false, userIds: [userId], groupId: addGroup },
+            { allowRoleChange: false, userIds: [userId], groupId: orgGroupPermission.id },
             organizationId,
             manager
           );
@@ -223,7 +232,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const userType = (await manager.count(User)) === 0 ? USER_TYPE.INSTANCE : USER_TYPE.WORKSPACE;
 
-      return await this.userRepository.createOne(
+      return await this.userRepository.createOrUpdate(
         {
           email,
           firstName,

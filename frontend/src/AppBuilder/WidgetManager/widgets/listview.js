@@ -13,6 +13,7 @@ export const listviewConfig = {
         top: 15,
         left: 3,
         height: 100,
+        width: 7,
       },
       properties: ['source'],
       accessorKey: 'imageURL',

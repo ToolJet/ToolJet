@@ -7,6 +7,7 @@ import { getWorkspaceId } from '@/_helpers/utils';
 import { navigate } from '@/AppBuilder/_utils/misc';
 import queryString from 'query-string';
 import { replaceEntityReferencesWithIds, baseTheme } from '../utils';
+import _ from 'lodash';
 
 const initialState = {
   app: {},
@@ -126,10 +127,14 @@ export const createAppSlice = (set, get) => ({
     setComponentNameIdMapping('canvas');
     setQueryMapping('canvas');
 
+    const isLicenseValid =
+      !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
+      _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
+
     const appId = get().app.appId;
     const filteredQueryParams = queryParams.filter(([key, value]) => {
       if (!value) return false;
-      if (key === 'env' && !license.isLicenseValid()) return false;
+      if (key === 'env' && isLicenseValid) return false;
       return true;
     });
 

@@ -12,8 +12,4 @@ export class FeatureAbilityGuard extends AbilityGuard {
   protected getAbilityFactory() {
     return FeatureAbilityFactory;
   }
-
-  protected forwardAbility(): boolean {
-    return true;
-  }
 }
