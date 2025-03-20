@@ -48,7 +48,7 @@ In this section you can configure the following branding elements:
 
 ## FAQ
 
-<details>
+<details id="tj-dropdown">
     <summary>
          **Q. What happens to white labeling if the license or subscription expires?**
     </summary>

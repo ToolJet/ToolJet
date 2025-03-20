@@ -88,7 +88,7 @@ Admin user has access to all the permission at workspace level, while an end use
 
 ## FAQ
 
-<details>
+<details id="tj-dropdown">
     <summary>
          **Q. Can applications and workspace settings be shared between workspaces?**
     </summary>
@@ -96,7 +96,7 @@ Admin user has access to all the permission at workspace level, while an end use
 
 </details>
 
-<details>
+<details id="tj-dropdown">
     <summary>
      **Q. Do users have access to all workspaces by default?**
     </summary>

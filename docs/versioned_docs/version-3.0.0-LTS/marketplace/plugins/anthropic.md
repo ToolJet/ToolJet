@@ -38,7 +38,7 @@ This operation processes the user's input and generates appropriate, context-awa
 
 <img className="screenshot-full" src="/img/marketplace/plugins/anthropic/query.png" alt="Anthropic Query" />
 
-<details>
+<details id="tj-dropdown">
 <summary>**Response Example**</summary>
 
 ```json
