@@ -389,8 +389,6 @@ img {
   padding: 2px 4px;
 }
 
-
-
 /* Info Alert box*/
 
 .alert.alert--info {
@@ -905,6 +903,13 @@ button[title="Switch between dark and light mode (currently light mode)"] svg,
 #tj-dropdown {
   border: none !important;
   background-color: #F6F8FA;
+}
+
+#tj-dropdown code {
+  border-radius: 4px;
+  background: inherit;
+  mix-blend-mode: normal;
+  padding: 5px 10px;
 }
 
 #tj-dropdown[data-collapsed="false"] summary {
