@@ -13,8 +13,12 @@ The **Text Editor** component is used to enter and edit text in HTML format. It 
 
 | **Property**  | **Description** | **Expected Value** |
 |:-----------|:-----------|:-----------|
-| Placeholder | A hint displayed to guide the user on what to enter. | String (e.g., `John Doe`). |
-| Default Value | The default value that the component will hold when the app is loaded. | String (e.g., `Default Text`). |
+| Placeholder | A hint displayed to guide the user on what to enter. | String (e.g., `John Doe`) <br/>HTML(e.g., `<h1>John Doe</h1>`) |
+| Default Value | The default value that the component will hold when the app is loaded. | String (e.g., `Default Text`) <br/>HTML (e,g., `<p>Hello, ToolJet!</p>`).|
+
+### HTML Support
+The Placeholder and Default Value property also supports HTML content allowing the use of headings, paragraphs, bold text, and other HTML elements within the text editor.
+
 
 </div>
 
@@ -26,7 +30,7 @@ Following actions of Button component can be controlled using the component spec
 
 | <div style={{ width:"100px"}}> Action  </div>  | <div style={{ width:"135px"}}> Description </div> | <div style={{ width:"135px"}}> How To Access </div> |
 |:----------- |:----------- |:---------|
-| setValue() | Sets the value of the text editor. | Employ a RunJS query (e.g., <br/> `await components.richtexteditor1.setValue(true)`) or trigger it using an event.|
+| setValue() | Sets the value of the text editor. | Employ a RunJS query (for e.g., <br/> `await components.richtexteditor1.setValue(<p> Hello ToolJet! </p>)`) or trigger it using an event.|
 | setVisibility() | Sets the visibility of the component.            | Employ a RunJS query (for e.g.,  <br/> `await components.richtexteditor1.setVisibility(false)`) or trigger it using an event. |
 | setLoading()   | Sets the loading state of the component.         | Employ a RunJS query (for e.g.,  <br/> `await components.richtexteditor1.setLoading(true)`) or trigger it using an event. |
 | setDisable()   | Disables the component.                           | Employ a RunJS query (for e.g., <br/> `await components.richtexteditor1.setDisable(true)`) or trigger it using an event. |
