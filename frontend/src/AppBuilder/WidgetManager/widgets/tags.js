@@ -38,6 +38,14 @@ export const tagsConfig = {
         defaultValue: true,
       },
     },
+    alignment: {
+      type: 'alignButtons',
+      displayName: 'Alignment',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'left',
+      },
+    },
   },
   exposedVariables: {},
   definition: {
@@ -54,6 +62,7 @@ export const tagsConfig = {
     events: [],
     styles: {
       visibility: { value: '{{true}}' },
+      alignment: { value: 'left' },
     },
   },
 };

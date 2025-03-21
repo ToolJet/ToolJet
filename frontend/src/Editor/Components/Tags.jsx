@@ -2,14 +2,15 @@ import React from 'react';
 
 export const Tags = function Tags({ width, height, properties, styles, dataCy }) {
   const { data } = properties;
-  const { visibility, boxShadow } = styles;
+  const { visibility, boxShadow, alignment } = styles;
 
   const computedStyles = {
     width,
     height,
-    display: visibility ? '' : 'none',
+    display: visibility ? 'flex' : 'none',
     overflowY: 'auto',
     boxShadow,
+    justifyContent: alignment,
   };
 
   function renderTag(item, index) {

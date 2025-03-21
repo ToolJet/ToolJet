@@ -23,8 +23,17 @@ export const Image = function Image({
 }) {
   const { imageFormat, source, jsSchema, alternativeText, zoomButtons, rotateButton, loadingState, disabledState } =
     properties;
-  const { imageFit, imageShape, backgroundColor, padding, customPadding, boxShadow, borderRadius, borderColor } =
-    styles;
+  const {
+    imageFit,
+    imageShape,
+    backgroundColor,
+    padding,
+    customPadding,
+    boxShadow,
+    borderRadius,
+    borderColor,
+    alignment,
+  } = styles;
 
   const isInitialRender = useRef(true);
 
