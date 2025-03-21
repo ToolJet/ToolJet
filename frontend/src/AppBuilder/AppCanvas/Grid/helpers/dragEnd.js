@@ -175,7 +175,6 @@ export class DragContext {
 
     const restrictedWidgets = [...restrictedWidgetsOnTarget, ...restrictedWidgetsOnTargetSlot];
     return !restrictedWidgets.includes(dragged.widgetType);
-    ß;
   }
 }
 
@@ -264,3 +263,62 @@ export const getAdjustedDropPosition = (event, target, isParentChangeAllowed, gr
     top: dragged.top,
   };
 };
+
+
+export class GroupDragContext {
+  constructor({ sourceSlotId, targetSlotId, draggedWidgets, widgets }) {
+    const sourceWidgetId = sourceSlotId?.slice(0, 36);
+    const sourceWidget = getWidgetById(widgets, sourceWidgetId);
+
+    const targetWidgetId = targetSlotId?.slice(0, 36);
+    const targetWidget = getWidgetById(widgets, targetWidgetId);
+
+    this.widgets = widgets;
+    this.source = new DropAreaEntity(sourceWidget, sourceSlotId);
+    this.target = new DropAreaEntity(targetWidget, targetSlotId);
+
+    // Create DragEntities for each dragged widget
+    this.draggedEntities = draggedWidgets.map((widget) => {
+      return new DragEntity(widget);
+    });
+  }
+
+  /**
+   * Updates the **target slot** dynamically as the drag event progresses.
+   */
+  updateTarget(targetSlotId) {
+    const targetWidgetId = targetSlotId?.slice(0, 36);
+    const targetWidget = getWidgetById(this.widgets, targetWidgetId);
+    this.target = new DropAreaEntity(targetWidget, targetSlotId);
+  }
+
+  get restrictedWidgetsTobeDropped() {
+    const restrictedWidgets = [
+      ...(RESTRICTED_WIDGETS_CONFIG?.[this.target.widgetType] || []),
+      ...(RESTRICTED_WIDGET_SLOTS_CONFIG?.[this.target.slotType] || []),
+    ];
+
+    return this.draggedEntities.map((dragged) => dragged.widgetType).filter((type) => restrictedWidgets.includes(type));
+  }
+
+}
+
+/**
+ * Constructs the **dragging context** by gathering all relevant details from the event.
+ */
+export function groupDragContextBuilder({ events, widgets }) {
+  const draggedWidgets = widgets
+    .filter(({ id }) => events.some((ev) => ev.target.id === id))
+    .map(({ component }) => component.component);
+
+  const sourceSlotId = draggedWidgets[0].parent;
+
+  // Initialize drag context
+  const context = new GroupDragContext({ widgets, draggedWidgets, sourceSlotId, targetSlotId: sourceSlotId });
+
+  // Determine the potential drop target
+  const targetSlotId = getDroppableSlotIdOnScreen(event, widgets);
+  context.updateTarget(targetSlotId);
+
+  return context;
+}
