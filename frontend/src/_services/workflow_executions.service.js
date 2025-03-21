@@ -49,7 +49,7 @@ function all(appVersionId) {
   return fetch(`${config.apiUrl}/workflow_executions/all/${appVersionId}`, requestOptions).then(handleResponse);
 }
 
-function execute(workflowAppId, params, appId = undefined, environmentId) {
+function execute(workflowAppId, params, appId = undefined, environmentId, signal) {
   const currentSession = authenticationService.currentSessionValue;
   const body = {
     appId: workflowAppId,
@@ -59,7 +59,13 @@ function execute(workflowAppId, params, appId = undefined, environmentId) {
     params: Object.fromEntries(params.map((param) => [param.key, param.value])),
     environmentId,
   };
-  const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    body: JSON.stringify(body),
+    credentials: 'include',
+    signal,
+  };
   return fetch(`${config.apiUrl}/workflow_executions`, requestOptions).then(handleResponse);
 }
 

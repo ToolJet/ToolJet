@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { DATA_SOURCE_TYPE } from '@/_helpers/constants';
 import { shallow } from 'zustand/shallow';
 import { Tooltip } from 'react-tooltip';
+import { ToolTip as AltTooltip } from '@/_components';
 import { Button } from 'react-bootstrap';
 import { decodeEntities } from '@/_helpers/utils';
 import { canDeleteDataSource, canReadDataSource, canUpdateDataSource } from '@/_helpers';
@@ -26,6 +27,10 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
   const setShowCreateQuery = useStore((state) => state.queryPanel.setShowCreateQuery);
   const queryName = selectedQuery?.name ?? '';
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
+  const isLoading = useStore(
+    (state) => state.resolvedStore.modules.canvas.exposedValues.queries[selectedQuery?.id]?.isLoading ?? false
+  );
+  const previewLoading = useStore((state) => state.queryPanel.isPreviewQueryLoading);
   useEffect(() => {
     if (selectedQuery?.name) {
       setShowCreateQuery(false);
@@ -128,6 +133,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, setActiveTab, activeTa
       <div className="query-header-buttons">
         {!(selectedQuery === null || showCreateQuery) && (
           <>
+            {(isLoading || previewLoading) && <AbortButton queryName={queryName} />}
             <RunButton buttonLoadingState={buttonLoadingState} />
             <PreviewButton
               disabled={shouldFreeze}
@@ -300,5 +306,26 @@ const PreviewButton = ({ buttonLoadingState, onClick }) => {
       </span>
       <span>{t('editor.queryManager.preview', 'Preview')}</span>
     </button>
+  );
+};
+
+const AbortButton = ({ queryName }) => {
+  const abortQuery = useStore((state) => state.queryPanel.abortQuery);
+  return (
+    <AltTooltip message="Abort Query" placement="bottom" trigger={['hover']} show={true} tooltipClassName="">
+      <button
+        onClick={() => {
+          abortQuery(queryName);
+        }}
+        className="abort-query"
+      >
+        <svg width={14} height={14} viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M3.49996 1.16602H10.5C11.7886 1.16602 12.8333 2.21068 12.8333 3.49935V10.4993C12.8333 11.788 11.7886 12.8327 10.5 12.8327H3.49996C2.2113 12.8327 1.16663 11.788 1.16663 10.4993V3.49935C1.16663 2.21068 2.21129 1.16602 3.49996 1.16602Z"
+            fill="#D72D39"
+          />
+        </svg>
+      </button>
+    </AltTooltip>
   );
 };
