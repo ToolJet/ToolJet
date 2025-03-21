@@ -4,7 +4,6 @@ title: GitHub
 ---
 
 In this guide, we will explore how to configure GitSync using GitHub as the repository manager. By default GitSync is configured for the **main** branch, but this can be configured to a different branch as well, refer to **[Configuring GitSync on a Different Branch](#configuring-gitsync-on-a-different-branch)** section for more information.
-
 To configure GitSync for other standard Git repository managers refer to **[GitLab](/docs/development-lifecycle/gitsync/configure-gitsync/gitlab)** or **[Gitea](/docs/development-lifecycle/gitsync/configure-gitsync/gitea)**.
 
 ## Setting up GitSync in ToolJet
@@ -29,7 +28,7 @@ Role Required: **Admin**
 3. Go to the **Workspace settings**, and click on the **Configure git** tab. <br/>
     (Example URL - `https://app.corp.com/nexus/workspace-settings/configure-git`)
 
-    <img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/gitsync/gitsync-v3.png" alt="GitLab Repo" />
+    <img className="screenshot-full" src="/img/gitsync/gitsync-v3.png" alt="GitLab Repo" />
 
 4. Enter the **SSH URL** of the repository in the **Git repo URL** field.
 
