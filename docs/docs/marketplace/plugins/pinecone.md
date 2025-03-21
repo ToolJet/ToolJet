@@ -38,7 +38,7 @@ This operation retrieves statistics about a specific index in your Pinecone data
 
 <img className="screenshot-full" src="/img/marketplace/plugins/pinecone/get-index-stats.png" alt="Get Index Stats Operation" />
 
-<details>
+<details id="tj-dropdown">
 <summary>**Example Response**</summary>
 
 ```json
@@ -72,7 +72,7 @@ This operation retrieves a list of vector IDs from a specified index.
 
 <img className="screenshot-full" src="/img/marketplace/plugins/pinecone/list-vector-ids.png" alt="List Vector IDs Operation" />
 
-<details>
+<details id="tj-dropdown">
 <summary>**Example Response**</summary>
 
 ```yaml
@@ -115,7 +115,7 @@ This operation retrieves specific vectors by their IDs from an index.
 
 <img className="screenshot-full" src="/img/marketplace/plugins/pinecone/fetch-vectors.png" alt="Fetch Vectors Operation" />
 
-<details>
+<details id="tj-dropdown">
 <summary>**Example Response**</summary>
 
 ```yaml
@@ -144,7 +144,7 @@ This operation inserts or updates vectors in an index.
 
 <img className="screenshot-full" src="/img/marketplace/plugins/pinecone/upsert-vectors.png" alt="Upsert Vectors Operation" /> 
 
-<details>
+<details id="tj-dropdown">
 <summary>**Example Response**</summary>
 
 ```yaml
@@ -170,7 +170,7 @@ This operation updates a single vector's values or metadata.
 
 <img className="screenshot-full" src="/img/marketplace/plugins/pinecone/update-vector.png" alt="Update Vector Operation" />
 
-<details>
+<details id="tj-dropdown">
 <summary>**Example Response**</summary>
 
 ```yaml
@@ -195,7 +195,7 @@ This operation deletes vectors from an index.
 
 <img className="screenshot-full" src="/img/marketplace/plugins/pinecone/delete-vectors.png" alt="Delete Vectors Operation" />
 
-<details>
+<details id="tj-dropdown">
 <summary>**Example Response**</summary>
 
 ```yaml

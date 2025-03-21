@@ -3,7 +3,15 @@ id: tooljet-api
 title: ToolJet API
 ---
 
-<div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
+<div className="badge badge--primary heading-badge">   
+  <img 
+    src="/img/badge-icons/premium.svg" 
+    alt="Icon" 
+    width="16" 
+    height="16" 
+  />
+ <span>Paid feature</span>
+</div>
 
 ToolJet API allows you to interact with the ToolJet platform programmatically. You can use the APIs to manage users and their workspaces relations. The API endpoints are secured with an access token. You can perform various operations using the API such as:
 
@@ -32,7 +40,7 @@ By default, the ToolJet API is disabled. To enable the API, add these variables 
 
 The ToolJet API is secured with an access token created by you in your `.env` file. You need to pass the access token in the `Authorization` header to authenticate your requests. The access token should be sent in the format `Basic <access_token>`.
 
-<details>
+<details id="tj-dropdown">
 
 <summary>cURL Request Example</summary>
 
@@ -57,7 +65,7 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
     - **Content-Type:** `application/json`
     - **Response:** Array of User objects.
 
-  <details>
+  <details id="tj-dropdown">
   <summary>**Response Example**</summary>
 ```json
 [
@@ -135,7 +143,7 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
     - **Content-Type:** `application/json`
     - **Response:** Array of Workspace objects.
 
-<details>
+<details id="tj-dropdown">
 <summary>Response Example</summary>
 
 ```json
@@ -186,7 +194,7 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
       - **workspace_id**: The ID of the workspace.
     - **Response:** Array of app details for all the applications in the workspace.
 
-  <details>
+  <details id="tj-dropdown">
   <summary>**Response Example**</summary>
     ```json
       [
@@ -243,7 +251,7 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
         - id (string): The ID of the user.
     - **Response:** User object.
 
-  <details>
+  <details id="tj-dropdown">
   <summary>**Response Example**</summary>
 ```json
 {
@@ -308,7 +316,7 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
             - `name` (string, optional): The name of the group.
             - `status` (string, optional): The status of the group. Can be either `active` or `archived`.
 
-  <details>
+  <details id="tj-dropdown">
   <summary>**Request Body Example**</summary>
 ```json
 {
@@ -348,7 +356,7 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
         - `status` (string, optional): The updated status of the user. Can be either `active` or `archived`.
 
 
-<details>
+<details id="tj-dropdown">
 
 <summary>Request Body Example</summary>
 
@@ -379,7 +387,7 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
         - `userId` (string, required): The unique identifier of the user.
 
 
-<details>
+<details id="tj-dropdown">
 
 <summary>Request Body Example</summary>
 
@@ -434,7 +442,7 @@ curl -X GET 'https://your-tooljet-instance.com/api/ext/users' \
           - `id` (string, optional): The ID of the group.
           - `name` (string, optional): The name of the group.
 
-<details>
+<details id="tj-dropdown">
 
 <summary>Request Body Example</summary>
 
@@ -471,7 +479,7 @@ From version **`v3.5.7-ee-lts`**, you can use ToolJet API to export application.
       - **exportAllVersions** (boolean): Defines whether to export all the available versions. By default it exports the latest version of the app.
     - **Response:** Exported application json.
 
-<details>
+<details id="tj-dropdown">
 <summary>Response Example</summary>
 
 ```json
@@ -923,7 +931,7 @@ By default, server accepts maximum JSON size as 50 MB. To increase this limit, u
 `MAX_JSON_SIZE`
 :::
 
-<details>
+<details id="tj-dropdown">
 
 <summary>Request Body Example</summary>
 

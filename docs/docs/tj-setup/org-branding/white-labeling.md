@@ -3,7 +3,15 @@ id: white-labeling
 title: White Labeling
 ---
 
-<div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
+<div className="badge badge--primary heading-badge">   
+  <img 
+    src="/img/badge-icons/premium.svg" 
+    alt="Icon" 
+    width="16" 
+    height="16" 
+  />
+ <span>Paid feature</span>
+</div>
 
 The White Label feature in ToolJet lets you customize the look and feel of your ToolJet deployment to match your branding guidelines, including your logo, favicon, and page title, making ToolJet appear like your own product. This guide will help you understand the configuration of White labelling for your organization. For **self-hosted** instances, the white labelling is set at the [instance level](/docs/user-management/authentication/self-hosted/instance-login) and for the **cloud**, it is applied at the [workspace level](/docs/user-management/authentication/self-hosted/workspace-login).
 
@@ -40,9 +48,9 @@ In this section you can configure the following branding elements:
 
 ## FAQ
 
-<details>
+<details id="tj-dropdown">
     <summary>
-         **Q. What happens to white labeling if the license or subscription expires?**
+         **What happens to white labeling if the license or subscription expires?**
     </summary>
 If your license or subscription expires, white labeling will automatically revert to ToolJet's default branding until the license is renewed.
 

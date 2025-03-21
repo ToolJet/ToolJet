@@ -39,7 +39,7 @@ Run this opetation to get the database schema.
 
 <img className="screenshot-full" src="/img/marketplace/plugins/weaviate/db-schema.png" alt="Weaviate Configuration" />
 
-<details>
+<details id="tj-dropdown">
 <summary>**Response Example**</summary>
 
 ```json
@@ -161,7 +161,7 @@ Run this opetation to get the database schema.
 
 <img className="screenshot-full" src="/img/marketplace/plugins/weaviate/get-collection.png" alt="Weaviate Configuration" />
 
-<details>
+<details id="tj-dropdown">
 <summary>**Response Example**</summary>
 
 ```json
@@ -263,7 +263,7 @@ Refer to **[weaviate documentation](https://weaviate.io/developers/weaviate/conf
 
 <img className="screenshot-full" src="/img/marketplace/plugins/weaviate/create-collection.png" alt="Weaviate Configuration" />
 
-<details>
+<details id="tj-dropdown">
 <summary>**Response Example**</summary>
 
 ```json
@@ -401,7 +401,7 @@ Use this operation to list all the objects of a collection.
 
 <img className="screenshot-full" src="/img/marketplace/plugins/weaviate/list-object.png" alt="Weaviate Configuration" />
 
-<details>
+<details id="tj-dropdown">
 <summary>**Response Example**</summary>
 
 ```json
@@ -462,7 +462,7 @@ Use this operation to create a new object within the selected collection.
 
 <img className="screenshot-full" src="/img/marketplace/plugins/weaviate/create-object.png" alt="Weaviate Configuration" />
 
-<details>
+<details id="tj-dropdown">
 <summary>**Response Example**</summary>
 
 ```json
@@ -492,7 +492,7 @@ Use this operation to fetch an object using it's ID.
 
 <img className="screenshot-full" src="/img/marketplace/plugins/weaviate/get-object.png" alt="Weaviate Configuration" />
 
-<details>
+<details id="tj-dropdown">
 <summary>**Response Example**</summary>
 
 ```json

@@ -3,7 +3,18 @@ id: variables
 title: Workspace Variables Migration
 ---
 
-<div className='badge badge--warning heading-badge'>Deprecated</div>
+<div className="badge badge--warning heading-badge">   
+  <img 
+    src="/img/badge-icons/warning.svg" 
+    alt="Icon" 
+    width="16" 
+    height="16" 
+  />
+ <span>Deprecated</span>
+</div>
+
+
+
 <br/><br/>
 
 Workspace variables were used in ToolJet to store values such as tokens, secret keys, API keys, etc. But currently **Workspace variables are marked as deprecated, indicating that it will be removed in future releases**. In the current version, you are still able to delete existing variables and use it through out any ToolJet apps, but creating and updating variables are no longer supported. 
