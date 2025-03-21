@@ -23,6 +23,10 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'Button',
   'RichTextEditor',
   'Image',
+  'CodeEditor',
+  'TextArea',
+  'Container',
+  'Form',
   'ModalV2',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
