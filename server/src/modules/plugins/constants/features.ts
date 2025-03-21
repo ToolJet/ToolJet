@@ -10,5 +10,7 @@ export const FEATURES: FeaturesConfig = {
     [FEATURE_KEY.INSTALL]: {},
     [FEATURE_KEY.RELOAD]: {},
     [FEATURE_KEY.UPDATE]: {},
+    [FEATURE_KEY.DEPENDENTPLUGINS]: {},
+    [FEATURE_KEY.INSTALL_DEPENDENT_PLUGINS]: {},
   },
 };

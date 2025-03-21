@@ -21,6 +21,15 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       can([FEATURE_KEY.INSTALL, FEATURE_KEY.UPDATE, FEATURE_KEY.DELETE], Plugin);
     }
     // These two operations are available to all
-    can([FEATURE_KEY.GET_ONE, FEATURE_KEY.RELOAD, FEATURE_KEY.GET], Plugin);
+    can(
+      [
+        FEATURE_KEY.GET_ONE,
+        FEATURE_KEY.RELOAD,
+        FEATURE_KEY.GET,
+        FEATURE_KEY.DEPENDENTPLUGINS,
+        FEATURE_KEY.INSTALL_DEPENDENT_PLUGINS,
+      ],
+      Plugin
+    );
   }
 }

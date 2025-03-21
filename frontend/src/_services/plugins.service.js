@@ -22,10 +22,24 @@ function reloadPlugin(id) {
   return adapter.post(`/plugins/${id}/reload`);
 }
 
+function findDepedentPlugins(dataSources) {
+  return adapter.post(`/plugins/findDependentPlugins`, dataSources);
+}
+
+function installDependetnPlugins(dependentPlugins, shouldAutoImportPlugin) {
+  const body = {
+    dependentPlugins,
+    shouldAutoImportPlugin,
+  };
+  return adapter.post(`/plugins/installDependentPlugins`, body);
+}
+
 export const pluginsService = {
   findAll,
   installPlugin,
   updatePlugin,
   deletePlugin,
   reloadPlugin,
+  findDepedentPlugins,
+  installDependetnPlugins,
 };
