@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { resolveWidgetFieldValue } from '@/_helpers/utils';
+import React, { useEffect, useRef, useState } from 'react';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import OverflowTooltip from '@/_components/OverflowTooltip';
 
@@ -8,37 +7,37 @@ export const Checkbox = ({
   properties,
   styles,
   fireEvent,
+  componentName,
   setExposedVariable,
   setExposedVariables,
+  validation,
   dataCy,
-  component,
   validate,
   width,
 }) => {
+  const isInitialRender = useRef(true);
   const defaultValueFromProperties = properties.defaultValue ?? false;
+  const isMandatory = validation?.mandatory ?? false;
   const [defaultValue, setDefaultValue] = useState(defaultValueFromProperties);
   const [checked, setChecked] = useState(defaultValueFromProperties);
-  const [value, setValue] = React.useState(defaultValueFromProperties);
   const [userInteracted, setUserInteracted] = useState(false);
 
   const { label } = properties;
-  const textColor = styles.textColor === '#1B1F24' ? 'var(--text-primary)' : styles.textColor;
+  const textColor = ['#1B1F24', '#000', '#000000ff'].includes(styles.textColor)
+    ? 'var(--text-primary)'
+    : styles.textColor;
   const { loadingState, disabledState } = properties;
   const { checkboxColor, boxShadow, alignment, uncheckedColor, borderColor, handleColor } = styles;
 
   const [loading, setLoading] = useState(properties?.loadingState);
   const [disable, setDisable] = useState(disabledState || loadingState);
   const [visibility, setVisibility] = useState(properties.visibility);
-  const { isValid, validationError } = validate(checked);
-
-  const isMandatory = resolveWidgetFieldValue(component?.definition?.validation?.mandatory?.value);
+  const [validationStatus, setValidationStatus] = useState(validate(checked));
+  const { isValid, validationError } = validationStatus;
 
   const toggleValue = (e) => {
     const isChecked = e.target.checked;
-    setChecked(isChecked);
-    setValue(isChecked);
-
-    setExposedVariable('value', isChecked);
+    setInputValue(isChecked);
     if (isChecked) {
       fireEvent('onCheck');
     } else {
@@ -48,27 +47,9 @@ export const Checkbox = ({
   };
 
   useEffect(() => {
-    const setCheckedAndNotify = async (status) => {
-      await setExposedVariable('value', status);
-      if (status) {
-        fireEvent('onCheck');
-      } else {
-        fireEvent('onUnCheck');
-      }
-      setChecked(status);
-      setValue(status);
-    };
-
-    const exposedVariables = {
-      value: defaultValueFromProperties,
-      setChecked: setCheckedAndNotify,
-      setValue: setCheckedAndNotify,
-    };
-
+    if (isInitialRender.current) return;
     setDefaultValue(defaultValueFromProperties);
-    setChecked(defaultValueFromProperties);
-    setValue(defaultValueFromProperties);
-    setExposedVariables(exposedVariables);
+    setInputValue(defaultValueFromProperties);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultValueFromProperties]);
@@ -89,83 +70,115 @@ export const Checkbox = ({
   }, [loadingState]);
 
   useEffect(() => {
+    if (isInitialRender.current) return;
     setExposedVariable('label', label);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [label]);
 
   useEffect(() => {
+    if (isInitialRender.current) return;
     setExposedVariable('isMandatory', isMandatory);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMandatory]);
 
   useEffect(() => {
+    if (isInitialRender.current) return;
     setExposedVariable('isLoading', loading);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading]);
-
   useEffect(() => {
+    if (isInitialRender.current) return;
     setExposedVariable('isVisible', visibility);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visibility]);
 
   useEffect(() => {
+    if (isInitialRender.current) return;
     setExposedVariable('isDisabled', disable);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disable]);
 
   useEffect(() => {
-    setExposedVariable('isValid', isValid);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isValid]);
+    if (isInitialRender.current) return;
+    const validationStatus = validate(checked);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
+  }, [validate]);
 
   useEffect(() => {
-    setExposedVariable('setLoading', async function (loading) {
-      setLoading(loading);
-      setExposedVariable('isLoading', loading);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.loadingState]);
-
-  useEffect(() => {
-    setExposedVariable('setVisibility', async function (state) {
-      setVisibility(state);
-      setExposedVariable('isVisible', state);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.visibility]);
-
-  useEffect(() => {
-    setExposedVariable('setDisable', async function (disable) {
-      setDisable(disable);
-      setExposedVariable('isDisabled', disable);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [disable]);
-
-  useEffect(() => {
+    if (isInitialRender.current) return;
     setExposedVariable('toggle', async function () {
-      setExposedVariable('value', !checked);
+      setInputValue(!checked);
       fireEvent('onChange');
-      setChecked(!checked);
-      setValue(!checked);
       setUserInteracted(true);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [checked, value]);
+  }, [checked]);
 
-  const handleToggleChange = () => {
-    const newCheckedState = !checked;
-    setChecked(newCheckedState);
-    setValue(newCheckedState);
-    setExposedVariable('value', newCheckedState).then(() => {
-      fireEvent('onChange');
-      if (newCheckedState) {
+  useEffect(() => {
+    const setCheckedAndNotify = async (status) => {
+      setInputValue(status);
+      if (status) {
         fireEvent('onCheck');
       } else {
         fireEvent('onUnCheck');
       }
-    });
+    };
+
+    const exposedVariables = {
+      value: defaultValueFromProperties,
+      setChecked: setCheckedAndNotify,
+      setValue: setCheckedAndNotify,
+      setLoading: async function (loading) {
+        setLoading(loading);
+        setExposedVariable('isLoading', loading);
+      },
+      setVisibility: async function (visibility) {
+        setVisibility(visibility);
+        setExposedVariable('isVisible', visibility);
+      },
+      setDisable: async function (disable) {
+        setDisable(disable);
+        setExposedVariable('isDisabled', disable);
+      },
+      toggle: () => {
+        setInputValue(!checked);
+        fireEvent('onChange');
+        setUserInteracted(true);
+      },
+      label: label,
+      isMandatory: isMandatory,
+      isLoading: loading,
+      isVisible: visibility,
+      isDisabled: disable,
+      isValid: isValid,
+    };
+
+    setExposedVariables(exposedVariables);
+
+    isInitialRender.current = false;
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleToggleChange = () => {
+    const newCheckedState = !checked;
+    setInputValue(newCheckedState);
+    fireEvent('onChange');
+    if (newCheckedState) {
+      fireEvent('onCheck');
+    } else {
+      fireEvent('onUnCheck');
+    }
     setUserInteracted(true);
+  };
+
+  const setInputValue = (value) => {
+    setChecked(value);
+    setExposedVariable('value', value);
+    const validationStatus = validate(value);
+    setValidationStatus(validationStatus);
+    setExposedVariable('isValid', validationStatus?.isValid);
   };
 
   const renderCheckBox = () => (
@@ -240,9 +253,9 @@ export const Checkbox = ({
           </>
         )}
       </div>
-      {validationError && visibility && !checked && userInteracted && (
+      {!isValid && visibility && userInteracted && (
         <div
-          data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
+          data-cy={`${String(componentName).toLowerCase()}-invalid-feedback`}
           style={{
             color: 'var(--status-error-strong)',
             fontSize: '11px',
@@ -255,7 +268,6 @@ export const Checkbox = ({
       )}
     </>
   );
-
   const checkmarkStyle = {
     position: 'absolute',
     top: '1px',

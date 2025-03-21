@@ -5,24 +5,25 @@ import { ItemTypes } from './editorConstants';
 import { DraggableBox } from './DraggableBox';
 import update from 'immutability-helper';
 import _, { isEmpty } from 'lodash';
-import { componentTypes } from './WidgetManager/components';
 import {
   addNewWidgetToTheEditor,
   onComponentOptionChanged,
   onComponentOptionsChanged,
   isPDFSupported,
+  calculateMoveableBoxHeight,
 } from '@/_helpers/appUtils';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
 import { restrictedWidgetsObj } from '@/Editor/WidgetManager/restrictedWidgetsConfig';
 import { getCurrentState } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
+import { componentTypes } from './WidgetManager/components';
 
 import { useEditorStore } from '@/_stores/editorStore';
 
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
-import { useGridStore, useResizingComponentId } from '@/_stores/gridStore';
+import { useGridStore } from '@/_stores/gridStore';
 import GhostWidget from './GhostWidget';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
@@ -58,6 +59,7 @@ export const SubContainer = ({
   parentWidgetId,
 }) => {
   const appDefinition = useEditorStore((state) => state.appDefinition, shallow);
+  const [isParentVisible, setIsParentVisible] = useState(false);
 
   const { selectedComponents } = useEditorStore(
     (state) => ({
@@ -66,13 +68,13 @@ export const SubContainer = ({
     shallow
   );
 
-  const resizingComponentId = useResizingComponentId();
+  const resizingComponentId = useGridStore((state) => state.resizingComponentId, shallow);
 
   const noOfGrids = 43;
   const { isGridActive } = useGridStore((state) => ({ isGridActive: state.activeGrid === parent }), shallow);
 
   const gridWidth = getContainerCanvasWidth() / noOfGrids;
-
+  // console.log(gridWidth, 'gridWidth');
   const [_containerCanvasWidth, setContainerCanvasWidth] = useState(0);
   useEffect(() => {
     if (parentRef.current) {
@@ -81,6 +83,12 @@ export const SubContainer = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [parentRef, getContainerCanvasWidth(), listmode, parentComponent?.definition?.properties?.size?.value]); // Listen for changes to the modal size and update the subcontainer state with the new grid width.
+
+  useEffect(() => {
+    if (parentRef.current) {
+      checkParentVisibility();
+    }
+  }, [parentRef, checkParentVisibility]);
 
   zoomLevel = zoomLevel || 1;
 
@@ -522,13 +530,17 @@ export const SubContainer = ({
     removeComponent(component);
   }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   function checkParentVisibility() {
     let elem = parentRef.current;
     if (elem?.className === 'tab-content') {
       elem = parentRef.current?.parentElement;
     }
-    if (elem?.style?.display !== 'none') return true;
-    return false;
+    if (elem?.style?.display !== 'none') {
+      setIsParentVisible(true);
+    } else {
+      setIsParentVisible(false);
+    }
   }
 
   const getContainerProps = (componentId) => {
@@ -574,7 +586,7 @@ export const SubContainer = ({
           component-id={parent}
           data-parent-type={parentComponent?.component}
         >
-          {checkParentVisibility() &&
+          {isParentVisible &&
             Object.entries({
               ...childWidgets,
             }).map(([key, box]) => {
@@ -596,6 +608,9 @@ export const SubContainer = ({
                     gridWidth={gridWidth}
                     isGhostComponent={key === 'resizingComponentId'}
                     mode={mode}
+                    propertiesDefinition={box?.component?.definition?.properties}
+                    stylesDefinition={box?.component?.definition?.styles}
+                    componentType={box?.component?.component}
                   >
                     <DraggableBox
                       onComponentClick={onComponentClick}
@@ -703,6 +718,9 @@ const SubWidgetWrapper = ({
   isResizing,
   isGhostComponent,
   mode,
+  stylesDefinition,
+  propertiesDefinition,
+  componentType,
 }) => {
   const { layouts } = widget;
 
@@ -728,9 +746,14 @@ const SubWidgetWrapper = ({
 
   let width = (canvasWidth * layoutData.width) / 43;
   width = width > canvasWidth ? canvasWidth : width; //this handles scenarios where the width is set more than canvas for older components
+
+  const { label = { value: null } } = propertiesDefinition ?? {};
+
   const styles = {
     width: width + 'px',
-    height: isComponentVisible() ? layoutData.height + 'px' : '10px',
+    height: isComponentVisible()
+      ? calculateMoveableBoxHeight(componentType, layoutData, stylesDefinition, label) + 'px'
+      : '10px',
     transform: `translate(${layoutData.left * gridWidth}px, ${layoutData.top}px)`,
     ...(isGhostComponent ? { opacity: 0.5 } : {}),
   };

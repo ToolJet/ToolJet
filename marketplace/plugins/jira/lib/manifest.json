@@ -1,0 +1,67 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Jira datasource",
+  "description": "A schema defining Jira datasource",
+  "type": "api",
+  "source": {
+    "name": "Jira",
+    "kind": "jira",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "customTesting": false,
+    "options": {
+      "url": {
+        "type": "string"
+      }
+    }
+  },
+  "defaults": {
+    "auth_type": {
+      "value": "personal_access_token"
+    }
+  },
+  "properties": {
+    "credentials": {
+      "label": "Authentication",
+      "key": "auth_type",
+      "type": "dropdown-component-flip",
+      "description": "A single select dropdown to choose credentials",
+      "list": [
+        {
+          "value": "personal_access_token",
+          "name": "Basic"
+        }
+      ],
+      "commonFields": {
+        "url": {
+          "label": "URL",
+          "key": "url",
+          "type": "text",
+          "description": "https://your-domain.atlassian.net"
+        }
+      }
+    },
+    "personal_access_token": {
+      "email": {
+        "label": "Email",
+        "key": "email",
+        "type": "text",
+        "description": "Enter email",
+        "hint": ""
+      },
+      "token": {
+        "label": "Token",
+        "key": "personal_token",
+        "type": "password",
+        "description": "Enter your api token",
+        "hint": "You can generate a personal access token from your Jira account 'Manage account'."
+      }
+    }
+  },
+  "required": [
+    "url"
+  ]
+}

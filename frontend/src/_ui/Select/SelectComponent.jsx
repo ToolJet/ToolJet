@@ -3,15 +3,7 @@ import _ from 'lodash';
 import Select from 'react-select';
 import defaultStyles from './styles';
 
-export const SelectComponent = ({
-  options = [],
-  value,
-  onChange,
-  closeMenuOnSelect,
-  classNamePrefix,
-  darkMode,
-  ...restProps
-}) => {
+export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSelect, darkMode, ...restProps }) => {
   const isDarkMode = darkMode ?? localStorage.getItem('darkMode') === 'true';
   const {
     isMulti = false,
@@ -29,9 +21,10 @@ export const SelectComponent = ({
     menuPlacement = 'auto',
     useCustomStyles = false,
     isDisabled = false,
+    borderRadius,
   } = restProps;
 
-  const customStyles = useCustomStyles ? styles : defaultStyles(isDarkMode, width, height, styles);
+  const customStyles = useCustomStyles ? styles : defaultStyles(isDarkMode, width, height, styles, borderRadius);
   const selectOptions =
     Array.isArray(options) && options.length === 0
       ? options

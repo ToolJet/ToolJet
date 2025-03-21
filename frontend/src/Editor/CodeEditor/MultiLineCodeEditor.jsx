@@ -1,5 +1,5 @@
 /* eslint-disable import/no-unresolved */
-import React, { useContext, useEffect, useRef } from 'react';
+import React, { useContext, useEffect, useMemo, useRef } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript, javascriptLanguage } from '@codemirror/lang-javascript';
 import { defaultKeymap } from '@codemirror/commands';
@@ -16,6 +16,9 @@ import CodeHinter from './CodeHinter';
 import { CodeHinterContext } from '../CodeBuilder/CodeHinterContext';
 import { createReferencesLookup } from '@/_stores/utils';
 import { PreviewBox } from './PreviewBox';
+import { removeNestedDoubleCurlyBraces } from '@/_helpers/utils';
+import useStore from '@/AppBuilder/_stores/store';
+import { shallow } from 'zustand/shallow';
 import { debounce } from 'lodash';
 
 const langSupport = Object.freeze({
@@ -43,8 +46,10 @@ const MultiLineCodeEditor = (props) => {
     showPreview,
     paramLabel = '',
     delayOnChange = true, // Added this prop to immediately update the onBlurUpdate callback
+    readOnly = false,
+    editable = true,
   } = props;
-
+  const replaceIdsWithName = useStore((state) => state.replaceIdsWithName, shallow);
   const context = useContext(CodeHinterContext);
 
   const { suggestionList } = createReferencesLookup(context, true);
@@ -85,7 +90,7 @@ const MultiLineCodeEditor = (props) => {
 
     const inputStr = currentString.join(' ');
     const currentCurosorPos = currentCursor;
-    const nearestSubstring = findNearestSubstring(inputStr, currentCurosorPos).replace(/{{|}}/g, '');
+    const nearestSubstring = removeNestedDoubleCurlyBraces(findNearestSubstring(inputStr, currentCurosorPos));
 
     let JSLangHints = [];
     if (lang === 'javascript') {
@@ -181,6 +186,15 @@ const MultiLineCodeEditor = (props) => {
   const { handleTogglePopupExapand, isOpen, setIsOpen, forceUpdate } = portalProps;
   let cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : props.cyLabel;
 
+  const initialValueWithReplacedIds = useMemo(() => {
+    if (
+      typeof initialValue === 'string' &&
+      (initialValue?.includes('components') || initialValue?.includes('queries'))
+    ) {
+      return replaceIdsWithName(initialValue);
+    }
+    return initialValue;
+  }, [initialValue, replaceIdsWithName]);
   return (
     <div className="code-hinter-wrapper position-relative" style={{ width: '100%' }}>
       <div className={`${className} ${darkMode && 'cm-codehinter-dark-themed'}`}>
@@ -206,7 +220,7 @@ const MultiLineCodeEditor = (props) => {
           <ErrorBoundary>
             <div className="codehinter-container w-100 " data-cy={`${cyLabel}-input-field`} style={{ height: '100%' }}>
               <CodeMirror
-                value={initialValue}
+                value={initialValueWithReplacedIds}
                 placeholder={placeholder}
                 height={'100%'}
                 minHeight={heightInPx}
@@ -237,6 +251,8 @@ const MultiLineCodeEditor = (props) => {
                 }}
                 className={`codehinter-multi-line-input`}
                 indentWithTab={true}
+                readOnly={readOnly}
+                editable={editable} //for transformations in query manager
               />
             </div>
             {showPreview && (

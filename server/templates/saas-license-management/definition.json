@@ -29022,7 +29022,7 @@
               "name": "onClick",
               "index": 0,
               "event": {
-                "modal": "21e52182-065f-4c14-9dd6-332404bbeb28",
+                "modal": "002530a9-5f41-4a16-ad5f-8d5dbe22250c",
                 "eventId": "onClick",
                 "message": "Hello world!",
                 "actionId": "close-modal",
@@ -29135,11 +29135,11 @@
                     },
                     "4": {
                       "column": "period",
-                      "value": "{{components.dropdown5.value}}"
+                      "value": "{{components.dropdown4.value}}"
                     },
                     "5": {
                       "column": "type",
-                      "value": "{{components.dropdown4.value}}"
+                      "value": "{{components.dropdown5.value}}"
                     },
                     "6": {
                       "column": "valid_till",

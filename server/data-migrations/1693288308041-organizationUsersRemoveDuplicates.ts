@@ -1,5 +1,5 @@
-import { WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
-import { MigrationProgress } from 'src/helpers/utils.helper';
+import { WORKSPACE_USER_STATUS } from '@modules/users/constants/lifecycle';
+import { MigrationProgress } from '@helpers/migration.helper';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class organizationUsersRemoveDuplicates1693288308041 implements MigrationInterface {

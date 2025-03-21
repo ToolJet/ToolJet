@@ -1747,7 +1747,7 @@
               "id": "36d58790-d5d5-4faa-a460-c3e87014022a",
               "name": "calculateDate",
               "options": {
-                "code": "var start = components.datepicker1.value;\nreturn (\n  \"30/\" +\n  (moment(start).month() + 1) +\n  \"/\" +\n  (moment(start).year() + Number(components.numberinput4.value))\n);",
+                "code": "var start = components.datepicker1.value;\nreturn (\n  \"30/\" +\n  (moment(start,'DD/MM/YYYY').month() + 1) +\n  \"/\" +\n  (moment(start,'DD/MM/YYYY').year() + Number(components.numberinput4.value))\n);",
                 "hasParamSupport": true,
                 "parameters": [],
                 "runOnPageLoad": true

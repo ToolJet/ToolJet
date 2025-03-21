@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import DOMPurify from 'dompurify';
 // eslint-disable-next-line import/no-unresolved
 import Markdown from 'react-markdown';
@@ -11,7 +11,18 @@ const VERTICAL_ALIGNMENT_VS_CSS_VALUE = {
   bottom: 'flex-end',
 };
 
-export const Text = function Text({ height, properties, fireEvent, styles, darkMode, setExposedVariable, dataCy }) {
+let count = 0;
+
+export const Text = function Text({
+  height,
+  properties,
+  fireEvent,
+  styles,
+  darkMode,
+  setExposedVariable,
+  setExposedVariables,
+  dataCy,
+}) {
   let {
     textSize,
     textColor,
@@ -32,13 +43,14 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
     borderRadius,
     isScrollRequired,
   } = styles;
+  const isInitialRender = useRef(true);
   const { loadingState, textFormat, disabledState } = properties;
   const [text, setText] = useState(() => computeText());
   const [visibility, setVisibility] = useState(properties.visibility);
   const [isLoading, setLoading] = useState(loadingState);
   const [isDisabled, setIsDisabled] = useState(disabledState);
   const color = ['#000', '#000000'].includes(textColor) ? (darkMode ? '#fff' : '#000') : textColor;
-
+  count = count + 1;
   useEffect(() => {
     if (visibility !== properties.visibility) setVisibility(properties.visibility);
     if (isLoading !== loadingState) setLoading(loadingState);
@@ -48,49 +60,63 @@ export const Text = function Text({ height, properties, fireEvent, styles, darkM
   }, [properties.visibility, loadingState, disabledState]);
 
   useEffect(() => {
+    if (isInitialRender.current) return;
     const text = computeText();
     setText(text);
     setExposedVariable('text', text);
+  }, [properties.text]);
 
-    setExposedVariable('setText', async function (text) {
-      setText(text);
-      setExposedVariable('text', text);
-    });
-    setExposedVariable('clear', async function (text) {
-      setText('');
-      setExposedVariable('text', '');
-    });
+  useEffect(() => {
+    if (isInitialRender.current) return;
     setExposedVariable('isVisible', properties.visibility);
+  }, [properties.visibility]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
     setExposedVariable('isLoading', loadingState);
+  }, [loadingState]);
+
+  useEffect(() => {
+    if (isInitialRender.current) return;
     setExposedVariable('isDisabled', disabledState);
+  }, [disabledState]);
 
-    setExposedVariable('visibility', async function (value) {
-      setVisibility(value);
-    });
-
-    setExposedVariable('setVisibility', async function (value) {
-      setVisibility(value);
-    });
-
-    setExposedVariable('setLoading', async function (value) {
-      setLoading(value);
-    });
-
-    setExposedVariable('setDisable', async function (value) {
-      setIsDisabled(value);
-    });
-
+  useEffect(() => {
+    const exposedVariables = {
+      text: computeText(),
+      setText: async function (text) {
+        setText(text);
+        setExposedVariable('text', text);
+      },
+      clear: async function () {
+        setText('');
+        setExposedVariable('text', '');
+      },
+      isVisible: properties.visibility,
+      isLoading: loadingState,
+      isDisabled: disabledState,
+      visibility: async function (value) {
+        setExposedVariable('isVisible', value);
+        setVisibility(value);
+      },
+      setVisibility: async function (value) {
+        setExposedVariable('isVisible', value);
+        setVisibility(value);
+      },
+      setLoading: async function (value) {
+        setExposedVariable('isLoading', value);
+        setLoading(value);
+      },
+      setDisable: async function (value) {
+        setExposedVariable('isDisabled', value);
+        setIsDisabled(value);
+      },
+    };
+    setExposedVariables(exposedVariables);
+    setText(text);
+    isInitialRender.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    properties.text,
-    setText,
-    setVisibility,
-    properties.visibility,
-    loadingState,
-    disabledState,
-    setIsDisabled,
-    setLoading,
-  ]);
+  }, []);
 
   function computeText() {
     return properties.text === 0 || properties.text === false ? properties.text?.toString() : properties.text;

@@ -1,57 +1,46 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
 // eslint-disable-next-line import/no-unresolved
 import * as XLSX from 'xlsx/xlsx.mjs';
 
 import { useAppInfo } from '@/_stores/appDataStore';
+import useStore from '@/AppBuilder/_stores/store';
 
 export const FilePicker = ({
   id,
   width,
   height,
   component,
+  fireEvent,
   onComponentOptionChanged,
-  onEvent,
   darkMode,
   styles,
+  properties,
   setExposedVariable,
+  setExposedVariables,
   dataCy,
 }) => {
-  //* properties definitions
-  const instructionText =
-    component.definition.properties.instructionText?.value ?? 'Drag and drop files here or click to select files';
-  const enableDropzone = component.definition.properties.enableDropzone.value ?? true;
-  const enablePicker = component.definition.properties?.enablePicker?.value ?? true;
-  const maxFileCount = component.definition.properties.maxFileCount?.value ?? 2;
-  const enableMultiple = component.definition.properties.enableMultiple?.value ?? false;
-  const fileType = component.definition.properties.fileType?.value ?? 'image/*';
-  const maxSize = component.definition.properties.maxSize?.value ?? 1048576;
-  const minSize = component.definition.properties.minSize?.value ?? 0;
-  const parseContent = resolveWidgetFieldValue(component.definition.properties.parseContent?.value);
-  const fileTypeFromExtension = component.definition.properties.parseFileType?.value ?? 'auto-detect';
-  const parsedEnableDropzone = typeof enableDropzone !== 'boolean' ? resolveWidgetFieldValue(enableDropzone) : true;
-  const parsedEnablePicker = typeof enablePicker !== 'boolean' ? resolveWidgetFieldValue(enablePicker) : true;
-
-  const parsedMaxFileCount = typeof maxFileCount !== 'number' ? resolveWidgetFieldValue(maxFileCount) : maxFileCount;
-  const parsedEnableMultiple =
-    typeof enableMultiple !== 'boolean' ? resolveWidgetFieldValue(enableMultiple) : enableMultiple;
-  const parsedFileType = resolveWidgetFieldValue(fileType);
-  const parsedMinSize = typeof fileType !== 'number' ? resolveWidgetFieldValue(minSize) : minSize;
-  const parsedMaxSize = typeof fileType !== 'number' ? resolveWidgetFieldValue(maxSize) : maxSize;
-  //* styles definitions
-  const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
-  const disabledState = component.definition.styles?.disabledState?.value ?? false;
-
-  const parsedDisabledState =
-    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState) : disabledState;
-  const parsedWidgetVisibility =
-    typeof widgetVisibility !== 'boolean' ? resolveWidgetFieldValue(widgetVisibility) : widgetVisibility;
+  //* resolved properties d
+  const isInitialRender = useRef(true);
+  const instructionText = properties?.instructionText ?? 'Drag and drop files here or click to select files';
+  const enableDropzone = properties?.enableDropzone ?? true;
+  const enablePicker = properties?.enablePicker ?? true;
+  const maxFileCount = properties?.maxFileCount ?? 2;
+  const enableMultiple = properties?.enableMultiple ?? false;
+  const fileType = properties?.fileType ?? 'image/*';
+  const maxSize = properties?.maxSize ?? 1048576;
+  const minSize = properties?.minSize ?? 0;
+  const parseContent = properties.parseContent;
+  const fileTypeFromExtension = properties.parseFileType ?? 'auto-detect';
+  //* resolved styles
+  const widgetVisibility = styles?.visibility ?? true;
+  const disabledState = styles?.disabledState ?? false;
 
   const { events: allAppEvents } = useAppInfo();
 
   const filePickerEvents = allAppEvents.filter((event) => event.target === 'component' && event.sourceId === id);
+  console.log(filePickerEvents);
 
   const bgThemeColor = darkMode ? '#232E3C' : '#fff';
 
@@ -68,9 +57,9 @@ export const FilePicker = ({
     color: '#bdbdbd',
     outline: 'none',
     transition: 'border .24s ease-in-out',
-    display: parsedWidgetVisibility ? 'flex' : 'none',
+    display: widgetVisibility ? 'flex' : 'none',
     height,
-    backgroundColor: !parsedDisabledState && bgThemeColor,
+    backgroundColor: !disabledState && bgThemeColor,
     boxShadow: styles.boxShadow,
   };
 
@@ -90,14 +79,14 @@ export const FilePicker = ({
 
   const { getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject, acceptedFiles, fileRejections } =
     useDropzone({
-      accept: { parsedFileType: [parsedFileType] },
-      noClick: !parsedEnablePicker || disablePicker,
-      noDrag: !parsedEnableDropzone || disablePicker,
+      accept: { parsedFileType: [fileType] },
+      noClick: !enablePicker || disablePicker,
+      noDrag: !enableDropzone || disablePicker,
       noKeyboard: true,
-      maxFiles: parsedMaxFileCount,
-      minSize: parsedMinSize,
-      maxSize: parsedMaxSize,
-      multiple: parsedEnableMultiple,
+      maxFiles: maxFileCount,
+      minSize: minSize,
+      maxSize: maxSize,
+      multiple: enableMultiple,
       disabled: disablePicker,
       validator: validateFileExists,
       onDropRejected: () => (selectedFiles.length > 0 ? setShowSelectedFiles(true) : setShowSelectedFiles(false)),
@@ -107,9 +96,9 @@ export const FilePicker = ({
   const style = useMemo(
     () => ({
       ...baseStyle,
-      ...(isDragActive && parsedEnableDropzone ? activeStyle : {}),
-      ...(isDragAccept && parsedEnableDropzone ? acceptStyle : {}),
-      ...(isDragReject && parsedEnableDropzone ? rejectStyle : {}),
+      ...(isDragActive && enableDropzone ? activeStyle : {}),
+      ...(isDragAccept && enableDropzone ? acceptStyle : {}),
+      ...(isDragReject && enableDropzone ? rejectStyle : {}),
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [baseStyle, isDragActive, isDragAccept, acceptStyle, isDragReject]
@@ -123,7 +112,7 @@ export const FilePicker = ({
   function validateFileExists(_file) {
     const selectedFilesCount = selectedFiles.length;
 
-    if (selectedFilesCount === parsedMaxFileCount) {
+    if (selectedFilesCount === maxFileCount) {
       return {
         code: 'max_file_count_reached',
         message: `Max file count reached`,
@@ -134,14 +123,13 @@ export const FilePicker = ({
   }
 
   useEffect(() => {
-    if (parsedDisabledState) setDisablePicker(true);
-
-    if (selectedFiles.length === parsedMaxFileCount && parsedEnableMultiple) {
+    if (disabledState) setDisablePicker(true);
+    else if (selectedFiles.length === maxFileCount && enableMultiple) {
       setDisablePicker(true);
     } else {
       setDisablePicker(false);
     }
-  }, [selectedFiles.length, parsedDisabledState, parsedMaxFileCount, parsedEnableMultiple]);
+  }, [selectedFiles.length, disabledState, maxFileCount, enableMultiple]);
 
   /**
    * *getFileData()
@@ -220,35 +208,38 @@ export const FilePicker = ({
     const fileSize = formatFileSize(rejectedFileSize);
 
     if (code === errorType.MIN_SIZE) {
-      return `File size ${fileSize} is too small. Minimum size is ${formatFileSize(parsedMinSize)}`;
+      return `File size ${fileSize} is too small. Minimum size is ${formatFileSize(minSize)}`;
     }
     if (code === errorType.MAX_SIZE) {
-      return `File size ${fileSize} is too large. Maximum size is ${formatFileSize(parsedMaxSize)}`;
+      return `File size ${fileSize} is too large. Maximum size is ${formatFileSize(maxSize)}`;
     }
 
     return message;
   };
 
   useEffect(() => {
+    if (isInitialRender.current) return;
     if (acceptedFiles.length === 0 && selectedFiles.length === 0) {
-      onComponentOptionChanged(component, 'file', [], id);
+      setExposedVariable('file', []);
+      // onComponentOptionChanged(component, 'file', [], id);
     }
 
-    if (acceptedFiles.length !== 0 && onEvent) {
-      const fileData = parsedEnableMultiple ? [...selectedFiles] : [];
+    if (acceptedFiles.length !== 0 && fireEvent) {
+      const fileData = enableMultiple ? [...selectedFiles] : [];
       if (parseContent) {
-        onComponentOptionChanged(component, 'isParsing', true, id);
+        setExposedVariable('isParsing', true);
+        // onComponentOptionChanged(component, 'isParsing', true, id);
       }
       acceptedFiles.map((acceptedFile) => {
         const acceptedFileData = fileReader(acceptedFile);
         acceptedFileData.then((data) => {
-          if (fileData.length < parsedMaxFileCount) {
+          if (fileData.length < maxFileCount) {
             fileData.push(data);
           }
         });
       });
 
-      onEvent('onFileSelected', filePickerEvents, { component })
+      fireEvent('onFileSelected', id, 'canvas', { component })
         .then(() => {
           setAccepted(true);
           // eslint-disable-next-line no-unused-vars
@@ -256,15 +247,17 @@ export const FilePicker = ({
             setTimeout(() => {
               setShowSelectedFiles(true);
               setAccepted(false);
-              onComponentOptionChanged(component, 'isParsing', false, id);
+              setExposedVariable('isParsing', false);
+              // onComponentOptionChanged(component, 'isParsing', false, id);
               resolve();
             }, 600);
           });
         })
-        .then(() => onEvent('onFileLoaded', filePickerEvents, { component }))
+        .then(() => fireEvent('onFileLoaded', id, 'canvas', { component }))
         .then(() => {
           setSelectedFiles(fileData);
-          onComponentOptionChanged(component, 'file', fileData, id);
+          setExposedVariable('file', fileData);
+          // onComponentOptionChanged(component, 'file', fileData, id);
         });
     }
 
@@ -288,19 +281,31 @@ export const FilePicker = ({
       copy.splice(index, 1);
       return copy;
     });
-    onEvent('onFileDeselected', filePickerEvents);
+    fireEvent('onFileDeselected', id);
   };
 
   useEffect(() => {
+    isInitialRender.current = false;
     if (selectedFiles.length === 0) {
       setShowSelectedFiles(false);
     }
-    onComponentOptionChanged(component, 'file', selectedFiles, id);
-    setExposedVariable('clearFiles', async function () {
-      setSelectedFiles([]);
-    });
+    setExposedVariable('file', selectedFiles);
+    // onComponentOptionChanged(component, 'file', selectedFiles, id);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedFiles]);
+
+  useEffect(() => {
+    const exposedVariables = {
+      clearFiles: async function () {
+        setSelectedFiles([]);
+      },
+      file: [],
+    };
+    setExposedVariables(exposedVariables);
+    setShowSelectedFiles(false);
+    isInitialRender.current = false;
+  }, []);
 
   return (
     <section>
@@ -342,12 +347,12 @@ export const FilePicker = ({
         )}
 
         <FilePicker.Signifiers
-          signifier={isDragAccept && !(selectedFiles.length === parsedMaxFileCount)}
+          signifier={isDragAccept && !(selectedFiles.length === maxFileCount)}
           feedback={'All files will be accepted'}
           cls="text-lime mt-3"
         />
         <FilePicker.Signifiers
-          signifier={isDragAccept && selectedFiles.length === parsedMaxFileCount}
+          signifier={isDragAccept && selectedFiles.length === maxFileCount}
           feedback={'Max file reached!'}
           cls="text-red mt-3"
         />

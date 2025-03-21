@@ -11,12 +11,42 @@ import Information from '@/_ui/Icon/solidIcons/Information';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ToolTip } from '@/_components/ToolTip';
 import './styles.scss';
+import cx from 'classnames';
 // import Maximize from '@/TooljetDatabase/Icons/maximize.svg';
 // import { Link } from 'react-router-dom';
 // import { getPrivateRoute } from '@/_helpers/routes';
 import ForeignKeyIndicator from '../Icons/ForeignKeyIndicator.svg';
 import ArrowRight from '../Icons/ArrowRight.svg';
 import Skeleton from 'react-loading-skeleton';
+import DateTimePicker from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/DateTimePicker';
+import { getLocalTimeZone, getUTCOffset } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/util';
+import CodeHinter from '@/AppBuilder/CodeEditor';
+import { resolveReferences } from '@/AppBuilder/CodeEditor/utils';
+
+const compareValueInObject = (currentValue, defaultValue) => {
+  try {
+    let cv = currentValue;
+    let defaultVal = defaultValue;
+
+    // Step 1: Parse cv until it's fully converted to an object
+    while (typeof cv === 'string') {
+      cv = JSON.parse(cv);
+    }
+
+    // Step 2: Use Lodash's isEqual for a deep comparison
+    return _.isEqual(cv, defaultVal);
+  } catch (error) {
+    return false;
+  }
+};
+
+const transformJSONValue = (value) => {
+  if (typeof value === 'string') {
+    return JSON.stringify(JSON.parse(value));
+  } else {
+    return JSON.stringify(value);
+  }
+};
 
 const EditRowForm = ({
   onEdit,
@@ -27,13 +57,20 @@ const EditRowForm = ({
   initiator,
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const { organizationId, selectedTable, columns, foreignKeys } = useContext(TooljetDatabaseContext);
+  const { organizationId, selectedTable, columns, foreignKeys, getConfigurationProperty } =
+    useContext(TooljetDatabaseContext);
   const inputRefs = useRef({});
   const [fetching, setFetching] = useState(false);
   const [activeTab, setActiveTab] = useState(Array.isArray(columns) ? columns.map(() => 'Custom') : []);
   const currentValue = selectedRowObj;
   const [inputValues, setInputValues] = useState([]);
   const [errorMap, setErrorMap] = useState({});
+
+  const [disabledSaveButton, setDisabledSaveButton] = useState(false);
+
+  const handleInputError = (bool = false) => {
+    setDisabledSaveButton(bool);
+  };
 
   useEffect(() => {
     toast.dismiss();
@@ -42,9 +79,17 @@ const EditRowForm = ({
   useEffect(() => {
     if (currentValue) {
       const keysWithNullValues = Object.keys(currentValue).filter((key) => currentValue[key] === null);
-      const keysWithDefaultValues = Object.keys(currentValue).filter(
-        (key, index) => currentValue[key]?.toString() === columns[index].column_default
-      );
+      const keysWithDefaultValues = Object.keys(currentValue).filter((key, index) => {
+        if (columns[index].dataType === 'jsonb') {
+          try {
+            return compareValueInObject(currentValue[key], columns[index].column_default);
+          } catch (error) {
+            return false;
+          }
+        }
+        return currentValue[key]?.toString() === columns[index].column_default;
+      });
+
       setActiveTab((prevActiveTabs) => {
         const newActiveTabs = [...prevActiveTabs];
         keysWithNullValues.forEach((key) => {
@@ -53,20 +98,36 @@ const EditRowForm = ({
             newActiveTabs[index] = 'Null';
           }
         });
+
         keysWithDefaultValues.forEach((key) => {
           const index = Object.keys(currentValue).indexOf(key);
-          if (currentValue[key]?.toString() === columns[index].column_default) {
+          const compareCondition =
+            columns[index].dataType === 'jsonb'
+              ? compareValueInObject(currentValue[key], columns[index].column_default)
+              : currentValue[key]?.toString() === columns[index].column_default;
+          if (compareCondition) {
             newActiveTabs[index] = 'Default';
           }
         });
         return newActiveTabs;
       });
+
       const initialInputValues = currentValue
         ? Object.keys(currentValue).map((key, index) => {
-            const value =
-              currentValue[key] === null ? null : currentValue[key] === currentValue[key] ? currentValue[key] : '';
+            const isJsonDataType = columns[index].dataType === 'jsonb';
+            let isJsonbCurrentAndDefaultValueEqual = false;
+            if (isJsonDataType) {
+              isJsonbCurrentAndDefaultValueEqual = compareValueInObject(
+                currentValue[key],
+                columns[index].column_default
+              );
+            }
+            const value = currentValue[key] === null ? null : currentValue[key] ? currentValue[key] : '';
             const disabledValue =
-              currentValue[key] === null || currentValue[key]?.toString() === columns[index].column_default
+              currentValue[key] === null ||
+              (isJsonDataType
+                ? isJsonbCurrentAndDefaultValueEqual
+                : currentValue[key]?.toString() === columns[index].column_default)
                 ? true
                 : false;
             return { value: value, disabled: disabledValue, label: value };
@@ -95,7 +156,7 @@ const EditRowForm = ({
     editRowColumns.forEach(({ accessor }) => {
       if (rowData[accessor] != '') {
         const inputElement = inputRefs.current[accessor];
-        inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFFFFF', 'important');
+        inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFFFFF');
         setErrorMap((prev) => {
           return { ...prev, [accessor]: '' };
         });
@@ -132,12 +193,18 @@ const EditRowForm = ({
       newInputValues[index] = { value: defaultValue, disabled: true, label: defaultValue };
     } else if (defaultValue && tabData === 'Default' && dataType === 'boolean') {
       newInputValues[index] = { value: actualDefaultVal, disabled: true, label: actualDefaultVal };
+    } else if (defaultValue && tabData === 'Default' && dataType === 'jsonb') {
+      const [_, __, resolvedValue] = resolveReferences(`{{${defaultValue}}}`);
+      newInputValues[index] = { value: resolvedValue, disabled: false, label: resolvedValue };
     } else if (nullValue && tabData === 'Null' && dataType !== 'boolean') {
       newInputValues[index] = { value: null, disabled: true, label: null };
     } else if (nullValue && tabData === 'Null' && dataType === 'boolean') {
       newInputValues[index] = { value: null, disabled: true, label: null };
-    } else if (tabData === 'Custom' && customVal.length > 0) {
+    } else if (tabData === 'Custom' && customVal?.length > 0 && dataType !== 'jsonb') {
       newInputValues[index] = { value: customVal, disabled: false, label: customVal };
+    } else if (tabData === 'Custom' && customVal?.length > 0 && dataType === 'jsonb') {
+      const [_, __, resolvedValue] = resolveReferences(`{{${customVal}}}`);
+      newInputValues[index] = { value: resolvedValue, disabled: false, label: resolvedValue };
     } else if (tabData === 'Custom' && customVal.length <= 0) {
       newInputValues[index] = { value: '', disabled: false, label: '' };
     } else {
@@ -159,6 +226,20 @@ const EditRowForm = ({
             ? currentValue
             : currentValue === null && customBooleanVal === false
             ? null
+            : null,
+      });
+    } else if (dataType === 'jsonb') {
+      setRowData({
+        ...rowData,
+        [columnName]:
+          newInputValues[index].value === null
+            ? null
+            : compareValueInObject(newInputValues[index].value, defaultValue)
+            ? defaultValue
+            : _.isEqual(newInputValues[index].value, currentValue)
+            ? currentValue
+            : currentValue === null && customVal === ''
+            ? ''
             : null,
       });
     } else {
@@ -189,13 +270,19 @@ const EditRowForm = ({
 
   const handleInputChange = (index, value, columnName) => {
     const newInputValues = [...inputValues];
+    const isNull = value === null || value === 'Null';
     newInputValues[index] = {
-      value: value === 'Null' ? null : value,
-      disabled: false,
-      label: value === 'Null' ? null : value,
+      value: isNull ? null : value,
+      disabled: isNull,
+      label: isNull ? null : value,
     };
     setInputValues(newInputValues);
-    setRowData({ ...rowData, [columnName]: value === 'Null' ? null : value });
+    setRowData({ ...rowData, [columnName]: isNull ? null : value });
+    if (isNull) {
+      const newActiveTabs = [...activeTab];
+      newActiveTabs[index] = 'Null';
+      setActiveTab(newActiveTabs);
+    }
   };
 
   useEffect(() => {
@@ -208,12 +295,12 @@ const EditRowForm = ({
 
     const { hasEmptyValue, newErrorMap } = editRowColumns.reduce(
       (acc, { accessor, dataType }) => {
-        if (['double precision', 'bigint', 'integer'].includes(dataType) && rowData[accessor] === '') {
+        if (['double precision', 'bigint', 'integer', 'jsonb'].includes(dataType) && rowData[accessor] === '') {
           acc.hasEmptyValue = true;
           acc.newErrorMap[accessor] = 'Cannot be empty';
 
           const inputElement = inputRefs.current?.[accessor];
-          inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFF8F7', 'important');
+          inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFF8F7');
         }
         return acc;
       },
@@ -247,7 +334,14 @@ const EditRowForm = ({
           return { ...prev, [columnName]: 'Value already exists' };
         });
         const inputElement = inputRefs.current?.[columnName];
-        inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFF8F7', 'important');
+        inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFF8F7');
+      } else if (error?.code === postgresErrorCode.NotNullViolation) {
+        const columnName = error?.message.split('.')[1];
+        setErrorMap((prev) => {
+          return { ...prev, [columnName]: 'Cannot be Null' };
+        });
+        const inputElement = inputRefs.current?.[columnName];
+        inputElement?.style?.setProperty('background-color', '#FFF8F7');
       } else if (error?.code === postgresErrorCode.DataTypeMismatch) {
         const errorMessageSplit = error?.message.split(':');
         const columnValue = errorMessageSplit[1]?.slice(2, -1);
@@ -262,7 +356,7 @@ const EditRowForm = ({
               return { ...prev, [accessor]: `Data type mismatch` };
             });
             const inputElement = inputRefs.current?.[accessor];
-            inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFF8F7', 'important');
+            inputElement?.style?.setProperty('background-color', darkMode ? '#1f2936' : '#FFF8F7');
           }
         });
       }
@@ -297,11 +391,11 @@ const EditRowForm = ({
                   </div>
                 }
                 loader={
-                  <div className="mx-2">
+                  <>
                     <Skeleton height={22} width={396} className="skeleton" style={{ margin: '15px 50px 7px 7px' }} />
                     <Skeleton height={22} width={450} className="skeleton" style={{ margin: '7px 14px 7px 7px' }} />
                     <Skeleton height={22} width={396} className="skeleton" style={{ margin: '7px 50px 15px 7px' }} />
-                  </div>
+                  </>
                 }
                 isLoading={true}
                 value={inputValues[index]?.value !== null && inputValues[index]}
@@ -394,6 +488,150 @@ const EditRowForm = ({
           </label>
         );
 
+      case 'timestamp with time zone':
+        return (
+          <div style={{ position: 'relative' }}>
+            <DateTimePicker
+              timestamp={inputValues[index]?.value}
+              setTimestamp={(value) => handleInputChange(index, value, columnName)}
+              isOpenOnStart={false}
+              isClearable={activeTab[index] === 'Custom'}
+              isPlaceholderEnabled={activeTab[index] === 'Custom'}
+              errorMessage={errorMap[columnName]}
+              timezone={getConfigurationProperty(columnName, 'timezone', getLocalTimeZone())}
+              isDisabled={inputValues[index]?.disabled || shouldInputBeDisabled}
+            />
+            {(inputValues[index]?.disabled || shouldInputBeDisabled) && (
+              <div
+                onClick={() =>
+                  handleDisabledInputClick(
+                    index,
+                    'Custom',
+                    column_default,
+                    isNullable,
+                    columnName,
+                    dataType,
+                    currentValue[columnName]
+                  )
+                }
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  zIndex: 4,
+                  cursor: 'pointer',
+                  backgroundColor: 'transparent',
+                }}
+              />
+            )}
+          </div>
+        );
+      case 'jsonb':
+        return (
+          <div style={{ position: 'relative' }} onKeyDown={(e) => e.stopPropagation()}>
+            {inputValues[index]?.value === null ? (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  position: 'relative',
+                  backgroundColor: 'transparent',
+                  width: '100%',
+                  border: '1px solid var(--slate7)',
+                  padding: '5px 5px',
+                  borderRadius: '6px',
+                }}
+                className={'null-container'}
+                tabindex="0"
+              >
+                <span
+                  style={{
+                    position: 'static',
+                    backgroundColor: 'transparent',
+                  }}
+                  className={'null-tag'}
+                >
+                  Null
+                </span>
+              </div>
+            ) : activeTab[index] === 'Default' ? (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  position: 'relative',
+                  backgroundColor: 'transparent',
+                  width: '100%',
+                  border: '1px solid var(--slate7)',
+                  padding: '5px 5px',
+                  borderRadius: '6px',
+                  overflow: 'hidden',
+                  height: '36px',
+                  maxHeight: '36px',
+                  fontSize: '12px',
+                }}
+                tabindex="0"
+                className="truncate"
+              >
+                {transformJSONValue(column_default)}
+              </div>
+            ) : (
+              <div className="tjdb-codehinter-wrapper-drawer" onKeyDown={(e) => e.stopPropagation()}>
+                <CodeHinter
+                  type="tjdbHinter"
+                  inEditor={false}
+                  initialValue={inputValues[index]?.value ? transformJSONValue(inputValues[index]?.value) : ''}
+                  lang="javascript"
+                  onChange={(value) => {
+                    if (value === 'Null') {
+                      handleInputChange(index, value, columnName);
+                    } else {
+                      const [_, __, resolvedValue] = resolveReferences(`{{${value}}}`);
+                      handleInputChange(index, resolvedValue, columnName);
+                    }
+                  }}
+                  componentName={`{} ${columnName}`}
+                  errorCallback={handleInputError}
+                  lineNumbers={false}
+                  placeholder="{}"
+                  columnName={columnName}
+                  showErrorMessage={true}
+                  className={cx(errorMap[columnName] ? 'has-empty-error' : '')}
+                />
+              </div>
+            )}
+
+            {(inputValues[index]?.disabled || shouldInputBeDisabled) && (
+              <div
+                onClick={() => {
+                  handleDisabledInputClick(
+                    index,
+                    'Custom',
+                    column_default,
+                    isNullable,
+                    columnName,
+                    dataType,
+                    currentValue[columnName]
+                  );
+                  handleTabClick(index, 'Custom', column_default, isNullable, columnName, dataType);
+                }}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  zIndex: 4,
+                  cursor: 'pointer',
+                  backgroundColor: 'transparent',
+                }}
+              />
+            )}
+          </div>
+        );
+
       default:
         break;
     }
@@ -482,12 +720,41 @@ const EditRowForm = ({
                         <span style={{ width: '24px' }}>
                           {renderDatatypeIcon(isSerialDataTypeColumn ? 'serial' : dataType)}
                         </span>
-                        <span style={{ marginRight: '5px' }}>{headerText}</span>
+                        <ToolTip
+                          message={<span>{headerText}</span>}
+                          show={dataType === 'timestamp with time zone' && headerText.length >= 20}
+                          placement="top"
+                          tooltipClassName="tjdb-table-tooltip"
+                        >
+                          <span
+                            style={{ marginRight: '5px' }}
+                            className={cx({
+                              'header-label-timestamp': dataType === 'timestamp with time zone',
+                            })}
+                          >
+                            {headerText}
+                          </span>
+                        </ToolTip>
                         {constraints_type?.is_primary_key === true && (
                           <span style={{ marginRight: '3px' }}>
                             <SolidIcon name="primarykey" />
                           </span>
                         )}
+                        {dataType === 'timestamp with time zone' && (
+                          <div
+                            style={{
+                              justifyContent: 'center',
+                              alignItems: 'center',
+                              marginLeft: '2px',
+                              marginTop: '1px',
+                            }}
+                          >
+                            <span className="tjdb-display-time-pill">{`UTC ${getUTCOffset(
+                              getConfigurationProperty(accessor, 'timezone', getLocalTimeZone())
+                            )}`}</span>
+                          </div>
+                        )}
+
                         <ToolTip
                           message={
                             isMatchingForeignKeyColumn(Header) ? (
@@ -637,7 +904,9 @@ const EditRowForm = ({
           fetching={fetching}
           onClose={onClose}
           onEdit={handleSubmit}
-          shouldDisableCreateBtn={Object.values(matchingObject).includes('') || (isSubset && isSubsetForCharacter)}
+          shouldDisableCreateBtn={
+            Object.values(matchingObject).includes('') || (isSubset && isSubsetForCharacter) || disabledSaveButton
+          }
           initiator={initiator}
         />
       )}

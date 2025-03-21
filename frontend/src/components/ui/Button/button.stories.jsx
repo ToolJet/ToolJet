@@ -17,8 +17,6 @@ const getDefaultIconFillColor = (variant, customFill = '') => {
     case 'ghost':
       return 'var(--icon-strong)';
     case 'dangerSecondary':
-    case 'dangerGhost':
-      return 'var(--icon-danger)';
     default:
       return '';
   }
@@ -37,16 +35,7 @@ export default {
     variant: {
       control: {
         type: 'select',
-        options: [
-          'primary',
-          'secondary',
-          'outline',
-          'ghost',
-          'ghostBrand',
-          'dangerPrimary',
-          'dangerSecondary',
-          'dangerGhost',
-        ],
+        options: ['primary', 'secondary', 'outline', 'ghost', 'ghostBrand', 'dangerPrimary', 'dangerSecondary'],
       },
     },
     fill: { control: 'color' },

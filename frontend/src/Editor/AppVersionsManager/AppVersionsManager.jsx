@@ -7,6 +7,7 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { useEnvironmentsAndVersionsStore } from '@/_stores/environmentsAndVersionsStore';
 import { useAppDataStore } from '@/_stores/appDataStore';
+import { ToolTip } from '@/_components/ToolTip';
 import { decodeEntities } from '@/_helpers/utils';
 
 const appVersionLoadingStatus = Object.freeze({
@@ -20,6 +21,7 @@ export const AppVersionsManager = function ({
   setAppDefinitionFromVersion,
   isEditable = true,
   isViewer,
+  appCreationMode,
   darkMode,
 }) {
   const [appVersionStatus, setGetAppVersionStatus] = useState(appVersionLoadingStatus.loading);
@@ -53,12 +55,14 @@ export const AppVersionsManager = function ({
     changeEditorVersionAction,
     selectedVersion,
     deleteVersionAction,
+    selectedEnvironment,
   } = useEnvironmentsAndVersionsStore(
     (state) => ({
       appVersionsLazyLoaded: state.appVersionsLazyLoaded,
       initializedEnvironmentDropdown: state.initializedEnvironmentDropdown,
       versionsPromotedToEnvironment: state.versionsPromotedToEnvironment,
       selectedVersion: state.selectedVersion,
+      selectedEnvironment: state.selectedEnvironment,
       lazyLoadAppVersions: state.actions.lazyLoadAppVersions,
       setEnvironmentAndVersionsInitStatus: state.actions.setEnvironmentAndVersionsInitStatus,
       deleteVersionAction: state.actions.deleteVersionAction,
@@ -93,7 +97,7 @@ export const AppVersionsManager = function ({
       appId,
       id,
       (newDeff) => {
-        setAppDefinitionFromVersion(newDeff);
+        setAppDefinitionFromVersion(newDeff, selectedEnvironment);
       },
       (error) => {
         toast.error(error);
@@ -119,7 +123,7 @@ export const AppVersionsManager = function ({
       (newVersionDef) => {
         if (newVersionDef) {
           /* User deleted new version */
-          setAppDefinitionFromVersion(newVersionDef);
+          setAppDefinitionFromVersion(newVersionDef, selectedEnvironment);
         }
         toast.dismiss(deleteingToastId);
         toast.success(`Version - ${decodeEntities(versionName)} Deleted`);
@@ -142,14 +146,16 @@ export const AppVersionsManager = function ({
     label: (
       <div className="row align-items-center app-version-list-item">
         <div className="col-10">
-          <div
-            className={cx('app-version-name text-truncate', {
-              'color-light-green': appVersion.id === releasedVersionId,
-            })}
-            style={{ maxWidth: '100%' }}
-          >
-            {decodeEntities(appVersion.name)}
-          </div>
+          <ToolTip message="Current released version" show={appVersion.id === releasedVersionId} placement="right">
+            <div
+              className={cx('app-version-name text-truncate', {
+                'color-light-green': appVersion.id === releasedVersionId,
+              })}
+              style={{ maxWidth: '100%' }}
+            >
+              {decodeEntities(appVersion.name)}
+            </div>
+          </ToolTip>
         </div>
         {isEditable && appVersion.id !== releasedVersionId && (
           <div
@@ -163,7 +169,13 @@ export const AppVersionsManager = function ({
               });
             }}
           >
-            <svg width="13" height="14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg
+              width="13"
+              height="14"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              data-cy={`${appVersion.name.toLowerCase().replace(/\s+/g, '-')}-delete-icon`}
+            >
               <path
                 d="M2.612 13.246c-.355 0-.663-.13-.925-.392a1.265 1.265 0 01-.391-.925V2.596h-.184a.645.645 0 01-.475-.192.645.645 0 01-.191-.475c0-.189.064-.347.191-.475a.645.645 0 01.475-.191h2.884c0-.19.064-.348.191-.475a.645.645 0 01.475-.192H8.03c.189 0 .35.067.483.2a.64.64 0 01.2.467h2.867c.189 0 .347.064.475.191a.645.645 0 01.192.475.645.645 0 01-.192.475.645.645 0 01-.475.192h-.183v9.333c0 .356-.13.664-.392.925-.261.261-.57.392-.925.392H2.612zm0-10.65v9.333h7.467V2.596H2.612zm1.734 7.4c0 .155.055.289.166.4a.545.545 0 00.4.167.565.565 0 00.417-.167.545.545 0 00.167-.4V4.513a.579.579 0 00-.175-.425.56.56 0 00-.409-.175.526.526 0 00-.408.175.61.61 0 00-.158.425v5.483zm2.85 0c0 .155.058.289.175.4a.573.573 0 00.408.167.565.565 0 00.417-.167.545.545 0 00.166-.4V4.513a.579.579 0 00-.175-.425.56.56 0 00-.408-.175.552.552 0 00-.417.175.594.594 0 00-.166.425v5.483zm-4.584-7.4v9.333-9.333z"
                 fill="#EB1414"
@@ -192,6 +204,7 @@ export const AppVersionsManager = function ({
     deleteVersion,
     deleteAppVersion,
     resetDeleteModal,
+    appCreationMode,
   };
 
   /* Force close is not working with usual blur function of react-select */
@@ -238,6 +251,7 @@ export const AppVersionsManager = function ({
             onMenuOpen={onMenuOpen}
             onMenuClose={() => setForceMenuOpen(false)}
             menuIsOpen={forceMenuOpen}
+            currentEnvironment={selectedEnvironment}
             darkMode={darkMode}
           />
         </div>

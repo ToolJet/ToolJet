@@ -1,6 +1,7 @@
 import React from 'react';
 // eslint-disable-next-line import/no-unresolved
 import { allSvgs } from '@tooljet/plugins/client';
+import AiBanner from '@/_ui/AiBanner';
 
 const Card = ({
   title,
@@ -13,6 +14,7 @@ const Card = ({
   titleClassName,
   actionButton,
   darkMode,
+  tags = [],
 }) => {
   const DisplayIcon = ({ src }) => {
     if (typeof src !== 'string') return;
@@ -29,7 +31,7 @@ const Card = ({
       const Icon = allSvgs[src];
       return <Icon style={{ height, width }} className="card-icon" />;
     }
-    return <img src={src} width={width} height={height} alt={title} />;
+    return <img src={src} width={width} height={height} alt={title} className="card-icon" />;
   };
 
   return (
@@ -44,7 +46,8 @@ const Card = ({
         data-cy={`data-source-${String(title).toLocaleLowerCase()}`}
       >
         <div className="card-body">
-          <center>
+          {tags && tags.includes('AI') && <AiBanner className="card-tag" />}
+          <center style={{ marginTop: tags.length > 0 ? '0px' : '15px' }}>
             <DisplayIcon src={src} />
             <br></br>
             <br></br>

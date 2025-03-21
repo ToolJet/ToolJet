@@ -1,0 +1,102 @@
+[
+    {
+        "id": 1,
+        "product_name": "Classic White T-Shirt",
+        "quantity": 25,
+        "status": "In stock",
+        "price": 19.99,
+        "description": "A timeless white t-shirt made from 100% cotton, perfect for everyday wear.",
+        "category": "Apparel",
+        "is_active": true
+    },
+    {
+        "id": 2,
+        "product_name": "Smart LED TV 55-inch",
+        "quantity": 12,
+        "status": "In stock",
+        "price": 499.99,
+        "description": "55-inch 4K Ultra HD Smart LED TV with streaming capabilities and voice control.",
+        "category": "Electronics",
+        "is_active": true
+    },
+    {
+        "id": 3,
+        "product_name": "Ergonomic Office Chair",
+        "quantity": 8,
+        "status": "Yet to receive",
+        "price": 149.99,
+        "description": "Comfortable office chair with lumbar support and adjustable height.",
+        "category": "Furniture",
+        "is_active": true
+    },
+    {
+        "id": 4,
+        "product_name": "Premium Coffee Beans",
+        "quantity": 40,
+        "status": "In stock",
+        "price": 15.99,
+        "description": "Rich and aromatic coffee beans sourced from the finest plantations.",
+        "category": "Beverage",
+        "is_active": true
+    },
+    {
+        "id": 5,
+        "product_name": "Wireless Noise-Cancelling Headphones",
+        "quantity": 30,
+        "status": "In stock",
+        "price": 299.99,
+        "description": "High-fidelity wireless headphones with active noise cancellation and long battery life.",
+        "category": "Electronics",
+        "is_active": true
+    },
+    {
+        "id": 6,
+        "product_name": "Stainless Steel Blender",
+        "quantity": 18,
+        "status": "Yet to receive",
+        "price": 89.99,
+        "description": "High-power blender with multiple speed settings, perfect for smoothies and soups.",
+        "category": "Appliances",
+        "is_active": true
+    },
+    {
+        "id": 7,
+        "product_name": "Organic Almond Butter",
+        "quantity": 35,
+        "status": "In stock",
+        "price": 9.99,
+        "description": "Creamy and delicious almond butter made from organic almonds.",
+        "category": "Food",
+        "is_active": true
+    },
+    {
+        "id": 8,
+        "product_name": "Fitness Tracker Watch",
+        "quantity": 22,
+        "status": "In stock",
+        "price": 129.99,
+        "description": "Wearable fitness tracker with heart rate monitor and GPS capabilities.",
+        "category": "Electronics",
+        "is_active": true
+    },
+    {
+        "id": 9,
+        "product_name": "Eco-friendly Water Bottle",
+        "quantity": 50,
+        "status": "In stock",
+        "price": 12.99,
+        "description": "Reusable water bottle made from sustainable materials, BPA-free.",
+        "category": "Apparel",
+        "is_active": true
+    },
+    {
+        "id": 10,
+        "product_name": "Home Security System",
+        "quantity": 10,
+        "status": "Yet to receive",
+        "price": 249.99,
+        "description": "Comprehensive home security system with cameras and motion detectors.",
+        "category": "Electronics",
+        "is_active": true
+    }
+]

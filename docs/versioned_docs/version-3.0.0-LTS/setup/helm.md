@@ -33,8 +33,6 @@ ToolJet offers a hosted database solution that allows you to build applications 
 
 For more information about the ToolJet database, you can visit [here](/docs/tooljet-db/tooljet-database).
 
-You need to set up and deploy the PostgREST server, which facilitates querying the ToolJet Database.
-
 ## Upgrading to the Latest LTS Version
 
 New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.

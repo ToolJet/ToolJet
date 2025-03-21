@@ -14,7 +14,7 @@ import BookSearch from './BookSearch.jsx';
 import Branch from './Branch.jsx';
 import Bug from './Bug.jsx';
 import Calender from './Calender.jsx';
-import Users from './Users.jsx';
+import UsersList from './UsersList.jsx';
 import CheckRectangle from './CheckRectangle.jsx';
 import CheveronDown from './CheveronDown.jsx';
 import CheveronLeft from './CheveronLeft.jsx';
@@ -117,9 +117,12 @@ import DragHandle from './DragHandle.jsx';
 import Lock from './Lock.jsx';
 import AddTemplate from './AddTemplate.jsx';
 import InviteCollaborator from './InviteCollabarator.jsx';
+import CloseIcon from './CloseIcon.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
+    case 'closeicon':
+      return <CloseIcon {...props} />;
     case 'addrectangle':
       return <AddRectangle {...props} />;
     case 'addtemplate':
@@ -218,7 +221,6 @@ const Icon = (props) => {
       return <Layers {...props} />;
     case 'leftarrow':
       return <LeftArrow {...props} />;
-
     case 'listview':
       return <ListView {...props} />;
     case 'lock':
@@ -316,6 +318,8 @@ const Icon = (props) => {
       return <Trash {...props} />;
     case 'uparrow':
       return <UpArrow {...props} />;
+    case 'users':
+      return <UsersList {...props} />;
 
     case 'useradd':
       return <UserAdd {...props} />;
@@ -337,8 +341,6 @@ const Icon = (props) => {
       return <ZoomOutRectangle {...props} />;
     case 'unlock':
       return <Unlock {...props} />;
-    case 'users':
-      return <Users {...props} />;
     case 'telescope':
       return <Telescope {...props} />;
     case 'removeCircle':

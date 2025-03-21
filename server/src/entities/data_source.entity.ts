@@ -1,4 +1,3 @@
-import { DataSourceTypes } from 'src/helpers/data_source.constants';
 import {
   Entity,
   Column,
@@ -16,8 +15,12 @@ import {
 import { App } from './app.entity';
 import { AppVersion } from './app_version.entity';
 import { DataQuery } from './data_query.entity';
+import { DataSourceGroupPermission } from './data_source_group_permission.entity';
 import { DataSourceOptions } from './data_source_options.entity';
+import { GroupPermission } from './group_permission.entity';
 import { Plugin } from './plugin.entity';
+import { GroupDataSources } from './group_data_source.entity';
+import { DataSourceTypes } from '@modules/data-sources/constants';
 
 @Entity({ name: 'data_sources' })
 export class DataSource extends BaseEntity {
@@ -78,6 +81,26 @@ export class DataSource extends BaseEntity {
   apps: App[];
 
   app: App;
+
+  @ManyToMany(() => GroupPermission)
+  @JoinTable({
+    name: 'data_source_group_permissions',
+    joinColumn: {
+      name: 'data_source_id',
+    },
+    inverseJoinColumn: {
+      name: 'group_permission_id',
+    },
+  })
+  groupPermissions: GroupPermission[];
+
+  @OneToMany(() => DataSourceGroupPermission, (dataSourceGroupPermission) => dataSourceGroupPermission.dataSource, {
+    onDelete: 'CASCADE',
+  })
+  dataSourceGroupPermissions: DataSourceGroupPermission[];
+
+  @OneToMany(() => GroupDataSources, (groupDataSources) => groupDataSources.dataSource, { onDelete: 'CASCADE' })
+  dataSourceGroups: GroupDataSources[];
 
   @ManyToOne(() => Plugin, (plugin) => plugin.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'plugin_id' })

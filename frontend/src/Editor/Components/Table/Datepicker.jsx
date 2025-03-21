@@ -13,22 +13,34 @@ const TjDatepicker = forwardRef(
   ({ value, onClick, styles, dateInputRef, readOnly, setIsDateInputFocussed, setDateInputValue }, ref) => {
     return (
       <div className="table-column-datepicker-input-container">
-        <input
-          className={cx('table-column-datepicker-input text-truncate', {
-            'pointer-events-none': readOnly,
-          })}
-          value={value}
-          onClick={onClick}
-          ref={dateInputRef}
-          style={styles}
-          onChange={(e) => {
-            setIsDateInputFocussed(true);
-            setDateInputValue(e.target.value);
-          }}
-          onFocus={() => {
-            setDateInputValue(value);
-          }}
-        />
+        {readOnly ? (
+          <div
+            style={{
+              height: '100%',
+              width: '100%',
+              overflow: 'hidden',
+            }}
+          >
+            {value}
+          </div>
+        ) : (
+          <input
+            className={cx('table-column-datepicker-input text-truncate', {
+              'pointer-events-none': readOnly,
+            })}
+            value={value}
+            onClick={onClick}
+            ref={dateInputRef}
+            style={styles}
+            onChange={(e) => {
+              setIsDateInputFocussed(true);
+              setDateInputValue(e.target.value);
+            }}
+            onFocus={() => {
+              setDateInputValue(value);
+            }}
+          />
+        )}
         {!readOnly && (
           <span className="cell-icon-display">
             <SolidIcon

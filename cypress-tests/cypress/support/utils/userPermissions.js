@@ -1,89 +1,113 @@
 import { commonSelectors } from "Selectors/common";
-import { usersSelector } from "Selectors/manageUsers";
-import { usersText } from "Texts/manageUsers";
-import * as users from "Support/utils/manageUsers";
-import * as common from "Support/utils/common";
-import { path } from "Texts/common";
-import { groupsSelector } from "Selectors/manageGroups";
-import { groupsText } from "Texts/manageGroups";
-import { dashboardSelector } from "Selectors/dashboard";
+import { commonText } from "Texts/common";
+import { workspaceConstantsSelectors } from "Selectors/workspaceConstants";
+import { createFolder, deleteFolder } from "Support/utils/common";
+import { addNewconstants } from "Support/utils/workspaceConstants";
 
-export const adminLogin = () => {
-  common.logout();
-  cy.defaultWorkspaceLogin();
-  common.navigateToManageGroups();
+const appOperations = {
+  createApp: (appName) => {
+    cy.createApp(appName);
+    cy.backToApps();
+  },
+
+  deleteApp: (appName) => {
+    cy.deleteApp(appName);
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      commonText.appDeletedToast
+    );
+  },
+
+  cloneApp: (appName) => {
+    cy.get(commonSelectors.appCard(appName))
+      .trigger("mouseover")
+      .find(commonSelectors.cloneButton)
+      .click();
+  },
 };
 
-export const reset = () => {
-  common.navigateToManageGroups();
-  cy.get(groupsSelector.permissionsLink).click();
+const folderOperations = {
+  createFolder: (folderName) => {
+    createFolder(folderName);
+  },
 
-  cy.get(groupsSelector.appsCreateCheck).then(($el) => {
-    if ($el.is(":checked")) {
-      cy.get(groupsSelector.appsCreateCheck).uncheck();
-    }
-  });
-
-  cy.get(groupsSelector.appsDeleteCheck).then(($el) => {
-    if ($el.is(":checked")) {
-      cy.get(groupsSelector.appsDeleteCheck).uncheck();
-    }
-  });
-
-  cy.get(groupsSelector.foldersCreateCheck).then(($el) => {
-    if ($el.is(":checked")) {
-      cy.get(groupsSelector.foldersCreateCheck).uncheck();
-    }
-  });
-
-  cy.get(groupsSelector.workspaceVarCheckbox).then(($el) => {
-    if ($el.is(":checked")) {
-      cy.get(groupsSelector.workspaceVarCheckbox).uncheck();
-    }
-  });
+  deleteFolder: (folderName) => {
+    deleteFolder(folderName);
+  },
 };
 
-export const updateWorkspaceName = (email) => {
-  let workspaceNametimeStamp, workspaceId, userId, defuserId, defWorkspaceId;
+const constantsOperations = {
+  createConstant: (name, value) => {
+    cy.get(commonSelectors.workspaceConstantsIcon).click();
+    addNewconstants(name, value);
+  },
 
-  cy.task("updateId", {
-    dbconfig: Cypress.env("app_db"),
-    sql: `select id from users where email='${email}';`,
-  }).then((resp) => {
-    userId = resp.rows[0].id;
+  deleteConstant: (name) => {
+    cy.get(workspaceConstantsSelectors.constDeleteButton(name)).click();
+    cy.get(commonSelectors.yesButton).click();
+  },
+};
 
-    cy.task("updateId", {
-      dbconfig: Cypress.env("app_db"),
-      sql: "select id from users where email='dev@tooljet.io';",
-    }).then((resp) => {
-      defuserId = resp.rows[0].id;
+// Permission verification helpers
+const verifyPermissions = {
+  checkAppPermissions: (shouldExist = true) => {
+    const assertion = shouldExist ? "exist" : "not.exist";
+    cy.get(commonSelectors.appCreateButton).should(assertion);
+  },
 
-      cy.task("updateId", {
-        dbconfig: Cypress.env("app_db"),
-        sql: `SELECT organization_id FROM organization_users WHERE user_id = '${defuserId}' `,
-      }).then((resp) => {
-        defWorkspaceId = resp.rows[0].organization_id;
-        cy.task("updateId", {
-          dbconfig: Cypress.env("app_db"),
-          sql: `SELECT organization_id FROM organization_users WHERE user_id = '${userId}'AND organization_id <> '${defWorkspaceId}';`,
-        }).then((resp) => {
-          workspaceId = resp.rows[0].organization_id;
+  checkFolderPermissions: (shouldExist = true) => {
+    const assertion = shouldExist ? "exist" : "not.exist";
+    cy.get(commonSelectors.createNewFolderButton).should(assertion);
+  },
 
-          cy.task("updateId", {
-            dbconfig: Cypress.env("app_db"),
-            sql: `select name from organizations where id='${workspaceId}';`,
-          }).then((resp) => {
-            workspaceNametimeStamp = resp.rows[0].name;
-            cy.get(commonSelectors.workspaceName).click();
-            cy.contains(`${workspaceNametimeStamp}`).should("exist");
+  checkConstantsPermissions: (shouldExist = true) => {
+    const assertion = shouldExist ? "exist" : "not.exist";
+    cy.get(commonSelectors.workspaceConstantsIcon).should(assertion);
+  },
 
-            cy.task("updateId", {
-              dbconfig: Cypress.env("app_db"),
-              sql: `update organizations set name ='${email}' where name='${workspaceNametimeStamp}';`,
-            });
-          });
-        });
-      });
-    });
-  });
+  checkSettingsAccess: (shouldExist = true) => {
+    cy.get(commonSelectors.settingsIcon).click();
+    cy.get(commonSelectors.workspaceSettings).should(
+      shouldExist ? "exist" : "not.exist"
+    );
+  },
+};
+
+// Helper function to perform all verifications
+const verifyAllPermissions = (shouldHaveAccess = true) => {
+  verifyPermissions.checkAppPermissions(shouldHaveAccess);
+  verifyPermissions.checkFolderPermissions(shouldHaveAccess);
+  verifyPermissions.checkConstantsPermissions(shouldHaveAccess);
+  verifyPermissions.checkSettingsAccess(shouldHaveAccess);
+};
+
+// Role-based permission sets
+const rolePermissions = {
+  admin: {
+    name: "Admin",
+    hasFullAccess: true,
+    canManageWorkspace: true,
+    canManageUsers: true,
+  },
+  builder: {
+    name: "Builder",
+    hasFullAccess: true,
+    canManageWorkspace: false,
+    canManageUsers: false,
+  },
+  endUser: {
+    name: "End User",
+    hasFullAccess: false,
+    canManageWorkspace: false,
+    canManageUsers: false,
+  },
+};
+
+export {
+  appOperations,
+  folderOperations,
+  constantsOperations,
+  verifyPermissions,
+  verifyAllPermissions,
+  rolePermissions,
 };

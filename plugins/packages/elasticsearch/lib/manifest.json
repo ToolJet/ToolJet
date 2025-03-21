@@ -55,7 +55,7 @@
     "ssl_enabled": {
       "value": true
     },
-    "ssl_certificate":{
+    "ssl_certificate": {
       "value": "none"
     }
   },
@@ -79,7 +79,7 @@
           "name": "None"
         }
       ],
-      "commonFields":{
+      "commonFields": {
         "host": {
           "label": "Host",
           "key": "host",
@@ -112,7 +112,7 @@
         }
       }
     },
-    "ca_certificate":{
+    "ca_certificate": {
       "ca_cert": {
         "label": "CA Cert",
         "key": "ca_cert",
@@ -121,7 +121,7 @@
         "description": "Enter ca certificate"
       }
     },
-    "client_certificate":{
+    "client_certificate": {
       "client_key": {
         "label": "Client Key",
         "key": "client_key",

@@ -262,8 +262,11 @@ describe("App creation", () => {
 
         cy.get(importSelectors.dropDownMenu).click();
         cy.get(commonSelectors.chooseFromTemplateButton).click();
-        cy.get(".d-flex > .tj-primary-btn").click();
+        cy.clearAndType('[data-cy="search-input-field"]', "Admin portal");
+        cy.get('[data-cy="admin-portal-list-item"]').click();
+        cy.get('[data-cy="create-application-from-template-button"]').click()
 
+        cy.wait(1000);
         cy.get(commonSelectors.CreateAppFromTemplateButton).verifyVisibleElement(
             "have.text",
             "Create new app from template"
@@ -274,13 +277,13 @@ describe("App creation", () => {
         );
         cy.get(commonSelectors.appNameInput).verifyVisibleElement(
             "have.value",
-            "Admin Panel (ToolJet Database)"
+            "Admin portal"
         );
         cy.get(commonSelectors.appNameInfoLabel).verifyVisibleElement(
             "have.text",
             commonText.appNameInfoLabel
         );
-        cy.get(commonSelectors.cancelButton).verifyVisibleElement(
+        cy.get(commonSelectors.cancelButton, { timoeut: 2000 }).verifyVisibleElement(
             "have.text",
             commonText.cancelButton
         );

@@ -1,0 +1,16 @@
+export enum FEATURE_KEY {
+  PROXY_POSTGREST = 'proxy_postgrest',
+  VIEW_TABLES = 'view_tables',
+  VIEW_TABLE = 'view_table',
+  CREATE_TABLE = 'create_table',
+  RENAME_TABLE = 'rename_table',
+  DROP_TABLE = 'drop_table',
+  ADD_COLUMN = 'add_column',
+  DROP_COLUMN = 'drop_column',
+  BULK_UPLOAD = 'bulk_upload',
+  JOIN_TABLES = 'join_tables',
+  EDIT_COLUMN = 'edit_column',
+  ADD_FOREIGN_KEY = 'add_foreign_key',
+  UPDATE_FOREIGN_KEY = 'update_foreign_key',
+  DELETE_FOREIGN_KEY = 'delete_foreign_key',
+}

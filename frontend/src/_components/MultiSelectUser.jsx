@@ -13,15 +13,18 @@ function MultiSelectUser({
   isLoading,
   className,
   searchLabel,
+  options,
+  allowCustomRender = true,
 }) {
   const [searchText, setSearchText] = useState('');
   const [filteredOptions, setOptions] = useState([]);
   const listOfOptions = useRef([]);
 
   useEffect(() => {
-    setOptions(filterOptions(listOfOptions.current));
+    // setOptions(filterOptions(listOfOptions.current));
+    options ? setOptions(filterOptions(options)) : setOptions(filterOptions(listOfOptions.current));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedValues, listOfOptions.current]);
+  }, [JSON.stringify(selectedValues), listOfOptions.current, options?.length]);
 
   const searchFunction = useCallback(
     async (query) => {
@@ -35,14 +38,19 @@ function MultiSelectUser({
   );
 
   function renderCustom(props, option) {
+    const valuePresent = selectedValues.some((item) => item.value === option.value);
     return (
       <div className={`item-renderer`}>
         <div>
           <input
             type="checkbox"
-            // eslint-disable-next-line no-unused-vars
+            checked={valuePresent}
             onClick={(e) => {
-              onSelect([...selectedValues, option]);
+              if (!valuePresent) {
+                onSelect([...selectedValues, option]);
+              } else {
+                onSelect([...selectedValues.filter((item) => item.value !== option.value)]);
+              }
             }}
           />
           <div className="d-flex flex-column" style={{ marginLeft: '12px' }}>
@@ -67,7 +75,7 @@ function MultiSelectUser({
     [selectedValues]
   );
   return (
-    <div className="tj-ms tj-ms-count">
+    <div className="tj-ms tj-ms-count" style={{ width: '100%', paddingRight: '0px' }}>
       <FilterPreview text={`${selectedValues.length} selected`} onClose={selectedValues.length ? onReset : undefined} />
       <Select
         className={className}
@@ -76,7 +84,7 @@ function MultiSelectUser({
         closeOnSelect={false}
         search={true}
         multiple
-        value={{ name: '' }}
+        value={selectedValues}
         onChange={(id, value) => onSelect([...selectedValues, ...value])}
         placeholder={placeholder}
         debounce={onSearch ? 300 : undefined}
@@ -92,7 +100,8 @@ function MultiSelectUser({
         }
         disabled={isLoading}
         fuzzySearch
-        renderOption={renderCustom}
+        renderOption={allowCustomRender && renderCustom}
+        customWrap={true}
       />
     </div>
   );

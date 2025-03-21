@@ -11,6 +11,7 @@ const OAuth = ({
   access_token_custom_headers,
   client_id,
   client_secret,
+  audience,
   client_auth,
   custom_auth_params,
   custom_query_params,
@@ -26,6 +27,7 @@ const OAuth = ({
   multiple_auth_enabled,
   optionchanged,
   workspaceConstants,
+  isDisabled,
   options,
   optionsChanged,
   selectedDataSource,
@@ -58,6 +60,7 @@ const OAuth = ({
         onChange={(value) => optionchanged('auth_type', value)}
         width={'100%'}
         useMenuPortal={false}
+        isDisabled={isDisabled}
       />
       <ElementToRender
         add_token_to={add_token_to}
@@ -70,6 +73,7 @@ const OAuth = ({
         custom_auth_params={custom_auth_params}
         custom_query_params={custom_query_params}
         client_id={client_id}
+        audience={audience}
         client_secret={client_secret}
         client_auth={client_auth}
         multiple_auth_enabled={multiple_auth_enabled}

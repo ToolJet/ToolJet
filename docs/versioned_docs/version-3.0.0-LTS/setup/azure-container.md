@@ -6,7 +6,13 @@ title: Azure container apps
 # Deploying ToolJet on Azure container apps
 
 :::info
-Please note that you need to set up a PostgreSQL database manually to be used by ToolJet. Additionally, you must set up a Redis service through Azure Cache for Redis.
+Please note that you need to set up a PostgreSQL database manually to be used by ToolJet. 
+
+ToolJet comes with a built-in Redis setup, which is used for multiplayer editing and background jobs. However, for multi-service setup, it's recommended to use an external Redis instance.
+:::
+
+:::warning
+To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`.
 :::
 
 ## Deploying ToolJet application
@@ -47,17 +53,8 @@ Please note that you need to set up a PostgreSQL database manually to be used by
    - **SECRET_KEY_BASE** 
    - **LOCKBOX_KEY**
 
-   For redis connection ensure below environment variables are added:
-   - **REDIS_HOST**
-   - **REDIS_PORT**
-   - **REDIS_USER**
-
    If using Azure Database for Postgresql-Flexible server, add:
    - **PGSSLMODE = require**
-
-:::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`.
-:::
 
    <div style={{textAlign: 'center'}}>
  
@@ -88,44 +85,6 @@ To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway
  </div>
 
 You can access ToolJet via the application URL provided in the overview tab.
-
-## Redis Setup
-
-[ToolJet](https://hub.docker.com/repository/docker/tooljet/tooljet/general) requires Redis for multiplayer editing and background jobs.
-
-If you already have Redis configured, you can use your existing setup. Otherwise, you can create a new Redis service by following these instructions.
-
-**Create a Redis Instance**
-
-- Create a Redis instance with the minimum required specifications.
-
-<div style={{textAlign: 'center'}}>
- <img className="screenshot-full" src="/img/setup/azure-container/redis-setup/1.png" alt="Step one of redis setup" />
-</div>
- 
- **Choose Network Settings**
-
-- Select your preferred network settings based on your setup. 
-
-<div style={{textAlign: 'center'}}>
- <img className="screenshot-full" src="/img/setup/azure-container/redis-setup/2.png" alt="Step two of redis setup" />
-</div>
-
-**Configure TLS Port**
-
-- Choose your preferred settings for the TLS port.
-
-<div style={{textAlign: 'center'}}>
- <img className="screenshot-full" src="/img/setup/azure-container/redis-setup/3.png" alt="Step three of redis setup" />
-</div>
-
-**Review and Create**
-
-- Click on "Review + create" and wait for the template to be verified and passed.
-
-<div style={{textAlign: 'center'}}>
- <img className="screenshot-full" src="/img/setup/azure-container/redis-setup/4.png" alt="Step four of redis setup" />
-</div>
 
 ## Upgrading to the Latest LTS Version
 

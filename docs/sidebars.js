@@ -73,7 +73,6 @@ const sidebars = {
         'setup/kubernetes-eks',
         'setup/azure-container',
         'setup/google-cloud-run',
-        'setup/client',
         'setup/env-vars',
         'setup/http-proxy',
         'setup/tooljet-subpath',

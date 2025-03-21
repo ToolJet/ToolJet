@@ -24,6 +24,10 @@ class ResetPasswordComponent extends React.Component {
       showPassword: false,
       password_confirmation: '',
       showConfirmPassword: false,
+      helperText: 'Password should be at least 5 characters',
+      validPassword: true,
+      validConfirmPassword: true,
+      validConfirmPasswordHelperText: "Passwords don't match, please re-enter",
     };
   }
   darkMode = localStorage.getItem('darkMode') === 'true';
@@ -31,11 +35,59 @@ class ResetPasswordComponent extends React.Component {
   handleOnCheck = () => {
     this.setState((prev) => ({ showPassword: !prev.showPassword }));
   };
+
+  handlePasswordInput = (event) => {
+    const input = event.target.value;
+    this.setState({
+      [event.target.name]: input,
+    });
+    if (input.length > 100) {
+      this.setState({
+        helperText: 'Password should be Max 100 characters',
+        validPassword: false,
+      });
+    } else if (input.length < 5) {
+      this.setState({
+        helperText: 'Password should be at least 5 characters',
+        validPassword: false,
+      });
+    } else {
+      this.setState({
+        helperText: 'Password should be at least 5 characters',
+        validPassword: true,
+      });
+    }
+
+    if (this.state.password_confirmation !== input) {
+      this.setState({
+        validConfirmPassword: false,
+      });
+    } else {
+      this.setState({
+        validConfirmPassword: true,
+      });
+    }
+  };
   handleOnConfirmCheck = () => {
     this.setState((prev) => ({ showConfirmPassword: !prev.showConfirmPassword }));
   };
   handleChange = (event) => {
-    this.setState({ [event.target.name]: event.target.value?.trim() });
+    const { name, value } = event.target;
+    const trimmedValue = value.trim();
+
+    this.setState((prevState) => {
+      const newState = { [name]: trimmedValue };
+
+      if (name === 'password_confirmation' && prevState.validPassword) {
+        if (prevState.password !== trimmedValue) {
+          newState.validConfirmPassword = false;
+        } else {
+          newState.validConfirmPassword = true;
+        }
+      }
+
+      return newState;
+    });
   };
 
   handleClick = (event) => {
@@ -64,8 +116,16 @@ class ResetPasswordComponent extends React.Component {
     }
   };
   render() {
-    const { isLoading, password, password_confirmation, showConfirmPassword, showPassword, showResponseScreen } =
-      this.state;
+    const {
+      isLoading,
+      password,
+      password_confirmation,
+      showConfirmPassword,
+      showPassword,
+      showResponseScreen,
+      validPassword,
+      helperText,
+    } = this.state;
 
     return (
       <div className="common-auth-section-whole-wrapper page">
@@ -88,7 +148,7 @@ class ResetPasswordComponent extends React.Component {
                       </label>
                       <div className="login-password">
                         <input
-                          onChange={this.handleChange}
+                          onChange={this.handlePasswordInput}
                           name="password"
                           type={showPassword ? 'text' : 'password'}
                           placeholder="Password"
@@ -128,8 +188,12 @@ class ResetPasswordComponent extends React.Component {
                             />
                           )}
                         </div>
-                        <span className="tj-input-helper-text" data-cy="password-helper-text">
-                          Password must be at least 5 characters
+                        <span
+                          className="tj-input-helper-text"
+                          style={{ color: !validPassword ? 'red' : undefined }}
+                          data-cy="password-helper-text"
+                        >
+                          {helperText}
                         </span>
 
                         <span></span>
@@ -180,8 +244,14 @@ class ResetPasswordComponent extends React.Component {
                             />
                           )}
                         </div>
-                        <span className="tj-input-helper-text" data-cy="password-helper-text">
-                          Password should be at least 5 characters
+                        <span
+                          className="tj-input-helper-text"
+                          style={{ color: !this.state.validConfirmPassword ? 'red' : undefined }}
+                          data-cy="password-helper-text"
+                        >
+                          {this.state.validConfirmPassword === false
+                            ? this.state.validConfirmPasswordHelperText
+                            : helperText}
                         </span>
 
                         <span></span>
@@ -193,7 +263,9 @@ class ResetPasswordComponent extends React.Component {
                           password?.length < 5 ||
                           password_confirmation?.length < 5 ||
                           isLoading ||
-                          password.length !== password_confirmation.length
+                          password.length !== password_confirmation.length ||
+                          !validPassword ||
+                          password !== password_confirmation
                         }
                         onClick={this.handleClick}
                         className="reset-password-btn"

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import _, { isEmpty } from 'lodash';
 import Select from '@/_ui/Select';
-import CodeHinter from '@/Editor/CodeEditor';
+import CodeHinter from '@/AppBuilder/CodeEditor';
 import { v4 as uuidv4 } from 'uuid';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 

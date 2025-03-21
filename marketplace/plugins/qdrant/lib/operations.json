@@ -3,7 +3,9 @@
   "title": "Qdrant Datasource",
   "description": "A schema defining Qdrant datasource",
   "type": "api",
-  "defaults": {},
+  "defaults": {
+    "operation": "get_collection_info"
+  },
   "properties": {
     "operation": {
       "label": "Operation",

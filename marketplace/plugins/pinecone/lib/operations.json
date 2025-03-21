@@ -5,27 +5,40 @@
   "type": "database",
   "defaults": {},
   "properties": {
-    "index": {
-      "label": "Index",
-      "key": "index",
-      "type": "text",
-      "description": "Enter the index name (e.g., example-index)",
-      "placeholder": "example-index",
-      "height": "36px"
-    },
     "operation": {
       "label": "Operation",
       "key": "operation",
       "type": "dropdown-component-flip",
       "description": "Select an operation",
       "list": [
-        { "value": "get_index_stats", "name": "Get Index Stats" },
-        { "value": "list_vector_ids", "name": "List Vector IDs" },
-        { "value": "fetch_vectors", "name": "Fetch Vectors" },
-        { "value": "upsert_vectors", "name": "Upsert Vectors" },
-        { "value": "update_vector", "name": "Update a Vector" },
-        { "value": "delete_vectors", "name": "Delete Vectors" },
-        { "value": "query_vector", "name": "Query Vectors" }
+        {
+          "value": "get_index_stats",
+          "name": "Get Index Stats"
+        },
+        {
+          "value": "list_vector_ids",
+          "name": "List Vector IDs"
+        },
+        {
+          "value": "fetch_vectors",
+          "name": "Fetch Vectors"
+        },
+        {
+          "value": "upsert_vectors",
+          "name": "Upsert Vectors"
+        },
+        {
+          "value": "update_vector",
+          "name": "Update a Vector"
+        },
+        {
+          "value": "delete_vectors",
+          "name": "Delete Vectors"
+        },
+        {
+          "value": "query_vector",
+          "name": "Query Vectors"
+        }
       ]
     },
     "get_index_stats": {
@@ -200,13 +213,13 @@
         "height": "36px"
       },
       "delete_all": {
-          "label": "Delete All",
-          "key": "delete_all",
-          "type": "codehinter",
-          "description": "Set true to delete all vectors",
-          "placeholder": "true (false by default)",
-          "height":"36px"
-        },
+        "label": "Delete All",
+        "key": "delete_all",
+        "type": "codehinter",
+        "description": "Set true to delete all vectors",
+        "placeholder": "true (false by default)",
+        "height": "36px"
+      },
       "namespace": {
         "label": "Namespace",
         "key": "namespace",

@@ -1,5 +1,5 @@
 import React from 'react';
-function Label({ label, width, labelRef, color, defaultAlignment, direction, auto, isMandatory, _width }) {
+function Label({ label, width, labelRef, color, defaultAlignment, direction, auto, isMandatory, _width, top }) {
   return (
     <>
       {label && (width > 0 || auto) && (
@@ -13,12 +13,13 @@ function Label({ label, width, labelRef, color, defaultAlignment, direction, aut
             justifyContent: direction == 'right' ? 'flex-end' : 'flex-start',
             fontSize: '12px',
             height: defaultAlignment === 'top' && '20px',
+            overflow: 'hidden',
           }}
         >
           <p
             style={{
               position: 'relative',
-              color: color !== '#1B1F24' ? color : 'var(--text-primary)',
+              color: !['#1B1F24', '#000', '#11181C', '#000000ff'].includes(color) ? color : 'var(--text-primary)',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
@@ -31,6 +32,7 @@ function Label({ label, width, labelRef, color, defaultAlignment, direction, aut
                   ? '12px'
                   : '',
               paddingLeft: label?.length > 0 && defaultAlignment === 'side' && direction != 'left' ? '12px' : '',
+              ...(top && { top }),
             }}
           >
             {label}

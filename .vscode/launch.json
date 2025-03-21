@@ -11,7 +11,21 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Server",
+            "name": "Server (Dev Mode)",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": [
+                "run",
+                "start:dev"
+            ],
+            "sourceMaps": true,
+            "cwd": "${workspaceRoot}/server",
+            "console": "integratedTerminal",
+            "skipFiles": ["<node_internals>/**"]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Server (Original)",
             "args": [
                 "${workspaceFolder}/server/src/main.ts"
             ],
@@ -49,7 +63,7 @@
                 "remoteRoot": "/app/server",
                 "sourceMaps": true,
                 "skipFiles": ["<node_internals>/**"]
-            },
+            }
         }
     ]
 }

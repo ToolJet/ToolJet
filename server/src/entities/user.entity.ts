@@ -18,9 +18,16 @@ import { App } from './app.entity';
 import { GroupPermission } from './group_permission.entity';
 const bcrypt = require('bcrypt');
 import { OrganizationUser } from './organization_user.entity';
-import { UserGroupPermission } from './user_group_permission.entity';
 import { File } from './file.entity';
 import { Organization } from './organization.entity';
+import { UserDetails } from './user_details.entity';
+import { GroupUsers } from './group_users.entity';
+import { UserGroupPermission } from './user_group_permission.entity';
+import { GroupPermissions } from './group_permissions.entity';
+import { OnboardingDetails } from './onboarding_details.entity';
+import { OnboardingStatus } from '@modules/onboarding/constants';
+import { AiConversation } from './ai_conversation.entity';
+import { AiResponseVote } from './ai_response_vote.entity';
 
 @Entity({ name: 'users' })
 export class User extends BaseEntity {
@@ -60,10 +67,28 @@ export class User extends BaseEntity {
     type: 'enum',
     enumName: 'source',
     name: 'source',
-    enum: ['signup', 'invite', 'google', 'git', 'workspace_signup'],
+    enum: ['signup', 'invite', 'google', 'git', 'ldap', 'saml', 'workspace_signup'],
     default: 'invite',
   })
   source: string;
+
+  @Column({
+    type: 'enum',
+    enumName: 'onboarding_status',
+    name: 'onboarding_status',
+    enum: OnboardingStatus,
+    default: OnboardingStatus.NOT_STARTED,
+  })
+  onboardingStatus: OnboardingStatus;
+
+  @Column({
+    type: 'enum',
+    enumName: 'user_type',
+    name: 'user_type',
+    enum: ['instance', 'workspace'],
+    default: 'workspace',
+  })
+  userType: string;
 
   @Column({ name: 'avatar_id', nullable: true, default: null })
   avatarId?: string;
@@ -111,6 +136,7 @@ export class User extends BaseEntity {
   })
   avatar?: File;
 
+  //Depreciated
   @ManyToMany(() => GroupPermission)
   @JoinTable({
     name: 'user_group_permissions',
@@ -123,11 +149,39 @@ export class User extends BaseEntity {
   })
   groupPermissions: GroupPermission[];
 
+  @ManyToMany(() => GroupPermissions)
+  @JoinTable({
+    name: 'group_users',
+    joinColumn: {
+      name: 'user_id',
+    },
+    inverseJoinColumn: {
+      name: 'group_id',
+    },
+  })
+  userPermissions: GroupPermissions[];
+
+  @OneToMany(() => GroupUsers, (groupUsers) => groupUsers.user, { onDelete: 'CASCADE' })
+  userGroups: GroupUsers[];
+
+  //Depreciated
   @OneToMany(() => UserGroupPermission, (userGroupPermission) => userGroupPermission.user, { onDelete: 'CASCADE' })
   userGroupPermissions: UserGroupPermission[];
 
   @OneToMany(() => App, (app) => app.user)
   apps: App[];
+
+  @OneToMany(() => UserDetails, (userDetails) => userDetails.user)
+  userDetails: UserDetails[];
+
+  @OneToOne(() => OnboardingDetails, (onboardingDetails) => onboardingDetails.user, { lazy: true })
+  onboardingDetails: Promise<OnboardingDetails>;
+
+  @OneToMany(() => AiConversation, (aiConversation) => aiConversation.user, { onDelete: 'CASCADE' })
+  aiConversations: AiConversation[];
+
+  @OneToMany(() => AiResponseVote, (aiResponseVote) => aiResponseVote.user, { onDelete: 'CASCADE' })
+  aiResponseVotes: AiResponseVote[];
 
   organizationId: string;
   invitedOrganizationId: string;

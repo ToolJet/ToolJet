@@ -1,0 +1,107 @@
+.edit-role-modal {
+    font-family: 'IBM Plex Sans';
+
+    .modal-dialog {
+        width: 320px;
+    }
+
+    .modal-content {
+        background: linear-gradient(0deg, #FFFFFF, #FFFFFF),
+            linear-gradient(0deg, #DFE3E6, #DFE3E6);
+    }
+
+    .modal-header {
+        justify-content: center !important;
+        flex-direction: column;
+        padding: 30px 32px 20px 32px;
+        border: none;
+
+        .remove-icon-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-right: 10px;
+
+            .close-btn {
+
+                width: 20px;
+                margin: 5px 5px 5px 5px;
+                height: 20px;
+                padding: 0 0;
+                background: none !important;
+                background-color: none !important;
+                box-shadow: none;
+            }
+        }
+
+        .icon-class {
+            display: flex;
+            /* Enable flexbox */
+            justify-content: center;
+            /* Center items horizontally */
+            align-items: center;
+            /* Center items vertically */
+            justify-content: center;
+            width: 64px;
+            height: 64px;
+            background-color: var(--tomato3);
+            border-radius: 6px;
+        }
+
+        .header-text {
+            font-style: normal;
+            font-weight: 600;
+            font-size: 16px;
+            text-align: center;
+            // line-height: 36px;
+            margin: 12px 0 5px 0;
+        }
+
+        p {
+            font-style: normal;
+            font-weight: 400;
+            font-size: 14px;
+            color: #687076;
+            text-align: Center;
+            margin-bottom: 0px;
+        }
+    }
+
+    .modal-body {
+        border: none;
+        padding: 12px 12px 22px 27px;
+
+        .item-list {
+            display: flex;
+            gap: 5px;
+            flex-direction: column;
+            max-height: 100px;
+            /* Set a fixed height or max-height */
+            overflow-y: scroll;
+            /* Enable vertical scrolling */
+        }
+    }
+}
+
+.edit-role-modal.dark-mode {
+
+    .modal-footer,
+    .modal-header {
+        border-color: #232e3c !important;
+
+        p {
+            color: var(--base) !important;
+        }
+    }
+
+    .modal-body,
+    .modal-footer,
+    .modal-header,
+    .modal-content {
+        color: white;
+        background-color: #2b394a;
+    }
+
+    .modal-content {
+        border: none;
+    }
+}

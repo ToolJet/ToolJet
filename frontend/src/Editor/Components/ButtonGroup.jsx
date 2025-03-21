@@ -34,6 +34,12 @@ export const ButtonGroup = function Button({
     display: visibility ? '' : 'none',
   };
 
+  const disabledStyles = {
+    opacity: 0.5,
+    pointerEvents: 'none',
+    cursor: 'not-allowed',
+  };
+
   const [defaultActive, setDefaultActive] = useState(defaultSelected);
   const [data, setData] = useState(values);
 
@@ -62,7 +68,7 @@ export const ButtonGroup = function Button({
 
   const buttonClick = (index) => {
     if (defaultActive?.includes(values[index]) && multiSelection) {
-      const copyDefaultActive = defaultActive;
+      const copyDefaultActive = [...defaultActive];
       copyDefaultActive?.splice(copyDefaultActive?.indexOf(values[index]), 1);
       setDefaultActive(copyDefaultActive);
       setExposedVariable('selected', copyDefaultActive.join(','));
@@ -100,6 +106,7 @@ export const ButtonGroup = function Button({
               color: defaultActive?.includes(values[index]) ? selectedTextColor : textColor,
               transition: 'all .1s ease',
               boxShadow,
+              ...(disabledState && disabledStyles),
             }}
             key={index}
             disabled={disabledState}

@@ -21,8 +21,11 @@ const config: Config.InitialOptions = {
     '@services/(.*)': '<rootDir>/src/services/$1',
     '@entities/(.*)': '<rootDir>/src/entities/$1',
     '@controllers/(.*)': '<rootDir>/src/controllers/$1',
+    '@modules/(.*)': '<rootDir>/src/modules/$1',
     '@ee/(.*)': '<rootDir>/ee/$1',
+    '@apps/(.*)': '<rootDir>/ee/apps/$1',
   },
+  runner: 'groups',
   testTimeout: 30000,
 };
 

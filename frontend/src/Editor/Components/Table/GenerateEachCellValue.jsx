@@ -4,7 +4,6 @@ import { validateWidget } from '@/_helpers/utils';
 import { useMounted } from '@/_hooks/use-mount';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import DOMPurify from 'dompurify';
-import NullRenderer from './NullRenderer/NullRenderer';
 
 export default function GenerateEachCellValue({
   cellValue,
@@ -20,8 +19,6 @@ export default function GenerateEachCellValue({
   currentState,
   darkMode,
   cellWidth,
-  // isCellValueChanged,
-  // setIsCellValueChanged,
 }) {
   const mounted = useMounted();
   const updateCellValue = useRef();
@@ -49,7 +46,6 @@ export default function GenerateEachCellValue({
       ref?.current?.clientHeight < ref?.current?.children[0]?.offsetHeight);
 
   const handleCellClick = () => {
-    // setIsNullCellClicked(true);
     if (isEditable && columnTypeAllowToRenderMarkElement.includes(columnType)) {
       setHighlighterCells(false);
     }
@@ -121,7 +117,7 @@ export default function GenerateEachCellValue({
     }
   }
   useEffect(() => {
-    if (mounted && _.isEmpty(rowChangeSet)) {
+    if (_.isEmpty(rowChangeSet)) {
       setHighlighterCells(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -148,12 +144,18 @@ export default function GenerateEachCellValue({
   let htmlElement = cellValue;
   if (cellValue?.toString()?.toLowerCase().includes(globalFilter?.toLowerCase())) {
     if (globalFilter) {
+      // Function to escape special characters
+      const escapeRegExp = (string) => {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+      };
       var normReq = globalFilter
         .toLowerCase()
         .replace(/\s+/g, ' ')
         .trim()
         .split(' ')
-        .sort((a, b) => b.length - a.length);
+        .sort((a, b) => b.length - a.length)
+        .map(escapeRegExp); // Escape special characters in each term
+
       htmlElement = cellValue
         .toString()
         .replace(new RegExp(`(${normReq.join('|')})`, 'gi'), (match) => `<mark>${match}</mark>`);
@@ -199,42 +201,6 @@ export default function GenerateEachCellValue({
       </div>
     );
   };
-
-  // const _renderNullCell = () => {
-  //   if (isEditable) {
-  //     if (!isNullCellClicked && !updateCellValue.current) {
-  //       return <NullRenderer darkMode={darkMode} />;
-  //     } else return cellRender;
-  //   } else {
-  //     return <NullRenderer darkMode={darkMode} />;
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   const handleClickOutside = (event) => {
-  //     if (cellRef.current && !cellRef.current.contains(event.target) && !isCellValueChanged) {
-  //       // Adding setTimeout to avoid this event to be executed before input's blur event
-  //       setTimeout(() => {
-  //         setIsNullCellClicked(false);
-  //         setIsCellValueChanged(false);
-  //       }, 100);
-  //     }
-  //   };
-  //   document.addEventListener('mousedown', handleClickOutside);
-  //   return () => {
-  //     document.removeEventListener('mousedown', handleClickOutside);
-  //   };
-  // }, [isCellValueChanged, setIsCellValueChanged]);
-
-  // useEffect(() => {
-  //   if (isNullCellClicked) {
-  //     const inputElement = document.getElementById(`table-input-${cell.column.id}-${cell.row.id}`);
-  //     if (inputElement) {
-  //       inputElement.focus();
-  //     }
-  //   }
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [isNullCellClicked]);
 
   return (
     <div

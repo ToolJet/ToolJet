@@ -1,20 +1,20 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { appService, appsService, authenticationService } from '@/_services';
 import Modal from 'react-bootstrap/Modal';
 import { toast } from 'react-hot-toast';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-import Skeleton from 'react-loading-skeleton';
 import _, { debounce } from 'lodash';
+import { validateName } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { getPrivateRoute, replaceEditorURL, getHostURL } from '@/_helpers/routes';
-import { validateName } from '@/_helpers/utils';
+import { ToolTip } from '@/_components/ToolTip';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import cx from 'classnames';
-import { ToolTip } from '@/_components/ToolTip';
 import { TOOLTIP_MESSAGES } from '@/_helpers/constants';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { retrieveWhiteLabelText } from '@white-label/whiteLabelling';
+import InfoIcon from '@assets/images/icons/info.svg';
 
 class ManageAppUsersComponent extends React.Component {
   constructor(props) {
@@ -32,6 +32,7 @@ class ManageAppUsersComponent extends React.Component {
         value: null,
         error: '',
       },
+      isHovered: false,
       isSlugUpdated: false,
     };
   }
@@ -85,7 +86,6 @@ class ManageAppUsersComponent extends React.Component {
         toast.error(error);
       });
   };
-
   toggleAppVisibility = () => {
     const newState = !this.props.isPublic;
     this.setState({
@@ -170,7 +170,13 @@ class ManageAppUsersComponent extends React.Component {
       });
     }
   };
+  handleMouseEnter = () => {
+    this.setState({ isHovered: true });
+  };
 
+  handleMouseLeave = () => {
+    this.setState({ isHovered: false });
+  };
   render() {
     const { appId, isSlugVerificationInProgress, newSlug, isSlugUpdated } = this.state;
 
@@ -178,66 +184,104 @@ class ManageAppUsersComponent extends React.Component {
     const shareableLink = appLink + (this.props.slug || appId);
     const slugButtonClass = !_.isEmpty(newSlug.error) ? 'is-invalid' : 'is-valid';
     const embeddableLink = `<iframe width="560" height="315" src="${appLink}${this.props.slug}" title="${this.whiteLabelText} app - ${this.props.slug}" frameborder="0" allowfullscreen></iframe>`;
-    const shouldWeDisableShareModal = !this.props.isVersionReleased;
+    const { isHovered } = this.state.isHovered;
 
     return (
-      <ToolTip
-        message={TOOLTIP_MESSAGES.SHARE_URL_UNAVAILABLE}
-        placement={!this.props.isVersionReleased ? 'bottom' : 'left'}
-        show={shouldWeDisableShareModal}
-      >
-        <div
-          title={!shouldWeDisableShareModal ? 'Share' : ''}
-          className="manage-app-users editor-header-icon tj-secondary-btn"
-          data-cy="share-button-link"
+      <div title={'Share'} className="manage-app-users" data-cy="share-button-link">
+        <span
+          className="manage-app-users tj-secondary-btn editor-header-icon cursor-pointer"
+          onClick={() => {
+            this.validateThePreExistingSlugs();
+            this.setState({ showModal: true });
+          }}
         >
           <span
             className={cx('d-flex', {
-              'share-disabled': shouldWeDisableShareModal,
+              'share-disabled': false,
             })}
-            onClick={() => {
-              this.validateThePreExistingSlugs();
-              !shouldWeDisableShareModal && this.setState({ showModal: true });
-            }}
           >
             <SolidIcon name="share" width="14" className="cursor-pointer" fill="#3E63DD" />
           </span>
-          <Modal
-            show={this.state.showModal}
-            size="lg"
-            backdrop="static"
-            centered={true}
-            keyboard={true}
-            animation={false}
-            onEscapeKeyDown={this.hideModal}
-            className={`app-sharing-modal animation-fade ${this.props.darkMode ? 'dark-theme' : ''}`}
-            contentClassName={this.props.darkMode ? 'dark-theme' : ''}
-          >
-            <Modal.Header>
-              <Modal.Title data-cy="modal-header">{this.props.t('editor.share', 'Share')}</Modal.Title>
-              <span onClick={this.hideModal} data-cy="modal-close-button">
-                <SolidIcon name="remove" className="cursor-pointer" aria-label="Close" />
-              </span>
-            </Modal.Header>
-            <Modal.Body>
-              {
-                <div class="shareable-link-container">
-                  <div className="make-public mb-3">
-                    <div className="form-check form-switch d-flex align-items-center">
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        onClick={this.toggleAppVisibility}
-                        checked={this?.props?.isPublic}
-                        disabled={this.state.ischangingVisibility}
-                        data-cy="make-public-app-toggle"
-                      />
-                      <span className="form-check-label field-name" data-cy="make-public-app-label">
-                        {this.props.t('editor.shareModal.makeApplicationPublic', 'Make application public')}
-                      </span>
-                    </div>
-                  </div>
+        </span>
+        <Modal
+          show={this.state.showModal}
+          size="lg"
+          backdrop="static"
+          centered={true}
+          keyboard={true}
+          animation={false}
+          onEscapeKeyDown={this.hideModal}
+          className={`app-sharing-modal animation-fade ${this.props.darkMode ? 'dark-theme' : ''}`}
+          contentClassName={this.props.darkMode ? 'dark-theme' : ''}
+        >
+          <Modal.Header>
+            <Modal.Title data-cy="modal-header">{this.props.t('editor.share', 'Share')}</Modal.Title>
+            <span onClick={this.hideModal} data-cy="modal-close-button">
+              <SolidIcon name="remove" className="cursor-pointer" aria-label="Close" />
+            </span>
+          </Modal.Header>
+          <Modal.Body>
+            {
+              <div class="shareable-link-container">
+                <div className="make-public mb-3">
+                  <div className="form-check form-switch d-flex align-items-center">
+                    {this.props.isVersionReleased ? (
+                      <div>
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          onClick={this.toggleAppVisibility}
+                          checked={this?.props?.isPublic}
+                          disabled={this.state.ischangingVisibility}
+                          data-cy="make-public-app-toggle"
+                        />
+                        <span className="form-check-label field-name" data-cy="make-public-app-label">
+                          {this.props.t('editor.shareModal.makeApplicationPublic', 'Make application public')}
+                        </span>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', alignItems: 'left', gap: '8px' }}>
+                        <ToolTip
+                          message={TOOLTIP_MESSAGES.RELEASE_VERSION_URL_UNAVAILABLE}
+                          placement={'top'}
+                          show={isHovered}
+                        >
+                          <div
+                            onMouseEnter={this.handleMouseEnter}
+                            onMouseLeave={this.handleMouseLeave}
+                            style={{
+                              width: '32px',
+                              height: '18px',
+                              marginLeft: '-40px',
+                            }}
+                          >
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              disabled
+                              style={{
+                                opacity: 0.3,
+                                cursor: 'default',
+                                margin: 0,
+                                padding: 0,
+                              }}
+                            />
+                          </div>
+                        </ToolTip>
 
+                        <span
+                          className="form-check-label field-name"
+                          data-cy="make-public-app-label"
+                          style={{ opacity: 0.6 }}
+                        >
+                          {this.props.t('editor.shareModal.makeApplicationPublic', 'Make application public')}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {this.props.isVersionReleased ? (
                   <div className="shareable-link tj-app-input mb-2">
                     <label data-cy="shareable-app-link-label" className="field-name">
                       {this.props.t('editor.shareModal.shareableLink', 'Shareable app link')}
@@ -259,6 +303,7 @@ class ManageAppUsersComponent extends React.Component {
                           style={{ maxWidth: '150px' }}
                           defaultValue={this.props.slug}
                           data-cy="app-name-slug-input"
+                          disabled={!this.props.isVersionReleased}
                         />
                         {isSlugVerificationInProgress && (
                           <div className="icon-container">
@@ -344,7 +389,20 @@ class ManageAppUsersComponent extends React.Component {
                       >{`URL-friendly 'slug' consists of lowercase letters, numbers, and hyphens`}</label>
                     )}
                   </div>
-                  {(this?.props?.isPublic || window?.public_config?.ENABLE_PRIVATE_APP_EMBED === 'true') && (
+                ) : (
+                  <div className="shareable-link tj-app-input mb-2">
+                    <label data-cy="shareable-app-link-label" className="field-name">
+                      {this.props.t('editor.shareModal.shareableLink', 'Shareable app link')}
+                    </label>
+                    <div className="empty-version">
+                      <InfoIcon style={{ width: '12px', marginRight: '5px' }} />
+                      <span>This version has not been released yet</span>
+                    </div>
+                  </div>
+                )}
+                {/* shows embedded app link only for released apps */}
+                {this?.props?.isVersionReleased &&
+                  (this?.props?.isPublic || window?.public_config?.ENABLE_PRIVATE_APP_EMBED === 'true') && (
                     <div className="tj-app-input">
                       <label className="field-name" data-cy="iframe-link-label">
                         Embedded app link
@@ -379,25 +437,24 @@ class ManageAppUsersComponent extends React.Component {
                       </span>
                     </div>
                   )}
-                </div>
-              }
-            </Modal.Body>
+              </div>
+            }
+          </Modal.Body>
 
-            <Modal.Footer className="manage-app-users-footer">
-              {this.isUserAdmin && (
-                <Link
-                  to={getPrivateRoute('workspace_settings')}
-                  target="_blank"
-                  className={`btn border-0 default-secondary-button float-right1`}
-                  data-cy="manage-users-button"
-                >
-                  Manage users
-                </Link>
-              )}
-            </Modal.Footer>
-          </Modal>
-        </div>
-      </ToolTip>
+          <Modal.Footer className="manage-app-users-footer">
+            {this.isUserAdmin && (
+              <Link
+                to={getPrivateRoute('workspace_settings')}
+                target="_blank"
+                className={`btn border-0 default-secondary-button float-right1`}
+                data-cy="manage-users-button"
+              >
+                Manage users
+              </Link>
+            )}
+          </Modal.Footer>
+        </Modal>
+      </div>
     );
   }
 }
