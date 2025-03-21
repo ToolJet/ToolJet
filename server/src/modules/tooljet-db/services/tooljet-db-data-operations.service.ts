@@ -58,6 +58,8 @@ export class TooljetDbDataOperationsService implements QueryService {
         return this.sqlExecution(queryOptions, context);
       case 'bulk_update_with_primary_key':
         return this.bulkUpdateWithPrimaryKey(queryOptions, context);
+      case 'bulk_upsert':
+        return this.bulkUpsertUsingPrimaryKey(queryOptions, context);
       default:
         return {
           status: 'failed',
@@ -576,6 +578,92 @@ export class TooljetDbDataOperationsService implements QueryService {
     }
 
     return query;
+  }
+
+  async bulkUpsertUsingPrimaryKey(queryOptions, context): Promise<QueryResult> {
+    if (hasNullValueInFilters(queryOptions, 'bulk_upsert')) {
+      return {
+        status: 'failed',
+        errorMessage: 'Null value comparison not allowed. To check null values, please use IS operator instead.',
+        data: {},
+      };
+    }
+
+    try {
+      const { table_id: tableId, bulk_upsert: bulkUpsertOptions } = queryOptions;
+      const { primary_key: primaryKeyColumns, rows: rowsToUpsert } = bulkUpsertOptions;
+      const { organization_id: organizationId } = context.app;
+
+      // Validate input
+      if (!Array.isArray(rowsToUpsert) || rowsToUpsert.length === 0) {
+        return {
+          status: 'failed',
+          errorMessage: 'No rows provided for upsert operation',
+          data: {},
+        };
+      }
+
+      if (!Array.isArray(primaryKeyColumns) || primaryKeyColumns.length === 0) {
+        return {
+          status: 'failed',
+          errorMessage: 'No primary key columns specified',
+          data: {},
+        };
+      }
+
+      // Get table information
+      const tableInfo = await this.tooljetDbBulkUploadService.getTableInfo(tableId, organizationId);
+      if (!tableInfo) {
+        return {
+          status: 'failed',
+          errorMessage: 'Table not found',
+          data: {},
+        };
+      }
+
+      // Validate primary keys exist in table
+      const tableColumns = tableInfo?.columns || [];
+      const invalidPrimaryKeys = primaryKeyColumns.filter((pk) => !tableColumns.includes(pk));
+
+      if (invalidPrimaryKeys.length > 0) {
+        return {
+          status: 'failed',
+          errorMessage: `Invalid primary key columns: ${invalidPrimaryKeys.join(', ')}`,
+          data: {},
+        };
+      }
+
+      // Perform bulk upsert
+      const result = await this.tooljetDbBulkUploadService.bulkUpsertRowsWithPrimaryKey(
+        rowsToUpsert,
+        tableId,
+        primaryKeyColumns,
+        organizationId
+      );
+
+      if (result.status === 'failed') {
+        return {
+          status: 'failed',
+          errorMessage: result.error,
+          data: {},
+        };
+      }
+
+      return {
+        status: 'ok',
+        data: {
+          inserted: result.inserted,
+          updated: result.updated,
+          rows: result.rows,
+        },
+      };
+    } catch (error) {
+      return {
+        status: 'failed',
+        errorMessage: error.message,
+        data: {},
+      };
+    }
   }
 }
 

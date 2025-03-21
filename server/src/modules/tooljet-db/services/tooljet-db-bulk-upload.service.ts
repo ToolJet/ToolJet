@@ -368,4 +368,220 @@ export class TooljetDbBulkUploadService {
       };
     }
   }
+
+  async getTableInfo(tableId: string, organizationId: string) {
+    const internalTable = await this.manager.findOne(InternalTable, {
+      where: { organizationId, id: tableId },
+    });
+
+    if (!internalTable) {
+      console.log('No internal table found');
+      return null;
+    }
+
+    const result = await this.tableOperationsService.perform(organizationId, 'view_table', {
+      id: tableId,
+    });
+
+    return {
+      table_name: internalTable.tableName,
+      columns: result?.columns?.map((col: Record<string, any>) => col.column_name) || [],
+      foreign_keys: result?.foreign_keys || [],
+    };
+  }
+
+  async bulkUpsertRowsWithPrimaryKey(
+    rowsToUpsert: Record<string, any>[],
+    tableId: string,
+    primaryKeyColumns: string[],
+    organizationId: string
+  ): Promise<{ status: string; inserted: number; updated: number; rows: any[]; error?: string }> {
+    if (isEmpty(rowsToUpsert)) {
+      return {
+        status: 'failed',
+        error: 'No rows provided for upsert operation',
+        inserted: 0,
+        updated: 0,
+        rows: [],
+      };
+    }
+
+    const internalTable = await this.manager.findOne(InternalTable, {
+      where: { organizationId, id: tableId },
+    });
+
+    if (!internalTable) {
+      return {
+        status: 'failed',
+        error: 'Table not found',
+        inserted: 0,
+        updated: 0,
+        rows: [],
+      };
+    }
+
+    const result = await this.tableOperationsService.perform(organizationId, 'view_table', {
+      id: tableId,
+    });
+
+    const tableColumns = result?.columns || [];
+
+    // Validate primary keys exist in table
+    const invalidPrimaryKeys = primaryKeyColumns.filter((pk) => !tableColumns.some((col) => col.column_name === pk));
+    if (invalidPrimaryKeys.length > 0) {
+      return {
+        status: 'failed',
+        error: `Invalid primary key columns: ${invalidPrimaryKeys.join(', ')}`,
+        inserted: 0,
+        updated: 0,
+        rows: [],
+      };
+    }
+
+    // Find NOT NULL columns without defaults
+    const notNullColumns = tableColumns
+      .filter((col) => (col.constraints_type as any)?.is_not_null && !col.column_default)
+      .map((col) => col.column_name);
+
+    const serialTypeColumns = tableColumns
+      .filter((col) => col.data_type === 'integer' && /^nextval\(/.test(col.column_default))
+      .map((col) => col.column_name);
+
+    const tenantSchema = findTenantSchema(organizationId);
+
+    // First, get all existing rows that match our primary keys
+    const existingDataMap = new Map();
+    for (const row of rowsToUpsert) {
+      // Validate primary keys are present
+      const missingPrimaryKeys = primaryKeyColumns.filter((pk) => row[pk] === undefined);
+      if (missingPrimaryKeys.length > 0) {
+        return {
+          status: 'failed',
+          error: `Missing primary key values: ${missingPrimaryKeys.join(', ')}`,
+          inserted: 0,
+          updated: 0,
+          rows: [],
+        };
+      }
+
+      const whereConditions = primaryKeyColumns.map((pk, index) => `"${pk}" = $${index + 1}`).join(' AND ');
+      const pkValues = primaryKeyColumns.map((pk) => row[pk]);
+
+      const existingDataQuery = `
+        SELECT *
+        FROM "${tenantSchema}"."${tableId}"
+        WHERE ${whereConditions};
+      `;
+
+      try {
+        const existingData = await this.tooljetDbManager.query(existingDataQuery, pkValues);
+        if (existingData?.[0]) {
+          const key = primaryKeyColumns.map((pk) => row[pk]).join('-');
+          existingDataMap.set(key, existingData[0]);
+        }
+      } catch (error) {
+        console.error('Error fetching existing data:', error);
+        throw new Error(`Error fetching existing data: ${error.message}`);
+      }
+    }
+
+    // Merge existing data with updates, preserving non-specified columns
+    const mergedRowsToUpsert = rowsToUpsert.map((row) => {
+      const key = primaryKeyColumns.map((pk) => row[pk]).join('-');
+      const existingData = existingDataMap.get(key);
+
+      if (existingData) {
+        // For updates: only update specified columns, preserve others
+        const merged = { ...existingData };
+        // Only update columns that were explicitly provided
+        Object.keys(row).forEach((col) => {
+          merged[col] = row[col];
+        });
+        return merged;
+      } else {
+        // For inserts: validate all NOT NULL constraints
+        const missingNotNullColumns = notNullColumns.filter((col) => row[col] === undefined);
+        if (missingNotNullColumns.length > 0) {
+          throw new Error(`Missing required NOT NULL columns for new row: ${missingNotNullColumns.join(', ')}`);
+        }
+        return row;
+      }
+    });
+
+    // Build the upsert query
+    const allValueSets = [];
+    let allPlaceholders = [];
+    let parameterIndex = 1;
+
+    for (const row of mergedRowsToUpsert) {
+      const valueSet = [];
+      const currentPlaceholders = [];
+      const providedColumns = Object.keys(row);
+
+      for (const col of providedColumns) {
+        // Always use provided value for primary keys
+        if (primaryKeyColumns.includes(col)) {
+          valueSet.push(`$${parameterIndex++}`);
+          currentPlaceholders.push(row[col]);
+        }
+        // Use DEFAULT for null serial columns (if not primary key)
+        else if (serialTypeColumns.includes(col) && !primaryKeyColumns.includes(col) && row[col] === null) {
+          valueSet.push('DEFAULT');
+        }
+        // Handle all other columns
+        else {
+          valueSet.push(`$${parameterIndex++}`);
+          const value = typeof row[col] === 'object' && row[col] !== null ? JSON.stringify(row[col]) : row[col];
+          currentPlaceholders.push(value);
+        }
+      }
+
+      allValueSets.push(`(${valueSet.join(', ')})`);
+      allPlaceholders = allPlaceholders.concat(currentPlaceholders);
+    }
+
+    // Only update columns that were provided in the original input
+    const providedColumns = Object.keys(mergedRowsToUpsert[0]);
+    const providedNonPKColumns = providedColumns.filter((col) => !primaryKeyColumns.includes(col));
+
+    // Filter update columns to only those in original input
+    const columnsToUpdate = providedNonPKColumns.filter((col) => Object.keys(rowsToUpsert[0]).includes(col));
+
+    const onConflictUpdate =
+      columnsToUpdate.length > 0
+        ? `DO UPDATE SET ${columnsToUpdate.map((col) => `"${col}" = EXCLUDED."${col}"`).join(', ')}`
+        : 'DO NOTHING';
+
+    const primaryKeyColumnsQuoted = primaryKeyColumns.map((column) => `"${column}"`);
+    const columnsQuoted = providedColumns.map((column) => `"${column}"`);
+
+    const queryText =
+      `INSERT INTO "${tenantSchema}"."${tableId}" (${columnsQuoted.join(', ')}) ` +
+      `VALUES ${allValueSets.join(', ')} ` +
+      `ON CONFLICT (${primaryKeyColumnsQuoted.join(', ')}) ` +
+      `${onConflictUpdate} ` +
+      `RETURNING *, (xmax = 0) as inserted;`;
+
+    try {
+      const result = await this.tooljetDbManager.query(queryText, allPlaceholders);
+      const inserted = result.filter((row) => row.inserted).length;
+      const updated = result.length - inserted;
+
+      return {
+        status: 'ok',
+        inserted,
+        updated,
+        rows: result.map(({ inserted, ...row }) => row),
+      };
+    } catch (error) {
+      console.error('Error executing upsert:', error);
+      return {
+        status: 'failed',
+        error: error.message,
+        inserted: 0,
+        updated: 0,
+        rows: [],
+      };
+    }
+  }
 }
