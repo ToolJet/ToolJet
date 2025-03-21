@@ -5,7 +5,7 @@ title: Overview
 
 # Data Sources : Overview
 
-Data sources pull in and push data to various sources, including databases, external APIs, and services. Once a data source is connected to a workspace, the connection can be shared with any application within that workspace.
+Data Sources pull in and push data to various sources, including databases, external APIs, and services. Once a data source is connected to a workspace, the connection can be shared with any application within that workspace.
 
 ToolJet offers a wide range of data sources. If needed, you can develop and integrate a plugin of your choice or use an available one from the marketplace. Checkout **[Marketplace Overview Guide](/docs/marketplace/marketplace-overview)** for more information.
 
