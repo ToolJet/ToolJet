@@ -566,8 +566,17 @@ const sidebars = {
           },
           'items': [
             'development-lifecycle/gitsync/overview',
-            'development-lifecycle/gitsync/gitsync-config',
-            'development-lifecycle/gitsync/ssh-config',
+            {
+              'type': 'category',
+              'label': 'Configure GitSync',
+              'collapsed': true,
+              'items': [
+                'development-lifecycle/gitsync/configure-gitsync/github',
+                'development-lifecycle/gitsync/configure-gitsync/gitlab',
+                'development-lifecycle/gitsync/configure-gitsync/gitea',
+
+              ],
+            },
             'development-lifecycle/gitsync/delete-gitsync',
             'development-lifecycle/gitsync/push',
             'development-lifecycle/gitsync/pull'
