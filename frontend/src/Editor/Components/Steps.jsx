@@ -47,6 +47,22 @@ export const Steps = function Button({ properties, styles, fireEvent, setExposed
   };
 
   useEffect(() => {
+    setExposedVariable('isVisible', isVisible);
+  }, [isVisible]);
+
+  useEffect(() => {
+    setIsVisible(visibility);
+  }, [visibility]);
+
+  useEffect(() => {
+    setExposedVariable('isDisabled', isDisabled);
+  }, [isDisabled]);
+
+  useEffect(() => {
+    setIsDisabled(!disabledState);
+  }, [disabledState]);
+
+  useEffect(() => {
     setExposedVariable('setStep', (stepId) => setActiveStepId(stepId));
     setExposedVariable('setVisibility', (visibility) => setIsVisible(visibility));
     setExposedVariable('setDisabled', (disabled) => setIsDisabled(disabled));
@@ -55,6 +71,10 @@ export const Steps = function Button({ properties, styles, fireEvent, setExposed
   useEffect(() => {
     setExposedVariable('currentStepId', activeStepId);
   }, [activeStepId]);
+
+  useEffect(() => {
+    setActiveStepId(currentStepId);
+  }, [currentStepId]);
 
   useEffect(() => {
     setExposedVariable('steps', steps);
@@ -87,27 +107,19 @@ export const Steps = function Button({ properties, styles, fireEvent, setExposed
     });
   }, [JSON.stringify(steps), JSON.stringify(stepsArr)]);
 
-  useEffect(() => {
-    setExposedVariable('isVisible', isVisible);
-  }, [isVisible]);
-
-  useEffect(() => {
-    setIsVisible(visibility);
-  }, [visibility]);
-
-  useEffect(() => {
-    setExposedVariable('isDisabled', isDisabled);
-  }, [isDisabled]);
-
-  useEffect(() => {
-    setIsDisabled(!disabledState);
-  }, [disabledState]);
-
   return (
     isVisible && (
       <div
         className={`steps ${theme == 'numbers' && 'steps-counter '}`}
-        style={{ color: textColor, height, boxShadow, opacity: isDisabled ? 0.5 : 1 }}
+        style={{
+          color: textColor,
+          height,
+          boxShadow,
+          opacity: isDisabled ? 0.5 : 1,
+          ...(theme === 'plain' && {
+            alignItems: 'center',
+          }),
+        }}
         data-cy={dataCy}
       >
         {filteredSteps?.map((item, index) => {
