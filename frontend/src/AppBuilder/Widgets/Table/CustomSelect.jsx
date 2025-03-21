@@ -24,13 +24,16 @@ export const CustomSelect = ({
   optionsLoadingState = false,
   horizontalAlignment = 'left',
   isEditable,
+  isNewRow,
+  isValid,
+  validationError,
 }) => {
   const containerRef = useRef(null);
   const inputRef = useRef(null); // Ref for the input search box
   const [isFocused, setIsFocused] = useState(false);
   useEffect(() => {
     const handleDocumentClick = (event) => {
-      if (isMulti && !containerRef.current?.contains(event.target)) {
+      if ((isMulti || isNewRow) && !containerRef.current?.contains(event.target)) {
         setIsFocused(false);
       }
     };
@@ -152,40 +155,60 @@ export const CustomSelect = ({
       trigger={isMulti && !isFocused && valueContainerHeight > containerHeight && ['hover', 'focus']} //container width -24 -16 gives that select container size
       rootClose={true}
     >
-      <div className="w-100 h-100 d-flex align-items-center" ref={selectContainerRef}>
-        <Select
-          options={options}
-          hasSearch={false}
-          fuzzySearch={fuzzySearch}
-          isDisabled={disabled}
-          className={className}
-          components={customComponents}
-          value={_value}
-          onMenuInputFocus={() => setIsFocused(true)}
-          onChange={(value) => {
-            setIsFocused(false);
-            if (!isMulti && value === _value?.value) {
-              // for single select column type if on change value is similar to current value , then discard the current value
-              onChange('');
-            } else {
-              onChange(value);
+      <>
+        <div
+          className="w-100 h-100 d-flex align-items-center"
+          ref={selectContainerRef}
+          onClick={() => {
+            if (isNewRow && isEditable) {
+              setIsFocused((prev) => !prev);
             }
           }}
-          useCustomStyles={true}
-          styles={customStyles}
-          defaultValue={defaultValue}
-          placeholder={placeholder}
-          isMulti={isMulti}
-          hideSelectedOptions={false}
-          isClearable={false}
-          clearIndicator={false}
-          darkMode={darkMode}
-          {...{
-            menuIsOpen: isFocused || undefined,
-            isFocused: isFocused || undefined,
+        >
+          <Select
+            options={options}
+            hasSearch={false}
+            fuzzySearch={fuzzySearch}
+            isDisabled={disabled}
+            className={className}
+            components={customComponents}
+            value={_value}
+            onMenuInputFocus={() => setIsFocused(true)}
+            onChange={(value) => {
+              setIsFocused(false);
+              if (!isMulti && value === _value?.value) {
+                // for single select column type if on change value is similar to current value , then discard the current value
+                onChange('');
+              } else {
+                onChange(value);
+              }
+            }}
+            useCustomStyles={true}
+            styles={customStyles}
+            defaultValue={defaultValue}
+            placeholder={placeholder}
+            isMulti={isMulti}
+            hideSelectedOptions={false}
+            isClearable={false}
+            clearIndicator={false}
+            darkMode={darkMode}
+            {...{
+              menuIsOpen: isFocused || undefined,
+              isFocused: isFocused || undefined,
+            }}
+          />
+        </div>
+        <div
+          onClick={() => {
+            if (!isValid) {
+              setIsFocused(true); // Open the dropdown
+            }
           }}
-        />
-      </div>
+          className={` ${isValid ? 'd-none' : 'invalid-feedback d-block'}`}
+        >
+          {validationError}
+        </div>
+      </>
     </OverlayTrigger>
   );
 };

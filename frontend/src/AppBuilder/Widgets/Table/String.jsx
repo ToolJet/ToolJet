@@ -160,7 +160,15 @@ const StringColumn = ({
             </span>
           </div>
         ) : (
-          <div className="h-100 d-flex flex-column justify-content-center position-relative">
+          <div
+            className="h-100 d-flex flex-column justify-content-center position-relative"
+            onMouseDown={(e) => {
+              if (!isEditing) {
+                e.preventDefault();
+                ref.current.focus();
+              }
+            }}
+          >
             <div
               onMouseMove={() => {
                 if (!hovered) setHovered(true);
