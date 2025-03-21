@@ -436,7 +436,6 @@ export default function Grid({ gridWidth, currentLayout }) {
       const context = groupDragContextBuilder({ events, widgets: boxList });
       const { source, target, draggedEntities, restrictedWidgetsTobeDropped } = context;
 
-      debugger;
       const isParentChangeAllowed = restrictedWidgetsTobeDropped.length === 0;
       const isModalToCanvas = source.isModal && target.slotId === 'real-canvas';
       const targetElm = document.getElementById(`canvas-${target.slotId}`) || document.getElementById('real-canvas');
