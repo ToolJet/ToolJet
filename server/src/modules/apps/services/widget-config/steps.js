@@ -31,7 +31,7 @@ export const stepsConfig = {
       validation: {
         schema: {
           type: 'array',
-          element: { type: 'object', object: { id: { type: 'number' } } },
+          element: { type: 'object' },
         },
         defaultValue: `[{ name: 'step 1'}, {name: 'step 2'}]`,
       },
@@ -97,12 +97,12 @@ export const stepsConfig = {
     {
       handle: 'setVisibility',
       displayName: 'Set visibility',
-      params: [
-        {
-          handle: 'option',
-          displayName: 'Option',
-        },
-      ],
+      params: [{ handle: 'visible', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+    },
+    {
+      handle: 'setDisabled',
+      displayName: 'Set disabled',
+      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{true}}', type: 'toggle' }],
     },
     {
       handle: 'resetSteps',
