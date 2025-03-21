@@ -79,6 +79,8 @@ const NEW_REVAMPED_COMPONENTS = [
   'Icon',
   'Image',
   'Container',
+  'Divider',
+  'VerticalDivider',
   'ModalV2',
 ];
 
