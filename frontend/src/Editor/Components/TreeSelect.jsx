@@ -128,6 +128,23 @@ export const TreeSelect = ({
         nativeCheckboxes
         checkModel="all"
         disabled={disabledState}
+        icons={{
+          expandClose: <span className="rct-icon rct-icon-expand-close" style={{ color: textColor }} />,
+          expandOpen: <span className="rct-icon rct-icon-expand-open" style={{ color: textColor }} />,
+          expandAll: <span className="rct-icon rct-icon-expand-all" style={{ color: textColor }} />,
+          collapseAll: <span className="rct-icon rct-icon-collapse-all" style={{ color: textColor }} />,
+        }}
+        styles={{
+          tree: {
+            backgroundColor: 'transparent', // Ensure the tree background doesn't interfere
+          },
+          node: {
+            color: textColor, // Set the text color of the nodes dynamically
+            '&:hover': {
+              backgroundColor: darkMode ? '#555' : '#e0e0e0', // Hover background color
+            },
+          },
+        }}
       />
     </div>
   );
