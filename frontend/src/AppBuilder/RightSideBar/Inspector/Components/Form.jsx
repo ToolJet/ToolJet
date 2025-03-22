@@ -169,25 +169,6 @@ export const baseComponentProperties = (
   }
 
   items.push({
-    title: `${i18next.t('widget.common.general', 'General')}`,
-    isOpen: true,
-    children: (
-      <>
-        {renderElement(
-          component,
-          componentMeta,
-          layoutPropertyChanged,
-          dataQueries,
-          'tooltip',
-          'general',
-          currentState,
-          allComponents
-        )}
-      </>
-    ),
-  });
-
-  items.push({
     title: `${i18next.t('widget.common.devices', 'Devices')}`,
     isOpen: true,
     children: (
