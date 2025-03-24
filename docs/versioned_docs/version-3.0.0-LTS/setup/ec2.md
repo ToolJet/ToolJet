@@ -94,7 +94,7 @@ Users on versions earlier than **v2.23.0-ee2.10.2** must first upgrade to this v
 
 New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
 
-If this is a new installation of the application, you may start directly with the latest version. This guide is not required for new installations.
+Since ToolJet is deployed using an AMI (Amazon Machine Image), upgrading to a new LTS version requires launching a new EC2 instance with the updated AMI instead of upgrading in place.
 
 #### Steps to Upgrade:
 
