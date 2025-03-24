@@ -1,19 +1,25 @@
 // import '@/Editor/wdyr';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-// eslint-disable-next-line import/no-unresolved
+
+// External libraries
 import Moveable from 'react-moveable';
 import { shallow } from 'zustand/shallow';
-import _, { isArray, isEmpty } from 'lodash';
+import _, { isArray } from 'lodash';
 import { flushSync } from 'react-dom';
-import { RESTRICTED_WIDGETS_CONFIG } from '@/AppBuilder/WidgetManager/configs/restrictedWidgetsConfig';
-import { useGridStore, useIsGroupHandleHoverd, useOpenModalWidgetId } from '@/_stores/gridStore';
 import toast from 'react-hot-toast';
+
+// App stores
+import useStore from '@/AppBuilder/_stores/store';
+import { useGridStore, useIsGroupHandleHoverd, useOpenModalWidgetId } from '@/_stores/gridStore';
+
+// Configs
+import { NO_OF_GRIDS, SUBCONTAINER_WIDGETS } from '../appCanvasConstants';
+
+// Grid logic utilities
 import {
   individualGroupableProps,
-  getMouseDistanceFromParentDiv,
   findChildrenAndGrandchildren,
   findHighestLevelofSelection,
-  getOffset,
   hasParentWithClass,
   getPositionForGroupDrag,
   adjustWidth,
@@ -23,12 +29,13 @@ import {
   handleDeactivateTargets,
   handleActivateNonDraggingComponents,
 } from './gridUtils';
-import { useAppVersionStore } from '@/_stores/appVersionStore';
-import { resolveWidgetFieldValue } from '@/_helpers/utils';
-import { dragContextBuilder, getAdjustedDropPosition } from './helpers/dragEnd';
-import useStore from '@/AppBuilder/_stores/store';
+
+import { dragContextBuilder, groupDragContextBuilder } from './context/contextBuilder';
+
+import { getAdjustedDropPosition } from './helpers/dragUtils';
+
+// Styles
 import './Grid.css';
-import { NO_OF_GRIDS, SUBCONTAINER_WIDGETS } from '../appCanvasConstants';
 
 const CANVAS_BOUNDS = { left: 0, top: 0, right: 0, position: 'css' };
 const RESIZABLE_CONFIG = {
@@ -429,113 +436,79 @@ export default function Grid({ gridWidth, currentLayout }) {
     try {
       hideGridLines();
       setIsGroupDragging(false);
-      const { events, clientX, clientY } = e;
+
+      const { events } = e;
       const initialParent = events[0].target.closest('.real-canvas');
-      // Get potential new parent using same logic as onDragEnd
-      let draggedOverElemId;
-      let draggedOverElem;
-      if (document.elementFromPoint(clientX, clientY)) {
-        const targetElems = document.elementsFromPoint(clientX, clientY);
-        draggedOverElem = targetElems.find((ele) => {
-          const isOwnChild = events.some((ev) => ev.target.contains(ele));
-          if (isOwnChild) return false;
 
-          let isDroppable =
-            !events.some((ev) => ev.target.id === ele.id) && ele.classList.contains('drag-container-parent');
-          if (isDroppable) {
-            let widgetId = ele?.getAttribute('component-id') || ele.id;
-            let widgetType = boxList.find(({ id }) => id === widgetId)?.component?.component;
-            if (!widgetType) {
-              widgetId = widgetId.split('-').slice(0, -1).join('-');
-              widgetType = boxList.find(({ id }) => id === widgetId)?.component?.component;
-            }
-            if (
-              !['Calendar', 'Kanban', 'Form', 'Tabs', 'Modal', 'Listview', 'Container', 'Table'].includes(widgetType)
-            ) {
-              isDroppable = false;
-            }
-          }
-          return isDroppable;
-        });
-        draggedOverElemId = draggedOverElem?.getAttribute('component-id') || draggedOverElem?.id;
-      }
+      const context = groupDragContextBuilder({ events, widgets: boxList });
+      const { source, target, draggedEntities, restrictedWidgetsTobeDropped } = context;
 
-      const widgetsTypeToBeDropped = boxList
-        .filter(({ id }) => events.some((ev) => ev.target.id === id))
-        .map(({ component }) => component.component);
-      const parentId = draggedOverElemId?.length > 36 ? draggedOverElemId.slice(0, 36) : draggedOverElemId;
-      const parentWidgetType = getComponentTypeFromId(parentId);
-      const restrictedWidgetsTobeDropped =
-        RESTRICTED_WIDGETS_CONFIG?.[parentWidgetType]?.filter((widgetType) =>
-          widgetsTypeToBeDropped.includes(widgetType)
-        ) || [];
-      const isParentChangeAllowed = isEmpty(restrictedWidgetsTobeDropped);
+      const isParentChangeAllowed = restrictedWidgetsTobeDropped.length === 0;
+      const isModalToCanvas = source.isModal && target.slotId === 'real-canvas';
+      const targetElm = document.getElementById(`canvas-${target.slotId}`) || document.getElementById('real-canvas');
+      const targetGridWidth = useGridStore.getState().subContainerWidths[target.slotId] || gridWidth;
 
-      if (!isParentChangeAllowed) {
-        // Get original positions for all dragged components
-        const currBoxes = boxList
-          .filter(({ id }) => events.some((ev) => ev.target.id === id))
-          .map(({ id, left, top, parent }) => ({ id, left, top, parent }));
+      if (!isParentChangeAllowed || isModalToCanvas) {
+        // Revert to original positions
+        draggedEntities.forEach((dragged, i) => {
+          const ev = events[i];
+          const originalGridWidth = useGridStore.getState().subContainerWidths[dragged.widget.parent] || gridWidth;
 
-        // Return each component to its original position
-        events.forEach((ev) => {
-          const originalBox = currBoxes.find((box) => box.id === ev.target.id);
-          const _gridWidth = useGridStore.getState().subContainerWidths[originalBox?.parent] || gridWidth;
-          if (originalBox) {
-            const _left = originalBox.left * _gridWidth;
-            const _top = originalBox.top;
+          const _left = dragged.left * originalGridWidth;
+          const _top = dragged.top;
 
-            // Apply transform to return to original position
-            ev.target.style.transform = `translate(${Math.round(_left / _gridWidth) * _gridWidth}px, ${
-              Math.round(_top / GRID_HEIGHT) * GRID_HEIGHT
-            }px)`;
-          }
+          ev.target.style.transform = `translate(${Math.round(_left / originalGridWidth) * originalGridWidth}px, ${
+            Math.round(_top / GRID_HEIGHT) * GRID_HEIGHT
+          }px)`;
         });
 
-        // Show error message
-        toast.error(`${restrictedWidgetsTobeDropped} is not compatible as a child component of ${parentWidgetType}`);
-      }
-
-      const parentElm = draggedOverElem || document.getElementById('real-canvas');
-      const parentCanvas =
-        document.getElementById('canvas-' + draggedOverElemId) || document.getElementById('real-canvas');
-      parentCanvas?.classList?.remove('show-grid');
-      const _gridWidth = useGridStore.getState().subContainerWidths[draggedOverElemId] || gridWidth;
-
-      if (isParentChangeAllowed) {
-        handleDragEnd(
-          events.map((ev) => {
-            const {
-              translate: [rawPosX, rawPosY],
-            } = ev.lastEvent;
-
-            // Calculate adjusted positions when parent changes
-            let posX = rawPosX;
-            let posY = rawPosY;
-
-            if (parentElm && initialParent !== parentElm) {
-              const newParentRect = parentElm.getBoundingClientRect();
-              const initialParentRect = initialParent.getBoundingClientRect();
-
-              // Adjust coordinates based on the difference in parent positions
-              posX = rawPosX - (newParentRect.left - initialParentRect.left);
-              posY = rawPosY - (newParentRect.top - initialParentRect.top);
-            }
-
-            // Apply grid snapping and bounds
-            const snappedX = Math.round(posX / _gridWidth) * _gridWidth;
-            const snappedY = Math.round(posY / GRID_HEIGHT) * GRID_HEIGHT;
-
-            ev.target.style.transform = `translate(${snappedX}px, ${snappedY}px)`;
-            return {
-              id: ev.target.id,
-              x: posX,
-              y: posY,
-              parent: draggedOverElemId,
-            };
-          })
+        toast.error(
+          restrictedWidgetsTobeDropped.length
+            ? `${restrictedWidgetsTobeDropped.join(', ')} ${
+                restrictedWidgetsTobeDropped.length === 1 ? 'is' : 'are'
+              } not compatible as a child of ${target.widgetType}`
+            : `Widgets cannot be dropped into the canvas from a modal`
         );
+
+        return;
       }
+
+      // Apply drop and calculate positions
+      handleDragEnd(
+        events.map((ev, i) => {
+          const {
+            translate: [rawPosX, rawPosY],
+          } = ev.lastEvent;
+
+          let posX = rawPosX;
+          let posY = rawPosY;
+
+          // Adjust position if changing parent container
+          if (targetElm && initialParent !== targetElm) {
+            const newParentRect = targetElm.getBoundingClientRect();
+            const initialParentRect = initialParent.getBoundingClientRect();
+
+            posX = rawPosX - (newParentRect.left - initialParentRect.left);
+            posY = rawPosY - (newParentRect.top - initialParentRect.top);
+          }
+
+          const snappedX = Math.round(posX / targetGridWidth) * targetGridWidth;
+          const snappedY = Math.round(posY / GRID_HEIGHT) * GRID_HEIGHT;
+
+          ev.target.style.transform = `translate(${snappedX}px, ${snappedY}px)`;
+          const parent = target.slotId === 'real-canvas' ? null : target.slotId;
+
+          return {
+            id: ev.target.id,
+            x: posX,
+            y: posY,
+            parent,
+          };
+        })
+      );
+
+      setCanvasBounds({ ...CANVAS_BOUNDS });
+      toggleCanvasUpdater();
     } catch (error) {
       console.error('Error dragging group', error);
     }
@@ -982,22 +955,38 @@ export default function Grid({ gridWidth, currentLayout }) {
         }}
         onDragGroup={(ev) => {
           const { events } = ev;
-          const parentElm = events[0]?.target?.closest('.real-canvas');
-          if (parentElm && !parentElm.classList.contains('show-grid')) {
-            parentElm?.classList?.add('show-grid');
-          }
+
+          const initialParentElm = events[0]?.target?.closest('.real-canvas');
+          const initialParentId = initialParentElm?.id?.replace('canvas-', '');
+          const initialGridWidth = useGridStore.getState().subContainerWidths?.[initialParentId] || gridWidth;
+
+          const targetElems = document.elementsFromPoint(ev.clientX, ev.clientY);
+
+          const newCanvas = targetElems.find((ele) => ele.classList.contains('real-canvas'));
+          const newCanvasId = newCanvas?.getAttribute('data-parentid') || newCanvas?.id?.replace('canvas-', '');
+          const newGridWidth = useGridStore.getState().subContainerWidths?.[newCanvasId] || gridWidth;
+
+          const isCanvasChanged = initialParentId !== newCanvasId;
 
           events.forEach((ev) => {
             const currentWidget = boxList.find(({ id }) => id === ev.target.id);
-            const _gridWidth =
-              useGridStore.getState().subContainerWidths?.[currentWidget?.component?.parent] || gridWidth;
+            const originalWidth = currentWidget?.layouts?.[currentLayout]?.width || 1;
 
-            let left = Math.round(ev.translate[0] / _gridWidth) * _gridWidth;
+            let left = Math.round(ev.translate[0] / newGridWidth) * newGridWidth;
             let top = Math.round(ev.translate[1] / GRID_HEIGHT) * GRID_HEIGHT;
 
             ev.target.style.transform = `translate(${left}px, ${top}px)`;
+
+            if (isCanvasChanged && currentWidget) {
+              const updatedWidth = Math.round((originalWidth * initialGridWidth) / newGridWidth);
+              ev.target.style.width = `${updatedWidth * newGridWidth}px`;
+            }
           });
-          handleActivateTargets(parentElm?.id?.replace('canvas-', ''));
+
+          if (newCanvasId && newCanvasId !== initialParentId) {
+            handleActivateTargets(newCanvasId);
+          }
+
           updateNewPosition(events);
         }}
         onDragGroupStart={({ events }) => {
