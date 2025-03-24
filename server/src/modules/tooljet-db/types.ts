@@ -150,10 +150,11 @@ export class TooljetDatabaseError extends QueryFailedError {
   }
 
   toString(): string {
+    const CapitalizeSentence = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
     const errorMessage =
       errorCodeMapping[this.code]?.[this.context.origin] ||
       errorCodeMapping[this.code]?.['default'] ||
-      capitalize(this.message);
+      CapitalizeSentence(this.message);
     return this.replaceErrorPlaceholders(errorMessage);
   }
 
