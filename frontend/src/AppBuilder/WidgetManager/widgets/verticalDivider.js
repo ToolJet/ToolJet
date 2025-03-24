@@ -1,6 +1,6 @@
 export const verticalDividerConfig = {
   name: 'VerticalDivider',
-  displayName: 'Vertical Divider',
+  displayName: 'Vertical divider',
   description: 'Vertical line separator',
   component: 'VerticalDivider',
   defaultSize: {
