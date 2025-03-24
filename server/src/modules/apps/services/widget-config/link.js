@@ -83,7 +83,7 @@ export const linkConfig = {
       accordian: 'Link text',
     },
     textSize: {
-      type: 'number',
+      type: 'numberInput',
       displayName: 'Text size',
       validation: {
         schema: { type: 'number' },
@@ -208,7 +208,7 @@ export const linkConfig = {
     },
     events: [],
     styles: {
-      textColor: { value: '#375FCF' },
+      textColor: { value: '#4368E3' },
       textSize: { value: '{{14}}' },
       underline: { value: 'on-hover' },
       verticalAlignment: { value: 'center' },

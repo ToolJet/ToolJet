@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import * as Icons from '@tabler/icons-react';
 import cx from 'classnames';
 import Loader from '@/ToolJetUI/Loader/Loader';
+import './link.scss';
 
 export const Link = ({ height, properties, styles, fireEvent, setExposedVariables, dataCy }) => {
   const { linkTarget, linkText, targetType, visibility, disabledState, loadingState } = properties;
@@ -19,11 +20,13 @@ export const Link = ({ height, properties, styles, fireEvent, setExposedVariable
     alignItems: verticalAlignment === 'top' ? 'flex-start' : verticalAlignment === 'center' ? 'center' : 'flex-end',
     justifyContent:
       horizontalAlignment === 'left' ? 'flex-start' : horizontalAlignment === 'center' ? 'center' : 'flex-end',
-    height,
+    height: '100%',
+    width: '100%',
     boxShadow,
     cursor: isDisabled ? 'not-allowed' : 'pointer',
     opacity: isDisabled ? 0.5 : 1,
     pointerEvents: isDisabled ? 'none' : 'auto',
+    fontWeight: '500',
   };
   // eslint-disable-next-line import/namespace
   const IconElement = Icons?.[icon] == undefined ? Icons['IconHome2'] : Icons[icon];
@@ -112,13 +115,16 @@ export const Link = ({ height, properties, styles, fireEvent, setExposedVariable
         style={{ color: textColor, fontSize: textSize }}
         ref={clickRef}
       >
-        <span className="d-flex align-items-center justify-content-center">
+        <span className="d-flex justify-content-center">
           {iconVisibility && (
             <IconElement
               style={{
-                width: textSize,
-                height: textSize,
+                width: `${textSize}px`,
+                height: `${textSize}px`,
+                minWidth: `${textSize}px`,
+                minHeight: `${textSize}px`,
                 marginRight: '4px',
+                marginTop: '3px',
               }}
               stroke={1.5}
             />
