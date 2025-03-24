@@ -154,10 +154,20 @@ export class PluginsService implements IPluginsService {
   async checkIfPluginsToBeInstalled(
     dataSources
   ): Promise<{ pluginsToBeInstalled: Array<string>; pluginsListIdToDetailsMap: any }> {
-    const { pluginsListIdToDetailsMap } = this.listMarketplacePlugins();
-    const marketplacePluginsUsed = this.filterMarketplacePluginsFromDatasources(dataSources, pluginsListIdToDetailsMap);
-    const { pluginsToBeInstalled } = await this.arePluginsInstalled(marketplacePluginsUsed);
-    return { pluginsToBeInstalled, pluginsListIdToDetailsMap };
+    try {
+      const { pluginsListIdToDetailsMap } = this.listMarketplacePlugins();
+      const marketplacePluginsUsed = this.filterMarketplacePluginsFromDatasources(
+        dataSources,
+        pluginsListIdToDetailsMap
+      );
+      const { pluginsToBeInstalled } = await this.arePluginsInstalled(marketplacePluginsUsed);
+      return { pluginsToBeInstalled, pluginsListIdToDetailsMap };
+    } catch (error) {
+      throw new InternalServerErrorException(
+        error,
+        'An error occurred while checking whether plugins need to be installed.'
+      );
+    }
   }
 
   async autoInstallPluginsForTemplates(pluginsToBeInstalled: Array<string>, shouldAutoInstall: boolean) {
