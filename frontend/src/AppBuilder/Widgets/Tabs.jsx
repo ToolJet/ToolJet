@@ -10,15 +10,15 @@ import { set } from 'lodash';
 
 const TabsNavShimmer = ({ divider }) => {
   return (
-    <div className="d-flex gap-4 px-1.5 px-2" style={{ borderBottom: `0.5px solid ${divider}` }}>
+    <div className="d-flex gap-4 py-1/2 px-2" style={{ borderBottom: `2px solid ${divider}` }}>
       {Array(3)
         .fill(0)
         .map((ind) => (
           <div
             key={ind}
             style={{
-              width: '70px',
-              height: '24px',
+              width: '106px',
+              height: '28px',
               backgroundColor: '#88909914',
               borderRadius: '16px',
               margin: '8px 0px',
@@ -223,7 +223,15 @@ export const Tabs = function Tabs({
         style={{
           display: computeTabDisplay(id, tab.id),
           height: parsedHideTabs ? height + 4 : height + 4 - 41,
-          position: 'absolute',
+
+          ...(padding === 'default'
+            ? {
+                margin: 'auto',
+                height: parsedHideTabs ? height + 4 - 13 : height + 4 - 41 - 13,
+                borderRadius: `0px 0px ${borderRadius - 2}px ${borderRadius - 2}px`,
+                overflow: 'hidden',
+              }
+            : {}),
           top: parsedHideTabs ? '0px' : '41px',
           width: '100%',
         }}
@@ -341,7 +349,7 @@ export const Tabs = function Tabs({
         size={16}
         style={{
           marginRight: '4px',
-          marginBottom: '2px',
+          marginBottom: '4px',
           ...(currentTab == tab.id ? { color: selectedIcon } : { color: unselectedIcon }),
         }}
         stroke={1.5}
@@ -361,7 +369,7 @@ export const Tabs = function Tabs({
         boxShadow,
         borderRadius: `${borderRadius}px`,
         overflow: 'hidden',
-        ...(padding === 'default' ? { padding: '1px', height: height } : { padding: '0px' }),
+
         ...(border ? { border: `1px solid ${border}` } : { border: 'none' }),
       }}
       data-cy={dataCy}
@@ -376,8 +384,8 @@ export const Tabs = function Tabs({
               display: 'flex',
               alignItems: 'center',
               width: '100%',
-              marginLeft: '4px',
-              marginRight: '4px',
+              paddingLeft: '4px',
+              paddingRight: '4px',
               backgroundColor: headerBackground,
             }}
           >
@@ -414,29 +422,32 @@ export const Tabs = function Tabs({
                 ?.map((tab) => (
                   <div
                     key={tab.id}
-                    style={{ zIndex: 3, ...(tabWidth == 'split' ? { minWidth: 'auto' } : { minWidth: '91px' }) }}
+                    style={{
+                      zIndex: 3,
+                      width: tabWidth == 'split' && equalSplitWidth + '%',
+                      ...(tabWidth == 'split' ? { minWidth: 'auto' } : {}),
+                    }}
                   >
                     <li
                       className={`nav-item ${currentTab == tab.id ? 'active' : ''}`}
                       style={{
                         opacity: tab?.disabled && '0.5',
-                        width: tabWidth == 'split' && equalSplitWidth + '%',
                         overflow: 'hidden',
                         backgroundColor: headerBackground,
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
                         fontWeight: 'bold',
                         padding: '0.2rem 0rem',
-                        marginBottom: '4px',
-                        marginTop: '4px',
+                        marginBottom: '6px',
+                        marginTop: '6px',
                         cursor: 'pointer',
-                        ...(tabWidth == 'split' ? { minWidth: 'auto' } : { minWidth: '56px' }),
+                        ...(tabWidth == 'split' ? { minWidth: 'auto' } : {}),
                       }}
                       onClick={() => {
                         if (currentTab == tab.id) return;
-
-                        !tab?.disabled && setCurrentTab(tab.id);
-                        !tab?.disabled && setExposedVariable('currentTab', tab.id);
+                        if (tab?.disable) return;
+                        !tab?.disable && setCurrentTab(tab.id);
+                        !tab?.disable && setExposedVariable('currentTab', tab.id);
                         fireEvent('onTabSwitch');
                       }}
                       onMouseEnter={() => handleMouseEnter(tab?.id)}
@@ -565,6 +576,7 @@ export const Tabs = function Tabs({
                         : 'translateX(100%)',
                   }
                 : {}),
+              ...(padding === 'default' ? { padding: '2px' } : { padding: '0px' }),
             }}
             id={`${id}-${tab.id}`}
             key={tab.id}

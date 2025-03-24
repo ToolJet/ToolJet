@@ -122,6 +122,15 @@ export const tabsConfig = {
       },
       accordian: 'Tabs',
     },
+    divider: {
+      type: 'color',
+      displayName: 'Divider',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#CCD1D5',
+      },
+      accordian: 'Tabs',
+    },
     unselectedText: {
       type: 'color',
       displayName: 'Unselected Tab Label',
@@ -201,15 +210,6 @@ export const tabsConfig = {
         { name: 'Auto', value: 'auto' },
         { name: 'Equally split', value: 'split' },
       ],
-      accordian: 'Tabs',
-    },
-    divider: {
-      type: 'color',
-      displayName: 'Divider',
-      validation: {
-        schema: { type: 'string' },
-        defaultValue: '#CCD1D5',
-      },
       accordian: 'Tabs',
     },
     transition: {
@@ -403,6 +403,7 @@ export const tabsConfig = {
     events: [],
     styles: {
       headerBackground: { value: '#FFFFFF' },
+      divider: { value: '#CCD1D5' },
       unselectedText: { value: '#6A727C' },
       selectedText: { value: '#1B1F24' },
       highlightColor: { value: '#375FCF' },
@@ -412,12 +413,11 @@ export const tabsConfig = {
       selectedIcon: { value: '#CCD1D5' },
       accent: { value: '#4368E3' },
       tabWidth: { value: 'auto' },
-      divider: { value: '#CCD1D5' },
       transition: { value: 'none' },
       borderRadius: { value: '{{6}}' },
       border: { value: '#CCD1D5' },
       boxShadow: { value: '0px 0px 0px 0px #00000090' },
-      padding: { value: 'none' },
+      padding: { value: 'default' },
     },
   },
 };
