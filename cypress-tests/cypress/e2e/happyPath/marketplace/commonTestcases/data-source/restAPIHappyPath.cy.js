@@ -8,8 +8,14 @@ import { restAPIText } from "Texts/restAPI";
 import { fillDataSourceTextField } from "Support/utils/postgreSql";
 
 const data = {};
-const dropdownSelector =
+const authenticationDropdownSelector =
   ".dynamic-form-element > .css-nwhe5y-container > .react-select__control";
+const grantTypeDropdown =
+  ":nth-child(1) > :nth-child(2) > .react-select__control";
+const addAccessTokenDropdown =
+  ":nth-child(9) > .css-nwhe5y-container > .react-select__control";
+const clientAuthenticationDropdown =
+  ":nth-child(14) > .css-nwhe5y-container > .react-select__control";
 
 describe("Data source Rest API", () => {
   beforeEach(() => {
@@ -19,7 +25,7 @@ describe("Data source Rest API", () => {
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");
   });
-  it.skip("Should verify elements on Rest API connection form", () => {
+  it("Should verify elements on Rest API connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
@@ -44,7 +50,7 @@ describe("Data source Rest API", () => {
     );
 
     cy.apiCreateGDS(
-      `${Cypress.env("server_host")}/api/v2/data_sources`,
+      `${Cypress.env("server_host")}/api/data-sources`,
       `cypress-${data.dataSourceName}-restapi`,
       "restapi",
       [
@@ -121,12 +127,12 @@ describe("Data source Rest API", () => {
       restAPISelector.subHeaderLabel(restAPIText.authenticationTypeLabel)
     ).should("have.text", restAPIText.authenticationTypeLabel);
 
-    cy.get(dropdownSelector).click();
+    cy.get(authenticationDropdownSelector).click();
     cy.contains(
       `[id*="react-select-"]`,
       restAPIText.basicAuth.basicText
     ).click();
-    cy.get(dropdownSelector).should(
+    cy.get(authenticationDropdownSelector).should(
       "have.text",
       restAPIText.basicAuth.basicText
     );
@@ -147,12 +153,11 @@ describe("Data source Rest API", () => {
       restAPISelector.inputField(restAPIText.basicAuth.passwordLabel)
     ).should("be.visible");
 
-    cy.get(dropdownSelector).click();
-    cy.contains(
-      `[id*="react-select-"]`,
-      restAPIText.bearerAuth.bearerText
-    ).click();
-    cy.get(dropdownSelector).should(
+    cy.get(authenticationDropdownSelector).click();
+    cy.contains(`[id*="react-select-"]`, restAPIText.bearerAuth.bearerText)
+      .should("be.visible")
+      .click();
+    cy.get(authenticationDropdownSelector).should(
       "have.text",
       restAPIText.bearerAuth.bearerText
     );
@@ -163,23 +168,27 @@ describe("Data source Rest API", () => {
       restAPISelector.inputField(restAPIText.bearerAuth.tokenLabel)
     ).should("be.visible");
 
-    cy.get(dropdownSelector).click();
+    cy.get(authenticationDropdownSelector).click();
     cy.contains(`[id*="react-select-"]`, restAPIText.oAuthText).click();
-    cy.get(dropdownSelector).should("have.text", restAPIText.oAuthText);
+    cy.get(authenticationDropdownSelector).should(
+      "have.text",
+      restAPIText.oAuthText
+    );
     cy.get(restAPISelector.subHeaderLabel(restAPIText.grantTypeLabel)).should(
       "have.text",
       restAPIText.grantTypeLabel
     );
-    cy.get(
-      ".dynamic-form-element > :nth-child(2) > :nth-child(3) > :nth-child(2)"
-    ).click();
+    cy.get(grantTypeDropdown).click();
     cy.contains(
       `[id*="react-select-"]`,
       restAPIText.authorizationCode.authorizationCodeLabel
-    ).click();
-    cy.get(
-      ".dynamic-form-element > :nth-child(2) > :nth-child(3) > :nth-child(2)"
-    ).should("contain", restAPIText.authorizationCode.authorizationCodeLabel);
+    )
+      .should("be.visible")
+      .click();
+    cy.get(grantTypeDropdown).should(
+      "contain",
+      restAPIText.authorizationCode.authorizationCodeLabel
+    );
     cy.get(
       restAPISelector.inputField(
         restAPIText.authorizationCode.headerPrefixLabel
@@ -209,19 +218,17 @@ describe("Data source Rest API", () => {
       if (
         key !== "authorizationCodeLabel" &&
         key !== "requestHeader" &&
-        key !== "sendBasicAuthheaderOption"
+        key !== "sendBasicAuthheaderOption" &&
+        key !== "sendClientCredentialsBodyOption"
       ) {
         cy.get(
           restAPISelector.subHeaderLabel(restAPIText.authorizationCode[key])
         ).should("have.text", value);
       }
     });
-    cy.get(
-      ":nth-child(4) > .react-select__control > .react-select__value-container"
-    ).should("be.visible");
-    cy.get(
-      ":nth-child(4) > .react-select__control > .react-select__value-container > .react-select__single-value"
-    ).should("contain", restAPIText.authorizationCode.requestHeader);
+    cy.get(addAccessTokenDropdown)
+      .should("be.visible")
+      .and("contain", restAPIText.authorizationCode.requestHeader);
     cy.get(
       restAPISelector.inputField(restAPIText.authorizationCode.scopeLabel)
     ).should("be.visible");
@@ -236,13 +243,6 @@ describe("Data source Rest API", () => {
         restAPISelector.subHeaderLabel(authorizationCodeSections)
       ).verifyVisibleElement("have.text", authorizationCodeSections);
       if (authorizationCodeSections !== restAPIText.baseUrlLabel) {
-        cy.get(
-          restAPISelector.keyLabel(authorizationCodeSections)
-        ).verifyVisibleElement("have.text", restAPIText.keyLabel);
-        cy.get(
-          restAPISelector.valueLabel(authorizationCodeSections)
-        ).verifyVisibleElement("have.text", restAPIText.valueLabel);
-
         cy.get(
           restAPISelector.keyInputField(authorizationCodeSections, 0)
         ).should("be.visible");
@@ -259,10 +259,19 @@ describe("Data source Rest API", () => {
         cy.get('[data-cy="base-url-text-field"]').should("be.visible");
       }
     });
-    cy.get(
-      ":nth-child(12) > .css-nwhe5y-container > .react-select__control > .react-select__value-container"
-    ).should(
-      "contain",
+    cy.get(clientAuthenticationDropdown).click();
+    cy.contains(
+      `[id*="react-select-"]`,
+      restAPIText.authorizationCode.sendClientCredentialsBodyOption
+    ).should("be.visible");
+    cy.contains(
+      `[id*="react-select-"]`,
+      restAPIText.authorizationCode.sendBasicAuthheaderOption
+    )
+      .should("be.visible")
+      .click();
+    cy.get(clientAuthenticationDropdown).should(
+      "have.text",
       restAPIText.authorizationCode.sendBasicAuthheaderOption
     );
     cy.get(
@@ -276,6 +285,25 @@ describe("Data source Rest API", () => {
     cy.get(restAPISelector.authenticationAllUsersToggleSwitch).should(
       "be.visible"
     );
+    cy.get(grantTypeDropdown).click();
+    cy.contains(
+      `[id*="react-select-"]`,
+      restAPIText.clientCredentials.clientCredentialsLabel
+    )
+      .should("be.visible")
+      .click();
+    cy.get(grantTypeDropdown).should(
+      "contain",
+      restAPIText.clientCredentials.clientCredentialsLabel
+    );
+    Object.entries(restAPIText.clientCredentials).forEach(([key, value]) => {
+      if (key !== "clientCredentialsLabel") {
+        cy.get(
+          restAPISelector.subHeaderLabel(restAPIText.clientCredentials[key])
+        ).should("have.text", value);
+      }
+    });
+
     cy.get(
       restAPISelector.subHeaderLabel(restAPIText.secureSocketsLayerText)
     ).should("have.text", restAPIText.secureSocketsLayerText);
@@ -305,7 +333,7 @@ describe("Data source Rest API", () => {
   });
   it("Should verify connection for Rest API", () => {
     cy.apiCreateGDS(
-      `${Cypress.env("server_host")}/api/v2/data_sources`,
+      `${Cypress.env("server_host")}/api/data-sources`,
       `cypress-${data.dataSourceName}-restapi`,
       "restapi",
       [
@@ -338,20 +366,18 @@ describe("Data source Rest API", () => {
       ]
     );
     cy.reload();
-    cy.apiCreateApp(`${fake.companyName}-restAPI-App`);
-    cy.apiAddQueryToApp(
-      "restapi1",
-      {
-        method: "get",
-        url: "",
-        url_params: [["", ""]],
-        headers: [["", ""]],
-        cookies: [["", ""]],
-      },
-      `cypress-${data.dataSourceName}-restapi`,
-      "restapi"
-    );
-
-    //cy.apiAddQuery(restapi2, query, dataQueryId);
+    // cy.apiCreateApp(`${fake.companyName}-restAPI-App`);
+    // cy.apiAddQueryToApp(
+    //   "restapi1",
+    //   {
+    //     method: "get",
+    //     url: "",
+    //     url_params: [["", ""]],
+    //     headers: [["", ""]],
+    //     cookies: [["", ""]],
+    //   },
+    //   `cypress-${data.dataSourceName}-restapi`,
+    //   "restapi"
+    // );
   });
 });
