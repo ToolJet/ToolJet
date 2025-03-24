@@ -31,7 +31,7 @@ During app creation, a **.meta** folder is generated, containing a **meta.json**
 
     <TabItem value="GitHub" label="GitHub"> 
 
-        <img className="screenshot-full" src="/img/gitsync/firstcommit-v2.png" alt="GitSync" />
+        <img className="screenshot-full" src="/img/gitsync/firstcommit-v3.png" alt="GitSync" />
 
     </TabItem>
 
@@ -48,10 +48,10 @@ During app creation, a **.meta** folder is generated, containing a **meta.json**
 Whenever a user makes a change in an app, they can make a commit to the git repository by following these steps:
 
 1. After making the changes, click on the **GitSync** button on the topbar. 
-    <img className="screenshot-full" src="/img/development-lifecycle/backup/gitsync/gitsync-button-v2.png" alt="GitSync Button" />
+    <img className="screenshot-full" src="/img/development-lifecycle/backup/gitsync/gitsync-button-v3.png" alt="GitSync Button" />
 
 2. On clicking the **GitSync** button, a modal will open with the option to enter the commit message. 
-    <img className="screenshot-full" src="/img/development-lifecycle/backup/gitsync/commit-message-v2.png" alt="GitSync Commit Message" />
+    <img className="screenshot-full" src="/img/development-lifecycle/backup/gitsync/commit-message-v3.png" alt="GitSync Commit Message" />
 
 3. Enter the commit message and click on the **Commit changes** button to commit the changes to the git repository. 
 
@@ -63,7 +63,7 @@ Once the changes are committed, the user can see the commit message, author, and
 
     <TabItem value="GitHub" label="GitHub"> 
 
-        <img className="screenshot-full" src="/img/development-lifecycle/backup/gitsync/github-commit-v2.png" alt="GitSync" />
+        <img className="screenshot-full" src="/img/development-lifecycle/backup/gitsync/github-commit-v3.png" alt="GitSync" />
 
     </TabItem>
 
@@ -83,7 +83,7 @@ Whenever an app is renamed, the changes will be automatically committed to the g
 
     <TabItem value="GitHub" label="GitHub"> 
 
-        <img className="screenshot-full" src="/img/gitsync/rename-v2.png" alt="GitSync" />
+        <img className="screenshot-full" src="/img/gitsync/rename-v3.png" alt="GitSync" />
 
     </TabItem>
 
@@ -107,7 +107,7 @@ The **JSON** file in the app folder will be replaced with the new version of the
 
     <TabItem value="GitHub" label="GitHub"> 
 
-        <img className="screenshot-full" src="/img/gitsync/replace-v2.png" alt="GitSync" />
+        <img className="screenshot-full" src="/img/gitsync/replace-v3.png" alt="GitSync" />
 
     </TabItem>
 
@@ -129,7 +129,7 @@ When you promote an environment, from **Development to Staging**, the changes wi
 
      <TabItem value="GitHub" label="GitHub"> 
 
-         <img className="screenshot-full" src="/img/gitsync/promoted-v2.png" alt="GitSync" />
+         <img className="screenshot-full" src="/img/gitsync/promoted-v3.png" alt="GitSync" />
 
      </TabItem>
 
