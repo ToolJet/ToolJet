@@ -295,7 +295,7 @@ export function Select({ componentMeta, darkMode, ...restProps }) {
           </div>
           <div className="field mb-2" data-cy={`input-and-label-column-name`}>
             <CodeHinter
-              initialValue={isMultiSelect ? `{{${markedAsDefault.includes(item?.value)}}}` : item?.default?.value}
+              initialValue={isMultiSelect ? `{{${markedAsDefault?.includes(item?.value)}}}` : item?.default?.value}
               theme={darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
