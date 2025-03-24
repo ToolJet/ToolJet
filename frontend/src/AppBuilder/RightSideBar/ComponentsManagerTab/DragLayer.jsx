@@ -42,11 +42,17 @@ const CustomDragLayer = ({ size }) => {
   const canvasBounds = item?.canvasRef?.getBoundingClientRect();
   const height = size.height;
 
-  const width = (canvasWidth * size.width) / NO_OF_GRIDS;
+  const mainCanvasWidth = document.getElementById('real-canvas')?.offsetWidth || 0;
 
+  let width = (mainCanvasWidth * size.width) / NO_OF_GRIDS;
   // Calculate position relative to the current canvas (parent or child)
   const left = currentOffset.x - (canvasBounds?.left || 0);
   const top = currentOffset.y - (canvasBounds?.top || 0);
+
+  // Adjust position and width if exceeding grid bounds
+  if (width >= canvasWidth) {
+    width = canvasWidth;
+  }
 
   const [x, y] = snapToGrid(canvasWidth, left, top);
   return (
