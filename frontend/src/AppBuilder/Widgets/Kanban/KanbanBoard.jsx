@@ -56,6 +56,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id }) {
   const [containers, setContainers] = useState([]);
 
   const [showModal, setShowModal] = useState(false);
+  const setModalOpenOnCanvas = useStore((state) => state.setModalOpenOnCanvas);
   const [activeId, setActiveId] = useState(null);
   const cardMovementRef = useRef(null);
   const shouldUpdateData = useRef(false);
@@ -117,6 +118,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id }) {
       }
       /**** End - Logic to reduce the zIndex of modal control box ****/
     }
+    setModalOpenOnCanvas(`${id}-modal`, showModal);
   }, [showModal]);
 
   useEffect(() => {
@@ -410,6 +412,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef, id }) {
                   width: `${(Number(cardWidth) || 300) + 48}px`,
                 }}
                 kanbanProps={kanbanProps}
+                componentType="Kanban"
               >
                 {items[columnId] && (
                   <SortableContext items={items[columnId]} strategy={verticalListSortingStrategy}>

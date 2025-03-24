@@ -186,6 +186,7 @@ export const QueryPanel = ({ darkMode }) => {
         id="query-manager"
         style={{
           height: `calc(100% - ${isExpanded ? height : 100}%)`,
+          maxHeight: '93.5%',
           cursor: isDraggingQueryPane || isTopOfQueryPanel ? 'row-resize' : 'default',
           ...(!isExpanded && {
             border: 'none',

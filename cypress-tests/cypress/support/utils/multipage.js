@@ -3,7 +3,7 @@ import { commonSelectors } from "../../constants/selectors/common";
 
 export const searchPage = (pageName) => {
   cy.get('[title="Search"]').click();
-  cy.get('[data-cy="search-input-filed"]').type(pageName);
+  cy.get('[data-cy="search-input-field"]').type(pageName);
 };
 
 export const clearSearch = () => {

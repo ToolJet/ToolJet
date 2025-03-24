@@ -9,6 +9,7 @@ const useCallbackActions = () => {
   const currentPageComponents = useStore((state) => state?.getCurrentPageComponents(), shallow);
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
   const runQuery = useStore((state) => state.queryPanel.runQuery);
+  const getComponentIdToAutoScroll = useStore((state) => state.getComponentIdToAutoScroll);
 
   const handleRemoveComponent = (component) => {
     deleteComponents([component.id]);
@@ -30,30 +31,22 @@ const useCallbackActions = () => {
     return toast.success('Copied to the clipboard', { position: 'top-center' });
   };
 
-  const autoScrollTo = (id) => {
-    setSelectedComponents([id]);
-    const target = document.getElementById(id);
-    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  };
-
   const handleAutoScrollToComponent = (data) => {
-    const currentPageComponents = useStore.getState().getCurrentPageComponents();
-    const component = currentPageComponents?.[data.id];
-
-    let parentId = component?.component?.parent;
-    if (parentId) {
-      const regex = /-\d+$/;
-      if (regex.test(parentId)) {
-        parentId = parentId.replace(regex, ''); // To get parentId without tab index if parent type is Tab
-      }
-      const parentType = currentPageComponents?.[parentId]?.component?.component;
-      if (parentType && (parentType === 'Modal' || parentType === 'Tabs')) {
-        autoScrollTo(parentId); // To scroll to parent component if parent type is Modal or Tabs
-        return;
-      }
+    const { isAccessible, computedComponentId, isOnCanvas } = getComponentIdToAutoScroll(data.id);
+    if (!isAccessible) {
+      if (isOnCanvas) {
+        toast.success(
+          `This component can't be opened because it's on the main canvas. Close ${computedComponentId} and click "Go to component" to view it there`
+        );
+      } else
+        toast.success(
+          `This component can't be opened because it's inside ${computedComponentId}. Open ${computedComponentId} and click "Go to component"to view it.`
+        );
+      return;
     }
-
-    autoScrollTo(data.id);
+    setSelectedComponents([computedComponentId]);
+    const target = document.getElementById(computedComponentId);
+    target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   };
 
   const callbackActions = [

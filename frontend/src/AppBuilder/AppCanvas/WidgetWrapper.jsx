@@ -27,7 +27,7 @@ const WidgetWrapper = memo(
     );
     const layoutData = useStore((state) => state.getComponentDefinition(id)?.layouts?.[currentLayout], shallow);
     const isWidgetActive = useStore((state) => state.selectedComponents.find((sc) => sc === id) && !readOnly, shallow);
-    const isDragging = useGridStore((state) => state.draggingComponentId === id);
+    const isDragging = useStore((state) => state.draggingComponentId === id);
     const isResizing = useGridStore((state) => state.resizingComponentId === id);
     const componentType = useStore((state) => state.getComponentDefinition(id)?.component?.component, shallow);
     const setHoveredComponentForGrid = useStore((state) => state.setHoveredComponentForGrid, shallow);
@@ -52,7 +52,9 @@ const WidgetWrapper = memo(
       height: visibility === false ? '10px' : `${height}px`,
       transform: `translate(${layoutData.left * gridWidth}px, ${layoutData.top}px)`,
       WebkitFontSmoothing: 'antialiased',
+      border: visibility === false ? `1px solid var(--border-default)` : 'none',
     };
+
     if (!componentType) return null;
     return (
       <>
@@ -67,8 +69,8 @@ const WidgetWrapper = memo(
           data-id={`${id}`}
           id={id}
           widgetid={id}
+          component-type={componentType}
           style={{
-            //   transform: `translate(332px, -134px)`,
             // zIndex: mode === 'view' && widget.component.component == 'Datepicker' ? 2 : null,
             ...styles,
           }}
@@ -84,12 +86,12 @@ const WidgetWrapper = memo(
           {mode == 'edit' && (
             <ConfigHandle
               id={id}
-              position={layoutData.top < 15 ? 'bottom' : 'top'}
               widgetTop={layoutData.top}
               widgetHeight={layoutData.height}
               showHandle={isWidgetActive}
               componentType={componentType}
               visibility={visibility}
+              subContainerIndex={subContainerIndex}
             />
           )}
           <RenderWidget

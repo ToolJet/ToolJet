@@ -98,6 +98,7 @@ export class WorkflowsModule {
         UserRepository,
         DataSourcesRepository,
         DataQueryRepository,
+        DataSourcesRepository,
         OrganizationConstantRepository,
         VersionRepository,
         AppsService,

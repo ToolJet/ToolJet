@@ -12,8 +12,4 @@ export class FeatureAbilityGuard extends AbilityGuard {
   protected getSubjectType() {
     return InternalTable;
   }
-
-  protected forwardAbility(): boolean {
-    return true;
-  }
 }
