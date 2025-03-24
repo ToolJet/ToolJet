@@ -66,6 +66,34 @@ export const ButtonGroup = function Button({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [multiSelection]);
 
+  const setSelected = (selected) => {
+    if (multiSelection) {
+      if (Array.isArray(selected)) {
+        const filteredItems = selected.filter((item) => values.includes(item));
+        setDefaultActive(filteredItems);
+        setExposedVariable('selected', filteredItems.join(','));
+      } else if ((typeof selected === 'string' || typeof selected === 'number') && values.includes(selected)) {
+        setDefaultActive([selected]);
+        setExposedVariable('selected', String(selected));
+      }
+    } else {
+      if (Array.isArray(selected)) {
+        const filteredItems = selected.filter((item) => values.includes(item));
+        if (filteredItems?.length >= 1) {
+          setDefaultActive([filteredItems[0]]);
+          setExposedVariable('selected', String(filteredItems[0]));
+        }
+      } else if ((typeof selected === 'string' || typeof selected === 'number') && values.includes(selected)) {
+        setDefaultActive([selected]);
+        setExposedVariable('selected', String(selected));
+      }
+    }
+  };
+
+  useEffect(() => {
+    setExposedVariable('setSelected', setSelected);
+  }, [multiSelection, values]);
+
   const buttonClick = (index) => {
     if (defaultActive?.includes(values[index]) && multiSelection) {
       const copyDefaultActive = [...defaultActive];
