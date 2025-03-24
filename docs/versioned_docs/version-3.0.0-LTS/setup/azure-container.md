@@ -5,14 +5,14 @@ title: Azure container apps
 
 # Deploying ToolJet on Azure container apps
 
+:::warning
+To enable ToolJet AI features in your ToolJet deployment, whitelist https://api-gateway.tooljet.ai.
+:::
+
 :::info
 Please note that you need to set up a PostgreSQL database manually to be used by ToolJet. 
 
 ToolJet comes with a built-in Redis setup, which is used for multiplayer editing and background jobs. However, for multi-service setup, it's recommended to use an external Redis instance.
-:::
-
-:::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`.
 :::
 
 ## Deploying ToolJet application
