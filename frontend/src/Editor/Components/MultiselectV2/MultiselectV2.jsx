@@ -11,7 +11,7 @@ import cx from 'classnames';
 import Label from '@/_ui/Label';
 const tinycolor = require('tinycolor2');
 import { CustomDropdownIndicator, CustomClearIndicator } from '../DropdownV2/DropdownV2';
-import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor } from '../DropdownV2/utils';
+import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor, sortArray } from '../DropdownV2/utils';
 
 export const MultiselectV2 = ({
   id,
@@ -36,6 +36,7 @@ export const MultiselectV2 = ({
     placeholder,
     loadingState: multiSelectLoadingState,
     optionsLoadingState,
+    sort,
   } = properties;
   const {
     selectedTextColor,
@@ -96,9 +97,9 @@ export const MultiselectV2 = ({
             isDisabled: data?.disable ?? false,
           }))
       : [];
-    return _selectOptions;
+    return sortArray(_selectOptions, sort);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [advanced, JSON.stringify(schema), JSON.stringify(options)]);
+  }, [advanced, JSON.stringify(schema), JSON.stringify(options), sort]);
 
   function findDefaultItem(value, isAdvanced, isDefault) {
     if (isAdvanced) {
