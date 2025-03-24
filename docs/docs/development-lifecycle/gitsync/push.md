@@ -37,7 +37,7 @@ During app creation, a **.meta** folder is generated, containing a **meta.json**
 
     <TabItem value="GitLab" label="GitLab"> 
 
-        <img className="screenshot-full" src="/img/gitsync/gitlab/author-v2.png" alt="GitSync" />
+        <img className="screenshot-full" src="/img/gitsync/gitlab/author-v3.png" alt="GitSync" />
 
     </TabItem>
 
@@ -69,7 +69,7 @@ Once the changes are committed, the user can see the commit message, author, and
 
     <TabItem value="GitLab" label="GitLab"> 
 
-        <img className="screenshot-full" src="/img/gitsync/gitlab/lastcommitmsg-v2.png" alt="GitSync" />
+        <img className="screenshot-full" src="/img/gitsync/gitlab/lastcommitmsg-v3.png" alt="GitSync" />
 
     </TabItem>
 
@@ -89,7 +89,7 @@ Whenever an app is renamed, the changes will be automatically committed to the g
 
     <TabItem value="GitLab" label="GitLab"> 
 
-        <img className="screenshot-full" src="/img/gitsync/gitlab/apprename-v2.png" alt="GitSync" />
+        <img className="screenshot-full" src="/img/gitsync/gitlab/apprename-v3.png" alt="GitSync" />
 
     </TabItem>
 
@@ -113,7 +113,7 @@ The **JSON** file in the app folder will be replaced with the new version of the
 
     <TabItem value="GitLab" label="GitLab"> 
 
-        <img className="screenshot-full" src="/img/gitsync/gitlab/newversion1-v2.png" alt="GitSync" />
+        <img className="screenshot-full" src="/img/gitsync/gitlab/newversion1-v3.png" alt="GitSync" />
 
     </TabItem>
 
@@ -135,7 +135,7 @@ When you promote an environment, from **Development to Staging**, the changes wi
 
      <TabItem value="GitLab" label="GitLab"> 
 
-         <img className="screenshot-full" src="/img/gitsync/gitlab/gitlab-promoted.png" alt="GitSync" />
+         <img className="screenshot-full" src="/img/gitsync/gitlab/gitlab-promoted-v2.png" alt="GitSync" />
 
      </TabItem>
 
