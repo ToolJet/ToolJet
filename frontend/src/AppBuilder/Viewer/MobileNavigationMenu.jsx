@@ -134,7 +134,7 @@ const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, chan
       version: selectedVersionName,
       env: selectedEnvironmentName,
     };
-    switchPage(pageId, pages.find((page) => page.id === pageId)?.handle, Object.entries(queryParams), true);
+    switchPage(pageId, pages.find((page) => page.id === pageId)?.handle, Object.entries(queryParams));
   };
   var styles = {
     bmBurgerButton: {

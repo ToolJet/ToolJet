@@ -95,7 +95,7 @@ export const ViewerSidebarNavigation = ({
       version: selectedVersionName,
       env: selectedEnvironmentName,
     };
-    switchPage(pageId, pages.find((page) => page.id === pageId)?.handle, Object.entries(queryParams), true);
+    switchPage(pageId, pages.find((page) => page.id === pageId)?.handle, Object.entries(queryParams));
   };
 
   const isLicensed =
