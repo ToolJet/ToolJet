@@ -15,6 +15,7 @@ import Label from '@/_ui/Label';
 import cx from 'classnames';
 import { getInputBackgroundColor, getInputBorderColor, getInputFocusedColor } from './utils';
 import { isMobileDevice } from '@/_helpers/appUtils';
+import useStore from '@/AppBuilder/_stores/store';
 
 const { DropdownIndicator, ClearIndicator } = components;
 const INDICATOR_CONTAINER_WIDTH = 60;
@@ -39,7 +40,7 @@ export const CustomDropdownIndicator = (props) => {
 export const CustomClearIndicator = (props) => {
   return (
     <ClearIndicator {...props}>
-      <ClearIndicatorIcon width={'18'} fill={'var(--borders-strong)'} className="cursor-pointer" />
+      <ClearIndicatorIcon width={'18'} fill={'var(--borders-strong)'} className="cursor-pointer clear-indicator" />
     </ClearIndicator>
   );
 };
@@ -96,11 +97,14 @@ export const DropdownV2 = ({
   const { isValid, validationError } = validationStatus;
   const ref = React.useRef(null);
   const dropdownRef = React.useRef(null);
+  const selectRef = React.useRef(null);
   const [visibility, setVisibility] = useState(properties.visibility);
   const [isDropdownLoading, setIsDropdownLoading] = useState(dropdownLoadingState);
   const [isDropdownDisabled, setIsDropdownDisabled] = useState(disabledState);
   const [searchInputValue, setSearchInputValue] = useState('');
   const [userInteracted, setUserInteracted] = useState(false);
+  const currentMode = useStore((state) => state.currentMode);
+  const isEditor = currentMode === 'edit';
 
   const _height = padding === 'default' ? `${height}px` : `${height + 4}px`;
   const labelRef = useRef();
@@ -165,6 +169,12 @@ export const DropdownV2 = ({
     const validationStatus = validate(value);
     setValidationStatus(validationStatus);
     setExposedVariable('isValid', validationStatus?.isValid);
+  };
+
+  const handleClickInEditor = (e) => {
+    if (e.target.className.includes('clear-indicator') || isMenuOpen) return;
+    e.stopPropagation();
+    selectRef.current?.onControlMouseDown(e);
   };
 
   useEffect(() => {
@@ -431,8 +441,13 @@ export const DropdownV2 = ({
           _width={_width}
           top={'1px'}
         />
-        <div className="w-100 px-0 h-100 dropdownV2-widget" ref={ref}>
+        <div
+          className="w-100 px-0 h-100 dropdownV2-widget"
+          ref={ref}
+          onMouseDownCapture={isEditor && handleClickInEditor}
+        >
           <Select
+            ref={selectRef}
             menuIsOpen={isMenuOpen}
             isDisabled={isDropdownDisabled}
             value={selectOptions.filter((option) => option.value === currentValue)[0] ?? null}
