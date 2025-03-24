@@ -7,20 +7,17 @@ export const VerticalDivider = function Divider({ styles, height, width, dataCy,
 
   return (
     <div
-      className="row"
-      style={{ display: properties?.visibility ? 'flex' : 'none', padding: '0 8px', width, height }}
+      className="justify-content-center"
+      style={{ display: properties?.visibility ? 'flex' : 'none', width: '100%', height: '100%' }}
       data-cy={dataCy}
     >
-      <div className="col-6"></div>
       <div
-        className="col-6"
         style={{
-          height,
+          height: '100%',
           width: '1px',
           backgroundColor: dividerStyle === 'solid' ? color : 'transparent',
           borderLeft: dividerStyle === 'dashed' ? `1px dashed ${color}` : 'none',
           padding: '0rem',
-          marginLeft: '0.5rem',
           boxShadow,
         }}
       ></div>

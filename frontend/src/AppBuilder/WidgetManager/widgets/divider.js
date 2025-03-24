@@ -47,6 +47,18 @@ export const dividerConfig = {
       },
       accordian: 'Divider',
     },
+    dividerStyle: {
+      type: 'switch',
+      displayName: 'Style',
+      validation: {
+        schema: { type: 'string' },
+      },
+      options: [
+        { displayName: 'Solid', value: 'solid' },
+        { displayName: 'Dashed', value: 'dashed' },
+      ],
+      accordian: 'Divider',
+    },
     labelAlignment: {
       type: 'switch',
       displayName: 'Label alignment',
@@ -60,18 +72,6 @@ export const dividerConfig = {
       ],
       accordian: 'Divider',
       isFxNotRequired: true,
-    },
-    dividerStyle: {
-      type: 'switch',
-      displayName: 'Style',
-      validation: {
-        schema: { type: 'string' },
-      },
-      options: [
-        { displayName: 'Solid', value: 'solid' },
-        { displayName: 'Dashed', value: 'dashed' },
-      ],
-      accordian: 'Divider',
     },
     labelColor: {
       type: 'color',
