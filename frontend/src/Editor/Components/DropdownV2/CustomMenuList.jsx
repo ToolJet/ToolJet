@@ -107,8 +107,7 @@ const CustomMenuList = ({ selectProps, ...props }) => {
             maxHeight: selectProps.maxMenuHeight || 300,
             overflowY: 'auto',
             position: 'relative',
-            marginTop: '5px',
-            marginBottom: '5px',
+            padding: '5px 0',
           }}
         >
           <div
