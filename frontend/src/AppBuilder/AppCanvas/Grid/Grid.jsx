@@ -1,19 +1,25 @@
 // import '@/Editor/wdyr';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-// eslint-disable-next-line import/no-unresolved
+
+// External libraries
 import Moveable from 'react-moveable';
 import { shallow } from 'zustand/shallow';
-import _, { isArray, isEmpty } from 'lodash';
+import _, { isArray } from 'lodash';
 import { flushSync } from 'react-dom';
-import { RESTRICTED_WIDGETS_CONFIG } from '@/AppBuilder/WidgetManager/configs/restrictedWidgetsConfig';
-import { useGridStore, useIsGroupHandleHoverd, useOpenModalWidgetId } from '@/_stores/gridStore';
 import toast from 'react-hot-toast';
+
+// App stores
+import useStore from '@/AppBuilder/_stores/store';
+import { useGridStore, useIsGroupHandleHoverd, useOpenModalWidgetId } from '@/_stores/gridStore';
+
+// Configs
+import { NO_OF_GRIDS, SUBCONTAINER_WIDGETS } from '../appCanvasConstants';
+
+// Grid logic utilities
 import {
   individualGroupableProps,
-  getMouseDistanceFromParentDiv,
   findChildrenAndGrandchildren,
   findHighestLevelofSelection,
-  getOffset,
   hasParentWithClass,
   getPositionForGroupDrag,
   adjustWidth,
@@ -23,12 +29,13 @@ import {
   handleDeactivateTargets,
   handleActivateNonDraggingComponents,
 } from './gridUtils';
-import { useAppVersionStore } from '@/_stores/appVersionStore';
-import { resolveWidgetFieldValue } from '@/_helpers/utils';
-import { dragContextBuilder, getAdjustedDropPosition, groupDragContextBuilder } from './helpers/dragEnd';
-import useStore from '@/AppBuilder/_stores/store';
+
+import { dragContextBuilder, groupDragContextBuilder } from './context/contextBuilder';
+
+import { getAdjustedDropPosition } from './helpers/dragUtils';
+
+// Styles
 import './Grid.css';
-import { NO_OF_GRIDS, SUBCONTAINER_WIDGETS } from '../appCanvasConstants';
 
 const CANVAS_BOUNDS = { left: 0, top: 0, right: 0, position: 'css' };
 const RESIZABLE_CONFIG = {
@@ -491,7 +498,6 @@ export default function Grid({ gridWidth, currentLayout }) {
           ev.target.style.transform = `translate(${snappedX}px, ${snappedY}px)`;
           const parent = target.slotId === 'real-canvas' ? null : target.slotId;
 
-
           return {
             id: ev.target.id,
             x: posX,
@@ -949,22 +955,38 @@ export default function Grid({ gridWidth, currentLayout }) {
         }}
         onDragGroup={(ev) => {
           const { events } = ev;
-          const parentElm = events[0]?.target?.closest('.real-canvas');
-          if (parentElm && !parentElm.classList.contains('show-grid')) {
-            parentElm?.classList?.add('show-grid');
-          }
+
+          const initialParentElm = events[0]?.target?.closest('.real-canvas');
+          const initialParentId = initialParentElm?.id?.replace('canvas-', '');
+          const initialGridWidth = useGridStore.getState().subContainerWidths?.[initialParentId] || gridWidth;
+
+          const targetElems = document.elementsFromPoint(ev.clientX, ev.clientY);
+
+          const newCanvas = targetElems.find((ele) => ele.classList.contains('real-canvas'));
+          const newCanvasId = newCanvas?.getAttribute('data-parentid') || newCanvas?.id?.replace('canvas-', '');
+          const newGridWidth = useGridStore.getState().subContainerWidths?.[newCanvasId] || gridWidth;
+
+          const isCanvasChanged = initialParentId !== newCanvasId;
 
           events.forEach((ev) => {
             const currentWidget = boxList.find(({ id }) => id === ev.target.id);
-            const _gridWidth =
-              useGridStore.getState().subContainerWidths?.[currentWidget?.component?.parent] || gridWidth;
+            const originalWidth = currentWidget?.layouts?.[currentLayout]?.width || 1;
 
-            let left = Math.round(ev.translate[0] / _gridWidth) * _gridWidth;
+            let left = Math.round(ev.translate[0] / newGridWidth) * newGridWidth;
             let top = Math.round(ev.translate[1] / GRID_HEIGHT) * GRID_HEIGHT;
 
             ev.target.style.transform = `translate(${left}px, ${top}px)`;
+
+            if (isCanvasChanged && currentWidget) {
+              const updatedWidth = Math.round((originalWidth * initialGridWidth) / newGridWidth);
+              ev.target.style.width = `${updatedWidth * newGridWidth}px`;
+            }
           });
-          handleActivateTargets(parentElm?.id?.replace('canvas-', ''));
+
+          if (newCanvasId && newCanvasId !== initialParentId) {
+            handleActivateTargets(newCanvasId);
+          }
+
           updateNewPosition(events);
         }}
         onDragGroupStart={({ events }) => {
