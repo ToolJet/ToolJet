@@ -1,17 +1,6 @@
 .target, .nested-target {
 	position: absolute;
-	/* width: 100px;
-	height: 100px; */
-	/* top: 150px;
-	left: 100px; */
-	/* line-height: 100px; */
-	/* text-align: center; */
-	/* background: #ee8; */
-	/* color: #333; */
-	/* font-weight: bold; */
 	box-sizing: border-box;
-	/* transition: transform 0.1s; */
-    /* z-index: 3001; */
 }
 
 .target.hovered{
@@ -76,43 +65,6 @@
 	background: #8DA4EF !important;
 }
 
-
-
-/* Hides all the control lines*/
-/* .moveable-line {
-    color: transparent !important;
-    --moveable-color: transparent !important;
-}
-
-.moveable-control {
-    visibility: hidden;
-}
-
-.target {
-    outline: 1px solid #4af;
-} */
-
-
-.main-editor-canvas .widget-target:not(:has(.widget-target:hover)):hover {  
-    outline: 1px solid #4af;
-    z-index: 4 !important;
-}
-
-.main-editor-canvas .widget-target:has(.nested-target:hover):hover {  
-    outline: 0px solid #4af;
-}
-
-
-.main-editor-canvas .nested-target:not(:has(.nested-target:hover)):hover {  
-    outline: 1px solid #4af;
-    z-index: 4 !important;
-}
-
-.active-target, .resizing-target {
-    outline: 1px solid #4af !important;
-    /* z-index: 1000000 !important; */
-} 
-
 .moveable-control-box:not([data-able-groupable]) .moveable-control-box:not(:hover) {
     opacity: 0;
 }
@@ -139,10 +91,6 @@
     opacity: 0;
     width: 0px !important;
     height: 0px !important;
-}
-
-.resizing-target * {
-    opacity: 0;
 }
 
 
@@ -186,5 +134,43 @@
     display: none;
 }
 
+.moveable-guideline {
+    background: #97AEFC !important;
+    opacity: 0.8;
+    z-index: 9999;
+}
 
-/*  */
+.moveable-guideline.moveable-horizontal {
+    height: 1px !important;
+    width: 100% !important;
+    background: #97AEFC !important;
+    left: 0 !important;
+
+}
+
+.moveable-guideline.moveable-vertical {
+    width: 1px !important;
+    height: 100% !important;
+    background: #97AEFC !important;
+    top: 0 !important;
+
+}
+
+.moveable-guideline-group {
+    z-index: 9999;
+}
+
+.dragging-component-canvas {
+    outline: 1px solid var(--border-accent-strong) !important;
+    outline-offset: 0px; /* Creates space between element and outline */
+    z-index: 999 !important;
+}
+
+.non-dragging-component { 
+    outline: 1px dotted var(--border-accent-weak) !important;
+    outline-offset: 0px; /* Creates space between element and outline */
+    z-index: 999 !important;
+}
+
+
+

@@ -35,7 +35,6 @@ export abstract class AbilityFactory<TActions extends string, TSubject> {
             }
           : {}),
       }));
-
     if (request) {
       request.tj_user_permissions = userPermission;
     }

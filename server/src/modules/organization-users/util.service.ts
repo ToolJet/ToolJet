@@ -40,7 +40,6 @@ import { SessionUtilService } from '@modules/session/util.service';
 import { SetupOrganizationsUtilService } from '@modules/setup-organization/util.service';
 import { IOrganizationUsersUtilService } from './interfaces/IUtilService';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-
 @Injectable()
 export class OrganizationUsersUtilService implements IOrganizationUsersUtilService {
   constructor(
@@ -147,8 +146,18 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
 
       try {
         for (const addGroup of groups) {
+          const orgGroupPermission = await this.groupPermissionsRepository.getGroup(
+            {
+              organizationId: organizationId,
+              name: addGroup,
+            },
+            manager
+          );
+          if (!orgGroupPermission) {
+            throw new BadRequestException(`${addGroup} group does not exist for current organization`);
+          }
           await this.groupPermissionsUtilService.addUsersToGroup(
-            { allowRoleChange: false, userIds: [userId], groupId: addGroup },
+            { allowRoleChange: false, userIds: [userId], groupId: orgGroupPermission.id },
             organizationId,
             manager
           );
@@ -223,7 +232,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const userType = (await manager.count(User)) === 0 ? USER_TYPE.INSTANCE : USER_TYPE.WORKSPACE;
 
-      return await this.userRepository.createOne(
+      return await this.userRepository.createOrUpdate(
         {
           email,
           firstName,
@@ -252,7 +261,6 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
 
     const role = orgUser.user.userPermissions.filter((group) => group.type === GROUP_PERMISSIONS_TYPE.DEFAULT);
     const groups = orgUser.user.userPermissions.filter((group) => group.type === GROUP_PERMISSIONS_TYPE.CUSTOM_GROUP);
-
     return {
       email: orgUser.user.email,
       firstName: orgUser.user.firstName ?? '',
@@ -263,9 +271,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
       role: orgUser.role,
       status: orgUser.status,
       avatarId: orgUser.user.avatarId,
-      groups: isBasicPlan
-        ? []
-        : groups.map((groupPermission) => ({ name: groupPermission.name, id: groupPermission.id })),
+      groups: groups.map((groupPermission) => ({ name: groupPermission.name, id: groupPermission.id })),
       roleGroup: role.map((groupPermission) => ({ name: groupPermission.name, id: groupPermission.id })),
       ...(orgUser.invitationToken ? { invitationToken: orgUser.invitationToken } : {}),
       ...(this.configService.get<string>('HIDE_ACCOUNT_SETUP_LINK') !== 'true' && orgUser.user.invitationToken

@@ -1250,6 +1250,11 @@ $border-radius: 4px;
         color: var(--slate12) !important;
       }
     }
+    &.data-source-exists {
+      .cm-editor {
+        border-radius: 0 4px 4px 0 !important;
+      }
+    }
   }
 
   .rest-api-methods-select-element-container {
@@ -1851,8 +1856,9 @@ $border-radius: 4px;
 .tjdb-codhinter-wrapper{
   .codehinter-input{
     .cm-editor{
-      height: 30px !important;
+      // height: 30px !important;
       min-height: 30px !important;
+      max-height:100px !important;
       border-radius: 0 !important;
       border-right: 0 ;
   }
@@ -1860,8 +1866,9 @@ $border-radius: 4px;
 }
 .tjdb-limit-offset-codehinter{
   .cm-editor{
-    height: 30px !important;
+    // height: 30px !important;
     min-height: 30px !important;
+    max-height:100px !important;
   }
 }
 
@@ -1898,5 +1905,20 @@ $border-radius: 4px;
       font-size: 12px;
       line-height: 18px;
     }
+  }
+}
+
+
+.qm-delete-btn {
+  min-height: 30px;
+  height: 100% !important;
+  align-items: flex-start !important;
+  padding-top: 6px;
+}
+
+.restapi-key-value {
+  .code-hinter-wrapper, .code-editor-basic-wrapper, .codehinter-container, .cm-codehinter, .code-editor-query-panel{
+    height:100%;
+    max-height: 100px;
   }
 }

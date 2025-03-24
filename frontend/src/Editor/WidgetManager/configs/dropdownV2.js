@@ -311,7 +311,6 @@ export const dropdownV2Config = {
         ],
       },
       label: { value: 'Select' },
-      value: { value: '{{"2"}}' },
       optionsLoadingState: { value: '{{false}}' },
       sort: { value: 'asc' },
       placeholder: { value: 'Select an option' },

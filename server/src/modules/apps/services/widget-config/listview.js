@@ -13,6 +13,7 @@ export const listviewConfig = {
         top: 15,
         left: 3,
         height: 100,
+        width: 7,
       },
       properties: ['source'],
       accessorKey: 'imageURL',
@@ -49,7 +50,7 @@ export const listviewConfig = {
       type: 'code',
       displayName: 'List data',
       validation: {
-        schema: { type: 'array', element: { type: 'object' } },
+        schema: { type: 'union', schemas: [{ type: 'array', element: { type: 'object' } },{ type: 'array', element: { type: 'string' } }] },
         defaultValue: "[{text: 'Sample text 1'}]",
       },
     },

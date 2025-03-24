@@ -3,9 +3,13 @@ import { shallow } from 'zustand/shallow';
 import './configHandle.scss';
 import useStore from '@/AppBuilder/_stores/store';
 import { findHighestLevelofSelection } from '../Grid/gridUtils';
+import SolidIcon from '@/_ui/Icon/solidIcons/index';
+
+const CONFIG_HANDLE_HEIGHT = 20;
+const BUFFER_HEIGHT = 1;
+
 export const ConfigHandle = ({
   id,
-  position,
   widgetTop,
   widgetHeight,
   setSelectedComponentAsModal = () => null, //! Only Modal widget passes this uses props down. All other widgets use selecto lib
@@ -13,6 +17,8 @@ export const ConfigHandle = ({
   customClassName = '',
   showHandle,
   componentType,
+  visibility,
+  subContainerIndex,
 }) => {
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
   const componentName = useStore((state) => state.getComponentDefinition(id)?.component?.name || '', shallow);
@@ -26,18 +32,35 @@ export const ConfigHandle = ({
     (state) => componentType === 'Tabs' && state.getExposedValueOfComponent(id)?.currentTab,
     shallow
   );
+  const position = widgetTop < 15 ? 'bottom' : 'top';
 
   const setComponentToInspect = useStore((state) => state.setComponentToInspect);
+  const isModal = componentType === 'Modal' || componentType === 'ModalV2';
+  const _showHandle = useStore((state) => {
+    const isWidgetHovered = state.getHoveredComponentForGrid() === id || state.hoveredComponentBoundaryId === id;
+    const anyComponentHovered = state.getHoveredComponentForGrid() !== '' || state.hoveredComponentBoundaryId !== '';
+    // If one component is hovered and one is selected, show the handle for the hovered component
+    return (
+      (subContainerIndex === 0 || subContainerIndex === null) &&
+      (isWidgetHovered ||
+        (showHandle && (!isMultipleComponentsSelected || (isModal && isModalOpen)) && !anyComponentHovered))
+    );
+  }, shallow);
+
+  let height = visibility === false ? 10 : widgetHeight;
+
   return (
     <div
       className={`config-handle ${customClassName}`}
       widget-id={id}
       style={{
-        top: position === 'top' ? '-20px' : widgetTop + widgetHeight - (widgetTop < 10 ? 15 : 10),
-        visibility:
-          showHandle && (!isMultipleComponentsSelected || (componentType === 'Modal' && isModalOpen))
-            ? 'visible'
-            : 'hidden',
+        top:
+          componentType === 'Modal' && isModalOpen
+            ? '0px'
+            : position === 'top'
+            ? '-20px'
+            : `${height - (CONFIG_HANDLE_HEIGHT + BUFFER_HEIGHT)}px`,
+        visibility: _showHandle ? 'visible' : 'hidden',
         left: '-1px',
       }}
       onClick={(e) => {
@@ -51,7 +74,10 @@ export const ConfigHandle = ({
     >
       <span
         style={{
-          background: componentType === 'Modal' && isModalOpen ? '#c6cad0' : '#4D72FA',
+          background:
+            visibility === false ? '#c6cad0' : componentType === 'Modal' && isModalOpen ? '#c6cad0' : '#4D72FA',
+          border: position === 'bottom' ? '1px solid white' : 'none',
+          color: visibility === false && 'var(--text-placeholder)',
         }}
         className="badge handle-content"
       >
@@ -65,17 +91,30 @@ export const ConfigHandle = ({
           data-cy={`${componentName?.toLowerCase()}-config-handle`}
           className="text-truncate"
         >
-          <img
-            style={{ cursor: 'pointer', marginRight: '5px', verticalAlign: 'middle' }}
-            src="assets/images/icons/settings.svg"
-            width="12"
-            height="12"
-            draggable="false"
-          />
+          {/* Settings Icon */}
+          <span style={{ cursor: 'pointer', marginRight: '5px' }}>
+            <SolidIcon
+              name="settings"
+              width="12"
+              height="12"
+              fill={visibility === false ? 'var(--text-placeholder)' : '#fff'}
+            />
+          </span>
           <span>{componentName}</span>
+          {/* Divider */}
+          <hr
+            style={{
+              marginLeft: '10px',
+              height: '12px',
+              width: '2px',
+              backgroundColor: visibility === false ? 'var(--text-placeholder)' : '#fff',
+              opacity: 0.5,
+            }}
+          />
         </div>
+        {/* Delete Button */}
         {!isMultipleComponentsSelected && !shouldFreeze && (
-          <div className="delete-part">
+          <div>
             <img
               style={{ cursor: 'pointer', marginLeft: '5px' }}
               src="assets/images/icons/inspect.svg"
@@ -87,19 +126,20 @@ export const ConfigHandle = ({
               data-cy={`${componentName.toLowerCase()}-inspect-button`}
               className="config-handle-inspect"
             />
-            <img
+            <span
               style={{ cursor: 'pointer', marginLeft: '5px' }}
-              src="assets/images/icons/trash-light.svg"
-              width="12"
-              role="button"
-              height="12"
-              draggable="false"
               onClick={() => {
                 deleteComponents([id]);
               }}
               data-cy={`${componentName.toLowerCase()}-delete-button`}
-              className="delete-icon"
-            />
+            >
+              <SolidIcon
+                name="trash"
+                width="12"
+                height="12"
+                fill={visibility === false ? 'var(--text-placeholder)' : '#fff'}
+              />
+            </span>
           </div>
         )}
       </span>

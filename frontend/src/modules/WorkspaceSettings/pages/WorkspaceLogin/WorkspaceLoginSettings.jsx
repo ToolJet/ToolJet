@@ -31,6 +31,7 @@ class OrganizationLogin extends React.Component {
       instanceSSO: [],
       featureAccess: {},
       isBasicPlan: false,
+      isCommunity: false,
       canToggleAutomaticSSOLogin: false,
       showDisableAutoSSOModal: false,
     };
@@ -152,6 +153,7 @@ class OrganizationLogin extends React.Component {
   async setLoginConfigs() {
     const featureAccess = await licenseService.getFeatureAccess();
     const isBasicPlan = !featureAccess?.licenseStatus?.isLicenseValid || featureAccess?.licenseStatus?.isExpired;
+    const isCommunity = !featureAccess?.licenseStatus?.isLicenseValid && featureAccess?.expiry == '';
     const settings = await this.fetchSSOSettings();
     const instanceSSOResult = await instanceSettingsService.fetchSSOConfigs();
     const instanceSSO = !Array.isArray(instanceSSOResult)
@@ -180,7 +182,8 @@ class OrganizationLogin extends React.Component {
     const enabledSSOs = combinedSSOConfigs.filter(
       (obj) => obj.enabled && obj.sso !== 'form' && (!this.protectedSSO.includes(obj.sso) || featureAccess?.[obj.sso])
     );
-    let passwordLoginEnabled = isBasicPlan ? true : ssoConfigs?.find((obj) => obj.sso === 'form')?.enabled || false;
+    let passwordLoginEnabled =
+      isBasicPlan && !isCommunity ? true : ssoConfigs?.find((obj) => obj.sso === 'form')?.enabled || false;
 
     if (enabledSSOs.length === 0) {
       try {
@@ -211,6 +214,7 @@ class OrganizationLogin extends React.Component {
       instanceSSO: [...instanceSSO],
       featureAccess: featureAccess,
       isBasicPlan: isBasicPlan,
+      isCommunity: isCommunity,
       canToggleAutomaticSSOLogin: canToggleAutomaticSSOLogin,
       isAnySSOEnabled:
         ssoConfigs?.some(
@@ -447,6 +451,7 @@ class OrganizationLogin extends React.Component {
       instanceSSO,
       featureAccess,
       isBasicPlan,
+      isCommunity,
       canToggleAutomaticSSOLogin,
     } = this.state;
     const flexContainerStyle = {
@@ -588,7 +593,7 @@ class OrganizationLogin extends React.Component {
                                 onChange={() => this.handleCheckboxChange('passwordLoginEnabled')}
                                 data-cy="password-enable-toggle"
                                 checked={options?.passwordLoginEnabled === true}
-                                disabled={isBasicPlan ? true : !isAnySSOEnabled}
+                                disabled={isBasicPlan && !isCommunity ? true : !isAnySSOEnabled}
                               />
                               <label className="form-check-label bold-text" data-cy="label-password-login">
                                 Password login

@@ -20,7 +20,6 @@ import { GroupUsers } from '@entities/group_users.entity';
 import { USER_STATUS, WORKSPACE_USER_STATUS } from '@modules/users/constants/lifecycle';
 import { User } from '@entities/user.entity';
 import { DATA_BASE_CONSTRAINTS } from './constants/error';
-
 @Injectable()
 export class GroupPermissionsRepository extends Repository<GroupPermissions> {
   constructor(private dataSource: DataSource) {

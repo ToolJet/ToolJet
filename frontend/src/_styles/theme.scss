@@ -628,7 +628,6 @@ button {
 
 
     .inspector {
-      padding: 0px !important;
       .form-control-plaintext {
         padding: 0;
         color: var(--slate12);
@@ -1544,7 +1543,7 @@ button {
   .tab-content {
     overflow-y: auto;
     // TAB HEADER HEIGHT + FOOTER HEIGHT + Extra padding = 120px
-    height: calc(100vh - 7.5rem);
+    height: calc(100vh - 10.4rem);
     // Hide scrollbar
     -ms-overflow-style: none;
     /* IE and Edge */
@@ -2665,10 +2664,18 @@ hr {
     overflow-y: initial !important
   }
 
-  .modal-dialog-scrollable .modal-content {
+  .modal-dialog-scrollable:not(.modal-fullscreen) .modal-content {
     max-height: 88% !important;
   }
 
+  .modal-dialog-scrollable.modal-fullscreen .modal-content {
+    max-height: 100% !important;
+  }
+
+  .modal-dialog-scrollable.modal-fullscreen .modal-content.modal-component {
+    // Modal header height
+    padding-bottom: 0;
+  }
 }
 
 
@@ -14022,8 +14029,8 @@ tbody {
 }
 
 /*
-* remove this once whole app is migrated to new styles. use only `theme-dark` class everywhere. 
-* This is added since some of the pages are in old theme and making changes to `theme-dark` styles can break UI style somewhere else 
+* remove this once whole app is migrated to new styles. use only `theme-dark` class everywhere.
+* This is added since some of the pages are in old theme and making changes to `theme-dark` styles can break UI style somewhere else
 */
 .tj-dark-mode {
   background-color: var(--base) !important;
@@ -15816,6 +15823,7 @@ tbody {
 }
 
 .rest-api-options-codehinter {
+  height: 100%;
   .cm-content>.cm-line {
     // max-width: 357px !important;
   }
@@ -18569,6 +18577,12 @@ section.ai-message-prompt-input-wrapper {
     flex-grow: 1;
   }
 }
+
+
+.cm-tooltip {
+  z-index: 9999 !important;
+}
+
 .workspace-constant-value {
   position: relative;
 
@@ -18615,5 +18629,12 @@ section.ai-message-prompt-input-wrapper {
     &.dark {
       background: #FFFAEB !important;
     }
+  }
+}
+
+
+.single-line-codehinter-input {
+  .cm-editor {
+    max-height: 100px !important;
   }
 }

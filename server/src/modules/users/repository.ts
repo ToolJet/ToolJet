@@ -65,6 +65,7 @@ export class UserRepository extends Repository<User> {
           organizationId: true,
           organization: {
             name: true,
+            status: true,
           },
         },
       },
@@ -85,9 +86,18 @@ export class UserRepository extends Repository<User> {
     };
   }
 
-  createOne(user: Partial<User>, manager?: EntityManager): Promise<User> {
-    return dbTransactionWrap((manager: EntityManager) => {
-      return manager.save(manager.create(User, user));
+  async createOrUpdate(user: Partial<User>, manager?: EntityManager): Promise<User> {
+    //not using upsert because hook is not supported for password digest
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const existingUser = await manager.findOne(User, { where: { email: user.email } });
+
+      if (existingUser) {
+        Object.assign(existingUser, user);
+        return manager.save(User, existingUser);
+      } else {
+        const newUser = manager.create(User, user);
+        return manager.save(User, newUser);
+      }
     }, manager || this.manager);
   }
 

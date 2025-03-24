@@ -10,7 +10,11 @@ import {
 import { extractAndReplaceReferencesFromString } from '@/AppBuilder/_stores/ast';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { cloneDeep, merge, set as lodashSet } from 'lodash';
-import { computeComponentName, getAllChildComponents } from '@/AppBuilder/AppCanvas/appCanvasUtils';
+import {
+  computeComponentName,
+  getAllChildComponents,
+  getParentWidgetFromId,
+} from '@/AppBuilder/AppCanvas/appCanvasUtils';
 import { pageConfig } from '@/AppBuilder/RightSideBar/PageSettingsTab/pageConfig';
 import { RIGHT_SIDE_BAR_TAB } from '@/AppBuilder/RightSideBar/rightSidebarConstants';
 import { DEFAULT_COMPONENT_STRUCTURE } from './resolvedSlice';
@@ -40,6 +44,7 @@ const initialState = {
   currentPageHandle: null,
   showWidgetDeleteConfirmation: false,
   focusedParentId: null,
+  modalsOpenOnCanvas: [],
 };
 
 export const createComponentsSlice = (set, get) => ({
@@ -502,7 +507,7 @@ export const createComponentsSlice = (set, get) => ({
 
     const resolvedMandatory = getResolvedValue(mandatory, customResolveObjects) || false;
 
-    if (resolvedMandatory == true && !widgetValue) {
+    if (resolvedMandatory == true && !widgetValue && widgetValue !== 0) {
       return {
         isValid: false,
         validationError: `Field cannot be empty`,
@@ -761,7 +766,7 @@ export const createComponentsSlice = (set, get) => ({
     const { getComponentTypeFromId } = get();
     const transformedParentId = parentId?.length > 36 ? parentId.slice(0, 36) : parentId;
     let parentType = getComponentTypeFromId(transformedParentId, moduleId);
-    const parentWidget = parentType === 'Kanban' ? 'Kanban_card' : parentType;
+    const parentWidget = getParentWidgetFromId(parentType, parentId);
     const restrictedWidgets = RESTRICTED_WIDGETS_CONFIG?.[parentWidget] || [];
     const isParentChangeAllowed = !restrictedWidgets.includes(currentWidget);
     if (!isParentChangeAllowed)
@@ -1742,7 +1747,10 @@ export const createComponentsSlice = (set, get) => ({
   getCustomResolvableReference: (value, parentId, moduleId) => {
     const { getParentComponentType } = get();
     const parentComponentType = getParentComponentType(parentId, moduleId);
-    if (parentComponentType === 'Listview' && value.includes('listItem') && checkSubstringRegex(value, 'listItem')) {
+    if (
+      (parentComponentType === 'Listview' && value.includes('listItem') && checkSubstringRegex(value, 'listItem')) ||
+      value === '{{listItem}}'
+    ) {
       return { entityType: 'components', entityNameOrId: parentId, entityKey: 'listItem' };
     } else if (
       parentComponentType === 'Kanban' &&
@@ -1859,5 +1867,18 @@ export const createComponentsSlice = (set, get) => ({
     const { getCurrentPage } = get();
     const currentPage = getCurrentPage(moduleId);
     return currentPage?.autoComputeLayout;
+  },
+  setModalOpenOnCanvas: (modalId, isOpen) => {
+    const { modalsOpenOnCanvas } = get();
+    let newModalOpenOnCanvas = [];
+
+    if (isOpen) {
+      newModalOpenOnCanvas = [...modalsOpenOnCanvas, modalId];
+    } else {
+      newModalOpenOnCanvas = modalsOpenOnCanvas.filter((id) => id !== modalId);
+    }
+    set((state) => {
+      state.modalsOpenOnCanvas = newModalOpenOnCanvas;
+    });
   },
 });

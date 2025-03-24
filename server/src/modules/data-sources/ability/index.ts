@@ -15,7 +15,12 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     return DataSource;
   }
 
-  protected defineAbilityFor(can: AbilityBuilder<FeatureAbility>['can'], UserAllPermissions: UserAllPermissions): void {
+  protected defineAbilityFor(
+    can: AbilityBuilder<FeatureAbility>['can'],
+    UserAllPermissions: UserAllPermissions,
+    extractedMetadata: { moduleName: string; features: string[] },
+    request?: any
+  ): void {
     // Data source permissions
     // EE - data source create/delete -> full access
     // CE - Admin - full access. builder -> use access
@@ -26,6 +31,8 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
     const isCanCreate = userPermission.dataSourceCreate;
     const isCanDelete = userPermission.dataSourceDelete;
     const isAllViewable = !!resourcePermissions?.isAllUsable;
+
+    const dataSourceId = request?.tj_resource_id;
 
     // Oauth end points available to all
     can(FEATURE_KEY.GET_OAUTH2_BASE_URL, DataSource);
@@ -81,11 +88,14 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       return;
     }
 
-    if (resourcePermissions?.configurableDataSourceId?.length) {
+    if (
+      resourcePermissions?.configurableDataSourceId?.length &&
+      dataSourceId &&
+      resourcePermissions?.configurableDataSourceId?.includes(dataSourceId)
+    ) {
       can(
         [FEATURE_KEY.GET, FEATURE_KEY.UPDATE, FEATURE_KEY.GET_BY_ENVIRONMENT, FEATURE_KEY.TEST_CONNECTION],
-        DataSource,
-        { id: { $in: resourcePermissions.configurableDataSourceId } }
+        DataSource
       );
     }
 
@@ -93,10 +103,12 @@ export class FeatureAbilityFactory extends AbilityFactory<FEATURE_KEY, Subjects>
       can([FEATURE_KEY.GET, FEATURE_KEY.GET_BY_ENVIRONMENT], DataSource);
       return;
     }
-    if (resourcePermissions.usableDataSourcesId?.length) {
-      can([FEATURE_KEY.GET, FEATURE_KEY.GET_BY_ENVIRONMENT], DataSource, {
-        id: { $in: resourcePermissions.usableDataSourcesId },
-      });
+    if (
+      resourcePermissions.usableDataSourcesId?.length &&
+      dataSourceId &&
+      resourcePermissions?.usableDataSourcesId?.includes(dataSourceId)
+    ) {
+      can([FEATURE_KEY.GET, FEATURE_KEY.GET_BY_ENVIRONMENT], DataSource);
     }
   }
 }

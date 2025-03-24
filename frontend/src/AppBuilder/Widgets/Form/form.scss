@@ -1,0 +1,40 @@
+.wj-form-header {
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: -7px;
+    right: -7px;
+    height: 1px;
+    background-color: var(--border-weak);
+  }
+}
+
+.wj-form-footer {
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -7px;
+    right: -7px;
+    height: 1px;
+    background-color: var(--border-weak);
+  }
+}
+
+.tj-form-disabled-overlay {
+  /* TODO: Make slot overlays common */
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  z-index: 1;
+  margin: 0;
+
+  box-sizing: content-box;
+  padding: 4px 0;
+}

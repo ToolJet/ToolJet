@@ -473,6 +473,7 @@ export function createReferencesLookup(currentState, forQueryParams = false, ini
   const actions = [
     'runQuery',
     'setVariable',
+    'unsetAllVariables',
     'unSetVariable',
     'showAlert',
     'logout',
@@ -483,6 +484,7 @@ export function createReferencesLookup(currentState, forQueryParams = false, ini
     'goToApp',
     'generateFile',
     'setPageVariable',
+    'unsetAllPageVariables',
     'unsetPageVariable',
     'switchPage',
     'logInfo',

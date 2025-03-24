@@ -5,19 +5,13 @@ const MIN_TABLE_ROW_HEIGHT_DEFAULT = 45;
 
 const TableRowHeightInput = ({ value, onChange, cyLabel, staticText, styleDefinition }) => {
   const [inputValue, setInputValue] = useState(value);
+  const minValue =
+    styleDefinition.cellSize?.value === 'condensed' ? MIN_TABLE_ROW_HEIGHT_CONDENSED : MIN_TABLE_ROW_HEIGHT_DEFAULT;
+
   useEffect(() => {
     setInputValue(value < minValue ? minValue : value);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, styleDefinition.cellSize?.value]);
-  useEffect(() => {
-    onChange(
-      styleDefinition.cellSize?.value === 'condensed' ? MIN_TABLE_ROW_HEIGHT_CONDENSED : MIN_TABLE_ROW_HEIGHT_DEFAULT
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const minValue =
-    styleDefinition.cellSize?.value === 'condensed' ? MIN_TABLE_ROW_HEIGHT_CONDENSED : MIN_TABLE_ROW_HEIGHT_DEFAULT;
 
   const handleBlur = () => {
     const newValue = Math.max(inputValue, minValue);
