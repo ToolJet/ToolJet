@@ -1,9 +1,15 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Accordion from '@/_ui/Accordion';
 import { baseComponentProperties } from '../DefaultComponent';
 import Select from '@/_ui/Select';
 import useStore from '@/AppBuilder/_stores/store';
 import { countries } from './en';
+import { getCountries } from 'react-phone-number-input/input';
+import en from 'react-phone-number-input/locale/en';
+import flags from 'react-phone-number-input/flags';
+import FxButton from '@/AppBuilder/CodeBuilder/Elements/FxButton';
+import CodeHinter from '@/AppBuilder/CodeEditor';
+import cx from 'classnames';
 
 export const PhoneInput = ({ componentMeta, darkMode, ...restProps }) => {
   const {
@@ -21,7 +27,17 @@ export const PhoneInput = ({ componentMeta, darkMode, ...restProps }) => {
   const events = Object.keys(componentMeta.events);
   const validations = Object.keys(componentMeta.validation || {});
   const resolvedProperties = useStore((state) => state.getResolvedComponent(component.id)?.properties);
-  const defaultCountry = resolvedProperties?.defaultCountry || 'None';
+  const defaultCountry = resolvedProperties?.defaultCountry;
+  const isDefaultCountryFxOn = componentMeta?.definition?.properties?.dateFormat?.fxActive || false;
+
+  const options = useMemo(
+    () =>
+      getCountries().map((country) => ({
+        label: `${en[country]}`,
+        value: country,
+      })),
+    []
+  );
 
   const renderCustomOption = ({ label, value: optionValue }) => {
     const optionStyle = {
@@ -37,10 +53,11 @@ export const PhoneInput = ({ componentMeta, darkMode, ...restProps }) => {
       fontWeight: '400',
       color: darkMode ? '#fff' : '#1B1F24',
     };
+    const FlagIcon = flags[optionValue];
 
     return (
       <div style={optionStyle} className={`selectedOption  ${optionValue !== 'none' && 'custom-phone-input-options'}`}>
-        <div style={{ width: '25px', height: '16px' }} className={`flag ${optionValue}`}></div>
+        <div>{FlagIcon ? <FlagIcon style={{ width: '22px', height: '16px' }} /> : null}</div>
         {label}
       </div>
     );
@@ -49,17 +66,40 @@ export const PhoneInput = ({ componentMeta, darkMode, ...restProps }) => {
   const getCountryDropdown = () => {
     return (
       <div className="mb-2">
-        <label class="tj-text-xsm color-slate12 mb-2 false">Default country</label>
-        <Select
-          width="100%"
-          options={countries}
-          value={defaultCountry}
-          customOption={renderCustomOption}
-          onChange={(value) => {
-            console.log('value', value);
-            paramUpdated({ name: 'defaultCountry' }, 'value', value, 'properties');
-          }}
-        />
+        <div className="d-flex justify-content-between mb-1">
+          <label className="form-label"> Default Country</label>
+          <div
+            className={cx({
+              'hide-fx': !isDefaultCountryFxOn,
+            })}
+          >
+            <FxButton
+              active={isDefaultCountryFxOn}
+              onPress={() => {
+                paramUpdated({ name: 'dateFormat' }, 'fxActive', !isDefaultCountryFxOn, 'properties');
+              }}
+            />
+          </div>
+        </div>
+        {isDefaultCountryFxOn ? (
+          <CodeHinter
+            initialValue={defaultCountry}
+            theme={darkMode ? 'monokai' : 'default'}
+            mode="javascript"
+            lineNumbers={false}
+            onChange={(value) => paramUpdated({ name: 'defaultCountry' }, 'value', value, 'properties')}
+          />
+        ) : (
+          <Select
+            width="100%"
+            options={options}
+            value={defaultCountry}
+            customOption={renderCustomOption}
+            onChange={(value) => {
+              paramUpdated({ name: 'defaultCountry' }, 'value', value, 'properties');
+            }}
+          />
+        )}
       </div>
     );
   };

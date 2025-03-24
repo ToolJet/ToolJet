@@ -145,6 +145,11 @@ export const useInput = ({
     fireEvent('onChange');
   };
 
+  const handlePhoneInputChange = (value) => {
+    setInputValue(value);
+    fireEvent('onChange');
+  };
+
   const handleBlur = (e) => {
     setShowValidationError(true);
     setIsFocused(false);
@@ -184,6 +189,7 @@ export const useInput = ({
     validationError,
     isMandatory,
     setInputValue,
+    handlePhoneInputChange,
     handleChange,
     handleBlur,
     handleFocus,
