@@ -28,8 +28,9 @@ jobs:
       - name: Fetch the remote branch if it's a forked PR
         if: steps.check_repo.outputs.is_fork == 'true'
         run: |
-          git fetch origin pull/${{ github.event.number }}/head:${{ env.BRANCH_NAME }}
-          git checkout ${{ env.BRANCH_NAME }}
+          git remote add forked_repo https://github.com/${{ github.event.pull_request.head.repo.full_name }}.git
+          git fetch forked_repo
+          git checkout -b pr-${{ env.BRANCH_NAME }} forked_repo/${{ env.BRANCH_NAME }}
 
       - name: Checkout
         if: steps.check_repo.outputs.is_fork == 'false'
