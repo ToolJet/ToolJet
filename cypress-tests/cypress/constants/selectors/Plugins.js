@@ -56,3 +56,7 @@ export const awsTextractSelectors = {
   bucketNameInputField: '[data-cy="bucket-input-field"]',
   keyNameInputField: '[data-cy="key-input-field"]',
 };
+
+export const graphQLSelectors = {
+  urlInputField: '[data-cy="url-text-field"]',
+};
