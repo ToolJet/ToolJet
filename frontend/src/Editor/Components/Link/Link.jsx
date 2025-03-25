@@ -28,7 +28,7 @@ export const Link = ({ height, properties, styles, fireEvent, setExposedVariable
     opacity: isDisabled ? 0.5 : 1,
     pointerEvents: isDisabled ? 'none' : 'auto',
     fontWeight: '500',
-    '--link-hover-color': tinycolor(textColor).darken(15).toString(),
+    '--link-hover-color': tinycolor(textColor).darken(8).toString(),
   };
   // eslint-disable-next-line import/namespace
   const IconElement = Icons?.[icon] == undefined ? Icons['IconHome2'] : Icons[icon];
