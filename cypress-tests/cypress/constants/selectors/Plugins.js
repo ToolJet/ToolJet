@@ -39,6 +39,18 @@ export const minioSelectors = {
   dataInput: '[data-cy="data-input-field"]',
 };
 
+export const harperDbSelectors = {
+  recordsInputField: '[data-cy="records-input-field"]',
+  hashValueInputField: '[data-cy="hash-values-input-field"]',
+  attributesInputField: '[data-cy="attributes-input-field"]',
+  searchValueInputField: '[data-cy="search-value-input-field"]',
+  searchAttributeInputField: '[data-cy="search-attribute-input-field"]',
+  conditionInputField: '[data-cy="conditions-input-field"]',
+  sqlQueryInputField: '[data-cy="sql-query-input-field"]',
+  schemaInputField: '[data-cy="schema-input-field"]',
+  TableInputField: '[data-cy="table-input-field"]',
+};
+
 export const awsTextractSelectors = {
   documentInputField: '[data-cy="document-input-field"]',
   bucketNameInputField: '[data-cy="bucket-input-field"]',
