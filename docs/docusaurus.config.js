@@ -218,7 +218,122 @@ module.exports = {
           {
             to: '/docs/user-management/authentication/self-hosted/instance-login/',
             from: '/docs/enterprise/superadmin',
-          }
+          },
+          {
+            to: '/docs/enterprise/white-label/?4f03d6ce_page=1&52503652_page=2&587c9779_page=2',
+            from: '/docs/tj-setup/org-branding/white-labeling/',
+          },
+          {
+            to: '/docs/user-authentication/sso/oidc',
+            from: '/docs/user-management/sso/oidc/setup',
+          },
+          {
+            to: '/docs/enterprise/white-label/?587c9779_page=2&4f03d6ce_page=2&__hstc=222093575.6694e1c5b8259356fcccdd9cfcb617fb.1739577600474.1739577600475.1739577600476.1&__hssc=222093575.2.1739577600477&__hsfp=1152905967',
+            from: '/docs/tj-setup/org-branding/white-labeling/',
+          },
+          {
+            to: '/docs/setup/client/',
+            from: '/docs/setup/try-tooljet',
+          },
+          {
+            to: '',
+            from: '',
+          },
+          {
+            to: '',
+            from: '',
+          },
+          {
+            to: '',
+            from: '',
+          }, {
+            to: '',
+            from: '',
+          }, {
+            to: '',
+            from: '',
+          }, {
+            to: '',
+            from: '',
+          }, {
+            to: '',
+            from: '',
+          }, {
+            to: '',
+            from: '',
+          }, {
+            to: '',
+            from: '',
+          }, {
+            to: '',
+            from: '',
+          }, {
+            to: '',
+            from: '',
+          }, {
+            to: '',
+            from: '',
+          }, {
+            to: '',
+            from: '',
+          }, {
+            to: '',
+            from: '',
+          }, {
+            to: '',
+            from: '',
+          }, {
+            to: '',
+            from: '',
+          }, {
+            to: '',
+            from: '',
+          }, {
+            to: '',
+            from: '',
+          }, {
+            to: '',
+            from: '',
+          }, {
+            to: '',
+            from: '',
+          }, {
+            to: '',
+            from: '',
+          }, {
+            to: '',
+            from: '',
+          }, {
+            to: '',
+            from: '',
+          }, {
+            to: '',
+            from: '',
+          }, {
+            to: '',
+            from: '',
+          }, {
+            to: '',
+            from: '',
+          }, {
+            to: '',
+            from: '',
+          }, {
+            to: '',
+            from: '',
+          }, {
+            to: '',
+            from: '',
+          }, {
+            to: '',
+            from: '',
+          }, {
+            to: '',
+            from: '',
+          }, {
+            to: '',
+            from: '',
+          },
         ],
       },
     ],
