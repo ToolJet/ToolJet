@@ -1,5 +1,7 @@
-.jet-form-body {
-  background-color: inherit;
+.jet-form-widget {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .wj-form-header {
@@ -48,12 +50,17 @@
   height: auto;
   box-shadow: 0 0 0 1px transparent; /* Acts as a border */
   transition: box-shadow 0.15s ease-in-out;
+  max-height: 100%;
 
   &:hover {
     box-shadow: 0 0 0 1px var(--border-weak);
   }
 
   &.active {
+    box-shadow: 0 0 0 1px var(--border-accent-weak);
+  }
+
+  &.dragging {
     box-shadow: 0 0 0 1px var(--border-accent-strong);
   }
 
@@ -76,7 +83,21 @@
     visibility: visible;
   }
 }
+
 .only-bottom {
+}
+
+.jet-form-header {
+  min-height: 10px;
+}
+
+.jet-form-body {
+  min-height: 100px;
+  background-color: inherit;
+}
+
+.jet-form-footer {
+  min-height: 10px;
 }
 
 .jet-form-footer .resize-handle {
