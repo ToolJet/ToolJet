@@ -6,7 +6,16 @@ import { toast } from 'react-hot-toast';
 import _, { debounce } from 'lodash';
 import { useGridStore } from '@/_stores/gridStore';
 import { findHighestLevelofSelection } from './Grid/gridUtils';
-import { CANVAS_WIDTHS, NO_OF_GRIDS, WIDGETS_WITH_DEFAULT_CHILDREN } from './appCanvasConstants';
+import {
+  CANVAS_WIDTHS,
+  NO_OF_GRIDS,
+  WIDGETS_WITH_DEFAULT_CHILDREN,
+  CONTAINER_FORM_CANVAS_PADDING,
+  SUBCONTAINER_CANVAS_BORDER_WIDTH,
+  BOX_PADDING,
+  TAB_CANVAS_PADDING,
+  MODAL_CANVAS_PADDING,
+} from './appCanvasConstants';
 
 export function snapToGrid(canvasWidth, x, y) {
   const gridX = canvasWidth / 43;
@@ -705,4 +714,26 @@ export const getSubContainerIdWithSlots = (parentId) => {
     }
   }
   return cleanParentId;
+};
+
+export const getSubContainerWidthAfterPadding = (canvasWidth, componentType, componentId) => {
+  let padding = 2; //Need to update this 2 to correct value for other subcontainers
+  if (componentType === 'Container' || componentType === 'Form') {
+    padding = 2 * CONTAINER_FORM_CANVAS_PADDING + 2 * SUBCONTAINER_CANVAS_BORDER_WIDTH + 2 * BOX_PADDING;
+  }
+  if (componentType === 'Tabs') {
+    padding = 2 * TAB_CANVAS_PADDING + 2 * SUBCONTAINER_CANVAS_BORDER_WIDTH + 2 * BOX_PADDING;
+  }
+  if (componentType === 'ModalV2') {
+    const isModalHeader = componentId?.includes('header');
+    if (isModalHeader) {
+      const isModalHeaderCloseBtnEnabled = !useStore.getState().getResolvedComponent(componentId)?.properties
+        ?.hideCloseButton;
+      console.log('isModalHeaderCloseBtnEnabled', isModalHeaderCloseBtnEnabled);
+      padding = 2 * (MODAL_CANVAS_PADDING + (isModalHeaderCloseBtnEnabled ? 56 : 0));
+    } else {
+      padding = 2 * MODAL_CANVAS_PADDING;
+    }
+  }
+  return canvasWidth - padding;
 };

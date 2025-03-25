@@ -19,6 +19,7 @@ export const ModalFooter = React.memo(({ id, isDisabled, customStyles, darkMode,
           overflowX: 'hidden',
           overflowY: isDisabled ? 'hidden' : 'auto',
         }}
+        componentType="ModalV2"
       />
       {isDisabled && (
         <div

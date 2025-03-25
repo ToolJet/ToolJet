@@ -21,6 +21,7 @@ export const ModalHeader = React.memo(
               overflowX: 'hidden',
               overflowY: isDisabled ? 'hidden' : 'auto',
             }}
+            componentType="ModalV2"
           />
         </div>
         {isDisabled && (

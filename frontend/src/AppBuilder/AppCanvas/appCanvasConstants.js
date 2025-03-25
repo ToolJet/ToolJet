@@ -23,3 +23,7 @@ export const CONTAINER_FORM_CANVAS_PADDING = 7;
 export const SUBCONTAINER_CANVAS_BORDER_WIDTH = 1;
 
 export const BOX_PADDING = 2;
+
+export const TAB_CANVAS_PADDING = 7.5;
+
+export const MODAL_CANVAS_PADDING = 5;
