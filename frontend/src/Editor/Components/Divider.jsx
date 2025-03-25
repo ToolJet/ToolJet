@@ -1,5 +1,8 @@
 import React from 'react';
 
+const DASH_WIDTH = 4;
+const DASH_GAP = 4;
+
 export const Divider = function Divider({ dataCy, height, width, darkMode, styles, properties }) {
   const { labelAlignment, labelColor, dividerColor, boxShadow, dividerStyle, padding } = styles;
   const { label, visibility } = properties;
@@ -12,9 +15,12 @@ export const Divider = function Divider({ dataCy, height, width, darkMode, style
     boxShadow,
     ...(dividerStyle === 'dashed'
       ? {
-          height: 0, // No height for dashed, use border instead
-          borderTop: `1px dashed ${color}`,
+          backgroundImage: `linear-gradient(to right, ${color} ${DASH_WIDTH}px, transparent ${DASH_GAP}px)`,
+          backgroundSize: `${DASH_WIDTH + DASH_GAP}px 1px`,
+          backgroundRepeat: 'repeat-x',
           backgroundColor: 'transparent',
+          borderTop: 'none',
+          height: '1px',
         }
       : {
           height: '1px',

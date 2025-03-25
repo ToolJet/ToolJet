@@ -1,4 +1,6 @@
 import React from 'react';
+const DASH_WIDTH = 4;
+const DASH_GAP = 4;
 
 export const VerticalDivider = function Divider({ styles, height, width, dataCy, darkMode, properties }) {
   const { dividerColor, boxShadow, dividerStyle } = styles;
@@ -15,8 +17,18 @@ export const VerticalDivider = function Divider({ styles, height, width, dataCy,
         style={{
           height: '100%',
           width: '1px',
-          backgroundColor: dividerStyle === 'solid' ? color : 'transparent',
-          borderLeft: dividerStyle === 'dashed' ? `1px dashed ${color}` : 'none',
+          ...(dividerStyle === 'dashed'
+            ? {
+                backgroundColor: 'transparent',
+                backgroundImage: `linear-gradient(to bottom, ${color} ${DASH_WIDTH}px, transparent ${DASH_GAP}px)`,
+                backgroundSize: `1px ${DASH_WIDTH + DASH_GAP}px`,
+                backgroundRepeat: 'repeat-y',
+                border: 'none',
+              }
+            : {
+                backgroundColor: dividerStyle === 'solid' ? color : 'transparent',
+                border: 'none',
+              }),
           padding: '0rem',
           boxShadow,
         }}
