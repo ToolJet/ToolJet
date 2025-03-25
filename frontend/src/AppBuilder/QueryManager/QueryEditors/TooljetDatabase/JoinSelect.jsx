@@ -213,6 +213,11 @@ export default function JoinSelect({ darkMode }) {
 
 const JsonBfieldsForSelect = ({ selectedJsonbColumns, handleJSonChange, table }) => {
   const [jsonPaths, setJsonPaths] = useState({});
+  const [jsonPathTooltip, setJsonPathTooltip] = useState(jsonPaths);
+
+  useEffect(() => {
+    setJsonPathTooltip(jsonPaths);
+  }, [jsonPaths]);
 
   const isInitialized = useRef(false);
 
@@ -263,6 +268,7 @@ const JsonBfieldsForSelect = ({ selectedJsonbColumns, handleJSonChange, table })
   const handleJSonPathChange = (value, colName, tableId, id) => {
     const jsonpathsToUpdate = { ...jsonPaths };
     jsonpathsToUpdate[id] = { ...jsonpathsToUpdate[id], jsonpath: value };
+    setJsonPaths(jsonpathsToUpdate);
     handleJSonChange(value, colName, tableId);
   };
   const preSelectedOptions = Object.values(jsonPaths).map((col) => col.name);
@@ -272,6 +278,8 @@ const JsonBfieldsForSelect = ({ selectedJsonbColumns, handleJSonChange, table })
     .map((col) => ({ label: col.name, value: col.name, table: col.table, icon: 'jsonb' })); // Transform each filtered column
 
   const isJsonbColumnSelected = _.isEmpty(selectedJsonbColumns);
+
+  console.log('selectedJsonbColumns', selectedJsonbColumns);
 
   return (
     <div className="d-flex flex-column custom-gap-4 w-100">
@@ -314,9 +322,8 @@ const JsonBfieldsForSelect = ({ selectedJsonbColumns, handleJSonChange, table })
                   <Col sm="8" className="p-0 d-flex tjdb-codhinter-wrapper">
                     <ToolTip
                       message={
-                        colDetails?.jsonpath
-                          ? colDetails.jsonpath
-                          : 'Access nested JSON fields by using -> for JSON object and ->> for text'
+                        jsonPathTooltip[colDetails.id]?.jsonpath ||
+                        'Access nested JSON fields by using -> for JSON object and ->> for text'
                       }
                       tooltipClassName="tjdb-table-tooltip"
                       placement="top"
@@ -327,6 +334,7 @@ const JsonBfieldsForSelect = ({ selectedJsonbColumns, handleJSonChange, table })
                         <CodeHinter
                           type="basic"
                           initialValue={colDetails?.jsonpath || ''}
+                          value={colDetails?.jsonpath || ''}
                           onChange={(value) => {
                             handleJSonPathChange(value, colDetails.name, colDetails.table, colDetails.id);
                           }}
@@ -334,6 +342,11 @@ const JsonBfieldsForSelect = ({ selectedJsonbColumns, handleJSonChange, table })
                           height="30"
                           placeholder="->>'key'"
                           componentName={colDetails?.name ? `{}${colDetails?.name}` : ''}
+                          onInputChange={(value) => {
+                            const jsonpathsToUpdate = { ...jsonPaths };
+                            jsonpathsToUpdate[colDetails.id] = { ...jsonpathsToUpdate[colDetails.id], jsonpath: value };
+                            setJsonPathTooltip(jsonpathsToUpdate);
+                          }}
                         />
                       </div>
                     </ToolTip>
