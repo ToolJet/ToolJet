@@ -87,12 +87,12 @@ function Logs({ logProps, idx }) {
       <p
         className="m-0 d-flex"
         onClick={(e) => {
-          setOpen((prev) => !prev);
+          logProps?.type !== 'Custom Log' && setOpen((prev) => !prev);
         }}
         style={{ pointerEvents: logProps?.isQuerySuccessLog ? 'none' : 'default', position: 'relative' }}
       >
         <span className={cx('position-absolute')} style={defaultStyles}>
-          <SolidIcon name="rightarrrow" fill={`var(--icons-strong)`} width="16" />
+          {logProps?.type !== 'Custom Log' && <SolidIcon name="rightarrrow" fill={`var(--icons-strong)`} width="16" />}
         </span>
         <span className="w-100" style={{ paddingTop: '8px', paddingBottom: '8px', paddingLeft: '20px' }}>
           {logProps.type === 'navToDisablePage' ? (
@@ -104,7 +104,9 @@ function Logs({ logProps, idx }) {
                 <small className="text-slate-10 text-right ">{moment(logProps?.timestamp).fromNow()}</small>
               </div>
               {logProps?.type === 'Custom Log' && (
-                <div className="error-target-custom-log cursor-pointer">Custom Log</div>
+                <div className="error-target-custom-log cursor-pointer">
+                  <SolidIcon name="code" fill={`var(--purple11)`} width="15" /> Custom Log
+                </div>
               )}
               <div className={`d-flex justify-content-between align-items-center ${!open && 'text-truncate'}`}>
                 <span
@@ -115,14 +117,14 @@ function Logs({ logProps, idx }) {
                   <HighlightSecondWord text={title} />
                 </span>
               </div>
+              {logProps?.type == 'Custom Log' && <div className="font-weight-500">{message}</div>}
               <span
                 className={cx('font-weight-500', {
                   'text-tomato-9': !logProps?.isQuerySuccessLog,
                   'color-light-green': logProps?.isQuerySuccessLog,
                 })}
               >
-                {message}
-                {logProps?.error?.lineNumber ? `, Line ${logProps.error.lineNumber}` : ''}
+                {logProps?.type !== 'Custom Log' && message}
               </span>
             </>
           )}

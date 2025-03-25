@@ -444,7 +444,7 @@ export const createEventsSlice = (set, get) => ({
           component: `[Page ${pageName}] [Component ${componentName}] [Event ${event?.eventId}] [Action ${event.actionId}]`,
           page: `[Page ${pageName}] [Event ${event.eventId}] [Action ${event.actionId}]`,
           query: `[Query ${getQueryName()}] [Event ${event.eventId}] [Action ${event.actionId}]`,
-          customLog: `${event.description}`,
+          customLog: `${event.key}`,
         };
 
         return headerMap[source] || '';
@@ -472,6 +472,7 @@ export const createEventsSlice = (set, get) => ({
           description: JSON.stringify(error.message, null, 2),
           ...(event.component === 'component' && componentId && { componentId: componentId }),
         },
+        description: event?.description,
         errorTarget: constructErrorTarget(),
         options: options,
         strace: 'app_level',
@@ -1110,7 +1111,8 @@ export const createEventsSlice = (set, get) => ({
         const lineNumber = lineNumberMatch ? lineNumberMatch[1] : 'unknown';
         const event = {
           actionId: 'log-info',
-          description: `${query.name}, ${log}, Line ${lineNumber - 2}`,
+          key: `${query.name}, Line ${lineNumber - 2}`,
+          description: log,
           eventType: 'customLog',
           query,
         };
@@ -1125,7 +1127,8 @@ export const createEventsSlice = (set, get) => ({
         const lineNumber = lineNumberMatch ? lineNumberMatch[1] : 'unknown';
         const event = {
           actionId: 'log-error',
-          description: `${query.name}, ${log}, Line ${lineNumber - 2}`,
+          key: `${query.name}, Line ${lineNumber - 2}`,
+          description: log,
           eventType: 'customLog',
           query,
         };
@@ -1140,7 +1143,8 @@ export const createEventsSlice = (set, get) => ({
         const lineNumber = lineNumberMatch ? lineNumberMatch[1] : 'unknown';
         const event = {
           actionId: 'log',
-          description: `${query.name}, ${log}, Line ${lineNumber - 2}`,
+          key: `${query.name}, Line ${lineNumber - 2}`,
+          description: log,
           eventType: 'customLog',
           query,
         };

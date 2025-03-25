@@ -810,7 +810,7 @@ export const createQueryPanelSlice = (set, get) => ({
             logLevel: result?.status === 'failed' ? 'error' : 'success',
             type: 'transformation',
             kind: query.kind,
-            key: query.name,
+            key: `${query.name}, transformation, line ${result?.data?.lineNumber}`,
             message: result?.message,
             error: result?.data,
             isTransformation: true,
@@ -981,12 +981,12 @@ export const createQueryPanelSlice = (set, get) => ({
 
         //Proxy Func required to get current execution line number from stack to log in debugger
 
-        const proxiedComponents = createProxy(resolvedState?.components, 'components');
-        const proxiedGlobals = createProxy(resolvedState?.globals, 'globals');
-        const proxiedConstants = createProxy(resolvedState?.constants, 'constants');
-        const proxiedVariables = createProxy(resolvedState?.variables, 'variables');
+        const proxiedComponents = createProxy(deepClone(resolvedState?.components), 'components');
+        const proxiedGlobals = createProxy(deepClone(resolvedState?.globals), 'globals');
+        const proxiedConstants = createProxy(deepClone(resolvedState?.constants), 'constants');
+        const proxiedVariables = createProxy(deepClone(resolvedState?.variables), 'variables');
         const proxiedPage = createProxy(deepClone(resolvedState?.page, 'page'));
-        const proxiedQueriesInResolvedState = createProxy(queriesInResolvedState, 'queries');
+        const proxiedQueriesInResolvedState = createProxy(deepClone(queriesInResolvedState), 'queries');
         const proxiedFormattedParams = createProxy(
           !_.isEmpty(proxiedFormattedParams) ? [proxiedFormattedParams] : [],
           'params'
