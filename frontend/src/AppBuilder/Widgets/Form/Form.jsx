@@ -268,21 +268,24 @@ export const Form = function Form(props) {
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
   const updateHeaderSizeInStore = ({ newHeight }) => {
     const heightInPx = `${parseInt(newHeight, 10)}px`;
-    console.log('newHeight', newHeight);
     setComponentProperty(id, `headerHeight`, heightInPx, 'properties', 'value', false);
   };
 
   const updateFooterSizeInStore = ({ newHeight }) => {
     const heightInPx = `${parseInt(newHeight, 10)}px`;
-    console.log('newHeight', newHeight);
     setComponentProperty(id, `footerHeight`, heightInPx, 'properties', 'value', false);
   };
+
+  // debugger;
+  const headerMaxHeight = parseInt(height, 10) - parseInt(footerHeight, 10) - 100 - 10;
+  const footerMaxHeight = parseInt(height, 10) - parseInt(headerHeight, 10) - 100 - 10;
   const formFooter = {
     flexShrink: 0,
     paddingTop: '3px',
     paddingBottom: '7px',
     paddingLeft: `${CONTAINER_FORM_CANVAS_PADDING}px`,
     paddingRight: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+    maxHeight: `${footerMaxHeight}px`,
     backgroundColor:
       ['#fff', '#ffffffff'].includes(footerBackgroundColor) && darkMode ? '#1F2837' : footerBackgroundColor,
   };
@@ -292,13 +295,14 @@ export const Form = function Form(props) {
     paddingTop: '7px',
     paddingLeft: `${CONTAINER_FORM_CANVAS_PADDING}px`,
     paddingRight: `${CONTAINER_FORM_CANVAS_PADDING}px`,
+    maxHeight: `${headerMaxHeight}px`,
     backgroundColor:
       ['#fff', '#ffffffff'].includes(headerBackgroundColor) && darkMode ? '#1F2837' : headerBackgroundColor,
   };
 
   return (
     <form
-      className={`jet-container ${advanced && 'jet-container-json-form'}`}
+      className={`jet-container jet-form-widget ${advanced && 'jet-container-json-form'}`}
       id={id}
       data-cy={dataCy}
       ref={parentRef}

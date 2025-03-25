@@ -14,8 +14,15 @@ const useIsWidgetSelected = (id) => {
 export const useActiveSlot = (widgetId) => {
   const [activeSlot, setActiveSlot] = useState(''); // Default to widget ID
   const isSelected = useIsWidgetSelected(widgetId); // Check if widget is selected
+
   useEffect(() => {
-    const handleClick = (event) => {
+    if (!isSelected) {
+      setActiveSlot('');
+    }
+  }, [isSelected]);
+
+  useEffect(() => {
+    const handleDoubleClick = (event) => {
       let target = event.target;
 
       // Traverse up to find a slot with an id
@@ -31,16 +38,40 @@ export const useActiveSlot = (widgetId) => {
       // If no slot is found, reset to widget ID
       setActiveSlot(widgetId);
     };
+    const handleSingleClick = (event) => {
+      let target = event.target;
+
+      // Traverse up to find a valid main slot (not header/footer)
+      while (target && target !== document.body) {
+        if (
+          target.id &&
+          target.id.startsWith('canvas-') &&
+          !target.id.endsWith('-header') &&
+          !target.id.endsWith('-footer')
+        ) {
+          const slotId = target.id.replace(/^canvas-/, ''); // Strip "canvas-"
+          setActiveSlot(slotId);
+          return;
+        }
+        target = target.parentElement;
+      }
+
+      // If no main slot is found, fallback to widget ID
+      setActiveSlot(widgetId);
+    };
 
     // Attach single click if the widget is selected, otherwise listen for double-click
-    const eventType = isSelected ? 'click' : 'dblclick';
+    // const eventType = isSelected ? 'click' : 'dblclick';
+    const eventType = 'dblclick';
 
-    document.addEventListener(eventType, handleClick);
+    document.addEventListener(eventType, handleDoubleClick);
+    document.addEventListener('click', handleSingleClick);
 
     return () => {
-      document.removeEventListener(eventType, handleClick);
+      document.removeEventListener(eventType, handleDoubleClick);
+      document.removeEventListener('click', handleSingleClick);
     };
-  }, [widgetId, isSelected]); // Re-run when widgetId or selection state changes
+  }, [widgetId]); // Re-run when widgetId or selection state changes
 
   return activeSlot;
 };

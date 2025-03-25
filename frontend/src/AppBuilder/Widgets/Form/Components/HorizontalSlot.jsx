@@ -13,15 +13,16 @@ export const HorizontalSlot = React.memo(
     isActive,
     slotName = 'header', // 'header' or 'footer'
     slotStyle = {},
-    onResize
+    onResize,
+    maxHeight,
   }) => {
     const parsedHeight = parseInt(height, 10);
 
     const { getRootProps, getHandleProps, getResizeState } = useResizable({
       initialHeight: parsedHeight,
       initialWidth: '100%', // Now respects parent's width
-      minHeight: 40,
-      maxHeight: 400,
+      minHeight: 10,
+      maxHeight: maxHeight || 400,
       maxWidth: '100%',
       stepHeight: 10, // Height will change in steps of 10px
       onResize: () => {},
@@ -32,8 +33,6 @@ export const HorizontalSlot = React.memo(
     });
 
     const { height: resizedHeight, isDragging } = getResizeState();
-
-
 
     useEffect(() => {
       if (isDragging) {
@@ -47,7 +46,10 @@ export const HorizontalSlot = React.memo(
 
     return (
       <div className={`jet-form-${slotName} wj-form-${slotName}`} style={slotStyle}>
-        <div className={`resizable-slot only-${slotName} ${isActive ? 'active' : ''}`} {...getRootProps()}>
+        <div
+          className={`resizable-slot only-${slotName} ${isActive ? 'active' : ''} ${isDragging ? 'dragging' : ''}`}
+          {...getRootProps()}
+        >
           <SubContainer
             id={id}
             canvasHeight={canvasHeight}
@@ -57,6 +59,7 @@ export const HorizontalSlot = React.memo(
             styles={{
               margin: 0,
               backgroundColor: 'transparent',
+              overflow: 'hidden',
             }}
             componentType="Form"
           />
