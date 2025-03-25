@@ -22,7 +22,8 @@ export interface IDataQueriesUtilService {
     dataQuery: any,
     queryOptions: object,
     organization_id: string,
-    environmentId?: string
+    environmentId?: string,
+    userId?: string
   ): Promise<{
     service: any;
     sourceOptions: object;

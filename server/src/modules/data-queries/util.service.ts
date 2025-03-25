@@ -82,6 +82,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         organizationId,
         environmentId
       );
+      const userId = user ? user.id : null;
       dataSource.options = dataSourceOptions.options;
 
       let { sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
@@ -89,7 +90,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         dataQuery,
         queryOptions,
         organizationId,
-        environmentId
+        environmentId,
+        userId
       );
 
       queryStatus.setOptions(parsedQueryOptions);
@@ -217,7 +219,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               dataQuery,
               queryOptions,
               organizationId,
-              environmentId
+              environmentId,
+              userId
             ));
             queryStatus.setOptions(parsedQueryOptions);
             result = await service.run(
@@ -291,18 +294,27 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     }
   }
 
-  async fetchServiceAndParsedParams(dataSource, dataQuery, queryOptions, organization_id, environmentId = undefined) {
+  async fetchServiceAndParsedParams(
+    dataSource,
+    dataQuery,
+    queryOptions,
+    organization_id,
+    environmentId = undefined,
+    userId = undefined
+  ) {
     const sourceOptions = await this.dataSourceUtilService.parseSourceOptions(
       dataSource.options,
       organization_id,
-      environmentId
+      environmentId,
+      userId
     );
 
     const parsedQueryOptions = await this.parseQueryOptions(
       dataQuery.options,
       queryOptions,
       organization_id,
-      environmentId
+      environmentId,
+      userId
     );
 
     const service = await this.pluginsSelectorService.getService(dataSource.pluginId, dataSource.kind);
@@ -368,7 +380,8 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     object: any,
     options: object,
     organization_id: string,
-    environmentId?: string
+    environmentId?: string,
+    userId?: string
   ): Promise<object> {
     const stack: any[] = [{ obj: object, key: null, parent: null }];
 
@@ -406,12 +419,14 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         // b: Handle {{constants.}} or {{secrets.}}
         if (
           (typeof resolvedValue === 'string' && resolvedValue.includes('{{constants.')) ||
-          resolvedValue.includes('{{secrets.')
+          resolvedValue.includes('{{secrets.') ||
+          resolvedValue.includes('{{globals.server.')
         ) {
           const resolvingConstant = await this.dataSourceUtilService.resolveConstants(
             resolvedValue,
             organization_id,
-            environmentId
+            environmentId,
+            userId
           );
           resolvedValue = resolvingConstant;
           if (parent && key !== null) {

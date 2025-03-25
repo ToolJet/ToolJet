@@ -96,6 +96,7 @@ export const PreviewBox = ({
   const [largeDataset, setLargeDataset] = useState(false);
   const globals = useStore((state) => state.getAllExposedValues().constants || {}, shallow);
   const secrets = useStore((state) => state.getSecrets(), shallow);
+  const globalServerConstantsRegex = /.*\{\{.*globals\.server\..*\}\}.*/;
 
   const getPreviewContent = (content, type) => {
     if (content === undefined || content === null) return currentValue;
@@ -118,11 +119,11 @@ export const PreviewBox = ({
   let previewContent = resolvedValue;
   let isGlobalConstant = currentValue && currentValue.includes('{{constants.');
   let isSecretConstant = currentValue && currentValue.includes('{{secrets.');
+  const isServerConstant = currentValue && currentValue.match(globalServerConstantsRegex);
   let invalidConstants = null;
   let undefinedError = null;
   if (isGlobalConstant || isSecretConstant) {
     invalidConstants = verifyConstant(currentValue, globals, secrets);
-    console.log('invalidConstants', invalidConstants);
   }
   if (invalidConstants?.length) {
     undefinedError = { type: 'Invalid constants' };
@@ -222,6 +223,7 @@ export const PreviewBox = ({
         isWorkspaceVariable={isWorkspaceVariable}
         isSecretConstant={isSecretConstant || false}
         isLargeDataset={largeDataset}
+        isServerConstant={isServerConstant}
       />
       <CodeHinter.PopupIcon
         callback={() => copyToClipboard(error ? error?.value : content)}
@@ -240,6 +242,7 @@ const RenderResolvedValue = ({
   withValidation,
   isWorkspaceVariable,
   isSecretConstant = false,
+  isServerConstant = false,
   isLargeDataset,
 }) => {
   const computeCoersionPreview = (resolvedValue, coersionData) => {
@@ -264,7 +267,9 @@ const RenderResolvedValue = ({
       }`
     : previewType;
 
-  const previewContent = isSecretConstant
+  const previewContent = isServerConstant
+    ? 'Server constants would be resolved at runtime'
+    : isSecretConstant
     ? 'Values of secret constants are hidden'
     : !withValidation
     ? resolvedValue
