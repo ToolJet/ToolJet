@@ -117,11 +117,7 @@ Cypress.Commands.add(
 
     const splitIntoFlatArray = (value) => {
       const regex =
-<<<<<<< HEAD
         /(\{|\}|\(|\)|\[|\]|,|:|;|=>|'[^']*'|"[^"]*"|[a-zA-Z0-9._+-]+|\s+)/g;
-=======
-        /(\{|\}|\(|\)|\[|\]|,|:|;|=>|'[^']*'|"[^"]*"|\*|[a-zA-Z0-9._-]+|\s+)/g;
->>>>>>> main
       let prefix = "";
 
       return (
@@ -140,11 +136,7 @@ Cypress.Commands.add(
             acc.push(prefix + ":");
           } else if (part === '"') {
             acc.push(prefix + '"');
-<<<<<<< HEAD
           } else if (part.includes("-") || part.includes("+")) {
-=======
-          } else if (part === "*" || part.includes("-")) {
->>>>>>> main
             acc.push(prefix + part);
           } else {
             acc.push(prefix + part);
