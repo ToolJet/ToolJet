@@ -205,7 +205,7 @@ A flat JSON object is a JSON structure where all key-value pairs exist at a sing
 
 <img style={{marginBottom:'15px'}} className="screenshot-full" src="/img/v2-beta/database/newui/flat_json.png" alt="ToolJet Database Date" />
 
-<details>
+<details id="tj-dropdown">
 <summary>**Response Example**</summary>
 
 ```json
@@ -242,7 +242,7 @@ A nested JSON object is a JSON structure that contains key-value pairs, where so
 
 **Note:** You can use `->` to access nested JSON fields and use `->>` to access the text.
 
-<details>
+<details id="tj-dropdown">
 <summary>**Response Example**</summary>
 
 ```json

@@ -72,7 +72,7 @@ Role Required: **Super Admin**
 
 ## FAQs
 
-<details>
+<details id="tj-dropdown">
     <summary>
      **Q. What happens if my subscription expires?**
     </summary>

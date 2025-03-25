@@ -25,7 +25,7 @@ Use this operation to retrieve metadata and configuration details about a specif
 
 <img className="screenshot-full" src="/img/marketplace/plugins/qdrant/get-collection-info.png" alt="Get Collection Info" />
 
-<details>
+<details id="tj-dropdown">
 <summary>**Example Response**</summary>
 ```yaml
 {
@@ -87,7 +87,7 @@ Use this operation to retrieve specific data points from a collection using thei
 
 <img className="screenshot-full" src="/img/marketplace/plugins/qdrant/get-points.png" alt="Get Points" />
 
-<details>
+<details id="tj-dropdown">
 <summary>**Example Response**</summary>
 
 ```yaml
@@ -137,7 +137,7 @@ Use this operation to search data points in a collection using a query, typicall
 
 <img className="screenshot-full" src="/img/marketplace/plugins/qdrant/query-points.png" alt="Query Points" />
 
-<details>
+<details id="tj-dropdown">
 <summary>**Example Response**</summary>
 
 ```yaml

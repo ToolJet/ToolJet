@@ -83,7 +83,7 @@ If you've decided to move forward with Pro or customized Enterprise plan, please
 
 ## FAQs
 
-<details>
+<details id="tj-dropdown">
     <summary>
      **Q. What happens if my subscription expires?**
     </summary>

@@ -3,7 +3,15 @@ id: overview
 title: GitSync Overview
 ---
 
-<div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
+<div className="badge badge--primary heading-badge">   
+  <img 
+    src="/img/badge-icons/premium.svg" 
+    alt="Icon" 
+    width="16" 
+    height="16" 
+  />
+ <span>Paid feature</span>
+</div>
 
 The GitSync feature in ToolJet allows seamless synchronization of workspace applications with a Git repository, enhancing version control, environment migration, and backup management. It supports both cloud-based and self-hosted Git providers offering flexibility in managing application development and deployment. GitSync can also be configured for a custom branch. To configure GitSync for standard Git repository managers refer to **[GitHub](/docs/development-lifecycle/gitsync/configure-gitsync/github)**, **[GitLab](/docs/development-lifecycle/gitsync/configure-gitsync/gitlab)** or **[Gitea](/docs/development-lifecycle/gitsync/configure-gitsync/gitea)**.
 

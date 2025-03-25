@@ -44,7 +44,7 @@ Use this operation to generate text based on the input and model settings. It pr
 
 <img className="screenshot-full" src="/img/marketplace/plugins/huggingface/text-generation-query.png" alt="Gemini Query" />
 
-<details>
+<details id="tj-dropdown">
 <summary>**Response Example**</summary>
 
 AI integration with ToolJet:
@@ -104,7 +104,7 @@ Use this operation to create a summary of the input text based on the model sett
 
 <img className="screenshot-full" src="/img/marketplace/plugins/huggingface/summary-query.png" alt="Gemini Query" />
 
-<details>
+<details id="tj-dropdown">
 <summary>**Response Example**</summary>
 
 ToolJet can integrate with various tools, including Slack, Jira, Google Drive, and more. AI integration with ToolJet: capabilities significantly enhance the power and flexibility of your development workflows. By leveraging pre-built integrations, customizability, and APIs, ToolJet empowers your team to achieve greater productivity.

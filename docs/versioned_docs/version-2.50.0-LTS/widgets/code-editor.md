@@ -26,7 +26,7 @@ Any property having **fx** button next to its field can be **programmatically co
 | Show line number | Show or hides line numbers to the left of the editor.| This fields expects a boolean value `{{true}}` or `{{false}}`. |
 
 :::info
-<details>
+<details id="tj-dropdown">
 <summary>Supporting all commonly used languages.</summary>
       <ul>
       <li>APL</li>

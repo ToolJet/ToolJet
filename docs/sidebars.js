@@ -10,18 +10,115 @@
 /** @type {import('@docusaurus/plugin-content-docs').SidebarsConfig} */
 const sidebars = {
   docs: [
-    "doc-home-page",
     {
       'type': 'category',
       'label': 'Getting Started',
+      'className': 'category-as-header getting-started-header',
+      'collapsed': false,
+      'collapsible': false,
       'items': [
+        'doc-home-page',
         'getting-started/platform-overview',
         'getting-started/quickstart-guide',
+        {
+          'type': 'category',
+          'label': 'ToolJet Concepts',
+          'items': [
+            'tooljet-concepts/what-are-components',
+            'tooljet-concepts/what-are-datasources',
+            'tooljet-concepts/what-are-queries',
+            'tooljet-concepts/inspector',
+            'tooljet-concepts/what-are-events',
+            'tooljet-concepts/actions',
+            'tooljet-concepts/variables',
+            'tooljet-concepts/how-to-access-values',
+            'tooljet-concepts/component-specific-actions',
+            'tooljet-concepts/exposed-variables',
+            'tooljet-concepts/pages',
+            'tooljet-concepts/run-js',
+            'tooljet-concepts/styling-components',
+            'tooljet-concepts/workspace-constants',
+            'tooljet-concepts/permissions',
+            'tooljet-concepts/super-admin',
+          ],
+        },
+        {
+          'type': 'category',
+          'label': 'How To',
+          'items': [
+            'how-to/use-url-params-on-load',
+            'how-to/pass-query-params-in-custom-components',
+            'how-to/use-custom-parameters',
+            'how-to/pass-values-in-rest-api',
+            'how-to/build-dynamic-forms',
+            'how-to/setup-rsyslog',
+            'how-to/conditionally-display-components',
+            'how-to/use-inspector',
+            'how-to/use-form-component',
+            'how-to/access-cellvalue-rowdata',
+            'how-to/conditionally-format-table',
+            'how-to/bulk-update-multiple-rows',
+            'how-to/delete-multiple-rows',
+            'how-to/use-server-side-pagination',
+            'how-to/access-currentuser',
+            'how-to/use-axios-in-runjs',
+            'how-to/import-external-libraries-using-runpy',
+            'how-to/import-external-libraries-using-runjs',
+            'how-to/run-actions-from-runjs',
+            'how-to/intentionally-fail-js-query',
+            'how-to/run-query-at-specified-intervals',
+            'how-to/use-to-py-function-in-runpy',
+            'how-to/access-users-location',
+            'how-to/use-s3-signed-url-to-upload-docs',
+            'how-to/s3-custom-endpoints',
+            'how-to/upload-files-aws',
+            'how-to/upload-files-gcs',
+            'how-to/loading-image-pdf-from-db',
+            'how-to/use-events-on-chart',
+            'how-to/print-multi-tabs-report',
+            'how-to/display-listview-record-on-new-page'
+          ],
+        },
+        {
+          'type': 'category',
+          'label': 'Deployment',
+          'link': {
+            'type': 'doc',
+            'id': 'setup/index',
+          },
+          'items': [
+            'setup/try-tooljet',
+            'setup/choose-your-tooljet',
+            'setup/system-requirements',
+            'setup/digitalocean',
+            'setup/docker',
+            'setup/ec2',
+            'setup/ecs',
+            'setup/openshift',
+            'setup/helm',
+            'setup/kubernetes',
+            'setup/kubernetes-gke',
+            'setup/kubernetes-aks',
+            'setup/kubernetes-eks',
+            'setup/azure-container',
+            'setup/google-cloud-run',
+            'setup/env-vars',
+            'setup/http-proxy',
+            'setup/tooljet-subpath',
+            'setup/v2-migration-guide',
+            'setup/upgrade-to-lts',
+            'setup/upgrade-to-v3',
+            'setup/cloud-v3-migration',
+          ]
+        }
       ],
-    }, 
+    },
     {
       "type": "category",
       "label": "Build with AI",
+      'className': 'category-as-header build-with-ai-header',
+      'collapsed': false,
+      'collapsible': false,
       "items": [
         "build-with-ai/overview",
         "build-with-ai/generate-applications",
@@ -30,61 +127,10 @@ const sidebars = {
     },
     {
       'type': 'category',
-      'label': 'ToolJet Concepts',
-      'items': [
-        'tooljet-concepts/what-are-components',
-        'tooljet-concepts/what-are-datasources',
-        'tooljet-concepts/what-are-queries',
-        'tooljet-concepts/inspector',
-        'tooljet-concepts/what-are-events',
-        'tooljet-concepts/actions',
-        'tooljet-concepts/variables',
-        'tooljet-concepts/how-to-access-values',
-        'tooljet-concepts/component-specific-actions',
-        'tooljet-concepts/exposed-variables',
-        'tooljet-concepts/pages',
-        'tooljet-concepts/run-js',
-        'tooljet-concepts/styling-components',
-        'tooljet-concepts/workspace-constants',
-        'tooljet-concepts/permissions',
-        'tooljet-concepts/super-admin',
-      ],
-    },
-    {
-      'type': 'category',
-      'label': 'Deployment',
-      'link': {
-        'type': 'doc',
-        'id': 'setup/index',
-      },
-      'items': [
-        'setup/try-tooljet',
-        'setup/choose-your-tooljet',
-        'setup/system-requirements',
-        'setup/digitalocean',
-        'setup/docker',
-        'setup/ec2',
-        'setup/ecs',
-        'setup/openshift',
-        'setup/helm',
-        'setup/kubernetes',
-        'setup/kubernetes-gke',
-        'setup/kubernetes-aks',
-        'setup/kubernetes-eks',
-        'setup/azure-container',
-        'setup/google-cloud-run',
-        'setup/env-vars',
-        'setup/http-proxy',
-        'setup/tooljet-subpath',
-        'setup/v2-migration-guide',
-        'setup/upgrade-to-lts',
-        'setup/upgrade-to-v3',
-        'setup/cloud-v3-migration',
-      ]
-    },
-    {
-      'type': 'category',
       'label': 'App Builder',
+      'collapsed': false,
+      'collapsible': false,
+      'className': 'category-as-header app-builder-header',
       'items': [
         'app-builder/overview',
         {
@@ -260,50 +306,16 @@ const sidebars = {
     },
     {
       'type': 'category',
-      'label': 'How To',
-      'items': [
-        'how-to/use-url-params-on-load',
-        'how-to/pass-query-params-in-custom-components',
-        'how-to/use-custom-parameters',
-        'how-to/pass-values-in-rest-api',
-        'how-to/build-dynamic-forms',
-        'how-to/setup-rsyslog',
-        'how-to/conditionally-display-components',
-        'how-to/use-inspector',
-        'how-to/use-form-component',
-        'how-to/access-cellvalue-rowdata',
-        'how-to/conditionally-format-table',
-        'how-to/bulk-update-multiple-rows',
-        'how-to/delete-multiple-rows',
-        'how-to/use-server-side-pagination',
-        'how-to/access-currentuser',
-        'how-to/use-axios-in-runjs',
-        'how-to/import-external-libraries-using-runpy',
-        'how-to/import-external-libraries-using-runjs',
-        'how-to/run-actions-from-runjs',
-        'how-to/intentionally-fail-js-query',
-        'how-to/run-query-at-specified-intervals',
-        'how-to/use-to-py-function-in-runpy',
-        'how-to/access-users-location',
-        'how-to/use-s3-signed-url-to-upload-docs',
-        'how-to/s3-custom-endpoints',
-        'how-to/upload-files-aws',
-        'how-to/upload-files-gcs',
-        'how-to/loading-image-pdf-from-db',
-        'how-to/use-events-on-chart',
-        'how-to/print-multi-tabs-report',
-        'how-to/display-listview-record-on-new-page'
-      ],
-    },
-    {
-      'type': 'category',
       'label': 'Data Sources',
+      'className': 'category-as-header data-sources-header',
+      'collapsed': false,
+      'collapsible': false,
       'items': [
         'data-sources/overview',
         'data-sources/sample-data-sources',
         {
           'type': 'category',
-          'label': 'Datasources library',
+          'label': 'Data Sources library',
           'items': [
             'data-sources/airtable',
             'data-sources/s3',
@@ -367,11 +379,51 @@ const sidebars = {
         },
         'tutorial/transformations',
         'data-sources/local-data-sources-migration',
+        {
+          'type': 'category',
+          'label': 'Marketplace',
+          'collapsed': true,
+          'items': [
+            'marketplace/marketplace-overview',
+            {
+              'type': 'category',
+              'label': 'Marketplace Plugins',
+              'items': [
+                'marketplace/plugins/marketplace-plugin-awsredshift',
+                'marketplace/plugins/marketplace-plugin-textract',
+                'marketplace/plugins/marketplace-plugin-aws-lambda',
+                'marketplace/plugins/marketplace-plugin-engagespot',
+                'marketplace/plugins/marketplace-plugin-github',
+                'marketplace/plugins/marketplace-plugin-harperdb',
+                'marketplace/plugins/marketplace-plugin-openai',
+                'marketplace/plugins/marketplace-plugin-plivo',
+                'marketplace/plugins/marketplace-plugin-salesforce',
+                'marketplace/plugins/marketplace-plugin-supabase',
+                'marketplace/plugins/marketplace-plugin-pocketbase',
+                'marketplace/plugins/marketplace-plugin-portkey',
+                'marketplace/plugins/marketplace-plugin-Presto',
+                'marketplace/plugins/marketplace-plugin-jira',
+                'marketplace/plugins/marketplace-plugin-sharepoint',
+                'marketplace/plugins/marketplace-plugin-pinecone',
+                'marketplace/plugins/marketplace-plugin-gemini',
+                'marketplace/plugins/marketplace-plugin-anthropic',
+                'marketplace/plugins/marketplace-plugin-mistral_ai',
+                'marketplace/plugins/marketplace-plugin-hugging_face',
+                'marketplace/plugins/marketplace-plugin-cohere',
+                'marketplace/plugins/marketplace-plugin-weaviate',
+                'marketplace/plugins/marketplace-plugin-qdrant'
+              ],
+            },
+          ],
+        },
       ],
     },
     {
       'type': 'category',
       'label': 'ToolJet Database',
+      'className': 'category-as-header tjdb-header',
+      'collapsed': false,
+      'collapsible': false,
       'items': [
         'tooljet-db/tooljet-database',
         'tooljet-db/database-editor',
@@ -390,11 +442,33 @@ const sidebars = {
     },
     {
       'type': 'category',
+      'label': 'Workflows',
+      'className': 'category-as-header workflows-header',
+      'collapsed': false,
+      'collapsible': false,
+      'items': [
+        'workflows/overview',
+        'workflows/nodes',
+        'workflows/workflow-triggers',
+        'workflows/results',
+        'workflows/permissions',
+        {
+          'type': 'category',
+          'label': 'How-to',
+          'items': [
+            'workflows/how-to/trigger-using-webhook',
+            'workflows/how-to/trigger-workflow-from-app',
+            'workflows/how-to/trigger-workflow-using-scheduler'
+          ]
+        }
+      ],
+    },
+    {
+      'type': 'category',
       'label': 'Setup ToolJet',
-      'link': {
-        'type': 'doc',
-        'id': 'tj-setup/overview',
-      },
+      'className': 'category-as-header setup-tj-header',
+      'collapsible': false,
+      'collapsed': false,
       'items': [
         'tj-setup/overview',
         'tj-setup/tj-deployment',
@@ -432,20 +506,15 @@ const sidebars = {
     },
     {
       'type': 'category',
+      'collapsed': false,
+      'collapsible': false,
+      'className': 'category-as-header user-management-header',
       'label': 'User Management and Access Control',
-      'link': {
-        'type': 'doc',
-        'id': 'user-management/overview',
-      },
       'items': [
         'user-management/overview',
         {
           'type': 'category',
           'label': 'Onboard and Offboard Users',
-          'link': {
-            'type': 'doc',
-            'id': 'user-management/onboard-users/overview',
-          },
           'items': [
             'user-management/onboard-users/overview',
             'user-management/onboard-users/invite-user',
@@ -541,11 +610,10 @@ const sidebars = {
     },
     {
       'type': 'category',
+      'collapsed': false,
+      'collapsible': false,
+      'className': 'category-as-header dev-cycle-header',
       'label': 'Development Lifecycle',
-      'link': {
-        'type': 'doc',
-        'id': 'development-lifecycle/overview',
-      },
       'items': [
         'development-lifecycle/overview',
         {
@@ -560,10 +628,6 @@ const sidebars = {
         {
           'type': 'category',
           'label': 'GitSync',
-          'link': {
-            'type': 'doc',
-            'id': 'development-lifecycle/gitsync/overview',
-          },
           'items': [
             'development-lifecycle/gitsync/overview',
             {
@@ -624,6 +688,9 @@ const sidebars = {
     {
       'type': 'category',
       'label': 'Security and Monitoring',
+      'collapsed': false,
+      'collapsible': false,
+      'className': 'category-as-header security-header',
       'items': [
         {
           'type': 'category',
@@ -638,69 +705,21 @@ const sidebars = {
 
       ]
     },
-    'tooljet-api',
     {
       'type': 'category',
-      'label': 'Workflows',
-      'items': [
-        'workflows/overview',
-        'workflows/nodes',
-        'workflows/workflow-triggers',
-        'workflows/results',
-        'workflows/permissions',
-        {
-          'type': 'category',
-          'label': 'How-to',
-          'items': [
-            'workflows/how-to/trigger-using-webhook',
-            'workflows/how-to/trigger-workflow-from-app',
-            'workflows/how-to/trigger-workflow-using-scheduler'
-          ]
-        }
-      ],
-    },
-    {
-      'type': 'category',
-      'label': 'Marketplace',
+      'label': 'ToolJet API',
+      'className': 'category-as-header tj-api-header',
+      'collapsible': false,
       'collapsed': true,
-      'items': [
-        'marketplace/marketplace-overview',
-        {
-          'type': 'category',
-          'label': 'Marketplace Plugins',
-          'items': [
-            'marketplace/plugins/marketplace-plugin-awsredshift',
-            'marketplace/plugins/marketplace-plugin-textract',
-            'marketplace/plugins/marketplace-plugin-aws-lambda',
-            'marketplace/plugins/marketplace-plugin-engagespot',
-            'marketplace/plugins/marketplace-plugin-github',
-            'marketplace/plugins/marketplace-plugin-harperdb',
-            'marketplace/plugins/marketplace-plugin-openai',
-            'marketplace/plugins/marketplace-plugin-plivo',
-            'marketplace/plugins/marketplace-plugin-salesforce',
-            'marketplace/plugins/marketplace-plugin-supabase',
-            'marketplace/plugins/marketplace-plugin-pocketbase',
-            'marketplace/plugins/marketplace-plugin-portkey',
-            'marketplace/plugins/marketplace-plugin-Presto',
-            'marketplace/plugins/marketplace-plugin-jira',
-            'marketplace/plugins/marketplace-plugin-sharepoint',
-            'marketplace/plugins/marketplace-plugin-pinecone',
-            'marketplace/plugins/marketplace-plugin-gemini',
-            'marketplace/plugins/marketplace-plugin-anthropic',
-            'marketplace/plugins/marketplace-plugin-mistral_ai',
-            'marketplace/plugins/marketplace-plugin-hugging_face',
-            'marketplace/plugins/marketplace-plugin-cohere',
-            'marketplace/plugins/marketplace-plugin-weaviate',
-            'marketplace/plugins/marketplace-plugin-qdrant'
-          ],
-        },
-      ],
-    },
-    'tracking',
+      'items': ['tooljet-api']
+    }
+    ,
     {
       'type': 'category',
-      'label': 'Project Overview',
+      'label': 'Resources',
+      'className': 'category-as-header resources-header',
       'collapsed': true,
+      'collapsible': false,
       'items': [
         {
           'type': 'link',
@@ -712,60 +731,62 @@ const sidebars = {
           'label': 'Roadmap',
           'href': 'https://github.com/orgs/ToolJet/projects/15',
         },
-        'versions'
-      ],
-    },
-    {
-      'type': 'category',
-      'label': 'Contributing Guide',
-      'collapsed': true,
-      'items': [
-        'contributing-guide/setup/architecture',
+        'versions',
+        'tracking',
         {
           'type': 'category',
-          'label': 'Setup',
+          'label': 'Contributing Guide',
+          'collapsed': true,
           'items': [
-            'contributing-guide/setup/codespaces',
-            'contributing-guide/setup/macos',
-            'contributing-guide/setup/docker',
-            'contributing-guide/setup/ubuntu',
-            'contributing-guide/setup/windows',
-            'contributing-guide/setup/system-requirements-for-contributing',
-          ],
-        },
-        {
-          'type': 'category',
-          'label': 'Marketplace',
-          'items': [
-            'contributing-guide/marketplace/marketplace-setup',
-            'contributing-guide/marketplace/creating-a-plugin',
-          ],
-        },
-        {
-          'type': 'category',
-          'label': 'Documentation',
-          'items': [
-            'contributing-guide/documentation-guidelines/introduction',
-            'contributing-guide/documentation-guidelines/pr-checklist',
-            'contributing-guide/documentation-guidelines/style-guide',
+            'contributing-guide/setup/architecture',
+            {
+              'type': 'category',
+              'label': 'Setup',
+              'items': [
+                'contributing-guide/setup/codespaces',
+                'contributing-guide/setup/macos',
+                'contributing-guide/setup/docker',
+                'contributing-guide/setup/ubuntu',
+                'contributing-guide/setup/windows',
+                'contributing-guide/setup/system-requirements-for-contributing',
+              ],
+            },
+            {
+              'type': 'category',
+              'label': 'Marketplace',
+              'items': [
+                'contributing-guide/marketplace/marketplace-setup',
+                'contributing-guide/marketplace/creating-a-plugin',
+              ],
+            },
+            {
+              'type': 'category',
+              'label': 'Documentation',
+              'items': [
+                'contributing-guide/documentation-guidelines/introduction',
+                'contributing-guide/documentation-guidelines/pr-checklist',
+                'contributing-guide/documentation-guidelines/style-guide',
 
+              ],
+            },
+            'tooljet-cli',
+            'contributing-guide/testing',
+            'contributing-guide/l10n',
+            {
+              'type': 'category',
+              'label': 'Troubleshooting',
+              'items': [
+                'contributing-guide/troubleshooting/eslint',
+                'contributing-guide/troubleshooting/runpy-limitations',
+              ],
+            },
+            'contributing-guide/code-of-conduct',
+            'contributing-guide/slackcoc',
           ],
         },
-        'tooljet-cli',
-        'contributing-guide/testing',
-        'contributing-guide/l10n',
-        {
-          'type': 'category',
-          'label': 'Troubleshooting',
-          'items': [
-            'contributing-guide/troubleshooting/eslint',
-            'contributing-guide/troubleshooting/runpy-limitations',
-          ],
-        },
-        'contributing-guide/code-of-conduct',
-        'contributing-guide/slackcoc',
       ],
     },
+
   ],
 };
 

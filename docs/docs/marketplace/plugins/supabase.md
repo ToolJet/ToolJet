@@ -76,7 +76,7 @@ You can create query for Supabase data source to perform several operations such
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/supabase/get_rows.png" alt="Get Rows" />
 </div>
 
-<details>
+<details id="tj-dropdown">
 <summary>**Example Response**</summary>
 
 ```yaml
@@ -109,7 +109,7 @@ You can create query for Supabase data source to perform several operations such
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/supabase/create_rows.png" alt="Create Rows" />
 </div>
 
-<details>
+<details id="tj-dropdown">
 <summary>**Example Response**</summary>
 
 ```yaml
@@ -131,7 +131,7 @@ created: true
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/supabase/update_rows.png" alt="Update Rows" />
 </div>
 
-<details>
+<details id="tj-dropdown">
 <summary>**Example Response**</summary>
 
 ```yaml
@@ -156,7 +156,7 @@ created: true
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/supabase/delete_rows.png" alt="Delete Rows" />
 </div>
 
-<details>
+<details id="tj-dropdown">
 <summary>**Example Response**</summary>
 
 ```yaml
@@ -178,7 +178,7 @@ deleted: true
     <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/supabase/count_rows.png" alt="Count Rows" />
 </div>
 
-<details>
+<details id="tj-dropdown">
 <summary>**Example Response**</summary>
 
 ```yaml

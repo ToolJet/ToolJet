@@ -60,7 +60,7 @@ Example Parameters:
 
 <img className="screenshot-full" src="/img/marketplace/plugins/cohere/text-generation.png" alt="Cohere Text generation" />
 
-<details>
+<details id="tj-dropdown">
 <summary>**Response Example**</summary>
 
 ToolJet is an open-source no-code platform that allows you to build your own tools and automate your workflows in minutes. It is built on top of the powerful Airbyte open-source standard for data integration, focusing on user-friendliness and extensibility. With ToolJet, you can create custom solutions for your business without any prior coding knowledge.
@@ -140,7 +140,7 @@ Example Parameters:
 
 <img className="screenshot-full" src="/img/marketplace/plugins/cohere/chat.png" alt="Cohere Chat" />
 
-<details>
+<details id="tj-dropdown">
 <summary>**Response Example**</summary>
 
 ToolJet is a no-code platform that allows you to build custom internal tools with drag and drop functionality. You can integrate Cohere with ToolJet to enable an added advantage of AI features in your apps built on ToolJet. 
