@@ -50,3 +50,9 @@ export const harperDbSelectors = {
   schemaInputField: '[data-cy="schema-input-field"]',
   TableInputField: '[data-cy="table-input-field"]',
 };
+
+export const awsTextractSelectors = {
+  documentInputField: '[data-cy="document-input-field"]',
+  bucketNameInputField: '[data-cy="bucket-input-field"]',
+  keyNameInputField: '[data-cy="key-input-field"]',
+};
