@@ -38,3 +38,9 @@ export const minioSelectors = {
   contentTypeInputField: '[data-cy="contenttype-input-field"]',
   dataInput: '[data-cy="data-input-field"]',
 };
+
+export const awsTextractSelectors = {
+  documentInputField: '[data-cy="document-input-field"]',
+  bucketNameInputField: '[data-cy="bucket-input-field"]',
+  keyNameInputField: '[data-cy="key-input-field"]',
+};
