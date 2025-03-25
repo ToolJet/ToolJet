@@ -1,8 +1,8 @@
 .link-widget {
   a {
-    text-underline-offset: 4px; // Adds space between text and underline
+    text-underline-offset: 32%; // Adds space between text and underline
     &:hover {
-      // color: var(--interactive-overlays-fill-hover) !important;
+      color: var(--link-hover-color) !important;
     }
     }
 }

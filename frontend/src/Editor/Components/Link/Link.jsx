@@ -3,6 +3,7 @@ import * as Icons from '@tabler/icons-react';
 import cx from 'classnames';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import './link.scss';
+const tinycolor = require('tinycolor2');
 
 export const Link = ({ height, properties, styles, fireEvent, setExposedVariables, dataCy }) => {
   const { linkTarget, linkText, targetType, visibility, disabledState, loadingState } = properties;
@@ -27,6 +28,7 @@ export const Link = ({ height, properties, styles, fireEvent, setExposedVariable
     opacity: isDisabled ? 0.5 : 1,
     pointerEvents: isDisabled ? 'none' : 'auto',
     fontWeight: '500',
+    '--link-hover-color': tinycolor(textColor).darken(15).toString(),
   };
   // eslint-disable-next-line import/namespace
   const IconElement = Icons?.[icon] == undefined ? Icons['IconHome2'] : Icons[icon];
