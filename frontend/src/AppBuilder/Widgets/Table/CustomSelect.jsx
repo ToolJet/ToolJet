@@ -10,6 +10,7 @@ const { MenuList } = components;
 
 export const CustomSelect = ({
   options,
+  useDynamicOptions,
   value,
   onChange,
   fuzzySearch = false,
@@ -103,12 +104,16 @@ export const CustomSelect = ({
     }),
   };
   const defaultValue = useMemo(() => {
-    if (defaultOptionsList.length >= 1) {
+    if (useDynamicOptions) {
+      return isMulti
+        ? options.filter((option) => option?.makeDefaultOption)
+        : options.find((option) => option?.makeDefaultOption);
+    } else if (defaultOptionsList.length >= 1) {
       return !isMulti ? defaultOptionsList[defaultOptionsList.length - 1] : defaultOptionsList;
     } else {
       return isMulti ? [] : {};
     }
-  }, [isMulti, defaultOptionsList]);
+  }, [isMulti, defaultOptionsList, options, useDynamicOptions]);
 
   const _value = useMemo(() => {
     // Return null to show default value
