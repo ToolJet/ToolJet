@@ -679,6 +679,7 @@
             "security/constants/variables"
           ]
         },
+        "security/whitelist-cdn",
         "security/audit-logs",
         "security/compliance"
       ]

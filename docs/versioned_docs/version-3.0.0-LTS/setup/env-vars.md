@@ -136,15 +136,6 @@ If ToolJet needs to connect to self-signed HTTPS endpoints, ensure the `NODE_EXT
 
 - `NODE_EXTRA_CA_CERTS=/path/to/cert.pem`: Absolute path to the PEM file (can contain multiple certificates).
 
-#### Whitelist custom CDN domains
-
-You can use the `CSP_WHITELISTED_DOMAINS` environment variable to whitelist your custom CDN domains. This allows loading external libraries securely while maintaining CSP compliance. 
-
-| Variable | Description                                                                 |
-| -------- | --------------------------------------------------------------------------- |
-| CSP_WHITELISTED_DOMAINS | CDN domains ( eg: cdn.example.com, assets.mycompany.com, static.customcdn.net) |
-
-
 ### Third-Party Integrations
 
 #### Slack
