@@ -120,6 +120,8 @@ export const stepsConfig = {
         {
           handle: 'visibility',
           displayName: 'visibility',
+          defaultValue: '{{false}}',
+          type: 'toggle',
         },
       ],
     },
@@ -134,6 +136,8 @@ export const stepsConfig = {
         {
           handle: 'disabled',
           displayName: 'disabled',
+          defaultValue: '{{true}}',
+          type: 'toggle',
         },
       ],
     },
