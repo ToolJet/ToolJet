@@ -14,7 +14,10 @@
       "type": "string",
       "title": "Connection type",
       "description": "Single select dropdown for connection_type",
-      "enum": ["manual", "string"],
+      "enum": [
+        "manual",
+        "string"
+      ],
       "default": "manual"
     },
     "host": {
@@ -54,7 +57,11 @@
       "type": "string",
       "title": "SSL certificate",
       "description": "Single select dropdown for choosing certificates",
-      "enum": ["ca_certificate", "self_signed", "none"],
+      "enum": [
+        "ca_certificate",
+        "self_signed",
+        "none"
+      ],
       "default": "none"
     },
     "connection_string": {
@@ -91,12 +98,16 @@
     "root_cert",
     "connection_string"
   ],
-  "required": ["connection_type"],
+  "required": [
+    "connection_type"
+  ],
   "allOf": [
     {
       "if": {
         "properties": {
-          "connection_type": { "const": "manual" }
+          "connection_type": {
+            "const": "manual"
+          }
         }
       },
       "then": {
@@ -111,21 +122,31 @@
           {
             "if": {
               "properties": {
-                "ssl_certificate": { "const": "ca_certificate" }
+                "ssl_certificate": {
+                  "const": "ca_certificate"
+                }
               }
             },
             "then": {
-              "required": ["ca_cert"]
+              "required": [
+                "ca_cert"
+              ]
             }
           },
           {
             "if": {
               "properties": {
-                "ssl_certificate": { "const": "self_signed" }
+                "ssl_certificate": {
+                  "const": "self_signed"
+                }
               }
             },
             "then": {
-              "required": ["client_key", "client_cert", "root_cert"]
+              "required": [
+                "client_key",
+                "client_cert",
+                "root_cert"
+              ]
             }
           }
         ]
@@ -134,11 +155,15 @@
     {
       "if": {
         "properties": {
-          "connection_type": { "const": "string" }
+          "connection_type": {
+            "const": "string"
+          }
         }
       },
       "then": {
-        "required": ["connection_string"]
+        "required": [
+          "connection_string"
+        ]
       }
     }
   ],
@@ -278,7 +303,7 @@
         "key": "connection_string",
         "label": "Connection string",
         "description": "postgres://username:password@hostname:port/database?sslmode=require",
-        "widget": "text-v3",
+        "widget": "text",
         "required": true
       }
     }

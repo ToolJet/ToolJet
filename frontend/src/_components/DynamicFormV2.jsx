@@ -2,6 +2,7 @@ import React from 'react';
 import cx from 'classnames';
 import DataSourceSchemaManager from '@/_helpers/dataSourceSchemaManager';
 import Textarea from '@/_ui/Textarea';
+import Input from '@/_ui/Input';
 import Select from '@/_ui/Select';
 import Headers from '@/_ui/HttpHeaders';
 import Toggle from '@/_ui/Toggle';
@@ -30,7 +31,6 @@ const DynamicFormV2 = ({
   setValidationMessages,
   clearValidationMessages,
 }) => {
-  // rename uiProperties everywhere
   const uiProperties = schema['tj:ui:properties'] || {};
   const dsm = React.useMemo(() => new DataSourceSchemaManager(schema), [schema]);
   const encryptedProperties = React.useMemo(() => dsm.getEncryptedProperties(), [dsm]);
@@ -193,6 +193,9 @@ const DynamicFormV2 = ({
 
   const getElement = (type) => {
     switch (type) {
+      case 'password':
+      case 'text':
+        return Input;
       case 'password-v3':
       case 'text-v3':
         return InputV3;
