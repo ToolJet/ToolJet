@@ -89,6 +89,19 @@ export const starratingConfig = {
         defaultValue: false,
       },
     },
+    padding: {
+      type: 'switch',
+      displayName: 'Padding',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: 'default',
+      },
+      isFxNotRequired: true,
+      options: [
+        { displayName: 'Default', value: 'default' },
+        { displayName: 'None', value: 'none' },
+      ],
+    },
   },
   exposedVariables: {
     value: 0,
@@ -112,6 +125,7 @@ export const starratingConfig = {
       labelColor: { value: '' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
+      padding: { value: 'default' },
     },
   },
 };
