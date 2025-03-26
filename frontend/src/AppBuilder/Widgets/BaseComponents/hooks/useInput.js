@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useGridStore } from '@/_stores/gridStore';
+import { getCountryCallingCode } from 'react-phone-number-input';
 
 export const useInput = ({
   id,
@@ -28,9 +29,18 @@ export const useInput = ({
   const [isFocused, setIsFocused] = useState(false);
   const [labelWidth, setLabelWidth] = useState(0);
   const [iconVisibility, setIconVisibility] = useState(false);
+  const [country, setCountry] = useState(properties.defaultCountry);
 
   const { isValid, validationError } = validationStatus;
   const isMandatory = validation?.mandatory ?? false;
+
+  const getCountryCallingCodeSafe = (country) => {
+    try {
+      return getCountryCallingCode(country);
+    } catch (error) {
+      return '';
+    }
+  };
 
   useEffect(() => {
     if (labelRef?.current) {
@@ -87,16 +97,41 @@ export const useInput = ({
 
   useEffect(() => {
     if (isInitialRender.current) return;
-    setInputValue(properties.value ?? '');
+    if (inputType === 'phone') {
+      let code = getCountryCallingCodeSafe(country);
+      setInputValue(`+${code}${properties.value}`);
+    } else {
+      setInputValue(properties.value ?? '');
+    }
   }, [properties.value]);
 
+  // useEffect(() => {
+  //   if (isInitialRender.current && inputType!=="phone") return;
+
+  //       setExposedVariable('setValue',
+  //     async function (value,country){
+
+  //     }
+  //   )
+
   useEffect(() => {
-    const setterName = inputType === 'phone' ? 'setValue' : 'setText';
+    if (inputType !== 'phone') return;
+    setExposedVariable('setValue', async function (value, countryCode = country) {
+      const code = getCountryCallingCodeSafe(country);
+      setInputValue(`+${code}${value}`);
+      setCountry(countryCode);
+      fireEvent('onChange');
+    });
+  }, [inputType, country]);
+
+  useEffect(() => {
     const exposedVariables = {
-      [setterName]: async function (text) {
-        setInputValue(text);
-        fireEvent('onChange');
-      },
+      ...(inputType !== 'phone' && {
+        setText: async function (text) {
+          setInputValue(text);
+          fireEvent('onChange');
+        },
+      }),
       clear: async function () {
         setInputValue('');
         fireEvent('onChange');
@@ -179,6 +214,8 @@ export const useInput = ({
     visibility,
     loading,
     disable,
+    country,
+    setCountry,
     validationStatus,
     showValidationError,
     isFocused,

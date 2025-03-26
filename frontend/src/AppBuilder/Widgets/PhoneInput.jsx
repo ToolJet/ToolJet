@@ -10,12 +10,17 @@ import { useInput } from './BaseComponents/hooks/useInput';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import Label from '@/_ui/Label';
 import TickV3 from '@/_ui/Icon/solidIcons/TickV3';
+import Planet from '@/_ui/Icon/bulkIcons/Planet';
 const tinycolor = require('tinycolor2');
 
 export const PhoneInput = (props) => {
   const { properties, styles, componentName, darkMode, height, setExposedVariable, setExposedVariables, fireEvent } =
     props;
-  const inputLogic = useInput(props);
+  const transformedProps = {
+    ...props,
+    inputType: 'phone',
+  };
+  const inputLogic = useInput(transformedProps);
   const {
     inputRef,
     labelRef,
@@ -33,6 +38,8 @@ export const PhoneInput = (props) => {
     handleFocus,
     value,
     handlePhoneInputChange,
+    country,
+    setCountry,
   } = inputLogic;
   const { label, placeholder, isCountryChangeEnabled, defaultCountry = 'US' } = properties;
 
@@ -54,7 +61,6 @@ export const PhoneInput = (props) => {
   const _width = (width / 100) * 70;
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
   const isInitialRender = useRef(true);
-  const [country, setCountry] = useState(defaultCountry);
 
   const getCountryCallingCodeSafe = (country) => {
     try {
@@ -171,7 +177,7 @@ export const PhoneInput = (props) => {
     borderLeft: 'none',
   };
 
-  const CustomValueContainer = ({ children, getValue, ...props }) => {
+  const CustomValueContainer = ({ getValue, ...props }) => {
     const selectedValue = getValue()[0];
     const FlagIcon = selectedValue ? flags[selectedValue.value] : null;
     const countryCode = getCountryCallingCodeSafe(selectedValue.value);
@@ -180,11 +186,14 @@ export const PhoneInput = (props) => {
       <components.ValueContainer {...props}>
         {FlagIcon ? (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
-            <FlagIcon style={{ height: '16px' }} />
-            <span style={{ marginLeft: '2px' }}>{` +${countryCode}`}</span>
+            <>
+              <FlagIcon style={{ height: '16px' }} /> <span style={{ marginLeft: '2px' }}>{` +${countryCode}`}</span>
+            </>
           </div>
         ) : (
-          children
+          <div style={{ display: 'flex', marginLeft: '17px', marginTop: '4px', justifyContent: 'center' }}>
+            <Planet width={24} height={24} />
+          </div>
         )}
       </components.ValueContainer>
     );

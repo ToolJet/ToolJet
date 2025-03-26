@@ -207,7 +207,15 @@ export const phoneinputConfig = {
     {
       handle: 'setValue',
       displayName: 'Set Value',
-      params: [{ handle: 'value', displayName: 'value', defaultValue: '00' }],
+      params: [
+        { handle: 'value', displayName: 'value', defaultValue: '' },
+        { handle: 'country', displayName: 'country', defaultValue: '' },
+      ],
+    },
+    {
+      handle: 'setCountryCode',
+      displayName: 'Set country code',
+      params: [{ handle: 'countryCode', displayName: 'Country code', defaultValue: '' }],
     },
     {
       handle: 'clear',
