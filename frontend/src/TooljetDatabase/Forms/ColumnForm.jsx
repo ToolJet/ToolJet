@@ -354,7 +354,7 @@ const ColumnForm = ({
                 show={foreignKeyDetails?.length > 0 && isForeignKey}
               >
                 <div className="d-flex align-items-center custom-gap-4">
-                  <span className="form-label">Set to Null</span>
+                  <span className="form-label">Set default value to Null</span>
                   <label className={`form-switch`}>
                     <input
                       className="form-check-input"

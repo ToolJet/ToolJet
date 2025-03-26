@@ -32,6 +32,7 @@ import { getLocalTimeZone, timeZonesWithOffsets } from '@/Editor/QueryManager/Qu
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import { resolveReferences } from '@/AppBuilder/CodeEditor/utils';
 import Switch from '@/AppBuilder/CodeBuilder/Elements/Switch';
+import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 
 const ColumnForm = ({
   onClose,
@@ -83,7 +84,6 @@ const ColumnForm = ({
 
   //  this is for DropDownDetails component which is react select
   const [foreignKeyDefaultValue, setForeignKeyDefaultValue] = useState(() => {
-    console.log('manish :: foreignKeyDefaultValue state', { dataType, selectedColumn });
     if (dataType === 'integer' || dataType === 'bigint' || dataType === 'double precision') {
       return {
         value: parseInt(selectedColumn?.column_default),
@@ -103,6 +103,68 @@ const ColumnForm = ({
   });
 
   const [foreignKeyDetails, setForeignKeyDetails] = useState([]);
+
+  // Add function to validate default value
+  const validateDefaultValue = async () => {
+    if (!isMatchingForeignKeyColumn(selectedColumn?.Header)) return;
+
+    try {
+      const referencedColumns = foreignKeys.find((item) => item.column_names[0] === selectedColumn?.Header);
+
+      if (!referencedColumns?.referenced_column_names?.length) {
+        setForeignKeyDefaultValue({
+          value: '',
+          label: '',
+        });
+        setDefaultValue('');
+        return;
+      }
+
+      const selectQuery = new PostgrestQueryBuilder();
+      selectQuery.select(referencedColumns.referenced_column_names[0]);
+      selectQuery.eq(referencedColumns.referenced_column_names[0], defaultValue);
+
+      const query = selectQuery.url.toString();
+
+      const { data = [], error } = await tooljetDatabaseService.findOne(
+        organizationId,
+        referencedColumns.referenced_table_id,
+        query
+      );
+
+      if (error) {
+        toast.error(error?.message ?? `Failed to validate default value`);
+        setForeignKeyDefaultValue({
+          value: '',
+          label: '',
+        });
+        setDefaultValue('');
+        return;
+      }
+
+      if (data.length === 0) {
+        setForeignKeyDefaultValue({
+          value: '',
+          label: '',
+        });
+        setDefaultValue('');
+      }
+    } catch (error) {
+      console.error('Error validating default value:', error);
+      setForeignKeyDefaultValue({
+        value: '',
+        label: '',
+      });
+      setDefaultValue('');
+    }
+  };
+
+  // Add useEffect to validate on mount
+  useEffect(() => {
+    if (isMatchingForeignKeyColumn(selectedColumn?.Header) && defaultValue) {
+      validateDefaultValue();
+    }
+  }, []);
 
   useEffect(() => {
     toast.dismiss();
@@ -636,7 +698,7 @@ const ColumnForm = ({
                   show={isMatchingForeignKeyColumn(selectedColumn?.Header)}
                 >
                   <div className="d-flex align-items-center custom-gap-4">
-                    <span className="form-label">Set to Null</span>
+                    <span className="form-label">Set default value to Null</span>
                     <label className={`form-switch`}>
                       <input
                         className="form-check-input"
