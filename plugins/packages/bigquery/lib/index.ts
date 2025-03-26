@@ -104,7 +104,37 @@ export default class Bigquery implements QueryService {
       }
     } catch (error) {
       console.log(error);
-      throw new QueryError('Query could not be completed', error.message, {});
+      const errorMessage = error.message || "An unknown error occurred.";
+      let errorDetails: any = {};
+      
+      const errorSuggestions = {
+        "notFound": "Check if the table or dataset exists in the specified location.",
+        "accessDenied": "Verify that the service account has the necessary permissions.",
+        "invalidQuery": "Check the SQL syntax and ensure that all referenced columns exist.",
+        "rateLimitExceeded": "You are making too many requests. Try again after some time.",
+        "backendError": "BigQuery encountered an internal error. Retry the request after some time.",
+        "quotaExceeded": "You have exceeded your quota limits. Consider upgrading your plan or reducing query size.",
+        "duplicate": "A resource with this name already exists. Try using a different name.",
+        "badRequest": "Check the request parameters and ensure they are correctly formatted.",
+      };
+
+      if (error && error instanceof Error) {
+        const bigqueryError = error as any;
+        errorDetails.error = bigqueryError;
+
+        const reason = bigqueryError.response?.status?.errorResult?.reason || "unknownError";
+        errorDetails.reason = reason;
+        errorDetails.message = errorMessage;
+        errorDetails.jobId = bigqueryError.response?.jobReference?.jobId;
+        errorDetails.location = bigqueryError.response?.jobReference?.location;
+        errorDetails.query = bigqueryError.response?.configuration?.query?.query;
+
+
+        const suggestion = errorSuggestions[reason] || "Check your request and try again.";
+        errorDetails.suggestion = suggestion;
+      }
+
+      throw new QueryError('Query could not be completed', errorMessage, errorDetails);
     }
 
     return {
