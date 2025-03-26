@@ -57,6 +57,7 @@
     "dotenv": "^16.0.3",
     "draft-js": "^0.11.7",
     "draft-js-export-html": "^1.4.1",
+    "draft-js-import-html": "^1.4.1",
     "driver.js": "^0.9.8",
     "emoji-mart": "^5.5.2",
     "file-loader": "^6.2.0",
