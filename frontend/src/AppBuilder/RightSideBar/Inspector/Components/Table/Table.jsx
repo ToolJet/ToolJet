@@ -626,6 +626,8 @@ class TableComponent extends React.Component {
                               return 'Multiselect';
                             case 'json':
                               return 'JSON';
+                            case 'markdown':
+                              return 'Markdown';
                             default:
                               capitalize(text ?? '');
                           }

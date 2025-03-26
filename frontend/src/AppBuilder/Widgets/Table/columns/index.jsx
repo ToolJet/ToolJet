@@ -15,6 +15,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import Text from '../Text';
 import StringColumn from '../String';
 import Json from '../Json';
+import Markdown from '../Markdown';
 
 export default function generateColumnsData({
   columnProperties,
@@ -721,6 +722,25 @@ export default function generateColumnsData({
               <Json
                 isEditable={isEditable}
                 jsonIndentation={jsonIndentation}
+                darkMode={darkMode}
+                handleCellValueChange={handleCellValueChange}
+                cellTextColor={cellTextColor}
+                horizontalAlignment={horizontalAlignment}
+                cellValue={cellValue}
+                column={column}
+                currentState={currentState}
+                containerWidth={width}
+                cell={cell}
+                isMaxRowHeightAuto={isMaxRowHeightAuto}
+                cellSize={cellSize}
+                maxRowHeightValue={maxRowHeightValue}
+              />
+            );
+          }
+          case 'markdown': {
+            return (
+              <Markdown
+                isEditable={isEditable}
                 darkMode={darkMode}
                 handleCellValueChange={handleCellValueChange}
                 cellTextColor={cellTextColor}
