@@ -68,6 +68,24 @@ To switch between the workspaces,
 2.  A table displaying all workspaces will appear. Click on the Archived tab to view archived workspaces.
 3.  Click the Unarchive button to unarchive the selected workspace.
 
+
+## Default Workspace  
+
+The **default workspace** is the workspace configured by the super admin to ensure that all new and existing users joins the company's workspace instead of a personal workspace. This applies when the [Enable Signup](/docs/user-management/onboard-users/self-signup-user#enable-sign-up-at-instance-level) setting (sign-up without invitations) is enabled in your intance login settings.
+
+To set up a default workspace for your instance, configure the `TOOLJET_DEFAULT_WORKSPACE_URL` environment variable. 
+
+| Variable | Description |
+| -------- | ----------- |
+| `TOOLJET_DEFAULT_WORKSPACE_URL` | The default workspace URL. (e.g.,`https://app.corp.com/workspace` )|
+
+Once the default workspace is configured, super admin can share the instance URL to invite the users. Ensure that you provide the full instance URL, whether it's a subdomain, subpath or a complete URL.
+
+  :::note
+The ability to configure the default workspace from the UI is coming soon!
+  :::
+
+
 ## Workspace Admin
 
 -   A Workspace has a three predefined roles, Admins, Builders and Endusers with predefined permissions. Checkout the [users and groups](/docs/user-management/role-based-access/user-roles) docs for more details.
