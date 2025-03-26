@@ -4,7 +4,6 @@ import * as protobuf from 'protobufjs';
 import got from 'got';
 import { CreateArgumentsDto, GetDataSourceOauthUrlDto, TestDataSourceDto } from './dto';
 import { dbTransactionWrap } from '@helpers/database.helper';
-import { OAuthCacheService } from '@helpers/oauth-cache.service';
 import { EntityManager } from 'typeorm';
 import { User } from '@entities/user.entity';
 import { DataSourceScopes, DataSourceTypes } from './constants';
@@ -32,8 +31,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     protected readonly licenseTermsService: LicenseTermsService,
     protected readonly encryptionService: EncryptionService,
     protected readonly pluginsServiceSelector: PluginsServiceSelector,
-    protected readonly organizationConstantsUtilService: OrganizationConstantsUtilService,
-    protected readonly oauthCacheService: OAuthCacheService
+    protected readonly organizationConstantsUtilService: OrganizationConstantsUtilService
   ) {}
   async create(createArgumentsDto: CreateArgumentsDto, user: User): Promise<DataSource> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -137,16 +135,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       const queryService = await this.pluginsServiceSelector.getService(plugin_id, provider);
 
       // const queryService = new allPlugins[provider]();
-      let accessDetailsPromise: Promise<any>;
-      const cacheKey = `${provider}_${authCode}`;
-
-      if (this.oauthCacheService.has(cacheKey)) {
-        accessDetailsPromise = this.oauthCacheService.get(cacheKey);
-      } else {
-        accessDetailsPromise = queryService.accessDetailsFrom(authCode, options, resetSecureData);
-        this.oauthCacheService.set(cacheKey, accessDetailsPromise);
-      }
-      const accessDetails = await accessDetailsPromise;
+      const accessDetails = await queryService.accessDetailsFrom(authCode, options, resetSecureData);
 
       for (const row of accessDetails) {
         const option = {};
@@ -175,57 +164,53 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     if (dataSource.type === DataSourceTypes.SAMPLE) {
       throw new BadRequestException('Cannot update configuration of sample data source');
     }
-    try {
-      await dbTransactionWrap(async (manager: EntityManager) => {
-        const isMultiEnvEnabled = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
-        const envToUpdate = await this.appEnvironmentUtilService.get(organizationId, environmentId, false, manager);
 
-        // if datasource is restapi then reset the token data
-        if (dataSource.kind === 'restapi')
-          options.push({
-            key: 'tokenData',
-            value: undefined,
-            encrypted: false,
-          });
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      const isMultiEnvEnabled = await this.licenseTermsService.getLicenseTerms(LICENSE_FIELD.MULTI_ENVIRONMENT);
+      const envToUpdate = await this.appEnvironmentUtilService.get(organizationId, environmentId, false, manager);
 
-        if (isMultiEnvEnabled) {
+      // if datasource is restapi then reset the token data
+      if (dataSource.kind === 'restapi')
+        options.push({
+          key: 'tokenData',
+          value: undefined,
+          encrypted: false,
+        });
+
+      if (isMultiEnvEnabled) {
+        dataSource.options = (
+          await this.appEnvironmentUtilService.getOptions(dataSourceId, organizationId, envToUpdate.id)
+        ).options;
+
+        const newOptions = await this.parseOptionsForUpdate(dataSource, options, manager);
+        await this.appEnvironmentUtilService.updateOptions(newOptions, envToUpdate.id, dataSource.id, manager);
+      } else {
+        const allEnvs = await this.appEnvironmentUtilService.getAll(organizationId);
+        /* 
+          Basic plan customer. lets update all environment options. 
+          this will help us to run the queries successfully when the user buys enterprise plan 
+          */
+
+        const newOptions = await this.parseOptionsForUpdate(dataSource, options, manager);
+        for (const env of allEnvs) {
           dataSource.options = (
-            await this.appEnvironmentUtilService.getOptions(dataSourceId, organizationId, envToUpdate.id)
+            await this.appEnvironmentUtilService.getOptions(dataSourceId, organizationId, env.id)
           ).options;
 
-          const newOptions = await this.parseOptionsForUpdate(dataSource, options, manager);
-          await this.appEnvironmentUtilService.updateOptions(newOptions, envToUpdate.id, dataSource.id, manager);
-        } else {
-          const allEnvs = await this.appEnvironmentUtilService.getAll(organizationId);
-          /* 
-            Basic plan customer. lets update all environment options. 
-            this will help us to run the queries successfully when the user buys enterprise plan 
-          */
-          await Promise.all(
-            allEnvs.map(async (envToUpdate) => {
-              dataSource.options = (
-                await this.appEnvironmentUtilService.getOptions(dataSourceId, organizationId, envToUpdate.id)
-              ).options;
-
-              const newOptions = await this.parseOptionsForUpdate(dataSource, options, manager);
-              await this.appEnvironmentUtilService.updateOptions(newOptions, envToUpdate.id, dataSource.id, manager);
-            })
-          );
+          await this.appEnvironmentUtilService.updateOptions(newOptions, env.id, dataSource.id, manager);
         }
-        const updatableParams = {
-          id: dataSourceId,
-          name,
-          updatedAt: new Date(),
-        };
+      }
+      const updatableParams = {
+        id: dataSourceId,
+        name,
+        updatedAt: new Date(),
+      };
 
-        // Remove keys with undefined values
-        cleanObject(updatableParams);
+      // Remove keys with undefined values
+      cleanObject(updatableParams);
 
-        await manager.save(DataSource, updatableParams);
-      });
-    } finally {
-      this.oauthCacheService.clear();
-    }
+      await manager.save(DataSource, updatableParams);
+    });
   }
 
   async parseOptionsForUpdate(dataSource: DataSource, options: Array<object>, manager: EntityManager) {
