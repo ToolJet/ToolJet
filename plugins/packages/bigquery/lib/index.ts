@@ -130,7 +130,7 @@ export default class Bigquery implements QueryService {
         errorDetails.query = bigqueryError.response?.configuration?.query?.query;
 
 
-        const suggestion = errorSuggestions[reason] || "Check your request and try again.";
+        const suggestion = errorSuggestions[reason];
         errorDetails.suggestion = suggestion;
       }
 
