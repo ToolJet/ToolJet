@@ -13,14 +13,10 @@ import {
 } from "Support/utils/postgreSql";
 
 import {
-  verifyCouldnotConnectWithAlert,
   deleteDatasource,
   closeDSModal,
-  addQuery,
-  addDsAndAddQuery,
+  deleteAppandDatasourceAfterExecution,
 } from "Support/utils/dataSource";
-
-import { openQueryEditor } from "Support/utils/dataSource";
 import { dataSourceSelector } from "../../../../../constants/selectors/dataSource";
 
 const data = {};
@@ -202,6 +198,10 @@ describe("Data source amazon athena", () => {
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       `Query (${data.dsName}) completed.`
+    );
+    deleteAppandDatasourceAfterExecution(
+      data.dsName,
+      `cypress-${data.dsName}-amazon-Athena`
     );
   });
 });

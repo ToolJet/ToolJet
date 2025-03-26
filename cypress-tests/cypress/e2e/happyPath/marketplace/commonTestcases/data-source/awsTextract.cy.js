@@ -15,11 +15,9 @@ import {
 import {
   deleteDatasource,
   closeDSModal,
-  addQuery,
-  addDsAndAddQuery,
+  deleteAppandDatasourceAfterExecution,
 } from "Support/utils/dataSource";
 
-import { openQueryEditor } from "Support/utils/dataSource";
 import { dataSourceSelector } from "../../../../../constants/selectors/dataSource";
 
 const data = {};
@@ -39,6 +37,18 @@ describe("Data source AWS Textract", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
 
+    cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
+      "have.text",
+      postgreSqlText.allDataSources()
+    );
+    cy.get(postgreSqlSelector.commonlyUsedLabelAndCount).should(
+      "have.text",
+      postgreSqlText.commonlyUsed
+    );
+    cy.get(postgreSqlSelector.databaseLabelAndCount).should(
+      "have.text",
+      postgreSqlText.allDatabase()
+    );
     cy.get(postgreSqlSelector.apiLabelAndCount).should(
       "have.text",
       postgreSqlText.allApis
@@ -131,7 +141,10 @@ describe("Data source AWS Textract", () => {
     );
 
     cy.get(".react-select__dropdown-indicator").eq(1).click();
-    cy.get(".react-select__option").contains("US West (N. California)").click();
+    cy.get(".react-select__option")
+      .contains("US West (N. California)")
+      .wait(500)
+      .click();
 
     cy.get(pluginSelectors.amazonsesAccesKey).click().type(Accesskey);
 
@@ -161,9 +174,9 @@ describe("Data source AWS Textract", () => {
     cy.get('[data-cy="query-rename-input"]').clear().type(data.dsName);
 
     // Verifying analyze document operation
-
     cy.get(pluginSelectors.operationDropdown)
       .click()
+      .wait(500)
       .type("Analyze Document{enter}");
 
     cy.wait(500);
@@ -183,6 +196,7 @@ describe("Data source AWS Textract", () => {
 
     cy.get(pluginSelectors.operationDropdown)
       .click()
+      .wait(500)
       .type("Analyze document stored in AWS S3{enter}");
 
     cy.wait(500);
@@ -202,5 +216,10 @@ describe("Data source AWS Textract", () => {
       commonSelectors.toastMessage,
       `Query (${data.dsName}) completed.`
     );
+    deleteAppandDatasourceAfterExecution(
+      data.dsName,
+      `cypress-${data.dsName}-aws-textract`
+    );
+    cy.uninstallMarketplacePlugin("AWS Textract");
   });
 });

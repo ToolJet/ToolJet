@@ -125,7 +125,8 @@ export const fillDataSourceTextField = (
   );
   cy.get(`[data-cy="${cyParamName(fieldName)}-text-field"]`).then(($field) => {
     if ($field.is(":disabled")) {
-      cy.get(".datasource-edit-btn").click();
+      cy.get(".datasource-edit-btn").wait(500).click();
+      cy.wait(500);
     }
   });
   cy.get(`[data-cy="${cyParamName(fieldName)}-text-field"]`)
@@ -133,7 +134,9 @@ export const fillDataSourceTextField = (
     .should("eq", placeholder.replace(/\u00a0/g, " "));
 
   cy.get(`[data-cy="${cyParamName(fieldName)}-text-field"]`)
+    .wait(500)
     .clear()
+    .wait(500)
     .type(input, args);
 };
 

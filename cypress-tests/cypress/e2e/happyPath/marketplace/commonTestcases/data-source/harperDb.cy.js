@@ -1,7 +1,6 @@
 import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
-import { minioText } from "Texts/minio";
 import { harperDbText } from "Texts/harperDb";
 import { harperDbSelectors } from "Selectors/Plugins";
 import { commonSelectors } from "Selectors/common";
@@ -13,14 +12,11 @@ import {
 } from "Support/utils/postgreSql";
 
 import {
-  verifyCouldnotConnectWithAlert,
   deleteDatasource,
   closeDSModal,
-  addQuery,
-  addDsAndAddQuery,
+  deleteAppandDatasourceAfterExecution,
 } from "Support/utils/dataSource";
 
-import { openQueryEditor } from "Support/utils/dataSource";
 import { dataSourceSelector } from "../../../../../constants/selectors/dataSource";
 
 const data = {};
@@ -42,16 +38,22 @@ describe("Data source HarperDB", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
 
+    cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
+      "have.text",
+      postgreSqlText.allDataSources()
+    );
     cy.get(postgreSqlSelector.commonlyUsedLabelAndCount).should(
       "have.text",
       postgreSqlText.commonlyUsed
     );
-
+    cy.get(postgreSqlSelector.databaseLabelAndCount).should(
+      "have.text",
+      postgreSqlText.allDatabase()
+    );
     cy.get(postgreSqlSelector.apiLabelAndCount).should(
       "have.text",
       postgreSqlText.allApis
     );
-
     cy.get(postgreSqlSelector.cloudStorageLabelAndCount).should(
       "have.text",
       postgreSqlText.allCloudStorage
@@ -110,7 +112,9 @@ describe("Data source HarperDB", () => {
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
+
     cy.installMarketplacePlugin("HarperDB");
+
     selectAndAddDataSource("databases", harperDbText.harperDb, data.dsName);
 
     fillDataSourceTextField(
@@ -330,5 +334,10 @@ describe("Data source HarperDB", () => {
       commonSelectors.toastMessage,
       `Query (${data.dsName1}) completed.`
     );
+    deleteAppandDatasourceAfterExecution(
+      data.dsName,
+      `cypress-${data.dsName}-HarperDB`
+    );
+    cy.uninstallMarketplacePlugin("HarperDB");
   });
 });
