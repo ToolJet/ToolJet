@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotAcceptableException } from '@nestjs/common';
+import { ConflictException, Injectable, NotAcceptableException, NotImplementedException } from '@nestjs/common';
 import { Organization } from 'src/entities/organization.entity';
 import { isSuperAdmin } from 'src/helpers/utils.helper';
 import { dbTransactionWrap } from 'src/helpers/database.helper';
@@ -82,5 +82,9 @@ export class OrganizationsService implements IOrganizationsService {
     });
     if (result) throw new ConflictException('Workspace name must be unique');
     return;
+  }
+
+  async setDefaultWorkspace(organizationId: string, manager?: EntityManager): Promise<void> {
+    throw new NotImplementedException('This feature is only available in Enterprise Edition');
   }
 }
