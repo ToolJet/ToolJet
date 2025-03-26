@@ -30,6 +30,8 @@ import { appService } from '@/_services';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import useStore from '@/AppBuilder/_stores/store';
 import { useEventActions, useEvents } from '@/AppBuilder/_stores/slices/eventsSlice';
+import ToggleGroup from '@/ToolJetUI/SwitchGroup/ToggleGroup';
+import ToggleGroupItem from '@/ToolJetUI/SwitchGroup/ToggleGroupItem';
 
 export const EventManager = ({
   sourceId,
@@ -512,6 +514,17 @@ export const EventManager = ({
                   usePortalEditor={false}
                   component={component}
                 />
+                <div className="d-flex align-items-center justify-content-between mt-1">
+                  <label className="form-label mt-1">Open in</label>
+                  <ToggleGroup
+                    onValueChange={(_value) => handlerChanged(index, 'windowTarget', _value)}
+                    defaultValue={event?.windowTarget || 'newTab'}
+                    style={{ width: '58%' }}
+                  >
+                    <ToggleGroupItem value="newTab">New tab</ToggleGroupItem>
+                    <ToggleGroupItem value="currentTab">Current tab</ToggleGroupItem>
+                  </ToggleGroup>
+                </div>
               </div>
             )}
 
