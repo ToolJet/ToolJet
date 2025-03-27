@@ -505,7 +505,7 @@ export const EventManager = ({
             )}
 
             {event.actionId === 'open-webpage' && (
-              <div className="p-1">
+              <div>
                 <label className="form-label mt-1">{t('editor.inspector.eventManager.url', 'URL')}</label>
                 <CodeHinter
                   type="basic"
@@ -514,12 +514,12 @@ export const EventManager = ({
                   usePortalEditor={false}
                   component={component}
                 />
-                <div className="d-flex align-items-center justify-content-between mt-1">
+                <div className="d-flex align-items-center justify-content-between mt-3">
                   <label className="form-label mt-1">Open in</label>
                   <ToggleGroup
                     onValueChange={(_value) => handlerChanged(index, 'windowTarget', _value)}
                     defaultValue={event?.windowTarget || 'newTab'}
-                    style={{ width: '58%' }}
+                    style={{ width: '74%' }}
                   >
                     <ToggleGroupItem value="newTab">New tab</ToggleGroupItem>
                     <ToggleGroupItem value="currentTab">Current tab</ToggleGroupItem>
