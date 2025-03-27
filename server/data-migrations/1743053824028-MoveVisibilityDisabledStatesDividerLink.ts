@@ -39,11 +39,6 @@ export class MoveVisibilityDisabledStatesDividerLink1743053824028 implements Mig
                 delete styles.visibility;
             }
 
-            if (styles.disabledState) {
-                properties.disabledState = styles.disabledState;
-                delete styles.disabledState;
-            }
-
             if (general?.tooltip) {
                 properties.tooltip = general?.tooltip;
                 delete general?.tooltip;
