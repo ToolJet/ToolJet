@@ -1,6 +1,5 @@
 import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
-import { pluginSelectors } from "Selectors/plugins";
 import { postgreSqlText } from "Texts/postgreSql";
 import { GraphQLText } from "Texts/graphQL";
 import { commonSelectors } from "Selectors/common";
@@ -12,11 +11,9 @@ import {
 } from "Support/utils/postgreSql";
 
 import {
-  verifyCouldnotConnectWithAlert,
   deleteDatasource,
   closeDSModal,
-  addQuery,
-  addDsAndAddQuery,
+  deleteAppandDatasourceAfterExecution,
 } from "Support/utils/dataSource";
 
 import { dataSourceSelector } from "../../../../../constants/selectors/dataSource";
@@ -138,15 +135,19 @@ describe("Data source GraphQL", () => {
 
     cy.get('[data-cy="query-input-field"]').clearAndTypeOnCodeMirror(
       `{
-  allFilms {
-    films { title director }
-    }
-    }`
+      allFilms {
+      films { title director }
+      }
+      }`
     );
     cy.get(dataSourceSelector.queryPreviewButton).click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       `Query (${data.dsName}) completed.`
+    );
+    deleteAppandDatasourceAfterExecution(
+      data.dsName,
+      `cypress-${data.dsName}-GraphQL`
     );
   });
 });
