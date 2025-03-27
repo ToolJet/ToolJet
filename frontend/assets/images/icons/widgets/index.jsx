@@ -13,8 +13,6 @@ import Customcomponent from './customcomponent.jsx';
 import Datepicker from './datepicker.jsx';
 import DateTimePickerV2 from './datetimepickerV2.jsx';
 import Daterangepicker from './daterangepicker.jsx';
-import Divider from './divider.jsx';
-import DividerHorizondal from './dividerhorizontal.jsx';
 import Downstatistics from './downstatistics.jsx';
 import Dropdown from './dropdown.jsx';
 import Filepicker from './filepicker.jsx';
@@ -59,6 +57,7 @@ import Upstatistics from './upstatistics.jsx';
 import Verticaldivider from './verticaldivider.jsx';
 import TimePicker from './timepicker.jsx';
 import DatepickerV2 from './datepickerv2.jsx';
+import HorizontalDivider from './horizontalDivider.jsx';
 
 const WidgetIcon = (props) => {
   switch (props.name) {
@@ -101,10 +100,8 @@ const WidgetIcon = (props) => {
       return <DateTimePickerV2 {...props} />;
     case 'daterangepicker':
       return <Daterangepicker {...props} />;
-    case 'divider':
-      return <Divider {...props} />;
-    case 'divider-horizondal':
-      return <DividerHorizondal {...props} />;
+    case 'horizontaldivider':
+      return <HorizontalDivider {...props} />;
     case 'downstatistics':
       return <Downstatistics {...props} />;
     case 'dropdown':
