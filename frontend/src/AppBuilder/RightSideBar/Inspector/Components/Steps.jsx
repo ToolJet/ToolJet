@@ -63,14 +63,14 @@ export function Steps({ componentMeta, darkMode, ...restProps }) {
     let currentNumber = options.length + 1;
     while (!found) {
       label = `step ${currentNumber}`;
-      if (options.find((option) => option.label === label) === undefined) {
+      if (options.find((option) => option.name === label) === undefined) {
         found = true;
       }
       currentNumber += 1;
     }
     return {
       name: label,
-      id: Number((Math.random() * 1000).toFixed(0)),
+      id: currentNumber - 1,
       tooltip: label,
       visible: { value: '{{true}}' },
       disabled: { value: '{{false}}' },
