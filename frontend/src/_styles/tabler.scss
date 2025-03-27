@@ -7659,29 +7659,33 @@ fieldset:disabled .btn {
 }
 
 .rounded {
-    border-radius: 4px ;
+    border-radius: 4px;
 }
 
 .rounded-0 {
     border-radius: 0 !important
 }
 
-.rounded-top-left{
+.rounded-top-left {
     border-top-left-radius: 4px;
 }
 
-.rounded-top-left-0{
+.rounded-top-left-0 {
     border-top-left-radius: 0 !important;
 }
-.rounded-top-right-0{
+
+.rounded-top-right-0 {
     border-top-right-radius: 0 !important;
 }
-.rounded-bottom-left-0{
+
+.rounded-bottom-left-0 {
     border-bottom-left-radius: 0 !important;
 }
-.rounded-bottom-right-0{
+
+.rounded-bottom-right-0 {
     border-bottom-right-radius: 0 !important;
 }
+
 .rounded-1 {
     border-radius: 2px !important
 }
@@ -17494,8 +17498,8 @@ a.step-item:hover {
     }
 }
 
-.step-item.active {
-    font-weight: 600
+.step-item {
+    font-weight: 500;
 }
 
 .step-item.active:before {
@@ -17512,7 +17516,7 @@ a.step-item:hover {
 }
 
 .step-item.active~.step-item:before {
-    color: #656d77 !important
+    color: var(--incompletedLabel) !important
 }
 
 .steps-counter {
@@ -17540,7 +17544,8 @@ a.step-item:hover {
 .steps-counter .step-item:before {
     font-size: .75rem;
     line-height: 1.5rem;
-    content: counter(steps)
+    content: counter(steps);
+    font-weight: 500 !important;
 }
 
 .steps-counter .step-item.active~.step-item:before {

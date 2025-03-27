@@ -3,7 +3,7 @@ import { isExpectedDataType } from '@/_helpers/utils';
 import { ToolTip } from '@/_components/ToolTip';
 
 export const Steps = function Button({ properties, styles, fireEvent, setExposedVariable, height, darkMode, dataCy }) {
-  const { stepsSelectable: disabledState } = properties;
+  const { stepsSelectable, disabledState } = properties;
   const visibility = isExpectedDataType(properties.visibility, 'boolean');
   const currentStepId = isExpectedDataType(properties.currentStep, 'number');
   const isDynamicStepsEnabled = isExpectedDataType(properties.advanced, 'boolean');
@@ -13,7 +13,7 @@ export const Steps = function Button({ properties, styles, fireEvent, setExposed
   const { completedAccent, incompletedAccent, incompletedLabel, completedLabel, currentStepLabel } = styles;
   const [stepsArr, setStepsArr] = useState(steps);
   const [isVisible, setIsVisible] = useState(visibility);
-  const [isDisabled, setIsDisabled] = useState(!disabledState);
+  const [isDisabled, setIsDisabled] = useState(disabledState);
   const [activeStepId, setActiveStepId] = useState(currentStepId);
   const filteredSteps = (stepsArr || []).filter((step) => step.visible);
   const currentStepIndex = filteredSteps.findIndex((step) => step.id == activeStepId);
@@ -59,18 +59,12 @@ export const Steps = function Button({ properties, styles, fireEvent, setExposed
   }, [isDisabled]);
 
   useEffect(() => {
-    setIsDisabled(!disabledState);
-  }, [disabledState]);
-
-  useEffect(() => {
-    setExposedVariable('setStep', (stepId) => setActiveStepId(stepId));
-    setExposedVariable('setVisibility', (visibility) => setIsVisible(visibility));
-    setExposedVariable('setDisabled', (disabled) => setIsDisabled(disabled));
-  }, []);
-
-  useEffect(() => {
     setExposedVariable('currentStepId', activeStepId);
   }, [activeStepId]);
+
+  useEffect(() => {
+    setIsDisabled(disabledState);
+  }, [disabledState]);
 
   useEffect(() => {
     setActiveStepId(currentStepId);
@@ -107,6 +101,15 @@ export const Steps = function Button({ properties, styles, fireEvent, setExposed
     });
   }, [JSON.stringify(steps), JSON.stringify(stepsArr)]);
 
+  useEffect(() => {
+    setExposedVariable('setStep', (stepId) => {
+      if (disabledState) return;
+      setActiveStepId(stepId);
+    });
+    setExposedVariable('setVisibility', (visibility) => setIsVisible(visibility));
+    setExposedVariable('setDisable', (disabled) => setIsDisabled(disabled));
+  }, []);
+
   return (
     isVisible && (
       <div
@@ -116,9 +119,15 @@ export const Steps = function Button({ properties, styles, fireEvent, setExposed
           height,
           boxShadow,
           opacity: isDisabled ? 0.5 : 1,
-          ...(theme === 'plain' && {
-            alignItems: 'center',
-          }),
+          ...(theme === 'numbers'
+            ? {
+                paddingTop: 4,
+              }
+            : theme === 'plain'
+            ? {
+                paddingTop: 10,
+              }
+            : {}),
         }}
         data-cy={dataCy}
       >
@@ -142,10 +151,26 @@ export const Steps = function Button({ properties, styles, fireEvent, setExposed
                 }`}
                 data-bs-toggle="tooltip"
                 title={item?.tooltip}
-                onClick={() => !isDisabled && !isStepDisabled && activeStepHandler(item.id)}
-                style={dynamicStyle}
+                onClick={() => stepsSelectable && !isDisabled && !isStepDisabled && activeStepHandler(item.id)}
+                style={{
+                  ...dynamicStyle,
+                  overflow: 'visible',
+                  minWidth: 0,
+                  flex: 1,
+                }}
               >
-                {theme == 'titles' && (item.name?.length > 12 ? item.name.slice(0, 12) + '...' : item.name)}
+                <div
+                  style={{
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    maxWidth: '100%',
+                    paddingLeft: index >= 0 ? 5 : 0,
+                    paddingRight: index < filteredSteps.length - 1 ? 5 : 0,
+                  }}
+                >
+                  {theme == 'titles' && item.name}
+                </div>
               </a>
             </ToolTip>
           );

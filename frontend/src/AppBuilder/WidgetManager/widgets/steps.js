@@ -10,7 +10,7 @@ export const stepsConfig = {
       validation: { schema: { type: 'string' }, defaultValue: 'titles' },
       options: [
         { displayName: 'Label', value: 'titles' },
-        { displayName: 'Numbers', value: 'numbers' },
+        { displayName: 'Number', value: 'numbers' },
         { displayName: 'Plain', value: 'plain' },
       ],
       accordian: 'label',
@@ -36,18 +36,18 @@ export const stepsConfig = {
         defaultValue: `[{ name: 'step 1'}, {name: 'step 2'}]`,
       },
     },
+    disabledState: {
+      type: 'toggle',
+      displayName: 'Disable',
+      validation: { schema: { type: 'boolean' } },
+      section: 'additionalActions',
+    },
     visibility: {
       type: 'toggle',
       displayName: 'Visibility',
       validation: { schema: { type: 'boolean' }, defaultValue: true },
       section: 'additionalActions',
     },
-    // disabledState: {
-    //   type: 'toggle',
-    //   displayName: 'Disable',
-    //   validation: { schema: { type: 'boolean' }, defaultValue: true },
-    //   section: 'additionalActions',
-    // },
     advanced: {
       type: 'toggle',
       displayName: 'Dynamic options',
@@ -226,11 +226,11 @@ export const stepsConfig = {
       schema: {
         value: `{{ [{ name: 'step 1', tooltip: 'some tooltip', id: 1,visible: true, disabled: false},{ name: 'step 2', tooltip: 'some tooltip', id: 2,visible: true, disabled: false},{ name: 'step 3', tooltip: 'some tooltip', id: 3,visible: true, disabled: false},{ name: 'step 4', tooltip: 'some tooltip', id: 4,visible: true, disabled: false},{ name: 'step 5', tooltip: 'some tooltip', id: 5,visible: true, disabled: false}]}}`,
       },
+      disabledState: { value: '{{false}}' },
       variant: { value: 'titles' },
       currentStep: { value: '{{3}}' },
       stepsSelectable: { value: true },
       advanced: { value: `{{false}}` },
-      // disabledState: { value: '{{false}}' },
       visibility: { value: '{{true}}' },
     },
     events: [],
