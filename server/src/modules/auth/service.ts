@@ -81,7 +81,7 @@ export class AuthService implements IAuthService {
         } else if (allowPersonalWorkspace && !isInviteRedirect) {
           // no form login enabled organization available for user - creating new one
           const { name, slug } = generateNextNameAndSlug('My workspace');
-          organization = await this.organizationRepository.createOne(name, slug, manager);
+          organization = await this.organizationRepository.createOne({ name, slug }, manager);
         } else {
           if (!isInviteRedirect) throw new UnauthorizedException('User is not assigned to any workspaces');
         }

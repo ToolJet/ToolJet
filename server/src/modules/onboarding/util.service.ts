@@ -263,7 +263,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
               } else {
                 /* Create a personal workspace for the user */
                 const { name, slug } = generateNextNameAndSlug('My workspace');
-                const defaultOrganization = await this.organizationRepository.createOne(name, slug, manager);
+                const defaultOrganization = await this.organizationRepository.createOne({ name, slug }, manager);
                 defaultOrganizationId = defaultOrganization.id;
                 await this.organizationUserRepository.createOne(existingUser, defaultOrganization, true, manager);
               }
@@ -398,7 +398,7 @@ export class OnboardingUtilService implements IOnboardingUtilService {
       let personalWorkspace: Organization;
       if (isPersonalWorkspaceEnabled) {
         const { name, slug } = generateNextNameAndSlug('My workspace');
-        personalWorkspace = await this.setupOrganizationsUtilService.create(name, slug, null, manager);
+        personalWorkspace = await this.setupOrganizationsUtilService.create({ name, slug }, null, manager);
       }
       const organizationRole = personalWorkspace ? USER_ROLE.ADMIN : USER_ROLE.END_USER;
 

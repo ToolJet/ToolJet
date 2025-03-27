@@ -2,7 +2,7 @@ import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
 
 export class AddIsDefaultToOrganizations1740401000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // Add is_default column
+    // Add is_default column (nullable initially)
     await queryRunner.addColumn(
       'organizations',
       new TableColumn({
@@ -12,6 +12,18 @@ export class AddIsDefaultToOrganizations1740401000000 implements MigrationInterf
         isNullable: true,
       })
     );
+
+    // Set the first created organization as default
+    await queryRunner.query(`
+      UPDATE organizations 
+      SET is_default = true 
+      WHERE id = (
+        SELECT id 
+        FROM organizations 
+        ORDER BY created_at ASC 
+        LIMIT 1
+      );
+    `);
 
     // Create a partial unique index to ensure only one default workspace
     await queryRunner.query(`

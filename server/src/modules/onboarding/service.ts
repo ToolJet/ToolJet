@@ -147,8 +147,7 @@ export class OnboardingService implements IOnboardingService {
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
       // Create first organization
       const organization = await this.organizationRepository.createOne(
-        workspace || 'My workspace',
-        'my-workspace',
+        { name: workspace || 'My workspace', slug: 'my-workspace' },
         manager
       );
 
@@ -692,8 +691,7 @@ export class OnboardingService implements IOnboardingService {
       // Create first organization
       const workspaceSlug = generateWorkspaceSlug(workspaceName || 'My workspace');
       const organization = await this.setupOrganizationsUtilService.create(
-        workspaceName || 'My workspace',
-        workspaceSlug,
+        { name: workspaceName || 'My workspace', slug: workspaceSlug },
         null,
         manager
       );

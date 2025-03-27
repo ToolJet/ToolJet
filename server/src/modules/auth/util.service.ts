@@ -147,7 +147,7 @@ export class AuthUtilService implements IAuthUtilService {
 
     if (!user && allowPersonalWorkspace) {
       const { name, slug } = generateNextNameAndSlug('My workspace');
-      defaultOrganization = await this.organizationRepository.createOne(name, slug, manager);
+      defaultOrganization = await this.organizationRepository.createOne({ name, slug }, manager);
     }
 
     const { source, status } = getUserStatusAndSource(lifecycleEvents.USER_SSO_ACTIVATE, sso);

@@ -7,6 +7,7 @@ import { catchDbException, isSuperAdmin } from '@helpers/utils.helper';
 import { ConfigScope, SSOType } from '@entities/sso_config.entity';
 import { WORKSPACE_STATUS, WORKSPACE_USER_STATUS } from '@modules/users/constants/lifecycle';
 import { CONSTRAINTS } from './constants';
+import { OrganizationInputs } from '@modules/setup-organization/types/organization-inputs';
 
 @Injectable()
 export class OrganizationRepository extends Repository<Organization> {
@@ -106,7 +107,8 @@ export class OrganizationRepository extends Repository<Organization> {
     }, manager);
   }
 
-  createOne(name: string, slug: string, manager?: EntityManager): Promise<any> {
+  createOne(organizationInputs: OrganizationInputs, manager?: EntityManager): Promise<any> {
+    const { name, slug, isDefault } = organizationInputs;
     return dbTransactionWrap((manager: EntityManager) => {
       return catchDbException(() => {
         return manager.save(
@@ -120,6 +122,7 @@ export class OrganizationRepository extends Repository<Organization> {
             ],
             name,
             slug,
+            isDefault,
             createdAt: new Date(),
             updatedAt: new Date(),
           })

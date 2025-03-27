@@ -211,7 +211,7 @@ export class OrganizationUsersUtilService implements IOrganizationUsersUtilServi
 
   async createDefaultOrganization(manager: EntityManager) {
     const { name, slug } = generateNextNameAndSlug('My workspace');
-    return await this.setupOrganizationsUtilService.create(name, slug, null, manager);
+    return await this.setupOrganizationsUtilService.create({ name, slug }, null, manager);
   }
 
   addUserAsAdmin(userId: string, organizationId: string, manager: EntityManager) {
