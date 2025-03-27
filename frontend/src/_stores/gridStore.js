@@ -12,6 +12,10 @@ const initialState = {
   idGroupDragged: false,
   openModalWidgetId: null,
   subContainerWidths: {},
+  reorderContainerChildren: {
+    containerId: null,
+    triggerUpdate: 0,
+  },
 };
 
 export const useGridStore = create(
@@ -26,6 +30,11 @@ export const useGridStore = create(
         setOpenModalWidgetId: (openModalWidgetId) => set({ openModalWidgetId }),
         setSubContainerWidths: (id, width) =>
           set((state) => ({ subContainerWidths: { ...state.subContainerWidths, [id]: width } })),
+        setReorderContainerChildren: (containerId) =>
+          // Function to trigger reordering of specific container for tab navigation
+          set((state) => ({
+            reorderContainerChildren: { containerId, triggerUpdate: state.reorderContainerChildren.triggerUpdate + 1 },
+          })),
       },
     }),
     { name: 'Grid Store' }
