@@ -19,7 +19,7 @@ After upgrading to ToolJet 3.0.0, any queries connected to Local Data Sources wi
    3. Look for queries showing an error message related to Local Data Sources. These queries will only display the error message and the rest of content will be hidden.
 
 <div style={{textAlign: 'center'}}>
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/v3-migration/query-error.png" alt="Identify Queries with Errors"/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/v3-migration/query-error.png" alt="Identify Queries with Errors"/>
 </div>
 
 ### 2. Create a New Data Source:
@@ -28,7 +28,7 @@ After upgrading to ToolJet 3.0.0, any queries connected to Local Data Sources wi
    3. Fill in the correct required details and save the new Data Source.
 
 <div style={{textAlign: 'center'}}>
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/v3-migration/create-new-data-source.png" alt="Create a New Data Source"/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/v3-migration/create-new-data-source.png" alt="Create a New Data Source"/>
 </div>
 
 ### 3. Reconnect Your Queries:
@@ -39,12 +39,12 @@ After upgrading to ToolJet 3.0.0, any queries connected to Local Data Sources wi
    5. Your query will now be reconnected and functional.
 
 <div style={{textAlign: 'center'}}>
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/v3-migration/query-reconnection.png" alt="Reconnect Query with Data Source"/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/v3-migration/query-reconnection.png" alt="Reconnect Query with Data Source"/>
 </div>
 
 ### 4. Test Your Queries:
    1. Run each updated query to ensure everything is working as expected.
 
 <div style={{textAlign: 'center'}}>
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/v3-migration/test-queries.png" alt="Test Your Queries"/>
+<img className="screenshot-full img-full" src="/img/datasource-reference/v3-migration/test-queries.png" alt="Test Your Queries"/>
 </div>

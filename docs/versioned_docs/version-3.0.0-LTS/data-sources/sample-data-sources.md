@@ -1,75 +1,104 @@
 ---
-id: sample-data-sources
-title: Sample Data Sources
+id: marketplace-overview
+title: 'Marketplace: Overview'
 ---
 
-# Sample Data Source in ToolJet
+# Marketplace: Overview
 
-ToolJet includes a built-in PostgreSQL sample data source that allows you to familiarize yourself with its features and components before connecting your own data. This database contains example tables and data for hands-on experimentation. The sample data source is a shared PostgreSQL connection available across all workspaces and applications. This means any changes or updates made to the data will be reflected in real-time for all users, regardless of the application or workspace. If are using ToolJet Cloud, the sample data resets daily at midnight. However, if you are using a self-hosted version of ToolJet, the data will not be reset.
-
-
-### Getting Started with Sample Data Sources
-
-When you create a new application, the empty state will guide you on the next steps for connecting a data source. If you don't have your own data source ready, you can immediately start exploring and building by connecting to our sample data source.
-
-<img className="screenshot-full" src="/img/datasource-reference/sample-data-sources/canvas.png" alt="Canvas View" />
-
-## Connecting to Sample Data Sources
-
-You can connect to the sample data source in three different ways, depending on your requirements:
-
-### 1. Connect the Sample Data Source to a Newly Created Application.
-
-This method allows you to add a sample data source to an existing application that is in an empty state (i.e., has no pre-existing components)
-
-  1. Select/Create the application you want to connect to the sample data source.
-  2. Once you select/create the new application, the empty state guides you through the initial setup for connecting the sample data source.
-  3. Click on the **Connect to sample data source** button. This will create a query in the query panel which will retrieve all the tables names from the sample data source.
-
-
+ToolJet Marketplace allows users to enhance their workspaces by adding custom plugins (data sources) tailored to their unique requirements. This functionality facilitates the seamless integration of user-created plugins with ToolJet.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/sample-data-sources/connect-via-canvas-v2.png" alt="Connect via Canvas" />
+    <img className="screenshot-full img-full" src="/img/marketplace/overview/marketplace-v2.png" alt="Marketplace Overview" />
 </div>
 
+<div style={{paddingTop:'24px'}}>
 
-### 2. Connect the Sample Data Source to an Existing Application.
+## Enabling Marketplace 
 
-This method allows you to connect the sample data source to an existing application from the query panel.
+To **Enable** the marketplace feature, users need to add the following environment variable to their **[`.env`](/docs/setup/env-vars#marketplace)** file:
 
-  1. Open the **Query Panel** of the application you want to connect to the **Sample Data Source**.
-  2. In the **Query Panel**, click on the **+Add** button to add a new query, and select **Sample Data Source**.
-  3. This will create a new empty query. You can now write your SQL query to retrieved data from the sample data source. You can checkout the sample data source [schema](#sample-data-source-schema) to understand the tables and columns available in the sample data source.
+```bash
+ENABLE_MARKETPLACE_FEATURE=true
+```
 
+When running ToolJet locally, ensure that all the plugins are available by building marketplace before starting the server.
 
+:::info Note
+The logged-in user should be an **Administrator** to access the marketplace page.
+:::
+
+</div>
+
+<div style={{paddingTop:'24px'}}>
+
+## Installing a Plugin
+
+To navigate to the Marketplace page, click on the settings icon on the bottom left of the dashboard, and click on **Marketplace** from the selection menu.
+
+The Marketplace page will contain two tabs: **Installed** and **Marketplace**. 
+
+Under the **Marketplace** tab, you will see a list of all the available plugins that can be installed on the workspace. To install a plugin, click on the **Install** button on the plugin's card. Once the installation is complete, the status will change from Install to **Installed**.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/sample-data-sources/connect-via-query-manager-v2.png" alt="Connect via query manager" />
+    <img className="screenshot-full img-full" src="/img/marketplace/overview/allplugins-v2.png" alt="List of All Plugins" /> 
 </div>
 
+</div>
 
-### 3. Create a Sample Application Using the Sample Data Source.
+<div style={{paddingTop:'24px'}}>
 
-This method enables the creation of a sample application with a pre-configured connection to the sample data source. The data will be already visualized on the application's canvas upon creation.
+## Using Marketplace Plugins
 
-   1. Navigate to the Data Sources page within the dashboard's left-hand sidebar.
-   2. Under the **DATA SOURCES ADDED** section in the sidebar, you will find the **Sample Data Source (postgres)**. This is a default data source and cannot be deleted.
-   3. Select **Sample Data Source (postgres)**. You can click on the **Test Connection** button to test your connection to your sample database.
-   4. Click **Create sample application** to generate the new application. This application automatically includes the sample data source.
-   5. By default, this application will feature a table component with tabs. These tabs will visually display the data retrieved from your sample data source.
+You can access any installed plugins by following these steps:
+
+- Navigate to the **Data sources** tab in the dashboard.
+- Scroll down to **Plugins**.
+
+You can now see the list of installed marketplace plugins that you can configure as data sources.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/sample-data-sources/create-sample-app-v2.png" alt="Create Sample App" />
+    <img className="screenshot-full img-full" src="/img/marketplace/overview/installed-plugins.png" alt="Installed plugins" />
 </div>
 
- ## Sample Data Source Schema
+- After successfully configuring a plugin, you can access it when trying to add a new query from the Query Panel.
 
-The sample data source contains various tables with different data types.
+## Removing a Plugin
 
-| Table Name                       | Column Names| Number of Rows |
-|:-------|:---------|:---------------|
-| `public.sample_data_organizations`   | `index`, `organization_id`, `name`, `website`, `country`, `description`, `founded`, `industry`, `number_of_employees`         | 100              |
-| `public.sample_data_country_gdp`      | `country`, `area_sq_km, population`, `exports`, `imports, gdp`, `gdp_per_capita`, `gdp_real_growth_rate`, `inflation_rate_consumer_prices`, `investment_gross_fixed_of_gdp`, `labor_force`, `unemployment_rate` | 263              |
-| `public.sample_data_users`           | `first_name`, `last_name`, `company_name`, `address`, `city`, `county`, `state`, `zip`, `phone1`, `phone2`, `email`, `web`     | 499              |
-| `public.sample_data_orders`          | `row_id`, `order_id`, `order_date`, `ship_date`, `ship_mode`, `customer_id`, `customer_name`, `segment`, `country`, `city`, `state`, `postal_code`, `region`, `product_id`, `category`, `sub_category`, `product_name`, `sales`, `quantity`, `discount`, `profit` | 500              |
-| `public.sample_data_product_cars` | `car`, `mpg`, `cylinders`, `displacement`, `horsepower`, `weight`, `acceleration`, `model`, `origin`                          | 406              |
+:::caution
+If you remove a plugin, all the queries associated with it will be eliminated from the applications.
+:::
+
+To remove a plugin, follow these steps:
+- Click on the settings icon on the bottom left of the dashboard, and click on `Marketplace` from the selection menu.
+- On the `Installed` page, click on the `Remove` button of the related plugin that you wish to remove.
+
+## Available Plugins
+- **[Anthropic](/docs/marketplace/plugins/marketplace-plugin-anthropic)**
+- **[AWS Redshift](/docs/marketplace/plugins/marketplace-plugin-awsredshift)**
+- **[AWS Textract](/docs/marketplace/plugins/marketplace-plugin-textract)**
+- **[AWS Lambda](/docs/marketplace/plugins/marketplace-plugin-aws-lambda)**
+- **[Cohere](/docs/marketplace/plugins/marketplace-plugin-cohere)**
+- **[Engagespot](/docs/marketplace/plugins/marketplace-plugin-engagespot)**
+- **[Gemini](/docs/marketplace/plugins/marketplace-plugin-gemini)**
+- **[GitHub](/docs/marketplace/plugins/marketplace-plugin-github)**
+- **[HarperDB](/docs/marketplace/plugins/marketplace-plugin-harperdb)**
+- **[Hugging Face](/docs/marketplace/plugins/marketplace-plugin-hugging_face)**
+- **[Jira](/docs/marketplace/plugins/marketplace-plugin-jira)**
+- **[Mistral AI](/docs/marketplace/plugins/marketplace-plugin-mistral_ai)**
+- **[OpenAI](/docs/marketplace/plugins/marketplace-plugin-openai)**
+- **[Pinecone](/docs/marketplace/plugins/marketplace-plugin-pinecone)**
+- **[Plivo](/docs/marketplace/plugins/marketplace-plugin-plivo)**
+- **[Pocketbase](/docs/marketplace/plugins/marketplace-plugin-pocketbase)**
+- **[Portkey](/docs/marketplace/plugins/marketplace-plugin-portkey)**
+- **[PrestoDB](/docs/marketplace/plugins/marketplace-plugin-Presto)**
+- **[Qdrant](/docs/marketplace/plugins/marketplace-plugin-qdrant)**
+- **[Salesforce](/docs/marketplace/plugins/marketplace-plugin-salesforce)**
+- **[Sharepoint](/docs/marketplace/plugins/marketplace-plugin-sharepoint)**
+- **[Supabase](/docs/marketplace/plugins/marketplace-plugin-supabase)**
+- **[Weaviate](/docs/marketplace/plugins/marketplace-plugin-weaviate)**
+
+:::info For Plugin Developers
+Refer to the **[Plugin Development guide](/docs/contributing-guide/marketplace/marketplace-setup)** to learn how to create plugins for the ToolJet Marketplace.
+:::
+
+</div>
