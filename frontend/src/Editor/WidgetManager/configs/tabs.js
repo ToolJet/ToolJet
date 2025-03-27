@@ -122,6 +122,15 @@ export const tabsConfig = {
       },
       accordian: 'Tabs',
     },
+    divider: {
+      type: 'color',
+      displayName: 'Divider',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#CCD1D5',
+      },
+      accordian: 'Tabs',
+    },
     unselectedText: {
       type: 'color',
       displayName: 'Unselected text',
@@ -194,15 +203,6 @@ export const tabsConfig = {
       ],
       accordian: 'Tabs',
     },
-    divider: {
-      type: 'color',
-      displayName: 'Divider',
-      validation: {
-        schema: { type: 'string' },
-        defaultValue: '#CCD1D5',
-      },
-      accordian: 'Tabs',
-    },
     transition: {
       type: 'select',
       displayName: 'Transition',
@@ -268,9 +268,9 @@ export const tabsConfig = {
       params: [{ handle: 'setVisibility', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
     },
     {
-      handle: 'setLoading',
+      handle: 'setDisable',
       displayName: 'Set disable',
-      params: [{ handle: 'setLoading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      params: [{ handle: 'setDisable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
     },
     {
       handle: 'setLoading',
@@ -394,6 +394,7 @@ export const tabsConfig = {
     events: [],
     styles: {
       headerBackground: { value: '#FFFFFF' },
+      divider: { value: '#CCD1D5' },
       unselectedText: { value: '#6A727C' },
       selectedText: { value: '#1B1F24' },
       highlightColor: { value: '#375FCF' },
@@ -402,7 +403,6 @@ export const tabsConfig = {
       selectedIcon: { value: '#CCD1D5' },
       accent: { value: '#4368E3' },
       tabWidth: { value: 'auto' },
-      divider: { value: '#CCD1D5' },
       transition: { value: 'none' },
       borderRadius: { value: '{{6}}' },
       border: { value: '#CCD1D5' },
