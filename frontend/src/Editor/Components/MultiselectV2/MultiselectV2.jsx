@@ -282,7 +282,7 @@ export const MultiselectV2 = ({
   };
 
   const handleClickInside = () => {
-    if (!isMultiSelectDisabled) {
+    if (!isMultiSelectDisabled && !isMultiSelectLoading) {
       fireEvent('onFocus');
       setIsMultiselectOpen(!isMultiselectOpen);
     }

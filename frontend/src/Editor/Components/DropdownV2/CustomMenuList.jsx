@@ -90,46 +90,48 @@ const CustomMenuList = ({ selectProps, ...props }) => {
           <span style={{ marginLeft: '4px' }}>Select all</span>
         </label>
       )}
-      <div
-        ref={parentRef}
-        style={{
-          maxHeight: selectProps.maxMenuHeight || 300,
-          overflowY: 'auto',
-          position: 'relative',
-          marginTop: '5px',
-          marginBottom: '5px',
-        }}
-      >
+      {!optionsLoadingState && (
         <div
+          ref={parentRef}
           style={{
-            height: `${virtualizer.getTotalSize() || 38}px`,
+            maxHeight: selectProps.maxMenuHeight || 300,
+            overflowY: 'auto',
             position: 'relative',
+            marginTop: '5px',
+            marginBottom: '5px',
           }}
         >
-          {!virtualizer.getTotalSize() && props.children}
-          {virtualizer.getVirtualItems().map((virtualItem) => {
-            const option = props.options[virtualItem.index];
-            const child = props.children[virtualItem.index];
-            return (
-              <div
-                key={option.value}
-                style={{
-                  position: 'absolute',
-                  width: '100%',
-                  top: 0,
-                  transform: `translateY(${virtualItem.start}px)`,
-                }}
-                data-index={virtualItem.index}
-                ref={virtualizer.measureElement}
-              >
-                <MenuList {...props} selectProps={selectProps}>
-                  <div>{child}</div>
-                </MenuList>
-              </div>
-            );
-          })}
+          <div
+            style={{
+              height: `${virtualizer.getTotalSize() || 38}px`,
+              position: 'relative',
+            }}
+          >
+            {!virtualizer.getTotalSize() && props.children}
+            {virtualizer.getVirtualItems().map((virtualItem) => {
+              const option = props.options[virtualItem.index];
+              const child = props.children[virtualItem.index];
+              return (
+                <div
+                  key={option.value}
+                  style={{
+                    position: 'absolute',
+                    width: '100%',
+                    top: 0,
+                    transform: `translateY(${virtualItem.start}px)`,
+                  }}
+                  data-index={virtualItem.index}
+                  ref={virtualizer.measureElement}
+                >
+                  <MenuList {...props} selectProps={selectProps}>
+                    <div>{child}</div>
+                  </MenuList>
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
       {optionsLoadingState && (
         <div className="text-center py-4" style={{ minHeight: '188px' }}>
           <Loader style={{ zIndex: 3, position: 'absolute' }} width="36" />
