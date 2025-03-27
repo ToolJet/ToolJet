@@ -489,7 +489,8 @@
             "tj-setup/smtp-setup/configuration",
             "tj-setup/smtp-setup/email-providers"
           ]
-        }
+        },
+        "tj-setup/import-libraries"
       ]
     },
     {
@@ -679,7 +680,6 @@
             "security/constants/variables"
           ]
         },
-        "security/whitelist-cdn",
         "security/audit-logs",
         "security/compliance"
       ]
