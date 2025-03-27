@@ -1,11 +1,13 @@
 export class QueryError extends Error {
   data: Record<string, unknown>;
   description: any;
-  constructor(message: string | undefined, description: any, data: Record<string, unknown>) {
+  metadata?: any;
+  constructor(message: string | undefined, description: any, data: Record<string, unknown>, metadata?: any) {
     super(message);
     this.name = this.constructor.name;
     this.data = data;
     this.description = description;
+    this.metadata = metadata;
 
     console.log(this.description);
   }
