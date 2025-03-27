@@ -351,7 +351,6 @@ const ColumnForm = ({
   const getForeignKeyColumnDetails = foreignKeys?.filter((item) => item.column_names[0] === selectedColumn?.Header); // this is for getting current foreign key column
 
   const handleEdit = async () => {
-    console.log('manish :: handleEdit', { selectedColumn, defaultValue });
     const reqConfigurations = {};
     if (selectedColumn?.dataType === 'timestamp with time zone') reqConfigurations['timezone'] = timezone;
 
@@ -536,6 +535,12 @@ const ColumnForm = ({
     setDisabledSaveButton(columnName === '');
   }, [columnName]);
 
+  useEffect(() => {
+    const shouldDisableForNullValue =
+      isNotNull === true && rows.length > 0 && isEmpty(defaultValue) && dataType?.value !== 'serial';
+    setDisabledSaveButton(shouldDisableForNullValue);
+  }, [isNotNull, defaultValue]);
+
   const handleInputError = (bool = false) => {
     setDisabledSaveButton(bool);
   };
@@ -692,10 +697,14 @@ const ColumnForm = ({
               </div>
               {isMatchingForeignKeyColumn(selectedColumn?.Header) && (
                 <ToolTip
-                  message={'Set the default value for the column to Null'}
+                  message={
+                    isNotNull
+                      ? 'Disable the NOT NULL constraint to set the default value to Null'
+                      : 'Set the default value for the column to Null'
+                  }
                   placement="top"
                   tooltipClassName="tootip-table"
-                  show={isMatchingForeignKeyColumn(selectedColumn?.Header)}
+                  show={isMatchingForeignKeyColumn(selectedColumn?.Header) || isNotNull}
                 >
                   <div className="d-flex align-items-center custom-gap-4">
                     <span className="form-label">Set default value to Null</span>
@@ -713,6 +722,7 @@ const ColumnForm = ({
                             setDefaultValue('');
                           }
                         }}
+                        disabled={isNotNull}
                       />
                     </label>
                   </div>
@@ -816,6 +826,11 @@ const ColumnForm = ({
                 )}
               </div>
             </ToolTip>
+            {isNotNull === true && dataType?.value !== 'serial' && rows?.length > 0 && defaultValue?.length <= 0 ? (
+              <span className="form-error-message">
+                Default value is required to populate this field in existing rows as NOT NULL constraint is added
+              </span>
+            ) : null}
             {isNotNull === true &&
             selectedColumn?.dataType !== 'serial' &&
             rows.length > 0 &&
@@ -976,6 +991,10 @@ const ColumnForm = ({
                     checked={isNotNull}
                     onChange={(e) => {
                       setIsNotNull(e.target.checked);
+                      if (e.target.checked && defaultValue === null) {
+                        setForeignKeyDefaultValue({ label: '', value: '' });
+                        setDefaultValue('');
+                      }
                     }}
                     disabled={selectedColumn?.dataType === 'serial' || selectedColumn?.constraints_type?.is_primary_key}
                   />
