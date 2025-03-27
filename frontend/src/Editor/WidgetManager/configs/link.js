@@ -215,7 +215,7 @@ export const linkConfig = {
       horizontalAlignment: { value: 'left' },
       padding: { value: 'default' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
-      icon: { value: 'IconHome2' },
+      icon: { value: 'IconLink' },
       iconVisibility: { value: false },
     },
   },

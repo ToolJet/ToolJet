@@ -24,7 +24,6 @@ export const Link = ({ height, properties, styles, fireEvent, setExposedVariable
     height: '100%',
     width: '100%',
     boxShadow,
-    cursor: isDisabled ? 'not-allowed' : 'pointer',
     opacity: isDisabled ? 0.5 : 1,
     pointerEvents: isDisabled ? 'none' : 'auto',
     fontWeight: '500',
@@ -32,7 +31,7 @@ export const Link = ({ height, properties, styles, fireEvent, setExposedVariable
   };
   // eslint-disable-next-line import/namespace
   const IconElement = Icons?.[icon] == undefined ? Icons['IconHome2'] : Icons[icon];
-
+  const iconSize = textSize + 2;
   // Update the state when the linkTarget or linkText changes
   useEffect(() => {
     setLinkTargetState(linkTarget);
@@ -114,19 +113,19 @@ export const Link = ({ height, properties, styles, fireEvent, setExposedVariable
         onMouseOver={() => {
           fireEvent('onHover');
         }}
-        style={{ color: textColor, fontSize: textSize }}
+        style={{ color: textColor, fontSize: textSize, cursor: isDisabled ? 'not-allowed' : 'pointer' }}
         ref={clickRef}
       >
         <span className="d-flex justify-content-center">
           {iconVisibility && (
             <IconElement
               style={{
-                width: `${textSize}px`,
-                height: `${textSize}px`,
-                minWidth: `${textSize}px`,
-                minHeight: `${textSize}px`,
+                width: `${iconSize}px`,
+                height: `${iconSize}px`,
+                minWidth: `${iconSize}px`,
+                minHeight: `${iconSize}px`,
                 marginRight: '4px',
-                marginTop: '3px',
+                marginTop: '2px',
               }}
               stroke={1.5}
             />
