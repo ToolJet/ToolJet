@@ -113,6 +113,7 @@
     "react-multi-select-component": "^4.3.4",
     "react-pdf": "^6.2.2",
     "react-phone-input-2": "^2.15.1",
+    "react-phone-number-input": "^3.4.12",
     "react-plotly.js": "^2.6.0",
     "react-qr-reader": "^2.2.1",
     "react-rnd": "^10.4.1",
