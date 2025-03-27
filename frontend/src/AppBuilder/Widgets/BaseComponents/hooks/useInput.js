@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useGridStore } from '@/_stores/gridStore';
+//eslint-disable-next-line import/no-unresolved
 import { getCountryCallingCode } from 'react-phone-number-input';
 
 export const useInput = ({
@@ -29,7 +30,7 @@ export const useInput = ({
   const [isFocused, setIsFocused] = useState(false);
   const [labelWidth, setLabelWidth] = useState(0);
   const [iconVisibility, setIconVisibility] = useState(false);
-  const [country, setCountry] = useState(properties.defaultCountry);
+  const [country, setCountry] = useState(properties.defaultCountry || 'US');
 
   const { isValid, validationError } = validationStatus;
   const isMandatory = validation?.mandatory ?? false;
@@ -96,7 +97,6 @@ export const useInput = ({
   }, [validate]);
 
   useEffect(() => {
-    if (isInitialRender.current) return;
     if (inputType === 'phone') {
       let code = getCountryCallingCodeSafe(country);
       setInputValue(`+${code}${properties.value}`);
@@ -104,15 +104,6 @@ export const useInput = ({
       setInputValue(properties.value ?? '');
     }
   }, [properties.value]);
-
-  // useEffect(() => {
-  //   if (isInitialRender.current && inputType!=="phone") return;
-
-  //       setExposedVariable('setValue',
-  //     async function (value,country){
-
-  //     }
-  //   )
 
   useEffect(() => {
     if (inputType !== 'phone') return;

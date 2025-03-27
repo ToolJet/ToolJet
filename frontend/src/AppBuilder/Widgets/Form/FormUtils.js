@@ -97,6 +97,8 @@ export function generateUIComponents(JSONSchema, advanced, componentName = '') {
       if (uiComponentsDraft?.length > 0 && uiComponentsDraft[index * 2 + 1]) {
         switch (typeResolver(value?.type)) {
           case 'TextInput':
+          case 'EmailInput':
+          case 'PhoneInput':
             if (value?.styles?.backgroundColor)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['backgroundColor'] =
                 value?.styles?.backgroundColor;
@@ -127,6 +129,11 @@ export function generateUIComponents(JSONSchema, advanced, componentName = '') {
             if (value?.value) uiComponentsDraft[index * 2 + 1]['definition']['properties']['value'] = value?.value;
             if (value?.placeholder)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['placeholder'] = value?.placeholder;
+
+            if (value?.defaultCountry && typeResolver(value?.type) === 'PhoneInput') {
+              uiComponentsDraft[index * 2 + 1]['definition']['properties']['defaultCountry'] = value?.defaultCountry;
+            }
+
             // prevent label from showing up in text input, because it is already shown in the text component. (Defaults to "Label" if not updated explicitly with an empty string)
             uiComponentsDraft[index * 2 + 1]['definition']['properties']['label'] = '';
             break;
@@ -482,6 +489,10 @@ const typeResolver = (type) => {
       return 'DropDown';
     case 'button':
       return 'Button';
+    case 'emailinput':
+      return 'EmailInput';
+    case 'phoneinput':
+      return 'PhoneInput';
     case 'text':
       return 'Text';
     case 'number':
