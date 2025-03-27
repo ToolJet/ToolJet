@@ -49,6 +49,7 @@ const CustomMenuList = ({ selectProps, ...props }) => {
       id={`dropdown-multiselect-widget-custom-menu-list-${menuId}`}
       className={cx('dropdown-multiselect-widget-custom-menu-list', { 'theme-dark dark-theme': darkMode })}
       onClick={(e) => e.stopPropagation()}
+      onTouchEnd={(e) => e.stopPropagation()}
     >
       <div className="dropdown-multiselect-widget-search-box-wrapper">
         <span>
@@ -80,7 +81,12 @@ const CustomMenuList = ({ selectProps, ...props }) => {
       </div>
       {showAllOption && !optionsLoadingState && (
         <label htmlFor="select-all-checkbox" className="multiselect-custom-menulist-select-all">
-          <FormCheck id="select-all-checkbox" checked={isSelectAllSelected} onChange={handleSelectAll} />
+          <FormCheck
+            id="select-all-checkbox"
+            checked={isSelectAllSelected}
+            onChange={handleSelectAll}
+            onTouchEnd={handleSelectAll}
+          />
           <span style={{ marginLeft: '4px' }}>Select all</span>
         </label>
       )}
