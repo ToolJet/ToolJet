@@ -57,6 +57,7 @@
   },
   "dependencies": {
     "@typescript-eslint/eslint-plugin": "^7.12.0",
-    "eslint-config-prettier": "^9.1.0"
+    "eslint-config-prettier": "^9.1.0",
+    "react-phone-number-input": "^3.4.12"
   }
 }
