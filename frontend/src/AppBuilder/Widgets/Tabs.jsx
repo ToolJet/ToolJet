@@ -1,27 +1,31 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
-import { resolveWidgetFieldValue, isExpectedDataType } from '@/_helpers/utils';
-import useStore from '@/AppBuilder/_stores/store';
-import Spinner from '@/_ui/Spinner';
-import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
-import * as Icons from '@tabler/icons-react';
-import { set } from 'lodash';
-
+import React, { useRef, useState, useEffect } from "react";
+import { Container as SubContainer } from "@/AppBuilder/AppCanvas/Container";
+import { resolveWidgetFieldValue, isExpectedDataType } from "@/_helpers/utils";
+import useStore from "@/AppBuilder/_stores/store";
+import Spinner from "@/_ui/Spinner";
+import { useExposeState } from "@/AppBuilder/_hooks/useExposeVariables";
+import SolidIcon from "@/_ui/Icon/SolidIcons";
+import * as Icons from "@tabler/icons-react";
+import { set } from "lodash";
+import OverlayTrigger from "react-bootstrap/OverlayTrigger";
+import Tooltip from "react-bootstrap/Tooltip";
 const TabsNavShimmer = ({ divider }) => {
   return (
-    <div className="d-flex gap-4 px-1.5 px-2" style={{ borderBottom: `0.5px solid ${divider}` }}>
+    <div
+      className="d-flex gap-4 px-1.5 px-2"
+      style={{ borderBottom: `0.5px solid ${divider}` }}
+    >
       {Array(3)
         .fill(0)
         .map((ind) => (
           <div
             key={ind}
             style={{
-              width: '70px',
-              height: '24px',
-              backgroundColor: '#88909914',
-              borderRadius: '16px',
-              margin: '8px 0px',
+              width: "80px",
+              height: "24px",
+              backgroundColor: "#88909914",
+              borderRadius: "6px",
+              margin: "8px 0px",
             }}
           ></div>
         ))}
@@ -52,13 +56,16 @@ export const Tabs = function Tabs({
     setExposedVariables,
     setExposedVariable
   );
-  const { defaultTab, hideTabs, renderOnlyActiveTab, useDynamicOptions } = properties;
-  const setSelectedComponents = useStore((state) => state.setSelectedComponents);
+  const { defaultTab, hideTabs, renderOnlyActiveTab, useDynamicOptions } =
+    properties;
+  const setSelectedComponents = useStore(
+    (state) => state.setSelectedComponents
+  );
 
   const widgetVisibility = styles?.visibility ?? true;
   const disabledState = styles?.disabledState ?? false;
   // config for tabs. Includes title
-  const tabs = isExpectedDataType(properties.tabs, 'array');
+  const tabs = isExpectedDataType(properties.tabs, "array");
   let parsedTabs = tabs;
   if (!useDynamicOptions) {
     parsedTabs = properties.tabItems;
@@ -74,24 +81,27 @@ export const Tabs = function Tabs({
   // set index as id if id is not provided
   parsedTabs = parsedTabs
     ?.filter((tab) => tab.visible !== false)
-    ?.map((parsedTab, index) => ({ ...parsedTab, id: parsedTab.id ? parsedTab.id : index }));
+    ?.map((parsedTab, index) => ({
+      ...parsedTab,
+      id: parsedTab.id ? parsedTab.id : index,
+    }));
   // Highlight color - for active tab text and border
-  const highlightColor = styles?.highlightColor ?? '#f44336';
+  const highlightColor = styles?.highlightColor ?? "#f44336";
   let parsedHighlightColor = highlightColor;
   parsedHighlightColor = resolveWidgetFieldValue(highlightColor);
 
-  const headerBackground = styles?.headerBackground ?? '#fff';
-  const unselectedText = styles?.unselectedText ?? '#6A727C';
-  const selectedText = styles?.selectedText ?? '#fff';
-  const hoverBackground = styles?.hoverBackground ?? '#F1F3F4';
-  const unselectedIcon = styles?.unselectedIcon ?? '#6A727C';
-  const selectedIcon = styles?.selectedIcon ?? '#fff';
-  const accent = styles?.accent ?? '#3c92dc';
-  const divider = styles?.divider ?? '#CCD1D5';
-  const borderRadius = styles?.borderRadius ?? '0px';
-  const border = styles?.border ?? '#CCD1D5';
-  const padding = styles?.padding ?? 'none';
-  const transition = styles?.transition ?? 'none';
+  const headerBackground = styles?.headerBackground ?? "#fff";
+  const unselectedText = styles?.unselectedText ?? "#6A727C";
+  const selectedText = styles?.selectedText ?? "#fff";
+  const hoverBackground = styles?.hoverBackground ?? "#F1F3F4";
+  const unselectedIcon = styles?.unselectedIcon ?? "#6A727C";
+  const selectedIcon = styles?.selectedIcon ?? "#fff";
+  const accent = styles?.accent ?? "#3c92dc";
+  const divider = styles?.divider ?? "#CCD1D5";
+  const borderRadius = styles?.borderRadius ?? "0px";
+  const border = styles?.border ?? "#CCD1D5";
+  const padding = styles?.padding ?? "none";
+  const transition = styles?.transition ?? "none";
   // options: [
   //   { name: 'Slide', value: 'slide' },
   //   { name: 'None', value: 'none' },
@@ -100,17 +110,26 @@ export const Tabs = function Tabs({
   // Default tab
   let parsedDefaultTab = defaultTab;
 
-  const defaultTabExists = parsedTabs?.some((tab) => tab.id === parsedDefaultTab);
+  const defaultTabExists = parsedTabs?.some(
+    (tab) => tab.id === parsedDefaultTab
+  );
   if (!defaultTabExists && parsedTabs.length > 0) {
     parsedDefaultTab = parsedTabs[0].id;
   }
 
   const parsedDisabledState =
-    typeof disabledState !== 'boolean' ? resolveWidgetFieldValue(disabledState) : disabledState;
+    typeof disabledState !== "boolean"
+      ? resolveWidgetFieldValue(disabledState)
+      : disabledState;
 
-  const parsedHideTabs = typeof hideTabs !== 'boolean' ? resolveWidgetFieldValue(hideTabs) : hideTabs;
+  const parsedHideTabs =
+    typeof hideTabs !== "boolean"
+      ? resolveWidgetFieldValue(hideTabs)
+      : hideTabs;
   const parsedRenderOnlyActiveTab =
-    typeof renderOnlyActiveTab !== 'boolean' ? resolveWidgetFieldValue(renderOnlyActiveTab) : renderOnlyActiveTab;
+    typeof renderOnlyActiveTab !== "boolean"
+      ? resolveWidgetFieldValue(renderOnlyActiveTab)
+      : renderOnlyActiveTab;
 
   let parsedWidgetVisibility = widgetVisibility;
 
@@ -124,7 +143,7 @@ export const Tabs = function Tabs({
   const [currentTab, setCurrentTab] = useState(parsedDefaultTab);
   const [tabItems, setTabItems] = useState(parsedTabs);
   const tabItemsRef = useRef(tabItems);
-  const [bgColor, setBgColor] = useState('#fff');
+  const [bgColor, setBgColor] = useState("#fff");
 
   useEffect(() => {
     setCurrentTab(parsedDefaultTab);
@@ -139,24 +158,30 @@ export const Tabs = function Tabs({
 
   useEffect(() => {
     const currentTabData = parsedTabs.filter((tab) => tab.id == currentTab);
-    setBgColor(currentTabData[0]?.backgroundColor ? currentTabData[0]?.backgroundColor : darkMode ? '#324156' : '#fff');
+    setBgColor(
+      currentTabData[0]?.backgroundColor
+        ? currentTabData[0]?.backgroundColor
+        : darkMode
+        ? "#324156"
+        : "#fff"
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentTab, darkMode]);
 
   function computeTabDisplay(componentId, id) {
-    let tabVisibility = 'none';
+    let tabVisibility = "none";
     if (id != currentTab) {
       return tabVisibility;
     }
 
     const tabElement = document.getElementById(`${componentId}-${id}`);
     if (tabElement) {
-      if (window.getComputedStyle(tabElement).visibility === 'none') {
-        return 'none';
+      if (window.getComputedStyle(tabElement).visibility === "none") {
+        return "none";
       }
     }
 
-    return id == currentTab ? 'block' : 'none';
+    return id == currentTab ? "block" : "none";
   }
 
   useEffect(() => {
@@ -164,8 +189,8 @@ export const Tabs = function Tabs({
       setTab: async function (id) {
         if (currentTab != id) {
           setCurrentTab(id);
-          setExposedVariable('currentTab', id);
-          fireEvent('onTabSwitch');
+          setExposedVariable("currentTab", id);
+          fireEvent("onTabSwitch");
           setSelectedComponents([]);
         }
       },
@@ -222,18 +247,18 @@ export const Tabs = function Tabs({
         style={{
           display: computeTabDisplay(id, tab.id),
           height: parsedHideTabs ? height : height - 41,
-          position: 'absolute',
-          top: parsedHideTabs ? '0px' : '41px',
-          width: '100%',
+          position: "absolute",
+          top: parsedHideTabs ? "0px" : "41px",
+          width: "100%",
         }}
       >
         {loading ? (
           <div
             style={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              height: '100%',
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "100%",
             }}
           >
             <Spinner />
@@ -241,7 +266,7 @@ export const Tabs = function Tabs({
         ) : (
           <SubContainer
             id={`${id}-${tab.id}`}
-            canvasHeight={'200'}
+            canvasHeight={"200"}
             canvasWidth={width}
             allowContainerSelect={true}
             styles={{ backgroundColor: fieldBackgroundColor || bgColor }}
@@ -272,7 +297,10 @@ export const Tabs = function Tabs({
   const scrollTabs = (direction) => {
     if (tabsRef.current) {
       const scrollAmount = tabsRef.current.clientWidth / 2;
-      tabsRef.current.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' });
+      tabsRef.current.scrollBy({
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
+      });
     }
     checkScroll();
   };
@@ -282,12 +310,12 @@ export const Tabs = function Tabs({
     const onScroll = () => checkScroll();
     const currentTabsRef = tabsRef.current;
     if (currentTabsRef) {
-      currentTabsRef.addEventListener('scroll', onScroll);
+      currentTabsRef.addEventListener("scroll", onScroll);
     }
 
     return () => {
       if (currentTabsRef) {
-        currentTabsRef.removeEventListener('scroll', onScroll);
+        currentTabsRef.removeEventListener("scroll", onScroll);
       }
     };
   }, [tabsRef.current, tabWidth]);
@@ -332,15 +360,19 @@ export const Tabs = function Tabs({
   function getTabIcon(tab) {
     const iconName = tab?.icon;
     // eslint-disable-next-line import/namespace
-    const IconElement = Icons[iconName] == undefined ? Icons['IconHome2'] : Icons[iconName];
+    const IconElement =
+      Icons[iconName] == undefined ? Icons["IconHome2"] : Icons[iconName];
 
     return tab?.iconVisibility ? (
       <IconElement
-        color={`${currentTab == tab?.id ? selectedIcon : unselectedIcon}`}
+        color={`${currentTab == tab?.id ? "#ACB2B9" : "#CCD1D5"}`}
         style={{
-          width: '16px',
-          height: '16px',
-          ...(currentTab == tab.id ? { color: selectedIcon } : { color: unselectedIcon }),
+          width: "20px",
+          height: "20px",
+          marginBottom: "3px",
+          ...(currentTab == tab.id
+            ? { color: "#ACB2B9" }
+            : { color: "#CCD1D5" }),
         }}
         stroke={1.5}
       />
@@ -354,13 +386,14 @@ export const Tabs = function Tabs({
       className="card tabs-component"
       style={{
         height: height + 4,
-        display: isVisible ? 'flex' : 'none',
-        backgroundColor: darkMode ? '#324156' : '#fff',
+        display: isVisible ? "flex" : "none",
+        backgroundColor: darkMode ? "#324156" : "#fff",
         boxShadow,
         borderRadius: `${borderRadius}px`,
-        overflow: 'hidden',
-        ...(padding === 'default' ? { padding: '4px' } : { padding: '0px' }),
-        ...(border ? { border: `1px solid ${border}` } : { border: 'none' }),
+        overflow: "hidden",
+        ...(padding === "default" ? { padding: "4px" } : { padding: "0px" }),
+        // ...(border ? { border: `1px solid ${border}` } : { border: "none" }),
+        border: "none",
       }}
       data-cy={dataCy}
       ref={containerRef}
@@ -371,19 +404,22 @@ export const Tabs = function Tabs({
         <div
           style={{
             borderBottom: `0.5px solid ${divider}`,
-            display: 'flex',
-            alignItems: 'center',
-            width: '100%',
+            display: "flex",
+            alignItems: "center",
+            width: "100%",
             backgroundColor: headerBackground,
           }}
         >
           {canScroll && (
             <div
               className="px-2"
-              onClick={() => scrollTabs('left')}
-              style={{ cursor: canScrollLeft ? 'pointer' : 'default' }}
+              onClick={() => scrollTabs("left")}
+              style={{ cursor: canScrollLeft ? "pointer" : "default" }}
             >
-              <SolidIcon fill={canScrollLeft ? '#6A727C' : '#C1C8CD'} name={'cheveronleft'} />
+              <SolidIcon
+                fill={canScrollLeft ? "#6A727C" : "#C1C8CD"}
+                name={"cheveronleft"}
+              />
             </div>
           )}
 
@@ -393,94 +429,139 @@ export const Tabs = function Tabs({
             data-bs-toggle="tabs"
             style={{
               zIndex: 1,
-              display: parsedHideTabs ? 'none' : 'flex',
+              display: parsedHideTabs ? "none" : "flex",
               backgroundColor: headerBackground,
-              overflowX: 'auto',
-              whiteSpace: 'nowrap',
-              flexWrap: 'nowrap',
-              scrollbarWidth: 'none',
-              msOverflowStyle: 'none',
-              scrollBehavior: 'smooth',
+              overflowX: "auto",
+              whiteSpace: "nowrap",
+              flexWrap: "nowrap",
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
+              scrollBehavior: "smooth",
               flexGrow: 1,
-              paddingLeft: '4px',
-              paddingRight: '4px',
+              paddingLeft: "10px",
+              paddingRight: "10px",
             }}
           >
             {tabItems
               ?.filter((tab) => tab?.visible !== false)
               ?.map((tab) => (
                 <li
-                  className={`nav-item ${currentTab == tab.id ? 'active' : ''}`}
+                  className={`nav-item ${currentTab == tab.id ? "active" : ""}`}
                   style={{
-                    opacity: tab?.disabled && '0.5',
-                    width: tabWidth == 'split' && equalSplitWidth + '%',
-                    borderBottom: currentTab === tab.id ? `1.5px solid ${accent}` : '#CCD1D5',
-                    overflow: 'hidden',
+                    opacity: tab?.disable && "0.5",
+                    width: tabWidth == "split" && equalSplitWidth + "%",
+                    borderBottom:
+                      currentTab === tab.id && !tab?.disable
+                        ? `4px solid ${accent}`
+                        : " #CCD1D5",
+                    overflow: "hidden",
                     backgroundColor: headerBackground,
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    fontWeight: 'bold',
-                    padding: '.25rem .5rem',
-                    cursor: 'pointer',
-                    ...(tabWidth == 'split' ? { minWidth: 'auto' } : { minWidth: '100px' }),
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                    fontWeight: "bold",
+                    paddingTop: ".5rem",
+                    paddingBottom: ".25rem",
+                    cursor: tab?.disable ? "not-allowed" : "pointer",
+                    ...(tabWidth == "split"
+                      ? { minWidth: "auto" }
+                      : { minWidth: "100px" }),
                   }}
                   onClick={() => {
                     if (currentTab == tab.id) return;
+                    if (tab?.disable) return;
 
                     !tab?.disabled && setCurrentTab(tab.id);
-                    !tab?.disabled && setExposedVariable('currentTab', tab.id);
-                    fireEvent('onTabSwitch');
+                    !tab?.disabled && setExposedVariable("currentTab", tab.id);
+                    fireEvent("onTabSwitch");
                   }}
                   onMouseEnter={() => handleMouseEnter(tab?.id)}
                   onMouseLeave={handleMouseLeave}
                   ref={(el) => {
                     if (el && currentTab == tab.id) {
-                      el.style.setProperty('color', parsedHighlightColor, 'important');
+                      el.style.setProperty(
+                        "color",
+                        parsedHighlightColor,
+                        "important"
+                      );
                     }
                   }}
                   key={tab.id}
                 >
-                  <div
-                    data-disabled={tab?.disable}
-                    style={{
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      textAlign: 'center',
-                      fontWeight: '500',
-                      background: isHovered && hoveredTabId === tab.id ? hoverBackground : 'transparent',
-                      borderRadius: '6px',
-                      width: '100%',
-                      padding: '.25rem .25rem',
-                      ...(currentTab == tab.id ? { color: selectedText } : { color: unselectedText }),
-                      ...(tabWidth == 'split' && {
-                        width: `${tabsRef.current?.clientWidth / (tabItems?.length || 1)}px`,
-                      }),
-                    }}
+                  <OverlayTrigger
+                    trigger={["click", "hover", "focus"]}
+                    placement="bottom"
+                    delay={{ show: 250, hide: 200 }}
+                    overlay={<Tooltip id="button-tooltip">{tab.title}</Tooltip>}
                   >
-                    <a style={{ paddingBottom: '16px' }}>{getTabIcon(tab)}</a>
-                    {tab.title}
-                  </div>
+                    <div
+                      data-disabled={tab?.disable}
+                      style={{
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        textAlign: "center",
+                        fontWeight: "500",
+                        background:
+                          isHovered && hoveredTabId === tab.id
+                            ? hoverBackground
+                            : "transparent",
+                        borderRadius: "6px",
+                        width: "100%",
+                        padding: ".25rem .25rem",
+
+                        ...(currentTab == tab.id
+                          ? { color: selectedText }
+                          : { color: unselectedText }),
+                        ...(tabWidth == "split" && {
+                          width: `${
+                            tabsRef.current?.clientWidth /
+                            (tabItems?.length || 1)
+                          }px`,
+                        }),
+                        display: "flex",
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "4px",
+                      }}
+                    >
+                      <a
+                      // style={{
+                      //   marginBottom: "4px",
+                      // }}
+                      >
+                        {getTabIcon(tab)}
+                      </a>
+
+                      {tab.title}
+                    </div>
+                  </OverlayTrigger>
                 </li>
               ))}
           </ul>
           {canScroll && (
             <div
               className="px-2"
-              onClick={() => scrollTabs('right')}
-              style={{ cursor: canScrollRight ? 'pointer' : 'default' }}
+              onClick={() => scrollTabs("right")}
+              style={{ cursor: canScrollRight ? "pointer" : "default" }}
             >
-              <SolidIcon fill={canScrollRight ? '#6A727C' : '#C1C8CD'} name="cheveronright" width="25" height="25" />
+              <SolidIcon
+                fill={canScrollRight ? "#6A727C" : "#C1C8CD"}
+                name="cheveronright"
+                width="25"
+                height="25"
+              />
             </div>
           )}
+          {/*  */}
         </div>
       )}
       {isLoading ? (
         <div
           style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            height: '100%',
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100%",
           }}
         >
           <Spinner />
@@ -489,7 +570,9 @@ export const Tabs = function Tabs({
         tabItems?.map((tab, index) => (
           <div
             className={`tab-content ${
-              transition == 'slide' && currentTab === tab.id ? 'tab-slide-in' : 'tab-slide-out'
+              transition == "slide" && currentTab === tab.id
+                ? "tab-slide-in"
+                : "tab-slide-out"
             }`}
             ref={(newCurrent) => {
               if (currentTab == tab.id) {
@@ -497,15 +580,16 @@ export const Tabs = function Tabs({
               }
             }}
             style={{
-              ...(transition == 'slide'
+              ...(transition == "slide"
                 ? {
-                    transition: 'transform 0.3s ease-in-out, opacity 0.3s ease-in-out',
+                    transition:
+                      "transform 0.3s ease-in-out, opacity 0.3s ease-in-out",
                     transform:
                       currentTab === tab.id
-                        ? 'translateX(0%)'
+                        ? "translateX(0%)"
                         : findTabIndex(currentTab) > index
-                        ? 'translateX(-100%)'
-                        : 'translateX(100%)',
+                        ? "translateX(-100%)"
+                        : "translateX(100%)",
                   }
                 : {}),
             }}
