@@ -5,10 +5,14 @@ title: Kubernetes (GKE)
 
 # Deploying ToolJet on Kubernetes (GKE)
 
-:::info
-You should setup a PostgreSQL database manually to be used by ToolJet. 
+:::warning
+To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
+:::
 
-ToolJet comes with a built-in Redis setup, which is used for multiplayer editing and background jobs. However, for multi-pod setup, it's recommended to use an external Redis instance.
+:::info
+You should setup a **PostgreSQL database** manually to be used by ToolJet. You can find the system requirements [here](/docs/setup/system-requirements#database-software).
+
+ToolJet comes with a **built-in Redis setup**, which is used for multiplayer editing and background jobs. However, for **multi-pod setup**, it's recommended to use an **external Redis instance**.
 :::
 
 Follow the steps below to deploy ToolJet on a GKE Kubernetes cluster.
@@ -41,7 +45,7 @@ LOCKBOX_MASTER_KEY=<generate using openssl rand -hex 32>
 SECRET_KEY_BASE=<generate using openssl rand -hex 64>
 
 PG_USER=<username>
-PG_HOST=<postgresql-instance-ip>
+PG_HOST=<postgresql-database-host>
 PG_PASS=<password>
 PG_DB=tooljet_production
 ```
@@ -49,10 +53,6 @@ Make sure to edit the environment variables in the `deployment.yaml`. You can ch
 
 :::info
 If there are self signed HTTPS endpoints that Tooljet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates. You can make use of kubernetes secrets to mount the certificate file onto the containers.
-:::
-
-:::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
 :::
 
 4. Create k8s service
@@ -94,10 +94,10 @@ Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration m
 To set up ToolJet Database, the following **environment variables are mandatory** and must be configured:
 
 ```env
-TOOLJET_DB=
-TOOLJET_DB_HOST=
-TOOLJET_DB_USER=
-TOOLJET_DB_PASS=
+TOOLJET_DB=tooljet_db # Default database name
+TOOLJET_DB_HOST=<postgresql-database-host>
+TOOLJET_DB_USER=<username>
+TOOLJET_DB_PASS=<password>
 ```
 
 Additionally, for **PostgREST**, the following **mandatory** environment variables must be set:

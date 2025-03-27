@@ -10,7 +10,7 @@ To enable ToolJet AI features in your ToolJet deployment, whitelist https://api-
 :::
 
 :::info
-You should setup a PostgreSQL database manually to be used by the ToolJet server.
+You should setup a PostgreSQL database manually to be used by ToolJet. We recommend using an **RDS PostgreSQL database**. You can find the system requirements [here](/docs/setup/system-requirements#database-software).
 :::
 
 
