@@ -37,7 +37,7 @@ The query will now look like this:
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/tutorial/transformations/jstransformv2.png" alt="Transformation" />
+<img className="screenshot-full img-full" src="/img/tutorial/transformations/jstransformv2.png" alt="Transformation" />
 
 </div>
 
@@ -58,7 +58,7 @@ return list(map(lambda row: {
 - Let's take a look at the data returned by a RESTAPI (using mock data here):
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/tutorial/transformations/ogdata.png" alt="raw data" />
+  <img className="screenshot-full img-full" src="/img/tutorial/transformations/ogdata.png" alt="raw data" />
 
   </div>
 
@@ -70,7 +70,7 @@ return list(map(lambda row: {
 - Now, you can click on the preview button to check the transformed data.
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/tutorial/transformations/tdata.png" alt="raw data" />
+  <img className="screenshot-full img-full" src="/img/tutorial/transformations/tdata.png" alt="raw data" />
 
   </div>
 
@@ -80,7 +80,7 @@ Click the `Save` button to create the query. Saved queries can be run using the 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/tutorial/transformations/run.png"  alt="result"/>
+<img className="screenshot-full img-full" src="/img/tutorial/transformations/run.png"  alt="result"/>
 
 </div>
 
@@ -88,6 +88,6 @@ We can see that `first_name` and `last_name` are added to all the rows in the `d
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/tutorial/transformations/rawdata.png" alt="raw data" />
+<img className="screenshot-full img-full" src="/img/tutorial/transformations/rawdata.png" alt="raw data" />
 
 </div>

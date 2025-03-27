@@ -12,7 +12,7 @@ ToolJet includes a built-in PostgreSQL sample data source that allows you to fam
 
 When you create a new application, the empty state will guide you on the next steps for connecting a data source. If you don't have your own data source ready, you can immediately start exploring and building by connecting to our sample data source.
 
-<img className="screenshot-full" src="/img/datasource-reference/sample-data-sources/canvas.png" alt="Canvas View" />
+<img className="screenshot-full img-full" src="/img/datasource-reference/sample-data-sources/canvas.png" alt="Canvas View" />
 
 ## Connecting to Sample Data Sources
 
@@ -29,7 +29,7 @@ This method allows you to add a sample data source to an existing application th
 
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/sample-data-sources/connect-via-canvas-v2.png" alt="Connect via Canvas" />
+    <img className="screenshot-full img-full" src="/img/datasource-reference/sample-data-sources/connect-via-canvas-v2.png" alt="Connect via Canvas" />
 </div>
 
 
@@ -44,7 +44,7 @@ This method allows you to connect the sample data source to an existing applicat
 
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/sample-data-sources/connect-via-query-manager-v2.png" alt="Connect via query manager" />
+    <img className="screenshot-full img-full" src="/img/datasource-reference/sample-data-sources/connect-via-query-manager-v2.png" alt="Connect via query manager" />
 </div>
 
 
@@ -59,7 +59,7 @@ This method enables the creation of a sample application with a pre-configured c
    5. By default, this application will feature a table component with tabs. These tabs will visually display the data retrieved from your sample data source.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/datasource-reference/sample-data-sources/create-sample-app-v2.png" alt="Create Sample App" />
+    <img className="screenshot-full img-full" src="/img/datasource-reference/sample-data-sources/create-sample-app-v2.png" alt="Create Sample App" />
 </div>
 
  ## Sample Data Source Schema
