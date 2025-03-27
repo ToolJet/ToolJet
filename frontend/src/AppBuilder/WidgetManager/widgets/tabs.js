@@ -394,6 +394,7 @@ export const tabsConfig = {
     events: [],
     styles: {
       headerBackground: { value: '#FFFFFF' },
+      divider: { value: '#CCD1D5' },
       unselectedText: { value: '#6A727C' },
       selectedText: { value: '#1B1F24' },
       highlightColor: { value: '#375FCF' },
@@ -402,7 +403,6 @@ export const tabsConfig = {
       selectedIcon: { value: '#CCD1D5' },
       accent: { value: '#4368E3' },
       tabWidth: { value: 'auto' },
-      divider: { value: '#CCD1D5' },
       transition: { value: 'none' },
       borderRadius: { value: '{{6}}' },
       border: { value: '#CCD1D5' },

@@ -33,6 +33,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
   );
 
   const [tabItems, setTabItems] = useState([]);
+  const [activeColumnPopoverIndex, setActiveColumnPopoverIndex] = useState(null);
   const [hoveredTabItemIndex, setHoveredTabItemIndex] = useState(null);
   let properties = [];
   let additionalActions = [];
@@ -82,7 +83,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
         currentNumber += 1;
       }
       return {
-        'id': id,
+        id: id,
         title,
         visible: { value: '{{true}}' },
         disable: { value: '{{false}}' },
@@ -318,6 +319,10 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
     setTabItems(constructTabItems());
   }, [isDynamicEnabled, component?.id]);
 
+  const handleToggleColumnPopover = (index) => {
+    setActiveColumnPopoverIndex(index);
+  };
+
   const _renderTabOptions = () => {
     return (
       <List style={{ marginBottom: '20px' }}>
@@ -345,11 +350,24 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
                             placement="left"
                             rootClose
                             overlay={_renderOverlay(item, index)}
+                            onToggle={(show) => {
+                              if (show) {
+                                handleToggleColumnPopover(index);
+                              } else {
+                                handleToggleColumnPopover(null);
+                              }
+                            }}
                           >
-                            <div key={item.title}>
+                            <div
+                              key={item.title}
+                              style={{
+                                marginBottom: '8px',
+                                backgroundColor:
+                                  activeColumnPopoverIndex === index ? 'var(--interactive-hover)' : 'var(--slate3)',
+                              }}
+                            >
                               <ListGroup.Item
                                 isDraggable={true}
-                                style={{ marginBottom: '8px', backgroundColor: 'var(--slate3)' }}
                                 onMouseEnter={() => setHoveredTabItemIndex(index)}
                                 onMouseLeave={() => setHoveredTabItemIndex(null)}
                                 {...restProps}
