@@ -169,7 +169,7 @@ export const DropdownV2 = ({
   };
 
   const handleInsideClick = () => {
-    if (!isDropdownDisabled) {
+    if (!isDropdownDisabled && !isDropdownLoading) {
       fireEvent('onFocus');
       setIsDropdownOpen((prev) => !prev);
     }
