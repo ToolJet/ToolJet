@@ -71,9 +71,12 @@ To switch between the workspaces,
 
 ## Default Workspace  
 
-The Default workspace is the workspace configured by the super admin to ensure that all new and existing users automatically join the company's workspace instead of a personal workspace.  
+**Role required** - Super Admin
 
-When the [Enable Signup](/docs/user-management/onboard-users/self-signup-user#enable-sign-up-at-instance-level) setting (sign-up without invitations) is enabled in your instance login settings, you can share the instance URL to invite users. Ensure that you provide the full instance URL, whether it's a subdomain, subpath, or a complete URL. All users who sign up through this link will be added to the default workspace. 
+The Default Workspace in ToolJet helps admins onboard users easily by ensuring all new users join the company's workspace automatically. This removes the need to invite users one by one and makes onboarding simple and faster.
+
+
+If the [Enable Signup](/docs/user-management/onboard-users/self-signup-user#enable-sign-up-at-instance-level)  setting is turned on, you can share the instance URL to invite users. Make sure to share the full instance URL, whether it’s a subdomain, subpath, or a complete URL. Everyone signing up through this link will be added to the default workspace.
 
 To set up a default workspace for your instance, configure the TOOLJET_DEFAULT_WORKSPACE_URL environment variable. 
 
