@@ -279,8 +279,6 @@ const JsonBfieldsForSelect = ({ selectedJsonbColumns, handleJSonChange, table })
 
   const isJsonbColumnSelected = _.isEmpty(selectedJsonbColumns);
 
-  console.log('selectedJsonbColumns', selectedJsonbColumns);
-
   return (
     <div className="d-flex flex-column custom-gap-4 w-100">
       <div>
