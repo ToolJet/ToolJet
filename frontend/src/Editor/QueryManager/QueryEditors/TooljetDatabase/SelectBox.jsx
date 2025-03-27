@@ -718,7 +718,7 @@ const MenuList = ({
 }) => {
   const menuListStyles = getStyles('menuList', props);
   const referencedColumnDetails =
-    Array.isArray(foreignKeys) && foreignKeys?.find((item) => item?.column_names[0] === cellColumnName);
+    Array.isArray(foreignKeys) && foreignKeys.find((item) => item?.column_names[0] === cellColumnName);
 
   const handleNavigateToReferencedTable = () => {
     const data = {
