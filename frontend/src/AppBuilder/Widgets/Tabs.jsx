@@ -422,7 +422,7 @@ export const Tabs = function Tabs({
               />
             </div>
           )}
-
+          {/* this started change */}
           <ul
             ref={tabsRef}
             className="nav"
@@ -454,7 +454,7 @@ export const Tabs = function Tabs({
                       currentTab === tab.id && !tab?.disable
                         ? `4px solid ${accent}`
                         : " #CCD1D5",
-                    overflow: "hidden",
+                    // Removed overflow: "hidden" to prevent clipping of rounded corners
                     backgroundColor: headerBackground,
                     textOverflow: "ellipsis",
                     whiteSpace: "nowrap",
@@ -507,16 +507,10 @@ export const Tabs = function Tabs({
                         borderRadius: "6px",
                         width: "100%",
                         padding: ".25rem .25rem",
-
                         ...(currentTab == tab.id
                           ? { color: selectedText }
                           : { color: unselectedText }),
-                        ...(tabWidth == "split" && {
-                          width: `${
-                            tabsRef.current?.clientWidth /
-                            (tabItems?.length || 1)
-                          }px`,
-                        }),
+                        // Removed the redundant width calculation for tabWidth == "split"
                         display: "flex",
                         flexDirection: "row",
                         alignItems: "center",
@@ -524,20 +518,14 @@ export const Tabs = function Tabs({
                         gap: "4px",
                       }}
                     >
-                      <a
-                      // style={{
-                      //   marginBottom: "4px",
-                      // }}
-                      >
-                        {getTabIcon(tab)}
-                      </a>
-
+                      <a>{getTabIcon(tab)}</a>
                       {tab.title}
                     </div>
                   </OverlayTrigger>
                 </li>
               ))}
           </ul>
+          {/* this ended change */}
           {canScroll && (
             <div
               className="px-2"
@@ -552,7 +540,6 @@ export const Tabs = function Tabs({
               />
             </div>
           )}
-          {/*  */}
         </div>
       )}
       {isLoading ? (
