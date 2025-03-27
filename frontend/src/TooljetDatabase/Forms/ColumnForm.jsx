@@ -369,6 +369,7 @@ const ColumnForm = ({
                           setDefaultValue('');
                         }
                       }}
+                      disabled={isNotNull}
                     />
                   </label>
                 </div>
@@ -595,6 +596,10 @@ const ColumnForm = ({
                 checked={isNotNull}
                 onChange={(e) => {
                   setIsNotNull(e.target.checked);
+                  if (e.target.checked && defaultValue === null) {
+                    setForeignKeyDefaultValue({ label: '', value: '' });
+                    setDefaultValue('');
+                  }
                 }}
                 disabled={dataType?.value === 'serial'}
               />
