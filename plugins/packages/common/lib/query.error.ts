@@ -2,7 +2,7 @@ export class QueryError extends Error {
   data: Record<string, unknown>;
   description: any;
   metadata?: unknown;
-  constructor(message: string | undefined, description: string, data: Record<string, unknown>, metadata?: unknown) {
+  constructor(message: string | undefined, description: unknown, data: Record<string, unknown>, metadata?: unknown) {
     super(message);
     this.name = this.constructor.name;
     this.data = data;
