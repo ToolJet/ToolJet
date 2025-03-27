@@ -235,6 +235,9 @@ export default class RestapiQueryService implements QueryService {
           response: responseObject,
         };
 
+        // TODO: Need to remove the request/response related information in result in next MAJOR release. 
+        // This is now shared in `metadata` key. Keeping this here for backward compatibility.
+
         result = {
           requestObject: requestObject,
           responseObject: responseObject,
