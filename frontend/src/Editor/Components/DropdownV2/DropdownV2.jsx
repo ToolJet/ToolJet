@@ -469,6 +469,8 @@ export const DropdownV2 = ({
             menuPlacement="auto"
             onMenuOpen={() => fireEvent('onFocus')}
             onMenuClose={() => fireEvent('onBlur')}
+            // This is not setting minheight, required to help calculate menuPlacement by providing fixed height upfront before rendering (required in the case of modal)
+            minMenuHeight={300}
           />
         </div>
       </div>
