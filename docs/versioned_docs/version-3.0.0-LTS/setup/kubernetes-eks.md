@@ -10,9 +10,9 @@ To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api
 :::
 
 :::info
-You should set up a PostgreSQL database manually to be used by ToolJet. We recommend using an RDS PostgreSQL database. You can find the system requirements [here](/docs/setup/system-requirements#database-software).
+You should set up a PostgreSQL database manually to be used by ToolJet. We recommend using an **RDS PostgreSQL database**. You can find the system requirements [here](/docs/setup/system-requirements#database-software).
 
-ToolJet comes with a built-in Redis setup, which is used for multiplayer editing and background jobs. However, for multi-pod setup, it's recommended to use an external Redis instance.
+ToolJet comes with a **built-in Redis setup**, which is used for multiplayer editing and background jobs. However, for **multi-pod setup**, it's recommended to use an **external Redis instance**.
 :::
 
 1. Create an EKS cluster and connect to it to start with the deployment. You can follow the steps as mentioned in the [AWS documentation](https://docs.aws.amazon.com/eks/latest/userguide/create-cluster.html).
@@ -35,7 +35,7 @@ LOCKBOX_MASTER_KEY=<generate using openssl rand -hex 32>
 SECRET_KEY_BASE=<generate using openssl rand -hex 64>
 
 PG_USER=<username>
-PG_HOST=<postgresql-instance-ip>
+PG_HOST=<postgresql-database-host>
 PG_PASS=<password>
 PG_DB=tooljet_production
 ```
@@ -59,10 +59,10 @@ Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration m
 To set up ToolJet Database, the following **environment variables are mandatory** and must be configured:
 
 ```env
-TOOLJET_DB=
-TOOLJET_DB_HOST=
-TOOLJET_DB_USER=
-TOOLJET_DB_PASS=
+TOOLJET_DB=tooljet_db # Default database name
+TOOLJET_DB_HOST=<postgresql-database-host>
+TOOLJET_DB_USER=<username>
+TOOLJET_DB_PASS=<password>
 ```
 
 Additionally, for **PostgREST**, the following **mandatory** environment variables must be set:

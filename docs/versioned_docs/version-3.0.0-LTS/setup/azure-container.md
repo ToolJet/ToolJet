@@ -10,9 +10,9 @@ To enable ToolJet AI features in your ToolJet deployment, whitelist https://api-
 :::
 
 :::info
-Please note that you need to set up a PostgreSQL database manually to be used by ToolJet. 
+Please note that you need to set up a **PostgreSQL database** manually to be used by ToolJet. 
 
-ToolJet comes with a built-in Redis setup, which is used for multiplayer editing and background jobs. However, for multi-service setup, it's recommended to use an external Redis instance.
+ToolJet comes with a **built-in Redis setup**, which is used for multiplayer editing and background jobs. However, for **multi-pod setup**, it's recommended to use an **external Redis instance**.
 :::
 
 ## Deploying ToolJet application
