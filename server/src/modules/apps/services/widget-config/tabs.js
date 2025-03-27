@@ -122,6 +122,15 @@ export const tabsConfig = {
       },
       accordian: 'Tabs',
     },
+    divider: {
+      type: 'color',
+      displayName: 'Divider',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: '#CCD1D5',
+      },
+      accordian: 'Tabs',
+    },
     unselectedText: {
       type: 'color',
       displayName: 'Unselected text',
@@ -194,15 +203,6 @@ export const tabsConfig = {
       ],
       accordian: 'Tabs',
     },
-    divider: {
-      type: 'color',
-      displayName: 'Divider',
-      validation: {
-        schema: { type: 'string' },
-        defaultValue: '#CCD1D5',
-      },
-      accordian: 'Tabs',
-    },
     transition: {
       type: 'select',
       displayName: 'Transition',
@@ -268,9 +268,9 @@ export const tabsConfig = {
       params: [{ handle: 'setVisibility', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
     },
     {
-      handle: 'setLoading',
+      handle: 'setDisable',
       displayName: 'Set disable',
-      params: [{ handle: 'setLoading', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
+      params: [{ handle: 'setDisable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
     },
     {
       handle: 'setLoading',
@@ -292,7 +292,7 @@ export const tabsConfig = {
           handle: 'value',
           type: 'toggle',
           displayName: 'Value',
-          defaultValue: '{{false}}'
+          defaultValue: '{{false}}',
         },
       ],
     },
@@ -311,7 +311,7 @@ export const tabsConfig = {
           handle: 'value',
           type: 'toggle',
           displayName: 'Value',
-          defaultValue: '{{false}}'
+          defaultValue: '{{false}}',
         },
       ],
     },
@@ -330,8 +330,8 @@ export const tabsConfig = {
           handle: 'value',
           type: 'toggle',
           displayName: 'Value',
-          defaultValue: '{{false}}'
-        }
+          defaultValue: '{{false}}',
+        },
       ],
     },
   ],
