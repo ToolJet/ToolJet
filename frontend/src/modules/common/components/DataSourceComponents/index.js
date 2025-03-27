@@ -19,7 +19,6 @@ const getSchemaDetailsForRender = (schema) => {
       kind: schema['tj:source'].kind,
       type: schema['tj:source'].type,
       options: initialSourceValues,
-      defaults: initialSourceValues, // can deprecate since we use options to fill defaults too?
     };
   }
 

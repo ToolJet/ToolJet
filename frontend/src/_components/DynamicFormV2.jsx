@@ -102,15 +102,6 @@ const DynamicFormV2 = ({
     }
   }, [options]);
 
-  React.useLayoutEffect(() => {
-    if (!isEditMode || isEmpty(options)) {
-      typeof setDefaultOptions === 'function' && setDefaultOptions(schema?.defaults);
-      optionsChanged(schema?.defaults ?? {});
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   React.useEffect(() => {
     const prevDataSourceId = prevDataSourceIdRef.current;
     prevDataSourceIdRef.current = selectedDataSource?.id;
