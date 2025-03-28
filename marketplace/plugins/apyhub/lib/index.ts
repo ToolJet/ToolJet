@@ -11,7 +11,13 @@ import {
   getDocumentExtraction,
 } from './query_operations';
 
-import { translateDocument, getWebpageText, getPdfText, getDocumentData } from './operations/data_extractions_operation';
+import {
+  translateDocument,
+  getPdfText,
+  getDocumentData,
+  getWebpageText,
+} from './operations/data_extractions_operation';
+
 export default class Apyhub implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     const operation: Operation = queryOptions.operation;
@@ -101,5 +107,4 @@ export default class Apyhub implements QueryService {
       throw new QueryError('Connection test failed', error.message, {});
     }
   }
-
 }

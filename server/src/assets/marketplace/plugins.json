@@ -215,8 +215,8 @@
     ]
   },
   {
-    "name": "apyhub",
-    "description": "api plugin from apyhub",
+    "name": "ApyHub",
+    "description": "Plugin for ApyHub APIs",
     "version": "1.0.0",
     "id": "apyhub",
     "author": "Tooljet",

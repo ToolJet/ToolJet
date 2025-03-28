@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import axios from 'axios';
 import FormData from 'form-data';
+import { DocumentExtractionOptions, DocumentExtractionResponse } from './types';
 
 interface QueryOptions {
     text?: string;
@@ -616,18 +617,6 @@ export async function getSeoTags(queryOptions: SeoTagsOptions, sourceOptions: So
 }
 
 // Add these interfaces after the existing interfaces
-interface DocumentExtractionOptions {
-    url?: string;
-    file?: string;
-}
-
-interface DocumentExtractionResponse {
-    data: {
-        [key: string]: {
-            content: string;
-        }
-    }
-}
 
 // Add these new functions before the exports
 async function extractDocumentFromUrl(options: DocumentExtractionOptions, sourceOptions: SourceOptions): Promise<DocumentExtractionResponse> {
