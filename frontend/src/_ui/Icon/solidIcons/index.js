@@ -229,6 +229,7 @@ import CalendarSmall from './CalendarSmall.jsx';
 import UserGroupsGrey from './UserGroupsGrey.jsx';
 import AppLimitSvg from './AppLimitSvg.jsx';
 import NewTabSmall from './NewTabSmall.jsx';
+import Code from './Code.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -308,6 +309,8 @@ const Icon = (props) => {
       return <CircularToggleEnabled {...props} />;
     case 'clearrectangle':
       return <ClearRectangle {...props} />;
+    case 'code':
+      return <Code {...props} />;
     case 'clock':
       return <Clock {...props} />;
     case 'column':
