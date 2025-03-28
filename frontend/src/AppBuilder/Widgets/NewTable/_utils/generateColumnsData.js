@@ -79,6 +79,9 @@ export default function generateColumnsData({
       }
 
       const isEditable = getResolvedValue(column.isEditable);
+      const isVisible = getResolvedValue(column.columnVisibility) ?? true;
+
+      if (!isVisible) return null;
 
       const columnDef = {
         id: column.id || uuidv4(),
@@ -91,7 +94,7 @@ export default function generateColumnsData({
         filterFn: 'applyFilters',
         size: columnSize || defaultColumn.width,
         minSize: 60,
-        show: column?.columnVisibility ?? true,
+        show: isVisible,
         meta: {
           columnType,
           isEditable: isEditable,
@@ -100,7 +103,7 @@ export default function generateColumnsData({
           horizontalAlignment: column?.horizontalAlignment ?? 'left',
           transformation: column.transformation,
           validation: column.validation,
-          columnVisibility: column.columnVisibility,
+          columnVisibility: isVisible,
           ...column,
         },
 
@@ -108,9 +111,9 @@ export default function generateColumnsData({
           const changeSet = columnForAddNewRow
             ? getAddNewRowDetailFromIndex(id, row.index)
             : getEditedRowFromIndex(id, row.index);
-          const cellValue = changeSet
-            ? changeSet[cell.column.columnDef?.meta?.name] ?? cell.getValue()
-            : cell.getValue();
+
+          let cellValue = changeSet ? changeSet[cell.column.columnDef?.meta?.name] ?? cell.getValue() : cell.getValue();
+          cellValue = cellValue === undefined || cellValue === null ? '' : cellValue;
           const rowData = tableData?.[row.index];
 
           switch (columnType) {
@@ -221,6 +224,8 @@ export default function generateColumnsData({
                   className="select-search table-select-search"
                   column={column}
                   isNewRow={columnForAddNewRow}
+                  horizontalAlignment={column?.horizontalAlignment}
+                  textColor={getResolvedValue(column.textColor, { cellValue, rowData })}
                 />
               );
 

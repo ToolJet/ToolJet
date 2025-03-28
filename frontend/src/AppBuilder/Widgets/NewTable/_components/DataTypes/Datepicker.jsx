@@ -3,6 +3,7 @@ import DatePickerComponent from 'react-datepicker';
 import moment from 'moment-timezone';
 import cx from 'classnames';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import CustomDatePickerHeader from './_components/CustomDatePickerHeader';
 import 'react-datepicker/dist/react-datepicker.css';
 
 const DISABLED_DATE_FORMAT = 'MM/DD/YYYY';
@@ -24,14 +25,16 @@ const DatepickerInput = forwardRef(({ value, onClick, styles, readOnly, onInputC
           onChange={onInputChange}
           onFocus={onInputFocus}
         />
-        <span className="cell-icon-display">
-          <SolidIcon
-            width="16"
-            fill="var(--borders-strong)"
-            name="calender"
-            className="table-column-datepicker-input-icon"
-          />
-        </span>
+        {!readOnly && (
+          <span className="cell-icon-display">
+            <SolidIcon
+              width="16"
+              fill="var(--borders-strong)"
+              name="calender"
+              className="table-column-datepicker-input-icon"
+            />
+          </span>
+        )}
       </>
     )}
   </div>
@@ -253,6 +256,7 @@ export const DatepickerColumn = ({
         dropdownMode="select"
         excludeDates={excludedDates}
         showPopperArrow={false}
+        renderCustomHeader={(headerProps) => <CustomDatePickerHeader {...headerProps} />}
         shouldCloseOnSelect
         readOnly={readOnly}
         popperProps={{ strategy: 'fixed' }}

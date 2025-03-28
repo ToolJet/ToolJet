@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { determineJustifyContentValue } from '@/_helpers/utils';
@@ -16,7 +16,25 @@ export const NumberColumn = ({
   row,
   searchText,
 }) => {
+  const [displayValue, setDisplayValue] = useState(cellValue);
   const validateWidget = useStore((state) => state.validateWidget, shallow);
+  const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
+
+  useEffect(() => {
+    setDisplayValue(cellValue);
+  }, [cellValue]);
+
+  const removingExcessDecimalPlaces = (value, allowedDecimalPlaces) => {
+    if (value?.toString()?.includes('.')) {
+      const [integerPart, decimalPart] = value.toString().split('.');
+      const truncatedDecimalPart = decimalPart.slice(0, allowedDecimalPlaces);
+      return Number(`${integerPart}.${truncatedDecimalPart}`);
+    }
+    return value;
+  };
+
+  const allowedDecimalPlaces = getResolvedValue(column?.decimalPlaces) ?? null;
+  cellValue = allowedDecimalPlaces ? removingExcessDecimalPlaces(cellValue, allowedDecimalPlaces) : cellValue;
 
   const validationData = validateWidget({
     validationObject: {
@@ -55,26 +73,15 @@ export const NumberColumn = ({
     }
   };
 
-  const removingExcessDecimalPlaces = (value, allowedDecimalPlaces) => {
-    if (value?.toString()?.includes('.')) {
-      const [integerPart, decimalPart] = value.toString().split('.');
-      const truncatedDecimalPart = decimalPart.slice(0, allowedDecimalPlaces);
-      return Number(`${integerPart}.${truncatedDecimalPart}`);
-    }
-    return value;
-  };
-
   const handleValueChange = (value) => {
     if (value === '') return;
 
     const numValue = Number(value);
     if (isNaN(numValue)) return;
 
-    const allowedDecimalPlaces = column?.decimalPlaces ?? null;
-    const processedValue = allowedDecimalPlaces
-      ? removingExcessDecimalPlaces(numValue, allowedDecimalPlaces)
-      : numValue;
-
+    const processedValue =
+      allowedDecimalPlaces !== null ? removingExcessDecimalPlaces(numValue, allowedDecimalPlaces) : numValue;
+    setDisplayValue(processedValue);
     handleCellValueChange(row.index, column.key || column.name, processedValue, row.original);
   };
 
@@ -91,17 +98,19 @@ export const NumberColumn = ({
             paddingRight: '20px',
           }}
           className={`table-column-type-input-element input-number h-100 ${!isValid ? 'is-invalid' : ''}`}
-          defaultValue={cellValue}
+          value={displayValue}
+          onChange={(e) => setDisplayValue(e.target.value)}
+          step={allowedDecimalPlaces !== null ? `0.${'0'.repeat(allowedDecimalPlaces - 1)}1` : 'any'}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
-              if (e.target.defaultValue !== e.target.value) {
-                handleValueChange(e.target.value);
+              if (displayValue !== cellValue) {
+                handleValueChange(displayValue);
               }
             }
           }}
-          onBlur={(e) => {
-            if (e.target.defaultValue !== e.target.value) {
-              handleValueChange(e.target.value);
+          onBlur={() => {
+            if (displayValue !== cellValue) {
+              handleValueChange(displayValue);
             }
           }}
           onFocus={(e) => e.stopPropagation()}

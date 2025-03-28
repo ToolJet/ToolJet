@@ -22,7 +22,6 @@ export const TableContainer = ({
     useTableStore();
 
   const columnProperties = getColumnProperties(id);
-
   // Table properties
   const showBulkSelector = useTableStore((state) => state.getTableProperties(id)?.showBulkSelector, shallow);
   const enableSorting = useTableStore((state) => state.getTableProperties(id)?.enabledSort, shallow);

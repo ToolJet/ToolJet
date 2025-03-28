@@ -63,7 +63,7 @@ export const buildTableColumn = (
       fireEvent,
       tableRef: tableBodyRef,
       handleCellValueChange,
-      searchText: serverSideSearch ? '' : globalFilter,
+      searchText: globalFilter,
     }).filter(Boolean),
 
     ...generateActionColumns({

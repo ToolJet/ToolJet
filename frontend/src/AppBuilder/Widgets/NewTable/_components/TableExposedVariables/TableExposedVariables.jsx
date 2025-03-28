@@ -16,7 +16,7 @@ export const TableExposedVariables = ({
   fireEvent,
   table,
   componentName,
-  pageIndex,
+  pageIndex = 1,
   lastClickedRow,
 }) => {
   const editedRows = useTableStore((state) => state.getAllEditedRows(id), shallow);
@@ -62,6 +62,8 @@ export const TableExposedVariables = ({
     columns: table.getAllColumns(),
     columnSizing: table.getState().columnSizing,
   };
+
+  const prevSortingLength = useRef(null);
 
   const getColumnName = useCallback(
     (columnId) => {
@@ -147,8 +149,11 @@ export const TableExposedVariables = ({
       const sortApplied = [{ column: getColumnName(sorting[0].id), direction: sorting[0].desc ? 'desc' : 'asc' }];
       setExposedVariables({ sortApplied });
       fireEvent('onSort');
+      prevSortingLength.current = sorting.length;
     } else {
       setExposedVariables({ sortApplied: undefined });
+      prevSortingLength.current && fireEvent('onSort');
+      prevSortingLength.current = null;
     }
   }, [sorting, getColumnName, setExposedVariables, fireEvent]);
 

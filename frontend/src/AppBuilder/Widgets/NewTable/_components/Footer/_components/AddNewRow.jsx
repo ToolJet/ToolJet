@@ -13,16 +13,23 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
   const addNewRowDetails = useTableStore((state) => state.getAllAddNewRowDetails(id), shallow);
   const updateAddNewRowDetails = useTableStore((state) => state.updateAddNewRowDetails, shallow);
   const clearAddNewRowDetails = useTableStore((state) => state.clearAddNewRowDetails, shallow);
+  const updateShouldPersistAddNewRow = useTableStore((state) => state.updateShouldPersistAddNewRow, shallow);
 
   const addNewRowDetailsLength = addNewRowDetails.size;
 
   const newEmptyRow = useMemo(() => {
     return allColumns.reduce((accumulator, column) => {
+      if (column.columnDef?.meta?.skipAddNewRow) return accumulator;
       const key = column.columnDef.accessorKey;
-      if (column.id !== 'selection') accumulator[key] = '';
+      accumulator[key] = '';
       return accumulator;
     }, {});
   }, [allColumns]);
+
+  useEffect(() => {
+    clearAddNewRowDetails(id);
+    updateShouldPersistAddNewRow(id, false);
+  }, [updateShouldPersistAddNewRow, clearAddNewRowDetails, id]);
 
   useEffect(() => {
     function discardNewlyAddedRows() {
@@ -81,6 +88,11 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
     updateAddNewRowDetails(id, addNewRowDetailsLength, newEmptyRow);
   };
 
+  const closeAddNewRowPopup = () => {
+    hideAddNewRowPopup();
+    updateShouldPersistAddNewRow(id, true);
+  };
+
   return (
     <div className={`table-add-new-row card ${darkMode && 'dark-theme'}`}>
       <div className="card-header row">
@@ -90,7 +102,7 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
           </h4>
         </div>
         <div className="col-auto">
-          <button data-cy={`button-close-filters`} onClick={hideAddNewRowPopup} className="btn btn-light btn-sm">
+          <button data-cy={`button-close-filters`} onClick={closeAddNewRowPopup} className="btn btn-light btn-sm">
             x
           </button>
         </div>
@@ -178,7 +190,6 @@ export function AddNewRow({ id, hideAddNewRowPopup, darkMode, allColumns, fireEv
           onClick={async () => {
             await fireEvent('onNewRowsAdded');
             hideAddNewRowPopup();
-            clearAddNewRowDetails(id);
           }}
           size="sm"
           customStyles={{ padding: '10px 20px' }}

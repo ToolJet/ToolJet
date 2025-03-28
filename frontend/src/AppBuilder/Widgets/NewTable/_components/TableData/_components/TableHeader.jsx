@@ -17,6 +17,7 @@ const DraggableHeader = ({ header, darkMode, id }) => {
   });
 
   const columnHeaderWrap = useTableStore((state) => state.getTableStyles(id)?.columnHeaderWrap, shallow);
+  const headerCasing = useTableStore((state) => state.getTableStyles(id)?.headerCasing, shallow);
 
   const getResolvedValue = useStore.getState().getResolvedValue;
 
@@ -82,6 +83,7 @@ const DraggableHeader = ({ header, darkMode, id }) => {
               'text-truncate': getResolvedValue(columnHeaderWrap) === 'fixed',
               'wrap-wrapper': getResolvedValue(columnHeaderWrap) === 'wrap',
             })}
+            style={{ textTransform: headerCasing === 'uppercase' ? 'uppercase' : 'none' }}
           >
             {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
           </div>

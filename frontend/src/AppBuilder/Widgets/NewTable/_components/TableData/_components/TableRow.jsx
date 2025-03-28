@@ -51,9 +51,6 @@ export const TableRow = ({
           fireEvent('onRowHovered');
         }
       }}
-      onMouseLeave={() => {
-        hasHoveredEvent && setExposedVariables({ hoveredRowId: '', hoveredRow: '' });
-      }}
     >
       {row.getVisibleCells().map((cell) => {
         const cellStyles = {
@@ -65,6 +62,7 @@ export const TableRow = ({
           justifyContent: determineJustifyContentValue(cell.column.columnDef?.meta?.horizontalAlignment),
           display: 'flex',
           alignItems: 'center',
+          textAlign: cell.column.columnDef?.meta?.horizontalAlignment,
         };
 
         const isEditable = getResolvedValue(cell.column.columnDef?.meta?.isEditable ?? false, {
@@ -76,9 +74,13 @@ export const TableRow = ({
           <td
             key={cell.id}
             style={cellStyles}
-            className={cx('table-cell table-text-align-left td', {
+            className={cx('table-cell td', {
+              'table-text-align-center': cell.column.columnDef?.meta?.horizontalAlignment === 'center',
+              'table-text-align-right': cell.column.columnDef?.meta?.horizontalAlignment === 'right',
+              'table-text-align-left': cell.column.columnDef?.meta?.horizontalAlignment === 'left',
               'wrap-wrapper': contentWrap,
               'has-text': cell.column.columnDef?.meta?.columnType === 'text' || isEditable,
+              'has-datepicker': cell.column.columnDef?.meta?.columnType === 'datepicker',
               'has-number': cell.column.columnDef?.meta?.columnType === 'number',
               'has-badge': ['badge', 'badges'].includes(cell.column.columnDef?.meta?.columnType),
               [cellHeight]: true,

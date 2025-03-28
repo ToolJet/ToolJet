@@ -3,7 +3,7 @@ import { utilityForNestedNewRow } from '../helper';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 
 export const createInitSlice = (set, get) => ({
-  initializeComponent: (id) =>
+  initializeComponent: (id) => {
     set(
       (state) => {
         if (!state.components[id]) {
@@ -12,6 +12,7 @@ export const createInitSlice = (set, get) => ({
             styles: {},
             filters: {},
             addNewRow: new Map(),
+            shouldPersistAddNewRow: false,
             editedRowDetails: {
               editedRows: new Map(),
               editedFields: new Map(),
@@ -31,7 +32,8 @@ export const createInitSlice = (set, get) => ({
       },
       false,
       { type: 'initializeComponent', payload: { id } }
-    ),
+    );
+  },
 
   setTableProperties: (id, properties) =>
     set(
@@ -105,9 +107,8 @@ export const createInitSlice = (set, get) => ({
           maxRowHeight = 'auto',
           maxRowHeightValue = 80,
           columnHeaderWrap = 'fixed',
+          headerCasing = 'uppercase',
         } = styles;
-
-        console.log('style--- cellSize--- ', cellSize);
 
         state.components[id].styles.borderRadius = Number.parseFloat(borderRadius);
         state.components[id].styles.boxShadow = boxShadow;
@@ -120,6 +121,7 @@ export const createInitSlice = (set, get) => ({
         state.components[id].styles.isMaxRowHeightAuto = maxRowHeight === 'auto';
         state.components[id].styles.maxRowHeightValue = maxRowHeightValue;
         state.components[id].styles.columnHeaderWrap = columnHeaderWrap;
+        state.components[id].styles.headerCasing = headerCasing;
       },
       false,
       { type: 'setStyles', payload: { id, styles } }
@@ -239,10 +241,20 @@ export const createInitSlice = (set, get) => ({
   clearAddNewRowDetails: (id) =>
     set(
       (state) => {
-        state.components[id].addNewRow.clear();
+        if (!state.components[id].shouldPersistAddNewRow) {
+          state.components[id].addNewRow.clear();
+        }
       },
       false,
       { type: 'clearNewRow', payload: { id } }
+    ),
+  updateShouldPersistAddNewRow: (id, value) =>
+    set(
+      (state) => {
+        state.components[id].shouldPersistAddNewRow = value;
+      },
+      false,
+      { type: 'updateShouldPersistAddNewRow', payload: { id, value } }
     ),
   getTableComponentEvents: (id) => {
     return get().components[id]?.events?.tableComponentEvents || [];

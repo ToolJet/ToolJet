@@ -89,6 +89,7 @@ export const Footer = memo(
               height={height}
               componentName={componentName}
               setShowAddNewRowPopup={setShowAddNewRowPopup}
+              fireEvent={fireEvent}
               columnVisibility={columnVisibility} // Passed to trigger a re-render when columnVisibility changes
             />
           </div>
