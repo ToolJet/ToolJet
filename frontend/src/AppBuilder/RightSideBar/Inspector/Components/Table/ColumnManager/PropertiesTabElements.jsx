@@ -253,7 +253,7 @@ export const PropertiesTabElements = ({
               paramType="properties"
             />
           </div>
-          {resolveReferences(column?.isEditable) && (
+          {(column?.fxActiveFields?.includes('isEditable') || resolveReferences(column?.isEditable)) && (
             <ValidationProperties
               column={column}
               index={index}

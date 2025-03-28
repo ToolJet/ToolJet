@@ -443,6 +443,7 @@ export default function generateColumnsData({
                 {['newMultiSelect', 'select'].includes(columnType) && (
                   <CustomSelect
                     options={rowOptions.length > 0 ? rowOptions : columnOptions.selectOptions}
+                    useDynamicOptions={useDynamicOptions}
                     value={cellValue}
                     search={true}
                     onChange={(value) => {

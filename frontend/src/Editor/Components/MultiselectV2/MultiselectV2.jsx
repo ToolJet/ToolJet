@@ -281,6 +281,13 @@ export const MultiselectV2 = ({
     }
   };
 
+  const handleClickInside = () => {
+    if (!isMultiSelectDisabled && !isMultiSelectLoading) {
+      fireEvent('onFocus');
+      setIsMultiselectOpen(!isMultiselectOpen);
+    }
+  };
+
   const setInputValue = (values) => {
     setSelected(values);
     setExposedVariables({
@@ -456,15 +463,7 @@ export const MultiselectV2 = ({
           _width={_width}
           top={'1px'}
         />
-        <div
-          className="w-100 px-0 h-100"
-          onClick={() => {
-            if (!isMultiSelectDisabled) {
-              fireEvent('onFocus');
-              setIsMultiselectOpen(!isMultiselectOpen);
-            }
-          }}
-        >
+        <div className="w-100 px-0 h-100" onClick={handleClickInside} onTouchEnd={handleClickInside}>
           <Select
             menuId={id}
             isDisabled={isMultiSelectDisabled}
