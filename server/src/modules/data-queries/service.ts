@@ -174,6 +174,7 @@ export class DataQueriesService implements IDataQueriesService {
           message: error.message,
           description: error.description,
           data: error.data,
+          metadata: error.metadata,
         };
       } else {
         console.log(error);
