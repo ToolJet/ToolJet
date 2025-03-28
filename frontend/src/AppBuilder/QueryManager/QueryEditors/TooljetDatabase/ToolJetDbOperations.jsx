@@ -47,7 +47,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
   const [tableForeignKeyInfo, setTableForeignKeyInfo] = useState({});
 
   const [bulkUpdatePrimaryKey, setBulkUpdatePrimaryKey] = useState(() => options['bulk_update_with_primary_key'] || {});
-  const [bulkUpsertPrimaryKey, setBulkUpsertPrimaryKey] = useState(() => options['bulk_upsert'] || {});
+  const [bulkUpsertPrimaryKey, setBulkUpsertPrimaryKey] = useState(() => options['bulk_upsert_with_primary_key'] || {});
 
   const joinOptions = options['join_table']?.['joins'] || [
     { conditions: { conditionsList: [{ leftField: { table: selectedTableId } }] } },
@@ -199,7 +199,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
   }, [bulkUpdatePrimaryKey]);
 
   useEffect(() => {
-    mounted && optionchanged('bulk_upsert', bulkUpsertPrimaryKey);
+    mounted && optionchanged('bulk_upsert_with_primary_key', bulkUpsertPrimaryKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bulkUpsertPrimaryKey]);
 
@@ -536,7 +536,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
         return JoinTable;
       case 'bulk_update_with_primary_key':
         return BulkUploadPrimaryKey;
-      case 'bulk_upsert':
+      case 'bulk_upsert_with_primary_key':
         return BulkUpsertPrimaryKey;
     }
   };
@@ -548,7 +548,7 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLay
     { label: 'Delete rows', value: 'delete_rows' },
     { label: 'Join tables', value: 'join_tables' },
     { label: 'Bulk update with primary key', value: 'bulk_update_with_primary_key' },
-    { label: 'Bulk Upsert with primary key', value: 'bulk_upsert' },
+    { label: 'Bulk upsert with primary key', value: 'bulk_upsert_with_primary_key' },
   ];
 
   const ComponentToRender = getComponent(operation);
