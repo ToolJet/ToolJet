@@ -70,7 +70,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
             });
           }
 
-          if (item.kind === 'tooljetdb' && item.options.table_id) extractedIdData.push(item.options.table_id);
+          if (item.kind === 'tooljetdb' && item.options.tableId) extractedIdData.push(item.options.tableId);
         });
         const uniqueSet = new Set(extractedIdData);
         const selectedVersiontable = Array.from(uniqueSet).map((item) => ({ table_id: item }));

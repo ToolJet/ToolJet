@@ -474,7 +474,7 @@ export const GlobalDataSources = ({ darkMode = false, updateSelectedDatasource }
     <div className="row gx-0">
       <Sidebar renderSidebarList={renderSidebarList} updateSelectedDatasource={updateSelectedDatasource} />
       <div ref={containerRef} className={cx('col animation-fade datasource-modal-container', {})}>
-        {containerRef && containerRef?.current && (
+        {containerRef && containerRef?.current && selectedDataSource && (
           <DataSourceManager
             showBackButton={selectedDataSource ? false : true}
             showDataSourceManagerModal={showDataSourceManagerModal}
