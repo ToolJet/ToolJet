@@ -260,16 +260,18 @@ export class TooljetDbBulkUploadService {
   }
 
   convertToDataType(columnValue: string, supportedDataType: TooljetDatabaseDataTypes) {
-    if (!columnValue) return null;
+    if (!columnValue && supportedDataType !== TJDB.boolean) return null;
 
     switch (supportedDataType) {
       case TJDB.boolean:
+        if (typeof columnValue === 'boolean') return columnValue;
         return this.convertBoolean(columnValue);
       case TJDB.integer:
       case TJDB.double_precision:
       case TJDB.bigint:
         return this.convertNumber(columnValue, supportedDataType);
       case TJDB.jsonb:
+        if (typeof columnValue !== 'string') return columnValue;
         return JSON.parse(columnValue);
       default:
         return columnValue;
@@ -365,6 +367,215 @@ export class TooljetDbBulkUploadService {
         status: 'failed',
         updatedRows: 0,
         error: error.message,
+      };
+    }
+  }
+
+  async getTableInfo(tableId: string, organizationId: string) {
+    const internalTable = await this.manager.findOne(InternalTable, {
+      where: { organizationId, id: tableId },
+    });
+
+    if (!internalTable) {
+      return null;
+    }
+
+    const result = await this.tableOperationsService.perform(organizationId, 'view_table', {
+      id: tableId,
+    });
+
+    return {
+      table_name: internalTable.tableName,
+      columns: result?.columns?.map((col: Record<string, any>) => col.column_name) || [],
+      foreign_keys: result?.foreign_keys || [],
+    };
+  }
+
+  async bulkUpsertRowsWithPrimaryKey(
+    rows: Record<string, any>[],
+    tableId: string,
+    primaryKeyColumns: string[],
+    organizationId: string
+  ): Promise<{ status: string; inserted: number; updated: number; rows: any[]; error?: string }> {
+    let rowsToUpsert = [...rows];
+    if (isEmpty(rowsToUpsert)) {
+      return {
+        status: 'failed',
+        error: 'No rows provided for upsert operation',
+        inserted: 0,
+        updated: 0,
+        rows: [],
+      };
+    }
+
+    if (rowsToUpsert.length > this.MAX_ROW_COUNT) {
+      rowsToUpsert = [...rowsToUpsert.slice(0, this.MAX_ROW_COUNT)];
+    }
+
+    const internalTable = await this.manager.findOne(InternalTable, {
+      where: { organizationId, id: tableId },
+    });
+
+    if (!internalTable) {
+      return {
+        status: 'failed',
+        error: 'Table not found',
+        inserted: 0,
+        updated: 0,
+        rows: [],
+      };
+    }
+
+    const result = await this.tableOperationsService.perform(organizationId, 'view_table', {
+      id: tableId,
+    });
+
+    const tableColumns = result?.columns || [];
+
+    const invalidPrimaryKeys = primaryKeyColumns.filter((pk) => !tableColumns.some((col) => col.column_name === pk));
+    if (invalidPrimaryKeys.length > 0) {
+      return {
+        status: 'failed',
+        error: `Invalid primary key columns: ${invalidPrimaryKeys.join(', ')}`,
+        inserted: 0,
+        updated: 0,
+        rows: [],
+      };
+    }
+
+    const notNullColumns = tableColumns
+      .filter((col) => (col.constraints_type as any)?.is_not_null && !col.column_default)
+      .map((col) => col.column_name);
+
+    const serialTypeColumns = tableColumns
+      .filter((col) => col.data_type === 'integer' && /^nextval\(/.test(col.column_default))
+      .map((col) => col.column_name);
+
+    const allColumns = new Set<string>();
+    rowsToUpsert.forEach((row) => {
+      Object.keys(row).forEach((col) => allColumns.add(col));
+    });
+
+    const processedRows = [];
+    for (const row of rowsToUpsert) {
+      const missingPrimaryKeys = primaryKeyColumns.filter((pk) => row[pk] === undefined);
+      if (missingPrimaryKeys.length > 0) {
+        return {
+          status: 'failed',
+          error: `Missing primary key values: ${missingPrimaryKeys.join(', ')}`,
+          inserted: 0,
+          updated: 0,
+          rows: [],
+        };
+      }
+
+      const missingNotNullColumns = notNullColumns.filter((col) => row[col] === undefined);
+      if (missingNotNullColumns.length > 0) {
+        return {
+          status: 'failed',
+          error: `Missing required NOT NULL columns: ${missingNotNullColumns.join(', ')}`,
+          inserted: 0,
+          updated: 0,
+          rows: [],
+        };
+      }
+
+      const processedRow: Record<string, any> = {};
+      for (const col of allColumns) {
+        const columnInfo = tableColumns.find((c) => c.column_name === col);
+        if (!columnInfo) {
+          return {
+            status: 'failed',
+            error: `Column "${col}" does not exist in table`,
+            inserted: 0,
+            updated: 0,
+            rows: [],
+          };
+        }
+
+        if (!(col in row)) continue;
+
+        const value = row[col];
+        if (value === null) {
+          processedRow[col] = null;
+        } else if (serialTypeColumns.includes(col) && !primaryKeyColumns.includes(col)) {
+          processedRow[col] = 'DEFAULT';
+        } else {
+          try {
+            processedRow[col] = this.convertToDataType(value, columnInfo.data_type);
+          } catch (error) {
+            return {
+              status: 'failed',
+              error: `Invalid value for column "${col}": ${error.message}`,
+              inserted: 0,
+              updated: 0,
+              rows: [],
+            };
+          }
+        }
+      }
+      processedRows.push(processedRow);
+    }
+
+    const tenantSchema = findTenantSchema(organizationId);
+    const allValueSets: string[] = [];
+    const allPlaceholders: any[] = [];
+    let parameterIndex = 1;
+
+    const columnsToInclude = Array.from(allColumns);
+    const columnsQuoted = columnsToInclude.map((column) => `"${column}"`);
+
+    for (const row of processedRows) {
+      const valueSet: string[] = [];
+      const currentPlaceholders: any[] = [];
+
+      for (const col of columnsToInclude) {
+        if (col in row) {
+          if (row[col] === 'DEFAULT') {
+            valueSet.push('DEFAULT');
+          } else {
+            valueSet.push(`$${parameterIndex++}`);
+            currentPlaceholders.push(row[col]);
+          }
+        } else {
+          valueSet.push('DEFAULT');
+        }
+      }
+
+      allValueSets.push(`(${valueSet.join(', ')})`);
+      allPlaceholders.push(...currentPlaceholders);
+    }
+
+    const updateColumns = columnsToInclude.filter((col) => !primaryKeyColumns.includes(col));
+
+    try {
+      const queryText = `
+        INSERT INTO "${tenantSchema}"."${tableId}" (${columnsQuoted.join(', ')})
+        VALUES ${allValueSets.join(', ')}
+        ON CONFLICT (${primaryKeyColumns.map((col) => `"${col}"`).join(', ')})
+        DO UPDATE SET
+          ${updateColumns.map((col) => `"${col}" = EXCLUDED."${col}"`).join(',\n        ')}
+        RETURNING *, (xmax = 0) as inserted;
+      `;
+
+      const result = await this.tooljetDbManager.query(queryText, allPlaceholders);
+
+      const inserted = result.filter((row) => row.inserted).length;
+      const updated = result.length - inserted;
+
+      return {
+        status: 'ok',
+        inserted,
+        updated,
+        rows: result.map(({ inserted: isInserted, ...row }) => row),
+      };
+    } catch (error) {
+      return {
+        status: 'failed',
+        error: error.message,
+        inserted: 0,
+        updated: 0,
+        rows: [],
       };
     }
   }
