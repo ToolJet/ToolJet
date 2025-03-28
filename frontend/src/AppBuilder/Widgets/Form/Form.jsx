@@ -41,16 +41,16 @@ export const Form = function Form(props) {
     onComponentClick,
   } = props;
   const childComponents = useStore((state) => state.getChildComponents(id), shallow);
+  const { borderRadius, borderColor, boxShadow, footerBackgroundColor, headerBackgroundColor } = styles;
   const {
-    borderRadius,
-    borderColor,
-    boxShadow,
-    headerHeight,
-    footerHeight,
-    footerBackgroundColor,
-    headerBackgroundColor,
-  } = styles;
-  const { buttonToSubmit, advanced, JSONSchema, showHeader = false, showFooter = false } = properties;
+    buttonToSubmit,
+    advanced,
+    JSONSchema,
+    showHeader = false,
+    showFooter = false,
+    headerHeight = 80,
+    footerHeight = 80,
+  } = properties;
   const { isDisabled, isVisible, isLoading } = useExposeState(
     properties.loadingState,
     properties.visibility,
@@ -88,7 +88,8 @@ export const Form = function Form(props) {
   const [isValid, setValidation] = useState(true);
   const [uiComponents, setUIComponents] = useState([]);
   const mounted = useMounted();
-  const canvasFooterHeight = getCanvasHeight(footerHeight) / 10;
+  const canvasHeaderHeight = headerHeight / 10;
+  const canvasFooterHeight = footerHeight / 10;
 
   useEffect(() => {
     const exposedVariables = {
