@@ -184,6 +184,13 @@ export const formConfig = {
         defaultValue: false,
       },
     },
+    tooltip: {
+      type: 'code',
+      displayName: 'Tooltip',
+      validation: { schema: { type: 'string' } },
+      section: 'additionalActions',
+      placeholder: 'Enter tooltip text',
+    },
   },
   events: {
     onSubmit: { displayName: 'On submit' },

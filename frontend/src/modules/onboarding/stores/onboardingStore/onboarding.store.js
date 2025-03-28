@@ -69,7 +69,7 @@ const useCEOnboardingStore = create(
 
     createNewOnboardingApp: async () => {
       const session = authenticationService.currentSessionValue;
-      const app = await appsService.createApp({ name: 'My App' });
+      const app = await appsService.createApp({ name: 'My App', type: 'front-end' });
       const appId = app?.id;
       utils.clearPageHistory();
       const path = getSubpath()
@@ -80,7 +80,7 @@ const useCEOnboardingStore = create(
 
     setAccountCreated: (value) => set({ accountCreated: value }),
 
-    resumeSignupOnboarding: async (callBack = (resumeOnboardingSession = false) => { }) => {
+    resumeSignupOnboarding: async (callBack = (resumeOnboardingSession = false) => {}) => {
       return callBack(false);
     },
   }))
