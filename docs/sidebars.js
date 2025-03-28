@@ -62,8 +62,6 @@ const sidebars = {
             'how-to/use-server-side-pagination',
             'how-to/access-currentuser',
             'how-to/use-axios-in-runjs',
-            'how-to/import-external-libraries-using-runpy',
-            'how-to/import-external-libraries-using-runjs',
             'how-to/run-actions-from-runjs',
             'how-to/intentionally-fail-js-query',
             'how-to/run-query-at-specified-intervals',
@@ -143,6 +141,14 @@ const sidebars = {
             'app-builder/walkthrough/accessing-values',
             'app-builder/walkthrough/variables',
             'app-builder/importing-exporting-applications',
+            {
+              'type': 'category',
+              'label': 'Import Libraries',
+              'items': [
+                'app-builder/import-libraries/runjs',
+                'app-builder/import-libraries/runpy',
+              ],
+            },
           ],
         },
         {
