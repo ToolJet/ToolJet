@@ -71,7 +71,7 @@ export class PluginsController implements IPluginsController {
   }
 
   @Post('findDependentPlugins')
-  @InitFeature(FEATURE_KEY.DEPENDENTPLUGINS)
+  @InitFeature(FEATURE_KEY.DEPENDENT_PLUGINS)
   async findDependentPluginsToBeInstalledFromDataSources(@Body() dataSources) {
     return this.pluginsService.checkIfPluginsToBeInstalled(dataSources);
   }
@@ -83,5 +83,11 @@ export class PluginsController implements IPluginsController {
     @Body('shouldAutoImportPlugin') shouldAutoImportPlugin
   ) {
     return this.pluginsService.autoInstallPluginsForTemplates(dependentPlugins, shouldAutoImportPlugin);
+  }
+
+  @Post('uninstallPlugins')
+  @InitFeature(FEATURE_KEY.UNINSTALL_PLUGINS)
+  async uninstallPlugins(@Body('pluginsId') pluginsId) {
+    return this.pluginsService.uninstallPlugins(pluginsId);
   }
 }

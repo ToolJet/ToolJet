@@ -329,7 +329,7 @@ class HomePageComponent extends React.Component {
           });
         });
 
-        const dependentPluginsResponse = await pluginsService.findDepedentPlugins(dataSourcesUsedInApps);
+        const dependentPluginsResponse = await pluginsService.findDependentPlugins(dataSourcesUsedInApps);
         const { pluginsToBeInstalled = [], pluginsListIdToDetailsMap = {} } = dependentPluginsResponse.data;
         this.setState({
           fileContent,
@@ -367,15 +367,19 @@ class HomePageComponent extends React.Component {
       importJSON.app[0].appName = appName;
     }
     const requestBody = { organization_id, ...importJSON };
+    let installedPluginsInfo = [];
     try {
       if (this.state.dependentPlugins.length) {
-        await pluginsService.installDependetnPlugins(this.state.dependentPlugins, true);
+        ({ installedPluginsInfo = [] } = await pluginsService.installDependentPlugins(
+          this.state.dependentPlugins,
+          true
+        ));
       }
+
       const data = await appsService.importResource(requestBody);
       toast.success('App imported successfully.');
-      this.setState({
-        isImportingApp: false,
-      });
+      this.setState({ isImportingApp: false });
+
       if (!isEmpty(data.imports.app)) {
         this.props.navigate(`/${getWorkspaceId()}/apps/${data.imports.app[0].id}`, {
           state: { commitEnabled: this.state.commitEnabled },
@@ -384,12 +388,13 @@ class HomePageComponent extends React.Component {
         this.props.navigate(`/${getWorkspaceId()}/database`);
       }
     } catch (error) {
-      this.setState({
-        isImportingApp: false,
-      });
-      if (error.statusCode === 409) {
-        return false;
+      if (installedPluginsInfo.length) {
+        const pluginsId = installedPluginsInfo.map((pluginInfo) => pluginInfo.id);
+        await pluginsService.uninstallPlugins(pluginsId);
       }
+
+      this.setState({ isImportingApp: false });
+      if (error.statusCode === 409) return false;
       toast.error(error?.error || error?.message || 'App import failed');
     }
   };

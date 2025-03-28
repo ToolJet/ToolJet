@@ -9,8 +9,9 @@ interface Features {
   [FEATURE_KEY.INSTALL]: FeatureConfig;
   [FEATURE_KEY.RELOAD]: FeatureConfig;
   [FEATURE_KEY.UPDATE]: FeatureConfig;
-  [FEATURE_KEY.DEPENDENTPLUGINS]: FeatureConfig;
+  [FEATURE_KEY.DEPENDENT_PLUGINS]: FeatureConfig;
   [FEATURE_KEY.INSTALL_DEPENDENT_PLUGINS]: FeatureConfig;
+  [FEATURE_KEY.UNINSTALL_PLUGINS]: FeatureConfig;
 }
 
 export interface FeaturesConfig {

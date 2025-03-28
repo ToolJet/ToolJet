@@ -1,4 +1,6 @@
 import HttpClient from '@/_helpers/http-client';
+import config from 'config';
+import { authHeader, handleResponse } from '@/_helpers';
 
 const adapter = new HttpClient();
 
@@ -22,16 +24,38 @@ function reloadPlugin(id) {
   return adapter.post(`/plugins/${id}/reload`);
 }
 
-function findDepedentPlugins(dataSources) {
+function findDependentPlugins(dataSources) {
   return adapter.post(`/plugins/findDependentPlugins`, dataSources);
 }
 
-function installDependetnPlugins(dependentPlugins, shouldAutoImportPlugin) {
+function installDependentPlugins(dependentPlugins, shouldAutoImportPlugin) {
   const body = {
     dependentPlugins,
     shouldAutoImportPlugin,
   };
-  return adapter.post(`/plugins/installDependentPlugins`, body);
+
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/plugins/installDependentPlugins`, requestOptions).then(handleResponse);
+}
+
+function uninstallPlugins(pluginsId) {
+  const body = {
+    pluginsId: pluginsId,
+  };
+
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+
+  return fetch(`${config.apiUrl}/plugins/uninstallPlugins`, requestOptions).then(handleResponse);
 }
 
 export const pluginsService = {
@@ -40,6 +64,7 @@ export const pluginsService = {
   updatePlugin,
   deletePlugin,
   reloadPlugin,
-  findDepedentPlugins,
-  installDependetnPlugins,
+  findDependentPlugins,
+  installDependentPlugins,
+  uninstallPlugins,
 };
