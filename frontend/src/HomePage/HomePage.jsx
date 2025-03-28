@@ -8,6 +8,7 @@ import {
   libraryAppService,
   gitSyncService,
   licenseService,
+  pluginsService,
 } from '@/_services';
 import { ConfirmDialog, AppModal } from '@/_components';
 import Select from '@/_ui/Select';
@@ -113,7 +114,7 @@ class HomePageComponent extends React.Component {
       showUserGroupMigrationModal: false,
       showGroupMigrationBanner: true,
       shouldAutoImportPlugin: false,
-      dependentPluginsForTemplate: [],
+      dependentPlugins: [],
       dependentPluginsDetail: {},
     };
   }
@@ -310,7 +311,7 @@ class HomePageComponent extends React.Component {
       const fileReader = new FileReader();
       const fileName = file.name.replace('.json', '').substring(0, 50);
       fileReader.readAsText(file, 'UTF-8');
-      fileReader.onload = (event) => {
+      fileReader.onload = async (event) => {
         const result = event.target.result;
         let fileContent;
         try {
@@ -319,8 +320,26 @@ class HomePageComponent extends React.Component {
           toast.error(`Could not import: ${parseError}`);
           return;
         }
-        this.setState({ fileContent, fileName, showImportAppModal: true });
+
+        const importedAppDef = fileContent.app || fileContent.appV2;
+        const dataSourcesUsedInApps = [];
+        importedAppDef.forEach((appDefinition) => {
+          appDefinition?.definition?.appV2?.dataSources.forEach((dataSource) => {
+            dataSourcesUsedInApps.push(dataSource);
+          });
+        });
+
+        const dependentPluginsResponse = await pluginsService.findDependentPlugins(dataSourcesUsedInApps);
+        const { pluginsToBeInstalled = [], pluginsListIdToDetailsMap = {} } = dependentPluginsResponse.data;
+        this.setState({
+          fileContent,
+          fileName,
+          showImportAppModal: true,
+          dependentPlugins: pluginsToBeInstalled,
+          dependentPluginsDetail: { ...pluginsListIdToDetailsMap },
+        });
       };
+
       fileReader.onerror = (error) => {
         toast.error(`Could not import the app: ${error}`);
         return;
@@ -348,12 +367,19 @@ class HomePageComponent extends React.Component {
       importJSON.app[0].appName = appName;
     }
     const requestBody = { organization_id, ...importJSON };
+    let installedPluginsInfo = [];
     try {
+      if (this.state.dependentPlugins.length) {
+        ({ installedPluginsInfo = [] } = await pluginsService.installDependentPlugins(
+          this.state.dependentPlugins,
+          true
+        ));
+      }
+
       const data = await appsService.importResource(requestBody);
       toast.success('App imported successfully.');
-      this.setState({
-        isImportingApp: false,
-      });
+      this.setState({ isImportingApp: false });
+
       if (!isEmpty(data.imports.app)) {
         this.props.navigate(`/${getWorkspaceId()}/apps/${data.imports.app[0].id}`, {
           state: { commitEnabled: this.state.commitEnabled },
@@ -362,12 +388,13 @@ class HomePageComponent extends React.Component {
         this.props.navigate(`/${getWorkspaceId()}/database`);
       }
     } catch (error) {
-      this.setState({
-        isImportingApp: false,
-      });
-      if (error.statusCode === 409) {
-        return false;
+      if (installedPluginsInfo.length) {
+        const pluginsId = installedPluginsInfo.map((pluginInfo) => pluginInfo.id);
+        await pluginsService.uninstallPlugins(pluginsId);
       }
+
+      this.setState({ isImportingApp: false });
+      if (error.statusCode === 409) return false;
       toast.error(error?.error || error?.message || 'App import failed');
     }
   };
@@ -380,7 +407,7 @@ class HomePageComponent extends React.Component {
       const data = await libraryAppService.deploy(
         id,
         appName,
-        this.state.dependentPluginsForTemplate,
+        this.state.dependentPlugins,
         this.state.shouldAutoImportPlugin
       );
       this.setState({ deploying: false });
@@ -732,7 +759,7 @@ class HomePageComponent extends React.Component {
         selectedTemplate: template,
         ...(plugins_to_be_installed.length && {
           shouldAutoImportPlugin: true,
-          dependentPluginsForTemplate: plugins_to_be_installed,
+          dependentPlugins: plugins_to_be_installed,
           dependentPluginsDetail: { ...plugins_detail_by_id },
         }),
       });
@@ -750,7 +777,7 @@ class HomePageComponent extends React.Component {
     this.setState({
       showCreateAppFromTemplateModal: false,
       selectedTemplate: null,
-      dependentPluginsForTemplate: [],
+      dependentPlugins: [],
       dependentPluginsDetail: {},
       shouldAutoImportPlugin: false,
     });
@@ -763,6 +790,20 @@ class HomePageComponent extends React.Component {
   closeCreateAppModal = () => {
     this.setState({ showCreateAppModal: false, showCreateModuleModal: false });
   };
+
+  openImportAppModal = async () => {
+    this.setState({ showImportAppModal: true });
+  };
+
+  closeImportAppModal = () => {
+    this.setState({
+      showImportAppModal: false,
+      dependentPlugins: [],
+      dependentPluginsDetail: {},
+      shouldAutoImportPlugin: false,
+    });
+  };
+
   isWithinSevenDaysOfSignUp = (date) => {
     const currentDate = new Date().toISOString();
     const differenceInTime = new Date(currentDate).getTime() - new Date(date).getTime();
@@ -836,7 +877,7 @@ class HomePageComponent extends React.Component {
       workflowInstanceLevelLimit,
       showUserGroupMigrationModal,
       showGroupMigrationBanner,
-      dependentPluginsForTemplate,
+      dependentPlugins,
       dependentPluginsDetail,
     } = this.state;
     const modalConfigs = {
@@ -865,12 +906,14 @@ class HomePageComponent extends React.Component {
         modalType: 'import',
         closeModal: () => this.setState({ showImportAppModal: false }),
         processApp: this.importFile,
-        show: () => this.setState({ showImportAppModal: true }),
+        show: this.openImportAppModal,
         title: 'Import app',
         actionButton: 'Import app',
         actionLoadingButton: 'Importing',
         fileContent: fileContent,
         selectedAppName: fileName,
+        dependentPluginsDetail: dependentPluginsDetail,
+        dependentPlugins: dependentPlugins,
       },
       template: {
         modalType: 'template',
@@ -882,7 +925,7 @@ class HomePageComponent extends React.Component {
         actionLoadingButton: 'Creating',
         templateDetails: this.state.selectedTemplate,
         dependentPluginsDetail: dependentPluginsDetail,
-        dependentPluginsForTemplate: dependentPluginsForTemplate,
+        dependentPlugins: dependentPlugins,
       },
     };
     return (

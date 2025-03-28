@@ -22,14 +22,14 @@ export class TemplateAppsController {
     @User() user,
     @Body('identifier') identifier,
     @Body('appName') appName,
-    @Body('dependentPluginsForTemplate') dependentPluginsForTemplate,
+    @Body('dependentPlugins') dependentPlugins,
     @Body('shouldAutoImportPlugin') shouldAutoImportPlugin
   ) {
     const newApp = await this.templatesService.perform(
       user,
       identifier,
       appName,
-      dependentPluginsForTemplate,
+      dependentPlugins,
       shouldAutoImportPlugin
     );
 

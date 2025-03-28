@@ -29,7 +29,7 @@ export function AppModal({
   handleCommitEnableChange,
   appType,
   dependentPluginsDetail = [],
-  dependentPluginsForTemplate = [],
+  dependentPlugins = [],
 }) {
   if (!selectedAppName && templateDetails) {
     selectedAppName = templateDetails?.name || '';
@@ -238,10 +238,10 @@ export function AppModal({
                 </div>
               )}
             </div>
-            {dependentPluginsForTemplate && dependentPluginsForTemplate.length >= 1 && (
+            {dependentPlugins && dependentPlugins.length >= 1 && (
               <div onClick={(e) => e.stopPropagation()}>
                 <PluginsListForAppModal
-                  dependentPluginsForTemplate={dependentPluginsForTemplate}
+                  dependentPlugins={dependentPlugins}
                   dependentPluginsDetail={dependentPluginsDetail}
                 />
               </div>
