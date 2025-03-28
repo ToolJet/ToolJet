@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Container as SubContainer } from '@/AppBuilder/AppCanvas/Container';
 // eslint-disable-next-line import/no-unresolved
 import _, { debounce, omit } from 'lodash';
-import { generateUIComponents } from './FormUtils';
+import { generateUIComponents, getBodyHeight } from './FormUtils';
 import { useMounted } from '@/_hooks/use-mount';
 import { onComponentClick, removeFunctionObjects } from '@/_helpers/appUtils';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
@@ -18,11 +18,6 @@ import { HorizontalSlot } from './Components/HorizontalSlot';
 import { useActiveSlot } from '@/AppBuilder/_hooks/useActiveSlot';
 
 import './form.scss';
-
-const getCanvasHeight = (height) => {
-  const parsedHeight = height.includes('px') ? parseInt(height, 10) : height;
-  return Math.ceil(parsedHeight);
-};
 
 export const Form = function Form(props) {
   const {
@@ -60,6 +55,9 @@ export const Form = function Form(props) {
   );
   const backgroundColor =
     ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
+
+  const computedFormBodyHeight = getBodyHeight(height, showHeader, showFooter, headerHeight, footerHeight);
+
   const computedStyles = {
     backgroundColor,
     borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
@@ -336,10 +334,13 @@ export const Form = function Form(props) {
         ) : (
           <fieldset disabled={isDisabled} style={{ width: '100%' }}>
             {!advanced && (
-              <div className={'json-form-wrapper-disabled'} style={{ width: '100%', height: '100%' }}>
+              <div
+                className={'json-form-wrapper-disabled'}
+                style={{ width: '100%', height: computedFormBodyHeight || '100%' }}
+              >
                 <SubContainer
                   id={id}
-                  canvasHeight={computedStyles.height}
+                  canvasHeight={parseInt(computedFormBodyHeight, 10)}
                   canvasWidth={width}
                   onOptionChange={onOptionChange}
                   onOptionsChange={onOptionsChange}
