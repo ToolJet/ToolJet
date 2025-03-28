@@ -1,6 +1,6 @@
 ---
-id: import-libraries
-title: Import external libraries
+id: whitelist-cdn-domains
+title: Whitelist CDN Domains
 ---
 
 You can import an external library in of your preference to extend your app's functionality. ToolJet supports [jsDelivr](https://www.jsdelivr.com/) and [Skypack](https://www.skypack.dev/) by default but you can load any other library by simply whitelisting the CDN URL.
