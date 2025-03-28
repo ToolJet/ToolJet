@@ -260,16 +260,18 @@ export class TooljetDbBulkUploadService {
   }
 
   convertToDataType(columnValue: string, supportedDataType: TooljetDatabaseDataTypes) {
-    if (!columnValue) return null;
+    if (!columnValue && supportedDataType !== TJDB.boolean) return null;
 
     switch (supportedDataType) {
       case TJDB.boolean:
+        if (typeof columnValue === 'boolean') return columnValue;
         return this.convertBoolean(columnValue);
       case TJDB.integer:
       case TJDB.double_precision:
       case TJDB.bigint:
         return this.convertNumber(columnValue, supportedDataType);
       case TJDB.jsonb:
+        if (typeof columnValue !== 'string') return columnValue;
         return JSON.parse(columnValue);
       default:
         return columnValue;
@@ -375,7 +377,6 @@ export class TooljetDbBulkUploadService {
     });
 
     if (!internalTable) {
-      console.log('No internal table found');
       return null;
     }
 
@@ -391,11 +392,12 @@ export class TooljetDbBulkUploadService {
   }
 
   async bulkUpsertRowsWithPrimaryKey(
-    rowsToUpsert: Record<string, any>[],
+    rows: Record<string, any>[],
     tableId: string,
     primaryKeyColumns: string[],
     organizationId: string
   ): Promise<{ status: string; inserted: number; updated: number; rows: any[]; error?: string }> {
+    let rowsToUpsert = [...rows];
     if (isEmpty(rowsToUpsert)) {
       return {
         status: 'failed',
@@ -404,6 +406,10 @@ export class TooljetDbBulkUploadService {
         updated: 0,
         rows: [],
       };
+    }
+
+    if (rowsToUpsert.length > this.MAX_ROW_COUNT) {
+      rowsToUpsert = [...rowsToUpsert.slice(0, this.MAX_ROW_COUNT)];
     }
 
     const internalTable = await this.manager.findOne(InternalTable, {
@@ -548,7 +554,7 @@ export class TooljetDbBulkUploadService {
         VALUES ${allValueSets.join(', ')}
         ON CONFLICT (${primaryKeyColumns.map((col) => `"${col}"`).join(', ')})
         DO UPDATE SET
-          ${updateColumns.map((col) => `"${col}" = COALESCEEXCLUDED."${col}"`).join(',\n        ')}
+          ${updateColumns.map((col) => `"${col}" = EXCLUDED."${col}"`).join(',\n        ')}
         RETURNING *, (xmax = 0) as inserted;
       `;
 
@@ -564,7 +570,6 @@ export class TooljetDbBulkUploadService {
         rows: result.map(({ inserted: isInserted, ...row }) => row),
       };
     } catch (error) {
-      console.error('Error executing upsert:', error);
       return {
         status: 'failed',
         error: error.message,
