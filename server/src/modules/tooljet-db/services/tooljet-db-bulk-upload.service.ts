@@ -426,7 +426,6 @@ export class TooljetDbBulkUploadService {
 
     const tableColumns = result?.columns || [];
 
-    // Validate primary keys exist in table
     const invalidPrimaryKeys = primaryKeyColumns.filter((pk) => !tableColumns.some((col) => col.column_name === pk));
     if (invalidPrimaryKeys.length > 0) {
       return {
@@ -438,7 +437,6 @@ export class TooljetDbBulkUploadService {
       };
     }
 
-    // Find NOT NULL columns without defaults
     const notNullColumns = tableColumns
       .filter((col) => (col.constraints_type as any)?.is_not_null && !col.column_default)
       .map((col) => col.column_name);
@@ -447,12 +445,13 @@ export class TooljetDbBulkUploadService {
       .filter((col) => col.data_type === 'integer' && /^nextval\(/.test(col.column_default))
       .map((col) => col.column_name);
 
-    const tenantSchema = findTenantSchema(organizationId);
+    const allColumns = new Set<string>();
+    rowsToUpsert.forEach((row) => {
+      Object.keys(row).forEach((col) => allColumns.add(col));
+    });
 
-    // First, get all existing rows that match our primary keys
-    const existingDataMap = new Map();
+    const processedRows = [];
     for (const row of rowsToUpsert) {
-      // Validate primary keys are present
       const missingPrimaryKeys = primaryKeyColumns.filter((pk) => row[pk] === undefined);
       if (missingPrimaryKeys.length > 0) {
         return {
@@ -464,106 +463,97 @@ export class TooljetDbBulkUploadService {
         };
       }
 
-      const whereConditions = primaryKeyColumns.map((pk, index) => `"${pk}" = $${index + 1}`).join(' AND ');
-      const pkValues = primaryKeyColumns.map((pk) => row[pk]);
-
-      const existingDataQuery = `
-        SELECT *
-        FROM "${tenantSchema}"."${tableId}"
-        WHERE ${whereConditions};
-      `;
-
-      try {
-        const existingData = await this.tooljetDbManager.query(existingDataQuery, pkValues);
-        if (existingData?.[0]) {
-          const key = primaryKeyColumns.map((pk) => row[pk]).join('-');
-          existingDataMap.set(key, existingData[0]);
-        }
-      } catch (error) {
-        console.error('Error fetching existing data:', error);
-        throw new Error(`Error fetching existing data: ${error.message}`);
+      const missingNotNullColumns = notNullColumns.filter((col) => row[col] === undefined);
+      if (missingNotNullColumns.length > 0) {
+        return {
+          status: 'failed',
+          error: `Missing required NOT NULL columns: ${missingNotNullColumns.join(', ')}`,
+          inserted: 0,
+          updated: 0,
+          rows: [],
+        };
       }
+
+      const processedRow: Record<string, any> = {};
+      for (const col of allColumns) {
+        const columnInfo = tableColumns.find((c) => c.column_name === col);
+        if (!columnInfo) {
+          return {
+            status: 'failed',
+            error: `Column "${col}" does not exist in table`,
+            inserted: 0,
+            updated: 0,
+            rows: [],
+          };
+        }
+
+        if (!(col in row)) continue;
+
+        const value = row[col];
+        if (value === null) {
+          processedRow[col] = null;
+        } else if (serialTypeColumns.includes(col) && !primaryKeyColumns.includes(col)) {
+          processedRow[col] = 'DEFAULT';
+        } else {
+          try {
+            processedRow[col] = this.convertToDataType(value, columnInfo.data_type);
+          } catch (error) {
+            return {
+              status: 'failed',
+              error: `Invalid value for column "${col}": ${error.message}`,
+              inserted: 0,
+              updated: 0,
+              rows: [],
+            };
+          }
+        }
+      }
+      processedRows.push(processedRow);
     }
 
-    // Merge existing data with updates, preserving non-specified columns
-    const mergedRowsToUpsert = rowsToUpsert.map((row) => {
-      const key = primaryKeyColumns.map((pk) => row[pk]).join('-');
-      const existingData = existingDataMap.get(key);
-
-      if (existingData) {
-        // For updates: only update specified columns, preserve others
-        const merged = { ...existingData };
-        // Only update columns that were explicitly provided
-        Object.keys(row).forEach((col) => {
-          merged[col] = row[col];
-        });
-        return merged;
-      } else {
-        // For inserts: validate all NOT NULL constraints
-        const missingNotNullColumns = notNullColumns.filter((col) => row[col] === undefined);
-        if (missingNotNullColumns.length > 0) {
-          throw new Error(`Missing required NOT NULL columns for new row: ${missingNotNullColumns.join(', ')}`);
-        }
-        return row;
-      }
-    });
-
-    // Build the upsert query
-    const allValueSets = [];
-    let allPlaceholders = [];
+    const tenantSchema = findTenantSchema(organizationId);
+    const allValueSets: string[] = [];
+    const allPlaceholders: any[] = [];
     let parameterIndex = 1;
 
-    for (const row of mergedRowsToUpsert) {
-      const valueSet = [];
-      const currentPlaceholders = [];
-      const providedColumns = Object.keys(row);
+    const columnsToInclude = Array.from(allColumns);
+    const columnsQuoted = columnsToInclude.map((column) => `"${column}"`);
 
-      for (const col of providedColumns) {
-        // Always use provided value for primary keys
-        if (primaryKeyColumns.includes(col)) {
-          valueSet.push(`$${parameterIndex++}`);
-          currentPlaceholders.push(row[col]);
-        }
-        // Use DEFAULT for null serial columns (if not primary key)
-        else if (serialTypeColumns.includes(col) && !primaryKeyColumns.includes(col) && row[col] === null) {
+    for (const row of processedRows) {
+      const valueSet: string[] = [];
+      const currentPlaceholders: any[] = [];
+
+      for (const col of columnsToInclude) {
+        if (col in row) {
+          if (row[col] === 'DEFAULT') {
+            valueSet.push('DEFAULT');
+          } else {
+            valueSet.push(`$${parameterIndex++}`);
+            currentPlaceholders.push(row[col]);
+          }
+        } else {
           valueSet.push('DEFAULT');
-        }
-        // Handle all other columns
-        else {
-          valueSet.push(`$${parameterIndex++}`);
-          const value = typeof row[col] === 'object' && row[col] !== null ? JSON.stringify(row[col]) : row[col];
-          currentPlaceholders.push(value);
         }
       }
 
       allValueSets.push(`(${valueSet.join(', ')})`);
-      allPlaceholders = allPlaceholders.concat(currentPlaceholders);
+      allPlaceholders.push(...currentPlaceholders);
     }
 
-    // Only update columns that were provided in the original input
-    const providedColumns = Object.keys(mergedRowsToUpsert[0]);
-    const providedNonPKColumns = providedColumns.filter((col) => !primaryKeyColumns.includes(col));
-
-    // Filter update columns to only those in original input
-    const columnsToUpdate = providedNonPKColumns.filter((col) => Object.keys(rowsToUpsert[0]).includes(col));
-
-    const onConflictUpdate =
-      columnsToUpdate.length > 0
-        ? `DO UPDATE SET ${columnsToUpdate.map((col) => `"${col}" = EXCLUDED."${col}"`).join(', ')}`
-        : 'DO NOTHING';
-
-    const primaryKeyColumnsQuoted = primaryKeyColumns.map((column) => `"${column}"`);
-    const columnsQuoted = providedColumns.map((column) => `"${column}"`);
-
-    const queryText =
-      `INSERT INTO "${tenantSchema}"."${tableId}" (${columnsQuoted.join(', ')}) ` +
-      `VALUES ${allValueSets.join(', ')} ` +
-      `ON CONFLICT (${primaryKeyColumnsQuoted.join(', ')}) ` +
-      `${onConflictUpdate} ` +
-      `RETURNING *, (xmax = 0) as inserted;`;
+    const updateColumns = columnsToInclude.filter((col) => !primaryKeyColumns.includes(col));
 
     try {
+      const queryText = `
+        INSERT INTO "${tenantSchema}"."${tableId}" (${columnsQuoted.join(', ')})
+        VALUES ${allValueSets.join(', ')}
+        ON CONFLICT (${primaryKeyColumns.map((col) => `"${col}"`).join(', ')})
+        DO UPDATE SET
+          ${updateColumns.map((col) => `"${col}" = COALESCEEXCLUDED."${col}"`).join(',\n        ')}
+        RETURNING *, (xmax = 0) as inserted;
+      `;
+
       const result = await this.tooljetDbManager.query(queryText, allPlaceholders);
+
       const inserted = result.filter((row) => row.inserted).length;
       const updated = result.length - inserted;
 
@@ -571,7 +561,7 @@ export class TooljetDbBulkUploadService {
         status: 'ok',
         inserted,
         updated,
-        rows: result.map(({ inserted, ...row }) => row),
+        rows: result.map(({ inserted: isInserted, ...row }) => row),
       };
     } catch (error) {
       console.error('Error executing upsert:', error);
