@@ -401,6 +401,7 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
       <GetAccordion
         componentName={componentMeta.component}
         layoutPropertyChanged={layoutPropertyChanged}
+        key={selectedComponentId + '-properties'}
         component={component}
         paramUpdated={paramUpdated}
         paramsUpdated={paramsUpdated}
@@ -424,6 +425,7 @@ export const Inspector = ({ componentDefinitionChanged, darkMode, pages, selecte
           dataQueries={dataQueries}
           currentState={currentState}
           allComponents={allComponents}
+          key={selectedComponentId + '-styles'}
         />
       </div>
       {!isRevampedComponent && buildGeneralStyle()}

@@ -107,6 +107,9 @@ export const Datepicker = function Datepicker({
   parseInUnixTimestamp,
   cellStyles,
   darkMode,
+  isEditable,
+  isValid,
+  validationError,
 }) {
   const [date, setDate] = React.useState(null);
   const [excludedDates, setExcludedDates] = React.useState([]);
@@ -267,6 +270,18 @@ export const Datepicker = function Datepicker({
           return e.target.className === 'table-responsive jet-data-table false false';
         }}
       />
+      {isEditable && (
+        <div
+          onClick={() => {
+            if (dateInputRef.current) {
+              dateInputRef.current.click(); // Open Datepicker on error click
+            }
+          }}
+          className={isValid ? '' : 'invalid-feedback d-block  text-truncate'}
+        >
+          {validationError}
+        </div>
+      )}
     </div>
   );
 };
