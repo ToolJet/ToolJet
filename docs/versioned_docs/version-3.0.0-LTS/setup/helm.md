@@ -33,6 +33,26 @@ ToolJet offers a hosted database solution that allows you to build applications 
 
 For more information about the ToolJet database, you can visit [here](/docs/tooljet-db/tooljet-database).
 
+## Redis Configuration  
+For a multi-service or multi-pod setup, it is recommended to use an external Redis instance.
+
+**Default Behavior:**  
+- Redis is included in the Helm chart but **disabled by default**.  
+
+**When to Enable Redis?**  
+- If **ReplicaSet > 1**, Redis **must be enabled** inside `values.yaml` for session management.  
+
+**Using an External Redis Instance:**  
+- To configure an external Redis, update the `values.yaml` with the following variables:  
+
+  ```yaml
+  REDIS_HOST=<external_redis_host>
+  REDIS_PORT=<external_redis_port>
+  REDIS_USER=<external_redis_user>
+  REDIS_PASSWORD=<external_redis_password>
+
+
+
 ## Upgrading to the Latest LTS Version
 
 New LTS versions are released every 3-5 months with an end-of-life of atleast 18 months. To check the latest LTS version, visit the [ToolJet Docker Hub](https://hub.docker.com/r/tooljet/tooljet/tags) page. The LTS tags follow a naming convention with the prefix `LTS-` followed by the version number, for example `tooljet/tooljet:ee-lts-latest`.
