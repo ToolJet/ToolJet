@@ -5,6 +5,8 @@ import { isEmpty } from 'lodash';
 import { USER_TYPE } from '@modules/users/constants/lifecycle';
 import { ConflictException } from '@nestjs/common';
 import { DataBaseConstraints } from './db_constraints.constants';
+import { getEnvVars } from 'scripts/database-config-utils';
+
 
 const semver = require('semver');
 
@@ -449,5 +451,6 @@ export const getSubpath = () => {
 };
 
 export function getTooljetEdition(): string {
-  return process.env.TOOLJET_EDITION?.toLowerCase() || 'ce';
+  const envVars = getEnvVars();
+  return envVars['TOOLJET_EDITION']?.toLowerCase() || 'ce';
 }
