@@ -415,6 +415,27 @@ export function hideGridLines() {
   document.getElementById('real-canvas')?.classList.add('hide-grid');
 }
 
+export function showGridLinesOnSlot(slotId) {
+  var canvasElm = document.getElementById(`canvas-${slotId}`);
+
+  canvasElm.classList.remove('hide-grid');
+  canvasElm.classList.add('show-grid');
+
+  document.getElementById('real-canvas')?.classList.add('hide-grid');
+  document.getElementById('real-canvas')?.classList.remove('show-grid');
+}
+
+export function hideGridLinesOnSlot(slotId) {
+  var canvasElm = document.getElementById(`canvas-${slotId}`);
+
+
+  canvasElm.classList.remove('show-grid');
+  canvasElm.classList.add('hide-grid');
+
+  document.getElementById('real-canvas')?.classList.remove('hide-grid');
+  document.getElementById('real-canvas')?.classList.add('show-grid');
+}
+
 // Track previously active elements for efficient cleanup
 let previousActiveWidgets = null;
 let previousActiveCanvas = null;
