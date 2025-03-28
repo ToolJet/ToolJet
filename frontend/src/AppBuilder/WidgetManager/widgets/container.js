@@ -3,7 +3,7 @@ export const containerConfig = {
   displayName: 'Container',
   description: 'Group components',
   defaultSize: {
-    width: 5,
+    width: 10,
     height: 200,
   },
   component: 'Container',
@@ -47,10 +47,16 @@ export const containerConfig = {
         defaultValue: true,
       },
     },
+    headerHeight: {
+      type: 'numberInput',
+      displayName: 'Header height',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 80 },
+    },
   },
   defaultChildren: [
     {
       componentName: 'Text',
+      slotName: 'header',
       layout: {
         top: 20,
         left: 1,
@@ -96,15 +102,6 @@ export const containerConfig = {
         defaultValue: '#fff',
       },
       accordian: 'container',
-    },
-    headerHeight: {
-      type: 'numberInput',
-      displayName: 'Height',
-      validation: {
-        schema: { type: 'number' },
-        defaultValue: 80,
-      },
-      accordian: 'header',
     },
     borderRadius: {
       type: 'numberInput',
@@ -157,6 +154,7 @@ export const containerConfig = {
       loadingState: { value: `{{false}}` },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
+      headerHeight: { value: `{{80}}` },
     },
     events: [],
     styles: {
