@@ -42,6 +42,22 @@ For a multi-service or multi-pod setup, it is recommended to use an external Red
 **When to Enable Redis?**  
 - If **ReplicaSet > 1**, Redis **must be enabled** inside `values.yaml` for session management.  
 
+Enabling or Disabling Redis in `values.yaml`  
+
+To **enable Redis**, modify the following section in `values.yaml`: 
+
+```yaml
+redis:
+  enabled: true  # Set to true if ReplicaSet > 1
+  fullnameOverride: redis
+  auth:
+    enabled: true
+    password: "tooljet"
+  master:
+    service:
+      port: 6379 
+``` 
+
 **Using an External Redis Instance:**  
 - To configure an external Redis, update the `values.yaml` with the following variables:  
 
@@ -50,7 +66,7 @@ For a multi-service or multi-pod setup, it is recommended to use an external Red
   REDIS_PORT=<external_redis_port>
   REDIS_USER=<external_redis_user>
   REDIS_PASSWORD=<external_redis_password>
-
+  ```
 
 
 ## Upgrading to the Latest LTS Version
