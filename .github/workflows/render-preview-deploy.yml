@@ -13,12 +13,31 @@ permissions:
 jobs:
 
 # Community Edition
-
   create-ce-review-app:
     if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'create-ce-review-app' || github.event.label.name == 'review-app') }}
     runs-on: ubuntu-latest
 
     steps:
+      - name: Sync repo
+        uses: actions/checkout@v3
+
+      - name: Check if PR is from the same repo
+        id: check_repo
+        run: echo "::set-output name=is_fork::$(if [[ '${{ github.event.pull_request.head.repo.full_name }}' != '${{ github.event.pull_request.base.repo.full_name }}' ]]; then echo true; else echo false; fi)"
+
+      - name: Fetch the remote branch if it's a forked PR
+        if: steps.check_repo.outputs.is_fork == 'true'
+        run: |
+          git fetch origin pull/${{ github.event.number }}/head:${{ env.BRANCH_NAME }}
+          git checkout ${{ env.BRANCH_NAME }}
+
+      - name: Checkout
+        if: steps.check_repo.outputs.is_fork == 'false'
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+
       - name: Creating deployment for CE
         id: create-ce-deployment
         run: |
