@@ -58,7 +58,7 @@ export class TooljetDbDataOperationsService implements QueryService {
         return this.sqlExecution(queryOptions, context);
       case 'bulk_update_with_primary_key':
         return this.bulkUpdateWithPrimaryKey(queryOptions, context);
-      case 'bulk_upsert':
+      case 'bulk_upsert_with_primary_key':
         return this.bulkUpsertUsingPrimaryKey(queryOptions, context);
       default:
         return {
@@ -581,7 +581,7 @@ export class TooljetDbDataOperationsService implements QueryService {
   }
 
   async bulkUpsertUsingPrimaryKey(queryOptions, context): Promise<QueryResult> {
-    if (hasNullValueInFilters(queryOptions, 'bulk_upsert')) {
+    if (hasNullValueInFilters(queryOptions, 'bulk_upsert_with_primary_key')) {
       return {
         status: 'failed',
         errorMessage: 'Null value comparison not allowed. To check null values, please use IS operator instead.',
@@ -590,7 +590,7 @@ export class TooljetDbDataOperationsService implements QueryService {
     }
 
     try {
-      const { table_id: tableId, bulk_upsert: bulkUpsertOptions } = queryOptions;
+      const { table_id: tableId, bulk_upsert_with_primary_key: bulkUpsertOptions } = queryOptions;
       const { primary_key: primaryKeyColumns, rows: rowsToUpsert } = bulkUpsertOptions;
       const { organization_id: organizationId } = context.app;
 

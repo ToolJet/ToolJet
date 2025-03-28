@@ -75,7 +75,7 @@ export type TooljetDbActions =
   | 'sql_execution'
   | 'bulk_upload'
   | 'proxy_postgrest'
-  | 'bulk_upsert';
+  | 'bulk_upsert_with_primary_key';
 
 type ErrorCodeMappingItem = Partial<Record<TooljetDbActions | 'default', string>>;
 type ErrorCodeMapping = {
