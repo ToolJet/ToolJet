@@ -94,7 +94,7 @@ const DynamicFormV2 = ({
     if (valid) {
       clearValidationMessages();
     } else {
-      setValidationMessages(errors);
+      setValidationMessages(errors, schema);
       const requiredFields = errors
         .filter((error) => error.keyword === 'required')
         .map((error) => error.params.missingProperty);

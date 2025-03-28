@@ -362,7 +362,7 @@ class DataSourceManagerComponent extends React.Component {
     this.setState({ suggestingDatasources: true, activeDatasourceList: '#' });
   };
 
-  setValidationMessages = (errors) => {
+  setValidationMessages = (errors, schema) => {
     const errorMap = errors.reduce((acc, error) => {
       // Get property name from either required error or dataPath
       const property =
@@ -371,7 +371,10 @@ class DataSourceManagerComponent extends React.Component {
           : error.dataPath?.replace(/^[./]/, '') || error.instancePath?.replace(/^[./]/, '');
 
       if (property) {
-        acc[property] = `${property}: ${error.message}`;
+        const propertySchema = schema.properties?.[property];
+        const propertyTitle = propertySchema?.title;
+        acc[property] =
+          error.keyword === 'required' ? `${propertyTitle} is required` : `${propertyTitle} ${error.message}`;
       }
       return acc;
     }, {});
