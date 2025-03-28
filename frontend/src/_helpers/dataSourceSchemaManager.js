@@ -1,7 +1,6 @@
 import Ajv2020 from 'ajv';
 
 const ajvOptions = {
-  useDefaults: true,
   strict: false,
   allErrors: true,
   removeAdditional: false,
@@ -40,7 +39,10 @@ export default class DataSourceSchemaManager {
     };
 
     // Compile the schema without conditionals to fill in default values
-    const ajvForDefaults = new Ajv2020(ajvOptions);
+    const ajvForDefaults = new Ajv2020({
+      ...ajvOptions,
+      useDefaults: true,
+    });
     const applyDefaults = ajvForDefaults.compile(schemaWithoutConditionals);
     applyDefaults(dataWithDefaults);
 
