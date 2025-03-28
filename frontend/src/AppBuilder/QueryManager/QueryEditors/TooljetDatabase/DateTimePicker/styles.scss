@@ -220,3 +220,10 @@
   overflow: visible !important;
   height: inherit !important;
 }
+.tjdb-td-wrapper{
+  .react-datepicker-time__input{
+    input{
+      line-height: normal !important;
+    }
+  }
+}
