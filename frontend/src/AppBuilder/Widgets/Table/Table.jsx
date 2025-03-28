@@ -49,6 +49,7 @@ import { EmptyState } from './Components/EmptyState';
 import { LoadingState } from './Components/LoadingState';
 // eslint-disable-next-line import/no-unresolved
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 
 // utilityForNestedNewRow function is used to construct nested object while adding or updating new row when '.' is present in column key for adding new row
 const utilityForNestedNewRow = (row) => {
@@ -84,6 +85,8 @@ export const Table = React.memo(
     properties,
     variablesExposedForPreview,
     exposeToCodeHinter,
+    adjustComponentPositions,
+    currentLayout,
     // events,
     // setProperty,
   }) => {
@@ -906,6 +909,16 @@ export const Table = React.memo(
       }
     }, [state.columnResizing.isResizingColumn]);
 
+    useDynamicHeight({
+      dynamicHeight: properties.dynamicHeight,
+      id: id,
+      height,
+      value: tableData,
+      adjustComponentPositions,
+      currentLayout,
+      width,
+    });
+
     const [paginationInternalPageIndex, setPaginationInternalPageIndex] = useState(pageIndex ?? 1);
     const [rowDetails, setRowDetails] = useState();
 
@@ -1050,7 +1063,7 @@ export const Table = React.memo(
         className={`card jet-table table-component ${darkMode ? 'dark-theme' : 'light-theme'}`}
         style={{
           width: `100%`,
-          height: `${height}px`,
+          height: properties.dynamicHeight ? 'auto' : `${height}px`,
           display: parsedWidgetVisibility ? '' : 'none',
           overflow: 'hidden',
           borderRadius: Number.parseFloat(borderRadius),

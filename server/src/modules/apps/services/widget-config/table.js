@@ -269,6 +269,15 @@ export const tableConfig = {
         schema: { type: 'boolean' },
       },
     },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
   },
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop ' },
@@ -664,6 +673,7 @@ export const tableConfig = {
       allowSelection: { value: '{{true}}' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
+      dynamicHeight: { value: `{{false}}` },
     },
     events: [],
     styles: {

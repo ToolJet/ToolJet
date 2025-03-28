@@ -3,6 +3,7 @@ import { Container as ContainerComponent } from '@/AppBuilder/AppCanvas/Containe
 import Spinner from '@/_ui/Spinner';
 import { useExposeState } from '@/AppBuilder/_hooks/useExposeVariables';
 import { shallow } from 'zustand/shallow';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import {
   CONTAINER_FORM_CANVAS_PADDING,
   SUBCONTAINER_CANVAS_BORDER_WIDTH,
@@ -19,6 +20,8 @@ export const Container = ({
   width,
   setExposedVariables,
   setExposedVariable,
+  adjustComponentPositions,
+  currentLayout,
 }) => {
   const { isDisabled, isVisible, isLoading } = useExposeState(
     properties.loadingState,
@@ -27,6 +30,17 @@ export const Container = ({
     setExposedVariables,
     setExposedVariable
   );
+
+  const { dynamicHeight } = properties;
+
+  useDynamicHeight({
+    dynamicHeight: properties.dynamicHeight,
+    id,
+    height,
+    adjustComponentPositions,
+    currentLayout,
+    isContainer: true,
+  });
 
   const isWidgetInContainerDragging = useStore(
     (state) => state.containerChildrenMapping?.[id]?.includes(state?.draggingComponentId),
@@ -54,7 +68,7 @@ export const Container = ({
     backgroundColor: contentBgColor.backgroundColor,
     borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
     border: `${SUBCONTAINER_CANVAS_BORDER_WIDTH}px solid ${borderColor}`,
-    height,
+    height: dynamicHeight ? '100%' : height,
     display: isVisible ? 'flex' : 'none',
     flexDirection: 'column',
     position: 'relative',
@@ -76,7 +90,9 @@ export const Container = ({
 
   return (
     <div
-      className={`jet-container ${isLoading ? 'jet-container-loading' : ''}`}
+      className={`${properties.dynamicHeight && `dynamic-${id}`} jet-container ${
+        isLoading ? 'jet-container-loading' : ''
+      }`}
       id={id}
       data-disabled={isDisabled}
       style={computedStyles}
@@ -106,9 +122,10 @@ export const Container = ({
                 // Prevent the scroll when dragging a widget inside the container or moving out of the container
                 overflow: isWidgetInContainerDragging ? 'hidden' : 'hidden auto',
               }}
-              canvasHeight={height}
+              canvasHeight={dynamicHeight ? '100%' : height}
               canvasWidth={width}
               darkMode={darkMode}
+              dynamicHeight={dynamicHeight}
               componentType="Container"
             />
           </div>

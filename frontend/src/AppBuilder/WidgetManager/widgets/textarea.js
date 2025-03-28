@@ -20,6 +20,15 @@ export const textareaConfig = {
         defaultValue: 'default text',
       },
     },
+    dynamicHeight: {
+      type: 'toggle',
+      displayName: 'Dynamic height',
+      validation: {
+        schema: { type: 'boolean' },
+        defaultValue: false,
+      },
+      section: 'additionalActions',
+    },
     placeholder: {
       type: 'code',
       displayName: 'Placeholder',
@@ -82,6 +91,7 @@ export const textareaConfig = {
           'ToolJet is an open-source low-code platform for building and deploying internal tools with minimal engineering efforts 🚀',
       },
       placeholder: { value: 'Placeholder text' },
+      dynamicHeight: { value: '{{false}}' },
     },
     events: [],
     styles: {
