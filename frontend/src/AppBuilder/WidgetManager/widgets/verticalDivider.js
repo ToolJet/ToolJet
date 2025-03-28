@@ -4,7 +4,7 @@ export const verticalDividerConfig = {
   description: 'Vertical line separator',
   component: 'VerticalDivider',
   defaultSize: {
-    width: 2,
+    width: 1,
     height: 100,
   },
   others: {
