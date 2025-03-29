@@ -270,6 +270,7 @@ const DynamicFormV2 = ({
               : isRequired && !isEncrypted
               ? { valid: true, message: '' }
               : { valid: null, message: '' }, // handle optional && encrypted fields
+          isDisabled: !canUpdateDataSource(selectedDataSource?.id) && !canDeleteDataSource(),
         };
       }
       case 'react-component-headers': {
@@ -404,35 +405,6 @@ const DynamicFormV2 = ({
                     widget !== 'text-v3' &&
                     widget !== 'password-v3' &&
                     renderLabel(label, uiProperties[key].tooltip)}
-
-                  {(widget === 'password' || encrypted) && selectedDataSource?.id && (
-                    <div className="mx-1 col">
-                      <ButtonSolid
-                        className="datasource-edit-btn mb-2"
-                        type="a"
-                        variant="tertiary"
-                        target="_blank"
-                        rel="noreferrer"
-                        disabled={!canUpdateDataSource() && !canDeleteDataSource()}
-                        onClick={(event) => handleEncryptedFieldsToggle(event, propertyKey)}
-                      >
-                        {computedProps?.[propertyKey]?.['disabled'] ? 'Edit' : 'Cancel'}
-                      </ButtonSolid>
-                    </div>
-                  )}
-                  {(widget === 'password' || encrypted) && (
-                    <div className="col-auto mb-2">
-                      <small className="text-green">
-                        <img
-                          className="mx-2 encrypted-icon"
-                          src="assets/images/icons/padlock.svg"
-                          width="12"
-                          height="12"
-                        />
-                        Encrypted
-                      </small>
-                    </div>
-                  )}
                 </div>
               )}
               <div
