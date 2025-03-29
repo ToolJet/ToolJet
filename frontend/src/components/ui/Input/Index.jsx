@@ -38,7 +38,7 @@ InputComponent.defaultProps = {
   size: 'medium',
   disabled: false,
   readOnly: '',
-  validation: (e) => {},
+  validation: null,
   label: '',
   'aria-label': '',
   required: false,

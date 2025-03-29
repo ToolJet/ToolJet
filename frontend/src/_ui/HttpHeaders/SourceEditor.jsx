@@ -42,7 +42,7 @@ export default ({
             disabled={isDisabled}
             style={{
               flex: 1,
-              width: width ? width : '300px',
+              width: '316px',
               borderTopRightRadius: '0',
               borderBottomRightRadius: '0',
               borderRight: 'none',
