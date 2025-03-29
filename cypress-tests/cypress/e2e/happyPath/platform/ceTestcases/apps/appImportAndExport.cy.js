@@ -107,7 +107,7 @@ describe("App Import Functionality", () => {
     );
     cy.get(commonSelectors.appNameLabel).verifyVisibleElement(
       "have.text",
-      "App Name"
+      "App name"
     );
     cy.get(commonSelectors.appNameInput)
       .should("be.visible")

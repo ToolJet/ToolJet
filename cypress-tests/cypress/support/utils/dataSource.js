@@ -235,7 +235,7 @@ export const createRestAPIQuery = (queryName, dsName, key = '', value = '', url 
     cy.log(Cypress.env("appId"));
     cy.request({
       method: "GET",
-      url: `${Cypress.env("server_host")}/api/v2/apps/${Cypress.env("appId")}`,
+      url: `${Cypress.env("server_host")}/api/apps/${Cypress.env("appId")}`,
       headers: headers,
     }).then((response) => {
       const editingVersionId = response.body.editing_version.id;

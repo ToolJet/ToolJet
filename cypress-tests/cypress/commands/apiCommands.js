@@ -1,3 +1,5 @@
+const envVar = Cypress.env("environment");
+
 Cypress.Commands.add(
   "apiLogin",
   (
@@ -75,14 +77,17 @@ Cypress.Commands.add("apiCreateApp", (appName = "testApp") => {
         Cookie: `tj_auth_token = ${cookie.value}`,
       },
       body: {
-        created_at: "",
-        id: "",
-        is_maintenance_on: false,
-        is_public: null,
+        type: "front-end",
         name: appName,
+        is_maintenance_on: false,
         organization_id: "",
-        updated_at: "",
         user_id: "",
+        created_at: "",
+        updated_at: "",
+        id: "",
+        is_public: null,
+        workflow_enabled: false,
+        creation_mode: "DEFAULT",
       },
     }).then((response) => {
       {
@@ -128,7 +133,7 @@ Cypress.Commands.add(
     appId = Cypress.env("appId"),
     componentSelector = "[data-cy='empty-editor-text']"
   ) => {
-    cy.intercept("GET", "/api/v2/apps/*").as("getAppData");
+    cy.intercept("GET", "/api/apps/*").as("getAppData");
     cy.window({ log: false }).then((win) => {
       win.localStorage.setItem("walkthroughCompleted", "true");
     });
@@ -175,7 +180,7 @@ Cypress.Commands.add("apiLogout", () => {
     cy.request(
       {
         method: "GET",
-        url: `${Cypress.env("server_host")}/api/logout`,
+        url: `${Cypress.env("server_host")}/api/session/logout`,
         headers: {
           "Tj-Workspace-Id": Cypress.env("workspaceId"),
           Cookie: `tj_auth_token=${cookie.value}`,
@@ -190,7 +195,23 @@ Cypress.Commands.add("apiLogout", () => {
 
 Cypress.Commands.add(
   "apiUserInvite",
-  (userName, userEmail, userRole = "end-user") => {
+  (userName, userEmail, userRole = "end-user", metaData = {}) => {
+
+    const requestBody = envVar === "Enterprise"
+      ? {
+        firstName: userName,
+        email: userEmail,
+        groups: [],
+        role: userRole,
+        userMetadata: metaData,
+      }
+      : {
+        first_name: userName,
+        email: userEmail,
+        groups: [],
+        role: userRole,
+      };
+
     cy.getCookie("tj_auth_token").then((cookie) => {
       cy.request(
         {
@@ -200,12 +221,7 @@ Cypress.Commands.add(
             "Tj-Workspace-Id": Cypress.env("workspaceId"),
             Cookie: `tj_auth_token=${cookie.value}`,
           },
-          body: {
-            first_name: userName,
-            email: userEmail,
-            groups: [],
-            role: userRole,
-          },
+          body: requestBody,
         },
         { log: false }
       ).then((response) => {
@@ -315,7 +331,7 @@ Cypress.Commands.add(
 
         cy.request({
           method: "GET",
-          url: `${Cypress.env("server_host")}/api/v2/apps/${appId}`,
+          url: `${Cypress.env("server_host")}/api/apps/${appId}`,
           headers: {
             "Tj-Workspace-Id": Cypress.env("workspaceId"),
             Cookie: `tj_auth_token=${cookie.value}`,
@@ -355,7 +371,7 @@ Cypress.Commands.add(
 
           cy.request({
             method: "POST",
-            url: `${Cypress.env("server_host")}/api/v2/apps/${appId}/versions/${editingVersionId}/components`,
+            url: `${Cypress.env("server_host")}/api/apps/${appId}/versions/${editingVersionId}/components`,
             headers: {
               "Content-Type": "application/json",
               "Tj-Workspace-Id": Cypress.env("workspaceId"),
@@ -531,7 +547,7 @@ Cypress.Commands.add("apiReleaseApp", (appName) => {
 
       cy.request({
         method: "GET",
-        url: `${Cypress.env("server_host")}/api/v2/apps/${appId}`,
+        url: `${Cypress.env("server_host")}/api/apps/${appId}`,
         headers,
       })
         .then((response) => {
@@ -539,7 +555,7 @@ Cypress.Commands.add("apiReleaseApp", (appName) => {
           const editingVersionId = response.body.editing_version.id;
           cy.request({
             method: "PUT",
-            url: `${Cypress.env("server_host")}/api/v2/apps/${appId}/release`,
+            url: `${Cypress.env("server_host")}/api/apps/${appId}/release`,
             headers: headers,
             body: {
               versionToBeReleased: editingVersionId,
