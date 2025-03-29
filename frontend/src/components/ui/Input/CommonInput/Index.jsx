@@ -5,7 +5,7 @@ import { HelperMessage, InputLabel, ValidationMessage } from '../InputUtils/Inpu
 import { ButtonSolid } from '../../../../_components/AppButton';
 
 const CommonInput = ({ label, helperText, disabled, required, onChange: change, ...restProps }) => {
-  const {type, encrypted, validation, isValidatedMessages, isDisabled} = restProps;
+  const { type, encrypted, validation, isValidatedMessages, isDisabled } = restProps;
 
   const InputComponentType = type === 'number' ? NumberInput : TextInput;
   const [isValid, setIsValid] = useState(null);
