@@ -18634,4 +18634,9 @@ section.ai-message-prompt-input-wrapper {
   .tj-text-input-widget.is-invalid {
     border-left: none !important;
   }
+
+  input[type="tel"] {
+    border-top-left-radius: '0px' !important;
+    border-bottom-left-radius: '0px' !important;
+  }
 }

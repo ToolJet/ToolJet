@@ -134,7 +134,7 @@ export const PhoneInput = (props) => {
 
   const computedStyles = {
     height: '100%',
-    borderRadius: `0px ${borderRadius}px ${borderRadius}px 0px`,
+    borderRadius: `${borderRadius}px`,
     color: !['#1B1F24', '#000', '#000000ff'].includes(textColor)
       ? textColor
       : disabledState
@@ -165,8 +165,7 @@ export const PhoneInput = (props) => {
     borderTopLeftRadius: '0px',
     borderLeft: 'none',
   };
-  const countryCode = getCountryCallingCodeSafe(country);
-  console.log(countryCode);
+
   return (
     <>
       <div
@@ -218,8 +217,7 @@ export const PhoneInput = (props) => {
           />
           <Input
             ref={inputRef}
-            {...(countryCode && { country: country })}
-            // country={country}
+            country={country}
             international={false}
             value={value}
             onChange={onInputValueChange}
