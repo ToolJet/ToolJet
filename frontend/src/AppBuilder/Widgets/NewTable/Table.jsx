@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, memo } from 'react';
+import React, { useEffect, useMemo, memo, useRef } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { shallow } from 'zustand/shallow';
@@ -19,7 +19,7 @@ export const Table = memo(
     const setTableEvents = useTableStore((state) => state.setTableEvents, shallow);
     const setTableStyles = useTableStore((state) => state.setTableStyles, shallow);
     const setColumnDetails = useTableStore((state) => state.setColumnDetails, shallow);
-    const getColumnTransformations = useTableStore((state) => state.getColumnTransformations, shallow);
+    const transformations = useTableStore((state) => state.getColumnTransformations(id), shallow);
 
     // get table properties
     const visibility = useTableStore((state) => state.getTableProperties(id)?.visibility, shallow);
@@ -44,10 +44,11 @@ export const Table = memo(
     } = properties;
 
     const firstRowOfTable = !isEmpty(restOfProperties.data?.[0]) ? restOfProperties.data?.[0] : undefined;
-    const transformations = getColumnTransformations(id);
 
     // Get all app events. Needed for certain events like onBulkUpdate
     const allAppEvents = useEvents();
+
+    const shouldAutogenerateColumns = useRef(false);
 
     // Initialize component on the table store
     useEffect(() => {
@@ -65,6 +66,10 @@ export const Table = memo(
       setTableActions(id, actions);
     }, [id, actions, setTableActions]);
 
+    useEffect(() => {
+      if (useDynamicColumn) shouldAutogenerateColumns.current = true;
+    }, [firstRowOfTable, useDynamicColumn, columnData]);
+
     // Set column details to the table store. This is responsible for auto-generating columns
     useEffect(() => {
       setColumnDetails(
@@ -74,8 +79,10 @@ export const Table = memo(
         columnData,
         firstRowOfTable,
         autogenerateColumns,
-        columnDeletionHistory
+        columnDeletionHistory,
+        shouldAutogenerateColumns.current
       );
+      shouldAutogenerateColumns.current = false;
     }, [
       id,
       columns,

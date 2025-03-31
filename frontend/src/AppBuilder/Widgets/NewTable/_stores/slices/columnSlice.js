@@ -13,7 +13,8 @@ export const createColumnSlice = (set, get) => ({
     columnData,
     firstRowOfTable,
     autogenerateColumnsFlag,
-    columnDeletionHistory
+    columnDeletionHistory,
+    shouldAutogenerateColumns
   ) => {
     set(
       (state) => {
@@ -23,19 +24,30 @@ export const createColumnSlice = (set, get) => ({
           state.components[id].columnDetails.columnData = columnData ?? [];
         } else {
           state.components[id].columnDetails.useDynamicColumn = false;
-          state.components[id].columnDetails.columnProperties = removeNullValues(columns);
         }
-        const columnProperties = get().generateColumns(
-          id,
-          columns,
-          firstRowOfTable,
-          isDynamicColumnSelected,
-          autogenerateColumnsFlag,
-          columnDeletionHistory,
-          columnData
-        );
-        state.components[id].columnDetails.columnProperties = columnProperties;
-        state.components[id].columnDetails.transformations = get().generateColumnTransformations(id, columnProperties);
+        if (shouldAutogenerateColumns) {
+          const columnProperties = get().generateColumns(
+            id,
+            columns,
+            firstRowOfTable,
+            isDynamicColumnSelected,
+            autogenerateColumnsFlag,
+            columnDeletionHistory,
+            columnData
+          );
+          state.components[id].columnDetails.columnProperties = columnProperties;
+          state.components[id].columnDetails.transformations = get().generateColumnTransformations(
+            id,
+            columnProperties
+          );
+        } else {
+          const columnProperties = removeNullValues(columns);
+          state.components[id].columnDetails.columnProperties = columnProperties;
+          state.components[id].columnDetails.transformations = get().generateColumnTransformations(
+            id,
+            columnProperties
+          );
+        }
       },
       false,
       { type: 'setColumnDetails', payload: { id, columns, useDynamicColumn, columnData } }
@@ -74,10 +86,12 @@ export const createColumnSlice = (set, get) => ({
   generateColumnTransformations: (id, columnProperties) => {
     const transformations = columnProperties
       .filter((column) => column.transformation && column.transformation != '{{cellValue}}')
-      .map((column) => ({
-        key: column.key ? column.key : column.name,
-        transformation: column.transformation,
-      }));
+      .map((column) => {
+        return {
+          key: column.key ? column.key : column.name,
+          transformation: column.transformation,
+        };
+      });
     const existingTransformations = get().getColumnTransformations(id);
     if (!isEqual(existingTransformations, transformations)) {
       return transformations;

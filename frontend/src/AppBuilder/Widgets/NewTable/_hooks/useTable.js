@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   getCoreRowModel,
   useReactTable,
@@ -30,8 +30,12 @@ export function useTable({
   const [columnFilters, setColumnFilters] = useState([]);
   const [columnOrder, setColumnOrder] = useState(columns.map((column) => column.id));
 
+  // When the columns change, the data is not getting re-rendered. So, we need to create a new data array
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const newData = useMemo(() => [...data], [data, columns]);
+
   const table = useReactTable({
-    data,
+    data: newData,
     columns,
     enableSorting,
     getCoreRowModel: getCoreRowModel(),

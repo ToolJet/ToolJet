@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef, useCallback, memo } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import useTableStore from '../../_stores/tableStore';
 import TableExposedVariables from '../TableExposedVariables';
 import Header from '../Header';
