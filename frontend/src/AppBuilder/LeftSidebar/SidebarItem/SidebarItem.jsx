@@ -1,18 +1,18 @@
-import SolidIcon from "@/_ui/Icon/SolidIcons";
-import React, { forwardRef } from "react";
-import OverlayTrigger from "react-bootstrap/OverlayTrigger";
-import Tooltip from "react-bootstrap/Tooltip";
-import { useTranslation } from "react-i18next";
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import React, { forwardRef } from 'react';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import Tooltip from 'react-bootstrap/Tooltip';
+import { useTranslation } from 'react-i18next';
 
 // TODO: remove refs and related dependancies
 export const SidebarItem = forwardRef(
   (
     {
-      tip = "",
+      tip = '',
       selectedSidebarItem,
       className,
       icon,
-      iconFill = "var(--slate8)",
+      iconFill = 'var(--slate8)',
       commentBadge,
       text,
       onClick,
@@ -24,27 +24,20 @@ export const SidebarItem = forwardRef(
   ) => {
     const { t } = useTranslation();
     let displayIcon = icon;
-    if (icon == "page") displayIcon = "file01";
+    if (icon == 'page') displayIcon = 'file01';
     const content = (
-      <div
-        {...rest}
-        className={className}
-        onClick={onClick && onClick}
-        ref={ref}
-      >
+      <div {...rest} className={className} onClick={onClick && onClick} ref={ref}>
         {icon && (
           <div
             className={`sidebar-svg-icon  position-relative ${
-              selectedSidebarItem === icon &&
-              selectedSidebarItem != "comments" &&
-              "sidebar-item"
+              selectedSidebarItem === icon && selectedSidebarItem != 'comments' && 'sidebar-item'
             }`}
             data-cy={`left-sidebar-${icon.toLowerCase()}-button`}
           >
             <SolidIcon
               name={displayIcon}
-              width={icon == "settings" ? 22.4 : 20}
-              fill={selectedSidebarItem === icon ? "#3E63DD" : iconFill}
+              width={icon == 'settings' ? 22.4 : 20}
+              fill={selectedSidebarItem === icon ? '#3E63DD' : iconFill}
             />
             {commentBadge && <SidebarItem.CommentBadge />}
           </div>
@@ -57,14 +50,10 @@ export const SidebarItem = forwardRef(
     if (!tip) return content;
     return (
       <OverlayTrigger
-        trigger={["click", "hover", "focus"]}
+        trigger={['click', 'hover', 'focus']}
         placement="right"
         delay={{ show: 250, hide: 200 }}
-        overlay={
-          <Tooltip id="button-tooltip">
-            {t(`leftSidebar.${tip}.tip`, tip)}
-          </Tooltip>
-        }
+        overlay={<Tooltip id="button-tooltip">{t(`leftSidebar.${tip}.tip`, tip)}</Tooltip>}
       >
         {content}
       </OverlayTrigger>
@@ -88,14 +77,11 @@ function CommentBadge() {
 }
 
 function NotificationBadge({ count }) {
-  const fontSize = count > 999 ? "7.5px" : "8.5px";
+  const fontSize = count > 999 ? '7.5px' : '8.5px';
   return (
     <>
       {count > 0 && (
-        <span
-          className="badge bg-red rounded-circle debugger-badge p-0"
-          style={{ fontSize: fontSize }}
-        >
+        <span className="badge bg-red rounded-circle debugger-badge p-0" style={{ fontSize: fontSize }}>
           {count > 999 ? `999+` : count}
         </span>
       )}
