@@ -8,6 +8,7 @@ import { CustomValueContainer } from './CustomValueContainer';
 export const CountrySelect = ({ value, onChange, options, ...rest }) => {
   const {
     isCountryChangeEnabled,
+    isCurrencyInput = false,
     disabledState,
     borderRadius,
     isValid,
@@ -37,8 +38,8 @@ export const CountrySelect = ({ value, onChange, options, ...rest }) => {
   const customStyles = {
     container: (provided) => ({
       ...provided,
-      minWidth: !isCountryChangeEnabled || disabledState ? '77px' : '87px',
-      width: !isCountryChangeEnabled || disabledState ? '77px' : '87px',
+      minWidth: isCurrencyInput ? '55px' : !isCountryChangeEnabled || disabledState ? '77px' : '87px',
+      width: isCurrencyInput ? '55px' : !isCountryChangeEnabled || disabledState ? '77px' : '87px',
       height: '100%',
     }),
     control: (provided) => ({
@@ -108,10 +109,11 @@ export const CountrySelect = ({ value, onChange, options, ...rest }) => {
         hasSearch={false}
         useCustomStyles={true}
         menuPortalTarget={document.body}
+        isCurrencyInput={isCurrencyInput}
         components={{
           MenuList: CustomMenuList,
           Option: (props) => <CustomOption {...props} />,
-          ValueContainer: CustomValueContainer, // Add this line
+          ValueContainer: (props) => <CustomValueContainer {...props} />, // Add this line
           IndicatorSeparator: () => null,
           DropdownIndicator:
             !isCountryChangeEnabled || disabledState

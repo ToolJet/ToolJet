@@ -14,6 +14,7 @@ const shouldAddBoxShadowAndVisibility = [
   'PasswordInput',
   'EmailInput',
   'PhoneInput',
+  'CurrencyInput',
   'NumberInput',
   'Text',
   'Checkbox',

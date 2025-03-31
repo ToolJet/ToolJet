@@ -5,7 +5,8 @@ import flags from 'react-phone-number-input/flags';
 import TickV3 from '@/_ui/Icon/solidIcons/TickV3';
 
 export const CustomOption = (props) => {
-  const { label, value: optionValue, isSelected, darkMode } = props;
+  const { label, value: optionValue, isSelected } = props;
+  const { darkMode } = props?.selectProps || {};
 
   const optionStyle = {
     display: 'flex',

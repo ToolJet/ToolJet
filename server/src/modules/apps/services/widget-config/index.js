@@ -60,6 +60,7 @@ import { datePickerV2Config } from './datepickerV2';
 import { timePickerConfig } from './timepicker';
 import { emailinputConfig } from './emailinput';
 import { phoneinputConfig } from './phoneinput';
+import {currencyinputConfig} from './currencyinput';
 
 const widgets = {
   buttonConfig,
@@ -77,6 +78,7 @@ const widgets = {
   timePickerConfig,
   emailinputConfig,
   phoneinputConfig,
+  currencyinputConfig,
   checkboxConfig,
   radiobuttonConfig, //!Depreciated
   radiobuttonV2Config,

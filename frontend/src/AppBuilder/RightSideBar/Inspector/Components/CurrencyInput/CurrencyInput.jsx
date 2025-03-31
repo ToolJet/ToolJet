@@ -3,14 +3,13 @@ import Accordion from '@/_ui/Accordion';
 import { baseComponentProperties } from '../DefaultComponent';
 import Select from '@/_ui/Select';
 import useStore from '@/AppBuilder/_stores/store';
-import { getCountries } from 'react-phone-number-input/input';
-import en from 'react-phone-number-input/locale/en';
 import flags from 'react-phone-number-input/flags';
 import FxButton from '@/AppBuilder/CodeBuilder/Elements/FxButton';
 import CodeHinter from '@/AppBuilder/CodeEditor';
 import cx from 'classnames';
+import { CurrencyMap } from '@/AppBuilder/Widgets/PhoneCurrency/constants';
 
-export const PhoneInput = ({ componentMeta, darkMode, ...restProps }) => {
+export const CurrencyInput = ({ componentMeta, darkMode, ...restProps }) => {
   const {
     layoutPropertyChanged,
     component,
@@ -29,14 +28,12 @@ export const PhoneInput = ({ componentMeta, darkMode, ...restProps }) => {
   const defaultCountry = resolvedProperties?.defaultCountry || 'US';
   const isDefaultCountryFxOn = componentMeta?.definition?.properties?.dateFormat?.fxActive || false;
 
-  const options = useMemo(
-    () =>
-      getCountries().map((country) => ({
-        label: `${en[country]}`,
-        value: country,
-      })),
-    []
-  );
+  const options = useMemo(() => {
+    return Object.keys(CurrencyMap).map((country) => ({
+      label: `${CurrencyMap[country].prefix} (${CurrencyMap[country].currency})`,
+      value: country,
+    }));
+  }, []);
 
   const renderCustomOption = ({ label, value: optionValue }) => {
     const optionStyle = {
@@ -66,7 +63,7 @@ export const PhoneInput = ({ componentMeta, darkMode, ...restProps }) => {
     return (
       <div className="mb-2">
         <div className="d-flex justify-content-between mb-1">
-          <label className="form-label"> Default Country</label>
+          <label className="form-label"> Default Currency</label>
           <div
             className={cx({
               'hide-fx': !isDefaultCountryFxOn,
@@ -129,7 +126,7 @@ export const PhoneInput = ({ componentMeta, darkMode, ...restProps }) => {
     additionalActions
   );
 
-  accordionItems[0].children.splice(3, 0, getCountryDropdown());
+  accordionItems[0].children.splice(4, 0, getCountryDropdown());
 
   return <Accordion items={accordionItems} />;
 };

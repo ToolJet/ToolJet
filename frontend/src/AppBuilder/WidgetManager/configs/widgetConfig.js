@@ -60,6 +60,7 @@ import {
   boundedBoxConfig,
   emailinputConfig,
   phoneinputConfig,
+  currencyinputConfig,
 } from '../widgets';
 
 export const widgets = [
@@ -74,6 +75,7 @@ export const widgets = [
   passinputConfig,
   emailinputConfig,
   phoneinputConfig,
+  currencyinputConfig,
   datepickerConfig,
   datetimePickerV2Config,
   datePickerV2Config,

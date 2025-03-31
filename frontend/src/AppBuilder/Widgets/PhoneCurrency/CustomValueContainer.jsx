@@ -7,6 +7,7 @@ import { getCountryCallingCodeSafe } from './utils';
 
 export const CustomValueContainer = ({ getValue, ...props }) => {
   const selectedValue = getValue()[0];
+  const { isCurrencyInput } = props?.selectProps || {};
   const FlagIcon = selectedValue ? flags[selectedValue.value] : null;
   const countryCode = getCountryCallingCodeSafe(selectedValue.value);
 
@@ -15,7 +16,8 @@ export const CustomValueContainer = ({ getValue, ...props }) => {
       {FlagIcon ? (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
           <>
-            <FlagIcon style={{ height: '16px' }} /> <span style={{ marginLeft: '2px' }}>{` +${countryCode}`}</span>
+            <FlagIcon style={{ height: '16px' }} />{' '}
+            <span style={{ marginLeft: '2px' }}>{!isCurrencyInput && ` +${countryCode}`}</span>
           </>
         </div>
       ) : (

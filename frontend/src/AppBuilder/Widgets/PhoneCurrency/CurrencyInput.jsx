@@ -1,24 +1,20 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-// eslint-disable-next-line import/no-unresolved
-import Input, { getCountries, getCountryCallingCode } from 'react-phone-number-input/input';
-import { getCountryCallingCodeSafe } from './utils';
-// eslint-disable-next-line import/no-unresolved
-import en from 'react-phone-number-input/locale/en';
-import 'react-phone-number-input/style.css';
+import { default as ReactCurrencyInput } from 'react-currency-input-field';
 import { useInput } from '../BaseComponents/hooks/useInput';
 import Loader from '@/ToolJetUI/Loader/Loader';
 import Label from '@/_ui/Label';
 import { CountrySelect } from './CountrySelect';
-
+import { CurrencyMap } from './constants';
 const tinycolor = require('tinycolor2');
 
-export const PhoneInput = (props) => {
+export const CurrencyInput = (props) => {
   const { properties, styles, componentName, darkMode, setExposedVariables, fireEvent } = props;
   const transformedProps = {
     ...props,
-    inputType: 'phone',
+    inputType: 'currency',
   };
   const inputLogic = useInput(transformedProps);
+
   const {
     inputRef,
     labelRef,
@@ -26,6 +22,7 @@ export const PhoneInput = (props) => {
     loading,
     disable,
     showValidationError,
+    handlePhoneCurrencyInputChange,
     isFocused,
     labelWidth,
     isValid,
@@ -34,11 +31,31 @@ export const PhoneInput = (props) => {
     handleBlur,
     handleFocus,
     value,
-    handlePhoneCurrencyInputChange,
     country,
     setCountry,
   } = inputLogic;
-  const { label, placeholder, isCountryChangeEnabled, defaultCountry = 'US' } = properties;
+  const { label, placeholder, decimalPlaces, isCountryChangeEnabled, defaultCountry = 'US' } = properties;
+
+  const handleKeyUp = (e) => {
+    if (e.key === 'Enter') {
+      fireEvent('onEnterPressed');
+    }
+  };
+
+  const options = useMemo(() => {
+    return Object.keys(CurrencyMap).map((country) => ({
+      label: `${CurrencyMap[country].prefix} (${CurrencyMap[country].currency})`,
+      value: country,
+    }));
+  }, []);
+
+  const onInputValueChange = (value) => {
+    setExposedVariables({
+      country: country,
+      formattedValue: `${CurrencyMap?.[country]?.prefix || ''} ${inputRef.current?.value}`,
+    });
+    handlePhoneCurrencyInputChange(value);
+  };
 
   const {
     textColor,
@@ -56,82 +73,8 @@ export const PhoneInput = (props) => {
   } = styles;
   const _width = (width / 100) * 70;
   const defaultAlignment = alignment === 'side' || alignment === 'top' ? alignment : 'side';
-  const isInitialRender = useRef(true);
-
-  const options = useMemo(
-    () =>
-      getCountries()
-        .map((country) => ({
-          label: `${en[country]} +${getCountryCallingCodeSafe(country)}`,
-          value: country,
-        }))
-        .sort((a, b) => a.label.localeCompare(b.label)),
-    []
-  );
-
-  const onInputValueChange = (value) => {
-    setExposedVariables({
-      country: country,
-      countryCode: `+${getCountryCallingCodeSafe(country)}`,
-      formattedValue: `+${getCountryCallingCodeSafe(country)} ${inputRef.current?.value}`,
-    });
-    handlePhoneCurrencyInputChange(value);
-  };
-
-  const handleKeyUp = (e) => {
-    if (e.key === 'Enter') {
-      fireEvent('onEnterPressed');
-    }
-  };
-
-  useEffect(() => {
-    if (isInitialRender.current) {
-      setExposedVariables({
-        country: country,
-        countryCode: `+${getCountryCallingCodeSafe(country)}`,
-        formattedValue: `+${getCountryCallingCodeSafe(country)} ${inputRef.current?.value}`,
-        value: value,
-        setCountryCode: (code) => {
-          let value = getCountryCallingCodeSafe(code);
-          if (value) {
-            setCountry(code);
-          } else {
-            value = getCountries().find((country) => `+${getCountryCallingCode(country)}` === code);
-            setCountry(value ? value : '');
-          }
-        },
-      });
-      isInitialRender.current = false;
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!isInitialRender.current) {
-      setCountry(defaultCountry);
-    }
-  }, [defaultCountry]);
-
   const disabledState = disable || loading;
-
-  const loaderStyle = {
-    right:
-      direction === 'right' &&
-      defaultAlignment === 'side' &&
-      ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0))
-        ? `${labelWidth + 11}px`
-        : '11px',
-    top:
-      defaultAlignment === 'top'
-        ? ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)) &&
-          'calc(50% + 10px)'
-        : '',
-    transform:
-      defaultAlignment === 'top' &&
-      ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)) &&
-      ' translateY(-50%)',
-    zIndex: 3,
-  };
-
+  const isInitialRender = useRef(true);
   const computedStyles = {
     height: '100%',
     borderRadius: `${borderRadius}px`,
@@ -166,6 +109,47 @@ export const PhoneInput = (props) => {
     borderLeft: 'none',
   };
 
+  const loaderStyle = {
+    right:
+      direction === 'right' &&
+      defaultAlignment === 'side' &&
+      ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0))
+        ? `${labelWidth + 11}px`
+        : '11px',
+    top:
+      defaultAlignment === 'top'
+        ? ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)) &&
+          'calc(50% + 10px)'
+        : '',
+    transform:
+      defaultAlignment === 'top' &&
+      ((label?.length > 0 && width > 0) || (auto && width == 0 && label && label?.length != 0)) &&
+      ' translateY(-50%)',
+    zIndex: 3,
+  };
+
+  useEffect(() => {
+    if (isInitialRender.current) {
+      setExposedVariables({
+        country: country,
+        formattedValue: `${CurrencyMap?.[country]?.prefix || ''} ${inputRef.current?.value}`,
+        value: value,
+        setCountryCode: (code) => {
+          setCountry(code);
+        },
+      });
+      isInitialRender.current = false;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isInitialRender.current) {
+      setCountry(defaultCountry);
+    }
+  }, [defaultCountry]);
+
+  console.log('CurrencyMap?.[country]?.prefix', CurrencyMap?.[country]?.prefix);
+
   return (
     <>
       <div
@@ -176,8 +160,8 @@ export const PhoneInput = (props) => {
             ? 'flex-column'
             : 'align-items-center'
         } ${direction === 'right' && defaultAlignment === 'side' ? 'flex-row-reverse' : ''}
-        ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
-        ${visibility || 'invisible'}`}
+      ${direction === 'right' && defaultAlignment === 'top' ? 'text-right' : ''}
+      ${visibility || 'invisible'}`}
         style={{
           position: 'relative',
           whiteSpace: 'nowrap',
@@ -200,7 +184,7 @@ export const PhoneInput = (props) => {
         />
         <div className="d-flex h-100 w-100" style={{ boxShadow, borderRadius: `${borderRadius}px` }}>
           <CountrySelect
-            value={{ label: `${en[country]} +${getCountryCallingCodeSafe(country)}`, value: country }}
+            value={{ label: `${CurrencyMap?.[country]?.prefix} (${CurrencyMap?.[country]?.currency})`, value: country }}
             options={options}
             isCountryChangeEnabled={isCountryChangeEnabled}
             disabledState={disabledState}
@@ -209,25 +193,30 @@ export const PhoneInput = (props) => {
             computedStyles={computedStyles}
             showValidationError={showValidationError}
             darkMode={darkMode}
+            isCurrencyInput={true}
             onChange={(selectedOption) => {
               if (selectedOption) {
                 setCountry(selectedOption.value);
+                setExposedVariables({
+                  country: selectedOption.value,
+                  formattedValue: `${CurrencyMap?.[selectedOption.value]?.prefix || ''} ${inputRef.current?.value}`,
+                });
               }
             }}
           />
-          <Input
+          <ReactCurrencyInput
             ref={inputRef}
-            country={country}
-            international={false}
-            value={value}
-            onChange={onInputValueChange}
             placeholder={placeholder}
-            style={computedStyles}
             className={`tj-text-input-widget ${
               !isValid && showValidationError ? 'is-invalid' : ''
             } validation-without-icon`}
-            disabled={disabledState}
+            value={value}
+            decimalsLimit={decimalPlaces}
+            style={computedStyles}
             data-ignore-hover={true}
+            onValueChange={(value) => onInputValueChange(value)}
+            prefix={`${CurrencyMap?.[country]?.prefix || ''} `}
+            disabled={disabledState}
             onBlur={handleBlur}
             onFocus={handleFocus}
             onKeyUp={handleKeyUp}

@@ -1846,6 +1846,7 @@ export const createComponentsSlice = (set, get) => ({
         'PasswordInput',
         'EmailInput',
         'PhoneInput',
+        'CurrencyInput',
         'NumberInput',
         'DropdownV2',
         'MultiselectV2',

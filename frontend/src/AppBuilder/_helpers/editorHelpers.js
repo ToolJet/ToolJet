@@ -32,6 +32,7 @@ import { FilePicker } from '@/Editor/Components/FilePicker';
 import { PasswordInput } from '@/AppBuilder/Widgets/PasswordInput';
 import { EmailInput } from '@/AppBuilder/Widgets/EmailInput';
 import { PhoneInput } from '@/AppBuilder/Widgets/PhoneCurrency/PhoneInput';
+import { CurrencyInput } from '@/AppBuilder/Widgets/PhoneCurrency/CurrencyInput';
 // import { Calendar } from '@/Editor/Components/Calendar';
 // import { Listview } from '@/Editor/Components/Listview';
 import { IFrame } from '@/Editor/Components/IFrame';
@@ -122,6 +123,7 @@ export const AllComponents = {
   PasswordInput,
   EmailInput,
   PhoneInput,
+  CurrencyInput,
   Calendar,
   IFrame,
   CodeEditor,

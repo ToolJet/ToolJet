@@ -91,6 +91,7 @@
     "react-circular-progressbar": "^2.1.0",
     "react-color": "^2.19.3",
     "react-copy-to-clipboard": "^5.1.0",
+    "react-currency-input-field": "^3.10.0",
     "react-datepicker": "^7.6.0",
     "react-dates": "^21.8.0",
     "react-datetime": "^3.2.0",

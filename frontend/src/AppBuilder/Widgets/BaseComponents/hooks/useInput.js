@@ -171,7 +171,7 @@ export const useInput = ({
     fireEvent('onChange');
   };
 
-  const handlePhoneInputChange = (value) => {
+  const handlePhoneCurrencyInputChange = (value) => {
     setInputValue(value);
     fireEvent('onChange');
   };
@@ -217,7 +217,7 @@ export const useInput = ({
     validationError,
     isMandatory,
     setInputValue,
-    handlePhoneInputChange,
+    handlePhoneCurrencyInputChange,
     handleChange,
     handleBlur,
     handleFocus,
