@@ -11,7 +11,7 @@ export interface IAuthUtilService {
     [key: string]: any;
   }>;
   verifyToken(token: string): any;
-  getSSOConfigs(ssoType: SSOType.GOOGLE | SSOType.GIT | SSOType.OPENID): Promise<Partial<SSOConfigs>>;
+  getSSOConfigs(ssoType: SSOType.GOOGLE | SSOType.GIT): Promise<Partial<SSOConfigs>>;
   getInstanceSSOConfigsOfType(ssoType: SSOType.GOOGLE | SSOType.GIT | SSOType.OPENID): Promise<DeepPartial<SSOConfigs>>;
   syncUserAndGroups(
     userResponse: UserResponse,

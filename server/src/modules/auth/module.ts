@@ -16,6 +16,9 @@ import { SSOResponseRepository } from '@modules/auth/oauth/repository/sso-respon
 import { FeatureAbilityFactory } from './ability';
 import { AbilityService } from '@modules/ability/service';
 import { AbilityUtilService } from '@modules/ability/util.service';
+import { GroupPermissionsRepository } from '@modules/group-permissions/repository';
+import { SetupOrganizationsModule } from '@modules/setup-organization/module';
+import { SSOConfigsRepository } from '@modules/login-configs/repository';
 
 @Module({})
 export class AuthModule {
@@ -31,6 +34,7 @@ export class AuthModule {
     const { GoogleOAuthService } = await import(`${importPath}/auth/oauth/util-services/google-oauth.service`);
     const { OidcOAuthService } = await import(`${importPath}/auth/oauth/util-services/oidc-auth.service`);
     const { LdapService } = await import(`${importPath}/auth/oauth/util-services/ldap.service`);
+    const { AppEnvironmentUtilService } = await import(`${importPath}/app-environments/util.service`);
 
     return {
       module: AuthModule,
@@ -45,6 +49,7 @@ export class AuthModule {
         await SessionModule.register(configs),
         await OrganizationUsersModule.register(configs),
         await LoginConfigsModule.register(configs),
+        await SetupOrganizationsModule.register(configs),
       ],
       controllers: [AuthController, OauthController],
       providers: [
@@ -64,6 +69,9 @@ export class AuthModule {
         FeatureAbilityFactory,
         AbilityService,
         AbilityUtilService,
+        AppEnvironmentUtilService,
+        GroupPermissionsRepository,
+        SSOConfigsRepository,
       ],
       exports: [AuthUtilService],
     };

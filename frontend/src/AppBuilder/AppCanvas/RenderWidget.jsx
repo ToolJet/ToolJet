@@ -25,6 +25,7 @@ const shouldAddBoxShadowAndVisibility = [
   'DaterangePicker',
   'DatePickerV2',
   'TimePicker',
+  'Link',
 ];
 
 const RenderWidget = ({
