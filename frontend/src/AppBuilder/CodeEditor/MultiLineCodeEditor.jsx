@@ -55,10 +55,8 @@ const MultiLineCodeEditor = (props) => {
   const replaceIdsWithName = useStore((state) => state.replaceIdsWithName, shallow);
   const wrapperRef = useRef(null);
   const getSuggestions = useStore((state) => state.getSuggestions, shallow);
-  const license = useStore((state) => state.license, shallow);
-  const isLicenseValid =
-    !_.get(license, 'featureAccess.licenseStatus.isExpired', true) &&
-    _.get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
+  const getServerSideGlobalSuggestions = useStore((state) => state.getServerSideGlobalSuggestions, shallow);
+
   const isInsideQueryPane = !!document.querySelector('.code-hinter-wrapper')?.closest('.query-details');
   const isInsideQueryManager = useMemo(
     () => isInsideParent(wrapperRef?.current, 'query-manager'),
@@ -111,19 +109,8 @@ const MultiLineCodeEditor = (props) => {
 
     const hints = getSuggestions();
 
-    const serverHints = [];
+    const serverHints = getServerSideGlobalSuggestions(isInsideQueryManager);
 
-    if (isInsideQueryManager && isLicenseValid) {
-      hints?.appHints?.forEach((appHint) => {
-        if (appHint?.hint?.startsWith('globals.currentUser')) {
-          const key = appHint?.hint?.replace('globals.currentUser', 'globals.server.currentUser');
-          serverHints.push({
-            hint: key,
-            type: appHint?.type,
-          });
-        }
-      });
-    }
     const allHints = {
       ...hints,
       appHints: [...hints.appHints, ...serverHints],

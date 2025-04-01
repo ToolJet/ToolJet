@@ -171,11 +171,7 @@ const EditorInput = ({
   onInputChange,
   wrapperRef,
 }) => {
-  const license = useStore((state) => state.license, shallow);
-
-  const isLicenseValid =
-    !get(license, 'featureAccess.licenseStatus.isExpired', true) &&
-    get(license, 'featureAccess.licenseStatus.isLicenseValid', false);
+  const getServerSideGlobalSuggestions = useStore((state) => state.getServerSideGlobalSuggestions, shallow);
 
   const getSuggestions = useStore((state) => state.getSuggestions, shallow);
   const isInsideQueryManager = useMemo(
@@ -184,19 +180,8 @@ const EditorInput = ({
   );
   function autoCompleteExtensionConfig(context) {
     const hints = getSuggestions();
-    const serverHints = [];
+    const serverHints = getServerSideGlobalSuggestions(isInsideQueryManager);
 
-    if (isInsideQueryManager && isLicenseValid) {
-      hints?.appHints?.forEach((appHint) => {
-        if (appHint?.hint?.startsWith('globals.currentUser')) {
-          const key = appHint?.hint?.replace('globals.currentUser', 'globals.server.currentUser');
-          serverHints.push({
-            hint: key,
-            type: appHint?.type,
-          });
-        }
-      });
-    }
     const allHints = {
       ...hints,
       appHints: [...hints.appHints, ...serverHints],

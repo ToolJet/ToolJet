@@ -198,7 +198,11 @@ export const PreviewBox = ({
       const errValue = ifCoersionErrorHasCircularDependency(_resolveValue);
 
       setError({
-        message: isSecretError ? 'secrets cannot be used in apps' : _error,
+        message: isServerConstant
+          ? 'Server side variables cannot be used in apps'
+          : isSecretError
+          ? 'secrets cannot be used in apps'
+          : _error,
         value: isSecretError
           ? 'Undefined'
           : jsErrorType === 'Invalid'

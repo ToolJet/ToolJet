@@ -122,7 +122,7 @@ module.exports = {
       '@cloud/modules': emptyModulePath,
     },
   },
-  devtool: 'source-map',
+  devtool: environment === 'development' ? 'source-map' : 'hidden-source-map',
   module: {
     rules: [
       {

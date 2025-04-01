@@ -36,4 +36,22 @@ export const createCodeHinterSlice = (set, get) => ({
     setSuggestions({ appHints: suggestionList, jsHints: jsHints });
   },
   getSuggestions: () => get().suggestions,
+  getServerSideGlobalSuggestions: (isInsideQueryManager) => {
+    const isServerSideGlobalEnabled = !!get()?.license?.featureAccess?.serverSideGlobal;
+    const serverHints = [];
+    const hints = get().getSuggestions();
+    if (isInsideQueryManager && isServerSideGlobalEnabled) {
+      hints?.appHints?.forEach((appHint) => {
+        if (appHint?.hint?.startsWith('globals.currentUser')) {
+          const key = appHint?.hint?.replace('globals.currentUser', 'globals.server.currentUser');
+          serverHints.push({
+            hint: key,
+            type: appHint?.type,
+          });
+        }
+      });
+    }
+
+    return serverHints;
+  },
 });
