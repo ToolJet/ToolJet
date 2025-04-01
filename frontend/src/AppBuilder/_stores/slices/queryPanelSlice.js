@@ -955,12 +955,12 @@ export const createQueryPanelSlice = (set, get) => ({
 
         //Proxy Func required to get current execution line number from stack to log in debugger
 
-        const proxiedComponents = createProxy(resolvedState?.components);
-        const proxiedGlobals = createProxy(resolvedState?.globals);
-        const proxiedConstants = createProxy(resolvedState?.constants);
-        const proxiedVariables = createProxy(resolvedState?.variables);
+        const proxiedComponents = createProxy(deepClone(resolvedState?.components));
+        const proxiedGlobals = createProxy(deepClone(resolvedState?.globals));
+        const proxiedConstants = createProxy(deepClone(resolvedState?.constants));
+        const proxiedVariables = createProxy(deepClone(resolvedState?.variables));
         const proxiedPage = createProxy(deepClone(resolvedState?.page));
-        const proxiedQueriesInResolvedState = createProxy(queriesInResolvedState);
+        const proxiedQueriesInResolvedState = createProxy(deepClone(queriesInResolvedState));
         const proxiedFormattedParams = createProxy(!_.isEmpty(proxiedFormattedParams) ? [proxiedFormattedParams] : []);
 
         const fnParams = [
