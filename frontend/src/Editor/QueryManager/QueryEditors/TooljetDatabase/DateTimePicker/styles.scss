@@ -235,3 +235,10 @@
     }
   }
 }
+.table-schema-row{
+  .react-datepicker-time__input-container{
+      input{
+        line-height: normal !important;
+      }
+  }
+}
