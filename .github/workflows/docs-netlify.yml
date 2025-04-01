@@ -34,7 +34,7 @@ jobs:
         working-directory: docs
 
       - name: Build the project
-        run: npm run build
+        run: GTM=${{ secrets.GTM }} ALGOLIA_API_KEY=${{ secrets.ALGOLIA_API_KEY }} npm run build
         working-directory: docs
 
       - name: Deploy to Netlify
