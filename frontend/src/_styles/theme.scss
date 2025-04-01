@@ -2362,6 +2362,7 @@ body {
   font-family: "Inconsolata", "Menlo", "Consolas", monospace;
   font-size: 16px;
   padding: 20px;
+  color: #0000009c;
 }
 
 .RichEditor-controls {
@@ -4746,7 +4747,21 @@ input[type="text"] {
  * Folder List
  */
 .folder-list {
-  overflow-y: auto;
+  overflow-y: scroll;
+  scrollbar-width: thin;
+  scrollbar-color: #888 transparent;  
+  &:hover {
+    &::-webkit-scrollbar {
+      display: block;
+      width: 5px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: #888;
+    }
+    &::-webkit-scrollbar-track {
+      background-color: transparent;
+    }
+  }
 
   .list-group-transparent .list-group-item.active {
     color: $primary;
@@ -5354,7 +5369,7 @@ div#driver-page-overlay {
   padding: 10px 5px 0 0;
   float: left;
   font-size: 14px;
-  color: $light-gray;
+  color: var(--slate-12);
 }
 
 .dynamic-form-element {
@@ -9842,6 +9857,25 @@ tbody {
 .workspace-settings-table-wrap {
   max-width: 880px;
   margin: 0 auto;
+  .tj-user-table-wrapper{
+    padding-right: 4px;
+   }
+   &:hover{
+     .tj-user-table-wrapper{
+       padding-right: 0px;
+     }
+     ::-webkit-scrollbar{
+       display: block;
+       width: 4px;
+     }
+     ::-webkit-scrollbar-track{
+       background: var(--base);
+     }
+     ::-webkit-scrollbar-thumb{
+       background: var(--slate7);
+       border-radius: 6px;
+     }
+   }
 }
 
 

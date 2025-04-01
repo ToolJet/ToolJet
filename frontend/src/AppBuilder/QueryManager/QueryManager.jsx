@@ -37,7 +37,7 @@ const QueryManager = ({ mode, darkMode }) => {
 
   useEffect(() => {
     if (selectedQuery) {
-      const selectedDS = [...dataSources, ...globalDataSources, ...(sampleDataSource?.length ? sampleDataSource : [])]
+      const selectedDS = [...dataSources, ...globalDataSources, !!sampleDataSource && sampleDataSource]
         .filter(Boolean)
         .find((datasource) => datasource.id === selectedQuery?.data_source_id);
       //TODO: currently type is not taken into account. May create issues in importing REST apis. to be revamped when import app is revamped

@@ -11,26 +11,22 @@ import {
 } from "Support/utils/postgreSql";
 
 import {
-  verifyCouldnotConnectWithAlert,
   deleteDatasource,
   closeDSModal,
-  addQuery,
   addDsAndAddQuery,
+  deleteAppandDatasourceAfterExecution,
 } from "Support/utils/dataSource";
-
-import { openQueryEditor } from "Support/utils/dataSource";
-import { dataSourceSelector } from "../../../../../constants/selectors/dataSource";
 
 const data = {};
 data.dsName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data source Redis", () => {
   beforeEach(() => {
-    cy.appUILogin();
-    cy.intercept("POST", "/api/data_queries").as("createQuery");
+    cy.apiLogin();
+    cy.defaultWorkspaceLogin();
   });
 
-  it("Should verify elements on connection Redison form", () => {
+  it("Should verify elements on connection Redis form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
 
@@ -114,7 +110,7 @@ describe("Data source Redis", () => {
     deleteDatasource(`cypress-${data.dsName}-redis`);
   });
 
-  it("Should verify the functionality of Redis connection form.", () => {
+  it("Should verify the functionality of Redis connection form", () => {
     selectAndAddDataSource("databases", redisText.redis, data.dsName);
 
     fillDataSourceTextField(
@@ -143,7 +139,7 @@ describe("Data source Redis", () => {
     cy.get(postgreSqlSelector.buttonTestConnection).click();
     cy.get('[data-cy="connection-alert-text"]').should(
       "have.text",
-      "WRONGPASS invalid username-password pair or user is disabled."
+      redisText.errorInvalidUserOrPassword
     );
     fillDataSourceTextField(
       postgreSqlText.labelHost,
@@ -176,7 +172,7 @@ describe("Data source Redis", () => {
     cy.get(postgreSqlSelector.buttonTestConnection).click();
     cy.get('[data-cy="connection-alert-text"]').should(
       "have.text",
-      "WRONGPASS invalid username-password pair or user is disabled."
+      redisText.errorInvalidUserOrPassword
     );
 
     fillDataSourceTextField(
@@ -193,7 +189,7 @@ describe("Data source Redis", () => {
     cy.get(postgreSqlSelector.buttonTestConnection).click();
     cy.get('[data-cy="connection-alert-text"]').should(
       "have.text",
-      "WRONGPASS invalid username-password pair or user is disabled."
+      redisText.errorInvalidUserOrPassword
     );
 
     fillDataSourceTextField(
@@ -256,5 +252,9 @@ describe("Data source Redis", () => {
     cy.skipWalkthrough();
 
     addDsAndAddQuery("redis", `TIME`, `cypress-${data.dsName}-redis`);
+    deleteAppandDatasourceAfterExecution(
+      data.dsName,
+      `cypress-${data.dsName}-redis`
+    );
   });
 });

@@ -213,7 +213,7 @@ This is used to set up for CSP headers and put trace info to be used with APM ve
 
 | variable           | description                                                  |
 | ------------------ | ------------------------------------------------------------ |
-| TOOLJET_SERVER_URL | the URL of ToolJet server ( eg: https://server.tooljet.com ) |
+| TOOLJET_SERVER_URL | the URL of ToolJet server ( eg: `https://server.tooljet.com` ) |
 
 ### RELEASE VERSION ( optional)
 
@@ -254,6 +254,14 @@ Configurations for instance level SSO.
 | SSO_DISABLE_SIGNUPS          | Disable user sign up if authenticated user does not exist                                                                     |
 | SSO_SKIP_LOGIN_SCREEN        | Set to `true` to enable automatic SSO login. Only works when a single SSO method is configured and password login is disabled |
 
+### Enable Cookie Forwarding to REST API (Optional)
+
+By default, the ToolJet server does not forward cookies along with the REST API requests. You can enable this functionality by setting the `FORWARD_RESTAPI_COOKIES` environment variable to `true`. This option is available only in the self-hosted version of ToolJet.
+
+| variable                | description                                                  |
+| ----------------------- | ------------------------------------------------------------ |
+| FORWARD_RESTAPI_COOKIES | `true` or `false`     
+
 ## ToolJet client
 
 ### Server URL ( optionally required )
@@ -262,7 +270,7 @@ This is required when client is built separately.
 
 | variable           | description                                                  |
 | ------------------ | ------------------------------------------------------------ |
-| TOOLJET_SERVER_URL | the URL of ToolJet server ( eg: https://server.tooljet.com ) |
+| TOOLJET_SERVER_URL | the URL of ToolJet server ( eg: `https://server.tooljet.com` ) |
 
 ### Server Port ( optional)
 
@@ -297,9 +305,10 @@ If you intend to use client separately then can set `SERVE_CLIENT` to `false`.
 If you intent to make changes in the above configuration. Please refer [PostgREST configuration docs](https://postgrest.org/en/stable/configuration.html#environment-variables).
 
 :::tip
-If you have openssl installed, you can run the following command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
+If you have openssl installed, you can run the 
+command `openssl rand -hex 32` to generate the value for `PGRST_JWT_SECRET`.
 
-If this parameter is not specified then PostgREST refuses authentication requests.
+If this parameter is not specified, PostgREST will refuse authentication requests.
 :::
 
 :::info
