@@ -10,7 +10,7 @@ title: Try ToolJet
 ::::info
 
 This deployment is **not suitable for production**. It is a lightweight setup designed for quickly exploring ToolJet and trying out its features.
-
+icbslidcbsdcilun
 :::warning
 To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
 :::
