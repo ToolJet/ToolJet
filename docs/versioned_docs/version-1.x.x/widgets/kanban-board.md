@@ -17,11 +17,11 @@ Kanban widget allows you to visually organize and prioritize your tasks with a t
 
 To add an event, click on the widget handle to open the widget properties on the right sidebar. Go to the **Events** section and click on **Add handler**.
 
-- **[Card added](#card-added)**
-- **[Card removed](#card-removed)**
-- **[Card moved](#card-moved)**
-- **[Card selected](#card-selected)**
-- **[Card updated](#card-updated)**
+- **Card added**
+- **Card removed**
+- **Card moved**
+- **Card selected**
+- **Card updated**
 
 Just like any other event on ToolJet, you can set multiple handlers for any of the above mentioned events.
 
