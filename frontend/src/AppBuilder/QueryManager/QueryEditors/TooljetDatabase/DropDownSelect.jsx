@@ -83,6 +83,7 @@ const DropDownSelect = ({
   //following two states are to determine whether the value is truncated or not to show tooltip
   const valueRef = useRef(null);
   const [isTruncated, setIsTruncated] = useState(false);
+  const prevShowMenu = useRef(false);
 
   useEffect(() => {
     if (shouldCloseFkMenu) {
@@ -129,6 +130,39 @@ const DropDownSelect = ({
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected]);
+
+  useEffect(() => {
+    const container = document.getElementsByClassName('query-details')[0];
+    const popoverBtn = document.getElementById(popoverBtnId.current);
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          if (prevShowMenu.current) {
+            setShowMenu(true);
+            prevShowMenu.current = false;
+          }
+        } else if (showMenu) {
+          setShowMenu(false);
+          prevShowMenu.current = true;
+        }
+        if (!entry.isIntersecting && showMenu) {
+          setShowMenu(false);
+        }
+      },
+      { root: container, threshold: [0.5] }
+    );
+
+    if (popoverBtn) {
+      observer.observe(popoverBtn);
+    }
+
+    return () => {
+      if (popoverBtn) {
+        observer.unobserve(popoverBtn);
+      }
+    };
+  }, [showMenu]);
 
   function checkElementPosition() {
     if (isForeignKeyInEditCell) {
