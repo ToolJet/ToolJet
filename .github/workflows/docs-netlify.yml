@@ -15,6 +15,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # Only runs if 'net-doc' label is added
     if: |
       github.event.action == 'labeled' &&
       github.event.label.name == 'net-doc'
