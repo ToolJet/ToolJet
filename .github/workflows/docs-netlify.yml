@@ -31,13 +31,15 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+        working-directory: docs
 
       - name: Build the project
         run: npm run build
+        working-directory: docs
 
       - name: Deploy to Netlify
         run: |
           npm install -g netlify-cli
-          netlify deploy --prod --dir=build --auth=$NETLIFY_AUTH_TOKEN --site=${{ secrets.NETLIFY_SITE_ID }}
+          netlify deploy --prod --dir=docs/build --auth=$NETLIFY_AUTH_TOKEN --site=${{ secrets.NETLIFY_SITE_ID }}
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
