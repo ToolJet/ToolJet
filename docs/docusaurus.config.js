@@ -16,7 +16,7 @@ const isProd = process.env.NODE_ENV === 'production';
 module.exports = {
   title: 'ToolJet',
   tagline: 'Low-code framework to Build internal tools and business apps.',
-  url: 'https://docs.tooljet.ai',
+  url: '',
   baseUrl: '/',
   onBrokenLinks: 'ignore',
   onBrokenMarkdownLinks: 'warn',
@@ -220,120 +220,621 @@ module.exports = {
             from: '/docs/enterprise/superadmin',
           },
           {
-            to: '/docs/enterprise/white-label/?4f03d6ce_page=1&52503652_page=2&587c9779_page=2',
-            from: '/docs/tj-setup/org-branding/white-labeling/',
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/enterprise/white-label/?4f03d6ce_page=1&52503652_page=2&587c9779_page=2  ',
           },
           {
-            to: '/docs/user-authentication/sso/oidc',
-            from: '/docs/user-management/sso/oidc/setup',
+            to: '/docs/user-management/sso/oidc/setup',
+            from: '/docs/user-authentication/sso/oidc ',
           },
           {
-            to: '/docs/enterprise/white-label/?587c9779_page=2&4f03d6ce_page=2&__hstc=222093575.6694e1c5b8259356fcccdd9cfcb617fb.1739577600474.1739577600475.1739577600476.1&__hssc=222093575.2.1739577600477&__hsfp=1152905967',
-            from: '/docs/tj-setup/org-branding/white-labeling/',
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/enterprise/white-label/?587c9779_page=2&4f03d6ce_page=2&__hstc=222093575.6694e1c5b8259356fcccdd9cfcb617fb.1739577600474.1739577600475.1739577600476.1&__hssc=222093575.2.1739577600477&__hsfp=1152905967 ',
           },
           {
-            to: '/docs/setup/client/',
-            from: '/docs/setup/try-tooljet',
+            to: '/docs/setup/try-tooljet',
+            from: '/docs/setup/client/ ',
           },
           {
-            to: '',
-            from: '',
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/enterprise/white-label/?587c9779_page=2&__hstc=222093575.6694e1c5b8259356fcccdd9cfcb617fb.1739232000553.1739232000554.1739232000555.1&__hssc=222093575.1.1739232000556&__hsfp=2761239502',
           },
           {
-            to: '',
-            from: '',
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/enterprise/white-label/?4f03d6ce_page=7&587c9779_page=2&__hstc=222093575.6694e1c5b8259356fcccdd9cfcb617fb.1739491200507.1739491200508.1739491200509.1&__hssc=222093575.1.1739491200510&__hsfp=1152905967',
           },
           {
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/enterprise/white-label/?__hstc=222093575.2f3f33a24b44870ec4a577029c49e44b.1742169600601.1742169600602.1742169600603.1&__hssc=222093575.1.1742169600604&__hsfp=3300808088',
+          }, 
+          {
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/enterprise/white-label/?__hstc=222093575.6694e1c5b8259356fcccdd9cfcb617fb.1740268800501.1740268800502.1740268800503.1&__hssc=222093575.1.1740268800504&__hsfp=1152905967',
+          }, 
+          {
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/enterprise/white-label/?__hstc=222093575.6694e1c5b8259356fcccdd9cfcb617fb.1740355200401.1740355200402.1740355200403.1&__hssc=222093575.1.1740355200404&__hsfp=1152905967',
+          }, 
+          {
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/enterprise/white-label/?587c9779_page=2&148fa06a_page=6&4f03d6ce_page=2&__hstc=222093575.6694e1c5b8259356fcccdd9cfcb617fb.1739491200455.1739491200456.1739491200457.1&__hssc=222093575.1.1739491200458&__hsfp=1152905967',
+          }, 
+          {
+            to: '/docs/tooljet-api/',
+            from: '/docs/beta/tutorial/tooljet-api/',
+          }, 
+          {
+            to: '/docs/user-management/sso/oidc/google/',
+            from: '/docs/user-authentication/sso/openid/google-openid/',
+          }, 
+          {
             to: '',
-            from: '',
-          }, {
+            from: '/docs/beta/user-authentication/user-lifecycle/',
+          }, 
+          {
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/enterprise/white-label/?__hstc=222093575.6694e1c5b8259356fcccdd9cfcb617fb.1739491200919.1739491200920.1739491200921.1&__hssc=222093575.1.1739491200922&__hsfp=1152905967',
+          }, 
+          {
+            to: '/docs/user-management/sso/saml/setup',
+            from: '/docs/user-authentication/sso/saml/',
+          }, 
+          {
             to: '',
-            from: '',
-          }, {
+            from: '/docs/release-management/multi-environment/',
+          }, 
+          {
             to: '',
-            from: '',
-          }, {
+            from: '/docs/beta/org-management/workspaces/workspace_overview/',
+          }, 
+          {
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/enterprise/white-label/?__hstc=222093575.2f3f33a24b44870ec4a577029c49e44b.1741392000277.1741392000278.1741392000279.1&__hssc=222093575.2.1741392000280&__hsfp=3324942381',
+          }, 
+          {
+            to: '/docs/security/audit-logs/',
+            from: '/docs/beta/enterprise/audit_logs/',
+          }, 
+          {
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/enterprise/white-label/?__hstc=222093575.2f3f33a24b44870ec4a577029c49e44b.1741305600251.1741305600252.1741305600253.1&__hssc=222093575.3.1741305600254&__hsfp=3324942381',
+          }, 
+          {
+            to: '/docs/user-management/sso/oidc/setup',
+            from: '/docs/beta/category/openid-connect/',
+          }, 
+          {
+            to: '/docs/workflows/permissions/',
+            from: '/docs/beta/org-management/permissions/',
+          }, 
+          {
+            to: '/docs/development-lifecycle/gitsync/overview/',
+            from: '/docs/release-management/gitsync/tj-config/',
+          }, 
+          {
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/enterprise/white-label/?__hstc=222093575.2f3f33a24b44870ec4a577029c49e44b.1742169600337.1742169600338.1742169600339.1&__hssc=222093575.1.1742169600340&__hsfp=3300808088&ref=workflowautomationtools.org',
+          }, 
+          {
             to: '',
-            from: '',
-          }, {
+            from: '/docs/beta/security',
+          }, 
+          {
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/enterprise/white-label/?__hstc=222093575.6694e1c5b8259356fcccdd9cfcb617fb.1739491200811.1739491200812.1739491200813.1&__hssc=222093575.2.1739491200814&__hsfp=1152905967',
+          }, 
+          {
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/enterprise/white-label/?__hstc=222093575.6694e1c5b8259356fcccdd9cfcb617fb.1740096000677.1740096000678.1740096000679.1&__hssc=222093575.1.1740096000680&__hsfp=1152905967',
+          }, 
+          {
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/enterprise/white-label/?587c9779_page=2&__hstc=222093575.6694e1c5b8259356fcccdd9cfcb617fb.1739577600567.1739577600568.1739577600569.1&__hssc=222093575.1.1739577600570&__hsfp=1152905967',
+          }, 
+          {
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/enterprise/white-label/?587c9779_page=2&52503652_page=2&__hstc=222093575.6694e1c5b8259356fcccdd9cfcb617fb.1739664000811.1739664000812.1739664000813.1&__hssc=222093575.1.1739664000814&__hsfp=1152905967',
+          }, 
+          {
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/enterprise/white-label/?587c9779_page=1&148fa06a_page=6&4f03d6ce_page=2&__hstc=222093575.6694e1c5b8259356fcccdd9cfcb617fb.1739577600451.1739577600452.1739577600453.1&__hssc=222093575.3.1739577600454&__hsfp=1152905967',
+          }, 
+          {
+            to: '/docs/security/constants/variables/',
+            from: '/docs/beta/org-management/workspaces/workspace-variables-migration/',
+          }, 
+          {
             to: '',
-            from: '',
-          }, {
+            from: '/docs/org-management/workspaces/workspace-variables',
+          }, 
+          {
             to: '',
-            from: '',
-          }, {
+            from: '/docs/enterprise/white-label/?4f03d6ce_page=7&52503652_page=2&__hstc=222093575.6694e1c5b8259356fcccdd9cfcb617fb.1739577600490.1739577600491.1739577600492.1&__hssc=222093575.1.1739577600493&__hsfp=1152905967',
+          }, 
+          {
+            to: '/docs/development-lifecycle/gitsync/overview/',
+            from: '/docs/release-management/gitsync/tj-config',
+          }, 
+          {
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/beta/enterprise/white-label/',
+          }, 
+          {
+            to: '/docs/development-lifecycle/gitsync/pull',
+            from: '/docs/beta/release-management/gitsync/git-pull/',
+          }, 
+          {
+            to: '/docs/user-management/sso/oidc/azuread/',
+            from: '/docs/user-authentication/sso/openid/azuread/',
+          }, 
+          {
             to: '',
-            from: '',
-          }, {
+            from: '/docs/org-management/permissions/',
+          }, 
+          {
+            to: '/docs/user-management/sso/oidc/setup/',
+            from: '/docs/user-authentication/sso/openid/setup',
+          }, 
+          {
             to: '',
-            from: '',
-          }, {
+            from: '/docs/beta/tutorial/manage-users-groups/',
+          }, 
+          {
+            to: '/docs/user-management/sso/github/',
+            from: '/docs/user-authentication/sso/github',
+          }, 
+          {
             to: '',
-            from: '',
-          }, {
+            from: '/docs/dashboard',
+          }, 
+          {
+            to: '/docs/user-management/authentication/self-hosted/workspace-login/',
+            from: '/docs/beta/user-authentication/workspace-login/',
+          }, 
+          {
+            to: '/docs/user-management/sso/github/',
+            from: '/docs/user-authentication/sso/github/',
+          }, 
+          {
+            to: '/docs/tooljet-concepts/variables/#workspace-variables',
+            from: '/docs/user-authentication/sso/github/',
+          }, 
+          {
+            to: '/docs/workflows/how-to/trigger-workflow-from-app/',
+            from: '/docs/workflows/trigger-workflow-from-app/',
+          }, 
+          {
+            to: '/docs/tj-setup/licensing/self-hosted/',
+            from: '/docs/beta/org-management/licensing/self-hosted/',
+          }, 
+          {
+            to: '/docs/tooljet-api/',
+            from: '/docs/tutorial/tooljet-api/',
+          }, 
+          {
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/enterprise/white-label/?__hstc=222093575.2f3f33a24b44870ec4a577029c49e44b.1742169600502.1742169600503.1742169600504.1&__hssc=222093575.1.1742169600505&__hsfp=3300808088',
+          }, 
+          {
             to: '',
-            from: '',
-          }, {
+            from: '/docs/security/',
+          }, 
+          {
             to: '',
-            from: '',
-          }, {
-            to: '',
-            from: '',
-          }, {
-            to: '',
-            from: '',
-          }, {
-            to: '',
-            from: '',
-          }, {
-            to: '',
-            from: '',
-          }, {
-            to: '',
-            from: '',
-          }, {
-            to: '',
-            from: '',
-          }, {
-            to: '',
-            from: '',
-          }, {
-            to: '',
-            from: '',
-          }, {
-            to: '',
-            from: '',
-          }, {
-            to: '',
-            from: '',
-          }, {
-            to: '',
-            from: '',
-          }, {
-            to: '',
-            from: '',
-          }, {
-            to: '',
-            from: '',
-          }, {
-            to: '',
-            from: '',
-          }, {
-            to: '',
-            from: '',
-          }, {
-            to: '',
-            from: '',
-          }, {
-            to: '',
-            from: '',
-          }, {
-            to: '',
-            from: '',
-          }, {
-            to: '',
-            from: '',
+            from: '/docs/user-authentication/general-settings/',
+          }, 
+          {
+            to: '/docs/tooljet-copilot/',
+            from: '/docs/beta/tooljet-copilot',
+          }, 
+          {
+            to: '/docs/user-management/sso/oidc/azuread/',
+            from: '/docs/beta/user-authentication/sso/openid/azuread/',
           },
+          {
+            to: '/docs/development-lifecycle/gitsync/ssh-config/',
+            from: '/docs/release-management/gitsync/ssh-config/',
+          }, 
+          {
+            to: '',
+            from: '/docs/beta/user-authentication/general-settings/',
+          }, 
+          {
+            to: '/docs/user-management/authentication/self-hosted/workspace-login/',
+            from: '/docs/user-authentication/workspace-login',
+          }, 
+          {
+            to: '/docs/user-management/sso/oidc/okta/',
+            from: '/docs/beta/user-authentication/sso/openid/okta/',
+          }, 
+          {
+            to: '/docs/tooljet-api/',
+            from: '/docs/tutorial/tooljet-api',
+          }, 
+          {
+            to: '/docs/user-management/authentication/self-hosted/workspace-login/',
+            from: '/docs/beta/user-authentication/workspace-login',
+          }, 
+          {
+            to: '/docs/user-management/sso/oidc/okta/',
+            from: '/docs/beta/user-authentication/sso/openid/okta/',
+          }, 
+          {
+            to: '/docs/user-management/sso/github/',
+            from: '/docs/beta/user-authentication/sso/github/',
+          }, 
+          {
+            to: '/docs/user-management/authentication/cloud-login/#password-login',
+            from: '/docs/beta/user-authentication/sso/github/',
+          }, 
+          {
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/enterprise/white-label/?10bd8e65_page=4',
+          }, 
+          {
+            to: '/docs/user-management/sso/saml/setup/',
+            from: '/docs/beta/user-authentication/sso/saml/',
+          }, 
+          {
+            to: '/docs/development-lifecycle/gitsync/delete-gitsync',
+            from: '/docs/release-management/gitsync/delete-gitsync/',
+          }, 
+          {
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/enterprise/white-label/',
+          }, 
+          {
+            to: '/docs/tooljet-concepts/super-admin/',
+            from: '/docs/beta/enterprise/superadmin/',
+          }, 
+          {
+            to: '',
+            from: '/docs/release-management/multi-environment',
+          }, 
+          {
+            to: '/docs/tooljet-concepts/workspace-constants/',
+            from: '/docs/beta/org-management/workspaces/workspace_constants/',
+          }, 
+          {
+            to: '/docs/development-lifecycle/gitsync/gitsync-config',
+            from: '/docs/beta/release-management/gitsync/tj-config/',
+          }, 
+          {
+            to: '/docs/tj-setup/licensing/self-hosted/',
+            from: '/docs/org-management/licensing/self-hosted/',
+          }, 
+          {
+            to: '/docs/user-management/authentication/cloud-login/#password-login',
+            from: '/docs/user-authentication/password-login',
+          }, 
+          {
+            to: '/docs/tj-setup/licensing/self-hosted/',
+            from: '/docs/org-management/licensing/self-hosted',
+          }, 
+          {
+            to: '/docs/tj-setup/workspaces/',
+            from: '/docs/org-management/workspaces/workspace_overview/',
+          }, 
+          {
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/beta/Enterprise/white-label',
+          }, 
+          {
+            to: '/docs/tj-setup/smtp-setup/configuration/',
+            from: '/docs/beta/org-management/smtp-configuration/',
+          }, 
+          {
+            to: '',
+            from: '/docs/user-authentication/user-lifecycle/',
+          }, 
+          {
+            to: '/docs/user-management/sso/ldap/',
+            from: '/docs/beta/user-authentication/sso/ldap/',
+          }, 
+          {
+            to: '/docs/security/audit-logs/',
+            from: '/docs/enterprise/audit_logs/',
+          }, 
+          {
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/enterprise/white-label/?__hstc=222093575.2f3f33a24b44870ec4a577029c49e44b.1741996800602.1741996800603.1741996800604.1&__hssc=222093575.1.1741996800605&__hsfp=3300808088',
+          }, 
+          {
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/enterprise/white-label/?52503652_page=2&148fa06a_page=6&4f03d6ce_page=2&587c9779_page=1&__hstc=222093575.6694e1c5b8259356fcccdd9cfcb617fb.1739577600451.1739577600452.1739577600453.1&__hssc=222093575.1.1739577600454&__hsfp=1152905967',
+          }, 
+          {
+            to: '/docs/user-management/sso/google/',
+            from: '/docs/user-authentication/sso/openid/google-openid',
+          }, 
+          {
+            to: '/docs/development-lifecycle/gitsync/overview/',
+            from: '/docs/beta/gitsync/',
+          }, 
+          {
+            to: '/docs/user-management/sso/oidc/okta/',
+            from: '/docs/user-authentication/sso/openid/okta',
+          }, 
+          {
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/enterprise/white-label/?__hstc=222093575.73bd3bee6fa385653ecd7c9674ba06f0.1741910400407.1741910400408.1741910400409.1&__hssc=222093575.4.1741910400410&__hsfp=3300808088',
+          }, 
+          {
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/enterprise/white-label/?__hstc=222093575.6694e1c5b8259356fcccdd9cfcb617fb.1740009600827.1740009600828.1740009600829.1&__hssc=222093575.2.1740009600830&__hsfp=1152905967',
+          }, 
+          {
+            to: '/docs/security/audit-logs/',
+            from: '/docs/beta/Enterprise/audit_logs',
+          }, 
+          {
+            to: '/docs/user-management/sso/saml/setup/',
+            from: '/docs/beta/user-authentication/sso/saml',
+          }, 
+          {
+            to: '/docs/workflows/how-to/trigger-workflow-from-app/',
+            from: '/docs/workflows/trigger-workflow-from-app',
+          }, 
+          {
+            to: '/docs/development-lifecycle/gitsync/push/',
+            from: '/docs/beta/release-management/gitsync/git-pull',
+          }, 
+          {
+            to: '',
+            from: '/docs/beta/dashboard',
+          }, 
+          {
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/Enterprise/white-label',
+          }, 
+          {
+            to: '',
+            from: '/docs/beta/user-authentication/sso/auto-sso-login',
+          }, 
+          {
+            to: '/docs/development-lifecycle/gitsync/delete-gitsync/',
+            from: '/docs/release-management/gitsync/delete-gitsync',
+          }, 
+          {
+            to: '/docs/user-management/sso/oidc/setup/',
+            from: '/docs/category/openid-connect/',
+          }, 
+          {
+            to: '/docs/user-management/sso/oidc/google',
+            from: '/docs/beta/user-authentication/sso/openid/google-openid/',
+          }, 
+          {
+            to: '/docs/user-management/sso/saml/setup/',
+            from: '/docs/user-authentication/sso/saml',
+          }, 
+          {
+            to: '/docs/user-management/authentication/cloud-login/#password-login',
+            from: '/docs/beta/user-authentication/password-login',
+          }, 
+          {
+            to: '/docs/tj-setup/smtp-setup/configuration/',
+            from: '/docs/beta/org-management/smtp-configuration',
+          }, 
+          {
+            to: '/docs/user-management/sso/oidc/setup/',
+            from: '/docs/category/openid-connect',
+          }, 
+          {
+            to: '',
+            from: '/docs/beta/tutorial/manage-users-groups',
+          }, 
+          {
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/enterprise/white-label/?__hstc=222093575.2f3f33a24b44870ec4a577029c49e44b.1741392000251.1741392000252.1741392000253.1&__hssc=222093575.3.1741392000254&__hsfp=3324942381',
+          }, 
+          {
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/enterprise/white-label/?__hstc=222093575.2f3f33a24b44870ec4a577029c49e44b.1741564800402.1741564800403.1741564800404.1&__hssc=222093575.3.1741564800405&__hsfp=3300808088',
+          }, 
+          {
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/enterprise/white-label/?__hstc=222093575.2f3f33a24b44870ec4a577029c49e44b.1741564800219.1741564800220.1741564800221.1&__hssc=222093575.1.1741564800222&__hsfp=3300808088',
+          }, 
+          {
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/enterprise/white-label/?ref=devhunt&__hstc=222093575.2f3f33a24b44870ec4a577029c49e44b.1741305600251.1741305600252.1741305600253.1&__hssc=222093575.7.1741305600254&__hsfp=3324942381',
+          }, 
+          {
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/enterprise/white-label/?148fa06a_page=6&4f03d6ce_page=2',
+          }, 
+          {
+            to: 'docs/development-lifecycle/gitsync/ssh-config/',
+            from: '/docs/release-management/gitsync/ssh-config',
+          }, 
+          {
+            to: '/docs/user-management/sso/oidc/okta/',
+            from: '/docs/beta/user-authentication/sso/openid/okta',
+          }, 
+          {
+            to: '/docs/security/constants/variables/',
+            from: '/docs/beta/org-management/workspaces/workspace-variables-migration',
+          }, 
+          {
+            to: '/docs/tooljet-api/',
+            from: '/docs/beta/tutorial/tooljet-api',
+          }, 
+          {
+            to: '/docs/tj-setup/workspaces',
+            from: '/docs/org-management/workspaces/workspace_overview',
+          }, 
+          {
+            to: '/docs/user-management/sso/oidc/google',
+            from: '/docs/beta/user-authentication/sso/openid/google-openid',
+          }, 
+          {
+            to: '/docs/user-management/sso/oidc/setup/',
+            from: '/docs/user-authentication/sso/openid/setup/',
+          }, 
+          {
+            to: '/docs/user-management/sso/github/',
+            from: '/docs/beta/user-authentication/sso/github',
+          }, 
+          {
+            to: '/docs/widgets/table/',
+            from: '/docs/widgets/table/table-properties',
+          }, 
+          {
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/enterprise/white-label/?587c9779_page=2&4f03d6ce_page=2&__hstc=222093575.6694e1c5b8259356fcccdd9cfcb617fb.1739577600474.1739577600475.1739577600476.1&__hssc=222093575.3.1739577600477&__hsfp=1152905967',
+          }, 
+          {
+            to: '/docs/security/audit-logs/',
+            from: '/docs/enterprise/audit_logs/?__hstc=222093575.6694e1c5b8259356fcccdd9cfcb617fb.1739404800899.1739404800900.1739404800901.1&__hssc=222093575.1.1739404800902&__hsfp=2761239502',
+          }, 
+          {
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/enterprise/white-label/?587c9779_page=2&148fa06a_page=8',
+          }, 
+          {
+            to: '/docs/workflows/permissions/',
+            from: '/docs/beta/org-management/permissions',
+          }, 
+          {
+            to: '/docs/development-lifecycle/gitsync/overview/',
+            from: '/docs/beta/gitsync',
+          }, 
+          {
+            to: '/docs/tooljet-concepts/super-admin/',
+            from: '/docs/beta/Enterprise/superadmin',
+          }, 
+          {
+            to: '/docs/user-management/sso/ldap/',
+            from: '/docs/beta/user-authentication/sso/ldap',
+          }, 
+          {
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/enterprise/white-label/?52503652_page=2&587c9779_page=2&__hstc=222093575.6694e1c5b8259356fcccdd9cfcb617fb.1739577600451.1739577600452.1739577600453.1&__hssc=222093575.3.1739577600454&__hsfp=1152905967',
+          }, 
+          {
+            to: '/docs/widgets/table/',
+            from: '/docs/widgets/table/table-properties/',
+          }, 
+          {
+            to: '/docs/user-management/sso/google/',
+            from: 'https://blog.tooljet.ai/advantages-of-custom-internal-tools/',
+          }, 
+          {
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/enterprise/white-label/?52503652_page=2&__hstc=222093575.6694e1c5b8259356fcccdd9cfcb617fb.1739664000811.1739664000812.1739664000813.1&__hssc=222093575.1.1739664000814&__hsfp=1152905967',
+          }, 
+          {
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/enterprise/white-label/?148fa06a_page=6&4f03d6ce_page=2&587c9779_page=2&52503652_page=1&__hstc=222093575.6694e1c5b8259356fcccdd9cfcb617fb.1739577600571.1739577600572.1739577600573.1&__hssc=222093575.1.1739577600574&__hsfp=1152905967',
+          }, 
+          {
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/enterprise/white-label/?587c9779_page=1&4f03d6ce_page=7&__hstc=222093575.6694e1c5b8259356fcccdd9cfcb617fb.1739491200450.1739491200451.1739491200452.1&__hssc=222093575.2.1739491200453&__hsfp=1152905967',
+          }, 
+          {
+            to: '/docs/tj-setup/org-branding/white-labeling/',
+            from: '/docs/enterprise/white-label/?__hstc=222093575.6694e1c5b8259356fcccdd9cfcb617fb.1739232000899.1739232000900.1739232000901.1&__hssc=222093575.1.1739232000902&__hsfp=2761239502',
+          }, 
+          {
+            to: '',
+            from: 'https://albecs.tooljet.ai/api/ai/onboarding',
+          }, 
+          {
+            to: '',
+            from: 'https://www.tooljet.ai/ai-events?53f8c481_page=3',
+          }, 
+          {
+            to: '',
+            from: 'https://blog.tooljet.ai/advantages-of-custom-internal-tools/',
+          }, 
+          {
+            to: '',
+            from: 'https://website-stage.tooljet.ai/case-study/emeritus',
+          }, 
+          {
+            to: '/docs/marketplace/plugins/marketplace-plugin-openai/',
+            from: 'https://www.tooljet.ai/datasources/open-ai',
+          }, 
+          {
+            to: '/docs/marketplace/plugins/marketplace-plugin-hugging_face/',
+            from: 'https://website-stage.tooljet.ai/datasources/hugging-face',
+          }, 
+          {
+            to: '/docs/marketplace/plugins/marketplace-plugin-openai/',
+            from: 'https://website-stage.tooljet.ai/datasources/openai',
+          }, 
+          {
+            to: '/docs/marketplace/plugins/marketplace-plugin-anthropic',
+            from: 'https://website-stage.tooljet.ai/datasources/anthropic',
+          }, 
+          {
+            to: '/docs/marketplace/plugins/marketplace-plugin-mistral_ai',
+            from: 'https://website-stage.tooljet.ai/datasources/mistral',
+          }, 
+          {
+            to: '/docs/marketplace/plugins/marketplace-plugin-weaviate',
+            from: 'https://website-stage.tooljet.ai/datasources/weaviate-db',
+          }, 
+          {
+            to: '/docs/marketplace/plugins/marketplace-plugin-gemini',
+            from: 'https://website-stage.tooljet.ai/datasources/gemini',
+          }, 
+          {
+            to: '/docs/app-builder/overview',
+            from: 'https://www.tooljet.ai/ai-visual-app-builder',
+          }, 
+          {
+            to: '',
+            from: 'https://website-stage.tooljet.ai/case-study/bfkn',
+          }, 
+          {
+            to: '',
+            from: 'https://www.tooljet.ai/ai-events?53f8c481_page=1',
+          }, 
+          {
+            to: '',
+            from: 'https://www.tooljet.ai/ai-integration?0e8e3b82_page=1',
+          }, 
+          {
+            to: '',
+            from: 'https://website-stage.tooljet.ai/case-study/pizza-pizza',
+          }, 
+          {
+            to: '',
+            from: 'https://website-stage.tooljet.ai/case-study/infear-org',
+          }, 
+          {
+            to: '',
+            from: 'https://website-stage.tooljet.ai/case-study/byjus',
+          }, 
+          {
+            to: '',
+            from: 'https://www.tooljet.ai/ai-integration?0e8e3b82_page=5',
+          }, 
+          {
+            to: '',
+            from: 'https://www.tooljet.ai/ai-integration?0e8e3b82_page=3',
+          }, 
+          {
+            to: '',
+            from: 'https://www.tooljet.ai/ai-integration?0e8e3b82_page=4',
+          }, 
+          {
+            to: '',
+            from: 'https://www.tooljet.ai/ai-integration?0e8e3b82_page=7',
+          }, 
+          {
+            to: '',
+            from: 'https://www.tooljet.ai/ai-integration?0e8e3b82_page=6',
+          }, 
+          {
+            to: '',
+            from: 'https://api-gateway.tooljet.ai/',
+          }, 
+          {
+            to: '/docs/getting-started/platform-overview',
+            from: '/docs/tooljet-ai/overview',
+          }, 
         ],
       },
     ],
