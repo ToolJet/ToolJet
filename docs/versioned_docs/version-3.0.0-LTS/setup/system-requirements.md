@@ -40,3 +40,6 @@ Redis required for **multiplayer editing and background jobs**. ToolJet includes
 ## PostgreSQL 
 
 ToolJet requires PostgreSQL for data storage. It is recommended to use **PostgreSQL version 13.x** for optimal compatibility and performance.
+
+
+testing the PR for netlify build
