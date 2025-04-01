@@ -1,5 +1,5 @@
 ---
-id: marketplace-plugin-redshift
+id: marketplace-plugin-awsredshift
 title: Amazon Redshift
 ---
 

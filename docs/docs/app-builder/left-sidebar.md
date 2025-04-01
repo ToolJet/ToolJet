@@ -60,7 +60,7 @@ Debugger consists of two main sections:
 
 To configure the app's global settings, click on the kebab menu(three vertical dots) on the left of the app name. Global settings include:
 
-- **Unique app slug**: The unique slug of the application. This slug is used in the URL of the application. By default, the slug is the `app id` of the application. You can change the slug to a custom value. For example, if the slug is `7b56293b-be5a-401f-8806-b71625f8ee0d` you can change it to `<unique-name>` then the new URL of the application will be `https://app.tooljet.com/<workspace-name>/apps/<unique-name>/`
+- **Unique app slug**: The unique slug of the application. This slug is used in the URL of the application. By default, the slug is the `app id` of the application. You can change the slug to a custom value. For example, if the slug is `7b56293b-be5a-401f-8806-b71625f8ee0d` you can change it to `<unique-name>` then the new URL of the application will be `https://app.tooljet.ai/<workspace-name>/apps/<unique-name>/`
 - **App link**: The link to the application. This link can be used to share the application with other users of the workspace. If you want to share the application with users outside the workspace, you can make the application public from the **[Share](/docs/app-builder/share)** modal.
 - **Hide header for launched apps**: Toggle this on to the hide the tooljet's header when the applications are launched
 - **Maintenance mode**: Toggle this on to put the application in maintenance mode. When in **maintenance mode**, on launching the app, the user will get an error message that **the app is under maintenance**.

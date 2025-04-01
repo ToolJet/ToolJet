@@ -16,21 +16,21 @@ const isProd = process.env.NODE_ENV === 'production';
 module.exports = {
   title: 'ToolJet',
   tagline: 'Low-code framework to Build internal tools and business apps.',
-  url: 'https://docs.tooljet.com',
+  url: 'https://docs.tooljet.ai',
   baseUrl: '/',
   onBrokenLinks: 'ignore',
   onBrokenMarkdownLinks: 'warn',
-  favicon: 'img/tooljet-favicon.svg',
+  favicon: 'img/tooljet-ai-favicon.svg',
   organizationName: 'ToolJet', // Usually your GitHub org/user name.
   projectName: 'ToolJet', // Usually your repo name.
   themeConfig: {
-    image: 'img/tooljet-og-image.png',
+    image: 'img/tooljet-ai-og-image.png',
     announcementBar: {
       id: 'support_us',
       content:
-        '⭐️ If you like ToolJet, give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/ToolJet/ToolJet">GitHub</a> and follow us on <a target="_blank" rel="noopener noreferrer" href="https://twitter.com/ToolJet">Twitter</a>',
-      backgroundColor: '#4D72DA',
-      textColor: '#ffffff',
+        'Star our repository on <a target="_blank" rel="noopener noreferrer" href="https://github.com/ToolJet/ToolJet">GitHub</a> to stay updated with new features and contribute to our platform!',
+      backgroundColor: '#ECF0FE',
+      textColor: '#4368E3',
       isCloseable: true,
     },
     docs: {
@@ -46,9 +46,9 @@ module.exports = {
       logo: {
         href: '/docs/',
         alt: 'ToolJet Logo',
-        src: 'img/Logomark.svg',
-        srcDark: `img/Logomark_white.svg`,
-        width: 90
+        src: 'img/docs_logo.svg',
+        srcDark: `img/docs_logo_dark.svg`,
+        width: 120
       },
       items: [
         {
@@ -66,7 +66,7 @@ module.exports = {
           'aria-label': 'GitHub repository',
         },
         {
-          href: 'https://tooljet.com/slack',
+          href: 'https://tooljet.ai/slack',
           position: 'right',
           className: 'navbar-social-link navbar-slack-logo',
           'aria-label': 'Slack workspace',
@@ -76,6 +76,20 @@ module.exports = {
           position: 'right',
           className: 'navbar-social-link navbar-twitter-logo',
           'aria-label': 'Twitter account',
+        },
+        {
+          href: 'https://app.tooljet.ai',
+          position: 'right',
+          label: 'Sign in',
+          className: 'navbar-signin',
+          'aria-label': 'Signin to ToolJet',
+        },
+        {
+          href: 'https://tooljet.ai',
+          position: 'right',
+          label: 'Website',
+          className: 'navbar-website',
+          'aria-label': 'ToolJet website',
         },
       ],
     },
@@ -90,7 +104,7 @@ module.exports = {
           items: [
             {
               label: 'Slack',
-              href: 'https://tooljet.com/slack',
+              href: 'https://tooljet.ai/slack',
             },
           ],
         },
@@ -113,7 +127,11 @@ module.exports = {
         },
       ],
       copyright: `Copyright © ${new Date().getFullYear()} ToolJet Solutions, Inc.
-      <img referrerpolicy="no-referrer-when-downgrade" src="https://static.scarf.sh/a.png?x-pxid=4f00afac-ae1f-4cf6-8c53-8a2c7b3ca206" />`,
+      <img referrerpolicy="no-referrer-when-downgrade" src="https://static.scarf.sh/a.png?x-pxid=4f00afac-ae1f-4cf6-8c53-8a2c7b3ca206" />
+      <script>window.faitracker=window.faitracker||function(){this.q=[];var t=new CustomEvent("FAITRACKER_QUEUED_EVENT");return this.init=function(t,e,a){this.TOKEN=t,this.INIT_PARAMS=e,this.INIT_CALLBACK=a,window.dispatchEvent(new CustomEvent("FAITRACKER_INIT_EVENT"))},this.call=function(){var e={k:"",a:[]};if(arguments&&arguments.length>=1){for(var a=1;a<arguments.length;a++)e.a.push(arguments[a]);e.k=arguments[0]}this.q.push(e),window.dispatchEvent(t)},this.message=function(){window.addEventListener("message",function(t){"faitracker"===t.data.origin&&this.call("message",t.data.type,t.data.message)})},this.message(),this.init("c4rgfujgx6jef4722rcjfhj7dlmcipih",{host:"https://api.factors.ai"}),this}(),function(){var t=document.createElement("script");t.type="text/javascript",t.src="https://app.factors.ai/assets/factors.js",t.async=!0,(d=document.getElementsByTagName("script")[0]).parentNode.insertBefore(t,d)}();</script>
+      <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0], j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src= 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-5L8R522S');</script>
+      <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5L8R522S" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+      `,
     },
     algolia: {
       appId: 'O8HQRLI0WA',
@@ -132,12 +150,22 @@ module.exports = {
           // Please change this to your repo.
           editUrl: 'https://github.com/ToolJet/Tooljet/blob/develop/docs/',
           includeCurrentVersion: true,
-          lastVersion: '2.50.0-LTS',
+          lastVersion: '3.0.0-LTS',
           versions: {
-            current : {
-              label: '3.0.0-Beta 🚧',
+            current: {
+              label: '3.1.0-Beta 🚧',
               path: 'beta',
+              banner: 'none',
+              badge: false
             },
+            "2.50.0-LTS": {
+              banner: 'none',
+              badge: false
+            },
+            "3.0.0-LTS": {
+              banner: 'none',
+              badge: false
+            }
           }
         },
         theme: {
@@ -168,6 +196,30 @@ module.exports = {
             to: '/docs/',
             from: '/',
           },
+          {
+            to: '/docs/security/constants/',
+            from: '/docs/org-management/workspaces/workspace_constants/',
+          },
+          {
+            to: '/docs/development-lifecycle/gitsync/overview',
+            from: '/docs/gitsync',
+          },
+          {
+            to: '/docs/user-management/role-based-access/access-control',
+            from: '/docs/tutorial/manage-users-groups',
+          },
+          {
+            to: '/docs/security/constants/variables/',
+            from: '/docs/org-management/workspaces/workspace-variables-migration',
+          },
+          {
+            to: '/docs/tj-setup/smtp-setup/configuration',
+            from: '/docs/org-management/smtp-configuration/',
+          },
+          {
+            to: '/docs/user-management/authentication/self-hosted/instance-login/',
+            from: '/docs/enterprise/superadmin',
+          }
         ],
       },
     ],
