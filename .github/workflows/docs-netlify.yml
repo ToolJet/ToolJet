@@ -8,19 +8,20 @@ on:
       - docs/**
   workflow_dispatch:
   pull_request:
-    types: [opened, labeled]
+    types: [labeled]
     branches:
       - automation/netlifydocs
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: |
+      github.event.action == 'labeled' &&
+      github.event.label.name == 'net-doc'
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-        with:
-          ref: refs/heads/automation/netlifydocs
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
