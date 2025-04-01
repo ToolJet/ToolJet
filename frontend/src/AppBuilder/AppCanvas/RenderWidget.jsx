@@ -7,6 +7,7 @@ import { renderTooltip } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
 import ErrorBoundary from '@/_ui/ErrorBoundary';
 import { BOX_PADDING } from './appCanvasConstants';
+
 const shouldAddBoxShadowAndVisibility = [
   'Table',
   'TextInput',
