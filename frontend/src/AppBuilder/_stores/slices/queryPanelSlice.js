@@ -392,10 +392,10 @@ export const createQueryPanelSlice = (set, get) => ({
                 error:
                   query.kind === 'restapi'
                     ? {
-                      substitutedVariables: options,
-                      request: data?.data?.requestObject,
-                      response: data?.data?.responseObject,
-                    }
+                        substitutedVariables: options,
+                        request: data?.data?.requestObject,
+                        response: data?.data?.responseObject,
+                      }
                     : errorData,
                 isQuerySuccessLog: false,
               });
@@ -404,10 +404,10 @@ export const createQueryPanelSlice = (set, get) => ({
                 isLoading: false,
                 ...(query.kind === 'restapi'
                   ? {
-                    request: data.data.requestObject,
-                    response: data.data.responseObject,
-                    responseHeaders: data.data.responseHeaders,
-                  }
+                      request: data.data.requestObject,
+                      response: data.data.responseObject,
+                      responseHeaders: data.data.responseHeaders,
+                    }
                   : {}),
               });
 
@@ -565,35 +565,35 @@ export const createQueryPanelSlice = (set, get) => ({
                 queryStatusCode === 400 ||
                 queryStatusCode === 404 ||
                 queryStatusCode === 422: {
-                  let errorData = {};
-                  switch (query.kind) {
-                    case 'runpy':
-                      errorData = data.data;
-                      break;
-                    case 'tooljetdb':
-                      if (data?.error) {
-                        errorData = {
-                          message: data?.error?.message || 'Something went wrong',
-                          description: data?.error?.message || 'Something went wrong',
-                          status: data?.statusText || 'Failed',
-                          data: data?.error || {},
-                        };
-                      } else {
-                        errorData = data;
-                        errorData.description = data.errorMessage || 'Something went wrong';
-                      }
-                      break;
-                    default:
+                let errorData = {};
+                switch (query.kind) {
+                  case 'runpy':
+                    errorData = data.data;
+                    break;
+                  case 'tooljetdb':
+                    if (data?.error) {
+                      errorData = {
+                        message: data?.error?.message || 'Something went wrong',
+                        description: data?.error?.message || 'Something went wrong',
+                        status: data?.statusText || 'Failed',
+                        data: data?.error || {},
+                      };
+                    } else {
                       errorData = data;
-                      break;
-                  }
-
-                  onEvent('onDataQueryFailure', queryEvents);
-
-                  if (!calledFromQuery) setPreviewData(errorData);
-
-                  break;
+                      errorData.description = data.errorMessage || 'Something went wrong';
+                    }
+                    break;
+                  default:
+                    errorData = data;
+                    break;
                 }
+
+                onEvent('onDataQueryFailure', queryEvents);
+
+                if (!calledFromQuery) setPreviewData(errorData);
+
+                break;
+              }
               case queryStatus === 'needs_oauth': {
                 const url = data.data.auth_url; // Backend generates and return sthe auth url
                 const kind = data.data?.kind;
@@ -610,31 +610,31 @@ export const createQueryPanelSlice = (set, get) => ({
                 queryStatus === 'Created' ||
                 queryStatus === 'Accepted' ||
                 queryStatus === 'No Content': {
-                  toast(`Query ${'(' + query.name + ') ' || ''}completed.`, {
-                    icon: '🚀',
-                  });
-                  if (query.options.enableTransformation) {
-                    finalData = await runTransformation(
-                      finalData,
-                      query.options.transformation,
-                      query.options.transformationLanguage,
-                      query,
-                      'edit'
-                    );
-                    if (finalData.status === 'failed') {
-                      onEvent('onDataQueryFailure', queryEvents);
-                      setPreviewLoading(false);
-                      setIsPreviewQueryLoading(false);
-                      resolve({ status: data.status, data: finalData });
-                      if (!calledFromQuery) setPreviewData(finalData);
-                      return;
-                    }
+                toast(`Query ${'(' + query.name + ') ' || ''}completed.`, {
+                  icon: '🚀',
+                });
+                if (query.options.enableTransformation) {
+                  finalData = await runTransformation(
+                    finalData,
+                    query.options.transformation,
+                    query.options.transformationLanguage,
+                    query,
+                    'edit'
+                  );
+                  if (finalData.status === 'failed') {
+                    onEvent('onDataQueryFailure', queryEvents);
+                    setPreviewLoading(false);
+                    setIsPreviewQueryLoading(false);
+                    resolve({ status: data.status, data: finalData });
+                    if (!calledFromQuery) setPreviewData(finalData);
+                    return;
                   }
-
-                  if (!calledFromQuery) setPreviewData(finalData);
-                  onEvent('onDataQuerySuccess', queryEvents, 'edit');
-                  break;
                 }
+
+                if (!calledFromQuery) setPreviewData(finalData);
+                onEvent('onDataQuerySuccess', queryEvents, 'edit');
+                break;
+              }
             }
             setPreviewLoading(false);
             setIsPreviewQueryLoading(false);
@@ -955,20 +955,13 @@ export const createQueryPanelSlice = (set, get) => ({
 
         //Proxy Func required to get current execution line number from stack to log in debugger
 
-        // const proxiedComponents = createProxy(resolvedState?.components);
-        // const proxiedGlobals = createProxy(resolvedState?.globals);
-        // const proxiedConstants = createProxy(resolvedState?.constants);
-        // const proxiedVariables = createProxy(resolvedState?.variables);
-        // const proxiedPage = createProxy(deepClone(resolvedState?.page));
-        // const proxiedQueriesInResolvedState = createProxy(queriesInResolvedState);
-        // const proxiedFormattedParams = createProxy(!_.isEmpty(proxiedFormattedParams) ? [proxiedFormattedParams] : []);
-        const proxiedComponents = resolvedState?.components;
-        const proxiedGlobals = resolvedState?.globals;
-        const proxiedConstants = resolvedState?.constants;
-        const proxiedVariables = resolvedState?.variables;
-        const proxiedPage = deepClone(resolvedState?.page);
-        const proxiedQueriesInResolvedState = queriesInResolvedState;
-        const proxiedFormattedParams = [formattedParams];
+        const proxiedComponents = createProxy(deepClone(resolvedState?.components));
+        const proxiedGlobals = createProxy(deepClone(resolvedState?.globals));
+        const proxiedConstants = createProxy(deepClone(resolvedState?.constants));
+        const proxiedVariables = createProxy(deepClone(resolvedState?.variables));
+        const proxiedPage = createProxy(deepClone(resolvedState?.page));
+        const proxiedQueriesInResolvedState = createProxy(deepClone(queriesInResolvedState));
+        const proxiedFormattedParams = createProxy(!_.isEmpty(proxiedFormattedParams) ? [proxiedFormattedParams] : []);
 
         const fnParams = [
           'moment',
