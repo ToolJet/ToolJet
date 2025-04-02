@@ -17,8 +17,6 @@ describe("App Slug", () => {
     data.appName = `${fake.companyName} App`;
     cy.log(Cypress.env("workspaceId"));
     cy.defaultWorkspaceLogin();
-    cy.pause()
-
   });
 
   before(() => {

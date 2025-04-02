@@ -68,7 +68,7 @@ export const verifyInvalidInvitationLink = () => {
 
 export const userSignUp = (fullName, email, workspaceName = "test") => {
   let invitationLink;
-  cy.intercept("GET", "/api/organizations/public-configs").as("publicConfig");
+  cy.intercept("GET", "/api/login-configs/public").as("publicConfig");
   cy.visit("/");
   cy.wait("@publicConfig");
   cy.wait(2000);
@@ -84,7 +84,7 @@ export const userSignUp = (fullName, email, workspaceName = "test") => {
   cy.get(commonSelectors.signUpButton).click();
 
   cy.wait(2500);
-  cy.task("updateId", {
+  cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
     sql: `select invitation_token from users where email='${email}';`,
   }).then((resp) => {
@@ -134,19 +134,19 @@ export const roleBasedOnboarding = (firstName, email, userRole) => {
 export const visitWorkspaceInvitation = (email, workspaceName) => {
   let workspaceId, userId, url, organizationToken;
 
-  cy.task("updateId", {
+  cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
     sql: `select id from organizations where name='${workspaceName}';`,
   }).then((resp) => {
     workspaceId = resp.rows[0].id;
 
-    cy.task("updateId", {
+    cy.task("dbConnection", {
       dbconfig: Cypress.env("app_db"),
       sql: `select id from users where email='${email}';`,
     }).then((resp) => {
       userId = resp.rows[0].id;
 
-      cy.task("updateId", {
+      cy.task("dbConnection", {
         dbconfig: Cypress.env("app_db"),
         sql: `select invitation_token from organization_users where organization_id= '${workspaceId}' AND user_id='${userId}';`,
       }).then((resp) => {
@@ -227,7 +227,7 @@ export const SignUpPageElements = () => {
 
 export const signUpLink = (email) => {
   let invitationLink;
-  cy.task("updateId", {
+  cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
     sql: `select invitation_token from users where email='${email}';`,
   }).then((resp) => {
@@ -251,7 +251,7 @@ export const bannerElementsVerification = () => {
 
 export const enableInstanceSignUp = (allow = true) => {
   const value = allow ? "true" : "false";
-  cy.task("updateId", {
+  cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
     sql: `UPDATE instance_settings SET value = '${value}' WHERE key = 'ALLOW_PERSONAL_WORKSPACE';
           UPDATE instance_settings SET value = '${value}' WHERE key = 'ENABLE_SIGNUP';`,

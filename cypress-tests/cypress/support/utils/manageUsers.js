@@ -330,14 +330,14 @@ export const inviteUserWithUserGroups = (
 export const fetchAndVisitInviteLink = (email) => {
   let invitationToken, organizationToken, workspaceId, userId;
 
-  cy.task("updateId", {
+  cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
     sql: `select invitation_token from users where email='${email}';`,
   })
     .then((resp) => {
       invitationToken = resp.rows[0]?.invitation_token;
 
-      cy.task("updateId", {
+      cy.task("dbConnection", {
         dbconfig: Cypress.env("app_db"),
         sql: "select id from organizations where name='My workspace';",
       });
@@ -345,7 +345,7 @@ export const fetchAndVisitInviteLink = (email) => {
     .then((resp) => {
       workspaceId = resp.rows[0]?.id;
 
-      cy.task("updateId", {
+      cy.task("dbConnection", {
         dbconfig: Cypress.env("app_db"),
         sql: `select id from users where email='${email}';`,
       });
@@ -353,7 +353,7 @@ export const fetchAndVisitInviteLink = (email) => {
     .then((resp) => {
       userId = resp.rows[0]?.id;
 
-      cy.task("updateId", {
+      cy.task("dbConnection", {
         dbconfig: Cypress.env("app_db"),
         sql: `select invitation_token from organization_users where user_id='${userId}';`,
       });
