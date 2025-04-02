@@ -85,7 +85,7 @@ Google Cloud Platform provides access to more than 350 APIs and Services that ca
 
 ### Configuring ToolJet Application with Google's OAuth 2.0 API
 
-#### Grant Type: Authorization Code
+### Grant Type: Authorization Code
 
 Let's follow the steps to authorize ToolJet to access your Google profile data:
 
@@ -105,7 +105,7 @@ Let's follow the steps to authorize ToolJet to access your Google profile data:
 
 <img class="screenshot-full" src="/img/how-to/oauth2-authorization/restapi-v2.png" alt="ToolJet - How To - REST API authentication using OAuth 2.0" />
 
-#### Grant Type: Client Credentials
+### Grant Type: Client Credentials
 
 Let's follow the steps to authorize ToolJet to access your Google profile data:
 
