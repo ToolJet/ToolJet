@@ -23,7 +23,7 @@ To connect to Sharepoint, you need the following details:
 - **Tenant ID**
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/sharepoint/connect.png" alt="Sharepoint Connect" />
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/sharepoint/connect.png" alt="Sharepoint Connect" />
 </div>
 
 ## Querying Sharepoint
@@ -60,7 +60,7 @@ This operation retrieves all available Sharepoint sites. For more details, see t
 - **Page**: The page number to retrieve
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/sharepoint/get-all-sites.png" alt="Get All Sites" />
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/sharepoint/get-all-sites.png" alt="Get All Sites" />
 </div>
 
 <details id="tj-dropdown">
@@ -95,7 +95,7 @@ This operation retrieves information about a specific site.
 - **Site ID**: The ID of the site to retrieve
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/sharepoint/get-site.png" alt="Get Site" />
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/sharepoint/get-site.png" alt="Get Site" />
 </div>
 
 #### Example:
@@ -135,7 +135,7 @@ This operation retrieves analytics for a specific site.
   - **All Time**
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/sharepoint/get-analytics.png" alt="Get Analytics" />
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/sharepoint/get-analytics.png" alt="Get Analytics" />
 </div>
 
 #### Example:
@@ -180,7 +180,7 @@ This operation retrieves all pages from a specific site.
 - **Page**: The page number to retrieve
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/sharepoint/get-pages.png" alt="Get Pages" />
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/sharepoint/get-pages.png" alt="Get Pages" />
 </div>
 
 #### Example:
@@ -252,7 +252,7 @@ This operation retrieves all lists from a specific site.
 - **Page**: The page number to retrieve
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/sharepoint/get-all-lists.png" alt="Get All Lists" />
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/sharepoint/get-all-lists.png" alt="Get All Lists" />
 </div>
 
 #### Example:
@@ -316,7 +316,7 @@ This operation retrieves metadata for a specific list.
 - **List ID**: The ID of the list, required if List Name is not provided
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/sharepoint/get-list-metadata.png" alt="Get List Metadata" />
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/sharepoint/get-list-metadata.png" alt="Get List Metadata" />
 </div>
 
 #### Example:
@@ -448,7 +448,7 @@ This operation creates a new list in a Sharepoint site.
 - **Body**: The list configuration in JSON format
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/sharepoint/create-list.png" alt="Create List" />
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/sharepoint/create-list.png" alt="Create List" />
 </div>
 
 #### Example:
@@ -525,7 +525,7 @@ This operation retrieves items from a specific list.
 - **Page**: The page number to retrieve
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/sharepoint/get-list-items.png" alt="Get List Items" />
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/sharepoint/get-list-items.png" alt="Get List Items" />
 </div>
 
 #### Example:
@@ -615,7 +615,7 @@ This operation updates an existing item in a list.
 - **Body**: The updated values in JSON format
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/sharepoint/update-item.png" alt="Update Item" />
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/sharepoint/update-item.png" alt="Update Item" />
 </div>
 
 #### Example:
@@ -656,7 +656,7 @@ This operation removes an item from a list.
 - **Item ID**: The ID of the item to delete
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/sharepoint/delete-item.png" alt="Delete Item" />
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/sharepoint/delete-item.png" alt="Delete Item" />
 </div>
 
 #### Example:
@@ -688,7 +688,7 @@ This operation adds a new item to a list.
 - **Body**: The new item's data in JSON format
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/sharepoint/add-item.png" alt="Add Item" />
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/sharepoint/add-item.png" alt="Add Item" />
 </div>
 
 #### Example:

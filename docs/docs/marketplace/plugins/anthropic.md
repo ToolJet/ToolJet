@@ -9,7 +9,7 @@ Integrating Anthropic with ToolJet enables the creation of interactive chatbots 
 
 To connect with Anthropic, you will need the **API Key**, which can be generated from **[Anthropic Console](https://console.anthropic.com/)**.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/anthropic/config.png" alt="Anthropic Configuration" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/anthropic/config.png" alt="Anthropic Configuration" />
 
 ## Supported Operations
 
@@ -36,7 +36,7 @@ This operation processes the user's input and generates appropriate, context-awa
 
 - **Temperature**: Controls the randomness of the response. Accepts values between 0 and 1, with a default of 1.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/anthropic/query.png" alt="Anthropic Query" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/anthropic/query.png" alt="Anthropic Query" />
 
 <details id="tj-dropdown">
 <summary>**Response Example**</summary>

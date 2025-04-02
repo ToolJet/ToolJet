@@ -11,7 +11,7 @@ Weaviate is a vector database, integrating Weaviate with ToolJet enables efficie
 
 To connect with Weaviate Cloud, you will need the **Instance URL** and the **API Key**, which can be generated from **[Weaviate Console](https://weaviate.io/developers/wcs/connect)**.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/weaviate/cloud-config.png" alt="Weaviate Configuration" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/weaviate/cloud-config.png" alt="Weaviate Configuration" />
 
 ### Local
 
@@ -23,7 +23,7 @@ Run the following Docker command to start the container locally. This will set t
 docker run -p 8080:8080 -p 50051:50051 cr.weaviate.io/semitechnologies/weaviate:1.28.4
 ```
 
-<img className="screenshot-full" src="/img/marketplace/plugins/weaviate/local-config.png" alt="Weaviate Configuration" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/weaviate/local-config.png" alt="Weaviate Configuration" />
 
 ## Supported Operations
 
@@ -37,7 +37,7 @@ Run this opetation to get the database schema.
 
 - **Consistency**: Ensures the request is handled by the leader node to maintain accuracy.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/weaviate/db-schema.png" alt="Weaviate Configuration" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/weaviate/db-schema.png" alt="Weaviate Configuration" />
 
 <details id="tj-dropdown">
 <summary>**Response Example**</summary>
@@ -159,7 +159,7 @@ Run this opetation to get the database schema.
 
 - **Consistency**: Ensures the request is handled by the leader node to maintain accuracy.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/weaviate/get-collection.png" alt="Weaviate Configuration" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/weaviate/get-collection.png" alt="Weaviate Configuration" />
 
 <details id="tj-dropdown">
 <summary>**Response Example**</summary>
@@ -261,7 +261,7 @@ Use this operation to create a new collection.
 
 Refer to **[weaviate documentation](https://weaviate.io/developers/weaviate/config-refs/schema)** for more information.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/weaviate/create-collection.png" alt="Weaviate Configuration" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/weaviate/create-collection.png" alt="Weaviate Configuration" />
 
 <details id="tj-dropdown">
 <summary>**Response Example**</summary>
@@ -376,7 +376,7 @@ Use this operation to delete a collection.
 
 - **Collection Name**: Collection name that needs to be deleted.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/weaviate/delete-collection.png" alt="Weaviate Configuration" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/weaviate/delete-collection.png" alt="Weaviate Configuration" />
 
 ## Data Type - Objects
 
@@ -399,7 +399,7 @@ Use this operation to list all the objects of a collection.
 - **Order**: Determines sorting direction (asc or desc).
 - **Tenant**: Specifies the tenant in a request targeting a multi-tenant class.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/weaviate/list-object.png" alt="Weaviate Configuration" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/weaviate/list-object.png" alt="Weaviate Configuration" />
 
 <details id="tj-dropdown">
 <summary>**Response Example**</summary>
@@ -460,7 +460,7 @@ Use this operation to create a new object within the selected collection.
 
 - **Object uuid**: The UUID of the object.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/weaviate/create-object.png" alt="Weaviate Configuration" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/weaviate/create-object.png" alt="Weaviate Configuration" />
 
 <details id="tj-dropdown">
 <summary>**Response Example**</summary>
@@ -490,7 +490,7 @@ Use this operation to fetch an object using it's ID.
 - **Collection Name**: Collection Name of the object.
 - **Object ID**: Object ID to fetch the object details.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/weaviate/get-object.png" alt="Weaviate Configuration" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/weaviate/get-object.png" alt="Weaviate Configuration" />
 
 <details id="tj-dropdown">
 <summary>**Response Example**</summary>
@@ -520,4 +520,4 @@ Use this operation to delete the object using it's ID.
 - **Collection Name**: Collection Name of the object.
 - **Object ID**: Object ID of the object to be deleted.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/weaviate/delete-object.png" alt="Weaviate Configuration" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/weaviate/delete-object.png" alt="Weaviate Configuration" />

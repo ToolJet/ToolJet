@@ -17,7 +17,7 @@ For connecting to OpenAI, the following credentials are required:
 - **Organization ID**: Find the Organization ID [here](https://platform.openai.com/account/org-settings).
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/openai/connection-v4.png" alt="Configuring OpenAI in ToolJet" />
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/openai/connection-v4.png" alt="Configuring OpenAI in ToolJet" />
 </div>
 
 ## Supported Operations
@@ -48,7 +48,7 @@ The function of this operation is to examine the user's input and generate a sui
 - **Suffix**: The suffix that follows the inserted text completion.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/openai/chat-v3.png" alt="Chat Operation" />
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/openai/chat-v3.png" alt="Chat Operation" />
 </div>
 
 <details id="tj-dropdown">
@@ -92,7 +92,7 @@ The purpose of this operation is to generate text completions based on a given p
 - **Suffix**: The suffix that follows the inserted text completion.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/openai/completions-v3.png" alt="Completions Operation" />
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/openai/completions-v3.png" alt="Completions Operation" />
 </div>
 
 <details id="tj-dropdown">
@@ -136,7 +136,7 @@ This operation generates AI images based on the given prompt.
     - **DALL-E 3**: Must be one of `1024x1024`, `1792x1024`, or `1024x1792`.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/openai/generate-ai-images-v2.png" alt="Generate AI Images Operation" />
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/openai/generate-ai-images-v2.png" alt="Generate AI Images Operation" />
 </div>
 
 <details id="tj-dropdown">
@@ -183,7 +183,7 @@ This operation is used to generate vector embeddings from the given text, which 
 - **Encoding format**: Specifies the output format of the vector embedding from the dropdown, float or base64.
 - **Dimensions**: Defines the number of values in the generated embedding vector, affecting its size and level of detail.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/openai/embedding-v2.png" alt="Generate Vector Embedding" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/openai/embedding-v2.png" alt="Generate Vector Embedding" />
 
 <details id="tj-dropdown">
 <summary>**Example Values**</summary>

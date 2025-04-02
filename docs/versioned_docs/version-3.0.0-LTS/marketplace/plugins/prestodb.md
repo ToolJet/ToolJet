@@ -23,7 +23,7 @@ To connect to your PrestoDB database, the following details are required:
 - **Extra Headers** (optional)
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/prestodb/connect.png" alt="PrestoDB Connect" />
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/prestodb/connect.png" alt="PrestoDB Connect" />
 </div>
 
 ## Querying PrestoDB
@@ -44,7 +44,7 @@ ToolJet supports executing SQL queries on PrestoDB databases.
 This operation allows you to execute SQL queries on your PrestoDB database.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/prestodb/query.png" alt="PrestoDB Query"/>
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/prestodb/query.png" alt="PrestoDB Query"/>
 </div>
 
 #### Parameters:

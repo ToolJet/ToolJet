@@ -7,7 +7,7 @@ HarperDB is a database and application development platform that is focused on p
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/harperconnect.gif" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full img-full" src="/img/marketplace/plugins/harperdb/harperconnect.gif" alt="Marketplace: HarperDB" />
 
 </div>
 
@@ -28,7 +28,7 @@ To establish a connection with HarperDB, you need the following credentials:
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/creds.png" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full img-full" src="/img/marketplace/plugins/harperdb/creds.png" alt="Marketplace: HarperDB" />
 
 </div>
 
@@ -41,7 +41,7 @@ To perform queries on HarperDB, click the `+Add` button in the query manager loc
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/query.png" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full img-full" src="/img/marketplace/plugins/harperdb/query.png" alt="Marketplace: HarperDB" />
 
 </div>
 
@@ -68,7 +68,7 @@ SELECT * FROM sampleorg.people WHERE id = 1
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/select.png" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full img-full" src="/img/marketplace/plugins/harperdb/select.png" alt="Marketplace: HarperDB" />
 
 </div>
 
@@ -82,7 +82,7 @@ INSERT INTO sampleorg.people (id, name, age, country, hobby) VALUE (5, 'Shubh', 
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/insert.png" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full img-full" src="/img/marketplace/plugins/harperdb/insert.png" alt="Marketplace: HarperDB" />
 
 </div>
 
@@ -96,7 +96,7 @@ UPDATE sampleorg.people SET hobby = 'chess' WHERE id = 5
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/update.png" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full img-full" src="/img/marketplace/plugins/harperdb/update.png" alt="Marketplace: HarperDB" />
 
 </div>
 
@@ -110,7 +110,7 @@ DELETE FROM sampleorg.people WHERE id = 5
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/delete.png" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full img-full" src="/img/marketplace/plugins/harperdb/delete.png" alt="Marketplace: HarperDB" />
 
 </div>
 
@@ -146,7 +146,7 @@ Insert operation allows to add one or more rows of data to a database table.
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/nosql_insert.png" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full img-full" src="/img/marketplace/plugins/harperdb/nosql_insert.png" alt="Marketplace: HarperDB" />
 
 </div>
 
@@ -167,7 +167,7 @@ The Update operation modifies the values of specified attributes in one or more 
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/nosql_update.png" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full img-full" src="/img/marketplace/plugins/harperdb/nosql_update.png" alt="Marketplace: HarperDB" />
 
 </div>
 
@@ -188,7 +188,7 @@ Removes one or more rows of data from a specified table.
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/nosql_delete.png" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full img-full" src="/img/marketplace/plugins/harperdb/nosql_delete.png" alt="Marketplace: HarperDB" />
 
 </div>
 
@@ -215,7 +215,7 @@ Returns data from a table for one or more hash values.
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/searchbyhash.png" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full img-full" src="/img/marketplace/plugins/harperdb/searchbyhash.png" alt="Marketplace: HarperDB" />
 
 </div>
 
@@ -251,7 +251,7 @@ Joh* // using wild card
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/searchbyvalue.png" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full img-full" src="/img/marketplace/plugins/harperdb/searchbyvalue.png" alt="Marketplace: HarperDB" />
 
 </div>
 
@@ -281,7 +281,7 @@ Returns data from a table for one or more matching conditions.
 
 <div style={{textAlign: 'center'}}>
 
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/harperdb/searchbyconditions.png" alt="Marketplace: HarperDB" />
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full img-full" src="/img/marketplace/plugins/harperdb/searchbyconditions.png" alt="Marketplace: HarperDB" />
 
 </div>
 

@@ -6,7 +6,7 @@ title: Portkey
 ToolJet can integrate with Portkey to access AI services such as text completion, chat completion, prompt completion, and embedding creation. This integration enables ToolJet to leverage Portkey's LMOps platform to develop, launch, maintain, and iterate on generative AI features.
 
 <div style={{textAlign: 'center', paddingBottom: '24px'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/portkey/overview.png" alt="Portkey Dashboard Overview" />
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/portkey/overview.png" alt="Portkey Dashboard Overview" />
 </div>
 
 :::note
@@ -23,7 +23,7 @@ To connect to Portkey, the following credentials are required:
 - **Gateway URL** (Optional): Your default Portkey Gateway URL. See the **[Portkey API Authentication Documentation](https://docs.portkey.ai/docs/api-reference/authentication#obtaining-your-api-key)** for details on how to obtain your Gateway URL.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/portkey/configuration.png" alt="Configuring Portkey in ToolJet" />
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/portkey/configuration.png" alt="Configuring Portkey in ToolJet" />
 </div>
 
 ## Supported Operations
@@ -50,7 +50,7 @@ This operation generates text completions based on a given prompt.
 - **Other Parameters**: Any other parameters to include in the request.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/portkey/completion.png" alt="Completion Operation for Portkey" />
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/portkey/completion.png" alt="Completion Operation for Portkey" />
 </div>
 
     <details id="tj-dropdown">
@@ -93,7 +93,7 @@ This operation generates chat completions based on a series of messages.
 - **Other Parameters**: Any other parameters to include in the request.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/portkey/chat.png" alt="Chat Operation for Portkey" />
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/portkey/chat.png" alt="Chat Operation for Portkey" />
 </div>
 
   <details id="tj-dropdown">
@@ -138,7 +138,7 @@ This operation generates completions based on a pre-defined prompt.
 - **Metadata**: Additional metadata for the request.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/portkey/prompt-completion.png" alt="Prompt Completion Operation for Portkey" />
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/portkey/prompt-completion.png" alt="Prompt Completion Operation for Portkey" />
 </div>
 
   <details id="tj-dropdown">
@@ -182,7 +182,7 @@ This operation creates embeddings for given input text.
 - **Metadata**: Additional metadata for the request.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/portkey/embedding.png" alt="Create Embedding Operation for Portkey" />
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/portkey/embedding.png" alt="Create Embedding Operation for Portkey" />
 </div>
 
   <details id="tj-dropdown">

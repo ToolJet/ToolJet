@@ -19,7 +19,7 @@ To connect ToolJet with Amazon Textract, you will need the following credentials
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/textract/credentials.png" alt="Amazon Textract Configuration" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/textract/credentials.png" alt="Amazon Textract Configuration" />
 
 </div>
 
