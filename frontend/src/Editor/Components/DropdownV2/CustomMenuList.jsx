@@ -103,11 +103,9 @@ const CustomMenuList = ({ selectProps, ...props }) => {
       {!optionsLoadingState && (
         <div
           ref={parentRef}
+          className="dropdown-multiselect-widget-custom-menu-list-body"
           style={{
             maxHeight: selectProps.maxMenuHeight || 300,
-            overflowY: 'auto',
-            position: 'relative',
-            padding: '5px 0',
           }}
         >
           <div

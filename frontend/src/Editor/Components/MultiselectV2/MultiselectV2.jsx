@@ -431,6 +431,7 @@ export const MultiselectV2 = ({
     menu: (provided) => ({
       ...provided,
       marginTop: '5px',
+      borderRadius: '8px',
     }),
   };
   const _width = (labelWidth / 100) * 70; // Max width which label can go is 70% for better UX calculate width based on this value
