@@ -110,6 +110,12 @@ export const TableContainer = ({
   }, [rowsPerPage, setPagination]);
 
   useEffect(() => {
+    if (serverSideSearch && globalFilter?.trim() !== '') {
+      setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+    }
+  }, [globalFilter, serverSideSearch, setPagination]);
+
+  useEffect(() => {
     setColumnOrder(columns.map((column) => column.id));
   }, [columns, setColumnOrder]);
 

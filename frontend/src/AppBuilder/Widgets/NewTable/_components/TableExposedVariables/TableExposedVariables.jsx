@@ -179,7 +179,9 @@ export const TableExposedVariables = ({
   // Expose applied filters
   useEffect(() => {
     setExposedVariables({ filters: appliedFilters.map((filter) => filter.value) });
-    mounted && fireEvent('onFilterChanged');
+    if (appliedFilters.length > 0) {
+      mounted && fireEvent('onFilterChanged');
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appliedFilters, setExposedVariables, fireEvent]); // Didn't add mounted as it's not a dependency
 
