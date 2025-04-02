@@ -323,10 +323,10 @@ export const DateTimePicker = ({
           'input-value-padding': transformedTimestamp,
         })}
         popperPlacement={'bottom-start'}
-        // popperClassName={cx({
-        //   'tjdb-datepicker-reset': !isEditCell,
-        //   'tjdb-datepicker-celledit-reset': isEditCell,
-        // })}
+        popperClassName={cx({
+          // 'tjdb-datepicker-reset': !isEditCell,
+          'tjdb-datepicker-celledit-reset': isEditCell,
+        })}
         onInputClick={() => {
           setIsOpen(true);
         }}
