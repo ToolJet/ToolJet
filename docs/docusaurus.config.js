@@ -16,7 +16,7 @@ const isProd = process.env.NODE_ENV === 'production';
 module.exports = {
   title: 'ToolJet',
   tagline: 'Low-code framework to Build internal tools and business apps.',
-  url: '',
+  url: 'https://docs.tooljet.ai',
   baseUrl: '/',
   onBrokenLinks: 'ignore',
   onBrokenMarkdownLinks: 'warn',
