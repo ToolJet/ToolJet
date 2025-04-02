@@ -6,7 +6,6 @@ import useTextColor from '../DataTypes/_hooks/useTextColor';
 import useTableStore from '../../_stores/tableStore';
 import { getMaxHeight } from '../../_utils/helper';
 import { shallow } from 'zustand/shallow';
-import remarkBreaks from 'remark-breaks';
 import DOMPurify from 'dompurify';
 
 export const MarkdownColumn = ({
@@ -65,7 +64,7 @@ export const MarkdownColumn = ({
             whiteSpace: 'pre-wrap',
           }}
         >
-          <ReactMarkdown remarkPlugins={[remarkBreaks]}>{getCellValue(cellValue)}</ReactMarkdown>
+          <ReactMarkdown>{getCellValue(cellValue)}</ReactMarkdown>
         </span>
       </div>
     );
@@ -112,11 +111,7 @@ export const MarkdownColumn = ({
           e.stopPropagation();
         }}
       >
-        {isEditing ? (
-          cellValue
-        ) : (
-          <ReactMarkdown remarkPlugins={[remarkBreaks]}>{getCellValue(cellValue)}</ReactMarkdown>
-        )}
+        <div>{isEditing ? cellValue : <ReactMarkdown>{getCellValue(cellValue)}</ReactMarkdown>}</div>
       </div>
     );
   };
@@ -155,7 +150,7 @@ export const MarkdownColumn = ({
                 whiteSpace: 'pre-wrap',
               }}
             >
-              <ReactMarkdown remarkPlugins={[remarkBreaks]}>{getCellValue(cellValue)}</ReactMarkdown>
+              <ReactMarkdown>{getCellValue(cellValue)}</ReactMarkdown>
             </span>
           </div>
         ) : (
