@@ -478,71 +478,81 @@ export class TooljetDbBulkUploadService {
     let totalUpdated = 0;
     const allResultRows: any[] = [];
 
-    for (const [groupKey, groupRows] of rowGroups.entries()) {
-      // The provided columns for this group are exactly the keys in the group.
-      const providedColumns = groupKey.split(','); // sorted keys
-      const columnsQuoted = providedColumns.map((col) => `"${col}"`);
+    try {
+      for (const [groupKey, groupRows] of rowGroups.entries()) {
+        // The provided columns for this group are exactly the keys in the group.
+        const providedColumns = groupKey.split(','); // sorted keys
+        const columnsQuoted = providedColumns.map((col) => `"${col}"`);
 
-      // Build the VALUES clause for this group
-      let parameterIndex = 1;
-      const allValueSets: string[] = [];
-      const allPlaceholders: any[] = [];
-      for (const row of groupRows) {
-        const valueSet: string[] = [];
-        for (const col of providedColumns) {
-          // Since the group is built by the row's own keys, if the row doesn't have a key, that column won't be in providedColumns.
-          if (Object.prototype.hasOwnProperty.call(row, col)) {
-            if (row[col] === 'DEFAULT') {
-              valueSet.push('DEFAULT');
+        // Build the VALUES clause for this group
+        let parameterIndex = 1;
+        const allValueSets: string[] = [];
+        const allPlaceholders: any[] = [];
+        for (const row of groupRows) {
+          const valueSet: string[] = [];
+          for (const col of providedColumns) {
+            // Since the group is built by the row's own keys, if the row doesn't have a key, that column won't be in providedColumns.
+            if (Object.prototype.hasOwnProperty.call(row, col)) {
+              if (row[col] === 'DEFAULT') {
+                valueSet.push('DEFAULT');
+              } else {
+                valueSet.push(`$${parameterIndex++}`);
+                allPlaceholders.push(row[col]);
+              }
             } else {
-              valueSet.push(`$${parameterIndex++}`);
-              allPlaceholders.push(row[col]);
+              valueSet.push('DEFAULT');
             }
-          } else {
-            valueSet.push('DEFAULT');
           }
+          allValueSets.push(`(${valueSet.join(', ')})`);
         }
-        allValueSets.push(`(${valueSet.join(', ')})`);
+
+        // Determine if this group omits any serial PK
+        const omittedSerialPKs = serialPrimaryKeys.filter((pk) => !providedColumns.includes(pk));
+
+        let queryText: string;
+        if (omittedSerialPKs.length > 0) {
+          // For groups omitting serial PKs, use plain INSERT (so PostgreSQL auto-generates those values)
+          queryText = `
+            INSERT INTO "${tenantSchema}"."${tableId}" (${columnsQuoted.join(', ')})
+            VALUES ${allValueSets.join(', ')}
+            RETURNING *, true as inserted;
+          `;
+        } else {
+          // For groups with all primary keys provided, use UPSERT
+          const conflictTarget = primaryKeyColumns.map((col) => `"${col}"`).join(', ');
+          // Update only non-PK columns
+          const updateColumns = providedColumns.filter((col) => !primaryKeyColumns.includes(col));
+          const onConflictUpdates = updateColumns.map((col) => `"${col}" = EXCLUDED."${col}"`).join(',\n        ');
+          queryText = `
+            INSERT INTO "${tenantSchema}"."${tableId}" (${columnsQuoted.join(', ')})
+            VALUES ${allValueSets.join(', ')}
+            ON CONFLICT (${conflictTarget})
+            DO UPDATE SET
+              ${onConflictUpdates}
+            RETURNING *, (xmax = 0) as inserted;
+          `;
+        }
+
+        const result = await this.tooljetDbManager.query(queryText, allPlaceholders);
+        totalInserted += result.filter((row: any) => row.inserted).length;
+        totalUpdated += result.length - result.filter((row: any) => row.inserted).length;
+        allResultRows.push(...result.map(({ inserted, ...row }: any) => row));
       }
 
-      // Determine if this group omits any serial PK
-      const omittedSerialPKs = serialPrimaryKeys.filter((pk) => !providedColumns.includes(pk));
-
-      let queryText: string;
-      if (omittedSerialPKs.length > 0) {
-        // For groups omitting serial PKs, use plain INSERT (so PostgreSQL auto-generates those values)
-        queryText = `
-          INSERT INTO "${tenantSchema}"."${tableId}" (${columnsQuoted.join(', ')})
-          VALUES ${allValueSets.join(', ')}
-          RETURNING *, true as inserted;
-        `;
-      } else {
-        // For groups with all primary keys provided, use UPSERT
-        const conflictTarget = primaryKeyColumns.map((col) => `"${col}"`).join(', ');
-        // Update only non-PK columns
-        const updateColumns = providedColumns.filter((col) => !primaryKeyColumns.includes(col));
-        const onConflictUpdates = updateColumns.map((col) => `"${col}" = EXCLUDED."${col}"`).join(',\n        ');
-        queryText = `
-          INSERT INTO "${tenantSchema}"."${tableId}" (${columnsQuoted.join(', ')})
-          VALUES ${allValueSets.join(', ')}
-          ON CONFLICT (${conflictTarget})
-          DO UPDATE SET
-            ${onConflictUpdates}
-          RETURNING *, (xmax = 0) as inserted;
-        `;
-      }
-
-      const result = await this.tooljetDbManager.query(queryText, allPlaceholders);
-      totalInserted += result.filter((row: any) => row.inserted).length;
-      totalUpdated += result.length - result.filter((row: any) => row.inserted).length;
-      allResultRows.push(...result.map(({ inserted, ...row }: any) => row));
+      return {
+        status: 'ok',
+        inserted: totalInserted,
+        updated: totalUpdated,
+        rows: allResultRows,
+      };
+    } catch (error) {
+      return {
+        status: 'failed',
+        error: error.message,
+        inserted: 0,
+        updated: 0,
+        rows: [],
+      };
     }
-
-    return {
-      status: 'ok',
-      inserted: totalInserted,
-      updated: totalUpdated,
-      rows: allResultRows,
-    };
   }
 }
