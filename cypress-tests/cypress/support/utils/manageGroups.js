@@ -680,7 +680,7 @@ export const createGroupAddAppAndUserToGroup = (groupName, email) => {
         expect(response.status).to.equal(201);
       });
 
-      cy.task("updateId", {
+      cy.task("dbConnection", {
         dbconfig: Cypress.env("app_db"),
         sql: `select id from users where email='${email}';`,
       }).then((resp) => {

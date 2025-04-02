@@ -41,7 +41,7 @@ describe("User signup", () => {
     cy.wait(500);
     verifyConfirmEmailPage(data.email);
 
-    cy.task("updateId", {
+    cy.task("dbConnection", {
       dbconfig: Cypress.env("app_db"),
       sql: `select invitation_token from users where email='${data.email}';`,
     }).then((resp) => {
@@ -67,9 +67,8 @@ describe("User signup", () => {
     data.workspaceName = fake.companyName;
 
     cy.visit("/");
-    cy.wait(8000);
     cy.get(onboardingSelectors.createAnAccountLink).click();
-    cy.wait(6000);
+    cy.wait(2000);
     cy.get(onboardingSelectors.nameInput).clear();
     cy.get(onboardingSelectors.nameInput).type(data.fullName);
     cy.clearAndType(onboardingSelectors.signupEmailInput, data.email);
@@ -78,9 +77,8 @@ describe("User signup", () => {
       commonText.password
     );
     cy.get(commonSelectors.signUpButton).click();
-    cy.wait(8000);
-    cy.get(commonSelectors.resendEmailButton).click();
-    cy.task("updateId", {
+
+    cy.task("dbConnection", {
       dbconfig: Cypress.env("app_db"),
       sql: `select invitation_token from users where email='${data.email}';`,
     }).then((resp) => {

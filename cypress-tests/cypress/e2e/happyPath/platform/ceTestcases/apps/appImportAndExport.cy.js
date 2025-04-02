@@ -107,7 +107,7 @@ describe("App Import Functionality", () => {
     );
     cy.get(commonSelectors.appNameLabel).verifyVisibleElement(
       "have.text",
-      "App Name"
+      "App name"
     );
     cy.get(commonSelectors.appNameInput)
       .should("be.visible")
@@ -141,7 +141,7 @@ describe("App Import Functionality", () => {
     cy.skipEditorPopover();
     cy.dragAndDropWidget(buttonText.defaultWidgetText);
     cy.get(appVersionSelectors.appVersionLabel).should("be.visible");
-    cy.get(commonWidgetSelector.draggableWidget("button1")).should(
+    cy.get(commonWidgetSelector.widgetConfigHandle("button1")).should(
       "be.visible"
     );
 
@@ -161,7 +161,7 @@ describe("App Import Functionality", () => {
     });
 
     cy.get(
-      commonWidgetSelector.draggableWidget("textInput3")
+      commonWidgetSelector.widgetConfigHandle("textInput3")
     ).verifyVisibleElement("have.value", "");
 
     // Setup database and data sources
@@ -204,7 +204,7 @@ describe("App Import Functionality", () => {
         "",
         Cypress.env("workspaceId"),
         appId,
-        commonWidgetSelector.draggableWidget("text2")
+        commonWidgetSelector.widgetConfigHandle("text2")
       );
     });
 
@@ -214,7 +214,7 @@ describe("App Import Functionality", () => {
       textInput2: "Leanne Graham",
     });
     cy.get(
-      commonWidgetSelector.draggableWidget("textInput3")
+      commonWidgetSelector.widgetConfigHandle("textInput3")
     ).verifyVisibleElement("have.value", "India");
 
     switchVersionAndVerify("v3", "v1");
@@ -406,14 +406,14 @@ describe("App Import Functionality", () => {
 });
 
 const verifyCommonData = (values) => {
-  cy.get(commonWidgetSelector.draggableWidget("text2")).verifyVisibleElement(
+  cy.get(commonWidgetSelector.widgetConfigHandle("text2")).verifyVisibleElement(
     "have.text",
     values.text2
   );
   cy.get(
-    commonWidgetSelector.draggableWidget("textInput1")
+    commonWidgetSelector.widgetConfigHandle("textInput1")
   ).verifyVisibleElement("have.value", values.textInput1);
   cy.get(
-    commonWidgetSelector.draggableWidget("textInput2")
+    commonWidgetSelector.widgetConfigHandle("textInput2")
   ).verifyVisibleElement("have.value", values.textInput2);
 };
