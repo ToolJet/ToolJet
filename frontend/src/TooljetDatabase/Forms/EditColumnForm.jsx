@@ -804,7 +804,7 @@ const ColumnForm = ({
                       topPlaceHolder={
                         selectedColumn?.dataType === 'serial'
                           ? 'Auto-generated'
-                          : foreignKeyDefaultValue?.value === null
+                          : foreignKeyDefaultValue?.value === null || defaultValue === null
                           ? 'Null'
                           : 'Enter a value'
                       }
