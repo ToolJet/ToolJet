@@ -9,7 +9,7 @@ Cohere can be integrated with ToolJet to use its advanced AI models for tasks su
 
 To connect with Cohere, you will need the **Access token**, which can be generated from **[Cohere Dashboard](https://dashboard.cohere.com/api-keys)**.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/cohere/config.png" alt="Cohere Configuration" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/cohere/config.png" alt="Cohere Configuration" />
 
 ## Supported Operations
 
@@ -58,7 +58,7 @@ Example Parameters:
 }
 ```
 
-<img className="screenshot-full" src="/img/marketplace/plugins/cohere/text-generation.png" alt="Cohere Text generation" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/cohere/text-generation.png" alt="Cohere Text generation" />
 
 <details id="tj-dropdown">
 <summary>**Response Example**</summary>
@@ -138,7 +138,7 @@ Example Parameters:
 }
 ```
 
-<img className="screenshot-full" src="/img/marketplace/plugins/cohere/chat.png" alt="Cohere Chat" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/cohere/chat.png" alt="Cohere Chat" />
 
 <details id="tj-dropdown">
 <summary>**Response Example**</summary>

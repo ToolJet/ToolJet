@@ -7,7 +7,7 @@ ToolJet can connect to Amazon Redshift, enabling your applications to query data
 
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/redshift/install.gif" alt="Marketplace Plugin: Amazon Redshift" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full img-full" src="/img/marketplace/plugins/redshift/install.gif" alt="Marketplace Plugin: Amazon Redshift" />
 </div>
 
 <br/>
@@ -34,7 +34,7 @@ To connect to Amazon Redshift, you need to provide the following details:
 - **Workgroup name**: The name of the workgroup you want to use to connect to the Redshift cluster.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/redshift/creds.png" alt="Marketplace Plugin: Amazon Redshift" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full img-full" src="/img/marketplace/plugins/redshift/creds.png" alt="Marketplace Plugin: Amazon Redshift" />
 </div>
 
 </div>

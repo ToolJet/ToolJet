@@ -18,7 +18,7 @@ ToolJet connects to your Salesforce account, allowing you to directly interact w
   - **Client Secret** - The consumer secret of your Salesforce connected app.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/salesforce/api_settings.png" alt="Salesforce Connected App API Settings" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full img-full" src="/img/marketplace/plugins/salesforce/api_settings.png" alt="Salesforce Connected App API Settings" />
 </div>
 
 - Establish a connection to Salesforce by either clicking `+Add new Data source` on the query panel or navigating to the [Data Sources](/docs/data-sources/overview/) page from the ToolJet dashboard.
@@ -32,7 +32,7 @@ ToolJet connects to your Salesforce account, allowing you to directly interact w
 - Once authenticated, click **Save data source** to store the data source.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/salesforce/setup.png" alt="Salesforece Install" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full img-full" src="/img/marketplace/plugins/salesforce/setup.png" alt="Salesforece Install" />
 </div>
 
 ## Querying Salesforce
@@ -54,7 +54,7 @@ ToolJet connects to your Salesforce account, allowing you to directly interact w
 - Click **Run** to execute the query.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/salesforce/soql-query.png" alt="SOQL Query" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full img-full" src="/img/marketplace/plugins/salesforce/soql-query.png" alt="SOQL Query" />
 </div>
 
 <br/>
@@ -74,7 +74,7 @@ To perform CRUD actions on Salesforce, select the **CRUD Action** operation from
   - **Resource Body** - The data you want to insert into the Salesforce object.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/salesforce/action-create.png" alt="Create" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full img-full" src="/img/marketplace/plugins/salesforce/action-create.png" alt="Create" />
 </div>
 
 ### Retrieve(Read)
@@ -84,7 +84,7 @@ To perform CRUD actions on Salesforce, select the **CRUD Action** operation from
   - **Resource ID** - The ID of the Salesforce object you want to retrieve.
 
   <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/salesforce/action-read.png" alt="Read" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full img-full" src="/img/marketplace/plugins/salesforce/action-read.png" alt="Read" />
 </div>
 
 ### Update
@@ -94,7 +94,7 @@ To perform CRUD actions on Salesforce, select the **CRUD Action** operation from
   - **Resource Body** - The data you want to update in the Salesforce object. The resource body should contain the ID of the Salesforce object you want to update.
 
   <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/salesforce/action-update.png" alt="Update" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full img-full" src="/img/marketplace/plugins/salesforce/action-update.png" alt="Update" />
 </div>
 
 ### Delete
@@ -104,7 +104,7 @@ To perform CRUD actions on Salesforce, select the **CRUD Action** operation from
   - **Resource ID** - The ID of the Salesforce object you want to delete.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/salesforce/action-delete.png" alt="Delete" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full img-full" src="/img/marketplace/plugins/salesforce/action-delete.png" alt="Delete" />
 </div>
 
 

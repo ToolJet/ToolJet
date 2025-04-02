@@ -9,7 +9,7 @@ Google Gemini can be integrated with ToolJet to build context-aware, intelligent
 
 To connect with Gemini, you will need the **API Key**, which can be generated from **[Google AI Studio](https://aistudio.google.com/apikey)**.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/gemini/config.png" alt="Gemini Configuration" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/gemini/config.png" alt="Gemini Configuration" />
 
 ## Supported Operations
 
@@ -35,7 +35,7 @@ Use this operation to generate text based on the prompt, system instructions, an
 
 - **Temperature**: Defines the randomness of the response. It takes a value between 0 and 1, with a default of 1.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/gemini/query.png" alt="Gemini Query" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/gemini/query.png" alt="Gemini Query" />
 
 <details id="tj-dropdown">
 <summary>**Response Example**</summary>
@@ -92,7 +92,7 @@ Use this operation for a chat-like conversation, where the model responds based 
 
 - **Temperature**: Defines the randomness of the response. It takes a value between 0 and 1, with a default of 1.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/gemini/chat-query.png" alt="Gemini Query" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/gemini/chat-query.png" alt="Gemini Query" />
 
 <details id="tj-dropdown">
 <summary>**Response Example**</summary>

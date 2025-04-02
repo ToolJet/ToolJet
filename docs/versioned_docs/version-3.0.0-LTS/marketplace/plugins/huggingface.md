@@ -7,7 +7,7 @@ Hugging Face integration with ToolJet enables you to use advanced natural langua
 
 This plugin leverages the Inference API from Hugging Face to ensure seamless integration with supported models. To confirm if a model is supported, refer to the Inference API section on its page on the **[Hugging Face](https://huggingface.co/models)**.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/huggingface/inference-api.png" alt="Hugging Face Configuration" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/huggingface/inference-api.png" alt="Hugging Face Configuration" />
 
 
 ## Connection
@@ -18,7 +18,7 @@ You can use the following toggles:
 - **Use Cache**: Use this to enable the cache layer on the inference API to accelerate response times for repeated requests. By default it is enabled.
 - **Wait for Model**: Use this to wait for the model to load if it is not ready, avoiding any errors. By default it is off.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/huggingface/config.png" alt="Hugging Face Configuration" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/huggingface/config.png" alt="Hugging Face Configuration" />
 
 ## Supported Operations
 
@@ -42,7 +42,7 @@ Use this operation to generate text based on the input and model settings. It pr
 
 - **Operation Parameters**: Additional parameters to configure the model response. These parameters might change based on model being used.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/huggingface/text-generation-query.png" alt="Gemini Query" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/huggingface/text-generation-query.png" alt="Gemini Query" />
 
 <details id="tj-dropdown">
 <summary>**Response Example**</summary>
@@ -102,7 +102,7 @@ Use this operation to create a summary of the input text based on the model sett
 
 - **Operation Parameters**: Additional parameters to configure the model response. These parameters might change based on model being used.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/huggingface/summary-query.png" alt="Gemini Query" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/huggingface/summary-query.png" alt="Gemini Query" />
 
 <details id="tj-dropdown">
 <summary>**Response Example**</summary>

@@ -11,7 +11,7 @@ At its core, Qdrant operates with points, which are records consisting of a vect
 
 To connect with Qdrant, you will need Qdrant URL and an API key, which can be generated from [Qdrant Cloud Dashboard](https://qdrant.to/cloud).
 
-<img className="screenshot-full" src="/img/marketplace/plugins/qdrant/config.png" alt="Qdrant Configuration" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/qdrant/config.png" alt="Qdrant Configuration" />
 
 ## Supported Operations
 
@@ -23,7 +23,7 @@ Use this operation to retrieve metadata and configuration details about a specif
 
 - **Collection Name:** Refers to the specific dataset stored in Qdrant.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/qdrant/get-collection-info.png" alt="Get Collection Info" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/qdrant/get-collection-info.png" alt="Get Collection Info" />
 
 <details id="tj-dropdown">
 <summary>**Example Response**</summary>
@@ -85,7 +85,7 @@ Use this operation to retrieve specific data points from a collection using thei
 - **Collection Name:** Refers to the specific dataset stored in Qdrant.
 - **IDs:** Unique identifiers for individual data points within the collection. They are used to locate and retrieve specific entries from the collection.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/qdrant/get-points.png" alt="Get Points" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/qdrant/get-points.png" alt="Get Points" />
 
 <details id="tj-dropdown">
 <summary>**Example Response**</summary>
@@ -117,7 +117,7 @@ Use this operation to remove specific data points from a collection using their 
 
 - **Filter:** Used to set conditions when searching or retrieving points.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/qdrant/delete-points.png" alt="Delete Points" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/qdrant/delete-points.png" alt="Delete Points" />
 
 ### Query Points
 
@@ -135,7 +135,7 @@ Use this operation to search data points in a collection using a query, typicall
 - **Include Metadata:** Specifies if metadata associated with the points should be returned (true or false).
 - **Filter:** Defines conditions to narrow down the search.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/qdrant/query-points.png" alt="Query Points" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/qdrant/query-points.png" alt="Query Points" />
 
 <details id="tj-dropdown">
 <summary>**Example Response**</summary>
@@ -166,4 +166,4 @@ Use this operation to add new data points or update existing ones in a collectio
 - **Collection Name:** Represents the group of data points where the new or updated points will be stored.
 - **Points:** The actual data being added or updated. Each point contains a unique identifier and optional attributes.
 
-<img className="screenshot-full" src="/img/marketplace/plugins/qdrant/upsert-points.png" alt="Upsert Points" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/qdrant/upsert-points.png" alt="Upsert Points" />

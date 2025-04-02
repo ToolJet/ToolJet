@@ -22,7 +22,7 @@ ToolJet connects to your PocketBase database, allowing you to directly interact 
 - Click **Test Connection** to validate your credentials. Click **Save** to store the data source.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/pocketbase/pocketbase_install.png" alt="PocketBase Install" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full img-full" src="/img/marketplace/plugins/pocketbase/pocketbase_install.png" alt="PocketBase Install" />
 </div>
 
 ## Querying PocketBase
@@ -36,7 +36,7 @@ ToolJet connects to your PocketBase database, allowing you to directly interact 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/pocketbase/add_query.gif" alt="PocketBase query" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/pocketbase/add_query.gif" alt="PocketBase query" />
 
 </div>
 
@@ -71,7 +71,7 @@ You can create query for PocketBase data source to perform several operations su
 
 
   <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/pocketbase/list_records.png" alt="List Records" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full img-full" src="/img/marketplace/plugins/pocketbase/list_records.png" alt="List Records" />
   </div>
 
 
@@ -83,7 +83,7 @@ You can create query for PocketBase data source to perform several operations su
 
 
   <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/pocketbase/get_record.png" alt="Get Record" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full img-full" src="/img/marketplace/plugins/pocketbase/get_record.png" alt="Get Record" />
 </div>
 
 ### Add Record to Collection
@@ -94,7 +94,7 @@ You can create query for PocketBase data source to perform several operations su
   
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/pocketbase/add_record.png" alt="Add Record" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full img-full" src="/img/marketplace/plugins/pocketbase/add_record.png" alt="Add Record" />
 </div>
 
 ### Update Record to Collection
@@ -106,7 +106,7 @@ You can create query for PocketBase data source to perform several operations su
 
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/pocketbase/update_record.png" alt="Update Record" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full img-full" src="/img/marketplace/plugins/pocketbase/update_record.png" alt="Update Record" />
 </div>
 
 ### Delete Record
@@ -117,7 +117,7 @@ You can create query for PocketBase data source to perform several operations su
 
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/pocketbase/delete_record.png" alt="Delete Record" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full img-full" src="/img/marketplace/plugins/pocketbase/delete_record.png" alt="Delete Record" />
 </div>
 
 

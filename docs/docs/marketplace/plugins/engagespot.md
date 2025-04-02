@@ -22,7 +22,7 @@ ToolJet connects to your Engagespot account, allowing you to send notifications,
 - Click **Test Connection** to validate your credentials. Click **Save** to store the data source.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/engagespot/engagespot_install.png" alt="Engagespot API Key" />
+    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full img-full" src="/img/marketplace/plugins/engagespot/engagespot_install.png" alt="Engagespot API Key" />
 </div>
 
 
@@ -40,7 +40,7 @@ Click on `+Add` button of the [query manager](/docs/app-builder/query-panel/#que
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/marketplace/plugins/engagespot/engagespot_query.png" alt="engagespot query" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/engagespot/engagespot_query.png" alt="engagespot query" />
 
 </div>
 
@@ -71,7 +71,7 @@ You can create query for Engagespot data source to perform several actions such 
   - **User Identifier** - Unique user identifier.
 
 <div style={{textAlign: 'center'}}>
-<img className="screenshot-full" src="/img/marketplace/plugins/engagespot/create_user.png" alt="engagespot create user" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/engagespot/create_user.png" alt="engagespot create user" />
 </div>
 <br/>
 
@@ -90,7 +90,7 @@ The user profile column accepts any key-value pairs in valid JSON object format.
   - **Notification Title** - The title for your notification.
 
 <div style={{textAlign: 'center'}}>
-<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/plugins/engagespot/send_notification.png" alt="engagespot send notitication"/>
+<img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full img-full" src="/img/marketplace/plugins/engagespot/send_notification.png" alt="engagespot send notitication"/>
 </div>
 <br/>
 
@@ -104,7 +104,7 @@ The user profile column accepts any key-value pairs in valid JSON object format.
   - **User Identifier** - Unique user identifier.
 
 <div style={{textAlign: 'center'}}>
-<img className="screenshot-full" src="/img/marketplace/plugins/engagespot/generate_token.png" alt="engagespot generate token" />
+<img className="screenshot-full img-full" src="/img/marketplace/plugins/engagespot/generate_token.png" alt="engagespot generate token" />
 </div>
 <br/>
 

@@ -8,7 +8,7 @@ title: Jira
 ToolJet allows you to connect to your Jira instance to perform various operations such as managing issues, users, worklogs, and boards.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/jira-homepage.png" alt="Jira Homepage" />
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/jira-homepage.png" alt="Jira Homepage" />
 </div>
 
 
@@ -22,7 +22,7 @@ To connect to your Jira instance, the following details are required:
 - **Token**: Your Jira API token
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/connect.png" alt="Jira Connect" />
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/connect.png" alt="Jira Connect" />
 </div>
 
 :::tip
@@ -76,7 +76,7 @@ ToolJet supports the following Jira resources and operations:
 This operation retrieves details of a specific Jira issue.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/get-issue.png" alt="Jira Get Issue"/>
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/get-issue.png" alt="Jira Get Issue"/>
 </div>
 
 #### Parameters:
@@ -98,7 +98,7 @@ Params/Body:
 This operation creates a new Jira issue.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/create-issue.png" alt="Jira Create Issue"/>
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/create-issue.png" alt="Jira Create Issue"/>
 </div>
 
 #### Parameters:
@@ -133,7 +133,7 @@ Params/Body:
 This operation deletes a specific Jira issue.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/delete-issue.png" alt="Jira Delete Issue"/>
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/delete-issue.png" alt="Jira Delete Issue"/>
 </div>
 
 #### Parameters:
@@ -151,7 +151,7 @@ Delete Subtasks: Yes // Can be Yes or No
 This operation assigns a Jira issue to a specific user.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/assign-issue.png" alt="Jira Assign Issue"/>
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/assign-issue.png" alt="Jira Assign Issue"/>
 </div>
 
 #### Parameters:
@@ -169,7 +169,7 @@ Account id: 712020:4581444c-054e-41d8-90ed-6d1d849557f7
 This operation modifies an existing Jira issue.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/edit-issue.png" alt="Jira Edit Issue"/>
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/edit-issue.png" alt="Jira Edit Issue"/>
 </div>
 
 #### Parameters:
@@ -195,7 +195,7 @@ Params/Body:
 This operation retrieves details of a specific Jira user.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/get-user.png" alt="Jira Get User"/>
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/get-user.png" alt="Jira Get User"/>
 </div>
 
 #### Parameters:
@@ -213,7 +213,7 @@ Expand: groups,applicationRoles
 This operation searches for users based on a query.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/find-users.png" alt="Jira Find Users"/>
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/find-users.png" alt="Jira Find Users"/>
 </div>
 
 #### Parameters:
@@ -233,7 +233,7 @@ Max results: 10
 This operation finds users that can be assigned to issues.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/assignable-users.png" alt="Jira Assignable Users"/>
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/assignable-users.png" alt="Jira Assignable Users"/>
 </div>
 
 #### Parameters:
@@ -270,7 +270,7 @@ Recommended: Yes
 This operation retrieves the worklogs for a specific issue.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/get-issue-worklogs.png" alt="Jira Get Issue Worklogs"/>
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/get-issue-worklogs.png" alt="Jira Get Issue Worklogs"/>
 </div>
 
 #### Parameters:
@@ -294,7 +294,7 @@ Started before: 1726228754515
 This operation adds a new worklog entry to an issue.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/add-worklog.png" alt="Jira Add Worklog"/>
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/add-worklog.png" alt="Jira Add Worklog"/>
 </div>
 
 #### Parameters:
@@ -320,7 +320,7 @@ Params/Body:
 This operation deletes a specific worklog entry from an issue.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/delete-worklog.png" alt="Jira Delete Worklog"/>
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/delete-worklog.png" alt="Jira Delete Worklog"/>
 </div>
 
 #### Parameters:
@@ -346,7 +346,7 @@ Params/Body:
 This operation retrieves issues from a board's backlog.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/backlog-issues.png" alt="Jira Backlog Issues"/>
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/backlog-issues.png" alt="Jira Backlog Issues"/>
 </div>
 
 #### Parameters:
@@ -374,7 +374,7 @@ Params/Body:
 This operation retrieves all boards visible to the user.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/all-boards.png" alt="Jira All Boards"/>
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/all-boards.png" alt="Jira All Boards"/>
 </div>
 
 #### Parameters:
@@ -398,7 +398,7 @@ Expand: projects
 This operation retrieves all issues from a specific board.
 
 <div style={{textAlign: 'center'}}>
-    <img className="screenshot-full" src="/img/marketplace/plugins/jira/board-issues.png" alt="Jira Board Issues"/>
+    <img className="screenshot-full img-full" src="/img/marketplace/plugins/jira/board-issues.png" alt="Jira Board Issues"/>
 </div>
 
 #### Parameters:

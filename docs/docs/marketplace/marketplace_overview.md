@@ -8,10 +8,10 @@ title: 'Marketplace: Overview'
 ToolJet Marketplace allows users to enhance their workspaces by adding custom plugins (data sources) tailored to their unique requirements. This functionality facilitates the seamless integration of user-created plugins with ToolJet.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/overview/marketplace-v2.png" alt="Marketplace Overview" />
+    <img className="screenshot-full img-full" src="/img/marketplace/overview/marketplace-v2.png" alt="Marketplace Overview" />
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Enabling Marketplace 
 
@@ -29,7 +29,7 @@ The logged-in user should be an **Administrator** to access the marketplace page
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Installing a Plugin
 
@@ -40,12 +40,12 @@ The Marketplace page will contain two tabs: **Installed** and **Marketplace**.
 Under the **Marketplace** tab, you will see a list of all the available plugins that can be installed on the workspace. To install a plugin, click on the **Install** button on the plugin's card. Once the installation is complete, the status will change from Install to **Installed**.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/overview/allplugins-v2.png" alt="List of All Plugins" /> 
+    <img className="screenshot-full img-full" src="/img/marketplace/overview/allplugins-v2.png" alt="List of All Plugins" /> 
 </div>
 
 </div>
 
-<div style={{paddingTop:'24px', paddingBottom:'24px'}}>
+<div style={{paddingTop:'24px'}}>
 
 ## Using Marketplace Plugins
 
@@ -57,7 +57,7 @@ You can access any installed plugins by following these steps:
 You can now see the list of installed marketplace plugins that you can configure as data sources.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{ border:'0', marginBottom:'15px', borderRadius:'5px', boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)' }} className="screenshot-full" src="/img/marketplace/overview/installed-plugins.png" alt="Installed plugins" />
+    <img className="screenshot-full img-full" src="/img/marketplace/overview/installed-plugins.png" alt="Installed plugins" />
 </div>
 
 - After successfully configuring a plugin, you can access it when trying to add a new query from the Query Panel.
