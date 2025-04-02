@@ -400,10 +400,15 @@ const JoinOn = ({
   onRemove,
 }) => {
   const [tooltipValue, setTooltipValue] = useState(condition?.leftField?.jsonpath || '');
+  const [rightFieldTooltipValue, setRightFieldTooltipValue] = useState(condition?.rightField?.jsonpath || '');
 
   useEffect(() => {
     setTooltipValue(condition?.leftField?.jsonpath || '');
   }, [condition?.leftField?.jsonpath]);
+
+  useEffect(() => {
+    setRightFieldTooltipValue(condition?.rightField?.jsonpath || '');
+  }, [condition?.rightField?.jsonpath]);
 
   const { tableInfo, findTableDetails } = useContext(TooljetDatabaseContext);
   const { operator, leftField, rightField } = condition;
@@ -615,8 +620,8 @@ const JoinOn = ({
             <div className="tjdb-codehinter-jsonpath">
               <ToolTip
                 message={
-                  condition?.rightField?.jsonpath
-                    ? condition.rightField.jsonpath
+                  rightFieldTooltipValue
+                    ? rightFieldTooltipValue
                     : 'Access nested JSON fields by using -> for JSON object and ->> for text'
                 }
                 tooltipClassName="tjdb-table-tooltip"
@@ -639,6 +644,9 @@ const JoinOn = ({
                             jsonpath: value,
                           },
                         });
+                    }}
+                    onInputChange={(value) => {
+                      setRightFieldTooltipValue(value);
                     }}
                     enablePreview={false}
                     height="30"
