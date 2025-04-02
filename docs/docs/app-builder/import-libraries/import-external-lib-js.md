@@ -1,6 +1,6 @@
 ---
-id: import-external-libraries-using-runjs
-title: Import External Libraries using RunJS
+id: runjs
+title: Using RunJS
 ---
 <div style={{paddingBottom:'24px'}}>
 
@@ -12,7 +12,7 @@ ToolJet allows you to integrate external JavaScript libraries into your applicat
 
 ## Choosing Libraries
 
-You can import various JavaScript libraries using their Content Delivery Network (CDN) links. Find the CDN links for your desired open-source projects on [jsDelivr](https://www.jsdelivr.com/).
+You can import various JavaScript libraries using their Content Delivery Network (CDN) links. Find the CDN links for your desired open-source projects on [jsDelivr](https://www.jsdelivr.com/). 
 
 </div>
 

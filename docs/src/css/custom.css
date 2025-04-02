@@ -151,6 +151,12 @@ h3 {
   color: #BF4F03;
 }
 
+.badge--self-hosted {
+  margin-bottom: 1rem;
+  background-color: #ECF0FE;
+  color: #4368E3;
+}
+
 .badge img {
   box-shadow: none;
 }

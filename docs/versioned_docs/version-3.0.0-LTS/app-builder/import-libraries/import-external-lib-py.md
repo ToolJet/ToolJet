@@ -1,6 +1,6 @@
 ---
-id: import-external-libraries-using-runpy
-title: Import External Libraries Using RunPy
+id: runpy
+title: Using RunPy
 ---
 <div style={{paddingBottom:'24px'}}>
 
