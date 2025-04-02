@@ -20,7 +20,7 @@ export const formConfig = {
       styles: ['fontWeight', 'textSize', 'textColor'],
       defaultValue: {
         text: 'Form',
-        textSize: 20,
+        textSize: 16,
         textColor: '#000',
       },
     },
@@ -201,11 +201,13 @@ export const formConfig = {
     headerHeight: {
       type: 'numberInput',
       displayName: 'Header height',
+      isHidden: true,
       validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 80 },
     },
     footerHeight: {
       type: 'numberInput',
       displayName: 'Footer height',
+      isHidden: true,
       validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: 80 },
     },
     visibility: {

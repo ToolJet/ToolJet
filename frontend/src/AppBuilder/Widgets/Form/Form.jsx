@@ -266,16 +266,17 @@ export const Form = function Form(props) {
   const activeSlot = useActiveSlot(id); // Track the active slot for this widget
   const setComponentProperty = useStore((state) => state.setComponentProperty, shallow);
   const updateHeaderSizeInStore = ({ newHeight }) => {
-    const heightInPx = `${parseInt(newHeight, 10)}px`;
-    setComponentProperty(id, `headerHeight`, heightInPx, 'properties', 'value', false);
+    const _height = parseInt(newHeight, 10);
+    setComponentProperty(id, `headerHeight`, _height, 'properties', 'value', false);
   };
 
   const updateFooterSizeInStore = ({ newHeight }) => {
-    const heightInPx = `${parseInt(newHeight, 10)}px`;
-    setComponentProperty(id, `footerHeight`, heightInPx, 'properties', 'value', false);
+    const _height = parseInt(newHeight, 10);
+    setComponentProperty(id, `footerHeight`, _height, 'properties', 'value', false);
   };
 
-  // debugger;
+  const mode = useStore((state) => state.currentMode, shallow);
+  const isEditing = mode === 'edit';
   const headerMaxHeight = parseInt(height, 10) - parseInt(footerHeight, 10) - 100 - 10;
   const footerMaxHeight = parseInt(height, 10) - parseInt(headerHeight, 10) - 100 - 10;
   const formFooter = {
@@ -315,7 +316,7 @@ export const Form = function Form(props) {
         <HorizontalSlot
           slotName="header"
           slotStyle={formHeader}
-          isEditing={true}
+          isEditing={mode === 'edit'}
           id={`${id}-header`}
           height={headerHeight}
           width={width}
@@ -390,7 +391,7 @@ export const Form = function Form(props) {
         <HorizontalSlot
           slotName="footer"
           slotStyle={formFooter}
-          isEditing={true}
+          isEditing={mode === 'edit'}
           id={`${id}-footer`}
           height={footerHeight}
           width={width}

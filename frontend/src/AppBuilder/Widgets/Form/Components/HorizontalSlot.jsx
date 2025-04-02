@@ -14,6 +14,7 @@ export const HorizontalSlot = React.memo(
     slotName = 'header', // 'header' or 'footer'
     slotStyle = {},
     onResize,
+    isEditing,
     maxHeight,
   }) => {
     const parsedHeight = parseInt(height, 10);
@@ -47,7 +48,9 @@ export const HorizontalSlot = React.memo(
     return (
       <div className={`jet-form-${slotName} wj-form-${slotName}`} style={slotStyle}>
         <div
-          className={`resizable-slot only-${slotName} ${isActive ? 'active' : ''} ${isDragging ? 'dragging' : ''}`}
+          className={`resizable-slot only-${slotName} ${isActive ? 'active' : ''}  ${isEditing && 'is-editing'} ${
+            isDragging ? 'dragging' : ''
+          }`}
           {...getRootProps()}
         >
           <SubContainer

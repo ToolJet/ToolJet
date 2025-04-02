@@ -52,15 +52,15 @@
   transition: box-shadow 0.15s ease-in-out;
   max-height: 100%;
 
-  &:hover {
+  &.is-editing:hover {
     box-shadow: 0 0 0 1px var(--border-weak);
   }
 
-  &.active {
+  &is-editing.active {
     box-shadow: 0 0 0 1px var(--border-accent-weak);
   }
 
-  &.dragging {
+  &.is-editing.dragging {
     box-shadow: 0 0 0 1px var(--border-accent-strong);
   }
 
