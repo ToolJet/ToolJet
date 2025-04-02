@@ -300,7 +300,7 @@ export const DateTimePicker = ({
   return (
     <div
       data-disabled={styles.disabledState}
-      className={cx('datepicker-widget', {
+      className={cx('datepicker-widget position-relative', {
         'theme-tjdb': !darkMode,
         'theme-dark': darkMode,
       })}
@@ -323,10 +323,10 @@ export const DateTimePicker = ({
           'input-value-padding': transformedTimestamp,
         })}
         popperPlacement={'bottom-start'}
-        popperClassName={cx({
-          'tjdb-datepicker-reset': !isEditCell,
-          'tjdb-datepicker-celledit-reset': isEditCell,
-        })}
+        // popperClassName={cx({
+        //   'tjdb-datepicker-reset': !isEditCell,
+        //   'tjdb-datepicker-celledit-reset': isEditCell,
+        // })}
         onInputClick={() => {
           setIsOpen(true);
         }}
