@@ -73,10 +73,9 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
       let found = false;
       let title = '';
       let currentNumber = tabItems.length + 1;
-      let id = 't' + currentNumber;
+      let id = `t${currentNumber}`;
       while (!found) {
         title = `Tab ${currentNumber}`;
-        id = currentNumber;
         if (tabItems.find((tabItem) => tabItem.title === title) === undefined) {
           found = true;
         }

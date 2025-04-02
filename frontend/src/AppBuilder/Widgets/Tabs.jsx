@@ -9,6 +9,7 @@ import * as Icons from '@tabler/icons-react';
 import { set } from 'lodash';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
+import OverflowTooltip from '@/_components/OverflowTooltip';
 const TabsNavShimmer = ({ divider, headerBackground }) => {
   return (
     <div
@@ -241,7 +242,7 @@ export const Tabs = function Tabs({
           display: computeTabDisplay(id, tab.id),
           height: parsedHideTabs ? height : height - 41,
           position: 'absolute',
-          top: parsedHideTabs ? '0px' : '41px',
+          top: parsedHideTabs ? '0px' : '50px',
           width: '100%',
         }}
       >
@@ -370,18 +371,18 @@ export const Tabs = function Tabs({
   }
 
   const equalSplitWidth = 100 / tabItems?.length || 1;
+  const someTabsVisible = tabItems?.filter((tab) => tab?.visible !== false);
   return (
     <div
       data-disabled={isDisabled}
       className="card tabs-component"
       style={{
-        height: height + 4,
+        height: padding === 'default' ? height : height + 4,
         display: isVisible ? 'flex' : 'none',
         backgroundColor: darkMode ? '#324156' : '#fff',
         boxShadow,
         borderRadius: `${borderRadius}px`,
         overflow: 'hidden',
-        ...(padding === 'default' ? { padding: '4px' } : { padding: '0px' }),
         ...(border ? { border: `1px solid ${border}` } : { border: 'none' }),
         // border: 'none',
       }}
@@ -393,7 +394,7 @@ export const Tabs = function Tabs({
       ) : (
         <div
           style={{
-            borderBottom: `0.5px solid ${divider}`,
+            borderBottom: someTabsVisible?.length > 0 && `0.5px solid ${divider}`,
             display: 'flex',
             alignItems: 'center',
             width: '100%',
@@ -466,66 +467,41 @@ export const Tabs = function Tabs({
                   }}
                   key={tab.id}
                 >
-                  {tab.title.length > 8 ? (
-                    <OverlayTrigger
-                      trigger={['click', 'hover', 'focus']}
-                      placement="bottom"
-                      delay={{ show: 250, hide: 200 }}
-                      overlay={<Tooltip id="button-tooltip">{tab.title}</Tooltip>}
-                    >
-                      <div
-                        data-disabled={tab?.disable}
-                        style={{
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          textAlign: 'center',
-                          fontWeight: '500',
-                          background: isHovered && hoveredTabId === tab.id ? hoverBackground : 'transparent',
-                          borderRadius: '6px',
-                          width: '100%',
-                          paddingTop: '.25rem ',
-                          paddingBottom: '.25rem',
-                          paddingLeft: '1rem',
-                          paddingRight: '1rem',
-                          ...(currentTab == tab.id ? { color: selectedText } : { color: unselectedText }),
-                          display: 'flex',
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '4px',
-                        }}
-                      >
+                  <div
+                    data-disabled={tab?.disable}
+                    style={{
+                      textAlign: 'center',
+                      fontWeight: '500',
+                      background: isHovered && hoveredTabId === tab.id ? hoverBackground : 'transparent',
+                      borderRadius: '6px',
+                      paddingTop: '.25rem ',
+                      paddingBottom: '.25rem',
+                      paddingLeft: '1rem',
+                      paddingRight: '1rem',
+                      ...(currentTab == tab.id ? { color: selectedText } : { color: unselectedText }),
+                      display: 'flex',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '4px',
+                    }}
+                  >
+                    {tabWidth === 'split' ? (
+                      <>
+                        <OverflowTooltip boxWidth={width}>
+                          <>
+                            <a>{getTabIcon(tab)}</a>
+                            {tab.title}
+                          </>
+                        </OverflowTooltip>
+                      </>
+                    ) : (
+                      <span>
                         <a>{getTabIcon(tab)}</a>
-                        <span>{tab.title.length > 10 ? `${tab.title.substring(0, 10)}...` : `${tab.title}...`}</span>
-                      </div>
-                    </OverlayTrigger>
-                  ) : (
-                    <div
-                      data-disabled={tab?.disable}
-                      style={{
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        textAlign: 'center',
-                        fontWeight: '500',
-                        background: isHovered && hoveredTabId === tab.id ? hoverBackground : 'transparent',
-                        borderRadius: '6px',
-                        width: '100%',
-                        paddingTop: '.25rem ',
-                        paddingBottom: '.25rem',
-                        paddingLeft: '1rem',
-                        paddingRight: '1rem',
-                        ...(currentTab == tab.id ? { color: selectedText } : { color: unselectedText }),
-                        display: 'flex',
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '4px',
-                      }}
-                    >
-                      <a>{getTabIcon(tab)}</a>
-                      <span>{tab.title}</span>
-                    </div>
-                  )}
+                        {tab.title}
+                      </span>
+                    )}
+                  </div>
                 </li>
               ))}
           </ul>
