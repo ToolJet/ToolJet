@@ -317,12 +317,12 @@ export const invitePageElements = () => {
     .and("equal", "https://www.tooljet.com/privacy");
 };
 
-export const updateId = () => {
-  cy.task("updateId", {
+export const dbConnection = () => {
+  cy.task("dbConnection", {
     dbconfig: Cypress.config("db"),
     sql: "update sso_configs set id='5edf41b2-ff2b-4932-9e2a-08aef4a303cc' where sso='google';",
   });
-  cy.task("updateId", {
+  cy.task("dbConnection", {
     dbconfig: Cypress.config("db"),
     sql: "update sso_configs set id='9628dee2-6fa9-4aca-9c98-ef950601c83e' where sso='git';",
   });
@@ -331,18 +331,18 @@ export const updateId = () => {
 export const setSSOStatus = (workspaceName, ssoType, enabled) => {
   let workspaceId;
 
-  cy.task("updateId", {
+  cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
     sql: `SELECT id FROM organizations WHERE name = '${workspaceName}'`,
   }).then((resp) => {
     workspaceId = resp.rows[0].id;
 
-    cy.task("updateId", {
+    cy.task("dbConnection", {
       dbconfig: Cypress.env("app_db"),
       sql: `SELECT * FROM sso_configs WHERE organization_id = '${workspaceId}' AND sso = '${ssoType}'`,
     }).then((ssoConfigResp) => {
       if (ssoConfigResp.rows.length > 0) {
-        cy.task("updateId", {
+        cy.task("dbConnection", {
           dbconfig: Cypress.env("app_db"),
           sql: `UPDATE sso_configs SET enabled = ${enabled ? "true" : "false"
             } WHERE organization_id = '${workspaceId}' AND sso = '${ssoType}'`,
@@ -372,7 +372,7 @@ export const defaultSSO = (enable) => {
 };
 
 export const setSignupStatus = (enable, workspaceName = 'My workspace') => {
-  cy.task("updateId", {
+  cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
     sql: `SELECT id FROM organizations WHERE name = '${workspaceName}'`,
   }).then((resp) => {
@@ -381,7 +381,7 @@ export const setSignupStatus = (enable, workspaceName = 'My workspace') => {
     cy.getCookie("tj_auth_token").then((cookie) => {
       cy.request({
         method: "PATCH",
-        url: `${Cypress.env("server_host")}/api/organizations`,
+        url: `${Cypress.env("server_host")}/api/login-configs/organization-general`,
         headers: {
           "Tj-Workspace-Id": workspaceId,
           Cookie: `tj_auth_token=${cookie.value}`,
@@ -396,13 +396,13 @@ export const setSignupStatus = (enable, workspaceName = 'My workspace') => {
 
 export const deleteOrganisationSSO = (workspaceName, services) => {
   let workspaceId;
-  cy.task("updateId", {
+  cy.task("dbConnection", {
     dbconfig: Cypress.env("app_db"),
     sql: `select id from organizations where name='${workspaceName}';`,
   }).then((resp) => {
     workspaceId = resp.rows[0].id;
 
-    cy.task("updateId", {
+    cy.task("dbConnection", {
       dbconfig: Cypress.env("app_db"),
       sql: `DELETE FROM sso_configs WHERE organization_id = '${workspaceId}' AND sso IN (${services
         .map((service) => `'${service}'`)

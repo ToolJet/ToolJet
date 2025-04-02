@@ -15,6 +15,7 @@ describe("App Slug", () => {
   beforeEach(() => {
     data.slug = `${fake.companyName.toLowerCase()}-app`;
     data.appName = `${fake.companyName} App`;
+    cy.log(Cypress.env("workspaceId"));
     cy.defaultWorkspaceLogin();
   });
 
@@ -24,6 +25,8 @@ describe("App Slug", () => {
     cy.apiCreateApp(data.appName);
     cy.wait(1000);
     cy.apiLogout();
+    cy.log(Cypress.env("workspaceId"));
+
   });
 
   it("Verify app slug cases in global settings", () => {

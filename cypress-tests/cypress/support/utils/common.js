@@ -91,7 +91,7 @@ export const navigateToAppEditor = (appName) => {
     .find(commonSelectors.editButton)
     .click({ force: true });
   if (Cypress.env("environment") === "Community") {
-    cy.intercept("GET", "/api/v2/data_sources").as("appDs");
+    cy.intercept("GET", "/api/data-sources").as("appDs");
     cy.wait("@appDs", { timeout: 15000 });
     cy.skipEditorPopover();
   } else {

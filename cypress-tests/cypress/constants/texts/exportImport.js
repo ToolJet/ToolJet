@@ -1,7 +1,7 @@
 export const appVersionText = {
   createNewVersion: "Create new version",
   createVersion: "Create Version",
-  versionNameLabel: "Version Name",
+  versionNameLabel: "Version name",
   createVersionFromLabel: "Create version from",
   emptyToastMessage: "Version name should not be empty",
   createdToastMessage: "Version Created",

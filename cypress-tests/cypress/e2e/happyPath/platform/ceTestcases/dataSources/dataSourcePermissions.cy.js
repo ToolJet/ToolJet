@@ -183,7 +183,7 @@ describe("Datasource Manager", () => {
       data.dsName1
     );
 
-    cy.intercept("GET", "/api/v2/data_sources").as("datasource");
+    // cy.intercept("GET", "/api/v2/data_sources").as("datasource");
     fillConnectionForm(
       {
         Host: Cypress.env("pg_host"),
@@ -194,7 +194,8 @@ describe("Datasource Manager", () => {
       },
       ".form-switch"
     );
-    cy.wait("@datasource");
+    // cy.wait("@datasource");
+    cy.wait(1000);
 
     cy.apiCreateApp(data.appName);
     cy.openApp();
@@ -223,7 +224,7 @@ describe("Datasource Manager", () => {
     cy.get('[data-cy="databases-datasource-button"]').should("be.visible");
 
     cy.apiCreateGDS(
-      `${Cypress.env("server_host")}/api/v2/data_sources`,
+      `${Cypress.env("server_host")}/api/data-sources`,
       `cypress-${data.dsName2}-postgresql`,
       "postgresql",
       [

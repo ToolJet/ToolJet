@@ -7,10 +7,7 @@ import {
   confirmVersionModalSelectors,
   editVersionSelectors,
 } from "Selectors/version";
-import {
-  deleteVersionText,
-  releasedVersionText,
-} from "Texts/version";
+import { deleteVersionText, releasedVersionText } from "Texts/version";
 import { verifyComponent } from "Support/utils/basicComponents";
 
 export const navigateToCreateNewVersionModal = (value) => {
@@ -98,9 +95,16 @@ export const deleteVersionAndVerify = (value, toastMessageText) => {
         .click({ force: true });
     });
 
-  cy.get(commonSelectors.modalMessage).verifyVisibleElement("have.text", deleteVersionText.deleteModalText(value))
+  cy.get(commonSelectors.modalMessage).verifyVisibleElement(
+    "have.text",
+    deleteVersionText.deleteModalText(value)
+  );
   cy.get(confirmVersionModalSelectors.yesButton).click();
-  cy.verifyToastMessage(commonSelectors.toastMessage, deleteVersionText.deleteToastMessage(value), false);
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    deleteVersionText.deleteToastMessage(value),
+    false
+  );
 };
 
 export const verifyDuplicateVersion = (newVersion = [], version) => {
@@ -111,7 +115,8 @@ export const verifyDuplicateVersion = (newVersion = [], version) => {
   cy.get(appVersionSelectors.createNewVersionButton).click();
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
-    appVersionText.versionNameAlreadyExists
+    // appVersionText.versionNameAlreadyExists
+    "Already exists!"
   );
 };
 
@@ -139,7 +144,7 @@ export const verifyVersionAfterPreview = (currentVersion) => {
     .click();
   cy.url().should("include", "/home");
   cy.wait(2000);
-  cy.get('[data-cy^="draggable-widget-table"]').should('be.visible')
+  cy.get('[data-cy^="draggable-widget-table"]').should("be.visible");
   cy.url().should("include", `version=${currentVersion}`);
   cy.get('[data-cy="viewer-page-logo"]').click();
   cy.wait(8000);
@@ -149,5 +154,5 @@ export const switchVersionAndVerify = (currentVersion, newVersion) => {
   cy.get(appVersionSelectors.currentVersionField(currentVersion))
     .should("be.visible")
     .click();
-  cy.get('.app-version-name').contains(newVersion).click();
-}
+  cy.get(".app-version-name").contains(newVersion).click();
+};

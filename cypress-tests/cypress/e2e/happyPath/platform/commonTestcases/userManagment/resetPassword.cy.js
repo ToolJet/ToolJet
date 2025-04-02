@@ -82,7 +82,7 @@ describe("Password reset functionality", () => {
     });
 
     // Get and visit reset password link
-    cy.task("updateId", {
+    cy.task("dbConnection", {
       dbconfig: Cypress.env("app_db"),
       sql: `select forgot_password_token from users where email='${data.email}';`,
     }).then((resp) => {
