@@ -7,6 +7,7 @@ import {
   getFilteredRowModel,
 } from '@tanstack/react-table';
 import { applyFilters } from '../_components/Header/_components/Filter/filterUtils';
+import { v4 as uuidv4 } from 'uuid';
 
 export function useTable({
   data,
@@ -32,7 +33,15 @@ export function useTable({
 
   // When the columns change, the data is not getting re-rendered. So, we need to create a new data array
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const newData = useMemo(() => [...data], [data, columns]);
+  const newData = useMemo(
+    () =>
+      data.map((row) => ({
+        ...row,
+        uniqueId: row.uniqueId || uuidv4(), // Use existing ID if available
+      })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [data, columns]
+  );
 
   const table = useReactTable({
     data: newData,
@@ -44,7 +53,7 @@ export function useTable({
     getFilteredRowModel: getFilteredRowModel(),
     enableColumnResizing: true,
     columnResizeMode: 'onChange',
-    getRowId: (row) => row.uuid,
+    getRowId: (row) => row.uniqueId,
     enableRowSelection: true,
     enableMultiRowSelection: showBulkSelector,
     state: {

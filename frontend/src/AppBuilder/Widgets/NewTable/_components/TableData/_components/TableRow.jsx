@@ -27,7 +27,7 @@ export const TableRow = ({
 
   return (
     <tr
-      key={row.id}
+      key={row.uniqueId}
       ref={measureElement}
       data-index={virtualRow.index}
       style={{
