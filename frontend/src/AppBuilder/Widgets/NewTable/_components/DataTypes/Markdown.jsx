@@ -2,24 +2,30 @@ import React, { useState, useEffect } from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 import { default as ReactMarkdown } from 'react-markdown';
+import useTextColor from '../DataTypes/_hooks/useTextColor';
+import useTableStore from '../../_stores/tableStore';
+import { getMaxHeight } from '../../_utils/helper';
+import { shallow } from 'zustand/shallow';
+import remarkBreaks from 'remark-breaks';
 import DOMPurify from 'dompurify';
 
-const Markdown = ({
+export const MarkdownColumn = ({
+  id,
   isEditable,
   darkMode,
   handleCellValueChange,
-  cellTextColor,
+  textColor,
   cellValue,
   column,
   containerWidth,
   cell,
   horizontalAlignment,
-  isMaxRowHeightAuto,
   cellSize,
-  maxRowHeightValue,
 }) => {
   const ref = React.useRef(null);
-
+  const cellTextColor = useTextColor(id, textColor, 'json');
+  const isMaxRowHeightAuto = useTableStore((state) => state.getTableStyles(id)?.isMaxRowHeightAuto, shallow);
+  const maxRowHeightValue = useTableStore((state) => state.getTableStyles(id)?.maxRowHeightValue, shallow);
   const [hovered, setHovered] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -28,7 +34,15 @@ const Markdown = ({
   };
 
   const getCellValue = (value) => {
-    return DOMPurify.sanitize(value);
+    let transformedValue = value;
+    if (typeof value !== 'string') {
+      try {
+        transformedValue = String(value);
+      } catch (e) {
+        transformedValue = '';
+      }
+    }
+    return DOMPurify.sanitize(transformedValue.trim());
   };
 
   useEffect(() => {
@@ -51,7 +65,7 @@ const Markdown = ({
             whiteSpace: 'pre-wrap',
           }}
         >
-          <ReactMarkdown>{getCellValue(cellValue)}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkBreaks]}>{getCellValue(cellValue)}</ReactMarkdown>
         </span>
       </div>
     );
@@ -60,7 +74,7 @@ const Markdown = ({
   const renderEditable = () => {
     const onChange = (e) => {
       if (cellValue !== e.target.textContent) {
-        const value = e.target.textContent.replace(/\n/g, '');
+        const value = e.target.textContent;
         handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
       }
     };
@@ -69,7 +83,7 @@ const Markdown = ({
       <div
         ref={ref}
         contentEditable={'true'}
-        className={`h-100 text-container long-text-input d-flex align-items-center ${
+        className={`h-100 text-container long-text-input d-flex${
           darkMode ? ' textarea-dark-theme' : ''
         } justify-content-${determineJustifyContentValue(horizontalAlignment)}`}
         tabIndex={-1}
@@ -80,6 +94,7 @@ const Markdown = ({
           background: 'inherit',
           position: 'relative',
           height: '100%',
+          flexDirection: 'column',
         }}
         readOnly={!isEditable}
         onBlur={(e) => {
@@ -87,7 +102,7 @@ const Markdown = ({
           onChange(e);
         }}
         onKeyDown={(e) => {
-          if (e.key === 'Enter') {
+          if (e.key === 'Enter' && !e.shiftKey) {
             ref.current.blur();
             onChange(e);
           }
@@ -97,7 +112,11 @@ const Markdown = ({
           e.stopPropagation();
         }}
       >
-        {isEditing ? cellValue : <ReactMarkdown>{getCellValue(cellValue)}</ReactMarkdown>}
+        {isEditing ? (
+          cellValue
+        ) : (
+          <ReactMarkdown remarkPlugins={[remarkBreaks]}>{getCellValue(cellValue)}</ReactMarkdown>
+        )}
       </div>
     );
   };
@@ -132,17 +151,11 @@ const Markdown = ({
           >
             <span
               style={{
-                maxHeight: isMaxRowHeightAuto
-                  ? 'fit-content'
-                  : maxRowHeightValue
-                  ? `${maxRowHeightValue}px`
-                  : cellSize === 'condensed'
-                  ? '39px'
-                  : '45px',
+                maxHeight: getMaxHeight(isMaxRowHeightAuto, maxRowHeightValue, cellSize),
                 whiteSpace: 'pre-wrap',
               }}
             >
-              <ReactMarkdown>{getCellValue(cellValue)}</ReactMarkdown>
+              <ReactMarkdown remarkPlugins={[remarkBreaks]}>{getCellValue(cellValue)}</ReactMarkdown>
             </span>
           </div>
         ) : (
@@ -162,5 +175,3 @@ const Markdown = ({
     </>
   );
 };
-
-export default Markdown;
