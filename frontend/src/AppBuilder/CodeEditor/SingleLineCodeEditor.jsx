@@ -432,7 +432,7 @@ const DynamicEditorBridge = (props) => {
 
   const [forceCodeBox, setForceCodeBox] = React.useState(fxActive);
   const codeShow = paramType === 'code' || forceCodeBox;
-  const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format'];
+  const HIDDEN_CODE_HINTER_LABELS = ['Table data', 'Column data', 'Text Format', 'Slider type'];
   const { isFxNotRequired } = fieldMeta;
   const { t } = useTranslation();
   const [_, error, value] = type === 'fxEditor' ? resolveReferences(initialValue) : [];
