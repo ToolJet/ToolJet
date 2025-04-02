@@ -34,6 +34,8 @@ export default function AppCard({
   const navigate = useNavigate();
   const cardRef = useRef();
   const [popoverVisible, setPopoverVisible] = useState(true);
+  const [isNameOverflowing, setIsNameOverflowing] = useState(false);
+  const h3Ref = useRef(null);
 
   const onMenuToggle = useCallback(
     (status) => {
@@ -83,6 +85,18 @@ export default function AppCard({
       }
     };
   }, [isMenuOpen]);
+
+  useEffect(() => {
+    const checkOverflow = () => {
+      if (h3Ref.current) {
+        setIsNameOverflowing(h3Ref.current.scrollWidth > h3Ref.current.clientWidth);
+      }
+    };
+
+    checkOverflow();
+    window.addEventListener('resize', checkOverflow);
+    return () => window.removeEventListener('resize', checkOverflow);
+  }, []);
 
   const updated_at = app?.editing_version?.updated_at || app?.updated_at;
   const updated = moment(updated_at).fromNow(true);
@@ -197,14 +211,25 @@ export default function AppCard({
           </div>
         </div>
         <div>
-          <ToolTip trigger={['hover']} message={app.name}>
+          {isNameOverflowing ? (
+            <ToolTip trigger={['hover']} message={app.name}>
+              <h3
+                ref={h3Ref}
+                className="app-card-name font-weight-500 tj-text-md"
+                data-cy={`${app.name.toLowerCase().replace(/\s+/g, '-')}-title`}
+              >
+                {decodeEntities(app.name)}
+              </h3>
+            </ToolTip>
+          ) : (
             <h3
+              ref={h3Ref}
               className="app-card-name font-weight-500 tj-text-md"
               data-cy={`${app.name.toLowerCase().replace(/\s+/g, '-')}-title`}
             >
               {decodeEntities(app.name)}
             </h3>
-          </ToolTip>
+          )}
         </div>
         <div className="app-creation-time-container" style={{ marginBottom: '12px' }}>
           {canUpdate && (
