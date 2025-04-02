@@ -21,7 +21,7 @@ Whenever you create a new application(s), you will see an option to select the *
 
 **Note**: If the app name is same as the name of an existing app in the git repo, it will overwrite the existing app in the git repo.
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/gitsync/commitchanges.png" alt="GitLab SSH Key" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/gitsync/commitchanges-v2.png" alt="GitLab SSH Key" />
 
 Selecting the **Commit changes** option will create a new commit in the git repository. The commit message will be `App <app_name> created` and the author will be the user who created the app.
 
@@ -141,7 +141,7 @@ When you promote an environment, from **Development to Staging**, the changes wi
 
  </Tabs>
 
-<img className="screenshot-full" src="/img/gitsync/autocommit-v2.png" alt="GitSync" />
+<img className="screenshot-full" src="/img/gitsync/autocommit-v3.png" alt="GitSync" />
 
 ## App Deletion
 

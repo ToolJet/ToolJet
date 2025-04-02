@@ -13,7 +13,7 @@ To restore an application from a git repository, click on the kebab menu (three 
 
 On clicking the **Import from git repository** option, a modal will open with the dropdown to select the app to be imported from the git repository. Once the app is selected, the app name and the last commit will be displayed. Click on the **Import app** button to import the app from the git repository. 
 
-<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/gitsync/importmodal-v2.png" alt="GitSync" />
+<img style={{ marginBottom:'15px' }} className="screenshot-full" src="/img/gitsync/importmodal-v3.png" alt="GitSync" />
 
 **Note**:
 - The app imported from the git repository cannot be edited. To edit the application, you will need to clone it.
@@ -30,5 +30,5 @@ You can check for updates and pull changes from the git repository by following 
 
 3. Click on the **Pull changes** button to pull the changes from the git repository.
 
-    <img className="screenshot-full" src="/img/gitsync/updatecheck.png" alt="GitSync" />
+    <img className="screenshot-full" src="/img/gitsync/updatecheck-v2.png" alt="GitSync" />
 
