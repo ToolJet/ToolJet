@@ -24,6 +24,7 @@ const SHOW_ADDITIONAL_ACTIONS = [
   'RichTextEditor',
   'Image',
   'ModalV2',
+  'RangeSlider',
 ];
 const PROPERTIES_VS_ACCORDION_TITLE = {
   Text: 'Data',
@@ -36,6 +37,7 @@ const PROPERTIES_VS_ACCORDION_TITLE = {
   Image: 'Data',
   Container: 'Data',
   ModalV2: 'Data',
+  RangeSlider: 'Data',
 };
 
 export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
@@ -88,6 +90,8 @@ export const DefaultComponent = ({ componentMeta, darkMode, ...restProps }) => {
     additionalActions
   );
 
+  console.log({ accordionItems });
+
   return <Accordion items={accordionItems} />;
 };
 
@@ -129,6 +133,7 @@ export const baseComponentProperties = (
       'DropdownV2',
       'MultiselectV2',
       'Image',
+      'RangeSlider',
     ],
     Layout: [],
   };
