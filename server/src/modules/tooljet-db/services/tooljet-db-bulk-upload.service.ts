@@ -409,13 +409,12 @@ export class TooljetDbBulkUploadService {
     }
 
     if (rowsToUpsert.length > this.MAX_ROW_COUNT) {
-      rowsToUpsert = [...rowsToUpsert.slice(0, this.MAX_ROW_COUNT)];
+      rowsToUpsert = rowsToUpsert.slice(0, this.MAX_ROW_COUNT);
     }
 
     const internalTable = await this.manager.findOne(InternalTable, {
       where: { organizationId, id: tableId },
     });
-
     if (!internalTable) {
       return {
         status: 'failed',
@@ -429,7 +428,6 @@ export class TooljetDbBulkUploadService {
     const result = await this.tableOperationsService.perform(organizationId, 'view_table', {
       id: tableId,
     });
-
     const tableColumns = result?.columns || [];
 
     const invalidPrimaryKeys = primaryKeyColumns.filter((pk) => !tableColumns.some((col) => col.column_name === pk));
@@ -443,140 +441,108 @@ export class TooljetDbBulkUploadService {
       };
     }
 
-    const notNullColumns = tableColumns
-      .filter((col) => (col.constraints_type as any)?.is_not_null && !col.column_default)
-      .map((col) => col.column_name);
-
     const serialTypeColumns = tableColumns
       .filter((col) => col.data_type === 'integer' && /^nextval\(/.test(col.column_default))
       .map((col) => col.column_name);
 
-    const allColumns = new Set<string>();
-    rowsToUpsert.forEach((row) => {
-      Object.keys(row).forEach((col) => allColumns.add(col));
-    });
+    // Identify serial vs. non-serial primary keys
+    const serialPrimaryKeys = primaryKeyColumns.filter((pk) => serialTypeColumns.includes(pk));
+    const nonSerialPrimaryKeys = primaryKeyColumns.filter((pk) => !serialTypeColumns.includes(pk));
 
-    const processedRows = [];
+    // Group rows by the exact set of provided keys
+    const rowGroups = new Map<string, Record<string, any>[]>();
     for (const row of rowsToUpsert) {
-      const missingPrimaryKeys = primaryKeyColumns.filter((pk) => row[pk] === undefined);
-      if (missingPrimaryKeys.length > 0) {
+      // Ensure required non-serial PKs are provided
+      const missingNonSerialPKs = nonSerialPrimaryKeys.filter((pk) => row[pk] === undefined);
+      if (missingNonSerialPKs.length > 0) {
         return {
           status: 'failed',
-          error: `Missing primary key values: ${missingPrimaryKeys.join(', ')}`,
+          error: `Missing required non-serial primary key values: ${missingNonSerialPKs.join(', ')}`,
           inserted: 0,
           updated: 0,
           rows: [],
         };
       }
-
-      const missingNotNullColumns = notNullColumns.filter((col) => row[col] === undefined);
-      if (missingNotNullColumns.length > 0) {
-        return {
-          status: 'failed',
-          error: `Missing required NOT NULL columns: ${missingNotNullColumns.join(', ')}`,
-          inserted: 0,
-          updated: 0,
-          rows: [],
-        };
+      // Create a group key based on the sorted keys present in this row.
+      const keys = Object.keys(row).sort();
+      const groupKey = keys.join(',');
+      if (!rowGroups.has(groupKey)) {
+        rowGroups.set(groupKey, []);
       }
-
-      const processedRow: Record<string, any> = {};
-      for (const col of allColumns) {
-        const columnInfo = tableColumns.find((c) => c.column_name === col);
-        if (!columnInfo) {
-          return {
-            status: 'failed',
-            error: `Column "${col}" does not exist in table`,
-            inserted: 0,
-            updated: 0,
-            rows: [],
-          };
-        }
-
-        if (!(col in row)) continue;
-
-        const value = row[col];
-        if (value === null) {
-          processedRow[col] = null;
-        } else if (serialTypeColumns.includes(col) && !primaryKeyColumns.includes(col)) {
-          processedRow[col] = 'DEFAULT';
-        } else {
-          try {
-            processedRow[col] = this.convertToDataType(value, columnInfo.data_type);
-          } catch (error) {
-            return {
-              status: 'failed',
-              error: `Invalid value for column "${col}": ${error.message}`,
-              inserted: 0,
-              updated: 0,
-              rows: [],
-            };
-          }
-        }
-      }
-      processedRows.push(processedRow);
+      rowGroups.get(groupKey)!.push(row);
     }
 
+    // Process each group separately – each group has a consistent set of keys.
     const tenantSchema = findTenantSchema(organizationId);
-    const allValueSets: string[] = [];
-    const allPlaceholders: any[] = [];
-    let parameterIndex = 1;
+    let totalInserted = 0;
+    let totalUpdated = 0;
+    const allResultRows: any[] = [];
 
-    const columnsToInclude = Array.from(allColumns);
-    const columnsQuoted = columnsToInclude.map((column) => `"${column}"`);
+    for (const [groupKey, groupRows] of rowGroups.entries()) {
+      // The provided columns for this group are exactly the keys in the group.
+      const providedColumns = groupKey.split(','); // sorted keys
+      const columnsQuoted = providedColumns.map((col) => `"${col}"`);
 
-    for (const row of processedRows) {
-      const valueSet: string[] = [];
-      const currentPlaceholders: any[] = [];
-
-      for (const col of columnsToInclude) {
-        if (col in row) {
-          if (row[col] === 'DEFAULT') {
-            valueSet.push('DEFAULT');
+      // Build the VALUES clause for this group
+      let parameterIndex = 1;
+      const allValueSets: string[] = [];
+      const allPlaceholders: any[] = [];
+      for (const row of groupRows) {
+        const valueSet: string[] = [];
+        for (const col of providedColumns) {
+          // Since the group is built by the row's own keys, if the row doesn't have a key, that column won't be in providedColumns.
+          if (Object.prototype.hasOwnProperty.call(row, col)) {
+            if (row[col] === 'DEFAULT') {
+              valueSet.push('DEFAULT');
+            } else {
+              valueSet.push(`$${parameterIndex++}`);
+              allPlaceholders.push(row[col]);
+            }
           } else {
-            valueSet.push(`$${parameterIndex++}`);
-            currentPlaceholders.push(row[col]);
+            valueSet.push('DEFAULT');
           }
-        } else {
-          valueSet.push('DEFAULT');
         }
+        allValueSets.push(`(${valueSet.join(', ')})`);
       }
 
-      allValueSets.push(`(${valueSet.join(', ')})`);
-      allPlaceholders.push(...currentPlaceholders);
-    }
+      // Determine if this group omits any serial PK
+      const omittedSerialPKs = serialPrimaryKeys.filter((pk) => !providedColumns.includes(pk));
 
-    const updateColumns = columnsToInclude.filter((col) => !primaryKeyColumns.includes(col));
-
-    try {
-      const queryText = `
-        INSERT INTO "${tenantSchema}"."${tableId}" (${columnsQuoted.join(', ')})
-        VALUES ${allValueSets.join(', ')}
-        ON CONFLICT (${primaryKeyColumns.map((col) => `"${col}"`).join(', ')})
-        DO UPDATE SET
-          ${updateColumns.map((col) => `"${col}" = EXCLUDED."${col}"`).join(',\n        ')}
-        RETURNING *, (xmax = 0) as inserted;
-      `;
+      let queryText: string;
+      if (omittedSerialPKs.length > 0) {
+        // For groups omitting serial PKs, use plain INSERT (so PostgreSQL auto-generates those values)
+        queryText = `
+          INSERT INTO "${tenantSchema}"."${tableId}" (${columnsQuoted.join(', ')})
+          VALUES ${allValueSets.join(', ')}
+          RETURNING *, true as inserted;
+        `;
+      } else {
+        // For groups with all primary keys provided, use UPSERT
+        const conflictTarget = primaryKeyColumns.map((col) => `"${col}"`).join(', ');
+        // Update only non-PK columns
+        const updateColumns = providedColumns.filter((col) => !primaryKeyColumns.includes(col));
+        const onConflictUpdates = updateColumns.map((col) => `"${col}" = EXCLUDED."${col}"`).join(',\n        ');
+        queryText = `
+          INSERT INTO "${tenantSchema}"."${tableId}" (${columnsQuoted.join(', ')})
+          VALUES ${allValueSets.join(', ')}
+          ON CONFLICT (${conflictTarget})
+          DO UPDATE SET
+            ${onConflictUpdates}
+          RETURNING *, (xmax = 0) as inserted;
+        `;
+      }
 
       const result = await this.tooljetDbManager.query(queryText, allPlaceholders);
-
-      const inserted = result.filter((row) => row.inserted).length;
-      const updated = result.length - inserted;
-
-      return {
-        status: 'ok',
-        inserted,
-        updated,
-        rows: result.map(({ inserted: isInserted, ...row }) => row),
-      };
-    } catch (error) {
-      return {
-        status: 'failed',
-        error: error.message,
-        inserted: 0,
-        updated: 0,
-        rows: [],
-      };
+      totalInserted += result.filter((row: any) => row.inserted).length;
+      totalUpdated += result.length - result.filter((row: any) => row.inserted).length;
+      allResultRows.push(...result.map(({ inserted, ...row }: any) => row));
     }
+
+    return {
+      status: 'ok',
+      inserted: totalInserted,
+      updated: totalUpdated,
+      rows: allResultRows,
+    };
   }
 }
