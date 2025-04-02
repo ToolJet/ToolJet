@@ -2,12 +2,13 @@ import React, { useEffect, useMemo, memo, useRef } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { shallow } from 'zustand/shallow';
-import { isEmpty } from 'lodash';
+import { isEmpty, isEqual } from 'lodash';
 import { useEvents } from '@/AppBuilder/_stores/slices/eventsSlice';
 import useStore from '@/AppBuilder/_stores/store';
 import useTableStore from './_stores/tableStore';
 import TableContainer from './_components/TableContainer';
 import { transformTableData } from './_utils/transformTableData';
+import { usePrevious } from '@dnd-kit/utilities';
 
 export const Table = memo(
   ({ id, componentName, width, height, properties, styles, darkMode, fireEvent, setExposedVariables }) => {
@@ -44,6 +45,7 @@ export const Table = memo(
     } = properties;
 
     const firstRowOfTable = !isEmpty(restOfProperties.data?.[0]) ? restOfProperties.data?.[0] : undefined;
+    const prevFirstRowOfTable = usePrevious(firstRowOfTable);
 
     // Get all app events. Needed for certain events like onBulkUpdate
     const allAppEvents = useEvents();
@@ -67,8 +69,8 @@ export const Table = memo(
     }, [id, actions, setTableActions]);
 
     useEffect(() => {
-      if (useDynamicColumn) shouldAutogenerateColumns.current = true;
-    }, [firstRowOfTable, useDynamicColumn, columnData]);
+      if (useDynamicColumn || !isEqual(prevFirstRowOfTable, firstRowOfTable)) shouldAutogenerateColumns.current = true;
+    }, [firstRowOfTable, useDynamicColumn, columnData, prevFirstRowOfTable]);
 
     // Set column details to the table store. This is responsible for auto-generating columns
     useEffect(() => {
