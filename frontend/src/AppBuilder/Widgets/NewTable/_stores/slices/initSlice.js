@@ -87,12 +87,12 @@ export const createInitSlice = (set, get) => ({
         } else {
           state.components[id].properties.enablePagination = properties.enablePagination;
         }
-      }
-      // false,
-      // { type: 'setProperties', payload: { id, properties } }
+      },
+      false,
+      { type: 'setProperties', payload: { id, properties } }
     ),
 
-  setTableStyles: (id, styles) =>
+  setTableStyles: (id, styles, darkMode) =>
     set(
       (state) => {
         const {
@@ -114,7 +114,7 @@ export const createInitSlice = (set, get) => ({
         state.components[id].styles.boxShadow = boxShadow;
         state.components[id].styles.borderColor = borderColor;
         state.components[id].styles.contentWrap = contentWrap;
-        state.components[id].styles.textColor = textColor;
+        state.components[id].styles.textColor = textColor !== '#000' ? textColor : darkMode && '#fff';
         state.components[id].styles.rowStyle = tableType;
         state.components[id].styles.cellHeight = cellSize;
         state.components[id].styles.actionButtonRadius = parseFloat(actionButtonRadius);
@@ -171,7 +171,9 @@ export const createInitSlice = (set, get) => ({
   removeComponent: (id) =>
     set(
       (state) => {
-        if (state.components[id]) {
+        // if the component is not present in the DOM, then remove it - this is to handle the case where the component is removed from the DOM and then added back
+        // Like when the component is moved from one container to another
+        if (state.components[id] && !document.querySelector(`[id="${id}"]`)) {
           delete state.components[id];
         }
       },

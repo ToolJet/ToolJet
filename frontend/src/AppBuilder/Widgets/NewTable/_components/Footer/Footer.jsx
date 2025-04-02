@@ -25,6 +25,7 @@ export const Footer = memo(
     fireEvent,
     setExposedVariables,
     pageCount,
+    dataLength,
     columnVisibility, // Passed to trigger a re-render when columnVisibility changes
   }) => {
     const isFooterVisible = useTableStore((state) => state.getFooterVisibility(id), shallow);
@@ -36,8 +37,6 @@ export const Footer = memo(
       (state) => state.getTableProperties(id)?.showBulkUpdateActions,
       shallow
     );
-
-    const dataLength = table.getFilteredRowModel().rows.length;
 
     const [showAddNewRowPopup, setShowAddNewRowPopup] = useState(false);
 

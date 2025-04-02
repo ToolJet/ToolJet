@@ -8,6 +8,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { isArray } from 'lodash';
 import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
+import useTextColor from '../DataTypes/_hooks/useTextColor';
 
 const { MenuList } = components;
 
@@ -136,12 +137,14 @@ export const CustomSelectColumn = ({
   isEditable,
   column,
   isNewRow,
+  id,
 }) => {
   const validateWidget = useStore((state) => state.validateWidget, shallow);
 
   const [isFocused, setIsFocused] = useState(false);
   const containerRef = useRef(null);
   const inputRef = useRef(null);
+  const cellTextColor = useTextColor(id, textColor);
 
   const validationData = validateWidget({
     validationObject: {
@@ -184,7 +187,7 @@ export const CustomSelectColumn = ({
           padding: '2px 6px',
           background: 'var(--surfaces-surface-03)',
           borderRadius: '6px',
-          color: textColor || 'var(--text-primary)',
+          color: cellTextColor || 'var(--text-primary)',
           fontSize: '12px',
         }),
       }),
@@ -211,11 +214,11 @@ export const CustomSelectColumn = ({
         padding: '2px 6px',
         background: 'var(--surfaces-surface-03)',
         borderRadius: '6px',
-        color: textColor || 'var(--text-primary)',
+        color: cellTextColor || 'var(--text-primary)',
         fontSize: '12px',
       }),
     }),
-    [darkMode, isMulti, horizontalAlignment, textColor]
+    [darkMode, isMulti, horizontalAlignment, cellTextColor]
   );
 
   const defaultValue = useMemo(
@@ -275,7 +278,7 @@ export const CustomSelectColumn = ({
     >
       <>
         <div
-          className="w-100 h-100 d-flex align-items-center"
+          className="w-100 d-flex align-items-center"
           ref={containerRef}
           onClick={() => {
             if (isNewRow && isEditable) {

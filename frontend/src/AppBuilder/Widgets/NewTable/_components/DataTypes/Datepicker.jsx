@@ -5,13 +5,16 @@ import cx from 'classnames';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import CustomDatePickerHeader from './_components/CustomDatePickerHeader';
 import 'react-datepicker/dist/react-datepicker.css';
+import useTextColor from '../DataTypes/_hooks/useTextColor';
 
 const DISABLED_DATE_FORMAT = 'MM/DD/YYYY';
 
 const DatepickerInput = forwardRef(({ value, onClick, styles, readOnly, onInputChange, onInputFocus }, ref) => (
   <div className="table-column-datepicker-input-container">
     {readOnly ? (
-      <div className="h-100 w-100 overflow-hidden">{value}</div>
+      <div className="h-100 w-100 overflow-hidden" style={{ color: styles?.color }}>
+        {value}
+      </div>
     ) : (
       <>
         <input
@@ -83,14 +86,16 @@ export const DatepickerColumn = ({
   disabledDates,
   unixTimestamp = 'seconds',
   parseInUnixTimestamp,
-  cellStyles,
   darkMode,
+  textColor,
+  id,
 }) => {
   const [date, setDate] = useState(null);
   const [excludedDates, setExcludedDates] = useState([]);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const dateInputRef = useRef(null);
+  const cellTextColor = useTextColor(id, textColor);
 
   const computeDateString = useCallback(
     (date) => {
@@ -241,7 +246,7 @@ export const DatepickerColumn = ({
           <DatepickerInput
             ref={dateInputRef}
             readOnly={readOnly}
-            styles={{ color: cellStyles?.color }}
+            styles={{ color: cellTextColor }}
             onInputChange={(e) => {
               setIsInputFocused(true);
               setInputValue(e.target.value);

@@ -18,6 +18,7 @@ import {
   CustomSelectColumn,
   CustomDropdownColumn,
   TextColumn,
+  JsonColumn,
 } from '../_components/DataTypes';
 import useTableStore from '../_stores/tableStore';
 
@@ -125,7 +126,7 @@ export default function generateColumnsData({
                   isEditable={isEditable}
                   darkMode={darkMode}
                   handleCellValueChange={handleCellValueChange}
-                  cellTextColor={getResolvedValue(column.textColor, { cellValue, rowData })}
+                  textColor={getResolvedValue(column.textColor, { cellValue, rowData })}
                   horizontalAlignment={column?.horizontalAlignment}
                   cellValue={cellValue}
                   column={column}
@@ -143,7 +144,7 @@ export default function generateColumnsData({
                   isEditable={isEditable}
                   darkMode={darkMode}
                   handleCellValueChange={handleCellValueChange}
-                  cellTextColor={getResolvedValue(column.textColor, { cellValue, rowData })}
+                  textColor={getResolvedValue(column.textColor, { cellValue, rowData })}
                   horizontalAlignment={column?.horizontalAlignment}
                   cellValue={cellValue}
                   column={column}
@@ -160,7 +161,7 @@ export default function generateColumnsData({
                 <NumberColumn
                   isEditable={isEditable}
                   handleCellValueChange={handleCellValueChange}
-                  cellTextColor={getResolvedValue(column.textColor, { cellValue, rowData })}
+                  textColor={getResolvedValue(column.textColor, { cellValue, rowData })}
                   horizontalAlignment={column?.horizontalAlignment}
                   cellValue={cellValue}
                   column={column}
@@ -226,6 +227,7 @@ export default function generateColumnsData({
                   isNewRow={columnForAddNewRow}
                   horizontalAlignment={column?.horizontalAlignment}
                   textColor={getResolvedValue(column.textColor, { cellValue, rowData })}
+                  id={id}
                 />
               );
 
@@ -291,6 +293,8 @@ export default function generateColumnsData({
                     getResolvedValue(column?.isTwentyFourHrFormatEnabled, { cellValue, rowData }) ?? false
                   }
                   darkMode={darkMode}
+                  textColor={getResolvedValue(column.textColor, { cellValue, rowData })}
+                  id={id}
                 />
               );
 
@@ -299,11 +303,12 @@ export default function generateColumnsData({
                 <LinkColumn
                   cellValue={cellValue}
                   linkTarget={getResolvedValue(column?.linkTarget, { cellValue, rowData })}
-                  linkColor={getResolvedValue(column?.linkColor ?? '#1B1F24', { cellValue, rowData })}
+                  textColor={getResolvedValue(column?.linkColor ?? '#1B1F24', { cellValue, rowData })}
                   underlineColor={getResolvedValue(column?.underlineColor, { cellValue, rowData })}
                   underline={column.underline}
                   displayText={getResolvedValue(column?.displayText, { cellValue, rowData })}
                   darkMode={darkMode}
+                  id={id}
                 />
               );
 
@@ -315,6 +320,22 @@ export default function generateColumnsData({
                   height={column?.height ? `${column?.height}px` : '100%'}
                   borderRadius={column?.borderRadius}
                   objectFit={column?.objectFit}
+                />
+              );
+
+            case 'json':
+              return (
+                <JsonColumn
+                  isEditable={isEditable}
+                  jsonIndentation={getResolvedValue(column?.jsonIndentation, { cellValue, rowData })}
+                  darkMode={darkMode}
+                  handleCellValueChange={handleCellValueChange}
+                  textColor={getResolvedValue(column.textColor, { cellValue, rowData })}
+                  horizontalAlignment={column?.horizontalAlignment}
+                  cellValue={cellValue}
+                  column={column}
+                  containerWidth={columnSize}
+                  id={id}
                 />
               );
 

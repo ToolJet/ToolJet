@@ -6,12 +6,14 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import useTableStore from '@/AppBuilder/Widgets/NewTable/_stores/tableStore';
 import HighLightSearch from '@/AppBuilder/Widgets/NewTable/_components/HighLightSearch';
 import { getMaxHeight } from '../../_utils/helper';
+import useTextColor from '../DataTypes/_hooks/useTextColor';
+import useValidationStyle from '../DataTypes/_hooks/useValidationStyle';
 
 export const StringColumn = ({
   isEditable,
   darkMode,
   handleCellValueChange,
-  cellTextColor,
+  textColor,
   horizontalAlignment,
   cellValue,
   column,
@@ -26,6 +28,7 @@ export const StringColumn = ({
   const cellHeight = useTableStore((state) => state.getTableStyles(id)?.cellHeight, shallow);
   const isMaxRowHeightAuto = useTableStore((state) => state.getTableStyles(id)?.isMaxRowHeightAuto, shallow);
   const maxRowHeightValue = useTableStore((state) => state.getTableStyles(id)?.maxRowHeightValue, shallow);
+  const cellTextColor = useTextColor(id, textColor);
 
   const ref = useRef(null);
   const [showOverlay, setShowOverlay] = useState(false);
@@ -43,6 +46,7 @@ export const StringColumn = ({
     customResolveObjects: { cellValue },
   });
   const { isValid, validationError } = validationData;
+  useValidationStyle(id, row, validationError);
 
   useEffect(() => {
     setShowOverlay(hovered);

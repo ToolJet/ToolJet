@@ -7,13 +7,14 @@ import { shallow } from 'zustand/shallow';
 import HighLightSearch from '@/AppBuilder/Widgets/NewTable/_components/HighLightSearch';
 import useTableStore from '@/AppBuilder/Widgets/NewTable/_stores/tableStore';
 import { getMaxHeight } from '../../_utils/helper';
+import useTextColor from '../DataTypes/_hooks/useTextColor';
 
 export const TextColumn = ({
   id,
   isEditable,
   darkMode,
   handleCellValueChange,
-  cellTextColor,
+  textColor,
   cellValue,
   column,
   containerWidth,
@@ -24,6 +25,7 @@ export const TextColumn = ({
   const cellHeight = useTableStore((state) => state.getTableStyles(id)?.cellHeight, shallow);
   const isMaxRowHeightAuto = useTableStore((state) => state.getTableStyles(id)?.isMaxRowHeightAuto, shallow);
   const maxRowHeightValue = useTableStore((state) => state.getTableStyles(id)?.maxRowHeightValue, shallow);
+  const cellTextColor = useTextColor(id, textColor);
 
   const [showOverlay, setShowOverlay] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -99,7 +101,7 @@ export const TextColumn = ({
         contentEditable="true"
         className={`${!isValid ? 'is-invalid' : ''} h-100 long-text-input text-container ${
           darkMode ? 'textarea-dark-theme' : ''
-        }`}
+        } justify-content-${determineJustifyContentValue(horizontalAlignment)}`}
         style={{
           color: cellTextColor || 'inherit',
           maxWidth: containerWidth,

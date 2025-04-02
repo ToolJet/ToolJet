@@ -4,11 +4,13 @@ import { shallow } from 'zustand/shallow';
 import { determineJustifyContentValue } from '@/_helpers/utils';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import HighLightSearch from '@/AppBuilder/Widgets/NewTable/_components/HighLightSearch';
+import useTextColor from '../DataTypes/_hooks/useTextColor';
 
 export const NumberColumn = ({
+  id,
   isEditable,
   handleCellValueChange,
-  cellTextColor,
+  textColor,
   horizontalAlignment,
   cellValue,
   column,
@@ -19,6 +21,7 @@ export const NumberColumn = ({
   const [displayValue, setDisplayValue] = useState(cellValue);
   const validateWidget = useStore((state) => state.validateWidget, shallow);
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
+  const cellTextColor = useTextColor(id, textColor);
 
   useEffect(() => {
     setDisplayValue(cellValue);

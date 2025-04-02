@@ -10,7 +10,17 @@ import Loader from '../Loader';
 import { Filter } from './_components/Filter/Filter';
 
 export const Header = memo(
-  ({ id, darkMode, fireEvent, setExposedVariables, setGlobalFilter, globalFilter, table, setFilters }) => {
+  ({
+    id,
+    darkMode,
+    fireEvent,
+    setExposedVariables,
+    setGlobalFilter,
+    globalFilter,
+    table,
+    setFilters,
+    appliedFiltersLength,
+  }) => {
     const displaySearchBox = useTableStore((state) => state.getTableProperties(id)?.displaySearchBox, shallow);
     const showFilterButton = useTableStore((state) => state.getTableProperties(id)?.showFilterButton, shallow);
 
@@ -61,7 +71,7 @@ export const Header = memo(
             data-tooltip-id="tooltip-for-filter-data"
             data-tooltip-content="Filter data"
           ></ButtonSolid>
-          {appliedFilters.length > 0 && (
+          {appliedFiltersLength > 0 && (
             <div className="filter-applied-state position-absolute">
               <svg
                 className="filter-applied-svg"

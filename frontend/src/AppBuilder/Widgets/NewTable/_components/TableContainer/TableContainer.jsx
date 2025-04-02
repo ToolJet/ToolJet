@@ -151,6 +151,7 @@ export const TableContainer = ({
         globalFilter={globalFilter}
         table={table}
         setFilters={handleFilterChange}
+        appliedFiltersLength={table.getState().columnFilters.length}
       />
       <TableData
         id={id}
@@ -178,6 +179,7 @@ export const TableContainer = ({
         setExposedVariables={setExposedVariables}
         fireEvent={fireEvent}
         pageCount={table.getPageCount()}
+        dataLength={table.getFilteredRowModel().rows.length}
         columnVisibility={columnVisibility} // Passed to trigger a re-render when columnVisibility changes
       />
     </>

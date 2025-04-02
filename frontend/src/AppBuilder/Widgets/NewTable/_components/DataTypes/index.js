@@ -12,3 +12,4 @@ export { CustomDropdownColumn } from './CustomDropdown';
 // export { MultiSelectColumn } from './MultiSelect';
 // export { SelectColumn } from './Select';
 export { TextColumn } from './Text';
+export { JsonColumn } from './JSON';

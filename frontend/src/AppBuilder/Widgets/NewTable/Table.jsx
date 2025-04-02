@@ -96,8 +96,8 @@ export const Table = memo(
 
     // Set styles to the table store
     useEffect(() => {
-      setTableStyles(id, styles);
-    }, [id, styles, setTableStyles]);
+      setTableStyles(id, styles, darkMode);
+    }, [id, styles, darkMode, setTableStyles]);
 
     // Set events to the table store
     useEffect(() => {

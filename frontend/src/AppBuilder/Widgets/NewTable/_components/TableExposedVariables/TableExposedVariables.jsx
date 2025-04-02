@@ -47,6 +47,7 @@ export const TableExposedVariables = ({
     tableData,
     columns,
     columnSizing,
+    resetRowSelection,
   } = {
     selectedRows: table.getFilteredSelectedRowModel()?.rows,
     sorting: table.getState()?.sorting,
@@ -61,6 +62,7 @@ export const TableExposedVariables = ({
     tableData: table.getRowModel().rows,
     columns: table.getAllColumns(),
     columnSizing: table.getState().columnSizing,
+    resetRowSelection: table.resetRowSelection,
   };
 
   const prevSortingLength = useRef(null);
@@ -209,10 +211,12 @@ export const TableExposedVariables = ({
   }, [setPageIndex, setExposedVariables, clientSidePagination]);
 
   useEffect(() => {
+    resetRowSelection();
     function selectRow(key, value) {
-      const item = data.find((item) => item[key] == value);
+      const index = data.findIndex((item) => item[key] == value);
+      const item = index !== -1 ? data[index] : null;
       if (item) {
-        setRowSelection({ [item.id - 1]: true });
+        setRowSelection({ [index]: true });
       }
       setExposedVariables({
         selectedRow: item,
@@ -231,7 +235,7 @@ export const TableExposedVariables = ({
         selectedRowId: null,
       });
     }
-  }, [data, defaultSelectedRow, setExposedVariables, setRowSelection]);
+  }, [data, defaultSelectedRow, setExposedVariables, setRowSelection, resetRowSelection]);
 
   useEffect(() => {
     if (lastClickedRow) {

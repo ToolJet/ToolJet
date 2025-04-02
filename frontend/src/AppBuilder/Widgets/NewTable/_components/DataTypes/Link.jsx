@@ -1,9 +1,21 @@
 import React, { useMemo } from 'react';
+import useTextColor from '../DataTypes/_hooks/useTextColor';
 
-export const LinkColumn = ({ cellValue, linkTarget, underline, underlineColor, linkColor, displayText, darkMode }) => {
+export const LinkColumn = ({
+  cellValue,
+  linkTarget,
+  underline,
+  underlineColor,
+  textColor,
+  displayText,
+  darkMode,
+  id,
+}) => {
+  const cellTextColor = useTextColor(id, textColor);
   const linkTextColor = useMemo(
-    () => (linkColor !== '#1B1F24' ? linkColor : darkMode && linkColor === '#1B1F24' ? '#FFFFFF' : linkColor),
-    [linkColor, darkMode]
+    () =>
+      cellTextColor !== '#1B1F24' ? cellTextColor : darkMode && cellTextColor === '#1B1F24' ? '#FFFFFF' : cellTextColor,
+    [cellTextColor, darkMode]
   );
 
   return (
