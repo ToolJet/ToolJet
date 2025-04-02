@@ -27,7 +27,7 @@ export const TableRow = ({
 
   return (
     <tr
-      key={row.id}
+      key={`${row.id}-${virtualRow.index}`} // Added virtualRow.index to make the key unique and work with useVirtualizer
       ref={measureElement}
       data-index={virtualRow.index}
       style={{

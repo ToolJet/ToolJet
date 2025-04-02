@@ -250,20 +250,30 @@ export const TableExposedVariables = ({
 
   useEffect(() => {
     function selectRow(key, value) {
-      const item = tableData.find((item) => item[key] == value);
+      const index = data.findIndex((item) => item[key] == value);
+      const item = index !== -1 ? data[index] : null;
       if (item) {
-        setRowSelection({ [item.id - 1]: true });
+        setRowSelection({ [index]: true });
       }
+      setExposedVariables({
+        selectedRow: item,
+        selectedRowId: isNaN(item?.id) ? String(item?.id) : item?.id,
+      });
     }
 
     function deselectRow(key, value) {
-      const item = tableData.find((item) => item[key] == value);
+      const index = data.findIndex((item) => item[key] == value);
+      const item = index !== -1 ? data[index] : null;
       if (item) {
-        setRowSelection({ [item.id - 1]: false });
+        setRowSelection({ [index]: false });
       }
+      setExposedVariables({
+        selectedRow: {},
+        selectedRowId: null,
+      });
     }
     setExposedVariables({ selectRow, deselectRow });
-  }, [tableData, setExposedVariables, setRowSelection]);
+  }, [data, setExposedVariables, setRowSelection]);
 
   // CSA to set & clear filters
   useEffect(() => {

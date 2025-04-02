@@ -44,7 +44,6 @@ export function useTable({
     getFilteredRowModel: getFilteredRowModel(),
     enableColumnResizing: true,
     columnResizeMode: 'onChange',
-    getRowId: (row) => row.uuid,
     enableRowSelection: true,
     enableMultiRowSelection: showBulkSelector,
     state: {
