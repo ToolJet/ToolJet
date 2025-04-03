@@ -62,7 +62,7 @@ export const Container = React.memo(
     const isContainerReadOnly = useMemo(() => {
       return (index !== 0 && (componentType === 'Listview' || componentType === 'Kanban')) || currentMode === 'view';
     }, [componentType, index, currentMode]);
-    const reorderContainerChildren = useGridStore((state) => state.reorderContainerChildren);
+    const reorderContainerChildren = useStore((state) => state.reorderContainerChildren, shallow);
     const prevForceUpdateRef = useRef(0);
     const prevComponentsOrder = useRef(components);
 

@@ -67,6 +67,7 @@ export default function Grid({ gridWidth, currentLayout }) {
   const prevDragParentId = useRef(null);
   const newDragParentId = useRef(null);
   const [isGroupDragging, setIsGroupDragging] = useState(false);
+  const setReorderContainerChildren = useStore((state) => state.setReorderContainerChildren, shallow);
 
   useEffect(() => {
     const selectedSet = new Set(selectedComponents);
@@ -536,7 +537,7 @@ export default function Grid({ gridWidth, currentLayout }) {
           })
         );
       }
-      useGridStore.getState().actions.setReorderContainerChildren(draggedOverElemId ?? 'canvas');
+      setReorderContainerChildren(draggedOverElemId ?? 'canvas');
     } catch (error) {
       console.error('Error dragging group', error);
     }
@@ -697,7 +698,7 @@ export default function Grid({ gridWidth, currentLayout }) {
               resizeData.gw = _gridWidth;
             }
             handleResizeStop([resizeData]);
-            useGridStore.getState().actions.setReorderContainerChildren(currentWidget?.parent ?? 'canvas');
+            setReorderContainerChildren(currentWidget?.parent ?? 'canvas');
           } catch (error) {
             console.error('ResizeEnd error ->', error);
           }
@@ -780,7 +781,7 @@ export default function Grid({ gridWidth, currentLayout }) {
 
             const groupParentId =
               boxList.find(({ id }) => id === groupResizeDataRef.current[0].target.id)?.parent ?? 'canvas';
-            useGridStore.getState().actions.setReorderContainerChildren(groupParentId);
+            setReorderContainerChildren(groupParentId);
 
             groupResizeDataRef.current = [];
             reloadGrid();
@@ -892,7 +893,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             // Force reordering of conatiner if the parent has not changed
             const newParentId = target.slotId === 'real-canvas' ? 'canvas' : target.slotId;
             if (oldParentId === newParentId) {
-              useGridStore.getState().actions.setReorderContainerChildren(newParentId);
+              setReorderContainerChildren(newParentId);
             }
 
             // Select the dragged component after drop
