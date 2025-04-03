@@ -29,10 +29,8 @@ export const currencyinputConfig = {
       type: 'code',
       displayName: 'Default value',
       validation: {
-        schema: {
-          type: 'string',
-        },
-        defaultValue: 'Default value',
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: 0,
       },
     },
     decimalPlaces: {
@@ -242,16 +240,6 @@ export const currencyinputConfig = {
       displayName: 'Set blur',
     },
     {
-      handle: 'disable',
-      displayName: 'Disable(deprecated)',
-      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
-    },
-    {
-      handle: 'visibility',
-      displayName: 'Visibility(deprecated)',
-      params: [{ handle: 'visibility', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
-    },
-    {
       handle: 'setVisibility',
       displayName: 'Set visibility',
       params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
@@ -281,9 +269,9 @@ export const currencyinputConfig = {
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
-      value: { value: '' },
+      value: { value: '0' },
       label: { value: 'Label' },
-      placeholder: { value: 'Enter your number' },
+      placeholder: { value: 'Enter amount' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
