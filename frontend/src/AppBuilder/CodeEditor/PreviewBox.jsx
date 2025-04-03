@@ -96,7 +96,7 @@ export const PreviewBox = ({
   const [largeDataset, setLargeDataset] = useState(false);
   const globals = useStore((state) => state.getAllExposedValues().constants || {}, shallow);
   const secrets = useStore((state) => state.getSecrets(), shallow);
-  const globalServerConstantsRegex = /.*\{\{.*globals\.server\..*\}\}.*/;
+  const globalServerConstantsRegex = /^\{\{.*globals\.server.*\}\}$/;
 
   const getPreviewContent = (content, type) => {
     if (content === undefined || content === null) return currentValue;

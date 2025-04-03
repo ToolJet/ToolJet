@@ -40,10 +40,16 @@ export const createCodeHinterSlice = (set, get) => ({
     const isServerSideGlobalEnabled = !!get()?.license?.featureAccess?.serverSideGlobal;
     const serverHints = [];
     const hints = get().getSuggestions();
+    console.log('isServerSideGlobalEnabled', isServerSideGlobalEnabled, 'isInsideQueryManager', isInsideQueryManager);
     if (isInsideQueryManager && isServerSideGlobalEnabled) {
+      serverHints.push({ hint: 'globals.server', type: 'Object' });
       hints?.appHints?.forEach((appHint) => {
         if (appHint?.hint?.startsWith('globals.currentUser')) {
           const key = appHint?.hint?.replace('globals.currentUser', 'globals.server.currentUser');
+          console.log({
+            hint: key,
+            type: appHint?.type,
+          });
           serverHints.push({
             hint: key,
             type: appHint?.type,
