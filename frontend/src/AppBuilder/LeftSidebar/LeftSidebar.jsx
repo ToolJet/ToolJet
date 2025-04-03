@@ -34,6 +34,7 @@ export const BaseLeftSidebar = ({
     resetUnreadErrorCount,
     toggleLeftSidebar,
     isSidebarOpen,
+    isDraggingQueryPane,
   ] = useStore(
     (state) => [
       state.isLeftSideBarPinned,
@@ -46,6 +47,7 @@ export const BaseLeftSidebar = ({
       state.debugger.resetUnreadErrorCount,
       state.toggleLeftSidebar,
       state.isSidebarOpen,
+      state.queryPanel.isDraggingQueryPane,
     ],
     shallow
   );
@@ -68,11 +70,15 @@ export const BaseLeftSidebar = ({
   };
 
   useEffect(() => {
-    setPopoverContentHeight(
-      ((window.innerHeight - (queryPanelHeight == 0 ? 40 : queryPanelHeight) - 45) / window.innerHeight) * 100
-    );
+    if (!isDraggingQueryPane) {
+      setPopoverContentHeight(
+        ((window.innerHeight - (queryPanelHeight == 0 ? 40 : queryPanelHeight) - 45) / window.innerHeight) * 100
+      );
+    } else {
+      setPopoverContentHeight(100);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryPanelHeight]);
+  }, [queryPanelHeight, isDraggingQueryPane]);
 
   const renderPopoverContent = () => {
     if (selectedSidebarItem === null || !isSidebarOpen) return null;
