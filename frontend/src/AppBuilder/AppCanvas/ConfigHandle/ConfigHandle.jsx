@@ -18,6 +18,7 @@ export const ConfigHandle = ({
   showHandle,
   componentType,
   visibility,
+  subContainerIndex,
 }) => {
   const shouldFreeze = useStore((state) => state.getShouldFreeze());
   const componentName = useStore((state) => state.getComponentDefinition(id)?.component?.name || '', shallow);
@@ -40,10 +41,12 @@ export const ConfigHandle = ({
     const anyComponentHovered = state.getHoveredComponentForGrid() !== '' || state.hoveredComponentBoundaryId !== '';
     // If one component is hovered and one is selected, show the handle for the hovered component
     return (
-      isWidgetHovered ||
-      (showHandle && (!isMultipleComponentsSelected || (isModal && isModalOpen)) && !anyComponentHovered)
+      (subContainerIndex === 0 || subContainerIndex === null) &&
+      (isWidgetHovered ||
+        (showHandle && (!isMultipleComponentsSelected || (isModal && isModalOpen)) && !anyComponentHovered))
     );
   }, shallow);
+
   let height = visibility === false ? 10 : widgetHeight;
 
   return (

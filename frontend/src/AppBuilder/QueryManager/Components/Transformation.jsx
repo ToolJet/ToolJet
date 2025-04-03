@@ -108,7 +108,8 @@ export const Transformation = ({ changeOption, options, darkMode, queryId, rende
   const [codeEditorKey, setCodeEditorKey] = useState(uuidv4());
   const [state, setState] = useState({
     ...defaultValue,
-    [options.transformationLanguage ?? 'javascript']: options?.transformation,
+    ...(options?.transformation ? { [options.transformationLanguage ?? 'javascript']: options?.transformation } : {}),
+    ...options?.transformations,
   });
   const { t } = useTranslation();
 
@@ -119,7 +120,6 @@ export const Transformation = ({ changeOption, options, darkMode, queryId, rende
   useEffect(() => {
     if (lang !== (options.transformationLanguage ?? 'javascript')) {
       changeOption('transformationLanguage', lang);
-      changeOption('transformation', state[lang]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lang]);
@@ -127,20 +127,24 @@ export const Transformation = ({ changeOption, options, darkMode, queryId, rende
   useEffect(() => {
     if (prevQueryId.current === queryId) {
       lang !== (options.transformationLanguage ?? 'javascript') && changeOption('transformationLanguage', lang);
-      setState({ ...state, [lang]: options.transformation ?? state[lang] ?? defaultValue[lang] });
+      setState((prevState) => {
+        return {
+          ...prevState,
+          ...(options?.transformation
+            ? { [options.transformationLanguage ?? 'javascript']: options?.transformation }
+            : {}),
+          ...options?.transformations,
+        };
+      });
     }
     prevQueryId.current = queryId;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(options.transformation)]);
+  }, [JSON.stringify(options?.transformation || {}), JSON.stringify(options.transformations)]);
 
   useEffect(() => {
     if (selectedQueryId !== queryId) {
-      const nonLangdefaultCode = getNonActiveTransformations(options?.transformationLanguage ?? 'javascript');
-      const finalState = _.merge(
-        {},
-        { [options?.transformationLanguage ?? lang]: options.transformation ?? defaultValue[lang] },
-        nonLangdefaultCode
-      );
+      const olderTransformation = options?.transformation ? { [lang]: options?.transformation } : {};
+      const finalState = _.merge({}, defaultValue, olderTransformation, options?.transformations);
 
       setState(finalState);
     }
@@ -206,8 +210,6 @@ export const Transformation = ({ changeOption, options, darkMode, queryId, rende
                 activeKey={lang}
                 onSelect={(value) => {
                   setLang(value);
-                  changeOption('transformationLanguage', value);
-                  changeOption('transformation', state[value]);
                 }}
                 defaultActiveKey="javascript"
               >
@@ -250,7 +252,7 @@ export const Transformation = ({ changeOption, options, darkMode, queryId, rende
               height={400}
               className="query-hinter"
               onChange={(value) => {
-                changeOption('transformation', value);
+                changeOption('transformations', { ...state, [lang]: value });
               }}
               renderCopilot={renderCopilot}
               componentName={`transformation`}

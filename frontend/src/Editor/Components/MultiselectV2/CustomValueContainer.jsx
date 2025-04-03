@@ -4,7 +4,7 @@ import * as Icons from '@tabler/icons-react';
 const { ValueContainer, Placeholder } = components;
 import './multiselectV2.scss';
 
-const CustomValueContainer = ({ ...props }) => {
+const CustomValueContainer = ({ children, ...props }) => {
   const selectProps = props.selectProps;
   const values = Array.isArray(selectProps?.value) && selectProps?.value?.map((option) => option.label);
   const isAllOptionsSelected = selectProps?.value.length === selectProps.options.length;
@@ -39,6 +39,13 @@ const CustomValueContainer = ({ ...props }) => {
               {isAllOptionsSelected ? 'All items are selected.' : values.join(', ')}
             </span>
           )}
+          {/* Rendering children except Placeholder component to preserve the default behavior of react-select like focus
+          handling */}
+          {React.Children.map(children, (child) => {
+            if (child.type !== Placeholder) {
+              return child;
+            }
+          })}
         </span>
       </div>
     </ValueContainer>

@@ -690,6 +690,12 @@ export const createEventsSlice = (set, get) => ({
             return getVariable(key);
           }
 
+          case 'unset-all-custom-variables': {
+            const { unsetAllVariables } = get();
+            unsetAllVariables();
+            return Promise.resolve();
+          }
+
           case 'unset-custom-variable': {
             const { unsetVariable } = get();
             const key = getResolvedValue(event.key, customVariables);
@@ -744,6 +750,12 @@ export const createEventsSlice = (set, get) => ({
             const { getPageVariable } = get();
             const key = getResolvedValue(event.key, customVariables);
             return getPageVariable(key);
+          }
+
+          case 'unset-all-page-variables': {
+            const { unsetAllPageVariables } = get();
+            unsetAllPageVariables();
+            return Promise.resolve();
           }
 
           case 'unset-page-variable': {
@@ -953,6 +965,13 @@ export const createEventsSlice = (set, get) => ({
         }
       };
 
+      const unsetAllVariables = () => {
+        const event = {
+          actionId: 'unset-all-custom-variables',
+        };
+        return executeAction(event, mode, {});
+      };
+
       const unSetVariable = (key = '') => {
         if (key) {
           const event = {
@@ -1066,6 +1085,13 @@ export const createEventsSlice = (set, get) => ({
         return executeAction(event, mode, {});
       };
 
+      const unsetAllPageVariables = () => {
+        const event = {
+          actionId: 'unset-all-page-variables',
+        };
+        return executeAction(event, mode, {});
+      };
+
       const unsetPageVariable = (key = '') => {
         const event = {
           actionId: 'unset-page-variable',
@@ -1133,6 +1159,7 @@ export const createEventsSlice = (set, get) => ({
         runQuery,
         setVariable,
         getVariable,
+        unsetAllVariables,
         unSetVariable,
         showAlert,
         logout,
@@ -1144,6 +1171,7 @@ export const createEventsSlice = (set, get) => ({
         generateFile,
         setPageVariable,
         getPageVariable,
+        unsetAllPageVariables,
         unsetPageVariable,
         switchPage,
         logInfo,

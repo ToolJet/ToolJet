@@ -50,7 +50,7 @@ import { Kanban } from '@/Editor/Components/Kanban/Kanban';
 import { Steps } from '@/Editor/Components/Steps';
 import { TreeSelect } from '@/Editor/Components/TreeSelect';
 import { Icon } from '@/Editor/Components/Icon';
-import { Link } from '@/Editor/Components/Link';
+import { Link } from '@/Editor/Components/Link/Link';
 import { Form } from '@/Editor/Components/Form/Form';
 import { BoundedBox } from '@/Editor/Components/BoundedBox/BoundedBox';
 import { isPDFSupported } from '@/_helpers/appUtils';

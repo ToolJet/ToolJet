@@ -74,6 +74,7 @@ export function getSuggestionKeys(refState) {
     'setVariable',
     'getVariable',
     'unSetVariable',
+    'unsetAllVariables',
     'showAlert',
     'logout',
     'showModal',
@@ -85,6 +86,7 @@ export function getSuggestionKeys(refState) {
     'setPageVariable',
     'getPageVariable',
     'unsetPageVariable',
+    'unsetAllPageVariables',
     'switchPage',
   ];
 

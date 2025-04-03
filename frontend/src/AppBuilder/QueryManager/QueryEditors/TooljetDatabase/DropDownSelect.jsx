@@ -298,7 +298,7 @@ const DropDownSelect = ({
           </p>
         </div>
       ) : (
-        <div className={`col-auto ${buttonClasses}`} id={popoverBtnId.current}>
+        <div className={`col-auto ${buttonClasses} h-100`} id={popoverBtnId.current}>
           <ButtonSolid
             size="sm"
             variant="tertiary"
@@ -322,6 +322,8 @@ const DropDownSelect = ({
               },
               'gap-0',
               'w-100',
+              'h-100',
+              'align-items-start',
               'rounded-0',
               'position-relative',
               'font-weight-normal',
