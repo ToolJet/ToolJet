@@ -6,7 +6,6 @@ import SettingsMenu from './SettingsMenu';
 import WorkspaceActions from './WorkspaceActions';
 import ConsultationBanner from './ConsultationBanner';
 import UserGroupMigrationBanner from './UserGroupMigrationBanner';
-import AppTypeTab from './AppTypeTab';
 
 export {
   ImportAppMenu,
@@ -17,5 +16,4 @@ export {
   WorkspaceActions,
   ConsultationBanner,
   UserGroupMigrationBanner,
-  AppTypeTab,
 };

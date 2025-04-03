@@ -254,15 +254,6 @@ class AppComponent extends React.Component {
               <Route path="/:workspaceId/workspace-settings/*" element={<WorkspaceSettings {...mergedProps} />}></Route>
               <Route path="settings/*" element={<InstanceSettings {...this.props} />}></Route>
               <Route path="/:workspaceId/settings/*" element={<Settings {...this.props} />}></Route>
-              <Route
-                exact
-                path="/:workspaceId/modules"
-                element={
-                  <PrivateRoute>
-                    <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} appType={'module'} />
-                  </PrivateRoute>
-                }
-              />
 
               {getAuditLogsRoutes(this.props)}
               <Route
