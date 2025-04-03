@@ -9,6 +9,7 @@
   .nav-item {
     font-size: 12px !important;
     line-height: 20px !important;
+    font-family: 'IBM Plex Sans';
 
     button {
       height: 36px;
@@ -17,7 +18,6 @@
 
   .nav-item .nav-link {
     color: var(--slate11) !important;
-    background-color: var(--base) !important;
   }
 
   .nav-tabs .nav-link.active {
