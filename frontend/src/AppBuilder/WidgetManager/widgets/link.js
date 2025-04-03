@@ -82,6 +82,14 @@ export const linkConfig = {
         defaultValue: true,
       },
     },
+    alignment: {
+      type: 'alignButtons',
+      displayName: 'Alignment',
+      validation: {
+        schema: { type: 'string' },
+        defaultValue: 'left',
+      },
+    },
   },
   exposedVariables: {},
   actions: [
@@ -106,6 +114,7 @@ export const linkConfig = {
       textSize: { value: '{{14}}' },
       underline: { value: 'on-hover' },
       visibility: { value: '{{true}}' },
+      alignment: { value: 'left' },
     },
   },
 };
