@@ -16,7 +16,6 @@ export class OrganizationsModule {
       imports: [await InstanceSettingsModule.register(configs)],
       controllers: [OrganizationsController],
       providers: [OrganizationsService, OrganizationRepository, FeatureAbilityFactory, AppEnvironmentUtilService],
-      exports: [OrganizationRepository],
     };
   }
 }
