@@ -13,7 +13,22 @@ ToolJet provides three types of licenses - **Basic**, **Trial**, and **Paid**. T
 
 ### Basic License
 
-This is a free license where a user can access basic offerings such as creating apps, pre-defined user groups, community support, etc. This is ideal for individuals or small teams who just need the essentials. No license key is required for this option.
+This is a free license where a user can access basic offerings with some limitations as mentioned below. This is ideal for individuals or small teams who just need the essentials. No license key is required for this option.
+
+#### Limitations and Impact on Existing Users
+
+| Resource | Allowed Limit | Impact on Existing Users |
+|----------|:-------------:|--------------------------|
+| Super Admin | 1 | No Impact |
+| Builder | 2 | All builders will be automatically archived, except for two random builders (including 1 Super Admin). |
+| End User | 50 | All users beyond 50 will be archived automatically. |
+| Applications | 2 | All the previously created apps will be accessible, but the users will not be able to create new apps if they already have two or more than two apps created. |
+| Workflows | 2 | Users can create upto two workflows. |
+| Workspaces | 1 | All the previously created workspaces will be accessible, but the users will not be able to create any new workspace. |
+
+**Note**: To retrieve desired Builder or End User, the Super Admin can archive the currect active builder/end-user and unarchive the desired users.
+
+<br/>
 
 ### Trial License
 
