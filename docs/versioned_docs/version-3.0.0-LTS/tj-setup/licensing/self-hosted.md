@@ -13,9 +13,19 @@ ToolJet provides three types of licenses - **Basic**, **Trial**, and **Paid**. T
 
 ### Basic License
 
-This is a free license where a user can access basic offerings with some limitations as mentioned below. This is ideal for individuals or small teams who just need the essentials. No license key is required for this option.
+This is a free license where a user can access basic offerings such as creating apps, pre-defined user groups, community support, etc. This is ideal for individuals or small teams who just need the essentials. No license key is required for this option.
 
-#### Limitations and Impact on Existing Users
+### Trial License
+
+ToolJet offers a trial license which is valid for 14 days, where users can access all premium features and evaluate ToolJet according to their needs. You can contact  **[ToolJet Team](mailto:hello@tooljet.com)** to generate a trial license key.
+
+### Paid License
+
+ToolJet offers various subscription plans for paid licenses. Visit the **[ToolJet Pricing](https://www.tooljet.ai/pricing)** page for more details on different subscription plans. Once you have decided on a suitable plan for your needs you can then contact the **[ToolJet Team](mailto:hello@tooljet.com)** to complete the onboarding process.
+
+### Migrating to New Pricing Plan
+
+Starting from the version **`v3.5.20-ee-lts`**, the basic license will have the following limitations and users on a previous version, will be impacted in the following ways:
 
 | Resource | Allowed Limit | Impact on Existing Users |
 |----------|:-------------:|--------------------------|
@@ -26,17 +36,11 @@ This is a free license where a user can access basic offerings with some limitat
 | Workflows | 2 | Users can create upto two workflows. |
 | Workspaces | 1 | All the previously created workspaces will be accessible, but the users will not be able to create any new workspace. |
 
-**Note**: To retrieve desired Builder or End User, the Super Admin can archive the currect active builder/end-user and unarchive the desired users.
+#### Retrieving Desired Users Affected Due to New Pricing Plan
 
-<br/>
+If an user is archived automatically due to the new pricing plan then to retrieve the desired Builder or End User, the Super Admin can [archive](/docs/user-management/onboard-users/archive-user#instance-level) the currect active builder/end-user and [unarchive](/docs/user-management/onboard-users/archive-user#instance-level-1) the desired users.
 
-### Trial License
-
-ToolJet offers a trial license which is valid for 14 days, where users can access all premium features and evaluate ToolJet according to their needs. You can contact  **[ToolJet Team](mailto:hello@tooljet.com)** to generate a trial license key.
-
-### Paid License
-
-ToolJet offers various subscription plans for paid licenses. Visit the **[ToolJet Pricing](https://www.tooljet.ai/pricing)** page for more details on different subscription plans. Once you have decided on a suitable plan for your needs you can then contact the **[ToolJet Team](mailto:hello@tooljet.com)** to complete the onboarding process.
+If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.
 
 </div>
 
