@@ -57,6 +57,7 @@ export const Form = function Form(props) {
     ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
 
   const computedFormBodyHeight = getBodyHeight(height, showHeader, showFooter, headerHeight, footerHeight);
+  const computedBorderRadius = `${borderRadius ? parseFloat(borderRadius) : 0}px`;
 
   const computedStyles = {
     backgroundColor,
@@ -67,6 +68,7 @@ export const Form = function Form(props) {
     position: 'relative',
     boxShadow,
     flexDirection: 'column',
+    clipPath: `inset(0 round ${computedBorderRadius})`,
   };
 
   const formContent = {
