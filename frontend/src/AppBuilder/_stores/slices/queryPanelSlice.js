@@ -621,7 +621,7 @@ export const createQueryPanelSlice = (set, get) => ({
                     query,
                     'edit'
                   );
-                  if (finalData.status === 'failed') {
+                  if (finalData?.status === 'failed') {
                     onEvent('onDataQueryFailure', queryEvents);
                     setPreviewLoading(false);
                     setIsPreviewQueryLoading(false);
