@@ -5,6 +5,8 @@ import _, { debounce, omit } from 'lodash';
 import { generateUIComponents } from './FormUtils';
 import { useMounted } from '@/_hooks/use-mount';
 import { onComponentClick, removeFunctionObjects } from '@/_helpers/appUtils';
+import { useAppInfo } from '@/_stores/appDataStore';
+import { useDynamicHeight } from '@/_hooks/useDynamicHeight';
 import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import RenderSchema from './RenderSchema';
 import useStore from '@/AppBuilder/_stores/store';
@@ -35,6 +37,8 @@ export const Form = function Form(props) {
     properties,
     resetComponent = () => {},
     dataCy,
+    adjustComponentPositions,
+    currentLayout,
   } = props;
   const childComponents = useStore((state) => state.getChildComponents(id), shallow);
   const {
@@ -46,6 +50,7 @@ export const Form = function Form(props) {
     footerBackgroundColor,
     headerBackgroundColor,
   } = styles;
+
   const {
     buttonToSubmit,
     loadingState,
@@ -55,7 +60,9 @@ export const Form = function Form(props) {
     showFooter = false,
     visibility,
     disabledState,
+    dynamicHeight,
   } = properties;
+
   const { isDisabled, isVisible, isLoading } = useExposeState(
     properties.loadingState,
     properties.visibility,
@@ -69,7 +76,7 @@ export const Form = function Form(props) {
     backgroundColor,
     borderRadius: borderRadius ? parseFloat(borderRadius) : 0,
     border: `${SUBCONTAINER_CANVAS_BORDER_WIDTH}px solid ${borderColor}`,
-    height,
+    height: dynamicHeight ? '100%' : height,
     display: isVisible ? 'flex' : 'none',
     position: 'relative',
     boxShadow,
@@ -102,6 +109,15 @@ export const Form = function Form(props) {
     backgroundColor:
       ['#fff', '#ffffffff'].includes(footerBackgroundColor) && darkMode ? '#1F2837' : footerBackgroundColor,
   };
+
+  useDynamicHeight({
+    dynamicHeight,
+    id,
+    height,
+    adjustComponentPositions,
+    currentLayout,
+    isContainer: true,
+  });
 
   const parentRef = useRef(null);
   const childDataRef = useRef({});
@@ -289,7 +305,9 @@ export const Form = function Form(props) {
 
   return (
     <form
-      className={`jet-container ${advanced && 'jet-container-json-form'}`}
+      className={`jet-container ${advanced && 'jet-container-json-form'} ${
+        properties.dynamicHeight && `dynamic-${id}`
+      }`}
       id={id}
       data-cy={dataCy}
       ref={parentRef}
