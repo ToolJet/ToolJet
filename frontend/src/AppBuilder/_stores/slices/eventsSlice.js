@@ -1111,7 +1111,7 @@ export const createEventsSlice = (set, get) => ({
         const lineNumber = lineNumberMatch ? lineNumberMatch[1] : 'unknown';
         const event = {
           actionId: 'log-info',
-          key: `${query.name}${isFromTransformation && ', transformation'}, line ${lineNumber - 2}`,
+          key: `${query.name}${isFromTransformation ? ', transformation' : ''}, line ${lineNumber - 2}`,
           description: log,
           eventType: 'customLog',
           query,
@@ -1127,7 +1127,7 @@ export const createEventsSlice = (set, get) => ({
         const lineNumber = lineNumberMatch ? lineNumberMatch[1] : 'unknown';
         const event = {
           actionId: 'log-error',
-          key: `${query.name}${isFromTransformation && ', transformation'}, line ${lineNumber - 2}`,
+          key: `${query.name}${isFromTransformation ? ', transformation' : ''}, line ${lineNumber - 2}`,
           description: log,
           eventType: 'customLog',
           query,
@@ -1143,7 +1143,7 @@ export const createEventsSlice = (set, get) => ({
         const lineNumber = lineNumberMatch ? lineNumberMatch[1] : 'unknown';
         const event = {
           actionId: 'log',
-          key: `${query.name}${isFromTransformation && ', transformation'}, line ${lineNumber - 2}`,
+          key: `${query.name}${isFromTransformation ? ', transformation' : ''}, line ${lineNumber - 2}`,
           description: log,
           eventType: 'customLog',
           query,

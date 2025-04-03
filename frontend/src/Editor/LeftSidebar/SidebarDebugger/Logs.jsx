@@ -108,11 +108,15 @@ function Logs({ logProps, idx }) {
                   <SolidIcon name="code" fill={`var(--purple11)`} width="15" /> Custom Log
                 </div>
               )}
-              <div className={`d-flex justify-content-between align-items-center ${!open && 'text-truncate'}`}>
+              <div
+                className={`d-flex justify-content-between align-items-center ${
+                  !open && logProps?.type !== 'Custom Log' && 'text-truncate'
+                }`}
+              >
                 <span
-                  className={` cursor-pointer debugger-error-title font-weight-500 ${!open && 'text-truncate'} ${
-                    logProps?.type == 'Custom Log' && logProps?.logLevel == 'error' && 'text-tomato-9'
-                  }`}
+                  className={` cursor-pointer debugger-error-title font-weight-500 ${
+                    !open && logProps?.type !== 'Custom Log' && 'text-truncate'
+                  } ${logProps?.type == 'Custom Log' && logProps?.logLevel == 'error' && 'text-tomato-9'}`}
                 >
                   <HighlightSecondWord text={title} />
                 </span>
