@@ -407,7 +407,7 @@ export const tabsConfig = {
       borderRadius: { value: '{{6}}' },
       border: { value: '#CCD1D5' },
       boxShadow: { value: '0px 0px 0px 0px #00000090' },
-      padding: { value: 'none' },
+      padding: { value: 'default' },
     },
   },
 };

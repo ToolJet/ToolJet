@@ -13,15 +13,12 @@ import OverflowTooltip from '@/_components/OverflowTooltip';
 const TabsNavShimmer = ({ divider, headerBackground }) => {
   return (
     <div
-      className="d-flex gap-4 px-4"
+      className="d-flex px-3 gap-4"
       style={{
         borderBottom: `0.5px solid ${divider}`,
-        height: '50px',
-        paddingLeft: '15px',
-        paddingRight: '15px',
-        paddingTop: '8px',
-        paddingBottom: '8px',
+        height: '60.41px',
         backgroundColor: headerBackground,
+        alignItems: 'center',
       }}
     >
       {Array(3)
@@ -358,12 +355,12 @@ export const Tabs = function Tabs({
 
     return tab?.iconVisibility ? (
       <IconElement
-        color={`${currentTab == tab?.id ? '#ACB2B9' : '#CCD1D5'}`}
+        color={`${currentTab == tab?.id ? selectedIcon : unselectedIcon}`}
         style={{
           width: '20px',
           height: '20px',
           marginBottom: '3px',
-          ...(currentTab == tab.id ? { color: '#ACB2B9' } : { color: '#CCD1D5' }),
+          ...(currentTab == tab.id ? { color: selectedIcon } : { color: unselectedIcon }),
         }}
         stroke={1.5}
       />
@@ -446,7 +443,7 @@ export const Tabs = function Tabs({
                     whiteSpace: 'nowrap',
                     fontWeight: 'bold',
                     paddingTop: '.5rem',
-                    paddingBottom: '.25rem',
+                    paddingBottom: '.5rem',
                     cursor: tab?.disable ? 'not-allowed' : 'pointer',
                     ...(tabWidth == 'split' ? { minWidth: 'auto' } : {}), // Remove minWidth for tabWidth != 'split'
                   }}
@@ -474,8 +471,6 @@ export const Tabs = function Tabs({
                       fontWeight: '500',
                       background: isHovered && hoveredTabId === tab.id ? hoverBackground : 'transparent',
                       borderRadius: '6px',
-                      paddingTop: '.25rem ',
-                      paddingBottom: '.25rem',
                       paddingLeft: '1rem',
                       paddingRight: '1rem',
                       ...(currentTab == tab.id ? { color: selectedText } : { color: unselectedText }),
@@ -484,20 +479,19 @@ export const Tabs = function Tabs({
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: '4px',
+                      height: '100%',
                     }}
                   >
                     {tabWidth === 'split' ? (
                       <>
+                        <a style={{ marginRight: '4px' }}>{getTabIcon(tab)}</a>
                         <OverflowTooltip boxWidth={width}>
-                          <>
-                            <a>{getTabIcon(tab)}</a>
-                            {tab.title}
-                          </>
+                          <>{tab.title}</>
                         </OverflowTooltip>
                       </>
                     ) : (
                       <span>
-                        <a>{getTabIcon(tab)}</a>
+                        <a style={{ marginRight: '4px' }}>{getTabIcon(tab)}</a>
                         {tab.title}
                       </span>
                     )}

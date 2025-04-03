@@ -343,6 +343,7 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
                           style={getItemStyle(snapshot.isDragging, provided.draggableProps.style)}
+                          className="tabs-list"
                         >
                           <OverlayTrigger
                             trigger="click"
@@ -361,14 +362,13 @@ export function TabsLayout({ componentMeta, darkMode, ...restProps }) {
                               key={item.title}
                               style={{
                                 marginBottom: '8px',
-                                backgroundColor:
-                                  activeColumnPopoverIndex === index ? 'var(--interactive-hover)' : 'var(--slate3)',
                               }}
                             >
                               <ListGroup.Item
                                 isDraggable={true}
                                 onMouseEnter={() => setHoveredTabItemIndex(index)}
                                 onMouseLeave={() => setHoveredTabItemIndex(null)}
+                                className={activeColumnPopoverIndex === index && 'active-column-list'}
                                 {...restProps}
                               >
                                 <div className="row">
