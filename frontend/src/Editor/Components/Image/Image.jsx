@@ -177,6 +177,7 @@ export const Image = function Image({
         border: '1px solid',
         borderRadius: imageShape === 'circle' ? '50%' : `${borderRadius}px`,
         borderColor: borderColor ? borderColor : 'transparent',
+        objectPosition: alignment,
       }}
       height={height}
       onClick={() => fireEvent('onClick')}
