@@ -47,6 +47,7 @@ export const AppMenu = function AppMenu({
       onToggle={onMenuOpen}
       onExit={() => setMenuOpen(false)}
       show={popoverVisible}
+      container={document.getElementsByClassName('home-page-content')[0]}
       overlay={
         <div>
           <Popover id="popover-app-menu" className={darkMode && 'dark-theme'} placement="bottom">
