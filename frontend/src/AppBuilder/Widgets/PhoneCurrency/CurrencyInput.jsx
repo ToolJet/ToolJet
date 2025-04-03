@@ -43,16 +43,17 @@ export const CurrencyInput = (props) => {
   };
 
   const options = useMemo(() => {
-    return Object.keys(CurrencyMap).map((country) => ({
-      label: `${CurrencyMap[country].prefix} (${CurrencyMap[country].currency})`,
-      value: country,
+    return Object.keys(CurrencyMap).map((ele) => ({
+      label: `${CurrencyMap[ele].prefix} (${CurrencyMap[ele].currency})`,
+      value: ele,
+      country: CurrencyMap[ele].country,
     }));
   }, []);
 
   const onInputValueChange = (value) => {
     setExposedVariables({
       country: country,
-      formattedValue: `${CurrencyMap?.[country]?.prefix || ''} ${inputRef.current?.value}`,
+      formattedValue: `${inputRef.current?.value}`,
     });
     handlePhoneCurrencyInputChange(value);
   };
@@ -129,10 +130,25 @@ export const CurrencyInput = (props) => {
   };
 
   useEffect(() => {
+    if (!isInitialRender.current) {
+      setCountry(defaultCountry);
+    }
+  }, [defaultCountry]);
+
+  useEffect(() => {
+    if (!isInitialRender.current) {
+      setExposedVariables({
+        country: country,
+        formattedValue: `${inputRef.current?.value}`,
+      });
+    }
+  }, [country]);
+
+  useEffect(() => {
     if (isInitialRender.current) {
       setExposedVariables({
         country: country,
-        formattedValue: `${CurrencyMap?.[country]?.prefix || ''} ${inputRef.current?.value}`,
+        formattedValue: `${inputRef.current?.value}`,
         value: value,
         setCountryCode: (code) => {
           setCountry(code);
@@ -141,14 +157,6 @@ export const CurrencyInput = (props) => {
       isInitialRender.current = false;
     }
   }, []);
-
-  useEffect(() => {
-    if (!isInitialRender.current) {
-      setCountry(defaultCountry);
-    }
-  }, [defaultCountry]);
-
-  console.log('CurrencyMap?.[country]?.prefix', CurrencyMap?.[country]?.prefix);
 
   return (
     <>
@@ -184,12 +192,22 @@ export const CurrencyInput = (props) => {
         />
         <div className="d-flex h-100 w-100" style={{ boxShadow, borderRadius: `${borderRadius}px` }}>
           <CountrySelect
-            value={{ label: `${CurrencyMap?.[country]?.prefix} (${CurrencyMap?.[country]?.currency})`, value: country }}
+            value={{
+              label: `${CurrencyMap?.[country]?.prefix} (${CurrencyMap?.[country]?.currency})`,
+              value: country,
+              country: CurrencyMap?.[country]?.country,
+            }}
             options={options}
             isCountryChangeEnabled={isCountryChangeEnabled}
             disabledState={disabledState}
             borderRadius={borderRadius}
             isValid={isValid}
+            filterOption={(option, inputValue) => {
+              return (
+                option.label.toLowerCase().includes(inputValue.toLowerCase()) ||
+                option.data.country.toLowerCase().includes(inputValue.toLowerCase())
+              );
+            }}
             computedStyles={computedStyles}
             showValidationError={showValidationError}
             darkMode={darkMode}
@@ -197,9 +215,10 @@ export const CurrencyInput = (props) => {
             onChange={(selectedOption) => {
               if (selectedOption) {
                 setCountry(selectedOption.value);
+                fireEvent('onChange');
                 setExposedVariables({
                   country: selectedOption.value,
-                  formattedValue: `${CurrencyMap?.[selectedOption.value]?.prefix || ''} ${inputRef.current?.value}`,
+                  formattedValue: `${inputRef.current?.value}`,
                 });
               }
             }}
@@ -214,7 +233,10 @@ export const CurrencyInput = (props) => {
             decimalsLimit={decimalPlaces}
             style={computedStyles}
             data-ignore-hover={true}
-            onValueChange={(value) => onInputValueChange(value)}
+            onValueChange={(newVal) => {
+              if (newVal === value) return;
+              onInputValueChange(newVal);
+            }}
             prefix={`${CurrencyMap?.[country]?.prefix || ''} `}
             disabled={disabledState}
             onBlur={handleBlur}

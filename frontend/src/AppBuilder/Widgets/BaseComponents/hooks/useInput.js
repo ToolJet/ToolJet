@@ -116,6 +116,15 @@ export const useInput = ({
   }, [inputType, country]);
 
   useEffect(() => {
+    if (inputType !== 'currency') return;
+    setExposedVariable('setValue', async function (value, countryCode = country) {
+      setInputValue(value);
+      setCountry(countryCode);
+      fireEvent('onChange');
+    });
+  }, [inputType, country]);
+
+  useEffect(() => {
     const exposedVariables = {
       ...(inputType !== 'phone' && {
         setText: async function (text) {

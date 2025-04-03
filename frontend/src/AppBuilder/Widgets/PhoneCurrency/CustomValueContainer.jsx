@@ -21,7 +21,14 @@ export const CustomValueContainer = ({ getValue, ...props }) => {
           </>
         </div>
       ) : (
-        <div style={{ display: 'flex', marginLeft: '17px', marginTop: '4px', justifyContent: 'center' }}>
+        <div
+          style={{
+            display: 'flex',
+            marginLeft: isCurrencyInput ? '6px' : '17px',
+            marginTop: '4px',
+            justifyContent: 'center',
+          }}
+        >
           <Planet width={24} height={24} />
         </div>
       )}

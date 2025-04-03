@@ -15,6 +15,7 @@ export const CountrySelect = ({ value, onChange, options, ...rest }) => {
     showValidationError,
     computedStyles,
     darkMode,
+    filterOption,
   } = rest;
   const [menuIsOpen, setMenuIsOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -110,6 +111,7 @@ export const CountrySelect = ({ value, onChange, options, ...rest }) => {
         useCustomStyles={true}
         menuPortalTarget={document.body}
         isCurrencyInput={isCurrencyInput}
+        {...(filterOption && { filterOption })}
         components={{
           MenuList: CustomMenuList,
           Option: (props) => <CustomOption {...props} />,

@@ -72,8 +72,8 @@ export const currencyinputConfig = {
   validation: {
     mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
     regex: { type: 'code', displayName: 'Regex', placeholder: '^[a-zA-Z0-9_ -]{3,16}$' },
-    minLength: { type: 'code', displayName: 'Min length', placeholder: 'Enter min length' },
-    maxLength: { type: 'code', displayName: 'Max length', placeholder: 'Enter max length' },
+    minValue: { type: 'code', displayName: 'Min value', placeholder: 'Enter min value' },
+    maxValue: { type: 'code', displayName: 'Max value', placeholder: 'Enter max value' },
     customRule: {
       type: 'code',
       displayName: 'Custom validation',
@@ -223,9 +223,12 @@ export const currencyinputConfig = {
   },
   actions: [
     {
-      handle: 'setText',
-      displayName: 'Set text',
-      params: [{ handle: 'text', displayName: 'text', defaultValue: 'New text' }],
+      handle: 'setValue',
+      displayName: 'Set Value',
+      params: [
+        { handle: 'value', displayName: 'value', defaultValue: '' },
+        { handle: 'country', displayName: 'country', defaultValue: '' },
+      ],
     },
     {
       handle: 'clear',
@@ -259,8 +262,8 @@ export const currencyinputConfig = {
     validation: {
       mandatory: { value: '{{false}}' },
       regex: { value: '' },
-      minLength: { value: '' },
-      maxLength: { value: '' },
+      minValue: { value: '' },
+      maxValue: { value: '' },
       customRule: { value: '' },
     },
 
