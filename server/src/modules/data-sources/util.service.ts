@@ -302,7 +302,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     return dataSource;
   }
 
-  async resolveConstants(str: string, organizationId: string, environmentId: string, userId?: string): Promise<string> {
+  async resolveConstants(str: string, organizationId: string, environmentId: string, user?: User): Promise<string> {
     const regex = /\{\{(constants|secrets)\.(.*?)\}\}/g;
 
     const matches = Array.from(str.matchAll(regex));
@@ -591,12 +591,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
     return options;
   }
 
-  async parseSourceOptions(
-    options: any,
-    organizationId: string,
-    environmentId: string,
-    userId?: string
-  ): Promise<object> {
+  async parseSourceOptions(options: any, organizationId: string, environmentId: string, user?: User): Promise<object> {
     // For adhoc queries such as REST API queries, source options will be null
     if (!options) return {};
     const constantMatcher = /\{\{(constants|secrets|globals.server)\..*?\}\}/g;
@@ -615,7 +610,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
               constantMatcher.lastIndex = 0;
 
               if (constantMatcher.test(inner)) {
-                const resolved = await this.resolveConstants(inner, organizationId, environmentId, userId);
+                const resolved = await this.resolveConstants(inner, organizationId, environmentId, user);
                 curr[j] = resolved;
               }
             }
@@ -624,7 +619,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
       }
 
       if (constantMatcher.test(currentOption)) {
-        const resolved = await this.resolveConstants(currentOption, organizationId, environmentId, userId);
+        const resolved = await this.resolveConstants(currentOption, organizationId, environmentId, user);
         options[key]['value'] = resolved;
       }
     }
@@ -639,7 +634,7 @@ export class DataSourcesUtilService implements IDataSourcesUtilService {
         const value = await this.credentialService.getValue(credentialId);
 
         if (value.includes('{{constants') || value.includes('{{secrets')) {
-          const resolved = await this.resolveConstants(value, organizationId, environmentId, userId);
+          const resolved = await this.resolveConstants(value, organizationId, environmentId, user);
           parsedOptions[key] = resolved;
           continue;
         } else {

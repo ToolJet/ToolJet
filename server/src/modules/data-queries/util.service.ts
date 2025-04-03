@@ -82,7 +82,6 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         organizationId,
         environmentId
       );
-      const userId = user ? user.id : null;
       dataSource.options = dataSourceOptions.options;
 
       let { sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
@@ -91,7 +90,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
         queryOptions,
         organizationId,
         environmentId,
-        userId
+        user
       );
 
       queryStatus.setOptions(parsedQueryOptions);
@@ -220,7 +219,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
               queryOptions,
               organizationId,
               environmentId,
-              userId
+              user
             ));
             queryStatus.setOptions(parsedQueryOptions);
             result = await service.run(
@@ -300,13 +299,13 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     queryOptions,
     organization_id,
     environmentId = undefined,
-    userId = undefined
+    user = undefined
   ) {
     const sourceOptions = await this.dataSourceUtilService.parseSourceOptions(
       dataSource.options,
       organization_id,
       environmentId,
-      userId
+      user
     );
 
     const parsedQueryOptions = await this.parseQueryOptions(
@@ -314,7 +313,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
       queryOptions,
       organization_id,
       environmentId,
-      userId
+      user
     );
 
     const service = await this.pluginsSelectorService.getService(dataSource.pluginId, dataSource.kind);
@@ -381,7 +380,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
     options: object,
     organization_id: string,
     environmentId?: string,
-    userId?: string
+    user?: User
   ): Promise<object> {
     const stack: any[] = [{ obj: object, key: null, parent: null }];
 
@@ -426,7 +425,7 @@ export class DataQueriesUtilService implements IDataQueriesUtilService {
             resolvedValue,
             organization_id,
             environmentId,
-            userId
+            user
           );
           resolvedValue = resolvingConstant;
           if (parent && key !== null) {

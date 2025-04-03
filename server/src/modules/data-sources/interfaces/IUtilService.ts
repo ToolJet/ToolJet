@@ -34,7 +34,7 @@ export interface IDataSourcesUtilService {
 
   parseOptionsForOauthDataSource(options: Array<object>, resetSecureData?: boolean): Promise<Array<object>>;
 
-  resolveConstants(value: string, organizationId: string, environmentId: string, userId?: string): Promise<string>;
+  resolveConstants(value: string, organizationId: string, environmentId: string, user?: User): Promise<string>;
 
   resolveKeyValuePair(element: any, organizationId: string, environmentId: string): Promise<any>;
 
