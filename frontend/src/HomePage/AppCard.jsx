@@ -32,10 +32,8 @@ export default function AppCard({
   const [isMenuOpen, setMenuOpen] = useState(false);
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const cardRef = useRef();
-  const [popoverVisible, setPopoverVisible] = useState(true);
   const [isNameOverflowing, setIsNameOverflowing] = useState(false);
-  const h3Ref = useRef(null);
+  const tooltipRef = useRef(null);
 
   const onMenuToggle = useCallback(
     (status) => {
@@ -62,34 +60,9 @@ export default function AppCard({
   }, [isHovered, isMenuOpen]);
 
   useEffect(() => {
-    const callBackFunction = (entries) => {
-      const [entry] = entries;
-      setPopoverVisible(isMenuOpen && entry.isIntersecting);
-    };
-
-    const options = {
-      root: null,
-      rootMargin: '0px',
-      threshold: 1.0,
-    };
-
-    const currentCardRef = cardRef.current;
-    const observer = new IntersectionObserver(callBackFunction, options);
-    if (currentCardRef) {
-      observer.observe(currentCardRef);
-    }
-
-    return () => {
-      if (currentCardRef) {
-        observer.unobserve(currentCardRef);
-      }
-    };
-  }, [isMenuOpen]);
-
-  useEffect(() => {
     const checkOverflow = () => {
-      if (h3Ref.current) {
-        setIsNameOverflowing(h3Ref.current.scrollWidth > h3Ref.current.clientWidth);
+      if (tooltipRef.current) {
+        setIsNameOverflowing(tooltipRef.current.scrollWidth > tooltipRef.current.clientWidth);
       }
     };
 
@@ -176,8 +149,28 @@ export default function AppCard({
       </div>
     );
 
+  function AppNameDisplay({ tooltipRef }) {
+    const AppName = (
+      <h3
+        ref={tooltipRef}
+        className="app-card-name font-weight-500 tj-text-md"
+        data-cy={`${app.name.toLowerCase().replace(/\s+/g, '-')}-title`}
+      >
+        {decodeEntities(app.name)}
+      </h3>
+    );
+
+    return isNameOverflowing ? (
+      <ToolTip trigger={['hover']} message={app.name}>
+        {AppName}
+      </ToolTip>
+    ) : (
+      AppName
+    );
+  }
+
   return (
-    <div className="card homepage-app-card" ref={cardRef}>
+    <div className="card homepage-app-card">
       <div key={app?.id} ref={hoverRef} data-cy={`${app?.name.toLowerCase().replace(/\s+/g, '-')}-card`}>
         <div className="row home-app-card-header">
           <div className="col-12 d-flex justify-content-between">
@@ -198,9 +191,6 @@ export default function AppCard({
                   canUpdateApp={canUpdateApp(app)}
                   deleteApp={() => deleteApp(app)}
                   exportApp={() => exportApp(app)}
-                  isMenuOpen={setMenuOpen}
-                  popoverVisible={popoverVisible}
-                  setMenuOpen={setMenuOpen}
                   darkMode={darkMode}
                   currentFolder={currentFolder}
                   appType={appType}
@@ -211,25 +201,7 @@ export default function AppCard({
           </div>
         </div>
         <div>
-          {isNameOverflowing ? (
-            <ToolTip trigger={['hover']} message={app.name}>
-              <h3
-                ref={h3Ref}
-                className="app-card-name font-weight-500 tj-text-md"
-                data-cy={`${app.name.toLowerCase().replace(/\s+/g, '-')}-title`}
-              >
-                {decodeEntities(app.name)}
-              </h3>
-            </ToolTip>
-          ) : (
-            <h3
-              ref={h3Ref}
-              className="app-card-name font-weight-500 tj-text-md"
-              data-cy={`${app.name.toLowerCase().replace(/\s+/g, '-')}-title`}
-            >
-              {decodeEntities(app.name)}
-            </h3>
-          )}
+          <AppNameDisplay tooltipRef={tooltipRef} />
         </div>
         <div className="app-creation-time-container" style={{ marginBottom: '12px' }}>
           {canUpdate && (
