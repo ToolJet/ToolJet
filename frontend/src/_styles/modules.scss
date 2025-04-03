@@ -1,0 +1,39 @@
+.apps-modules-tabs {
+    .nav-link {
+        background-color: var(--page-default);
+    }
+
+    .nav-link.active {
+        border-bottom-width: medium !important;
+    }
+
+    li.nav-item {
+        flex: 1;
+
+        button {
+            width: 100%;
+        }
+    }
+
+}
+
+.apps-modules-navigation {
+    margin-bottom: 10px;
+
+    .tab-content {
+        display: none;
+    }
+}
+
+.apps-modules-tabs.dark-mode {
+    .nav-link {
+        background-color: inherit;
+    }
+
+    border-bottom-color: #2B394A;
+}
+
+#homePage-tab-front-end,
+#homePage-tab-module {
+    border-radius: 0;
+}
