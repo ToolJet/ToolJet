@@ -56,7 +56,7 @@
     box-shadow: 0 0 0 1px var(--border-weak);
   }
 
-  &is-editing.active {
+  &.is-editing.active {
     box-shadow: 0 0 0 1px var(--border-accent-weak);
   }
 
