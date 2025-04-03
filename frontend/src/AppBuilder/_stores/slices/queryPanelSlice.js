@@ -787,9 +787,15 @@ export const createQueryPanelSlice = (set, get) => ({
             proxiedPage,
             proxiedConstants,
             {
-              logError: actions.logError,
-              logInfo: actions.logInfo,
-              log: actions.log,
+              logError: function (log) {
+                return actions.logError.call(actions, log, true);
+              },
+              logInfo: function (log) {
+                return actions.logInfo.call(actions, log, true);
+              },
+              log: function (log) {
+                return actions.log.call(actions, log, true);
+              },
             }
           );
         } catch (err) {

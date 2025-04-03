@@ -1103,15 +1103,15 @@ export const createEventsSlice = (set, get) => ({
         return executeAction(event, mode, {});
       };
 
-      const logInfo = (log) => {
+      const logInfo = (log, isFromTransformation) => {
         const query = dataQuery.queries.modules['canvas'].find((query) => query.id == queryId);
         const error = new Error();
-        const stackLine = error.stack.split('\n')[2];
+        const stackLine = error.stack.split('\n')[isFromTransformation ? 3 : 2];
         const lineNumberMatch = stackLine.match(/:(\d+):\d+\)$/);
         const lineNumber = lineNumberMatch ? lineNumberMatch[1] : 'unknown';
         const event = {
           actionId: 'log-info',
-          key: `${query.name}, Line ${lineNumber - 2}`,
+          key: `${query.name}${isFromTransformation && ', transformation'}, line ${lineNumber - 2}`,
           description: log,
           eventType: 'customLog',
           query,
@@ -1119,15 +1119,15 @@ export const createEventsSlice = (set, get) => ({
         return executeAction(event, mode, {});
       };
 
-      const logError = (log) => {
+      const logError = (log, isFromTransformation = false) => {
         const query = dataQuery.queries.modules['canvas'].find((query) => query.id == queryId);
         const error = new Error();
-        const stackLine = error.stack.split('\n')[2];
+        const stackLine = error.stack.split('\n')[isFromTransformation ? 3 : 2];
         const lineNumberMatch = stackLine.match(/:(\d+):\d+\)$/);
         const lineNumber = lineNumberMatch ? lineNumberMatch[1] : 'unknown';
         const event = {
           actionId: 'log-error',
-          key: `${query.name}, Line ${lineNumber - 2}`,
+          key: `${query.name}${isFromTransformation && ', transformation'}, line ${lineNumber - 2}`,
           description: log,
           eventType: 'customLog',
           query,
@@ -1135,15 +1135,15 @@ export const createEventsSlice = (set, get) => ({
         return executeAction(event, mode, {});
       };
 
-      const log = (log) => {
+      const log = (log, isFromTransformation = false) => {
         const query = dataQuery.queries.modules['canvas'].find((query) => query.id == queryId);
         const error = new Error();
-        const stackLine = error.stack.split('\n')[2];
+        const stackLine = error.stack.split('\n')[isFromTransformation ? 3 : 2];
         const lineNumberMatch = stackLine.match(/:(\d+):\d+\)$/);
         const lineNumber = lineNumberMatch ? lineNumberMatch[1] : 'unknown';
         const event = {
           actionId: 'log',
-          key: `${query.name}, Line ${lineNumber - 2}`,
+          key: `${query.name}${isFromTransformation && ', transformation'}, line ${lineNumber - 2}`,
           description: log,
           eventType: 'customLog',
           query,
