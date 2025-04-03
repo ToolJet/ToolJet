@@ -20,6 +20,7 @@ import NoComponentCanvasContainer from './NoComponentCanvasContainer';
 import { RIGHT_SIDE_BAR_TAB } from '../RightSideBar/rightSidebarConstants';
 import { isPDFSupported } from '@/_helpers/appUtils';
 import toast from 'react-hot-toast';
+import useSortedComponents from '../_hooks/useSortedComponents';
 
 //TODO: Revisit the logic of height (dropRef)
 
@@ -58,13 +59,9 @@ export const Container = React.memo(
     const currentMode = useStore((state) => state.currentMode, shallow);
     const currentLayout = useStore((state) => state.currentLayout, shallow);
     const setFocusedParentId = useStore((state) => state.setFocusedParentId, shallow);
-    const getCurrentPageComponents = useStore((state) => state.getCurrentPageComponents, shallow);
     const isContainerReadOnly = useMemo(() => {
       return (index !== 0 && (componentType === 'Listview' || componentType === 'Kanban')) || currentMode === 'view';
     }, [componentType, index, currentMode]);
-    const reorderContainerChildren = useStore((state) => state.reorderContainerChildren, shallow);
-    const prevForceUpdateRef = useRef(0);
-    const prevComponentsOrder = useRef(components);
 
     const [{ isOverCurrent }, drop] = useDrop({
       accept: 'box',
@@ -150,39 +147,7 @@ export const Container = React.memo(
       [setLastCanvasClickPosition]
     );
 
-    // Function to sort the components based on position in container for tab navigation
-    const sortedComponents = useMemo(() => {
-      const { triggerUpdate, containerId } = reorderContainerChildren;
-
-      // If a forced update occurred for a different container, return the previous order
-      const isForcedUpdate = prevForceUpdateRef.current !== triggerUpdate;
-      if (isForcedUpdate) {
-        prevForceUpdateRef.current = triggerUpdate;
-        if (containerId !== id) {
-          return prevComponentsOrder.current;
-        }
-      }
-
-      const currentPageComponents = getCurrentPageComponents()
-
-      const newComponentsOrder = [...components].sort((a, b) => {
-        const aTop = currentPageComponents?.[a]?.layouts?.[currentLayout]?.top;
-        const bTop = currentPageComponents?.[b]?.layouts?.[currentLayout]?.top;
-        if (aTop !== bTop) {
-          return aTop - bTop;
-        } else {
-          const aLeft = currentPageComponents?.[a]?.layouts?.[currentLayout]?.left;
-          const bLeft = currentPageComponents?.[b]?.layouts?.[currentLayout]?.left;
-          if (aLeft !== bLeft) {
-            return aLeft - bLeft;
-          }
-        }
-      });
-
-      prevComponentsOrder.current = newComponentsOrder;
-      return newComponentsOrder;
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [components, currentLayout, reorderContainerChildren.triggerUpdate]);
+    const sortedComponents = useSortedComponents(components, currentLayout, id);
 
     return (
       <div
