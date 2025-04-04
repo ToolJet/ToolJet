@@ -20,7 +20,9 @@ export class OrganizationUsersModule {
     const { OrganizationUsersController } = await import(
       `${await getImportPath(IS_GET_CONTEXT)}/organization-users/controller`
     );
-    const { OrganizationUsersService } = await import(`${await getImportPath(IS_GET_CONTEXT)}/organization-users/service`);
+    const { OrganizationUsersService } = await import(
+      `${await getImportPath(IS_GET_CONTEXT)}/organization-users/service`
+    );
     const { OrganizationUsersUtilService } = await import(
       `${await getImportPath(IS_GET_CONTEXT)}/organization-users/util.service`
     );

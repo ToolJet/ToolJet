@@ -7,6 +7,7 @@ import { keymap } from '@codemirror/view';
 import { completionKeymap, acceptCompletion, autocompletion, completionStatus } from '@codemirror/autocomplete';
 import { python } from '@codemirror/lang-python';
 import { sql } from '@codemirror/lang-sql';
+import _ from 'lodash';
 import { sass, sassCompletionSource } from '@codemirror/lang-sass';
 import { okaidia } from '@uiw/codemirror-theme-okaidia';
 import { githubLight } from '@uiw/codemirror-theme-github';
@@ -21,6 +22,7 @@ import useStore from '@/AppBuilder/_stores/store';
 import { shallow } from 'zustand/shallow';
 import { search, searchKeymap, searchPanelOpen } from '@codemirror/search';
 import { handleSearchPanel, SearchBtn } from './SearchBox';
+import { isInsideParent } from './utils';
 
 const langSupport = Object.freeze({
   javascript: javascript(),
@@ -51,8 +53,15 @@ const MultiLineCodeEditor = (props) => {
     renderCopilot,
   } = props;
   const replaceIdsWithName = useStore((state) => state.replaceIdsWithName, shallow);
+  const wrapperRef = useRef(null);
   const getSuggestions = useStore((state) => state.getSuggestions, shallow);
+  const getServerSideGlobalSuggestions = useStore((state) => state.getServerSideGlobalSuggestions, shallow);
+
   const isInsideQueryPane = !!document.querySelector('.code-hinter-wrapper')?.closest('.query-details');
+  const isInsideQueryManager = useMemo(
+    () => isInsideParent(wrapperRef?.current, 'query-manager'),
+    [wrapperRef.current]
+  );
 
   const context = useContext(CodeHinterContext);
 
@@ -100,9 +109,16 @@ const MultiLineCodeEditor = (props) => {
 
     const hints = getSuggestions();
 
+    const serverHints = getServerSideGlobalSuggestions(isInsideQueryManager);
+
+    const allHints = {
+      ...hints,
+      appHints: [...hints.appHints, ...serverHints],
+    };
+
     let JSLangHints = [];
     if (lang === 'javascript') {
-      JSLangHints = Object.keys(hints['jsHints'])
+      JSLangHints = Object.keys(allHints['jsHints'])
         .map((key) => {
           return hints['jsHints'][key]['methods'].map((hint) => ({
             hint: hint,
@@ -120,7 +136,7 @@ const MultiLineCodeEditor = (props) => {
       });
     }
 
-    const appHints = hints['appHints'];
+    const appHints = allHints['appHints'];
 
     let autoSuggestionList = appHints.filter((suggestion) => {
       return suggestion.hint.includes(nearestSubstring);
@@ -229,6 +245,7 @@ const MultiLineCodeEditor = (props) => {
     <div
       className={`code-hinter-wrapper position-relative ${isInsideQueryPane ? 'code-editor-query-panel' : ''}`}
       style={{ width: '100%' }}
+      ref={wrapperRef}
     >
       <div className={`${className} ${darkMode && 'cm-codehinter-dark-themed'}`}>
         <SearchBtn view={editorView} />
