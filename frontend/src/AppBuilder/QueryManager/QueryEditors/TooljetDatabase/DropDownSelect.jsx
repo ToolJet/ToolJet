@@ -9,6 +9,7 @@ import Remove from '@/_ui/Icon/bulkIcons/Remove';
 import { v4 as uuidv4 } from 'uuid';
 import { isEmpty } from 'lodash';
 import { ToolTip } from '@/_components/ToolTip';
+import usePopoverObserver from '@/AppBuilder/_hooks/usePopoverObserver';
 
 const DropDownSelect = ({
   darkMode,
@@ -83,7 +84,6 @@ const DropDownSelect = ({
   //following two states are to determine whether the value is truncated or not to show tooltip
   const valueRef = useRef(null);
   const [isTruncated, setIsTruncated] = useState(false);
-  const prevShowMenu = useRef(false);
 
   useEffect(() => {
     if (shouldCloseFkMenu) {
@@ -131,38 +131,14 @@ const DropDownSelect = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected]);
 
-  useEffect(() => {
-    const container = document.getElementsByClassName('query-details')[0];
-    const popoverBtn = document.getElementById(popoverBtnId.current);
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          if (prevShowMenu.current) {
-            setShowMenu(true);
-            prevShowMenu.current = false;
-          }
-        } else if (showMenu) {
-          setShowMenu(false);
-          prevShowMenu.current = true;
-        }
-        if (!entry.isIntersecting && showMenu) {
-          setShowMenu(false);
-        }
-      },
-      { root: container, threshold: [0.5] }
-    );
-
-    if (popoverBtn) {
-      observer.observe(popoverBtn);
-    }
-
-    return () => {
-      if (popoverBtn) {
-        observer.unobserve(popoverBtn);
-      }
-    };
-  }, [showMenu]);
+  usePopoverObserver(
+    document.getElementsByClassName('query-details')[0],
+    document.getElementById(popoverBtnId.current),
+    document.getElementById(popoverId.current),
+    showMenu,
+    () => setShowMenu(true),
+    () => setShowMenu(false)
+  );
 
   function checkElementPosition() {
     if (isForeignKeyInEditCell) {
