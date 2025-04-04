@@ -88,17 +88,17 @@ Admin user has access to all the permission at workspace level, while an end use
 
 ## FAQ
 
-<details>
+<details id="tj-dropdown">
     <summary>
-         **Q. Can applications and workspace settings be shared between workspaces?**
+Can applications and workspace settings be shared between workspaces?
     </summary>
 **No**, applications and workspace settings cannot be shared directly between workspaces. Each workspace operates independently, maintaining its own applications and configurations. However, you can **export an application** from one workspace and **import it** into another. For more details, refer to the [Import and Export Applications](/docs/app-builder/importing-exporting-applications/) documentation.
 
 </details>
 
-<details>
+<details id="tj-dropdown">
     <summary>
-     **Q. Do users have access to all workspaces by default?**
+Do users have access to all workspaces by default?
     </summary>
 **No**, users need to be **invited** to a specific workspace to access the apps and data within that workspace. Refer to [invite users](/docs/user-management/role-based-access/user-roles) documentation for more details
 

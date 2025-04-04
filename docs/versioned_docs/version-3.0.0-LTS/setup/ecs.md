@@ -6,13 +6,13 @@ title: AWS ECS
 # Deploying ToolJet on Amazon ECS
 
 :::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`.
+To enable ToolJet AI features in your ToolJet deployment, whitelist https://api-gateway.tooljet.ai.
 :::
 
 :::info
-You should setup a PostgreSQL database manually to be used by ToolJet. 
+You should setup a PostgreSQL database manually to be used by ToolJet. We recommend using an **RDS PostgreSQL database**. You can find the system requirements [here](/docs/setup/system-requirements#database-software).
 
-ToolJet comes with a built-in Redis setup, which is used for multiplayer editing and background jobs. However, for multi-service setups, it's recommended to use an external Redis instance.
+ToolJet comes with a **built-in Redis setup**, which is used for multiplayer editing and background jobs. However, for **multi-service setup**, it's recommended to use an **external Redis instance**.
 :::
 
 You can effortlessly deploy Amazon Elastic Container Service (ECS) by utilizing a [CloudFormation template](https://aws.amazon.com/cloudformation/):
@@ -105,10 +105,10 @@ Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration m
 To set up ToolJet Database, the following **environment variables are mandatory** and must be configured:
 
 ```env
-TOOLJET_DB=
-TOOLJET_DB_HOST=
-TOOLJET_DB_USER=
-TOOLJET_DB_PASS=
+TOOLJET_DB=tooljet_db # Default database name
+TOOLJET_DB_HOST=<postgresql-database-host>
+TOOLJET_DB_USER=<username>
+TOOLJET_DB_PASS=<password>
 ```
 
 Additionally, for **PostgREST**, the following **mandatory** environment variables must be set:

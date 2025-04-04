@@ -5,10 +5,14 @@ title: Kubernetes
 
 # Deploying ToolJet on Kubernetes
 
-:::info
-You should setup a PostgreSQL database manually to be used by ToolJet. 
+:::warning
+To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
+:::
 
-ToolJet comes with a built-in Redis setup, which is used for multiplayer editing and background jobs. However, for multi-pod setup, it's recommended to use an external Redis instance.
+:::info
+You should setup a **PostgreSQL database** manually to be used by ToolJet. You can find the system requirements [here](/docs/setup/system-requirements#database-software).
+
+ToolJet comes with a **built-in Redis setup**, which is used for multiplayer editing and background jobs. However, for **multi-pod setup**, it's recommended to use an **external Redis instance**.
 :::
 
 Follow the steps below to deploy ToolJet on a Kubernetes cluster.
@@ -25,21 +29,17 @@ LOCKBOX_MASTER_KEY=<generate using openssl rand -hex 32>
 SECRET_KEY_BASE=<generate using openssl rand -hex 64>
 
 PG_USER=<username>
-PG_HOST=<postgresql-instance-ip>
+PG_HOST=<postgresql-database-host>
 PG_PASS=<password>
 PG_DB=tooljet_production
 ```
 Also, for setting up additional environment variables in the .env file, please check our documentation on environment variables [here](/docs/setup/env-vars).
 
-:::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist `https://api-gateway.tooljet.ai`.
-:::
-
 3. Create a Kubernetes deployment
 
-   ```bash
-   kubectl apply -f https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/deployment.yaml
-   ```
+```bash
+kubectl apply -f https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/deployment.yaml
+```
 
 :::info
 The file given above is just a template and might not suit production environments. You should download the file and configure parameters such as the replica count and environment variables according to your needs.
@@ -51,9 +51,9 @@ If there are self signed HTTPS endpoints that ToolJet needs to connect to, pleas
 
 4. Verify if ToolJet is running
 
-   ```bash
-    kubectl get pods
-   ```
+```bash
+kubectl get pods
+```
 
 5. Create a Kubernetes services to publish the Kubernetes deployment that you've created. This step varies with cloud providers. We have a [template](https://tooljet-deployments.s3.us-west-1.amazonaws.com/kubernetes/service.yaml) for exposing the ToolJet server as a service using an AWS loadbalancer.
 
@@ -79,10 +79,10 @@ Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration m
 To set up ToolJet Database, the following **environment variables are mandatory** and must be configured:
 
 ```env
-TOOLJET_DB=
-TOOLJET_DB_HOST=
-TOOLJET_DB_USER=
-TOOLJET_DB_PASS=
+TOOLJET_DB=tooljet_db # Default database name
+TOOLJET_DB_HOST=<postgresql-database-host>
+TOOLJET_DB_USER=<username>
+TOOLJET_DB_PASS=<password>
 ```
 
 Additionally, for **PostgREST**, the following **mandatory** environment variables must be set:

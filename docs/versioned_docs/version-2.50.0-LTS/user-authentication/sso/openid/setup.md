@@ -3,7 +3,15 @@ id: setup
 title: OpenID Setup
 ---
 
-<div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
+<div className="badge badge--primary heading-badge">   
+  <img 
+    src="/img/badge-icons/premium.svg" 
+    alt="Icon" 
+    width="16" 
+    height="16" 
+  />
+ <span>Paid feature</span>
+</div>
 
 # Configure OpenId Connect Single Sign-on
 

@@ -37,7 +37,7 @@ Use this operation to generate text based on the prompt, system instructions, an
 
 <img className="screenshot-full" src="/img/marketplace/plugins/gemini/query.png" alt="Gemini Query" />
 
-<details>
+<details id="tj-dropdown">
 <summary>**Response Example**</summary>
 
 Connecting ToolJet to a database involves several steps, and the specific method depends on the type of database you're using.  ToolJet primarily uses database connections through its built-in features, avoiding the need for complex configuration files or external tools.  Here's a general guide, focusing on common scenarios:
@@ -94,7 +94,7 @@ Use this operation for a chat-like conversation, where the model responds based 
 
 <img className="screenshot-full" src="/img/marketplace/plugins/gemini/chat-query.png" alt="Gemini Query" />
 
-<details>
+<details id="tj-dropdown">
 <summary>**Response Example**</summary>
 
 Integrating an API into ToolJet involves several steps, depending on the API's specifics (REST, GraphQL, etc.) and the desired functionality within your ToolJet application.  Here's a breakdown of the process:

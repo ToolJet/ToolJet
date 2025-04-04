@@ -6,13 +6,13 @@ title: Google Cloud Run
 # Deploying ToolJet on Google Cloud Run
 
 :::warning
-To enable ToolJet AI features in your ToolJet deployment, whitelist `api-gateway.tooljet.ai` and `docs.tooljet.ai`.
+To enable ToolJet AI features in your ToolJet deployment, whitelist https://api-gateway.tooljet.ai.
 :::
 
 :::info
-You should manually set up a PostgreSQL database to be used by ToolJet. We recommend using **Cloud SQL** for this purpose. 
+You should manually set up a **PostgreSQL database** to be used by ToolJet. We recommend using **Cloud SQL** for this purpose. 
 
-ToolJet comes with a built-in Redis setup, which is used for multiplayer editing and background jobs. However, for multi-service setups, it's recommended to use an external Redis instance.
+ToolJet comes with a **built-in Redis setup**, which is used for multiplayer editing and background jobs. However, for **multi-service setup**, it's recommended to use an **external Redis instance**.
 :::
 
 <!-- Follow the steps below to deploy ToolJet on Cloud run with `gcloud` CLI. -->
@@ -87,10 +87,10 @@ Deploying ToolJet Database is mandatory from ToolJet 3.0 or else the migration m
 To set up ToolJet Database, the following **environment variables are mandatory** and must be configured:
 
 ```env
-TOOLJET_DB=
-TOOLJET_DB_HOST=
-TOOLJET_DB_USER=
-TOOLJET_DB_PASS=
+TOOLJET_DB=tooljet_db # Default database name
+TOOLJET_DB_HOST=<postgresql-database-host>
+TOOLJET_DB_USER=<username>
+TOOLJET_DB_PASS=<password>
 ```
 
 Additionally, for **PostgREST**, the following **mandatory** environment variables must be set:
@@ -123,9 +123,6 @@ PGRST_DB_URI=postgres://TOOLJET_DB_USER:TOOLJET_DB_PASS@TOOLJET_DB_HOST:5432/TOO
 
 
 **Note:** These environment variables are in general and might change in the future. You can also refer env variable [**here**](/docs/setup/env-vars). 
-
-
-  Update `TOOLJET_HOST` environment variable if you want to use the default url assigned with Cloud run after the initial deploy.
 
 
 

@@ -83,9 +83,9 @@ If you've decided to move forward with Pro or customized Enterprise plan, please
 
 ## FAQs
 
-<details>
+<details id="tj-dropdown">
     <summary>
-     **Q. What happens if my subscription expires?**
+     **What happens if my subscription expires?**
     </summary>
 
 If your paid or trial license key expires, your instance will revert to the Basic plan. You will lose access to premium features such as OpenID SSO login and Audit logs, but no data will be lost. You can renew anytime to regain access to premium features.

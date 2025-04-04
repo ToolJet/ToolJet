@@ -50,7 +50,7 @@ Use this operation to generate text content by controlling various parameters to
 
 <img className="screenshot-full" src="/img/marketplace/plugins/mistral/query.png" alt="Mistral Query" />
 
-<details>
+<details id="tj-dropdown">
 <summary>**Response Example**</summary>
 
 "While I can't provide personalized financial advice, I can certainly help you understand some common investment options that may offer tax benefits. Here are some strategies to consider:
