@@ -4,6 +4,7 @@ import { deepClone } from '@/_helpers/utilities/utils.helpers';
 import { FilterRow } from './FilterRow';
 import { FilterFooter } from './FilterFooter';
 import { FilterHeader } from './FilterHeader';
+import { debounce, isEqual } from 'lodash';
 
 export const Filter = memo(({ table, darkMode, setFilters, setShowFilter }) => {
   const { t } = useTranslation();
@@ -98,17 +99,35 @@ export const Filter = memo(({ table, darkMode, setFilters, setShowFilter }) => {
     applyFilters(newFilters.filter((filter) => filter.id !== ''));
   };
 
+  const debouncedApplyFilters = useMemo(
+    () =>
+      debounce((filters) => {
+        const currentTableFilters = table.getState().columnFilters;
+        if (!isEqual(filters, currentTableFilters)) {
+          setFilters(
+            filters.map((filter) => ({
+              id: filter.id,
+              value: filter.value,
+            }))
+          );
+        }
+      }, 500),
+    [setFilters, table]
+  );
+
   const applyFilters = useCallback(
     (filters) => {
-      setFilters(
-        filters.map((filter) => ({
-          id: filter.id,
-          value: filter.value,
-        }))
-      );
+      debouncedApplyFilters(filters);
     },
-    [setFilters]
+    [debouncedApplyFilters]
   );
+
+  // Cleanup debounce on unmount
+  useEffect(() => {
+    return () => {
+      debouncedApplyFilters.cancel();
+    };
+  }, [debouncedApplyFilters]);
 
   useEffect(() => {
     if (localFilters.length > 0) {
