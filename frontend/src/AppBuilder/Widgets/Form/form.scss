@@ -72,7 +72,8 @@
     width: 24px;
     height: 8px;
     border-radius: 4px;
-    background-color: var(--background-accent-strong);
+    background-color: initial;
+    border: 1px solid var(--background-accent-strong);
     cursor: ns-resize;
     z-index: 1;
     visibility: hidden;
@@ -104,3 +105,4 @@
   top: -4px;
   bottom: unset;
 }
+
