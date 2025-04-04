@@ -88,8 +88,6 @@ export const Form = function Form(props) {
   const [isValid, setValidation] = useState(true);
   const [uiComponents, setUIComponents] = useState([]);
   const mounted = useMounted();
-  const canvasHeaderHeight = headerHeight / 10;
-  const canvasFooterHeight = footerHeight / 10;
 
   useEffect(() => {
     const exposedVariables = {
@@ -318,7 +316,7 @@ export const Form = function Form(props) {
         <HorizontalSlot
           slotName="header"
           slotStyle={formHeader}
-          isEditing={mode === 'edit'}
+          isEditing={isEditing}
           id={`${id}-header`}
           height={headerHeight}
           width={width}
@@ -329,7 +327,7 @@ export const Form = function Form(props) {
         />
       )}
 
-      <div className="jet-form-body" style={formContent}>
+      <div className="jet-form-body overflow-wrapper" style={formContent}>
         {isLoading ? (
           <div className="p-2 tw-flex tw-items-center tw-justify-center" style={{ margin: '0px auto' }}>
             <div className="spinner-border" role="status"></div>
@@ -393,7 +391,7 @@ export const Form = function Form(props) {
         <HorizontalSlot
           slotName="footer"
           slotStyle={formFooter}
-          isEditing={mode === 'edit'}
+          isEditing={isEditing}
           id={`${id}-footer`}
           height={footerHeight}
           width={width}

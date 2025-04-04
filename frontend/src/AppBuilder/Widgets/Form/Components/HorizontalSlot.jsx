@@ -45,6 +45,10 @@ export const HorizontalSlot = React.memo(
 
     const canvasHeight = parseInt(resizedHeight, 10) / 10;
 
+    const resizeStyle = {
+      backgroundColor: darkMode ? '#1F2837' : '#fff',
+    };
+
     return (
       <div className={`jet-form-${slotName} wj-form-${slotName}`} style={slotStyle}>
         <div
@@ -66,7 +70,7 @@ export const HorizontalSlot = React.memo(
             }}
             componentType="Form"
           />
-          <div className="resize-handle" {...getHandleProps()} />
+          <div className="resize-handle" {...getHandleProps()} style={resizeStyle} />
         </div>
 
         {isDisabled && (
