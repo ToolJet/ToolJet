@@ -5,7 +5,7 @@ import { ComponentsManagerTab } from './ComponentsManagerTab';
 import cx from 'classnames';
 import { PageSettings } from './PageSettingsTab';
 
-export const RightSideBar = ({ darkMode }) => {
+export const RightSideBar = ({ darkMode, moveableRef }) => {
   const activeTab = useStore((state) => state.activeRightSideBarTab);
   const pageSettingSelected = useStore((state) => state.pageSettingSelected);
 
@@ -15,7 +15,7 @@ export const RightSideBar = ({ darkMode }) => {
         <div className={cx({ 'dark-theme theme-dark': darkMode })} style={{ position: 'relative', height: '100%' }}>
           {pageSettingSelected && <PageSettings />}
           {activeTab === 'components' ? (
-            <ComponentsManagerTab darkMode={darkMode} />
+            <ComponentsManagerTab darkMode={darkMode} moveableRef={moveableRef} />
           ) : (
             <ComponentConfigurationTab darkMode={darkMode} />
           )}

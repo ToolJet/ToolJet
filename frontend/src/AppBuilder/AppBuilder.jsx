@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useEffect } from 'react';
+import React, { Suspense, lazy, useEffect, useRef } from 'react';
 import useStore from '@/AppBuilder/_stores/store';
 import useAppData from '@/AppBuilder/_hooks/useAppData';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
@@ -23,6 +23,7 @@ import { ModuleProvider } from '@/AppBuilder/_contexts/ModuleContext';
 
 // TODO: split Loader into separate component and remove editor loading state from Editor
 export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMode }) => {
+  const moveableRef = useRef(null);
   useAppData(appId, moduleId, darkMode);
   const isEditorLoading = useStore((state) => state.isEditorLoading);
   const currentMode = useStore((state) => state.currentMode);
@@ -52,9 +53,9 @@ export const Editor = ({ id: appId, darkMode, moduleId = 'canvas', switchDarkMod
         {window?.public_config?.ENABLE_MULTIPLAYER_EDITING === 'true' && <RealtimeCursors />}
         <DndProvider backend={HTML5Backend}>
           <ModuleProvider moduleId={moduleId}>
-            <AppCanvas moduleId={moduleId} appId={appId} />
+            <AppCanvas moduleId={moduleId} appId={appId} moveableRef={moveableRef} />
             <QueryPanel darkMode={darkMode} />
-            <RightSideBar darkMode={darkMode} />
+            <RightSideBar darkMode={darkMode} moveableRef={moveableRef} />
           </ModuleProvider>
         </DndProvider>
         <Popups darkMode={darkMode} />

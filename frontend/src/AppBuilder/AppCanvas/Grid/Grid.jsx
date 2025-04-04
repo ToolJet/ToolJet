@@ -31,6 +31,7 @@ import './Grid.css';
 import { NO_OF_GRIDS, SUBCONTAINER_WIDGETS } from '../appCanvasConstants';
 import { useDndMoveableGuidelines } from './useDndMoveableGuidelines';
 import useDndMoveable from './useDndMoveable';
+import MoveableHelper from 'moveable-helper';
 
 const CANVAS_BOUNDS = { left: 0, top: 0, right: 0, position: 'css' };
 const RESIZABLE_CONFIG = {
@@ -39,7 +40,7 @@ const RESIZABLE_CONFIG = {
 };
 export const GRID_HEIGHT = 10;
 
-export default function Grid({ gridWidth, currentLayout }) {
+export default function Grid({ gridWidth, currentLayout, moveableRef }) {
   const lastDraggedEventsRef = useRef(null);
   const updateCanvasBottomHeight = useStore((state) => state.updateCanvasBottomHeight, shallow);
   const setComponentLayout = useStore((state) => state.setComponentLayout, shallow);
@@ -52,7 +53,6 @@ export default function Grid({ gridWidth, currentLayout }) {
   const getResolvedValue = useStore((state) => state.getResolvedValue, shallow);
   const isGroupHandleHoverd = useIsGroupHandleHoverd();
   const openModalWidgetId = useOpenModalWidgetId();
-  const moveableRef = useRef(null);
   const triggerCanvasUpdater = useStore((state) => state.triggerCanvasUpdater, shallow);
   const toggleCanvasUpdater = useStore((state) => state.toggleCanvasUpdater, shallow);
   const groupResizeDataRef = useRef([]);
@@ -69,6 +69,7 @@ export default function Grid({ gridWidth, currentLayout }) {
   const prevDragParentId = useRef(null);
   const newDragParentId = useRef(null);
   const [isGroupDragging, setIsGroupDragging] = useState(false);
+
   // useDndMoveable(moveableRef);
   useDndMoveableGuidelines(moveableRef);
 
@@ -560,168 +561,113 @@ export default function Grid({ gridWidth, currentLayout }) {
       }
     }
   }, [draggingComponentId, resizingComponentId, isGroupDragging, selectedComponents]);
+
   const ProgrammaticDrag = {
     name: 'programmaticDrag',
-    props: [],
+    // props: {
+    //   programmaticDrag: Boolean,
+    // },
+    // Initial events that will be added to the Moveable instance
     events: [],
 
-    // Method to manually start a drag operation
-    startDrag(elementId, initialPosition) {
-      const moveableInstance = moveableRef.current;
-      if (!moveableInstance) return;
-
-      const targetElement = document.getElementById(elementId);
-      if (!targetElement) return;
-
-      // Save reference to target and starting position
-      this._targetElement = targetElement;
-      this._startPos = initialPosition;
-
-      // Create a synthetic mousedown-like event
-      const inputEvent = {
-        type: 'mousedown',
-        target: targetElement,
-        currentTarget: targetElement,
-        clientX: initialPosition.x,
-        clientY: initialPosition.y,
-        preventDefault: () => {},
-        stopPropagation: () => {},
+    // Initialize the plugin when it's added
+    init() {
+      const state = {
+        currentDrag: null,
       };
 
-      // Create a complete event object matching what Moveable expects
-      const dragEvent = {
-        target: targetElement,
-        clientX: initialPosition.x,
-        clientY: initialPosition.y,
-        inputEvent: inputEvent,
-        datas: {}, // Will store drag state
-        originalDatas: {},
-        isPinch: false,
-        isFirstDrag: true,
-        isTrusted: true,
-      };
-
-      // Get the draggable able
-      const draggableAble = moveableInstance.moveable.getAble('draggable');
-      if (!draggableAble) return;
-
-      // Directly call the internal dragStart method on the Draggable able
-      const result = draggableAble.dragStart(moveableInstance.moveable, dragEvent);
-
-      // Store the event data for later use
-      this._dragEvent = dragEvent;
-
-      // After internal processing, trigger the public event
-      if (moveableInstance.props.onDragStart) {
-        moveableInstance.props.onDragStart(dragEvent);
-      }
-
-      return result;
-    },
-
-    // Method to update drag position
-    updateDrag(elementId, newPosition) {
-      const moveableInstance = moveableRef.current;
-      if (!moveableInstance || !this._dragEvent || !this._startPos) return;
-
-      // Calculate delta from starting position
-      const deltaX = newPosition.x - this._startPos.x;
-      const deltaY = newPosition.y - this._startPos.y;
-
-      // Create a synthetic mousemove-like event
-      const inputEvent = {
-        type: 'mousemove',
-        target: this._targetElement,
-        currentTarget: this._targetElement,
-        clientX: newPosition.x,
-        clientY: newPosition.y,
-        preventDefault: () => {},
-        stopPropagation: () => {},
-      };
-
-      // Create a complete event object for drag
-      const dragEvent = {
-        ...this._dragEvent,
-        clientX: newPosition.x,
-        clientY: newPosition.y,
-        inputEvent: inputEvent,
-        delta: [deltaX, deltaY],
-        dist: [deltaX, deltaY],
-        translate: [deltaX, deltaY],
-        transform: `translate(${deltaX}px, ${deltaY}px)`,
-        isPinch: false,
-        isFirstDrag: false,
-      };
-
-      // Get the draggable able
-      const draggableAble = moveableInstance.moveable.getAble('draggable');
-      if (!draggableAble) return;
-
-      // Directly call the internal drag method on the Draggable able
-      const result = draggableAble.drag(moveableInstance.moveable, dragEvent);
-
-      // After internal processing, trigger the public event
-      if (moveableInstance.props.onDrag) {
-        moveableInstance.props.onDrag(dragEvent);
-      }
-
-      return result;
-    },
-
-    // Method to end a drag operation
-    endDrag(elementId, finalPosition) {
-      const moveableInstance = moveableRef.current;
-      if (!moveableInstance || !this._dragEvent || !this._startPos) return;
-
-      // Calculate final delta
-      const deltaX = finalPosition.x - this._startPos.x;
-      const deltaY = finalPosition.y - this._startPos.y;
-
-      // Create a synthetic mouseup-like event
-      const inputEvent = {
-        type: 'mouseup',
-        target: this._targetElement,
-        currentTarget: this._targetElement,
-        clientX: finalPosition.x,
-        clientY: finalPosition.y,
-        preventDefault: () => {},
-        stopPropagation: () => {},
-      };
-
-      // Create a complete event object for dragEnd
-      const dragEndEvent = {
-        ...this._dragEvent,
-        clientX: finalPosition.x,
-        clientY: finalPosition.y,
-        inputEvent: inputEvent,
-        lastEvent: {
-          translate: [deltaX, deltaY],
-          transform: `translate(${deltaX}px, ${deltaY}px)`,
+      return {
+        // Getter/setter for state
+        get state() {
+          return state;
         },
-        isDrag: Math.abs(deltaX) > 0 || Math.abs(deltaY) > 0,
-        isDouble: false,
+
+        // Method to start a drag operation
+        startDrag(elementId, position) {
+          // Find the target element
+          const targetElement = document.getElementById(elementId);
+          if (!targetElement) return false;
+
+          // Set the target and ensure it's active
+          moveableRef.current.updateTarget();
+
+          // Create a proper drag start event
+          const startEvent = {
+            clientX: position.x,
+            clientY: position.y,
+            target: targetElement,
+          };
+
+          // Save initial state
+          state.currentDrag = {
+            target: targetElement,
+            startPos: { ...position },
+            lastPos: { ...position },
+          };
+
+          // Call Moveable's internal dragStart method
+          const result = moveableRef.current.dragStart(startEvent);
+          return result;
+        },
+
+        // Method to update drag position
+        updateDrag(elementId, position) {
+          if (!state.currentDrag || state.currentDrag.target.id !== elementId) return false;
+
+          // Create appropriate event object
+          const dragEvent = {
+            clientX: position.x,
+            clientY: position.y,
+            target: state.currentDrag.target,
+          };
+
+          // Calculate delta from last position
+          const deltaX = position.x - state.currentDrag.lastPos.x;
+          const deltaY = position.y - state.currentDrag.lastPos.y;
+
+          // Update the last position
+          state.currentDrag.lastPos = { ...position };
+
+          // Trigger the drag event on the Moveable instance
+          const result = moveableRef.current.drag({
+            ...dragEvent,
+            deltaX,
+            deltaY,
+            transform: `translate(${position.x - state.currentDrag.startPos.x}px, ${
+              position.y - state.currentDrag.startPos.y
+            }px)`,
+          });
+
+          return result;
+        },
+
+        // Method to end a drag operation
+        endDrag(elementId, position) {
+          if (!state.currentDrag || state.currentDrag.target.id !== elementId) return false;
+
+          // Create a proper drag end event
+          const endEvent = {
+            clientX: position.x,
+            clientY: position.y,
+            target: state.currentDrag.target,
+            lastEvent: {
+              // Total distance from start
+              translate: [position.x - state.currentDrag.startPos.x, position.y - state.currentDrag.startPos.y],
+            },
+          };
+
+          // Call Moveable's internal dragEnd method
+          const result = moveableRef.current.dragEnd(endEvent);
+
+          // Clean up state
+          state.currentDrag = null;
+
+          return result;
+        },
       };
-
-      // Get the draggable able
-      const draggableAble = moveableInstance.moveable.getAble('draggable');
-      if (!draggableAble) return;
-
-      // Directly call the internal dragEnd method
-      const result = draggableAble.dragEnd(moveableInstance.moveable, dragEndEvent);
-
-      // After internal processing, trigger the public event
-      if (moveableInstance.props.onDragEnd) {
-        moveableInstance.props.onDragEnd(dragEndEvent);
-      }
-
-      // Clean up stored data
-      this._dragEvent = null;
-      this._startPos = null;
-      this._targetElement = null;
-
-      return result;
     },
   };
+
   if (mode !== 'edit') return null;
 
   return (
@@ -1077,13 +1023,13 @@ export default function Grid({ gridWidth, currentLayout }) {
           const _dragParentId = newDragParentId.current === null ? 'canvas' : newDragParentId.current;
 
           // Snap to grid
-          let left = Math.round(e.translate[0] / _gridWidth) * _gridWidth;
-          let top = Math.round(e.translate[1] / GRID_HEIGHT) * GRID_HEIGHT;
+          let left = Math.round(e.translate?.[0] / _gridWidth) * _gridWidth;
+          let top = Math.round(e.translate?.[1] / GRID_HEIGHT) * GRID_HEIGHT;
 
           // This logic is to handle the case when the dragged element is over a new canvas
           if (_dragParentId !== currentParentId) {
-            left = e.translate[0];
-            top = e.translate[1];
+            left = e.translate?.[0];
+            top = e.translate?.[1];
           }
 
           // Special case for Modal
@@ -1117,7 +1063,9 @@ export default function Grid({ gridWidth, currentLayout }) {
           e.target.style.transform = `translate(${left}px, ${top}px)`;
           e.target.setAttribute(
             'widget-pos2',
-            `translate: ${e.translate[0]} | Round: ${Math.round(e.translate[0] / gridWidth) * gridWidth} | ${gridWidth}`
+            `translate: ${e.translate?.[0]} | Round: ${
+              Math.round(e.translate?.[0] / gridWidth) * gridWidth
+            } | ${gridWidth}`
           );
 
           // This block is to show grid lines on the canvas when the dragged element is over a new canvas
@@ -1154,6 +1102,7 @@ export default function Grid({ gridWidth, currentLayout }) {
             document.getElementById(`moveable-drag-ghost`).style.height = `${e.target.clientHeight}px`;
           }
         }}
+        // onDrag={helper.onDrag}
         onDragGroup={(ev) => {
           const { events } = ev;
           const parentElm = events[0]?.target?.closest('.real-canvas');
@@ -1223,6 +1172,9 @@ export default function Grid({ gridWidth, currentLayout }) {
           center: false,
           middle: false,
         }}
+        verticalGuidelines={[100, 300]}
+        horizontalGuidelines={[100, 300]}
+        isDisplayInnerSnapDigit={true}
         onSnap={(e) => {
           console.log('onSnap', e);
           const components = e.elements;

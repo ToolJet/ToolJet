@@ -13,7 +13,7 @@ import useStore from '@/AppBuilder/_stores/store';
 // TODO: scrolling
 // TODO: searching
 
-export const ComponentsManagerTab = ({ darkMode }) => {
+export const ComponentsManagerTab = ({ darkMode, moveableRef }) => {
   const componentList = useMemo(() => {
     return componentTypes.map((component) => component.component);
   }, [componentTypes]);
@@ -62,7 +62,12 @@ export const ComponentsManagerTab = ({ darkMode }) => {
   function renderComponentCard(component, index) {
     return (
       <div className="text-center align-items-center clearfix draggable-box-wrapper">
-        <DragLayer index={index} component={componentTypeDefinitionMap[component]} key={component} />
+        <DragLayer
+          index={index}
+          component={componentTypeDefinitionMap[component]}
+          key={component}
+          moveableRef={moveableRef}
+        />
       </div>
     );
   }

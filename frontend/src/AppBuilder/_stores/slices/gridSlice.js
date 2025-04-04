@@ -8,6 +8,7 @@ const initialState = {
   lastCanvasIdClick: '',
   lastCanvasClickPosition: null,
   draggingComponentId: null,
+  moveableRef: null,
 };
 
 export const createGridSlice = (set, get) => ({
@@ -73,4 +74,5 @@ export const createGridSlice = (set, get) => ({
   setLastCanvasClickPosition: (position) => {
     set({ lastCanvasClickPosition: position });
   },
+  setMoveableRef: (ref) => set(() => ({ moveableRef: ref })),
 });

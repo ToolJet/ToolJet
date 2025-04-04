@@ -4,8 +4,10 @@ import { useDrag, useDragLayer } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { snapToGrid } from '@/AppBuilder/AppCanvas/appCanvasUtils';
 import { NO_OF_GRIDS } from '@/AppBuilder/AppCanvas/appCanvasConstants';
+import useStore from '@/AppBuilder/_stores/store';
+import { shallow } from 'zustand/shallow';
 
-export const DragLayer = ({ index, component }) => {
+export const DragLayer = ({ index, component, moveableRef }) => {
   const [{ isDragging }, drag, preview] = useDrag(
     () => ({
       type: 'box',
@@ -18,12 +20,45 @@ export const DragLayer = ({ index, component }) => {
   useEffect(() => {
     preview(getEmptyImage(), { captureDraggingState: true });
   }, []);
-
+  // console.log('moveableRef', moveableRef);
   const size = component.defaultSize || { width: 30, height: 40 };
   return (
     <>
       {isDragging && <CustomDragLayer size={size} />}
-      <div ref={drag} className="draggable-box" style={{ height: '100%' }}>
+      <div
+        ref={drag}
+        className="draggable-box"
+        style={{ height: '100%' }}
+        onDragStart={(e) => {
+          console.log('drsddsdsdagStart', e, moveableRef);
+          const virtualTarget = document.createElement('div');
+          virtualTarget.className = 'virtual-moveable-target moveable-box target widget-target';
+          virtualTarget.id = 'virtual-moveable-target';
+          virtualTarget.style.position = 'absolute';
+          virtualTarget.style.pointerEvents = 'none';
+          virtualTarget.style.border = '1px dashed #9747FF';
+          virtualTarget.style.backgroundColor = 'rgba(151, 71, 255, 0.1)';
+          virtualTarget.style.zIndex = '9999';
+          // Add to DOM
+          const realCanvas = document.getElementById('rm-container');
+          if (realCanvas) {
+            realCanvas.appendChild(virtualTarget);
+          } else {
+            document.body.appendChild(virtualTarget);
+          }
+          moveableRef.current.setState(
+            {
+              target: virtualTarget,
+              hideDefaultLines: true,
+              resizable: false,
+              origin: false,
+            },
+            () => {
+              moveableRef.current.dragStart(e);
+            }
+          );
+        }}
+      >
         <WidgetBox index={index} component={component} />
       </div>
     </>

@@ -18,7 +18,7 @@ import useAppCanvasMaxWidth from './useAppCanvasMaxWidth';
 import { DeleteWidgetConfirmation } from './DeleteWidgetConfirmation';
 import useSidebarMargin from './useSidebarMargin';
 
-export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
+export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned, moveableRef }) => {
   const canvasContainerRef = useRef();
   const handleCanvasContainerMouseUp = useStore((state) => state.handleCanvasContainerMouseUp, shallow);
   const canvasHeight = useStore((state) => state.canvasHeight);
@@ -121,7 +121,7 @@ export const AppCanvas = ({ moduleId, appId, isViewerSidebarPinned }) => {
             )}
 
             {currentMode === 'view' || (currentLayout === 'mobile' && isAutoMobileLayout) ? null : (
-              <Grid currentLayout={currentLayout} gridWidth={gridWidth} />
+              <Grid currentLayout={currentLayout} gridWidth={gridWidth} moveableRef={moveableRef} />
             )}
           </HotkeyProvider>
         </div>
