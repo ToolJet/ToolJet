@@ -51,11 +51,11 @@ export const CurrencyInput = (props) => {
   }, []);
 
   const onInputValueChange = (value) => {
+    handlePhoneCurrencyInputChange(value);
     setExposedVariables({
       country: country,
-      formattedValue: `${inputRef.current?.value}`,
+      formattedValue: `${CurrencyMap[country]?.prefix} ${inputRef.current?.value}`,
     });
-    handlePhoneCurrencyInputChange(value);
   };
 
   const {
@@ -139,7 +139,7 @@ export const CurrencyInput = (props) => {
     if (!isInitialRender.current) {
       setExposedVariables({
         country: country,
-        formattedValue: `${inputRef.current?.value}`,
+        formattedValue: `${CurrencyMap[country]?.prefix} ${value}`,
       });
     }
   }, [country]);
@@ -148,7 +148,7 @@ export const CurrencyInput = (props) => {
     if (isInitialRender.current) {
       setExposedVariables({
         country: country,
-        formattedValue: `${inputRef.current?.value}`,
+        formattedValue: `${CurrencyMap[country]?.prefix} ${value}`,
         value: value,
         setCountryCode: (code) => {
           setCountry(code);
@@ -218,7 +218,7 @@ export const CurrencyInput = (props) => {
                 fireEvent('onChange');
                 setExposedVariables({
                   country: selectedOption.value,
-                  formattedValue: `${inputRef.current?.value}`,
+                  formattedValue: `${CurrencyMap[selectedOption.value]?.prefix} ${selectedOption.value}`,
                 });
               }
             }}
@@ -237,7 +237,8 @@ export const CurrencyInput = (props) => {
               if (newVal === value) return;
               onInputValueChange(newVal);
             }}
-            prefix={`${CurrencyMap?.[country]?.prefix || ''} `}
+            // prefix={`${CurrencyMap?.[country]?.prefix || ''} `}
+            prefix={''}
             disabled={disabledState}
             onBlur={handleBlur}
             onFocus={handleFocus}

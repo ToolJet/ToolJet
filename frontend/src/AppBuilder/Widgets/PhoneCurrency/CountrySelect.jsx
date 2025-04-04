@@ -39,9 +39,13 @@ export const CountrySelect = ({ value, onChange, options, ...rest }) => {
   const customStyles = {
     container: (provided) => ({
       ...provided,
-      minWidth: isCurrencyInput ? '55px' : !isCountryChangeEnabled || disabledState ? '77px' : '87px',
-      width: isCurrencyInput ? '55px' : !isCountryChangeEnabled || disabledState ? '77px' : '87px',
+      minWidth: !isCountryChangeEnabled || disabledState ? '77px' : isCurrencyInput ? '87px' : '93px',
+      width: !isCountryChangeEnabled || disabledState ? '77px' : isCurrencyInput ? '87px' : '93px',
       height: '100%',
+    }),
+    valueContainer: (provided) => ({
+      ...provided,
+      padding: '0px',
     }),
     control: (provided) => ({
       ...provided,
@@ -54,13 +58,7 @@ export const CountrySelect = ({ value, onChange, options, ...rest }) => {
       borderColor: `${
         !isValid && showValidationError ? 'var(--status-error-strong)' : computedStyles?.borderColor
       } !important`,
-      backgroundColor: `${
-        isCountryChangeEnabled
-          ? computedStyles?.backgroundColor
-          : darkMode
-          ? 'var(--surfaces-app-bg-default)'
-          : 'var(--surfaces-surface-03)'
-      } !important`,
+      backgroundColor: `${computedStyles?.backgroundColor} !important`,
     }),
     menu: (provided) => ({
       ...provided,
@@ -68,6 +66,7 @@ export const CountrySelect = ({ value, onChange, options, ...rest }) => {
       height: '236px',
       borderRadius: '8px',
       marginTop: '2px',
+      boxShadow: 'var(--elevation-400-box-shadow)',
     }),
     menuList: (provided) => ({
       ...provided,
@@ -111,6 +110,7 @@ export const CountrySelect = ({ value, onChange, options, ...rest }) => {
         useCustomStyles={true}
         menuPortalTarget={document.body}
         isCurrencyInput={isCurrencyInput}
+        isCountryChangeEnabled={isCountryChangeEnabled}
         {...(filterOption && { filterOption })}
         components={{
           MenuList: CustomMenuList,

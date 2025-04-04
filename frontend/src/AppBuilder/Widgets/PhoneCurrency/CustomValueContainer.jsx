@@ -4,20 +4,32 @@ import { components } from 'react-select';
 import flags from 'react-phone-number-input/flags';
 import Planet from '@/_ui/Icon/bulkIcons/Planet';
 import { getCountryCallingCodeSafe } from './utils';
+import { CurrencyMap } from './constants';
 
 export const CustomValueContainer = ({ getValue, ...props }) => {
   const selectedValue = getValue()[0];
-  const { isCurrencyInput } = props?.selectProps || {};
+  const country = selectedValue?.value;
+  const { isCurrencyInput, isCountryChangeEnabled } = props?.selectProps || {};
   const FlagIcon = selectedValue ? flags[selectedValue.value] : null;
   const countryCode = getCountryCallingCodeSafe(selectedValue.value);
 
   return (
     <components.ValueContainer {...props}>
       {FlagIcon ? (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%',
+            marginLeft: isCountryChangeEnabled ? '4px' : '0px',
+          }}
+        >
           <>
             <FlagIcon style={{ height: '16px' }} />{' '}
-            <span style={{ marginLeft: '2px' }}>{!isCurrencyInput && ` +${countryCode}`}</span>
+            <span style={{ marginLeft: '6px' }}>
+              {isCurrencyInput ? ` ${CurrencyMap?.[country]?.prefix}` : ` +${countryCode}`}
+            </span>
           </>
         </div>
       ) : (
