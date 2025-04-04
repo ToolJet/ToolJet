@@ -69,7 +69,8 @@ export const Table = memo(
     }, [id, actions, setTableActions]);
 
     useEffect(() => {
-      if (useDynamicColumn || !isEqual(prevFirstRowOfTable, firstRowOfTable)) shouldAutogenerateColumns.current = true;
+      if (useDynamicColumn || (!isEqual(prevFirstRowOfTable, firstRowOfTable) && !isEmpty(firstRowOfTable)))
+        shouldAutogenerateColumns.current = true;
     }, [firstRowOfTable, useDynamicColumn, columnData, prevFirstRowOfTable]);
 
     // Set column details to the table store. This is responsible for auto-generating columns
