@@ -17,6 +17,7 @@ export const ControlButtons = memo(
       shallow
     );
     const clientSidePagination = useTableStore((state) => state.getTableProperties(id)?.clientSidePagination, shallow);
+    const hasDownloadEvent = useTableStore((state) => state.getHasDownloadEvent(id), shallow);
 
     const renderButton = (icon, onClick, tooltipId, tooltipContent) => {
       return (
@@ -142,7 +143,8 @@ export const ControlButtons = memo(
     );
 
     const renderDownloadButton = () => {
-      if (!clientSidePagination) {
+      // if server side pagination is enabled and download event is associated with the table, then directly fire download event without displaying popover
+      if (hasDownloadEvent && !clientSidePagination) {
         const onClick = () => {
           fireEvent('onTableDataDownload');
         };
@@ -173,7 +175,7 @@ export const ControlButtons = memo(
             ></ButtonSolid>
           </>
         )}
-        {renderDownloadButton()}
+        {showDownloadButton && renderDownloadButton()}
         {!hideColumnSelectorButton &&
           renderOverlay(id, 'eye1', hideColumnsPopover, 'tooltip-for-manage-columns', 'Manage columns')}
       </div>

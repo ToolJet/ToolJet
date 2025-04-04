@@ -19,6 +19,7 @@ export const createInitSlice = (set, get) => ({
             },
             events: {
               hasHoveredEvent: false,
+              hasDownloadEvent: false,
               tableComponentEvents: [],
               tableColumnEvents: [],
               tableActionEvents: [],
@@ -151,6 +152,9 @@ export const createInitSlice = (set, get) => ({
         state.components[id].events.hasHoveredEvent = tableComponentEvents.some(
           (event) => event.event.eventId === 'onRowHovered'
         );
+        state.components[id].events.hasDownloadEvent = tableComponentEvents.some(
+          (event) => event.event.eventId === 'onTableDataDownload'
+        );
         state.components[id].events.tableColumnEvents = tableEvents.filter((event) => event.target === 'table_column');
         state.components[id].events.tableActionEvents = tableEvents.filter((event) => event.target === 'table_action');
       },
@@ -271,5 +275,8 @@ export const createInitSlice = (set, get) => ({
   },
   getHasHoveredEvent: (id) => {
     return get().components[id]?.events?.hasHoveredEvent || false;
+  },
+  getHasDownloadEvent: (id) => {
+    return get().components[id]?.events?.hasDownloadEvent || false;
   },
 });
