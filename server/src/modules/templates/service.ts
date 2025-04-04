@@ -27,12 +27,12 @@ export class TemplatesService {
     currentUser: User,
     identifier: string,
     appName: string,
-    dependentPluginsForTemplate: Array<string>,
+    dependentPlugins: Array<string>,
     shouldAutoImportPlugin: boolean
   ) {
     const templateDefinition = this.findTemplateDefinition(identifier);
-    if (dependentPluginsForTemplate.length)
-      await this.pluginsService.autoInstallPluginsForTemplates(dependentPluginsForTemplate, shouldAutoImportPlugin);
+    if (dependentPlugins.length)
+      await this.pluginsService.autoInstallPluginsForTemplates(dependentPlugins, shouldAutoImportPlugin);
     return this.importTemplate(currentUser, templateDefinition, appName, identifier);
   }
 
