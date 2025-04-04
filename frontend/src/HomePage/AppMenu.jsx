@@ -13,6 +13,8 @@ export const AppMenu = function AppMenu({
   openAppActionModal,
   darkMode,
   currentFolder,
+  popoverVisible,
+  setMenuOpen,
   appType,
   appCreationMode,
 }) {
@@ -40,9 +42,12 @@ export const AppMenu = function AppMenu({
   return (
     <OverlayTrigger
       trigger="click"
-      placement="bottom-end"
+      placement="top-start"
       rootClose
       onToggle={onMenuOpen}
+      onExit={() => setMenuOpen(false)}
+      show={popoverVisible}
+      container={document.getElementsByClassName('home-page-content')[0]}
       overlay={
         <div>
           <Popover id="popover-app-menu" className={darkMode && 'dark-theme'} placement="bottom">
