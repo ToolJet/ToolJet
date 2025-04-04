@@ -92,6 +92,15 @@ export const iconConfig = {
       ],
       accordian: 'Icon',
     },
+    boxShadow: {
+      type: 'boxShadow',
+      displayName: 'Box shadow',
+      validation: {
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: '0px 0px 0px 0px #00000040',
+      },
+      accordian: 'Icon',
+    },
   },
   exposedVariables: {},
   actions: [
@@ -131,6 +140,6 @@ export const iconConfig = {
       iconColor: { value: '#000' },
       iconAlign: { value: 'center' },
       padding: { value: 'default' },
-    },
+      boxShadow: { value: '0px 0px 0px 0px #00000040' },
   },
 };
