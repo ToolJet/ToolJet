@@ -1222,8 +1222,7 @@ export class AppImportExportService {
           name: dataSource.name,
           kind: dataSource.kind,
           type: DataSourceTypes.DEFAULT,
-          appVersionId,
-          scope: 'global',
+          scope: 'global', // No appVersionId for global data sources
           pluginId: plugin.id,
         });
         await manager.save(newDataSource);
@@ -1238,8 +1237,7 @@ export class AppImportExportService {
         name: dataSource.name,
         kind: dataSource.kind,
         type: DataSourceTypes.DEFAULT,
-        appVersionId,
-        scope: 'global',
+        scope: 'global', // No appVersionId for global data sources
         pluginId: null,
       });
       await manager.save(newDataSource);

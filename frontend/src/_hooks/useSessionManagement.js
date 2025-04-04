@@ -44,7 +44,7 @@ export const useSessionManagement = (initialState = defaultState) => {
   }, []);
 
   useEffect(() => {
-    setFaviconAndTitle(whiteLabelFavicon, whiteLabelText, location);
+    setFaviconAndTitle(location);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 

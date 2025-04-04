@@ -11,6 +11,8 @@ const data = {};
 data.dsNamefake = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 data.dsNamefake1 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 const cyParamName = (name) => name.toLowerCase().replace(/[^a-z0-9]/g, "-");
+data.workspaceName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+data.workspaceSlug = fake.lastName.toLowerCase().replace(/\s+/g, "-");
 
 const dataSources = [
   "BigQuery",
@@ -62,10 +64,12 @@ const dataSources = [
 describe("Add all Data sources to app", () => {
   beforeEach(() => {
     cy.apiLogin();
-    cy.defaultWorkspaceLogin();
   });
 
   it("Should verify global data source page", () => {
+    cy.apiCreateWorkspace(data.workspaceName, data.workspaceSlug);
+    cy.visit(`${data.workspaceSlug}`);
+
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
 
@@ -84,6 +88,8 @@ describe("Add all Data sources to app", () => {
   });
 
   it("Should add all data sources in data source page", () => {
+    cy.visit(`${data.workspaceSlug}`);
+
     dataSources.forEach((dsName) => {
       cy.get(commonSelectors.globalDataSourceIcon).click();
       selectAndAddDataSource("databases", dsName, dsName); // Using the correct fake name
@@ -104,6 +110,7 @@ describe("Add all Data sources to app", () => {
   });
 
   it("Should add all data sources in the app", () => {
+    cy.visit(`${data.workspaceSlug}`);
     cy.get(commonSelectors.dashboardIcon).click();
     cy.get(commonSelectors.appCreateButton).click();
     cy.get(commonSelectors.appNameInput).click().type(data.dsNamefake);
@@ -129,6 +136,7 @@ describe("Add all Data sources to app", () => {
   });
 
   it("Should install all makretplace plugins and add them into the app", () => {
+    cy.visit(`${data.workspaceSlug}`);
     const dataSourcesMarketplace = [
       "Plivo",
       "GitHub",

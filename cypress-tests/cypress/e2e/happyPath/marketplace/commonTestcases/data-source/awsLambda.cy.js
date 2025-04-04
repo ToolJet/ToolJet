@@ -14,11 +14,9 @@ import {
 import {
   deleteDatasource,
   closeDSModal,
-  addQuery,
-  addDsAndAddQuery,
+  deleteAppandDatasourceAfterExecution,
 } from "Support/utils/dataSource";
 
-import { openQueryEditor } from "Support/utils/dataSource";
 import { dataSourceSelector } from "../../../../../constants/selectors/dataSource";
 
 const data = {};
@@ -38,6 +36,18 @@ describe("Data source AWS Lambda", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
 
+    cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
+      "have.text",
+      postgreSqlText.allDataSources()
+    );
+    cy.get(postgreSqlSelector.commonlyUsedLabelAndCount).should(
+      "have.text",
+      postgreSqlText.commonlyUsed
+    );
+    cy.get(postgreSqlSelector.databaseLabelAndCount).should(
+      "have.text",
+      postgreSqlText.allDatabase()
+    );
     cy.get(postgreSqlSelector.apiLabelAndCount).should(
       "have.text",
       postgreSqlText.allApis
@@ -118,7 +128,10 @@ describe("Data source AWS Lambda", () => {
     selectAndAddDataSource("databases", awsLambdaText.awsLambda, data.dsName);
 
     cy.get(".react-select__dropdown-indicator").eq(1).click();
-    cy.get(".react-select__option").contains("US West (N. California)").click();
+    cy.get(".react-select__option")
+      .contains("US West (N. California)")
+      .wait(500)
+      .click();
 
     cy.get(pluginSelectors.amazonsesAccesKey).click().type(Accesskey);
 
@@ -165,5 +178,10 @@ describe("Data source AWS Lambda", () => {
       commonSelectors.toastMessage,
       `Query (${data.dsName}) completed.`
     );
+    deleteAppandDatasourceAfterExecution(
+      data.dsName,
+      `cypress-${data.dsName}-aws-lambda`
+    );
+    cy.uninstallMarketplacePlugin("AWS Lambda");
   });
 });

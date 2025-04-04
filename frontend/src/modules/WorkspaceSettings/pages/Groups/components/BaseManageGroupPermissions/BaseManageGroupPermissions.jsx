@@ -399,6 +399,7 @@ class BaseManageGroupPermissions extends React.Component {
       this.state.newGroupName?.length > 50 ? { color: '#ff0000', borderColor: '#ff0000' } : {};
     const { addPermission, addApps, addUsers, addDataSource = null } = groupDuplicateOption;
     const allFalse = Object.values(groupDuplicateOption).every((value) => !value);
+    const isSaveBtnDisabled = creatingGroup || this.state.isSaveBtnDisabled || this.state.newGroupName?.trim() === '';
 
     return (
       <ErrorBoundary showFallback={true}>
@@ -626,7 +627,7 @@ class BaseManageGroupPermissions extends React.Component {
                   <ButtonSolid
                     type="submit"
                     id="my-form"
-                    disabled={creatingGroup || this.state.isSaveBtnDisabled}
+                    disabled={isSaveBtnDisabled}
                     data-cy="create-group-button"
                     isLoading={creatingGroup || isUpdatingGroupName}
                     leftIcon="plus"

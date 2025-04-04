@@ -20,7 +20,7 @@ import useRouter from '@/_hooks/use-router';
 import { extractEnvironmentConstantsFromConstantsList, navigate } from '../_utils/misc';
 import { getWorkspaceId } from '@/_helpers/utils';
 import { shallow } from 'zustand/shallow';
-import { fetchAndSetWindowTitle, pageTitles, defaultWhiteLabellingSettings } from '@white-label/whiteLabelling';
+import { fetchAndSetWindowTitle, pageTitles, retrieveWhiteLabelText } from '@white-label/whiteLabelling';
 import { initEditorWalkThrough } from '@/AppBuilder/_helpers/createWalkThrough';
 import queryString from 'query-string';
 import { distinctUntilChanged } from 'rxjs';
@@ -412,7 +412,7 @@ const useAppData = (appId, moduleId, darkMode, mode = 'edit', { environmentId, v
       if (showWalkthrough) initEditorWalkThrough();
       checkAndSetTrueBuildSuggestionsFlag();
       return () => {
-        document.title = defaultWhiteLabellingSettings.WHITE_LABEL_TEXT;
+        document.title = retrieveWhiteLabelText();
       };
     });
   }, [setApp, setEditorLoading, currentSession]);

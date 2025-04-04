@@ -2,9 +2,7 @@ import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { pluginSelectors, baserowSelectors } from "Selectors/plugins";
 import { postgreSqlText } from "Texts/postgreSql";
-import { amazonSesText } from "Texts/amazonSes";
 import { baseRowText } from "Texts/baseRow";
-import { amazonAthenaText } from "Texts/amazonAthena";
 import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
 
@@ -14,14 +12,11 @@ import {
 } from "Support/utils/postgreSql";
 
 import {
-  verifyCouldnotConnectWithAlert,
   deleteDatasource,
   closeDSModal,
-  addQuery,
-  addDsAndAddQuery,
+  deleteAppandDatasourceAfterExecution,
 } from "Support/utils/dataSource";
 
-import { openQueryEditor } from "Support/utils/dataSource";
 import { dataSourceSelector } from "../../../../../constants/selectors/dataSource";
 
 const data = {};
@@ -215,5 +210,9 @@ describe("Data source baserow", () => {
         `Query (${data.dsName}) completed.`
       );
     });
+    deleteAppandDatasourceAfterExecution(
+      data.dsName,
+      `cypress-${data.dsName}-baserow`
+    );
   });
 });

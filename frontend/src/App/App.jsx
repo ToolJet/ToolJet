@@ -4,7 +4,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { authorizeWorkspace, updateCurrentSession } from '@/_helpers/authorizeWorkspace';
 import { authenticationService, tooljetService } from '@/_services';
 import { withRouter } from '@/_hoc/withRouter';
-import { PrivateRoute, AdminRoute, AppsRoute, SwitchWorkspaceRoute, OrganizationInviteRoute } from '@/Routes';
+import { PrivateRoute, AdminRoute, AppsRoute, SwitchWorkspaceRoute } from '@/Routes';
 import { HomePage } from '@/HomePage';
 import { TooljetDatabase } from '@/TooljetDatabase';
 import { Authorize } from '@/Oauth2';
@@ -17,7 +17,6 @@ import { MarketplacePlugins } from '@/MarketplacePage/MarketplacePlugins';
 import SwitchWorkspacePage from '@/HomePage/SwitchWorkspacePage';
 import { lt } from 'semver';
 import Toast from '@/_ui/Toast';
-import { VerificationSuccessInfoScreen } from '@/SuccessInfoScreen';
 import '@/_styles/theme.scss';
 import AppLoader from '@/AppLoader';
 export const BreadCrumbContext = React.createContext({});
@@ -51,6 +50,7 @@ const AppWrapper = (props) => {
     }),
     shallow
   );
+
   return (
     <Suspense fallback={null}>
       <BrowserRouter basename={window.public_config?.SUB_PATH || '/'}>
@@ -93,7 +93,6 @@ class AppComponent extends React.Component {
     setFaviconAndTitle();
     authorizeWorkspace();
     this.fetchMetadata();
-    setFaviconAndTitle(null, null, this.props.location);
     setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
   }
   // check if its getting routed from editor
@@ -196,14 +195,6 @@ class AppComponent extends React.Component {
               {auth(this.props)}
               <Route path="/sso/:origin/:configId" exact element={<Oauth {...this.props} />} />
               <Route path="/sso/:origin" exact element={<Oauth {...this.props} />} />
-              <Route
-                path="/invitations/:token/workspaces/:organizationToken"
-                element={
-                  <OrganizationInviteRoute {...this.props}>
-                    <VerificationSuccessInfoScreen />
-                  </OrganizationInviteRoute>
-                }
-              />
               <Route
                 exact
                 path="/:workspaceId/apps/:slug/:pageHandle?/*"
