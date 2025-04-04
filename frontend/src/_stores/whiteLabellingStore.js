@@ -2,6 +2,7 @@ import { create, zustandDevTools } from './utils';
 import { whiteLabellingService } from '@/_services';
 import { authHeader } from '@/_helpers';
 
+import useStore from '@/AppBuilder/_stores/store';
 // Define constants locally to avoid import issues
 const DEFAULT_WHITE_LABEL_SETTINGS = {
   WHITE_LABEL_TEXT: 'ToolJet',
@@ -30,51 +31,40 @@ export const useWhiteLabellingStore = create(
       ...initialState,
       actions: {
         fetchWhiteLabelDetails: (organizationId) => {
-          if (organizationId) {
-            return new Promise((resolve, reject) => {
-              const headers = authHeader();
-              const workspaceId = headers['tj-workspace-id'];
-              set({
-                loadingWhiteLabelDetails: true,
-                activeOrganizationId: organizationId || workspaceId,
-                isWhiteLabelDetailsFetched: false,
-              });
-              whiteLabellingService
-                .get(null, organizationId)
-                .then((settings) => {
-                  set({
-                    whiteLabelText:
-                      settings[WHITE_LABEL_OPTIONS.WHITE_LABEL_TEXT] || DEFAULT_WHITE_LABEL_SETTINGS.WHITE_LABEL_TEXT,
-                    whiteLabelLogo:
-                      settings[WHITE_LABEL_OPTIONS.WHITE_LABEL_LOGO] || DEFAULT_WHITE_LABEL_SETTINGS.WHITE_LABEL_LOGO,
-                    whiteLabelFavicon:
-                      settings[WHITE_LABEL_OPTIONS.WHITE_LABEL_FAVICON] ||
-                      DEFAULT_WHITE_LABEL_SETTINGS.WHITE_LABEL_FAVICON,
-                    loadingWhiteLabelDetails: false,
-                    isWhiteLabelDetailsFetched: true,
-                  });
-                  resolve();
-                })
-                .catch((error) => {
-                  console.error('Error in fetchWhiteLabelDetails:', error);
-                  set({
-                    loadingWhiteLabelDetails: false,
-                    activeOrganizationId: null,
-                    isWhiteLabelDetailsFetched: false,
-                  });
-                  reject(error);
-                });
-            });
-          } else {
+          return new Promise((resolve, reject) => {
+            const headers = authHeader();
+            const workspaceId = headers['tj-workspace-id'];
             set({
-              whiteLabelText: window.public_config?.WHITE_LABEL_TEXT || DEFAULT_WHITE_LABEL_SETTINGS.WHITE_LABEL_TEXT,
-              whiteLabelLogo: window.public_config?.WHITE_LABEL_LOGO || DEFAULT_WHITE_LABEL_SETTINGS.WHITE_LABEL_LOGO,
-              whiteLabelFavicon:
-                window.public_config?.WHITE_LABEL_FAVICON || DEFAULT_WHITE_LABEL_SETTINGS.WHITE_LABEL_FAVICON,
-              loadingWhiteLabelDetails: false,
-              isWhiteLabelDetailsFetched: true,
+              loadingWhiteLabelDetails: true,
+              activeOrganizationId: organizationId || workspaceId,
+              isWhiteLabelDetailsFetched: false,
             });
-          }
+            whiteLabellingService
+              .get(organizationId)
+              .then((settings) => {
+                const updatedSettings = {
+                  whiteLabelText: settings[WHITE_LABEL_OPTIONS.WHITE_LABEL_TEXT],
+                  whiteLabelLogo: settings[WHITE_LABEL_OPTIONS.WHITE_LABEL_LOGO],
+                  whiteLabelFavicon: settings[WHITE_LABEL_OPTIONS.WHITE_LABEL_FAVICON],
+                  loadingWhiteLabelDetails: false,
+                  isWhiteLabelDetailsFetched: true,
+                  isDefaultWhiteLabel: settings.is_default,
+                };
+                set(updatedSettings);
+                //update the white-label slice from here. somehow when we open the builder the actual store values goes back to default state. need to investigte more
+                useStore.getState().updateWhiteLabelDetails(updatedSettings);
+                resolve();
+              })
+              .catch((error) => {
+                console.error('Error in fetchWhiteLabelDetails:', error);
+                set({
+                  loadingWhiteLabelDetails: false,
+                  activeOrganizationId: null,
+                  isWhiteLabelDetailsFetched: false,
+                });
+                reject(error);
+              });
+          });
         },
         resetWhiteLabellingStoreBackToInitialState: () => {
           set({ ...initialState });

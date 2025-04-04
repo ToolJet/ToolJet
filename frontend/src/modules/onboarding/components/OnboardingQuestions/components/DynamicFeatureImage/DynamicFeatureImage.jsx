@@ -6,7 +6,7 @@ const DynamicFeatureImage = () => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   return (
-    <div className="dynamic-feature-image">
+    <div className="dynamic-feature-image" data-cy="onboarding-image">
       <Step2 darkMode={darkMode} />
     </div>
   );

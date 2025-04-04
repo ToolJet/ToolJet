@@ -63,7 +63,7 @@ function test(body) {
 
 function testSampleDb(body) {
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/data-sources/test-connection/sample-db`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/data-sources/sample-db/test-connection`, requestOptions).then(handleResponse);
 }
 
 function setOauth2Token(dataSourceId, body, current_organization_id) {

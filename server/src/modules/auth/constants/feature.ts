@@ -85,7 +85,7 @@ export const FEATURES: FeaturesConfig = {
       isPublic: true,
     },
     [FEATURE_KEY.OAUTH_OPENID_CONFIGS]: {
-      license: LICENSE_FIELD.OIDC,
+      isPublic: true,
     },
     [FEATURE_KEY.OAUTH_SAML_CONFIGS]: {
       isPublic: true,

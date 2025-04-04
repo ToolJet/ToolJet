@@ -1,10 +1,7 @@
-const host = process.env.TOOLJET_HOST;
-const subpath = process.env.SUB_PATH;
-
 export const DEFAULT_WHITE_LABELLING_SETTINGS = {
-  logo: `${host}${subpath}/assets/logo`,
-  text: 'ToolJet',
-  favicon: `${host}${subpath}/assets/logo`,
+  white_label_logo: 'assets/images/tj-logo.svg',
+  white_label_text: 'ToolJet',
+  white_label_favicon: 'assets/images/logo.svg',
 };
 
 export enum FEATURE_KEY {

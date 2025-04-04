@@ -10,7 +10,7 @@ import {
 import { ERROR_TYPES } from './constants';
 import useStore from '@/AppBuilder/_stores/store';
 import { safelyParseJSON } from './utils';
-
+import { fetchWhiteLabelDetails } from '@/_helpers/white-label/whiteLabelling';
 /* [* Be cautious: READ THE CASES BEFORE TOUCHING THE CODE. OTHERWISE YOU MAY SEE ENDLESS REDIRECTIONS (AKA ROUTES-BURMUDA-TRIANGLE) *]
   What is this function?
     - This function is used to authorize the workspace that the user is currently trying to open (for multi-workspace functionality across multiple tabs).
@@ -23,105 +23,110 @@ import { safelyParseJSON } from './utils';
 */
 
 export const authorizeWorkspace = () => {
-  if (!isThisExistedRoute()) {
-    updateCurrentSession({
-      triggeredOnce: true,
-    });
-    const workspaceIdOrSlug = getWorkspaceIdOrSlugFromURL();
-    const isApplicationsPath = getPathname(null, true).startsWith('/applications/');
-    const appId = isApplicationsPath ? getPathname().split('/')[2] : null;
-    /* CASE-1 */
-    sessionService
-      .validateSession(appId, workspaceIdOrSlug)
-      .then(
-        ({
-          current_organization_id,
-          current_organization_slug,
-          no_workspace_attached_in_the_session: noWorkspaceAttachedInTheSession,
-          is_all_workspaces_archived: isAllWorkspacesArchived,
-          is_onboarding_completed: isOnboardingCompleted,
-          is_first_user_onboarding_completed: isFirstUserOnboardingCompleted,
-          consulation_banner_date,
-        }) => {
-          if (!isFirstUserOnboardingCompleted) {
-            const subpath = getSubpath();
-            const path = subpath ? `${subpath}/setup` : '/setup';
-            window.location.href = path;
-          } else if (!isOnboardingCompleted) {
-            // const subpath = getSubpath();
-            // const path = subpath ? `${subpath}/confirm` : '/confirm';
-            // window.location.href
-          }
+  /* Default APIs */
+  const workspaceIdOrSlug = getWorkspaceIdOrSlugFromURL();
+  fetchWhiteLabelDetails(workspaceIdOrSlug).finally(() => {
+    if (!isThisExistedRoute()) {
+      updateCurrentSession({
+        triggeredOnce: true,
+      });
+      const isApplicationsPath = getPathname(null, true).startsWith('/applications/');
+      const appId = isApplicationsPath ? getPathname().split('/')[2] : null;
+      /* CASE-1 */
+      sessionService
+        .validateSession(appId, workspaceIdOrSlug)
+        .then(
+          ({
+            current_organization_id,
+            current_organization_slug,
+            no_workspace_attached_in_the_session: noWorkspaceAttachedInTheSession,
+            is_all_workspaces_archived: isAllWorkspacesArchived,
+            is_onboarding_completed: isOnboardingCompleted,
+            is_first_user_onboarding_completed: isFirstUserOnboardingCompleted,
+            consulation_banner_date,
+          }) => {
+            if (!isFirstUserOnboardingCompleted) {
+              const subpath = getSubpath();
+              const path = subpath ? `${subpath}/setup` : '/setup';
+              window.location.href = path;
+            } else if (!isOnboardingCompleted) {
+              // const subpath = getSubpath();
+              // const path = subpath ? `${subpath}/confirm` : '/confirm';
+              // window.location.href
+            }
 
-          if (window.location.pathname !== `${getSubpath() ?? ''}/switch-workspace`) {
-            if (isAllWorkspacesArchived) {
-              /* All workspaces are archived by the super admin. lets logout the user */
-              sessionService.logout();
+            if (window.location.pathname !== `${getSubpath() ?? ''}/switch-workspace`) {
+              if (isAllWorkspacesArchived) {
+                /* All workspaces are archived by the super admin. lets logout the user */
+                sessionService.logout();
+              } else {
+                updateCurrentSession({
+                  noWorkspaceAttachedInTheSession,
+                  authentication_status: true,
+                  consulation_banner_date,
+                });
+                if (noWorkspaceAttachedInTheSession) {
+                  /*
+                    User just signed up after the invite flow and doesn't have any active workspace.
+                    - From useSessionManagement hook we will be redirecting the user to an error page.
+                  */
+                  return;
+                }
+                /*CASE-2*/
+                authorizeUserAndHandleErrors(current_organization_id, current_organization_slug);
+              }
             } else {
               updateCurrentSession({
-                noWorkspaceAttachedInTheSession,
-                authentication_status: true,
-                consulation_banner_date,
+                current_organization_id,
               });
-              if (noWorkspaceAttachedInTheSession) {
-                /*
-                User just signed up after the invite flow and doesn't have any active workspace.
-                - From useSessionManagement hook we will be redirecting the user to an error page.
-              */
-                return;
-              }
-              /*CASE-2*/
-              authorizeUserAndHandleErrors(current_organization_id, current_organization_slug);
             }
-          } else {
+          }
+        )
+        .catch((error) => {
+          const isDesiredStatusCode =
+            (error && error?.data?.statusCode == 422) ||
+            error?.data?.statusCode == 404 ||
+            error?.data?.statusCode == 400;
+          if (isDesiredStatusCode) {
+            const isWorkspaceArchived =
+              error?.data?.statusCode == 400 && error?.data?.message == ERROR_TYPES.WORKSPACE_ARCHIVED;
+            if (isWorkspaceArchived) {
+              const subpath = getSubpath();
+              let path = subpath ? `${subpath}/switch-workspace` : `/switch-workspace`;
+              if (appId) {
+                path = 'app-url-archived';
+              } else {
+                path += '-archived';
+              }
+              window.location = path;
+            } else if (appId) {
+              /* If the user is trying to load the app viewer and the app id / slug not found */
+              redirectToErrorPage(ERROR_TYPES.INVALID);
+            } else if (error?.data?.statusCode == 422) {
+              if (isThisWorkspaceLoginPage()) {
+                return redirectToErrorPage(ERROR_TYPES.INVALID);
+              }
+              redirectToErrorPage(ERROR_TYPES.UNKNOWN);
+            } else {
+              const subpath = getSubpath();
+              window.location = subpath ? `${subpath}${'/switch-workspace'}` : '/switch-workspace';
+            }
+          }
+          if (!isApplicationsPath) {
+            /* CASE-3 */
             updateCurrentSession({
-              current_organization_id,
+              authentication_status: false,
+            });
+          } else if (isApplicationsPath) {
+            /* CASE-4 */
+            updateCurrentSession({
+              authentication_failed: true,
+              load_app: true,
             });
           }
-        }
-      )
-      .catch((error) => {
-        const isDesiredStatusCode =
-          (error && error?.data?.statusCode == 422) || error?.data?.statusCode == 404 || error?.data?.statusCode == 400;
-        if (isDesiredStatusCode) {
-          const isWorkspaceArchived =
-            error?.data?.statusCode == 400 && error?.data?.message == ERROR_TYPES.WORKSPACE_ARCHIVED;
-          if (isWorkspaceArchived) {
-            const subpath = getSubpath();
-            let path = subpath ? `${subpath}/switch-workspace` : `/switch-workspace`;
-            if (appId) {
-              path = 'app-url-archived';
-            } else {
-              path += '-archived';
-            }
-            window.location = path;
-          } else if (appId) {
-            /* If the user is trying to load the app viewer and the app id / slug not found */
-            redirectToErrorPage(ERROR_TYPES.INVALID);
-          } else if (error?.data?.statusCode == 422) {
-            if (isThisWorkspaceLoginPage()) {
-              return redirectToErrorPage(ERROR_TYPES.INVALID);
-            }
-            redirectToErrorPage(ERROR_TYPES.UNKNOWN);
-          } else {
-            const subpath = getSubpath();
-            window.location = subpath ? `${subpath}${'/switch-workspace'}` : '/switch-workspace';
-          }
-        }
-        if (!isApplicationsPath) {
-          /* CASE-3 */
-          updateCurrentSession({
-            authentication_status: false,
-          });
-        } else if (isApplicationsPath) {
-          /* CASE-4 */
-          updateCurrentSession({
-            authentication_failed: true,
-            load_app: true,
-          });
-        }
-      });
-  }
+        });
+    }
+  });
 };
 
 const isThisExistedRoute = () => {

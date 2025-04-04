@@ -2,12 +2,15 @@ import { Controller, Param, Post, Put, UseGuards, Get, Query, Body } from '@nest
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '@modules/session/guards/jwt-auth.guard';
 import { FolderAppsService } from './service';
-import { User } from '@modules/app/decorators/user.decorator';
+import { User, UserEntity } from '@modules/app/decorators/user.decorator';
 import { FeatureAbilityGuard } from './ability/guard';
 import { InitModule } from '@modules/app/decorators/init-module';
 import { InitFeature } from '@modules/app/decorators/init-feature.decorator';
 import { MODULES } from '@modules/app/constants/modules';
 import { FEATURE_KEY } from './constants';
+import { UserPermissionsDecorator } from '@modules/app/decorators/user-permission.decorator';
+import { UserPermissions } from '@modules/ability/types';
+import { USER_ROLE } from '@modules/group-permissions/constants';
 @InitModule(MODULES.FOLDER_APPS)
 @UseGuards(JwtAuthGuard, FeatureAbilityGuard)
 @Controller('folder-apps')
@@ -16,7 +19,8 @@ export class FolderAppsController {
 
   @InitFeature(FEATURE_KEY.GET_FOLDERS)
   @Get()
-  async index(@User() user, @Query() query) {
+  async index(@User() user: UserEntity, @Query() query, @UserPermissionsDecorator() userPermissions: UserPermissions) {
+    user.roleGroup = userPermissions.isEndUser ? USER_ROLE.END_USER : undefined;
     return await this.folderAppsService.getFolders(user, query);
   }
 

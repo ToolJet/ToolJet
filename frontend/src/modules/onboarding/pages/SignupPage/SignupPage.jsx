@@ -5,7 +5,6 @@ import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services';
 import OnboardingBackgroundWrapper from '@/modules/onboarding/components/OnboardingBackgroundWrapper';
 import { onInvitedUserSignUpSuccess } from '@/_helpers/platform/utils/auth.utils';
-import { checkWhiteLabelsDefaultState } from '@white-label/whiteLabelling';
 import { SignupForm, SignupSuccessInfo } from './components';
 import { GeneralFeatureImage } from '@/modules/common/components';
 
@@ -19,7 +18,6 @@ const SignupPage = ({ configs, organizationId }) => {
     email: '',
     name: '',
   });
-  const [defaultState, setDefaultState] = useState(false);
 
   const routeState = location.state;
   const organizationToken = routeState?.organizationToken;
@@ -32,9 +30,6 @@ const SignupPage = ({ configs, organizationId }) => {
     if (errorMessage) {
       toast.error(errorMessage);
     }
-    checkWhiteLabelsDefaultState(inviteOrganizationId).then((res) => {
-      setDefaultState(res);
-    });
   }, []);
 
   const handleSignup = (formData, onSuccess = () => {}, onFaluire = () => {}) => {
@@ -109,7 +104,6 @@ const SignupPage = ({ configs, organizationId }) => {
           onSubmit={handleSignup}
           setSignupOrganizationDetails={setSignupOrganizationDetails}
           initialData={signingUserInfo}
-          defaultState={defaultState}
         />
       )}
       RightSideComponent={GeneralFeatureImage}

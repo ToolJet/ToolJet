@@ -2,6 +2,7 @@ import { Module, DynamicModule } from '@nestjs/common';
 import { getImportPath } from '@modules/app/constants';
 import { WhiteLabellingRepository } from './repository';
 import { OrganizationRepository } from '../organizations/repository';
+import { FeatureAbilityFactory } from '@modules/white-labelling/ability';
 
 @Module({})
 export class WhiteLabellingModule {
@@ -15,7 +16,13 @@ export class WhiteLabellingModule {
       module: WhiteLabellingModule,
       imports: [],
       controllers: [WhiteLabellingController],
-      providers: [WhiteLabellingService, OrganizationRepository, WhiteLabellingRepository, WhiteLabellingUtilService],
+      providers: [
+        WhiteLabellingService,
+        OrganizationRepository,
+        WhiteLabellingRepository,
+        WhiteLabellingUtilService,
+        FeatureAbilityFactory,
+      ],
       exports: [WhiteLabellingUtilService],
     };
   }

@@ -133,7 +133,7 @@ const LoginForm = ({
                     <>
                       {' '}
                       {signupText}{' '}
-                      <Link to={signUpUrl} className="signin-link" tabIndex="-1" data-cy="signin-link">
+                      <Link to={signUpUrl} className="signin-link" tabIndex="-1" data-cy="create-an-account-link">
                         {t('createToolJetAccount', signUpCTA)}
                       </Link>
                     </>

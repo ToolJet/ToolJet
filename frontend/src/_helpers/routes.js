@@ -103,7 +103,7 @@ export const appendWorkspaceId = (slug, path, replaceId = false) => {
   path = getPathname(path);
 
   let newPath = path;
-  if (path === '/:workspaceId' || path.split('/').length === 2 || path.includes('instance-settings')) {
+  if (path === '/:workspaceId' || path.split('/').length === 2 || path.includes('settings')) {
     newPath = `/${slug}`;
   } else {
     const paths = path.split('/').filter((path) => path !== '');

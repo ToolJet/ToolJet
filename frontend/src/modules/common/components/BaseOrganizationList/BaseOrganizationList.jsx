@@ -53,7 +53,7 @@ const BaseOrganizationList = function ({ workspacesLimit = null, LicenseBadge = 
         <div className={`align-items-center d-flex tj-org-dropdown  ${darkMode && 'dark-theme'}`}>
           {org.id === current_organization_id ? (
             <div className="current-org-avatar">
-              <SolidIcon name="tickv3" fill="#3E63DD" dataCy="add-new-workspace-link" width="21" />
+              <SolidIcon name="tickv3" fill="#3E63DD" data-cy="add-new-workspace-link" width="21" />
             </div>
           ) : (
             <div
@@ -78,7 +78,7 @@ const BaseOrganizationList = function ({ workspacesLimit = null, LicenseBadge = 
                 data-cy="current-org-indicator"
                 onClick={() => setShowEditOrg(true)}
               >
-                <SolidIcon name="editable" fill="#3E63DD" dataCy="add-new-workspace-link" width="16" />
+                <SolidIcon name="editable" fill="#3E63DD" data-cy="edit-rectangle-icon" width="16" />
               </div>
             </ToolTip>
           ) : (
