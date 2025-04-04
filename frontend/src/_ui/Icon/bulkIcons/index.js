@@ -118,6 +118,7 @@ import Lock from './Lock.jsx';
 import AddTemplate from './AddTemplate.jsx';
 import InviteCollaborator from './InviteCollabarator.jsx';
 import CloseIcon from './CloseIcon.jsx';
+import Planet from './Planet.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -361,7 +362,8 @@ const Icon = (props) => {
       return <Comments {...props} />;
     case 'checkcircle':
       return <CheckCircle {...props} />;
-
+    case 'planet':
+      return <Planet {...props} />;
     default:
       return <Apps {...props} />;
   }

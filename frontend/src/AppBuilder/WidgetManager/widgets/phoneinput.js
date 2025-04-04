@@ -1,11 +1,11 @@
-export const textareaConfig = {
-  name: 'Textarea',
-  displayName: 'Text Area',
-  description: 'Multi-line text input',
-  component: 'TextArea',
+export const phoneinputConfig = {
+  name: 'PhoneInput',
+  displayName: 'Phone Input',
+  description: 'Phone input field',
+  component: 'PhoneInput',
   defaultSize: {
     width: 10,
-    height: 100,
+    height: 40,
   },
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -34,6 +34,11 @@ export const textareaConfig = {
         },
         defaultValue: 'Default value',
       },
+    },
+    isCountryChangeEnabled: {
+      type: 'toggle',
+      displayName: 'Enable country change',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
     },
     loadingState: {
       type: 'toggle',
@@ -161,21 +166,6 @@ export const textareaConfig = {
       validation: { schema: { type: 'string' }, defaultValue: '#D72D39' },
       accordian: 'field',
     },
-    icon: {
-      type: 'icon',
-      displayName: 'Icon',
-      validation: { schema: { type: 'string' }, defaultValue: 'IconHome2' },
-      accordian: 'field',
-      visibility: false,
-    },
-    iconColor: {
-      type: 'color',
-      displayName: 'Icon color',
-      validation: { schema: { type: 'string' }, defaultValue: '#CFD3D859' },
-      accordian: 'field',
-      visibility: false,
-      showLabel: false,
-    },
     borderRadius: {
       type: 'numberInput',
       displayName: 'Border radius',
@@ -215,9 +205,17 @@ export const textareaConfig = {
   },
   actions: [
     {
-      handle: 'setText',
-      displayName: 'Set text',
-      params: [{ handle: 'text', displayName: 'text', defaultValue: 'New text' }],
+      handle: 'setValue',
+      displayName: 'Set Value',
+      params: [
+        { handle: 'value', displayName: 'value', defaultValue: '' },
+        { handle: 'country', displayName: 'country', defaultValue: '' },
+      ],
+    },
+    {
+      handle: 'setCountryCode',
+      displayName: 'Set country code',
+      params: [{ handle: 'countryCode', displayName: 'Country code', defaultValue: '' }],
     },
     {
       handle: 'clear',
@@ -230,16 +228,6 @@ export const textareaConfig = {
     {
       handle: 'setBlur',
       displayName: 'Set blur',
-    },
-    {
-      handle: 'disable',
-      displayName: 'Disable(deprecated)',
-      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
-    },
-    {
-      handle: 'visibility',
-      displayName: 'Visibility(deprecated)',
-      params: [{ handle: 'visibility', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
     },
     {
       handle: 'setVisibility',
@@ -273,11 +261,12 @@ export const textareaConfig = {
     properties: {
       value: { value: '' },
       label: { value: 'Label' },
-      placeholder: { value: 'Enter your input' },
+      placeholder: { value: 'Enter your phone' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
       tooltip: { value: '' },
+      isCountryChangeEnabled: { value: '{{true}}' },
     },
     events: [],
     styles: {
@@ -287,7 +276,6 @@ export const textareaConfig = {
       errTextColor: { value: '#D72D39' },
       borderRadius: { value: '{{6}}' },
       backgroundColor: { value: '#fff' },
-      iconColor: { value: '#CFD3D859' },
       direction: { value: 'left' },
       width: { value: '{{33}}' },
       alignment: { value: 'side' },
@@ -295,8 +283,6 @@ export const textareaConfig = {
       auto: { value: '{{true}}' },
       padding: { value: 'default' },
       boxShadow: { value: '0px 0px 0px 0px #00000040' },
-      icon: { value: 'IconHome2' },
-      iconVisibility: { value: false },
     },
   },
 };

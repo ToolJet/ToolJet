@@ -26,6 +26,7 @@ const RenderSchema = ({ component, parent, id, onOptionChange, onOptionsChange, 
       return validateWidget({
         ...{ widgetValue: value },
         ...{ validationObject: component.definition.validation },
+        componentType: component?.component,
       });
     },
     [component.definition.validation]

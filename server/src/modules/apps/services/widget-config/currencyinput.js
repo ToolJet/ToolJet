@@ -1,11 +1,11 @@
-export const textareaConfig = {
-  name: 'Textarea',
-  displayName: 'Text Area',
-  description: 'Multi-line text input',
-  component: 'TextArea',
+export const currencyinputConfig = {
+  name: 'CurrencyInput',
+  displayName: 'Currency Input',
+  description: 'Currency input field',
+  component: 'CurrencyInput',
   defaultSize: {
     width: 10,
-    height: 100,
+    height: 40,
   },
   others: {
     showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -22,18 +22,26 @@ export const textareaConfig = {
       displayName: 'Placeholder',
       validation: {
         schema: { type: 'string' },
-        defaultValue: 'Enter your input',
+        defaultValue: 'Enter your number',
       },
     },
     value: {
       type: 'code',
       displayName: 'Default value',
       validation: {
-        schema: {
-          type: 'string',
-        },
-        defaultValue: 'Default value',
+        schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        defaultValue: 0,
       },
+    },
+    decimalPlaces: {
+      type: 'code',
+      displayName: 'Decimal places',
+      validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] }, defaultValue: '2' },
+    },
+    isCountryChangeEnabled: {
+      type: 'toggle',
+      displayName: 'Enable currency change',
+      validation: { schema: { type: 'boolean' }, defaultValue: true },
     },
     loadingState: {
       type: 'toggle',
@@ -64,8 +72,8 @@ export const textareaConfig = {
   validation: {
     mandatory: { type: 'toggle', displayName: 'Make this field mandatory' },
     regex: { type: 'code', displayName: 'Regex', placeholder: '^[a-zA-Z0-9_ -]{3,16}$' },
-    minLength: { type: 'code', displayName: 'Min length', placeholder: 'Enter min length' },
-    maxLength: { type: 'code', displayName: 'Max length', placeholder: 'Enter max length' },
+    minValue: { type: 'code', displayName: 'Min value', placeholder: 'Enter min value' },
+    maxValue: { type: 'code', displayName: 'Max value', placeholder: 'Enter max value' },
     customRule: {
       type: 'code',
       displayName: 'Custom validation',
@@ -215,9 +223,12 @@ export const textareaConfig = {
   },
   actions: [
     {
-      handle: 'setText',
-      displayName: 'Set text',
-      params: [{ handle: 'text', displayName: 'text', defaultValue: 'New text' }],
+      handle: 'setValue',
+      displayName: 'Set Value',
+      params: [
+        { handle: 'value', displayName: 'value', defaultValue: '' },
+        { handle: 'country', displayName: 'country', defaultValue: '' },
+      ],
     },
     {
       handle: 'clear',
@@ -230,16 +241,6 @@ export const textareaConfig = {
     {
       handle: 'setBlur',
       displayName: 'Set blur',
-    },
-    {
-      handle: 'disable',
-      displayName: 'Disable(deprecated)',
-      params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
-    },
-    {
-      handle: 'visibility',
-      displayName: 'Visibility(deprecated)',
-      params: [{ handle: 'visibility', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
     },
     {
       handle: 'setVisibility',
@@ -261,8 +262,8 @@ export const textareaConfig = {
     validation: {
       mandatory: { value: '{{false}}' },
       regex: { value: '' },
-      minLength: { value: '' },
-      maxLength: { value: '' },
+      minValue: { value: '' },
+      maxValue: { value: '' },
       customRule: { value: '' },
     },
 
@@ -271,13 +272,15 @@ export const textareaConfig = {
       showOnMobile: { value: '{{false}}' },
     },
     properties: {
-      value: { value: '' },
+      value: { value: '0' },
       label: { value: 'Label' },
-      placeholder: { value: 'Enter your input' },
+      placeholder: { value: 'Enter amount' },
       visibility: { value: '{{true}}' },
       disabledState: { value: '{{false}}' },
       loadingState: { value: '{{false}}' },
       tooltip: { value: '' },
+      isCountryChangeEnabled: { value: '{{true}}' },
+      decimalPlaces: { value: '2' },
     },
     events: [],
     styles: {
