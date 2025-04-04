@@ -100,7 +100,6 @@ class HomePageComponent extends React.Component {
       importingGitAppOperations: {},
       featuresLoaded: false,
       showCreateAppModal: false,
-      showCreateModuleModal: false,
       showCreateAppFromTemplateModal: false,
       showImportAppModal: false,
       showCloneAppModal: false,
@@ -233,22 +232,23 @@ class HomePageComponent extends React.Component {
     this.fetchFolders();
   };
 
-  createApp = async (appName, type) => {
+  getAppType = () => {
+    return this.props.appType === 'module' ? 'Module' : this.props.appType === 'workflow' ? 'Workflow' : 'App';
+  };
+
+  createApp = async (appName) => {
     let _self = this;
     _self.setState({ creatingApp: true });
+
     try {
       const data = await appsService.createApp({
         icon: sample(iconList),
         name: appName,
-        type: type ?? this.props.appType,
+        type: this.props.appType,
       });
       const workspaceId = getWorkspaceId();
       _self.props.navigate(`/${workspaceId}/apps/${data.id}`, { state: { commitEnabled: this.state.commitEnabled } });
-      toast.success(
-        `${
-          this.props.appType === 'workflow' ? 'Workflow' : this.props.appType === 'module' ? 'Module' : 'App'
-        } created successfully!`
-      );
+      toast.success(`${this.getAppType()} created successfully!`);
       _self.setState({ creatingApp: false });
       return true;
     } catch (errorResponse) {
@@ -267,7 +267,7 @@ class HomePageComponent extends React.Component {
     try {
       await appsService.saveApp(appId, { name: newAppName });
       await this.fetchApps(this.state.currentPage, this.state.currentFolder.id);
-      toast.success(`${this.props.appType === 'workflow' ? 'Workflow' : 'App'} name has been updated!`);
+      toast.success(`${this.getAppType()} name has been updated!`);
       _self.setState({ renamingApp: false });
       return true;
     } catch (errorResponse) {
@@ -483,7 +483,7 @@ class HomePageComponent extends React.Component {
       .deleteApp(this.state.appToBeDeleted.id)
       // eslint-disable-next-line no-unused-vars
       .then((data) => {
-        toast.success(`${this.props.appType === 'workflow' ? 'Workflow' : 'App'} deleted successfully.`);
+        toast.success(`${this.getAppType()} deleted successfully.`);
         this.fetchApps(
           this.state.currentPage
             ? this.state.apps?.length === 1
@@ -766,11 +766,11 @@ class HomePageComponent extends React.Component {
   };
 
   openCreateAppModal = () => {
-    this.setState({ showCreateAppModal: true, showCreateModuleModal: true });
+    this.setState({ showCreateAppModal: true });
   };
 
   closeCreateAppModal = () => {
-    this.setState({ showCreateAppModal: false, showCreateModuleModal: false });
+    this.setState({ showCreateAppModal: false });
   };
   isWithinSevenDaysOfSignUp = (date) => {
     const currentDate = new Date().toISOString();
@@ -835,7 +835,6 @@ class HomePageComponent extends React.Component {
       importingGitAppOperations,
       featuresLoaded,
       showCreateAppModal,
-      showCreateModuleModal,
       showImportAppModal,
       fileContent,
       fileName,
@@ -856,10 +855,10 @@ class HomePageComponent extends React.Component {
       create: {
         modalType: 'create',
         closeModal: this.closeCreateAppModal,
-        processApp: (name) => this.createApp(name, showCreateAppModal ? 'front-end' : 'module'),
+        processApp: (name) => this.createApp(name),
         show: this.openCreateAppModal,
-        title: this.props.appType === 'workflow' ? 'Create workflow' : 'Create app',
-        actionButton: this.props.appType === 'workflow' ? '+ Create workflow' : '+ Create app',
+        title: `Create ${this.getAppType().toLocaleLowerCase()}`,
+        actionButton: `+ Create ${this.getAppType().toLocaleLowerCase()}`,
         actionLoadingButton: 'Creating',
         appType: this.props.appType,
       },
@@ -904,7 +903,6 @@ class HomePageComponent extends React.Component {
           <AppActionModal
             modalStates={{
               showCreateAppModal,
-              showCreateModuleModal,
               showCloneAppModal,
               showImportAppModal,
               showCreateAppFromTemplateModal,
@@ -919,8 +917,8 @@ class HomePageComponent extends React.Component {
               processApp={this.renameApp}
               selectedAppId={appOperations.selectedApp.id}
               selectedAppName={appOperations.selectedApp.name}
-              title={`Rename ${this.props.appType === 'workflow' ? 'workflow' : 'app'}`}
-              actionButton={`Rename ${this.props.appType === 'workflow' ? 'workflow' : 'app'}`}
+              title={`Rename ${this.getAppType().toLocaleLowerCase()}`}
+              actionButton={`Rename ${this.getAppType().toLocaleLowerCase()}`}
               actionLoadingButton={'Renaming'}
               appType={this.props.appType}
             />
@@ -1171,7 +1169,7 @@ class HomePageComponent extends React.Component {
                           className={`create-new-app-button col-11 ${creatingApp ? 'btn-loading' : ''}`}
                           onClick={() =>
                             this.setState({
-                              [this.props.appType === 'module' ? 'showCreateModuleModal' : 'showCreateAppModal']: true,
+                              showCreateAppModal: true,
                             })
                           }
                           data-cy="create-new-app-button"
@@ -1189,7 +1187,7 @@ class HomePageComponent extends React.Component {
                               )}
                         </Button>
 
-                        {this.props.appType !== 'workflow' && (
+                        {this.props.appType !== 'workflow' && this.props.appType !== 'module' && (
                           <Dropdown.Toggle
                             disabled={
                               appsLimit?.percentage >= 100 || (this.props.appType === 'module' && invalidLicense)
@@ -1283,7 +1281,7 @@ class HomePageComponent extends React.Component {
                   !appSearchKey && <HeaderSkeleton />
                 )}
 
-                {this.props.appType !== 'workflow' && this.canCreateApp() && (
+                {this.props.appType !== 'workflow' && this.props.appType !== 'module' && this.canCreateApp() && (
                   <CreateAppWithPrompt createApp={this.createApp} />
                 )}
 
@@ -1328,7 +1326,7 @@ class HomePageComponent extends React.Component {
                   meta?.total_count === 0 &&
                   !currentFolder.id &&
                   !appSearchKey &&
-                  (['front-end', 'modules'].includes(this.props.appType) ? (
+                  (['front-end', 'workflow'].includes(this.props.appType) ? (
                     <BlankPage
                       canCreateApp={this.canCreateApp}
                       isLoading={true}
