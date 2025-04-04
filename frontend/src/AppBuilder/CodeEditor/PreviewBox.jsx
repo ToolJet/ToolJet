@@ -199,7 +199,7 @@ export const PreviewBox = ({
 
       setError({
         message: isServerConstant
-          ? 'Server side variables cannot be used in apps'
+          ? 'Server variables cannot be used in apps'
           : isSecretError
           ? 'secrets cannot be used in apps'
           : _error,
@@ -249,6 +249,8 @@ const RenderResolvedValue = ({
   isServerConstant = false,
   isLargeDataset,
 }) => {
+  const isServerSideGlobalEnabled = useStore((state) => !!state?.license?.featureAccess?.serverSideGlobal, shallow);
+
   const computeCoersionPreview = (resolvedValue, coersionData) => {
     if (coersionData?.typeBeforeCoercion === coersionData?.typeAfterCoercion) return resolvedValue;
 
@@ -272,7 +274,9 @@ const RenderResolvedValue = ({
     : previewType;
 
   const previewContent = isServerConstant
-    ? 'Server constants would be resolved at runtime'
+    ? isServerSideGlobalEnabled
+      ? 'Server variables would be resolved at runtime'
+      : 'Server variables are only available in paid plans'
     : isSecretConstant
     ? 'Values of secret constants are hidden'
     : !withValidation
