@@ -117,6 +117,13 @@ export class OnboardingService implements IOnboardingService {
       const { firstName, lastName } = names;
       const userParams = { email, password, firstName, lastName };
 
+            // Find the default workspace
+            const defaultWorkspace = await this.organizationRepository.findOne({
+              where: {
+                isDefault: true,
+              }
+            });
+
       if (existingUser) {
         // Handling instance and workspace level signup for existing user
         return await this.onboardingUtilService.whatIfTheSignUpIsAtTheWorkspaceLevel(
@@ -127,6 +134,14 @@ export class OnboardingService implements IOnboardingService {
           manager
         );
       } else {
+        if(defaultWorkspace) {
+          return await this.onboardingUtilService.createUserInDefaultWorkspace(
+            userParams,
+            defaultWorkspace,
+            redirectTo,
+            manager
+          );
+        }
         return await this.onboardingUtilService.createUserOrPersonalWorkspace(
           userParams,
           existingUser,

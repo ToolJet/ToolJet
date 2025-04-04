@@ -604,4 +604,68 @@ export class OnboardingUtilService implements IOnboardingUtilService {
       manager
     );
   }
+
+  createUserInDefaultWorkspace = async (
+    userParams: { email: string; password: string; firstName: string; lastName: string },
+    defaultWorkspace: Organization,
+    redirectTo?: string,
+    manager?: EntityManager
+  ) => {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const { email, password, firstName, lastName } = userParams;
+
+      if (!defaultWorkspace) {
+        throw new Error('No default workspace found in the instance');
+      }
+
+      // Create user with end-user role in default workspace
+      const lifeCycleParms = getUserStatusAndSource(lifecycleEvents.USER_SIGN_UP);
+      
+      const user = await this.create(
+        {
+          email,
+          password,
+          ...(firstName && { firstName }),
+          ...(lastName && { lastName }),
+          ...lifeCycleParms,
+        },
+        defaultWorkspace.id,
+        USER_ROLE.END_USER,
+        null,
+        true,
+        null,
+        manager,
+        true // skipInvitationEmail
+      );
+
+      // Create organization user entry
+      const organizationUser = await this.organizationUserRepository.createOne(
+        user,
+        defaultWorkspace,
+        true,
+        manager,
+        WORKSPACE_USER_SOURCE.SIGNUP
+      );
+
+      // Validate license
+      await this.licenseUserService.validateUser(manager);
+
+      // Send welcome email
+      this.eventEmitter.emit('emailEvent', {
+        type: EMAIL_EVENTS.SEND_WELCOME_EMAIL,
+        payload: {
+          to: user.email,
+          name: user.firstName,
+          invitationtoken: user.invitationToken,
+          organizationInvitationToken: organizationUser.invitationToken,
+          organizationId: defaultWorkspace.id,
+          organizationName: defaultWorkspace.name,
+          sender: null,
+          redirectTo: redirectTo,
+        },
+      });
+
+      return {};
+    }, manager);
+  };
 }
