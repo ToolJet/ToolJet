@@ -4,6 +4,7 @@ import cx from 'classnames';
 import PlusRectangle from '@/_ui/Icon/solidIcons/PlusRectangle';
 import Remove from '@/_ui/Icon/bulkIcons/Remove';
 import ParameterForm from './ParameterForm';
+import usePopoverObserver from '@/AppBuilder/_hooks/usePopoverObserver';
 
 const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRemove, otherParams }) => {
   const [showModal, setShowModal] = useState(false);
@@ -46,6 +47,17 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
       setShowModal(false);
     }
   };
+
+  usePopoverObserver(
+    document.getElementsByClassName('query-details')[0],
+    isEdit
+      ? document.getElementById(`query-param-${String(name).toLowerCase()}`)
+      : document.getElementById('runjs-param-add-btn'),
+    document.getElementById('parameter-form-popover'),
+    showModal,
+    () => setShowModal(true),
+    closeMenu
+  );
 
   return (
     <OverlayTrigger
