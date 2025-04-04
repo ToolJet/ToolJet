@@ -127,6 +127,15 @@ export const CellEditMenu = ({
     closeFKMenu();
   };
 
+  const handleSave = () => {
+    if (isForeignKey) {
+      saveFKValue();
+    } else {
+      saveFunction(cellValue);
+      closePopover();
+    }
+  };
+
   const handleKeyDown = (e) => {
     if (e.key === 'ArrowRight' && isBoolean) {
       e.preventDefault();
@@ -145,7 +154,11 @@ export const CellEditMenu = ({
     }
 
     if (e.key === 'Enter' && cellValue != previousCellValue && show) {
-      saveFunction(cellValue);
+      if (isForeignKey) {
+        saveFKValue();
+      } else {
+        saveFunction(cellValue);
+      }
     }
 
     if (e.key === 'Backspace') {
@@ -278,8 +291,8 @@ export const CellEditMenu = ({
             Cancel
           </ButtonSolid>
           <ButtonSolid
-            onClick={isForeignKeyInEditCell ? saveFKValue : () => saveFunction(selectedValue)}
-            disabled={cellValue == previousCellValue ? true : false}
+            onClick={handleSave}
+            disabled={cellValue === previousCellValue}
             variant="primary"
             size="sm"
             className="fs-12 p-2"
