@@ -8,6 +8,40 @@ if [ -f "./.env" ]; then
   export $(grep -v '^#' ./.env | xargs -d '\n') || true
 fi
 
+# Start Redis server only if REDIS_HOST is localhost or not set
+if [ -z "$REDIS_HOST" ] || [ "$REDIS_HOST" = "localhost" ]; then
+  echo "Starting Redis server locally..."
+  redis-server /etc/redis/redis.conf &
+elif [ -n "$REDIS_URL" ]; then
+  echo "REDIS_URL connection is set: $REDIS_URL"
+else
+  echo "Using external Redis at $REDIS_HOST:$REDIS_PORT."
+
+  # Validate external Redis connection
+  if ! ./server/scripts/wait-for-it.sh "$REDIS_HOST:${REDIS_PORT:-6379}" --strict --timeout=300 -- echo "Redis is up"; then
+    echo "Error: Unable to connect to Redis at $REDIS_HOST:$REDIS_PORT."
+    exit 1
+  fi
+fi
+
+# Check if PGRST_HOST starts with "localhost"
+if [[ "$PGRST_HOST" == localhost:* ]]; then
+  echo "Starting PostgREST server locally..."
+
+  # Generate PostgREST configuration in a writable directory
+  POSTGREST_CONFIG_PATH="/tmp/postgrest.conf"
+
+  echo "db-uri = \"${PGRST_DB_URI}\"" > "$POSTGREST_CONFIG_PATH"
+  echo "db-pre-config = \"postgrest.pre_config\"" >> "$POSTGREST_CONFIG_PATH"
+  echo "server-port = \"${PGRST_SERVER_PORT}\"" >> "$POSTGREST_CONFIG_PATH"
+
+  # Starting PostgREST
+  echo "Starting PostgREST..."
+  postgrest "$POSTGREST_CONFIG_PATH" &
+else
+  echo "Using external PostgREST at $PGRST_HOST."
+fi
+
 # Check WORKLOW_WORKER and skip SETUP_CMD if true
 if [ "${WORKFLOW_WORKER}" == "true" ]; then
   echo "WORKFLOW_WORKER is set to true. Running worker process."
@@ -29,19 +63,6 @@ else
   PG_PORT=$(echo "$DATABASE_URL" | awk -F'[/:@?]' '{print $7}')
 
   ./server/scripts/wait-for-it.sh "$PG_HOST:$PG_PORT" --strict --timeout=300 -- echo "PostgreSQL is up"
-fi
-
-# Note: This Redis connection check changes are only for EE repo
-
-# Check Redis connection
-if [ -z "$REDIS_URL" ]; then
-  if [ -z "$REDIS_HOST" ] || [ -z "$REDIS_PORT" ]; then
-    echo "Waiting for Redis connection..."
-  fi
-
-  ./server/scripts/wait-for-it.sh $REDIS_HOST:${REDIS_PORT:-6379} --strict --timeout=300 -- echo "Redis is up"
-else
-  echo "REDIS_URL connection is set"
 fi
 
 # Run setup command if defined

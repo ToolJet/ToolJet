@@ -123,7 +123,7 @@ describe("Data sources", () => {
     );
 
     cy.clearAndType(
-      '[data-cy="data-source-name-input-filed"]',
+      '[data-cy="data-source-name-input-field"]',
       postgreSqlText.psqlName
     );
 

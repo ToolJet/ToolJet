@@ -19,7 +19,8 @@ const data = {};
 
 describe("Data sources AWS S3", () => {
   beforeEach(() => {
-    cy.appUILogin();
+    cy.apiLogin();
+    cy.defaultWorkspaceLogin();
     data.dataSourceName = fake.lastName
       .toLowerCase()
       .replaceAll("[^A-Za-z]", "");

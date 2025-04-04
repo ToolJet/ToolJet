@@ -13,7 +13,7 @@ export const ValidationMessage = ({ response, validationMessage, className }) =>
       htmlFor="validation"
       type="helper"
       size="default"
-      className={`tw-font-normal ${response === true ? 'tw-text-text-success' : 'tw-text-text-warning'}`}
+      className={`tw-font-normal ${response === true ? 'tw-text-text-success' : '!tw-text-text-warning'}`}
       data-cy="validation-label"
     >
       {validationMessage}
